@@ -3552,5 +3552,105 @@ class SubSub : Sub
 }"
             }.RunAsync();
         }
+
+        [Fact]
+        public async Task FieldDisposableThatDoNotRequireToBeDisposed()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.IO;
+using System.Threading.Tasks;
+
+public class BaseClass : IDisposable
+{
+    private readonly MemoryStream _stream = new MemoryStream();
+    private readonly StringReader _stringReader = new StringReader(""something"");
+    private readonly Task _task = new Task(() => {});
+
+    public void Dispose()
+    {
+    }
+}
+");
+        }
+
+        [Fact, WorkItem(6172, "https://github.com/dotnet/roslyn-analyzers/issues/6172")]
+        public async Task FieldIsDisposedInSubClassFollowingDisposePattern()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.IO;
+
+public class BaseClass : IDisposable
+{
+    private bool disposedValue;
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (!disposedValue)
+        {
+            if (disposing)
+            {
+                // TODO: dispose managed state (managed objects)
+            }
+
+            // TODO: free unmanaged resources (unmanaged objects) and override finalizer
+            // TODO: set large fields to null
+            disposedValue = true;
+        }
+    }
+
+    public void Dispose()
+    {
+        // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+        Dispose(disposing: true);
+        GC.SuppressFinalize(this);
+    }
+}
+
+public class SubClass1 : BaseClass
+{
+    private readonly MemoryStream _stream;
+
+    public SubClass1()
+    {
+        _stream = new MemoryStream();
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        _stream.Dispose();
+    }
+}
+
+public class SubClass2 : BaseClass
+{
+    private readonly MemoryStream _stream;
+    private bool _isDisposed = false;
+
+    public SubClass2()
+    {
+        _stream = new MemoryStream();
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        base.Dispose(disposing);
+
+        if (_isDisposed)
+        {
+            return;
+        }
+
+        if (disposing)
+        {
+            // free managed resources
+            _stream.Dispose();
+        }
+
+        _isDisposed = true;
+    }
+}");
+        }
     }
 }
