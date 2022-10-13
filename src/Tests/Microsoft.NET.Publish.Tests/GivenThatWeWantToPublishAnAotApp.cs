@@ -34,17 +34,19 @@ namespace Microsoft.NET.Publish.Tests
         [PlatformSpecificFact(TestPlatforms.OSX)]
         public void Publish_fails_on_Mac()
         {
-            var proj = CreateHelloWorldTestProject(ToolsetInfo.CurrentTargetFramework, "HelloWorldMac", true);
+            var tfm = ToolsetInfo.CurrentTargetFramework;
+            var rid = EnvironmentInfo.GetCompatibleRid(tfm);
+            var proj = CreateHelloWorldTestProject(tfm, "HelloWorldMac", true);
             proj.AdditionalProperties["PublishAot"] = "true";
             var testAsset = _testAssetsManager.CreateTestProject(proj);
 
             var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, proj.Name));
             publishCommand
-                .Execute(RuntimeIdentifier)
+                .Execute($"/p:RuntimeIdentifier={rid}")
                 .Should().Fail()
                 .And.HaveStdOutContaining("NETSDK1193")
                 .And.HaveStdOutContaining("error")
-                .And.HaveStdOutContaining(RuntimeInformation.RuntimeIdentifier);
+                .And.HaveStdOutContaining(tfm);
         }
 
         [RequiresMSBuildVersionTheory("17.0.0.32901")]

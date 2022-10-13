@@ -362,11 +362,9 @@ namespace Microsoft.NET.Build.Tasks
             
             if (AotEnabled)
             {
-                if (!AddAotOrR2RRuntimePackage(AotPackageType.ILCompiler, _normalizedTargetFrameworkVersion, packagesToDownload))
-                {
-                    Log.LogError(Strings.AotNoValidRuntimePackageError);
-                    return;
-                }
+                // Try to download the package. If it fails, we don't error out, as failing a restore
+                // provides a worse user experience than providing some other error later.
+                _ = AddAotOrR2RRuntimePackage(AotPackageType.ILCompiler, _normalizedTargetFrameworkVersion, packagesToDownload);
             }            
 
             if (packagesToDownload.Any())

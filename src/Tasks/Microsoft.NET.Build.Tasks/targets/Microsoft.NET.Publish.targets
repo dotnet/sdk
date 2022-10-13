@@ -83,7 +83,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   </Target>
 
   <PropertyGroup>
-    <_AotSupportedRids>linux-x64;linux-arm64;linux-musl-x64;linux-musl-arm64;windows-x64;windows-arm64</_AotSupportedRids>
+    <_AotSupportedRids>;linux-x64;linux-arm64;linux-musl-x64;linux-musl-arm64;windows-x64;windows-arm64;</_AotSupportedRids>
   </PropertyGroup>
 
   <!--
@@ -117,9 +117,9 @@ Copyright (c) .NET Foundation. All rights reserved.
                  ResourceName="CompressionInSingleFileRequiresSelfContained" />
     <NETSdkError Condition="'$(PublishAot)' == 'true' And
                             '$(_SkipAotSupportedRidCheck)' != 'true' And
-                            $(_AotSupportedRids.Contains('$(RuntimeIdentifier)')) != 'true'"
+                            $(_AotSupportedRids.Contains(';$(NETCoreSdkRuntimeIdentifier);')) != 'true'"
                  ResourceName="PublishAotRidNotSupported"
-                 FormatArguments="$(RuntimeIdentifier)" />
+                 FormatArguments="$(NETCoreSdkRuntimeIdentifier)" />
 
     <!-- Enable warning for trying to use PublishRelease or PackRelease with a solution if env-var is not set.-->
     <NETSdkWarning Condition="'$(PublishRelease)' != '' and '$(SolutionExt)' == '.sln' and '$(DOTNET_CLI_ENABLE_PUBLISH_RELEASE_FOR_SOLUTIONS)' == ''"
