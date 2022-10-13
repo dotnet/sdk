@@ -78,7 +78,7 @@ steps:
   displayName: Publish Artifacts
 
 - ${{ if eq(parameters.publishToBlob, true) }}:
-  - bash: curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+  - script: '$(Build.SourcesDirectory)/eng/SearchCache/InstallAzureCLI.sh'
     displayName: Install Azure CLI
 
   - bash: az config set extension.use_dynamic_install=yes_without_prompt
