@@ -49,6 +49,26 @@ namespace Microsoft.NET.Publish.Tests
                 .And.HaveStdOutContaining(tfm);
         }
 
+        [PlatformSpecificFact(TestPlatforms.OSX)]
+        public void Publish_passes_on_Mac_x64_with_bypass()
+        {
+            var tfm = ToolsetInfo.CurrentTargetFramework;
+            var rid = EnvironmentInfo.GetCompatibleRid(tfm);
+            if (!rid.EndsWith("-x64"))
+            {
+                // Only osx-x64 packages are available right now
+                return;
+            }
+            var proj = CreateHelloWorldTestProject(tfm, "HelloWorldMac", true);
+            proj.AdditionalProperties["PublishAot"] = "true";
+            var testAsset = _testAssetsManager.CreateTestProject(proj);
+
+            var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, proj.Name));
+            publishCommand
+                .Execute($"/p:RuntimeIdentifier={rid}", "/p:_SkipAotSupportedRidCheck=true")
+                .Should().Pass();
+        }
+
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
         [InlineData(ToolsetInfo.CurrentTargetFramework)]
         public void NativeAot_hw_runs_with_no_warnings_when_PublishAot_is_enabled(string targetFramework)
