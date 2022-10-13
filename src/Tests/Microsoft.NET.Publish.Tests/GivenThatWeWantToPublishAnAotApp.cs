@@ -228,35 +228,30 @@ namespace Microsoft.NET.Publish.Tests
         [InlineData(ToolsetInfo.CurrentTargetFramework)]
         public void NativeAot_app_builds_with_config_when_PublishAot_is_enabled(string targetFramework)
         {
-            // NativeAOT application publish directory should not contain any <App>.deps.json or <App>.runtimeconfig.json
-            // But build step should preserve these files
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-            {
-                var projectName = "NativeAotAppForConfigTest";
-                var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
+            var projectName = "NativeAotAppForConfigTest";
+            var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
 
-                var testProject = CreateAppForConfigCheck(targetFramework, projectName, true);
-                testProject.AdditionalProperties["PublishAot"] = "true";
-                var testAsset = _testAssetsManager.CreateTestProject(testProject)
-                    // populate a runtime config file with a key value pair
-                    // <RuntimeHostConfigurationOption Include="key1" Value="value1" />
-                    .WithProjectChanges(project => AddRuntimeConfigOption(project));
+            var testProject = CreateAppForConfigCheck(targetFramework, projectName, true);
+            testProject.AdditionalProperties["PublishAot"] = "true";
+            var testAsset = _testAssetsManager.CreateTestProject(testProject)
+                // populate a runtime config file with a key value pair
+                // <RuntimeHostConfigurationOption Include="key1" Value="value1" />
+                .WithProjectChanges(project => AddRuntimeConfigOption(project));
 
-                var buildCommand = new BuildCommand(testAsset);
-                buildCommand.Execute($"/p:RuntimeIdentifier={rid}")
-                    .Should().Pass();
+            var buildCommand = new BuildCommand(testAsset);
+            buildCommand.Execute($"/p:RuntimeIdentifier={rid}")
+                .Should().Pass();
 
-                var outputDirectory = buildCommand.GetOutputDirectory(targetFramework, runtimeIdentifier: rid).FullName;
-                var assemblyPath = Path.Combine(outputDirectory, $"{projectName}{Constants.ExeSuffix}");
-                var runtimeConfigPath = Path.Combine(outputDirectory, $"{projectName}.runtimeconfig.json");
-                var depsPath = Path.Combine(outputDirectory, $"{projectName}.deps.json");
+            var outputDirectory = buildCommand.GetOutputDirectory(targetFramework, runtimeIdentifier: rid).FullName;
+            var assemblyPath = Path.Combine(outputDirectory, $"{projectName}{Constants.ExeSuffix}");
+            var runtimeConfigPath = Path.Combine(outputDirectory, $"{projectName}.runtimeconfig.json");
+            var depsPath = Path.Combine(outputDirectory, $"{projectName}.deps.json");
 
-                File.Exists(assemblyPath).Should().BeTrue();
-                // NativeAOT build dir should contain a runtime configuration file
-                File.Exists(runtimeConfigPath).Should().BeTrue();
-                // NativeAOT build dir should contain a dependency file
-                File.Exists(depsPath).Should().BeTrue();
-            }
+            File.Exists(assemblyPath).Should().BeTrue();
+            // NativeAOT build dir should contain a runtime configuration file
+            File.Exists(runtimeConfigPath).Should().BeTrue();
+            // NativeAOT build dir should contain a dependency file
+            File.Exists(depsPath).Should().BeTrue();
         }
 
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
@@ -353,7 +348,7 @@ namespace Microsoft.NET.Publish.Tests
                     .And.HaveStdOutContaining("Hello World");
             }
         }
-        
+
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
         [InlineData(ToolsetInfo.CurrentTargetFramework)]
         public void NativeAot_hw_runs_with_cross_target_PublishAot_is_enabled(string targetFramework)
