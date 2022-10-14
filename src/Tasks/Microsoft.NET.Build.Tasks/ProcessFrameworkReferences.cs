@@ -362,8 +362,8 @@ namespace Microsoft.NET.Build.Tasks
             
             if (AotEnabled)
             {
-                // Add the package to the download list, even if the RID isn't officially supported.
-                // provides a worse user experience than providing some other error later.
+                // Add the package to the download list if the package is registered, even if the RID isn't officially supported.
+                // Erroring during restore provides a worse user experience than providing some other error later.
                 _ = AddAotOrR2RRuntimePackage(AotPackageType.ILCompiler, _normalizedTargetFrameworkVersion, packagesToDownload);
             }            
 
