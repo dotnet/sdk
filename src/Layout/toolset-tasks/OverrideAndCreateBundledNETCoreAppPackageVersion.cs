@@ -21,7 +21,7 @@ namespace Microsoft.DotNet.Build.Tasks
     /// and then update the stage 0 back.
     ///
     /// Override NETCoreSdkVersion to stage 0 sdk version like 6.0.100-dev
-    /// 
+    ///
     /// Use a task to override since it was generated as a string literal replace anyway.
     /// And using C# can have better error when anything goes wrong.
     /// </summary>
@@ -122,6 +122,12 @@ namespace Microsoft.DotNet.Build.Tasks
             {
                 crossgen2Rids.Value += ";osx-x64";
             }
+
+            // Currently has too many RIDs. We only want to include the RIDs of actual packages we
+            // produce, as if don't try to download a missing package then restore will succeed and
+            // we can give a better error during publish that the given RID is not supported.
+            var ilcompilerRids = itemGroup.Elements(ns + "KnownILCompilerPack").First().Attribute("ILCompilerRuntimeIdentifiers");
+            ilcompilerRids.Value = "linux-x64;linux-musl-x64;linux-arm64;linux-musl-arm64;win-x64;win-arm64;osx-x64";
 
             CheckAndReplaceAttribute(itemGroup
                 .Elements(ns + "KnownRuntimePack").First().Attribute("LatestRuntimeFrameworkVersion"));
