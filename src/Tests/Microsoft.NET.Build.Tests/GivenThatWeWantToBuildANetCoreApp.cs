@@ -860,15 +860,6 @@ class Program
         }
 
         [Fact]
-        public void It_passes_when_building_aot_app_without_rid()
-        {
-            GetBuildCommand()
-                .Execute("/p:PublishAot=true")
-                .Should()
-                .Pass();
-        }
-
-        [Fact]
         public void It_errors_when_publishing_single_file_without_apphost()
         {
             GetBuildCommand()
