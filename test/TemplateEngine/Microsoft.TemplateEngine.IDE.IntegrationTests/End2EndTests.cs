@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.RegularExpressions;
 using Microsoft.TemplateEngine.TestHelper;
 using Microsoft.TemplateEngine.Utils;
 
@@ -72,6 +73,184 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             Assert.True(File.Exists(targetFile));
 
             await Verify(File.ReadAllText(targetFile));
+        }
+
+        [Fact]
+        internal async Task PortAndCoalesceTest_WithFallbackInput()
+        {
+            using Bootstrapper bootstrapper = GetBootstrapper();
+            string templateLocation = GetTestTemplateLocation("TemplateWithPortsAndCoalesce");
+            await InstallTemplateAsync(bootstrapper, templateLocation).ConfigureAwait(false);
+
+            string output = TestUtils.CreateTemporaryFolder();
+
+            IReadOnlyList<Abstractions.TemplateFiltering.ITemplateMatchInfo> foundTemplates = await bootstrapper.GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter("TestAssets.TemplateWithPortsAndCoalesce") }).ConfigureAwait(false);
+            Edge.Template.ITemplateCreationResult result = await bootstrapper.CreateAsync(foundTemplates[0].Info, "test-template", output, new Dictionary<string, string?>()).ConfigureAwait(false);
+
+            Assert.Equal(Edge.Template.CreationResultStatus.Success, result.Status);
+
+            string targetFile = Path.Combine(output, "bar.cs");
+            Assert.True(File.Exists(targetFile));
+            string fileContent = File.ReadAllText(targetFile);
+            Assert.True(Regex.Match(
+                fileContent,
+                """
+                The port is (\d{4,5})
+                The port is (\d{4,5})
+                
+                """).Success);
+            Assert.NotEqual(
+                """
+                The port is 1234
+                The port is 1235
+
+                """,
+                fileContent);
+        }
+
+        [Fact]
+        internal async Task PortAndCoalesceTest_WithUserInput()
+        {
+            using Bootstrapper bootstrapper = GetBootstrapper();
+            string templateLocation = GetTestTemplateLocation("TemplateWithPortsAndCoalesce");
+            await InstallTemplateAsync(bootstrapper, templateLocation).ConfigureAwait(false);
+
+            string output = TestUtils.CreateTemporaryFolder();
+            Dictionary<string, string?> parameters = new()
+            {
+                { "userPort1", "4000" },
+                { "userPort2", "3000" },
+            };
+
+            IReadOnlyList<Abstractions.TemplateFiltering.ITemplateMatchInfo> foundTemplates = await bootstrapper.GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter("TestAssets.TemplateWithPortsAndCoalesce") }).ConfigureAwait(false);
+            Edge.Template.ITemplateCreationResult result = await bootstrapper.CreateAsync(foundTemplates[0].Info, "test-template", output, parameters).ConfigureAwait(false);
+
+            Assert.Equal(Edge.Template.CreationResultStatus.Success, result.Status);
+
+            string targetFile = Path.Combine(output, "bar.cs");
+            Assert.True(File.Exists(targetFile));
+            string fileContent = File.ReadAllText(targetFile);
+            Assert.Equal(
+                """
+                The port is 4000
+                The port is 3000
+
+                """,
+                fileContent);
+        }
+
+        [Fact]
+        internal async Task StringCoalesceTest_WithFallbackInput()
+        {
+            using Bootstrapper bootstrapper = GetBootstrapper();
+            string templateLocation = GetTestTemplateLocation("TemplateWithStringCoalesce");
+            await InstallTemplateAsync(bootstrapper, templateLocation).ConfigureAwait(false);
+
+            string output = TestUtils.CreateTemporaryFolder();
+
+            IReadOnlyList<Abstractions.TemplateFiltering.ITemplateMatchInfo> foundTemplates = await bootstrapper.GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter("TestAssets.TemplateWithStringCoalesce") }).ConfigureAwait(false);
+            Edge.Template.ITemplateCreationResult result = await bootstrapper.CreateAsync(foundTemplates[0].Info, "test-template", output, new Dictionary<string, string?>()).ConfigureAwait(false);
+
+            Assert.Equal(Edge.Template.CreationResultStatus.Success, result.Status);
+
+            string targetFile = Path.Combine(output, "bar.cs");
+            Assert.True(File.Exists(targetFile));
+            string fileContent = File.ReadAllText(targetFile);
+            Assert.Equal(
+                """
+                var str = "fallback";
+                
+                """,
+                fileContent);
+        }
+
+        [Fact]
+        internal async Task StringCoalesceTest_WithUserInput()
+        {
+            using Bootstrapper bootstrapper = GetBootstrapper();
+            string templateLocation = GetTestTemplateLocation("TemplateWithStringCoalesce");
+            await InstallTemplateAsync(bootstrapper, templateLocation).ConfigureAwait(false);
+
+            string output = TestUtils.CreateTemporaryFolder();
+            Dictionary<string, string?> parameters = new()
+            {
+                { "userVal", "myVal" },
+            };
+
+            IReadOnlyList<Abstractions.TemplateFiltering.ITemplateMatchInfo> foundTemplates = await bootstrapper.GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter("TestAssets.TemplateWithStringCoalesce") }).ConfigureAwait(false);
+            Edge.Template.ITemplateCreationResult result = await bootstrapper.CreateAsync(foundTemplates[0].Info, "test-template", output, parameters).ConfigureAwait(false);
+
+            Assert.Equal(Edge.Template.CreationResultStatus.Success, result.Status);
+
+            string targetFile = Path.Combine(output, "bar.cs");
+            Assert.True(File.Exists(targetFile));
+            string fileContent = File.ReadAllText(targetFile);
+            Assert.Equal(
+                """
+                var str = "myVal";
+                
+                """,
+                fileContent);
+        }
+
+        [Fact]
+        internal async Task StringCoalesceTest_WithEmptyUserInput()
+        {
+            using Bootstrapper bootstrapper = GetBootstrapper();
+            string templateLocation = GetTestTemplateLocation("TemplateWithStringCoalesce");
+            await InstallTemplateAsync(bootstrapper, templateLocation).ConfigureAwait(false);
+
+            string output = TestUtils.CreateTemporaryFolder();
+#pragma warning disable SA1122 // Use string.Empty for empty strings
+            Dictionary<string, string?> parameters = new()
+            {
+                { "userVal", "" },
+            };
+#pragma warning restore SA1122 // Use string.Empty for empty strings
+
+            IReadOnlyList<Abstractions.TemplateFiltering.ITemplateMatchInfo> foundTemplates = await bootstrapper.GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter("TestAssets.TemplateWithStringCoalesce") }).ConfigureAwait(false);
+            Edge.Template.ITemplateCreationResult result = await bootstrapper.CreateAsync(foundTemplates[0].Info, "test-template", output, parameters).ConfigureAwait(false);
+
+            Assert.Equal(Edge.Template.CreationResultStatus.Success, result.Status);
+
+            string targetFile = Path.Combine(output, "bar.cs");
+            Assert.True(File.Exists(targetFile));
+            string fileContent = File.ReadAllText(targetFile);
+            Assert.Equal(
+                """
+                var str = "";
+                
+                """,
+                fileContent);
+        }
+
+        [Fact]
+        internal async Task StringCoalesceTest_WithNullUserInput()
+        {
+            using Bootstrapper bootstrapper = GetBootstrapper();
+            string templateLocation = GetTestTemplateLocation("TemplateWithStringCoalesce");
+            await InstallTemplateAsync(bootstrapper, templateLocation).ConfigureAwait(false);
+
+            string output = TestUtils.CreateTemporaryFolder();
+            Dictionary<string, string?> parameters = new()
+            {
+                { "userVal", null },
+            };
+
+            IReadOnlyList<Abstractions.TemplateFiltering.ITemplateMatchInfo> foundTemplates = await bootstrapper.GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter("TestAssets.TemplateWithStringCoalesce") }).ConfigureAwait(false);
+            Edge.Template.ITemplateCreationResult result = await bootstrapper.CreateAsync(foundTemplates[0].Info, "test-template", output, parameters).ConfigureAwait(false);
+
+            Assert.Equal(Edge.Template.CreationResultStatus.Success, result.Status);
+
+            string targetFile = Path.Combine(output, "bar.cs");
+            Assert.True(File.Exists(targetFile));
+            string fileContent = File.ReadAllText(targetFile);
+            Assert.Equal(
+                """
+                var str = "A";
+                
+                """,
+                fileContent);
         }
     }
 }
