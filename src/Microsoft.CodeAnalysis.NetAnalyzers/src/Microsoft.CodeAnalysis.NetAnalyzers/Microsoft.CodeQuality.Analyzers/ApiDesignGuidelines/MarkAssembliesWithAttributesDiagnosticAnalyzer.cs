@@ -10,6 +10,10 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 {
     using static MicrosoftCodeQualityAnalyzersResources;
 
+    /// <summary>
+    /// CA1016: <inheritdoc cref="MarkAssembliesWithAssemblyVersionTitle"/>
+    /// CA1014: <inheritdoc cref="MarkAssembliesWithClsCompliantTitle"/>
+    /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class MarkAssembliesWithAttributesDiagnosticAnalyzer : DiagnosticAnalyzer
     {

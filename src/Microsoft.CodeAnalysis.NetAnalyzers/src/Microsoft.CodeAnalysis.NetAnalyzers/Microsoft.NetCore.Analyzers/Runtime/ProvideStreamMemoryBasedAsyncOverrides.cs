@@ -12,9 +12,10 @@ using static Microsoft.NetCore.Analyzers.MicrosoftNetCoreAnalyzersResources;
 namespace Microsoft.NetCore.Analyzers.Runtime
 {
     /// <summary>
-    /// CA1840: Reports a diagnostic if a class that directly subclasses <see cref="System.IO.Stream"/> overrides 
+    /// CA1840: <inheritdoc cref="ProvideStreamMemoryBasedAsyncOverridesTitle"/>
+    /// Reports a diagnostic if a class that directly subclasses <see cref="System.IO.Stream"/> overrides 
     /// <see cref="System.IO.Stream.ReadAsync(byte[], int, int)"/> and/or <see cref="System.IO.Stream.WriteAsync(byte[], int, int)"/>, 
-    /// and does not override the corrasponding memory-based version.
+    /// and does not override the corresponding memory-based version.
     /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class ProvideStreamMemoryBasedAsyncOverrides : DiagnosticAnalyzer

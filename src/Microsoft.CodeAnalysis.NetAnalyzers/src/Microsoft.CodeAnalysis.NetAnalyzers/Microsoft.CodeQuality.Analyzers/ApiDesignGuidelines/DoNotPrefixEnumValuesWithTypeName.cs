@@ -15,7 +15,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
     using static MicrosoftCodeQualityAnalyzersResources;
 
     /// <summary>
-    /// CA1712: Do not prefix enum values with type name
+    /// CA1712: <inheritdoc cref="DoNotPrefixEnumValuesWithTypeNameTitle"/>
     /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class DoNotPrefixEnumValuesWithTypeNameAnalyzer : DiagnosticAnalyzer

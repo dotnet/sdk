@@ -18,6 +18,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 {
     using static MicrosoftNetCoreAnalyzersResources;
 
+    /// <summary>
+    /// CA2000: <inheritdoc cref="DisposeObjectsBeforeLosingScopeTitle"/>
+    /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class DisposeObjectsBeforeLosingScope : DiagnosticAnalyzer
     {

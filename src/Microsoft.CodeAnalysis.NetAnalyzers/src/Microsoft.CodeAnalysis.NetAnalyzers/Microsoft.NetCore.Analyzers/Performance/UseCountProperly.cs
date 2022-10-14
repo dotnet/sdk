@@ -16,10 +16,10 @@ namespace Microsoft.NetCore.Analyzers.Performance
     using static MicrosoftNetCoreAnalyzersResources;
 
     /// <summary>
-    /// CA1827: Do not use Count()/LongCount() when Any() can be used.
-    /// CA1828: Do not use CountAsync()/LongCountAsync() when AnyAsync() can be used.
-    /// CA1829: Use property instead of <see cref="Enumerable.Count{TSource}(System.Collections.Generic.IEnumerable{TSource})"/>, when available.
-    /// CA1836: Prefer IsEmpty over Count when available.
+    /// CA1827: <inheritdoc cref="DoNotUseCountWhenAnyCanBeUsedTitle"/>
+    /// CA1828: <inheritdoc cref="DoNotUseCountAsyncWhenAnyAsyncCanBeUsedTitle"/>
+    /// CA1829: <inheritdoc cref="UsePropertyInsteadOfCountMethodWhenAvailableTitle"/>
+    /// CA1836: <inheritdoc cref="PreferIsEmptyOverCountTitle"/>
     /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class UseCountProperlyAnalyzer : DiagnosticAnalyzer

@@ -12,7 +12,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 {
     using static MicrosoftNetCoreAnalyzersResources;
 
-    /// <summary>CA1830: Prefer strongly-typed StringBuilder.Append overloads.</summary>
+    /// <summary>
+    /// CA1830: <inheritdoc cref="PreferTypedStringBuilderAppendOverloadsTitle"/>
+    /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class PreferTypedStringBuilderAppendOverloads : DiagnosticAnalyzer
     {

@@ -12,6 +12,10 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
 {
     using static MicrosoftNetCoreAnalyzersResources;
 
+    /// <summary>
+    /// CA1401: <inheritdoc cref="PInvokesShouldNotBeVisibleTitle"/>
+    /// CA2101: <inheritdoc cref="SpecifyMarshalingForPInvokeStringArgumentsTitle"/>
+    /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class PInvokeDiagnosticAnalyzer : DiagnosticAnalyzer
     {

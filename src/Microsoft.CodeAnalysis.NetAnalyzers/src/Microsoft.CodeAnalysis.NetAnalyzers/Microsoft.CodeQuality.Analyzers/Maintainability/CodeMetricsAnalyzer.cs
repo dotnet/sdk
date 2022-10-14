@@ -19,11 +19,11 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.CodeMetrics
     using static MicrosoftCodeQualityAnalyzersResources;
 
     /// <summary>
-    /// CA1501: Avoid excessive inheritance
-    /// CA1502: Avoid excessive complexity
-    /// CA1505: Avoid unmaintainable code
-    /// CA1506: Avoid excessive class coupling
-    /// CA1509: Invalid entry in code metrics rule specification file
+    /// CA1501: <inheritdoc cref="AvoidExcessiveInheritanceTitle"/>
+    /// CA1502: <inheritdoc cref="AvoidExcessiveComplexityTitle"/>
+    /// CA1505: <inheritdoc cref="AvoidUnmantainableCodeTitle"/>
+    /// CA1506: <inheritdoc cref="AvoidExcessiveClassCouplingTitle"/>
+    /// CA1509: <inheritdoc cref="InvalidEntryInCodeMetricsConfigFileTitle"/>
     /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class CodeMetricsAnalyzer : DiagnosticAnalyzer

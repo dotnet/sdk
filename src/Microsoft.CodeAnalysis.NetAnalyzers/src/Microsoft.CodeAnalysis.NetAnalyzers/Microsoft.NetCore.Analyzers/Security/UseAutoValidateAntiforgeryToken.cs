@@ -18,6 +18,10 @@ namespace Microsoft.NetCore.Analyzers.Security
 {
     using static MicrosoftNetCoreAnalyzersResources;
 
+    /// <summary>
+    /// CA5391: <inheritdoc cref="UseAutoValidateAntiforgeryToken"/>
+    /// CA5395: <inheritdoc cref="MissHttpVerbAttribute"/>
+    /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class UseAutoValidateAntiforgeryToken : DiagnosticAnalyzer
     {

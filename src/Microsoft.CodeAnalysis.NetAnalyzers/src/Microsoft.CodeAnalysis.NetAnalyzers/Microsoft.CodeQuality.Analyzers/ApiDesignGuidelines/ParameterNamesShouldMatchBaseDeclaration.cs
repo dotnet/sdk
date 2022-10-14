@@ -12,7 +12,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
     using static MicrosoftCodeQualityAnalyzersResources;
 
     /// <summary>
-    /// CA1725: Parameter names should match base declaration
+    /// CA1725: <inheritdoc cref="ParameterNamesShouldMatchBaseDeclarationTitle"/>
     /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class ParameterNamesShouldMatchBaseDeclarationAnalyzer : DiagnosticAnalyzer

@@ -14,6 +14,7 @@ using static Microsoft.NetCore.Analyzers.MicrosoftNetCoreAnalyzersResources;
 namespace Microsoft.NetCore.Analyzers.Runtime
 {
     /// <summary>
+    /// CA2251: <inheritdoc cref="UseStringEqualsOverStringCompareTitle"/>
     /// Reports a diagnostic on any <see cref="IBinaryOperation"/> that:
     /// <list type="bullet">
     /// <item>Is an equals or not-equals operation</item>

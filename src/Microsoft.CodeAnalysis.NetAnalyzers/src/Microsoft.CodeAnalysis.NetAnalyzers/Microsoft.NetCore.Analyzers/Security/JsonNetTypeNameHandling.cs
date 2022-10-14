@@ -14,6 +14,7 @@ namespace Microsoft.NetCore.Analyzers.Security
     using static MicrosoftNetCoreAnalyzersResources;
 
     /// <summary>
+    /// CA2326: <inheritdoc cref="JsonNetTypeNameHandlingTitle"/>
     /// For using a <see cref="T:Newtonsoft.Json.TypeNameHandling"/> values other than None.
     /// </summary>
     [SuppressMessage("Documentation", "CA1200:Avoid using cref tags with a prefix", Justification = "The comment references a type that is not referenced by this compilation.")]

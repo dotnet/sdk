@@ -11,6 +11,9 @@ namespace Microsoft.NetCore.Analyzers.Usage
 {
     using static MicrosoftNetCoreAnalyzersResources;
 
+    /// <summary>
+    /// CA2248: <inheritdoc cref="ProvideCorrectArgumentToEnumHasFlagTitle"/>
+    /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class ProvideCorrectArgumentToEnumHasFlag : DiagnosticAnalyzer
     {

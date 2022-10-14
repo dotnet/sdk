@@ -23,7 +23,8 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
     using static MicrosoftNetCoreAnalyzersResources;
 
     /// <summary>
-    /// CA1416: Analyzer that informs developers when they use platform-specific APIs from call sites where the API might not be available
+    /// CA1416: <inheritdoc cref="PlatformCompatibilityTitle"/>
+    /// CA1422: <inheritdoc cref="PlatformCompatibilityTitle"/>
     ///
     /// It finds usage of platform-specific or unsupported APIs and diagnoses if the
     /// API is guarded by platform check or if it is annotated with corresponding platform specific attribute.

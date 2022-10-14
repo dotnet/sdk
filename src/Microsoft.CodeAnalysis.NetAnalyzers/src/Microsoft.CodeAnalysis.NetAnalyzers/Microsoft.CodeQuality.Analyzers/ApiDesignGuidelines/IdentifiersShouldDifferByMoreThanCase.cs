@@ -14,6 +14,9 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 {
     using static MicrosoftCodeQualityAnalyzersResources;
 
+    /// <summary>
+    /// CA1708: <inheritdoc cref="IdentifiersShouldDifferByMoreThanCaseTitle"/>
+    /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class IdentifiersShouldDifferByMoreThanCaseAnalyzer : DiagnosticAnalyzer
     {

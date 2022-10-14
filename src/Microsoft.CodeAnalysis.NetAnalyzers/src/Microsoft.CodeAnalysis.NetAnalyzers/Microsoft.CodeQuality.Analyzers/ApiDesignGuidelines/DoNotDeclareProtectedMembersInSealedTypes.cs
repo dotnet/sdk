@@ -11,6 +11,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
     using static MicrosoftCodeQualityAnalyzersResources;
 
     /// <summary>
+    /// CA1047: <inheritdoc cref="DoNotDeclareProtectedMembersInSealedTypesTitle"/>
     /// This rule is not implemented for C# as the compiler warning CS0628 already covers this part.
     /// </summary>
 #pragma warning disable RS1004 // Recommend adding language support to diagnostic analyzer

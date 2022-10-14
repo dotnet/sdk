@@ -13,7 +13,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
     using static MicrosoftNetCoreAnalyzersResources;
 
     /// <summary>
-    /// CA1813: Seal attribute types for improved performance. Sealing attribute types speeds up performance during reflection on custom attributes.
+    /// CA1813: <inheritdoc cref="AvoidUnsealedAttributesTitle"/>
+    /// Seal attribute types for improved performance. Sealing attribute types speeds up performance during reflection on custom attributes.
     /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class AvoidUnsealedAttributesAnalyzer : DiagnosticAnalyzer

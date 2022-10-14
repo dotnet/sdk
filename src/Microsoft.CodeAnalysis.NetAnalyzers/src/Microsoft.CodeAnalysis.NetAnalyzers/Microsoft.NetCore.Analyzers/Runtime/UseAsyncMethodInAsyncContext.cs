@@ -16,6 +16,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
     using static MicrosoftNetCoreAnalyzersResources;
 
     /// <summary>
+    /// CA1849: <inheritdoc cref="UseAsyncMethodInAsyncContextTitle"/>
     /// This analyzer suggests using the async version of a method when inside a Task-returning method
     /// In addition, calling Task.Wait(), Task.Result or Task.GetAwaiter().GetResult() will produce a diagnostic
     /// </summary>

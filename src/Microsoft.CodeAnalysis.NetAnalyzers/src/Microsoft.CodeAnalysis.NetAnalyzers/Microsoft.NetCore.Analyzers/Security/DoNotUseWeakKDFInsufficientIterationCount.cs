@@ -22,6 +22,10 @@ namespace Microsoft.NetCore.Analyzers.Security
 {
     using static MicrosoftNetCoreAnalyzersResources;
 
+    /// <summary>
+    /// CA5387: <inheritdoc cref="DefinitelyUseWeakKDFInsufficientIterationCount"/>
+    /// CA5388: <inheritdoc cref="MaybeUseWeakKDFInsufficientIterationCount"/>
+    /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class DoNotUseWeakKDFInsufficientIterationCount : DiagnosticAnalyzer
     {

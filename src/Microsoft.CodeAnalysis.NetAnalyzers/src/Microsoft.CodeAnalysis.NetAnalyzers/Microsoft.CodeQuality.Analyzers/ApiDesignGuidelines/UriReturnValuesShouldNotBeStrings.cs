@@ -11,7 +11,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
     using static MicrosoftCodeQualityAnalyzersResources;
 
     /// <summary>
-    /// CA1055: Uri return values should not be strings
+    /// CA1055: <inheritdoc cref="UriReturnValuesShouldNotBeStringsTitle"/>
     /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public class UriReturnValuesShouldNotBeStringsAnalyzer : DiagnosticAnalyzer

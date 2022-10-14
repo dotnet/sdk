@@ -12,7 +12,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
     using static MicrosoftCodeQualityAnalyzersResources;
 
     /// <summary>
-    /// CA1720-redefined: Identifiers should not contain type names
+    /// CA1720: <inheritdoc cref="IdentifiersShouldNotContainTypeNamesTitle"/>
     /// Cause:
     /// The name of a parameter or a member contains a language-specific data type name.
     ///

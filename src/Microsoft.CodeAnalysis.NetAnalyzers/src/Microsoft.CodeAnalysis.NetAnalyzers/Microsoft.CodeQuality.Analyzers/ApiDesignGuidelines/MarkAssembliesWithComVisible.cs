@@ -11,6 +11,9 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 {
     using static MicrosoftCodeQualityAnalyzersResources;
 
+    /// <summary>
+    /// CA1017: <inheritdoc cref="MarkAssembliesWithComVisibleTitle"/>
+    /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class MarkAssembliesWithComVisibleAnalyzer : DiagnosticAnalyzer
     {

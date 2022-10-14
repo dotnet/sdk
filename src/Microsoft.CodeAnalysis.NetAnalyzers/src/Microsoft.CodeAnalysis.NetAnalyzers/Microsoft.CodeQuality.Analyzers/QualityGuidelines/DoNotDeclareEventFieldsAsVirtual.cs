@@ -10,6 +10,9 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
 {
     using static MicrosoftCodeQualityAnalyzersResources;
 
+    /// <summary>
+    /// CA1070: <inheritdoc cref="DoNotDeclareEventFieldsAsVirtualTitle"/>
+    /// </summary>
 #pragma warning disable RS1004 // Recommend adding language support to diagnostic analyzer - Construct is invalid in VB.NET
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
 #pragma warning restore RS1004 // Recommend adding language support to diagnostic analyzer

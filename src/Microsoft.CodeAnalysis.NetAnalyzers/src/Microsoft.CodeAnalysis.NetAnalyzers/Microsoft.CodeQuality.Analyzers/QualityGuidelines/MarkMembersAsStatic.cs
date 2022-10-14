@@ -15,7 +15,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
     using static MicrosoftCodeQualityAnalyzersResources;
 
     /// <summary>
-    /// CA1822: Mark members as static
+    /// CA1822: <inheritdoc cref="MarkMembersAsStaticTitle"/>
     /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class MarkMembersAsStaticAnalyzer : DiagnosticAnalyzer

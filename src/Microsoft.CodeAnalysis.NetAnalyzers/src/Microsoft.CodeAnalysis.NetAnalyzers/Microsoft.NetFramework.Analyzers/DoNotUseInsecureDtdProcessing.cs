@@ -18,6 +18,7 @@ namespace Microsoft.NetFramework.Analyzers
     using static MicrosoftNetFrameworkAnalyzersResources;
 
     /// <summary>
+    /// CA3075: <inheritdoc cref="InsecureXmlDtdProcessing"/>
     /// Secure DTD processing and entity resolution in XML
     /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]

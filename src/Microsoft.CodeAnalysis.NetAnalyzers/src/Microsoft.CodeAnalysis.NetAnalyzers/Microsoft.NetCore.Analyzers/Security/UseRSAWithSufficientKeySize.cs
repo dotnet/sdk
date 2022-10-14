@@ -14,6 +14,9 @@ namespace Microsoft.NetCore.Analyzers.Security
 {
     using static MicrosoftNetCoreAnalyzersResources;
 
+    /// <summary>
+    /// CA5385: <inheritdoc cref="UseRSAWithSufficientKeySize"/>
+    /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class UseRSAWithSufficientKeySize : DiagnosticAnalyzer
     {

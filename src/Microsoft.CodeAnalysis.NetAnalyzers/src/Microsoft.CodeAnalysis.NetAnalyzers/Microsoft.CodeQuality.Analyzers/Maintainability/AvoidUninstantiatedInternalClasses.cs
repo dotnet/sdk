@@ -16,7 +16,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
     using static MicrosoftCodeQualityAnalyzersResources;
 
     /// <summary>
-    /// CA1812: Avoid uninstantiated internal classes
+    /// CA1812: <inheritdoc cref="AvoidUninstantiatedInternalClassesTitle"/>
     /// </summary>
     public abstract class AvoidUninstantiatedInternalClassesAnalyzer : DiagnosticAnalyzer
     {

@@ -10,7 +10,7 @@ namespace Microsoft.CodeQuality.Analyzers.Documentation
     using static MicrosoftCodeQualityAnalyzersResources;
 
     /// <summary>
-    /// CA1200: Avoid using cref tags with a prefix
+    /// CA1200: <inheritdoc cref="AvoidUsingCrefTagsWithAPrefixTitle"/>
     /// </summary>
     public abstract class AvoidUsingCrefTagsWithAPrefixAnalyzer : DiagnosticAnalyzer
     {

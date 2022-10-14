@@ -14,6 +14,10 @@ namespace Microsoft.NetCore.Analyzers.Security
 {
     using static MicrosoftNetCoreAnalyzersResources;
 
+    /// <summary>
+    /// CA5397: <inheritdoc cref="DeprecatedSslProtocolsTitle"/>
+    /// CA5398: <inheritdoc cref="HardcodedSslProtocolsTitle"/>
+    /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class SslProtocolsAnalyzer : DiagnosticAnalyzer
     {

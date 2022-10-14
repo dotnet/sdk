@@ -15,6 +15,9 @@ namespace Microsoft.NetCore.Analyzers.Data
 {
     using static MicrosoftNetCoreAnalyzersResources;
 
+    /// <summary>
+    /// CA2100: <inheritdoc cref="ReviewSQLQueriesForSecurityVulnerabilitiesTitle"/>
+    /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class ReviewSqlQueriesForSecurityVulnerabilities : DiagnosticAnalyzer
     {

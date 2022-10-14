@@ -13,6 +13,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
     using static MicrosoftNetCoreAnalyzersResources;
 
     /// <summary>
+    /// CA1834: <inheritdoc cref="PreferConstCharOverConstUnitStringInStringBuilderTitle"/>
     /// Test for single character strings passed in to StringBuilder.Append
     /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]

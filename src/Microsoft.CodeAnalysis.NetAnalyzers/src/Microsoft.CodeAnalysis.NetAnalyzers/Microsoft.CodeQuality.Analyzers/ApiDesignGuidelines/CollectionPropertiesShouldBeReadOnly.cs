@@ -14,7 +14,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
     using static MicrosoftCodeQualityAnalyzersResources;
 
     /// <summary>
-    /// CA2227: Collection properties should be read only
+    /// CA2227: <inheritdoc cref="CollectionPropertiesShouldBeReadOnlyTitle"/>
     ///
     /// Cause:
     /// An externally visible writable property is a type that implements System.Collections.ICollection.

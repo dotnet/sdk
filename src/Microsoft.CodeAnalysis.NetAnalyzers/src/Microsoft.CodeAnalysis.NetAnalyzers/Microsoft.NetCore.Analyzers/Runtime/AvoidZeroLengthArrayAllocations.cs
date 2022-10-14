@@ -13,7 +13,10 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 {
     using static MicrosoftNetCoreAnalyzersResources;
 
-    /// <summary>Base type for an analyzer that looks for empty array allocations and recommends their replacement.</summary>
+    /// <summary>
+    /// CA1825: <inheritdoc cref="AvoidZeroLengthArrayAllocationsTitle"/>
+    /// Base type for an analyzer that looks for empty array allocations and recommends their replacement.
+    /// </summary>
     public abstract class AvoidZeroLengthArrayAllocationsAnalyzer : DiagnosticAnalyzer
     {
         internal const string RuleId = "CA1825";

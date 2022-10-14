@@ -22,6 +22,8 @@ namespace Microsoft.NetCore.Analyzers.Security
     using static MicrosoftNetCoreAnalyzersResources;
 
     /// <summary>
+    /// CA2329: <inheritdoc cref="JsonNetInsecureSerializerTitle"/>
+    /// CA2330: <inheritdoc cref="JsonNetMaybeInsecureSerializerTitle"/>
     /// For detecting deserialization with <see cref="T:Newtonsoft.Json.JsonSerializer"/> when its TypeNameHandling != None
     /// and its Binder/SerializationBinder is null.
     /// </summary>

@@ -18,6 +18,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 {
     using static MicrosoftNetCoreAnalyzersResources;
 
+    /// <summary>
+    /// CA2213: <inheritdoc cref="DisposableFieldsShouldBeDisposedTitle"/>
+    /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class DisposableFieldsShouldBeDisposed : DiagnosticAnalyzer
     {

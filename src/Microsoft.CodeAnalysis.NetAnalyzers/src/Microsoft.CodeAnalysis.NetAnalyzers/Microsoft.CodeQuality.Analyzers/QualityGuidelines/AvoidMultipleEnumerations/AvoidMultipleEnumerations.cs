@@ -14,6 +14,9 @@ using static Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnum
 
 namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumerations
 {
+    /// <summary>
+    /// CA1851: <inheritdoc cref="AvoidMultipleEnumerationsTitle"/>
+    /// </summary>
     internal abstract partial class AvoidMultipleEnumerations : DiagnosticAnalyzer
     {
         private const string RuleId = "CA1851";

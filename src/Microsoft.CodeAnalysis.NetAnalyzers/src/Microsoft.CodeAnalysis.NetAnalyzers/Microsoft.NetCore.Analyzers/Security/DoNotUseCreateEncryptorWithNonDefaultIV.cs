@@ -19,6 +19,10 @@ namespace Microsoft.NetCore.Analyzers.Security
 {
     using static MicrosoftNetCoreAnalyzersResources;
 
+    /// <summary>
+    /// CA5401: <inheritdoc cref="DefinitelyUseCreateEncryptorWithNonDefaultIV"/>
+    /// CA5402: <inheritdoc cref="MaybeUseCreateEncryptorWithNonDefaultIV"/>
+    /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class DoNotUseCreateEncryptorWithNonDefaultIV : DiagnosticAnalyzer
     {

@@ -13,7 +13,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
     using static MicrosoftNetCoreAnalyzersResources;
 
     /// <summary>
-    /// CA2208: Instantiate argument exceptions correctly
+    /// CA2208: <inheritdoc cref="InstantiateArgumentExceptionsCorrectlyTitle"/>
     /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class InstantiateArgumentExceptionsCorrectlyAnalyzer : DiagnosticAnalyzer

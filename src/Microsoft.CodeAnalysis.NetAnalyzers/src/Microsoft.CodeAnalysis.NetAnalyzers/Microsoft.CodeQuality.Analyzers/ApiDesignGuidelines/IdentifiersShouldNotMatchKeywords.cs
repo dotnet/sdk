@@ -14,7 +14,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
     using static MicrosoftCodeQualityAnalyzersResources;
 
     /// <summary>
-    /// CA1716: Identifiers should not match keywords
+    /// CA1716: <inheritdoc cref="IdentifiersShouldNotMatchKeywordsTitle"/>
     /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class IdentifiersShouldNotMatchKeywordsAnalyzer : DiagnosticAnalyzer

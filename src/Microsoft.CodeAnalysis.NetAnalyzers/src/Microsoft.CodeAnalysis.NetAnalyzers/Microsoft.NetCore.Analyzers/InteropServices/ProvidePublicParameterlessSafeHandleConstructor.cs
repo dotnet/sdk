@@ -10,6 +10,9 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
 {
     using static MicrosoftNetCoreAnalyzersResources;
 
+    /// <summary>
+    /// CA1419: <inheritdoc cref="ProvidePublicParameterlessSafeHandleConstructorTitle"/>
+    /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class ProvidePublicParameterlessSafeHandleConstructorAnalyzer : DiagnosticAnalyzer
     {

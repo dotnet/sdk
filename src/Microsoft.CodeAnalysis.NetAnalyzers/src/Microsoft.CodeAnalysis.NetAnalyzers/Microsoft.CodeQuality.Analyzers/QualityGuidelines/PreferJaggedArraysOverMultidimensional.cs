@@ -12,7 +12,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
     using static MicrosoftCodeQualityAnalyzersResources;
 
     /// <summary>
-    /// CA1814: Prefer jagged arrays over multidimensional
+    /// CA1814: <inheritdoc cref="PreferJaggedArraysOverMultidimensionalTitle"/>
     /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class PreferJaggedArraysOverMultidimensionalAnalyzer : DiagnosticAnalyzer

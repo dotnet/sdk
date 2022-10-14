@@ -14,7 +14,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
     using static MicrosoftNetCoreAnalyzersResources;
 
     /// <summary>
-    /// CA1855: Use Span.Clear instead of Span.Fill(default)
+    /// CA1855: <inheritdoc cref="UseSpanClearInsteadOfFillTitle"/>
     /// </summary>
     public abstract class UseSpanClearInsteadOfFillAnalyzer : DiagnosticAnalyzer
     {

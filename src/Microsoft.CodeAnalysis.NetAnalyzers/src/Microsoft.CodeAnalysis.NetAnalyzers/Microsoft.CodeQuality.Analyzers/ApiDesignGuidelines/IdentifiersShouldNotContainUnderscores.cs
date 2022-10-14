@@ -12,7 +12,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
     using static MicrosoftCodeQualityAnalyzersResources;
 
     /// <summary>
-    /// CA1707: Identifiers should not contain underscores
+    /// CA1707: <inheritdoc cref="IdentifiersShouldNotContainUnderscoresTitle"/>
     /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class IdentifiersShouldNotContainUnderscoresAnalyzer : DiagnosticAnalyzer

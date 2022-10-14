@@ -10,6 +10,9 @@ namespace Microsoft.NetFramework.Analyzers
 {
     using static MicrosoftNetFrameworkAnalyzersResources;
 
+    /// <summary>
+    /// CA3147: <inheritdoc cref="MarkVerbHandlersWithValidateAntiforgeryTokenTitle"/>
+    /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public partial class MarkVerbHandlersWithValidateAntiforgeryTokenAnalyzer : DiagnosticAnalyzer
     {

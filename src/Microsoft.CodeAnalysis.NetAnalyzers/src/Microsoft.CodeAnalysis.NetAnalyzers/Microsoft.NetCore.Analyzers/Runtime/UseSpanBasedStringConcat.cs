@@ -14,6 +14,9 @@ using static Microsoft.NetCore.Analyzers.MicrosoftNetCoreAnalyzersResources;
 
 namespace Microsoft.NetCore.Analyzers.Runtime
 {
+    /// <summary>
+    /// CA1845: <inheritdoc cref="UseSpanBasedStringConcatTitle"/>
+    /// </summary>
     public abstract class UseSpanBasedStringConcat : DiagnosticAnalyzer
     {
         internal const string RuleId = "CA1845";

@@ -13,6 +13,9 @@ using static Microsoft.NetCore.Analyzers.MicrosoftNetCoreAnalyzersResources;
 
 namespace Microsoft.NetCore.Analyzers.Runtime
 {
+    /// <summary>
+    /// CA2250: <inheritdoc cref="UseCancellationTokenThrowIfCancellationRequestedTitle"/>
+    /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class UseCancellationTokenThrowIfCancellationRequested : DiagnosticAnalyzer
     {

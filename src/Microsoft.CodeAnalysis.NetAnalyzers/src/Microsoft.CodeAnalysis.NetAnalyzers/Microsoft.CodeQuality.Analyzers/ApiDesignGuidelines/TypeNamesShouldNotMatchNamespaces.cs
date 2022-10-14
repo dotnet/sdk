@@ -14,7 +14,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
     using static MicrosoftCodeQualityAnalyzersResources;
 
     /// <summary>
-    /// CA1724: Type names should not match namespaces
+    /// CA1724: <inheritdoc cref="TypeNamesShouldNotMatchNamespacesTitle"/>
     /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class TypeNamesShouldNotMatchNamespacesAnalyzer : DiagnosticAnalyzer

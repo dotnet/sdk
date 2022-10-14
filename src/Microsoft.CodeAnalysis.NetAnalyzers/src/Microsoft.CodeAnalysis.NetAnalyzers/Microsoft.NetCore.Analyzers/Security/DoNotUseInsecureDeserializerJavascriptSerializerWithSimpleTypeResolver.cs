@@ -21,6 +21,8 @@ namespace Microsoft.NetCore.Analyzers.Security
     using static MicrosoftNetCoreAnalyzersResources;
 
     /// <summary>
+    /// CA2321: <inheritdoc cref="JavaScriptSerializerWithSimpleTypeResolverTitle"/>
+    /// CA2322: <inheritdoc cref="JavaScriptSerializerMaybeWithSimpleTypeResolverTitle"/>
     /// For detecting deserialization with <see cref="T:System.Web.Script.Serialization.JavaScriptSerializer"/>.
     /// </summary>
     [SuppressMessage("Documentation", "CA1200:Avoid using cref tags with a prefix", Justification = "The comment references a type that is not referenced by this compilation.")]

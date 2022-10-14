@@ -11,7 +11,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
     using static MicrosoftCodeQualityAnalyzersResources;
 
     /// <summary>
-    /// CA2109: Review visible event handlers
+    /// CA2109: <inheritdoc cref="ReviewVisibleEventHandlersTitle"/>
     /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class ReviewVisibleEventHandlersAnalyzer : DiagnosticAnalyzer

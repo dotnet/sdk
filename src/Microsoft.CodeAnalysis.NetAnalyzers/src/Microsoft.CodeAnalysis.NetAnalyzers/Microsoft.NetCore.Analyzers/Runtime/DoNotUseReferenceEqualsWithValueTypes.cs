@@ -12,7 +12,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
     using static MicrosoftNetCoreAnalyzersResources;
 
     /// <summary>
-    /// CA2013: Do not use ReferenceEquals with value types.
+    /// CA2013: <inheritdoc cref="DoNotUseReferenceEqualsWithValueTypesTitle"/>
     /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class DoNotUseReferenceEqualsWithValueTypesAnalyzer : DiagnosticAnalyzer

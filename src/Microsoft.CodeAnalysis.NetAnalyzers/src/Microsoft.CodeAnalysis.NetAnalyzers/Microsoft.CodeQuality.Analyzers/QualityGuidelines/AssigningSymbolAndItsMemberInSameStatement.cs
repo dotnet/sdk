@@ -13,7 +13,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
     using static MicrosoftCodeQualityAnalyzersResources;
 
     /// <summary>
-    /// CA2246: Prevent objects from being referenced in statements where they are reassigned
+    /// CA2246: <inheritdoc cref="AssigningSymbolAndItsMemberInSameStatementTitle"/>
     /// </summary>
 #pragma warning disable RS1004 // Recommend adding language support to diagnostic analyzer - Construct not valid in VB.NET
     [DiagnosticAnalyzer(LanguageNames.CSharp)]

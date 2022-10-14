@@ -13,6 +13,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
     using static MicrosoftNetCoreAnalyzersResources;
 
     /// <summary>
+    /// CA2249: <inheritdoc cref="PreferStringContainsOverIndexOfTitle"/>
     /// Prefer string.Contains over string.IndexOf when the result is used to check for the presence/absence of a substring
     /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]

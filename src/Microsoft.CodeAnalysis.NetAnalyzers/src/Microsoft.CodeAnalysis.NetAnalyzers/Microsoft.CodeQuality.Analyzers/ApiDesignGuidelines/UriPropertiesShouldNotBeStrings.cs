@@ -11,7 +11,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
     using static MicrosoftCodeQualityAnalyzersResources;
 
     /// <summary>
-    /// CA1056: Uri properties should not be strings
+    /// CA1056: <inheritdoc cref="UriPropertiesShouldNotBeStringsTitle"/>
     /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public class UriPropertiesShouldNotBeStringsAnalyzer : DiagnosticAnalyzer

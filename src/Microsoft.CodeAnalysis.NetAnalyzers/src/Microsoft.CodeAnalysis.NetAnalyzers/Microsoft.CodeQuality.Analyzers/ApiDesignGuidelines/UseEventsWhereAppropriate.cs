@@ -13,7 +13,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
     using static MicrosoftCodeQualityAnalyzersResources;
 
     /// <summary>
-    /// CA1030: Use events where appropriate
+    /// CA1030: <inheritdoc cref="UseEventsWhereAppropriateTitle"/>
     /// <para>
     /// This rule detects methods that have names that ordinarily would be used for events.
     /// Events follow the Observer or Publish-Subscribe design pattern; they are used when a state change in one object must be communicated to other objects.

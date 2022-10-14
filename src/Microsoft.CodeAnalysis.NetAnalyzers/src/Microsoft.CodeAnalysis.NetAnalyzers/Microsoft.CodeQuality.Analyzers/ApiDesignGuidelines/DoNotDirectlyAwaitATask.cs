@@ -14,7 +14,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
     using static MicrosoftCodeQualityAnalyzersResources;
 
     /// <summary>
-    /// CA2007: Do not directly await a Task in libraries. Append ConfigureAwait(false) to the task.
+    /// CA2007: <inheritdoc cref="DoNotDirectlyAwaitATaskTitle"/>
     /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class DoNotDirectlyAwaitATaskAnalyzer : DiagnosticAnalyzer

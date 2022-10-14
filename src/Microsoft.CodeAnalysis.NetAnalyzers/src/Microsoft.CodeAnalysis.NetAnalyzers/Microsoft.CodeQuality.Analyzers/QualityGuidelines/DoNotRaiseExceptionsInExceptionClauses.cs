@@ -13,7 +13,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
     using static MicrosoftCodeQualityAnalyzersResources;
 
     /// <summary>
-    /// CA2219: Do not raise exceptions in exception clauses
+    /// CA2219: <inheritdoc cref="DoNotRaiseExceptionsInExceptionClausesTitle"/>
     /// </summary>
     /// <remarks>
     /// The original FxCop implementation of this rule finds violations of this rule inside 

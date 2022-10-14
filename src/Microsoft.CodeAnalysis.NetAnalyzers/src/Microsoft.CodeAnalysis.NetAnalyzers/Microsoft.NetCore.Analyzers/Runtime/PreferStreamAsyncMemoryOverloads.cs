@@ -14,7 +14,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime
     using static MicrosoftNetCoreAnalyzersResources;
 
     /// <summary>
-    /// CA1835: Prefer Memory/ReadOnlyMemory overloads for Stream ReadAsync/WriteAsync methods.
+    /// CA1835: <inheritdoc cref="PreferStreamAsyncMemoryOverloadsTitle"/>
+    /// 
+    /// Prefer Memory/ReadOnlyMemory overloads for Stream ReadAsync/WriteAsync methods.
     ///
     /// Undesired methods (available since .NET Framework 4.5):
     ///

@@ -13,6 +13,10 @@ namespace Microsoft.NetCore.Analyzers.Security
 {
     using static MicrosoftNetCoreAnalyzersResources;
 
+    /// <summary>
+    /// CA5350: <inheritdoc cref="DoNotUseBrokenCryptographicAlgorithms"/>
+    /// CA5351: <inheritdoc cref="DoNotUseWeakCryptographicAlgorithms"/>
+    /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class DoNotUseInsecureCryptographicAlgorithmsAnalyzer : DiagnosticAnalyzer
     {

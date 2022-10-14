@@ -11,6 +11,9 @@ namespace Microsoft.NetCore.Analyzers.Security
 {
     using static MicrosoftNetCoreAnalyzersResources;
 
+    /// <summary>
+    /// CA5394: <inheritdoc cref="DoNotUseInsecureRandomness"/>
+    /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class DoNotUseInsecureRandomness : DiagnosticAnalyzer
     {

@@ -9,6 +9,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 {
     using static MicrosoftNetCoreAnalyzersResources;
 
+    /// <summary>
+    /// CA2014: <inheritdoc cref="DoNotUseStackallocInLoopsTitle"/>
+    /// </summary>
     public abstract class DoNotUseStackallocInLoopsAnalyzer : DiagnosticAnalyzer
     {
         internal const string RuleId = "CA2014";

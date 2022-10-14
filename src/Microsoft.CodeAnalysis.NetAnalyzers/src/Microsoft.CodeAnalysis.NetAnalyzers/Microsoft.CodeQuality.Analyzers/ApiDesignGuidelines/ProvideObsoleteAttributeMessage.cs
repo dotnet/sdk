@@ -12,7 +12,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
     using static MicrosoftCodeQualityAnalyzersResources;
 
     /// <summary>
-    /// CA1041: Provide ObsoleteAttribute message
+    /// CA1041: <inheritdoc cref="ProvideObsoleteAttributeMessageTitle"/>
     /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class ProvideObsoleteAttributeMessageAnalyzer : DiagnosticAnalyzer

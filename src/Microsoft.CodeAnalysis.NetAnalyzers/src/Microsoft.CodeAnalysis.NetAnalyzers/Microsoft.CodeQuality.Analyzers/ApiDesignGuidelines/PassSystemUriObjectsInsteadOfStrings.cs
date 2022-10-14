@@ -15,7 +15,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
     using static MicrosoftCodeQualityAnalyzersResources;
 
     /// <summary>
-    /// CA2234: Pass system uri objects instead of strings
+    /// CA2234: <inheritdoc cref="PassSystemUriObjectsInsteadOfStringsTitle"/>
     /// </summary>
     public abstract class PassSystemUriObjectsInsteadOfStringsAnalyzer : DiagnosticAnalyzer
     {

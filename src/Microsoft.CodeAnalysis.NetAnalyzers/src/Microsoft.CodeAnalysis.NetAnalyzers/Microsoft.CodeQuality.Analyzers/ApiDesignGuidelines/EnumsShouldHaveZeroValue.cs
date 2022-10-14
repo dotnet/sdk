@@ -15,7 +15,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
     using static MicrosoftCodeQualityAnalyzersResources;
 
     /// <summary>
-    /// CA1008: Enums should have zero value
+    /// CA1008: <inheritdoc cref="EnumsShouldHaveZeroValueTitle"/>
     ///
     /// Cause:
     /// An enumeration without an applied System.FlagsAttribute does not define a member that has a value of zero;

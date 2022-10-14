@@ -12,6 +12,9 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 {
     using static MicrosoftCodeQualityAnalyzersResources;
 
+    /// <summary>
+    /// CA1715: <inheritdoc cref="IdentifiersShouldHaveCorrectPrefixTitle"/>
+    /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class IdentifiersShouldHaveCorrectPrefixAnalyzer : DiagnosticAnalyzer
     {

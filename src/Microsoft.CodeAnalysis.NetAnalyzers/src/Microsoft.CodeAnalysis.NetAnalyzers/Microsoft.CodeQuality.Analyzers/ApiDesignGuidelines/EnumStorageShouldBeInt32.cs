@@ -11,7 +11,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
     using static MicrosoftCodeQualityAnalyzersResources;
 
     /// <summary>
-    /// CA1028: Enum Storage should be Int32
+    /// CA1028: <inheritdoc cref="EnumStorageShouldBeInt32Title"/>
     /// Implementation slightly modified from original FxCop after discussing with Nick Guerrera
     /// FxCop implementation used 2 distinct diagnostic messages depending on the underlying type of the enum
     /// In this implementation, we have only 1 diagnostic message - "If possible, make the underlying type of '{0}'  System.Int32 instead of {1}."

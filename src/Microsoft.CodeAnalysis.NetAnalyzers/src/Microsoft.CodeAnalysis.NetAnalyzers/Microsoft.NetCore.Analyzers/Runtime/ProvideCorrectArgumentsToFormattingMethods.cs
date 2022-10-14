@@ -15,7 +15,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
     using static MicrosoftNetCoreAnalyzersResources;
 
     /// <summary>
-    /// CA2241: Provide correct arguments to formatting methods
+    /// CA2241: <inheritdoc cref="ProvideCorrectArgumentsToFormattingMethodsTitle"/>
     /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public class ProvideCorrectArgumentsToFormattingMethodsAnalyzer : DiagnosticAnalyzer

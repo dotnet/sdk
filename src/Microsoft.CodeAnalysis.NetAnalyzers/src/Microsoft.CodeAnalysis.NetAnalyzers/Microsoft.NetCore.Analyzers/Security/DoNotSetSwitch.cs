@@ -19,6 +19,8 @@ namespace Microsoft.NetCore.Analyzers.Security
     using static MicrosoftNetCoreAnalyzersResources;
 
     /// <summary>
+    /// CA5361: <inheritdoc cref="DoNotDisableSchUseStrongCrypto"/>
+    /// CA5378: <inheritdoc cref="DoNotDisableUsingServicePointManagerSecurityProtocolsTitle"/>
     /// Analyzer for System.AppContext.SetSwitch invocations.
     /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]

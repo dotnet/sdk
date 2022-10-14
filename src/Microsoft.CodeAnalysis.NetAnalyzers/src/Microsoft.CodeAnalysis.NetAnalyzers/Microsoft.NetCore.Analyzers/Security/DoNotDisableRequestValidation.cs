@@ -11,6 +11,9 @@ namespace Microsoft.NetCore.Analyzers.Security
 {
     using static MicrosoftNetCoreAnalyzersResources;
 
+    /// <summary>
+    /// CA5363: <inheritdoc cref="DoNotDisableRequestValidation"/>
+    /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class DoNotDisableRequestValidation : DiagnosticAnalyzer
     {

@@ -13,7 +13,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
     using static MicrosoftNetCoreAnalyzersResources;
 
     /// <summary>
-    /// CA2216: Disposable types should declare finalizer
+    /// CA2216: <inheritdoc cref="DisposableTypesShouldDeclareFinalizerTitle"/>
     /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class DisposableTypesShouldDeclareFinalizerAnalyzer : DiagnosticAnalyzer

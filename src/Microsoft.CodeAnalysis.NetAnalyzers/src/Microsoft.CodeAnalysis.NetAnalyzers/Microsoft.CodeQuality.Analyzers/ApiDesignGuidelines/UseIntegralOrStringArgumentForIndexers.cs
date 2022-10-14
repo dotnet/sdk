@@ -12,7 +12,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
     using static MicrosoftCodeQualityAnalyzersResources;
 
     /// <summary>
-    /// CA1043: Use Integral Or String Argument For Indexers
+    /// CA1043: <inheritdoc cref="UseIntegralOrStringArgumentForIndexersTitle"/>
     /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class UseIntegralOrStringArgumentForIndexersAnalyzer : DiagnosticAnalyzer

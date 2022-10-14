@@ -14,6 +14,9 @@ namespace Microsoft.NetFramework.Analyzers
 {
     using static MicrosoftNetFrameworkAnalyzersResources;
 
+    /// <summary>
+    /// CA3076: <inheritdoc cref="InsecureXsltScriptProcessingMessage"/>
+    /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class DoNotUseInsecureXSLTScriptExecutionAnalyzer : DiagnosticAnalyzer
     {

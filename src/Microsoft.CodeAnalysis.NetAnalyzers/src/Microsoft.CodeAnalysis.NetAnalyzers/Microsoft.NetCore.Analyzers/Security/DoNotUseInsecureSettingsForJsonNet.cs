@@ -22,6 +22,8 @@ namespace Microsoft.NetCore.Analyzers.Security
     using static MicrosoftNetCoreAnalyzersResources;
 
     /// <summary>
+    /// CA2327: <inheritdoc cref="JsonNetInsecureSettingsTitle"/>
+    /// CA2328: <inheritdoc cref="JsonNetMaybeInsecureSettingsTitle"/>
     /// For detecting potentially insecure deserialization settings with <see cref="T:Newtonsoft.Json.JsonSerializerSettings"/>.
     /// </summary>
     [SuppressMessage("Documentation", "CA1200:Avoid using cref tags with a prefix", Justification = "The comment references a type that is not referenced by this compilation.")]

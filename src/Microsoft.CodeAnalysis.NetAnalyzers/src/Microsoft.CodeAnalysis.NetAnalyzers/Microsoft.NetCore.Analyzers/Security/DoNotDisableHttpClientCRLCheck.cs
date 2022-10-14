@@ -20,6 +20,10 @@ namespace Microsoft.NetCore.Analyzers.Security
 {
     using static MicrosoftNetCoreAnalyzersResources;
 
+    /// <summary>
+    /// CA5399: <inheritdoc cref="DefinitelyDisableHttpClientCRLCheck"/>
+    /// CA5400: <inheritdoc cref="MaybeDisableHttpClientCRLCheck"/>
+    /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     internal class DoNotDisableHttpClientCRLCheck : DiagnosticAnalyzer
     {

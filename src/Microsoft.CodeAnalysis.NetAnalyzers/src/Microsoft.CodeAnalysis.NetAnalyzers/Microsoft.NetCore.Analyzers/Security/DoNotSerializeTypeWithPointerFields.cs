@@ -12,6 +12,9 @@ namespace Microsoft.NetCore.Analyzers.Security
 {
     using static MicrosoftNetCoreAnalyzersResources;
 
+    /// <summary>
+    /// CA5367: <inheritdoc cref="DoNotSerializeTypesWithPointerFields"/>
+    /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class DoNotSerializeTypeWithPointerFields : DiagnosticAnalyzer
     {

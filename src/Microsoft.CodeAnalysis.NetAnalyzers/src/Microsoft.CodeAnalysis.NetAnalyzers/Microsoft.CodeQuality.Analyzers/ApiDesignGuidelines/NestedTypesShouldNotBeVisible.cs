@@ -13,7 +13,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
     using static MicrosoftCodeQualityAnalyzersResources;
 
     /// <summary>
-    /// CA1034: Nested types should not be visible
+    /// CA1034: <inheritdoc cref="NestedTypesShouldNotBeVisibleTitle"/>
     /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class NestedTypesShouldNotBeVisibleAnalyzer : DiagnosticAnalyzer

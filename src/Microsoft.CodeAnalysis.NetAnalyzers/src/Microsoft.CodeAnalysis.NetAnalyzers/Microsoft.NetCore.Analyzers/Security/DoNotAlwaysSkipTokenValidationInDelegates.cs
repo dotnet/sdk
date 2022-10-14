@@ -14,6 +14,9 @@ namespace Microsoft.NetCore.Analyzers.Security
 {
     using static MicrosoftNetCoreAnalyzersResources;
 
+    /// <summary>
+    /// CA5405: <inheritdoc cref="DoNotAlwaysSkipTokenValidationInDelegatesTitle"/>
+    /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class DoNotAlwaysSkipTokenValidationInDelegates : DiagnosticAnalyzer
     {

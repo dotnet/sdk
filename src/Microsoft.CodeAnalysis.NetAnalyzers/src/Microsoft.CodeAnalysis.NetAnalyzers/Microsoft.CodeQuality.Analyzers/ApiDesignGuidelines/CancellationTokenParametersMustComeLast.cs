@@ -12,7 +12,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
     using static MicrosoftCodeQualityAnalyzersResources;
 
     /// <summary>
-    /// CA1068: CancellationToken parameters must come last.
+    /// CA1068: <inheritdoc cref="CancellationTokenParametersMustComeLastTitle"/>
     /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class CancellationTokenParametersMustComeLastAnalyzer : DiagnosticAnalyzer

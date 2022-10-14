@@ -14,7 +14,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
     using static MicrosoftCodeQualityAnalyzersResources;
 
     /// <summary>
-    /// CA1823: Avoid unused private fields
+    /// CA1823: <inheritdoc cref="AvoidUnusedPrivateFieldsTitle"/>
     /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class AvoidUnusedPrivateFieldsAnalyzer : DiagnosticAnalyzer

@@ -11,7 +11,7 @@ using static Microsoft.NetCore.Analyzers.MicrosoftNetCoreAnalyzersResources;
 namespace Microsoft.NetCore.Analyzers.Runtime
 {
     /// <summary>
-    /// CA2255: ModuleInitializer attributes should not be used in libraries.
+    /// CA2255: <inheritdoc cref="ModuleInitializerAttributeShouldNotBeUsedInLibrariesTitle"/>
     /// </summary>
     /// <remarks>
     /// ModuleInitializer methods must:

@@ -11,6 +11,10 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 {
     using static MicrosoftCodeQualityAnalyzersResources;
 
+    /// <summary>
+    /// CA1066: <inheritdoc cref="ImplementIEquatableWhenOverridingObjectEqualsTitle"/>
+    /// CA1067: <inheritdoc cref="OverrideObjectEqualsTitle"/>
+    /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class EquatableAnalyzer : DiagnosticAnalyzer
     {

@@ -14,7 +14,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
 {
     using static MicrosoftNetCoreAnalyzersResources;
     /// <summary>
-    /// Do not guard 'Dictionary.Remove(key)' with 'Dictionary.ContainsKey(key)'
+    /// CA1853: <inheritdoc cref="DoNotGuardDictionaryRemoveByContainsKeyTitle"/>
     /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class DoNotGuardDictionaryRemoveByContainsKey : DiagnosticAnalyzer

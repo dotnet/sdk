@@ -11,7 +11,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
     using static MicrosoftCodeQualityAnalyzersResources;
 
     /// <summary>
-    /// CA1819: Properties should not return arrays
+    /// CA1819: <inheritdoc cref="PropertiesShouldNotReturnArraysTitle"/>
     /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class PropertiesShouldNotReturnArraysAnalyzer : DiagnosticAnalyzer

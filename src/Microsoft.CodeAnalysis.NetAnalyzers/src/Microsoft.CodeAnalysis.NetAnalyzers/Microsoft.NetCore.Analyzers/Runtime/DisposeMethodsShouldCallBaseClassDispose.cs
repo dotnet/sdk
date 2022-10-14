@@ -13,7 +13,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
     using static MicrosoftNetCoreAnalyzersResources;
 
     /// <summary>
-    /// CA2215: Dispose methods should call base class dispose
+    /// CA2215: <inheritdoc cref="DisposeMethodsShouldCallBaseClassDisposeTitle"/>
     ///
     /// A type that implements System.IDisposable inherits from a type that also implements IDisposable.
     /// The Dispose method of the inheriting type does not call the Dispose method of the parent type.

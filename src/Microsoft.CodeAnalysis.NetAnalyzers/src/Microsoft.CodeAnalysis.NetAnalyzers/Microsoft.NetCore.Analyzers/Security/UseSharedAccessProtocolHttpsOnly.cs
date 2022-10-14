@@ -15,6 +15,9 @@ namespace Microsoft.NetCore.Analyzers.Security
 {
     using static MicrosoftNetCoreAnalyzersResources;
 
+    /// <summary>
+    /// CA5376: <inheritdoc cref="UseSharedAccessProtocolHttpsOnly"/>
+    /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class UseSharedAccessProtocolHttpsOnly : DiagnosticAnalyzer
     {

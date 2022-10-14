@@ -11,6 +11,9 @@ namespace Microsoft.NetCore.Analyzers.Security
 {
     using static MicrosoftNetCoreAnalyzersResources;
 
+    /// <summary>
+    /// CA5404: <inheritdoc cref="DoNotDisableTokenValidationChecksTitle"/>
+    /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class DoNotDisableTokenValidationChecks : DiagnosticAnalyzer
     {

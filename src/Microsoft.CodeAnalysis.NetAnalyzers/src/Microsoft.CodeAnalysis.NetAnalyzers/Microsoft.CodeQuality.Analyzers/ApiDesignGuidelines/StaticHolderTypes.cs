@@ -11,8 +11,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
     using static MicrosoftCodeQualityAnalyzersResources;
 
     /// <summary>
-    /// CA1052: Static holder classes should be marked static, and should not have default
-    /// constructors.
+    /// CA1052: <inheritdoc cref="StaticHolderTypesShouldBeStaticOrNotInheritable"/>
     /// </summary>
     /// <remarks>
     /// <para>

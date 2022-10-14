@@ -11,6 +11,9 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
 {
     using static MicrosoftCodeQualityAnalyzersResources;
 
+    /// <summary>
+    /// CA1821: <inheritdoc cref="RemoveEmptyFinalizers"/>
+    /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class RemoveEmptyFinalizersAnalyzer : DiagnosticAnalyzer
     {

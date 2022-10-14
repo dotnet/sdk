@@ -12,6 +12,9 @@ namespace Microsoft.NetCore.Analyzers.Security
 {
     using static MicrosoftNetCoreAnalyzersResources;
 
+    /// <summary>
+    /// CA5358: <inheritdoc cref="ApprovedCipherMode"/>
+    /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class ApprovedCipherModeAnalyzer : DiagnosticAnalyzer
     {

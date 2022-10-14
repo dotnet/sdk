@@ -11,7 +11,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
     using static MicrosoftCodeQualityAnalyzersResources;
 
     /// <summary>
-    /// CA2226: Operators should have symmetrical overloads
+    /// CA2226: <inheritdoc cref="OperatorsShouldHaveSymmetricalOverloadsTitle"/>
     /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class OperatorsShouldHaveSymmetricalOverloadsAnalyzer : DiagnosticAnalyzer

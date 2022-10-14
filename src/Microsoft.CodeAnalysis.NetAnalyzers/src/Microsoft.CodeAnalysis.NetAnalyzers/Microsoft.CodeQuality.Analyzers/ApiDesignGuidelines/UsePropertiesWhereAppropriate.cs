@@ -12,7 +12,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
     using static MicrosoftCodeQualityAnalyzersResources;
 
     /// <summary>
-    /// CA1024: Use properties where appropriate
+    /// CA1024: <inheritdoc cref="UsePropertiesWhereAppropriateTitle"/>
     ///
     /// Cause:
     /// A public or protected method has a name that starts with Get, takes no parameters, and returns a value that is not an array.

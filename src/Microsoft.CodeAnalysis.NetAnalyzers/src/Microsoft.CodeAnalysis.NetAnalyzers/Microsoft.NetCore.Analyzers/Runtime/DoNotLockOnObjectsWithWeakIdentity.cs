@@ -12,7 +12,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
     using static MicrosoftNetCoreAnalyzersResources;
 
     /// <summary>
-    /// CA2002: Do not lock on objects with weak identities
+    /// CA2002: <inheritdoc cref="DoNotLockOnObjectsWithWeakIdentityTitle"/>
     ///
     /// Cause:
     /// A thread that attempts to acquire a lock on an object that has a weak identity could cause hangs.

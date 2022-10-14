@@ -13,7 +13,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
     using static MicrosoftNetCoreAnalyzersResources;
 
     /// <summary>
-    /// CA1816: Dispose methods should call SuppressFinalize
+    /// CA1816: <inheritdoc cref="CallGCSuppressFinalizeCorrectlyTitle"/>
     /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class CallGCSuppressFinalizeCorrectlyAnalyzer : DiagnosticAnalyzer
