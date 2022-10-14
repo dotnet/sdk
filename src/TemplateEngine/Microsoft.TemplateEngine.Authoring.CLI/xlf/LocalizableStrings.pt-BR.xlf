@@ -65,72 +65,72 @@ Do not localize: "template.json"</note>
       </trans-unit>
       <trans-unit id="command_verify_error_failed">
         <source>Verification Failed.</source>
-        <target state="new">Verification Failed.</target>
+        <target state="translated">Falha na Verificação.</target>
         <note />
       </trans-unit>
       <trans-unit id="command_verify_error_unrecognizedArguments">
         <source>Argument(s) {0} are not recognized. Must be one of: {1}.</source>
-        <target state="new">Argument(s) {0} are not recognized. Must be one of: {1}.</target>
+        <target state="translated">O(s) argumento(s) {0} não é(são) reconhecido(s). Deve ser um destes: {1}.</target>
         <note>{0} and {1} is both a list of arguments</note>
       </trans-unit>
       <trans-unit id="command_verify_help_customExcludes_description">
         <source>Specifies pattern(s) defining files to be excluded from verification.</source>
-        <target state="new">Specifies pattern(s) defining files to be excluded from verification.</target>
+        <target state="translated">Especifica padrões que definem arquivos a serem excluídos da verificação.</target>
         <note />
       </trans-unit>
       <trans-unit id="command_verify_help_description">
         <source>Runs the template with specified arguments and compares the result with expectations files.</source>
-        <target state="new">Runs the template with specified arguments and compares the result with expectations files.</target>
+        <target state="translated">Executa o modelo com argumentos especificados e compara o resultado com arquivos de expectativas.</target>
         <note />
       </trans-unit>
       <trans-unit id="command_verify_help_disableDefaultExcludes_description">
         <source>If set to true - all template output files will be verified, unless --exclude-pattern option is used.</source>
-        <target state="new">If set to true - all template output files will be verified, unless --exclude-pattern option is used.</target>
+        <target state="translated">Se definido como verdadeiro - todos os arquivos de saída do modelo serão verificados, a menos que a opção --exclude-pattern seja usada.</target>
         <note>Do not translate 'true'. Do not translate '--exclude-pattern'</note>
       </trans-unit>
       <trans-unit id="command_verify_help_disableDiffTool_description">
         <source>If set to true - the diff tool won't be automatically started by the Verifier on verification failures.</source>
-        <target state="new">If set to true - the diff tool won't be automatically started by the Verifier on verification failures.</target>
+        <target state="translated">Se definido como verdadeiro - a ferramenta de comparação não será iniciada automaticamente pelo Verificador em caso de falhas de verificação.</target>
         <note>Do not translate 'true'.</note>
       </trans-unit>
       <trans-unit id="command_verify_help_expectFailure_description">
         <source>If set to true - 'dotnet new' command is expected to return non-zero return code.</source>
-        <target state="new">If set to true - 'dotnet new' command is expected to return non-zero return code.</target>
+        <target state="translated">Se definido como verdadeiro - esperava-se que o comando 'dotnet new' retornasse um código de retorno diferente de zero.</target>
         <note>Do not translate 'true'. Do not translate 'dotnet new'</note>
       </trans-unit>
       <trans-unit id="command_verify_help_expectationsDirPath_description">
         <source>Specifies path to the directory with expectation files.</source>
-        <target state="new">Specifies path to the directory with expectation files.</target>
+        <target state="translated">Especifica o caminho para o diretório com arquivos de expectativa.</target>
         <note />
       </trans-unit>
       <trans-unit id="command_verify_help_newCommandPath_description">
         <source>Specifies the path to custom assembly implementing 'dotnet new' command.</source>
-        <target state="new">Specifies the path to custom assembly implementing 'dotnet new' command.</target>
+        <target state="translated">Especifica o caminho para o assembly personalizado que implementa o comando 'dotnet new'.</target>
         <note>Do not translate 'dotnet new'</note>
       </trans-unit>
       <trans-unit id="command_verify_help_outputPath_description">
         <source>Specifies the path to target directory to output the generated template to.</source>
-        <target state="new">Specifies the path to target directory to output the generated template to.</target>
+        <target state="translated">Especifica o caminho para o diretório de destino para a saída do modelo gerado.</target>
         <note />
       </trans-unit>
       <trans-unit id="command_verify_help_templateName_description">
         <source>Name of the template to be verified. Can be already installed template or a template within local path specified with -p/--template-path option.</source>
-        <target state="new">Name of the template to be verified. Can be already installed template or a template within local path specified with -p/--template-path option.</target>
+        <target state="translated">Nome do modelo a ser verificado. Pode ser um modelo já instalado ou um modelo dentro do caminho local especificado com a opção -p/--template-path.</target>
         <note>Do not translate the '-p/--template-path'</note>
       </trans-unit>
       <trans-unit id="command_verify_help_templatePath_description">
         <source>Specifies the path to the directory with template to be verified.</source>
-        <target state="new">Specifies the path to the directory with template to be verified.</target>
+        <target state="translated">Especifica o caminho para o diretório com o modelo a ser verificado.</target>
         <note />
       </trans-unit>
       <trans-unit id="command_verify_help_uniqueFor_description">
         <source>Sets the Verifier expectations directory naming convention, by indicating which scenarios should be differentiated.</source>
-        <target state="new">Sets the Verifier expectations directory naming convention, by indicating which scenarios should be differentiated.</target>
+        <target state="translated">Define a convenção de nomenclatura do diretório de expectativas do Verificador, indicando quais cenários devem ser diferenciados.</target>
         <note />
       </trans-unit>
       <trans-unit id="command_verify_help_verifyOutputs_description">
         <source>If set to true - 'dotnet new' command standard output and error contents will be verified along with the produced template files.</source>
-        <target state="new">If set to true - 'dotnet new' command standard output and error contents will be verified along with the produced template files.</target>
+        <target state="translated">Se definido como verdadeiro - a saída padrão do comando 'dotnet new' e o conteúdo do erro serão verificados juntamente com os arquivos de modelo produzidos.</target>
         <note>Do not translate 'true'. Do not translate 'dotnet new'</note>
       </trans-unit>
       <trans-unit id="generic_log_commandExecutionFailed">

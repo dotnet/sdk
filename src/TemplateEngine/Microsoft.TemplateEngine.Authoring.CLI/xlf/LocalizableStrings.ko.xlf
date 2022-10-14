@@ -65,72 +65,72 @@ Do not localize: "template.json"</note>
       </trans-unit>
       <trans-unit id="command_verify_error_failed">
         <source>Verification Failed.</source>
-        <target state="new">Verification Failed.</target>
+        <target state="translated">확인에 실패했습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="command_verify_error_unrecognizedArguments">
         <source>Argument(s) {0} are not recognized. Must be one of: {1}.</source>
-        <target state="new">Argument(s) {0} are not recognized. Must be one of: {1}.</target>
+        <target state="translated">{0} 인수를 인식할 수 없습니다. {1} 중 하나여야 합니다.</target>
         <note>{0} and {1} is both a list of arguments</note>
       </trans-unit>
       <trans-unit id="command_verify_help_customExcludes_description">
         <source>Specifies pattern(s) defining files to be excluded from verification.</source>
-        <target state="new">Specifies pattern(s) defining files to be excluded from verification.</target>
+        <target state="translated">확인에서 제외할 파일을 정의하는 패턴을 지정합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="command_verify_help_description">
         <source>Runs the template with specified arguments and compares the result with expectations files.</source>
-        <target state="new">Runs the template with specified arguments and compares the result with expectations files.</target>
+        <target state="translated">지정된 인수로 템플릿을 실행하고 결과를 예상 파일과 비교합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="command_verify_help_disableDefaultExcludes_description">
         <source>If set to true - all template output files will be verified, unless --exclude-pattern option is used.</source>
-        <target state="new">If set to true - all template output files will be verified, unless --exclude-pattern option is used.</target>
+        <target state="translated">true로 설정하면 --exclude-pattern 옵션이 사용되지 않는 한 모든 템플릿 출력 파일이 확인됩니다.</target>
         <note>Do not translate 'true'. Do not translate '--exclude-pattern'</note>
       </trans-unit>
       <trans-unit id="command_verify_help_disableDiffTool_description">
         <source>If set to true - the diff tool won't be automatically started by the Verifier on verification failures.</source>
-        <target state="new">If set to true - the diff tool won't be automatically started by the Verifier on verification failures.</target>
+        <target state="translated">true로 설정하면 확인 실패 시 검증자가 Diff 도구를 자동으로 시작하지 않습니다.</target>
         <note>Do not translate 'true'.</note>
       </trans-unit>
       <trans-unit id="command_verify_help_expectFailure_description">
         <source>If set to true - 'dotnet new' command is expected to return non-zero return code.</source>
-        <target state="new">If set to true - 'dotnet new' command is expected to return non-zero return code.</target>
+        <target state="translated">true로 설정하면 'dotnet new' 명령이 0이 아닌 반환 코드를 반환할 것으로 예상됩니다.</target>
         <note>Do not translate 'true'. Do not translate 'dotnet new'</note>
       </trans-unit>
       <trans-unit id="command_verify_help_expectationsDirPath_description">
         <source>Specifies path to the directory with expectation files.</source>
-        <target state="new">Specifies path to the directory with expectation files.</target>
+        <target state="translated">예상 파일이 있는 디렉터리 경로를 지정합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="command_verify_help_newCommandPath_description">
         <source>Specifies the path to custom assembly implementing 'dotnet new' command.</source>
-        <target state="new">Specifies the path to custom assembly implementing 'dotnet new' command.</target>
+        <target state="translated">'dotnet new' 명령을 구현하는 사용자 지정 어셈블리의 경로를 지정합니다.</target>
         <note>Do not translate 'dotnet new'</note>
       </trans-unit>
       <trans-unit id="command_verify_help_outputPath_description">
         <source>Specifies the path to target directory to output the generated template to.</source>
-        <target state="new">Specifies the path to target directory to output the generated template to.</target>
+        <target state="translated">생성된 템플릿을 출력할 대상 디렉터리의 경로를 지정합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="command_verify_help_templateName_description">
         <source>Name of the template to be verified. Can be already installed template or a template within local path specified with -p/--template-path option.</source>
-        <target state="new">Name of the template to be verified. Can be already installed template or a template within local path specified with -p/--template-path option.</target>
+        <target state="translated">확인할 템플릿의 이름입니다. 이미 설치된 템플릿 또는 -p/--template-path 옵션으로 지정된 로컬 경로 내의 템플릿일 수 있습니다.</target>
         <note>Do not translate the '-p/--template-path'</note>
       </trans-unit>
       <trans-unit id="command_verify_help_templatePath_description">
         <source>Specifies the path to the directory with template to be verified.</source>
-        <target state="new">Specifies the path to the directory with template to be verified.</target>
+        <target state="translated">확인할 템플릿이 있는 디렉터리의 경로를 지정합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="command_verify_help_uniqueFor_description">
         <source>Sets the Verifier expectations directory naming convention, by indicating which scenarios should be differentiated.</source>
-        <target state="new">Sets the Verifier expectations directory naming convention, by indicating which scenarios should be differentiated.</target>
+        <target state="translated">구별해야 하는 시나리오를 표시하여 검증자 기대 디렉터리 명명 규칙을 설정합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="command_verify_help_verifyOutputs_description">
         <source>If set to true - 'dotnet new' command standard output and error contents will be verified along with the produced template files.</source>
-        <target state="new">If set to true - 'dotnet new' command standard output and error contents will be verified along with the produced template files.</target>
+        <target state="translated">true로 설정하면 생성된 템플릿 파일과 함께 'dotnet new' 명령 표준 출력 및 오류 내용이 확인됩니다.</target>
         <note>Do not translate 'true'. Do not translate 'dotnet new'</note>
       </trans-unit>
       <trans-unit id="generic_log_commandExecutionFailed">

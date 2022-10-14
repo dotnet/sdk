@@ -70,7 +70,7 @@ Do not localize: "template.json"</note>
       </trans-unit>
       <trans-unit id="command_verify_error_unrecognizedArguments">
         <source>Argument(s) {0} are not recognized. Must be one of: {1}.</source>
-        <target state="new">Argument(s) {0} are not recognized. Must be one of: {1}.</target>
+        <target state="translated">Argument(y) {0} nebyl(y) rozpoznán(y). Musí se jednat o jeden z těchto argumentů: {1}.</target>
         <note>{0} and {1} is both a list of arguments</note>
       </trans-unit>
       <trans-unit id="command_verify_help_customExcludes_description">
