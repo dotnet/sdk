@@ -6,14 +6,12 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Pipes;
 using System.Linq;
-using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using System.Security;
 using System.Security.AccessControl;
 using System.Security.Cryptography.X509Certificates;
 using System.Security.Principal;
-using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Installer.Windows.Security;
 using Microsoft.Win32.Msi;
 using Newtonsoft.Json;
@@ -185,7 +183,13 @@ namespace Microsoft.DotNet.Installer.Windows
         {
             if (!File.Exists(destinationFile))
             {
-                FileAccessRetrier.RetryOnMoveAccessFailure(() => File.Move(sourceFile, destinationFile));
+                // Do an explict copy + delete operation. This ensures that the parent directory's security descriptor
+                // is properly inherited (see SecureDirectory method) and everyone has read access, otherwise the original user
+                // will be the owner and the descriptor will include the user's SID, e.g. "O:S-1-5-21-1004336348-1177238915-682003330-512G:DUD:P(A;;FA;;;SY)(A;;FA;;;BA)(A;;FA;;;S-1-5-21-1004336348-1177238915-682003330-512)".
+                // We want the descriptor to be similar to "O:BAG:DUD:AI(A;;0x1200a9;;;WD)(A;ID;FA;;;SY)(A;ID;FA;;;BA)(A;ID;0x1200a9;;;BU)"
+                // See https://github.com/dotnet/sdk/issues/28450
+                File.Copy(sourceFile, destinationFile);
+                File.Delete(sourceFile);
                 Log?.LogMessage($"Moved '{sourceFile}' to '{destinationFile}'");
             }
         }
