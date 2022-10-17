@@ -154,8 +154,8 @@ namespace Microsoft.DotNet.Installer.Windows
                 string cachedMsiPath = Path.Combine(packageDirectory, Path.GetFileName(msiPath));
                 string cachedManifestPath = Path.Combine(packageDirectory, Path.GetFileName(manifestPath));
 
-                MoveFile(manifestPath, cachedManifestPath);
-                MoveFile(msiPath, cachedMsiPath);
+                MoveAndSecureFile(manifestPath, cachedManifestPath);
+                MoveAndSecureFile(msiPath, cachedMsiPath);
             }
             else if (IsClient)
             {
@@ -179,17 +179,19 @@ namespace Microsoft.DotNet.Installer.Windows
         /// </summary>
         /// <param name="sourceFile">The source file to move.</param>
         /// <param name="destinationFile">The destination where the source file will be moved.</param>
-        protected void MoveFile(string sourceFile, string destinationFile)
+        private void MoveAndSecureFile(string sourceFile, string destinationFile)
         {
             if (!File.Exists(destinationFile))
             {
-                // Do an explict copy + delete operation. This ensures that the parent directory's security descriptor
-                // is properly inherited (see SecureDirectory method) and everyone has read access, otherwise the original user
-                // will be the owner and the descriptor will include the user's SID, e.g. "O:S-1-5-21-1004336348-1177238915-682003330-512G:DUD:P(A;;FA;;;SY)(A;;FA;;;BA)(A;;FA;;;S-1-5-21-1004336348-1177238915-682003330-512)".
-                // We want the descriptor to be similar to "O:BAG:DUD:AI(A;;0x1200a9;;;WD)(A;ID;FA;;;SY)(A;ID;FA;;;BA)(A;ID;0x1200a9;;;BU)"
                 // See https://github.com/dotnet/sdk/issues/28450
-                File.Copy(sourceFile, destinationFile);
-                File.Delete(sourceFile);
+                File.Move(sourceFile, destinationFile);
+                FileInfo fi = new(destinationFile);
+                FileSecurity fs = new();
+                // Set BUILTIN\Administrators as the owner and give full control to
+                // BUILTIN\Administrators and NT AUTHORITY\SYSTEM. BUILTIN\Users and Everyone get
+                // read and execute privileges.
+                fs.SetSecurityDescriptorSddlForm("O:BAG:DUD:AI(A;ID;FA;;;SY)(A;ID;FA;;;BA)(A;ID;0x1200a9;;;BU)(A;ID;0x1200a9;;;WD)");
+                fi.SetAccessControl(fs);
                 Log?.LogMessage($"Moved '{sourceFile}' to '{destinationFile}'");
             }
         }
