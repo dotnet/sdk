@@ -65,7 +65,7 @@ Do not localize: "template.json"</note>
       </trans-unit>
       <trans-unit id="command_verify_error_failed">
         <source>Verification Failed.</source>
-        <target state="new">Verification Failed.</target>
+        <target state="translated">Проверка не пройдена.</target>
         <note />
       </trans-unit>
       <trans-unit id="command_verify_error_unrecognizedArguments">
@@ -75,62 +75,62 @@ Do not localize: "template.json"</note>
       </trans-unit>
       <trans-unit id="command_verify_help_customExcludes_description">
         <source>Specifies pattern(s) defining files to be excluded from verification.</source>
-        <target state="new">Specifies pattern(s) defining files to be excluded from verification.</target>
+        <target state="translated">Задает шаблон(ы), определяя файлы, которые следует исключить из проверки.</target>
         <note />
       </trans-unit>
       <trans-unit id="command_verify_help_description">
         <source>Runs the template with specified arguments and compares the result with expectations files.</source>
-        <target state="new">Runs the template with specified arguments and compares the result with expectations files.</target>
+        <target state="translated">Запускает шаблон с указанными аргументами и сравнивает результат с файлами ожиданий.</target>
         <note />
       </trans-unit>
       <trans-unit id="command_verify_help_disableDefaultExcludes_description">
         <source>If set to true - all template output files will be verified, unless --exclude-pattern option is used.</source>
-        <target state="new">If set to true - all template output files will be verified, unless --exclude-pattern option is used.</target>
+        <target state="translated">Если задано значение "true", все выходные файлы шаблона будут проходить проверку, если не используется параметр --exclude-pattern.</target>
         <note>Do not translate 'true'. Do not translate '--exclude-pattern'</note>
       </trans-unit>
       <trans-unit id="command_verify_help_disableDiffTool_description">
         <source>If set to true - the diff tool won't be automatically started by the Verifier on verification failures.</source>
-        <target state="new">If set to true - the diff tool won't be automatically started by the Verifier on verification failures.</target>
+        <target state="translated">Если задано значение "true", инструмент сравнения не будет автоматически запускаться средством проверки при сбоях проверки.</target>
         <note>Do not translate 'true'.</note>
       </trans-unit>
       <trans-unit id="command_verify_help_expectFailure_description">
         <source>If set to true - 'dotnet new' command is expected to return non-zero return code.</source>
-        <target state="new">If set to true - 'dotnet new' command is expected to return non-zero return code.</target>
+        <target state="translated">Если задано значение "true", ожидается, что команда "dotnet new" вернет ненулевой код возврата.</target>
         <note>Do not translate 'true'. Do not translate 'dotnet new'</note>
       </trans-unit>
       <trans-unit id="command_verify_help_expectationsDirPath_description">
         <source>Specifies path to the directory with expectation files.</source>
-        <target state="new">Specifies path to the directory with expectation files.</target>
+        <target state="translated">Указывает путь к каталогу с файлами ожиданий.</target>
         <note />
       </trans-unit>
       <trans-unit id="command_verify_help_newCommandPath_description">
         <source>Specifies the path to custom assembly implementing 'dotnet new' command.</source>
-        <target state="new">Specifies the path to custom assembly implementing 'dotnet new' command.</target>
+        <target state="translated">Указывает путь к настраиваемой сборке, реализующей команду "dotnet new".</target>
         <note>Do not translate 'dotnet new'</note>
       </trans-unit>
       <trans-unit id="command_verify_help_outputPath_description">
         <source>Specifies the path to target directory to output the generated template to.</source>
-        <target state="new">Specifies the path to target directory to output the generated template to.</target>
+        <target state="translated">Указывает путь к целевому каталогу для вывода созданного шаблона.</target>
         <note />
       </trans-unit>
       <trans-unit id="command_verify_help_templateName_description">
         <source>Name of the template to be verified. Can be already installed template or a template within local path specified with -p/--template-path option.</source>
-        <target state="new">Name of the template to be verified. Can be already installed template or a template within local path specified with -p/--template-path option.</target>
+        <target state="translated">Имя шаблона, который необходимо проверить. Это может быть уже установленный шаблон или шаблон в локальном пути, указанном через параметр -p/--template-path.</target>
         <note>Do not translate the '-p/--template-path'</note>
       </trans-unit>
       <trans-unit id="command_verify_help_templatePath_description">
         <source>Specifies the path to the directory with template to be verified.</source>
-        <target state="new">Specifies the path to the directory with template to be verified.</target>
+        <target state="translated">Указывает путь к каталогу с шаблоном, который следует проверить.</target>
         <note />
       </trans-unit>
       <trans-unit id="command_verify_help_uniqueFor_description">
         <source>Sets the Verifier expectations directory naming convention, by indicating which scenarios should be differentiated.</source>
-        <target state="new">Sets the Verifier expectations directory naming convention, by indicating which scenarios should be differentiated.</target>
+        <target state="translated">Задает соглашение о наименовании каталогов ожиданий средства проверки, указывая, какие сценарии следует различать.</target>
         <note />
       </trans-unit>
       <trans-unit id="command_verify_help_verifyOutputs_description">
         <source>If set to true - 'dotnet new' command standard output and error contents will be verified along with the produced template files.</source>
-        <target state="new">If set to true - 'dotnet new' command standard output and error contents will be verified along with the produced template files.</target>
+        <target state="translated">Если задано значение "true", стандартный вывод команды "dotnet new" и содержимое ошибок будут проверены вместе с созданными файлами шаблонов.</target>
         <note>Do not translate 'true'. Do not translate 'dotnet new'</note>
       </trans-unit>
       <trans-unit id="generic_log_commandExecutionFailed">
