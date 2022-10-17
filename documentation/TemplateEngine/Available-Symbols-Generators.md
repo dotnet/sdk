@@ -41,7 +41,6 @@ Available built-in generators for computing generated symbols values are:
 | [casing](#casing) | Enables changing the casing of a string. |
 | [coalesce](#coalesce) | Behaves like the C# `??` operator. |
 | [constant](#constant) | Constant value |
-| [evaluate](#evaluate) | Evaluate a code expression (using C style syntax) |
 | [port](#port) | Generate a port number that can be used by web projects. |
 | [guid](#guid) | Create a new guid. |
 | [now](#now) | Get the current date/time. |
@@ -55,10 +54,10 @@ Available built-in generators for computing generated symbols values are:
 Changes the case of the text of the source value to all upper-case or all lower-case.  It does not affect spaces (i.e. does not do any sort of Camel Casing).
 
 #### Parameters
-| Name     |Data Type| Description   |
-|----------|------|---------------|
-|source|string|Source of the data| 
-|toLower|bool| applies lower case if true, uppercase otherwise|
+| Name     |Data Type| Description |Mandatory|
+|----------|------|---------------|---|
+|`source`|`string`| The name of symbol to use as the source of data.| yes |
+|`toLower`|`bool`| applies lower case if `true`, upper case otherwise| no |
 
 ### Samples
 
@@ -104,14 +103,16 @@ In this sample three symbols are defined:
 
 
 ## Coalesce
-Behaves like the C# `??` operator.
+Behaves like the C# `??` operator. Note: the empty string value is treated as `null`. 
+The typical use of this generator is to check if the parameter was provided by user, otherwise set fallback generated value.
 
 #### Parameters
 
-| Name     |Data Type| Description   |
-|----------|------|---------------|
-|sourceVariableName|string|source of the data|
-|fallbackVariableName|string|alternate source of data|
+|Name|Data Type|Description|Mandatory|
+|---|---|---|---|
+|`sourceVariableName`|`string`|the symbol name which is a primary source of data (left operand of `coalesce`)|yes|
+|`fallbackVariableName`|`string`|the symbol name which is an alternate source of data(right operand of `coalesce`)|yes|
+|`defaultValue`|`string`|The default value. In case it is specified, and primary source is equal to this value, the fallback value will be used.|no|
 
 ### Samples
 
@@ -154,9 +155,9 @@ Uses constant value.
 
 #### Parameters
 
-| Name     |Data Type| Description   |
-|----------|------|---------------|
-|value|string|constant value| 
+|Name|Data Type|Description|Mandatory|
+|----------|------|---------------|---|
+|`value`|`string`|constant value|yes|
 
 
 ### Samples
@@ -182,42 +183,40 @@ Uses constant value.
 [`Sample`](https://github.com/dotnet/dotnet-template-samples/tree/master/13-constant-value)
 
 
-## Evaluate
-
-Defines expression that will be evaluated during the processing of the template based on parameters and other symbols.
-The `computed` type symbols can be use for same purpose.
-
-#### Parameters
-
-| Name     |Data Type| Description   |
-|----------|------|---------------|
-|value|string|expression to be evaluated| 
-
-### Samples
-
-In this sample `IndividualAuth` is `true` if the value of `auth`, another symbol defined in the template, is `IndividualB2C`
-```
-  "IndividualAuth": {
-    "type": "generated",
-    "generator": "evaluate",
-    "parameters": {
-      "action": "(auth == \"IndividualB2C\")"
-    },
-  },
-```
-### Related
-[`Implementation class`](https://github.com/dotnet/templating/blob/main/src/Microsoft.TemplateEngine.Orchestrator.RunnableProjects/Macros/EvaluateMacro.cs)
-
-
 ## Port
 Gets an available port number on the machine.   
 During evaluation looks for a valid free port number trying to create a socket, and in case of problems, returns the value defined in the `fallback` parameter.
 
 #### Parameters
 
-| Name     |Data Type| Description   |
-|----------|------|---------------|
-|fallback|string|fallback value| 
+|Name|Data Type|Description|Mandatory|
+|----------|------|---------------|---|
+|`high`|`integer`|defined the high bound of range to select port from. The maximum value is `65535`. If greater value is specified, `65535` is used instead. |no, default: `65535`|
+|`low`|`integer`|defined the low bound of range to select port from. The minimum value is `1024`. If less value is specified, `1024` is used instead.|no, default: `1024`|
+|`fallback`|`integer`|fallback value|no, default: `0`|
+
+Note: if `low` > `high`, the default values for `low` and `high` are used: 1024 - 65535.
+
+The following ports are reserved:
+- 1719 - H323 (RAS)
+- 1720 - H323 (Q931)
+- 1723 - H323 (H245)
+- 2049 - NFS
+- 3659 - apple-sasl / PasswordServer [Apple addition]
+- 4045 - lockd
+- 4190 - ManageSieve [Apple addition]
+- 5060 - SIP
+- 5061 - SIPS
+- 6000 - X11
+- 6566 - SANE
+- 6665 - Alternate IRC [Apple addition]
+- 6666 - Alternate IRC [Apple addition]
+- 6667 - Standard IRC [Apple addition]
+- 6668 - Alternate IRC [Apple addition]
+- 6669 - Alternate IRC [Apple addition]
+- 6679 - Alternate IRC SSL [Apple addition]
+- 6697 - IRC+SSL [Apple addition]
+- 10080 - amanda
 
 ### Samples
 In this sample `KestrelPortGenerated` is a symbol that return the number of an available port or 5000.
@@ -242,9 +241,9 @@ In this sample `KestrelPortGenerated` is a symbol that return the number of an a
 
 Creates a formatted guid for a replacement. To configure the output format of the macro you can use the **defaultFormat** parameter that accepts a single value from **{'n', 'd', 'b', 'p', 'x'}** for lowercase output or **{'N', 'D', 'B', 'P', 'X'}** for uppercase output. The formats are defined in [`Guid.ToString()`  method documentation](https://msdn.microsoft.com/en-us/library/97af8hh4(v=vs.110).aspx)
 #### Parameters
-| Name     |Data Type| Description   |
-|----------|------|---------------|
-|defaultFormat|string|Format Descriptor| 
+|Name|Data Type|Description|Mandatory|
+|----------|------|---------------|---|
+|`defaultFormat`|`string`|format descriptor|no, default: `D`|
 
 ### Samples
 This sample creates different symbols showing the different formatting available for the generated guid.
@@ -305,10 +304,10 @@ This sample creates different symbols showing the different formatting available
 Creates a symbol from the current date/time. 
 
 #### Parameters 
-| Name     |Data Type| Description   |
-|----------|------|---------------|
-|format|string|DateTime.ToString format|
-|utc|bool|UTC time if true, local time otherwise|    
+|Name|Data Type|Description|Mandatory|
+|----------|------|---------------|---|
+|`format`|`string`|[`DateTime.ToString()`](https://learn.microsoft.com/en-us/dotnet/standard/base-types/standard-date-and-time-format-strings) format|no|
+|`utc`|`bool`|UTC time if `true`, local time otherwise|no|
 
 ### Samples
 In this sample a symbol is created showing the current data, and replacing any instance of "01/01/1999"    
@@ -336,10 +335,10 @@ In this sample a symbol is created showing the current data, and replacing any i
 Creates a random integer value in a specified range. 
 
 #### Parameters
-| Name     |Data Type| Description   |
-|----------|------|---------------|
-|low|integer|lower bound|
-|high|integer|upper bound|   
+|Name|Data Type|Description|Mandatory|
+|----------|------|---------------|---|
+|`low`|`integer`|lower inclusive bound|yes|
+|`high`|`integer`|upper exclusive bound|no, default:`int.MaxValue`|
 
 ### Samples   
 This sample shows a symbol that generates a value from `0` to `10000` excluded, and replace any instance of `4321`
@@ -367,17 +366,16 @@ This sample shows a symbol that generates a value from `0` to `10000` excluded, 
 Defines a list of data manipulation steps based on regex expressions.     
 
 #### Parameters
-| Name     |Data Type| Description   |
-|----------|------|---------------|
-|source|string|data source|
-|steps|array|replacement steps|
+|Name|Data Type|Description|Mandatory|
+|----------|------|---------------|---|
+|`source`|`string`|the symbol to transform|yes|
+|`steps`|`array`|replacement steps|yes|
 
-Replacement steps     
-
-| Name     |Data Type| Description   |    
-|----------|------|---------------|    
-|regex|string|selection pattern|    
-|replacement|string|replacement formula|
+`steps` element definition:     
+|Name|Data Type|Description|Mandatory| 
+|----------|------|---------------|---|
+|`regex`|`string`, regex pattern|selection pattern|yes|
+|`replacement`|`string`|the replacement value for matched pattern|yes|
 
 ### Samples
 
@@ -410,13 +408,13 @@ Replacement steps
 [`RegEx.Replace Documentation`](https://msdn.microsoft.com/en-us/library/xwewhkd1(v=vs.110).aspx)     
 
 ## RegexMatch
-Tries to match regex pattern against value of source symbol and returns `True` if matched, otherwise `False`.
+Tries to match regex pattern against value of source symbol and returns `true` if matched, otherwise `false`.
 
 #### Parameters
-| Name     |Data Type| Description   |
-|----------|------|---------------|
-|source|string|data source|
-|pattern|string|match pattern|
+|Name|Data Type|Description|Mandatory|
+|----------|------|---------------|---|
+|`source`|`string`|the symbol to attempt to match value|yes|
+|`pattern`|`string`, regex pattern|the regex match pattern|yes|
 
 ### Samples
 
@@ -444,17 +442,16 @@ Tries to match regex pattern against value of source symbol and returns `True` i
 Defines a set of conditions to be evaluated, and the value to return if the condition is met. The first condition to evaluate to true is used. To include a default case, add a condition that always evaluates to true as the last entry in `cases`.
 
 #### Parameters
-| Name     |Data Type| Description   |    
-|----------|------|---------------|    
-|cases|array|choices to evaluate|
-|evaluator|string|expression evaluation engine, if not C++|
+|Name|Data Type|Description|Mandatory|
+|----------|------|---------------|---|    
+|`cases`|`array`|choices to evaluate|yes|
+|`evaluator`|`enum`: `C++2`, `C++`, `MSBuild`, `VB`|expression evaluation engine|no, default: `C++2`|
 
-Cases definition
-
-| Name     |Data Type| Description   |    
-|----------|------|---------------|    
-|condition|string|condition to evaluate|
-|value|string|value to return if match|
+`cases` definition
+|Name|Data Type|Description|Mandatory| 
+|----------|------|---------------|---|    
+|`condition`|`string`|the condition to evaluate, keep empty for default clause.|no|
+|`value`|`string`|the value to return, if `condition` evaluates to `true`|yes|
 
 ### Samples
 
@@ -497,18 +494,17 @@ In this case, if the user enters the value `123` as the value of the parameter `
 Concatenates multiple symbols or constants with the defined separator into a new symbol.
 
 #### Parameters
-| Name     |Data Type| Optional | Description   |    
+|Name|Data Type|Description|Mandatory|   
 |----------|---------|----------|-----|    
-|symbols   |array    |no     |all values to concatenate|
-|separator |string   |yes      |the value used as the separator between the values to be concatenated, notice that you can use `/` as folder separator also on Windows since File API will convert it into `\` |
-|removeEmptyValues |bool   |yes      |indicates whether empty values should be skiped or honored. By default this switch is off - leading to multiple consecutive separators in output string in case that same input values are null or empty|
+|`symbols`   |`array`    |defines the values to concatenate|yes|
+|`separator` |`string`   |the value used as the separator between the values to be concatenated, notice that you can use `/` as folder separator also on Windows, since File API will convert it into `\` | no |
+|`removeEmptyValues` |`bool`|indicates whether the empty values should be skipped or honored. By default this switch is off - leading to multiple consecutive separators in output string in case that same input values are null or empty| no |
 
-Symbols definition
-
-| Name |Data Type| Description   |    
-|------|---------|---------------|    
-|type  |string   |`ref` to reference value from another symbol or `const` for string constant, defaults to `const`.|
-|value |string   |either name of another symbol or string constant|
+`symbols` definition
+|Name|Data Type|Description|Mandatory|   
+|------|---------|---------------|---|
+|`type`  |`enum`: `ref`, `const` |`ref` indicates that the value is referenced from another symbol </br> `const` - the value is a string constant|no, default: `const`|
+|`value` |`string`   |either a name of another symbol or string constant|yes, should be not empty or whitespace when `type` is `ref`|
 
 ### Samples
 
