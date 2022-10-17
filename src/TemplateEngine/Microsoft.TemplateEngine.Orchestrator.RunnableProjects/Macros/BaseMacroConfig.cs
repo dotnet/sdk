@@ -124,11 +124,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
             try
             {
                 var jToken = JToken.Parse(token);
-                if (jToken.Type != JTokenType.String)
+                if (jToken is not JValue val)
                 {
                     throw new TemplateAuthoringException(string.Format(LocalizableStrings.MacroConfig_Exception_ValueShouldBeString, config.VariableName, parameterName), config.VariableName);
                 }
-                return jToken.ToString();
+                return val.ToString();
             }
             catch (Exception ex) when (ex is not TemplateAuthoringException)
             {

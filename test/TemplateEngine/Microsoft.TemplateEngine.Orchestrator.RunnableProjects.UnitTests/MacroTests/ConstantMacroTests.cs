@@ -58,6 +58,42 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
         }
 
         [Fact]
+        public void GeneratedSymbolTest_Bool()
+        {
+            string variableName = "myConstant";
+            Dictionary<string, string> jsonParameters = new(StringComparer.OrdinalIgnoreCase)
+            {
+                { "value", JExtensions.ToJsonString(true) }
+            };
+
+            ConstantMacro macro = new();
+            GeneratedSymbol symbol = new(variableName, macro.Type, jsonParameters);
+
+            IVariableCollection variables = new VariableCollection();
+
+            macro.Evaluate(_engineEnvironmentSettings, variables, symbol);
+            Assert.Equal("True", variables[variableName]);
+        }
+
+        [Fact]
+        public void GeneratedSymbolTest_Int()
+        {
+            string variableName = "myConstant";
+            Dictionary<string, string> jsonParameters = new(StringComparer.OrdinalIgnoreCase)
+            {
+                { "value", JExtensions.ToJsonString(1000) }
+            };
+
+            ConstantMacro macro = new();
+            GeneratedSymbol symbol = new(variableName, macro.Type, jsonParameters);
+
+            IVariableCollection variables = new VariableCollection();
+
+            macro.Evaluate(_engineEnvironmentSettings, variables, symbol);
+            Assert.Equal("1000", variables[variableName]);
+        }
+
+        [Fact]
         [Obsolete("EvaluateConfig is deprecated")]
         public void ObsoleteEvaluateConfigTest()
         {
