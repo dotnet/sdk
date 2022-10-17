@@ -128,21 +128,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
         }
 
         [Fact]
-        public void InvalidConfigurationTest_MissingSeparator()
-        {
-            JoinMacro macro = new();
-
-            Dictionary<string, string> jsonParameters = new(StringComparer.OrdinalIgnoreCase);
-            string symbols =
-                $"[ {{\"type\":\"const\" , \"value\":\"true\"  }}, {{\"type\":\"ref\" , \"value\":\"ref\"  }} ]";
-            jsonParameters.Add("symbols", symbols);
-
-            VariableCollection variables = new();
-            TemplateAuthoringException ex = Assert.Throws<TemplateAuthoringException>(() => macro.Evaluate(_engineEnvironmentSettings, variables, new GeneratedSymbol("test", "join", jsonParameters)));
-            Assert.Equal("Generated symbol 'test' of type 'join' should have 'separator' property defined.", ex.Message);
-        }
-
-        [Fact]
         public void InvalidConfigurationTest_MissingSymbols()
         {
             JoinMacro macro = new();
@@ -196,15 +181,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
         {
             JoinMacro macro = new();
 
-            Dictionary<string, string> jsonParameters = new(StringComparer.OrdinalIgnoreCase)
-            {
-                { "separator", JExtensions.ToJsonString(",") }
-            };
+            Dictionary<string, string> jsonParameters = new(StringComparer.OrdinalIgnoreCase);
             string symbols = $"[ {{\"value\":\"rep\"  }} ]";
             jsonParameters.Add("symbols", symbols);
 
             JoinMacroConfig config = new(macro, new GeneratedSymbol("test", "join", jsonParameters));
 
+            Assert.Equal(string.Empty, config.Separator);
             Assert.False(config.RemoveEmptyValues);
             Assert.Equal(JoinMacroConfig.JoinType.Const, config.Symbols.Single().Type);
         }

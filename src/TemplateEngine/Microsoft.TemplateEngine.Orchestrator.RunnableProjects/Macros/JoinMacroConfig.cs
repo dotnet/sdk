@@ -15,7 +15,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
         private const string SymbolsTypePropertyName = "type";
         private const string SymbolsValuePropertyName = "value";
 
-        internal JoinMacroConfig(JoinMacro macro, string variableName, string? dataType, IReadOnlyList<(JoinType, string)> symbols, string separator, bool removeEmptyValues)
+        internal JoinMacroConfig(JoinMacro macro, string variableName, string? dataType, IReadOnlyList<(JoinType, string)> symbols, string separator = "", bool removeEmptyValues = false)
              : base(macro, variableName, dataType)
         {
             Symbols = symbols ?? throw new ArgumentNullException(nameof(symbols));
@@ -26,7 +26,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
         internal JoinMacroConfig(JoinMacro macro, IGeneratedSymbolConfig generatedSymbolConfig)
         : base(macro, generatedSymbolConfig.VariableName, generatedSymbolConfig.DataType)
         {
-            Separator = GetMandatoryParameterValue(generatedSymbolConfig, "separator");
+            Separator = GetOptionalParameterValue(generatedSymbolConfig, "separator") ?? string.Empty;
             RemoveEmptyValues = GetOptionalParameterValue(generatedSymbolConfig, "removeEmptyValues", ConvertJTokenToBool);
 
             List<(JoinType Type, string Value)> symbolsList = new();
