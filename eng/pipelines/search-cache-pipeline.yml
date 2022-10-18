@@ -24,6 +24,26 @@ steps:
 
 - script: '$(Build.SourcesDirectory)/build.sh'
 
+- task: CopyFiles@2
+  displayName: Gather Test Log and Results
+  inputs:
+    SourceFolder: '$(Build.SourcesDirectory)/artifacts'
+    Contents: |
+     log/**/*
+     TestResults/**/*
+    TargetFolder: '$(Build.ArtifactStagingDirectory)'
+  continueOnError: true
+  condition: always()
+
+- task: PublishBuildArtifacts@1
+  displayName: Publish Test Log and Results
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    ArtifactName: Test_LogResults
+    publishLocation: Container
+  continueOnError: true
+  condition: always()
+
 - task: UseDotNet@2
   displayName: 'Use .NET 3.1'
   inputs:
