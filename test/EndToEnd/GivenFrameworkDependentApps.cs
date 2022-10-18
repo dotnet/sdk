@@ -47,6 +47,11 @@ namespace EndToEnd
 
         internal void ItDoesNotRollForwardToTheLatestVersion(string packageName, string minorVersion)
         {
+            // https://github.com/NuGet/Home/issues/8571
+            #if LINUX_PORTABLE
+                return;
+            #endif
+
             var testProjectCreator = new TestProjectCreator()
             {
                 PackageName = packageName,
