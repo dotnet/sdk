@@ -10,6 +10,7 @@
       custom sourcebuild arg is the one that's required. This avoids running bootstrapping twice.
     -->
     <BuildCommandArgs>$(BuildCommandArgs) --sourcebuild</BuildCommandArgs>
+    <BuildCommandArgs>$(BuildCommandArgs) /p:CheckEolTargetFramework=false</BuildCommandArgs>
     <BuildCommand>$(StandardSourceBuildCommand) $(BuildCommandArgs)</BuildCommand>
 
     <OutputPlacementRepoApiImplemented>false</OutputPlacementRepoApiImplemented>
