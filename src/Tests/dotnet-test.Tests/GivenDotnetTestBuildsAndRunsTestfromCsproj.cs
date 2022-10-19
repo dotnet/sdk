@@ -817,6 +817,26 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             Directory.EnumerateFileSystemEntries(flagDirectory).Should().NotBeEmpty();
         }
 
+        [Theory]
+        [InlineData("-e:foo=bardll")]
+        [InlineData("-e:foo=barexe")]
+        public void ArgumentsEndWithDllOrExeShouldNotFail(string arg)
+        {
+            var testProjectDirectory = CopyAndRestoreVSTestDotNetCoreTestApp();
+
+            // Call test
+            CommandResult result = new DotnetTestCommand(Log)
+                .Execute(testProjectDirectory, arg);
+
+            // Verify
+            if (!TestContext.IsLocalized())
+            {
+                result.StdOut.Should().Contain("Total:     2");
+                result.StdOut.Should().Contain("Passed:     1");
+                result.StdOut.Should().Contain("Failed:     1");
+            }
+        }
+
         private string CopyAndRestoreVSTestDotNetCoreTestApp([CallerMemberName] string callingMethod = "")
         {
             // Copy VSTestCore project in output directory of project dotnet-vstest.Tests
