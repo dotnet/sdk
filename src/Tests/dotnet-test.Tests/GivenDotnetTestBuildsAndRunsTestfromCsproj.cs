@@ -834,6 +834,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 result.StdOut.Should().Contain("Total:     2");
                 result.StdOut.Should().Contain("Passed:     1");
                 result.StdOut.Should().Contain("Failed:     1");
+                result.StdOut.Should().Contain("Failed VSTestFailTest");
             }
         }
 
