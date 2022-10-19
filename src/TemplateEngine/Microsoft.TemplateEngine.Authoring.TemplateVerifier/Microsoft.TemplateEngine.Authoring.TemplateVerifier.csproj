@@ -20,12 +20,9 @@
     <PackageReference Include="FluentAssertions" />
   </ItemGroup>
 
-  <ItemGroup Condition="$(TargetFramework) == $(NETCoreTargetFramework)">
-    <PackageReference Include="Microsoft.DotNet.Cli.Utils" />
-  </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="$(SrcDir)Microsoft.TemplateEngine.Utils\Microsoft.TemplateEngine.Utils.csproj" />
+    <ProjectReference Include="$(TestDir)Microsoft.TemplateEngine.CommandUtils\Microsoft.TemplateEngine.CommandUtils.csproj" />
   </ItemGroup>
 
   <ItemGroup>

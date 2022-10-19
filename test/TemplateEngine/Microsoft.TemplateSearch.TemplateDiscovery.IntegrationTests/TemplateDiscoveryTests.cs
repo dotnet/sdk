@@ -1,8 +1,9 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.TemplateEngine.CommandUtils;
+using Microsoft.TemplateEngine.CommandUtils.Assertions;
 using Microsoft.TemplateEngine.TestHelper;
-using Microsoft.TemplateEngine.TestHelper.Commands;
 using Microsoft.TemplateEngine.Tests;
 using Newtonsoft.Json.Linq;
 using Xunit;
@@ -49,7 +50,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
             foreach (var cacheFilePath in cacheFilePaths)
             {
                 Assert.True(File.Exists(cacheFilePath));
-                new DotnetCommand(_log, "new")
+                new DotnetNewCommand(_log)
                       .WithCustomHive(settingsPath)
                       .WithEnvironmentVariable("DOTNET_NEW_SEARCH_FILE_OVERRIDE", cacheFilePath)
                       .WithEnvironmentVariable("DOTNET_CLI_CONTEXT_VERBOSE", "true")
@@ -58,7 +59,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
                       .ExitWith(0)
                       .And.NotHaveStdErr();
 
-                new DotnetCommand(_log, "new", "func", "--search")
+                new DotnetNewCommand(_log, "func", "--search")
                     .WithCustomHive(settingsPath)
                     .WithEnvironmentVariable("DOTNET_NEW_SEARCH_FILE_OVERRIDE", cacheFilePath)
                     .WithEnvironmentVariable("DOTNET_CLI_CONTEXT_VERBOSE", "true")
@@ -69,7 +70,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
                     .And.NotHaveStdOutContaining("Exception")
                     .And.HaveStdOutContaining("Microsoft.Azure.WebJobs.ProjectTemplates");
 
-                new DotnetCommand(_log, "new")
+                new DotnetNewCommand(_log)
                       .WithCustomHive(settingsPath)
                       .WithEnvironmentVariable("DOTNET_NEW_SEARCH_FILE_OVERRIDE", cacheFilePath)
                       .WithEnvironmentVariable("DOTNET_CLI_CONTEXT_VERBOSE", "true")
@@ -78,7 +79,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
                       .ExitWith(0)
                       .And.NotHaveStdErr();
 
-                new DotnetCommand(_log, "new", "func", "--search")
+                new DotnetNewCommand(_log, "func", "--search")
                     .WithCustomHive(settingsPath)
                     .WithEnvironmentVariable("DOTNET_NEW_SEARCH_FILE_OVERRIDE", cacheFilePath)
                     .WithEnvironmentVariable("DOTNET_CLI_CONTEXT_VERBOSE", "true")
@@ -519,7 +520,7 @@ Package Test.Templates was unlisted.");
             foreach (var cacheFilePath in cacheFilePaths)
             {
                 Assert.True(File.Exists(cacheFilePath));
-                new DotnetCommand(_log, "new")
+                new DotnetNewCommand(_log)
                       .WithCustomHive(settingsPath)
                       .WithEnvironmentVariable("DOTNET_NEW_SEARCH_FILE_OVERRIDE", cacheFilePath)
                       .WithEnvironmentVariable("DOTNET_CLI_CONTEXT_VERBOSE", "true")
@@ -528,7 +529,7 @@ Package Test.Templates was unlisted.");
                       .ExitWith(0)
                       .And.NotHaveStdErr();
 
-                new DotnetCommand(_log, "new", "CliHostFile", "--search")
+                new DotnetNewCommand(_log, "CliHostFile", "--search")
                     .WithCustomHive(settingsPath)
                     .WithEnvironmentVariable("DOTNET_NEW_SEARCH_FILE_OVERRIDE", cacheFilePath)
                     .WithEnvironmentVariable("DOTNET_CLI_CONTEXT_VERBOSE", "true")
@@ -540,7 +541,7 @@ Package Test.Templates was unlisted.");
                     .And.HaveStdOutContaining("TestAssets.TemplateWithCliHostFile")
                     .And.HaveStdOutContaining("Microsoft.TemplateEngine.TestTemplates");
 
-                new DotnetCommand(_log, "new", "--search", "--param")
+                new DotnetNewCommand(_log, "--search", "--param")
                      .WithCustomHive(settingsPath)
                      .WithEnvironmentVariable("DOTNET_NEW_SEARCH_FILE_OVERRIDE", cacheFilePath)
                      .WithEnvironmentVariable("DOTNET_CLI_CONTEXT_VERBOSE", "true")
@@ -552,7 +553,7 @@ Package Test.Templates was unlisted.");
                      .And.HaveStdOutContaining("TestAssets.TemplateWithCliHostFile")
                      .And.HaveStdOutContaining("Microsoft.TemplateEngine.TestTemplates");
 
-                new DotnetCommand(_log, "new", "--search", "-p")
+                new DotnetNewCommand(_log, "--search", "-p")
                     .WithCustomHive(settingsPath)
                     .WithEnvironmentVariable("DOTNET_NEW_SEARCH_FILE_OVERRIDE", cacheFilePath)
                     .WithEnvironmentVariable("DOTNET_CLI_CONTEXT_VERBOSE", "true")
@@ -564,7 +565,7 @@ Package Test.Templates was unlisted.");
                     .And.HaveStdOutContaining("TestAssets.TemplateWithCliHostFile")
                     .And.HaveStdOutContaining("Microsoft.TemplateEngine.TestTemplates");
 
-                new DotnetCommand(_log, "new", "--search", "--test-param")
+                new DotnetNewCommand(_log, "--search", "--test-param")
                     .WithCustomHive(settingsPath)
                     .WithEnvironmentVariable("DOTNET_NEW_SEARCH_FILE_OVERRIDE", cacheFilePath)
                     .WithEnvironmentVariable("DOTNET_CLI_CONTEXT_VERBOSE", "true")

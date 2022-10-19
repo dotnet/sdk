@@ -1,11 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#if NET
-
-using Microsoft.DotNet.Cli.Utils;
-
-namespace Microsoft.TemplateEngine.TestHelper.Commands
+namespace Microsoft.TemplateEngine.CommandUtils.Assertions
 {
     public static class CommandResultExtensions
     {
@@ -15,4 +11,3 @@ namespace Microsoft.TemplateEngine.TestHelper.Commands
         }
     }
 }
-#endif

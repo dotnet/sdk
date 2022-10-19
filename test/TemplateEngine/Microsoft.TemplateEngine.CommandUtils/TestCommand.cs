@@ -1,25 +1,28 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#if NET
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using Microsoft.DotNet.Cli.Utils;
+using Microsoft.Extensions.Logging;
 using Xunit.Abstractions;
 
-namespace Microsoft.TemplateEngine.TestHelper.Commands
+namespace Microsoft.TemplateEngine.CommandUtils
 {
     public abstract class TestCommand
     {
+        private readonly LoggerWrapper _loggerWrapper;
+
         protected TestCommand(ITestOutputHelper log)
         {
-            Log = log;
+            _loggerWrapper = new LoggerWrapper(log);
         }
 
-        public ITestOutputHelper Log { get; }
+        protected TestCommand(ILogger log)
+        {
+            _loggerWrapper = new LoggerWrapper(log);
+        }
 
         public string? WorkingDirectory { get; set; }
 
@@ -48,7 +51,7 @@ namespace Microsoft.TemplateEngine.TestHelper.Commands
 
         public ProcessStartInfo GetProcessStartInfo(params string[] args)
         {
-            var commandSpec = CreateCommandSpec(args);
+            SdkCommandSpec commandSpec = CreateCommandSpec(args);
 
             var psi = commandSpec.ToProcessStartInfo();
 
@@ -63,7 +66,7 @@ namespace Microsoft.TemplateEngine.TestHelper.Commands
 
         public virtual CommandResult Execute(IEnumerable<string> args)
         {
-            var command = CreateCommandSpec(args)
+            Command command = CreateCommandSpec(args)
                 .ToCommand()
                 .CaptureStdOut()
                 .CaptureStdErr();
@@ -73,27 +76,27 @@ namespace Microsoft.TemplateEngine.TestHelper.Commands
                 command.OnOutputLine(CommandOutputHandler);
             }
 
-            var result = ((Command)command).Execute(ProcessStartedHandler);
+            var result = command.Execute(ProcessStartedHandler);
 
-            Log.WriteLine($"> {result.StartInfo.FileName} {result.StartInfo.Arguments}");
-            Log.WriteLine(result.StdOut);
+            _loggerWrapper.WriteLine($"> {result.StartInfo.FileName} {result.StartInfo.Arguments}");
+            _loggerWrapper.WriteLine(result.StdOut);
 
             if (!string.IsNullOrEmpty(result.StdErr))
             {
-                Log.WriteLine(string.Empty);
-                Log.WriteLine("StdErr:");
-                Log.WriteLine(result.StdErr);
+                _loggerWrapper.WriteLine(string.Empty);
+                _loggerWrapper.WriteLine("StdErr:");
+                _loggerWrapper.WriteLine(result.StdErr);
             }
 
             if (result.ExitCode != 0)
             {
-                Log.WriteLine($"Exit Code: {result.ExitCode}");
+                _loggerWrapper.WriteLine($"Exit Code: {result.ExitCode}");
             }
 
             return result;
         }
 
-        protected abstract SdkCommandSpec CreateCommand(IEnumerable<string> args);
+        private protected abstract SdkCommandSpec CreateCommand(IEnumerable<string> args);
 
         private SdkCommandSpec CreateCommandSpec(IEnumerable<string> args)
         {
@@ -120,6 +123,31 @@ namespace Microsoft.TemplateEngine.TestHelper.Commands
 
             return commandSpec;
         }
+
+        private class LoggerWrapper
+        {
+            private readonly ILogger? _logger;
+            private readonly ITestOutputHelper? _testHelper;
+
+            internal LoggerWrapper(ILogger logger)
+            {
+                _logger = logger;
+            }
+
+            internal LoggerWrapper(ITestOutputHelper logger)
+            {
+                _testHelper = logger;
+            }
+
+            internal void WriteLine(string? message)
+            {
+                if (message is null)
+                {
+                    return;
+                }
+                _logger?.Log(LogLevel.Information, message);
+                _testHelper?.WriteLine(message);
+            }
+        }
     }
 }
-#endif

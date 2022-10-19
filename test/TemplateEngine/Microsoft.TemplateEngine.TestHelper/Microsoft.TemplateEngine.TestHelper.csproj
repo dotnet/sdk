@@ -22,9 +22,4 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Console" />
     <PackageReference Include="FluentAssertions" />
   </ItemGroup>
-
-  <ItemGroup Condition="$(TargetFramework) == $(NETCoreTargetFramework)">
-    <PackageReference Include="Microsoft.DotNet.Cli.Utils" />
-  </ItemGroup>
-
 </Project>

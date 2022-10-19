@@ -8,6 +8,7 @@ using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.TemplateEngine.Authoring.TemplateVerifier.Commands;
+using Microsoft.TemplateEngine.CommandUtils;
 using Microsoft.TemplateEngine.Utils;
 
 namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier
@@ -291,7 +292,7 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier
             {
                 customHiveLocation ??= Path.Combine(Path.GetTempPath(), Path.GetRandomFileName(), "home");
                 var installCommand =
-                    new DotnetCommand(commandLogger, "new", "install", options.TemplatePath)
+                    new DotnetNewCommand(commandLogger, "install", options.TemplatePath)
                         .WithCustomHive(customHiveLocation)
                         .WithWorkingDirectory(workingDir);
 

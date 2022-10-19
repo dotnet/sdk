@@ -1,7 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.DotNet.Cli.Utils;
+using Microsoft.TemplateEngine.CommandUtils;
 
 namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.Commands
 {
@@ -16,7 +16,7 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.Commands
         }
 
         public CommandResultData(CommandResult commandResult)
-            : this(commandResult.ExitCode, commandResult.StdOut, commandResult.StdErr, commandResult.StartInfo.WorkingDirectory)
+            : this(commandResult.ExitCode, commandResult.StdOut ?? string.Empty, commandResult.StdErr ?? string.Empty, commandResult.StartInfo.WorkingDirectory)
         { }
 
         public int ExitCode { get; }
