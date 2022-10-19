@@ -10,11 +10,11 @@ The feature is available for both `dotnet new` and Visual Studio.
 The symbol binds value from external sources. 
 By default, the following sources are available:
 - host parameters - parameters defined at certain host. For .NET SDK the following parameters are defined: `HostIdentifier: dotnetcli`, `GlobalJsonExists: true/false`.  Binding syntax is `host:<param name>`, example: `host:HostIdentifier`. 
-- environment variables - allows to bind environment allowed. Binding syntax is `env:<environment variable name>`, example: `env:MYENVVAR`.
+- environment variables - allows to bind environment variables. Binding syntax is `env:<environment variable name>`, example: `env:MYENVVAR`.
 
-It is also possible to bind the parameter without the prefix as the fallback behavior: `HostIdentifier`, `MYENVVAR`.
+It is also possible to bind the parameter without the prefix as a fallback behavior: `HostIdentifier`, `MYENVVAR`.
 
-The priority of the sources are as the following:
+The priority of the sources are following:
 - host parameters: 100
 - environment variables: 0
 
@@ -47,9 +47,9 @@ It is possible to bind symbols to MSBuild properties of the current project. The
 Commonly used with item templates to get the information about the project it is added to.
 
 `dotnet new` attempts to find the closest project file using following rules:
-- the project in current directory or `--output` directory (matching `*.*proj` extension)
-- if not found, the parent of above and so on
-In case of ambiguity, the path to the project can be specified using `--project` option.
+- The project in current directory or `--output` directory (matching `*.*proj` extension).
+- If not found, the parent of above and so on.
+- The path to the project can be explicitly specified using `--project` instantiation option. This path takes precedence - so it can be used in case of ambiguity.
 
 Once project is located, its MSBuild properties are evaluated. The project should be restored, otherwise evaluation fails.
 Only .NET [SDK-style projects](https://docs.microsoft.com/en-us/dotnet/core/project-sdk/overview) are supported.
@@ -59,20 +59,20 @@ If applicable, it is also recommended to use [project capability constraint](htt
 
 Example - binds `DefaultNamespace` symbol to `RootNamespace` of the project:
 ```json
-  "symbols": {
-    "DefaultNamespace": {
-      "type": "bind",
-      "binding": "msbuild:RootNamespace",
-      "replaces": "%NAMESPACE%",
-      "defaultValue": "TestNamespace"
-    }
-  },
-  "constraints": {
-    "csharp-only": {
-      "type": "project-capability",
-      "args": "CSharp + TestContainer" // only allowed in C# test project
-    }
+"symbols": {
+  "DefaultNamespace": {
+    "type": "bind",
+    "binding": "msbuild:RootNamespace",
+    "replaces": "%NAMESPACE%",
+    "defaultValue": "TestNamespace"
   }
+},
+"constraints": {
+  "csharp-only": {
+    "type": "project-capability",
+    "args": "CSharp + TestContainer" // only allowed in C# test project
+  }
+}
 ```
 
 
@@ -80,19 +80,19 @@ Example - binds `DefaultNamespace` symbol to `RootNamespace` of the project:
 
 Visual Studio supports binding to host parameters, environment variables and MSBuild properties.
 In addition to that, there is additional `context` source supporting:
-- `context:cratesolutiondirectory` - indicates if a solution directory is to be created as a result of project creation (Place solution and project in same directory is UNCHECKED in NPD).
-- `context:isexclusive` - is the template instantiation is a result of a new project being created (true) vs adding to an existing solution (false).
+- `context:cratesolutiondirectory` - indicates whether a solution directory is to be created as a result of project creation (Place solution and project in same directory is UNCHECKED in NPD).
+- `context:isexclusive` - indicates whether the template instantiation is a result of a new project being created (true) vs result of adding to an existing solution (false).
 - `context:solutionname` - the name of the solution, which may be different from the project name.
 
 Visual Studio also provides a way to bind to "namespace" via host parameters source:
-```
+```json
   "type": "bind"
   "binding": "namespace"
 ```
 
 or 
 
-```
+```json
   "type": "bind"
   "binding": "host:namespace"
 ```

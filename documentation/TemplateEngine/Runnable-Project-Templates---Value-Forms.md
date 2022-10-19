@@ -2,10 +2,12 @@
 
 At a high level, value forms allow the specification of a "replaces"/"replacement" pair to also apply to other ways the "replaces" value may have been specified in the source by specifying a transform from the original value of "replaces" in configuration to the one that may be found in the source.
 
-Ex.
-In my source, the value `"Hi there"` should be replaced by a user supplied value, but, `&quot;Hi there&quot;` should be as well - the user value should be XML encoded for the latter and not for the former. The below snippet from template.json shows how to accomplish this.
 
-```
+*Example*
+
+In my source, the value `"Hi there"` should be replaced by a user supplied value, but, `&quot;Hi there&quot;` should be as well. The user value should be XML encoded for the latter and not for the former. The below snippet from template.json shows how to accomplish this.
+
+```json
 {
   ...
   "symbols": {
@@ -34,61 +36,101 @@ When the value say, `Test ©` is supplied as the value for the parameter `exampl
 
 ## Available transforms:
 
-replace   - Perform a replacement with regular expressions
-```
-            `identifier`  -> `replace`
-            `pattern`     -> A regular expression matching the characters to replace
-            `replacement` -> The replacement for the matched characters
-```
-
-chain     - Performs multiple transformations
-```
-            `identifier`  -> `chain`
-            `steps`       -> An array of names of other transformations (applied in the order they appear in the array)
-```
-
-xmlEncode - XML encodes a value
-```
-            `identifier`  -> `xmlEncode`
-```
-
-lowerCase - Lower cases a value
-```
-            `identifier`  -> `lowerCase` or `lowerCaseInvariant`
-```
-
-upperCase - Upper cases a value
-```
-            `identifier`  -> `upperCase` or `upperCaseInvariant`
-```
-
-`firstLowerCase` - converts the first letter of the value to lowercase using the casing rules of the current culture. Available since .NET 5.0.300.
-```
-    "forms": {
-        "first_lc": {
-          "identifier": "firstLowerCase"
-        }
+**`replace`**   - Performs a replacement with regular expressions
+```json
+"forms": {
+    "dotToUnderscore": {
+      "identifier": "replace",
+      "pattern": "\\.",        // A regular expression matching the characters to replace
+      "replacement": "_"       // The replacement for the matched characters
     }
-```
-`firstLowerCaseInvariant` - converts the first letter of the value to lowercase using the casing rules of the invariant culture. Available since .NET 5.0.300.
-```
-    "forms": {
-        "first_lc": {
-          "identifier": "firstLowerCaseInvariant"
-        }
-    }
+}
 ```
 
-`firstUpperCase` - converts the first letter of the value to uppercase using the casing rules of the current culture. Available since .NET 5.0.300.
+**`chain`**     - Performs multiple transformations
+```json
+"forms": {
+    "chained": {
+      "identifier": "chain",
+      "steps": [ "dotToUnderscore", "digitToBang" ]  // An array of names of other transformations (applied in the order they appear in the array)
+    },
+}
 ```
-    "forms": {
-        "first_uc": {
-          "identifier": "firstUpperCase"
-        }
+
+**`xmlEncode`** - XML encodes a value
+```json
+"forms": {
+    "encode": {
+      "identifier": "xmlEncode"
     }
+}
 ```
-`firstUpperCaseInvariant` - converts the first letter of the value to uppercase using the casing rules of the invariant culture. Available since .NET 5.0.300.
+
+**`lowerCase`** - Converts the letters of the value to lowercase using the casing rules of the current culture.
+```json
+"forms": {
+    "lc": {
+      "identifier": "lowerCase"
+    }
+}
 ```
+
+**`lowerCaseInvariant`** - Converts the letters of the value to lowercase using the casing rules of the invariant culture.
+```json
+"forms": {
+    "lc": {
+      "identifier": "lowerCaseInvariant"
+    }
+}
+```
+
+**`upperCase`** - Converts the letters of the value to uppercase using the casing rules of the current culture.
+```json
+"forms": {
+    "uc": {
+      "identifier": "upperCase"
+    }
+}
+```
+
+**`upperCaseInvariant`** - Converts the letters of the value to uppercase using the casing rules of the invariant culture.
+```json
+"forms": {
+    "uc": {
+      "identifier": "upperCaseInvariant"
+    }
+}
+```
+
+**`firstLowerCase`** - Converts the first letter of the value to lowercase using the casing rules of the current culture. Available since .NET 5.0.300.
+```json
+"forms": {
+    "first_lc": {
+      "identifier": "firstLowerCase"
+    }
+}
+```
+
+**`firstLowerCaseInvariant`** - Converts the first letter of the value to lowercase using the casing rules of the invariant culture. Available since .NET 5.0.300.
+```json
+"forms": {
+    "first_lc": {
+      "identifier": "firstLowerCaseInvariant"
+    }
+}
+```
+
+**`firstUpperCase`** - Converts the first letter of the value to uppercase using the casing rules of the current culture. Available since .NET 5.0.300.
+```json
+"forms": {
+    "first_uc": {
+      "identifier": "firstUpperCase"
+    }
+}
+```
+
+**`firstUpperCaseInvariant`** - Converts the first letter of the value to uppercase using the casing rules of the invariant culture. Available since .NET 5.0.300.
+```json
     "forms": {
         "first_uc": {
           "identifier": "firstUpperCaseInvariant"
@@ -96,20 +138,20 @@ upperCase - Upper cases a value
     }
 ```
 
-`titleCase` - converts the value to title case using the casing rules of the current culture. See [TextInfo.ToTitleCase(String) documentation](https://docs.microsoft.com/dotnet/api/system.globalization.textinfo.totitlecase) for more details. Available since .NET 5.0.300.
-```
-    "forms": {
-        "title": {
-          "identifier": "titleCase"
-        }
+**`titleCase`** - Converts the value to title case using the casing rules of the current culture. See [TextInfo.ToTitleCase(String) documentation](https://docs.microsoft.com/dotnet/api/system.globalization.textinfo.totitlecase) for more details. Available since .NET 5.0.300.
+```json
+"forms": {
+    "title": {
+      "identifier": "titleCase"
     }
+}
 ```
 
-`kebabCase` - converts the value to kebab case using the casing rules of the invariant culture. Available since .NET 5.0.300.
-```
-    "forms": {
-        "kebab": {
-          "identifier": "kebabCase"
-        }
+**`kebabCase`** - Converts the value to kebab case using the casing rules of the invariant culture. Available since .NET 5.0.300.
+```json
+"forms": {
+    "kebab": {
+      "identifier": "kebabCase"
     }
+}
 ```

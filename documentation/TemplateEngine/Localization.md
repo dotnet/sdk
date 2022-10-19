@@ -13,13 +13,13 @@ Localizable elements are:
   - description
   - manual instructions
 
-Localization files should be located inside a `.template-config\localize` folder. The format of the localization file is JSON, and there should be one file per language.
+Localization files should be located inside the `.template-config\localize` folder. The format of the localization file is JSON, and there should be one file per language.
 The naming convention for localization files is: `templatestrings.<lang code>.json`, where the `lang code` should match one of the CultureInfo [names](https://docs.microsoft.com/en-us/dotnet/api/system.globalization.cultureinfo.name?view=net-6.0#system-globalization-cultureinfo-name) from the list provided by [GetCultures](https://docs.microsoft.com/dotnet/api/system.globalization.cultureinfo.getcultures?view=net-6.0).
-The structure of the localization JSON files are key-value pairs, where:
-- The key is the reference to an element of `template.json` to be localized. If the element is child, the full path using `/` delimiter should be given, example: `symbols/Framework/choices/netstandard2.1/description`.
-- The value is the localization of the element given in the key. 
+The structure of the localization JSON files consist of key-value pairs, where:
+- The key is the reference to an element of `template.json` to be localized. If the element is a child, the full path using `/` delimiter should be given. Example: `symbols/Framework/choices/netstandard2.1/description`.
+- The value is the localization of the element given by the key. 
 
-Examples of localization files can be found [here](https://github.com/dotnet/templating/tree/main/template_feed/Microsoft.DotNet.Common.ProjectTemplates.7.0/content/ClassLibrary-CSharp/.template.config/localize).
+Examples of localization files can be found [here](https://github.com/dotnet/sdk/tree/main/template_feed/Microsoft.DotNet.Common.ItemTemplates/content/EditorConfig/.template.config/localize).
 
 These files are to be parsed by the template engine when loading information about the template. The Template Engine API returns information for localizable properties in language matching the current UI culture (if localization is available) transparently, without explicit user action.
 

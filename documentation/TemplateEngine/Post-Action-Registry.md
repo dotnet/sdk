@@ -37,7 +37,7 @@ Used to restore NuGet packages after project create.
  - **Ignored in**:
    - `Visual Studio` - Visual Studio restores all projects automatically, so post action will be be ignored.
 
-Note: when using `files` argument it should contain the path to the file in source template definition, and ignore all the path and filename changes that can happen when instantiating template. For more details, see [the article](https://github.com/dotnet/templating/wiki/Using-Primary-Outputs-for-Post-Actions).
+Note: when using `files` argument it should contain the path to the file in source template definition, and ignore all the path and filename changes that can happen when instantiating template. For more details, see [the article](Using-Primary-Outputs-for-Post-Actions.md).
 
 ### Example
 
@@ -45,9 +45,9 @@ Restores the project mentioned in primary outputs:
 
 ```
 "primaryOutputs": [
-    {
-      "path": "MyTestProject.csproj"        
-    }
+  {
+    "path": "MyTestProject.csproj"        
+  }
 ],
 "postActions": [{
   "condition": "(!skipRestore)",
@@ -64,9 +64,9 @@ Restores the files mentioned in `files` argument. The primary outputs will be ig
 
 ```
 "primaryOutputs": [
-    {
-      "path": "Primary/Output/PrimaryOutput.csproj"        // will not be restored
-    }
+  {
+    "path": "Primary/Output/PrimaryOutput.csproj"        // will not be restored
+  }
 ],
 "postActions": [{
   "condition": "(!skipRestore)",
@@ -170,7 +170,7 @@ Opens a file in the editor. For command line cases this post action will be igno
    - `dotnet new3`
    - `dotnet new` (2.0.0 or higher)
 
-Note: when using `targetFiles` argument it should contain the path to the file in source template definition, and ignore all the path and filename changes that can happen when instantiating template. For more details, see [the article](https://github.com/dotnet/templating/wiki/Using-Primary-Outputs-for-Post-Actions).
+Note: when using `targetFiles` argument it should contain the path to the file in source template definition, and ignore all the path and filename changes that can happen when instantiating template. For more details, see [the article](Using-Primary-Outputs-for-Post-Actions.md).
 
 ### Example
 
@@ -227,7 +227,7 @@ Includes a reference to `SomeDependency` into `MyProjectFile`. The referenced pr
  - **Ignored in**:
    - `Visual Studio` - the user indicates where to add project explicitly, so post action defined in the template will be ignored.
 
-Note: when using `projectFiles` argument it should contain the path to the file in source template definition, and ignore all the path and filename changes that can happen when instantiating template. For more details, see [the article](https://github.com/dotnet/templating/wiki/Using-Primary-Outputs-for-Post-Actions).
+Note: when using `projectFiles` argument it should contain the path to the file in source template definition, and ignore all the path and filename changes that can happen when instantiating template. For more details, see [the article](Using-Primary-Outputs-for-Post-Actions.md).
 
 
 ### Example

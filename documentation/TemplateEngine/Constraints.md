@@ -9,7 +9,7 @@
 | [Project capabilities](#project-capabilities) | `project-capability` |
 
 The feature is available since .NET SDK 7.0.100.
-The template may define the constraints all of which must be met in order for the template to be used.  In case constraints are not met, the template will be installed, however will not be visible or used by default. 
+The template may define constraints, all of which must be met in order for the template to be usable.  In case constraints are not met, the template will be installed, however will not be visible nor used by default. 
 
 
 # Base configuration
@@ -23,7 +23,7 @@ Example `template.json`:
   // other template elements
 
   "constraints": {
-    "windows-only": {    // Custom name - not validate
+    "windows-only": {    // Custom name - not validated
       "type": "os",      // Type of the constraint - used to match to proper Constraint component to evaluate the constraint
       "args": "Windows"  // Arguments passed to the evaluating constraint component
     }
@@ -38,7 +38,7 @@ Restrict the template instantiation to certain operating system.
 **Configuration:**
 
  - `type`: `os`
- - `args`: (string, array) - list of supported operating systems. Possible values are: Windows, Linux, OSX.
+ - `args`: (string, array) - list of supported operating systems. Possible values are: `Windows`, `Linux`, `OSX`.
 
 **Supported in:**
    - all hosts (by default). 3rd party host may explicitly disable the constraint.
@@ -47,20 +47,20 @@ Restrict the template instantiation to certain operating system.
 ### Examples
 
 ```json
-   "constraints": {
-       "linux-only": {
-           "type": "os",
-           "args": "Linux"
-       },
-   }
+"constraints": {
+   "linux-only": {
+      "type": "os",
+      "args": "Linux"
+   },
+}
 ```  
 ```json
-   "constraints": {
-       "linux-and-osx": {
-           "type": "os",
-           "args": [ "Linux", "OSX" ]
-       },
-   }
+"constraints": {
+  "linux-and-osx": {
+    "type": "os",
+    "args": [ "Linux", "OSX" ]
+  },
+}
 ```  
 
 ## Template engine host
@@ -95,49 +95,49 @@ The parsing is done in following order:
 
 Supported on .NET SDK 6.
 ```json
-   "constraints": {
-       "sdk-only": {
-           "type": "host",
-           "args": [
-               {
-                    "hostname": "dotnetcli",
-                    "version": "6.0.*"
-               }
-           ]
-       },
-   }
+"constraints": {
+   "sdk-only": {
+      "type": "host",
+      "args": [
+        {
+            "hostname": "dotnetcli",
+            "version": "6.0.*"
+        }
+      ]
+   },
+}
 ```  
 
 Supported from .NET SDK 6.
 ```json
-   "constraints": {
-       "sdk-only": {
-           "type": "host",
-           "args": [
-               {
-                    "hostname": "dotnetcli",
-                    "version": "[6.0,)"
-               }
-           ]
-       },
-   }
+"constraints": {
+   "sdk-only": {
+      "type": "host",
+      "args": [
+        {
+            "hostname": "dotnetcli",
+            "version": "[6.0,)"
+        }
+      ]
+   },
+}
 ```
 
 Supported in .NET SDK and Visual Studio
 ```json
-   "constraints": {
-       "sdk-only": {
-           "type": "host",
-           "args": [
-               {
-                    "hostname": "dotnetcli"
-               },
-               {
-                    "hostname": "vs"
-               },
-           ]
-       },
-   }
+"constraints": {
+   "sdk-only": {
+      "type": "host",
+      "args": [
+        {
+            "hostname": "dotnetcli"
+        },
+        {
+            "hostname": "vs"
+        },
+      ]
+   },
+}
 ```
 
 ## Installed Workloads
@@ -158,20 +158,20 @@ All the installed (queryable via `dotnet workload list`) as well as [extended](h
 ### Examples
 
 ```json
-   "constraints": {
-       "android-runtime": {
-           "type": "workload",
-           "args": [ "microsoft-net-runtime-android", "microsoft-net-runtime-android-aot" ]
-       },
-   }
+"constraints": {
+   "android-runtime": {
+      "type": "workload",
+      "args": [ "microsoft-net-runtime-android", "microsoft-net-runtime-android-aot" ]
+   },
+}
 ```  
 ```json
-   "constraints": {
-       "web-assembly": {
-           "type": "workload",
-           "args": "wasm-tools"
-       },
-   }
+"constraints": {
+   "web-assembly": {
+      "type": "workload",
+      "args": "wasm-tools"
+   },
+}
 ```
 
 ## Current SDK Version
@@ -191,29 +191,28 @@ Only the currently active SDK (queryable via `dotnet --version`, changeable by t
 ### Examples
 
 ```json
-   "constraints": {
-       "LTS ": {
-           "type": "sdk-version",
-           "args": [ "6.0.*", "3.1.*" ]
-       },
-   }
+"constraints": {
+   "LTS ": {
+      "type": "sdk-version",
+      "args": [ "6.0.*", "3.1.*" ]
+   },
+}
 ```  
 ```json
-   "current-with-previews": {
-       "web-assembly": {
-           "type": "sdk-version",
-           "args": "7.*.*-*"
-       },
-   }
+"current-with-previews": {
+   "web-assembly": {
+      "type": "sdk-version",
+      "args": "7.*.*-*"
+   },
+}
 ```
 ## Project capabilities
 Defines [project capabilities](https://github.com/microsoft/VSProjectSystem/blob/master/doc/overview/about_project_capabilities.md) that the template requires.
 Commonly used with item templates to define the certain projects it is applicable to. 
 `dotnet new` attempts to find the closest project file using following rules:
-- the project in current directory or `--output` directory (matching `*.*proj` extension)
-- if not found, the parent of above and so on
-
-In case of ambiguity, the path to the project can be specified using `--project` option.
+- The project in current directory or `--output` directory (matching `*.*proj` extension).
+- If not found, the parent of above and so on.
+- The path to the project can be explicitly specified using `--project` instantiation option. This path takes precedence - so it can be used in case of ambiguity.
 
 Once project is located, its project capabilities are evaluated. The project should be restored, otherwise evaluation fails.
 Only .NET [SDK-style projects](https://docs.microsoft.com/en-us/dotnet/core/project-sdk/overview) are supported.
@@ -230,18 +229,18 @@ Only .NET [SDK-style projects](https://docs.microsoft.com/en-us/dotnet/core/proj
 ### Examples
 
 ```json
-   "constraints": {
-       "CSharp": {
-           "type": "project-capability",
-           "args": "CSharp",
-       },
-   }
+"constraints": {
+   "CSharp": {
+      "type": "project-capability",
+      "args": "CSharp",
+   },
+}
 ```  
 ```json
-   "constraints": {
-       "CSharpTest": {
-           "type": "project-capability",
-           "args": "CSharp & TestContainer",
-       },
-   }
+"constraints": {
+   "CSharpTest": {
+      "type": "project-capability",
+      "args": "CSharp & TestContainer",
+   },
+}
 ``` 
