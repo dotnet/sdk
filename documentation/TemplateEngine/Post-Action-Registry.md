@@ -220,7 +220,8 @@ Includes a reference to `SomeDependency` into `MyProjectFile`. The referenced pr
         - `string`: A semicolon delimited list of files that should be added to solution. If not specified, primary outputs will be used instead.
         - `array`: An array of files that should be added to solution. If not specified, primary outputs will be used instead.
      - `primaryOutputIndexes` (string) (optional): A semicolon delimited list of indexes to the primary outputs. If not specified, all primary outputs will be added. Note: If primary outputs are conditional, multiple post actions with the same conditions as the primary outputs might be necessary.
-     - `solutionFolder` (string) (optional) (supported in 5.0.200 or higher): the destination solution folder path to add the projects to. 
+     - `solutionFolder` (string) (optional) (supported in 5.0.200 or higher): the destination solution folder path to add the projects to.
+     - `inRoot` (boolean) (optional) (supported in 7.0.200 or higher): whether to place the projects in the root of the solution, rather than create a solution folder. Cannot be used with `solutionFolder`.
  - **Supported in**:
    - `dotnet new3`
    - `dotnet new` (2.0.0 or higher)
@@ -266,6 +267,27 @@ Adds `MyTestProject.csproj` to solution in output directory or its closest paren
 }]
 ```
 
+Adds `MyTestProject.csproj` in the root of the solution.
+
+```json
+"primaryOutputs": [{
+    "path": "MyTestProject.csproj"
+  }
+],
+"postActions": [{
+    "description": "Add projects to solution",
+    "manualInstructions": [{
+        "text": "Add generated project to solution manually."
+      }
+    ],
+    "args": {
+      "inRoot": true
+    },
+    "actionId": "D396686C-DE0E-4DE6-906D-291CD29FC5DE",
+    "continueOnError": true
+  }
+]
+```
 
 # Change file permissions
 
