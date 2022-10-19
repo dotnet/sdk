@@ -477,10 +477,10 @@ public class C
         #region Helpers
 
         private static DiagnosticResult GetCA1720CSharpResultAt(int line, int column, string identifierName)
-#pragma warning disable RS0030 // Do not used banned APIs
+#pragma warning disable RS0030 // Do not use banned APIs
             => VerifyCS.Diagnostic()
                 .WithLocation(line, column)
-#pragma warning restore RS0030 // Do not used banned APIs
+#pragma warning restore RS0030 // Do not use banned APIs
                 .WithArguments(identifierName);
 
         #endregion

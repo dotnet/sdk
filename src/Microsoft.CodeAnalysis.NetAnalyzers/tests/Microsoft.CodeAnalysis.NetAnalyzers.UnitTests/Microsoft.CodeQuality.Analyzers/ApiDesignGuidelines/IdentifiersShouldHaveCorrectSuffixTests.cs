@@ -2524,26 +2524,26 @@ public class {|#1:Second" + typeNameSuffix + @"|} : Stack<int>
         private static DiagnosticResult GetCA1710BasicResultAt(int line, int column, string typeName, string suffix, params string[] additionalSuffixes)
         {
             var args = new[] { typeName, suffix }.Concat(additionalSuffixes).ToArray();
-#pragma warning disable RS0030 // Do not used banned APIs
+#pragma warning disable RS0030 // Do not use banned APIs
             return VerifyVB
                 .Diagnostic(additionalSuffixes.Length > 0
                     ? IdentifiersShouldHaveCorrectSuffixAnalyzer.MultipleSuffixesRule
                     : IdentifiersShouldHaveCorrectSuffixAnalyzer.OneSuffixRule)
                 .WithLocation(line, column)
-#pragma warning restore RS0030 // Do not used banned APIs
+#pragma warning restore RS0030 // Do not use banned APIs
                 .WithArguments(args);
         }
 
         private static DiagnosticResult GetCA1710CSharpResultAt(int line, int column, string typeName, string suffix, params string[] additionalSuffixes)
         {
             var args = new[] { typeName, suffix }.Concat(additionalSuffixes).ToArray();
-#pragma warning disable RS0030 // Do not used banned APIs
+#pragma warning disable RS0030 // Do not use banned APIs
             return VerifyCS
                 .Diagnostic(additionalSuffixes.Length > 0
                     ? IdentifiersShouldHaveCorrectSuffixAnalyzer.MultipleSuffixesRule
                     : IdentifiersShouldHaveCorrectSuffixAnalyzer.OneSuffixRule)
                 .WithLocation(line, column)
-#pragma warning restore RS0030 // Do not used banned APIs
+#pragma warning restore RS0030 // Do not use banned APIs
                 .WithArguments(args);
         }
     }
