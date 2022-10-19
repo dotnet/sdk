@@ -138,7 +138,7 @@
   </Target>
 
   <Target Name="GenerateRootFs" Condition="'$(OS)' != 'Windows_NT'">
-     <Exec Condition="$(Platform.Contains('arm')) AND '$(Platform)' != 'armel' AND '$(BuildArchitecture)' != 'arm64'" Command="$(ArmEnvironmentVariables) $(ProjectDir)cross/build-rootfs.sh" />
+     <Exec Condition="$(Platform.Contains('arm')) AND '$(Platform)' != 'armel' AND '$(BuildArchitecture)' != 'arm64' AND '$(BuildArchitecture)' != 'arm'" Command="$(ArmEnvironmentVariables) $(ProjectDir)cross/build-rootfs.sh" />
      <Exec Condition="'$(Platform)' == 'armel'" Command="$(ArmEnvironmentVariables) $(ProjectDir)cross/armel/tizen-build-rootfs.sh" />
   </Target>
 
