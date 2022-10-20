@@ -351,10 +351,10 @@ namespace Microsoft.CodeAnalysis.Tools
         {
             try
             {
-                // Get the latest .NET 6 SDK instance.
+                // Get the global.json pinned SDK or latest instance.
                 var msBuildInstance = Build.Locator.MSBuildLocator.QueryVisualStudioInstances()
                     .Where(instance => instance.Version.Major == 6)
-                    .MaxBy(instance => instance.Version);
+                    .FirstOrDefault();
                 if (msBuildInstance is null)
                 {
                     msBuildPath = null;
