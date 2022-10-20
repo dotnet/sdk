@@ -17,12 +17,12 @@ parameters:
   fedora33Container: mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-33-20210222183538-031e7d2
   ubuntu1804Container: mcr.microsoft.com/dotnet-buildtools/prereqs:ubuntu-18.04-20210924170306-047508b
   poolInternalAmd64:
-    name: NetCore1ESPool-Svc-Internal
+    name: NetCore1ESPool-Internal-XL
     demands: ImageOverride -equals Build.Ubuntu.1804.Amd64
   poolInternalArm64:
     name: Docker-Linux-Arm-Internal
   poolPublicAmd64:
-    name: NetCore-Svc-Public
+    name: NetCore-Public-XL
     demands: ImageOverride -equals Build.Ubuntu.1804.Amd64.Open
 
 jobs:
