@@ -129,36 +129,6 @@ namespace Microsoft.TemplateEngine.CommandUtils
             return job;
         }
 
-        private void HandleProcessExit(object? sender, EventArgs args)
-        {
-            int processId;
-            try
-            {
-                processId = _process.Id;
-            }
-            catch (InvalidOperationException)
-            {
-                // The process hasn't started yet; nothing to signal
-                return;
-            }
-
-            // Take ownership of the shutdown mutex; this will ensure that the other
-            // thread also waiting on the process to exit won't complete CLR shutdown before
-            // this one does.
-            _shutdownMutex?.WaitOne();
-
-            if (!_process.WaitForExit(0) && NativeMethods.Posix.kill(processId, NativeMethods.Posix.SIGTERM) != 0)
-            {
-                // Couldn't send the signal, don't wait
-                return;
-            }
-
-            // If SIGTERM was ignored by the target, then we'll still wait
-            _process.WaitForExit();
-
-            Environment.ExitCode = _process.ExitCode;
-        }
-
         private static bool SetKillOnJobClose(IntPtr job, bool value)
         {
             var information = new NativeMethods.Windows.JobObjectExtendedLimitInformation
@@ -191,6 +161,36 @@ namespace Microsoft.TemplateEngine.CommandUtils
             {
                 Marshal.FreeHGlobal(informationPtr);
             }
+        }
+
+        private void HandleProcessExit(object? sender, EventArgs args)
+        {
+            int processId;
+            try
+            {
+                processId = _process.Id;
+            }
+            catch (InvalidOperationException)
+            {
+                // The process hasn't started yet; nothing to signal
+                return;
+            }
+
+            // Take ownership of the shutdown mutex; this will ensure that the other
+            // thread also waiting on the process to exit won't complete CLR shutdown before
+            // this one does.
+            _shutdownMutex?.WaitOne();
+
+            if (!_process.WaitForExit(0) && NativeMethods.Posix.kill(processId, NativeMethods.Posix.SIGTERM) != 0)
+            {
+                // Couldn't send the signal, don't wait
+                return;
+            }
+
+            // If SIGTERM was ignored by the target, then we'll still wait
+            _process.WaitForExit();
+
+            Environment.ExitCode = _process.ExitCode;
         }
     }
 }

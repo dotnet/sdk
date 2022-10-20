@@ -11,8 +11,8 @@ namespace Microsoft.TemplateEngine.CommandUtils
 {
     internal sealed class StreamForwarder
     {
+        private const char FlushBuilderCharacter = '\n';
         private static readonly char[] IgnoreCharacters = new char[] { '\r' };
-        private static readonly char FlushBuilderCharacter = '\n';
 
         private StringBuilder? _builder;
         private StringWriter? _capture;

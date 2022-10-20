@@ -9,14 +9,6 @@ namespace Microsoft.TemplateEngine.CommandUtils
     {
         public static readonly CommandResult Empty;
 
-        public ProcessStartInfo StartInfo { get; }
-
-        public int ExitCode { get; }
-
-        public string? StdOut { get; }
-
-        public string? StdErr { get; }
-
         public CommandResult(ProcessStartInfo startInfo, int exitCode, string? stdOut, string? stdErr)
         {
             StartInfo = startInfo;
@@ -24,5 +16,13 @@ namespace Microsoft.TemplateEngine.CommandUtils
             StdOut = stdOut;
             StdErr = stdErr;
         }
+
+        public ProcessStartInfo StartInfo { get; }
+
+        public int ExitCode { get; }
+
+        public string? StdOut { get; }
+
+        public string? StdErr { get; }
     }
 }

@@ -24,6 +24,10 @@ namespace Microsoft.TemplateEngine.CommandUtils
             _process = process ?? throw new ArgumentNullException(nameof(process));
         }
 
+        public string CommandName => _process.StartInfo.FileName;
+
+        public string CommandArgs => _process.StartInfo.Arguments;
+
         public CommandResult Execute()
         {
             return Execute(_ => { });
@@ -160,10 +164,6 @@ namespace Microsoft.TemplateEngine.CommandUtils
             _stdErr!.ForwardTo(writeLine: handler);
             return this;
         }
-
-        public string CommandName => _process.StartInfo.FileName;
-
-        public string CommandArgs => _process.StartInfo.Arguments;
 
         public Command SetCommandArgs(string commandArgs)
         {

@@ -37,47 +37,6 @@ namespace Microsoft.TemplateEngine.CommandUtils
             return string.Join(" ", escaped);
         }
 
-        /// <summary>
-        /// Undo the processing which took place to create string[] args in Main,
-        /// so that the next process will receive the same string[] args
-        /// See here for more info:
-        /// http://blogs.msdn.com/b/twistylittlepassagesallalike/archive/2011/04/23/everyone-quotes-arguments-the-wrong-way.aspx .
-        /// </summary>
-        /// <param name="args"></param>
-        /// <returns></returns>
-        private static IEnumerable<string> EscapeArgArray(IEnumerable<string> args)
-        {
-            var escapedArgs = new List<string>();
-
-            foreach (var arg in args)
-            {
-                escapedArgs.Add(EscapeSingleArg(arg));
-            }
-
-            return escapedArgs;
-        }
-
-        /// <summary>
-        /// This prefixes every character with the '^' character to force cmd to
-        /// interpret the argument string literally. An alternative option would
-        /// be to do this only for cmd metacharacters.
-        /// See here for more info:
-        /// http://blogs.msdn.com/b/twistylittlepassagesallalike/archive/2011/04/23/everyone-quotes-arguments-the-wrong-way.aspx.
-        /// </summary>
-        /// <param name="arguments"></param>
-        /// <returns></returns>
-        private static IEnumerable<string> EscapeArgArrayForCmd(IEnumerable<string> arguments)
-        {
-            var escapedArgs = new List<string>();
-
-            foreach (var arg in arguments)
-            {
-                escapedArgs.Add(EscapeArgForCmd(arg));
-            }
-
-            return escapedArgs;
-        }
-
         public static string EscapeSingleArg(string arg)
         {
             var sb = new StringBuilder();
@@ -141,6 +100,23 @@ namespace Microsoft.TemplateEngine.CommandUtils
             return sb.ToString();
         }
 
+        internal static bool ShouldSurroundWithQuotes(string argument)
+        {
+            // Only quote if whitespace exists in the string
+            return ArgumentContainsWhitespace(argument);
+        }
+
+        internal static bool IsSurroundedWithQuotes(string argument)
+        {
+            return argument.StartsWith("\"", StringComparison.Ordinal) &&
+                   argument.EndsWith("\"", StringComparison.Ordinal);
+        }
+
+        internal static bool ArgumentContainsWhitespace(string argument)
+        {
+            return argument.Contains(" ") || argument.Contains("\t") || argument.Contains("\n");
+        }
+
         /// <summary>
         /// Prepare as single argument to
         /// roundtrip properly through cmd.
@@ -181,21 +157,45 @@ namespace Microsoft.TemplateEngine.CommandUtils
             return sb.ToString();
         }
 
-        internal static bool ShouldSurroundWithQuotes(string argument)
+        /// <summary>
+        /// Undo the processing which took place to create string[] args in Main,
+        /// so that the next process will receive the same string[] args
+        /// See here for more info:
+        /// http://blogs.msdn.com/b/twistylittlepassagesallalike/archive/2011/04/23/everyone-quotes-arguments-the-wrong-way.aspx .
+        /// </summary>
+        /// <param name="args"></param>
+        /// <returns></returns>
+        private static IEnumerable<string> EscapeArgArray(IEnumerable<string> args)
         {
-            // Only quote if whitespace exists in the string
-            return ArgumentContainsWhitespace(argument);
+            var escapedArgs = new List<string>();
+
+            foreach (var arg in args)
+            {
+                escapedArgs.Add(EscapeSingleArg(arg));
+            }
+
+            return escapedArgs;
         }
 
-        internal static bool IsSurroundedWithQuotes(string argument)
+        /// <summary>
+        /// This prefixes every character with the '^' character to force cmd to
+        /// interpret the argument string literally. An alternative option would
+        /// be to do this only for cmd metacharacters.
+        /// See here for more info:
+        /// http://blogs.msdn.com/b/twistylittlepassagesallalike/archive/2011/04/23/everyone-quotes-arguments-the-wrong-way.aspx.
+        /// </summary>
+        /// <param name="arguments"></param>
+        /// <returns></returns>
+        private static IEnumerable<string> EscapeArgArrayForCmd(IEnumerable<string> arguments)
         {
-            return argument.StartsWith("\"", StringComparison.Ordinal) &&
-                   argument.EndsWith("\"", StringComparison.Ordinal);
-        }
+            var escapedArgs = new List<string>();
 
-        internal static bool ArgumentContainsWhitespace(string argument)
-        {
-            return argument.Contains(" ") || argument.Contains("\t") || argument.Contains("\n");
+            foreach (var arg in arguments)
+            {
+                escapedArgs.Add(EscapeArgForCmd(arg));
+            }
+
+            return escapedArgs;
         }
     }
 }

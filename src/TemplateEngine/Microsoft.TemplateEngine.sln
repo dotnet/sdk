@@ -35,9 +35,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.TemplateEngine.Ed
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.TemplateSearch.Common", "src\Microsoft.TemplateSearch.Common\Microsoft.TemplateSearch.Common.csproj", "{4DF4A1B9-F31C-49D1-8FEB-8DB37AEBDC0B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.TemplateSearch.TemplateDiscovery", "src\Microsoft.TemplateSearch.TemplateDiscovery\Microsoft.TemplateSearch.TemplateDiscovery.csproj", "{FBEBB725-F645-40DC-856C-D1BC7FB52CF3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.TemplateSearch.TemplateDiscovery", "tools\Microsoft.TemplateSearch.TemplateDiscovery\Microsoft.TemplateSearch.TemplateDiscovery.csproj", "{FBEBB725-F645-40DC-856C-D1BC7FB52CF3}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.TemplateSearch.ScraperOutputComparison", "src\Microsoft.TemplateSearch.ScraperOutputComparison\Microsoft.TemplateSearch.ScraperOutputComparison.csproj", "{95D28477-05FE-4450-86B8-D7384202AB90}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.TemplateSearch.ScraperOutputComparison", "tools\Microsoft.TemplateSearch.ScraperOutputComparison\Microsoft.TemplateSearch.ScraperOutputComparison.csproj", "{95D28477-05FE-4450-86B8-D7384202AB90}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.TemplateEngine.TestTemplates", "test\Microsoft.TemplateEngine.TestTemplates\Microsoft.TemplateEngine.TestTemplates.csproj", "{FC7516FB-7F44-4786-ADF2-589EF06C2EDE}"
 EndProject
@@ -45,9 +45,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.TemplateEngine.ID
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.TemplateSearch.Common.UnitTests", "test\Microsoft.TemplateSearch.Common.UnitTests\Microsoft.TemplateSearch.Common.UnitTests.csproj", "{15304624-1774-4990-A0CC-7B9DA27A8FF6}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.TemplateEngine.Authoring.CLI", "src\Microsoft.TemplateEngine.Authoring.CLI\Microsoft.TemplateEngine.Authoring.CLI.csproj", "{F8C5BBAA-99E9-46BA-87C9-9FB7F388F403}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.TemplateEngine.Authoring.CLI", "tools\Microsoft.TemplateEngine.Authoring.CLI\Microsoft.TemplateEngine.Authoring.CLI.csproj", "{F8C5BBAA-99E9-46BA-87C9-9FB7F388F403}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.TemplateEngine.TemplateLocalizer.Core", "src\Microsoft.TemplateEngine.TemplateLocalizer.Core\Microsoft.TemplateEngine.TemplateLocalizer.Core.csproj", "{ED5D6873-220B-4F9D-A30B-B99E950F8E26}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.TemplateEngine.TemplateLocalizer.Core", "tools\Microsoft.TemplateEngine.TemplateLocalizer.Core\Microsoft.TemplateEngine.TemplateLocalizer.Core.csproj", "{ED5D6873-220B-4F9D-A30B-B99E950F8E26}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.TemplateEngine.TemplateLocalizer.Core.UnitTests", "test\Microsoft.TemplateEngine.TemplateLocalizer.Core.UnitTests\Microsoft.TemplateEngine.TemplateLocalizer.Core.UnitTests.csproj", "{858B2E28-1FF8-4ED2-A356-B576BD793B71}"
 EndProject
@@ -55,7 +55,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.TemplateEngine.Au
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests", "test\Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests\Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests.csproj", "{B0330A2C-3F10-4C46-97DF-13D187564F70}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.TemplateEngine.Authoring.Tasks", "src\Microsoft.TemplateEngine.Authoring.Tasks\Microsoft.TemplateEngine.Authoring.Tasks.csproj", "{BD758B10-A47F-4159-B9A1-997723AF7349}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.TemplateEngine.Authoring.Tasks", "tools\Microsoft.TemplateEngine.Authoring.Tasks\Microsoft.TemplateEngine.Authoring.Tasks.csproj", "{BD758B10-A47F-4159-B9A1-997723AF7349}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.TemplateEngine.Authoring.Tasks.IntegrationTests", "test\Microsoft.TemplateEngine.Authoring.Tasks.IntegrationTests\Microsoft.TemplateEngine.Authoring.Tasks.IntegrationTests.csproj", "{2FFDBB61-8AE8-468B-87D3-0D907D7C2FFE}"
 EndProject
@@ -68,7 +68,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{B794BF86-4185-4DCE-AC86-C27D5D966B9B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.TemplateEngine.Authoring.TemplateVerifier", "src\Microsoft.TemplateEngine.Authoring.TemplateVerifier\Microsoft.TemplateEngine.Authoring.TemplateVerifier.csproj", "{12764D81-61A7-437A-90B6-9F245E43F457}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.TemplateEngine.Authoring.TemplateVerifier", "tools\Microsoft.TemplateEngine.Authoring.TemplateVerifier\Microsoft.TemplateEngine.Authoring.TemplateVerifier.csproj", "{12764D81-61A7-437A-90B6-9F245E43F457}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.TemplateEngine.Authoring.TemplateVerifier.IntegrationTests", "test\Microsoft.TemplateEngine.Authoring.TemplateVerifier.IntegrationTests\Microsoft.TemplateEngine.Authoring.TemplateVerifier.IntegrationTests.csproj", "{B1DDA327-F55E-466A-AF3E-7F039B9B51A9}"
 EndProject
@@ -81,7 +81,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "eng", "eng", "{D190251C-564
 		eng\Versions.props = eng\Versions.props
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.TemplateEngine.CommandUtils", "test\Microsoft.TemplateEngine.CommandUtils\Microsoft.TemplateEngine.CommandUtils.csproj", "{67986D9B-72ED-4B97-B72E-D65EBA75193A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.TemplateEngine.CommandUtils", "tools\Microsoft.TemplateEngine.CommandUtils\Microsoft.TemplateEngine.CommandUtils.csproj", "{67986D9B-72ED-4B97-B72E-D65EBA75193A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -490,7 +490,7 @@ Global
 		{0A4EBB7D-E75B-4589-9FB3-0CD6A0B47C78} = {8B498D0C-F488-4B38-8A7D-B20BF9DB6F60}
 		{15304624-1774-4990-A0CC-7B9DA27A8FF6} = {8B498D0C-F488-4B38-8A7D-B20BF9DB6F60}
 		{F8C5BBAA-99E9-46BA-87C9-9FB7F388F403} = {B794BF86-4185-4DCE-AC86-C27D5D966B9B}
-		{ED5D6873-220B-4F9D-A30B-B99E950F8E26} = {7DAC892E-ADAE-4CEB-8A0C-EDC452A5826A}
+		{ED5D6873-220B-4F9D-A30B-B99E950F8E26} = {B794BF86-4185-4DCE-AC86-C27D5D966B9B}
 		{858B2E28-1FF8-4ED2-A356-B576BD793B71} = {8B498D0C-F488-4B38-8A7D-B20BF9DB6F60}
 		{BB38681E-BBD1-4E77-BCD5-CDB6E532B2C5} = {8B498D0C-F488-4B38-8A7D-B20BF9DB6F60}
 		{B0330A2C-3F10-4C46-97DF-13D187564F70} = {8B498D0C-F488-4B38-8A7D-B20BF9DB6F60}

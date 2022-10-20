@@ -22,7 +22,7 @@
 
   <ItemGroup>
     <ProjectReference Include="$(SrcDir)Microsoft.TemplateEngine.Utils\Microsoft.TemplateEngine.Utils.csproj" />
-    <ProjectReference Include="$(TestDir)Microsoft.TemplateEngine.CommandUtils\Microsoft.TemplateEngine.CommandUtils.csproj" />
+    <ProjectReference Include="$(ToolsDir)Microsoft.TemplateEngine.CommandUtils\Microsoft.TemplateEngine.CommandUtils.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -11,6 +11,8 @@ namespace Microsoft.TemplateEngine.CommandUtils
     {
         internal static class Windows
         {
+            internal const int ProcessBasicInformation = 0;
+
             internal enum JobObjectInfoClass : uint
             {
                 JobObjectExtendedLimitInformation = 9,
@@ -21,6 +23,23 @@ namespace Microsoft.TemplateEngine.CommandUtils
             {
                 JobObjectLimitKillOnJobClose = 0x2000,
             }
+
+            [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+            internal static extern SafeWaitHandle CreateJobObjectW(IntPtr lpJobAttributes, string? lpName);
+
+            [DllImport("kernel32.dll", SetLastError = true)]
+            internal static extern bool SetInformationJobObject(IntPtr hJob, JobObjectInfoClass jobObjectInformationClass, IntPtr lpJobObjectInformation, uint cbJobObjectInformationLength);
+
+            [DllImport("kernel32.dll", SetLastError = true)]
+            internal static extern bool AssignProcessToJobObject(IntPtr hJob, IntPtr hProcess);
+
+            [DllImport("kernel32.dll", CharSet = CharSet.Auto)]
+            [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+            internal static extern IntPtr GetCommandLine();
+
+            [DllImport("ntdll.dll", SetLastError = true)]
+            [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+            internal static extern unsafe uint NtQueryInformationProcess(SafeProcessHandle ProcessHandle, int ProcessInformationClass, void* ProcessInformation, uint ProcessInformationLength, out uint ReturnLength);
 
             [StructLayout(LayoutKind.Sequential)]
             internal struct JobObjectBasicLimitInformation
@@ -58,8 +77,6 @@ namespace Microsoft.TemplateEngine.CommandUtils
                 public UIntPtr PeakJobMemoryUsed;
             }
 
-            internal const int ProcessBasicInformation = 0;
-
             [StructLayout(LayoutKind.Sequential)]
             internal struct PROCESS_BASIC_INFORMATION
             {
@@ -70,32 +87,15 @@ namespace Microsoft.TemplateEngine.CommandUtils
                 public UIntPtr UniqueProcessId;
                 public UIntPtr InheritedFromUniqueProcessId;
             }
-
-            [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
-            internal static extern SafeWaitHandle CreateJobObjectW(IntPtr lpJobAttributes, string? lpName);
-
-            [DllImport("kernel32.dll", SetLastError = true)]
-            internal static extern bool SetInformationJobObject(IntPtr hJob, JobObjectInfoClass jobObjectInformationClass, IntPtr lpJobObjectInformation, uint cbJobObjectInformationLength);
-
-            [DllImport("kernel32.dll", SetLastError = true)]
-            internal static extern bool AssignProcessToJobObject(IntPtr hJob, IntPtr hProcess);
-
-            [DllImport("kernel32.dll", CharSet = CharSet.Auto)]
-            [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-            internal static extern IntPtr GetCommandLine();
-
-            [DllImport("ntdll.dll", SetLastError = true)]
-            [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-            internal static extern unsafe uint NtQueryInformationProcess(SafeProcessHandle ProcessHandle, int ProcessInformationClass, void* ProcessInformation, uint ProcessInformationLength, out uint ReturnLength);
         }
 
         internal static class Posix
         {
-            [DllImport("libc", SetLastError = true)]
-            internal static extern int kill(int pid, int sig);
-
             internal const int SIGINT = 2;
             internal const int SIGTERM = 15;
+
+            [DllImport("libc", SetLastError = true)]
+            internal static extern int kill(int pid, int sig);
         }
     }
 }
