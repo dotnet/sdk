@@ -12,6 +12,11 @@
         <target state="translated">NETSDK1183: non è possibile ottimizzare gli assembly per la compilazione Ahead Of Time perché non è stato trovato alcun pacchetto di runtime valido. Impostare la proprietà PublishAot su false oppure usare un identificatore di runtime supportato durante la pubblicazione. Quando si usa .NET 7 o versioni successive, assicurarsi di ripristinare i pacchetti con la proprietà PublishAot impostata su true.</target>
         <note>{StrBegin="NETSDK1183: "}</note>
       </trans-unit>
+      <trans-unit id="AotNotSupported">
+        <source>NETSDK1193: The SDK does not support Ahead of time compilation. Set the PublishAot property to false.</source>
+        <target state="new">NETSDK1193: The SDK does not support Ahead of time compilation. Set the PublishAot property to false.</target>
+        <note>{StrBegin="NETSDK1193: "}</note>
+      </trans-unit>
       <trans-unit id="AppConfigRequiresRootConfiguration">
         <source>NETSDK1070: The application configuration file must have root configuration element.</source>
         <target state="translated">NETSDK1070: il file di configurazione dell'applicazione deve avere un elemento di configurazione radice.</target>

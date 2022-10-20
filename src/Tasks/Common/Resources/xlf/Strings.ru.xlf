@@ -12,6 +12,11 @@
         <target state="translated">NETSDK1183: не удалось оптимизировать сборки для компиляции Ahead Of Time: не найден допустимый пакет среды выполнения. Задайте для свойства PublishAot значение false либо используйте поддерживаемый идентификатор среды выполнения при публикации. При выборе .NET 7 или более поздней версии в качестве цели восстановите пакеты со свойством PublishAot со значением true.</target>
         <note>{StrBegin="NETSDK1183: "}</note>
       </trans-unit>
+      <trans-unit id="AotNotSupported">
+        <source>NETSDK1193: The SDK does not support Ahead of time compilation. Set the PublishAot property to false.</source>
+        <target state="new">NETSDK1193: The SDK does not support Ahead of time compilation. Set the PublishAot property to false.</target>
+        <note>{StrBegin="NETSDK1193: "}</note>
+      </trans-unit>
       <trans-unit id="AppConfigRequiresRootConfiguration">
         <source>NETSDK1070: The application configuration file must have root configuration element.</source>
         <target state="translated">NETSDK1070: В файле конфигурации приложения должен присутствовать корневой элемент конфигурации.</target>

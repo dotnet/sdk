@@ -12,6 +12,11 @@
         <target state="translated">NETSDK1183: 無法為提前編譯最佳化組件: 找不到有效的執行階段套件。請將 PublishAot 屬性設為 false，或在發佈時使用支援的執行階段識別碼。以 .NET 7 或更高版本為目標時，請務必還原套件，將 PublishAot 屬性設為 true。</target>
         <note>{StrBegin="NETSDK1183: "}</note>
       </trans-unit>
+      <trans-unit id="AotNotSupported">
+        <source>NETSDK1193: The SDK does not support Ahead of time compilation. Set the PublishAot property to false.</source>
+        <target state="new">NETSDK1193: The SDK does not support Ahead of time compilation. Set the PublishAot property to false.</target>
+        <note>{StrBegin="NETSDK1193: "}</note>
+      </trans-unit>
       <trans-unit id="AppConfigRequiresRootConfiguration">
         <source>NETSDK1070: The application configuration file must have root configuration element.</source>
         <target state="translated">NETSDK1070: 應用程式組態檔必須有根組態元素。</target>

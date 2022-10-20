@@ -12,6 +12,11 @@
         <target state="translated">NETSDK1183: Ahead Of Time コンパイル用にアセンブリを最適化できません: 有効なランタイム パッケージが見つかりませんでした。PublishAot プロパティを false に設定するか、公開時に、サポートされているランタイム識別子を使用してください。.NET 7 以降を対象とする場合は、必ず PublishAot プロパティを true に設定してパッケージを復元してください。</target>
         <note>{StrBegin="NETSDK1183: "}</note>
       </trans-unit>
+      <trans-unit id="AotNotSupported">
+        <source>NETSDK1193: The SDK does not support Ahead of time compilation. Set the PublishAot property to false.</source>
+        <target state="new">NETSDK1193: The SDK does not support Ahead of time compilation. Set the PublishAot property to false.</target>
+        <note>{StrBegin="NETSDK1193: "}</note>
+      </trans-unit>
       <trans-unit id="AppConfigRequiresRootConfiguration">
         <source>NETSDK1070: The application configuration file must have root configuration element.</source>
         <target state="translated">NETSDK1070: アプリケーション構成ファイルには、ルート構成要素が必要です。</target>

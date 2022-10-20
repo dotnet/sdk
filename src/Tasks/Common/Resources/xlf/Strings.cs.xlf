@@ -12,6 +12,11 @@
         <target state="translated">NETSDK1183: Sestavení nelze optimalizovat pro kompilaci s předstihem: nebyl nalezen platný balíček modulu runtime. Buď nastavte vlastnost PublishAot na hodnotu false, nebo při publikování použijte podporovaný identifikátor modulu runtime. Při cílení na .NET 7 nebo vyšší nezapomeňte obnovit balíčky s vlastností PublishAot nastavenou na hodnotu true.</target>
         <note>{StrBegin="NETSDK1183: "}</note>
       </trans-unit>
+      <trans-unit id="AotNotSupported">
+        <source>NETSDK1193: The SDK does not support Ahead of time compilation. Set the PublishAot property to false.</source>
+        <target state="new">NETSDK1193: The SDK does not support Ahead of time compilation. Set the PublishAot property to false.</target>
+        <note>{StrBegin="NETSDK1193: "}</note>
+      </trans-unit>
       <trans-unit id="AppConfigRequiresRootConfiguration">
         <source>NETSDK1070: The application configuration file must have root configuration element.</source>
         <target state="translated">NETSDK1070: Konfigurační soubor aplikace musí obsahovat kořenový element konfigurace.</target>
