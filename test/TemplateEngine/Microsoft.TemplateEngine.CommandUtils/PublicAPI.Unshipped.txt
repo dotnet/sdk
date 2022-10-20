@@ -1,0 +1,70 @@
+﻿Microsoft.TemplateEngine.CommandUtils.ArgumentEscaper
+Microsoft.TemplateEngine.CommandUtils.Assertions.CommandResultAssertions
+Microsoft.TemplateEngine.CommandUtils.Assertions.CommandResultAssertions.CommandResultAssertions(Microsoft.TemplateEngine.CommandUtils.CommandResult commandResult) -> void
+Microsoft.TemplateEngine.CommandUtils.Assertions.CommandResultAssertions.ExitWith(int expectedExitCode) -> FluentAssertions.AndConstraint<Microsoft.TemplateEngine.CommandUtils.Assertions.CommandResultAssertions!>!
+Microsoft.TemplateEngine.CommandUtils.Assertions.CommandResultAssertions.Fail() -> FluentAssertions.AndConstraint<Microsoft.TemplateEngine.CommandUtils.Assertions.CommandResultAssertions!>!
+Microsoft.TemplateEngine.CommandUtils.Assertions.CommandResultAssertions.HaveCompiledProject(string! compiledProject, string! frameworkFullName) -> FluentAssertions.AndConstraint<Microsoft.TemplateEngine.CommandUtils.Assertions.CommandResultAssertions!>!
+Microsoft.TemplateEngine.CommandUtils.Assertions.CommandResultAssertions.HaveSkippedProjectCompilation(string! skippedProject, string! frameworkFullName) -> FluentAssertions.AndConstraint<Microsoft.TemplateEngine.CommandUtils.Assertions.CommandResultAssertions!>!
+Microsoft.TemplateEngine.CommandUtils.Assertions.CommandResultAssertions.HaveStdErr() -> FluentAssertions.AndConstraint<Microsoft.TemplateEngine.CommandUtils.Assertions.CommandResultAssertions!>!
+Microsoft.TemplateEngine.CommandUtils.Assertions.CommandResultAssertions.HaveStdErr(string! expectedOutput) -> FluentAssertions.AndConstraint<Microsoft.TemplateEngine.CommandUtils.Assertions.CommandResultAssertions!>!
+Microsoft.TemplateEngine.CommandUtils.Assertions.CommandResultAssertions.HaveStdErrContaining(string! pattern) -> FluentAssertions.AndConstraint<Microsoft.TemplateEngine.CommandUtils.Assertions.CommandResultAssertions!>!
+Microsoft.TemplateEngine.CommandUtils.Assertions.CommandResultAssertions.HaveStdErrMatching(string! pattern, System.Text.RegularExpressions.RegexOptions options = System.Text.RegularExpressions.RegexOptions.None) -> FluentAssertions.AndConstraint<Microsoft.TemplateEngine.CommandUtils.Assertions.CommandResultAssertions!>!
+Microsoft.TemplateEngine.CommandUtils.Assertions.CommandResultAssertions.HaveStdOut() -> FluentAssertions.AndConstraint<Microsoft.TemplateEngine.CommandUtils.Assertions.CommandResultAssertions!>!
+Microsoft.TemplateEngine.CommandUtils.Assertions.CommandResultAssertions.HaveStdOut(string! expectedOutput) -> FluentAssertions.AndConstraint<Microsoft.TemplateEngine.CommandUtils.Assertions.CommandResultAssertions!>!
+Microsoft.TemplateEngine.CommandUtils.Assertions.CommandResultAssertions.HaveStdOutContaining(string! pattern) -> FluentAssertions.AndConstraint<Microsoft.TemplateEngine.CommandUtils.Assertions.CommandResultAssertions!>!
+Microsoft.TemplateEngine.CommandUtils.Assertions.CommandResultAssertions.HaveStdOutContaining(System.Func<string!, bool>! predicate, string! description = "") -> FluentAssertions.AndConstraint<Microsoft.TemplateEngine.CommandUtils.Assertions.CommandResultAssertions!>!
+Microsoft.TemplateEngine.CommandUtils.Assertions.CommandResultAssertions.HaveStdOutContainingIgnoreCase(string! pattern) -> FluentAssertions.AndConstraint<Microsoft.TemplateEngine.CommandUtils.Assertions.CommandResultAssertions!>!
+Microsoft.TemplateEngine.CommandUtils.Assertions.CommandResultAssertions.HaveStdOutContainingIgnoreSpaces(string! pattern) -> FluentAssertions.AndConstraint<Microsoft.TemplateEngine.CommandUtils.Assertions.CommandResultAssertions!>!
+Microsoft.TemplateEngine.CommandUtils.Assertions.CommandResultAssertions.HaveStdOutMatching(string! pattern, System.Text.RegularExpressions.RegexOptions options = System.Text.RegularExpressions.RegexOptions.None) -> FluentAssertions.AndConstraint<Microsoft.TemplateEngine.CommandUtils.Assertions.CommandResultAssertions!>!
+Microsoft.TemplateEngine.CommandUtils.Assertions.CommandResultAssertions.NotHaveStdErr() -> FluentAssertions.AndConstraint<Microsoft.TemplateEngine.CommandUtils.Assertions.CommandResultAssertions!>!
+Microsoft.TemplateEngine.CommandUtils.Assertions.CommandResultAssertions.NotHaveStdErrContaining(string! pattern) -> FluentAssertions.AndConstraint<Microsoft.TemplateEngine.CommandUtils.Assertions.CommandResultAssertions!>!
+Microsoft.TemplateEngine.CommandUtils.Assertions.CommandResultAssertions.NotHaveStdOut() -> FluentAssertions.AndConstraint<Microsoft.TemplateEngine.CommandUtils.Assertions.CommandResultAssertions!>!
+Microsoft.TemplateEngine.CommandUtils.Assertions.CommandResultAssertions.NotHaveStdOutContaining(string! pattern) -> FluentAssertions.AndConstraint<Microsoft.TemplateEngine.CommandUtils.Assertions.CommandResultAssertions!>!
+Microsoft.TemplateEngine.CommandUtils.Assertions.CommandResultAssertions.NotHaveStdOutMatching(string! pattern, System.Text.RegularExpressions.RegexOptions options = System.Text.RegularExpressions.RegexOptions.None) -> FluentAssertions.AndConstraint<Microsoft.TemplateEngine.CommandUtils.Assertions.CommandResultAssertions!>!
+Microsoft.TemplateEngine.CommandUtils.Assertions.CommandResultAssertions.Pass() -> FluentAssertions.AndConstraint<Microsoft.TemplateEngine.CommandUtils.Assertions.CommandResultAssertions!>!
+Microsoft.TemplateEngine.CommandUtils.Assertions.CommandResultExtensions
+Microsoft.TemplateEngine.CommandUtils.BasicCommand
+Microsoft.TemplateEngine.CommandUtils.BasicCommand.BasicCommand(Microsoft.Extensions.Logging.ILogger! log, string! processName, params string![]! args) -> void
+Microsoft.TemplateEngine.CommandUtils.BasicCommand.BasicCommand(Xunit.Abstractions.ITestOutputHelper! log, string! processName, params string![]! args) -> void
+Microsoft.TemplateEngine.CommandUtils.CommandResult
+Microsoft.TemplateEngine.CommandUtils.CommandResult.CommandResult() -> void
+Microsoft.TemplateEngine.CommandUtils.CommandResult.CommandResult(System.Diagnostics.ProcessStartInfo! startInfo, int exitCode, string? stdOut, string? stdErr) -> void
+Microsoft.TemplateEngine.CommandUtils.CommandResult.ExitCode.get -> int
+Microsoft.TemplateEngine.CommandUtils.CommandResult.StartInfo.get -> System.Diagnostics.ProcessStartInfo!
+Microsoft.TemplateEngine.CommandUtils.CommandResult.StdErr.get -> string?
+Microsoft.TemplateEngine.CommandUtils.CommandResult.StdOut.get -> string?
+Microsoft.TemplateEngine.CommandUtils.DotnetCommand
+Microsoft.TemplateEngine.CommandUtils.DotnetCommand.DotnetCommand(Microsoft.Extensions.Logging.ILogger! log, string! subcommand, params string![]! args) -> void
+Microsoft.TemplateEngine.CommandUtils.DotnetCommand.DotnetCommand(Xunit.Abstractions.ITestOutputHelper! log, string! subcommand, params string![]! args) -> void
+Microsoft.TemplateEngine.CommandUtils.DotnetNewCommand
+Microsoft.TemplateEngine.CommandUtils.DotnetNewCommand.DotnetNewCommand(Microsoft.Extensions.Logging.ILogger! log, params string![]! args) -> void
+Microsoft.TemplateEngine.CommandUtils.DotnetNewCommand.DotnetNewCommand(Xunit.Abstractions.ITestOutputHelper! log, params string![]! args) -> void
+Microsoft.TemplateEngine.CommandUtils.DotnetNewCommand.WithCustomHive(string! path) -> Microsoft.TemplateEngine.CommandUtils.DotnetNewCommand!
+Microsoft.TemplateEngine.CommandUtils.DotnetNewCommand.WithDebug() -> Microsoft.TemplateEngine.CommandUtils.DotnetNewCommand!
+Microsoft.TemplateEngine.CommandUtils.DotnetNewCommand.WithoutBuiltInTemplates() -> Microsoft.TemplateEngine.CommandUtils.DotnetNewCommand!
+Microsoft.TemplateEngine.CommandUtils.DotnetNewCommand.WithoutCustomHive() -> Microsoft.TemplateEngine.CommandUtils.DotnetNewCommand!
+Microsoft.TemplateEngine.CommandUtils.DotnetNewCommand.WithVirtualHive() -> Microsoft.TemplateEngine.CommandUtils.DotnetNewCommand!
+Microsoft.TemplateEngine.CommandUtils.TestCommand
+Microsoft.TemplateEngine.CommandUtils.TestCommand.Arguments.get -> System.Collections.Generic.List<string!>!
+Microsoft.TemplateEngine.CommandUtils.TestCommand.Arguments.set -> void
+Microsoft.TemplateEngine.CommandUtils.TestCommand.CommandOutputHandler.get -> System.Action<string!>?
+Microsoft.TemplateEngine.CommandUtils.TestCommand.CommandOutputHandler.set -> void
+Microsoft.TemplateEngine.CommandUtils.TestCommand.Environment.get -> System.Collections.Generic.Dictionary<string!, string!>!
+Microsoft.TemplateEngine.CommandUtils.TestCommand.Environment.set -> void
+Microsoft.TemplateEngine.CommandUtils.TestCommand.EnvironmentToRemove.get -> System.Collections.Generic.List<string!>!
+Microsoft.TemplateEngine.CommandUtils.TestCommand.Execute(params string![]! args) -> Microsoft.TemplateEngine.CommandUtils.CommandResult
+Microsoft.TemplateEngine.CommandUtils.TestCommand.GetProcessStartInfo(params string![]! args) -> System.Diagnostics.ProcessStartInfo!
+Microsoft.TemplateEngine.CommandUtils.TestCommand.ProcessStartedHandler.get -> System.Action<System.Diagnostics.Process!>?
+Microsoft.TemplateEngine.CommandUtils.TestCommand.ProcessStartedHandler.set -> void
+Microsoft.TemplateEngine.CommandUtils.TestCommand.TestCommand(Microsoft.Extensions.Logging.ILogger! log) -> void
+Microsoft.TemplateEngine.CommandUtils.TestCommand.TestCommand(Xunit.Abstractions.ITestOutputHelper! log) -> void
+Microsoft.TemplateEngine.CommandUtils.TestCommand.WithEnvironmentVariable(string! name, string! value) -> Microsoft.TemplateEngine.CommandUtils.TestCommand!
+Microsoft.TemplateEngine.CommandUtils.TestCommand.WithWorkingDirectory(string! workingDirectory) -> Microsoft.TemplateEngine.CommandUtils.TestCommand!
+Microsoft.TemplateEngine.CommandUtils.TestCommand.WorkingDirectory.get -> string?
+Microsoft.TemplateEngine.CommandUtils.TestCommand.WorkingDirectory.set -> void
+static Microsoft.TemplateEngine.CommandUtils.ArgumentEscaper.EscapeAndConcatenateArgArrayForCmdProcessStart(System.Collections.Generic.IEnumerable<string!>! args) -> string!
+static Microsoft.TemplateEngine.CommandUtils.ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(System.Collections.Generic.IEnumerable<string!>! args) -> string!
+static Microsoft.TemplateEngine.CommandUtils.ArgumentEscaper.EscapeSingleArg(string! arg) -> string!
+static Microsoft.TemplateEngine.CommandUtils.Assertions.CommandResultExtensions.Should(this Microsoft.TemplateEngine.CommandUtils.CommandResult commandResult) -> Microsoft.TemplateEngine.CommandUtils.Assertions.CommandResultAssertions!
+static readonly Microsoft.TemplateEngine.CommandUtils.CommandResult.Empty -> Microsoft.TemplateEngine.CommandUtils.CommandResult
+virtual Microsoft.TemplateEngine.CommandUtils.TestCommand.Execute(System.Collections.Generic.IEnumerable<string!>! args) -> Microsoft.TemplateEngine.CommandUtils.CommandResult

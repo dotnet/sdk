@@ -4,7 +4,8 @@
     <TargetFramework>$(NETCoreTargetFramework)</TargetFramework>
     <Nullable>enable</Nullable>
     <IsPackable>true</IsPackable>
-    <IsShipping>false</IsShipping>
+    <EnablePublicApiAnalyzer>true</EnablePublicApiAnalyzer>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <IsTestProject>false</IsTestProject>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Description>The library with useful utils to run dotnet commands as part of other CLI applications or tests.</Description>

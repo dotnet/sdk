@@ -9,8 +9,11 @@ using Xunit.Abstractions;
 
 namespace Microsoft.TemplateEngine.TestHelper
 {
+    /// <summary>
+    /// Microsoft.Extensions.Logging <see cref="ILoggerProvider"/> which logs to XUnit test output.
+    /// </summary>
     /// <remarks>
-    /// https://github.com/dotnet/runtime/blob/main/src/libraries/Microsoft.Extensions.Logging/tests/DI.Common/Common/src/XunitLoggerProvider.cs
+    /// See https://github.com/dotnet/runtime/blob/main/src/libraries/Microsoft.Extensions.Logging/tests/DI.Common/Common/src/XunitLoggerProvider.cs for more details.
     /// </remarks>
     public class XunitLoggerProvider : ILoggerProvider
     {
