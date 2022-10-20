@@ -7,7 +7,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
     {
         public VerifySettingsFixture()
         {
-            Verifier.DerivePathInfo(
+            DerivePathInfo(
                 (_, _, type, method) => new(
                     directory: "Approvals",
                     typeName: type.Name,

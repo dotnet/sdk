@@ -191,7 +191,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             string targetFile2 = Path.Combine(output, "MyApp.1.cs");
             Assert.True(File.Exists(targetFile2));
 
-            await Verifier.Verify(File.ReadAllText(targetFile2));
+            await Verify(File.ReadAllText(targetFile2));
         }
     }
 }

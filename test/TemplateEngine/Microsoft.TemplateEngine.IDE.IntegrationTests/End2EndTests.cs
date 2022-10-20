@@ -2,8 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.RegularExpressions;
+using Microsoft.TemplateEngine.Edge.Template;
 using Microsoft.TemplateEngine.TestHelper;
-using Microsoft.TemplateEngine.Utils;
+using ITemplateMatchInfo = Microsoft.TemplateEngine.Abstractions.TemplateFiltering.ITemplateMatchInfo;
+using WellKnownSearchFilters = Microsoft.TemplateEngine.Utils.WellKnownSearchFilters;
 
 namespace Microsoft.TemplateEngine.IDE.IntegrationTests
 {
@@ -23,7 +25,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             var foundTemplates = await bootstrapper.GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter("TestAssets.SourceNameForms") }).ConfigureAwait(false);
             var result = await bootstrapper.CreateAsync(foundTemplates[0].Info, "MyApp.1", output, new Dictionary<string, string?>()).ConfigureAwait(false);
 
-            Assert.Equal(Edge.Template.CreationResultStatus.Success, result.Status);
+            Assert.Equal(CreationResultStatus.Success, result.Status);
 
             string targetFile = Path.Combine(output, "myapp.12.cs");
             Assert.True(File.Exists(targetFile));
@@ -45,7 +47,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             var foundTemplates = await bootstrapper.GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter("TestAssets.ValueForms.DerivedSymbol") }).ConfigureAwait(false);
             var result = await bootstrapper.CreateAsync(foundTemplates[0].Info, "Real.Web.App", output, new Dictionary<string, string?>()).ConfigureAwait(false);
 
-            Assert.Equal(Edge.Template.CreationResultStatus.Success, result.Status);
+            Assert.Equal(CreationResultStatus.Success, result.Status);
 
             string targetFile = Path.Combine(output, "Real.Web.App.txt");
             Assert.True(File.Exists(targetFile));
@@ -67,7 +69,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             var foundTemplates = await bootstrapper.GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter("TestAssets.ValueForms.DerivedSymbolFromGeneratedSymbol") }).ConfigureAwait(false);
             var result = await bootstrapper.CreateAsync(foundTemplates[0].Info, "Real.Web.App", output, new Dictionary<string, string?>()).ConfigureAwait(false);
 
-            Assert.Equal(Edge.Template.CreationResultStatus.Success, result.Status);
+            Assert.Equal(CreationResultStatus.Success, result.Status);
 
             string targetFile = Path.Combine(output, "Real.Web.App.txt");
             Assert.True(File.Exists(targetFile));
@@ -84,10 +86,10 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
 
             string output = TestUtils.CreateTemporaryFolder();
 
-            IReadOnlyList<Abstractions.TemplateFiltering.ITemplateMatchInfo> foundTemplates = await bootstrapper.GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter("TestAssets.TemplateWithPortsAndCoalesce") }).ConfigureAwait(false);
-            Edge.Template.ITemplateCreationResult result = await bootstrapper.CreateAsync(foundTemplates[0].Info, "test-template", output, new Dictionary<string, string?>()).ConfigureAwait(false);
+            IReadOnlyList<ITemplateMatchInfo> foundTemplates = await bootstrapper.GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter("TestAssets.TemplateWithPortsAndCoalesce") }).ConfigureAwait(false);
+            ITemplateCreationResult result = await bootstrapper.CreateAsync(foundTemplates[0].Info, "test-template", output, new Dictionary<string, string?>()).ConfigureAwait(false);
 
-            Assert.Equal(Edge.Template.CreationResultStatus.Success, result.Status);
+            Assert.Equal(CreationResultStatus.Success, result.Status);
 
             string targetFile = Path.Combine(output, "bar.cs");
             Assert.True(File.Exists(targetFile));
@@ -122,10 +124,10 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
                 { "userPort2", "3000" },
             };
 
-            IReadOnlyList<Abstractions.TemplateFiltering.ITemplateMatchInfo> foundTemplates = await bootstrapper.GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter("TestAssets.TemplateWithPortsAndCoalesce") }).ConfigureAwait(false);
-            Edge.Template.ITemplateCreationResult result = await bootstrapper.CreateAsync(foundTemplates[0].Info, "test-template", output, parameters).ConfigureAwait(false);
+            IReadOnlyList<ITemplateMatchInfo> foundTemplates = await bootstrapper.GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter("TestAssets.TemplateWithPortsAndCoalesce") }).ConfigureAwait(false);
+            ITemplateCreationResult result = await bootstrapper.CreateAsync(foundTemplates[0].Info, "test-template", output, parameters).ConfigureAwait(false);
 
-            Assert.Equal(Edge.Template.CreationResultStatus.Success, result.Status);
+            Assert.Equal(CreationResultStatus.Success, result.Status);
 
             string targetFile = Path.Combine(output, "bar.cs");
             Assert.True(File.Exists(targetFile));
@@ -148,10 +150,10 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
 
             string output = TestUtils.CreateTemporaryFolder();
 
-            IReadOnlyList<Abstractions.TemplateFiltering.ITemplateMatchInfo> foundTemplates = await bootstrapper.GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter("TestAssets.TemplateWithStringCoalesce") }).ConfigureAwait(false);
-            Edge.Template.ITemplateCreationResult result = await bootstrapper.CreateAsync(foundTemplates[0].Info, "test-template", output, new Dictionary<string, string?>()).ConfigureAwait(false);
+            IReadOnlyList<ITemplateMatchInfo> foundTemplates = await bootstrapper.GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter("TestAssets.TemplateWithStringCoalesce") }).ConfigureAwait(false);
+            ITemplateCreationResult result = await bootstrapper.CreateAsync(foundTemplates[0].Info, "test-template", output, new Dictionary<string, string?>()).ConfigureAwait(false);
 
-            Assert.Equal(Edge.Template.CreationResultStatus.Success, result.Status);
+            Assert.Equal(CreationResultStatus.Success, result.Status);
 
             string targetFile = Path.Combine(output, "bar.cs");
             Assert.True(File.Exists(targetFile));
@@ -177,10 +179,10 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
                 { "userVal", "myVal" },
             };
 
-            IReadOnlyList<Abstractions.TemplateFiltering.ITemplateMatchInfo> foundTemplates = await bootstrapper.GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter("TestAssets.TemplateWithStringCoalesce") }).ConfigureAwait(false);
-            Edge.Template.ITemplateCreationResult result = await bootstrapper.CreateAsync(foundTemplates[0].Info, "test-template", output, parameters).ConfigureAwait(false);
+            IReadOnlyList<ITemplateMatchInfo> foundTemplates = await bootstrapper.GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter("TestAssets.TemplateWithStringCoalesce") }).ConfigureAwait(false);
+            ITemplateCreationResult result = await bootstrapper.CreateAsync(foundTemplates[0].Info, "test-template", output, parameters).ConfigureAwait(false);
 
-            Assert.Equal(Edge.Template.CreationResultStatus.Success, result.Status);
+            Assert.Equal(CreationResultStatus.Success, result.Status);
 
             string targetFile = Path.Combine(output, "bar.cs");
             Assert.True(File.Exists(targetFile));
@@ -208,10 +210,10 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             };
 #pragma warning restore SA1122 // Use string.Empty for empty strings
 
-            IReadOnlyList<Abstractions.TemplateFiltering.ITemplateMatchInfo> foundTemplates = await bootstrapper.GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter("TestAssets.TemplateWithStringCoalesce") }).ConfigureAwait(false);
-            Edge.Template.ITemplateCreationResult result = await bootstrapper.CreateAsync(foundTemplates[0].Info, "test-template", output, parameters).ConfigureAwait(false);
+            IReadOnlyList<ITemplateMatchInfo> foundTemplates = await bootstrapper.GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter("TestAssets.TemplateWithStringCoalesce") }).ConfigureAwait(false);
+            ITemplateCreationResult result = await bootstrapper.CreateAsync(foundTemplates[0].Info, "test-template", output, parameters).ConfigureAwait(false);
 
-            Assert.Equal(Edge.Template.CreationResultStatus.Success, result.Status);
+            Assert.Equal(CreationResultStatus.Success, result.Status);
 
             string targetFile = Path.Combine(output, "bar.cs");
             Assert.True(File.Exists(targetFile));
@@ -237,10 +239,10 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
                 { "userVal", null },
             };
 
-            IReadOnlyList<Abstractions.TemplateFiltering.ITemplateMatchInfo> foundTemplates = await bootstrapper.GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter("TestAssets.TemplateWithStringCoalesce") }).ConfigureAwait(false);
-            Edge.Template.ITemplateCreationResult result = await bootstrapper.CreateAsync(foundTemplates[0].Info, "test-template", output, parameters).ConfigureAwait(false);
+            IReadOnlyList<ITemplateMatchInfo> foundTemplates = await bootstrapper.GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter("TestAssets.TemplateWithStringCoalesce") }).ConfigureAwait(false);
+            ITemplateCreationResult result = await bootstrapper.CreateAsync(foundTemplates[0].Info, "test-template", output, parameters).ConfigureAwait(false);
 
-            Assert.Equal(Edge.Template.CreationResultStatus.Success, result.Status);
+            Assert.Equal(CreationResultStatus.Success, result.Status);
 
             string targetFile = Path.Combine(output, "bar.cs");
             Assert.True(File.Exists(targetFile));
@@ -251,6 +253,52 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
                 
                 """,
                 fileContent);
+        }
+
+        [Fact]
+        internal async Task Test_CreateAsync_OnInvalidParamsPassed()
+        {
+            using Bootstrapper bootstrapper = GetBootstrapper();
+            string templateLocation = GetTestTemplateLocation("TemplateWithPortsAndCoalesce");
+            await InstallTemplateAsync(bootstrapper, templateLocation).ConfigureAwait(false);
+
+            string output = TestUtils.CreateTemporaryFolder();
+
+            IReadOnlyList<ITemplateMatchInfo> foundTemplates = await bootstrapper.GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter("TestAssets.TemplateWithPortsAndCoalesce") }).ConfigureAwait(false);
+
+            Dictionary<string, string?> parameters = new()
+            {
+                { "userPort1", "non-int" },
+                { "userPort2", string.Empty }
+            };
+
+            ITemplateCreationResult result = await bootstrapper.CreateAsync(foundTemplates[0].Info, "Test", output, parameters).ConfigureAwait(false);
+
+            Assert.Equal(CreationResultStatus.InvalidParamValues, result.Status);
+            Assert.Equal("userPort1, userPort2", result.ErrorMessage);
+        }
+
+        [Fact]
+        internal async Task Test_DryRunAsync_OnInvalidParamsPassed()
+        {
+            using Bootstrapper bootstrapper = GetBootstrapper();
+            string templateLocation = GetTestTemplateLocation("TemplateWithPortsAndCoalesce");
+            await InstallTemplateAsync(bootstrapper, templateLocation).ConfigureAwait(false);
+
+            string output = TestUtils.CreateTemporaryFolder();
+
+            IReadOnlyList<ITemplateMatchInfo> foundTemplates = await bootstrapper.GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter("TestAssets.TemplateWithPortsAndCoalesce") }).ConfigureAwait(false);
+
+            Dictionary<string, string?> parameters = new()
+            {
+                { "userPort1", "non-int" },
+                { "userPort2", string.Empty }
+            };
+
+            ITemplateCreationResult result = await bootstrapper.GetCreationEffectsAsync(foundTemplates[0].Info, "Test", output, parameters).ConfigureAwait(false);
+
+            Assert.Equal(CreationResultStatus.InvalidParamValues, result.Status);
+            Assert.Equal("userPort1, userPort2", result.ErrorMessage);
         }
     }
 }
