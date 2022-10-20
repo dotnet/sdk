@@ -33,6 +33,8 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.IntegrationTests
                 ExpectationsDirectory = "Expectations",
                 OutputDirectory = workingDir,
                 VerifyCommandOutput = true,
+                DoNotPrependTemplateNameToScenarioName = true,
+                DoNotAppendTemplateArgsToScenarioName = true,
                 UniqueFor = UniqueForOption.Architecture,
             }
                 .WithCustomScrubbers(
