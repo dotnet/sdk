@@ -78,6 +78,11 @@ Do not localize: "template.json"</note>
         <target state="translated">指定要從驗證排除的模式定義檔案。</target>
         <note />
       </trans-unit>
+      <trans-unit id="command_verify_help_customIncludes_description">
+        <source>Specifies pattern(s) defining files to be included to verification (all files are included if not specified).</source>
+        <target state="new">Specifies pattern(s) defining files to be included to verification (all files are included if not specified).</target>
+        <note />
+      </trans-unit>
       <trans-unit id="command_verify_help_description">
         <source>Runs the template with specified arguments and compares the result with expectations files.</source>
         <target state="translated">使用指定的引數執行範本，並將結果與期望檔案比較。</target>
@@ -111,6 +116,11 @@ Do not localize: "template.json"</note>
       <trans-unit id="command_verify_help_outputPath_description">
         <source>Specifies the path to target directory to output the generated template to.</source>
         <target state="translated">指定要輸出所產生範本的目標目錄路徑。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="command_verify_help_scenarioName_description">
+        <source>Specifies optional scenario name to be used in the snapshot folder name.</source>
+        <target state="new">Specifies optional scenario name to be used in the snapshot folder name.</target>
         <note />
       </trans-unit>
       <trans-unit id="command_verify_help_templateName_description">

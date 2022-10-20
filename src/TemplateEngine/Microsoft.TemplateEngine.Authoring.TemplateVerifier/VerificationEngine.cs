@@ -16,14 +16,13 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier
     {
         private static readonly IReadOnlyList<string> DefaultVerificationExcludePatterns = new List<string>()
         {
-            @"obj/*",
-            @"obj\*",
-            @"bin/*",
-            @"bin\*",
+            @"**/obj/*",
+            @"**\obj\*",
+            @"**/bin/*",
+            @"**\bin\*",
             "*.exe",
             "*.dll",
             "*.",
-            "*.exe",
         };
 
         private readonly ILogger _logger;
@@ -55,10 +54,19 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier
             _commandRunner = commandRunner;
         }
 
+        /// <summary>
+        /// Asynchronously performs the scenario and its verification based on given configuration options.
+        /// </summary>
+        /// <param name="optionsAccessor">Configuration of the scenario and verification.</param>
+        /// <param name="cancellationToken"></param>
+        /// <param name="sourceFile"></param>
+        /// <param name="callerMethod"></param>
+        /// <returns>A <see cref="Task"/> Task to be awaited.</returns>
         public async Task Execute(
             IOptions<TemplateVerifierOptions> optionsAccessor,
             CancellationToken cancellationToken = default,
-            [CallerFilePath] string sourceFile = "")
+            [CallerFilePath] string sourceFile = "",
+            [CallerMemberName] string callerMethod = "")
         {
             if (optionsAccessor == null)
             {
@@ -69,7 +77,7 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier
 
             CommandResultData commandResult = RunDotnetNewCommand(options, _commandRunner, _loggerFactory, _logger);
 
-            if (options.IsCommandExpectedToFail ?? false)
+            if (options.IsCommandExpectedToFail)
             {
                 if (commandResult.ExitCode == 0)
                 {
@@ -89,7 +97,7 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier
 
                 // We do not expect stderr in passing command.
                 // However if verification of stdout and stderr is opted-in - we will let that verification validate the stderr content
-                if (!(options.VerifyCommandOutput ?? false) && !string.IsNullOrEmpty(commandResult.StdErr))
+                if (!options.VerifyCommandOutput && !string.IsNullOrEmpty(commandResult.StdErr))
                 {
                     throw new TemplateVerificationException(
                         string.Format(
@@ -100,17 +108,24 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier
                 }
             }
 
-            await VerifyResult(options, commandResult, string.IsNullOrEmpty(sourceFile) ? string.Empty : Path.GetDirectoryName(sourceFile)!)
+            await VerifyResult(options, commandResult, string.IsNullOrEmpty(sourceFile) ? string.Empty : Path.GetDirectoryName(sourceFile)!, callerMethod)
                 .ConfigureAwait(false);
+
+            // if everything is successful - let's delete the created files (unless placed into explicitly requested dir)
+            if (string.IsNullOrEmpty(options.OutputDirectory) && _fileSystem.DirectoryExists(commandResult.WorkingDirectory))
+            {
+                _fileSystem.DirectoryDelete(commandResult.WorkingDirectory, true);
+            }
         }
 
         internal static Task CreateVerificationTask(
             string contentDir,
             string callerDir,
+            string? callerMethodName,
             TemplateVerifierOptions options,
             IPhysicalFileSystemEx fileSystem)
         {
-            List<string> exclusionsList = (options.DisableDefaultVerificationExcludePatterns ?? false)
+            List<string> exclusionsList = options.DisableDefaultVerificationExcludePatterns
                 ? new()
                 : new(DefaultVerificationExcludePatterns);
 
@@ -119,18 +134,30 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier
                 exclusionsList.AddRange(options.VerificationExcludePatterns);
             }
 
-            List<Glob> globs = exclusionsList.Select(pattern => Glob.Parse(pattern)).ToList();
+            List<IPatternMatcher> excludeGlobs = exclusionsList.Select(pattern => (IPatternMatcher)Glob.Parse(pattern)).ToList();
+            List<IPatternMatcher> includeGlobs = new();
+
+            if (options.VerificationIncludePatterns != null)
+            {
+                includeGlobs.AddRange(options.VerificationIncludePatterns.Select(pattern => Glob.Parse(pattern)));
+            }
+
+            if (!includeGlobs.Any())
+            {
+                includeGlobs.Add(Glob.MatchAll);
+            }
 
             if (options.CustomDirectoryVerifier != null)
             {
                 return options.CustomDirectoryVerifier(
                     contentDir,
                     new Lazy<IAsyncEnumerable<(string FilePath, string ScrubbedContent)>>(
-                        GetVerificationContent(contentDir, globs, options.CustomScrubbers, fileSystem)));
+                        GetVerificationContent(contentDir, includeGlobs, excludeGlobs, options.CustomScrubbers, fileSystem)));
             }
 
             VerifySettings verifySettings = new();
 
+            // Scrubbers by file: https://github.com/VerifyTests/Verify/issues/673
             if (options.CustomScrubbers != null)
             {
                 if (options.CustomScrubbers.GeneralScrubber != null)
@@ -144,14 +171,20 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier
                 }
             }
 
-            verifySettings.UseTypeName(options.TemplateName);
+            string scenarioPrefix = options.DoNotPrependTemplateNameToScenarioName ? string.Empty : options.TemplateName;
+            if (!options.DoNotPrependCallerMethodNameToScenarioName && !string.IsNullOrEmpty(callerMethodName))
+            {
+                scenarioPrefix = callerMethodName + (string.IsNullOrEmpty(scenarioPrefix) ? null : ".") + scenarioPrefix;
+            }
+            scenarioPrefix = string.IsNullOrEmpty(scenarioPrefix) ? "_" : scenarioPrefix;
+            verifySettings.UseTypeName(scenarioPrefix);
             string expectationsDir = options.ExpectationsDirectory ?? "VerifyExpectations";
             if (!string.IsNullOrEmpty(callerDir) && !Path.IsPathRooted(expectationsDir))
             {
                 expectationsDir = Path.Combine(callerDir, expectationsDir);
             }
             verifySettings.UseDirectory(expectationsDir);
-            verifySettings.UseMethodName(EncodeArgsAsPath(options.TemplateSpecificArgs));
+            verifySettings.UseMethodName(GetScenarioName(options));
 
             if ((options.UniqueFor ?? UniqueForOption.None) != UniqueForOption.None)
             {
@@ -188,15 +221,46 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier
                 }
             }
 
-            if (options.DisableDiffTool ?? false)
+            if (options.DisableDiffTool)
             {
                 verifySettings.DisableDiff();
             }
 
             return Verifier.VerifyDirectory(
                 contentDir,
-                (filePath) => !globs.Any(g => g.IsMatch(filePath)),
+                include: (filePath) =>
+                {
+                    string relativePath = fileSystem.PathRelativeTo(filePath, contentDir);
+                    return includeGlobs.Any(g => g.IsMatch(relativePath)) && !excludeGlobs.Any(g => g.IsMatch(relativePath));
+                },
+                fileScrubber: ExtractFileScrubber(options, contentDir, fileSystem),
                 settings: verifySettings);
+        }
+
+        private static FileScrubber? ExtractFileScrubber(TemplateVerifierOptions options, string contentDir, IPhysicalFileSystemEx fileSystem)
+        {
+            if (!(options.CustomScrubbers?.ByPathScrubbers.Any() ?? false))
+            {
+                return null;
+            }
+
+            return (fullPath, builder) =>
+            {
+                string relativePath = fileSystem.PathRelativeTo(fullPath, contentDir);
+                options.CustomScrubbers.ByPathScrubbers.ForEach(scrubberByPath => scrubberByPath(relativePath, builder));
+            };
+        }
+
+        private static string GetScenarioName(TemplateVerifierOptions options)
+        {
+            // TBD: once the custom SDK switching feature is implemented - here we should append the sdk distinguisher if UniqueForOption.Runtime requested
+
+            var scenarioName = options.ScenarioName + (options.DoNotAppendTemplateArgsToScenarioName ? null : EncodeArgsAsPath(options.TemplateSpecificArgs));
+            if (string.IsNullOrEmpty(scenarioName))
+            {
+                scenarioName = "_";
+            }
+            return scenarioName;
         }
 
         private static string EncodeArgsAsPath(IEnumerable<string>? args)
@@ -221,11 +285,11 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier
 
             Directory.CreateDirectory(workingDir);
             ILogger commandLogger = loggerFactory?.CreateLogger(typeof(DotnetCommand)) ?? logger;
-            string? customHiveLocation = null;
+            string? customHiveLocation = options.SettingsDirectory;
 
             if (!string.IsNullOrEmpty(options.TemplatePath))
             {
-                customHiveLocation = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName(), "home");
+                customHiveLocation ??= Path.Combine(Path.GetTempPath(), Path.GetRandomFileName(), "home");
                 var installCommand =
                     new DotnetCommand(commandLogger, "new", "install", options.TemplatePath)
                         .WithCustomHive(customHiveLocation)
@@ -279,7 +343,8 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier
             var command = new DotnetCommand(loggerFactory?.CreateLogger(typeof(DotnetCommand)) ?? logger, "new", cmdArgs.ToArray())
                     .WithWorkingDirectory(workingDir);
             var result = commandRunner.RunCommand(command);
-            if (!string.IsNullOrEmpty(customHiveLocation))
+            // Cleanup, unless the settings dir was externally passed
+            if (!string.IsNullOrEmpty(customHiveLocation) && string.IsNullOrEmpty(options.SettingsDirectory))
             {
                 Directory.Delete(customHiveLocation, true);
             }
@@ -291,13 +356,21 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier
 
         private static async IAsyncEnumerable<(string FilePath, string ScrubbedContent)> GetVerificationContent(
             string contentDir,
-            List<Glob> globs,
+            List<IPatternMatcher> includeMatchers,
+            List<IPatternMatcher> excludeMatchers,
             ScrubbersDefinition? scrubbers,
             IPhysicalFileSystemEx fileSystem)
         {
             foreach (string filePath in fileSystem.EnumerateFiles(contentDir, "*", SearchOption.AllDirectories))
             {
-                if (globs.Any(g => g.IsMatch(filePath)))
+                string relativePath = fileSystem.PathRelativeTo(filePath, contentDir);
+
+                if (!includeMatchers.Any(g => g.IsMatch(relativePath)))
+                {
+                    continue;
+                }
+
+                if (excludeMatchers.Any(g => g.IsMatch(relativePath)))
                 {
                     continue;
                 }
@@ -314,9 +387,15 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier
                     }
                     StringBuilder? sb = null;
 
-                    if (!string.IsNullOrEmpty(extension) && scrubbers.ScrubersByExtension.TryGetValue(extension, out Action<StringBuilder>? scrubber))
+                    if (scrubbers.ByPathScrubbers.Any())
                     {
                         sb = new StringBuilder(content);
+                        scrubbers.ByPathScrubbers.ForEach(scrubberByPath => scrubberByPath(relativePath, sb));
+                    }
+
+                    if (!string.IsNullOrEmpty(extension) && scrubbers.ScrubersByExtension.TryGetValue(extension, out Action<StringBuilder>? scrubber))
+                    {
+                        sb ??= new StringBuilder(content);
                         scrubber(sb);
                     }
 
@@ -332,11 +411,11 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier
                     }
                 }
 
-                yield return new(filePath, content);
+                yield return new(relativePath, content);
             }
         }
 
-        private async Task VerifyResult(TemplateVerifierOptions args, CommandResultData commandResultData, string callerDir)
+        private async Task VerifyResult(TemplateVerifierOptions args, CommandResultData commandResultData, string callerDir, string callerMethodName)
         {
             UsesVerifyAttribute a = new UsesVerifyAttribute();
             // https://github.com/VerifyTests/Verify/blob/d8cbe38f527d6788ecadd6205c82803bec3cdfa6/src/Verify.Xunit/Verifier.cs#L10
@@ -345,7 +424,7 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier
             MethodInfo mi = v.Method;
             a.Before(mi);
 
-            if (args.VerifyCommandOutput ?? false)
+            if (args.VerifyCommandOutput)
             {
                 if (_fileSystem.DirectoryExists(Path.Combine(commandResultData.WorkingDirectory, SpecialFiles.StandardStreamsDir)))
                 {
@@ -369,7 +448,7 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier
                     .ConfigureAwait(false);
             }
 
-            Task verifyTask = CreateVerificationTask(commandResultData.WorkingDirectory, callerDir, args, _fileSystem);
+            Task verifyTask = CreateVerificationTask(commandResultData.WorkingDirectory, callerDir, callerMethodName, args, _fileSystem);
 
             try
             {

@@ -78,6 +78,11 @@ Do not localize: "template.json"</note>
         <target state="translated">Gibt Muster an, die Dateien definieren, die von der Überprüfung ausgeschlossen werden sollen.</target>
         <note />
       </trans-unit>
+      <trans-unit id="command_verify_help_customIncludes_description">
+        <source>Specifies pattern(s) defining files to be included to verification (all files are included if not specified).</source>
+        <target state="new">Specifies pattern(s) defining files to be included to verification (all files are included if not specified).</target>
+        <note />
+      </trans-unit>
       <trans-unit id="command_verify_help_description">
         <source>Runs the template with specified arguments and compares the result with expectations files.</source>
         <target state="translated">Führt die Vorlage mit angegebenen Argumenten aus und vergleicht das Ergebnis mit den Erwartungsdateien.</target>
@@ -111,6 +116,11 @@ Do not localize: "template.json"</note>
       <trans-unit id="command_verify_help_outputPath_description">
         <source>Specifies the path to target directory to output the generated template to.</source>
         <target state="translated">Gibt den Pfad zum Zielverzeichnis an, in das die generierte Vorlage ausgegeben werden soll.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="command_verify_help_scenarioName_description">
+        <source>Specifies optional scenario name to be used in the snapshot folder name.</source>
+        <target state="new">Specifies optional scenario name to be used in the snapshot folder name.</target>
         <note />
       </trans-unit>
       <trans-unit id="command_verify_help_templateName_description">

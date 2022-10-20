@@ -171,6 +171,9 @@ Do not localize: "template.json"</comment>
   <data name="command_verify_help_customExcludes_description" xml:space="preserve">
     <value>Specifies pattern(s) defining files to be excluded from verification.</value>
   </data>
+  <data name="command_verify_help_customIncludes_description" xml:space="preserve">
+    <value>Specifies pattern(s) defining files to be included to verification (all files are included if not specified).</value>
+  </data>
   <data name="command_verify_help_description" xml:space="preserve">
     <value>Runs the template with specified arguments and compares the result with expectations files.</value>
   </data>
@@ -195,6 +198,9 @@ Do not localize: "template.json"</comment>
   </data>
   <data name="command_verify_help_outputPath_description" xml:space="preserve">
     <value>Specifies the path to target directory to output the generated template to.</value>
+  </data>
+  <data name="command_verify_help_scenarioName_description" xml:space="preserve">
+    <value>Specifies optional scenario name to be used in the snapshot folder name.</value>
   </data>
   <data name="command_verify_help_templateName_description" xml:space="preserve">
     <value>Name of the template to be verified. Can be already installed template or a template within local path specified with -p/--template-path option.</value>

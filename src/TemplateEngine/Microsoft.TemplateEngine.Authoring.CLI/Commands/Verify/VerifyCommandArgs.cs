@@ -23,11 +23,13 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.Commands.Verify
             string? templateSpecificArgs,
             string? dotnetNewCommandAssemblyPath,
             string? expectationsDirectory,
+            string? scenarioDistinguisher,
             string? outputDirectory,
-            bool? disableDiffTool,
-            bool? disableDefaultVerificationExcludePatterns,
+            bool disableDiffTool,
+            bool disableDefaultVerificationExcludePatterns,
             IEnumerable<string>? verificationExcludePatterns,
-            bool? verifyCommandOutput,
+            IEnumerable<string>? verificationIncludePatterns,
+            bool verifyCommandOutput,
             bool isCommandExpectedToFail,
             IEnumerable<UniqueForOption>? uniqueForOptions)
         : this(templateName, templateSpecificArgs)
@@ -35,10 +37,12 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.Commands.Verify
             TemplatePath = templatePath;
             DotnetNewCommandAssemblyPath = dotnetNewCommandAssemblyPath;
             ExpectationsDirectory = expectationsDirectory;
+            ScenarioDistinguisher = scenarioDistinguisher;
             OutputDirectory = outputDirectory;
             DisableDiffTool = disableDiffTool;
             DisableDefaultVerificationExcludePatterns = disableDefaultVerificationExcludePatterns;
             VerificationExcludePatterns = verificationExcludePatterns;
+            VerificationIncludePatterns = verificationIncludePatterns;
             VerifyCommandOutput = verifyCommandOutput;
             IsCommandExpectedToFail = isCommandExpectedToFail;
             UniqueFor = ToUniqueForOptionFlags(uniqueForOptions);
@@ -70,6 +74,11 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.Commands.Verify
         public string? ExpectationsDirectory { get; init; }
 
         /// <summary>
+        /// Gets a custom prefix prepended in front of generated scenario name - result used for naming verification subdirectories.
+        /// </summary>
+        public string? ScenarioDistinguisher { get; init; }
+
+        /// <summary>
         /// Gets the target directory to output the generated template.
         /// </summary>
         public string? OutputDirectory { get; init; }
@@ -77,13 +86,13 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.Commands.Verify
         /// <summary>
         /// If set to true - the diff tool won't be automatically started by the Verifier on verification failures.
         /// </summary>
-        public bool? DisableDiffTool { get; init; }
+        public bool DisableDiffTool { get; init; }
 
         /// <summary>
         /// If set to true - all template output files will be verified, unless <see cref="VerificationExcludePatterns"/> are specified.
         /// Otherwise a default exclusions (to be documented - mostly binaries etc.).
         /// </summary>
-        public bool? DisableDefaultVerificationExcludePatterns { get; init; }
+        public bool DisableDefaultVerificationExcludePatterns { get; init; }
 
         /// <summary>
         /// Set of patterns defining files to be excluded from verification.
@@ -91,9 +100,15 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.Commands.Verify
         public IEnumerable<string>? VerificationExcludePatterns { get; init; }
 
         /// <summary>
+        /// Set of patterns defining files to be included into verification (unless excluded by <see cref="VerificationExcludePatterns"/>).
+        /// By default all files are included (unless excluded).
+        /// </summary>
+        public IEnumerable<string>? VerificationIncludePatterns { get; init; }
+
+        /// <summary>
         /// If set to true - 'dotnet new' command standard output and error contents will be verified along with the produced template files.
         /// </summary>
-        public bool? VerifyCommandOutput { get; init; }
+        public bool VerifyCommandOutput { get; init; }
 
         /// <summary>
         /// If set to true - 'dotnet new' command is expected to return nonzero return code.

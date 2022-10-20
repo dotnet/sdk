@@ -189,6 +189,15 @@ namespace Microsoft.TemplateEngine.Authoring.CLI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Specifies pattern(s) defining files to be included to verification (all files are included if not specified)..
+        /// </summary>
+        internal static string command_verify_help_customIncludes_description {
+            get {
+                return ResourceManager.GetString("command_verify_help_customIncludes_description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Runs the template with specified arguments and compares the result with expectations files..
         /// </summary>
         internal static string command_verify_help_description {
@@ -248,6 +257,15 @@ namespace Microsoft.TemplateEngine.Authoring.CLI {
         internal static string command_verify_help_outputPath_description {
             get {
                 return ResourceManager.GetString("command_verify_help_outputPath_description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Specifies optional scenario name to be used in the snapshot folder name..
+        /// </summary>
+        internal static string command_verify_help_scenarioName_description {
+            get {
+                return ResourceManager.GetString("command_verify_help_scenarioName_description", resourceCulture);
             }
         }
         

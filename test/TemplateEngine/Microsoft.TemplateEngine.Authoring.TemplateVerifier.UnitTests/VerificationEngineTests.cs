@@ -36,16 +36,16 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.UnitTests
             A.CallTo(() => fileSystem.EnumerateFiles(verifyLocation, "*", SearchOption.AllDirectories)).Returns(files.Keys);
             A.CallTo(() => fileSystem.ReadAllTextAsync(A<string>._, A<CancellationToken>._))
                 .ReturnsLazily((string fileName, CancellationToken _) => Task.FromResult(files[fileName]));
+            A.CallTo(() => fileSystem.PathRelativeTo(A<string>._, A<string>._))
+                .ReturnsLazily((string target, string relativeTo) => target);
 
             Dictionary<string, string> resultContents = new Dictionary<string, string>();
 
             TemplateVerifierOptions options = new TemplateVerifierOptions(templateName: "console")
             {
                 TemplateSpecificArgs = null,
-                DisableDiffTool = null,
                 OutputDirectory = verifyLocation,
                 VerificationExcludePatterns = new[] { "*.dll" },
-                VerifyCommandOutput = null,
                 UniqueFor = null,
             }
                 .WithCustomScrubbers(
@@ -63,7 +63,7 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.UnitTests
                         }
                     });
 
-            await VerificationEngine.CreateVerificationTask(verifyLocation, "callerLocation", options, fileSystem);
+            await VerificationEngine.CreateVerificationTask(verifyLocation, "callerLocation", null, options, fileSystem);
 
             resultContents.Keys.Count.Should().Be(2);
             resultContents["Program.cs"].Should().BeEquivalentTo("zz xx cc");

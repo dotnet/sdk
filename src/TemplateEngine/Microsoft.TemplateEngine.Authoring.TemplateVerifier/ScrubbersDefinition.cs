@@ -9,20 +9,24 @@ public class ScrubbersDefinition
 {
     public static readonly ScrubbersDefinition Empty = new();
 
-    public ScrubbersDefinition() { }
-
     public ScrubbersDefinition(Action<StringBuilder> scrubber, string? extension = null)
     {
         AddScrubber(scrubber, extension);
     }
 
-    public Dictionary<string, Action<StringBuilder>> ScrubersByExtension { get; private set; } = new Dictionary<string, Action<StringBuilder>>();
+    private ScrubbersDefinition() { }
 
-    public Action<StringBuilder>? GeneralScrubber { get; private set; }
+    public delegate void ScrubFileByPath(string relativeFilePath, StringBuilder content);
+
+    internal Dictionary<string, Action<StringBuilder>> ScrubersByExtension { get; private set; } = new Dictionary<string, Action<StringBuilder>>();
+
+    internal Action<StringBuilder>? GeneralScrubber { get; private set; }
+
+    internal List<ScrubFileByPath> ByPathScrubbers { get; private set; } = new List<ScrubFileByPath>();
 
     public ScrubbersDefinition AddScrubber(Action<StringBuilder> scrubber, string? extension = null)
     {
-        if (object.ReferenceEquals(this, Empty))
+        if (ReferenceEquals(this, Empty))
         {
             return new ScrubbersDefinition().AddScrubber(scrubber, extension);
         }
@@ -39,6 +43,12 @@ public class ScrubbersDefinition
                 : scrubber;
         }
 
+        return this;
+    }
+
+    public ScrubbersDefinition AddScrubber(ScrubFileByPath fileScrubber)
+    {
+        ByPathScrubbers.Add(fileScrubber);
         return this;
     }
 }

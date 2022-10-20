@@ -24,7 +24,6 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.IntegrationTests
             string templateShortName = "TestAssets.SampleTestTemplate";
 
             //get the template location
-            string executingAssemblyPath = GetType().Assembly.Location;
             string templateLocation = Path.Combine(TestTemplatesLocation, "TestTemplate");
 
             TemplateVerifierOptions options = new TemplateVerifierOptions(templateName: templateShortName)
@@ -38,7 +37,14 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.IntegrationTests
             }
                 .WithCustomScrubbers(
                     ScrubbersDefinition.Empty
-                        .AddScrubber(sb => sb.Replace("B is enabled", "*******")));
+                        .AddScrubber(sb => sb.Replace("B is enabled", "*******"))
+                        .AddScrubber((path, content) =>
+                        {
+                            if (path.Replace(Path.DirectorySeparatorChar, '/') == "std-streams/stdout.txt")
+                            {
+                                content.Replace("SampleTestTemplate", "%TEMPLATE%");
+                            }
+                        }));
 
             VerificationEngine engine = new VerificationEngine(_log);
             await engine.Execute(options);

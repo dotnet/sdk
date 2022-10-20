@@ -50,6 +50,11 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.Commands.Verify
             Description = LocalizableStrings.command_verify_help_expectationsDirPath_description,
         };
 
+        private readonly Option<string> _scenarioNameOption = new(new[] { "--scenario-name" })
+        {
+            Description = LocalizableStrings.command_verify_help_scenarioName_description,
+        };
+
         private readonly Option<bool> _disableDiffToolOption = new("--disable-diff-tool")
         {
             Description = LocalizableStrings.command_verify_help_disableDiffTool_description,
@@ -63,6 +68,12 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.Commands.Verify
         private readonly Option<IEnumerable<string>> _excludePatternOption = new("--exclude-pattern")
         {
             Description = LocalizableStrings.command_verify_help_customExcludes_description,
+            Arity = new ArgumentArity(0, 999)
+        };
+
+        private readonly Option<IEnumerable<string>> _includePatternOption = new("--include-pattern")
+        {
+            Description = LocalizableStrings.command_verify_help_customIncludes_description,
             Arity = new ArgumentArity(0, 999)
         };
 
@@ -92,14 +103,16 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.Commands.Verify
             AddOption(_newCommandPathOption);
             AddOption(_templateOutputPathOption);
             AddOption(_expectationsDirectoryOption);
+            AddOption(_scenarioNameOption);
             AddOption(_disableDiffToolOption);
             AddOption(_disableDefaultExcludePatternsOption);
             AddOption(_excludePatternOption);
+            AddOption(_includePatternOption);
             AddOption(_verifyCommandOutputOption);
             AddOption(_isCommandExpectedToFailOption);
             FromAmongCaseInsensitive(
                 _uniqueForOption,
-                System.Enum.GetNames(typeof(UniqueForOption))
+                Enum.GetNames(typeof(UniqueForOption))
                     .Where(v => !v.Equals(UniqueForOption.None.ToString(), StringComparison.OrdinalIgnoreCase))
                     .ToArray());
             AddOption(_uniqueForOption);
@@ -113,10 +126,12 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.Commands.Verify
                 templatePath: parseResult.GetValueForOption(verifyCommand._templatePathOption),
                 dotnetNewCommandAssemblyPath: parseResult.GetValueForOption(verifyCommand._newCommandPathOption),
                 expectationsDirectory: parseResult.GetValueForOption(verifyCommand._expectationsDirectoryOption),
+                scenarioDistinguisher: parseResult.GetValueForOption(verifyCommand._scenarioNameOption),
                 outputDirectory: parseResult.GetValueForOption(verifyCommand._templateOutputPathOption),
                 disableDiffTool: parseResult.GetValueForOption(verifyCommand._disableDiffToolOption),
                 disableDefaultVerificationExcludePatterns: parseResult.GetValueForOption(verifyCommand._disableDefaultExcludePatternsOption),
                 verificationExcludePatterns: parseResult.GetValueForOption(verifyCommand._excludePatternOption),
+                verificationIncludePatterns: parseResult.GetValueForOption(verifyCommand._includePatternOption),
                 verifyCommandOutput: parseResult.GetValueForOption(verifyCommand._verifyCommandOutputOption),
                 isCommandExpectedToFail: parseResult.GetValueForOption(verifyCommand._isCommandExpectedToFailOption),
                 uniqueForOptions: parseResult.GetValueForOption(verifyCommand._uniqueForOption));
@@ -136,12 +151,15 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.Commands.Verify
                     DisableDiffTool = args.DisableDiffTool,
                     DisableDefaultVerificationExcludePatterns = args.DisableDefaultVerificationExcludePatterns,
                     VerificationExcludePatterns = args.VerificationExcludePatterns,
+                    VerificationIncludePatterns = args.VerificationIncludePatterns,
                     DotnetNewCommandAssemblyPath = args.DotnetNewCommandAssemblyPath,
                     ExpectationsDirectory = args.ExpectationsDirectory,
+                    ScenarioName = args.ScenarioDistinguisher,
                     OutputDirectory = args.OutputDirectory,
                     VerifyCommandOutput = args.VerifyCommandOutput,
                     IsCommandExpectedToFail = args.IsCommandExpectedToFail,
                     UniqueFor = args.UniqueFor,
+                    DoNotPrependCallerMethodNameToScenarioName = true
                 };
                 await engine.Execute(
                     options,

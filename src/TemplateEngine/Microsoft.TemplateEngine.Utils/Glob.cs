@@ -7,8 +7,13 @@ using System.Linq;
 
 namespace Microsoft.TemplateEngine.Utils
 {
-    public class Glob
+    public class Glob : IPatternMatcher
     {
+        /// <summary>
+        /// Instance of Matcher satisfying all patterns tests.
+        /// </summary>
+        public static readonly IPatternMatcher MatchAll = new MatchAllGlob();
+
         private readonly IReadOnlyList<IMatcher> _matchers;
         private readonly bool _negate;
         private readonly bool _isNameOnlyMatch;
@@ -329,6 +334,15 @@ namespace Microsoft.TemplateEngine.Utils
             {
                 return "**";
             }
+        }
+
+        private class MatchAllGlob : IPatternMatcher
+        {
+            public MatchAllGlob()
+            { }
+
+            /// <inheritdoc />
+            public bool IsMatch(string test) => true;
         }
     }
 }
