@@ -639,10 +639,6 @@ namespace Microsoft.NET.Build.Tasks
                     if (!hostRuntimeIdentifier.Equals(targetRuntimeIdentifier))
                     {
                         var runtimeIlcPackName = packPattern.Replace("**RID**", targetRuntimeIdentifier);
-                        TaskItem targetIlcPackToDownload = new TaskItem(runtimeIlcPackName);
-                        targetIlcPackToDownload.SetMetadata(MetadataKeys.Version, packVersion);
-                        packagesToDownload.Add(targetIlcPackToDownload);
-
                         var newItem2 = new TaskItem(runtimeIlcPackName);
                         newItem2.SetMetadata(MetadataKeys.NuGetPackageId, runtimeIlcPackName);
                         newItem2.SetMetadata(MetadataKeys.NuGetPackageVersion, packVersion);
