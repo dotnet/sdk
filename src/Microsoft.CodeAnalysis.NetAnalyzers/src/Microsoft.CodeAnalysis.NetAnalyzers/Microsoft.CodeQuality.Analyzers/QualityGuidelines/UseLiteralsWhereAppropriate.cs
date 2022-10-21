@@ -13,7 +13,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
     using static MicrosoftCodeQualityAnalyzersResources;
 
     /// <summary>
-    /// CA1802: Use literals where appropriate
+    /// CA1802: <inheritdoc cref="UseLiteralsWhereAppropriateTitle"/>
     /// </summary>
     public abstract class UseLiteralsWhereAppropriateAnalyzer : DiagnosticAnalyzer
     {

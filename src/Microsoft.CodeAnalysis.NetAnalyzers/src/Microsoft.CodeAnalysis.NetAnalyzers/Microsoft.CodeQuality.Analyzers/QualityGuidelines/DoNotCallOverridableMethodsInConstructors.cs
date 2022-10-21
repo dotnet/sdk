@@ -12,7 +12,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
     using static MicrosoftCodeQualityAnalyzersResources;
 
     /// <summary>
-    /// CA2214: Do not call overridable methods in constructors
+    /// CA2214: <inheritdoc cref="DoNotCallOverridableMethodsInConstructors"/>
     ///
     /// Cause: The constructor of an unsealed type calls a virtual method defined in its class.
     ///

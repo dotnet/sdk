@@ -11,7 +11,9 @@ namespace Microsoft.NetCore.Analyzers.Tasks
 {
     using static MicrosoftNetCoreAnalyzersResources;
 
-    /// <summary>CA2012: Use ValueTasks correctly.</summary>
+    /// <summary>
+    /// CA2247: <inheritdoc cref="DoNotCreateTaskCompletionSourceWithWrongArgumentsTitle"/>
+    /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class DoNotCreateTaskCompletionSourceWithWrongArguments : DiagnosticAnalyzer
     {

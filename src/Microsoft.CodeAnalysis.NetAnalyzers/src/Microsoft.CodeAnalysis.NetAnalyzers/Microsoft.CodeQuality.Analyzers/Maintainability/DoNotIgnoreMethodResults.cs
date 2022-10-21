@@ -13,7 +13,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
     using static MicrosoftCodeQualityAnalyzersResources;
 
     /// <summary>
-    /// CA1806: Do not ignore method results
+    /// CA1806: <inheritdoc cref="DoNotIgnoreMethodResultsTitle"/>
     /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class DoNotIgnoreMethodResultsAnalyzer : DiagnosticAnalyzer

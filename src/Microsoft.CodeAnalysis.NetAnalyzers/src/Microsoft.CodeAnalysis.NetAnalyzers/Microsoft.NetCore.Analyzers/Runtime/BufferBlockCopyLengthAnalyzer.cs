@@ -14,6 +14,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
     using static MicrosoftNetCoreAnalyzersResources;
 
     /// <summary>
+    /// CA2018: <inheritdoc cref="BufferBlockCopyLengthTitle"/>
     /// Check for the intended use of .Length on arrays passed into Buffer.BlockCopy
     /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]

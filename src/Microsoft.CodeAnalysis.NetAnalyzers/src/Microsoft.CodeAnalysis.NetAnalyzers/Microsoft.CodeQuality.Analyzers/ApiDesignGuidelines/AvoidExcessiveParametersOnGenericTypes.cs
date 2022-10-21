@@ -10,6 +10,9 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 {
     using static MicrosoftCodeQualityAnalyzersResources;
 
+    /// <summary>
+    /// CA1005: <inheritdoc cref="AvoidExcessiveParametersOnGenericTypesTitle"/>
+    /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class AvoidExcessiveParametersOnGenericTypes : DiagnosticAnalyzer
     {

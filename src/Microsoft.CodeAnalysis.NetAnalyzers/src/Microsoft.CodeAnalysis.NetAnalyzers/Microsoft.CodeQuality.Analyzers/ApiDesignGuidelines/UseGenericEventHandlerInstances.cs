@@ -11,8 +11,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
     using static MicrosoftCodeQualityAnalyzersResources;
 
     /// <summary>
-    /// CA1003: Use generic event handler instances
-    /// CA1009: A delegate that handles a public or protected event does not have the correct signature, return type, or parameter names.
+    /// CA1003: <inheritdoc cref="UseGenericEventHandlerInstancesTitle"/>
     ///
     /// Recommends that event handlers use <see cref="System.EventHandler{TEventArgs}"/>
     /// </summary>

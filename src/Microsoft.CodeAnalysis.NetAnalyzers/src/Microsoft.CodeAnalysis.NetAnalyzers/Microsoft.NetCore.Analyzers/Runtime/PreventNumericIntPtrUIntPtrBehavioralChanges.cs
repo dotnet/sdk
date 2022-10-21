@@ -12,7 +12,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 {
     using static MicrosoftNetCoreAnalyzersResources;
     /// <summary>
-    /// CA2020: Detects Behavioral Changes introduced by new Numeric IntPtr UIntPtr feature
+    /// CA2020: <inheritdoc cref="PreventNumericIntPtrUIntPtrBehavioralChangesTitle"/>
+    /// Detects Behavioral Changes introduced by new Numeric IntPtr UIntPtr feature
     /// </summary>
     public abstract class PreventNumericIntPtrUIntPtrBehavioralChanges : DiagnosticAnalyzer
     {

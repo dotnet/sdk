@@ -13,7 +13,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks
     using static MicrosoftNetCoreAnalyzersResources;
 
     /// <summary>
-    /// CA2008: Do not create tasks without passing a TaskScheduler
+    /// CA2008: <inheritdoc cref="DoNotCreateTasksWithoutPassingATaskSchedulerTitle"/>
     /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class DoNotCreateTasksWithoutPassingATaskSchedulerAnalyzer : DiagnosticAnalyzer

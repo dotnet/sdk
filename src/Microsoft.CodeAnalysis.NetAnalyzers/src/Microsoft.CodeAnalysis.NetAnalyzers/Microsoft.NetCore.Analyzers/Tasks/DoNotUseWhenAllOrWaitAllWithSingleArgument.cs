@@ -14,6 +14,10 @@ namespace Microsoft.NetCore.Analyzers.Tasks
 {
     using static MicrosoftNetCoreAnalyzersResources;
 
+    /// <summary>
+    /// CA1842: <inheritdoc cref="DoNotUseWhenAllWithSingleTaskTitle"/>
+    /// CA1843: <inheritdoc cref="DoNotUseWaitAllWithSingleTaskTitle"/>
+    /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public class DoNotUseWhenAllOrWaitAllWithSingleArgument : DiagnosticAnalyzer
     {

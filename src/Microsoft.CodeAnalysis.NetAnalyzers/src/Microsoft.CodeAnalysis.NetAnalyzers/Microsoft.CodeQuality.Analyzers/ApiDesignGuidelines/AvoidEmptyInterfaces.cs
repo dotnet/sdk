@@ -12,7 +12,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
     using static MicrosoftCodeQualityAnalyzersResources;
 
     /// <summary>
-    /// CA1040: Avoid empty interfaces
+    /// CA1040: <inheritdoc cref="AvoidEmptyInterfacesTitle"/>
     /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class AvoidEmptyInterfacesAnalyzer : DiagnosticAnalyzer

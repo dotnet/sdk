@@ -15,7 +15,7 @@ namespace Microsoft.NetCore.Analyzers.Resources
     using static MicrosoftNetCoreAnalyzersResources;
 
     /// <summary>
-    /// CA1824: Mark assemblies with NeutralResourcesLanguageAttribute
+    /// CA1824: <inheritdoc cref="MarkAssembliesWithNeutralResourcesLanguageTitle"/>
     /// </summary>
     public abstract class MarkAssembliesWithNeutralResourcesLanguageAnalyzer : DiagnosticAnalyzer
     {

@@ -11,6 +11,9 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
 {
     using static MicrosoftCodeQualityAnalyzersResources;
 
+    /// <summary>
+    /// CA2200: <inheritdoc cref="RethrowToPreserveStackDetailsTitle"/>
+    /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class RethrowToPreserveStackDetailsAnalyzer : DiagnosticAnalyzer
     {

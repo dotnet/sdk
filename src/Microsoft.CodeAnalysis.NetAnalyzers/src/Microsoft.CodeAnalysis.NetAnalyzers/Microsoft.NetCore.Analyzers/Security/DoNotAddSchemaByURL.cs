@@ -11,6 +11,9 @@ namespace Microsoft.NetCore.Analyzers.Security
 {
     using static MicrosoftNetCoreAnalyzersResources;
 
+    /// <summary>
+    /// CA3061: <inheritdoc cref="DoNotAddSchemaByURL"/>
+    /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class DoNotAddSchemaByURL : DiagnosticAnalyzer
     {

@@ -13,7 +13,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
     using static MicrosoftCodeQualityAnalyzersResources;
 
     /// <summary>
-    /// CA1061: Do not hide base class methods
+    /// CA1061: <inheritdoc cref="DoNotHideBaseClassMethodsTitle"/>
     /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class DoNotHideBaseClassMethodsAnalyzer : DiagnosticAnalyzer

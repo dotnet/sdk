@@ -11,6 +11,9 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 {
     using static MicrosoftCodeQualityAnalyzersResources;
 
+    /// <summary>
+    /// CA1713: <inheritdoc cref="EventsShouldNotHaveBeforeOrAfterPrefixTitle"/>
+    /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class EventsShouldNotHaveBeforeOrAfterPrefix : DiagnosticAnalyzer
     {

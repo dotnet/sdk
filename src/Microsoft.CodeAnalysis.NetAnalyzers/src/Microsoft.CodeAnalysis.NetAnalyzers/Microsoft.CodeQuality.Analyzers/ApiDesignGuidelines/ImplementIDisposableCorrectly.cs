@@ -14,7 +14,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
     using static MicrosoftCodeQualityAnalyzersResources;
 
     /// <summary>
-    /// CA1063: Implement IDisposable Correctly
+    /// CA1063: <inheritdoc cref="ImplementIDisposableCorrectlyTitle"/>
     /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class ImplementIDisposableCorrectlyAnalyzer : DiagnosticAnalyzer

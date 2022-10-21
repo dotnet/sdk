@@ -11,7 +11,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
     using static MicrosoftCodeQualityAnalyzersResources;
 
     /// <summary>
-    /// CA2211: Non-constant fields should not be visible
+    /// CA2211: <inheritdoc cref="NonConstantFieldsShouldNotBeVisibleTitle"/>
     /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class NonConstantFieldsShouldNotBeVisibleAnalyzer : DiagnosticAnalyzer

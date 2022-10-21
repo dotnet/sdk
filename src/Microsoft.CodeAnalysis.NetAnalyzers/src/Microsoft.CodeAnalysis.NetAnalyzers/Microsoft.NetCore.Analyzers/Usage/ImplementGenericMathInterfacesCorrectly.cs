@@ -11,7 +11,8 @@ namespace Microsoft.NetCore.Analyzers.Usage
     using static MicrosoftNetCoreAnalyzersResources;
 
     /// <summary>
-    /// CA2260: Some generic math interfaces require the derived type itself to be used for the self recurring type parameter, enforces that requirement
+    /// CA2260: <inheritdoc cref="ImplementGenericMathInterfacesCorrectlyTitle"/>
+    /// Some generic math interfaces require the derived type itself to be used for the self recurring type parameter, enforces that requirement
     /// </summary>
     public abstract class ImplementGenericMathInterfacesCorrectly : DiagnosticAnalyzer
     {

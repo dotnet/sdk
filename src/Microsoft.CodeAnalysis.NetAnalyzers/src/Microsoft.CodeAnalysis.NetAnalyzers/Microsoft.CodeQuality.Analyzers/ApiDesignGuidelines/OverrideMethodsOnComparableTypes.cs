@@ -13,7 +13,8 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
     using static MicrosoftCodeQualityAnalyzersResources;
 
     /// <summary>
-    /// CA1036: A public or protected type implements the System.IComparable interface and
+    /// CA1036: <inheritdoc cref="OverrideMethodsOnComparableTypesTitle"/>
+    /// A public or protected type implements the System.IComparable interface and
     /// does not override Object.Equals or does not overload the language-specific operator
     /// for equality, inequality, less than, less than or equal, greater than or
     /// greater than or equal. The rule does not report a violation if the type inherits

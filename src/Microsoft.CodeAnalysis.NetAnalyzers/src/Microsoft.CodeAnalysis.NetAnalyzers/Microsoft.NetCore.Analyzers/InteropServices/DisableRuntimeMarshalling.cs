@@ -12,6 +12,10 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
 {
     using static MicrosoftNetCoreAnalyzersResources;
 
+    /// <summary>
+    /// CA1420: <inheritdoc cref="FeatureUnsupportedWhenRuntimeMarshallingDisabledTitle"/>
+    /// CA1421: <inheritdoc cref="MethodUsesRuntimeMarshallingEvenWhenMarshallingDisabledTitle"/>
+    /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     internal sealed partial class DisableRuntimeMarshallingAnalyzer : DiagnosticAnalyzer
     {

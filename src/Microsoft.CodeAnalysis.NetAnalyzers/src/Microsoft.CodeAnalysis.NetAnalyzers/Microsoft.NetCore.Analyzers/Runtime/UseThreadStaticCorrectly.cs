@@ -11,6 +11,10 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 {
     using static MicrosoftNetCoreAnalyzersResources;
 
+    /// <summary>
+    /// CA2259: <inheritdoc cref="ThreadStaticOnNonStaticFieldTitle"/>
+    /// CA2019: <inheritdoc cref="ThreadStaticInitializedInlineTitle"/>
+    /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class UseThreadStaticCorrectly : DiagnosticAnalyzer
     {

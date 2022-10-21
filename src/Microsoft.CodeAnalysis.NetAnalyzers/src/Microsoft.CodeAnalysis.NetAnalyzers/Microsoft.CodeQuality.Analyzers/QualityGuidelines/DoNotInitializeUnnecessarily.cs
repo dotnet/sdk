@@ -12,7 +12,9 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
 {
     using static MicrosoftCodeQualityAnalyzersResources;
 
-    /// <summary>CA1805: Do not initialize unnecessarily.</summary>
+    /// <summary>
+    /// CA1805: <inheritdoc cref="DoNotInitializeUnnecessarilyTitle"/>
+    /// </summary>
     public abstract class DoNotInitializeUnnecessarilyAnalyzer : DiagnosticAnalyzer
     {
         internal const string RuleId = "CA1805";

@@ -13,6 +13,9 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
 {
     using static MicrosoftCodeQualityAnalyzersResources;
 
+    /// <summary>
+    /// CA1062: <inheritdoc cref="ValidateArgumentsOfPublicMethodsTitle"/>
+    /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class ValidateArgumentsOfPublicMethods : DiagnosticAnalyzer
     {

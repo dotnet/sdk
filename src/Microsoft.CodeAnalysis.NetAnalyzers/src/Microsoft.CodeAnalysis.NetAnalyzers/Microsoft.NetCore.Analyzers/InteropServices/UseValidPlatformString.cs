@@ -15,6 +15,9 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
 {
     using static MicrosoftNetCoreAnalyzersResources;
 
+    /// <summary>
+    /// CA1418: <inheritdoc cref="UseValidPlatformStringTitle"/>
+    /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class UseValidPlatformString : DiagnosticAnalyzer
     {

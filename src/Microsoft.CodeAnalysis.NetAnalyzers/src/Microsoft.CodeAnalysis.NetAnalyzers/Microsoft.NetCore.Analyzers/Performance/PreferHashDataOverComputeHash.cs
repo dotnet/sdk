@@ -17,7 +17,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
     using static MicrosoftNetCoreAnalyzersResources;
 
     /// <summary>
-    /// CA1850: Prefer static HashData over ComputeHash
+    /// CA1850: <inheritdoc cref="PreferHashDataOverComputeHashAnalyzerTitle"/>
     /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class PreferHashDataOverComputeHashAnalyzer : DiagnosticAnalyzer

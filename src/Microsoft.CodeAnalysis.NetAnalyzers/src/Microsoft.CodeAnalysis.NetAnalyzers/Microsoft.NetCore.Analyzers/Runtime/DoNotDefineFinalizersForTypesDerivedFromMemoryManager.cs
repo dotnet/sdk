@@ -12,7 +12,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
     using static MicrosoftNetCoreAnalyzersResources;
 
     /// <summary>
-    /// CA2015: Do not define finalizers for types derived from MemoryManager&lt;T&gt;.
+    /// CA2015: <inheritdoc cref="DoNotDefineFinalizersForTypesDerivedFromMemoryManagerTitle"/>
     /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class DoNotDefineFinalizersForTypesDerivedFromMemoryManager : DiagnosticAnalyzer

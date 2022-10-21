@@ -15,7 +15,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
     using static MicrosoftNetCoreAnalyzersResources;
 
     /// <summary>
-    /// CA2243: Attribute string literals should parse correctly
+    /// CA2243: <inheritdoc cref="AttributeStringLiteralsShouldParseCorrectlyTitle"/>
     /// Unlike FxCop, this rule does not fire diagnostics for ill-formed versions
     /// Reason: There is wide usage of semantic versioning which does not follow traditional versioning grammar.
     /// </summary>

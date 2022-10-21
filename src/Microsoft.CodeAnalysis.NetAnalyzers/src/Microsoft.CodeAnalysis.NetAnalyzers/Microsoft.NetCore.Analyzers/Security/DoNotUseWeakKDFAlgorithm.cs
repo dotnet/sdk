@@ -12,6 +12,9 @@ namespace Microsoft.NetCore.Analyzers.Security
 {
     using static MicrosoftNetCoreAnalyzersResources;
 
+    /// <summary>
+    /// CA5379: <inheritdoc cref="DoNotUseWeakKDFAlgorithm"/>
+    /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class DoNotUseWeakKDFAlgorithm : DiagnosticAnalyzer
     {

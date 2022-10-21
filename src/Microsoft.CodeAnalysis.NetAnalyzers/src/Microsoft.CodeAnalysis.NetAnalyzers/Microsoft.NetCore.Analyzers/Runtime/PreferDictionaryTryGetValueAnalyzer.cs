@@ -14,6 +14,9 @@ using static Microsoft.NetCore.Analyzers.MicrosoftNetCoreAnalyzersResources;
 
 namespace Microsoft.NetCore.Analyzers.Runtime
 {
+    /// <summary>
+    /// CA1854: <inheritdoc cref="PreferDictionaryTryGetValueTitle"/>
+    /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class PreferDictionaryTryGetValueAnalyzer : DiagnosticAnalyzer
     {

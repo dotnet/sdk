@@ -18,6 +18,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
     using static MicrosoftNetCoreAnalyzersResources;
 
     /// <summary>
+    /// CA2252: <inheritdoc cref="DetectPreviewFeaturesTitle"/>
     /// Detect the use of [RequiresPreviewFeatures] in assemblies that have not opted into preview features
     /// </summary>
     public abstract class DetectPreviewFeatureAnalyzer : DiagnosticAnalyzer

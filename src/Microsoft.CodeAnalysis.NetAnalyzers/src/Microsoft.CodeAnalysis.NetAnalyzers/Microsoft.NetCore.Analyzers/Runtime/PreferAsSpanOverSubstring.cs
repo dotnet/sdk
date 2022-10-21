@@ -16,7 +16,7 @@ using static Microsoft.NetCore.Analyzers.MicrosoftNetCoreAnalyzersResources;
 namespace Microsoft.NetCore.Analyzers.Runtime
 {
     /// <summary>
-    /// CA1842: Prefer 'AsSpan' over 'Substring'.
+    /// CA1846: <inheritdoc cref="PreferAsSpanOverSubstringTitle"/>
     /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class PreferAsSpanOverSubstring : DiagnosticAnalyzer

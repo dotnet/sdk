@@ -13,6 +13,9 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 {
     using static MicrosoftCodeQualityAnalyzersResources;
 
+    /// <summary>
+    /// CA1069: <inheritdoc cref="EnumShouldNotHaveDuplicatedValuesTitle"/>
+    /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public class EnumShouldNotHaveDuplicatedValues : DiagnosticAnalyzer
     {

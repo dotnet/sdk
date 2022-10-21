@@ -11,7 +11,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
     using static MicrosoftNetCoreAnalyzersResources;
 
     /// <summary>
-    /// CA1838: Avoid StringBuilder parameters for P/Invokes
+    /// CA1838: <inheritdoc cref="AvoidStringBuilderPInvokeParametersTitle"/>
     /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class AvoidStringBuilderPInvokeParametersAnalyzer : DiagnosticAnalyzer

@@ -12,6 +12,9 @@ namespace Microsoft.NetCore.Analyzers.Performance
 {
     using static MicrosoftNetCoreAnalyzersResources;
 
+    /// <summary>
+    /// CA1847: <inheritdoc cref="UseStringContainsCharOverloadWithSingleCharactersTitle"/>
+    /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class UseStringContainsCharOverloadWithSingleCharactersAnalyzer : DiagnosticAnalyzer
     {

@@ -16,6 +16,9 @@ namespace Microsoft.NetCore.Analyzers.Security
 {
     using static MicrosoftNetCoreAnalyzersResources;
 
+    /// <summary>
+    /// CA5377: <inheritdoc cref="UseContainerLevelAccessPolicy"/>
+    /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class UseContainerLevelAccessPolicy : DiagnosticAnalyzer
     {

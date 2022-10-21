@@ -13,7 +13,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
     using static MicrosoftCodeQualityAnalyzersResources;
 
     /// <summary>
-    /// CA1507 Use nameof to express symbol names
+    /// CA1507: <inheritdoc cref="UseNameOfInPlaceOfStringTitle"/>
     /// </summary>
     public abstract class UseNameofInPlaceOfStringAnalyzer : DiagnosticAnalyzer
     {

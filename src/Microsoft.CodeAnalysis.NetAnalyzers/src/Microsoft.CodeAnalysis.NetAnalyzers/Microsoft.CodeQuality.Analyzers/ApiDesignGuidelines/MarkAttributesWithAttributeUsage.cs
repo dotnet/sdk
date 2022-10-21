@@ -12,7 +12,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
     using static MicrosoftCodeQualityAnalyzersResources;
 
     /// <summary>
-    /// CA1018: Custom attributes should have AttributeUsage attribute defined.
+    /// CA1018: <inheritdoc cref="MarkAttributesWithAttributeUsageTitle"/>
     /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class MarkAttributesWithAttributeUsageAnalyzer : DiagnosticAnalyzer

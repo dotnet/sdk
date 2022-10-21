@@ -13,8 +13,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
     using static MicrosoftNetCoreAnalyzersResources;
 
     /// <summary>
-    /// CA1810: Initialize reference type static fields inline
-    /// CA2207: Initialize value type static fields inline
+    /// CA1810: <inheritdoc cref="InitializeReferenceTypeStaticFieldsInlineTitle"/>
+    /// CA2207: <inheritdoc cref="InitializeValueTypeStaticFieldsInlineTitle"/>
     /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class InitializeStaticFieldsInlineAnalyzer : DiagnosticAnalyzer

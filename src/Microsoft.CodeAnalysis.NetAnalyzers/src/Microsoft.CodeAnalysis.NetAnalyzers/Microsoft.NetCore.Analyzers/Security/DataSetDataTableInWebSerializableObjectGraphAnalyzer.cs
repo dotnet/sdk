@@ -14,6 +14,7 @@ namespace Microsoft.NetCore.Analyzers.Security
     using static MicrosoftNetCoreAnalyzersResources;
 
     /// <summary>
+    /// CA2356: <inheritdoc cref="DataSetDataTableInWebDeserializableObjectGraphTitle"/>
     /// For detecting deserialization of <see cref="T:System.Data.DataSet"/> or <see cref="T:System.Data.DataTable"/> in an
     /// web API / WCF API serializable object graph.
     /// </summary>

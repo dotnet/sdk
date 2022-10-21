@@ -16,6 +16,9 @@ namespace Microsoft.NetFramework.Analyzers
 {
     using static MicrosoftNetFrameworkAnalyzersResources;
 
+    /// <summary>
+    /// CA3077: <inheritdoc cref="InsecureDtdProcessingInApiDesign"/>
+    /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class DoNotUseInsecureDtdProcessingInApiDesignAnalyzer : DiagnosticAnalyzer
     {

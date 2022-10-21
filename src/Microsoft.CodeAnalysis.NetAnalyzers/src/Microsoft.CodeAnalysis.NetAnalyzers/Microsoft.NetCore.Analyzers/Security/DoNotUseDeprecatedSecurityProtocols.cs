@@ -13,6 +13,10 @@ namespace Microsoft.NetCore.Analyzers.Security
 {
     using static MicrosoftNetCoreAnalyzersResources;
 
+    /// <summary>
+    /// CA5364: <inheritdoc cref="DoNotUseDeprecatedSecurityProtocols"/>
+    /// CA5386: <inheritdoc cref="HardCodedSecurityProtocolTitle"/>
+    /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class DoNotUseDeprecatedSecurityProtocols : DiagnosticAnalyzer
     {

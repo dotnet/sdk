@@ -13,7 +13,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
     using static MicrosoftNetCoreAnalyzersResources;
 
     /// <summary>
-    /// CA2242: Test for NaN correctly
+    /// CA2242: <inheritdoc cref="TestForNaNCorrectlyTitle"/>
     /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class TestForNaNCorrectlyAnalyzer : DiagnosticAnalyzer

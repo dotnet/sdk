@@ -14,7 +14,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
     using static MicrosoftCodeQualityAnalyzersResources;
 
     /// <summary>
-    /// CA1019: Define accessors for attribute arguments
+    /// CA1019: <inheritdoc cref="DefineAccessorsForAttributeArgumentsTitle"/>
     ///
     /// Cause:
     /// In its constructor, an attribute defines arguments that do not have corresponding properties.

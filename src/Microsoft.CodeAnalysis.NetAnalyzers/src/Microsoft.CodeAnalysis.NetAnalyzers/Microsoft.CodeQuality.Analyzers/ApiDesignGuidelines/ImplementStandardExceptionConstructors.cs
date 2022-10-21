@@ -11,7 +11,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
     using static MicrosoftCodeQualityAnalyzersResources;
 
     /// <summary>
-    /// CA1032 - redefined: Implement standard exception constructors
+    /// CA1032: <inheritdoc cref="ImplementStandardExceptionConstructorsTitle"/>
     /// Cause: A type extends System.Exception and does not declare all the required constructors.
     /// Description: Exception types must implement the following constructors. Failure to provide the full set of constructors can make it difficult to correctly handle exceptions
     /// For CSharp, example when type name is GoodException

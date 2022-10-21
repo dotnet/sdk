@@ -11,7 +11,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
     using static MicrosoftNetCoreAnalyzersResources;
 
     /// <summary>
-    /// CA1417: Do not use [Out] string parameters for P/Invokes
+    /// CA1417: <inheritdoc cref="DoNotUseOutAttributeStringPInvokeParametersTitle"/>
     /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class DoNotUseOutAttributeStringPInvokeParametersAnalyzer : DiagnosticAnalyzer

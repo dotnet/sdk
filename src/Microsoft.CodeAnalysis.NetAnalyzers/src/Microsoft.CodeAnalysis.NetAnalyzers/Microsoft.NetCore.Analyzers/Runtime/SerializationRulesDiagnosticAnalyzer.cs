@@ -11,6 +11,11 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 {
     using static MicrosoftNetCoreAnalyzersResources;
 
+    /// <summary>
+    /// CA2229: <inheritdoc cref="ImplementSerializationConstructorsTitle"/>
+    /// CA2237: <inheritdoc cref="MarkISerializableTypesWithSerializableTitle"/>
+    /// CA2235: <inheritdoc cref="MarkAllNonSerializableFieldsTitle"/>
+    /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class SerializationRulesDiagnosticAnalyzer : DiagnosticAnalyzer
     {

@@ -15,7 +15,7 @@ namespace Microsoft.NetFramework.Analyzers
     using static MicrosoftNetFrameworkAnalyzersResources;
 
     /// <summary>
-    /// CA1058: Types should not extend certain base types
+    /// CA1058: <inheritdoc cref="TypesShouldNotExtendCertainBaseTypesTitle"/>
     /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class TypesShouldNotExtendCertainBaseTypesAnalyzer : DiagnosticAnalyzer

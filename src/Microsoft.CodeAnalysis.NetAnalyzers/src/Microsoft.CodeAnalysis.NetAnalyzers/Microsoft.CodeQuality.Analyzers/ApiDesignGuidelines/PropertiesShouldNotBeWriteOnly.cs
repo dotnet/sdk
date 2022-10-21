@@ -12,7 +12,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
     using static MicrosoftCodeQualityAnalyzersResources;
 
     /// <summary>
-    /// CA1044: Properties should not be write only
+    /// CA1044: <inheritdoc cref="PropertiesShouldNotBeWriteOnlyTitle"/>
     /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class PropertiesShouldNotBeWriteOnlyAnalyzer : DiagnosticAnalyzer

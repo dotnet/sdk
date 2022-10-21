@@ -13,6 +13,9 @@ namespace Microsoft.NetCore.Analyzers.Security
 {
     using static MicrosoftNetCoreAnalyzersResources;
 
+    /// <summary>
+    /// CA5362: <inheritdoc cref="PotentialReferenceCycleInDeserializedObjectGraphTitle"/>
+    /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class PotentialReferenceCycleInDeserializedObjectGraph : DiagnosticAnalyzer
     {

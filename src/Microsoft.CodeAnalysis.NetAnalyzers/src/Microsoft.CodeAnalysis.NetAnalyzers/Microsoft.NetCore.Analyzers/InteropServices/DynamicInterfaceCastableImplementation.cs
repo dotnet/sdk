@@ -10,6 +10,11 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
 {
     using static MicrosoftNetCoreAnalyzersResources;
 
+    /// <summary>
+    /// CA2256: <inheritdoc cref="InterfaceMembersMissingImplementationTitle"/>
+    /// CA2257: <inheritdoc cref="MembersDeclaredOnImplementationTypeMustBeStaticTitle"/>
+    /// CA2258: <inheritdoc cref="DynamicInterfaceCastableImplementationUnsupportedTitle"/>
+    /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     internal sealed class DynamicInterfaceCastableImplementationAnalyzer : DiagnosticAnalyzer
     {

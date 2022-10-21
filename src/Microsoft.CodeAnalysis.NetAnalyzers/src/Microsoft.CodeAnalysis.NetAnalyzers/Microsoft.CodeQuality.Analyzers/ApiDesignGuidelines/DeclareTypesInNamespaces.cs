@@ -11,7 +11,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
     using static MicrosoftCodeQualityAnalyzersResources;
 
     /// <summary>
-    /// CA1050: Declare types in namespaces
+    /// CA1050: <inheritdoc cref="DeclareTypesInNamespacesTitle"/>
     /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class DeclareTypesInNamespacesAnalyzer : DiagnosticAnalyzer

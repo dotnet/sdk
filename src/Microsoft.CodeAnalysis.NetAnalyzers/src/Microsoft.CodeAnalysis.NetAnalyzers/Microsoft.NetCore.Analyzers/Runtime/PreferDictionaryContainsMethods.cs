@@ -12,6 +12,9 @@ using static Microsoft.NetCore.Analyzers.MicrosoftNetCoreAnalyzersResources;
 
 namespace Microsoft.NetCore.Analyzers.Runtime
 {
+    /// <summary>
+    /// CA1841: <inheritdoc cref="PreferDictionaryContainsMethodsTitle"/>
+    /// </summary>
     public abstract class PreferDictionaryContainsMethods : DiagnosticAnalyzer
     {
         internal const string RuleId = "CA1841";

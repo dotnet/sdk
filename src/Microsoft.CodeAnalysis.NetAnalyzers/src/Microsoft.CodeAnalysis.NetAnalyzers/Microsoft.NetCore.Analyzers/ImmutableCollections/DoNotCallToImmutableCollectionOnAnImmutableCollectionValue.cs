@@ -15,7 +15,7 @@ namespace Microsoft.NetCore.Analyzers.ImmutableCollections
     using static MicrosoftNetCoreAnalyzersResources;
 
     /// <summary>
-    /// CA2009: Do not call ToImmutableCollection on an ImmutableCollection value
+    /// CA2009: <inheritdoc cref="DoNotCallToImmutableCollectionOnAnImmutableCollectionValueTitle"/>
     /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class DoNotCallToImmutableCollectionOnAnImmutableCollectionValueAnalyzer : DiagnosticAnalyzer

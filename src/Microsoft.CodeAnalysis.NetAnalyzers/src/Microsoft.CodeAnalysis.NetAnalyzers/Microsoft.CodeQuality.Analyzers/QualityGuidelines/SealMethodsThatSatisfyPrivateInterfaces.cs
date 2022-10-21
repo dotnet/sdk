@@ -12,7 +12,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
     using static MicrosoftCodeQualityAnalyzersResources;
 
     /// <summary>
-    /// CA2119: Seal methods that satisfy private interfaces
+    /// CA2119: <inheritdoc cref="SealMethodsThatSatisfyPrivateInterfacesTitle"/>
     /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class SealMethodsThatSatisfyPrivateInterfacesAnalyzer : DiagnosticAnalyzer

@@ -13,7 +13,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
     using static MicrosoftNetCoreAnalyzersResources;
 
     /// <summary>
-    /// CA2201: Do not raise reserved exception types
+    /// CA2201: <inheritdoc cref="DoNotRaiseReservedExceptionTypesTitle"/>
     ///
     /// Too generic:
     ///     System.Exception

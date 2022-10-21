@@ -13,7 +13,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
     using static MicrosoftCodeQualityAnalyzersResources;
 
     /// <summary>
-    /// CA1033: Interface methods should be callable by child types
+    /// CA1033: <inheritdoc cref="InterfaceMethodsShouldBeCallableByChildTypesTitle"/>
     /// <para>
     /// Consider a base type that explicitly implements a public interface method.
     /// A type that derives from the base type can access the inherited interface method only through a reference to the current instance ('this' in C#) that is cast to the interface.

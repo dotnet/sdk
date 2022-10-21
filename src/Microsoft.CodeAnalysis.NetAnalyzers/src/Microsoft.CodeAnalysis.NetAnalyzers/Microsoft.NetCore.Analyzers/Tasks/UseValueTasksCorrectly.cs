@@ -17,7 +17,9 @@ namespace Microsoft.NetCore.Analyzers.Tasks
 {
     using static MicrosoftNetCoreAnalyzersResources;
 
-    /// <summary>CA2012: Use ValueTasks correctly.</summary>
+    /// <summary>
+    /// CA2012: <inheritdoc cref="UseValueTasksCorrectlyTitle"/>
+    /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class UseValueTasksCorrectlyAnalyzer : DiagnosticAnalyzer
     {

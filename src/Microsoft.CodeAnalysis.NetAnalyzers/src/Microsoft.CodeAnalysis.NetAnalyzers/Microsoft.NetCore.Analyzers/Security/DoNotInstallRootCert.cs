@@ -21,6 +21,10 @@ namespace Microsoft.NetCore.Analyzers.Security
 {
     using static MicrosoftNetCoreAnalyzersResources;
 
+    /// <summary>
+    /// CA5380: <inheritdoc cref="DefinitelyInstallRootCert"/>
+    /// CA5381: <inheritdoc cref="MaybeInstallRootCert"/>
+    /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class DoNotInstallRootCert : DiagnosticAnalyzer
     {
