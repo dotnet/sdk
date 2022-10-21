@@ -285,10 +285,6 @@
       <EngCommonContent Include="$(RepoRoot)eng/common/**/*" />
     </ItemGroup>
 
-    <Copy Condition=" '$(InitializeVMR)' != 'true' "
-      SourceFiles="$(TarballGitInfoDir)runtime.props"
-      DestinationFiles="$(TarballGitInfoDir)runtime-portable.props" />
-
     <Copy
       SourceFiles="@(TarballContent)"
       DestinationFiles="@(TarballContent->'$(TarballRootDir)%(RecursiveDir)%(Filename)%(Extension)')" />
