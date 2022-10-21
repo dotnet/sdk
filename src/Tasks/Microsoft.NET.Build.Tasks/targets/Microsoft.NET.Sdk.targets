@@ -1160,7 +1160,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <!-- Temporary workaround for https://github.com/dotnet/runtime/issues/75468. Delete once the issue is fixed. -->
   <PropertyGroup>
-    <LinkStandardCPlusPlusLibrary Condition="'$(OS)' != 'Windows_NT' and '$(LinkStandardCPlusPlusLibrary)' == ''">true</LinkStandardCPlusPlusLibrary>
+    <LinkStandardCPlusPlusLibrary Condition="$([MSBuild]::VersionLessThan('$(TargetFrameworkVersion)', '7.0')) and '$(OS)' != 'Windows_NT' and '$(LinkStandardCPlusPlusLibrary)' == ''">true</LinkStandardCPlusPlusLibrary>
   </PropertyGroup>
 
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.DisableStandardFrameworkResolution.targets" Condition="'$(DisableStandardFrameworkResolution)' == 'true'" />
