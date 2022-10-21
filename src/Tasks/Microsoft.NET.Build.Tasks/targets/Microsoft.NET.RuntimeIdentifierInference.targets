@@ -182,9 +182,6 @@ Copyright (c) .NET Foundation. All rights reserved.
                 ResourceName="ImplicitRuntimeIdentifierResolutionForPublishPropertyFailed"
                 FormatArguments="PublishAot"/>
 
-    <NETSdkError Condition="'$(PublishAot)' == 'true' and '$(PublishAotSupported)' != 'true'"
-                ResourceName="AotNotSupported" />
-
     <!-- End of implicit RID resolver checks.-->
     <NETSdkError Condition="'$(SelfContained)' == 'true' and '$(UseAppHost)' != 'true' and '$(_RuntimeIdentifierUsesAppHost)' == 'true'"
                  ResourceName="CannotUseSelfContainedWithoutAppHost" />
