@@ -9,13 +9,14 @@ namespace Microsoft.NET.Publish.Tests
 {
     internal static class PublishTestUtils
     {
-#if NET7_0
+#if NET8_0
 
         public static IEnumerable<object[]> SupportedTfms { get; } = new List<object[]>
         {
             new object[] { "netcoreapp3.1" },
             new object[] { "net5.0" },
             new object[] { "net6.0" },
+            new object[] { "net7.0" },
             new object[] { ToolsetInfo.CurrentTargetFramework }
         };
 
@@ -24,6 +25,7 @@ namespace Microsoft.NET.Publish.Tests
         {
             new object[] { "net5.0" },
             new object[] { "net6.0" },
+            new object[] { "net7.0" },
             new object[] { ToolsetInfo.CurrentTargetFramework }
         };
 
@@ -31,6 +33,7 @@ namespace Microsoft.NET.Publish.Tests
         public static IEnumerable<object[]> Net6Plus { get; } = new List<object[]>
         {
             new object[] { "net6.0" },
+            new object[] { "net7.0" },
             new object[] { ToolsetInfo.CurrentTargetFramework }
         };
 #else

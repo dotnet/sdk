@@ -3,8 +3,8 @@
 
   <PropertyGroup>
     <OutputType>Library</OutputType>
-    <TargetFramework>net7.0</TargetFramework>
-    <TargetFrameworkMoniker>.NETCoreApp,Version=v7.0</TargetFrameworkMoniker>
+    <TargetFramework>net8.0</TargetFramework>
+    <TargetFrameworkMoniker>.NETCoreApp,Version=v8.0</TargetFrameworkMoniker>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
 
