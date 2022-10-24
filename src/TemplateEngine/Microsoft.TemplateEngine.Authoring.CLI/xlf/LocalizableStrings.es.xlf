@@ -80,7 +80,7 @@ Do not localize: "template.json"</note>
       </trans-unit>
       <trans-unit id="command_verify_help_customIncludes_description">
         <source>Specifies pattern(s) defining files to be included to verification (all files are included if not specified).</source>
-        <target state="new">Specifies pattern(s) defining files to be included to verification (all files are included if not specified).</target>
+        <target state="translated">Especifica patrones que definen los archivos que se incluirán en la comprobación (todos los archivos se incluyen si no se especifican).</target>
         <note />
       </trans-unit>
       <trans-unit id="command_verify_help_description">
@@ -120,7 +120,7 @@ Do not localize: "template.json"</note>
       </trans-unit>
       <trans-unit id="command_verify_help_scenarioName_description">
         <source>Specifies optional scenario name to be used in the snapshot folder name.</source>
-        <target state="new">Specifies optional scenario name to be used in the snapshot folder name.</target>
+        <target state="translated">Especifica el nombre de escenario opcional que se usará en el nombre de la carpeta de instantáneas.</target>
         <note />
       </trans-unit>
       <trans-unit id="command_verify_help_templateName_description">

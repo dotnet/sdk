@@ -80,7 +80,7 @@ Do not localize: "template.json"</note>
       </trans-unit>
       <trans-unit id="command_verify_help_customIncludes_description">
         <source>Specifies pattern(s) defining files to be included to verification (all files are included if not specified).</source>
-        <target state="new">Specifies pattern(s) defining files to be included to verification (all files are included if not specified).</target>
+        <target state="translated">指定要包含在驗證中的模式定義檔案 (若未指定則包含所有檔案)。</target>
         <note />
       </trans-unit>
       <trans-unit id="command_verify_help_description">
@@ -120,7 +120,7 @@ Do not localize: "template.json"</note>
       </trans-unit>
       <trans-unit id="command_verify_help_scenarioName_description">
         <source>Specifies optional scenario name to be used in the snapshot folder name.</source>
-        <target state="new">Specifies optional scenario name to be used in the snapshot folder name.</target>
+        <target state="translated">指定要在快照集資料夾名稱中使用的選用案例名稱。</target>
         <note />
       </trans-unit>
       <trans-unit id="command_verify_help_templateName_description">

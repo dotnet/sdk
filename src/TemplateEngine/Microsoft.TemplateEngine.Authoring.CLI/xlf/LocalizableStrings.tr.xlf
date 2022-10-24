@@ -80,7 +80,7 @@ Do not localize: "template.json"</note>
       </trans-unit>
       <trans-unit id="command_verify_help_customIncludes_description">
         <source>Specifies pattern(s) defining files to be included to verification (all files are included if not specified).</source>
-        <target state="new">Specifies pattern(s) defining files to be included to verification (all files are included if not specified).</target>
+        <target state="translated">Doğrulamaya dahil edilecek dosyaları tanımlayan kalıpları belirtir (belirtilmemişse tüm dosyalar dahil edilir).</target>
         <note />
       </trans-unit>
       <trans-unit id="command_verify_help_description">
@@ -120,7 +120,7 @@ Do not localize: "template.json"</note>
       </trans-unit>
       <trans-unit id="command_verify_help_scenarioName_description">
         <source>Specifies optional scenario name to be used in the snapshot folder name.</source>
-        <target state="new">Specifies optional scenario name to be used in the snapshot folder name.</target>
+        <target state="translated">Anlık görüntü klasörü adında kullanılacak isteğe bağlı senaryo adını belirtir.</target>
         <note />
       </trans-unit>
       <trans-unit id="command_verify_help_templateName_description">
