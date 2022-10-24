@@ -304,6 +304,13 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
                     continue;
                 }
 
+                // Skip if the project does not contain any of the formattable paths.
+                if (!project.Documents.Any(d => d.FilePath is not null && formattablePaths.Contains(d.FilePath)))
+                {
+                    projectAnalyzers.Add(projectId, ImmutableArray<DiagnosticAnalyzer>.Empty);
+                    continue;
+                }
+
                 var analyzers = ImmutableArray.CreateBuilder<DiagnosticAnalyzer>();
 
                 // Filter analyzers by project's language

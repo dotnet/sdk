@@ -1,13 +1,16 @@
 // For format details, see https://aka.ms/vscode-remote/devcontainer.json or this file's README at:
-// https://github.com/microsoft/vscode-dev-containers/tree/v0.126.0/containers/dotnetcore
+// https://github.com/microsoft/vscode-dev-containers/tree/v0.177.0/containers/dotnet
 {
-  "name": "C# (.NET 6)",
+  "name": "C# (.NET)",
   "build": {
     "dockerfile": "Dockerfile",
     "args": {
-      // Update 'VARIANT' to pick a .NET SDK version: 3.1, 5.0, 6.0
-      // Append -bullseye or -focal to pin to an OS version.
-      "VARIANT": "6.0",
+      // The VARIANT here must align with a dotnet container image that
+      // is publicly available on https://mcr.microsoft.com/v2/vscode/devcontainers/dotnet/tags/list.
+      // We'll default to `latest` as the default. Generally, the .NET version that is baked
+      // into the image by default doesn't matter since we end up installing our own
+      // local version and using that by default in the container environment.
+      "VARIANT": "latest",
     }
   },
   // Set *default* container specific settings.json values on container create.
@@ -36,6 +39,7 @@
     },
     "terminal.integrated.defaultProfile.linux": "pwsh",
     // ms-dotnettools.csharp settings
+    "omnisharp.path": "latest",
     "omnisharp.defaultLaunchSolution": "format.sln",
     "omnisharp.disableMSBuildDiagnosticWarning": true,
     "omnisharp.useModernNet": true,
@@ -60,6 +64,15 @@
     "ms-vscode.powershell",
     "ms-azure-devops.azure-pipelines"
   ],
-  // Use 'postCreateCommand' to run commands after the container is created.
-  "postCreateCommand": "./restore.sh",
+  // Use 'onCreateCommand' to run commands during container creation.
+  "onCreateCommand": "bash -i ${containerWorkspaceFolder}/.devcontainer/scripts/container-creation.sh", // Add the locally installed dotnet to the path to ensure that it is activated
+  // This is needed so that things like the C# extension can resolve the correct SDK version
+  "remoteEnv": {
+    "PATH": "${containerWorkspaceFolder}/.dotnet:${containerEnv:PATH}",
+    "DOTNET_MULTILEVEL_LOOKUP": "0",
+    "TARGET": "net7.0",
+    "DOTNET_WATCH_SUPPRESS_LAUNCH_BROWSER": "true"
+  },
+  // Comment out connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
+  //"remoteUser": "vscode"
 }
