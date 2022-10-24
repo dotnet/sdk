@@ -30,7 +30,7 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.IntegrationTests
             {
                 TemplateSpecificArgs = new string[] { "--paramB", "true" },
                 TemplatePath = templateLocation,
-                ExpectationsDirectory = "Expectations",
+                SnapshotsDirectory = "Snapshots",
                 OutputDirectory = workingDir,
                 VerifyCommandOutput = true,
                 DoNotPrependTemplateNameToScenarioName = true,

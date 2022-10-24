@@ -25,7 +25,7 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.IntegrationTests
         {
             // dots issue https://github.com/VerifyTests/Verify/issues/658
             string workingDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName().Replace(".", string.Empty));
-            string expectationsDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName().Replace(".", string.Empty));
+            string snapshotsDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName().Replace(".", string.Empty));
             string templateOutputDir = "path with spaces";
 
             var cmd = new BasicCommand(
@@ -39,8 +39,8 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.IntegrationTests
                 "--verify-std",
                 "-o",
                 workingDir,
-                "--expectations-directory",
-                expectationsDir,
+                "--snapshots-directory",
+                snapshotsDir,
                 "--disable-diff-tool",
                 "--unique-for",
                 "architecture",
@@ -58,38 +58,38 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.IntegrationTests
             File.Exists(Path.Combine(workingDir, templateOutputDir, "Program.cs")).Should().BeTrue();
 
             // Assert verification files created
-            Directory.Exists(expectationsDir).Should().BeTrue();
-            Directory.GetDirectories(expectationsDir).Length.Should().Be(2);
+            Directory.Exists(snapshotsDir).Should().BeTrue();
+            Directory.GetDirectories(snapshotsDir).Length.Should().Be(2);
             //for simplicity move to the created dir
-            expectationsDir = Directory.GetDirectories(expectationsDir).Single(d => d.EndsWith(".received", StringComparison.Ordinal));
-            File.Exists(Path.Combine(expectationsDir, templateOutputDir, "console.csproj")).Should().BeTrue();
-            File.Exists(Path.Combine(expectationsDir, templateOutputDir, "Program.cs")).Should().BeTrue();
-            File.Exists(Path.Combine(expectationsDir, "std-streams", "stdout.txt")).Should().BeTrue();
-            File.Exists(Path.Combine(expectationsDir, "std-streams", "stderr.txt")).Should().BeTrue();
-            Directory.GetFiles(expectationsDir, "*", SearchOption.AllDirectories).Length.Should().Be(4);
+            snapshotsDir = Directory.GetDirectories(snapshotsDir).Single(d => d.EndsWith(".received", StringComparison.Ordinal));
+            File.Exists(Path.Combine(snapshotsDir, templateOutputDir, "console.csproj")).Should().BeTrue();
+            File.Exists(Path.Combine(snapshotsDir, templateOutputDir, "Program.cs")).Should().BeTrue();
+            File.Exists(Path.Combine(snapshotsDir, "std-streams", "stdout.txt")).Should().BeTrue();
+            File.Exists(Path.Combine(snapshotsDir, "std-streams", "stderr.txt")).Should().BeTrue();
+            Directory.GetFiles(snapshotsDir, "*", SearchOption.AllDirectories).Length.Should().Be(4);
             // .verified files are only created when diff tool is used - that is however turned off in CI
-            //File.Exists(Path.Combine(expectationsDir, "console.console.csproj.verified.csproj")).Should().BeTrue();
-            //File.Exists(Path.Combine(expectationsDir, "console.Program.cs.verified.cs")).Should().BeTrue();
-            //File.Exists(Path.Combine(expectationsDir, "console.StdOut.verified.txt")).Should().BeTrue();
-            //File.Exists(Path.Combine(expectationsDir, "console.StdErr.verified.txt")).Should().BeTrue();
+            //File.Exists(Path.Combine(snapshotsDir, "console.console.csproj.verified.csproj")).Should().BeTrue();
+            //File.Exists(Path.Combine(snapshotsDir, "console.Program.cs.verified.cs")).Should().BeTrue();
+            //File.Exists(Path.Combine(snapshotsDir, "console.StdOut.verified.txt")).Should().BeTrue();
+            //File.Exists(Path.Combine(snapshotsDir, "console.StdErr.verified.txt")).Should().BeTrue();
 
             // .verified files are only created when diff tool is used - that is however turned off in CI
-            //File.ReadAllText(Path.Combine(expectationsDir, "console.console.csproj.verified.csproj")).Should().BeEmpty();
-            //File.ReadAllText(Path.Combine(expectationsDir, "console.Program.cs.verified.cs")).Should().BeEmpty();
-            //File.ReadAllText(Path.Combine(expectationsDir, "console.StdOut.verified.txt")).Should().BeEmpty();
-            //File.ReadAllText(Path.Combine(expectationsDir, "console.StdErr.verified.txt")).Should().BeEmpty();
-            File.ReadAllText(Path.Combine(expectationsDir, templateOutputDir, "console.csproj").UnixifyLineBreaks()).Should()
+            //File.ReadAllText(Path.Combine(snapshotsDir, "console.console.csproj.verified.csproj")).Should().BeEmpty();
+            //File.ReadAllText(Path.Combine(snapshotsDir, "console.Program.cs.verified.cs")).Should().BeEmpty();
+            //File.ReadAllText(Path.Combine(snapshotsDir, "console.StdOut.verified.txt")).Should().BeEmpty();
+            //File.ReadAllText(Path.Combine(snapshotsDir, "console.StdErr.verified.txt")).Should().BeEmpty();
+            File.ReadAllText(Path.Combine(snapshotsDir, templateOutputDir, "console.csproj").UnixifyLineBreaks()).Should()
                 .BeEquivalentTo(File.ReadAllText(Path.Combine(workingDir, templateOutputDir, "console.csproj")).UnixifyLineBreaks());
-            File.ReadAllText(Path.Combine(expectationsDir, templateOutputDir, "Program.cs").UnixifyLineBreaks()).Should()
+            File.ReadAllText(Path.Combine(snapshotsDir, templateOutputDir, "Program.cs").UnixifyLineBreaks()).Should()
                 .BeEquivalentTo(File.ReadAllText(Path.Combine(workingDir, templateOutputDir, "Program.cs")).UnixifyLineBreaks());
 
             // Accept changes
-            string verifiedDir = expectationsDir.Replace(".received", ".verified", StringComparison.Ordinal);
+            string verifiedDir = snapshotsDir.Replace(".received", ".verified", StringComparison.Ordinal);
             Directory.Delete(verifiedDir, false);
-            Directory.Move(expectationsDir, verifiedDir);
+            Directory.Move(snapshotsDir, verifiedDir);
 
             //reset the expectations dir to where it was before previous run
-            expectationsDir = Path.GetDirectoryName(expectationsDir)!;
+            snapshotsDir = Path.GetDirectoryName(snapshotsDir)!;
 
             // And run again same scenario - verification should succeed now
             string workingDir2 = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
@@ -104,8 +104,8 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.IntegrationTests
                 "--verify-std",
                 "-o",
                 workingDir2,
-                "--expectations-directory",
-                expectationsDir,
+                "--snapshots-directory",
+                snapshotsDir,
                 "--unique-for",
                 "architecture",
                 "--unique-for",
@@ -119,7 +119,7 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.IntegrationTests
 
             Directory.Delete(workingDir, true);
             Directory.Delete(workingDir2, true);
-            Directory.Delete(expectationsDir, true);
+            Directory.Delete(snapshotsDir, true);
         }
 
         [Fact]
@@ -127,7 +127,7 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.IntegrationTests
         {
             // dots issue https://github.com/VerifyTests/Verify/issues/658
             string workingDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName().Replace(".", string.Empty));
-            string expectationsDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName().Replace(".", string.Empty));
+            string snapshotsDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName().Replace(".", string.Empty));
             string templateShortName = "TestAssets.SampleTestTemplate";
             string templateOutputDir = templateShortName;
 
@@ -148,8 +148,8 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.IntegrationTests
                 "--verify-std",
                 "-o",
                 workingDir,
-                "--expectations-directory",
-                expectationsDir,
+                "--snapshots-directory",
+                snapshotsDir,
                 "--disable-diff-tool");
 
             cmd.Execute()
@@ -162,25 +162,25 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.IntegrationTests
             File.Exists(Path.Combine(workingDir, templateOutputDir, "Test.cs")).Should().BeTrue();
 
             // Assert verification files created
-            Directory.Exists(expectationsDir).Should().BeTrue();
-            Directory.GetDirectories(expectationsDir).Length.Should().Be(2);
+            Directory.Exists(snapshotsDir).Should().BeTrue();
+            Directory.GetDirectories(snapshotsDir).Length.Should().Be(2);
             //for simplicity move to the created dir
-            expectationsDir = Directory.GetDirectories(expectationsDir).Single(d => d.EndsWith(".received", StringComparison.Ordinal));
-            File.Exists(Path.Combine(expectationsDir, templateOutputDir, "Test.cs")).Should().BeTrue();
-            File.Exists(Path.Combine(expectationsDir, "std-streams", "stdout.txt")).Should().BeTrue();
-            File.Exists(Path.Combine(expectationsDir, "std-streams", "stderr.txt")).Should().BeTrue();
-            Directory.GetFiles(expectationsDir, "*", SearchOption.AllDirectories).Length.Should().Be(3);
+            snapshotsDir = Directory.GetDirectories(snapshotsDir).Single(d => d.EndsWith(".received", StringComparison.Ordinal));
+            File.Exists(Path.Combine(snapshotsDir, templateOutputDir, "Test.cs")).Should().BeTrue();
+            File.Exists(Path.Combine(snapshotsDir, "std-streams", "stdout.txt")).Should().BeTrue();
+            File.Exists(Path.Combine(snapshotsDir, "std-streams", "stderr.txt")).Should().BeTrue();
+            Directory.GetFiles(snapshotsDir, "*", SearchOption.AllDirectories).Length.Should().Be(3);
 
-            File.ReadAllText(Path.Combine(expectationsDir, templateOutputDir, "Test.cs").UnixifyLineBreaks()).Should()
+            File.ReadAllText(Path.Combine(snapshotsDir, templateOutputDir, "Test.cs").UnixifyLineBreaks()).Should()
                 .BeEquivalentTo(File.ReadAllText(Path.Combine(workingDir, templateOutputDir, "Test.cs")).UnixifyLineBreaks());
 
             // Accept changes
-            string verifiedDir = expectationsDir.Replace(".received", ".verified", StringComparison.Ordinal);
+            string verifiedDir = snapshotsDir.Replace(".received", ".verified", StringComparison.Ordinal);
             Directory.Delete(verifiedDir, false);
-            Directory.Move(expectationsDir, verifiedDir);
+            Directory.Move(snapshotsDir, verifiedDir);
 
             //reset the expectations dir to where it was before previous run
-            expectationsDir = Path.GetDirectoryName(expectationsDir)!;
+            snapshotsDir = Path.GetDirectoryName(snapshotsDir)!;
 
             // And run again same scenario - verification should succeed now
             string workingDir2 = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
@@ -197,8 +197,8 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.IntegrationTests
                 "--verify-std",
                 "-o",
                 workingDir2,
-                "--expectations-directory",
-                expectationsDir);
+                "--snapshots-directory",
+                snapshotsDir);
 
             cmd2.Execute()
                 .Should()
@@ -208,7 +208,7 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.IntegrationTests
 
             Directory.Delete(workingDir, true);
             Directory.Delete(workingDir2, true);
-            Directory.Delete(expectationsDir, true);
+            Directory.Delete(snapshotsDir, true);
         }
     }
 }

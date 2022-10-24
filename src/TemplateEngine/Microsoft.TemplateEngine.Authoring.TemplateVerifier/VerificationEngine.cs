@@ -178,12 +178,12 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier
             }
             scenarioPrefix = string.IsNullOrEmpty(scenarioPrefix) ? "_" : scenarioPrefix;
             verifySettings.UseTypeName(scenarioPrefix);
-            string expectationsDir = options.ExpectationsDirectory ?? "VerifyExpectations";
-            if (!string.IsNullOrEmpty(callerDir) && !Path.IsPathRooted(expectationsDir))
+            string snapshotsDir = options.SnapshotsDirectory ?? "Snapshots";
+            if (!string.IsNullOrEmpty(callerDir) && !Path.IsPathRooted(snapshotsDir))
             {
-                expectationsDir = Path.Combine(callerDir, expectationsDir);
+                snapshotsDir = Path.Combine(callerDir, snapshotsDir);
             }
-            verifySettings.UseDirectory(expectationsDir);
+            verifySettings.UseDirectory(snapshotsDir);
             verifySettings.UseMethodName(GetScenarioName(options));
 
             if ((options.UniqueFor ?? UniqueForOption.None) != UniqueForOption.None)

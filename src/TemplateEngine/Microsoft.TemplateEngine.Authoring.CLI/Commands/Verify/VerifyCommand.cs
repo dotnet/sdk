@@ -45,9 +45,9 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.Commands.Verify
             Description = LocalizableStrings.command_verify_help_outputPath_description,
         };
 
-        private readonly Option<string> _expectationsDirectoryOption = new(new[] { "-d", "--expectations-directory" })
+        private readonly Option<string> _snapshotsDirectoryOption = new(new[] { "-d", "--snapshots-directory" })
         {
-            Description = LocalizableStrings.command_verify_help_expectationsDirPath_description,
+            Description = LocalizableStrings.command_verify_help_snapshotsDirPath_description,
         };
 
         private readonly Option<string> _scenarioNameOption = new(new[] { "--scenario-name" })
@@ -102,7 +102,7 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.Commands.Verify
             AddOption(_templatePathOption);
             AddOption(_newCommandPathOption);
             AddOption(_templateOutputPathOption);
-            AddOption(_expectationsDirectoryOption);
+            AddOption(_snapshotsDirectoryOption);
             AddOption(_scenarioNameOption);
             AddOption(_disableDiffToolOption);
             AddOption(_disableDefaultExcludePatternsOption);
@@ -125,7 +125,7 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.Commands.Verify
                 templateSpecificArgs: parseResult.GetValueForOption(verifyCommand._remainingArguments),
                 templatePath: parseResult.GetValueForOption(verifyCommand._templatePathOption),
                 dotnetNewCommandAssemblyPath: parseResult.GetValueForOption(verifyCommand._newCommandPathOption),
-                expectationsDirectory: parseResult.GetValueForOption(verifyCommand._expectationsDirectoryOption),
+                snapshotsDirectory: parseResult.GetValueForOption(verifyCommand._snapshotsDirectoryOption),
                 scenarioDistinguisher: parseResult.GetValueForOption(verifyCommand._scenarioNameOption),
                 outputDirectory: parseResult.GetValueForOption(verifyCommand._templateOutputPathOption),
                 disableDiffTool: parseResult.GetValueForOption(verifyCommand._disableDiffToolOption),
@@ -153,7 +153,7 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.Commands.Verify
                     VerificationExcludePatterns = args.VerificationExcludePatterns,
                     VerificationIncludePatterns = args.VerificationIncludePatterns,
                     DotnetNewCommandAssemblyPath = args.DotnetNewCommandAssemblyPath,
-                    ExpectationsDirectory = args.ExpectationsDirectory,
+                    SnapshotsDirectory = args.SnapshotsDirectory,
                     ScenarioName = args.ScenarioDistinguisher,
                     OutputDirectory = args.OutputDirectory,
                     VerifyCommandOutput = args.VerifyCommandOutput,

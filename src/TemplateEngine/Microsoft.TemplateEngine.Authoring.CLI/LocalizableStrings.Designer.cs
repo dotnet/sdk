@@ -225,15 +225,6 @@ namespace Microsoft.TemplateEngine.Authoring.CLI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Specifies path to the directory with expectation files..
-        /// </summary>
-        internal static string command_verify_help_expectationsDirPath_description {
-            get {
-                return ResourceManager.GetString("command_verify_help_expectationsDirPath_description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to If set to true - &apos;dotnet new&apos; command is expected to return non-zero return code..
         /// </summary>
         internal static string command_verify_help_expectFailure_description {
@@ -266,6 +257,15 @@ namespace Microsoft.TemplateEngine.Authoring.CLI {
         internal static string command_verify_help_scenarioName_description {
             get {
                 return ResourceManager.GetString("command_verify_help_scenarioName_description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Specifies path to the directory with snapshot files..
+        /// </summary>
+        internal static string command_verify_help_snapshotsDirPath_description {
+            get {
+                return ResourceManager.GetString("command_verify_help_snapshotsDirPath_description", resourceCulture);
             }
         }
         

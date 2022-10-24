@@ -37,9 +37,9 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier
         public IEnumerable<string>? TemplateSpecificArgs { get; init; }
 
         /// <summary>
-        /// Gets the directory with expectation files.
+        /// Gets the directory with snapshot files.
         /// </summary>
-        public string? ExpectationsDirectory { get; init; }
+        public string? SnapshotsDirectory { get; init; }
 
         /// <summary>
         /// If set to true - 'dotnet new' command standard output and error contents will be verified along with the produced template files.

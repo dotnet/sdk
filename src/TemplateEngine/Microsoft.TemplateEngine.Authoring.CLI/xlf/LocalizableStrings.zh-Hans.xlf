@@ -103,11 +103,6 @@ Do not localize: "template.json"</note>
         <target state="translated">如果设置为 true–"dotnet new" 命令应返回非零返回代码。</target>
         <note>Do not translate 'true'. Do not translate 'dotnet new'</note>
       </trans-unit>
-      <trans-unit id="command_verify_help_expectationsDirPath_description">
-        <source>Specifies path to the directory with expectation files.</source>
-        <target state="translated">指定具有预期文件的目录的路径。</target>
-        <note />
-      </trans-unit>
       <trans-unit id="command_verify_help_newCommandPath_description">
         <source>Specifies the path to custom assembly implementing 'dotnet new' command.</source>
         <target state="translated">指定实现 "dotnet new" 命令的自定义程序集的路径。</target>
@@ -121,6 +116,11 @@ Do not localize: "template.json"</note>
       <trans-unit id="command_verify_help_scenarioName_description">
         <source>Specifies optional scenario name to be used in the snapshot folder name.</source>
         <target state="translated">指定要在快照文件夹名称中使用的可选方案名称。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="command_verify_help_snapshotsDirPath_description">
+        <source>Specifies path to the directory with snapshot files.</source>
+        <target state="new">Specifies path to the directory with snapshot files.</target>
         <note />
       </trans-unit>
       <trans-unit id="command_verify_help_templateName_description">

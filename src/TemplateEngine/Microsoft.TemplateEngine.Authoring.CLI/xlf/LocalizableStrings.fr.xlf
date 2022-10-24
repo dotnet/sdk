@@ -103,11 +103,6 @@ Do not localize: "template.json"</note>
         <target state="translated">Si la valeur est définie sur true, la commande 'dotnet new' doit retourner un code de retour différent de zéro.</target>
         <note>Do not translate 'true'. Do not translate 'dotnet new'</note>
       </trans-unit>
-      <trans-unit id="command_verify_help_expectationsDirPath_description">
-        <source>Specifies path to the directory with expectation files.</source>
-        <target state="translated">Spécifie le chemin d’accès au répertoire avec les fichiers attendus.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="command_verify_help_newCommandPath_description">
         <source>Specifies the path to custom assembly implementing 'dotnet new' command.</source>
         <target state="translated">Spécifie le chemin d’accès de l’assembly personnalisé implémentant la commande 'dotnet new'.</target>
@@ -121,6 +116,11 @@ Do not localize: "template.json"</note>
       <trans-unit id="command_verify_help_scenarioName_description">
         <source>Specifies optional scenario name to be used in the snapshot folder name.</source>
         <target state="translated">Spécifie le nom de scénario facultatif à utiliser dans le nom du dossier d’instantanés.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="command_verify_help_snapshotsDirPath_description">
+        <source>Specifies path to the directory with snapshot files.</source>
+        <target state="new">Specifies path to the directory with snapshot files.</target>
         <note />
       </trans-unit>
       <trans-unit id="command_verify_help_templateName_description">

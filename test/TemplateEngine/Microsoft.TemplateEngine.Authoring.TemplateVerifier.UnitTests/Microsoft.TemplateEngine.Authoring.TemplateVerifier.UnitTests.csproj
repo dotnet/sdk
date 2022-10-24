@@ -16,9 +16,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Remove="Expectations\**\*" />
-    <Content Include="Expectations\**\*" />
-    <None Include="Expectations\**\*" CopyToOutputDirectory="Never" />
+    <Compile Remove="Snapshots\**\*" />
+    <Content Include="Snapshots\**\*" />
+    <None Include="Snapshots\**\*" CopyToOutputDirectory="Never" />
   </ItemGroup>
 
 </Project>

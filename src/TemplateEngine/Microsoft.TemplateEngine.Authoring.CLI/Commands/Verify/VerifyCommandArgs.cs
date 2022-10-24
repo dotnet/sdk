@@ -22,7 +22,7 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.Commands.Verify
             string? templatePath,
             string? templateSpecificArgs,
             string? dotnetNewCommandAssemblyPath,
-            string? expectationsDirectory,
+            string? snapshotsDirectory,
             string? scenarioDistinguisher,
             string? outputDirectory,
             bool disableDiffTool,
@@ -36,7 +36,7 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.Commands.Verify
         {
             TemplatePath = templatePath;
             DotnetNewCommandAssemblyPath = dotnetNewCommandAssemblyPath;
-            ExpectationsDirectory = expectationsDirectory;
+            SnapshotsDirectory = snapshotsDirectory;
             ScenarioDistinguisher = scenarioDistinguisher;
             OutputDirectory = outputDirectory;
             DisableDiffTool = disableDiffTool;
@@ -69,9 +69,9 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.Commands.Verify
         public IEnumerable<string> TemplateSpecificArgs { get; init; }
 
         /// <summary>
-        /// Gets the directory with expectation files.
+        /// Gets the directory with snapshot files.
         /// </summary>
-        public string? ExpectationsDirectory { get; init; }
+        public string? SnapshotsDirectory { get; init; }
 
         /// <summary>
         /// Gets a custom prefix prepended in front of generated scenario name - result used for naming verification subdirectories.

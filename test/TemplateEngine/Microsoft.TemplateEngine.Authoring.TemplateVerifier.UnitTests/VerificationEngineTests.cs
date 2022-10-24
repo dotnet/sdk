@@ -74,7 +74,7 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.UnitTests
         public async void ExecuteFailsOnInstantiationFailure()
         {
             string workingDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName().Replace(".", string.Empty));
-            string expectationsDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName().Replace(".", string.Empty));
+            string snapshotsDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName().Replace(".", string.Empty));
 
             ICommandRunner commandRunner = A.Fake<ICommandRunner>();
             A.CallTo(() => commandRunner.RunCommand(A<TestCommand>._))
@@ -84,7 +84,7 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.UnitTests
             {
                 TemplateSpecificArgs = new string[] { "--a", "-b", "c", "--d" },
                 DisableDiffTool = true,
-                ExpectationsDirectory = expectationsDir,
+                SnapshotsDirectory = snapshotsDir,
                 OutputDirectory = workingDir,
                 VerifyCommandOutput = true,
                 UniqueFor = UniqueForOption.OsPlatform | UniqueForOption.OsPlatform,
@@ -103,7 +103,7 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.UnitTests
         public async void ExecuteSucceedsOnExpectedInstantiationFailure()
         {
             string workingDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName().Replace(".", string.Empty));
-            string expectationsDir = "Expectations";
+            string snapshotsDir = "Snapshots";
 
             ICommandRunner commandRunner = A.Fake<ICommandRunner>();
             A.CallTo(() => commandRunner.RunCommand(A<TestCommand>._))
@@ -113,7 +113,7 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.UnitTests
             {
                 TemplateSpecificArgs = new string[] { "--a", "-b", "c", "--d" },
                 //DisableDiffTool = true,
-                ExpectationsDirectory = expectationsDir,
+                SnapshotsDirectory = snapshotsDir,
                 IsCommandExpectedToFail = true,
                 OutputDirectory = workingDir,
                 VerifyCommandOutput = true,
@@ -127,7 +127,7 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.UnitTests
         public async void ExecuteSucceedsOnExpectedInstantiationSuccess()
         {
             string workingDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName().Replace(".", string.Empty));
-            string expectationsDir = "Expectations";
+            string snapshotsDir = "Snapshots";
 
             ICommandRunner commandRunner = A.Fake<ICommandRunner>();
             A.CallTo(() => commandRunner.RunCommand(A<TestCommand>._))
@@ -137,7 +137,7 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.UnitTests
             {
                 TemplateSpecificArgs = new string[] { "--x", "y", "-z" },
                 //DisableDiffTool = true,
-                ExpectationsDirectory = expectationsDir,
+                SnapshotsDirectory = snapshotsDir,
                 IsCommandExpectedToFail = false,
                 OutputDirectory = workingDir,
                 VerifyCommandOutput = true,

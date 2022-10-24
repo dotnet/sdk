@@ -185,9 +185,6 @@ Do not localize: "template.json"</comment>
     <value>If set to true - the diff tool won't be automatically started by the Verifier on verification failures.</value>
     <comment>Do not translate 'true'.</comment>
   </data>
-  <data name="command_verify_help_expectationsDirPath_description" xml:space="preserve">
-    <value>Specifies path to the directory with expectation files.</value>
-  </data>
   <data name="command_verify_help_expectFailure_description" xml:space="preserve">
     <value>If set to true - 'dotnet new' command is expected to return non-zero return code.</value>
     <comment>Do not translate 'true'. Do not translate 'dotnet new'</comment>
@@ -201,6 +198,9 @@ Do not localize: "template.json"</comment>
   </data>
   <data name="command_verify_help_scenarioName_description" xml:space="preserve">
     <value>Specifies optional scenario name to be used in the snapshot folder name.</value>
+  </data>
+  <data name="command_verify_help_snapshotsDirPath_description" xml:space="preserve">
+    <value>Specifies path to the directory with snapshot files.</value>
   </data>
   <data name="command_verify_help_templateName_description" xml:space="preserve">
     <value>Name of the template to be verified. Can be already installed template or a template within local path specified with -p/--template-path option.</value>
