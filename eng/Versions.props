@@ -93,7 +93,6 @@
     <SystemCodeDomPackageVersion>8.0.0-alpha.1.22519.7</SystemCodeDomPackageVersion>
     <SystemTextEncodingCodePagesPackageVersion>8.0.0-alpha.1.22519.7</SystemTextEncodingCodePagesPackageVersion>
     <SystemResourcesExtensionsPackageVersion>8.0.0-alpha.1.22519.7</SystemResourcesExtensionsPackageVersion>
-    <MicrosoftDotNetILCompilerPackageVersion>8.0.0-alpha.1.22519.7</MicrosoftDotNetILCompilerPackageVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/format -->
