@@ -52,7 +52,7 @@
 
   <Target Name="CommitInitialContent">
     <Exec Command="git add -A" WorkingDirectory="$(VmrDir)" />
-    <Exec Command="git commit -m 'VMR initialized'" WorkingDirectory="$(VmrDir)" />
+    <Exec Command="git commit -m '[Initialization] Initial commit%0D%0A%0D%0A[[ commit created by automation ]]'" WorkingDirectory="$(VmrDir)" />
   </Target>
 
   <Target Name="InitializeRepoAndDependentsRecursive"
@@ -86,7 +86,7 @@
 
   <Target Name="CommitTextOnlyPackages">
     <Exec Command="git add packages/text-only" WorkingDirectory="$(VmrDir)" />
-    <Exec Command="git commit -m 'Initialized text-only packages'" WorkingDirectory="$(VmrDir)" />
+    <Exec Command="git commit -m '[Initialization] Initialized text-only packages%0D%0A%0D%0A[[ commit created by automation ]]'" WorkingDirectory="$(VmrDir)" />
   </Target>
 
 </Project>
