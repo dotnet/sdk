@@ -151,7 +151,7 @@ namespace Microsoft.NET.Build.Tasks
                 if (!string.IsNullOrEmpty(fusionName))
                 {
                     AssemblyName assemblyName = new AssemblyName(fusionName);
-                    version = assemblyName.Version.ToString();
+                    version = assemblyName.Version?.ToString();
                 }
 
                 if (string.IsNullOrEmpty(version))
