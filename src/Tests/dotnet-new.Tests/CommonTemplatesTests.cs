@@ -247,6 +247,71 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         }
 
         [Fact]
+        public void EditorConfigTests_orig()
+        {
+            string workingDir = CreateTemporaryFolder();
+
+            new DotnetNewCommand(_log, "editorconfig")
+                .WithCustomHive(_fixture.HomeDirectory)
+                .WithWorkingDirectory(workingDir)
+                .Execute()
+                .Should()
+                .ExitWith(0)
+                .And.NotHaveStdErr()
+                .And.HaveStdOut($@"The template ""EditorConfig file"" was created successfully.");
+
+            string path = Path.Combine(workingDir, ".editorconfig");
+            string editorConfigContent = File.ReadAllText(path);
+            Assert.Contains("dotnet_naming_rule", editorConfigContent);
+            Assert.Contains("dotnet_style_", editorConfigContent);
+            Assert.Contains("dotnet_naming_symbols", editorConfigContent);
+            File.Delete(path);
+
+            new DotnetNewCommand(_log, "editorconfig", "--empty")
+                .WithCustomHive(_fixture.HomeDirectory)
+                .WithWorkingDirectory(workingDir)
+                .Execute()
+                .Should()
+                .ExitWith(0)
+                .And.NotHaveStdErr()
+                .And.HaveStdOut($@"The template ""EditorConfig file"" was created successfully.");
+
+            editorConfigContent = File.ReadAllText(path);
+            Assert.DoesNotContain("dotnet_naming_rule", editorConfigContent);
+            Assert.DoesNotContain("dotnet_style_", editorConfigContent);
+            Assert.DoesNotContain("dotnet_naming_symbols", editorConfigContent);
+            Assert.Contains("root = true", editorConfigContent);
+            Directory.Delete(workingDir, true);
+
+            Assert.Fail("Fail to get logs");
+        }
+
+        [Fact]
+        public void EditorConfigTests()
+        {
+            string workingDir = CreateTemporaryFolder();
+            string path = Path.Combine(workingDir, ".editorconfig");
+
+            new DotnetNewCommand(_log, "editorconfig", "--empty")
+                .WithCustomHive(_fixture.HomeDirectory)
+                .WithWorkingDirectory(workingDir)
+                .Execute()
+                .Should()
+                .ExitWith(0)
+                .And.NotHaveStdErr()
+                .And.HaveStdOut($@"The template ""EditorConfig file"" was created successfully.");
+
+            string editorConfigContent = File.ReadAllText(path);
+            Assert.DoesNotContain("dotnet_naming_rule", editorConfigContent);
+            Assert.DoesNotContain("dotnet_style_", editorConfigContent);
+            Assert.DoesNotContain("dotnet_naming_symbols", editorConfigContent);
+            Assert.Contains("root = true", editorConfigContent);
+            Directory.Delete(workingDir, true);
+
+            Assert.Fail("Fail to get logs");
+        }
+
+        [Fact]
         public async void EditorConfigTests_Default()
         {
             TemplateVerifierOptions options = new TemplateVerifierOptions(templateName: "editorconfig")
@@ -411,6 +476,52 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
             VerificationEngine engine = new VerificationEngine(_logger);
             await engine.Execute(options).ConfigureAwait(false);
+        }
+
+        [Theory]
+        [InlineData("9.0")]
+        [InlineData("9")]
+        public void TopLevelProgramSupport_WhenFlagIsEnabled_NoFileScopedNamespaces_orig(string? langVersion)
+        {
+            string workingDir = CreateTemporaryFolder(folderName: $"{langVersion ?? "null"}");
+
+            List<string> args = new() { "console", "-o", "MyProject", "--use-program-main" };
+            if (!string.IsNullOrEmpty(langVersion))
+            {
+                args.Add("--langVersion");
+                args.Add(langVersion);
+            }
+
+            new DotnetNewCommand(_log, args.ToArray())
+                .WithCustomHive(_fixture.HomeDirectory)
+                .WithWorkingDirectory(workingDir)
+                .Execute()
+                .Should()
+                .ExitWith(0)
+                .And.NotHaveStdErr();
+
+            new DotnetBuildCommand(_log, "MyProject")
+                .WithWorkingDirectory(workingDir)
+                .Execute()
+                .Should().ExitWith(0).And.NotHaveStdErr();
+
+            string programFileContent = File.ReadAllText(Path.Combine(workingDir, "MyProject", "Program.cs"));
+            string expectedTopLevelContent =
+                @"namespace MyProject
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            Console.WriteLine(""Hello, World!"");
+        }
+    }
+}
+";
+            Assert.DoesNotContain("// See https://aka.ms/new-console-template for more information", programFileContent);
+            Assert.Contains(expectedTopLevelContent, programFileContent);
+
+            Assert.Fail("Fail to get logs");
         }
 
         /// <summary>
