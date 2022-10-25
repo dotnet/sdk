@@ -83,7 +83,7 @@ namespace Microsoft.DotNet.ApiCompat
                     {
                         serviceProvider.CompatibilityLogger.LogMessage(
                         MessageImportance.High,
-                        "To update compatibility suppression files, rebuild with \\p:GenerateCompatibilitySuppressions or --generate-suppression-file.");
+                        "Either fix breaking change, or update compatibility suppression files, rebuild with \\p:GenerateCompatibilitySuppressions or --generate-suppression-file.");
                     }
                 }
                 else
