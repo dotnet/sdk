@@ -29,9 +29,10 @@
     <Bundled80Templates Include="Microsoft.Dotnet.Wpf.ProjectTemplates" PackageVersion="$(MicrosoftDotnetWpfProjectTemplates80PackageVersion)" Condition="'$(DotNetBuildFromSource)' != 'true'" />
     <Bundled80Templates Include="Microsoft.Dotnet.WinForms.ProjectTemplates" PackageVersion="$(MicrosoftDotnetWinFormsProjectTemplates80PackageVersion)" Condition="'$(DotNetBuildFromSource)' != 'true'" />
     
+    <Bundled80Templates Include="Microsoft.DotNet.Test.ProjectTemplates.8.0" PackageVersion="$(MicrosoftDotNetTestProjectTemplates80PackageVersion)" />
+    
     <!-- NUnit templates are shipped in Test.ProjectTemplates -->
     <!-- Not available yet for 8.0 -->
-    <Bundled80Templates Include="Microsoft.DotNet.Test.ProjectTemplates.7.0" PackageVersion="$(MicrosoftDotNetTestProjectTemplates70PackageVersion)" />
     <Bundled80Templates Include="Microsoft.DotNet.Common.ProjectTemplates.7.0" PackageVersion="$(MicrosoftDotNetCommonItemTemplates70PackageVersion)" />
   </ItemGroup>
 
