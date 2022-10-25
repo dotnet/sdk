@@ -38,9 +38,18 @@ public class ScrubbersDefinition
         // This is to get the same behavior as Verify.NET
         else
         {
-            ScrubersByExtension[extension.Trim()] = extension.Trim().StartsWith('.')
-                ? throw new TemplateVerificationException(LocalizableStrings.VerificationEngine_Error_ScrubberExtension, TemplateVerificationErrorCode.InvalidOption)
-                : scrubber;
+            extension = extension.Trim();
+            if (extension.StartsWith('.'))
+            {
+                throw new TemplateVerificationException(LocalizableStrings.VerificationEngine_Error_ScrubberExtension, TemplateVerificationErrorCode.InvalidOption);
+            }
+
+            if (ScrubersByExtension.TryGetValue(extension, out var origScrubber))
+            {
+                scrubber = origScrubber + scrubber;
+            }
+
+            ScrubersByExtension[extension] = scrubber;
         }
 
         return this;

@@ -53,7 +53,9 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.UnitTests
                         .AddScrubber(sb => sb.Replace("bb", "xx"), "cs")
                         .AddScrubber(sb => sb.Replace("cc", "yy"), "dll")
                         .AddScrubber(sb => sb.Replace("123", "yy"), "dll")
-                        .AddScrubber(sb => sb.Replace("aa", "zz")))
+                        .AddScrubber(sb => sb.Replace("aa", "zz"))
+                        // supports multiple scrubbers per extension
+                        .AddScrubber(sb => sb.Replace("cc", "**"), "cs"))
                 .WithCustomDirectoryVerifier(
                     async (content, contentFetcher) =>
                     {
@@ -66,7 +68,7 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.UnitTests
             await VerificationEngine.CreateVerificationTask(verifyLocation, "callerLocation", null, options, fileSystem);
 
             resultContents.Keys.Count.Should().Be(2);
-            resultContents["Program.cs"].Should().BeEquivalentTo("zz xx cc");
+            resultContents["Program.cs"].Should().BeEquivalentTo("zz xx **");
             resultContents["Subfolder\\Class.cs"].Should().BeEquivalentTo("123 456 789 zz");
         }
 
