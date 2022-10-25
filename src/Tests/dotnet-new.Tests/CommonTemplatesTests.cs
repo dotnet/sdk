@@ -87,7 +87,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             TemplateVerifierOptions options = new TemplateVerifierOptions(templateName: templateShortName)
             {
                 TemplateSpecificArgs = args,
-                ExpectationsDirectory = "Approvals",
+                SnapshotsDirectory = "Approvals",
                 OutputDirectory = workingDir,
                 VerifyCommandOutput = true,
                 VerificationExcludePatterns = new[] { "*.cs", "*.fs", "*.vb", "*.*proj" },
@@ -181,7 +181,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             TemplateVerifierOptions options = new TemplateVerifierOptions(templateName: templateShortName)
             {
                 TemplateSpecificArgs = args,
-                ExpectationsDirectory = "Approvals",
+                SnapshotsDirectory = "Approvals",
                 VerifyCommandOutput = true,
                 VerificationIncludePatterns = new[] { "*.txt" },
                 DoNotAppendTemplateArgsToScenarioName = true,
@@ -209,7 +209,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         {
             TemplateVerifierOptions options = new TemplateVerifierOptions(templateName: templateShortName)
             {
-                ExpectationsDirectory = "Approvals",
+                SnapshotsDirectory = "Approvals",
                 VerifyCommandOutput = true,
                 VerificationIncludePatterns = new[] { "*.txt" },
                 DoNotAppendTemplateArgsToScenarioName = true,
@@ -237,7 +237,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             TemplateVerifierOptions options = new TemplateVerifierOptions(templateName: "editorconfig")
             {
                 TemplateSpecificArgs = new[] { "--empty" },
-                ExpectationsDirectory = "Approvals",
+                SnapshotsDirectory = "Approvals",
                 SettingsDirectory = _fixture.HomeDirectory,
                 VerifyCommandOutput = true,
             };
@@ -361,7 +361,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         {
             TemplateVerifierOptions options = new TemplateVerifierOptions(templateName: "editorconfig")
             {
-                ExpectationsDirectory = "Approvals",
+                SnapshotsDirectory = "Approvals",
                 SettingsDirectory = _fixture.HomeDirectory,
             }
             .WithCustomDirectoryVerifier(async (content, contentFetcher) =>
@@ -395,7 +395,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             TemplateVerifierOptions options = new TemplateVerifierOptions(templateName: parameters[0])
             {
                 TemplateSpecificArgs = parameters[1..],
-                ExpectationsDirectory = "Approvals",
+                SnapshotsDirectory = "Approvals",
                 SettingsDirectory = _fixture.HomeDirectory,
                 VerifyCommandOutput = true,
             };
@@ -471,7 +471,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             TemplateVerifierOptions options = new TemplateVerifierOptions(templateName: "console")
             {
                 TemplateSpecificArgs = args,
-                ExpectationsDirectory = "Approvals",
+                SnapshotsDirectory = "Approvals",
                 OutputDirectory = workingDir,
                 SettingsDirectory = _fixture.HomeDirectory,
                 // DoNotPrependTemplateNameToScenarioName = true,
@@ -508,7 +508,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             TemplateVerifierOptions options = new TemplateVerifierOptions(templateName: "console")
             {
                 TemplateSpecificArgs = args,
-                ExpectationsDirectory = "Approvals",
+                SnapshotsDirectory = "Approvals",
                 SettingsDirectory = _fixture.HomeDirectory,
                 // DoNotPrependTemplateNameToScenarioName = true,
                 DoNotAppendTemplateArgsToScenarioName = true,
@@ -742,7 +742,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             TemplateVerifierOptions options = new TemplateVerifierOptions(templateName: name)
             {
                 TemplateSpecificArgs = args,
-                ExpectationsDirectory = "Approvals",
+                SnapshotsDirectory = "Approvals",
                 OutputDirectory = workingDir,
                 SettingsDirectory = _fixture.HomeDirectory,
                 DoNotPrependTemplateNameToScenarioName = false,
