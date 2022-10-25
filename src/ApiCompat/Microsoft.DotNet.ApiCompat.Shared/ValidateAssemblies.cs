@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using Microsoft.DotNet.ApiCompatibility.Abstractions;
 using Microsoft.DotNet.ApiCompatibility.Logging;
@@ -84,6 +85,23 @@ namespace Microsoft.DotNet.ApiCompat
 
             // Execute the enqueued work item(s).
             apiCompatRunner.ExecuteWorkItems();
+
+            if (serviceProvider.CompatibilityLogger.SuppressionWasLogged)
+            {
+                if (!generateSuppressionFile)
+                {
+                    serviceProvider.CompatibilityLogger.LogMessage(
+                        MessageImportance.High,
+                        "To update compatibility suppression files, rebuild with \\p:GenerateCompatibilitySuppressions or --generate-suppression-file.");
+                }
+            }
+            else
+            {
+                serviceProvider.CompatibilityLogger.LogMessage(
+                    MessageImportance.High,
+                    "Package validation was successful. No breaking changes."
+                    );
+            }
 
             if (generateSuppressionFile)
             {

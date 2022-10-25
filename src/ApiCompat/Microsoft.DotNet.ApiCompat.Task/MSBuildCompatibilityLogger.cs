@@ -13,12 +13,14 @@ namespace Microsoft.DotNet.ApiCompat.Task
     {
         private readonly Logger _log;
         private readonly ISuppressionEngine _suppressionEngine;
+        private bool _suppressionWasLogged;
 
         public MSBuildCompatibilityLogger(Logger log,
             ISuppressionEngine suppressionEngine)
         {
             _log = log;
             _suppressionEngine = suppressionEngine;
+            _suppressionWasLogged = false;
         }
 
         /// <inheritdoc />
@@ -38,9 +40,13 @@ namespace Microsoft.DotNet.ApiCompat.Task
             if (_suppressionEngine.IsErrorSuppressed(suppression))
                 return false;
 
+            _suppressionWasLogged = true;
+
             _log.Log(new Message(messageLevel, string.Format(format, args), code));
 
             return true;
         }
+
+        public bool SuppressionWasLogged => _suppressionWasLogged;
     }
 }
