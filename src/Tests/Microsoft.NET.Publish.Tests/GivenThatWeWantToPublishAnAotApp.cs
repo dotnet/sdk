@@ -443,8 +443,6 @@ namespace Microsoft.NET.Publish.Tests
                 var publishDirectory = publishCommand.GetOutputDirectory(targetFramework: targetFramework, runtimeIdentifier: rid).FullName;
                 var publishedDll = Path.Combine(publishDirectory, $"{projectName}.dll");
                 File.Exists(publishedDll).Should().BeTrue();
-
-                CheckIlcVersions(Path.Combine(testAsset.TestRoot, testProject.Name), targetFramework, ExplicitPackageVersion);
             }
         }
 
