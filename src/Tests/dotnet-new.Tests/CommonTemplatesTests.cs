@@ -249,6 +249,40 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         }
 
         [Fact]
+        public async void EditorConfigTests_Empty2()
+        {
+            TemplateVerifierOptions options = new TemplateVerifierOptions(templateName: "editorconfig")
+            {
+                TemplateSpecificArgs = new[] { "--empty" },
+                SnapshotsDirectory = "Approvals",
+                SettingsDirectory = _fixture.HomeDirectory,
+                DisableDefaultVerificationExcludePatterns = true,
+                VerifyCommandOutput = true,
+            };
+
+            VerificationEngine engine = new VerificationEngine(_logger);
+            await engine.Execute(options).ConfigureAwait(false);
+        }
+
+        [Fact]
+        public async void EditorConfigTests_Empty_withWorkDir()
+        {
+            string workingDir = CreateTemporaryFolder();
+
+            TemplateVerifierOptions options = new TemplateVerifierOptions(templateName: "editorconfig")
+            {
+                TemplateSpecificArgs = new[] { "--empty" },
+                SnapshotsDirectory = "Approvals",
+                SettingsDirectory = _fixture.HomeDirectory,
+                OutputDirectory = workingDir,
+                VerifyCommandOutput = true,
+            };
+
+            VerificationEngine engine = new VerificationEngine(_logger);
+            await engine.Execute(options).ConfigureAwait(false);
+        }
+
+        [Fact]
         public async void EditorConfigTests_Empty_custom()
         {
             TemplateVerifierOptions options = new TemplateVerifierOptions(templateName: "editorconfig")
@@ -648,6 +682,76 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             string workingDir = CreateTemporaryFolder(folderName: $"{langVersion ?? "null"}");
 
             List<string> args = new() { "new", "console", "-o", "MyProject", "--use-program-main" };
+            if (!string.IsNullOrEmpty(langVersion))
+            {
+                args.Add("--langVersion");
+                args.Add(langVersion);
+            }
+
+            //Theory - the missing env vars or dotnet full path is the culprit
+            SdkCommandSpec spec = new SdkCommandSpec()
+            {
+                FileName = "dotnet",
+                Arguments = args,
+                WorkingDirectory = workingDir
+            };
+
+            var command = spec.ToCommand()
+                .CaptureStdOut()
+                .CaptureStdErr();
+
+            var result = ((Microsoft.DotNet.Cli.Utils.Command)command).Execute();
+
+            Log.WriteLine($"> {result.StartInfo.FileName} {result.StartInfo.Arguments}");
+            Log.WriteLine(result.StdOut);
+
+            if (!string.IsNullOrEmpty(result.StdErr))
+            {
+                Log.WriteLine("");
+                Log.WriteLine("StdErr:");
+                Log.WriteLine(result.StdErr);
+            }
+
+            if (result.ExitCode != 0)
+            {
+                Log.WriteLine($"Exit Code: {result.ExitCode}");
+            }
+
+            result.ExitCode.Should().Be(0, "Expected zero exit code");
+            result.StdErr.Should().BeNullOrEmpty("Expected no stderr");
+
+            new DotnetBuildCommand(_log, "MyProject")
+                .WithWorkingDirectory(workingDir)
+                .Execute()
+                .Should().ExitWith(0).And.NotHaveStdErr();
+
+            string programFileContent = File.ReadAllText(Path.Combine(workingDir, "MyProject", "Program.cs"));
+            string expectedTopLevelContent =
+                @"namespace MyProject
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            Console.WriteLine(""Hello, World!"");
+        }
+    }
+}
+";
+            Assert.DoesNotContain("// See https://aka.ms/new-console-template for more information", programFileContent);
+            Assert.Contains(expectedTopLevelContent, programFileContent);
+
+            Assert.Fail("Fail to get logs");
+        }
+
+        [Theory]
+        [InlineData("9.0")]
+        [InlineData("9")]
+        public void TopLevelProgramSupport_WhenFlagIsEnabled_X_NoFileScopedNamespaces_orig__X_DotnetDotnet(string? langVersion)
+        {
+            string workingDir = CreateTemporaryFolder(folderName: $"{langVersion ?? "null"}");
+
+            List<string> args = new() { TestContext.Current.ToolsetUnderTest.DotNetHostPath, "new", "console", "-o", "MyProject", "--use-program-main" };
             if (!string.IsNullOrEmpty(langVersion))
             {
                 args.Add("--langVersion");
