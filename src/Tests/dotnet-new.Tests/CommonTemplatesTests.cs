@@ -249,6 +249,30 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         }
 
         [Fact]
+        public async void EditorConfigTests_Empty_custom()
+        {
+            TemplateVerifierOptions options = new TemplateVerifierOptions(templateName: "editorconfig")
+            {
+                TemplateSpecificArgs = new[] { "--empty" },
+                SnapshotsDirectory = "Approvals",
+                SettingsDirectory = _fixture.HomeDirectory,
+            }
+            .WithCustomDirectoryVerifier(async (content, contentFetcher) =>
+            {
+                await foreach (var (filePath, scrubbedContent) in contentFetcher.Value)
+                {
+                    filePath.Replace(Path.DirectorySeparatorChar, '/').Should().BeEquivalentTo(@"editorconfig/.editorconfig");
+                    scrubbedContent.Trim().Should().BeEquivalentTo("root = true");
+                }
+            });
+
+            VerificationEngine engine = new VerificationEngine(_logger);
+            await engine.Execute(options).ConfigureAwait(false);
+
+            Assert.Fail("Fail to get logs - as file is obviously created");
+        }
+
+        [Fact]
         public void EditorConfigTests_orig()
         {
             string workingDir = CreateTemporaryFolder();
