@@ -120,7 +120,7 @@ Do not localize: "template.json"</note>
       </trans-unit>
       <trans-unit id="command_verify_help_snapshotsDirPath_description">
         <source>Specifies path to the directory with snapshot files.</source>
-        <target state="new">Specifies path to the directory with snapshot files.</target>
+        <target state="translated">스냅샷 파일이 있는 디렉터리의 경로를 지정합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="command_verify_help_templateName_description">
