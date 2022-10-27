@@ -5,11 +5,11 @@ using System.Diagnostics;
 
 namespace Microsoft.TemplateEngine.CommandUtils
 {
-    public readonly struct CommandResult
+    internal readonly struct CommandResult
     {
-        public static readonly CommandResult Empty;
+        internal static readonly CommandResult Empty;
 
-        public CommandResult(ProcessStartInfo startInfo, int exitCode, string? stdOut, string? stdErr)
+        internal CommandResult(ProcessStartInfo startInfo, int exitCode, string? stdOut, string? stdErr)
         {
             StartInfo = startInfo;
             ExitCode = exitCode;
@@ -17,12 +17,12 @@ namespace Microsoft.TemplateEngine.CommandUtils
             StdErr = stdErr;
         }
 
-        public ProcessStartInfo StartInfo { get; }
+        internal ProcessStartInfo StartInfo { get; }
 
-        public int ExitCode { get; }
+        internal int ExitCode { get; }
 
-        public string? StdOut { get; }
+        internal string? StdOut { get; }
 
-        public string? StdErr { get; }
+        internal string? StdErr { get; }
     }
 }

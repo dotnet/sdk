@@ -1,13 +1,11 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Text;
 
 namespace Microsoft.TemplateEngine.CommandUtils
 {
-    public static class ArgumentEscaper
+    internal static class ArgumentEscaper
     {
         /// <summary>
         /// Undo the processing which took place to create string[] args in Main,
@@ -17,7 +15,7 @@ namespace Microsoft.TemplateEngine.CommandUtils
         /// </summary>
         /// <param name="args"></param>
         /// <returns></returns>
-        public static string EscapeAndConcatenateArgArrayForProcessStart(IEnumerable<string> args)
+        internal static string EscapeAndConcatenateArgArrayForProcessStart(IEnumerable<string> args)
         {
             IEnumerable<string> escaped = EscapeArgArray(args);
             return string.Join(" ", escaped);
@@ -31,13 +29,13 @@ namespace Microsoft.TemplateEngine.CommandUtils
         /// </summary>
         /// <param name="args"></param>
         /// <returns></returns>
-        public static string EscapeAndConcatenateArgArrayForCmdProcessStart(IEnumerable<string> args)
+        internal static string EscapeAndConcatenateArgArrayForCmdProcessStart(IEnumerable<string> args)
         {
             IEnumerable<string> escaped = EscapeArgArrayForCmd(args);
             return string.Join(" ", escaped);
         }
 
-        public static string EscapeSingleArg(string arg)
+        internal static string EscapeSingleArg(string arg)
         {
             var sb = new StringBuilder();
 

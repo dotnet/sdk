@@ -1,33 +1,31 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
 using Xunit.Abstractions;
 
 namespace Microsoft.TemplateEngine.CommandUtils
 {
-    public class DotnetNewCommand : DotnetCommand
+    internal class DotnetNewCommand : DotnetCommand
     {
         private bool _hiveSet;
 
-        public DotnetNewCommand(ILogger log, params string[] args) : base(log, "new", args)
+        internal DotnetNewCommand(ILogger log, params string[] args) : base(log, "new", args)
         {
         }
 
-        public DotnetNewCommand(ITestOutputHelper log, params string[] args) : base(log, "new", args)
+        internal DotnetNewCommand(ITestOutputHelper log, params string[] args) : base(log, "new", args)
         {
         }
 
-        public DotnetNewCommand WithVirtualHive()
+        internal DotnetNewCommand WithVirtualHive()
         {
             Arguments.Add("--debug:ephemeral-hive");
             _hiveSet = true;
             return this;
         }
 
-        public DotnetNewCommand WithCustomHive(string path)
+        internal DotnetNewCommand WithCustomHive(string path)
         {
             Arguments.Add("--debug:custom-hive");
             Arguments.Add(path);
@@ -35,19 +33,19 @@ namespace Microsoft.TemplateEngine.CommandUtils
             return this;
         }
 
-        public DotnetNewCommand WithoutCustomHive()
+        internal DotnetNewCommand WithoutCustomHive()
         {
             _hiveSet = true;
             return this;
         }
 
-        public DotnetNewCommand WithoutBuiltInTemplates()
+        internal DotnetNewCommand WithoutBuiltInTemplates()
         {
             Arguments.Add("--debug:disable-sdk-templates");
             return this;
         }
 
-        public DotnetNewCommand WithDebug()
+        internal DotnetNewCommand WithDebug()
         {
             WithEnvironmentVariable("DOTNET_CLI_CONTEXT_VERBOSE", "true");
             return this;

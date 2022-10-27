@@ -3,7 +3,6 @@
 
 using FluentAssertions;
 using Microsoft.TemplateEngine.CommandUtils;
-using Microsoft.TemplateEngine.CommandUtils.Assertions;
 using Microsoft.TemplateEngine.TestHelper;
 
 namespace Microsoft.TemplateSearch.TemplateDiscovery.Test

@@ -1,16 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using Microsoft.Extensions.Logging;
 using Xunit.Abstractions;
 
 namespace Microsoft.TemplateEngine.CommandUtils
 {
-    public abstract class TestCommand
+    internal abstract class TestCommand
     {
         private readonly LoggerWrapper _loggerWrapper;
 
@@ -24,32 +21,32 @@ namespace Microsoft.TemplateEngine.CommandUtils
             _loggerWrapper = new LoggerWrapper(log);
         }
 
-        public string? WorkingDirectory { get; set; }
+        internal string? WorkingDirectory { get; set; }
 
-        public List<string> Arguments { get; set; } = new List<string>();
+        internal List<string> Arguments { get; set; } = new List<string>();
 
-        public List<string> EnvironmentToRemove { get; } = new List<string>();
+        internal List<string> EnvironmentToRemove { get; } = new List<string>();
 
         //  These only work via Execute(), not when using GetProcessStartInfo()
-        public Action<string>? CommandOutputHandler { get; set; }
+        internal Action<string>? CommandOutputHandler { get; set; }
 
-        public Action<Process>? ProcessStartedHandler { get; set; }
+        internal Action<Process>? ProcessStartedHandler { get; set; }
 
         protected Dictionary<string, string> Environment { get; set; } = new Dictionary<string, string>();
 
-        public TestCommand WithEnvironmentVariable(string name, string value)
+        internal TestCommand WithEnvironmentVariable(string name, string value)
         {
             Environment[name] = value;
             return this;
         }
 
-        public TestCommand WithWorkingDirectory(string workingDirectory)
+        internal TestCommand WithWorkingDirectory(string workingDirectory)
         {
             WorkingDirectory = workingDirectory;
             return this;
         }
 
-        public ProcessStartInfo GetProcessStartInfo(params string[] args)
+        internal ProcessStartInfo GetProcessStartInfo(params string[] args)
         {
             SdkCommandSpec commandSpec = CreateCommandSpec(args);
 
@@ -58,13 +55,13 @@ namespace Microsoft.TemplateEngine.CommandUtils
             return psi;
         }
 
-        public CommandResult Execute(params string[] args)
+        internal CommandResult Execute(params string[] args)
         {
             IEnumerable<string> enumerableArgs = args;
             return Execute(enumerableArgs);
         }
 
-        public virtual CommandResult Execute(IEnumerable<string> args)
+        internal virtual CommandResult Execute(IEnumerable<string> args)
         {
             Command command = CreateCommandSpec(args)
                 .ToCommand()

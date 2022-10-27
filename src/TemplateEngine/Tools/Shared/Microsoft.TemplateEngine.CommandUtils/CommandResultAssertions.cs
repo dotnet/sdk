@@ -1,51 +1,50 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Text.RegularExpressions;
 using FluentAssertions;
 using FluentAssertions.Execution;
 
-namespace Microsoft.TemplateEngine.CommandUtils.Assertions
+namespace Microsoft.TemplateEngine.CommandUtils
 {
-    public class CommandResultAssertions
+    internal class CommandResultAssertions
     {
         private readonly CommandResult _commandResult;
 
-        public CommandResultAssertions(CommandResult commandResult)
+        internal CommandResultAssertions(CommandResult commandResult)
         {
             _commandResult = commandResult;
         }
 
-        public AndConstraint<CommandResultAssertions> ExitWith(int expectedExitCode)
+        internal AndConstraint<CommandResultAssertions> ExitWith(int expectedExitCode)
         {
             Execute.Assertion.ForCondition(_commandResult.ExitCode == expectedExitCode)
                 .FailWith(AppendDiagnosticsTo($"Expected command to exit with {expectedExitCode} but it did not."));
             return new AndConstraint<CommandResultAssertions>(this);
         }
 
-        public AndConstraint<CommandResultAssertions> Pass()
+        internal AndConstraint<CommandResultAssertions> Pass()
         {
             Execute.Assertion.ForCondition(_commandResult.ExitCode == 0)
                 .FailWith(AppendDiagnosticsTo($"Expected command to pass but it did not."));
             return new AndConstraint<CommandResultAssertions>(this);
         }
 
-        public AndConstraint<CommandResultAssertions> Fail()
+        internal AndConstraint<CommandResultAssertions> Fail()
         {
             Execute.Assertion.ForCondition(_commandResult.ExitCode != 0)
                 .FailWith(AppendDiagnosticsTo($"Expected command to fail but it did not."));
             return new AndConstraint<CommandResultAssertions>(this);
         }
 
-        public AndConstraint<CommandResultAssertions> HaveStdOut()
+        internal AndConstraint<CommandResultAssertions> HaveStdOut()
         {
             Execute.Assertion.ForCondition(!string.IsNullOrEmpty(_commandResult.StdOut))
                 .FailWith(AppendDiagnosticsTo("Command did not output anything to stdout"));
             return new AndConstraint<CommandResultAssertions>(this);
         }
 
-        public AndConstraint<CommandResultAssertions> HaveStdOut(string expectedOutput)
+        internal AndConstraint<CommandResultAssertions> HaveStdOut(string expectedOutput)
         {
             if (_commandResult.StdOut is null)
             {
@@ -56,7 +55,7 @@ namespace Microsoft.TemplateEngine.CommandUtils.Assertions
             return new AndConstraint<CommandResultAssertions>(this);
         }
 
-        public AndConstraint<CommandResultAssertions> HaveStdOutContaining(string pattern)
+        internal AndConstraint<CommandResultAssertions> HaveStdOutContaining(string pattern)
         {
             if (_commandResult.StdOut is null)
             {
@@ -67,7 +66,7 @@ namespace Microsoft.TemplateEngine.CommandUtils.Assertions
             return new AndConstraint<CommandResultAssertions>(this);
         }
 
-        public AndConstraint<CommandResultAssertions> HaveStdOutContaining(Func<string, bool> predicate, string description = "")
+        internal AndConstraint<CommandResultAssertions> HaveStdOutContaining(Func<string, bool> predicate, string description = "")
         {
             if (_commandResult.StdOut is null)
             {
@@ -78,7 +77,7 @@ namespace Microsoft.TemplateEngine.CommandUtils.Assertions
             return new AndConstraint<CommandResultAssertions>(this);
         }
 
-        public AndConstraint<CommandResultAssertions> NotHaveStdOutContaining(string pattern)
+        internal AndConstraint<CommandResultAssertions> NotHaveStdOutContaining(string pattern)
         {
             if (_commandResult.StdOut is null)
             {
@@ -89,7 +88,7 @@ namespace Microsoft.TemplateEngine.CommandUtils.Assertions
             return new AndConstraint<CommandResultAssertions>(this);
         }
 
-        public AndConstraint<CommandResultAssertions> HaveStdOutContainingIgnoreSpaces(string pattern)
+        internal AndConstraint<CommandResultAssertions> HaveStdOutContainingIgnoreSpaces(string pattern)
         {
             if (_commandResult.StdOut is null)
             {
@@ -104,7 +103,7 @@ namespace Microsoft.TemplateEngine.CommandUtils.Assertions
             return new AndConstraint<CommandResultAssertions>(this);
         }
 
-        public AndConstraint<CommandResultAssertions> HaveStdOutContainingIgnoreCase(string pattern)
+        internal AndConstraint<CommandResultAssertions> HaveStdOutContainingIgnoreCase(string pattern)
         {
             if (_commandResult.StdOut is null)
             {
@@ -115,7 +114,7 @@ namespace Microsoft.TemplateEngine.CommandUtils.Assertions
             return new AndConstraint<CommandResultAssertions>(this);
         }
 
-        public AndConstraint<CommandResultAssertions> HaveStdOutMatching(string pattern, RegexOptions options = RegexOptions.None)
+        internal AndConstraint<CommandResultAssertions> HaveStdOutMatching(string pattern, RegexOptions options = RegexOptions.None)
         {
             if (_commandResult.StdOut is null)
             {
@@ -126,7 +125,7 @@ namespace Microsoft.TemplateEngine.CommandUtils.Assertions
             return new AndConstraint<CommandResultAssertions>(this);
         }
 
-        public AndConstraint<CommandResultAssertions> NotHaveStdOutMatching(string pattern, RegexOptions options = RegexOptions.None)
+        internal AndConstraint<CommandResultAssertions> NotHaveStdOutMatching(string pattern, RegexOptions options = RegexOptions.None)
         {
             if (_commandResult.StdOut is null)
             {
@@ -137,7 +136,7 @@ namespace Microsoft.TemplateEngine.CommandUtils.Assertions
             return new AndConstraint<CommandResultAssertions>(this);
         }
 
-        public AndConstraint<CommandResultAssertions> HaveStdErr()
+        internal AndConstraint<CommandResultAssertions> HaveStdErr()
         {
             if (_commandResult.StdErr is null)
             {
@@ -148,7 +147,7 @@ namespace Microsoft.TemplateEngine.CommandUtils.Assertions
             return new AndConstraint<CommandResultAssertions>(this);
         }
 
-        public AndConstraint<CommandResultAssertions> HaveStdErr(string expectedOutput)
+        internal AndConstraint<CommandResultAssertions> HaveStdErr(string expectedOutput)
         {
             if (_commandResult.StdErr is null)
             {
@@ -159,7 +158,7 @@ namespace Microsoft.TemplateEngine.CommandUtils.Assertions
             return new AndConstraint<CommandResultAssertions>(this);
         }
 
-        public AndConstraint<CommandResultAssertions> HaveStdErrContaining(string pattern)
+        internal AndConstraint<CommandResultAssertions> HaveStdErrContaining(string pattern)
         {
             if (_commandResult.StdErr is null)
             {
@@ -170,7 +169,7 @@ namespace Microsoft.TemplateEngine.CommandUtils.Assertions
             return new AndConstraint<CommandResultAssertions>(this);
         }
 
-        public AndConstraint<CommandResultAssertions> NotHaveStdErrContaining(string pattern)
+        internal AndConstraint<CommandResultAssertions> NotHaveStdErrContaining(string pattern)
         {
             if (_commandResult.StdErr is null)
             {
@@ -181,7 +180,7 @@ namespace Microsoft.TemplateEngine.CommandUtils.Assertions
             return new AndConstraint<CommandResultAssertions>(this);
         }
 
-        public AndConstraint<CommandResultAssertions> HaveStdErrMatching(string pattern, RegexOptions options = RegexOptions.None)
+        internal AndConstraint<CommandResultAssertions> HaveStdErrMatching(string pattern, RegexOptions options = RegexOptions.None)
         {
             if (_commandResult.StdErr is null)
             {
@@ -192,7 +191,7 @@ namespace Microsoft.TemplateEngine.CommandUtils.Assertions
             return new AndConstraint<CommandResultAssertions>(this);
         }
 
-        public AndConstraint<CommandResultAssertions> NotHaveStdOut()
+        internal AndConstraint<CommandResultAssertions> NotHaveStdOut()
         {
             if (_commandResult.StdOut is null)
             {
@@ -203,7 +202,7 @@ namespace Microsoft.TemplateEngine.CommandUtils.Assertions
             return new AndConstraint<CommandResultAssertions>(this);
         }
 
-        public AndConstraint<CommandResultAssertions> NotHaveStdErr()
+        internal AndConstraint<CommandResultAssertions> NotHaveStdErr()
         {
             if (_commandResult.StdErr is null)
             {
@@ -214,14 +213,14 @@ namespace Microsoft.TemplateEngine.CommandUtils.Assertions
             return new AndConstraint<CommandResultAssertions>(this);
         }
 
-        public AndConstraint<CommandResultAssertions> HaveSkippedProjectCompilation(string skippedProject, string frameworkFullName)
+        internal AndConstraint<CommandResultAssertions> HaveSkippedProjectCompilation(string skippedProject, string frameworkFullName)
         {
             _commandResult.StdOut.Should().Contain($"Project {skippedProject} ({frameworkFullName}) was previously compiled. Skipping compilation.");
 
             return new AndConstraint<CommandResultAssertions>(this);
         }
 
-        public AndConstraint<CommandResultAssertions> HaveCompiledProject(string compiledProject, string frameworkFullName)
+        internal AndConstraint<CommandResultAssertions> HaveCompiledProject(string compiledProject, string frameworkFullName)
         {
             _commandResult.StdOut.Should().Contain($"Project {compiledProject} ({frameworkFullName}) will be compiled");
 

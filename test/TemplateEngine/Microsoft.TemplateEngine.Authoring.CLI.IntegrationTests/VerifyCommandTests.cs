@@ -4,7 +4,6 @@
 using FluentAssertions;
 using Microsoft.TemplateEngine.Authoring.TemplateVerifier;
 using Microsoft.TemplateEngine.CommandUtils;
-using Microsoft.TemplateEngine.CommandUtils.Assertions;
 using Microsoft.TemplateEngine.TestHelper;
 using Microsoft.TemplateEngine.Tests;
 using Xunit.Abstractions;
