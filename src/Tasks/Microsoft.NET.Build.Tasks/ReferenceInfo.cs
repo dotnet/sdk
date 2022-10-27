@@ -69,13 +69,14 @@ namespace Microsoft.NET.Build.Tasks
                     return false;
                 }
 
-                string fusionName = referencePath.GetMetadata("FusionName");
-                if (string.IsNullOrEmpty(fusionName))
+                string outputName = Path.GetFileName(referencePath.ItemSpec);
+                string projectName = Path.GetFileNameWithoutExtension(outputName);
+                if (string.IsNullOrEmpty(projectName))
                 {
                     return true;
                 }
 
-                return lockFileLookup.GetProject(fusionName) != null;
+                return lockFileLookup.GetProject(projectName) != null;
             }
 
             IEnumerable<ITaskItem> directReferencePaths = referencePaths
