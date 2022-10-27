@@ -28,14 +28,15 @@ public class WebScenarioTests : SmokeTests
     {
         foreach (DotNetLanguage language in new[] { DotNetLanguage.CSharp, DotNetLanguage.FSharp })
         {
-            yield return new(nameof(WebScenarioTests), language, DotNetTemplate.Web,    DotNetActions.Build | DotNetActions.Run | DotNetActions.PublishComplex);
-            yield return new(nameof(WebScenarioTests), language, DotNetTemplate.Mvc,    DotNetActions.Build | DotNetActions.Run | DotNetActions.Publish) { NoHttps = true };
-            yield return new(nameof(WebScenarioTests), language, DotNetTemplate.WebApi, DotNetActions.Build | DotNetActions.Run | DotNetActions.Publish);
+            // TODO: Re-enable once the templates target net8.0 - https://github.com/dotnet/source-build/issues/3093
+            // yield return new(nameof(WebScenarioTests), language, DotNetTemplate.Web,    DotNetActions.Build | DotNetActions.Run | DotNetActions.PublishComplex);
+            // yield return new(nameof(WebScenarioTests), language, DotNetTemplate.Mvc,    DotNetActions.Build | DotNetActions.Run | DotNetActions.Publish) { NoHttps = true };
+            // yield return new(nameof(WebScenarioTests), language, DotNetTemplate.WebApi, DotNetActions.Build | DotNetActions.Run | DotNetActions.Publish);
         }
 
-        yield return new(nameof(WebScenarioTests), DotNetLanguage.CSharp, DotNetTemplate.Razor,         DotNetActions.Build | DotNetActions.Run | DotNetActions.Publish);
+        //yield return new(nameof(WebScenarioTests), DotNetLanguage.CSharp, DotNetTemplate.Razor,         DotNetActions.Build | DotNetActions.Run | DotNetActions.Publish);
         yield return new(nameof(WebScenarioTests), DotNetLanguage.CSharp, DotNetTemplate.BlazorWasm,    DotNetActions.Build | DotNetActions.Run | DotNetActions.Publish);
-        yield return new(nameof(WebScenarioTests), DotNetLanguage.CSharp, DotNetTemplate.BlazorServer,  DotNetActions.Build | DotNetActions.Run | DotNetActions.Publish);
+        //yield return new(nameof(WebScenarioTests), DotNetLanguage.CSharp, DotNetTemplate.BlazorServer,  DotNetActions.Build | DotNetActions.Run | DotNetActions.Publish);
         yield return new(nameof(WebScenarioTests), DotNetLanguage.CSharp, DotNetTemplate.Worker);
         yield return new(nameof(WebScenarioTests), DotNetLanguage.CSharp, DotNetTemplate.Angular);
     }
