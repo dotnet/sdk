@@ -1,37 +1,54 @@
 ### Reference for dotnetcli.host.json
-Generally the name of parameter symbol is the long name and its first character is the short name. Prefixing long name with `--` as long alias and prefixing short name with `-` are the aliases for the parameter symbol listed in the template options.  
-With `dotnetcli.host.json` file we can change long alias and short alias of the template option and its visibility. `dotnetcli.host.json` is located at the same directory as template.json file. It has the following configuration.
-- symbolsInfo  
-It has a collection of the name of specified parameter symbol in template.json with corresponding long or short name to override original ones and the visibility of the template option.  
-   - longName
-   - shortName  
-   Empty means short alias should not be used.
-   - isHidden  
-   True if hiding the parameter in CLI.
-- usageExamples  
-It's an array of usage exmples. Currently it's not used and please track on issue [#3262](https://github.com/dotnet/templating/issues/3262).
+In `dotnet new` the parameter symbols are exposed as additional template options that can be passed to the command. Generally, `dotnet new` uses the name of parameter symbol to generate the long and the short alias for the option:
+- The long alias is a parameter symbol name with `--` prefix.
+- The short alias is a parameter symbol name first character with `-` prefix.
 
-The following examples are several cases when using `dotnetcli.host.json`.
+Note that the aliases are case sensitive.
+
+With `dotnetcli.host.json` file we can change long alias and short alias of the template option and its visibility. `dotnetcli.host.json` is located at the same directory as template.json file. It has the following configuration:
+- `symbolsInfo`  
+It has a collection of the name of specified parameter symbol in template.json with corresponding long or short aliases to override original ones and the visibility of the template option.  
+   - `longName` - overrides the long alias for the parameter symbol.
+   - `shortName` - overrides the short alias for the parameter symbol. Empty means short alias should not be used.
+   - `isHidden` - `true` if the parameter should be hidden in `dotnet new`.
+- `usageExamples` - not used; see [#3262](https://github.com/dotnet/templating/issues/3262) for more details.
+
+In case when option assignment results in duplicate options, `--param:` prefix is used for the long alias and short alias is generated from the beginning of the symbol's name till the one which can form a unique short name with `-` prefix or `-p:` prefix is used.
 
 ##### Examples
-Override original long alias `--TargetFrameworkOverride` with `--targetframework` and override short alias `-T` with `-tf`. And this template option is hidden in CLI help information.
+##### Example 1
+Overrides original long alias `--TargetFrameworkOverride` with `--targetframework` and overrides short alias `-T` with `-tf`.
 ```
 {
   "$schema": "http://json.schemastore.org/dotnetcli.host",
   "symbolInfo": {
     "TargetFrameworkOverride": {
-      "isHidden": "true",
       "longName": "targetframework",
       "shortName": "tf"
-    },
-  },
-  "usageExamples": [
-    "--targetframework net7.0",
-    "-fr net7.0"
-  ]
+    }
+  }
+}
+```
+Part of the output of `dotnet new <template shortName> --help` looks like:
+```
+Template options:
+  -tf, --targetframework <net7.0|net6.0|...>  Overrides the target framework.
+```
+
+##### Example 2
+Parameter `TargetFrameworkOverride` is hidden from `dotnet new` help information.
+```
+{
+  "$schema": "http://json.schemastore.org/dotnetcli.host",
+  "symbolInfo": {
+    "TargetFrameworkOverride": {
+      "isHidden": "true"
+    }
+  }
 }
 ```
 
+##### Example 3
 If short name is not specified, short name is the first character of overridden long name. Long alias is `--targetframework` and short alias is `-t`.
 ```
 {
@@ -39,15 +56,12 @@ If short name is not specified, short name is the first character of overridden 
   "symbolInfo": {
     "TargetFrameworkOverride": {
       "longName": "targetframework"
-    },
-  },
-  "usageExamples": [
-    "--targetframework net7.0",
-    "-t net7.0",
-  ]
+    }
+  }
 }
 ```
 
+##### Example 4
 If short name is empty, there is no short alias for the template option. Long alias is `--targetframework`.
 ```
 {
@@ -56,15 +70,18 @@ If short name is empty, there is no short alias for the template option. Long al
     "TargetFrameworkOverride": {
       "longName": "targetframework",
       "shortName": ""
-    },
-  },
-  "usageExamples": [
-    "--targetframework net7.0"
-  ]
+    }
+  }
 }
 ```
+Part of the output of `dotnet new <template shortName> --help` looks like:
+```
+Template options:
+  --targetframework <net7.0|net6.0|...>  Overrides the target framework.
+```
 
-If long/short alias from overridden long/short name is reserved alias, long name will be prefixed with `--param:` instead and short name will be prefixed with `-p:` instead. Here long alias is `--param:package` and short alias is `-p:i`. Please see [Reserved Aliases](#reserved-aliases).
+##### Example 5
+If long/short alias from overridden long/short name is reserved alias, long name will be prefixed with `--param:` and short name will be prefixed with `-p:` instead. Here long alias is `--param:package` and short alias is `-p:i`. See [Reserved Aliases](#reserved-aliases).
 ```
 {
   "$schema": "http://json.schemastore.org/dotnetcli.host",
@@ -72,33 +89,49 @@ If long/short alias from overridden long/short name is reserved alias, long name
     "pack": {
       "longName": "package",
       "shortName": "i"
-    },
-  },
-  "usageExamples": [
-    "--param:package net7.0",
-    "-p:i net7.0"
-  ]
+    }
+  }
 }
 ```
 
-If the name of a parameter symbol is duplicate with any long name specified in `dotnetcli.host.json`, the long name is taken by the symbol specified in `dotnetcli.host.json`. Assuming there are two parameter symbols with the name `TargetFrameworkOverride`, `targetframework` respectively, long alias and short alias of symbol `TargetFrameworkOverride` is `--targetframework` and `-t`, long alias and short alias of symbol `targetframework` is `--param:targetframework` and `-ta`. Note that short name `ta` is generated from the beginning of the symbol's name till the one which can form a unique short name for symbol `targetframework`.
+##### Example 6
+Assuming `template.json` has the symbols below.
+```
+  "symbols": {
+    "TargetFrameworkOverride": {
+      "type": "parameter",
+      "description": "Overrides the target framework.",
+      "dataType": "string",
+      "defaultValue": "net7.0"
+    },
+    "targetframework": {
+      "type": "parameter",
+      "description": "The target framework for the project.",
+      "dataType": "string",
+      "defaultValue": "net6.0"
+    }
+  }
+```
+With the following `dotnetcli.host.json`, long alias and short alias of symbol `TargetFrameworkOverride` is `--targetframework` and `-t`. For symbol `targetframework`, since aliases `--targetframework` `-t` are already taken its long alias is prefixed with `--param:` to be `--param:targetframework` and short alias is `-ta`.
 ```
 {
   "$schema": "http://json.schemastore.org/dotnetcli.host",
   "symbolInfo": {
     "TargetFrameworkOverride": {
       "longName": "targetframework"
-    },
-  },
-  "usageExamples": [
-    "--targetframework net7.0",
-    "-t net7.0"
-  ]
+    }
+  }
 }
+```
+Part of the output of `dotnet new <template shortName> --help` looks like:
+```
+Template options:
+  -t, --targetframework <net7.0>  Overrides the target framework.
+  -ta, --param:targetframework <net6.0>  The target framework for the project.
 ```
 
 ### Reserved Aliases
-The following are [reserved aliases](#list-of-reserved-aliases) in template engine. They are applied to .NET SDK 7+.
+The following are [reserved aliases](#list-of-reserved-aliases) in `dotnet new`. They are applied to .NET SDK 7+.
 
 If long alias is reserved alias, long name will be prefixed with `--param:` instead.  
 If short alias is reserved alias, short name will be prefixed with `-p:` instead.  
@@ -118,7 +151,7 @@ If short alias is reserved alias, short name will be prefixed with `-p:` instead
 When instantiating the template, for symbol `package` the template option is **`--param:package`** , and `-p` for short.
 For symbol `u` the template option is `--u`, and **`-p:u`** for short.
 
-#### List of Reserved Aliases
+#### List of reserved aliases
 |Alias|Description|
 |-|-|
 |create|Instantiates a template with given short name.|
