@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -48,6 +49,9 @@ public class VirtualMonoRepo_Initialize : Build.Utilities.Task, ICancelableTask
 
     private async Task<bool> ExecuteAsync()
     {
+        VmrPath = Path.GetFullPath(VmrPath);
+        TmpPath = Path.GetFullPath(TmpPath);
+
         var vmrInitializer = _serviceProvider.Value.GetRequiredService<IVmrInitializer>();
         await vmrInitializer.InitializeRepository(Repository, Revision, PackageVersion, Recursive, _cancellationToken.Token);
         return true;
