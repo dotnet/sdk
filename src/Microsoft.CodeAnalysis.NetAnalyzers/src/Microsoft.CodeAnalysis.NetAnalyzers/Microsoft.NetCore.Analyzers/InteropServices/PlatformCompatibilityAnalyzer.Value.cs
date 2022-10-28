@@ -145,71 +145,6 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 return false;
             }
 
-            private static bool TryDecodeOSVersion(
-                ImmutableArray<IArgumentOperation> arguments,
-                ValueContentAnalysisResult? valueContentAnalysisResult,
-                [NotNullWhen(returnValue: true)] out Version? osVersion,
-                int skip = 0)
-            {
-
-                using var versionBuilder = ArrayBuilder<int>.GetInstance(4, fillWithValue: 0);
-                var index = 0;
-
-                foreach (var argument in arguments.GetArgumentsInParameterOrder().Skip(skip))
-                {
-                    if (!TryDecodeOSVersionPart(argument, valueContentAnalysisResult, out var osVersionPart))
-                    {
-                        osVersion = null;
-                        return false;
-                    }
-
-                    versionBuilder[index++] = osVersionPart;
-                }
-
-                osVersion = CreateVersion(versionBuilder);
-                return true;
-
-                static bool TryDecodeOSVersionPart(IArgumentOperation argument, ValueContentAnalysisResult? valueContentAnalysisResult, out int osVersionPart)
-                {
-                    if (argument.Value.ConstantValue.HasValue &&
-                        argument.Value.ConstantValue.Value is int versionPart)
-                    {
-                        osVersionPart = versionPart;
-                        return true;
-                    }
-
-                    if (valueContentAnalysisResult != null)
-                    {
-                        var valueContentValue = valueContentAnalysisResult[argument.Value];
-                        if (valueContentValue.IsLiteralState &&
-                            valueContentValue.LiteralValues.Count == 1 &&
-                            valueContentValue.LiteralValues.Single() is int part)
-                        {
-                            osVersionPart = part;
-                            return true;
-                        }
-                    }
-
-                    osVersionPart = default;
-                    return false;
-                }
-
-                static Version CreateVersion(ArrayBuilder<int> versionBuilder)
-                {
-                    if (versionBuilder[3] == 0)
-                    {
-                        if (versionBuilder[2] == 0)
-                        {
-                            return new Version(versionBuilder[0], versionBuilder[1]);
-                        }
-
-                        return new Version(versionBuilder[0], versionBuilder[1], versionBuilder[2]);
-                    }
-
-                    return new Version(versionBuilder[0], versionBuilder[1], versionBuilder[2], versionBuilder[3]);
-                }
-            }
-
             public override string ToString()
             {
                 var result = $"{PlatformName};{Version}";
@@ -249,6 +184,64 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
             {
                 return !(left == right);
             }
+        }
+
+        private static bool TryDecodeOSVersion(
+                ImmutableArray<IArgumentOperation> arguments,
+                ValueContentAnalysisResult? valueContentAnalysisResult,
+                [NotNullWhen(returnValue: true)] out Version? osVersion,
+                int skip = 0)
+        {
+
+            using var versionBuilder = ArrayBuilder<int>.GetInstance(4, fillWithValue: 0);
+            var index = 0;
+
+            foreach (var argument in arguments.GetArgumentsInParameterOrder().Skip(skip))
+            {
+                if (!TryDecodeOSVersionPart(argument, valueContentAnalysisResult, out var osVersionPart))
+                {
+                    osVersion = null;
+                    return false;
+                }
+
+                versionBuilder[index++] = osVersionPart;
+            }
+
+            osVersion = CreateVersion(versionBuilder);
+            return true;
+
+            static bool TryDecodeOSVersionPart(IArgumentOperation argument, ValueContentAnalysisResult? valueContentAnalysisResult, out int osVersionPart)
+            {
+                if (argument.Value.ConstantValue.HasValue &&
+                    argument.Value.ConstantValue.Value is int versionPart)
+                {
+                    osVersionPart = versionPart;
+                    return true;
+                }
+
+                if (valueContentAnalysisResult != null)
+                {
+                    var valueContentValue = valueContentAnalysisResult[argument.Value];
+                    if (valueContentValue.IsLiteralState &&
+                        valueContentValue.LiteralValues.Count == 1 &&
+                        valueContentValue.LiteralValues.Single() is int part)
+                    {
+                        osVersionPart = part;
+                        return true;
+                    }
+                }
+
+                osVersionPart = default;
+                return false;
+            }
+
+            static Version CreateVersion(ArrayBuilder<int> versionBuilder) => versionBuilder switch
+            {
+                [int major, int minor, 0, 0] => new Version(major, minor),
+                [int major, int minor, int build, 0] => new Version(major, minor, build),
+                [int major, int minor, int build, int revision] => new Version(major, minor, build, revision),
+                _ => EmptyVersion
+            };
         }
     }
 }
