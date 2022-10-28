@@ -1,0 +1,40 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Chris Rummel <crummel@microsoft.com>
+Date: Mon, 26 Sep 2022 14:25:33 -0500
+Subject: Remove LLVM ObjWriter dependency in source-build
+
+Backport PR: https://github.com/dotnet/runtime/pull/76206.
+
+---
+ src/coreclr/tools/aot/ILCompiler/ILCompiler.props | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/src/coreclr/tools/aot/ILCompiler/ILCompiler.props b/src/coreclr/tools/aot/ILCompiler/ILCompiler.props
+index 8c4fce523906e..4fd1db03e8a48 100644
+--- a/src/coreclr/tools/aot/ILCompiler/ILCompiler.props
++++ b/src/coreclr/tools/aot/ILCompiler/ILCompiler.props
+@@ -48,12 +48,14 @@
+ 
+     <!-- CoreDisTools are used in debugging visualizers. -->
+     <IncludeCoreDisTools Condition="'$(Configuration)' != 'Release' and '$(CrossHostArch)' == ''">true</IncludeCoreDisTools>
++    <!-- source-build doesn't use ObjWriter for the ILCompiler.  the end-user will end up pulling Microsoft-built bits for NativeAOT anyway.  -->
++    <IncludeObjWriter Condition="'$(DotNetBuildFromSource)' != 'true'">true</IncludeObjWriter>
+   </PropertyGroup>
+ 
+   <Import Project="$(RepositoryEngineeringDir)coredistools.targets" Condition="'$(DotNetBuildFromSource)' != 'true' and '$(IncludeCoreDisTools)' == 'true'" />
+ 
+   <ItemGroup>
+-    <PackageReference Include="runtime.$(ObjWriterRid).Microsoft.NETCore.Runtime.ObjWriter">
++    <PackageReference Include="runtime.$(ObjWriterRid).Microsoft.NETCore.Runtime.ObjWriter" Condition="'$(IncludeObjWriter)' == 'true'">
+       <Version>$(ObjWriterVersion)</Version>
+     </PackageReference>
+ 
+@@ -62,7 +64,7 @@
+       <Version>$(NetStandardLibraryVersion)</Version>
+     </PackageReference>
+ 
+-    <Content Include="$(NuGetPackageRoot)runtime.$(ObjWriterRid).microsoft.netcore.runtime.objwriter\$(ObjWriterVersion)\runtimes\$(ObjWriterRid)\native\$(LibPrefix)objwriter$(LibSuffix)">
++    <Content Include="$(NuGetPackageRoot)runtime.$(ObjWriterRid).microsoft.netcore.runtime.objwriter\$(ObjWriterVersion)\runtimes\$(ObjWriterRid)\native\$(LibPrefix)objwriter$(LibSuffix)" Condition="'$(IncludeObjWriter)' == 'true'">
+       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+       <Visible>false</Visible>
+       <Pack>false</Pack>

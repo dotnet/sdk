@@ -15,6 +15,9 @@ parameters:
   fedora36Container: mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-36
   ubuntu2004Container: mcr.microsoft.com/dotnet-buildtools/prereqs:ubuntu-20.04
   poolInternalAmd64:
+    name: NetCore1ESPool-Svc-Internal
+    demands: ImageOverride -equals Build.Ubuntu.1804.Amd64
+  poolInternalAmd64PR:
     name: NetCore1ESPool-Internal-XL
     demands: ImageOverride -equals Build.Ubuntu.1804.Amd64
   poolInternalArm64:
@@ -68,7 +71,10 @@ jobs:
       ${{ if eq(variables['System.TeamProject'], 'public') }}:
         ${{ parameters.poolPublicAmd64 }}
       ${{ if eq(variables['System.TeamProject'], 'internal') }}:
-        ${{ parameters.poolInternalAmd64 }}
+        ${{ if in(variables['Build.Reason'], 'PullRequest') }}:
+          ${{ parameters.poolInternalAmd64PR }}
+        ${{ else }}:
+          ${{ parameters.poolInternalAmd64 }}
 
 - ${{ if eq(variables['System.TeamProject'], 'internal') }}:
   - template: /src/SourceBuild/Arcade/eng/common/templates/job/source-build-build-tarball.yml

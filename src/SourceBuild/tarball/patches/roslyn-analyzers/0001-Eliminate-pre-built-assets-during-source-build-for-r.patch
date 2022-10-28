@@ -15,7 +15,7 @@ This is taking the approach used in previous versions of source-build: update th
 Contributes to https://github.com/dotnet/source-build/issues/2420
 Contributes to https://github.com/dotnet/source-build/issues/2527
 
-Backport: https://github.com/dotnet/source-build/issues/2708
+Backport: https://github.com/dotnet/source-build/issues/3049
 ---
  eng/Versions.props                                 | 14 --------------
  src/Directory.Build.targets                        |  5 +++--
