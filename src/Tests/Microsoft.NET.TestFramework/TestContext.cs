@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Text;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.NET.TestFramework.Commands;
-using System.Reflection;
 using System.Globalization;
 
 namespace Microsoft.NET.TestFramework
@@ -74,7 +71,7 @@ namespace Microsoft.NET.TestFramework
         public static void Initialize(TestCommandLine commandLine)
         {
             //  Show verbose debugging output for tests
-            CommandContext.SetVerbose(true);
+            CommandLoggingContext.SetVerbose(true);
             Reporter.Reset();
 
             Environment.SetEnvironmentVariable("DOTNET_MULTILEVEL_LOOKUP", "0");

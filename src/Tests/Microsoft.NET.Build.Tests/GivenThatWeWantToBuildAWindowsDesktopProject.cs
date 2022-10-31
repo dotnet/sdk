@@ -146,16 +146,17 @@ namespace Microsoft.NET.Build.Tests
             getValuesCommand.Execute()
                 .Should()
                 .Pass();
-            getValuesCommand.GetValues().ShouldBeEquivalentTo(new[] { "true" });
+            getValuesCommand.GetValues().Should().BeEquivalentTo(new[] { "true" });
         }
 
         [WindowsOnlyRequiresMSBuildVersionFact("17.0.0.32901")]
         public void It_builds_successfully_when_targeting_net_framework()
         {
             var testDirectory = _testAssetsManager.CreateTestDirectory().Path;
-            var newCommand = new DotnetCommand(Log, "new", "wpf", "--no-restore");
-            newCommand.WorkingDirectory = testDirectory;
-            newCommand.Execute()
+            new DotnetNewCommand(Log, "wpf", "--no-restore")
+                .WithVirtualHive()
+                .WithWorkingDirectory(testDirectory)
+                .Execute()
                 .Should()
                 .Pass();
 
@@ -433,12 +434,9 @@ namespace Microsoft.NET.Build.Tests
                     var testItems = XElement.Parse(@"
   <ItemGroup>
     <WindowsSdkSupportedTargetPlatformVersion Remove=""@(WindowsSdkSupportedTargetPlatformVersion)"" />
-
     <WindowsSdkSupportedTargetPlatformVersion Include=""10.0.22621.0"" WindowsSdkPackageVersion=""10.0.22621.26"" MinimumNETVersion=""6.0"" />
-
     <WindowsSdkSupportedTargetPlatformVersion Include=""10.0.22000.0"" WindowsSdkPackageVersion=""10.0.22000.26"" MinimumNETVersion=""6.0"" />
     <WindowsSdkSupportedTargetPlatformVersion Include=""10.0.22000.0"" WindowsSdkPackageVersion=""10.0.22000.25"" MinimumNETVersion=""5.0"" />
-
     <WindowsSdkSupportedTargetPlatformVersion Include=""10.0.19041.0"" WindowsSdkPackageVersion=""10.0.19041.25"" MinimumNETVersion=""5.0"" />
   </ItemGroup>");
 

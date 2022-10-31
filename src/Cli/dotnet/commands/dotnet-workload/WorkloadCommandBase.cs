@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.CommandLine;
-using System.CommandLine.Parsing;
 using System.IO;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
@@ -96,7 +95,7 @@ namespace Microsoft.DotNet.Workloads.Workload
                 ? parseResult.GetValueForOption(CommonOptions.VerbosityOption)
                 : parseResult.GetValueForOption(verbosityOptions);
 
-            ILogger nugetLogger = Verbosity.VerbosityIsDetailedOrDiagnostic() ? new NuGetConsoleLogger() : new NullLogger();
+            ILogger nugetLogger = Verbosity.IsDetailedOrDiagnostic() ? new NuGetConsoleLogger() : new NullLogger();
 
             Reporter = reporter ?? Cli.Utils.Reporter.Output;
 
@@ -104,7 +103,7 @@ namespace Microsoft.DotNet.Workloads.Workload
                 ? tempDirPath
                 : !string.IsNullOrWhiteSpace(parseResult.GetValueForOption(WorkloadInstallCommandParser.TempDirOption))
                 ? parseResult.GetValueForOption(WorkloadInstallCommandParser.TempDirOption)
-                : Path.GetTempPath();
+                : PathUtilities.CreateTempSubdirectory();
 
             TempPackagesDirectory = new DirectoryPath(Path.Combine(TempDirectoryPath, "dotnet-sdk-advertising-temp"));
 
