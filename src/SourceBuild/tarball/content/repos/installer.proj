@@ -46,6 +46,9 @@
 
     <!-- This repo uses text-only template packages from the internal transport feed. -->
     <SetUpInternalTransportFeed>true</SetUpInternalTransportFeed>
+
+    <!-- CS9057 - Caused by incoherency of analyzer assemblies during pre-release builds. -->
+    <RepoNoWarns>CS9057</RepoNoWarns>
   </PropertyGroup>
 
   <ItemGroup>

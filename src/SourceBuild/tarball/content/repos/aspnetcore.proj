@@ -22,6 +22,11 @@
 
     <GlobalJsonFile>$(ProjectDirectory)global.json</GlobalJsonFile>
     <NuGetConfigFile>$(ProjectDirectory)NuGet.config</NuGetConfigFile>
+
+    <!-- CS0618 - Caused from deprecated IOperation.Children in
+                  Microsoft.CodeAnalysis 4.3.0, but aspnetcore references version 4.2.0.
+                  Requires https://github.com/dotnet/source-build/issues/2482 -->
+    <RepoNoWarns>CS0618</RepoNoWarns>
   </PropertyGroup>
 
   <ItemGroup>
