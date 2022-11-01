@@ -359,9 +359,98 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 
                 var manifestAssets = manifest.Assets.OrderBy(a => a.BasePath).ThenBy(a => a.RelativePath).ThenBy(a => a.AssetKind);
                 var expectedAssets = expected.Assets.OrderBy(a => a.BasePath).ThenBy(a => a.RelativePath).ThenBy(a => a.AssetKind);
-                
-                manifestAssets.ShouldBeEquivalentTo(expectedAssets, AssetDifferencesDetails(manifestAssets, expectedAssets));
 
+                // If there's a mismatch in the number of assets, just print the strict difference in the asset `Identity`
+                if (manifest.Assets.Length != expected.Assets.Length)
+                {
+                    manifestAssets.Should().BeEquivalentTo(expectedAssets, AssetDifferencesDetails(manifestAssets, expectedAssets));
+                    return;
+                }
+
+                var manifestAssetsEnumerator = manifestAssets.GetEnumerator();
+                var expectedAssetsEnumerator = expectedAssets.GetEnumerator();
+
+                var differences = new List<string>();
+
+                // Otherwise, do a property level comparison of all assets
+                do
+                {
+                    var manifestAsset = manifestAssetsEnumerator.Current;
+                    var expectedAsset = expectedAssetsEnumerator.Current;
+
+                    var assetDifferences = new List<string>();
+
+                    if (manifestAsset.Identity != expectedAsset.Identity)
+                    {
+                        assetDifferences.Add($"Expected manifest Identity of {expectedAsset.Identity} but found {manifestAsset.Identity}.");
+                    }
+                    if (manifestAsset.SourceType != expectedAsset.SourceType)
+                    {
+                        assetDifferences.Add($"Expected manifest SourceType of {expectedAsset.SourceType} but found {manifestAsset.SourceType}.");
+                    }
+                    if (manifestAsset.SourceId != expectedAsset.SourceId)
+                    {
+                        assetDifferences.Add($"Expected manifest SourceId of {expectedAsset.SourceId} but found {manifestAsset.SourceId}.");
+                    }
+                    if (manifestAsset.ContentRoot != expectedAsset.ContentRoot)
+                    {
+                        assetDifferences.Add($"Expected manifest ContentRoot of {expectedAsset.ContentRoot} but found {manifestAsset.ContentRoot}.");
+                    }
+                    if (manifestAsset.BasePath != expectedAsset.BasePath)
+                    {
+                        assetDifferences.Add($"Expected manifest BasePath of {expectedAsset.BasePath} but found {manifestAsset.BasePath}.");
+                    }
+                    if (manifestAsset.RelativePath != expectedAsset.RelativePath)
+                    {
+                        assetDifferences.Add($"Expected manifest RelativePath of {expectedAsset.RelativePath} but found {manifestAsset.RelativePath}.");
+                    }
+                    if (manifestAsset.AssetKind != expectedAsset.AssetKind)
+                    {
+                        assetDifferences.Add($"Expected manifest AssetKind of {expectedAsset.AssetKind} but found {manifestAsset.AssetKind}.");
+                    }
+                    if (manifestAsset.AssetMode != expectedAsset.AssetMode)
+                    {
+                        assetDifferences.Add($"Expected manifest AssetMode of {expectedAsset.AssetMode} but found {manifestAsset.AssetMode}.");
+                    }
+                    if (manifestAsset.AssetRole != expectedAsset.AssetRole)
+                    {
+                        assetDifferences.Add($"Expected manifest AssetRole of {expectedAsset.AssetRole} but found {manifestAsset.AssetRole}.");
+                    }
+                    if (manifestAsset.RelatedAsset != expectedAsset.RelatedAsset)
+                    {
+                        assetDifferences.Add($"Expected manifest RelatedAsset of {expectedAsset.RelatedAsset} but found {manifestAsset.RelatedAsset}.");
+                    }
+                    if (manifestAsset.AssetTraitName != expectedAsset.AssetTraitName)
+                    {
+                        assetDifferences.Add($"Expected manifest AssetTraitName of {expectedAsset.AssetTraitName} but found {manifestAsset.AssetTraitName}.");
+                    }
+                    if (manifestAsset.AssetTraitValue != expectedAsset.AssetTraitValue)
+                    {
+                        assetDifferences.Add($"Expected manifest AssetTraitValue of {expectedAsset.AssetTraitValue} but found {manifestAsset.AssetTraitValue}.");
+                    }
+                    if (manifestAsset.CopyToOutputDirectory != expectedAsset.CopyToOutputDirectory)
+                    {
+                        assetDifferences.Add($"Expected manifest CopyToOutputDirectory of {expectedAsset.CopyToOutputDirectory} but found {manifestAsset.CopyToOutputDirectory}.");
+                    }
+                    if (manifestAsset.CopyToPublishDirectory != expectedAsset.CopyToPublishDirectory)
+                    {
+                        assetDifferences.Add($"Expected manifest CopyToPublishDirectory of {expectedAsset.CopyToPublishDirectory} but found {manifestAsset.CopyToPublishDirectory}.");
+                    }
+                    if (manifestAsset.OriginalItemSpec != expectedAsset.OriginalItemSpec)
+                    {
+                        assetDifferences.Add($"Expected manifest OriginalItemSpec of {expectedAsset.OriginalItemSpec} but found {manifestAsset.OriginalItemSpec}.");
+                    }
+
+                    if (assetDifferences.Any())
+                    {
+                        differences.Add($"For {expectedAsset.Identity}:");
+                        differences.AddRange(assetDifferences);
+                    }
+
+                } while (manifestAssetsEnumerator.MoveNext() && expectedAssetsEnumerator.MoveNext());
+
+                differences.Should().BeEmpty();
+                
                 static string AssetDifferencesDetails(IEnumerable<StaticWebAsset> manifestAssets, IEnumerable<StaticWebAsset> expectedAssets)
                 {
                     var missingAssets = expectedAssets.Except(manifestAssets);
