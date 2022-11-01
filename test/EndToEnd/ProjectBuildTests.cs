@@ -394,13 +394,11 @@ namespace EndToEnd.Tests
             int latestMajorVersion = runtimeFolders.Select(folder => int.Parse(Path.GetFileName(folder).Split('.').First())).Max();
             if (latestMajorVersion == 8)
             {
+                // Return net7.0 for templates that don't support
+                // net8.0 yet.
                 if (template.StartsWith("blazor")
-                    || template.StartsWith("mstest")
                     || template.StartsWith("classlib")
                     || template.StartsWith("console")
-                    || template.StartsWith("nunit")
-                    || template.StartsWith("xunit")
-                    || template.StartsWith("xunit")
                     || template.StartsWith("mvc")
                     || template.StartsWith("web")
                     || template.StartsWith("worker")
