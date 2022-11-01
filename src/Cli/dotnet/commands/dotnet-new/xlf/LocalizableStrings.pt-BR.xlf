@@ -7,6 +7,11 @@
         <target state="translated">Expressão inválida, posição: {0}.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Diagnostics_OptionDescription">
+        <source>Enables diagnostic output.</source>
+        <target state="translated">Habilita a saída de diagnóstico.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DisableProjectContextEval_OptionDescription">
         <source>Disables evaluating project context using MSBuild.</source>
         <target state="translated">Desabilita a avaliação do contexto do projeto usando o MSBuild.</target>
@@ -37,6 +42,13 @@
         <target state="translated">Vários projetos encontrados: {0}.</target>
         <note>{0} - semi-colon separated list of path to projects found.</note>
       </trans-unit>
+      <trans-unit id="PostAction_AddProjToSln_Error_BothInRootAndSolutionFolderSpecified">
+        <source>Add project reference to solution action is not configured correctly in the template.
+    The 'solutionFolder' and 'inRoot' cannot be used together; use only one of the options.</source>
+        <target state="translated">A adição da referência do projeto à ação da solução não está configurada corretamente no modelo.
+    O 'solutionFolder' e o 'inRoot' não podem ser usados juntos; use apenas uma das opções.</target>
+        <note>do not translate: 'solutionFolder', 'inRoot'</note>
+      </trans-unit>
       <trans-unit id="PostAction_AddProjToSln_Error_NoProjectsToAdd">
         <source>Add project reference to solution action is not configured correctly in the template. Unable to determine the project files to add.</source>
         <target state="translated">A adição de referência de projeto à ação de solução não está configurada corretamente no modelo. Não é possível determinar os arquivos de projeto a serem adicionados.</target>
@@ -57,6 +69,16 @@
         <target state="translated">Falha ao adicionar projeto(s) a um arquivo de solução.</target>
         <note />
       </trans-unit>
+      <trans-unit id="PostAction_AddProjToSln_InRoot_Running">
+        <source>Adding
+    project(s): {0}
+    in the root of solution file: {1}</source>
+        <target state="translated">Adicionando
+    projeto(s): {0}
+    na raiz do arquivo da solução: {1}</target>
+        <note>{0} - list of file paths to projects to add,
+{1} - the path to target solution file</note>
+      </trans-unit>
       <trans-unit id="PostAction_AddProjToSln_Running">
         <source>Adding
     project(s): {0}
@@ -66,7 +88,9 @@
     projeto(s): {0}
     ao arquivo de solução: {1}
     pasta de solução: {2}</target>
-        <note />
+        <note>{0} - list of file paths to projects to add,
+{1} - the path to target solution file,
+{2} - the solution folder inside solution to add the projects to.</note>
       </trans-unit>
       <trans-unit id="PostAction_AddProjToSln_Succeeded">
         <source>Successfully added project(s) to a solution file.</source>
@@ -233,11 +257,6 @@
         <target state="translated">Contexto do projeto</target>
         <note />
       </trans-unit>
-      <trans-unit id="ProjectPath_OptionDescription">
-        <source>The project that should be used for context evaluation.</source>
-        <target state="translated">O projeto que deve ser usado para avaliação de contexto.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="SdkInfoProvider_Message_InstallSdk">
         <source>Go to aka.ms/get-dotnet and install any of the supported SDK versions: '{0}'.</source>
         <target state="translated">Acesse aka.ms/get-dotnet e instale qualquer uma das versões do SDK compatíveis: '{0}'.</target>
@@ -247,6 +266,11 @@
         <source>You have other SDK version(s) installed that can be used to run this template. Switch to any of the following SDK(s) on your system to run this template: '{0}'. Details on selecting SDK version to run: https://docs.microsoft.com/dotnet/core/tools/global-json.</source>
         <target state="translated">Você tem outras versões do SDK instaladas que podem ser usadas para executar este modelo. Alterne para qualquer um dos seguintes SDKs em seu sistema para executar este modelo: '{0}'. Detalhes sobre como selecionar a versão do SDK a ser executada: https://docs.microsoft.com/dotnet/core/tools/global-json.</target>
         <note>{0} is the list of installed and supported versions.</note>
+      </trans-unit>
+      <trans-unit id="Verbosity_OptionDescription">
+        <source>Sets the verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], and diag[nostic].</source>
+        <target state="translated">Define o nível de detalhamento. Os valores permitidos são q[uiet], m[inimal], n[ormal] e diag[nostic].</target>
+        <note />
       </trans-unit>
       <trans-unit id="WorkloadInfoProvider_Message_AddWorkloads">
         <source>Run 'dotnet workload search' to search workloads available to be installed on your SDK.</source>

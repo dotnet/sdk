@@ -57,13 +57,16 @@ namespace Microsoft.DotNet.ApiCompatibility.Tests
             List<ElementContainer<IAssemblySymbol>> result = new();
             foreach (string syntax in syntaxes)
             {
-                MetadataInformation info = new(string.Empty, $"runtime-{i++}");
+                string asmName = $"{assemblyName}-{i}";
+                MetadataInformation info = new(asmName, $"runtime-{i}");
                 IAssemblySymbol symbol = referencesSyntax != null ?
-                    GetAssemblyFromSyntaxWithReferences(syntax, referencesSyntax, enableNullable, publicKey, assemblyName) :
-                    GetAssemblyFromSyntax(syntax, enableNullable, publicKey, assemblyName);
+                    GetAssemblyFromSyntaxWithReferences(syntax, referencesSyntax, enableNullable, publicKey, asmName) :
+                    GetAssemblyFromSyntax(syntax, enableNullable, publicKey, asmName);
 
                 ElementContainer<IAssemblySymbol> container = new(symbol, info);
                 result.Add(container);
+
+                i++;
             }
 
             return result;
@@ -99,13 +102,13 @@ namespace Microsoft.DotNet.ApiCompatibility.Tests
             return CSharpCompilation.Create(name, options: compilationOptions, references: DefaultReferences);
         }
 
-        private static CSharpParseOptions ParseOptions { get; } = new(preprocessorSymbols:
+        private static CSharpParseOptions ParseOptions { get; } = new CSharpParseOptions(preprocessorSymbols:
 #if NETFRAMEWORK
                 new string[] { "NETFRAMEWORK" }
 #else
                 Array.Empty<string>()
 #endif
-        ); 
+        );
 
         private static IEnumerable<KeyValuePair<string, ReportDiagnostic>> DiagnosticOptions { get; } = new[]
         {

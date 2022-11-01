@@ -1,25 +1,20 @@
-// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+// Copyright (c) .NET Foundation and contributors. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+//
 
-#nullable enable
-
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
-using Microsoft.NET.TestFramework;
+using Microsoft.DotNet.Cli.Utils;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Commands;
 using Microsoft.TemplateEngine.TestHelper;
-using Xunit;
 using Xunit.Abstractions;
 
-namespace Microsoft.DotNet.New.Tests
+namespace Microsoft.DotNet.Cli.New.IntegrationTests
 {
-    public class CommonTemplatesTests : SdkTest, IClassFixture<SharedHomeDirectory>
+    public class CommonTemplatesTests : BaseIntegrationTest, IClassFixture<SharedHomeDirectory>
     {
         private readonly SharedHomeDirectory _fixture;
         private readonly ITestOutputHelper _log;
@@ -55,7 +50,7 @@ namespace Microsoft.DotNet.New.Tests
 
         public void AllCommonProjectsCreateRestoreAndBuild(string expectedTemplateName, string templateShortName, string? language = null, string? framework = null, string? langVersion = null)
         {
-            string workingDir = TestUtils.CreateTemporaryFolder();
+            string workingDir = CreateTemporaryFolder(folderName: $"{templateShortName}-{language?.Replace("#", "Sharp") ?? "null"}-{framework ?? "null"}");
             string workingDirName = Path.GetFileName(workingDir);
             string extension = language switch
             {
@@ -66,7 +61,7 @@ namespace Microsoft.DotNet.New.Tests
             string finalProjectName = Regex.Escape(Path.Combine(workingDir, $"{workingDirName}.{extension}"));
             Console.WriteLine($"Expected project location: {finalProjectName}");
 
-            List<string> args = new List<string>() { templateShortName };
+            List<string> args = new() { templateShortName };
             if (!string.IsNullOrWhiteSpace(language))
             {
                 args.Add("--language");
@@ -99,7 +94,7 @@ Restoring {finalProjectName}:
 Restore succeeded\.",
                 RegexOptions.Singleline);
 
-            new DotnetCommand(_log, "restore")
+            new DotnetRestoreCommand(_log)
                 .WithWorkingDirectory(workingDir)
                 .Execute()
                 .Should()
@@ -107,7 +102,7 @@ Restore succeeded\.",
                 .And
                 .NotHaveStdErr();
 
-            new DotnetCommand(_log, "build")
+            new DotnetBuildCommand(_log)
                 .WithWorkingDirectory(workingDir)
                 .Execute()
                 .Should()
@@ -154,9 +149,9 @@ Restore succeeded\.",
         [InlineData("Class Library", "classlib", "F#", "netstandard2.0")]
         public void AllCommonProjectsCreate_NoRestore(string expectedTemplateName, string templateShortName, string? language = null, string? framework = null)
         {
-            string workingDir = TestUtils.CreateTemporaryFolder();
+            string workingDir = CreateTemporaryFolder(folderName: $"{templateShortName}-{language?.Replace("#", "Sharp") ?? "null"}-{framework ?? "null"}");
 
-            List<string> args = new List<string>() { templateShortName, "--no-restore" };
+            List<string> args = new() { templateShortName, "--no-restore" };
             if (!string.IsNullOrWhiteSpace(language))
             {
                 args.Add("--language");
@@ -190,7 +185,7 @@ Restore succeeded\.",
         [InlineData("Web Config", "webconfig")]
         public void AllCommonItemsCreate(string expectedTemplateName, string templateShortName)
         {
-            string workingDir = TestUtils.CreateTemporaryFolder();
+            string workingDir = CreateTemporaryFolder(folderName: $"{templateShortName}");
 
             new DotnetNewCommand(_log, templateShortName)
                 .WithCustomHive(_fixture.HomeDirectory)
@@ -199,7 +194,7 @@ Restore succeeded\.",
                 .Should()
                 .ExitWith(0)
                 .And.NotHaveStdErr()
-                .And.HaveStdOut($@"The template ""{expectedTemplateName}"" was created successfully.");
+                .And.HaveStdOutContaining($@"The template ""{expectedTemplateName}"" was created successfully.");
 
             Directory.Delete(workingDir, true);
         }
@@ -207,7 +202,7 @@ Restore succeeded\.",
         [Fact]
         public void EditorConfigTests()
         {
-            string workingDir = TestUtils.CreateTemporaryFolder();
+            string workingDir = CreateTemporaryFolder();
 
             new DotnetNewCommand(_log, "editorconfig")
                 .WithCustomHive(_fixture.HomeDirectory)
@@ -266,7 +261,7 @@ Restore succeeded\.",
             "major")]
         public void GlobalJsonTests(string expectedContent, params string[] parameters)
         {
-            string workingDir = TestUtils.CreateTemporaryFolder();
+            string workingDir = CreateTemporaryFolder();
 
             new DotnetNewCommand(_log, parameters)
                 .WithCustomHive(_fixture.HomeDirectory)
@@ -279,6 +274,47 @@ Restore succeeded\.",
 
             string globalJsonConent = File.ReadAllText(Path.Combine(workingDir, "global.json"));
             Assert.Equal(expectedContent.Replace("\r\n", "\n"), globalJsonConent.Replace("\r\n", "\n"));
+            Directory.Delete(workingDir, true);
+        }
+
+        [Fact]
+        public void NuGetConfigPermissions()
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                //runs only on Unix
+                return;
+            }
+
+            string templateShortName = "nugetconfig";
+            string expectedTemplateName = "NuGet Config";
+            string workingDir = TestUtils.CreateTemporaryFolder();
+
+            new DotnetNewCommand(_log, templateShortName)
+                .WithCustomHive(_fixture.HomeDirectory)
+                .WithWorkingDirectory(workingDir)
+                .Execute()
+                .Should()
+                .ExitWith(0)
+                .And.NotHaveStdErr()
+                .And.HaveStdOutContaining($@"The template ""{expectedTemplateName}"" was created successfully.");
+
+            var process = Process.Start(new ProcessStartInfo()
+            {
+                FileName = "/bin/sh",
+                Arguments = "-c \"ls -la\"",
+                WorkingDirectory = workingDir
+            });
+
+            new Command(process)
+                .WorkingDirectory(workingDir)
+                .CaptureStdOut()
+                .CaptureStdErr()
+                .Execute()
+                .Should()
+                .ExitWith(0)
+                .And.HaveStdOutMatching("^-rw-------.*nuget.config$", RegexOptions.Multiline);
+
             Directory.Delete(workingDir, true);
         }
 
@@ -295,15 +331,15 @@ Restore succeeded\.",
             };
 
             string[] unsupportedLanguageVersions = { "1", "ISO-1" };
-            string?[] supportedLanguageVersions = { null, "ISO-2", "2", "3", "4", "5", "6", "7", "7.1", "7.2", "7.3", "8.0", "9.0", "10.0", "latest", "latestMajor", "default", "preview" };
+            string?[] supportedLanguageVersions = { null, "ISO-2", "2", "3", "4", "5", "6", "7", "7.1", "7.2", "7.3", "8.0", "9.0", "10.0", "11.0", "latest", "latestMajor", "default", "preview" };
 
-            string?[] topLevelStatementSupport = { null, "9.0", "10.0", "latest", "latestMajor", "default", "preview" };
+            string?[] topLevelStatementSupport = { null, "9.0", "10.0", "11.0", "latest", "latestMajor", "default", "preview" };
 
             foreach (var template in templatesToTest)
             {
-                foreach (var langVersion in unsupportedLanguageVersions)
+                foreach (string langVersion in unsupportedLanguageVersions)
                 {
-                    foreach (var framework in template.Frameworks)
+                    foreach (string? framework in template.Frameworks)
                     {
                         yield return new object?[]
                         {
@@ -315,9 +351,9 @@ Restore succeeded\.",
                         };
                     }
                 }
-                foreach (var langVersion in supportedLanguageVersions)
+                foreach (string? langVersion in supportedLanguageVersions)
                 {
-                    foreach (var framework in template.Frameworks)
+                    foreach (string? framework in template.Frameworks)
                     {
                         yield return new object?[]
                         {
@@ -334,12 +370,14 @@ Restore succeeded\.",
 
         [Theory]
         //creates all possible combinations for supported templates, language versions and frameworks
+#pragma warning disable CA1825 // Avoid zero-length array allocations. https://github.com/dotnet/sdk/issues/28672
         [MemberData(nameof(TopLevelProgramSupport_Data))]
+#pragma warning restore CA1825 // Avoid zero-length array allocations.
         public void TopLevelProgramSupport(string name, bool buildPass, string? framework, string? langVersion, bool supportsFeature)
         {
-            string workingDir = TestUtils.CreateTemporaryFolder();
+            string workingDir = CreateTemporaryFolder(folderName: $"{name}-{langVersion ?? "null"}-{framework ?? "null"}");
 
-            List<string> args = new List<string>() { name, "-o", "MyProject" };
+            List<string> args = new() { name, "-o", "MyProject" };
             if (!string.IsNullOrWhiteSpace(framework))
             {
                 args.Add("--framework");
@@ -359,7 +397,7 @@ Restore succeeded\.",
                 .ExitWith(0)
                 .And.NotHaveStdErr();
 
-            var buildResult = new DotnetCommand(_log, "build", "MyProject")
+            CommandResult buildResult = new DotnetBuildCommand(_log, "MyProject")
                 .WithWorkingDirectory(workingDir)
                 .Execute();
 
@@ -400,6 +438,8 @@ Restore succeeded\.",
         }
 
         [Theory]
+        [InlineData("11.0")]
+        [InlineData("11")]
         [InlineData("10.0")]
         [InlineData("10")]
         [InlineData("preview")]
@@ -409,9 +449,9 @@ Restore succeeded\.",
         [InlineData(null)]
         public void TopLevelProgramSupport_WhenFlagIsEnabled(string? langVersion)
         {
-            string workingDir = TestUtils.CreateTemporaryFolder();
+            string workingDir = CreateTemporaryFolder(folderName: $"{langVersion ?? "null"}");
 
-            List<string> args = new List<string>() { "console", "-o", "MyProject", "--use-program-main" };
+            List<string> args = new() { "console", "-o", "MyProject", "--use-program-main" };
             if (!string.IsNullOrEmpty(langVersion))
             {
                 args.Add("--langVersion");
@@ -426,7 +466,7 @@ Restore succeeded\.",
                 .ExitWith(0)
                 .And.NotHaveStdErr();
 
-            var buildResult = new DotnetCommand(_log, "build", "MyProject")
+            new DotnetBuildCommand(_log, "MyProject")
                 .WithWorkingDirectory(workingDir)
                 .Execute()
                 .Should().ExitWith(0).And.NotHaveStdErr();
@@ -451,9 +491,9 @@ class Program
         [InlineData("9")]
         public void TopLevelProgramSupport_WhenFlagIsEnabled_NoFileScopedNamespaces(string? langVersion)
         {
-            string workingDir = TestUtils.CreateTemporaryFolder();
+            string workingDir = CreateTemporaryFolder(folderName: $"{langVersion ?? "null"}");
 
-            List<string> args = new List<string>() { "console", "-o", "MyProject", "--use-program-main" };
+            List<string> args = new() { "console", "-o", "MyProject", "--use-program-main" };
             if (!string.IsNullOrEmpty(langVersion))
             {
                 args.Add("--langVersion");
@@ -468,7 +508,7 @@ class Program
                 .ExitWith(0)
                 .And.NotHaveStdErr();
 
-            var buildResult = new DotnetCommand(_log, "build", "MyProject")
+            new DotnetBuildCommand(_log, "MyProject")
                 .WithWorkingDirectory(workingDir)
                 .Execute()
                 .Should().ExitWith(0).And.NotHaveStdErr();
@@ -502,16 +542,16 @@ class Program
             };
 
             string[] unsupportedLanguageVersions = { "1", "ISO-1" };
-            string?[] supportedLanguageVersions = { null, "ISO-2", "2", "3", "4", "5", "6", "7", "7.1", "7.2", "7.3", "8.0", "9.0", "10.0", "latest", "latestMajor", "default", "preview" };
+            string?[] supportedLanguageVersions = { null, "ISO-2", "2", "3", "4", "5", "6", "7", "7.1", "7.2", "7.3", "8.0", "9.0", "10.0", "11.0", "latest", "latestMajor", "default", "preview" };
 
             string?[] supportedInFrameworkByDefault = { null, "net7.0", "netstandard2.1" };
-            string?[] supportedInLanguageVersion = { "8.0", "9.0", "10.0", "latest", "latestMajor", "default", "preview" };
+            string?[] supportedInLanguageVersion = { "8.0", "9.0", "10.0", "11.0", "latest", "latestMajor", "default", "preview" };
 
             foreach (var template in templatesToTest)
             {
-                foreach (var langVersion in unsupportedLanguageVersions)
+                foreach (string? langVersion in unsupportedLanguageVersions)
                 {
-                    foreach (var framework in template.Frameworks)
+                    foreach (string? framework in template.Frameworks)
                     {
                         yield return new object?[]
                         {
@@ -524,9 +564,9 @@ class Program
                         };
                     }
                 }
-                foreach (var langVersion in supportedLanguageVersions)
+                foreach (string? langVersion in supportedLanguageVersions)
                 {
-                    foreach (var framework in template.Frameworks)
+                    foreach (string? framework in template.Frameworks)
                     {
                         yield return new object?[]
                         {
@@ -544,12 +584,14 @@ class Program
 
         [Theory]
         //creates all possible combinations for supported templates, language versions and frameworks
+#pragma warning disable CA1825 // Avoid zero-length array allocations. https://github.com/dotnet/sdk/issues/28672
         [MemberData(nameof(NullableSupport_Data))]
+#pragma warning restore CA1825 // Avoid zero-length array allocations.
         public void NullableSupport(string name, bool buildPass, string? framework, string? langVersion, bool supportsFeature)
         {
-            string workingDir = TestUtils.CreateTemporaryFolder();
+            string workingDir = CreateTemporaryFolder(folderName: $"{name}-{langVersion ?? "null"}-{framework ?? "null"}");
 
-            List<string> args = new List<string>() { name, "-o", "MyProject" };
+            List<string> args = new() { name, "-o", "MyProject" };
             if (!string.IsNullOrWhiteSpace(framework))
             {
                 args.Add("--framework");
@@ -569,7 +611,7 @@ class Program
                 .ExitWith(0)
                 .And.NotHaveStdErr();
 
-            var buildResult = new DotnetCommand(_log, "build", "MyProject")
+            CommandResult buildResult = new DotnetBuildCommand(_log, "MyProject")
                 .WithWorkingDirectory(workingDir)
                 .Execute();
 
@@ -606,16 +648,16 @@ class Program
                 new { Template = "classlib", Frameworks = new[] { null, "net7.0", "netstandard2.0", "netstandard2.1" } }
             };
             string[] unsupportedLanguageVersions = { "1", "ISO-1" };
-            string?[] supportedLanguageVersions = { null, "ISO-2", "2", "3", "4", "5", "6", "7", "7.1", "7.2", "7.3", "8.0", "9.0", "10.0", "latest", "latestMajor", "default", "preview" };
+            string?[] supportedLanguageVersions = { null, "ISO-2", "2", "3", "4", "5", "6", "7", "7.1", "7.2", "7.3", "8.0", "9.0", "10.0", "11.0", "latest", "latestMajor", "default", "preview" };
 
             string?[] supportedInFramework = { null, "net7.0" };
-            string?[] supportedInLangVersion = { null, "10.0", "latest", "latestMajor", "default", "preview" };
+            string?[] supportedInLangVersion = { null, "10.0", "11.0", "latest", "latestMajor", "default", "preview" };
 
             foreach (var template in templatesToTest)
             {
-                foreach (var langVersion in unsupportedLanguageVersions)
+                foreach (string langVersion in unsupportedLanguageVersions)
                 {
-                    foreach (var framework in template.Frameworks)
+                    foreach (string? framework in template.Frameworks)
                     {
                         yield return new object?[]
                         {
@@ -627,9 +669,9 @@ class Program
                         };
                     }
                 }
-                foreach (var langVersion in supportedLanguageVersions)
+                foreach (string? langVersion in supportedLanguageVersions)
                 {
-                    foreach (var framework in template.Frameworks)
+                    foreach (string? framework in template.Frameworks)
                     {
                         yield return new object?[]
                         {
@@ -646,12 +688,14 @@ class Program
 
         [Theory]
         //creates all possible combinations for supported templates, language versions and frameworks
+#pragma warning disable CA1825 // Avoid zero-length array allocations. https://github.com/dotnet/sdk/issues/28672
         [MemberData(nameof(ImplicitUsingsSupport_Data))]
+#pragma warning restore CA1825 // Avoid zero-length array allocations.
         public void ImplicitUsingsSupport(string name, bool buildPass, string? framework, string? langVersion, bool supportsFeature)
         {
-            string workingDir = TestUtils.CreateTemporaryFolder();
+            string workingDir = CreateTemporaryFolder(folderName: $"{name}-{langVersion ?? "null"}-{framework ?? "null"}");
 
-            List<string> args = new List<string>() { name, "-o", "MyProject" };
+            List<string> args = new() { name, "-o", "MyProject" };
             if (!string.IsNullOrWhiteSpace(framework))
             {
                 args.Add("--framework");
@@ -671,7 +715,7 @@ class Program
                 .ExitWith(0)
                 .And.NotHaveStdErr();
 
-            var buildResult = new DotnetCommand(_log, "build", "MyProject")
+            CommandResult buildResult = new DotnetBuildCommand(_log, "MyProject")
                 .WithWorkingDirectory(workingDir)
                 .Execute();
 
@@ -707,23 +751,23 @@ class Program
                 new { Template = "classlib", Frameworks = new[] { null, "net7.0", "netstandard2.0", "netstandard2.1" } }
             };
             string[] unsupportedLanguageVersions = { "1", "ISO-1" };
-            string?[] supportedLanguageVersions = { null, "ISO-2", "2", "3", "4", "5", "6", "7", "7.1", "7.2", "7.3", "8.0", "9.0", "10.0", "latest", "latestMajor", "default", "preview" };
+            string?[] supportedLanguageVersions = { null, "ISO-2", "2", "3", "4", "5", "6", "7", "7.1", "7.2", "7.3", "8.0", "9.0", "10.0", "11.0", "latest", "latestMajor", "default", "preview" };
 
             string?[] supportedFrameworks = { null, "net7.0" };
-            string?[] fileScopedNamespacesSupportedLanguages = { "10.0", "latest", "latestMajor", "default", "preview" };
+            string?[] fileScopedNamespacesSupportedLanguages = { "10.0", "11.0", "latest", "latestMajor", "default", "preview" };
 
             foreach (var template in templatesToTest)
             {
-                foreach (var langVersion in unsupportedLanguageVersions)
+                foreach (string? langVersion in unsupportedLanguageVersions)
                 {
-                    foreach (var framework in template.Frameworks)
+                    foreach (string? framework in template.Frameworks)
                     {
                         yield return new object?[] { template.Template, false, framework, langVersion, fileScopedNamespacesSupportedLanguages.Contains(langVersion) || langVersion == null && supportedFrameworks.Contains(framework) };
                     }
                 }
-                foreach (var langVersion in supportedLanguageVersions)
+                foreach (string? langVersion in supportedLanguageVersions)
                 {
-                    foreach (var framework in template.Frameworks)
+                    foreach (string? framework in template.Frameworks)
                     {
                         yield return new object?[] { template.Template, true, framework, langVersion, fileScopedNamespacesSupportedLanguages.Contains(langVersion) || langVersion == null && supportedFrameworks.Contains(framework) };
                     }
@@ -732,13 +776,15 @@ class Program
         }
 
         [Theory]
-        //creates all possible combinations for supported templates, language versions and frameworks 
+        //creates all possible combinations for supported templates, language versions and frameworks
+#pragma warning disable CA1825 // Avoid zero-length array allocations.https://github.com/dotnet/sdk/issues/28672
         [MemberData(nameof(FileScopedNamespacesSupport_Data))]
+#pragma warning restore CA1825 // Avoid zero-length array allocations.
         public void FileScopedNamespacesSupport(string name, bool pass, string? framework, string? langVersion, bool supportsFeature)
         {
-            string workingDir = TestUtils.CreateTemporaryFolder();
+            string workingDir = CreateTemporaryFolder(folderName: $"{name}-{langVersion ?? "null"}-{framework ?? "null"}");
 
-            List<string> args = new List<string>() { name, "-o", "MyProject" };
+            List<string> args = new() { name, "-o", "MyProject" };
             if (!string.IsNullOrWhiteSpace(framework))
             {
                 args.Add("--framework");
@@ -758,7 +804,7 @@ class Program
                 .ExitWith(0)
                 .And.NotHaveStdErr();
 
-            var buildResult = new DotnetCommand(_log, "build", "MyProject")
+            CommandResult buildResult = new DotnetBuildCommand(_log, "MyProject")
                 .WithWorkingDirectory(workingDir)
                 .Execute();
 
@@ -843,8 +889,8 @@ public class Class1
 
         public void SetPropertiesByDefault(string propertyName, string? propertyValue, string expectedTemplateName, string templateShortName, string? language, string? framework)
         {
-            string workingDir = TestUtils.CreateTemporaryFolder();
-            List<string> args = new List<string>() { templateShortName, "--no-restore" };
+            string workingDir = CreateTemporaryFolder(folderName: $"{propertyName}-{templateShortName}-{templateShortName.Replace("#", "Sharp") ?? "null"}-{framework ?? "null"}");
+            List<string> args = new() { templateShortName, "--no-restore" };
             if (!string.IsNullOrWhiteSpace(language))
             {
                 args.Add("--language");
@@ -909,8 +955,8 @@ public class Class1
         [InlineData("TargetFramework", "net5.0", "-f", "net5.0", "Class library", "classlib", "F#", null)]
         public void CanSetProperty(string propertyName, string? propertyValue, string argName, string argValue, string expectedTemplateName, string templateShortName, string? language, string? framework)
         {
-            string workingDir = TestUtils.CreateTemporaryFolder();
-            List<string> args = new List<string>() { templateShortName, "--no-restore" };
+            string workingDir = CreateTemporaryFolder(folderName: $"{propertyName}-{templateShortName}-{templateShortName.Replace("#", "Sharp") ?? "null"}-{framework ?? "null"}");
+            List<string> args = new() { templateShortName, "--no-restore" };
             if (!string.IsNullOrWhiteSpace(language))
             {
                 args.Add("--language");

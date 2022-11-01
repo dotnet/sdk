@@ -51,7 +51,7 @@ namespace Microsoft.DotNet.Tools.Test
 
             // Fix for https://github.com/Microsoft/vstest/issues/1453
             // Run dll/exe directly using the VSTestForwardingApp
-            if (ContainsBuiltTestSources(args))
+            if (ContainsBuiltTestSources(parseResult))
             {
                 return ForwardToVSTestConsole(parseResult, args, settings, testSessionCorrelationId);
             }
@@ -142,7 +142,7 @@ namespace Microsoft.DotNet.Tools.Test
                     msbuildArgs.Add(argument);
             }
 
-            string verbosityArg = result.ForwardedOptionValues<IReadOnlyCollection<string>>(TestCommandParser.GetCommand(), "verbosity")?.SingleOrDefault() ?? null;
+            string verbosityArg = result.ForwardedOptionValues<IReadOnlyCollection<string>>(TestCommandParser.GetCommand(), "--verbosity")?.SingleOrDefault() ?? null;
             if (verbosityArg != null)
             {
                 string[] verbosity = verbosityArg.Split(':', 2);
@@ -227,16 +227,15 @@ namespace Microsoft.DotNet.Tools.Test
             }
         }
 
-        private static bool ContainsBuiltTestSources(string[] args)
+        private static bool ContainsBuiltTestSources(ParseResult parseResult)
         {
-            foreach (string arg in args)
+            string commandArgument = parseResult.GetValueForArgument(TestCommandParser.SlnOrProjectArgument);
+
+            if (commandArgument is not null && (commandArgument.EndsWith(".dll", StringComparison.OrdinalIgnoreCase) || commandArgument.EndsWith(".exe", StringComparison.OrdinalIgnoreCase)))
             {
-                if (!arg.StartsWith("-") &&
-                    (arg.EndsWith("dll", StringComparison.OrdinalIgnoreCase) || arg.EndsWith("exe", StringComparison.OrdinalIgnoreCase)))
-                {
-                    return true;
-                }
+                return true;
             }
+
             return false;
         }
 

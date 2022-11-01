@@ -7,6 +7,11 @@
         <target state="translated">運算式無效，位置: {0}。</target>
         <note />
       </trans-unit>
+      <trans-unit id="Diagnostics_OptionDescription">
+        <source>Enables diagnostic output.</source>
+        <target state="translated">啟用診斷輸出。</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DisableProjectContextEval_OptionDescription">
         <source>Disables evaluating project context using MSBuild.</source>
         <target state="translated">使用 MSBuild 停用評估專案內容。</target>
@@ -37,6 +42,13 @@
         <target state="translated">找到多個專案: {0}。</target>
         <note>{0} - semi-colon separated list of path to projects found.</note>
       </trans-unit>
+      <trans-unit id="PostAction_AddProjToSln_Error_BothInRootAndSolutionFolderSpecified">
+        <source>Add project reference to solution action is not configured correctly in the template.
+    The 'solutionFolder' and 'inRoot' cannot be used together; use only one of the options.</source>
+        <target state="translated">未在範本中正確設定新增至解決方案動作中的專案參考。
+    'solutionFolder' 和 'inRoot' 不能同時使用; 只使用其中一個選項。</target>
+        <note>do not translate: 'solutionFolder', 'inRoot'</note>
+      </trans-unit>
       <trans-unit id="PostAction_AddProjToSln_Error_NoProjectsToAdd">
         <source>Add project reference to solution action is not configured correctly in the template. Unable to determine the project files to add.</source>
         <target state="translated">範本中未正確設定將專案參考新增至方案動作。無法判斷要新增的專案檔案。</target>
@@ -57,6 +69,16 @@
         <target state="translated">無法將專案新增至方案檔。</target>
         <note />
       </trans-unit>
+      <trans-unit id="PostAction_AddProjToSln_InRoot_Running">
+        <source>Adding
+    project(s): {0}
+    in the root of solution file: {1}</source>
+        <target state="translated">正在新增
+    專案: {0}
+    在解決方案檔案的根中: {1}</target>
+        <note>{0} - list of file paths to projects to add,
+{1} - the path to target solution file</note>
+      </trans-unit>
       <trans-unit id="PostAction_AddProjToSln_Running">
         <source>Adding
     project(s): {0}
@@ -66,7 +88,9 @@
     專案: {0}
     至解決方案檔案: {1}
     解決方案資料夾: {2}</target>
-        <note />
+        <note>{0} - list of file paths to projects to add,
+{1} - the path to target solution file,
+{2} - the solution folder inside solution to add the projects to.</note>
       </trans-unit>
       <trans-unit id="PostAction_AddProjToSln_Succeeded">
         <source>Successfully added project(s) to a solution file.</source>
@@ -233,11 +257,6 @@
         <target state="translated">專案內容</target>
         <note />
       </trans-unit>
-      <trans-unit id="ProjectPath_OptionDescription">
-        <source>The project that should be used for context evaluation.</source>
-        <target state="translated">應該用於內容評估的專案。</target>
-        <note />
-      </trans-unit>
       <trans-unit id="SdkInfoProvider_Message_InstallSdk">
         <source>Go to aka.ms/get-dotnet and install any of the supported SDK versions: '{0}'.</source>
         <target state="translated">移至 aka.ms/get-dotnet 並安裝任何支援的 SDK 版本: '{0}'。</target>
@@ -247,6 +266,11 @@
         <source>You have other SDK version(s) installed that can be used to run this template. Switch to any of the following SDK(s) on your system to run this template: '{0}'. Details on selecting SDK version to run: https://docs.microsoft.com/dotnet/core/tools/global-json.</source>
         <target state="translated">您已安裝其他可用來執行此範本的 SDK 版本。請在系統上切換至下列任一 SDK 以執行此範本: '{0}'。有關選取要執行之 SDK 版本的詳細資料: https://docs.microsoft.com/dotnet/core/tools/global-json。</target>
         <note>{0} is the list of installed and supported versions.</note>
+      </trans-unit>
+      <trans-unit id="Verbosity_OptionDescription">
+        <source>Sets the verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], and diag[nostic].</source>
+        <target state="translated">設定詳細資訊層級。允許的值為 q[uiet]、m[inimal]、n[ormal] 和 diag[nostic]。</target>
+        <note />
       </trans-unit>
       <trans-unit id="WorkloadInfoProvider_Message_AddWorkloads">
         <source>Run 'dotnet workload search' to search workloads available to be installed on your SDK.</source>
