@@ -21,6 +21,18 @@ namespace Microsoft.NET.Sdk.Razor.Tests
     public class AspNetSdkBaselineTest : AspNetSdkTest
     {
         private static readonly JsonSerializerOptions BaselineSerializationOptions = new() { WriteIndented = true };
+        private static readonly string BaselineGenerationInstructions =
+            @"If the difference in baselines is expected, please re-generate the baselines.
+Note, baseline generation must be done on a Windows device.
+Start by ensuring you're dogfooding the SDK from the current branch (dotnet --version should be '*.0.0-dev').
+    If you're not on the dogfood sdk, run:
+        1. dotnet clean
+        2. .\restore.cmd
+        3. .\build.cmd
+        4. .\eng\dogfood.cmd
+
+Then, using the dogfood SDK run the src/RazorSdk/update-test-baselines.ps1 script.";
+
         protected static readonly string DotNetJSHashRegexPattern = "\\.[a-z0-9]{10}\\.js";
         protected static readonly string DotNetJSHashTemplate = ".[[hash]].js";
 
@@ -352,7 +364,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 manifest.BasePath.Should().Be(expected.BasePath);
                 manifest.Mode.Should().Be(expected.Mode);
                 manifest.ManifestType.Should().Be(expected.ManifestType);
-                
+
                 manifest.ReferencedProjectsConfiguration.Count().Should().Be(expected.ReferencedProjectsConfiguration.Count());
 
                 // Relax the check for project reference configuration items see
@@ -374,12 +386,12 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                     return;
                 }
 
+                // Otherwise, do a property level comparison of all assets
                 var manifestAssetsEnumerator = manifestAssets.GetEnumerator();
                 var expectedAssetsEnumerator = expectedAssets.GetEnumerator();
 
                 var differences = new List<string>();
 
-                // Otherwise, do a property level comparison of all assets
                 do
                 {
                     var manifestAsset = manifestAssetsEnumerator.Current;
@@ -456,8 +468,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 
                 } while (manifestAssetsEnumerator.MoveNext() && expectedAssetsEnumerator.MoveNext());
 
-                differences.Should().BeEmpty();
-                
+                differences.Should().BeEmpty(BaselineGenerationInstructions);
+
                 static string AssetDifferencesDetails(IEnumerable<StaticWebAsset> manifestAssets, IEnumerable<StaticWebAsset> expectedAssets)
                 {
                     var missingAssets = expectedAssets.Except(manifestAssets);
@@ -477,7 +489,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 
                     if (differences.Any())
                     {
-                        differences.Add("If the difference in baselines is expected, please re-generate the baselines using the src/RazorSdk/update-test-baselines.ps1 script.");
+                        differences.Add(BaselineGenerationInstructions);
                     }
 
                     return string.Join(Environment.NewLine, differences);
