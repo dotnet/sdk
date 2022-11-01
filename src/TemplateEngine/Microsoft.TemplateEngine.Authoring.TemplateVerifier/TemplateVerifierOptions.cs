@@ -17,7 +17,7 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier
         public TemplateVerifierOptions(string templateName) => TemplateName = templateName;
 
         /// <summary>
-        /// Gets the name of locally installed template.
+        /// Gets the name of the template to be verified. Can be already installed template or a template within local path specified with <see cref="TemplatePath"/>.
         /// </summary>
         public string TemplateName { get; init; }
 
@@ -48,7 +48,7 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier
 
         /// <summary>
         /// If set to true - 'dotnet new' command is expected to return nonzero return code.
-        /// Otherwise a zero error code and no error output is expected.
+        /// Otherwise a zero exit code and no error output is expected.
         /// </summary>
         public bool IsCommandExpectedToFail { get; init; }
 
@@ -76,6 +76,7 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier
 
         /// <summary>
         /// Gets the target directory to output the generated template.
+        /// If explicitly specified, it won't be cleaned up upon successful run of test scenario.
         /// </summary>
         public string? OutputDirectory { get; init; }
 
@@ -105,17 +106,17 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier
         public string? ScenarioName { get; init; }
 
         /// <summary>
-        /// <see langword="true" />, if the instantiation args should not be appended to verification subdirectories.
+        /// <see langword="true" />, if the instantiation args should not be appended to verification snapshot name.
         /// </summary>
         public bool DoNotAppendTemplateArgsToScenarioName { get; init; }
 
         /// <summary>
-        /// <see langword="true" />, if the template name should not be prepended to verification subdirectories.
+        /// <see langword="true" />, if the template name should not be prepended to verification snapshot name.
         /// </summary>
         public bool DoNotPrependTemplateNameToScenarioName { get; init; }
 
         /// <summary>
-        /// <see langword="true" />, if the caller method name should not be prepended to verification subdirectories.
+        /// <see langword="true" />, if the caller method name should not be prepended to verification snapshot name.
         /// </summary>
         public bool DoNotPrependCallerMethodNameToScenarioName { get; init; }
 
