@@ -540,17 +540,17 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
             //  The character that the string starts with must be one of the supported quote kinds
             if (literal.Length < 2 || literal[0] != literal[literal.Length - 1] || !SupportedQuotes.Contains(literal[0]))
             {
-                if (string.Equals(literal, "true", StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(literal, "true", StringComparison.OrdinalIgnoreCase)) //lgtm [cs/campaign/constantine]
                 {
                     return true;
                 }
 
-                if (string.Equals(literal, "false", StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(literal, "false", StringComparison.OrdinalIgnoreCase)) //lgtm [cs/campaign/constantine]
                 {
                     return false;
                 }
 
-                if (string.Equals(literal, "null", StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(literal, "null", StringComparison.OrdinalIgnoreCase)) //lgtm [cs/campaign/constantine]
                 {
                     return null;
                 }

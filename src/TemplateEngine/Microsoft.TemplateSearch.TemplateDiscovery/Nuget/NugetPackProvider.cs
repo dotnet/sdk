@@ -92,7 +92,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.NuGet
                 string queryString = string.Format(_searchUriFormat, skip, pageSize);
 
                 Uri queryUri = new Uri(queryString);
-                using (HttpClient client = new HttpClient())
+                using (HttpClient client = new HttpClient(new HttpClientHandler() { CheckCertificateRevocationList = true }))
                 using (HttpResponseMessage response = await client.GetAsync(queryUri, token).ConfigureAwait(false))
                 {
                     if (response.IsSuccessStatusCode)
@@ -174,7 +174,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.NuGet
         {
             string queryString = string.Format(_searchUriFormat, 0, _pageSize);
             Uri queryUri = new Uri(queryString);
-            using (HttpClient client = new HttpClient())
+            using (HttpClient client = new HttpClient(new HttpClientHandler() { CheckCertificateRevocationList = true }))
             using (HttpResponseMessage response = await client.GetAsync(queryUri, token).ConfigureAwait(false))
             {
                 response.EnsureSuccessStatusCode();

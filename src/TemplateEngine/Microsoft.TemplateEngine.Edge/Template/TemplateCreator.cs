@@ -294,7 +294,7 @@ namespace Microsoft.TemplateEngine.Edge.Template
                             // don't fail on value resolution errors, but report them as authoring problems.
                             else
                             {
-                                _logger.LogDebug($"Template {template.Identity} has an invalid DefaultIfOptionWithoutValue value for parameter {inputParam.ParameterDefinition.Name}");
+                                _logger.LogDebug($"Template {template.Identity} has an invalid DefaultIfOptionWithoutValue value for parameter {inputParam.ParameterDefinition.Name}"); //lgtm [cs/privacy/suspicious-logging-arguments]
                             }
                         }
                         else

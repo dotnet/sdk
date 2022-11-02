@@ -106,6 +106,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.NuGet
             {
                 HttpClientHandler handler = new HttpClientHandler()
                 {
+                    CheckCertificateRevocationList = true,
                     AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate
                 };
                 using (HttpClient client = new HttpClient(handler))
