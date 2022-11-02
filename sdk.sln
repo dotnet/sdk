@@ -397,6 +397,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Assets", "Assets", "{06260D
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "dotnet-new", "dotnet-new", "{81003712-2EF6-47D0-904A-64E4DDD75BF7}"
 EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Microsoft.DotNet.ApiSymbolExtension", "src\Microsoft.DotNet.ApiSymbolExtension\Microsoft.DotNet.ApiSymbolExtension.shproj", "{9B0BF5B4-D8E0-4726-872B-7099ED927C51}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -892,6 +894,7 @@ Global
 		{C37EC61D-6A88-4C15-B371-A61F23EF9072} = {81003712-2EF6-47D0-904A-64E4DDD75BF7}
 		{06260DC7-BA64-42BE-B99C-6069A1C3E70E} = {580D1AE7-AA8F-4912-8B76-105594E00B3B}
 		{81003712-2EF6-47D0-904A-64E4DDD75BF7} = {06260DC7-BA64-42BE-B99C-6069A1C3E70E}
+		{9B0BF5B4-D8E0-4726-872B-7099ED927C51} = {22AB674F-ED91-4FBC-BFEE-8A1E82F9F05E}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FB8F26CE-4DE6-433F-B32A-79183020BBD6}
@@ -899,6 +902,8 @@ Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		src\ApiCompat\Microsoft.DotNet.ApiCompat.Shared\Microsoft.DotNet.ApiCompat.Shared.projitems*{03c5a84a-982b-4f38-ac73-ab832c645c4a}*SharedItemsImports = 5
 		src\ApiCompat\Microsoft.DotNet.ApiCompat.Shared\Microsoft.DotNet.ApiCompat.Shared.projitems*{0a3c9afd-f6e6-4a5d-83fb-93bf66732696}*SharedItemsImports = 5
+		src\Microsoft.DotNet.ApiSymbolExtension\Microsoft.DotNet.ApiSymbolExtension.projitems*{3f5a028c-c51b-434a-8c10-37680cd2635c}*SharedItemsImports = 5
+		src\Microsoft.DotNet.ApiSymbolExtension\Microsoft.DotNet.ApiSymbolExtension.projitems*{9b0bf5b4-d8e0-4726-872b-7099ed927c51}*SharedItemsImports = 13
 		src\ApiCompat\Microsoft.DotNet.ApiCompat.Shared\Microsoft.DotNet.ApiCompat.Shared.projitems*{9d36039f-d0a1-462f-85b4-81763c6b02cb}*SharedItemsImports = 13
 		src\ApiCompat\Microsoft.DotNet.ApiCompat.Shared\Microsoft.DotNet.ApiCompat.Shared.projitems*{a9103b98-d888-4260-8a05-fa36f640698a}*SharedItemsImports = 5
 	EndGlobalSection

@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects Condition="'$(MSBuildVersion)' == '' Or '$(MSBuildVersion)' &lt; '16.0'">$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>9b0bf5b4-d8e0-4726-872b-7099ed927c51</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>Microsoft.DotNet.ApiSymbolExtension</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)AssemblyLoadWarning.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)AssemblySymbolLoader.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DiagnosticIds.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)IAssemblySymbolLoader.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)IDiagnostic.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)IAssemblySymbolLoaderFactory.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)AssemblySymbolLoaderFactory.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\Filtering\ISymbolFilter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\Filtering\SymbolAccessibilityBasedFilter.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)ExtensionResources.resx" GenerateSource="true" SubType="Designer" Generator="MSBuild:_GenerateResxSource" ClassName="Microsoft.DotNet.ApiSymbolExtension.ExtensionResources" ManifestResourceName="Microsoft.DotNet.ApiSymbolExtension.ExtensionResources" />
+  </ItemGroup>
+</Project>

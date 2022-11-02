@@ -12,7 +12,7 @@ using System.Reflection.PortableExecutable;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
-namespace Microsoft.DotNet.ApiCompatibility
+namespace Microsoft.DotNet.ApiSymbolExtension
 {
     /// <summary>
     /// Loads <see cref="IAssemblySymbol"/> objects from source files, binaries or directories containing binaries.
@@ -160,7 +160,7 @@ namespace Microsoft.DotNet.ApiCompatibility
         {
             if (stream.Position >= stream.Length)
             {
-                throw new ArgumentException(Resources.StreamPositionGreaterThanLength, nameof(stream));
+                throw new ArgumentException(ExtensionResources.StreamPositionGreaterThanLength, nameof(stream));
             }
 
             if (!_loadedAssemblies.TryGetValue(name, out MetadataReference? metadataReference))
@@ -176,12 +176,12 @@ namespace Microsoft.DotNet.ApiCompatibility
         {
             if (!filePaths.Any())
             {
-                throw new ArgumentNullException(nameof(filePaths), Resources.ShouldNotBeNullAndContainAtLeastOneElement);
+                throw new ArgumentNullException(nameof(filePaths), ExtensionResources.ShouldNotBeNullAndContainAtLeastOneElement);
             }
 
             if (string.IsNullOrEmpty(assemblyName))
             {
-                throw new ArgumentNullException(nameof(assemblyName), Resources.ShouldProvideValidAssemblyName);
+                throw new ArgumentNullException(nameof(assemblyName), ExtensionResources.ShouldProvideValidAssemblyName);
             }
 
             _cSharpCompilation = _cSharpCompilation.WithAssemblyName(assemblyName);
@@ -191,7 +191,7 @@ namespace Microsoft.DotNet.ApiCompatibility
             {
                 if (!File.Exists(filePath))
                 {
-                    throw new FileNotFoundException(string.Format(Resources.FileDoesNotExist, filePath));
+                    throw new FileNotFoundException(string.Format(ExtensionResources.FileDoesNotExist, filePath));
                 }
 
                 syntaxTrees.Add(CSharpSyntaxTree.ParseText(File.ReadAllText(filePath)));
@@ -215,7 +215,7 @@ namespace Microsoft.DotNet.ApiCompatibility
                 {
                     if (!Directory.Exists(directory))
                     {
-                        throw new FileNotFoundException(string.Format(Resources.ShouldProvideValidAssemblyName, directory), nameof(searchPaths));
+                        throw new FileNotFoundException(string.Format(ExtensionResources.ShouldProvideValidAssemblyName, directory), nameof(searchPaths));
                     }
 
                     string possiblePath = Path.Combine(directory, name);
@@ -242,7 +242,7 @@ namespace Microsoft.DotNet.ApiCompatibility
                 if (warnOnMissingAssemblies && !found)
                 {
                     string assemblyInfo = validateMatchingIdentity ? assembly.Identity.GetDisplayName() : assembly.Name;
-                    _warnings.Add(new AssemblyLoadWarning(DiagnosticIds.AssemblyNotFound, assemblyInfo, string.Format(Resources.MatchingAssemblyNotFound, assemblyInfo)));
+                    _warnings.Add(new AssemblyLoadWarning(DiagnosticIds.AssemblyNotFound, assemblyInfo, string.Format(ExtensionResources.MatchingAssemblyNotFound, assemblyInfo)));
                 }
             }
 
@@ -277,7 +277,7 @@ namespace Microsoft.DotNet.ApiCompatibility
                 }
                 else
                 {
-                    throw new FileNotFoundException(string.Format(Resources.ProvidedPathToLoadBinariesFromNotFound, path));
+                    throw new FileNotFoundException(string.Format(ExtensionResources.ProvidedPathToLoadBinariesFromNotFound, path));
                 }
             }
 
@@ -306,7 +306,7 @@ namespace Microsoft.DotNet.ApiCompatibility
 
             if (!reader.HasMetadata)
             {
-                throw new ArgumentException(string.Format(Resources.ProvidedStreamDoesNotHaveMetadata, name));
+                throw new ArgumentException(string.Format(ExtensionResources.ProvidedStreamDoesNotHaveMetadata, name));
             }
 
             PEMemoryBlock image = reader.GetEntireImage();
@@ -371,7 +371,7 @@ namespace Microsoft.DotNet.ApiCompatibility
                         _warnings.Add(new AssemblyLoadWarning(
                             DiagnosticIds.AssemblyReferenceNotFound,
                             name,
-                            string.Format(Resources.CouldNotResolveReference, name)));
+                            string.Format(ExtensionResources.CouldNotResolveReference, name)));
                     }
                 }
             }

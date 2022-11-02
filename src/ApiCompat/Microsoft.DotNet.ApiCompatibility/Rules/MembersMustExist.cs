@@ -6,6 +6,7 @@ using System.IO;
 using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.ApiCompatibility.Abstractions;
 using Microsoft.DotNet.ApiCompatibility.Extensions;
+using Microsoft.DotNet.ApiSymbolExtension;
 
 namespace Microsoft.DotNet.ApiCompatibility.Rules
 {

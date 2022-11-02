@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
+using Microsoft.DotNet.ApiSymbolExtension;
 
 namespace Microsoft.DotNet.ApiCompatibility.Abstractions
 {

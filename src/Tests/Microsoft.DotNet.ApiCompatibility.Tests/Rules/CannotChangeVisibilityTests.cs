@@ -4,6 +4,7 @@
 using Microsoft.CodeAnalysis;
 using System.Collections.Generic;
 using Microsoft.DotNet.ApiCompatibility.Abstractions;
+using Microsoft.DotNet.ApiSymbolExtension;
 using Microsoft.DotNet.ApiCompatibility.Tests;
 using Xunit;
 
