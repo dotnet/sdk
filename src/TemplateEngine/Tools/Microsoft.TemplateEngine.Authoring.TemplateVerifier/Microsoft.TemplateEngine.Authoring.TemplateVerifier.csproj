@@ -9,7 +9,6 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <EnablePublicApiAnalyzer>true</EnablePublicApiAnalyzer>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>

@@ -36,10 +36,6 @@ namespace Microsoft.TemplateEngine.CommandUtils
             [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
             internal static extern IntPtr GetCommandLine();
 
-            [DllImport("ntdll.dll", SetLastError = true)]
-            [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-            internal static extern unsafe uint NtQueryInformationProcess(SafeProcessHandle ProcessHandle, int ProcessInformationClass, void* ProcessInformation, uint ProcessInformationLength, out uint ReturnLength);
-
             [StructLayout(LayoutKind.Sequential)]
             internal struct JobObjectBasicLimitInformation
             {

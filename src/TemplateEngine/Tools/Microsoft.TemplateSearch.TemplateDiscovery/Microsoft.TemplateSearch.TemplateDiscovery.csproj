@@ -6,7 +6,6 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
