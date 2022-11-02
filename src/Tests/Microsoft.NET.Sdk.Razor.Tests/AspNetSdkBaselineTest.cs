@@ -25,13 +25,13 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             @"If the difference in baselines is expected, please re-generate the baselines.
 Note, baseline generation must be done on a Windows device.
 Start by ensuring you're dogfooding the SDK from the current branch (dotnet --version should be '*.0.0-dev').
-    If you're not on the dogfood sdk, run:
+    If you're not on the dogfood sdk, from the root of the repository run:
         1. dotnet clean
         2. .\restore.cmd
         3. .\build.cmd
         4. .\eng\dogfood.cmd
 
-Then, using the dogfood SDK run the src/RazorSdk/update-test-baselines.ps1 script.";
+Then, using the dogfood SDK run the .\src\RazorSdk\update-test-baselines.ps1 script.";
 
         protected static readonly string DotNetJSHashRegexPattern = "\\.[a-z0-9]{10}\\.js";
         protected static readonly string DotNetJSHashTemplate = ".[[hash]].js";
@@ -375,7 +375,6 @@ Then, using the dogfood SDK run the src/RazorSdk/update-test-baselines.ps1 scrip
                 //    .BeEquivalentTo(expected.ReferencedProjectsConfiguration.OrderBy(cm => cm.Identity));
 
                 manifest.DiscoveryPatterns.OrderBy(dp => dp.Name).Should().BeEquivalentTo(expected.DiscoveryPatterns.OrderBy(dp => dp.Name));
-
                 var manifestAssets = manifest.Assets.OrderBy(a => a.BasePath).ThenBy(a => a.RelativePath).ThenBy(a => a.AssetKind);
                 var expectedAssets = expected.Assets.OrderBy(a => a.BasePath).ThenBy(a => a.RelativePath).ThenBy(a => a.AssetKind);
 
@@ -396,6 +395,11 @@ Then, using the dogfood SDK run the src/RazorSdk/update-test-baselines.ps1 scrip
                 {
                     var manifestAsset = manifestAssetsEnumerator.Current;
                     var expectedAsset = expectedAssetsEnumerator.Current;
+
+                    if (manifestAsset is null && expectedAsset is null)
+                    {
+                        continue;
+                    }
 
                     var assetDifferences = new List<string>();
 
