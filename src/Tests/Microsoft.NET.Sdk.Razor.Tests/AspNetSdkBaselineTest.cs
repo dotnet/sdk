@@ -365,7 +365,7 @@ Then, using the dogfood SDK run the .\src\RazorSdk\update-test-baselines.ps1 scr
                 manifest.Mode.Should().Be(expected.Mode);
                 manifest.ManifestType.Should().Be(expected.ManifestType);
 
-                manifest.ReferencedProjectsConfiguration.Count().Should().Be(expected.ReferencedProjectsConfiguration.Count());
+                manifest.ReferencedProjectsConfiguration.Should().HaveSameCount(expected.ReferencedProjectsConfiguration);
 
                 // Relax the check for project reference configuration items see
                 // https://github.com/dotnet/sdk/pull/27381#issuecomment-1228764471
@@ -375,14 +375,14 @@ Then, using the dogfood SDK run the .\src\RazorSdk\update-test-baselines.ps1 scr
                 //    .BeEquivalentTo(expected.ReferencedProjectsConfiguration.OrderBy(cm => cm.Identity));
 
                 manifest.DiscoveryPatterns.OrderBy(dp => dp.Name).Should().BeEquivalentTo(expected.DiscoveryPatterns.OrderBy(dp => dp.Name));
+
                 var manifestAssets = manifest.Assets.OrderBy(a => a.BasePath).ThenBy(a => a.RelativePath).ThenBy(a => a.AssetKind);
                 var expectedAssets = expected.Assets.OrderBy(a => a.BasePath).ThenBy(a => a.RelativePath).ThenBy(a => a.AssetKind);
 
                 // If there's a mismatch in the number of assets, just print the strict difference in the asset `Identity`
-                if (manifest.Assets.Length != expected.Assets.Length)
+                if (manifestAssets.Count() != expectedAssets.Count())
                 {
-                    manifestAssets.Should().BeEquivalentTo(expectedAssets, AssetDifferencesDetails(manifestAssets, expectedAssets));
-                    return;
+                    ThrowAssetCountMismatchError(manifestAssets, expectedAssets);
                 }
 
                 // Otherwise, do a property level comparison of all assets
@@ -466,15 +466,26 @@ Then, using the dogfood SDK run the .\src\RazorSdk\update-test-baselines.ps1 scr
 
                     if (assetDifferences.Any())
                     {
-                        differences.Add($"For {expectedAsset.Identity}:");
-                        differences.AddRange(assetDifferences);
+                        differences.Add(@$"
+==================================================
+
+For {expectedAsset.Identity}:
+
+{string.Join(Environment.NewLine, assetDifferences)}
+
+==================================================");
                     }
 
                 } while (manifestAssetsEnumerator.MoveNext() && expectedAssetsEnumerator.MoveNext());
 
-                differences.Should().BeEmpty(BaselineGenerationInstructions);
+                differences.Should().BeEmpty(
+                    @$" the generated manifest should match the expected baseline.
 
-                static string AssetDifferencesDetails(IEnumerable<StaticWebAsset> manifestAssets, IEnumerable<StaticWebAsset> expectedAssets)
+{BaselineGenerationInstructions}
+
+");
+
+                static void ThrowAssetCountMismatchError(IEnumerable<StaticWebAsset> manifestAssets, IEnumerable<StaticWebAsset> expectedAssets)
                 {
                     var missingAssets = expectedAssets.Except(manifestAssets);
                     var unexpectedAssets = manifestAssets.Except(expectedAssets);
@@ -483,20 +494,19 @@ Then, using the dogfood SDK run the .\src\RazorSdk\update-test-baselines.ps1 scr
 
                     if (missingAssets.Any())
                     {
-                        differences.Add($"The following expected assets weren't found in the manifest {string.Join(", ", missingAssets.Select(a => a.Identity))}.");
+                        differences.Add($@"The following expected assets weren't found in the manifest:
+    {string.Join($"{Environment.NewLine}\t", missingAssets.Select(a => a.Identity))}");
                     }
 
                     if (unexpectedAssets.Any())
                     {
-                        differences.Add($"The following additional unexpected assets were found in the manifest {string.Join(", ", unexpectedAssets.Select(a => a.Identity))}.");
+                        differences.Add($@"The following additional unexpected assets were found in the manifest:
+    {string.Join($"{Environment.NewLine}\t", unexpectedAssets.Select(a => a.Identity))}");
                     }
 
-                    if (differences.Any())
-                    {
-                        differences.Add(BaselineGenerationInstructions);
-                    }
+                    throw new Exception($@"{string.Join(Environment.NewLine, differences)}
 
-                    return string.Join(Environment.NewLine, differences);
+{BaselineGenerationInstructions}");
                 }
             }
             else
@@ -668,3 +678,4 @@ Then, using the dogfood SDK run the .\src\RazorSdk\update-test-baselines.ps1 scr
         }
     }
 }
+
