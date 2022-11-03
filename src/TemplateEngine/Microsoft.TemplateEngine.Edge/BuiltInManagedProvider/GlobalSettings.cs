@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Installer;
 using Microsoft.TemplateEngine.Edge.Settings;
@@ -16,12 +17,15 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
     internal sealed class GlobalSettings : IGlobalSettings, IDisposable
     {
         private const int FileReadWriteRetries = 20;
+        private const int MillisecondsInterval = 20;
+        private static readonly TimeSpan MaxNotificationDelayOnWriterLock = TimeSpan.FromSeconds(1);
         private readonly SettingsFilePaths _paths;
         private readonly IEngineEnvironmentSettings _environmentSettings;
         private readonly string _globalSettingsFile;
         private IDisposable? _watcher;
         private volatile bool _disposed;
         private volatile AsyncMutex? _mutex;
+        private int _waitingInstances;
 
         public GlobalSettings(IEngineEnvironmentSettings environmentSettings, string globalSettingsFile)
         {
@@ -29,10 +33,7 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
             _globalSettingsFile = globalSettingsFile ?? throw new ArgumentNullException(nameof(globalSettingsFile));
             _paths = new SettingsFilePaths(environmentSettings);
             environmentSettings.Host.FileSystem.CreateDirectory(Path.GetDirectoryName(_globalSettingsFile));
-            if (environmentSettings.Environment.GetEnvironmentVariable("TEMPLATE_ENGINE_DISABLE_FILEWATCHER") != "1")
-            {
-                _watcher = environmentSettings.Host.FileSystem.WatchFileChanges(_globalSettingsFile, FileChanged);
-            }
+            _watcher = CreateWatcherIfRequested();
         }
 
         public event Action? SettingsChanged;
@@ -105,7 +106,7 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
                         throw;
                     }
                 }
-                await Task.Delay(20, cancellationToken).ConfigureAwait(false);
+                await Task.Delay(MillisecondsInterval, cancellationToken).ConfigureAwait(false);
             }
             throw new InvalidOperationException();
         }
@@ -130,7 +131,11 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
 
                 try
                 {
+                    // Ignore FSW notifications received during writing changes (we'll notify synchronously)
+                    _watcher?.Dispose();
                     _environmentSettings.Host.FileSystem.WriteObject(_globalSettingsFile, globalSettingsData);
+                    // We are ready for new notifications now
+                    _watcher = CreateWatcherIfRequested();
                     SettingsChanged?.Invoke();
                     return;
                 }
@@ -141,14 +146,66 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
                         throw;
                     }
                 }
-                await Task.Delay(20, cancellationToken).ConfigureAwait(false);
+                await Task.Delay(MillisecondsInterval, cancellationToken).ConfigureAwait(false);
             }
             throw new InvalidOperationException();
         }
 
-        private void FileChanged(object sender, FileSystemEventArgs e)
+        private IDisposable? CreateWatcherIfRequested()
         {
+            if (_environmentSettings.Environment.GetEnvironmentVariable("TEMPLATE_ENGINE_DISABLE_FILEWATCHER") != "1")
+            {
+                return _environmentSettings.Host.FileSystem.WatchFileChanges(_globalSettingsFile, FileChanged);
+            }
+
+            return null;
+        }
+
+        // This method is called whenever there is a change in global settings. Since the handlers of SettingsChanged event
+        //  first grab the lock (LockAsync) and then read the whole content of GlobalSettings folder - we are here making sure
+        //  to skip unwanted extra calls - all concurrent calls while handler is waiting for a lock leads to duplicate reprocessing
+        //  of a whole global settings folder.
+        //  To prevent this - we try to wait for a lock on behalf of the handler and refuse all concurrent file change notifications in the meantime
+        private async void FileChanged(object sender, FileSystemEventArgs e)
+        {
+            // Make sure the waiting happens only for one notification at the time - as we do not care about other notifications
+            // until the SettingsChanged is called
+            //  if multiple concurrent call(s) get here, while there is already other caller inside waiting for the lock
+            //  those concurrent callers will just return (as counter is 1 already).
+            if (Interlocked.Increment(ref _waitingInstances) > 1)
+            {
+                return;
+            }
+
+            await TryWaitForLock().ConfigureAwait(false);
+
+            // We are ready for new notifications now - indicate so by clearing the counter
+            Interlocked.Exchange(ref _waitingInstances, 0);
+
             SettingsChanged?.Invoke();
+        }
+
+        private async Task<bool> TryWaitForLock()
+        {
+            CancellationTokenSource cts = new();
+            try
+            {
+                cts.CancelAfter(MaxNotificationDelayOnWriterLock);
+                if (!(_mutex?.IsLocked ?? false))
+                {
+                    using (await LockAsync(cts.Token).ConfigureAwait(false))
+                    { }
+                }
+            }
+            catch (Exception e)
+            {
+                _environmentSettings.Host.Logger.LogDebug(
+                    "Failed to wait for GlobalSettings lock to be freed, before notifying about new changes. {error}",
+                    e.Message);
+                return false;
+            }
+
+            return true;
         }
     }
 }
