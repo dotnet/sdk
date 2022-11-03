@@ -12,7 +12,7 @@ using System.Reflection.PortableExecutable;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
-namespace Microsoft.DotNet.ApiSymbolExtension
+namespace Microsoft.DotNet.ApiSymbolExtensions
 {
     /// <summary>
     /// Loads <see cref="IAssemblySymbol"/> objects from source files, binaries or directories containing binaries.

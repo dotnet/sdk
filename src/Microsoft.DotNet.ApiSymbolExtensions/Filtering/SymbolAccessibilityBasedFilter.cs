@@ -4,7 +4,7 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.ApiCompatibility.Extensions;
 
-namespace Microsoft.DotNet.ApiSymbolExtension
+namespace Microsoft.DotNet.ApiSymbolExtensions
 {
     internal class SymbolAccessibilityBasedFilter : ISymbolFilter
     {

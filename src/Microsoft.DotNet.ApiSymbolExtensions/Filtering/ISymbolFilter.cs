@@ -3,7 +3,7 @@
 
 using Microsoft.CodeAnalysis;
 
-namespace Microsoft.DotNet.ApiSymbolExtension
+namespace Microsoft.DotNet.ApiSymbolExtensions
 {
     /// <summary>
     /// Provides a mechanism to filter <see cref="ISymbol"/> when building the <see cref="ElementMapper{T}"/>.

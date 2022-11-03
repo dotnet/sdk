@@ -26,5 +26,5 @@
     <Reference Include="System.IO.Compression" />
   </ItemGroup>
 
-  <Import Project="..\..\Microsoft.DotNet.ApiSymbolExtension\Microsoft.DotNet.ApiSymbolExtension.projitems" Label="Shared" />
+  <Import Project="..\..\Microsoft.DotNet.ApiSymbolExtensions\Microsoft.DotNet.ApiSymbolExtensions.projitems" Label="Shared" />
 </Project>

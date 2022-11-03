@@ -3,7 +3,7 @@
 
 using System.Collections.Generic;
 using Microsoft.DotNet.ApiCompatibility.Abstractions;
-using Microsoft.DotNet.ApiSymbolExtension;
+using Microsoft.DotNet.ApiSymbolExtensions;
 using Xunit;
 
 namespace Microsoft.DotNet.ApiCompatibility.Tests

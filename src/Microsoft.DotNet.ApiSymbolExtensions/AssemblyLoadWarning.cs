@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Microsoft.DotNet.ApiSymbolExtension
+namespace Microsoft.DotNet.ApiSymbolExtensions
 {
     /// <summary>
     /// Class that represents a warning that occurred while trying to load a specific assembly.

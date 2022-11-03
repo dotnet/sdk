@@ -6,7 +6,7 @@
     <SharedGUID>9b0bf5b4-d8e0-4726-872b-7099ed927c51</SharedGUID>
   </PropertyGroup>
   <PropertyGroup Label="Configuration">
-    <Import_RootNamespace>Microsoft.DotNet.ApiSymbolExtension</Import_RootNamespace>
+    <Import_RootNamespace>Microsoft.DotNet.ApiSymbolExtensions</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)AssemblyLoadWarning.cs" />
@@ -20,6 +20,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)\Filtering\SymbolAccessibilityBasedFilter.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)ExtensionResources.resx" GenerateSource="true" SubType="Designer" Generator="MSBuild:_GenerateResxSource" ClassName="Microsoft.DotNet.ApiSymbolExtension.ExtensionResources" ManifestResourceName="Microsoft.DotNet.ApiSymbolExtension.ExtensionResources" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)ExtensionResources.resx" GenerateSource="true" SubType="Designer" Generator="MSBuild:_GenerateResxSource" ClassName="Microsoft.DotNet.ApiSymbolExtensions.ExtensionResources" ManifestResourceName="Microsoft.DotNet.ApiSymbolExtensions.ExtensionResources" />
   </ItemGroup>
 </Project>
