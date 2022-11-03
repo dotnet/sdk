@@ -50,16 +50,18 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
             {
                 Assert.True(File.Exists(cacheFilePath));
                 new DotnetNewCommand(_log)
-                      .WithCustomHive(settingsPath)
-                      .WithEnvironmentVariable("DOTNET_NEW_SEARCH_FILE_OVERRIDE", cacheFilePath)
-                      .WithEnvironmentVariable("DOTNET_CLI_CONTEXT_VERBOSE", "true")
-                      .Execute()
-                      .Should()
-                      .ExitWith(0)
-                      .And.NotHaveStdErr();
+                    .WithCustomHive(settingsPath)
+                    .WithoutTelemetry()
+                    .WithEnvironmentVariable("DOTNET_NEW_SEARCH_FILE_OVERRIDE", cacheFilePath)
+                    .WithEnvironmentVariable("DOTNET_CLI_CONTEXT_VERBOSE", "true")
+                    .Execute()
+                    .Should()
+                    .ExitWith(0)
+                    .And.NotHaveStdErr();
 
                 new DotnetNewCommand(_log, "func", "--search")
                     .WithCustomHive(settingsPath)
+                    .WithoutTelemetry()
                     .WithEnvironmentVariable("DOTNET_NEW_SEARCH_FILE_OVERRIDE", cacheFilePath)
                     .WithEnvironmentVariable("DOTNET_CLI_CONTEXT_VERBOSE", "true")
                     .Execute()
@@ -71,6 +73,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
 
                 new DotnetNewCommand(_log)
                       .WithCustomHive(settingsPath)
+                      .WithoutTelemetry()
                       .WithEnvironmentVariable("DOTNET_NEW_SEARCH_FILE_OVERRIDE", cacheFilePath)
                       .WithEnvironmentVariable("DOTNET_CLI_CONTEXT_VERBOSE", "true")
                       .Execute()
@@ -80,6 +83,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
 
                 new DotnetNewCommand(_log, "func", "--search")
                     .WithCustomHive(settingsPath)
+                    .WithoutTelemetry()
                     .WithEnvironmentVariable("DOTNET_NEW_SEARCH_FILE_OVERRIDE", cacheFilePath)
                     .WithEnvironmentVariable("DOTNET_CLI_CONTEXT_VERBOSE", "true")
                     .Execute()
@@ -521,6 +525,7 @@ Package Test.Templates was unlisted.");
                 Assert.True(File.Exists(cacheFilePath));
                 new DotnetNewCommand(_log)
                       .WithCustomHive(settingsPath)
+                      .WithoutTelemetry()
                       .WithEnvironmentVariable("DOTNET_NEW_SEARCH_FILE_OVERRIDE", cacheFilePath)
                       .WithEnvironmentVariable("DOTNET_CLI_CONTEXT_VERBOSE", "true")
                       .Execute()
@@ -530,6 +535,7 @@ Package Test.Templates was unlisted.");
 
                 new DotnetNewCommand(_log, "CliHostFile", "--search")
                     .WithCustomHive(settingsPath)
+                    .WithoutTelemetry()
                     .WithEnvironmentVariable("DOTNET_NEW_SEARCH_FILE_OVERRIDE", cacheFilePath)
                     .WithEnvironmentVariable("DOTNET_CLI_CONTEXT_VERBOSE", "true")
                     .Execute()
@@ -542,6 +548,7 @@ Package Test.Templates was unlisted.");
 
                 new DotnetNewCommand(_log, "--search", "--param")
                      .WithCustomHive(settingsPath)
+                     .WithoutTelemetry()
                      .WithEnvironmentVariable("DOTNET_NEW_SEARCH_FILE_OVERRIDE", cacheFilePath)
                      .WithEnvironmentVariable("DOTNET_CLI_CONTEXT_VERBOSE", "true")
                      .Execute()
@@ -554,6 +561,7 @@ Package Test.Templates was unlisted.");
 
                 new DotnetNewCommand(_log, "--search", "-p")
                     .WithCustomHive(settingsPath)
+                    .WithoutTelemetry()
                     .WithEnvironmentVariable("DOTNET_NEW_SEARCH_FILE_OVERRIDE", cacheFilePath)
                     .WithEnvironmentVariable("DOTNET_CLI_CONTEXT_VERBOSE", "true")
                     .Execute()
@@ -566,6 +574,7 @@ Package Test.Templates was unlisted.");
 
                 new DotnetNewCommand(_log, "--search", "--test-param")
                     .WithCustomHive(settingsPath)
+                    .WithoutTelemetry()
                     .WithEnvironmentVariable("DOTNET_NEW_SEARCH_FILE_OVERRIDE", cacheFilePath)
                     .WithEnvironmentVariable("DOTNET_CLI_CONTEXT_VERBOSE", "true")
                     .Execute()

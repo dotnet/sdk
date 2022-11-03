@@ -27,12 +27,14 @@ namespace Microsoft.TemplateEngine.Authoring.Tasks.IntegrationTests
             TestUtils.SetupNuGetConfigForPackagesLocation(tmpDir, ShippingPackagesLocation);
 
             new DotnetCommand(_log, "add", "TemplatePackage.csproj", "package", "Microsoft.TemplateEngine.Authoring.Tasks", "--prerelease")
-              .WithWorkingDirectory(tmpDir)
-              .Execute()
-              .Should()
-              .Pass();
+                .WithoutTelemetry()
+                .WithWorkingDirectory(tmpDir)
+                .Execute()
+                .Should()
+                .Pass();
 
             new DotnetCommand(_log, "build")
+                .WithoutTelemetry()
                 .WithWorkingDirectory(tmpDir)
                 .Execute()
                 .Should()
@@ -55,12 +57,14 @@ namespace Microsoft.TemplateEngine.Authoring.Tasks.IntegrationTests
             TestUtils.SetupNuGetConfigForPackagesLocation(tmpDir, ShippingPackagesLocation);
 
             new DotnetCommand(_log, "add", "TemplatePackage.csproj", "package", "Microsoft.TemplateEngine.Authoring.Tasks", "--prerelease")
-              .WithWorkingDirectory(tmpDir)
-              .Execute()
-              .Should()
-              .Pass();
+                .WithoutTelemetry()
+                .WithWorkingDirectory(tmpDir)
+                .Execute()
+                .Should()
+                .Pass();
 
             new DotnetCommand(_log, "build")
+                .WithoutTelemetry()
                 .WithWorkingDirectory(tmpDir)
                 .Execute()
                 .Should()
@@ -84,12 +88,14 @@ namespace Microsoft.TemplateEngine.Authoring.Tasks.IntegrationTests
             TestUtils.SetupNuGetConfigForPackagesLocation(tmpDir, ShippingPackagesLocation);
 
             new DotnetCommand(_log, "add", "TemplatePackage.csproj", "package", "Microsoft.TemplateEngine.Authoring.Tasks", "--prerelease")
-              .WithWorkingDirectory(tmpDir)
-              .Execute()
-              .Should()
-              .Pass();
+                .WithoutTelemetry()
+                .WithWorkingDirectory(tmpDir)
+                .Execute()
+                .Should()
+                .Pass();
 
             new DotnetCommand(_log, "build")
+                .WithoutTelemetry()
                 .WithWorkingDirectory(tmpDir)
                 .Execute()
                 .Should()
@@ -114,12 +120,14 @@ namespace Microsoft.TemplateEngine.Authoring.Tasks.IntegrationTests
             TestUtils.SetupNuGetConfigForPackagesLocation(tmpDir, ShippingPackagesLocation);
 
             new DotnetCommand(_log, "add", "TemplatePackage.csproj", "package", "Microsoft.TemplateEngine.Authoring.Tasks", "--prerelease")
-              .WithWorkingDirectory(tmpDir)
-              .Execute()
-              .Should()
-              .Pass();
+                .WithoutTelemetry()
+                .WithWorkingDirectory(tmpDir)
+                .Execute()
+                .Should()
+                .Pass();
 
             new DotnetCommand(_log, "build")
+                .WithoutTelemetry()
                 .WithWorkingDirectory(tmpDir)
                 .Execute()
                 .Should()

@@ -12,16 +12,18 @@ namespace Microsoft.TemplateEngine.CommandUtils
         {
             Arguments.Add(subcommand);
             Arguments.AddRange(args);
-            //opt out from telemetry
-            WithEnvironmentVariable("DOTNET_CLI_TELEMETRY_OPTOUT", "true");
         }
 
         internal DotnetCommand(ITestOutputHelper log, string subcommand, params string[] args) : base(log)
         {
             Arguments.Add(subcommand);
             Arguments.AddRange(args);
-            //opt out from telemetry
+        }
+
+        internal DotnetCommand WithoutTelemetry()
+        {
             WithEnvironmentVariable("DOTNET_CLI_TELEMETRY_OPTOUT", "true");
+            return this;
         }
 
         private protected override SdkCommandSpec CreateCommand(IEnumerable<string> args)

@@ -51,6 +51,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Test
             workingDirectory = TestUtils.CreateTemporaryFolder("latest");
             //print the version
             new DotnetCommand(TestOutputLogger.Instance, "--version")
+                .WithoutTelemetry()
                 .WithWorkingDirectory(workingDirectory)
                 .Execute()
                 .Should()
@@ -66,6 +67,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Test
             CreateGlobalJson(workingDirectory, requestedSdkVersion, rollForward, allowPrerelease);
 
             new DotnetCommand(TestOutputLogger.Instance, "--version")
+                .WithoutTelemetry()
                 .WithWorkingDirectory(workingDirectory)
                 .Execute()
                 .Should()
@@ -78,7 +80,8 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Test
         private static void CanSearchWhileInstantiating(string workingDirectory, string cacheFilePath)
         {
             var settingsPath = TestUtils.CreateTemporaryFolder();
-            new DotnetCommand(TestOutputLogger.Instance, "new", "func", "--debug:custom-hive", settingsPath)
+            new DotnetNewCommand(TestOutputLogger.Instance, "func", "--debug:custom-hive", settingsPath)
+                .WithoutTelemetry()
                 .WithWorkingDirectory(workingDirectory)
                 .WithEnvironmentVariable("DOTNET_NEW_SEARCH_FILE_OVERRIDE", cacheFilePath)
                 .Execute()
@@ -91,7 +94,8 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Test
         private static void CanCheckUpdates(string workingDirectory, string cacheFilePath)
         {
             var settingsPath = TestUtils.CreateTemporaryFolder();
-            new DotnetCommand(TestOutputLogger.Instance, "new", "--install", "Microsoft.Azure.WebJobs.ItemTemplates::2.1.1785", "--debug:custom-hive", settingsPath)
+            new DotnetNewCommand(TestOutputLogger.Instance, "--install", "Microsoft.Azure.WebJobs.ItemTemplates::2.1.1785", "--debug:custom-hive", settingsPath)
+              .WithoutTelemetry()
               .WithWorkingDirectory(workingDirectory)
               .WithEnvironmentVariable("DOTNET_NEW_SEARCH_FILE_OVERRIDE", cacheFilePath)
               .Execute()
@@ -99,7 +103,8 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Test
               .ExitWith(0)
               .And.NotHaveStdErr();
 
-            new DotnetCommand(TestOutputLogger.Instance, "new", "--update-check", "--debug:custom-hive", settingsPath)
+            new DotnetNewCommand(TestOutputLogger.Instance, "--update-check", "--debug:custom-hive", settingsPath)
+                .WithoutTelemetry()
                 .WithWorkingDirectory(workingDirectory)
                 .WithEnvironmentVariable("DOTNET_NEW_SEARCH_FILE_OVERRIDE", cacheFilePath)
                 .Execute()
@@ -114,15 +119,17 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Test
         private static void CanUpdate(string workingDirectory, string cacheFilePath)
         {
             var settingsPath = TestUtils.CreateTemporaryFolder();
-            new DotnetCommand(TestOutputLogger.Instance, "new", "--install", "Microsoft.Azure.WebJobs.ItemTemplates::2.1.1785", "--debug:custom-hive", settingsPath)
-              .WithWorkingDirectory(workingDirectory)
-              .WithEnvironmentVariable("DOTNET_NEW_SEARCH_FILE_OVERRIDE", cacheFilePath)
-              .Execute()
-              .Should()
-              .ExitWith(0)
-              .And.NotHaveStdErr();
+            new DotnetNewCommand(TestOutputLogger.Instance, "--install", "Microsoft.Azure.WebJobs.ItemTemplates::2.1.1785", "--debug:custom-hive", settingsPath)
+                .WithoutTelemetry()
+                .WithWorkingDirectory(workingDirectory)
+                .WithEnvironmentVariable("DOTNET_NEW_SEARCH_FILE_OVERRIDE", cacheFilePath)
+                .Execute()
+                .Should()
+                .ExitWith(0)
+                .And.NotHaveStdErr();
 
-            new DotnetCommand(TestOutputLogger.Instance, "new", "--update-apply", "--debug:custom-hive", settingsPath)
+            new DotnetNewCommand(TestOutputLogger.Instance, "--update-apply", "--debug:custom-hive", settingsPath)
+                .WithoutTelemetry()
                 .WithWorkingDirectory(workingDirectory)
                 .WithEnvironmentVariable("DOTNET_NEW_SEARCH_FILE_OVERRIDE", cacheFilePath)
                 .Execute()
@@ -137,7 +144,8 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Test
         private static void CanSearch(string workingDirectory, string cacheFilePath)
         {
             var settingsPath = TestUtils.CreateTemporaryFolder();
-            new DotnetCommand(TestOutputLogger.Instance, "new", "func", "--search", "--debug:custom-hive", settingsPath)
+            new DotnetNewCommand(TestOutputLogger.Instance, "func", "--search", "--debug:custom-hive", settingsPath)
+                .WithoutTelemetry()
                 .WithWorkingDirectory(workingDirectory)
                 .WithEnvironmentVariable("DOTNET_NEW_SEARCH_FILE_OVERRIDE", cacheFilePath)
                 .Execute()
