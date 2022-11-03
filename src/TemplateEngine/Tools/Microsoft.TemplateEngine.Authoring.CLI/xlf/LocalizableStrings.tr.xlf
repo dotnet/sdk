@@ -4,153 +4,153 @@
     <body>
       <trans-unit id="command_export_help_description">
         <source>Given a template.config file, creates a "localize" directory next to it and exports the localization files into the created directory. If the localization files already exist, the existing translations will be preserved.</source>
-        <target state="translated">template.config dosyası belirtildiğinde, yanında bir "localize" dizini oluşturulur ve yerelleştirme dosyaları oluşturulan dizine aktarılır. Yerelleştirme dosyaları zaten varsa mevcut çeviriler saklanır.</target>
+        <target state="new">Given a template.config file, creates a "localize" directory next to it and exports the localization files into the created directory. If the localization files already exist, the existing translations will be preserved.</target>
         <note>The phrase "localization files" here mean the files that will be given to the translators to be localized.</note>
       </trans-unit>
       <trans-unit id="command_export_help_dryrun_description">
         <source>If this option is specified, modified files will not be saved to file system and the changes will only be printed to console output.</source>
-        <target state="translated">Bu seçenek belirtilmişse, değiştirilen dosyalar dosya sistemine kaydedilmez ve değişiklikler yalnızca konsol çıkışına yazdırılır.</target>
+        <target state="new">If this option is specified, modified files will not be saved to file system and the changes will only be printed to console output.</target>
         <note />
       </trans-unit>
       <trans-unit id="command_export_help_language_description">
         <source>The list of languages to be supported by this template. The following language list will be used as default if this option is omitted: cs, de, en, es, fr, it, ja, ko, pl, pt-BR, ru, tr, zh-Hans, zh-Hant</source>
-        <target state="translated">Bu şablon tarafından desteklenen dillerin listesi. Bu seçenek atlanırsa, şu dil listesi varsayılan olarak kullanılır: cs, de, en, es, fr, it, ja, ko, pl, pt-BR, ru, tr, zh-Hans, zh-Hant</target>
+        <target state="new">The list of languages to be supported by this template. The following language list will be used as default if this option is omitted: cs, de, en, es, fr, it, ja, ko, pl, pt-BR, ru, tr, zh-Hans, zh-Hant</target>
         <note />
       </trans-unit>
       <trans-unit id="command_export_help_recursive_description">
         <source>When specified, subdirectories are also searched for template.json files.</source>
-        <target state="translated">Belirtildiğinde, template.json dosyalarına yönelik alt dizinler de aranır.</target>
+        <target state="new">When specified, subdirectories are also searched for template.json files.</target>
         <note>Do not localize: "template.json"</note>
       </trans-unit>
       <trans-unit id="command_export_help_templatePath_description">
         <source>Specifies the path to the template.json file. If a directory is given, template.json file will be searched within the directory. If --recursive options is specified, all the template.json files under the given directory and its subdirectories will be taken as input.</source>
-        <target state="translated">template.json dosyasının yolunu belirtir. Dizin belirtildiğinde, dizinde template.json dosyası aranır. --recursive options belirtilirse, sağlanan dizin ve alt dizinleri altındaki tüm template.json dosyaları giriş olarak alınır.</target>
+        <target state="new">Specifies the path to the template.json file. If a directory is given, template.json file will be searched within the directory. If --recursive options is specified, all the template.json files under the given directory and its subdirectories will be taken as input.</target>
         <note>Do not localize: "template.json", "--recursive"</note>
       </trans-unit>
       <trans-unit id="command_export_log_cancelled">
         <source>"export" command for the following file was cancelled: "{0}".</source>
-        <target state="translated">Şu dosya için "dışarı aktarma" komutu iptal edildi: "{0}".</target>
+        <target state="new">"export" command for the following file was cancelled: "{0}".</target>
         <note>Do not localize: "export"</note>
       </trans-unit>
       <trans-unit id="command_export_log_executionEnded">
         <source>Execution of "export" command has completed. {0} files were processed.</source>
-        <target state="translated">“Dışarı aktarma” komutunun yürütme işlemi tamamlandı. {0} dosyalar işlendi.</target>
+        <target state="new">Execution of "export" command has completed. {0} files were processed.</target>
         <note>{0} is the number of files. Do not localize "export"</note>
       </trans-unit>
       <trans-unit id="command_export_log_templateExportFailedWithError">
         <source>Generating localization files for a template.json has failed.
 Reason: {0}.
 File Path: {1}.</source>
-        <target state="translated">template.json için yerelleştirme dosyaları oluşturulamadı.
-Neden: {0}.
-Dosya Yolu: {1}.</target>
+        <target state="new">Generating localization files for a template.json has failed.
+Reason: {0}.
+File Path: {1}.</target>
         <note>{0} is a sentence such as "Json property should contain a field 'ID'"
 {1} is a file path such as: C:\temp\template.json
 Do not localize: "template.json"</note>
       </trans-unit>
       <trans-unit id="command_export_log_templateExportFailedWithException">
         <source>Generating localization files for the following template.json file has failed: "{0}".</source>
-        <target state="translated">Şu template.json dosyası için yerelleştirme dosyaları oluşturulamadı: "{0}".</target>
+        <target state="new">Generating localization files for the following template.json file has failed: "{0}".</target>
         <note />
       </trans-unit>
       <trans-unit id="command_export_log_templateExportSucceeded">
         <source>Localization files were successfully generated for the template.json file at path "{0}".</source>
-        <target state="translated">"{0}" yolundaki template.json dosyası için yerelleştirme dosyaları başarıyla oluşturuldu.</target>
+        <target state="new">Localization files were successfully generated for the template.json file at path "{0}".</target>
         <note />
       </trans-unit>
       <trans-unit id="command_export_log_templateJsonNotFound">
         <source>Failed to find "template.json" file under the path "{0}".</source>
-        <target state="translated">"{0}" yolunda "template.json" dosyası bulunamadı.</target>
+        <target state="new">Failed to find "template.json" file under the path "{0}".</target>
         <note>Do not localize: "template.json"</note>
       </trans-unit>
       <trans-unit id="command_verify_error_failed">
         <source>Verification Failed.</source>
-        <target state="translated">Doğrulama Başarısız Oldu.</target>
+        <target state="new">Verification Failed.</target>
         <note />
       </trans-unit>
       <trans-unit id="command_verify_error_unrecognizedArguments">
         <source>Argument(s) {0} are not recognized. Must be one of: {1}.</source>
-        <target state="translated">Bağımsız değişken {0} tanınmıyor. Şunlardan biri olmalı: {1}</target>
+        <target state="new">Argument(s) {0} are not recognized. Must be one of: {1}.</target>
         <note>{0} and {1} is both a list of arguments</note>
       </trans-unit>
       <trans-unit id="command_verify_help_customExcludes_description">
         <source>Specifies pattern(s) defining files to be excluded from verification.</source>
-        <target state="translated">Doğrulamanın dışında tutulacak dosyaları tanımlayan desenleri belirtir.</target>
+        <target state="new">Specifies pattern(s) defining files to be excluded from verification.</target>
         <note />
       </trans-unit>
       <trans-unit id="command_verify_help_customIncludes_description">
         <source>Specifies pattern(s) defining files to be included to verification (all files are included if not specified).</source>
-        <target state="translated">Doğrulamaya dahil edilecek dosyaları tanımlayan kalıpları belirtir (belirtilmemişse tüm dosyalar dahil edilir).</target>
+        <target state="new">Specifies pattern(s) defining files to be included to verification (all files are included if not specified).</target>
         <note />
       </trans-unit>
       <trans-unit id="command_verify_help_description">
         <source>Runs the template with specified arguments and compares the result with expectations files.</source>
-        <target state="translated">Şablonu, belirtilen bağımsız değişkenlerle çalıştırıp sonucu beklenti dosyalarıyla karşılaştırır.</target>
+        <target state="new">Runs the template with specified arguments and compares the result with expectations files.</target>
         <note />
       </trans-unit>
       <trans-unit id="command_verify_help_disableDefaultExcludes_description">
         <source>If set to true - all template output files will be verified, unless --exclude-pattern option is used.</source>
-        <target state="translated">True olarak ayarlandığında, -- exclude-pattern seçeneği kullanılmadıkça tüm şablon çıkış dosyaları doğrulanır.</target>
+        <target state="new">If set to true - all template output files will be verified, unless --exclude-pattern option is used.</target>
         <note>Do not translate 'true'. Do not translate '--exclude-pattern'</note>
       </trans-unit>
       <trans-unit id="command_verify_help_disableDiffTool_description">
         <source>If set to true - the diff tool won't be automatically started by the Verifier on verification failures.</source>
-        <target state="translated">True olarak ayarlandığında, Doğrulayıcı, doğrulama hatalarında fark aracını otomatik olarak başlatmaz.</target>
+        <target state="new">If set to true - the diff tool won't be automatically started by the Verifier on verification failures.</target>
         <note>Do not translate 'true'.</note>
       </trans-unit>
       <trans-unit id="command_verify_help_expectFailure_description">
         <source>If set to true - 'dotnet new' command is expected to return non-zero return code.</source>
-        <target state="translated">True olarak ayarlandığında, - 'dotnet new' komutunun sıfır olmayan dönüş kodu döndürmesi beklenir.</target>
+        <target state="new">If set to true - 'dotnet new' command is expected to return non-zero return code.</target>
         <note>Do not translate 'true'. Do not translate 'dotnet new'</note>
       </trans-unit>
       <trans-unit id="command_verify_help_newCommandPath_description">
         <source>Specifies the path to custom assembly implementing 'dotnet new' command.</source>
-        <target state="translated">'dotnet new' komutunu uygulayan özel derlemenin yolunu belirtir.</target>
+        <target state="new">Specifies the path to custom assembly implementing 'dotnet new' command.</target>
         <note>Do not translate 'dotnet new'</note>
       </trans-unit>
       <trans-unit id="command_verify_help_outputPath_description">
         <source>Specifies the path to target directory to output the generated template to.</source>
-        <target state="translated">Oluşturulan şablonun çıkış yapılacağı hedef dizini yolunu belirtir.</target>
+        <target state="new">Specifies the path to target directory to output the generated template to.</target>
         <note />
       </trans-unit>
       <trans-unit id="command_verify_help_scenarioName_description">
         <source>Specifies optional scenario name to be used in the snapshot folder name.</source>
-        <target state="translated">Anlık görüntü klasörü adında kullanılacak isteğe bağlı senaryo adını belirtir.</target>
+        <target state="new">Specifies optional scenario name to be used in the snapshot folder name.</target>
         <note />
       </trans-unit>
       <trans-unit id="command_verify_help_snapshotsDirPath_description">
         <source>Specifies path to the directory with snapshot files.</source>
-        <target state="translated">Anlık görüntü dosyaları içeren dizinin yolunu belirtir.</target>
+        <target state="new">Specifies path to the directory with snapshot files.</target>
         <note />
       </trans-unit>
       <trans-unit id="command_verify_help_templateName_description">
         <source>Name of the template to be verified. Can be already installed template or a template within local path specified with -p/--template-path option.</source>
-        <target state="translated">Doğrulanacak şablonun adı. Zaten yüklü bir şablon veya -p/--template-path seçeneğiyle belirtilen yerel yolda bir şablon olabilir.</target>
+        <target state="new">Name of the template to be verified. Can be already installed template or a template within local path specified with -p/--template-path option.</target>
         <note>Do not translate the '-p/--template-path'</note>
       </trans-unit>
       <trans-unit id="command_verify_help_templatePath_description">
         <source>Specifies the path to the directory with template to be verified.</source>
-        <target state="translated">Doğrulanacak şablonu içeren dizinin yolunu belirtir.</target>
+        <target state="new">Specifies the path to the directory with template to be verified.</target>
         <note />
       </trans-unit>
       <trans-unit id="command_verify_help_uniqueFor_description">
         <source>Sets the Verifier expectations directory naming convention, by indicating which scenarios should be differentiated.</source>
-        <target state="translated">Hangi senaryoların ayrıştırılması gerektiğini belirterek Doğrulayıcı beklentileri dizin adlandırma kuralını ayarlar.</target>
+        <target state="new">Sets the Verifier expectations directory naming convention, by indicating which scenarios should be differentiated.</target>
         <note />
       </trans-unit>
       <trans-unit id="command_verify_help_verifyOutputs_description">
         <source>If set to true - 'dotnet new' command standard output and error contents will be verified along with the produced template files.</source>
-        <target state="translated">True olarak ayarlandığında, - 'dotnet new' komutu standart çıktısı ve hata içerikleri, oluşturulan şablon dosyalarıyla birlikte doğrulanır.</target>
+        <target state="new">If set to true - 'dotnet new' command standard output and error contents will be verified along with the produced template files.</target>
         <note>Do not translate 'true'. Do not translate 'dotnet new'</note>
       </trans-unit>
       <trans-unit id="generic_log_commandExecutionFailed">
         <source>"{0}" command has encountered an error. See the logs for more details.</source>
-        <target state="translated">"{0}" komutu bir hatayla karşılaştı. Daha fazla ayrıntı için günlüklere bakın.</target>
+        <target state="new">"{0}" command has encountered an error. See the logs for more details.</target>
         <note>{0} will be replaced by the command name. Such as: "export" command has encountered an error.</note>
       </trans-unit>
       <trans-unit id="generic_log_commandExecutionFailedWithErrorMessage">
         <source>There was an error while running the "--{0}" command. Error message: "{1}". See the logs for more details.</source>
-        <target state="translated">"--{0}" komutu çalıştırılırken bir hata oluştu. Hata iletisi: "{1}". Daha fazla ayrıntı için günlüklere bakın.</target>
+        <target state="new">There was an error while running the "--{0}" command. Error message: "{1}". See the logs for more details.</target>
         <note />
       </trans-unit>
     </body>

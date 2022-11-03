@@ -4,47 +4,47 @@
     <body>
       <trans-unit id="VerificationEngine_Error_InstallUnexpectedFail">
         <source>Template installation expected to pass but it had exit code '{0}'.</source>
-        <target state="translated">Şablon yüklemenin başarılı olması bekleniyordu ancak '{0}' çıkış kodu oluştu.</target>
+        <target state="new">Template installation expected to pass but it had exit code '{0}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="VerificationEngine_Error_ScrubberExtension">
         <source>File extension passed to scrubber should not start with dot.</source>
-        <target state="translated">Temizleyiciye geçirilen dosya uzantısı noktayla başlamamalıdır.</target>
+        <target state="new">File extension passed to scrubber should not start with dot.</target>
         <note />
       </trans-unit>
       <trans-unit id="VerificationEngine_Error_StdOutFolderExists">
         <source>The folder [{0}] should not exist in the template output - cannot verify stdout/stderr in such case.</source>
-        <target state="translated">[{0}] klasörü şablon çıkışında olmamalıdır; böyle bir durumda stdout/stderr doğrulanamıyor.</target>
+        <target state="new">The folder [{0}] should not exist in the template output - cannot verify stdout/stderr in such case.</target>
         <note>{0} is a folder path</note>
       </trans-unit>
       <trans-unit id="VerificationEngine_Error_TemplateNameMandatory">
         <source>Template name is mandatory, but was not supplied.</source>
-        <target state="translated">Zorunlu şablon adı sağlanmadı.</target>
+        <target state="new">Template name is mandatory, but was not supplied.</target>
         <note />
       </trans-unit>
       <trans-unit id="VerificationEngine_Error_Unexpected">
         <source>Unexpected error encountered.</source>
-        <target state="translated">Beklenmeyen bir hatayla karşılaşıldı.</target>
+        <target state="new">Unexpected error encountered.</target>
         <note />
       </trans-unit>
       <trans-unit id="VerificationEngine_Error_UnexpectedFail">
         <source>Template instantiation expected to pass but it had exit code '{0}'.</source>
-        <target state="translated">Şablon örneği oluşturmanın başarılı olması bekleniyordu ancak '{0}' çıkış kodu oluştu.</target>
+        <target state="new">Template instantiation expected to pass but it had exit code '{0}'.</target>
         <note>{0} is an exit code number</note>
       </trans-unit>
       <trans-unit id="VerificationEngine_Error_UnexpectedPass">
         <source>Template instantiation expected to fail but it passed.</source>
-        <target state="translated">Şablon örneği oluşturmanın başarısız olması bekleniyordu ancak başarılı oldu.</target>
+        <target state="new">Template instantiation expected to fail but it passed.</target>
         <note />
       </trans-unit>
       <trans-unit id="VerificationEngine_Error_UnexpectedStdErr">
         <source>Template instantiation expected not to have any stderr output, but stderr output was encountered:{0}{1}</source>
-        <target state="translated">Şablon örneği oluşturmanın stderr çıkışına sahip olması beklenmiyordu, ancak stderr çıkışıyla karşılaşıldı:{0}{1}</target>
+        <target state="new">Template instantiation expected not to have any stderr output, but stderr output was encountered:{0}{1}</target>
         <note>{0} is newline, {1} is the standard error content</note>
       </trans-unit>
       <trans-unit id="VerificationEngine_Error_WorkDirExists">
         <source>The working directory already exists and is not empty.</source>
-        <target state="translated">Çalışma dizini zaten var ve boş değil.</target>
+        <target state="new">The working directory already exists and is not empty.</target>
         <note />
       </trans-unit>
     </body>
