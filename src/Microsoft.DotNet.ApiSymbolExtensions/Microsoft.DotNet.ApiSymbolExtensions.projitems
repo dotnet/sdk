@@ -16,6 +16,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)IDiagnostic.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IAssemblySymbolLoaderFactory.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AssemblySymbolLoaderFactory.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\Extensions\SymbolExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\Filtering\ISymbolFilter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\Filtering\SymbolAccessibilityBasedFilter.cs" />
   </ItemGroup>

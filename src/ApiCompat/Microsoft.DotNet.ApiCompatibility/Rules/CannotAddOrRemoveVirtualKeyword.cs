@@ -4,8 +4,8 @@
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.ApiCompatibility.Abstractions;
-using Microsoft.DotNet.ApiCompatibility.Extensions;
 using Microsoft.DotNet.ApiSymbolExtensions;
+using Microsoft.DotNet.ApiSymbolExtensions.Extensions;
 
 namespace Microsoft.DotNet.ApiCompatibility.Rules
 {

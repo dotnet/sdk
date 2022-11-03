@@ -2,7 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Microsoft.CodeAnalysis;
-using Microsoft.DotNet.ApiCompatibility.Extensions;
+using Microsoft.DotNet.ApiSymbolExtensions.Extensions;
 
 namespace Microsoft.DotNet.ApiSymbolExtensions
 {

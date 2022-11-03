@@ -4,7 +4,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using Microsoft.CodeAnalysis;
-using Microsoft.DotNet.ApiCompatibility.Extensions;
+using Microsoft.DotNet.ApiSymbolExtensions.Extensions;
 using Microsoft.DotNet.ApiCompatibility.Rules;
 
 namespace Microsoft.DotNet.ApiCompatibility.Abstractions
