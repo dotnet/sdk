@@ -73,11 +73,11 @@ using System;
 
 This allows for easier authoring of nested generated conditions.
 
-### Multichoice symbols
+### Multi-choice symbols
 
 Information about multi-choice symbols can be found in [Reference for `template.json`](Reference-for-template.json.md#multichoice-symbols-specifics)
 
-Comparison to multichoice symbol results in operation checking of a presence of any value of a multichoice parameter - meaning `==` operator behaves as `contains()` operation. Example (sourced from [integration test](https://github.com/dotnet/templating/tree/main/test/Microsoft.TemplateEngine.TestTemplates/test_templates/TemplateWithMultiValueChoice)):
+Comparison to multi-choice symbol results in operation checking of a presence of any value of a multi-choice parameter - meaning `==` operator behaves as `contains()` operation. Example (sourced from [integration test](https://github.com/dotnet/templating/tree/main/test/Microsoft.TemplateEngine.TestTemplates/test_templates/TemplateWithMultiValueChoice)):
 
 `template.json`:
 ```json
@@ -121,22 +121,22 @@ Comparison to multichoice symbol results in operation checking of a presence of 
 
 `Program.cs`:
 ```C#
-#if (Platform = MacOS)
+#if (Platform == MacOS)
 // MacOS choice flag specified here
 #endif
 ```
 
-In above example if `Platform` has it's default value (`MacOS` and `iOS`) or if those 2 values are passed to the engine (e.g. via commandline: `dotnet new MyTemplate --Platform MacOS --Platform iOS`), the condition in `Program.cs` file will be evaluated as true.
+In above example if `Platform` has it's default value (`MacOS` and `iOS`) or if those 2 values are passed to the engine (e.g. via command line: `dotnet new MyTemplate --Platform MacOS --Platform iOS`), the condition in `Program.cs` file will be evaluated as true.
 
-Order of operands doesn't matter - `PLATFORM == Windows` evaluates identical as `Windows == PLATFORM`. Comparing 2 multichoice symbols leads to standard equality check
+Order of operands doesn't matter - `PLATFORM == Windows` evaluates identical as `Windows == PLATFORM`. Comparing 2 multi-choice symbols leads to standard equality check
 
-### Using Computed Conditions to work with Multichoice Symbols
+### Using Computed Conditions to work with multi-choice symbols
 
-Cases that needs evaluation of different type of condition over multichoice symbols than 'contains' (e.g. exclusive equality or membership in subset of possible values) can be achieved with slightly more involved condition - so we recommend definition of aliases via computed conditions.
+Cases that needs evaluation of different type of condition over multi-choice symbols than 'contains' (e.g. exclusive equality or membership in subset of possible values) can be achieved with slightly more involved condition - so we recommend definition of aliases via computed conditions.
 
 #### Example:
 
-Lets consider following multichoice symbol:
+Lets consider following multi-choice symbol:
 
 `template.json`:
 ```json
@@ -223,9 +223,9 @@ Usage can then look as following:
 
 **Input** - currently only other parameter symbols from the template configuration are supported within the parameter conditions. Any other variables are not bound and replaced (they are considered part of literal string).
 
-**Evaluation order** - Dependencies between parameters are detected and evaluation is peformed in order that guarantees that all dependencies are evaluated prior their dependant (see [Topological Sorting](https://en.wikipedia.org/wiki/Topological_sorting) for details).
+**Evaluation order** - Dependencies between parameters are detected and evaluation is performed in order that guarantees that all dependencies are evaluated prior their dependant (see [Topological Sorting](https://en.wikipedia.org/wiki/Topological_sorting) for details).
 
- In case of cyclic dependency the evaluation proceeds only if current input values of parameters do not lead to indeterministic result (and the cycle is indicated in warning log message). That means order of evaluation or number of reevaluations should not have impact on the result of evaluation. Otherwise an error is reported, indicating the cycle.
+ In case of cyclic dependency the evaluation proceeds only if current input values of parameters do not lead to nondeterministic result (and the cycle is indicated in warning log message). That means order of evaluation or number of reevaluations should not have impact on the result of evaluation. Otherwise an error is reported, indicating the cycle.
 
  Example `template.json` with cyclic dependency:
 ```json
@@ -245,9 +245,9 @@ Usage can then look as following:
 }
 ```
 
-Following input parameter values can (and will) be evaluated deterministically: `--A false --B true`
+The following input parameter values can (and will) be evaluated deterministically: `--A false --B true`
 
-Following input parameter values cannot be evaluated deterministically (and will lead to error): `--A true --B false`
+The following input parameter values cannot be evaluated deterministically (and will lead to error): `--A true --B false`
 
 **Applying user, host and default values** - All user-provided, host-provided and default values are applied before the conditions are evaluated. After the evaluation default values are reapplied to parameters that were evaluated as optional and that do not have user-/host-provided values. After this an evaluation of presence of required values takes place.
 

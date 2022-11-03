@@ -65,20 +65,20 @@ Rerun the command and pass --force to accept and create.
 For details on current exit code please visit https://aka.ms/templating-exit-codes#73
 ```
 
-Destructive changes can be forced by passing `--force` option
+Destructive changes can be forced by passing `--force` option.
 
 This is a semi-standardized exit code (see [EX_CANTCREAT in /usr/include/sysexits.h](https://github.com/openbsd/src/blob/master/include/sysexits.h#L110))
 
 
 ## <a name="100"></a>100 - Instantiation Failed - Processing issues
 
-The template instantiation failed due to error(s). Caused by environment (failure to read/write template(s) or cache) or 
+The template instantiation failed due to error(s). Caused by environment (failure to read/write template(s) or cache). 
 
 ## <a name="101"></a>101 - Invalid template or template package
 
 _Reserved for future usage - described behavior is yet not implemented. [Feature is tracked](https://github.com/dotnet/templating/issues/4801)_
 
-Caused by errorneous template(s) (incomplete conditions, symbols or macros etc.). Exact error reason will be output to stderr.
+Caused by erroneous template(s) (incomplete conditions, symbols or macros etc.). Exact error reason will be output to stderr.
 
 _Examples:_
 
@@ -166,19 +166,19 @@ foobarbaz could not be installed, no NuGet feeds are configured or they are inva
 For details on current exit code please visit https://aka.ms/templating-exit-codes#103
 ```
 
-## <a name="104"></a>104 - PostAction operation was cancelled
+## <a name="104"></a>104 - Post action operation was cancelled
 
-Applicable to a case when user aborts custom post action.
+Applicable to a case when user aborts run-script post action.
 
 
 ## <a name="105"></a>105 - Instantiation Failed - Post action failed
 
-Applicable to a case when PostAction fails - unless it is configured to [continue on errors](Post-Action-Registry.md#continueOnError).
+Applicable to a case when post action fails - unless it is configured to [continue on errors](Post-Action-Registry.md#continueOnError).
 
 ## <a name="106"></a>106 - Template/Package management operation failed
 
 The exit code is used for errors during templates installation, uninstallation or updates.
-Failure to download packages, read/write templates or cache, erorrneous or corrupted template, or an attempt to install same package multiple times.
+Failure to download packages, read/write templates or cache, erroneous or corrupted template, or an attempt to install same package multiple times.
 
 _Example:_
 ```console

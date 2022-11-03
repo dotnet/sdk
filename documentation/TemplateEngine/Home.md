@@ -1,6 +1,6 @@
 # Environments using Template Engine
 - `dotnet new`
-- Visual Studio 2019
+- Visual Studio
 - Visual Studio for Mac
 
 # Community templates
@@ -9,8 +9,12 @@
 # Template authoring
 - [How to create templates](https://docs.microsoft.com/dotnet/core/tools/custom-templates)
 - [Samples repository](https://github.com/dotnet/dotnet-template-samples)
-- [Post action registry](https://github.com/dotnet/templating/wiki/Post-Action-Registry)
-- [Available Symbols Generators](https://github.com/dotnet/templating/wiki/Available-Symbols-Generators)
-- ["Runnable Project" templates in depth](https://github.com/dotnet/templating/wiki/Runnable-Project-Templates)
-- [Testing your templates](https://github.com/dotnet/templating/wiki/Testing-your-templates)
-- [Choosing a good sourceName](https://github.com/dotnet/templating/wiki/Naming-and-default-value-forms)
+- [Reference for `template.json`](Reference-for-template.json.md)
+- [Post actions](Post-Action-Registry.md)
+- [Symbols Generators](Available-Symbols-Generators.md)
+- [Value Forms](Value-Forms.md)
+- [Conditional content generation](Conditional-processing-and-comment-syntax.md)
+- [Template constraints](Constraints.md)
+- [Binding and project context evaluation](Binding-and-project-context-evaluation.md)
+- [Authoring tools: localization](authoring-tools/Localization.md)
+- [Authoring tools: testing the templates](authoring-tools/Templates-Testing-Tooling.md)

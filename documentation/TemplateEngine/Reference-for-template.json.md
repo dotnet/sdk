@@ -1,55 +1,101 @@
 ## Overview
 
-This page describes the options that are available when creating `template.json` files.
+This page describes the available properties of `template.json` configuration file.
 
-When using the Template Engine the design is to allow you to create a template which is still a "runnable project" A "runnable project" is a project that can be
+The templates defined using `template.json`are still the "runnable projects" A "runnable project" is a project that can be
 executed as a normal project can. Instead of updating your source files to be tokenized you define replacements, and other processing, mostly in an external file,
 the `template.json` file. This requires that a few changes have to be done on the fly during the preparation of the package, and in the `template.json` we define all the operations needed to create a well working package.
 
+**Benefits of "runnable project" templates**
+* Code format is not modified, therefore existing editors work great for template content
+* You can still build, run, debug and test your template just like any other project
+* No injection of special templating tokens into the project is required (though possible)
+
+**Typical layout on disk**
+```
+  .template.config/
+      template.json
+  MyTemplate/
+      MyTemplate.csproj
+      Program.cs
+```
+
+The templates can be packaged to a NuGet package for further distribution.
+A tutorial on how to create the template package can be find [here](https://learn.microsoft.com/en-us/dotnet/core/tutorials/cli-templates-create-template-package).
+
+
 |Category|Description|  
 |------|------|     
-|[Package Definition](#package-definition)|Metadata of the package|     
+|[Template Definition](#template-definition)|Metadata of the template|     
 |[Content Manipulation](#content-manipulation)|Configuration of content changes in source files|
 |[Output Management](#output-management)|Configuration of the final output|
 
-### Package Definition
-|Name|Description|
-|---|---|
-|identity|A unique name for this template|
-|author|The author of the template|
-|classifications|Zero or more characteristics of the template which may be used in search. In this field you define the values shown as Tags in `dotnet new`|
-|name|The name for the template. This is displayed as the template name when using `dotnet new`|
-|groupIdentity|The ID of the group this template belongs to. When combined with the `tags`section, this allows multiple templates to be displayed as one, with the the decision for which one to use being presented as a choice in each one of the pivot categories (keys) |
-|tags|You can use tags to improve the metadata of your project. To specify the project language you have to add the tag `language`, and if you want to make your project searchable via the `dotnet new --type` command you have to use the tag `type`|
-|shortName|A default shorthand for selecting the template (applies to environments where the template name is specified by the user - not selected via a GUI). this is the name shown as Short Name in `dotnet new` list of templates, and is the name to use command list to run this template |
-|postActions|Enables actions to be performed after the project is created. See https://github.com/dotnet/templating/wiki/Post-Action-Registry|
+### Template Definition
+|Name|Description|Mandatory|
+|---|---|---|
+|`identity`|A unique name for this template|yes|
+|`author`|The author of the template|no|
+|`classifications`|Zero or more characteristics of the template which may be used in search. In this field you define the values shown as Tags in `dotnet new`|no|
+|`name`|The name for the template. This is displayed as the template name when using `dotnet new` and Visual Studio.|yes|
+|`groupIdentity`|The ID of the group this template belongs to. This allows multiple templates to be displayed as one, with the the decision for which one to use based on the template options. |no|
+|`tags`|You can use tags to improve the metadata of your project. Well-known tags are: `language` and `type`. To specify the template language, use the tag `language`. To specify the template type, use the tag `type`. Supported types are: `project`, `item`, `solution`.|no|
+|`shortName`|A name for selecting the template in CLI environment. This is the name shown as `Short Name` in `dotnet new` list of templates, and is the name to use to run this template. |yes|
+|`postActions`|Enables actions to be performed after the project is created. See [the article](Post-Action-Registry.md) on post actions for more details.|no|
+|`constraints`|[Template constraints](#template-constraints)||no|
+
+#### Template constraints
+
+Available since .NET SDK 7.0.100.
+The template may define the constraints all of which must be met in order for the template to be used. 
+In case constraints are not met, the template will be installed, however will not be visible by default. 
+For the details on available constraints, refer to [the article](Constraints.md).
+The constraints are defined under `constraints` property (top level in template.json). `constraints` contains objects (constraint definition). Each constraint should have a unique name, `type` and optional arguments (`args`). Argument syntax depends on the constraint implementation.
+
+```json
+"constraints": {
+  "linux-only": {
+    "type": "os",
+    "args": "Linux"
+  },
+  "sdk-only": {
+    "type": "host",
+    "args": [
+      {
+        "hostname": "dotnetcli",
+        "version": "[6.0.100, )"
+      }
+    ]
+  }
+}
+```
 
 ### Content Manipulation
-|Name|Description|Default|
-|---|---|---|
-|sources|The set of mappings in the template content to user directories. It's defined as any array of [Source](#source-definition) |If not specified, an implicit source is created with `"source": "./"` and `"target": "./"`, all other properties in the source are set to their defaults|
-|guids|[See Below](#guids)|
-|symbols|[See Below](#symbols)|
+|Name|Description|Default|Mandatory|
+|---|---|---|---|
+|`sources`|The set of mappings in the template content to user directories. It's defined as any array of [Source](#source-definition) |If not specified, an implicit source is created with `"source": "./"` and `"target": "./"`, all other properties in the source are set to their defaults|no|
+|`guids`|[Guids](#guids)||no|
+|`symbols`|[Symbols](#symbols)||no|
+|`forms`|[Value forms](Value-Forms.md)||no|
 
 #### Source Definition
-|Name|Description|Default|
-|---|---|---|
-|source|The path in the template content (relative to the directory containing the .template.config folder) that should be processed|`./`|
-|target|The path (relative to the directory the user has specified) that content should be written to|`./`|
-|include|The set of globbing patterns indicating the content to process in the path referred to by `source`|[ "**/*" ]|
-|exclude |The set of globbing patterns indicating the content that was included by sources.include that should not be processed|`[ "**/[Bb]in/**", "**/[Oo]bj/**", ".template.config/**/*", "**/*.filelist", "**/*.user", "**/*.lock.json" ]`|
-|copyOnly |The set of globbing patterns indicating the content that was included by `include`, that hasn't been excluded by sources.exclude that should be placed in the user's directory without modification|`[ "**/node_modules/**/*" ]`|
-|rename|The set of explicit renames to perform. Each key is a path to a file in the source, each value is a path to the target location - only the values will be evaluated with the information the user supplies||
-|condition|A Boolean-evaluable condition to indicate if the sources configuration should be included or ignored. If the condition evaluates to `true` or is not provided, the sources config will be used for creating the template. If it evaluates to `false`, the sources config will be ignored||
-|modifiers|A list of additional source information which gets added to the top-level source information, based on evaluation the corresponding source.modifiers.condition. Is defined as an array of [Modifier](#modifier-definition)||
+|Name|Description|Default|Mandatory|
+|---|---|---|---|
+|`source`|The path in the template content (relative to the directory containing the .template.config folder) that should be processed|`./`|no|
+|`target`|The path (relative to the directory the user has specified) that content should be written to|`./`|no|
+|`include`|The set of globing patterns indicating the content to process in the path referred to by `source`|[ "**/*" ]|no|
+|`exclude` |The set of globing patterns indicating the content that was included by sources.include that should not be processed|`[ "**/[Bb]in/**", "**/[Oo]bj/**", ".template.config/**/*", "**/*.filelist", "**/*.user", "**/*.lock.json" ]`|no|
+|`copyOnly` |The set of globing patterns indicating the content that was included by `include`, that hasn't been excluded by sources.exclude that should be placed in the user's directory without modification|`[ "**/node_modules/**/*" ]`|no|
+|`rename`|The set of explicit renames to perform. Each key is a path to a file in the source, each value is a path to the target location - only the values will be evaluated with the information the user supplies||no|
+|`condition`|A boolean condition to indicate if the sources configuration should be included or ignored. If the condition evaluates to `true` or is not provided, the sources config will be used for creating the template. If it evaluates to `false`, the sources config will be ignored||no|
+|`modifiers`|A list of additional source information which gets added to the top-level source information, based on evaluation the corresponding `source.modifiers.condition`. Is defined as an array of [Modifier](#modifier-definition)||no|
 
 #### Modifier Definition
-|Name|Description|
-|---|---|
-|condition|A Boolean-evaluable condition to indicate if the sources.modifiers instance should be included or ignored. If the condition evaluates to true or is not provided, the sources.modifiers instance will be used for creating the template. If it evaluates to false, the sources.modifiers config will be ignored.|
-|include|Include configuration specific to this sources.modifiers instance, contingent on the corresponding sources.modifiers.condition. See sources.include for more info.|
-|exclude|Exclude configuration specific to this sources.modifiers instance, contingent on the corresponding sources.modifiers.condition. See sources.exclude for more info|
-|copyOnly|CopyOnly configuration specific to this sources.modifiers instance, contingent on the corresponding sources.modifiers.condition. See sources.copyonly for more info|
+|Name|Description|Mandatory|
+|---|---|---|
+|`condition`|A boolean condition to indicate if the `sources.modifiers` instance should be included or ignored. If the condition evaluates to `true` or is not provided, the `sources.modifiers` instance will be used for creating the template. If it evaluates to false, the `sources.modifiers` config will be ignored.|yes|
+|`include`|Include configuration specific to this `sources.modifiers` instance, contingent on the corresponding `sources.modifiers.condition`. See `sources.include` for more info.|no|
+|`exclude`|Exclude configuration specific to this `sources.modifiers` instance, contingent on the corresponding `sources.modifiers.condition`. See `sources.exclude` for more info|no|
+|`copyOnly`|CopyOnly configuration specific to this `sources.modifiers` instance, contingent on the corresponding `sources.modifiers.condition`. See `sources.copyOnly` for more info|no|
 
 ### Guids
 An optional list of guids which appear in the template source and should be replaced in the template output. For each guid listed, a replacement guid is generated, and replaces all occurrences of the source guid in the output. Matching of the guids in the source template works independently on the format and casing of the guids in the `template.json` file and source files. Format and casing from template source is preserved in the output (casing and format of the guid in `Guids` section of `template.json` doesn't influence matching or output generation).
@@ -135,18 +181,18 @@ A symbol for which the config provides literal and/or default values.
 |---|---|---|
 |`type`|`parameter`| yes |
 |`dataType`|	Supported values: <br />- `bool`: boolean type, possible values: `true`/`false`. <br />- `choice`: enumeration, possible values are defined in `choices` property.<br />- `float`: double-precision floating format number. Accepts any value that can be parsed by `double.TryParse()`.<br />- `int`/`integer`: 64-bit signed integer. Accepts any value that can be parsed by `long.TryParse()`.<br />- `hex`: hex number. Accepts any value that can be parsed by `long.TryParse(value.Substring(2), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out long convertedHex)`.<br />- `text`/`string`: string type.<br />- `<any other>`: treated as string.| no, default - `string` |
-|<a name="defaultValue"></a>`defaultValue`|The value assigned to the symbol if no parameter is provided by the user or host. The default is *not applied* if [`isRequired`](#isRequired) configuration is set to `true` for a parameter (or is set to condition that evals to `true`), as that is an indication that user specified value is required.  | no |
+|<a name="defaultValue"></a>`defaultValue`|The value assigned to the symbol if no parameter is provided by the user or host. The default is *not applied* if [`isRequired`](#isRequired) configuration is set to `true` for a parameter (or is set to condition that evaluates to `true`), as that is an indication that user specified value is required.  | no |
 |`defaultIfOptionWithoutValue`|The value assigned to the symbol if explicit `null` parameter value is provided by the user or host.|no |
 |<a name="replaces"></a>`replaces`|The text to be replaced by the symbol value in the template files content|	no | 
 |`fileRename`|The portion of template filenames to be replaced by the symbol value.| 	no | 
 |`description`|Human readable text describing the meaning of the symbol. This has no effect on template generation.|	no | 
-|<a name="isRequired"></a>`isRequired`|Optional. Indicates if the user supplied value is required or not. Might be a fixed boolean value or a condition string that evals based on passed parameters - more details in [Conditions documentation](Conditions.md#conditional-parameters).<br/>If set to `true` (or condition that evals to `true`) and user has not specified the value on input, validation error occurs - even if [`defaultValue`](#defaultValue) is present.|	no | 
-|<a name="isEnabled"></a>`isEnabled`| Optional condition indicating whether parameter should be processed. Might be a fixed boolean value or a condition string that evals based on passed parameters - more details in [Conditions documentation](Conditions.md#conditional-parameters).|	no | 
+|<a name="isRequired"></a>`isRequired`|Optional. Indicates if the user supplied value is required or not. Might be a fixed boolean value or a condition string that evaluates based on passed parameters - more details in [Conditions documentation](Conditions.md#conditional-parameters).<br/>If set to `true` (or condition that evaluates to `true`) and user has not specified the value on input, validation error occurs - even if [`defaultValue`](#defaultValue) is present.|	no | 
+|<a name="isEnabled"></a>`isEnabled`| Optional condition indicating whether parameter should be processed. Might be a fixed boolean value or a condition string that evaluates based on passed parameters - more details in [Conditions documentation](Conditions.md#conditional-parameters).|	no | 
 |`choices`|Applicable only when `datatype=choice.`<br />List of available choices. Contains array of the elements: <br />- `choice`: possible value of the symbol.<br />- `description`: human readable text describing the meaning of the choice. This has no effect on template generation. <br /> If not provided, there are no valid choices for the symbol, so it can never be assigned a value.| yes, for `dataType` = `choice` | 
 |`allowMultipleValues`|Applicable only when `datatype=choice`.<br /> Enables ability to specify multiple values for single symbol.| no | 
 |<a id="enableQuotelessLiterals"></a>`enableQuotelessLiterals`|Applicable only when `datatype=choice`. <br /> Enables ability to specify choice literals in conditions without quotation.|no |
-|`onlyIf`| |no |
-|`forms`|Defines the set of transforms that can be referenced by symbol definitions. Forms allow the specification of a "replaces"/"replacement" pair to also apply to other ways the "replaces" value may have been specified in the source by specifying a transform from the original value of "replaces" in configuration to the one that may be found in the source. [Details](https://github.com/dotnet/templating/wiki/Runnable-Project-Templates---Value-Forms)|no |
+|`onlyIf`| Defines the conditions that should be fulfilled in order that replacement happens. |no |
+|`forms`|Defines the set of transforms that can be referenced by symbol definitions. Forms allow the specification of a "replaces"/"replacement" pair to also apply to other ways the "replaces" value may have been specified in the source by specifying a transform from the original value of "replaces" in configuration to the one that may be found in the source. [Details](Value-Forms.md)|no |
 
 ##### Examples
 Boolean optional parameter with default value `false`:
@@ -201,46 +247,47 @@ String optional parameter, replaces TargetFrameworkOverride:
 }
 ```
 
-#### Multichoice symbols specifics
-Multichoice symbols have similar behavior and usage scenarios as [C# Flag enums](https://docs.microsoft.com/en-us/dotnet/api/system.flagsattribute) - they express a range of possible values (not a single value - unlike the plain [choice symbol](#choice-sample))
+#### Multi-choice symbols specifics
+Multi-choice symbols have similar behavior and usage scenarios as [C# Flag enums](https://docs.microsoft.com/en-us/dotnet/api/system.flagsattribute) - they express a range of possible values (not a single value - unlike the plain [choice symbol](#choice-sample))
 
-##### Example definition of multichoice symbol:
+##### Example definition of multi-choice symbol:
 
 ```json
-  "symbols": {
-        "Platform": {
-      "type": "parameter",
-      "description": "The target platform for the project.",
-      "datatype": "choice",
-      "allowMultipleValues": true,  // multichoice indicator
-      "choices": [
-        {
-          "choice": "Windows",
-          "description": "Windows Desktop"
-        },
-        {
-          "choice": "MacOS",
-          "description": "Macintosh computers"
-        },
-        {
-          "choice": "iOS",
-          "description": "iOS mobile"
-        },
-        {
-          "choice": "android",
-          "description": "android mobile"
-        },
-        {
-          "choice": "nix",
-          "description": "Linux distributions"
-        }
-      ],
-      "defaultValue": "MacOS|iOS"
-    }
+"symbols": 
+{
+  "Platform": {
+    "type": "parameter",
+    "description": "The target platform for the project.",
+    "datatype": "choice",
+    "allowMultipleValues": true,  // multi-choice indicator
+    "choices": [
+      {
+        "choice": "Windows",
+        "description": "Windows Desktop"
+      },
+      {
+        "choice": "MacOS",
+        "description": "Macintosh computers"
+      },
+      {
+        "choice": "iOS",
+        "description": "iOS mobile"
+      },
+      {
+        "choice": "android",
+        "description": "android mobile"
+      },
+      {
+        "choice": "nix",
+        "description": "Linux distributions"
+      }
+    ],
+    "defaultValue": "MacOS|iOS"
+  }
 }
 ```
 
-There are some specifics in behavior of multichoice symbols that are worth noting:
+There are some specifics in behavior of multi-choice symbols that are worth noting:
 
 * Condition evaluation - closer described in [Conditions document](Conditions.md#multichoice-literals).
 * [`Switch` symbol](Available-Symbols-Generators.md#switch) evaluation - conditions are evaluated by identical evaluator as preprocessing conditions (previous bullet point). 
@@ -254,7 +301,7 @@ There are some specifics in behavior of multichoice symbols that are worth notin
   Tab completion works identically as for standard choice symbol
 
 * Default values specification and API usage - Currently multiple values can be specified within single string separated by `|` or `,` characters. Escaping of those characters within values is currently not supported.
-* Outputing multichoice value as a string - this can be achieved via leveraging the [`join` symbol](Available-Symbols-Generators.md#multichoice-join-sample). For simplicity it is as well possible to specify replacement for choice symbol with multiple values - in such case the values will be rendered into single string separated by `|` sign.
+* Using multi-choice value as a string in template content - this can be achieved via leveraging the [`join` symbol](Available-Symbols-Generators.md#multichoice-join-sample). For simplicity it is as well possible to specify replacement for choice symbol with multiple values - in such case the values will be rendered into single string separated by `|` sign.
 
 
 
@@ -265,7 +312,7 @@ A symbol that defines transformation of another symbol.  The value of this symbo
 |Name|Description|Mandatory|
 |---|---|---|
 |`type`|`derived`| yes |
-|`valueSource`|The name of the other symbol whose value will be used to derive this value.| yes |
+|`valueSource`|The name of the other symbol which value will be used to derive this value.| yes |
 |`valueTransform`|The name of the value form to apply to the source value.| yes |
 |`replaces`|The text to be replaced by the symbol value in the template files content| no |	 
 |`fileRename`|The portion of template filenames to be replaced by the symbol value.| no | 
@@ -299,13 +346,13 @@ Renames `Application1` file to value of `name` symbol after last dot
 
 #### Generated symbol
 
-A symbol whose value gets computed by a built-in symbol value generator. [Details](https://github.com/dotnet/templating/wiki/Reference-for-available-macros)
+A symbol which value gets computed by a built-in symbol value generator. [Details](Available-Symbols-Generators.md)
 
 |Name|Description|Mandatory|
 |---|---|---|
 |`type`|`generated`| yes |
-|`generator`|Generator to use: See [this article](https://github.com/dotnet/templating/wiki/Reference-for-available-macros) for more details.| yes |
-|`parameters`|The parameters for generator. See [description](https://github.com/dotnet/templating/wiki/Reference-for-available-macros) for each generator for details.| depends on generator |
+|`generator`|Generator to use: See [this article](Available-Symbols-Generators.md) for more details.| yes |
+|`parameters`|The parameters for generator. See [description](Available-Symbols-Generators.md) for each generator for details.| depends on generator |
 |`replaces`|The text to be replaced by the symbol value in the template files content| no |	 
 |`fileRename`|(supported in 5.0.200 or higher) The portion of template filenames to be replaced by the symbol value.| no | 
 |`dataType`|	Supported values: <br />- `bool`: boolean type, possible values: `true`/`false`. <br />- `float`: double-precision floating format number. Accepts any value that can be parsed by `double.TryParse()`.<br />- `int`/`integer`: 64-bit signed integer. Accepts any value that can be parsed by `long.TryParse()`.<br />- `hex`: hex number. Accepts any value that can be parsed by `long.TryParse(value.Substring(2), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out long convertedHex)`.<br />- `text`/`string`: string type.<br />- `<any other>`: treated as string.| no, default: `string` |
@@ -438,49 +485,183 @@ Values of `OrganizationalAuth`, `WindowsAuth`, `MultiOrgAuth`, `SingleOrgAuth`, 
 ```
 
 #### Bind symbol
-See (https://github.com/dotnet/templating/wiki/Binding-and-project-context-evaluation#bind-symbols).
+See [the article](Binding-and-project-context-evaluation.md#bind-symbols).
 
 
 ### Output Management
-|Name|Description|Default|
-|---|---|--|
-|sourceName| The name in the source tree to replace with the name the user specifies. The value to be replaced with can be given using the `-n` `--name` options while running a template. The template engine will look for any occurrence of the name present in the config file and replace it in file names and file contents. If no name is specified by the host, the current directory is used. The value of the `sourceName` is available in built-in `name` symbol and can be used as the source for creating other symbols and condition expressions. || 
-|preferNameDirectory| Boolean value, indicates whether to create a directory for the template if name is specified but an output directory is not set (instead of creating the content directly in the current directory).|If not specified, `false` is used.| 
-|placeholderFilename|A filename that will be completely ignored expect to indicate that its containing directory should be copied. This allows creation of empty directory in the created template, by having a corresponding source directory containing just the placeholder file. Completely empty directories are ignored.|If not specified, a default value of `"-.-"` is used.|
-|primaryOutputs|A list of template files for further processing by the host (including post-actions). The path should contain the relative path to the file prior to the symbol based renaming that may happen during template generation. It is defined as an array of [Primary Outputs](#primary-output-definition)||
+|Name|Description|Default|Mandatory|
+|---|---|---|---|
+|`sourceName`| The name in the source tree to replace with the name the user specifies. The value to be replaced with can be given using the `-n` `--name` options while running a template. The template engine will look for any occurrence of the name present in the config file and replace it in file names and file contents. If no name is specified by the host, the current directory is used. The value of the `sourceName` is available in built-in `name` symbol and can be used as the source for creating other symbols and condition expressions. ||no|
+|`preferNameDirectory`| Boolean value, indicates whether to create a directory for the template if name is specified but an output directory is not set (instead of creating the content directly in the current directory).|If not specified, `false` is used.|no|
+|`placeholderFilename`|A filename that will be completely ignored, used to indicate that its containing directory should be copied. This allows creation of empty directory in the created template, by having a corresponding source directory containing just the placeholder file. By default, empty directories are ignored.|If not specified, a default value of `"-.-"` is used.|no|
+|`primaryOutputs`|A list of template files for further processing by the host (including post-actions). The path should contain the relative path to the file prior to the symbol based renaming that may happen during template generation. It is defined as an array of [Primary Outputs](#primary-output-definition)||no|
 
 #### Primary Output Definition
-Primary outputs define the list of template files for further processing. 
-|Name|Description|
-|---|---|
-|path|should contain the relative path to the file after the template is instantiated.|
-|condition|if the condition evaluates to `true`, the corresponding path will be added to primary outputs, if `false`, the path is ignored. If no condition is provided for a path, the condition defaults to `true`.|
+Primary outputs define the list of template files for further processing, usually post actions. 
+|Name|Description|Mandatory|
+|---|---|---|
+|`path`|should contain the relative path to the file after the template is instantiated.|yes|
+|`condition`|if the condition evaluates to `true`, the corresponding path will be added to primary outputs, if `false`, the path is ignored. If no condition is provided for a path, the condition defaults to `true`.|no|
 
-For more information on primary outputs, refer to [the article](https://github.com/dotnet/templating/wiki/Using-Primary-Outputs-for-Post-Actions).
+For more information on primary outputs, refer to [the article](Using-Primary-Outputs-for-Post-Actions.md).
+
+### Global custom operations and special custom operations
+This advanced configuration allows the template author to define custom actions for the template creation process. Global custom operations are scoped globally unless overridden by a more restrictive custom configuration.
+Special custom operations are scoped to the files matched by their glob pattern.
+
+Customizations allowed include:
+* Flag definitions
+* Modification operations
+
+There can only be one instance of the (global) `customOperations` section, as follows:
+```JSON
+  "customOperations": {
+    // configuration details
+  }
+```
+
+But since there can be many instances of the SpecialCustomOperations, each applicable to their glob patterns, the `specialCustomOperations` configuration section is defined as follows:
+
+```JSON
+  "specialCustomOperations": {
+    "<fileglob1>": {
+      // configuration details
+    },
+    "<fileglob2>": {
+      // configuration details
+    },
+  }
+```
+
+The configuration details options are identical in both situations, they only differ in the scopes they're applied in. The below sections are labelled `customOperations.<item>`, but are equally applicable to `specialCustomOperations.<fileglob>.<Item>`
+
+|Name|Description|Mandatory|
+|---|---|---|
+|`flagPrefix`|Overrides the default prefix to indicate a flag option in a file being processed.|no|
+|`operations`|An array that defines custom operations for processing data in the files within the scope of the configuration. These operations are applied in addition to other operations setup by default, except in the case of the conditional operation. If a custom conditional operation is defined, the default conditional operation(s) are ignored (in this scope).|no|
+|`operations.type`|Indicates the type of operation being configured. The operations currently available to configure are: <br /> - `balancedNesting`<br /> - `conditional` <br /> - `flag` <br /> - `include`<br /> - `region` <br /> - `replacement`|yes|
+|`operations.condition`|A boolean expression whose result determines whether or not to use this custom operation. If this is not provided, the operation is used.|no|
+|`operations.configuration`|The details of the operation configuration. Each type of operation has its own configuration options, as detailed below.|yes|
 
 
-### Template constraints
+#### Balanced nesting
+This operation type is designed to be used in conjunction with a conditional operation, to help maintain the proper commenting on conditional, and the text they may optionally emit. See the section on configuring a custom conditional operation for more details.
 
-Available since .NET SDK 7.0.100.
-The template may define the constraints all of which must be met in order for the template to be used. 
-In case constraints are not met, the template will be installed, however will not be visible by default. 
-For the details on available constraints, refer to [the article](link).
-The constraints are defined under `constraints` property (top level in template.json). `constraints` contains objects (constraint definition). Each constraint should have a unique name, `type` and optional arguments (`args`). Argument syntax depends on the constraint implementation.
+#### Conditional
+Conditional operations allow sections of template files to be optionally included during template creation.
 
-```json
-   "constraints": {
-       "linux-only": {
-           "type": "os",
-           "args": "Linux"
-       },
-       "sdk-only": {
-           "type": "host",
-           "args": [
-               {
-                   "hostname": "dotnetcli",
-                   "version": "[6.0.100, )"
-               }
-           ]
-       }
-   }
-```  
+The customization of this operation facilitates preprocessing on many file formats for which there is no standard preprocessor syntax defined, by defining comment-based symbols to represent the preprocessor directives. 
+By using comments recognized by the file formats, the unprocessed file content is valid even when it contains the customized preprocessor directives (since they're commented out as needed).
+
+Conditional processing is based on the 4 conditional keywords:
+* `if`
+* `elseif`
+* `else`
+* `endif`
+
+Other than the `endif` keyword, each keyword type can be defined in up to 2 flavors, `basic` and `actionable`. The basic flavor indicates that if the condition is `true`, the contents should be emitted verbatim. The `actionable` flavor indicates that other actions should be taken on the content of the conditional - usually the other action is uncommenting.
+
+Here is an example of defining a custom conditional operation (this is the actual predefined C-style line comments conditional configuration, which is the default for .json files)
+``` JSON
+{
+  "type": "conditional",
+  "configuration": {
+    "if": [ "//#if" ],
+    "else": [ "//#else" ],
+    "elseif": [ "//#elseif" ],
+    "endif": [ "//#endif" ],
+    "actionableIf": [ "////#if" ],
+    "actionableElse": [ "////#else" ],
+    "actionableElseif": [ "////#elseif" ],
+    "actions": [ "cStyleUncomment", "cStyleReduceComment" ],
+    "trim": true,
+    "wholeLine": true,
+    "evaluator": "C++"
+  },
+}
+```
+
+Because there are actionable keywords, there is an "actions" field provided, which refers to other action(s) to activate when an actionable token is encountered. The other actions remain active until any other token in the conditional config is encountered. In this case, the other actions jobs are to remove comments, and to reduce consecutive double comments to a single comment. 
+
+These other actions are defined as:
+``` JSON
+{
+  "type": "replacement",
+  "configuration": {
+    "original": "//",
+    "replacement": "",
+    "id": "cStyleUncomment",
+  },
+},
+{
+  "type": "replacement",
+  "configuration": {
+    "original": "////",
+    "replacement": "//",
+    "id": "cStyleReduceComment",
+  },
+}
+```
+
+Note that the `id` in the replacement configurations correspond to the actions in the conditional configuration. This is what ties them together - it causes the replacements to be activated / deactivated when the actionable tokens are in / out of scope.
+
+Let's look at a specific example of a template file being processed by this configuration, and see what happens:
+
+```
+...
+//#if (A)
+  // comment related to the 'if' content
+  default content // also appropriate if A is true
+////#elseif (B)
+  //// comment related to the 'elseif' content
+  //content for when B is true and A is false
+////#else
+  // comment related to the 'else' content
+  // content for when both A & B are false
+//#endif
+...
+```
+
+There are 4 possible scenarios for when this appears in a template file.
+
+1) No appropriate conditional processing. In this case, the entire block above will be copied to the created template as-is. This includes all the commenting, i.e.:
+```
+//#if (A)
+  // comment related to the 'if' content
+  default content // also appropriate if A is true
+////#elseif (B)
+  //// comment related to the 'elseif' content
+  //content for when B is true and A is false
+////#else
+  //// comment related to the 'else' content
+  // content for when both A & B are false
+//#endif
+```
+which means only the default content under the 'if' will be interpreted in the created template.
+
+2) A is `true`
+
+Because the conditional token `//#if` was specified in the conditional configuration as an `if` token (as opposed to an `actionableIf` token), the `actions` operations are not activated, so no commenting will change. Thus, the lines between the `//#if` and the `/#elseif` is the only part emitted to the created template, i.e.:
+```
+  // comment related to the 'if' content
+  default content // also appropriate if A is true
+```
+
+3) B is true (A is false)
+
+The `elseif` predicate is `true`, so only content under the elseif will be emitted to the created template. But `////#elseif` is an actionable token, so the `actions` operations get activated, resulting in this text to be output:
+```
+  // comment related to the 'elseif' content
+  content for when B is true and A is false
+```
+Note the comment changes from the original text - they're a results of the other 'actions'.
+
+4) Both A & B are false
+ 
+ The else should happen. Note that `////#else` is an actionable token, resulting in this text to be output:
+```
+  // comment related to the 'else' content
+    content for when both A & B are false
+```
+
+For more details, refer to [Conditional processing](Conditional-processing-and-comment-syntax.md) article.
