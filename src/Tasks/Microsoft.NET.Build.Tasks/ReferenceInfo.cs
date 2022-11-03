@@ -57,7 +57,7 @@ namespace Microsoft.NET.Build.Tasks
             LockFileLookup lockFileLookup,
             Func<ITaskItem, bool> isRuntimeAssembly)
         {
-            bool lockFileContains(ITaskItem referencePath)
+            bool lockFileContainsProject(ITaskItem referencePath)
             {
                 if (lockFileLookup == null)
                 {
@@ -80,7 +80,7 @@ namespace Microsoft.NET.Build.Tasks
             }
 
             IEnumerable<ITaskItem> directReferencePaths = referencePaths
-                .Where(r => !lockFileContains(r) && !IsNuGetReference(r) && isRuntimeAssembly(r));
+                .Where(r => !lockFileContainsProject(r) && !IsNuGetReference(r) && isRuntimeAssembly(r));
 
             return CreateFilteredReferenceInfos(directReferencePaths, referenceSatellitePaths);
         }
