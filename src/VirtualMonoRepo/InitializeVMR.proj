@@ -33,8 +33,6 @@
   <Target Name="InitializeVMR" DependsOnTargets="GenerateFullNuGetVersion;
                                                  GenerateVersionFile;
                                                  InitializeCleanVmr;
-                                                 CopyTarballContent;
-                                                 CommitInitialContent;
                                                  InitializeRepoAndDependentsRecursive;
                                                  CopyTextOnlyPackages;
                                                  CommitTextOnlyPackages">
@@ -46,13 +44,12 @@
     <MakeDir Directories="$(VmrDir)" />
     <MakeDir Directories="$(VmrGitInfoDir)" Condition=" '$(VmrGitInfoDir)' != '' " />
     <MakeDir Directories="$(TmpDir)" Condition=" !EXISTS('$(TmpDir)') " />
+    <MakeDir Directories="$(VmrDir)/src" />
+    <Copy SourceFiles="$(MSBuildThisFileDirectory)/source-mappings.json" DestinationFolder="$(VmrDir)/src" />
 
-    <Exec Command="git init -b $(VmrDefaultBranch)" WorkingDirectory="$(VmrDir)" />
-  </Target>
-
-  <Target Name="CommitInitialContent">
-    <Exec Command="git add -A" WorkingDirectory="$(VmrDir)" />
-    <Exec Command="git commit -m '[Initialization] Initial commit%0D%0A%0D%0A[[ commit created by automation ]]'" WorkingDirectory="$(VmrDir)" />
+    <Exec WorkingDirectory="$(VmrDir)" Command="git init -b $(VmrDefaultBranch)" />
+    <Exec WorkingDirectory="$(VmrDir)" Command="git add -A" />
+    <Exec WorkingDirectory="$(VmrDir)" Command="git commit -m 'Initial commit of the VMR%0D%0A%0D%0A[[ commit created by automation ]]'" />
   </Target>
 
   <Target Name="InitializeRepoAndDependentsRecursive"
@@ -85,8 +82,8 @@
   </Target>
 
   <Target Name="CommitTextOnlyPackages">
-    <Exec Command="git add packages/text-only" WorkingDirectory="$(VmrDir)" />
-    <Exec Command="git commit -m '[Initialization] Initialized text-only packages%0D%0A%0D%0A[[ commit created by automation ]]'" WorkingDirectory="$(VmrDir)" />
+    <Exec WorkingDirectory="$(VmrDir)" Command="git add packages/text-only" />
+    <Exec WorkingDirectory="$(VmrDir)" Command="git commit -m '[Initialization] Initialized text-only packages%0D%0A%0D%0A[[ commit created by automation ]]'" />
   </Target>
 
 </Project>

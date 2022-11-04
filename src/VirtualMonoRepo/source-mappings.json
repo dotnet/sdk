@@ -1,18 +1,26 @@
 // This file configures where the VMR synchronizes the sources from.
-// Each individual repository has its own mapping which says where the remote repo is,
-// what files are excluded from the sync, etc.
-// More details can be found at: {{ TODO: https://github.com/dotnet/arcade/issues/11226 }}
+// Each development repository has a mapping record which says where the remote repo is,
+// what files are in/excluded from the sync, etc.
+//
+// This file does not contain information about what version of sources is synchronized.
+// Please check the source-manifest.json file for that purpose.
+//
+// More details on this file's mechanics:
+// https://github.com/dotnet/arcade/blob/main/Documentation/UnifiedBuild/VMR-Design-And-Operation.md#repository-source-mappings
 {
-    // Location withing the VMR where the source-build patches are stored
+    // Location within the VMR where the source-build patches are stored
     // These patches are applied on top of the code synchronized into the VMR
     "patchesPath": "src/installer/src/SourceBuild/tarball/patches",
 
+    // Files on this path are synchronized with files in the root of the VMR
+    "contentPath": "src/installer/src/SourceBuild/tarball/content",
+
     // These defaults are added to all mappings unless `ignoreDefaults: true` is specified
     // When no "include" filter is specified, "**/*" is used
+    // The default filters do not apply to submodules
+    // Only filters which start with submodule's path are applied when syncing submodules
     "defaults": {
         "defaultRef": "main",
-        // The default filters do not apply to submodules
-        // Only filters which start with submodule's path are applied when syncing submodules
         "exclude": [
             "**/*.dll",
             "**/*.Dll",
@@ -38,10 +46,6 @@
                 "**/samples/**/jquery-validation-unobtrusive/.bower.json",
                 "**/samples/**/jquery-validation-unobtrusive/*.js"
             ]
-        },
-        {
-            "name": "clicommandlineparser",
-            "defaultRemote": "https://github.com/dotnet/clicommandlineparser"
         },
         {
             "name": "command-line-api",
@@ -82,11 +86,6 @@
             ]
         },
         {
-            "name": "llvm-project",
-            "defaultRemote": "https://github.com/dotnet/llvm-project",
-            "defaultRef": "dotnet/main"
-        },
-        {
             "name": "msbuild",
             "defaultRemote": "https://github.com/dotnet/msbuild"
         },
@@ -114,10 +113,6 @@
         {
             "name": "sdk",
             "defaultRemote": "https://github.com/dotnet/sdk"
-        },
-        {
-            "name": "source-build",
-            "defaultRemote": "https://github.com/dotnet/source-build"
         },
         {
             "name": "source-build-externals",
