@@ -199,6 +199,15 @@ Details: {1}</value>
     <value>Unrecognized evaluator: '{0}'.</value>
     <comment>{0} - invalid evaluator value</comment>
   </data>
+  <data name="GeneratePortNumberConfig_Warning_InvalidHighBound" xml:space="preserve">
+    <value>The high port bound '{0}' is greater than the maximum allowed, '{1}' will be used instead.</value>
+  </data>
+  <data name="GeneratePortNumberConfig_Warning_InvalidLowBound" xml:space="preserve">
+    <value>The low port bound '{0}' is less than the minimum allowed, '{1}' will be used instead.</value>
+  </data>
+  <data name="GeneratePortNumberConfig_Warning_InvalidLowHighBound" xml:space="preserve">
+    <value>The low port bound '{0}' is greater the high port bound '{1}', the default range [{2}-{3}] will be used instead.</value>
+  </data>
   <data name="JoinMacroConfig_Exception_ValuePropertyIsEmpty" xml:space="preserve">
     <value>Generated symbol '{0}': array '{1}' should contain JSON objects with property non-empty '{2}' when '{3}' is '{4}'.</value>
     <comment>{0} - name of generated symbol, {1} - the invalid property name; {2}, {3}, {4} - the property names and values.</comment>

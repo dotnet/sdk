@@ -115,6 +115,21 @@ Ayrıntılar: {1}</target>
         <target state="new">Unrecognized evaluator: '{0}'.</target>
         <note>{0} - invalid evaluator value</note>
       </trans-unit>
+      <trans-unit id="GeneratePortNumberConfig_Warning_InvalidHighBound">
+        <source>The high port bound '{0}' is greater than the maximum allowed, '{1}' will be used instead.</source>
+        <target state="new">The high port bound '{0}' is greater than the maximum allowed, '{1}' will be used instead.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="GeneratePortNumberConfig_Warning_InvalidLowBound">
+        <source>The low port bound '{0}' is less than the minimum allowed, '{1}' will be used instead.</source>
+        <target state="new">The low port bound '{0}' is less than the minimum allowed, '{1}' will be used instead.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="GeneratePortNumberConfig_Warning_InvalidLowHighBound">
+        <source>The low port bound '{0}' is greater the high port bound '{1}', the default range [{2}-{3}] will be used instead.</source>
+        <target state="new">The low port bound '{0}' is greater the high port bound '{1}', the default range [{2}-{3}] will be used instead.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="JoinMacroConfig_Exception_ValuePropertyIsEmpty">
         <source>Generated symbol '{0}': array '{1}' should contain JSON objects with property non-empty '{2}' when '{3}' is '{4}'.</source>
         <target state="new">Generated symbol '{0}': array '{1}' should contain JSON objects with property non-empty '{2}' when '{3}' is '{4}'.</target>

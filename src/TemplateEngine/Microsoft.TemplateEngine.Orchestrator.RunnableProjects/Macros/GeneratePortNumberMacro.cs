@@ -27,6 +27,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
             environmentSettings.Host.Logger.LogDebug("[{macro}]: Variable '{var}' was assigned to value '{value}' in deterministic mode.", nameof(GeneratePortNumberMacro), config.VariableName, config.Low);
         }
 
-        protected override GeneratePortNumberConfig CreateConfig(IGeneratedSymbolConfig deferredConfig) => new(this, deferredConfig);
+        protected override GeneratePortNumberConfig CreateConfig(IEngineEnvironmentSettings environmentSettings, IGeneratedSymbolConfig deferredConfig)
+            => new(environmentSettings.Host.Logger, this, deferredConfig);
     }
 }

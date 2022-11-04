@@ -1,11 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
@@ -45,29 +47,47 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
         internal GeneratePortNumberConfig(GeneratePortNumberMacro macro, string variableName, string? dataType, int fallback, int low, int high)
              : base(macro, variableName, dataType)
         {
+            if (low < LowPortDefault)
+            {
+                throw new ArgumentException($"{nameof(low)} should be greater than {LowPortDefault}.", nameof(low));
+            }
+
+            if (high > HighPortDefault)
+            {
+                throw new ArgumentException($"{nameof(high)} should be less than {HighPortDefault}.", nameof(high));
+            }
+
+            if (low > high)
+            {
+                throw new ArgumentException($"{nameof(low)} should be greater than {nameof(high)}.", nameof(low));
+            }
+
             Fallback = fallback;
             Low = low;
             High = high;
             Port = AllocatePort(low, high, fallback);
         }
 
-        internal GeneratePortNumberConfig(GeneratePortNumberMacro macro, IGeneratedSymbolConfig generatedSymbolConfig)
+        internal GeneratePortNumberConfig(ILogger logger, GeneratePortNumberMacro macro, IGeneratedSymbolConfig generatedSymbolConfig)
             : base(macro, generatedSymbolConfig.VariableName, generatedSymbolConfig.DataType)
         {
             int low = GetOptionalParameterValue(generatedSymbolConfig, "low", ConvertJTokenToInt, LowPortDefault);
             int high = GetOptionalParameterValue(generatedSymbolConfig, "high", ConvertJTokenToInt, HighPortDefault);
             if (low < LowPortDefault)
             {
+                logger.LogWarning(LocalizableStrings.GeneratePortNumberConfig_Warning_InvalidLowBound, low, LowPortDefault);
                 low = LowPortDefault;
             }
 
             if (high > HighPortDefault)
             {
+                logger.LogWarning(LocalizableStrings.GeneratePortNumberConfig_Warning_InvalidHighBound, high, HighPortDefault);
                 high = HighPortDefault;
             }
 
             if (low > high)
             {
+                logger.LogWarning(LocalizableStrings.GeneratePortNumberConfig_Warning_InvalidLowHighBound, low, high, LowPortDefault, HighPortDefault);
                 low = LowPortDefault;
                 high = HighPortDefault;
             }

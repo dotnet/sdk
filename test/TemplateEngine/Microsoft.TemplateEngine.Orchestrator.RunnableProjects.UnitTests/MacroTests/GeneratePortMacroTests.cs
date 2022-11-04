@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Core;
 using Microsoft.TemplateEngine.Core.Contracts;
@@ -116,7 +117,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             Dictionary<string, string> jsonParameters = new(StringComparer.OrdinalIgnoreCase);
             GeneratePortNumberMacro macro = new();
             GeneratedSymbol symbol = new(variableName, "port", jsonParameters, "integer");
-            GeneratePortNumberConfig config = new(macro, symbol);
+            GeneratePortNumberConfig config = new(NullLogger.Instance, macro, symbol);
 
             Assert.Equal(1024, config.Low);
             Assert.Equal(65535, config.High);

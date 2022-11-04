@@ -251,6 +251,33 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The high port bound &apos;{0}&apos; is greater than the maximum allowed, &apos;{1}&apos; will be used instead..
+        /// </summary>
+        internal static string GeneratePortNumberConfig_Warning_InvalidHighBound {
+            get {
+                return ResourceManager.GetString("GeneratePortNumberConfig_Warning_InvalidHighBound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The low port bound &apos;{0}&apos; is less than the minimum allowed, &apos;{1}&apos; will be used instead..
+        /// </summary>
+        internal static string GeneratePortNumberConfig_Warning_InvalidLowBound {
+            get {
+                return ResourceManager.GetString("GeneratePortNumberConfig_Warning_InvalidLowBound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The low port bound &apos;{0}&apos; is greater the high port bound &apos;{1}&apos;, the default range [{2}-{3}] will be used instead..
+        /// </summary>
+        internal static string GeneratePortNumberConfig_Warning_InvalidLowHighBound {
+            get {
+                return ResourceManager.GetString("GeneratePortNumberConfig_Warning_InvalidLowHighBound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Generated symbol &apos;{0}&apos;: array &apos;{1}&apos; should contain JSON objects with property non-empty &apos;{2}&apos; when &apos;{3}&apos; is &apos;{4}&apos;..
         /// </summary>
         internal static string JoinMacroConfig_Exception_ValuePropertyIsEmpty {

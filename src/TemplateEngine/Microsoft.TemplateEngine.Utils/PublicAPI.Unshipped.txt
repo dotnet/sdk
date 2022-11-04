@@ -1,7 +1,7 @@
-﻿Microsoft.TemplateEngine.Utils.TemplateAuthoringException.ConfigItem.get -> string?
+﻿Microsoft.TemplateEngine.Utils.AsyncLazy<T>
+Microsoft.TemplateEngine.Utils.TemplateAuthoringException.ConfigItem.get -> string?
 Microsoft.TemplateEngine.Utils.TemplateAuthoringException.TemplateAuthoringException(string! message) -> void
 Microsoft.TemplateEngine.Utils.TemplateAuthoringException.TemplateAuthoringException(string! message, string? configItem, System.Exception! innerException) -> void
-﻿Microsoft.TemplateEngine.Utils.AsyncLazy<T>
 Microsoft.TemplateEngine.Utils.AsyncLazy<T>.AsyncLazy(System.Func<System.Threading.Tasks.Task<T>!>! taskFactory) -> void
 Microsoft.TemplateEngine.Utils.AsyncLazy<T>.AsyncLazy(System.Func<T>! valueFactory) -> void
 Microsoft.TemplateEngine.Utils.AsyncLazy<T>.GetAwaiter() -> System.Runtime.CompilerServices.TaskAwaiter<T>

@@ -22,15 +22,15 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
             {
                 throw new InvalidCastException($"Couldn't cast the {nameof(rawConfig)} as {nameof(IGeneratedSymbolConfig)}.");
             }
-            return CreateConfig(deferredConfig);
+            return CreateConfig(environmentSettings, deferredConfig);
         }
 
         public void Evaluate(IEngineEnvironmentSettings environmentSettings, IVariableCollection vars, IGeneratedSymbolConfig deferredConfig)
         {
-            Evaluate(environmentSettings, vars, CreateConfig(deferredConfig));
+            Evaluate(environmentSettings, vars, CreateConfig(environmentSettings, deferredConfig));
         }
 
-        protected abstract T CreateConfig(IGeneratedSymbolConfig deferredConfig);
+        protected abstract T CreateConfig(IEngineEnvironmentSettings environmentSettings, IGeneratedSymbolConfig deferredConfig);
     }
 
     /// <summary>
@@ -49,6 +49,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
     /// <typeparam name="T">The macro config.</typeparam>
     internal abstract class BaseNondeterministicGenSymMacro<T> : BaseNondeterministicMacro<T>, IDeterministicModeMacro<IGeneratedSymbolConfig> where T : BaseMacroConfig, IMacroConfig
     {
-        public void EvaluateDeterministically(IEngineEnvironmentSettings environmentSettings, IVariableCollection variables, IGeneratedSymbolConfig config) => EvaluateDeterministically(environmentSettings, variables, CreateConfig(config));
+        public void EvaluateDeterministically(IEngineEnvironmentSettings environmentSettings, IVariableCollection variables, IGeneratedSymbolConfig config) => EvaluateDeterministically(environmentSettings, variables, CreateConfig(environmentSettings, config));
     }
 }
