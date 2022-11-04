@@ -218,7 +218,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             string fileContent = File.ReadAllText(targetFile);
             Assert.Equal(
                 """
-                var str = "";
+                var str = "fallback";
                 
                 """,
                 fileContent);

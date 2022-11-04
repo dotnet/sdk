@@ -3,6 +3,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Core;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel;
@@ -16,17 +18,19 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
     public class CoalesceMacroTests : IClassFixture<EnvironmentSettingsHelper>
     {
         private readonly IEngineEnvironmentSettings _engineEnvironmentSettings;
+        private readonly EnvironmentSettingsHelper _environmentSettingsHelper;
 
         public CoalesceMacroTests(EnvironmentSettingsHelper environmentSettingsHelper)
         {
             _engineEnvironmentSettings = environmentSettingsHelper.CreateEnvironment(hostIdentifier: GetType().Name, virtualize: true);
+            _environmentSettingsHelper = environmentSettingsHelper;
         }
 
         [Theory]
         [InlineData(null, null, null, null)]
         [InlineData("", "", null, "")]
         [InlineData(null, "fallback", null, "fallback")]
-        [InlineData("", "fallback", null, "")]
+        [InlineData("", "fallback", null, "fallback")]
         [InlineData("def", "fallback", "def", "fallback")]
         [InlineData("def", "fallback", "", "def")]
         public void CoalesceMacroTest(string? sourceValue, string? fallbackValue, string? defaultValue, string? expectedResult)
@@ -60,7 +64,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
         [InlineData(null, null, null, null)]
         [InlineData("", "", null, "")]
         [InlineData(null, "fallback", null, "fallback")]
-        [InlineData("", "fallback", null, "")]
+        [InlineData("", "fallback", null, "fallback")]
         [InlineData("def", "fallback", "def", "fallback")]
         [InlineData("def", "fallback", "", "def")]
         public void GeneratedSymbolTest(string? sourceValue, string? fallbackValue, string? defaultValue, string? expectedResult)
@@ -97,6 +101,32 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             {
                 Assert.Equal(expectedResult, variables["test"]);
             }
+        }
+
+        [Fact]
+        public void GeneratedSymbolTest_DefaultValueLeadsToFallback()
+        {
+            List<(LogLevel Level, string Message)> loggedMessages = new();
+            InMemoryLoggerProvider loggerProvider = new(loggedMessages);
+            IEngineEnvironmentSettings environmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true, addLoggerProviders: new[] { loggerProvider });
+
+            CoalesceMacro macro = new();
+
+            Dictionary<string, string> jsonParameters = new(StringComparer.OrdinalIgnoreCase)
+            {
+                { "sourceVariableName", JExtensions.ToJsonString("varA") },
+                { "fallbackVariableName", JExtensions.ToJsonString("varB") }
+            };
+
+            VariableCollection variables = new()
+            {
+                ["varA"] = 0,
+                ["varB"] = 10
+            };
+
+            macro.Evaluate(environmentSettings, variables, new GeneratedSymbol("test", "coalesce", jsonParameters));
+            Assert.Equal(10, variables["test"]);
+            Assert.Equal("[CoalesceMacro]: 'test': source value 'varA' of type 'Int32' is equivalent to its default value '0', fall back.", loggedMessages.First().Message);
         }
 
         [Fact]
