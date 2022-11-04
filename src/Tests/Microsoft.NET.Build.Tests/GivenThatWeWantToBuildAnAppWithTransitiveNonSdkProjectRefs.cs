@@ -1,21 +1,18 @@
 // Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System.Collections.Generic;
-using System.Diagnostics;
+using System;
 using System.IO;
-using System.Runtime.InteropServices;
-using Microsoft.DotNet.Cli.Utils;
+using System.Linq;
+using System.Xml.Linq;
+
+using FluentAssertions;
+using Microsoft.Extensions.DependencyModel;
 using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Commands;
-using Xunit;
-using FluentAssertions;
-using System.Xml.Linq;
-using System.Linq;
-using System;
+using Microsoft.NET.TestFramework.ProjectConstruction;
 using Xunit.Abstractions;
-using Microsoft.Extensions.DependencyModel;
 
 namespace Microsoft.NET.Build.Tests
 {
@@ -25,29 +22,26 @@ namespace Microsoft.NET.Build.Tests
         {
         }
 
-        [Fact]
+        [WindowsOnlyFact]
         public void It_builds_the_project_successfully()
         {
-            // NOTE the project dependencies in AppWithTransitiveNonSdkProjectRefs:
+            // NOTE the projects created by CreateTestProject:
             // TestApp --depends on--> MainLibrary --depends on--> AuxLibrary (non-SDK)
             // (TestApp transitively depends on AuxLibrary)
-
             var testAsset = _testAssetsManager
-                .CopyTestAsset("AppWithTransitiveNonSdkProjectRefs", "BuildAppWithTransitiveProjectRef")
-                .WithSource();
+                .CreateTestProject(CreateTestProject());
 
             VerifyAppBuilds(testAsset);
         }
 
-        [Fact]
+        [WindowsOnlyFact]
         public void It_builds_deps_correctly_when_projects_do_not_get_restored()
         {
-            // NOTE the project dependencies in AppWithTransitiveProjectRefs:
+            // NOTE the projects created by CreateTestProject:
             // TestApp --depends on--> MainLibrary --depends on--> AuxLibrary
             // (TestApp transitively depends on AuxLibrary)
             var testAsset = _testAssetsManager
-                .CopyTestAsset("AppWithTransitiveNonSdkProjectRefs", "BuildAppWithTransitiveNonSdkProjectRefsNoRestore")
-                .WithSource()
+                .CreateTestProject(CreateTestProject())
                 .WithProjectChanges(
                     (projectName, project) =>
                     {
@@ -74,6 +68,78 @@ namespace Microsoft.NET.Build.Tests
                 var projectNames = dependencyContext.RuntimeLibraries.Select(library => library.Name).ToList();
                 projectNames.Should().BeEquivalentTo(new[] { "TestApp", "AuxLibrary", "MainLibrary" });
             }
+        }
+
+        private TestProject CreateTestProject()
+        {
+            string targetFrameworkVersion = "v4.8";
+
+            var auxLibraryProject = new TestProject("AuxLibrary")
+            {
+                IsSdkProject = false,
+                TargetFrameworkVersion = targetFrameworkVersion
+            };
+            auxLibraryProject.SourceFiles["Helper.cs"] = """
+                using System;
+
+                namespace AuxLibrary
+                {
+                    public static class Helper
+                    {
+                        public static void WriteMessage()
+                        {
+                            Console.WriteLine("This string came from AuxLibrary!");
+                        }
+                    }
+                }
+                """;
+
+            var mainLibraryProject = new TestProject("MainLibrary")
+            {
+                IsSdkProject = false,
+                TargetFrameworkVersion = targetFrameworkVersion
+            };
+            mainLibraryProject.ReferencedProjects.Add(auxLibraryProject);
+            mainLibraryProject.SourceFiles["Helper.cs"] = """
+                using System;
+
+                namespace MainLibrary
+                {
+                    public static class Helper
+                    {
+                        public static void WriteMessage()
+                        {
+                            Console.WriteLine("This string came from MainLibrary!");
+                            AuxLibrary.Helper.WriteMessage();
+                        }
+                    }
+                }
+                """;
+
+            var testAppProject = new TestProject("TestApp")
+            {
+                IsExe = true,
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework
+            };
+            testAppProject.AdditionalProperties["ProduceReferenceAssembly"] = "false";
+            testAppProject.ReferencedProjects.Add(mainLibraryProject);
+            testAppProject.SourceFiles["Program.cs"] = """
+                using System;
+
+                namespace TestApp
+                {
+                    public class Program
+                    {
+                        public static void Main(string[] args)
+                        {
+                            Console.WriteLine("TestApp --depends on--> MainLibrary --depends on--> AuxLibrary");
+                            MainLibrary.Helper.WriteMessage();
+                        }
+                    }
+                }
+                """;
+
+            return testAppProject;
         }
 
         private string VerifyAppBuilds(TestAsset testAsset)
