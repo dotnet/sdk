@@ -447,7 +447,17 @@ extern "C" HRESULT DetectSdk(LPWSTR sczSdkFeatureBandVersion, LPWSTR sczArchitec
     LogStringLine(REPORT_STANDARD, "Scanning %ls", sczInstalledSdkVersionsKeyName);
 
     hr = RegOpen(HKEY_LOCAL_MACHINE, sczInstalledSdkVersionsKeyName, KEY_READ, &hkInstalledSdkVersionsKey);
-    ExitOnFailure(hr, "Failed to read installed versions key.");
+
+    // When the last SDK is removed the registry key should no longer exist so we can just exit
+    if (E_FILENOTFOUND == hr)
+    {
+        LogStringLine(REPORT_STANDARD, "Registry key not found: %ls.", sczInstalledSdkVersionsKeyName);
+        hr = S_OK;
+        *pbInstalled = FALSE;
+        goto LExit;
+    }
+
+    ExitOnFailure(hr, "Failed to open registry key: %ls.", sczInstalledSdkVersionsKeyName);
 
     for (DWORD dwSdkVersionsValueIndex = 0;; ++dwSdkVersionsValueIndex)
     {
@@ -509,9 +519,10 @@ int wmain(int argc, wchar_t* argv[])
     hr = ::DetectSdk(sczFeatureBandVersion, argv[3], &bSdkFeatureBandInstalled);
     ExitOnFailure(hr, "Failed to detect installed SDKs.");
 
-    if (!bSdkFeatureBandInstalled)
+    // If the feature band is still present, do not remove workloads.
+    if (bSdkFeatureBandInstalled)
     {
-        LogStringLine(REPORT_STANDARD, "SDK with feature band %ls could not be found.", sczFeatureBandVersion);
+        LogStringLine(REPORT_STANDARD, "Detected SDK with feature band %ls.", sczFeatureBandVersion);
         goto LExit;
     }
 
