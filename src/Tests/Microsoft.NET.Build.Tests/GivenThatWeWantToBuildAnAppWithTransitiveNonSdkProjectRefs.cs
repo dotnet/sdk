@@ -12,6 +12,8 @@ using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Commands;
 using Microsoft.NET.TestFramework.ProjectConstruction;
+
+using Xunit;
 using Xunit.Abstractions;
 
 namespace Microsoft.NET.Build.Tests
@@ -31,11 +33,13 @@ namespace Microsoft.NET.Build.Tests
             var testAsset = _testAssetsManager
                 .CreateTestProject(CreateTestProject());
 
-            VerifyAppBuilds(testAsset);
+            VerifyAppBuilds(testAsset, string.Empty);
         }
 
-        [WindowsOnlyFact]
-        public void It_builds_deps_correctly_when_projects_do_not_get_restored()
+        [WindowsOnlyTheory]
+        [InlineData("")]
+        [InlineData("TestApp.")]
+        public void It_builds_deps_correctly_when_projects_do_not_get_restored(string prefix)
         {
             // NOTE the projects created by CreateTestProject:
             // TestApp --depends on--> MainLibrary --depends on--> AuxLibrary
@@ -45,10 +49,19 @@ namespace Microsoft.NET.Build.Tests
                 .WithProjectChanges(
                     (projectName, project) =>
                     {
-                        if (StringComparer.OrdinalIgnoreCase.Equals(Path.GetFileNameWithoutExtension(projectName), "AuxLibrary") ||
-                            StringComparer.OrdinalIgnoreCase.Equals(Path.GetFileNameWithoutExtension(projectName), "MainLibrary"))
+                        string projectFileName = Path.GetFileNameWithoutExtension(projectName);
+                        if (StringComparer.OrdinalIgnoreCase.Equals(projectFileName, "AuxLibrary") ||
+                            StringComparer.OrdinalIgnoreCase.Equals(projectFileName, "MainLibrary"))
                         {
                             var ns = project.Root.Name.Namespace;
+
+                            if (!string.IsNullOrEmpty(prefix))
+                            {
+                                XElement propertyGroup = project.Root.Element(XName.Get("PropertyGroup", ns.NamespaceName));
+                                XElement assemblyName = propertyGroup.Element(XName.Get("AssemblyName", ns.NamespaceName));
+                                assemblyName.RemoveAll();
+                                assemblyName.Add("TestApp." + projectFileName);
+                            }
 
                             // indicate that project restore is not supported for these projects:
                             var target = new XElement(ns + "Target",
@@ -59,14 +72,14 @@ namespace Microsoft.NET.Build.Tests
                         }
                     });
 
-            string outputDirectory = VerifyAppBuilds(testAsset);
+            string outputDirectory = VerifyAppBuilds(testAsset, prefix);
 
             using (var depsJsonFileStream = File.OpenRead(Path.Combine(outputDirectory, "TestApp.deps.json")))
             {
                 var dependencyContext = new DependencyContextJsonReader().Read(depsJsonFileStream);
 
                 var projectNames = dependencyContext.RuntimeLibraries.Select(library => library.Name).ToList();
-                projectNames.Should().BeEquivalentTo(new[] { "TestApp", "AuxLibrary", "MainLibrary" });
+                projectNames.Should().BeEquivalentTo(new[] { "TestApp", prefix + "AuxLibrary", prefix + "MainLibrary" });
             }
         }
 
@@ -142,7 +155,7 @@ namespace Microsoft.NET.Build.Tests
             return testAppProject;
         }
 
-        private string VerifyAppBuilds(TestAsset testAsset)
+        private string VerifyAppBuilds(TestAsset testAsset, string prefix)
         {
             var buildCommand = new BuildCommand(testAsset, "TestApp");
             var outputDirectory = buildCommand.GetOutputDirectory(ToolsetInfo.CurrentTargetFramework);
@@ -158,10 +171,10 @@ namespace Microsoft.NET.Build.Tests
                 $"TestApp{EnvironmentInfo.ExecutableExtension}",
                 "TestApp.deps.json",
                 "TestApp.runtimeconfig.json",
-                "MainLibrary.dll",
-                "MainLibrary.pdb",
-                "AuxLibrary.dll",
-                "AuxLibrary.pdb",
+                prefix + "MainLibrary.dll",
+                prefix + "MainLibrary.pdb",
+                prefix + "AuxLibrary.dll",
+                prefix + "AuxLibrary.pdb",
             });
 
             new DotnetCommand(Log, Path.Combine(outputDirectory.FullName, "TestApp.dll"))
