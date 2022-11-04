@@ -9,7 +9,7 @@ Template group is set of templates with same `groupIdentity` defined in
 template.json. In case group identity is not set, the template is treated as
 a template group on its own.
 
-`dotnet new --list` and `dotnet new --search` show the list of template groups, not
+`dotnet new list` and `dotnet new search` show the list of template groups, not
 all the templates.
 
 Templates in a template group:
@@ -27,7 +27,7 @@ Templates in a template group:
 
 When resolving the template to be shown/used:
 -   first the template group is evaluated based on short name or name match.
-    Name match/partial matches is only applicable for `--list` and `--search`.
+    Name match/partial matches is only applicable for `list` and `search`.
 -   when evaluating the template group, the supported languages are considered:
     if the template group has multiple languages defined and the user didn’t
     specify a language to use the default language (C\#) will be used. Otherwise
@@ -35,6 +35,7 @@ When resolving the template to be shown/used:
 -   then the other matches of the group are evaluated based on the other
     template info filters (type, author, tag, baseline) and template specific
     parameters.
+-   Starting with .NET SDK 7.0.100, the `list` command might not show all the templates installed on the machine. It takes the result of template constraints into account, and the templates that can't be used won't be shown. To force show all the templates, use the `--ignore-constraints` option.
 
 In order to instantiate (create) the template, the command input should resolve
 single template from single template group:
@@ -83,71 +84,68 @@ Argument (name) matching: exact short name
 -   Exact match on parameter value
 -   All required parameters should be specified.
 
--   *Example:* `dotnet new console --framework net5.0 --langVersion 9.0`
+-   *Example:* `dotnet new console --framework net7.0 --langVersion 9.0`
 
 #### Error cases
 
 **Invalid template parameter value (choice)**
 
 ```
-> dotnet .\dotnet-new3.dll console --framework invalid
+> dotnet new console --framework invalid
 Error: Invalid option(s):
 --framework invalid
    'invalid' is not a valid value for --framework. The possible values are:
-      net5.0          - Target net5.0
       net6.0          - Target net6.0
-      netcoreapp2.1   - Target netcoreapp2.1
+      net7.0          - Target net7.0
       netcoreapp3.1   - Target netcoreapp3.1
 
 For more information, run:
-   dotnet new3 console -h
+   dotnet new console -h
 
+For details on the exit code, refer to https://aka.ms/templating-exit-codes#127
 ```
 
 **Invalid template parameter**
 
 ```
-> dotnet .\dotnet-new3.dll console --invalid
+> dotnet new console --invalid
 Error: Invalid option(s):
 --invalid
    '--invalid' is not a valid option
 
 For more information, run:
-   dotnet new3 console -h
+   dotnet new console -h
 
+For details on the exit code, refer to https://aka.ms/templating-exit-codes#127
 ```
 
 **Invalid language**
 
 ```
-> dotnet .\dotnet-new3.dll console --language invalid
-No templates found matching: 'console', language='invalid'.
+> dotnet new console --language invalid
+No templates found matching: 'console', --language='invalid'.
+Allowed values for '--language' option are: 'C#', 'F#', 'VB'.
 
-To list installed templates, run:
-   dotnet new3 --list
-To search for the templates on NuGet.org, run:
-   dotnet new3 console –search
 
+For details on the exit code, refer to https://aka.ms/templating-exit-codes#103
 ```
 
 **Combination of invalid parameters:**
 ```
-> dotnet .\dotnet-new3.dll console --language invalid --invalidParam
-No templates found matching: 'console', language='invalid'.
+> dotnet new console --language invalid --invalidParam
+No templates found matching: 'console', --language='invalid'.
+Allowed values for '--language' option are: 'C#', 'F#', 'VB'.
 
-To list installed templates, run:
-   dotnet new3 --list
-To search for the templates on NuGet.org, run:
-   dotnet new3 console --search
 
+For details on the exit code, refer to https://aka.ms/templating-exit-codes#103
 ```
 
-## List the templates (dotnet new --list)
+## List the templates (dotnet new list)
 
 Argument (name) matching: exact or partial short name or name, optional.
 
-*Example:* `dotnet new --list`
-*Example:* `dotnet new con --list`
+*Example:* `dotnet new list`  
+*Example:* `dotnet new list con`
 
 ### Template info filters
 
@@ -156,58 +154,40 @@ Argument (name) matching: exact or partial short name or name, optional.
         groups that match the language will be shown (exact match)
     -   The default language is not considered
 
-    -   *Example:* `dotnet new --list --language F#`
-    -   *Example:* `dotnet new con --list --language F#`
+    -   *Example:* `dotnet new list --language F#`
+    -   *Example:* `dotnet new list con --language F#`
 
 -   Type
     -   If user specified the type via `--type` option, only the template groups
         that match the type will be shown (exact match)
 
-    -   *Example:* `dotnet new --list --type project`
-    -   *Example:* `dotnet new con --list --type project`
+    -   *Example:* `dotnet new list --type project`
+    -   *Example:* `dotnet new list con --type project`
 
 -   Baseline (hidden)
     -   If user specified the baseline via `--baseline` option, only the template
         groups that match the baseline will be shown (exact match)
 
-    -   *Example:* `dotnet new --list --baseline standard`
-    -   *Example:* `dotnet new con --list --baseline standard`
+    -   *Example:* `dotnet new list --baseline standard`
+    -   *Example:* `dotnet new list con --baseline standard`
 
 -   Author
     -   If user specified the author via `--author` option, only the template
         groups that match the author will be shown (exact or partial match)
 
-    -   *Example:* `dotnet new --list --author Microsoft`
-    -   *Example:* `dotnet new con --list --author soft`
+    -   *Example:* `dotnet new list --author Microsoft`
+    -   *Example:* `dotnet new list con --author soft`
 
 -   Tags
     -   If user specified the tag via `--tag` option, only the template groups
         that match the tag will be shown (exact match on single tag)
 
-    -   *Example:* `dotnet new --list --tag Common`
-    -   *Example:* `dotnet new con --list --tag Common`
+    -   *Example:* `dotnet new list --tag Common`
+    -   *Example:* `dotnet new list con --tag Common`
 
 ### Template parameter filters
 
--   if template parameter is given without the value, list all the templates that
-    have that parameter
-
-    -   *Example:* `dotnet new --list --framework`
-    -   *Example:* `dotnet new con --list --framework`
-
--   (choice only) if template parameter is given with a value, then list all the
-    templates that have that parameter and the value fits the parameter constraints.
-
-    -   *Example:* `dotnet new --list --framework net5.0`
-    -   *Example:* `dotnet new con --list--framework net5.0`
-
--   (non-choice only) if template parameter is given with a value, then list all
-    the templates that have that parameter and ignore the value
-
-    -   *Example:* `dotnet new --list --langVersion 9.0` *(same as dotnet new --list
-        \--langVersion)*
-    -   *Example:* `dotnet new con --list -- langVersion 9.0` *(same as dotnet new
-        con --list --langVersion)*
+This feature is currently unsupported (support was removed with moving o a new command line parser) - but it's being [tracked](https://github.com/dotnet/templating/issues/4061)
 
 ### Error cases
 
@@ -216,31 +196,15 @@ Argument (name) matching: exact or partial short name or name, optional.
 **No match on language:**
 
 ```
-dotnet .\dotnet-new3.dll console --list --language invalid
-No templates found matching: 'console', language='invalid'.
-3 template(s) partially matched, but failed on language='invalid'.
+dotnet new list --language invalid
+No templates found matching: --language='invalid'.
+73 template(s) partially matched, but failed on --language='invalid'.
 
 To search for the templates on NuGet.org, run:
-   dotnet new3 console --search
+   dotnet new search [<template-name>]
 
-```
 
-**Parameter matching errors:**
-
-```
-> dotnet .\dotnet-new3.dll --list --invalid
-No templates found matching: --invalid.
-26 template(s) partially matched, but failed on --invalid.
-
-To search for the templates on NuGet.org, run:
-   dotnet new3 <TEMPLATE_NAME> --search
-> dotnet .\dotnet-new3.dll --list --framework invalid
-No templates found matching: --framework='invalid'.
-26 template(s) partially matched, but failed on --framework='invalid'.
-
-To search for the templates on NuGet.org, run:
-   dotnet new3 <TEMPLATE_NAME> --search
-
+For details on the exit code, refer to https://aka.ms/templating-exit-codes#103
 ```
 
 ### With argument
@@ -248,38 +212,23 @@ To search for the templates on NuGet.org, run:
 **No match on language:**
 
 ```
-dotnet .\dotnet-new3.dll con --list --language invalid
-No templates found matching: 'con', language='invalid'.
-9 template(s) partially matched, but failed on language='invalid'.
+dotnet new list con --language invalid
+No templates found matching: 'con', --language='invalid'.
+17 template(s) partially matched, but failed on --language='invalid'.
 
 To search for the templates on NuGet.org, run:
-   dotnet new3 con --search
+   dotnet new search con
 
-```
-**Parameter matching errors:**
-```
-> dotnet .\dotnet-new3.dll con --list --invalid
-No templates found matching: 'con', --invalid.
-9 template(s) partially matched, but failed on --invalid.
 
-To search for the templates on NuGet.org, run:
-   dotnet new3 con –search
-
-> dotnet .\dotnet-new3.dll con --list --framework invalid
-No templates found matching: 'con', --framework='invalid'.
-9 template(s) partially matched, but failed on --framework='invalid'.
-
-To search for the templates on NuGet.org, run:
-   dotnet new3 con --search
-
+For details on the exit code, refer to https://aka.ms/templating-exit-codes#103
 ```
 
-## Search for the templates (dotnet new --search)
+## Search for the templates (dotnet new search)
 
-Argument (name) matching: exact or partial short name or name. Optional if
+Argument (name) matching: exact or partial (substring) short name or name. Optional if
 filters applied.
 
-*Example:* `dotnet new con --search`
+*Example:* `dotnet new search con`
 
 ### Template info filters:
 
@@ -288,66 +237,48 @@ filters applied.
         groups that match the language will be shown (exact match)
     -   The default language is not considered
 
-    -   *Example:* `dotnet new --search --language F#`
-    -   *Example:* `dotnet new con --search --language F#`
+    -   *Example:* `dotnet new search --language F#`
+    -   *Example:* `dotnet new search con --language F#`
 
 -   Type
     -   If user specified the type via `--type` option, only the template groups
         that match the type will be shown (exact match)
 
-    -   *Example:* `dotnet new --search --type project`
-    -   *Example:* `dotnet new con --search --type project`
+    -   *Example:* `dotnet new search --type project`
+    -   *Example:* `dotnet new search con --type project`
 
 -   Baseline (hidden)
     -   If user specified the baseline via `--baseline` option, only the template
         groups that match the baseline will be shown (exact match)
 
-    -   *Example:* `dotnet new --search --baseline standard`
-    -   *Example:* `dotnet new con --search --baseline standard`
+    -   *Example:* `dotnet new search --baseline standard`
+    -   *Example:* `dotnet new search con --baseline standard`
 
 -   Author
     -   If user specified the author via `--author` option, only the template
         groups that match the author will be shown (exact or partial match)
 
-    -   *Example:* `dotnet new --search --author Microsoft`
-    -   *Example:* `dotnet new con --search --author soft`
+    -   *Example:* `dotnet new search --author Microsoft`
+    -   *Example:* `dotnet new search con --author soft`
 
 -   Tags
     -   If user specified the tag via `--tag` option, only the template groups
         that match the tag will be shown (exact match on single tag)
 
-    -   *Example:* `dotnet new --search --tag Common`
-    -   *Example:* `dotnet new con --search --tag Common`
+    -   *Example:* `dotnet new search --tag Common`
+    -   *Example:* `dotnet new search con --tag Common`
 
 -   Package name
     -   If user specified the package name via `--package` option, only the
         template groups that match the package name will be shown (exact or
         partial)
 
-    -   *Example:* `dotnet new --search --package Micro`
-    -   *Example:* `dotnet new con --search --package Micro`
+    -   *Example:* `dotnet new search --package Micro`
+    -   *Example:* `dotnet new search con --package Micro`
 
 ### Template parameter filters
 
--   if template parameter is given without a value, list all the templates that
-    have that parameter
-
-    -   *Example:* `dotnet new --search --framework`
-    -   *Example:* `dotnet new con --search --framework`
-
--   (choice only) if template parameter is given with a value, then list all the
-    templates that have that parameter and value fits the parameter constraints.
-
-    -   *Example:* `dotnet new --search --framework net5.0`
-    -   *Example:* `dotnet new con --search --framework net5.0`
-
--   (non-choice only) if template parameter is given with a value, then list all
-    the templates that have that parameter and ignore the value
-
-    -   *Example:* `dotnet new --search --langVersion 9.0` *(same as dotnet new
-        \--search --langVersion)*
-    -   *Example:* `dotnet new con --search -- langVersion 9.0` *(same as dotnet new
-        con --search --langVersion)*
+This feature is currently unsupported (support was removed with moving o a new command line parser) - but it's being [tracked](https://github.com/dotnet/templating/issues/4061)
 
 ### Error cases
 
@@ -355,42 +286,33 @@ filters applied.
 
 **No match**
 ```
-> dotnet .\dotnet-new3.dll --search --language invalid
+> dotnet new search --language invalid
 Searching for the templates...
-No templates found matching: language='invalid'.
+Matches from template source: NuGet.org
+No templates found matching: --language='invalid'.
 
+
+For details on the exit code, refer to https://aka.ms/templating-exit-codes#103
 ```
 
-**Template parameter matching**
-
-```
-> dotnet .\dotnet-new3.dll --search --invalid
-Searching for the templates...
-No templates found matching: --invalid.
-
-> dotnet .\dotnet-new3.dll --search --invalid invalid
-Searching for the templates...
-No templates found matching: --invalid='invalid'.
-
-```
 
 #### With argument
 ```
-> dotnet .\dotnet-new3.dll con  --search --invalid invalid
+> dotnet new search con --language invalid
 Searching for the templates...
-No templates found matching: 'con', --invalid='invalid'.
+Matches from template source: NuGet.org
+No templates found matching: 'con', --language='invalid'.
 
-> dotnet .\dotnet-new3.dll --search --invalid invalid
-Searching for the templates...
-No templates found matching: --invalid='invalid'.
 
+For details on the exit code, refer to https://aka.ms/templating-exit-codes#103
 ```
 
-## Template help (dotnet new \<short name\> --h)
+## Template help (dotnet new \<short name\> [--help|-h])
 
 Argument (name) matching: exact short name
 
-*Example:* `dotnet new console -h`
+*Example:* `dotnet new console -h`  
+*Example:* `dotnet new console --help`
 
 ### Template info filters
 
@@ -415,65 +337,42 @@ Argument (name) matching: exact short name
     -   Applying baseline will also show parameters applied by baseline
 
 ```
-> dotnet .\dotnet-new3.dll classlib -h
+> dotnet new classlib -h
 Class Library (C#)
 Author: Microsoft
-Description: A project for creating a class library that targets .NET Standard or .NET Core
+Description: A project for creating a class library that targets .NET or .NET Standard
+
+Usage:
+  dotnet new classlib [options] [template options]
+
 Options:
-  -f|--framework  The target framework for the project.
-                      net6.0            - Target net6.0
-                      netstandard2.1    - Target netstandard2.1
-                      netstandard2.0    - Target netstandard2.0
-                      net5.0            - Target net5.0
-                      netcoreapp3.1     - Target netcoreapp3.1
-                      netcoreapp2.1     - Target netcoreapp2.1
-                  Default: net6.0
+  -n, --name <name>       The name for the output being created. If no name is specified, the name of the output
+                          directory is used.
+  -o, --output <output>   Location to place the generated output.
+  --dry-run               Displays a summary of what would happen if the given command line were run if it would result
+                          in a template creation.
+  --force                 Forces content to be generated even if it would change existing files.
+  --no-update-check       Disables checking for the template package updates when instantiating a template.
+  --project <project>     The project that should be used for context evaluation.
+  -lang, --language <C#>  Specifies the template language to instantiate.
+  --type <project>        Specifies the template type to instantiate.
 
-  --langVersion   Sets the LangVersion property in the created project file
-                  text - Optional
+Template options:
+  -f, --framework <choice>     The target framework for the project.
+                               Type: choice
+                                 net7.0          Target net7.0
+                                 netstandard2.1  Target netstandard2.1
+                                 netstandard2.0  Target netstandard2.0
+                                 net6.0          Target net6.0
+                                 netcoreapp3.1   Target netcoreapp3.1
+                               Default: net7.0
+  --langVersion <langVersion>  Sets the LangVersion property in the created project file
+                               Type: text
+  --no-restore                 If specified, skips the automatic restore of the project on create.
+                               Type: bool
+                               Default: false
 
-  --no-restore    If specified, skips the automatic restore of the project on create.
-                  bool - Optional
-                  Default: false
-
-  --nullable      Whether to enable nullable reference types for this project.
-                  bool - Optional
-                  Default: true
-
-> dotnet .\dotnet-new3.dll classlib -h --baseline standard
-Class Library (C#)
-Author: Microsoft
-Description: A project for creating a class library that targets .NET Standard or .NET Core
-Options:
-  -f|--framework  The target framework for the project.
-                      net6.0            - Target net6.0
-                      netstandard2.1    - Target netstandard2.1
-                      netstandard2.0    - Target netstandard2.0
-                      net5.0            - Target net5.0
-                      netcoreapp3.1     - Target netcoreapp3.1
-                      netcoreapp2.1     - Target netcoreapp2.1
-                  Default: netstandard2.0
-
-  --langVersion   Sets the LangVersion property in the created project file
-                  text - Optional
-
-  --no-restore    If specified, skips the automatic restore of the project on create.
-                  bool - Optional
-                  Default: false
-
-  --nullable      Whether to enable nullable reference types for this project.
-                  bool - Optional
-                  Default: true
-
+To see help for other template languages (F#, VB), use --language option:
+   dotnet new classlib -h --language F#
 ```
 
-(note difference in default value for framework)
-
-### Template parameter filters
-
-(on hold until new parser)
-
--   If not specified all parameters will be shown
--   If specified:
-    -   Only the templates with the parameter will be considered.
-    -   If specified with value, the given value will be shown in the help.

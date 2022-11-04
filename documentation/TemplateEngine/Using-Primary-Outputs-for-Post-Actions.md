@@ -297,6 +297,7 @@ template files:
 - `./Custom/MyTestProject/Class.cs`
 - `./Custom/MyTestProject.Tests/MyTestProject.Tests.csproj`
 - `./Custom/MyTestProject.Tests/Class.cs`
+
 `template.json` definition
 ```
 {
@@ -344,6 +345,7 @@ template files:
 - `./Custom/MyTestProject/Class.cs`
 - `./Custom/MyTestProject.Tests/MyTestProject.Tests.csproj`
 - `./Custom/MyTestProject.Tests/Class.cs`
+
 `template.json` definition
 ```
 {
@@ -390,7 +392,8 @@ Specifying files in post action arguments is supported by:
 ## Example 3 - using primary output indexes in post action arguments
 
 Opens the file from primary outputs defined by index.
-`template.json` definition
+
+`template.json` definition:
 ```
 "primaryOutputs": [
   { "path": "Company.ClassLibrary1.csproj" },
