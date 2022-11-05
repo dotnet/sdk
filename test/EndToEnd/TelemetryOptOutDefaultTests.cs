@@ -10,7 +10,12 @@ namespace EndToEnd.Tests
         [Fact]
         public void TelemetryOptOutDefaultAttribute()
         {
-            var dotnetdir = Path.Combine(Path.GetDirectoryName(RepoDirectoriesProvider.DotnetUnderTest), "sdk", "7.0.100");
+            var result = new DotnetCommand()
+                .ExecuteWithCapturedOutput("--version");
+
+            var sdkVersion = result.StdOut.Trim();
+
+            var dotnetdir = Path.Combine(Path.GetDirectoryName(RepoDirectoriesProvider.DotnetUnderTest), "sdk", sdkVersion);
             var result = AssemblyInfo.Get(Path.Combine(dotnetdir, "dotnet.dll"), "AssemblyMetadataAttribute");
             result.Should().Contain("TelemetryOptOutDefault:False");
         }
