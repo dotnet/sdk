@@ -16,6 +16,7 @@ namespace EndToEnd.Tests
             var sdkVersion = versionCommand.StdOut.Trim();
 
             var dotnetdir = Path.Combine(Path.GetDirectoryName(RepoDirectoriesProvider.DotnetUnderTest), "sdk", sdkVersion);
+
             var result = AssemblyInfo.Get(Path.Combine(dotnetdir, "dotnet.dll"), "AssemblyMetadataAttribute");
             result.Should().Contain("TelemetryOptOutDefault:False");
         }
