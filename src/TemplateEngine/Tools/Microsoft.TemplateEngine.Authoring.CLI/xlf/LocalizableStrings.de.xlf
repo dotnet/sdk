@@ -4,153 +4,153 @@
     <body>
       <trans-unit id="command_export_help_description">
         <source>Given a template.config file, creates a "localize" directory next to it and exports the localization files into the created directory. If the localization files already exist, the existing translations will be preserved.</source>
-        <target state="new">Given a template.config file, creates a "localize" directory next to it and exports the localization files into the created directory. If the localization files already exist, the existing translations will be preserved.</target>
+        <target state="translated">Wenn eine template.config-Datei angegeben ist, wird daneben ein "localize"-Verzeichnis erstellt und die Lokalisierungsdateien werden in das erstellte Verzeichnis exportiert. Wenn die Lokalisierungsdateien bereits vorhanden sind, werden die vorhandenen Übersetzungen beibehalten.</target>
         <note>The phrase "localization files" here mean the files that will be given to the translators to be localized.</note>
       </trans-unit>
       <trans-unit id="command_export_help_dryrun_description">
         <source>If this option is specified, modified files will not be saved to file system and the changes will only be printed to console output.</source>
-        <target state="new">If this option is specified, modified files will not be saved to file system and the changes will only be printed to console output.</target>
+        <target state="translated">Wenn diese Option angegeben wird, werden geänderte Dateien nicht im Dateisystem gespeichert und die Änderungen werden nur in der Konsolenausgabe gedruckt.</target>
         <note />
       </trans-unit>
       <trans-unit id="command_export_help_language_description">
         <source>The list of languages to be supported by this template. The following language list will be used as default if this option is omitted: cs, de, en, es, fr, it, ja, ko, pl, pt-BR, ru, tr, zh-Hans, zh-Hant</source>
-        <target state="new">The list of languages to be supported by this template. The following language list will be used as default if this option is omitted: cs, de, en, es, fr, it, ja, ko, pl, pt-BR, ru, tr, zh-Hans, zh-Hant</target>
+        <target state="translated">Die Liste der Sprachen, die von dieser Vorlage unterstützt werden sollen. Die folgende Sprachliste wird als Standard verwendet, wenn diese Option weggelassen wird: cs, de, en, es, fr, it, ja, ko, pl, pt-BR, ru, tr, zh-Hans, zh-Hant</target>
         <note />
       </trans-unit>
       <trans-unit id="command_export_help_recursive_description">
         <source>When specified, subdirectories are also searched for template.json files.</source>
-        <target state="new">When specified, subdirectories are also searched for template.json files.</target>
+        <target state="translated">Bei Angabe dieser Option werden Unterverzeichnisse auch nach template.json-Dateien durchsucht.</target>
         <note>Do not localize: "template.json"</note>
       </trans-unit>
       <trans-unit id="command_export_help_templatePath_description">
         <source>Specifies the path to the template.json file. If a directory is given, template.json file will be searched within the directory. If --recursive options is specified, all the template.json files under the given directory and its subdirectories will be taken as input.</source>
-        <target state="new">Specifies the path to the template.json file. If a directory is given, template.json file will be searched within the directory. If --recursive options is specified, all the template.json files under the given directory and its subdirectories will be taken as input.</target>
+        <target state="translated">Gibt den Pfad zur Datei template.json an. Wenn ein Verzeichnis angegeben wird, wird die template.json-Datei in diesem Verzeichnis gesucht. Wenn die Option \"--recursive\" angegeben ist, werden alle template.json-Dateien unter dem angegebenen Verzeichnis und seinen Unterverzeichnissen als Eingabe betrachtet.</target>
         <note>Do not localize: "template.json", "--recursive"</note>
       </trans-unit>
       <trans-unit id="command_export_log_cancelled">
         <source>"export" command for the following file was cancelled: "{0}".</source>
-        <target state="new">"export" command for the following file was cancelled: "{0}".</target>
+        <target state="translated">Der Befehl "export" für die folgende Datei wurde abgebrochen: "{0}".</target>
         <note>Do not localize: "export"</note>
       </trans-unit>
       <trans-unit id="command_export_log_executionEnded">
         <source>Execution of "export" command has completed. {0} files were processed.</source>
-        <target state="new">Execution of "export" command has completed. {0} files were processed.</target>
+        <target state="translated">Die Ausführung des "export"-Befehls wurde abgeschlossen. {0} Dateien wurden verarbeitet.</target>
         <note>{0} is the number of files. Do not localize "export"</note>
       </trans-unit>
       <trans-unit id="command_export_log_templateExportFailedWithError">
         <source>Generating localization files for a template.json has failed.
 Reason: {0}.
 File Path: {1}.</source>
-        <target state="new">Generating localization files for a template.json has failed.
-Reason: {0}.
-File Path: {1}.</target>
+        <target state="translated">Fehler beim Generieren von Lokalisierungsdateien für eine Datei \"template.json\".
+Ursache: {0}.
+Dateipfad: {1}.</target>
         <note>{0} is a sentence such as "Json property should contain a field 'ID'"
 {1} is a file path such as: C:\temp\template.json
 Do not localize: "template.json"</note>
       </trans-unit>
       <trans-unit id="command_export_log_templateExportFailedWithException">
         <source>Generating localization files for the following template.json file has failed: "{0}".</source>
-        <target state="new">Generating localization files for the following template.json file has failed: "{0}".</target>
+        <target state="translated">Fehler beim Generieren von Lokalisierungsdateien für die folgende template.json-Datei: "{0}".</target>
         <note />
       </trans-unit>
       <trans-unit id="command_export_log_templateExportSucceeded">
         <source>Localization files were successfully generated for the template.json file at path "{0}".</source>
-        <target state="new">Localization files were successfully generated for the template.json file at path "{0}".</target>
+        <target state="translated">Lokalisierungsdateien wurden erfolgreich für die template.json-Datei im Pfad "{0}" generiert.</target>
         <note />
       </trans-unit>
       <trans-unit id="command_export_log_templateJsonNotFound">
         <source>Failed to find "template.json" file under the path "{0}".</source>
-        <target state="new">Failed to find "template.json" file under the path "{0}".</target>
+        <target state="translated">Die Datei "template.json" konnte unter dem Pfad "{0}" nicht gefunden werden.</target>
         <note>Do not localize: "template.json"</note>
       </trans-unit>
       <trans-unit id="command_verify_error_failed">
         <source>Verification Failed.</source>
-        <target state="new">Verification Failed.</target>
+        <target state="translated">Fehler bei der Überprüfung.</target>
         <note />
       </trans-unit>
       <trans-unit id="command_verify_error_unrecognizedArguments">
         <source>Argument(s) {0} are not recognized. Must be one of: {1}.</source>
-        <target state="new">Argument(s) {0} are not recognized. Must be one of: {1}.</target>
+        <target state="translated">Das oder die Argumente {0} wurden nicht erkannt. Folgendes ist erforderlich: {1}.</target>
         <note>{0} and {1} is both a list of arguments</note>
       </trans-unit>
       <trans-unit id="command_verify_help_customExcludes_description">
         <source>Specifies pattern(s) defining files to be excluded from verification.</source>
-        <target state="new">Specifies pattern(s) defining files to be excluded from verification.</target>
+        <target state="translated">Gibt Muster an, die Dateien definieren, die von der Überprüfung ausgeschlossen werden sollen.</target>
         <note />
       </trans-unit>
       <trans-unit id="command_verify_help_customIncludes_description">
         <source>Specifies pattern(s) defining files to be included to verification (all files are included if not specified).</source>
-        <target state="new">Specifies pattern(s) defining files to be included to verification (all files are included if not specified).</target>
+        <target state="translated">Gibt Muster an, die Dateien definieren, die in die Überprüfung einbezogen werden sollen (wenn nicht anders angegeben, werden alle Dateien einbezogen).</target>
         <note />
       </trans-unit>
       <trans-unit id="command_verify_help_description">
         <source>Runs the template with specified arguments and compares the result with expectations files.</source>
-        <target state="new">Runs the template with specified arguments and compares the result with expectations files.</target>
+        <target state="translated">Führt die Vorlage mit angegebenen Argumenten aus und vergleicht das Ergebnis mit den Erwartungsdateien.</target>
         <note />
       </trans-unit>
       <trans-unit id="command_verify_help_disableDefaultExcludes_description">
         <source>If set to true - all template output files will be verified, unless --exclude-pattern option is used.</source>
-        <target state="new">If set to true - all template output files will be verified, unless --exclude-pattern option is used.</target>
+        <target state="translated">Bei Festlegung auf WAHR werden alle Vorlagenausgabedateien überprüft, es sei denn, die Option „--exclude-pattern“ wird verwendet.</target>
         <note>Do not translate 'true'. Do not translate '--exclude-pattern'</note>
       </trans-unit>
       <trans-unit id="command_verify_help_disableDiffTool_description">
         <source>If set to true - the diff tool won't be automatically started by the Verifier on verification failures.</source>
-        <target state="new">If set to true - the diff tool won't be automatically started by the Verifier on verification failures.</target>
+        <target state="translated">Bei Festlegung auf WAHR wird das Diff-Tool bei Überprüfungsfehlern nicht automatisch vom Überprüfer gestartet.</target>
         <note>Do not translate 'true'.</note>
       </trans-unit>
       <trans-unit id="command_verify_help_expectFailure_description">
         <source>If set to true - 'dotnet new' command is expected to return non-zero return code.</source>
-        <target state="new">If set to true - 'dotnet new' command is expected to return non-zero return code.</target>
+        <target state="translated">Bei Festlegung auf WAHR wird erwartet, dass der Befehl „dotnet new“ einen Rückgabecode ungleich 0 (Null) zurückgibt.</target>
         <note>Do not translate 'true'. Do not translate 'dotnet new'</note>
       </trans-unit>
       <trans-unit id="command_verify_help_newCommandPath_description">
         <source>Specifies the path to custom assembly implementing 'dotnet new' command.</source>
-        <target state="new">Specifies the path to custom assembly implementing 'dotnet new' command.</target>
+        <target state="translated">Gibt den Pfad zur benutzerdefinierten Assembly an, die den Befehl „dotnet new“ implementiert.</target>
         <note>Do not translate 'dotnet new'</note>
       </trans-unit>
       <trans-unit id="command_verify_help_outputPath_description">
         <source>Specifies the path to target directory to output the generated template to.</source>
-        <target state="new">Specifies the path to target directory to output the generated template to.</target>
+        <target state="translated">Gibt den Pfad zum Zielverzeichnis an, in das die generierte Vorlage ausgegeben werden soll.</target>
         <note />
       </trans-unit>
       <trans-unit id="command_verify_help_scenarioName_description">
         <source>Specifies optional scenario name to be used in the snapshot folder name.</source>
-        <target state="new">Specifies optional scenario name to be used in the snapshot folder name.</target>
+        <target state="translated">Gibt den optionalen Szenarionamen an, der im Ordnernamen der Momentaufnahme verwendet werden soll.</target>
         <note />
       </trans-unit>
       <trans-unit id="command_verify_help_snapshotsDirPath_description">
         <source>Specifies path to the directory with snapshot files.</source>
-        <target state="new">Specifies path to the directory with snapshot files.</target>
+        <target state="translated">Gibt den Pfad zum Verzeichnis mit Momentaufnahmedateien an.</target>
         <note />
       </trans-unit>
       <trans-unit id="command_verify_help_templateName_description">
         <source>Name of the template to be verified. Can be already installed template or a template within local path specified with -p/--template-path option.</source>
-        <target state="new">Name of the template to be verified. Can be already installed template or a template within local path specified with -p/--template-path option.</target>
+        <target state="translated">Name der zu überprüfenden Vorlage. Kann eine bereits installierte Vorlage oder eine Vorlage innerhalb des lokalen Pfads sein, der mit der Option „-p/--template-path“ angegeben ist.</target>
         <note>Do not translate the '-p/--template-path'</note>
       </trans-unit>
       <trans-unit id="command_verify_help_templatePath_description">
         <source>Specifies the path to the directory with template to be verified.</source>
-        <target state="new">Specifies the path to the directory with template to be verified.</target>
+        <target state="translated">Gibt den Pfad zum Verzeichnis mit der zu überprüfenden Vorlage an.</target>
         <note />
       </trans-unit>
       <trans-unit id="command_verify_help_uniqueFor_description">
         <source>Sets the Verifier expectations directory naming convention, by indicating which scenarios should be differentiated.</source>
-        <target state="new">Sets the Verifier expectations directory naming convention, by indicating which scenarios should be differentiated.</target>
+        <target state="translated">Legt die Verzeichnisnamenskonvention für die Überprüfer-Erwartungen fest, indem angegeben wird, welche Szenarien unterschieden werden sollen.</target>
         <note />
       </trans-unit>
       <trans-unit id="command_verify_help_verifyOutputs_description">
         <source>If set to true - 'dotnet new' command standard output and error contents will be verified along with the produced template files.</source>
-        <target state="new">If set to true - 'dotnet new' command standard output and error contents will be verified along with the produced template files.</target>
+        <target state="translated">Bei Festlegung auf WAHR werden die Standardausgabe und der Fehlerinhalt des Befehls „dotnet new“ zusammen mit den erstellten Vorlagendateien überprüft.</target>
         <note>Do not translate 'true'. Do not translate 'dotnet new'</note>
       </trans-unit>
       <trans-unit id="generic_log_commandExecutionFailed">
         <source>"{0}" command has encountered an error. See the logs for more details.</source>
-        <target state="new">"{0}" command has encountered an error. See the logs for more details.</target>
+        <target state="translated">Fehler beim Ausführen des Befehls "{0}". Weitere Informationen finden Sie in den Protokollen.</target>
         <note>{0} will be replaced by the command name. Such as: "export" command has encountered an error.</note>
       </trans-unit>
       <trans-unit id="generic_log_commandExecutionFailedWithErrorMessage">
         <source>There was an error while running the "--{0}" command. Error message: "{1}". See the logs for more details.</source>
-        <target state="new">There was an error while running the "--{0}" command. Error message: "{1}". See the logs for more details.</target>
+        <target state="translated">Fehler beim Ausführen des "--{0}"-Befehls. Fehlermeldung: "{1}". Weitere Informationen finden Sie in den Protokollen.</target>
         <note />
       </trans-unit>
     </body>
