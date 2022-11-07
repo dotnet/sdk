@@ -18,6 +18,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging
     /// </summary>
     public class SuppressionEngine : ISuppressionEngine
     {
+        public const string DiagnosticIdDocumentationUrl = "https://learn.microsoft.com/en-us/dotnet/fundamentals/package-validation/diagnostic-ids";
         protected HashSet<Suppression> _validationSuppressions;
         private readonly ReaderWriterLockSlim _readerWriterLock = new();
         private readonly XmlSerializer _serializer = new(typeof(Suppression[]), new XmlRootAttribute("Suppressions"));
@@ -144,6 +145,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging
                         Formatting = Formatting.Indented,
                         Indentation = 2
                     };
+                    xmlWriter.WriteComment(DiagnosticIdDocumentationUrl);
                     _serializer.Serialize(xmlWriter, orderedSuppressions);
                     AfterWrittingSuppressionsCallback(writer);
                 }
