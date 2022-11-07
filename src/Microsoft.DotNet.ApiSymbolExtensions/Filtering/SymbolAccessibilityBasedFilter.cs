@@ -6,11 +6,11 @@ using Microsoft.DotNet.ApiSymbolExtensions.Extensions;
 
 namespace Microsoft.DotNet.ApiSymbolExtensions
 {
-    internal class SymbolAccessibilityBasedFilter : ISymbolFilter
+    public class SymbolAccessibilityBasedFilter : ISymbolFilter
     {
         private readonly bool _includeInternalSymbols;
 
-        internal SymbolAccessibilityBasedFilter(bool includeInternalSymbols)
+        public SymbolAccessibilityBasedFilter(bool includeInternalSymbols)
         {
             _includeInternalSymbols = includeInternalSymbols;
         }

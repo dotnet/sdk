@@ -1,7 +1,8 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>net6.0;net472</TargetFrameworks>
+    <Nullable>enable</Nullable>
     <TargetFrameworks Condition="'$(DotNetBuildFromSource)' == 'true'">net7.0;net472</TargetFrameworks>
     <StrongNameKeyId>Open</StrongNameKeyId>
     <Nullable>enable</Nullable>
@@ -18,13 +19,8 @@
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="$(_MicrosoftCodeAnalysisVersion)" />
   </ItemGroup>
 
-
   <ItemGroup>
-    <ProjectReference Include="..\..\Microsoft.DotNet.ApiSymbolExtensions\Microsoft.DotNet.ApiSymbolExtensions.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Update="Resources.resx" GenerateSource="True" />
+    <EmbeddedResource Update="ExtensionResources.resx" GenerateSource="True" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">

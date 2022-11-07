@@ -10,7 +10,6 @@ using System.Reflection;
 using System.Threading;
 using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.ApiSymbolExtensions;
 using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Commands;
@@ -18,7 +17,7 @@ using Microsoft.NET.TestFramework.ProjectConstruction;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Microsoft.DotNet.ApiCompatibility.Tests
+namespace Microsoft.DotNet.ApiSymbolExtensions.Tests
 {
     public class AssemblySymbolLoaderTests : SdkTest
     {
