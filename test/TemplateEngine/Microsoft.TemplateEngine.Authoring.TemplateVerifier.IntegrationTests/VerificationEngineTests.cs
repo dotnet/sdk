@@ -144,5 +144,19 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.IntegrationTests
 
             Directory.Delete(workingDir, true);
         }
+
+        [Fact]
+        public async void VerificationEngine_DotFile_EditorConfigTests()
+        {
+            TemplateVerifierOptions options = new TemplateVerifierOptions(templateName: "editorconfig")
+            {
+                TemplateSpecificArgs = new[] { "--empty" },
+                VerifyCommandOutput = true,
+            };
+
+            VerificationEngine engine = new VerificationEngine(_log);
+            // Demonstrate well handling of dot files - workarounding Verify bug https://github.com/VerifyTests/Verify/issues/699
+            await engine.Execute(options).ConfigureAwait(false);
+        }
     }
 }

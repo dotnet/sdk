@@ -234,6 +234,12 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier
                     string relativePath = fileSystem.PathRelativeTo(filePath, contentDir);
                     return includeGlobs.Any(g => g.IsMatch(relativePath)) && !excludeGlobs.Any(g => g.IsMatch(relativePath));
                 },
+                options: new EnumerationOptions()
+                {
+                    RecurseSubdirectories = true,
+                    // Workarounding Verify bug https://github.com/VerifyTests/Verify/issues/699
+                    AttributesToSkip = 0
+                },
                 fileScrubber: ExtractFileScrubber(options, contentDir, fileSystem),
                 settings: verifySettings);
         }
