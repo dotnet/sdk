@@ -144,7 +144,7 @@ namespace Microsoft.TemplateEngine.Utils
         /// </summary>
         public static bool HasAuthorMatch(this ITemplateMatchInfo templateMatchInfo)
         {
-            return templateMatchInfo.MatchDisposition.Any(x => x.Name == MatchInfo.BuiltIn.Author && (x.Kind == MatchKind.Exact || x.Kind == MatchKind.Partial)); //lgtm [cs/campaign/constantine]
+            return templateMatchInfo.MatchDisposition.Any(x => x.Name == MatchInfo.BuiltIn.Author && (x.Kind == MatchKind.Exact || x.Kind == MatchKind.Partial)); // CodeQL [cs/campaign/constantine] False Positive: CodeQL wrongly detected "Author"
         }
 
         /// <summary>
@@ -152,7 +152,7 @@ namespace Microsoft.TemplateEngine.Utils
         /// </summary>
         public static bool HasAuthorExactMatch(this ITemplateMatchInfo templateMatchInfo)
         {
-            return templateMatchInfo.MatchDisposition.Any(x => x.Name == MatchInfo.BuiltIn.Author && x.Kind == MatchKind.Exact); //lgtm [cs/campaign/constantine]
+            return templateMatchInfo.MatchDisposition.Any(x => x.Name == MatchInfo.BuiltIn.Author && x.Kind == MatchKind.Exact); // CodeQL [cs/campaign/constantine] False Positive: CodeQL wrongly detected "Author"
         }
 
         /// <summary>
@@ -160,7 +160,7 @@ namespace Microsoft.TemplateEngine.Utils
         /// </summary>
         public static bool HasAuthorPartialMatch(this ITemplateMatchInfo templateMatchInfo)
         {
-            return templateMatchInfo.MatchDisposition.Any(x => x.Name == MatchInfo.BuiltIn.Author && x.Kind == MatchKind.Partial); //lgtm [cs/campaign/constantine]
+            return templateMatchInfo.MatchDisposition.Any(x => x.Name == MatchInfo.BuiltIn.Author && x.Kind == MatchKind.Partial); // CodeQL [cs/campaign/constantine] False Positive: CodeQL wrongly detected "Author"
         }
 
         /// <summary>
@@ -168,7 +168,7 @@ namespace Microsoft.TemplateEngine.Utils
         /// </summary>
         public static bool HasAuthorMismatch(this ITemplateMatchInfo templateMatchInfo)
         {
-            return templateMatchInfo.MatchDisposition.Any(x => x.Name == MatchInfo.BuiltIn.Author && x.Kind == MatchKind.Mismatch); //lgtm [cs/campaign/constantine]
+            return templateMatchInfo.MatchDisposition.Any(x => x.Name == MatchInfo.BuiltIn.Author && x.Kind == MatchKind.Mismatch); // CodeQL [cs/campaign/constantine] False Positive: CodeQL wrongly detected "Author"
         }
     }
 }
