@@ -8,6 +8,8 @@ namespace Microsoft.TemplateEngine.CommandUtils
 {
     internal class DotnetCommand : TestCommand
     {
+        private string _executableFilePath = "dotnet";
+
         internal DotnetCommand(ILogger log, string subcommand, params string[] args) : base(log)
         {
             Arguments.Add(subcommand);
@@ -26,11 +28,20 @@ namespace Microsoft.TemplateEngine.CommandUtils
             return this;
         }
 
+        internal DotnetCommand WithCustomExecutablePath(string? executableFilePath)
+        {
+            if (!string.IsNullOrEmpty(executableFilePath))
+            {
+                _executableFilePath = executableFilePath;
+            }
+            return this;
+        }
+
         private protected override SdkCommandSpec CreateCommand(IEnumerable<string> args)
         {
             var sdkCommandSpec = new SdkCommandSpec()
             {
-                FileName = "dotnet",
+                FileName = _executableFilePath,
                 Arguments = args.ToList(),
                 WorkingDirectory = WorkingDirectory
             };

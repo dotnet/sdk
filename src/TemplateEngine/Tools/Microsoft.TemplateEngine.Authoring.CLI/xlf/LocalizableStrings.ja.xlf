@@ -103,11 +103,6 @@ Do not localize: "template.json"</note>
         <target state="translated">true に設定すると、'dotnet new' コマンドは 0 以外のリターン コードを返す必要があります。</target>
         <note>Do not translate 'true'. Do not translate 'dotnet new'</note>
       </trans-unit>
-      <trans-unit id="command_verify_help_newCommandPath_description">
-        <source>Specifies the path to custom assembly implementing 'dotnet new' command.</source>
-        <target state="translated">'dotnet new' コマンドを実装するカスタム アセンブリへのパスを指定します。</target>
-        <note>Do not translate 'dotnet new'</note>
-      </trans-unit>
       <trans-unit id="command_verify_help_outputPath_description">
         <source>Specifies the path to target directory to output the generated template to.</source>
         <target state="translated">生成されたテンプレートを出力するターゲット ディレクトリへのパスを指定します。</target>

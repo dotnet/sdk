@@ -66,23 +66,6 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.UnitTests
                         UniqueFor = UniqueForOption.None,
                     }
                 },
-                new object[]
-                {
-                    "someName --new-command-assembly a\\b\\c.dll",
-                    new VerifyCommandArgs(
-                        "someName",
-                        null)
-                    {
-                        DotnetNewCommandAssemblyPath = "a\\b\\c.dll",
-                        DisableDiffTool = false,
-                        DisableDefaultVerificationExcludePatterns = false,
-                        VerificationExcludePatterns = Enumerable.Empty<string>(),
-                        VerificationIncludePatterns = Enumerable.Empty<string>(),
-                        VerifyCommandOutput = false,
-                        IsCommandExpectedToFail = false,
-                        UniqueFor = UniqueForOption.None,
-                    }
-                },
             };
 
         [Theory]

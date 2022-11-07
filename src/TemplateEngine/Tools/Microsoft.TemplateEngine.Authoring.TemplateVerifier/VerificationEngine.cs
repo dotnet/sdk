@@ -300,6 +300,8 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier
                 var installCommand =
                     new DotnetNewCommand(commandLogger, "install", options.TemplatePath)
                         .WithCustomHive(customHiveLocation)
+                        .WithCustomExecutablePath(options.DotnetExecutablePath)
+                        .WithEnvironmentVariables(options.Environment)
                         .WithWorkingDirectory(workingDir);
 
                 CommandResultData installCommandResult = commandRunner.RunCommand(installCommand);
@@ -312,25 +314,13 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier
                 }
             }
 
-            List<string> cmdArgs = new();
-            if (!string.IsNullOrEmpty(options.DotnetNewCommandAssemblyPath))
+            List<string> cmdArgs = new()
             {
-                cmdArgs.Add(options.DotnetNewCommandAssemblyPath);
-            }
-            cmdArgs.Add(options.TemplateName);
+                options.TemplateName
+            };
             if (options.TemplateSpecificArgs != null)
             {
                 cmdArgs.AddRange(options.TemplateSpecificArgs);
-            }
-
-            if (!string.IsNullOrEmpty(customHiveLocation))
-            {
-                cmdArgs.Add("--debug:custom-hive");
-                cmdArgs.Add(customHiveLocation);
-            }
-            else
-            {
-                cmdArgs.Add("--debug:ephemeral-hive");
             }
 
             // let's make sure the template outputs are named and placed deterministically
@@ -347,8 +337,12 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier
                 cmdArgs.Add(options.TemplateName);
             }
 
-            var command = new DotnetCommand(loggerFactory?.CreateLogger(typeof(DotnetCommand)) ?? logger, "new", cmdArgs.ToArray())
-                    .WithWorkingDirectory(workingDir);
+            var command = new DotnetNewCommand(loggerFactory?.CreateLogger(typeof(DotnetCommand)) ?? logger, cmdArgs.ToArray())
+                .WithCustomOrVirtualHive(customHiveLocation)
+                .WithCustomExecutablePath(options.DotnetExecutablePath)
+                .WithEnvironmentVariables(options.Environment)
+                .WithWorkingDirectory(workingDir);
+
             var result = commandRunner.RunCommand(command);
             // Cleanup, unless the settings dir was externally passed
             if (!string.IsNullOrEmpty(customHiveLocation) && string.IsNullOrEmpty(options.SettingsDirectory))

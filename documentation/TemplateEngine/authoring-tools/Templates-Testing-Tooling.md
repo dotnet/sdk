@@ -128,7 +128,23 @@ Configuration of the scenario run is done via `TemplateVerifierOptions` type.
     - TargetFramework
     - TargetFrameworkAndVersion
 
-- **`string? DotnetNewCommandAssemblyPath`** - Applicable for internal tests of dotnet assembly. Path to custom assembly implementing the new command.
+- **`string? DotnetExecutablePath`** - Path to custom dotnet executable (e.g. x-copy install scenario).
+
+- **`IReadOnlyDictionary<string, string>? Environment`** - Custom environment variable collection to be passed to execution of dotnet commands.
+
+  Custom environment variables can as well be added via fluent API `WithCustomEnvironment` and `WithEnvironmentVariable`. Sample usage:
+
+  ```cs
+  options.WithCustomEnvironment(
+	new Dictionary<string, string>() 
+	  { 
+		  { name1, value1 }, 
+		  { name2, value2 },
+		  { name3, value3 },
+	  }
+	);
+  ```
+
 
 - **<a name="ScenarioName"></a>`string? ScenarioName`** - Custom scenario name; if specified it will be used as part of verification snapshot name.
 

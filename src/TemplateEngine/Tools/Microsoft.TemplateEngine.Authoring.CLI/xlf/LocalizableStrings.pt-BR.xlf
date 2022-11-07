@@ -103,11 +103,6 @@ Do not localize: "template.json"</note>
         <target state="translated">Se definido como verdadeiro - esperava-se que o comando 'dotnet new' retornasse um código de retorno diferente de zero.</target>
         <note>Do not translate 'true'. Do not translate 'dotnet new'</note>
       </trans-unit>
-      <trans-unit id="command_verify_help_newCommandPath_description">
-        <source>Specifies the path to custom assembly implementing 'dotnet new' command.</source>
-        <target state="translated">Especifica o caminho para o assembly personalizado que implementa o comando 'dotnet new'.</target>
-        <note>Do not translate 'dotnet new'</note>
-      </trans-unit>
       <trans-unit id="command_verify_help_outputPath_description">
         <source>Specifies the path to target directory to output the generated template to.</source>
         <target state="translated">Especifica o caminho para o diretório de destino para a saída do modelo gerado.</target>

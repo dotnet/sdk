@@ -234,15 +234,6 @@ namespace Microsoft.TemplateEngine.Authoring.CLI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Specifies the path to custom assembly implementing &apos;dotnet new&apos; command..
-        /// </summary>
-        internal static string command_verify_help_newCommandPath_description {
-            get {
-                return ResourceManager.GetString("command_verify_help_newCommandPath_description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Specifies the path to target directory to output the generated template to..
         /// </summary>
         internal static string command_verify_help_outputPath_description {

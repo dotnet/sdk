@@ -30,8 +30,9 @@ Microsoft.TemplateEngine.Authoring.TemplateVerifier.TemplateVerifierOptions.DoNo
 Microsoft.TemplateEngine.Authoring.TemplateVerifier.TemplateVerifierOptions.DoNotPrependCallerMethodNameToScenarioName.init -> void
 Microsoft.TemplateEngine.Authoring.TemplateVerifier.TemplateVerifierOptions.DoNotPrependTemplateNameToScenarioName.get -> bool
 Microsoft.TemplateEngine.Authoring.TemplateVerifier.TemplateVerifierOptions.DoNotPrependTemplateNameToScenarioName.init -> void
-Microsoft.TemplateEngine.Authoring.TemplateVerifier.TemplateVerifierOptions.DotnetNewCommandAssemblyPath.get -> string?
-Microsoft.TemplateEngine.Authoring.TemplateVerifier.TemplateVerifierOptions.DotnetNewCommandAssemblyPath.init -> void
+Microsoft.TemplateEngine.Authoring.TemplateVerifier.TemplateVerifierOptions.DotnetExecutablePath.get -> string?
+Microsoft.TemplateEngine.Authoring.TemplateVerifier.TemplateVerifierOptions.DotnetExecutablePath.init -> void
+Microsoft.TemplateEngine.Authoring.TemplateVerifier.TemplateVerifierOptions.Environment.get -> System.Collections.Generic.IReadOnlyDictionary<string!, string!>?
 Microsoft.TemplateEngine.Authoring.TemplateVerifier.TemplateVerifierOptions.IsCommandExpectedToFail.get -> bool
 Microsoft.TemplateEngine.Authoring.TemplateVerifier.TemplateVerifierOptions.IsCommandExpectedToFail.init -> void
 Microsoft.TemplateEngine.Authoring.TemplateVerifier.TemplateVerifierOptions.OutputDirectory.get -> string?
@@ -60,7 +61,9 @@ Microsoft.TemplateEngine.Authoring.TemplateVerifier.TemplateVerifierOptions.Veri
 Microsoft.TemplateEngine.Authoring.TemplateVerifier.TemplateVerifierOptions.VerifyCommandOutput.get -> bool
 Microsoft.TemplateEngine.Authoring.TemplateVerifier.TemplateVerifierOptions.VerifyCommandOutput.init -> void
 Microsoft.TemplateEngine.Authoring.TemplateVerifier.TemplateVerifierOptions.WithCustomDirectoryVerifier(Microsoft.TemplateEngine.Authoring.TemplateVerifier.VerifyDirectory! verifier) -> Microsoft.TemplateEngine.Authoring.TemplateVerifier.TemplateVerifierOptions!
+Microsoft.TemplateEngine.Authoring.TemplateVerifier.TemplateVerifierOptions.WithCustomEnvironment(System.Collections.Generic.IReadOnlyDictionary<string!, string!>! environment) -> Microsoft.TemplateEngine.Authoring.TemplateVerifier.TemplateVerifierOptions!
 Microsoft.TemplateEngine.Authoring.TemplateVerifier.TemplateVerifierOptions.WithCustomScrubbers(Microsoft.TemplateEngine.Authoring.TemplateVerifier.ScrubbersDefinition! scrubbers) -> Microsoft.TemplateEngine.Authoring.TemplateVerifier.TemplateVerifierOptions!
+Microsoft.TemplateEngine.Authoring.TemplateVerifier.TemplateVerifierOptions.WithEnvironmentVariable(string! name, string! value) -> Microsoft.TemplateEngine.Authoring.TemplateVerifier.TemplateVerifierOptions!
 Microsoft.TemplateEngine.Authoring.TemplateVerifier.UniqueForOption
 Microsoft.TemplateEngine.Authoring.TemplateVerifier.UniqueForOption.Architecture = 1 -> Microsoft.TemplateEngine.Authoring.TemplateVerifier.UniqueForOption
 Microsoft.TemplateEngine.Authoring.TemplateVerifier.UniqueForOption.None = 0 -> Microsoft.TemplateEngine.Authoring.TemplateVerifier.UniqueForOption

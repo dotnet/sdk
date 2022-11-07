@@ -32,14 +32,6 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.Commands.Verify
             Description = LocalizableStrings.command_verify_help_templatePath_description,
         };
 
-        private readonly Option<string> _newCommandPathOption = new("--new-command-assembly")
-        {
-            Description = LocalizableStrings.command_verify_help_newCommandPath_description,
-            //TODO: do we have better way of distinguishing options that might rarely be needed?
-            // if not - we should probably add a link to more detailed help in the command description (mentioning that online help has additional options)
-            IsHidden = true
-        };
-
         private readonly Option<string> _templateOutputPathOption = new(new[] { "-o", "--output" })
         {
             Description = LocalizableStrings.command_verify_help_outputPath_description,
@@ -100,7 +92,6 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.Commands.Verify
             AddArgument(_templateNameArgument);
             AddOption(_remainingArguments);
             AddOption(_templatePathOption);
-            AddOption(_newCommandPathOption);
             AddOption(_templateOutputPathOption);
             AddOption(_snapshotsDirectoryOption);
             AddOption(_scenarioNameOption);
@@ -124,7 +115,6 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.Commands.Verify
                 templateName: parseResult.GetValueForArgument(verifyCommand._templateNameArgument),
                 templateSpecificArgs: parseResult.GetValueForOption(verifyCommand._remainingArguments),
                 templatePath: parseResult.GetValueForOption(verifyCommand._templatePathOption),
-                dotnetNewCommandAssemblyPath: parseResult.GetValueForOption(verifyCommand._newCommandPathOption),
                 snapshotsDirectory: parseResult.GetValueForOption(verifyCommand._snapshotsDirectoryOption),
                 scenarioDistinguisher: parseResult.GetValueForOption(verifyCommand._scenarioNameOption),
                 outputDirectory: parseResult.GetValueForOption(verifyCommand._templateOutputPathOption),
@@ -152,7 +142,6 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.Commands.Verify
                     DisableDefaultVerificationExcludePatterns = args.DisableDefaultVerificationExcludePatterns,
                     VerificationExcludePatterns = args.VerificationExcludePatterns,
                     VerificationIncludePatterns = args.VerificationIncludePatterns,
-                    DotnetNewCommandAssemblyPath = args.DotnetNewCommandAssemblyPath,
                     SnapshotsDirectory = args.SnapshotsDirectory,
                     ScenarioName = args.ScenarioDistinguisher,
                     OutputDirectory = args.OutputDirectory,

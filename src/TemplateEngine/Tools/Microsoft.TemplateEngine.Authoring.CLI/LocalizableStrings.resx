@@ -189,10 +189,6 @@ Do not localize: "template.json"</comment>
     <value>If set to true - 'dotnet new' command is expected to return non-zero return code.</value>
     <comment>Do not translate 'true'. Do not translate 'dotnet new'</comment>
   </data>
-  <data name="command_verify_help_newCommandPath_description" xml:space="preserve">
-    <value>Specifies the path to custom assembly implementing 'dotnet new' command.</value>
-    <comment>Do not translate 'dotnet new'</comment>
-  </data>
   <data name="command_verify_help_outputPath_description" xml:space="preserve">
     <value>Specifies the path to target directory to output the generated template to.</value>
   </data>

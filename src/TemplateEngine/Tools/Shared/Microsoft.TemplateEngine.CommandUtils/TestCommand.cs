@@ -3,6 +3,7 @@
 
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
+using Microsoft.TemplateEngine.Utils;
 using Xunit.Abstractions;
 
 namespace Microsoft.TemplateEngine.CommandUtils
@@ -37,6 +38,15 @@ namespace Microsoft.TemplateEngine.CommandUtils
         internal TestCommand WithEnvironmentVariable(string name, string value)
         {
             Environment[name] = value;
+            return this;
+        }
+
+        internal TestCommand WithEnvironmentVariables(IReadOnlyDictionary<string, string>? variables)
+        {
+            if (variables != null)
+            {
+                Environment.Merge(variables);
+            }
             return this;
         }
 

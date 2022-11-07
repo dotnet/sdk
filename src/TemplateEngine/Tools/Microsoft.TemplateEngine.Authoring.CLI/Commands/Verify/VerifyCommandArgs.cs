@@ -21,7 +21,6 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.Commands.Verify
             string templateName,
             string? templatePath,
             string? templateSpecificArgs,
-            string? dotnetNewCommandAssemblyPath,
             string? snapshotsDirectory,
             string? scenarioDistinguisher,
             string? outputDirectory,
@@ -35,7 +34,6 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.Commands.Verify
         : this(templateName, templateSpecificArgs)
         {
             TemplatePath = templatePath;
-            DotnetNewCommandAssemblyPath = dotnetNewCommandAssemblyPath;
             SnapshotsDirectory = snapshotsDirectory;
             ScenarioDistinguisher = scenarioDistinguisher;
             OutputDirectory = outputDirectory;
@@ -57,11 +55,6 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.Commands.Verify
         /// Gets the path to template.json file or containing directory.
         /// </summary>
         public string? TemplatePath { get; init; }
-
-        /// <summary>
-        /// Gets the path to custom assembly implementing the new command.
-        /// </summary>
-        public string? DotnetNewCommandAssemblyPath { get; init; }
 
         /// <summary>
         /// Gets the template specific arguments.
