@@ -18,7 +18,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging
     /// </summary>
     public class SuppressionEngine : ISuppressionEngine
     {
-        public const string DiagnosticIdDocumentationUrl = "https://learn.microsoft.com/en-us/dotnet/fundamentals/package-validation/diagnostic-ids";
+        public const string DiagnosticIdDocumentationComment = " https://learn.microsoft.com/en-us/dotnet/fundamentals/package-validation/diagnostic-ids ";
         protected HashSet<Suppression> _validationSuppressions;
         private readonly ReaderWriterLockSlim _readerWriterLock = new();
         private readonly XmlSerializer _serializer = new(typeof(Suppression[]), new XmlRootAttribute("Suppressions"));
@@ -140,12 +140,14 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging
                 _readerWriterLock.EnterReadLock();
                 try
                 {
-                    XmlTextWriter xmlWriter = new(writer, Encoding.UTF8)
+                    XmlWriter xmlWriter = XmlWriter.Create(writer, new XmlWriterSettings()
                     {
-                        Formatting = Formatting.Indented,
-                        Indentation = 2
-                    };
-                    xmlWriter.WriteComment(DiagnosticIdDocumentationUrl);
+                        Encoding = Encoding.UTF8,
+                        ConformanceLevel = ConformanceLevel.Document,
+                        Indent = true
+                    });
+
+                    xmlWriter.WriteComment(DiagnosticIdDocumentationComment);
                     _serializer.Serialize(xmlWriter, orderedSuppressions);
                     AfterWrittingSuppressionsCallback(writer);
                 }
