@@ -6,11 +6,20 @@ jobs:
   displayName: Source-Build Create Tarball
   pool:
     ${{ if eq(variables['System.TeamProject'], 'public') }}:
-      name: NetCore-Svc-Public
-      demands: ImageOverride -equals Build.Ubuntu.1804.Amd64.Open
+      ${{ if in(variables['Build.Reason'], 'PullRequest') }}:
+        name: NetCore-Public-XL
+        demands: ImageOverride -equals Build.Ubuntu.1804.Amd64.Open
+      ${{ else }}:
+        name: NetCore-Svc-Public
+        demands: ImageOverride -equals Build.Ubuntu.1804.Amd64.Open
     ${{ if eq(variables['System.TeamProject'], 'internal') }}:
-      name: NetCore1ESPool-Svc-Internal
-      demands: ImageOverride -equals Build.Ubuntu.1804.Amd64
+      ${{ if in(variables['Build.Reason'], 'PullRequest') }}:
+        name: NetCore1ESPool-Internal-XL
+        demands: ImageOverride -equals Build.Ubuntu.1804.Amd64
+      ${{ else }}:
+        name: NetCore1ESPool-Svc-Internal
+        demands: ImageOverride -equals Build.Ubuntu.1804.Amd64
+
   variables:
   - name: _BuildConfig
     value: Release
