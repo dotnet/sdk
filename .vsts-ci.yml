@@ -1,15 +1,18 @@
-trigger:
-  batch: true
-  ${{ if eq(variables['System.TeamProject'], 'public') }}:
-    branches:
-      include:
-      - main
-      - release/*
-  ${{ if eq(variables['System.TeamProject'], 'internal') }}:
-    branches:
-      include:
-      - main
-      - internal/release/*
+${{ if eq(variables['System.TeamProject'], 'public') }}:
+  branches:
+    trigger:
+    batch: true
+    include:
+    - main
+    - release/*
+
+${{ if eq(variables['System.TeamProject'], 'internal') }}:
+  branches:
+    trigger:
+    batch: true
+    include:
+    - main
+    - internal/release/*
 
 variables:
   - name: teamName
