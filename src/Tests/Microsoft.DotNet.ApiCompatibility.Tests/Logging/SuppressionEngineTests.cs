@@ -258,7 +258,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging.Tests
   </Suppression>
 </Suppressions>";
 
-        public readonly string suppressionsFileWithoutComment = @$"{DiagnosticIdDocumentationUrl}
+        public readonly string suppressionsFileWithoutComment = @$"<!--{DiagnosticIdDocumentationUrl}-->
 <?xml version=""1.0"" encoding=""utf-8""?>
 {s_suppressionsHeader}
   <Suppression>
