@@ -19,16 +19,24 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
     /// </summary>
     public class AssemblySymbolLoader : IAssemblySymbolLoader
     {
-        /// <summary>
-        /// Dictionary that holds the paths to help loading dependencies. Keys will be assembly name and 
-        /// value are the containing folder.
-        /// </summary>
+        // Dictionary that holds the paths to help loading dependencies. Keys will be assembly name and 
+        // value are the containing folder.
         private readonly Dictionary<string, string> _referencePathFiles = new(StringComparer.OrdinalIgnoreCase);
         private readonly HashSet<string> _referencePathDirectories = new(StringComparer.OrdinalIgnoreCase);
         private readonly List<AssemblyLoadWarning> _warnings = new();
         private readonly Dictionary<string, MetadataReference> _loadedAssemblies;
         private readonly bool _resolveReferences;
         private CSharpCompilation _cSharpCompilation;
+
+        /// <summary>
+        /// Error code that is emitted when an assembly isn't found.
+        /// </summary>
+        public const string AssemblyNotFoundErrorCode = "CP1001";
+
+        /// <summary>
+        /// Error code that is emitted when an assembly reference isn't found.
+        /// </summary>
+        public const string AssemblyReferenceNotFoundErrorCode = "CP1002";
 
         /// <inheritdoc />
         public AssemblySymbolLoader(bool resolveAssemblyReferences = false)
@@ -160,7 +168,7 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
         {
             if (stream.Position >= stream.Length)
             {
-                throw new ArgumentException(ExtensionResources.StreamPositionGreaterThanLength, nameof(stream));
+                throw new ArgumentException(Resources.StreamPositionGreaterThanLength, nameof(stream));
             }
 
             if (!_loadedAssemblies.TryGetValue(name, out MetadataReference? metadataReference))
@@ -176,12 +184,12 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
         {
             if (!filePaths.Any())
             {
-                throw new ArgumentNullException(nameof(filePaths), ExtensionResources.ShouldNotBeNullAndContainAtLeastOneElement);
+                throw new ArgumentNullException(nameof(filePaths), Resources.ShouldNotBeNullAndContainAtLeastOneElement);
             }
 
             if (string.IsNullOrEmpty(assemblyName))
             {
-                throw new ArgumentNullException(nameof(assemblyName), ExtensionResources.ShouldProvideValidAssemblyName);
+                throw new ArgumentNullException(nameof(assemblyName), Resources.ShouldProvideValidAssemblyName);
             }
 
             _cSharpCompilation = _cSharpCompilation.WithAssemblyName(assemblyName);
@@ -189,11 +197,6 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
             List<SyntaxTree> syntaxTrees = new();
             foreach (string filePath in filePaths)
             {
-                if (!File.Exists(filePath))
-                {
-                    throw new FileNotFoundException(string.Format(ExtensionResources.FileDoesNotExist, filePath));
-                }
-
                 syntaxTrees.Add(CSharpSyntaxTree.ParseText(File.ReadAllText(filePath)));
             }
 
@@ -215,7 +218,7 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
                 {
                     if (!Directory.Exists(directory))
                     {
-                        throw new FileNotFoundException(string.Format(ExtensionResources.ShouldProvideValidAssemblyName, directory), nameof(searchPaths));
+                        throw new FileNotFoundException(string.Format(Resources.ShouldProvideValidAssemblyName, directory), nameof(searchPaths));
                     }
 
                     string possiblePath = Path.Combine(directory, name);
@@ -242,7 +245,9 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
                 if (warnOnMissingAssemblies && !found)
                 {
                     string assemblyInfo = validateMatchingIdentity ? assembly.Identity.GetDisplayName() : assembly.Name;
-                    _warnings.Add(new AssemblyLoadWarning(DiagnosticIds.AssemblyNotFound, assemblyInfo, string.Format(ExtensionResources.MatchingAssemblyNotFound, assemblyInfo)));
+                    _warnings.Add(new AssemblyLoadWarning(AssemblyNotFoundErrorCode,
+                        assemblyInfo,
+                        string.Format(Resources.MatchingAssemblyNotFound, assemblyInfo)));
                 }
             }
 
@@ -277,7 +282,7 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
                 }
                 else
                 {
-                    throw new FileNotFoundException(string.Format(ExtensionResources.ProvidedPathToLoadBinariesFromNotFound, path));
+                    throw new FileNotFoundException(string.Format(Resources.ProvidedPathToLoadBinariesFromNotFound, path));
                 }
             }
 
@@ -306,7 +311,7 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
 
             if (!reader.HasMetadata)
             {
-                throw new ArgumentException(string.Format(ExtensionResources.ProvidedStreamDoesNotHaveMetadata, name));
+                throw new ArgumentException(string.Format(Resources.ProvidedStreamDoesNotHaveMetadata, name));
             }
 
             PEMemoryBlock image = reader.GetEntireImage();
@@ -369,9 +374,9 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
                     if (!found)
                     {
                         _warnings.Add(new AssemblyLoadWarning(
-                            DiagnosticIds.AssemblyReferenceNotFound,
+                            AssemblyReferenceNotFoundErrorCode,
                             name,
-                            string.Format(ExtensionResources.CouldNotResolveReference, name)));
+                            string.Format(Resources.CouldNotResolveReference, name)));
                     }
                 }
             }

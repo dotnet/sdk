@@ -15,7 +15,7 @@ namespace Microsoft.DotNet.ApiSymbolExtensions.Tests
 {
     internal static class SymbolFactory
     {
-        internal static string EmitAssemblyFromSyntax(string syntax, bool enableNullable = false, byte[] publicKey = null, [CallerMemberName] string assemblyName = "")
+        public static string EmitAssemblyFromSyntax(string syntax, bool enableNullable = false, byte[] publicKey = null, [CallerMemberName] string assemblyName = "")
         {
             CSharpCompilation compilation = CreateCSharpCompilationFromSyntax(syntax, assemblyName, enableNullable, publicKey);
 
@@ -29,7 +29,7 @@ namespace Microsoft.DotNet.ApiSymbolExtensions.Tests
             return assemblyPath;
         }
 
-        internal static IAssemblySymbol GetAssemblyFromSyntax(string syntax, bool enableNullable = false, byte[] publicKey = null, [CallerMemberName] string assemblyName = "")
+        public static IAssemblySymbol GetAssemblyFromSyntax(string syntax, bool enableNullable = false, byte[] publicKey = null, [CallerMemberName] string assemblyName = "")
         {
             CSharpCompilation compilation = CreateCSharpCompilationFromSyntax(syntax, assemblyName, enableNullable, publicKey);
 
@@ -38,7 +38,7 @@ namespace Microsoft.DotNet.ApiSymbolExtensions.Tests
             return compilation.Assembly;
         }
 
-        internal static IAssemblySymbol GetAssemblyFromSyntaxWithReferences(string syntax, IEnumerable<string> referencesSyntax, bool enableNullable = false, byte[] publicKey = null, [CallerMemberName] string assemblyName = "")
+        public static IAssemblySymbol GetAssemblyFromSyntaxWithReferences(string syntax, IEnumerable<string> referencesSyntax, bool enableNullable = false, byte[] publicKey = null, [CallerMemberName] string assemblyName = "")
         {
             CSharpCompilation compilation = CreateCSharpCompilationFromSyntax(syntax, assemblyName, enableNullable, publicKey);
             CSharpCompilation compilationWithReferences = CreateCSharpCompilationFromSyntax(referencesSyntax, $"{assemblyName}_reference", enableNullable, publicKey);

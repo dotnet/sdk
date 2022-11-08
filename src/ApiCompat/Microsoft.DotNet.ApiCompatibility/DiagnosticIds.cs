@@ -1,7 +1,7 @@
 ﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace Microsoft.DotNet.ApiSymbolExtensions
+namespace Microsoft.DotNet.ApiCompatibility
 {
     /// <summary>
     /// Class containing the strings representing the Diagnostic IDs that can be returned in the compatibility differences.
@@ -30,7 +30,6 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
         public const string CannotExpandVisibility = "CP0020";
 
         // Assembly loading ids
-        public const string AssemblyNotFound = "CP1001";
         public const string AssemblyReferenceNotFound = "CP1002";
     }
 }

@@ -14,13 +14,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="$(_MicrosoftCodeAnalysisVersion)" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="$(_MicrosoftCodeAnalysisVersion)" />
+    <ProjectReference Include="..\..\Microsoft.DotNet.ApiSymbolExtensions\Microsoft.DotNet.ApiSymbolExtensions.csproj" />
   </ItemGroup>
 
-
   <ItemGroup>
-    <ProjectReference Include="..\..\Microsoft.DotNet.ApiSymbolExtensions\Microsoft.DotNet.ApiSymbolExtensions.csproj" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="$(_MicrosoftCodeAnalysisVersion)" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="$(_MicrosoftCodeAnalysisVersion)" />
   </ItemGroup>
 
   <ItemGroup>

@@ -120,9 +120,6 @@
   <data name="CouldNotResolveReference" xml:space="preserve">
     <value>Could not resolve reference '{0}' in any of the provided search directories.</value>
   </data>
-  <data name="FileDoesNotExist" xml:space="preserve">
-    <value>File '{0}' does not exist.</value>
-  </data>
   <data name="MatchingAssemblyNotFound" xml:space="preserve">
     <value>Could not find matching assembly: '{0}' in any of the search directories.</value>
   </data>
