@@ -5,7 +5,7 @@ using Microsoft.CodeAnalysis;
 using System;
 using System.Collections.Generic;
 
-namespace Microsoft.DotNet.ApiSymbolExtensions.Extensions
+namespace Microsoft.DotNet.ApiSymbolExtensions
 {
     public static class SymbolExtensions
     {

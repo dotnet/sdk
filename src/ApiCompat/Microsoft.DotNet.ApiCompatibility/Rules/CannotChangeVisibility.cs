@@ -7,7 +7,6 @@ using System.Runtime;
 using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.ApiCompatibility.Abstractions;
 using Microsoft.DotNet.ApiSymbolExtensions;
-using Microsoft.DotNet.ApiSymbolExtensions.Extensions;
 
 namespace Microsoft.DotNet.ApiCompatibility.Rules
 {
