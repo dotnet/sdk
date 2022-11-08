@@ -4,7 +4,8 @@ trigger:
     include:
     - master
     - main
-    - release/*
+    - ${{ if eq(variables['System.TeamProject'], 'public') }}:
+      - release/*
     - internal/release/3.*
     - internal/release/5.*
     - internal/release/6.*
