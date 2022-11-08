@@ -13,16 +13,16 @@ namespace Microsoft.DotNet.ApiCompat
         /// </summary>
         public static void GenerateSuppressionFile(ISuppressionEngine suppressionEngine,
             ICompatibilityLogger log,
-            string? suppressionFile)
+            string? suppressionOutputFile)
         {
-            if (suppressionFile == null)
+            if (suppressionOutputFile == null)
             {
-                throw new ArgumentException(CommonResources.SuppressionsFileNotSpecified, nameof(suppressionFile));
+                throw new ArgumentException(CommonResources.SuppressionsFileNotSpecified, nameof(suppressionOutputFile));
             }
 
-            if (suppressionEngine.WriteSuppressionsToFile(suppressionFile))
+            if (suppressionEngine.WriteSuppressionsToFile(suppressionOutputFile))
             {
-                log.LogMessage(MessageImportance.High, CommonResources.WroteSuppressions, suppressionFile);
+                log.LogMessage(MessageImportance.High, CommonResources.WroteSuppressions, suppressionOutputFile);
             }
         }
     }
