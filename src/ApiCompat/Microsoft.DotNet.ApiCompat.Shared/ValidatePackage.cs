@@ -80,6 +80,7 @@ namespace Microsoft.DotNet.ApiCompat
             {
                 SuppressionFileHelper.GenerateSuppressionFile(serviceProvider.SuppressionEngine,
                     serviceProvider.CompatibilityLogger,
+                    suppressionFiles,
                     suppressionOutputFile);
             }
         }

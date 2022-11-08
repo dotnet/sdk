@@ -13,8 +13,15 @@ namespace Microsoft.DotNet.ApiCompat
         /// </summary>
         public static void GenerateSuppressionFile(ISuppressionEngine suppressionEngine,
             ICompatibilityLogger log,
+            string[]? suppressionFiles,
             string? suppressionOutputFile)
         {
+            // When a single suppression (input) file is passed in but no suppression output file, use the single input file.
+            if (suppressionOutputFile == null && suppressionFiles?.Length == 1)
+            {
+                suppressionOutputFile = suppressionFiles[0];
+            }
+
             if (suppressionOutputFile == null)
             {
                 throw new ArgumentException(CommonResources.SuppressionsFileNotSpecified, nameof(suppressionOutputFile));
