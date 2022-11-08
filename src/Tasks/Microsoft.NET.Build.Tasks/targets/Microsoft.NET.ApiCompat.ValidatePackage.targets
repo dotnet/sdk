@@ -48,7 +48,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       EnableStrictModeForCompatibleFrameworksInPackage="$(EnableStrictModeForCompatibleFrameworksInPackage)"
       EnableStrictModeForBaselineValidation="$(EnableStrictModeForBaselineValidation)"
       GenerateSuppressionFile="$(ApiCompatGenerateSuppressionFile)"
-      SuppressionFiles="@(ApiCompatSuppressionFiles)"
+      SuppressionFiles="@(ApiCompatSuppressionFile)"
       SuppressionOutputFile="$(ApiCompatSuppressionOutputFile)"
       BaselinePackageTargetPath="$(_packageValidationBaselinePath)"
       RoslynAssembliesPath="$(RoslynAssembliesPath)"
