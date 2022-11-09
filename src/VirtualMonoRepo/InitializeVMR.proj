@@ -33,9 +33,7 @@
   <Target Name="InitializeVMR" DependsOnTargets="GenerateFullNuGetVersion;
                                                  GenerateVersionFile;
                                                  InitializeCleanVmr;
-                                                 InitializeRepoAndDependentsRecursive;
-                                                 CopyTextOnlyPackages;
-                                                 CommitTextOnlyPackages">
+                                                 InitializeRepoAndDependentsRecursive">
     <Message Text="VMR was successfully initialized in '$(VmrDir)'" Importance="High" />
   </Target>
 
@@ -79,11 +77,6 @@
 
     <Message Text=" -> Done initializing individual repositories recursively" Importance="High" />
 
-  </Target>
-
-  <Target Name="CommitTextOnlyPackages">
-    <Exec WorkingDirectory="$(VmrDir)" Command="git add packages/text-only" />
-    <Exec WorkingDirectory="$(VmrDir)" Command="git commit -m '[Initialization] Initialized text-only packages%0D%0A%0D%0A[[ commit created by automation ]]'" />
   </Target>
 
 </Project>
