@@ -12,8 +12,18 @@
     // These patches are applied on top of the code synchronized into the VMR
     "patchesPath": "src/installer/src/SourceBuild/tarball/patches",
 
-    // Files on this path are synchronized with files in the root of the VMR
-    "contentPath": "src/installer/src/SourceBuild/tarball/content",
+    // Some files are copied outside of the src/ directory into other locations
+    // When files in the source paths are changed, they are automatically synchronized too
+    "additionalMappings": [
+        {
+            "source": "src/installer/src/SourceBuild/tarball/content",
+            "destination": ""
+        },
+        {
+            "source": "src/installer/eng/common",
+            "destination": "eng/common"
+        }
+    ],
 
     // These defaults are added to all mappings unless `ignoreDefaults: true` is specified
     // When no "include" filter is specified, "**/*" is used
