@@ -56,12 +56,6 @@ public class EnvironmentVariableNamesTests
     }
 
     [Theory]
-    [InlineData("os-unknown", null, Architecture.X86, true, "DOTNET_ROOT")]
-    [InlineData("os-unknown", null, Architecture.X86, false, "DOTNET_ROOT(x86)")]
-    [InlineData("os-unknown", "v5.0", Architecture.X86, true, "DOTNET_ROOT")]
-    [InlineData("os-unknown", "v5.0", Architecture.X86, false, "DOTNET_ROOT(x86)")]
-    [InlineData("os-unknown", "v6.0", Architecture.Wasm, true, "DOTNET_ROOT_WASM")]
-    [InlineData("os-unknown", "v6.0", Architecture.Wasm, false, "DOTNET_ROOT_WASM")]
     [InlineData("os-x86", null, Architecture.X86, true, "DOTNET_ROOT")]
     [InlineData("os-x86", null, Architecture.X86, false, "DOTNET_ROOT(x86)")]
     [InlineData("os-x86", "v5.0", Architecture.X86, true, "DOTNET_ROOT")]
@@ -71,12 +65,33 @@ public class EnvironmentVariableNamesTests
     [InlineData("os-x64", "v5.0", Architecture.X64, true, "DOTNET_ROOT")]
     [InlineData("os-x64", "v6.0", Architecture.X64, true, "DOTNET_ROOT_X64")]
     [InlineData("os-arm64", "v6.0", Architecture.Arm64, true, "DOTNET_ROOT_ARM64")]
+    [InlineData("os-armv6", "v6.0", Architecture.Armv6, true, "DOTNET_ROOT_ARMV6")]
+    [InlineData("os-armv6", "v6.0", Architecture.Arm64, true, null)]
     [InlineData("os-x64", "v6.0", Architecture.X86, false, null)]
-    public static void TryGetDotNetRootVariableName(string rid, string frameworkVersion, Architecture currentArchitecture, bool is64bit, string expected)
+    public static void TryGetDotNetRootVariableName_KnownArchitecture(string rid, string frameworkVersion, Architecture currentArchitecture, bool is64bit, string expected)
     {
         var parsedVersion = EnvironmentVariableNames.TryParseTargetFrameworkVersion(frameworkVersion);
-        Assert.Equal(expected, EnvironmentVariableNames.TryGetDotNetRootVariableNameImpl(rid, "", parsedVersion, currentArchitecture, is64bit));
-        Assert.Equal(expected, EnvironmentVariableNames.TryGetDotNetRootVariableNameImpl("", rid, parsedVersion, currentArchitecture, is64bit));
+        Assert.Equal(expected, EnvironmentVariableNames.TryGetDotNetRootVariableNameImpl(rid, "os-unknown", parsedVersion, currentArchitecture, is64bit));
         Assert.Equal(expected, EnvironmentVariableNames.TryGetDotNetRootVariableNameImpl(rid, "os-armv6", parsedVersion, currentArchitecture, is64bit));
+        Assert.Equal(expected, EnvironmentVariableNames.TryGetDotNetRootVariableNameImpl("os-unknown", rid, parsedVersion, currentArchitecture, is64bit));
+    }
+
+    [Theory]
+    [InlineData(null, Architecture.X86, true, "DOTNET_ROOT")]
+    [InlineData(null, Architecture.X86, false, "DOTNET_ROOT(x86)")]
+    [InlineData("v5.0", Architecture.X86, true, "DOTNET_ROOT")]
+    [InlineData("v5.0", Architecture.X86, false, "DOTNET_ROOT(x86)")]
+    [InlineData("v6.0", Architecture.X86, true, "DOTNET_ROOT_X86")]
+    [InlineData("v6.0", Architecture.X86, false, "DOTNET_ROOT_X86")]
+    [InlineData("v5.0", Architecture.X64, true, "DOTNET_ROOT")]
+    [InlineData("v6.0", Architecture.X64, true, "DOTNET_ROOT_X64")]
+    [InlineData("v6.0", Architecture.Arm64, true, "DOTNET_ROOT_ARM64")]
+    [InlineData("v6.0", Architecture.Armv6, true, "DOTNET_ROOT_ARMV6")]
+    [InlineData("v6.0", Architecture.Wasm, true, "DOTNET_ROOT_WASM")]
+    [InlineData("v6.0", Architecture.Wasm, false, "DOTNET_ROOT_WASM")]
+    public static void TryGetDotNetRootVariableName_UnknownArchitecture(string frameworkVersion, Architecture currentArchitecture, bool is64bit, string expected)
+    {
+        var parsedVersion = EnvironmentVariableNames.TryParseTargetFrameworkVersion(frameworkVersion);
+        Assert.Equal(expected, EnvironmentVariableNames.TryGetDotNetRootVariableNameImpl("os-unknown", "os-unknown", parsedVersion, currentArchitecture, is64bit));
     }
 }
