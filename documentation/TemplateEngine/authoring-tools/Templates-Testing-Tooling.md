@@ -6,6 +6,8 @@ Tooling currently uses [Verify](https://github.com/VerifyTests/Verify) as an und
 
 Engine creates a serialized version of outputs of tested scenario and compares those with stored snapshot (if any) and reports success or any found discrepancies. Snapshot created during the first run can be used as a baseline for future runs of the test scenario.
 
+Serialized snapshots are not mandatory - custom verification callback can be injected via [`CustomDirectoryVerifier`](#CustomDirectoryVerifier) which will not create nor validate any snapshot files, instead validation is expected to be performed by the injected custom logic.
+
 ## Naming of snapshots
 
 All snapshots are stored in a single folder that is by default named `Snapshots` and is located in a folder with test code (in case of API usage) or current folder (in case of CLI) usage. Location of the snapshots directory can be optionaly specified in API via [SnapshotsDirectory](#SnapshotsDirectory) parameter or in CLI via [-d|--snapshots-directory](#--snapshots-directory) option.
@@ -178,7 +180,7 @@ Configuration of the scenario run is done via `TemplateVerifierOptions` type.
 		}));
   ```
 
-- **`VerifyDirectory? CustomDirectoryVerifier`** - Delegate that performs custom verification of template output contents.
+- **<a name="CustomDirectoryVerifier"></a>`VerifyDirectory? CustomDirectoryVerifier`** - Delegate that performs custom verification of template output contents.
 
   Custom verifier can as well be defined via fluent API `WithCustomDirectoryVerifier`. Sample usage:
 
