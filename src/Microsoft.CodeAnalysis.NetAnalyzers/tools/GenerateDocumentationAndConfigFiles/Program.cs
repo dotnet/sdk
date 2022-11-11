@@ -667,6 +667,7 @@ Rule ID | Missing Help Link | Title |
             async Task<bool> createGlobalConfigFilesAsync()
             {
                 using var shippedFilesDataBuilder = ArrayBuilder<ReleaseTrackingData>.GetInstance();
+                using var unshippedFilesDataBuilder = ArrayBuilder<ReleaseTrackingData>.GetInstance();
                 using var versionsBuilder = PooledHashSet<Version>.GetInstance();
 
                 // Validate all assemblies exist on disk and can be loaded.
@@ -705,7 +706,8 @@ Rule ID | Missing Help Link | Title |
 
                     var assemblyName = Path.GetFileNameWithoutExtension(assembly);
                     var shippedFile = Path.Combine(assemblyDir, "AnalyzerReleases", assemblyName, ReleaseTrackingHelper.ShippedFileName);
-                    if (File.Exists(shippedFile))
+                    var unshippedFile = Path.Combine(assemblyDir, "AnalyzerReleases", assemblyName, ReleaseTrackingHelper.UnshippedFileName);
+                    if (File.Exists(shippedFile) && File.Exists(unshippedFile))
                     {
                         sawShippedFile = true;
 
@@ -717,6 +719,7 @@ Rule ID | Missing Help Link | Title |
 
                         try
                         {
+                            // Read shipped file
                             using var fileStream = File.OpenRead(shippedFile);
                             var sourceText = SourceText.From(fileStream);
                             var releaseTrackingData = ReleaseTrackingHelper.ReadReleaseTrackingData(shippedFile, sourceText,
@@ -725,6 +728,15 @@ Rule ID | Missing Help Link | Title |
                                 isShippedFile: true);
                             shippedFilesDataBuilder.Add(releaseTrackingData);
                             versionsBuilder.AddRange(releaseTrackingData.Versions);
+
+                            // Read unshipped file
+                            using var fileStreamUnshipped = File.OpenRead(unshippedFile);
+                            var sourceTextUnshipped = SourceText.From(fileStreamUnshipped);
+                            var releaseTrackingDataUnshipped = ReleaseTrackingHelper.ReadReleaseTrackingData(unshippedFile, sourceTextUnshipped,
+                                onDuplicateEntryInRelease: (_1, _2, _3, _4, line) => throw new Exception($"Duplicate entry in {unshippedFile} at {line.LineNumber}: '{line}'"),
+                                onInvalidEntry: (line, _2, _3, _4) => throw new Exception($"Invalid entry in {unshippedFile} at {line.LineNumber}: '{line}'"),
+                                isShippedFile: false);
+                            unshippedFilesDataBuilder.Add(releaseTrackingDataUnshipped);
                         }
 #pragma warning disable CA1031 // Do not catch general exception types
                         catch (Exception ex)
@@ -744,33 +756,49 @@ Rule ID | Missing Help Link | Title |
 
                 if (versionsBuilder.Count > 0)
                 {
-                    var shippedFilesData = shippedFilesDataBuilder.ToImmutable();
+                    var releaseTrackingData = shippedFilesDataBuilder.Concat(unshippedFilesDataBuilder).ToImmutableArray();
 
-                    // Generate global analyzer config files for each shipped version, if required.
+                    // Generate global analyzer config files for each shipped version.
                     foreach (var version in versionsBuilder)
                     {
-                        var analysisLevelVersionString = GetNormalizedVersionStringForEditorconfigFileNameSuffix(version);
-
-                        foreach (var analysisMode in Enum.GetValues(typeof(AnalysisMode)))
-                        {
-                            CreateGlobalConfig(version, analysisLevelVersionString, (AnalysisMode)analysisMode!, shippedFilesData, category: null);
-                            foreach (var category in categories)
-                            {
-                                CreateGlobalConfig(version, analysisLevelVersionString, (AnalysisMode)analysisMode!, shippedFilesData, category);
-                            }
-                        }
+                        CreateGlobalConfigsForVersion(version, isShippedVersion: true, releaseTrackingData);
                     }
+
+                    // Generate global analyzer config files for unshipped version.
+                    // See https://github.com/dotnet/roslyn-analyzers/issues/6247 for details.
+
+                    // Use 'unshippedVersion = maxShippedVersion + 1' for unshipped data.
+                    var maxShippedVersion = versionsBuilder.Max();
+                    var unshippedVersion = new Version(maxShippedVersion!.Major + 1, maxShippedVersion.Minor);
+                    CreateGlobalConfigsForVersion(unshippedVersion, isShippedVersion: false, releaseTrackingData);
                 }
 
                 return true;
 
                 // Local functions.
+                void CreateGlobalConfigsForVersion(
+                    Version version,
+                    bool isShippedVersion,
+                    ImmutableArray<ReleaseTrackingData> releaseTrackingData)
+                {
+                    var analysisLevelVersionString = GetNormalizedVersionStringForEditorconfigFileNameSuffix(version);
+
+                    foreach (var analysisMode in Enum.GetValues(typeof(AnalysisMode)))
+                    {
+                        CreateGlobalConfig(version, isShippedVersion, analysisLevelVersionString, (AnalysisMode)analysisMode!, releaseTrackingData, category: null);
+                        foreach (var category in categories!)
+                        {
+                            CreateGlobalConfig(version, isShippedVersion, analysisLevelVersionString, (AnalysisMode)analysisMode!, releaseTrackingData, category);
+                        }
+                    }
+                }
 
                 void CreateGlobalConfig(
                     Version version,
+                    bool isShippedVersion,
                     string analysisLevelVersionString,
                     AnalysisMode analysisMode,
-                    ImmutableArray<ReleaseTrackingData> shippedFilesData,
+                    ImmutableArray<ReleaseTrackingData> releaseTrackingData,
                     string? category)
                 {
                     var analysisLevelPropName = "AnalysisLevel";
@@ -793,7 +821,7 @@ Rule ID | Missing Help Link | Title |
                         analysisMode,
                         category,
                         allRulesById,
-                        (shippedFilesData, version));
+                        (releaseTrackingData, version, isShippedVersion));
                 }
 
                 static string GetNormalizedVersionStringForEditorconfigFileNameSuffix(Version version)
@@ -1125,7 +1153,7 @@ Rule ID | Missing Help Link | Title |
             AnalysisMode analysisMode,
             string? category,
             SortedList<string, DiagnosticDescriptor> sortedRulesById,
-            (ImmutableArray<ReleaseTrackingData> shippedFiles, Version version) shippedReleaseData)
+            (ImmutableArray<ReleaseTrackingData> releaseTrackingData, Version version, bool isShippedVersion) releaseTrackingDataAndVersion)
         {
             Debug.Assert(editorconfigFileName.EndsWith(".editorconfig", StringComparison.Ordinal));
 
@@ -1135,7 +1163,7 @@ Rule ID | Missing Help Link | Title |
                 analysisMode,
                 category,
                 sortedRulesById,
-                shippedReleaseData);
+                releaseTrackingDataAndVersion);
             var directory = Directory.CreateDirectory(folder);
             var editorconfigFilePath = Path.Combine(directory.FullName, editorconfigFileName.ToLowerInvariant());
             File.WriteAllText(editorconfigFilePath, text);
@@ -1148,7 +1176,7 @@ Rule ID | Missing Help Link | Title |
                 AnalysisMode analysisMode,
                 string? category,
                 SortedList<string, DiagnosticDescriptor> sortedRulesById,
-                (ImmutableArray<ReleaseTrackingData> shippedFiles, Version version)? shippedReleaseData)
+                (ImmutableArray<ReleaseTrackingData> releaseTrackingData, Version version, bool isShippedVersion)? releaseTrackingDataAndVersion)
             {
                 var result = new StringBuilder();
                 StartGlobalconfig();
@@ -1257,14 +1285,16 @@ Rule ID | Missing Help Link | Title |
                             effectiveSeverity = DiagnosticSeverity.Warning;
                         }
 
-                        if (shippedReleaseData != null)
+                        if (releaseTrackingDataAndVersion != null)
                         {
                             isEnabledByDefault = isEnabledRuleForNonDefaultAnalysisMode;
-                            var maxVersion = shippedReleaseData.Value.version;
+                            var maxVersion = releaseTrackingDataAndVersion.Value.isShippedVersion ?
+                                releaseTrackingDataAndVersion.Value.version :
+                                ReleaseTrackingHelper.UnshippedVersion;
                             var foundReleaseTrackingEntry = false;
-                            foreach (var shippedFile in shippedReleaseData.Value.shippedFiles)
+                            foreach (var releaseTrackingData in releaseTrackingDataAndVersion.Value.releaseTrackingData)
                             {
-                                if (shippedFile.TryGetLatestReleaseTrackingLine(rule.Id, maxVersion, out _, out var releaseTrackingLine))
+                                if (releaseTrackingData.TryGetLatestReleaseTrackingLine(rule.Id, maxVersion, out _, out var releaseTrackingLine))
                                 {
                                     foundReleaseTrackingEntry = true;
 
