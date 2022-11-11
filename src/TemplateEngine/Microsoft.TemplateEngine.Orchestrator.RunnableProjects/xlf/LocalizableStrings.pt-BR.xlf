@@ -112,27 +112,27 @@ Detalhes: {1}</target>
       </trans-unit>
       <trans-unit id="EvaluatorSelector_Exception_UnknownEvaluator">
         <source>Unrecognized evaluator: '{0}'.</source>
-        <target state="new">Unrecognized evaluator: '{0}'.</target>
+        <target state="translated">Avaliador não reconhecido: '{0}'.</target>
         <note>{0} - invalid evaluator value</note>
       </trans-unit>
       <trans-unit id="GeneratePortNumberConfig_Warning_InvalidHighBound">
         <source>The high port bound '{0}' is greater than the maximum allowed, '{1}' will be used instead.</source>
-        <target state="new">The high port bound '{0}' is greater than the maximum allowed, '{1}' will be used instead.</target>
+        <target state="translated">O limite de porta alta '{0}' é maior que o máximo permitido, '{1}' será usado em vez disso.</target>
         <note />
       </trans-unit>
       <trans-unit id="GeneratePortNumberConfig_Warning_InvalidLowBound">
         <source>The low port bound '{0}' is less than the minimum allowed, '{1}' will be used instead.</source>
-        <target state="new">The low port bound '{0}' is less than the minimum allowed, '{1}' will be used instead.</target>
+        <target state="translated">O limite de porta baixa '{0}' é menor do que o mínimo permitido; '{1}' será usado em vez disso.</target>
         <note />
       </trans-unit>
       <trans-unit id="GeneratePortNumberConfig_Warning_InvalidLowHighBound">
         <source>The low port bound '{0}' is greater the high port bound '{1}', the default range [{2}-{3}] will be used instead.</source>
-        <target state="new">The low port bound '{0}' is greater the high port bound '{1}', the default range [{2}-{3}] will be used instead.</target>
+        <target state="translated">O limite de porta baixa '{0}' é maior que '{1}', o intervalo padrão [{2}-{3}] será usado.</target>
         <note />
       </trans-unit>
       <trans-unit id="JoinMacroConfig_Exception_ValuePropertyIsEmpty">
         <source>Generated symbol '{0}': array '{1}' should contain JSON objects with property non-empty '{2}' when '{3}' is '{4}'.</source>
-        <target state="new">Generated symbol '{0}': array '{1}' should contain JSON objects with property non-empty '{2}' when '{3}' is '{4}'.</target>
+        <target state="translated">Símbolo gerado '{0}': a matriz '{1}' deve conter objetos JSON com a propriedade '{2}' quando '{3}' é '{4}'.</target>
         <note>{0} - name of generated symbol, {1} - the invalid property name; {2}, {3}, {4} - the property names and values.</note>
       </trans-unit>
       <trans-unit id="LocalizationModelDeserializer_Error_FailedToParse">
@@ -142,62 +142,62 @@ Detalhes: {1}</target>
       </trans-unit>
       <trans-unit id="RunnableProjectConfig_OperationSetup_UnknownForm">
         <source>The symbol '{0}': unable to find a form '{1}', the further processing of the symbol will be skipped.</source>
-        <target state="new">The symbol '{0}': unable to find a form '{1}', the further processing of the symbol will be skipped.</target>
+        <target state="translated">O símbolo '{0}': não é possível localizar um formulário '{1}', o processamento adicional do símbolo será ignorado.</target>
         <note>{0} - the name of the symbol in configuration, {1} - the name of the form in configuration.</note>
       </trans-unit>
       <trans-unit id="MacroConfig_Exception_ArrayShouldContainObjects">
         <source>Generated symbol '{0}': array '{1}' should contain JSON objects.</source>
-        <target state="new">Generated symbol '{0}': array '{1}' should contain JSON objects.</target>
+        <target state="translated">Símbolo gerado '{0}': a matriz '{1}' deve conter objetos JSON.</target>
         <note>{0} - name of generated symbol, {1} - the invalid property name.</note>
       </trans-unit>
       <trans-unit id="MacroConfig_Exception_InvalidJSON">
         <source>Generated symbol '{0}': '{1}' is not a valid JSON.</source>
-        <target state="new">Generated symbol '{0}': '{1}' is not a valid JSON.</target>
+        <target state="translated">Símbolo gerado '{0}': '{1}' não é um JSON válido.</target>
         <note>{0} - name of generated symbol, {1} - the invalid property name.</note>
       </trans-unit>
       <trans-unit id="MacroConfig_Exception_InvalidRegex">
         <source>Generated symbol '{0}': the regex pattern '{1}' is invalid.</source>
-        <target state="new">Generated symbol '{0}': the regex pattern '{1}' is invalid.</target>
+        <target state="translated">Símbolo gerado '{0}': o padrão regex '{1}' é inválido.</target>
         <note>{0} - name of generated symbol, {1} - the invalid regex pattern</note>
       </trans-unit>
       <trans-unit id="MacroConfig_Exception_MissingMandatoryProperty">
         <source>Generated symbol '{0}' of type '{1}' should have '{2}' property defined.</source>
-        <target state="new">Generated symbol '{0}' of type '{1}' should have '{2}' property defined.</target>
+        <target state="translated">O símbolo gerado '{0}' do tipo '{1}' deve ter a propriedade '{2}' definida.</target>
         <note>{0} - name of generated symbol, {1} - the generated symbol type, {2} - the missing property.</note>
       </trans-unit>
       <trans-unit id="MacroConfig_Exception_MissingValueProperty">
         <source>Generated symbol '{0}': array '{1}' should contain JSON objects with property '{2}'.</source>
-        <target state="new">Generated symbol '{0}': array '{1}' should contain JSON objects with property '{2}'.</target>
+        <target state="translated">Símbolo gerado '{0}': a matriz '{1}' deve conter objetos JSON com a propriedade '{2}'.</target>
         <note>{0} - name of generated symbol, {1} - the invalid property name; {2} - the missing property.</note>
       </trans-unit>
       <trans-unit id="MacroConfig_Exception_ValueShouldBeArray">
         <source>Generated symbol '{0}': '{1}' should be a valid JSON array.</source>
-        <target state="new">Generated symbol '{0}': '{1}' should be a valid JSON array.</target>
+        <target state="translated">Símbolo gerado '{0}': '{1}' deve ser uma matriz JSON válida.</target>
         <note>{0} - name of generated symbol, {1} - the invalid property name.</note>
       </trans-unit>
       <trans-unit id="MacroConfig_Exception_ValueShouldBeBoolean">
         <source>Generated symbol '{0}': '{1}' should be a boolean value.</source>
-        <target state="new">Generated symbol '{0}': '{1}' should be a boolean value.</target>
+        <target state="translated">Símbolo gerado '{0}': '{1}' deve ser um valor booliano.</target>
         <note>{0} - name of generated symbol, {1} - the invalid property name.</note>
       </trans-unit>
       <trans-unit id="MacroConfig_Exception_ValueShouldBeInteger">
         <source>Generated symbol '{0}': '{1}' should be an integer value.</source>
-        <target state="new">Generated symbol '{0}': '{1}' should be an integer value.</target>
+        <target state="translated">Símbolo gerado '{0}': '{1}' deve ser um valor inteiro.</target>
         <note>{0} - name of generated symbol, {1} - the invalid property name.</note>
       </trans-unit>
       <trans-unit id="MacroConfig_Exception_ValueShouldBeString">
         <source>Generated symbol '{0}': '{1}' should be a string value.</source>
-        <target state="new">Generated symbol '{0}': '{1}' should be a string value.</target>
+        <target state="translated">Símbolo gerado '{0}': '{1}' deve ser um valor de cadeia de caracteres.</target>
         <note>{0} - name of generated symbol, {1} - the invalid property name.</note>
       </trans-unit>
       <trans-unit id="MacroProcessingException_Message">
         <source>Failed to process macro '{0}' of type '{1}'.</source>
-        <target state="new">Failed to process macro '{0}' of type '{1}'.</target>
+        <target state="translated">Falha ao processar a macro '{0}' do tipo '{1}'.</target>
         <note>{0} - macro variable name, {1} - macro type (not localized).</note>
       </trans-unit>
       <trans-unit id="MacroProcessor_Warning_UnknownMacro">
         <source>Generated symbol '{0}': type '{1}' is unknown, processing is skipped.</source>
-        <target state="new">Generated symbol '{0}': type '{1}' is unknown, processing is skipped.</target>
+        <target state="translated">Símbolo gerado '{0}': o tipo '{1}' é desconhecido, processamento ignorado.</target>
         <note>{0} - macro (generated symbol) variable name, {1} - macro type (not localized).</note>
       </trans-unit>
       <trans-unit id="RunnableProjectGenerator_CannotAddImplicitChoice">

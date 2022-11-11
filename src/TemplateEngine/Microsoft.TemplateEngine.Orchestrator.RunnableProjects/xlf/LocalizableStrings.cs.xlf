@@ -112,27 +112,27 @@ Podrobnosti: {1}</target>
       </trans-unit>
       <trans-unit id="EvaluatorSelector_Exception_UnknownEvaluator">
         <source>Unrecognized evaluator: '{0}'.</source>
-        <target state="new">Unrecognized evaluator: '{0}'.</target>
+        <target state="translated">Nerozpoznané vyhodnocení: „{0}“</target>
         <note>{0} - invalid evaluator value</note>
       </trans-unit>
       <trans-unit id="GeneratePortNumberConfig_Warning_InvalidHighBound">
         <source>The high port bound '{0}' is greater than the maximum allowed, '{1}' will be used instead.</source>
-        <target state="new">The high port bound '{0}' is greater than the maximum allowed, '{1}' will be used instead.</target>
+        <target state="translated">Horní mez „{0}“ portu překračuje maximální povolenou hodnotu. Místo toho se použije „{1}“.</target>
         <note />
       </trans-unit>
       <trans-unit id="GeneratePortNumberConfig_Warning_InvalidLowBound">
         <source>The low port bound '{0}' is less than the minimum allowed, '{1}' will be used instead.</source>
-        <target state="new">The low port bound '{0}' is less than the minimum allowed, '{1}' will be used instead.</target>
+        <target state="translated">Dolní mez portu „{0}“ je menší než minimální povolená hodnota. Místo toho se použije „{1}“.</target>
         <note />
       </trans-unit>
       <trans-unit id="GeneratePortNumberConfig_Warning_InvalidLowHighBound">
         <source>The low port bound '{0}' is greater the high port bound '{1}', the default range [{2}-{3}] will be used instead.</source>
-        <target state="new">The low port bound '{0}' is greater the high port bound '{1}', the default range [{2}-{3}] will be used instead.</target>
+        <target state="translated">Dolní mez „{0}“ portu je větší než „{1}“ s vysokou mezí portu, Místo toho se použije výchozí rozsah [{2}–{3}].</target>
         <note />
       </trans-unit>
       <trans-unit id="JoinMacroConfig_Exception_ValuePropertyIsEmpty">
         <source>Generated symbol '{0}': array '{1}' should contain JSON objects with property non-empty '{2}' when '{3}' is '{4}'.</source>
-        <target state="new">Generated symbol '{0}': array '{1}' should contain JSON objects with property non-empty '{2}' when '{3}' is '{4}'.</target>
+        <target state="translated">Vygenerovaný symbol „{0}“: pole „{1}“ by měl obsahovat objekty JSON s neprázdnou vlastností „{2}“, pokud „{3}“ je „{4}“.</target>
         <note>{0} - name of generated symbol, {1} - the invalid property name; {2}, {3}, {4} - the property names and values.</note>
       </trans-unit>
       <trans-unit id="LocalizationModelDeserializer_Error_FailedToParse">
@@ -142,62 +142,62 @@ Podrobnosti: {1}</target>
       </trans-unit>
       <trans-unit id="RunnableProjectConfig_OperationSetup_UnknownForm">
         <source>The symbol '{0}': unable to find a form '{1}', the further processing of the symbol will be skipped.</source>
-        <target state="new">The symbol '{0}': unable to find a form '{1}', the further processing of the symbol will be skipped.</target>
+        <target state="translated">Symbol „{0}“: nelze najít formulář „{1}“, další zpracování symbolu bude přeskočeno.</target>
         <note>{0} - the name of the symbol in configuration, {1} - the name of the form in configuration.</note>
       </trans-unit>
       <trans-unit id="MacroConfig_Exception_ArrayShouldContainObjects">
         <source>Generated symbol '{0}': array '{1}' should contain JSON objects.</source>
-        <target state="new">Generated symbol '{0}': array '{1}' should contain JSON objects.</target>
+        <target state="translated">Vygenerovaný symbol „{0}“: pole „{1}“ by mělo obsahovat objekty JSON.</target>
         <note>{0} - name of generated symbol, {1} - the invalid property name.</note>
       </trans-unit>
       <trans-unit id="MacroConfig_Exception_InvalidJSON">
         <source>Generated symbol '{0}': '{1}' is not a valid JSON.</source>
-        <target state="new">Generated symbol '{0}': '{1}' is not a valid JSON.</target>
+        <target state="translated">Vygenerovaný symbol „{0}“: „{1}“ není platný JSON.</target>
         <note>{0} - name of generated symbol, {1} - the invalid property name.</note>
       </trans-unit>
       <trans-unit id="MacroConfig_Exception_InvalidRegex">
         <source>Generated symbol '{0}': the regex pattern '{1}' is invalid.</source>
-        <target state="new">Generated symbol '{0}': the regex pattern '{1}' is invalid.</target>
+        <target state="translated">Vygenerovaný symbol „{0}“: Vzor regulárního výrazu „{1}“ je neplatný.</target>
         <note>{0} - name of generated symbol, {1} - the invalid regex pattern</note>
       </trans-unit>
       <trans-unit id="MacroConfig_Exception_MissingMandatoryProperty">
         <source>Generated symbol '{0}' of type '{1}' should have '{2}' property defined.</source>
-        <target state="new">Generated symbol '{0}' of type '{1}' should have '{2}' property defined.</target>
+        <target state="translated">Vygenerovaný symbol „{0}“ typu „{1}“ by měl mít definovanou vlastnost „{2}“.</target>
         <note>{0} - name of generated symbol, {1} - the generated symbol type, {2} - the missing property.</note>
       </trans-unit>
       <trans-unit id="MacroConfig_Exception_MissingValueProperty">
         <source>Generated symbol '{0}': array '{1}' should contain JSON objects with property '{2}'.</source>
-        <target state="new">Generated symbol '{0}': array '{1}' should contain JSON objects with property '{2}'.</target>
+        <target state="translated">Vygenerovaný symbol „{0}“: pole „{1}“ by mělo obsahovat objekty JSON s vlastností „{2}“.</target>
         <note>{0} - name of generated symbol, {1} - the invalid property name; {2} - the missing property.</note>
       </trans-unit>
       <trans-unit id="MacroConfig_Exception_ValueShouldBeArray">
         <source>Generated symbol '{0}': '{1}' should be a valid JSON array.</source>
-        <target state="new">Generated symbol '{0}': '{1}' should be a valid JSON array.</target>
+        <target state="translated">Vygenerovaný symbol „{0}“: „{1}“ by mělo být platné pole JSON.</target>
         <note>{0} - name of generated symbol, {1} - the invalid property name.</note>
       </trans-unit>
       <trans-unit id="MacroConfig_Exception_ValueShouldBeBoolean">
         <source>Generated symbol '{0}': '{1}' should be a boolean value.</source>
-        <target state="new">Generated symbol '{0}': '{1}' should be a boolean value.</target>
+        <target state="translated">Vygenerovaný symbol „{0}“: „{1}“ by měl být logická hodnota.</target>
         <note>{0} - name of generated symbol, {1} - the invalid property name.</note>
       </trans-unit>
       <trans-unit id="MacroConfig_Exception_ValueShouldBeInteger">
         <source>Generated symbol '{0}': '{1}' should be an integer value.</source>
-        <target state="new">Generated symbol '{0}': '{1}' should be an integer value.</target>
+        <target state="translated">Vygenerovaný symbol „{0}“: „{1}“ by měl být celočíselná hodnota.</target>
         <note>{0} - name of generated symbol, {1} - the invalid property name.</note>
       </trans-unit>
       <trans-unit id="MacroConfig_Exception_ValueShouldBeString">
         <source>Generated symbol '{0}': '{1}' should be a string value.</source>
-        <target state="new">Generated symbol '{0}': '{1}' should be a string value.</target>
+        <target state="translated">Vygenerovaný symbol „{0}“: „{1}“ by měl být řetězcová hodnota.</target>
         <note>{0} - name of generated symbol, {1} - the invalid property name.</note>
       </trans-unit>
       <trans-unit id="MacroProcessingException_Message">
         <source>Failed to process macro '{0}' of type '{1}'.</source>
-        <target state="new">Failed to process macro '{0}' of type '{1}'.</target>
+        <target state="translated">Zpracování makra „{0}“ typu „{1}“ se nezdařilo.</target>
         <note>{0} - macro variable name, {1} - macro type (not localized).</note>
       </trans-unit>
       <trans-unit id="MacroProcessor_Warning_UnknownMacro">
         <source>Generated symbol '{0}': type '{1}' is unknown, processing is skipped.</source>
-        <target state="new">Generated symbol '{0}': type '{1}' is unknown, processing is skipped.</target>
+        <target state="translated">Vygenerovaný symbol „{0}“: typ „{1}“ je neznámý, zpracování se přeskočí.</target>
         <note>{0} - macro (generated symbol) variable name, {1} - macro type (not localized).</note>
       </trans-unit>
       <trans-unit id="RunnableProjectGenerator_CannotAddImplicitChoice">
