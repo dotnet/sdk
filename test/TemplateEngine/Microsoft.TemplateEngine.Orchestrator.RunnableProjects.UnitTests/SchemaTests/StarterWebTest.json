@@ -1,4 +1,5 @@
 {
+  "$schema": "https://json.schemastore.org/template.json",
   "author": "Microsoft",
   "classifications": [ "Web", "MVC" ],
   "name": "ASP.NET Core Web App (Model-View-Controller)",

@@ -1,7 +1,9 @@
-﻿{
+{
+  "$schema": "https://json.schemastore.org/template.json",
   "author": "Test Asset",
   "classifications": [ "Test Asset" ],
   "name": "TemplateWithPortsAndCoalesce",
+  "tags": { "type": "project" },
   "generatorVersions": "[1.0.0.0-*)",
   "groupIdentity": "TestAssets.TemplateWithPortsAndCoalesce",
   "precedence": "100",

@@ -1,4 +1,5 @@
-﻿{
+{
+  "$schema": "https://json.schemastore.org/template.json",
   "author": "Test Asset",
   "classifications": [ "Test Asset" ],
   "name": "TemplateWithConditionalParameters",

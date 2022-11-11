@@ -1,4 +1,5 @@
 {
+  "$schema": "https://json.schemastore.org/template.json",
   "author": "Mads Kristensen",
   "classifications": [ "Web", "MVC" ],
   "name": "ASP.NET Core MVC Basic",

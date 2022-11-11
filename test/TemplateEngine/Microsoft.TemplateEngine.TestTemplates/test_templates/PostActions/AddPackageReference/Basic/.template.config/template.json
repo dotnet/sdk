@@ -1,7 +1,9 @@
 {
+  "$schema": "https://json.schemastore.org/template.json",
   "author": "Test Asset",
   "classifications": [ "Test Asset" ],
   "name": "TestAssets.PostActions.AddPackageReference.Basic",
+  "tags": { "type": "project" },
   "generatorVersions": "[1.0.0.0-*)",
   "groupIdentity": "TestAssets.PostActions.AddPackageReference.Basic",
   "precedence": "100",
@@ -10,12 +12,12 @@
   "sourceName": "Basic",
   "postActions": [
     {
-      "Description": "Adding Reference to Newtonsoft.Json NuGet package",
-      "ActionId": "B17581D1-C5C9-4489-8F0A-004BE667B814",
-      "ContinueOnError": "false",
-      "ManualInstructions": [
+      "description": "Adding Reference to Newtonsoft.Json NuGet package",
+      "actionId": "B17581D1-C5C9-4489-8F0A-004BE667B814",
+      "continueOnError": false,
+      "manualInstructions": [
         {
-          "Text": "Manually add the reference to  Newtonsoft.Json to your project file"
+          "text": "Manually add the reference to  Newtonsoft.Json to your project file"
         }
       ],
       "args": {

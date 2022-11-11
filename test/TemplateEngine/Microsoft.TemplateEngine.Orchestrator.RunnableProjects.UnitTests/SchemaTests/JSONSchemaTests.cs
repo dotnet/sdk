@@ -4,6 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using Microsoft.TemplateEngine.Tests;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Schema;
@@ -11,7 +13,7 @@ using Xunit;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.SchemaTests
 {
-    public class JSONSchemaTests
+    public class JSONSchemaTests : TestBase
     {
         [Theory(DisplayName = nameof(IsJSONSchemaValid))]
         [InlineData(@"SchemaTests/BasicTest.json")]
@@ -40,6 +42,25 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Schem
                     }
                 }
             }
+        }
+
+        private static readonly string JsonLocation = Path.Combine(".template.config", "template.json");
+
+        public static IEnumerable<object?[]> GetAllTemplates()
+        {
+            return Directory.EnumerateFiles(TestTemplatesLocation, "template.json", SearchOption.AllDirectories)
+                .Where(s => s.Contains(".template.config"))
+                .Select(s => s.Remove(s.Length - JsonLocation.Length).Remove(0, TestTemplatesLocation.Length).Trim(Path.DirectorySeparatorChar))
+                .Select(s => new object?[] { s });
+        }
+
+        [Theory]
+        [MemberData(nameof(GetAllTemplates))]
+        public void TestAllTestTemplatesHaveValidJson(string testTemplateName)
+        {
+            string testFile = Path.Combine(TestTemplatesLocation, testTemplateName, JsonLocation);
+
+            IsJSONSchemaValid(testFile);
         }
     }
 }
