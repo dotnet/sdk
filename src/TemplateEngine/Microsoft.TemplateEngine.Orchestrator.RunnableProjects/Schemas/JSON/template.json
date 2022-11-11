@@ -1362,7 +1362,13 @@
               "required": ["type"],
               "properties": {
                 "type": {
-                  "enum": ["os", "host", "workload", "sdk-version", "project-capability"]
+                  "enum": [
+                    "os",
+                    "host",
+                    "workload",
+                    "sdk-version",
+                    "project-capability"
+                  ]
                 }
               }
             },
@@ -1488,7 +1494,6 @@
               }
             }
           }
-
         ]
       }
     }
