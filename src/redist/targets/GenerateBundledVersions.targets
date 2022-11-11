@@ -77,7 +77,6 @@
       <_NETStandardLibraryPackageVersion>$(NETStandardLibraryRefPackageVersion)</_NETStandardLibraryPackageVersion>
       <_NETCorePlatformsPackageVersion>$(MicrosoftNETCorePlatformsPackageVersion)</_NETCorePlatformsPackageVersion>
 
-      <!-- TODO: Once .NET 7.0 has released, update these version numbers to 7.0.0 -->
       <_NET70RuntimePackVersion>7.0.$(VersionFeature70)</_NET70RuntimePackVersion>
       <_NET70TargetingPackVersion>7.0.$(VersionFeature70)</_NET70TargetingPackVersion>
       <_WindowsDesktop70RuntimePackVersion>7.0.$(VersionFeature70)</_WindowsDesktop70RuntimePackVersion>
