@@ -20,7 +20,7 @@ namespace Microsoft.DotNet.Watcher.Tools
         private const string ExitingMessage = "Exiting";
         private const string WatchStartedMessage = "dotnet watch 🚀 Started";
         private const string WatchExitedMessage = "dotnet watch ⌚ Exited";
-        private const string WatchExitedWithErrorMessage = "dotnet watch ❌ Exited";
+        private const string WatchErrorOutputEmoji = "❌";
         private const string WaitingForFileChangeMessage = "dotnet watch ⏳ Waiting for a file to change";
         private const string WatchFileChanged = "dotnet watch ⌚ File changed:";
 
@@ -51,7 +51,8 @@ namespace Microsoft.DotNet.Watcher.Tools
         public async Task<string> AssertOutputLineStartsWith(string expectedPrefix)
         {
             var line = await Process.GetOutputLineAsync(
-                m => m.StartsWith(expectedPrefix, StringComparison.Ordinal) || m.StartsWith(WatchExitedWithErrorMessage, StringComparison.Ordinal));
+                success: line => line.StartsWith(expectedPrefix, StringComparison.Ordinal),
+                failure: line => line.Contains(WatchErrorOutputEmoji, StringComparison.Ordinal));
 
             Assert.StartsWith(expectedPrefix, line, StringComparison.Ordinal);
 

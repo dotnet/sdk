@@ -76,18 +76,22 @@ namespace Microsoft.DotNet.Watcher.Tools
             WriteTestOutput($"{DateTime.Now}: process started: '{_process.StartInfo.FileName} {_process.StartInfo.Arguments}'");
         }
 
-        public async Task<string> GetOutputLineAsync(Predicate<string> predicate)
+        public async Task<string> GetOutputLineAsync(Predicate<string> success, Predicate<string> failure)
         {
-            while (!_source.Completion.IsCompleted)
+            bool failed = false;
+
+            while (!_source.Completion.IsCompleted && !failed)
             {
                 while (await _source.OutputAvailableAsync(CancellationToken.None))
                 {
                     var line = await _source.ReceiveAsync(CancellationToken.None);
                     _lines.Add(line);
-                    if (predicate(line))
+                    if (success(line))
                     {
                         return line;
                     }
+
+                    failed |= failure(line);
                 }
             }
 
