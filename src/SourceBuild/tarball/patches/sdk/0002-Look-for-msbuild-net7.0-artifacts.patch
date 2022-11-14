@@ -3,8 +3,7 @@ From: Logan Bussell <loganbussell@microsoft.com>
 Date: Tue, 20 Sep 2022 10:10:29 -0700
 Subject: [PATCH] Look for msbuild net7.0 artifacts
 
-This patch can be removed once https://github.com/dotnet/msbuild/pull/7790 flows
-into dotnet/sdk, at which point that repo will need this change.
+Backport: https://github.com/dotnet/sdk/pull/28425
 ---
  .../Microsoft.DotNet.Cli.Utils.csproj                           | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
