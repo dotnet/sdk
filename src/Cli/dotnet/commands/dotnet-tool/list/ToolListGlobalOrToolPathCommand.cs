@@ -36,7 +36,7 @@ namespace Microsoft.DotNet.Tools.Tool.List
 
         public override int Execute()
         {
-            var toolPathOption = _parseResult.GetValueForOption(ToolListCommandParser.ToolPathOption);
+            var toolPathOption = _parseResult.GetValue(ToolListCommandParser.ToolPathOption);
 
             DirectoryPath? toolPath = null;
             if (!string.IsNullOrWhiteSpace(toolPathOption))

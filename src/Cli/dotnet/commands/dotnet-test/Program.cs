@@ -203,7 +203,7 @@ namespace Microsoft.DotNet.Tools.Test
 
             if (parseResult.HasOption(TestCommandParser.DiagOption))
             {
-                artifactsPostProcessArgs.Add($"--diag:{parseResult.GetValueForOption(TestCommandParser.DiagOption)}");
+                artifactsPostProcessArgs.Add($"--diag:{parseResult.GetValue(TestCommandParser.DiagOption)}");
             }
 
             try
@@ -249,7 +249,7 @@ namespace Microsoft.DotNet.Tools.Test
                 return;
             }
 
-            foreach (string env in parseResult.GetValueForOption(option))
+            foreach (string env in parseResult.GetValue(option))
             {
                 string name = env;
                 string value = string.Empty;

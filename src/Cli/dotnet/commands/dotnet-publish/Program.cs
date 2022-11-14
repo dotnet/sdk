@@ -49,7 +49,7 @@ namespace Microsoft.DotNet.Tools.Publish
                 "--property:_IsPublishing=true"
             };
 
-            IEnumerable<string> slnOrProjectArgs = parseResult.GetValueForArgument(PublishCommandParser.SlnOrProjectArgument);
+            IEnumerable<string> slnOrProjectArgs = parseResult.GetValue(PublishCommandParser.SlnOrProjectArgument);
 
             CommonOptions.ValidateSelfContainedOptions(parseResult.HasOption(PublishCommandParser.SelfContainedOption),
                 parseResult.HasOption(PublishCommandParser.NoSelfContainedOption));
