@@ -23,7 +23,8 @@ namespace Microsoft.TemplateEngine.Authoring.Tasks.Utilities
             _loggingHelper = loggingHelperToWrap;
         }
 
-        public IDisposable BeginScope<TState>(TState state) => Scope;
+        public IDisposable? BeginScope<TState>(TState state) where TState : notnull
+            => Scope;
 
         public bool IsEnabled(LogLevel logLevel) => true;
 
