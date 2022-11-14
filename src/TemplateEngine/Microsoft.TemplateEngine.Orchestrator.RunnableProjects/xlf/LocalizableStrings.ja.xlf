@@ -112,27 +112,27 @@ Details: {1}</source>
       </trans-unit>
       <trans-unit id="EvaluatorSelector_Exception_UnknownEvaluator">
         <source>Unrecognized evaluator: '{0}'.</source>
-        <target state="new">Unrecognized evaluator: '{0}'.</target>
+        <target state="translated">認識されないエバリュエーター: '{0}'。</target>
         <note>{0} - invalid evaluator value</note>
       </trans-unit>
       <trans-unit id="GeneratePortNumberConfig_Warning_InvalidHighBound">
         <source>The high port bound '{0}' is greater than the maximum allowed, '{1}' will be used instead.</source>
-        <target state="new">The high port bound '{0}' is greater than the maximum allowed, '{1}' will be used instead.</target>
+        <target state="translated">上限ポート バウンド '{0}' が許可されている最大値を超えています。代わりに '{1}' が使用されます。</target>
         <note />
       </trans-unit>
       <trans-unit id="GeneratePortNumberConfig_Warning_InvalidLowBound">
         <source>The low port bound '{0}' is less than the minimum allowed, '{1}' will be used instead.</source>
-        <target state="new">The low port bound '{0}' is less than the minimum allowed, '{1}' will be used instead.</target>
+        <target state="translated">下限ポート バインド '{0}' が許可されている最小値を下回っています。代わりに '{1}' が使用されます。</target>
         <note />
       </trans-unit>
       <trans-unit id="GeneratePortNumberConfig_Warning_InvalidLowHighBound">
         <source>The low port bound '{0}' is greater the high port bound '{1}', the default range [{2}-{3}] will be used instead.</source>
-        <target state="new">The low port bound '{0}' is greater the high port bound '{1}', the default range [{2}-{3}] will be used instead.</target>
+        <target state="translated">下限ポート バインド '{0}' が上限ポート バインド '{1}'を超えています。代わりに既定の範囲 [{2}-{3}] が使用されます。</target>
         <note />
       </trans-unit>
       <trans-unit id="JoinMacroConfig_Exception_ValuePropertyIsEmpty">
         <source>Generated symbol '{0}': array '{1}' should contain JSON objects with property non-empty '{2}' when '{3}' is '{4}'.</source>
-        <target state="new">Generated symbol '{0}': array '{1}' should contain JSON objects with property non-empty '{2}' when '{3}' is '{4}'.</target>
+        <target state="translated">生成されたシンボル '{0}': 配列 '{1}' には、'{3}' が '{4}' の場合に、空でない '{2}' プロパティを持つ JSON オブジェクトを含める必要があります。</target>
         <note>{0} - name of generated symbol, {1} - the invalid property name; {2}, {3}, {4} - the property names and values.</note>
       </trans-unit>
       <trans-unit id="LocalizationModelDeserializer_Error_FailedToParse">
@@ -142,62 +142,62 @@ Details: {1}</source>
       </trans-unit>
       <trans-unit id="RunnableProjectConfig_OperationSetup_UnknownForm">
         <source>The symbol '{0}': unable to find a form '{1}', the further processing of the symbol will be skipped.</source>
-        <target state="new">The symbol '{0}': unable to find a form '{1}', the further processing of the symbol will be skipped.</target>
+        <target state="translated">シンボル '{0}': フォーム '{1}'が見つからないため、シンボルの処理はスキップされます。</target>
         <note>{0} - the name of the symbol in configuration, {1} - the name of the form in configuration.</note>
       </trans-unit>
       <trans-unit id="MacroConfig_Exception_ArrayShouldContainObjects">
         <source>Generated symbol '{0}': array '{1}' should contain JSON objects.</source>
-        <target state="new">Generated symbol '{0}': array '{1}' should contain JSON objects.</target>
+        <target state="translated">生成されたシンボル '{0}': 配列 '{1}' には、JSON オブジェクトを含める必要があります。</target>
         <note>{0} - name of generated symbol, {1} - the invalid property name.</note>
       </trans-unit>
       <trans-unit id="MacroConfig_Exception_InvalidJSON">
         <source>Generated symbol '{0}': '{1}' is not a valid JSON.</source>
-        <target state="new">Generated symbol '{0}': '{1}' is not a valid JSON.</target>
+        <target state="translated">生成されたシンボル '{0}': '{1}' は有効な JSON ではありません。</target>
         <note>{0} - name of generated symbol, {1} - the invalid property name.</note>
       </trans-unit>
       <trans-unit id="MacroConfig_Exception_InvalidRegex">
         <source>Generated symbol '{0}': the regex pattern '{1}' is invalid.</source>
-        <target state="new">Generated symbol '{0}': the regex pattern '{1}' is invalid.</target>
+        <target state="translated">生成されたシンボル '{0}': 正規表現パターン '{1}' が無効です。</target>
         <note>{0} - name of generated symbol, {1} - the invalid regex pattern</note>
       </trans-unit>
       <trans-unit id="MacroConfig_Exception_MissingMandatoryProperty">
         <source>Generated symbol '{0}' of type '{1}' should have '{2}' property defined.</source>
-        <target state="new">Generated symbol '{0}' of type '{1}' should have '{2}' property defined.</target>
+        <target state="translated">型 '{1}' の生成されたシンボル '{0}' には、'{2}' プロパティを定義する必要があります。</target>
         <note>{0} - name of generated symbol, {1} - the generated symbol type, {2} - the missing property.</note>
       </trans-unit>
       <trans-unit id="MacroConfig_Exception_MissingValueProperty">
         <source>Generated symbol '{0}': array '{1}' should contain JSON objects with property '{2}'.</source>
-        <target state="new">Generated symbol '{0}': array '{1}' should contain JSON objects with property '{2}'.</target>
+        <target state="translated">生成されたシンボル '{0}': 配列 '{1}' には、プロパティ '{2}' を持つ JSON オブジェクトを含める必要があります。</target>
         <note>{0} - name of generated symbol, {1} - the invalid property name; {2} - the missing property.</note>
       </trans-unit>
       <trans-unit id="MacroConfig_Exception_ValueShouldBeArray">
         <source>Generated symbol '{0}': '{1}' should be a valid JSON array.</source>
-        <target state="new">Generated symbol '{0}': '{1}' should be a valid JSON array.</target>
+        <target state="translated">生成されたシンボル '{0}': '{1}' は有効な JSON 配列である必要があります。</target>
         <note>{0} - name of generated symbol, {1} - the invalid property name.</note>
       </trans-unit>
       <trans-unit id="MacroConfig_Exception_ValueShouldBeBoolean">
         <source>Generated symbol '{0}': '{1}' should be a boolean value.</source>
-        <target state="new">Generated symbol '{0}': '{1}' should be a boolean value.</target>
+        <target state="translated">生成されたシンボル '{0}': '{1}' はブール値である必要があります。</target>
         <note>{0} - name of generated symbol, {1} - the invalid property name.</note>
       </trans-unit>
       <trans-unit id="MacroConfig_Exception_ValueShouldBeInteger">
         <source>Generated symbol '{0}': '{1}' should be an integer value.</source>
-        <target state="new">Generated symbol '{0}': '{1}' should be an integer value.</target>
+        <target state="translated">生成されたシンボル '{0}': '{1}' は整数値である必要があります。</target>
         <note>{0} - name of generated symbol, {1} - the invalid property name.</note>
       </trans-unit>
       <trans-unit id="MacroConfig_Exception_ValueShouldBeString">
         <source>Generated symbol '{0}': '{1}' should be a string value.</source>
-        <target state="new">Generated symbol '{0}': '{1}' should be a string value.</target>
+        <target state="translated">生成されたシンボル '{0}': '{1}' は文字列値である必要があります。</target>
         <note>{0} - name of generated symbol, {1} - the invalid property name.</note>
       </trans-unit>
       <trans-unit id="MacroProcessingException_Message">
         <source>Failed to process macro '{0}' of type '{1}'.</source>
-        <target state="new">Failed to process macro '{0}' of type '{1}'.</target>
+        <target state="translated">種類が '{1}' のマクロ '{0}'を処理できませんでした。</target>
         <note>{0} - macro variable name, {1} - macro type (not localized).</note>
       </trans-unit>
       <trans-unit id="MacroProcessor_Warning_UnknownMacro">
         <source>Generated symbol '{0}': type '{1}' is unknown, processing is skipped.</source>
-        <target state="new">Generated symbol '{0}': type '{1}' is unknown, processing is skipped.</target>
+        <target state="translated">生成されたシンボル '{0}': 型 '{1}' が不明です。処理はスキップされました。</target>
         <note>{0} - macro (generated symbol) variable name, {1} - macro type (not localized).</note>
       </trans-unit>
       <trans-unit id="RunnableProjectGenerator_CannotAddImplicitChoice">

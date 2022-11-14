@@ -112,27 +112,27 @@ Details: {1}</source>
       </trans-unit>
       <trans-unit id="EvaluatorSelector_Exception_UnknownEvaluator">
         <source>Unrecognized evaluator: '{0}'.</source>
-        <target state="new">Unrecognized evaluator: '{0}'.</target>
+        <target state="translated">无法识别的计算器: "{0}" 。</target>
         <note>{0} - invalid evaluator value</note>
       </trans-unit>
       <trans-unit id="GeneratePortNumberConfig_Warning_InvalidHighBound">
         <source>The high port bound '{0}' is greater than the maximum allowed, '{1}' will be used instead.</source>
-        <target state="new">The high port bound '{0}' is greater than the maximum allowed, '{1}' will be used instead.</target>
+        <target state="translated">高端口绑定 "{0}" 大于允许的最大值，将改用 "{1}"。</target>
         <note />
       </trans-unit>
       <trans-unit id="GeneratePortNumberConfig_Warning_InvalidLowBound">
         <source>The low port bound '{0}' is less than the minimum allowed, '{1}' will be used instead.</source>
-        <target state="new">The low port bound '{0}' is less than the minimum allowed, '{1}' will be used instead.</target>
+        <target state="translated">低端口绑定 "{0}" 小于允许的最小值，将改用 "{1}"。</target>
         <note />
       </trans-unit>
       <trans-unit id="GeneratePortNumberConfig_Warning_InvalidLowHighBound">
         <source>The low port bound '{0}' is greater the high port bound '{1}', the default range [{2}-{3}] will be used instead.</source>
-        <target state="new">The low port bound '{0}' is greater the high port bound '{1}', the default range [{2}-{3}] will be used instead.</target>
+        <target state="translated">低端口绑定 "{0}" 大于高端口绑定 "{1}" ，将改用默认范围 [{2}-{3}]。</target>
         <note />
       </trans-unit>
       <trans-unit id="JoinMacroConfig_Exception_ValuePropertyIsEmpty">
         <source>Generated symbol '{0}': array '{1}' should contain JSON objects with property non-empty '{2}' when '{3}' is '{4}'.</source>
-        <target state="new">Generated symbol '{0}': array '{1}' should contain JSON objects with property non-empty '{2}' when '{3}' is '{4}'.</target>
+        <target state="translated">生成的符号 "{0}": 当 "{3}" 为 "{4}" 时，数组 "{1}" 应包含属性为非空 "{2}" 的 JSON 对象。</target>
         <note>{0} - name of generated symbol, {1} - the invalid property name; {2}, {3}, {4} - the property names and values.</note>
       </trans-unit>
       <trans-unit id="LocalizationModelDeserializer_Error_FailedToParse">
@@ -142,62 +142,62 @@ Details: {1}</source>
       </trans-unit>
       <trans-unit id="RunnableProjectConfig_OperationSetup_UnknownForm">
         <source>The symbol '{0}': unable to find a form '{1}', the further processing of the symbol will be skipped.</source>
-        <target state="new">The symbol '{0}': unable to find a form '{1}', the further processing of the symbol will be skipped.</target>
+        <target state="translated">符号 "{0}": 找不到窗体 "{1}"，将跳过该符号的进一步处理。</target>
         <note>{0} - the name of the symbol in configuration, {1} - the name of the form in configuration.</note>
       </trans-unit>
       <trans-unit id="MacroConfig_Exception_ArrayShouldContainObjects">
         <source>Generated symbol '{0}': array '{1}' should contain JSON objects.</source>
-        <target state="new">Generated symbol '{0}': array '{1}' should contain JSON objects.</target>
+        <target state="translated">生成的符号 "{0}": 数组 "{1}" 应包含 JSON 对象。</target>
         <note>{0} - name of generated symbol, {1} - the invalid property name.</note>
       </trans-unit>
       <trans-unit id="MacroConfig_Exception_InvalidJSON">
         <source>Generated symbol '{0}': '{1}' is not a valid JSON.</source>
-        <target state="new">Generated symbol '{0}': '{1}' is not a valid JSON.</target>
+        <target state="translated">生成的符号 "{0}": "{1}" 不是有效的 JSON。</target>
         <note>{0} - name of generated symbol, {1} - the invalid property name.</note>
       </trans-unit>
       <trans-unit id="MacroConfig_Exception_InvalidRegex">
         <source>Generated symbol '{0}': the regex pattern '{1}' is invalid.</source>
-        <target state="new">Generated symbol '{0}': the regex pattern '{1}' is invalid.</target>
+        <target state="translated">生成的符号 "{0}": 正则表达式模式 "{1}" 无效。</target>
         <note>{0} - name of generated symbol, {1} - the invalid regex pattern</note>
       </trans-unit>
       <trans-unit id="MacroConfig_Exception_MissingMandatoryProperty">
         <source>Generated symbol '{0}' of type '{1}' should have '{2}' property defined.</source>
-        <target state="new">Generated symbol '{0}' of type '{1}' should have '{2}' property defined.</target>
+        <target state="translated">类型 "{1}" 的生成的符号 "{0}" 应定义 "{2}" 属性。</target>
         <note>{0} - name of generated symbol, {1} - the generated symbol type, {2} - the missing property.</note>
       </trans-unit>
       <trans-unit id="MacroConfig_Exception_MissingValueProperty">
         <source>Generated symbol '{0}': array '{1}' should contain JSON objects with property '{2}'.</source>
-        <target state="new">Generated symbol '{0}': array '{1}' should contain JSON objects with property '{2}'.</target>
+        <target state="translated">生成的符号 "{0}": 数组 "{1}" 应包含属性为 "{2}" 的 JSON 对象。</target>
         <note>{0} - name of generated symbol, {1} - the invalid property name; {2} - the missing property.</note>
       </trans-unit>
       <trans-unit id="MacroConfig_Exception_ValueShouldBeArray">
         <source>Generated symbol '{0}': '{1}' should be a valid JSON array.</source>
-        <target state="new">Generated symbol '{0}': '{1}' should be a valid JSON array.</target>
+        <target state="translated">生成的符号 "{0}": "{1}" 应为有效的 JSON 数组。</target>
         <note>{0} - name of generated symbol, {1} - the invalid property name.</note>
       </trans-unit>
       <trans-unit id="MacroConfig_Exception_ValueShouldBeBoolean">
         <source>Generated symbol '{0}': '{1}' should be a boolean value.</source>
-        <target state="new">Generated symbol '{0}': '{1}' should be a boolean value.</target>
+        <target state="translated">生成的符号 "{0}": "{1}" 应为布尔值。</target>
         <note>{0} - name of generated symbol, {1} - the invalid property name.</note>
       </trans-unit>
       <trans-unit id="MacroConfig_Exception_ValueShouldBeInteger">
         <source>Generated symbol '{0}': '{1}' should be an integer value.</source>
-        <target state="new">Generated symbol '{0}': '{1}' should be an integer value.</target>
+        <target state="translated">生成的符号 "{0}": "{1}" 应为整数值。</target>
         <note>{0} - name of generated symbol, {1} - the invalid property name.</note>
       </trans-unit>
       <trans-unit id="MacroConfig_Exception_ValueShouldBeString">
         <source>Generated symbol '{0}': '{1}' should be a string value.</source>
-        <target state="new">Generated symbol '{0}': '{1}' should be a string value.</target>
+        <target state="translated">生成的符号 "{0}": "{1}" 应为字符串值。</target>
         <note>{0} - name of generated symbol, {1} - the invalid property name.</note>
       </trans-unit>
       <trans-unit id="MacroProcessingException_Message">
         <source>Failed to process macro '{0}' of type '{1}'.</source>
-        <target state="new">Failed to process macro '{0}' of type '{1}'.</target>
+        <target state="translated">无法处理类型 "{1}" 的宏 "{0}" 。</target>
         <note>{0} - macro variable name, {1} - macro type (not localized).</note>
       </trans-unit>
       <trans-unit id="MacroProcessor_Warning_UnknownMacro">
         <source>Generated symbol '{0}': type '{1}' is unknown, processing is skipped.</source>
-        <target state="new">Generated symbol '{0}': type '{1}' is unknown, processing is skipped.</target>
+        <target state="translated">生成的符号 "{0}": 类型 "{1}" 未知，已跳过处理。</target>
         <note>{0} - macro (generated symbol) variable name, {1} - macro type (not localized).</note>
       </trans-unit>
       <trans-unit id="RunnableProjectGenerator_CannotAddImplicitChoice">
