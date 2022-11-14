@@ -93,7 +93,7 @@ namespace Microsoft.DotNet.Cli
         {
             ArgumentHelpName = LocalizableStrings.CrashDumpTypeArgumentName,
         }
-        .FromAmong(new string[] { "full", "mini" })
+        .AcceptOnlyFromAmong(new string[] { "full", "mini" })
         .ForwardAsMany(o => new[] { "-property:VSTestBlameCrash=true", $"-property:VSTestBlameCrashDumpType={o}" });
 
         public static readonly Option<bool> BlameCrashAlwaysOption = new ForwardedOption<bool>("--blame-crash-collect-always", LocalizableStrings.CmdBlameCrashCollectAlwaysDescription)
@@ -106,7 +106,7 @@ namespace Microsoft.DotNet.Cli
         {
             ArgumentHelpName = LocalizableStrings.HangDumpTypeArgumentName
         }
-            .FromAmong(new string[] { "full", "mini", "none" })
+            .AcceptOnlyFromAmong(new string[] { "full", "mini", "none" })
             .ForwardAsMany(o => new[] { "-property:VSTestBlameHang=true", $"-property:VSTestBlameHangDumpType={o}" });
 
         public static readonly Option<string> BlameHangTimeoutOption = new ForwardedOption<string>("--blame-hang-timeout", LocalizableStrings.CmdBlameHangTimeoutDescription)
