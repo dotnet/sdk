@@ -254,6 +254,12 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
             return matchingAssemblies;
         }
 
+        /// <inheritdoc />
+        public IEnumerable<MetadataReference> GetMetadataReferences()
+        {
+            return _cSharpCompilation.References;
+        }
+
         private IReadOnlyList<MetadataReference> LoadFromPaths(IEnumerable<string> paths, ImmutableHashSet<string>? referenceAssemblyNamesToIgnore = null)
         {
             List<MetadataReference> result = new();
