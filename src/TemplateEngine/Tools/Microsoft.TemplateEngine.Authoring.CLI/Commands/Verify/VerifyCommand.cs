@@ -112,19 +112,19 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.Commands.Verify
         internal static VerifyCommandArgs ExtractArguments(VerifyCommand verifyCommand, ParseResult parseResult)
         {
             return new VerifyCommandArgs(
-                templateName: parseResult.GetValueForArgument(verifyCommand._templateNameArgument),
-                templateSpecificArgs: parseResult.GetValueForOption(verifyCommand._remainingArguments),
-                templatePath: parseResult.GetValueForOption(verifyCommand._templatePathOption),
-                snapshotsDirectory: parseResult.GetValueForOption(verifyCommand._snapshotsDirectoryOption),
-                scenarioDistinguisher: parseResult.GetValueForOption(verifyCommand._scenarioNameOption),
-                outputDirectory: parseResult.GetValueForOption(verifyCommand._templateOutputPathOption),
-                disableDiffTool: parseResult.GetValueForOption(verifyCommand._disableDiffToolOption),
-                disableDefaultVerificationExcludePatterns: parseResult.GetValueForOption(verifyCommand._disableDefaultExcludePatternsOption),
-                verificationExcludePatterns: parseResult.GetValueForOption(verifyCommand._excludePatternOption),
-                verificationIncludePatterns: parseResult.GetValueForOption(verifyCommand._includePatternOption),
-                verifyCommandOutput: parseResult.GetValueForOption(verifyCommand._verifyCommandOutputOption),
-                isCommandExpectedToFail: parseResult.GetValueForOption(verifyCommand._isCommandExpectedToFailOption),
-                uniqueForOptions: parseResult.GetValueForOption(verifyCommand._uniqueForOption));
+                templateName: parseResult.GetValue(verifyCommand._templateNameArgument),
+                templateSpecificArgs: parseResult.GetValue(verifyCommand._remainingArguments),
+                templatePath: parseResult.GetValue(verifyCommand._templatePathOption),
+                snapshotsDirectory: parseResult.GetValue(verifyCommand._snapshotsDirectoryOption),
+                scenarioDistinguisher: parseResult.GetValue(verifyCommand._scenarioNameOption),
+                outputDirectory: parseResult.GetValue(verifyCommand._templateOutputPathOption),
+                disableDiffTool: parseResult.GetValue(verifyCommand._disableDiffToolOption),
+                disableDefaultVerificationExcludePatterns: parseResult.GetValue(verifyCommand._disableDefaultExcludePatternsOption),
+                verificationExcludePatterns: parseResult.GetValue(verifyCommand._excludePatternOption),
+                verificationIncludePatterns: parseResult.GetValue(verifyCommand._includePatternOption),
+                verifyCommandOutput: parseResult.GetValue(verifyCommand._verifyCommandOutputOption),
+                isCommandExpectedToFail: parseResult.GetValue(verifyCommand._isCommandExpectedToFailOption),
+                uniqueForOptions: parseResult.GetValue(verifyCommand._uniqueForOption));
         }
 
         protected override async Task<int> ExecuteAsync(VerifyCommandArgs args, CancellationToken cancellationToken = default)

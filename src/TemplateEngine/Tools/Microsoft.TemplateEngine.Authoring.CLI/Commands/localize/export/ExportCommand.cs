@@ -224,10 +224,10 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.Commands
             protected override ExportCommandArgs GetBoundValue(BindingContext bindingContext)
             {
                 return new ExportCommandArgs(
-                    templatePath: bindingContext.ParseResult.GetValueForArgument(_exportCommand._templatePathArgument),
-                    language: bindingContext.ParseResult.GetValueForOption(_exportCommand._languageOption),
-                    recursive: bindingContext.ParseResult.GetValueForOption(_exportCommand._recursiveOption),
-                    dryRun: bindingContext.ParseResult.GetValueForOption(_exportCommand._dryRunOption));
+                    templatePath: bindingContext.ParseResult.GetValue(_exportCommand._templatePathArgument),
+                    language: bindingContext.ParseResult.GetValue(_exportCommand._languageOption),
+                    recursive: bindingContext.ParseResult.GetValue(_exportCommand._recursiveOption),
+                    dryRun: bindingContext.ParseResult.GetValue(_exportCommand._dryRunOption));
             }
         }
     }
