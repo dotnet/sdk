@@ -43,7 +43,7 @@ See the [Unified Build roadmap](https://github.com/dotnet/arcade/blob/main/Docum
 ### Supported platforms
 
 The VMR only supports .NET 8.0 and higher. Additionally, source-build currently supports Linux only.  
-It is expected that Mac and Window will be supported in the .NET 9.0.
+It is expected that Mac and Windows will be supported in the .NET 9.0.
 
 For the latest information about Source-Build support for new .NET versions, please check our [GitHub Discussions page](https://github.com/dotnet/source-build/discussions) for announcements.
 
