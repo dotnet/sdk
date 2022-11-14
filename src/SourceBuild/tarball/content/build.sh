@@ -17,7 +17,7 @@ usage() {
 
 SCRIPT_ROOT="$(cd -P "$( dirname "$0" )" && pwd)"
 
-MSBUILD_ARGUMENTS=("/flp:v=detailed")
+MSBUILD_ARGUMENTS=("-flp:v=detailed")
 CUSTOM_REF_PACKAGES_DIR=''
 CUSTOM_PACKAGES_DIR=''
 alternateTarget=false
@@ -32,18 +32,18 @@ while :; do
     lowerI="$(echo $1 | awk '{print tolower($0)}')"
     case $lowerI in
         --clean-while-building)
-            MSBUILD_ARGUMENTS+=( "/p:CleanWhileBuilding=true")
+            MSBUILD_ARGUMENTS+=( "-p:CleanWhileBuilding=true")
             ;;
         --online)
-            MSBUILD_ARGUMENTS+=( "/p:BuildWithOnlineSources=true")
+            MSBUILD_ARGUMENTS+=( "-p:BuildWithOnlineSources=true")
             ;;
         --poison)
-            MSBUILD_ARGUMENTS+=( "/p:EnablePoison=true")
+            MSBUILD_ARGUMENTS+=( "-p:EnablePoison=true")
             ;;
         --run-smoke-test)
             alternateTarget=true
             runningSmokeTests=true
-            MSBUILD_ARGUMENTS+=( "/t:RunSmokeTest" )
+            MSBUILD_ARGUMENTS+=( "-t:RunSmokeTest" )
             ;;
         --with-packages)
             CUSTOM_PACKAGES_DIR="$(cd -P "$2" && pwd)"
@@ -85,9 +85,9 @@ done
 
 if [ "$CUSTOM_PACKAGES_DIR" != "" ]; then
   if [ "$runningSmokeTests" == "true" ]; then
-    MSBUILD_ARGUMENTS+=( "/p:CustomSourceBuiltPackagesPath=$CUSTOM_PACKAGES_DIR" )
+    MSBUILD_ARGUMENTS+=( "-p:CustomSourceBuiltPackagesPath=$CUSTOM_PACKAGES_DIR" )
   else
-    MSBUILD_ARGUMENTS+=( "/p:CustomPrebuiltSourceBuiltPackagesPath=$CUSTOM_PACKAGES_DIR" )
+    MSBUILD_ARGUMENTS+=( "-p:CustomPrebuiltSourceBuiltPackagesPath=$CUSTOM_PACKAGES_DIR" )
   fi
 fi
 
@@ -174,12 +174,14 @@ export NUGET_PACKAGES=$restoredPackagesDir/
 
 LogDateStamp=$(date +"%m%d%H%M%S")
 
-if [ "$alternateTarget" == "true" ]; then
-  "$CLI_ROOT/dotnet" $CLI_ROOT/sdk/$SDK_VERSION/MSBuild.dll "$SCRIPT_ROOT/build.proj" /bl:$SCRIPT_ROOT/artifacts/log/Debug/BuildTests_$LogDateStamp.binlog /fileLoggerParameters:LogFile=$SCRIPT_ROOT/artifacts/logs/BuildTests_$LogDateStamp.log /clp:v=m ${MSBUILD_ARGUMENTS[@]} "$@"
-else
-  $CLI_ROOT/dotnet $CLI_ROOT/sdk/$SDK_VERSION/MSBuild.dll /bl:$SCRIPT_ROOT/artifacts/log/Debug/BuildXPlatTasks_$LogDateStamp.binlog /fileLoggerParameters:LogFile=$SCRIPT_ROOT/artifacts/logs/BuildXPlatTasks_$LogDateStamp.log $SCRIPT_ROOT/tools-local/init-build.proj /t:PrepareOfflineLocalTools ${MSBUILD_ARGUMENTS[@]} "$@"
-  # kill off the MSBuild server so that on future invocations we pick up our custom SDK Resolver
-  $CLI_ROOT/dotnet build-server shutdown
+"$CLI_ROOT/dotnet" build-server shutdown
 
-  $CLI_ROOT/dotnet $CLI_ROOT/sdk/$SDK_VERSION/MSBuild.dll /bl:$SCRIPT_ROOT/artifacts/log/Debug/Build_$LogDateStamp.binlog /fileLoggerParameters:LogFile=$SCRIPT_ROOT/artifacts/logs/Build_$LogDateStamp.log $SCRIPT_ROOT/build.proj ${MSBUILD_ARGUMENTS[@]} "$@"
+if [ "$alternateTarget" == "true" ]; then
+  "$CLI_ROOT/dotnet" msbuild "$SCRIPT_ROOT/build.proj" -bl:$SCRIPT_ROOT/artifacts/log/Debug/BuildTests_$LogDateStamp.binlog -flp:LogFile=$SCRIPT_ROOT/artifacts/logs/BuildTests_$LogDateStamp.log -clp:v=m ${MSBUILD_ARGUMENTS[@]} "$@"
+else
+  "$CLI_ROOT/dotnet" msbuild "$SCRIPT_ROOT/tools-local/init-build.proj" -bl:$SCRIPT_ROOT/artifacts/log/Debug/BuildXPlatTasks_$LogDateStamp.binlog -flp:LogFile=$SCRIPT_ROOT/artifacts/logs/BuildXPlatTasks_$LogDateStamp.log -t:PrepareOfflineLocalTools ${MSBUILD_ARGUMENTS[@]} "$@"
+  # kill off the MSBuild server so that on future invocations we pick up our custom SDK Resolver
+  "$CLI_ROOT/dotnet" build-server shutdown
+
+  "$CLI_ROOT/dotnet" msbuild "$SCRIPT_ROOT/build.proj" -bl:$SCRIPT_ROOT/artifacts/log/Debug/Build_$LogDateStamp.binlog -flp:LogFile=$SCRIPT_ROOT/artifacts/logs/Build_$LogDateStamp.log ${MSBUILD_ARGUMENTS[@]} "$@"
 fi

@@ -9,6 +9,7 @@
     <BuildCommandArgs>$(BuildCommandArgs) --no-build-repo-tasks</BuildCommandArgs>
     <BuildCommandArgs>$(BuildCommandArgs) --no-build-nodejs</BuildCommandArgs>
     <BuildCommandArgs>$(BuildCommandArgs) /p:PublishCompressedFilesPathPrefix=$(SourceBuiltAspNetCoreRuntime)</BuildCommandArgs>
+    <BuildCommandArgs>$(BuildCommandArgs) /p:PortableBuild=false /p:TargetRuntimeIdentifier=$(TargetRid)</BuildCommandArgs>
     <!-- Update to 1.0.0 version of reference assemblies which are built in SBRP instead of the preview.2 version
          included by Arcade -->
     <BuildCommandArgs>$(BuildCommandArgs) /p:MicrosoftNetFrameworkReferenceAssembliesVersion=1.0.0</BuildCommandArgs>
@@ -21,6 +22,11 @@
 
     <GlobalJsonFile>$(ProjectDirectory)global.json</GlobalJsonFile>
     <NuGetConfigFile>$(ProjectDirectory)NuGet.config</NuGetConfigFile>
+
+    <!-- CS0618 - Caused from deprecated IOperation.Children in
+                  Microsoft.CodeAnalysis 4.3.0, but aspnetcore references version 4.2.0.
+                  Requires https://github.com/dotnet/source-build/issues/2482 -->
+    <RepoNoWarns>CS0618</RepoNoWarns>
   </PropertyGroup>
 
   <ItemGroup>
