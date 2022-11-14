@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
+// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Xunit;
@@ -26,7 +26,6 @@ namespace Microsoft.DotNet.GenAPI.Tests
 
         public CSharpFileBuilderTests()
         {
-
             var compositeFilter = new CompositeFilter()
                 .Add<ImplicitSymbolsFilter>()
                 .Add(new SymbolAccessibilityBasedFilter(true));
@@ -48,7 +47,6 @@ namespace Microsoft.DotNet.GenAPI.Tests
             IAssemblySymbol assemblySymbol = SymbolFactory.GetAssemblyFromSyntax(original);
             _csharpFileBuilder.WriteAssembly(assemblySymbol);
 
-
             StringBuilder stringBuilder = _stringWriter.GetStringBuilder();
             var resultedString = stringBuilder.ToString();
 
@@ -57,6 +55,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
             SyntaxTree resultedSyntaxTree = GetSyntaxTree(resultedString);
             SyntaxTree expectedSyntaxTree = GetSyntaxTree(expected);
 
+            /// compare SyntaxTree and not string representation
             Assert.True(resultedSyntaxTree.IsEquivalentTo(expectedSyntaxTree),
                 $"Expected:\n{expected}\nResulted:\n{resultedString}");
         }
