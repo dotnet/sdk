@@ -17,10 +17,13 @@ parameters:
   poolInternalAmd64:
     name: NetCore1ESPool-Svc-Internal
     demands: ImageOverride -equals Build.Ubuntu.1804.Amd64
+  poolInternalAmd64PR:
+    name: NetCore1ESPool-Internal-XL
+    demands: ImageOverride -equals Build.Ubuntu.1804.Amd64
   poolInternalArm64:
     name: Docker-Linux-Arm-Internal
   poolPublicAmd64:
-    name: NetCore-Svc-Public
+    name: NetCore-Public-XL
     demands: ImageOverride -equals Build.Ubuntu.1804.Amd64.Open
 
 jobs:
@@ -68,24 +71,24 @@ jobs:
       ${{ if eq(variables['System.TeamProject'], 'public') }}:
         ${{ parameters.poolPublicAmd64 }}
       ${{ if eq(variables['System.TeamProject'], 'internal') }}:
-        ${{ parameters.poolInternalAmd64 }}
+        ${{ if in(variables['Build.Reason'], 'PullRequest') }}:
+          ${{ parameters.poolInternalAmd64PR }}
+        ${{ else }}:
+          ${{ parameters.poolInternalAmd64 }}
 
-- ${{ if eq(variables['System.TeamProject'], 'internal') }}:
+- ${{ if and(eq(variables['System.TeamProject'], 'internal'), ne(variables['Build.Reason'], 'PullRequest')) }}:
   - template: /src/SourceBuild/Arcade/eng/common/templates/job/source-build-build-tarball.yml
     parameters:
       architecture: arm64
       dependsOn: ${{ parameters.dependsOn }}
-      ${{ if in(variables['Build.Reason'], 'PullRequest') }}:
-        excludeSdkContentTests: true
       installerBuildResourceId: ${{ parameters.installerBuildResourceId }}
       matrix:
-        ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
-          Debian11-Offline:
-            _BootstrapPrep: true
-            _Container: ${{ parameters.debian11Arm64Container }}
-            _EnablePoison: false
-            _ExcludeOmniSharpTests: false
-            _RunOnline: false
+        Debian11-Offline:
+          _BootstrapPrep: true
+          _Container: ${{ parameters.debian11Arm64Container }}
+          _EnablePoison: false
+          _ExcludeOmniSharpTests: false
+          _RunOnline: false
       name: Build_Tarball_arm64
       pool: ${{ parameters.poolInternalArm64 }}
 
