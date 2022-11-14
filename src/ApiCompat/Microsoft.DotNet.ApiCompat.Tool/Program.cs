@@ -19,13 +19,17 @@ namespace Microsoft.DotNet.ApiCompat.Tool
             // Important: Keep parameters exposed in sync with the msbuild task frontend.
 
             // Global options
-            Option<string?> suppressionFileOption = new("--suppression-file",
-                "The path to a compatibility suppression file.")
-            {
-                ArgumentHelpName = "file"
-            };
             Option<bool> generateSuppressionFileOption = new("--generate-suppression-file",
                 "If true, generates a compatibility suppression file.");
+            Option<string[]> suppressionFilesOption = new("--suppression-file",
+                "The path to one or more suppression files to read from.")
+            {
+                AllowMultipleArgumentsPerToken= true,
+                Arity = ArgumentArity.ZeroOrMore,
+                ArgumentHelpName = "file"
+            };
+            Option<string?> suppressionOutputFileOption = new("--suppression-output-file",
+                "The path to a suppression file to write to when --generate-suppression-file is true.");
             Option<string?> noWarnOption = new("--noWarn",
                 "A NoWarn string that allows to disable specific rules.");
             Option<string?> roslynAssembliesPathOption = new("--roslyn-assemblies-path",
@@ -99,8 +103,9 @@ namespace Microsoft.DotNet.ApiCompat.Tool
             {
                 TreatUnmatchedTokensAsErrors = true
             };
-            rootCommand.AddGlobalOption(suppressionFileOption);
             rootCommand.AddGlobalOption(generateSuppressionFileOption);
+            rootCommand.AddGlobalOption(suppressionFilesOption);
+            rootCommand.AddGlobalOption(suppressionOutputFileOption);
             rootCommand.AddGlobalOption(noWarnOption);
             rootCommand.AddGlobalOption(roslynAssembliesPathOption);
             rootCommand.AddGlobalOption(verbosityOption);
@@ -126,7 +131,8 @@ namespace Microsoft.DotNet.ApiCompat.Tool
 
                 MessageImportance verbosity = context.ParseResult.GetValue(verbosityOption);
                 bool generateSuppressionFile = context.ParseResult.GetValue(generateSuppressionFileOption);
-                string? suppressionFile = context.ParseResult.GetValue(suppressionFileOption);
+                string[]? suppressionFiles = context.ParseResult.GetValue(suppressionFilesOption);
+                string? suppressionOutputFile = context.ParseResult.GetValue(suppressionOutputFileOption);
                 string? noWarn = context.ParseResult.GetValue(noWarnOption);
                 bool enableRuleAttributesMustMatch = context.ParseResult.GetValue(enableRuleAttributesMustMatchOption);
                 string[]? excludeAttributesFiles = context.ParseResult.GetValue(excludeAttributesFilesOption);
@@ -144,7 +150,8 @@ namespace Microsoft.DotNet.ApiCompat.Tool
                 Func<ISuppressionEngine, ConsoleCompatibilityLogger> logFactory = (suppressionEngine) => new(suppressionEngine, verbosity);
                 ValidateAssemblies.Run(logFactory,
                     generateSuppressionFile,
-                    suppressionFile,
+                    suppressionFiles,
+                    suppressionOutputFile,
                     noWarn,
                     enableRuleAttributesMustMatch,
                     excludeAttributesFiles,
@@ -222,7 +229,8 @@ namespace Microsoft.DotNet.ApiCompat.Tool
 
                 MessageImportance verbosity = context.ParseResult.GetValue(verbosityOption);
                 bool generateSuppressionFile = context.ParseResult.GetValue(generateSuppressionFileOption);
-                string? suppressionFile = context.ParseResult.GetValue(suppressionFileOption);
+                string[]? suppressionFiles = context.ParseResult.GetValue(suppressionFilesOption);
+                string? suppressionOutputFile = context.ParseResult.GetValue(suppressionOutputFileOption);
                 string? noWarn = context.ParseResult.GetValue(noWarnOption);
                 bool enableRuleAttributesMustMatch = context.ParseResult.GetValue(enableRuleAttributesMustMatchOption);
                 string[]? excludeAttributesFiles = context.ParseResult.GetValue(excludeAttributesFilesOption);
@@ -241,7 +249,8 @@ namespace Microsoft.DotNet.ApiCompat.Tool
                 Func<ISuppressionEngine, ConsoleCompatibilityLogger> logFactory = (suppressionEngine) => new(suppressionEngine, verbosity);
                 ValidatePackage.Run(logFactory,
                     generateSuppressionFile,
-                    suppressionFile,
+                    suppressionFiles,
+                    suppressionOutputFile,
                     noWarn,
                     enableRuleAttributesMustMatch,
                     excludeAttributesFiles,
