@@ -312,7 +312,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                 """);
         }
 
-        [Fact (Skip = "https://github.com/dotnet/arcade/issues/11615")]
+        [Fact]
         public void TestPartiallySpecifiedGenericClassGeneration()
         {
             RunTest(original: """
@@ -328,16 +328,16 @@ namespace Microsoft.DotNet.GenAPI.Tests
                 expected: """
                 namespace Foo
                 {
-                    public partial class BaseNodeMultiple<T, U> { }
+                    public partial class BaseNodeMultiple <T, U> { }
                 
-                    public partial class Node4<T> : BaseNodeMultiple<T, int> { }
+                    public partial class Node4 <T> : BaseNodeMultiple<T, int> { }
                 
-                    public partial class Node5<T, U> : BaseNodeMultiple<T, U> { }
+                    public partial class Node5 <T, U> : BaseNodeMultiple<T, U> { }
                 }
                 """);
         }
 
-        [Fact (Skip = "https://github.com/dotnet/arcade/issues/11615")]
+        [Fact]
         public void TestGenericClassWitConstraintsParameterGeneration()
         {
             RunTest(original: """
@@ -352,10 +352,10 @@ namespace Microsoft.DotNet.GenAPI.Tests
                 expected: """
                 namespace Foo
                 {
-                    public partial class SuperKeyType<K, V, U>
+                    public partial class SuperKeyType <K, V, U> where V : new()
                         where U : System.IComparable<U>
-                        where V : new()
-                    { }
+                    {
+                    }
                 }
                 """);
         }
@@ -416,13 +416,13 @@ namespace Microsoft.DotNet.GenAPI.Tests
             RunTest(original: """
                 namespace Foo
                 {
-                    public delegate bool SyntaxReceiverCreator();
+                    public delegate bool SyntaxReceiverCreator(int a, bool b);
                 }
                 """,
                 expected: """
                 namespace Foo
                 {
-                    public sealed delegate bool SyntaxReceiverCreator();
+                    public sealed delegate bool SyntaxReceiverCreator(int a, bool b);
                 }
                 """);
         }
