@@ -1,0 +1,5 @@
+﻿StdErr:
+Mandatory option '--paramA,  paramB' is missing for the template 'TemplateWithRequiredParameters'.
+
+For details on the exit code, refer to https://aka.ms/templating-exit-codes#102
+StdOut:

@@ -1028,6 +1028,15 @@ namespace Microsoft.TemplateEngine.Cli {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The operation was cancelled..
+        /// </summary>
+        internal static string OperationCancelled {
+            get {
+                return ResourceManager.GetString("OperationCancelled", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Error during synchronization with the Optional SDK Workloads..
         /// </summary>
         internal static string OptionalWorkloadsSyncFailed {

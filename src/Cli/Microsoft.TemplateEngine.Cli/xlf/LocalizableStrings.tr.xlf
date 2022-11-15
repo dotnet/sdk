@@ -548,6 +548,11 @@ The header is followed by the list of parameters and their errors (might be seve
         <target state="translated">Yüklü şablon yok.</target>
         <note />
       </trans-unit>
+      <trans-unit id="OperationCancelled">
+        <source>The operation was cancelled.</source>
+        <target state="new">The operation was cancelled.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="OptionalWorkloadsSyncFailed">
         <source>Error during synchronization with the Optional SDK Workloads.</source>
         <target state="translated">İsteğe Bağlı SDK İş Yükleri ile eşitleme sırasında hata oluştu.</target>

@@ -548,6 +548,11 @@ The header is followed by the list of parameters and their errors (might be seve
         <target state="translated">Nenhum modelo instalado.</target>
         <note />
       </trans-unit>
+      <trans-unit id="OperationCancelled">
+        <source>The operation was cancelled.</source>
+        <target state="new">The operation was cancelled.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="OptionalWorkloadsSyncFailed">
         <source>Error during synchronization with the Optional SDK Workloads.</source>
         <target state="translated">Erro durante a sincronização com as Cargas de trabalho do SDK Opcionais.</target>

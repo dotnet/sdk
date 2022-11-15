@@ -207,6 +207,8 @@ namespace Microsoft.TemplateEngine.Cli
 
                     return HandlePostActions(instantiateResult, templateArgs);
                 case CreationResultStatus.CreateFailed:
+                case CreationResultStatus.TemplateIssueDetected:
+                case CreationResultStatus.CondtionsEvaluationMismatch:
                     Reporter.Error.WriteLine(string.Format(LocalizableStrings.CreateFailed, resultTemplateName, instantiateResult.ErrorMessage).Bold().Red());
                     return NewCommandStatus.CreateFailed;
                 //this is unlikely case as these errors are caught on parse level now
@@ -275,6 +277,9 @@ namespace Microsoft.TemplateEngine.Cli
                     }
                     Reporter.Error.WriteLine(LocalizableStrings.RerunCommandAndPassForceToCreateAnyway.Bold().Red());
                     return NewCommandStatus.CannotCreateOutputFile;
+                case CreationResultStatus.Cancelled:
+                    Reporter.Error.WriteLine(LocalizableStrings.OperationCancelled.Bold().Red());
+                    return NewCommandStatus.Cancelled;
                 default:
                     return NewCommandStatus.Unexpected;
             }

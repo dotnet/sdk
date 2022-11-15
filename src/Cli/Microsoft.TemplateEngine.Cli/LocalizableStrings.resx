@@ -806,4 +806,7 @@ The header is followed by the list of parameters and their errors (might be seve
   <data name="Generic_CommandHints_List" xml:space="preserve">
     <value>To list installed templates, run:</value>
   </data>
+  <data name="OperationCancelled" xml:space="preserve">
+    <value>The operation was cancelled.</value>
+  </data>
 </root>
