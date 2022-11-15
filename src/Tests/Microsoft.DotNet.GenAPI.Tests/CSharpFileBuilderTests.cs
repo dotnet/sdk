@@ -29,13 +29,10 @@ namespace Microsoft.DotNet.GenAPI.Tests
             var compositeFilter = new CompositeFilter()
                 .Add<ImplicitSymbolsFilter>()
                 .Add(new SymbolAccessibilityBasedFilter(true));
-            _csharpFileBuilder = new CSharpFileBuilder(compositeFilter, _stringWriter, _csharpSyntaxWriter, GetMetadataReferences());
+            _csharpFileBuilder = new CSharpFileBuilder(compositeFilter, _stringWriter, _csharpSyntaxWriter, MetadataReferences);
         }
 
-        private static IEnumerable<MetadataReference> GetMetadataReferences()
-        {
-            return new List<MetadataReference> { MetadataReference.CreateFromFile(typeof(Object).Assembly!.Location!) };
-        }
+        private static IEnumerable<MetadataReference> MetadataReferences { get => new List<MetadataReference> { MetadataReference.CreateFromFile(typeof(Object).Assembly!.Location!) }; }
 
         private static SyntaxTree GetSyntaxTree(string syntax)
         {
