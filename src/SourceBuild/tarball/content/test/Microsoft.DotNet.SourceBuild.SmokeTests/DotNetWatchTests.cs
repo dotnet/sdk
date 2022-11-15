@@ -13,7 +13,7 @@ public class DotNetWatchTests : SmokeTests
 {
     public DotNetWatchTests(ITestOutputHelper outputHelper) : base(outputHelper) { }
 
-    [Fact]
+    //[Fact] - Renable with https://github.com/dotnet/source-build/issues/3123
     public void WatchTests()
     {
         string projectDirectory = DotNetHelper.ExecuteNew(DotNetTemplate.Console.GetName(), nameof(DotNetWatchTests));
