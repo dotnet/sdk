@@ -1919,6 +1919,15 @@ namespace Microsoft.TemplateEngine.Cli {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Template generation ended with unexpected result: &apos;{0}&apos;. Details: {1}.
+        /// </summary>
+        internal static string UnexpectedResult {
+            get {
+                return ResourceManager.GetString("UnexpectedResult", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Unknown Change.
         /// </summary>
         internal static string UnknownChangeKind {

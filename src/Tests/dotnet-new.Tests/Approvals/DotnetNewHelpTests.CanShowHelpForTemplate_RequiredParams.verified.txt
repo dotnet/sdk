@@ -20,7 +20,7 @@ Template options:
                            Required: *true*
                            Type: string
                            Default: def
-  -p:p, --paramС <paramС>  parameter C description
+  -p:p, --paramC <paramC>  parameter C description
                            Required if: enableC == true
                            Type: string
                            Default: def
