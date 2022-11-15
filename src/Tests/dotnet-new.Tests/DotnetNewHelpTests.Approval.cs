@@ -183,8 +183,9 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         }
 
         [Theory]
-        [InlineData("basic -h")]
-        public Task CanShowHelpForTemplateWhenRequiredParamIsMissed(string command)
+        [InlineData("basic -h", "Mandatory option 'param' is missing for the template 'Basic Template'.")]
+        [InlineData("basic2 -h", "Mandatory option 'param' is missing for the template 'Basic Template'.")]
+        public Task CanShowHelpForTemplateWhenRequiredParamIsMissed(string command, string expectedMessage)
         {
             string workingDirectory = CreateTemporaryFolder();
             InstallTestTemplate("TemplateResolution/MissedRequiredParameter/BasicTemplate1", _log, _fixture.HomeDirectory, workingDirectory);
@@ -198,7 +199,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .Should()
                 .ExitWith(0)
                 .And.NotHaveStdErr()
-                .And.HaveStdOutContaining("Mandatory option 'param' is missing for the template 'Basic Template'.");
+                .And.HaveStdOutContaining(expectedMessage);
 
             return Verify(commandResult.StdOut);
         }
