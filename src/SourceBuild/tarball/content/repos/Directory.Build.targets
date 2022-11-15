@@ -85,11 +85,11 @@
       NewText="/p:RepoRoot=&quot;$repo_root/&quot;" />
   </Target>
 
-  <Target Name="AddNoWarns"
+  <Target Name="AddCommonNoWarns"
           BeforeTargets="Build"
           Condition=" EXISTS('$(ProjectDirectory)Directory.Build.props') OR EXISTS('$(ProjectDirectory)src/Directory.Build.props') "
           Inputs="$(MSBuildProjectFullPath)"
-          Outputs="$(RepoCompletedSemaphorePath)AddNoWarns.complete" >
+          Outputs="$(RepoCompletedSemaphorePath)AddCommonNoWarns.complete" >
 
     <!-- Don't warn on warnings that can be generated in source-build
          but not necessarily in repo builds. 
@@ -104,7 +104,7 @@
       <OldText><![CDATA[</Project>]]></OldText>
       <NewText>
         <![CDATA[  <PropertyGroup>
-    <NoWarn>%24(NoWarn);NU5104;NU1603;$(RepoNoWarns)</NoWarn>
+    <NoWarn>%24(NoWarn);NU5104;NU1603</NoWarn>
   </PropertyGroup>
 </Project>]]>
       </NewText>
