@@ -666,8 +666,7 @@ Rule ID | Missing Help Link | Title |
 
             async Task<bool> createGlobalConfigFilesAsync()
             {
-                using var shippedFilesDataBuilder = ArrayBuilder<ReleaseTrackingData>.GetInstance();
-                using var unshippedFilesDataBuilder = ArrayBuilder<ReleaseTrackingData>.GetInstance();
+                using var releaseTrackingFilesDataBuilder = ArrayBuilder<ReleaseTrackingData>.GetInstance();
                 using var versionsBuilder = PooledHashSet<Version>.GetInstance();
 
                 // Validate all assemblies exist on disk and can be loaded.
@@ -707,7 +706,18 @@ Rule ID | Missing Help Link | Title |
                     var assemblyName = Path.GetFileNameWithoutExtension(assembly);
                     var shippedFile = Path.Combine(assemblyDir, "AnalyzerReleases", assemblyName, ReleaseTrackingHelper.ShippedFileName);
                     var unshippedFile = Path.Combine(assemblyDir, "AnalyzerReleases", assemblyName, ReleaseTrackingHelper.UnshippedFileName);
-                    if (File.Exists(shippedFile) && File.Exists(unshippedFile))
+                    var shippedFileExists = File.Exists(shippedFile);
+                    var unshippedFileExists = File.Exists(unshippedFile);
+
+                    if (shippedFileExists ^ unshippedFileExists)
+                    {
+                        var existingFile = shippedFileExists ? shippedFile : unshippedFile;
+                        var nonExistingFile = shippedFileExists ? unshippedFile : shippedFile;
+                        await Console.Error.WriteLineAsync($"Expected both '{shippedFile}' and '{unshippedFile}' to exist or not exist, but '{existingFile}' exists and '{nonExistingFile}' does not exist.").ConfigureAwait(false);
+                        return false;
+                    }
+
+                    if (shippedFileExists)
                     {
                         sawShippedFile = true;
 
@@ -726,7 +736,7 @@ Rule ID | Missing Help Link | Title |
                                 onDuplicateEntryInRelease: (_1, _2, _3, _4, line) => throw new Exception($"Duplicate entry in {shippedFile} at {line.LineNumber}: '{line}'"),
                                 onInvalidEntry: (line, _2, _3, _4) => throw new Exception($"Invalid entry in {shippedFile} at {line.LineNumber}: '{line}'"),
                                 isShippedFile: true);
-                            shippedFilesDataBuilder.Add(releaseTrackingData);
+                            releaseTrackingFilesDataBuilder.Add(releaseTrackingData);
                             versionsBuilder.AddRange(releaseTrackingData.Versions);
 
                             // Read unshipped file
@@ -736,7 +746,7 @@ Rule ID | Missing Help Link | Title |
                                 onDuplicateEntryInRelease: (_1, _2, _3, _4, line) => throw new Exception($"Duplicate entry in {unshippedFile} at {line.LineNumber}: '{line}'"),
                                 onInvalidEntry: (line, _2, _3, _4) => throw new Exception($"Invalid entry in {unshippedFile} at {line.LineNumber}: '{line}'"),
                                 isShippedFile: false);
-                            unshippedFilesDataBuilder.Add(releaseTrackingDataUnshipped);
+                            releaseTrackingFilesDataBuilder.Add(releaseTrackingDataUnshipped);
                         }
 #pragma warning disable CA1031 // Do not catch general exception types
                         catch (Exception ex)
@@ -756,7 +766,7 @@ Rule ID | Missing Help Link | Title |
 
                 if (versionsBuilder.Count > 0)
                 {
-                    var releaseTrackingData = shippedFilesDataBuilder.Concat(unshippedFilesDataBuilder).ToImmutableArray();
+                    var releaseTrackingData = releaseTrackingFilesDataBuilder.ToImmutableArray();
 
                     // Generate global analyzer config files for each shipped version.
                     foreach (var version in versionsBuilder)
