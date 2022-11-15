@@ -1,5 +1,5 @@
 ﻿StdErr:
-Mandatory option '--paramC' is missing for the template 'TemplateWithRequiredParameters'.
+Missing mandatory option(s) for the template 'TemplateWithRequiredParameters': '--paramC'.
 
 For details on the exit code, refer to https://aka.ms/templating-exit-codes#102
 StdOut:

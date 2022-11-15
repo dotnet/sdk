@@ -711,6 +711,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         [InlineData("TestAssets.TemplateWithRequiredParameters", "no-params")]
         [InlineData("TestAssets.TemplateWithRequiredParameters|--paramA|valA", "onlyA")]
         [InlineData("TestAssets.TemplateWithRequiredParameters|--paramA|valA|--paramB|valB|--enableC|true", "onlyAB")]
+        [InlineData("TestAssets.TemplateWithRequiredParameters|--enableC|true", "no-params-C-enabled")]
         public Task CannotInstantiateTemplate_WithoutRequiredParams(string parameters, string setName)
         {
             string workingDirectory = CreateTemporaryFolder();

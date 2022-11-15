@@ -983,7 +983,7 @@ namespace Microsoft.TemplateEngine.Cli {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Mandatory option &apos;{0}&apos; is missing for the template &apos;{1}&apos;..
+        ///   Looks up a localized string similar to Missing mandatory option(s) for the template &apos;{1}&apos;: {0}..
         /// </summary>
         internal static string MissingRequiredParameter {
             get {
