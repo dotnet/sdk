@@ -223,12 +223,8 @@
     <ExtraPackageVersionPropsPackageInfo Include="MicrosoftNETCoreAppRuntimePackageVersion" Version="$(runtimeOutputPackageVersion)" />
     <ExtraPackageVersionPropsPackageInfo Include="MicrosoftNETCoreAppRuntimeVersion" Version="$(runtimeOutputPackageVersion)" />
     <ExtraPackageVersionPropsPackageInfo Include="MicrosoftNETCoreAppHostPackageVersion" Version="$(runtimeOutputPackageVersion)" />
-    <ExtraPackageVersionPropsPackageInfo Include="MicrosoftAspNetCoreAppRuntimePackageVersion" Version="%24(MicrosoftAspNetCoreAppRuntime$(TargetRid.Replace('-', '').Replace('.', ''))PackageVersion)" />
     <!-- core-sdk uses this property for ASP.NET blob directory -->
     <ExtraPackageVersionPropsPackageInfo Include="VSRedistCommonAspNetCoreTargetingPackx6430PackageVersion" Version="$(aspnetcoreOutputPackageVersion)" />
-    <!-- OSX needs the OSX version instead of Linux.  We don't have a lot of flexibility in how we output these properties so we're relying on the previous one being blank if the Linux version of the package is missing.  -->
-    <ExtraPackageVersionPropsPackageInfo Include="MicrosoftAspNetCoreAppRuntimePackageVersion" Version="%24(MicrosoftAspNetCoreAppRuntimeOsxX64PackageVersion)" DoNotOverwrite="true" />
-    <ExtraPackageVersionPropsPackageInfo Include="MicrosoftAspNetCoreAppRuntimePackageVersion" Version="%24(MicrosoftAspNetCoreAppRuntimewinx64PackageVersion)" DoNotOverwrite="true" />
 
     <!-- Used by installer to determine sdk version -->
     <ExtraPackageVersionPropsPackageInfo Include="MicrosoftDotnetToolsetInternalPackageVersion" Version="%24(MicrosoftNETSdkPackageVersion)" />
