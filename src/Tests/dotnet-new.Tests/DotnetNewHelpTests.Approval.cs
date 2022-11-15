@@ -182,6 +182,27 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .DisableRequireUniquePrefix();
         }
 
+        [Theory]
+        [InlineData("basic -h")]
+        public Task CanShowHelpForTemplateWhenRequiredParamIsMissed(string command)
+        {
+            string workingDirectory = CreateTemporaryFolder();
+            InstallTestTemplate("TemplateResolution/MissedRequiredParameter/BasicTemplate1", _log, _fixture.HomeDirectory, workingDirectory);
+
+            CommandResult commandResult = new DotnetNewCommand(_log, command.Split(" "))
+                .WithCustomHive(_fixture.HomeDirectory)
+                .WithWorkingDirectory(workingDirectory)
+                .Execute();
+
+            commandResult
+                .Should()
+                .ExitWith(0)
+                .And.NotHaveStdErr()
+                .And.HaveStdOutContaining("Mandatory option 'param' is missing for the template 'Basic Template'.");
+
+            return Verify(commandResult.StdOut);
+        }
+
         [Fact]
         public Task CannotShowHelpForTemplate_PartialNameMatch()
         {
