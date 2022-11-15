@@ -1062,6 +1062,11 @@ The header is followed by the list of parameters and their errors (might be seve
         <target state="translated">{0} 권한을 "{1}"에 적용할 수 없습니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="UnexpectedResult">
+        <source>Template generation ended with unexpected result: '{0}'. Details: {1}</source>
+        <target state="new">Template generation ended with unexpected result: '{0}'. Details: {1}</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UnknownChangeKind">
         <source>Unknown Change</source>
         <target state="translated">알 수 없는 변경</target>

@@ -281,6 +281,7 @@ namespace Microsoft.TemplateEngine.Cli
                     Reporter.Error.WriteLine(LocalizableStrings.OperationCancelled.Bold().Red());
                     return NewCommandStatus.Cancelled;
                 default:
+                    Reporter.Error.WriteLine(string.Format(LocalizableStrings.UnexpectedResult, Enum.GetName(typeof(CreationResultStatus), instantiateResult.Status), instantiateResult.ErrorMessage).Bold().Red());
                     return NewCommandStatus.Unexpected;
             }
         }

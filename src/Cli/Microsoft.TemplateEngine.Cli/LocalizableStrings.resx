@@ -809,4 +809,7 @@ The header is followed by the list of parameters and their errors (might be seve
   <data name="OperationCancelled" xml:space="preserve">
     <value>The operation was cancelled.</value>
   </data>
+  <data name="UnexpectedResult" xml:space="preserve">
+    <value>Template generation ended with unexpected result: '{0}'. Details: {1}</value>
+  </data>
 </root>

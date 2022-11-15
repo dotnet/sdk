@@ -1062,6 +1062,11 @@ The header is followed by the list of parameters and their errors (might be seve
         <target state="translated">Não é possível aplicar as permissões {0} a "{1}".</target>
         <note />
       </trans-unit>
+      <trans-unit id="UnexpectedResult">
+        <source>Template generation ended with unexpected result: '{0}'. Details: {1}</source>
+        <target state="new">Template generation ended with unexpected result: '{0}'. Details: {1}</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UnknownChangeKind">
         <source>Unknown Change</source>
         <target state="translated">Alteração desconhecida</target>

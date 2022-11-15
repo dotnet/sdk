@@ -14,10 +14,10 @@ Options:
 
 Template options:
   -p, --paramA <paramA>   parameter A description
-                          Enabled if: A_enabled
+                          Enabled if: A_enabled == true
                           Type: string
   -pa, --paramB <paramB>  parameter B description
-                          Enabled if: B_enabled
+                          Enabled if: B_enabled == true
                           Type: string
                           Default: placeholderB
   -A, --A_enabled         Type: bool
