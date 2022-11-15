@@ -53,12 +53,12 @@ namespace Microsoft.DotNet.GenAPI
                 ProjectId.CreateNewId(), VersionStamp.Create(), assembly.Name, assembly.Name, LanguageNames.CSharp));
             project = project.AddMetadataReferences(_metadataReferences);
 
-            var namespaceSymbols = EnumerateNamespaces(assembly).Where(_symbolFilter.Include);
-            var namespaceSyntaxNodes = new List<SyntaxNode>();
+            IEnumerable<INamespaceSymbol> namespaceSymbols = EnumerateNamespaces(assembly).Where(_symbolFilter.Include);
+            List<SyntaxNode> namespaceSyntaxNodes = new();
 
-            foreach (var namespaceSymbol in namespaceSymbols)
+            foreach (INamespaceSymbol namespaceSymbol in namespaceSymbols)
             {
-                var syntaxNode = Visit(namespaceSymbol);
+                SyntaxNode? syntaxNode = Visit(namespaceSymbol);
 
                 if (syntaxNode is not null)
                 {
@@ -81,19 +81,19 @@ namespace Microsoft.DotNet.GenAPI
 
         private SyntaxNode? Visit(INamespaceSymbol namespaceSymbol)
         {
-            var namespaceNode = _syntaxGenerator.NamespaceDeclaration(namespaceSymbol.ToDisplayString());
+            SyntaxNode namespaceNode = _syntaxGenerator.NamespaceDeclaration(namespaceSymbol.ToDisplayString());
 
-            var typeMembers = namespaceSymbol.GetTypeMembers().Where(_symbolFilter.Include);
+            IEnumerable<INamedTypeSymbol> typeMembers = namespaceSymbol.GetTypeMembers().Where(_symbolFilter.Include);
             if (!typeMembers.Any())
             {
                 return null;
             }
 
-            foreach (var typeMember in typeMembers)
+            foreach (INamedTypeSymbol typeMember in typeMembers)
             {
-                var typeDeclaration = _syntaxGenerator.DeclarationExt(typeMember);
+                SyntaxNode typeDeclaration = _syntaxGenerator.DeclarationExt(typeMember);
 
-                foreach (var attribute in typeMember.GetAttributes()
+                foreach (AttributeData attribute in typeMember.GetAttributes()
                     .Where(a => a.AttributeClass != null && _symbolFilter.Include(a.AttributeClass)))
                 {
                     typeDeclaration = _syntaxGenerator.AddAttributes(typeDeclaration, _syntaxGenerator.Attribute(attribute));
@@ -110,12 +110,12 @@ namespace Microsoft.DotNet.GenAPI
         private SyntaxNode Visit(SyntaxNode namedTypeNode, INamedTypeSymbol namedType)
         {
             namedTypeNode = VisitInnerNamedTypes(namedTypeNode, namedType);
-
-            foreach (var member in namedType.GetMembers().Where(_symbolFilter.Include))
+            
+            foreach (ISymbol member in namedType.GetMembers().Where(_symbolFilter.Include))
             {
-                var memberDeclaration = _syntaxGenerator.DeclarationExt(member);
+                SyntaxNode memberDeclaration = _syntaxGenerator.DeclarationExt(member);
 
-                foreach (var attribute in member.GetAttributes()
+                foreach (AttributeData attribute in member.GetAttributes()
                     .Where(a => a.AttributeClass != null && _symbolFilter.Include(a.AttributeClass)))
                 {
                     memberDeclaration = _syntaxGenerator.AddAttributes(memberDeclaration, _syntaxGenerator.Attribute(attribute));
@@ -129,11 +129,11 @@ namespace Microsoft.DotNet.GenAPI
 
         private SyntaxNode VisitInnerNamedTypes(SyntaxNode namedTypeNode, INamedTypeSymbol namedType)
         {
-            var innerNamedTypes = namedType.GetTypeMembers().Where(_symbolFilter.Include);
+            IEnumerable<INamedTypeSymbol> innerNamedTypes = namedType.GetTypeMembers().Where(_symbolFilter.Include);
 
-            foreach (var innerNamedType in innerNamedTypes)
+            foreach (INamedTypeSymbol innerNamedType in innerNamedTypes)
             {
-                var typeDeclaration = _syntaxGenerator.DeclarationExt(innerNamedType);
+                SyntaxNode typeDeclaration = _syntaxGenerator.DeclarationExt(innerNamedType);
                 typeDeclaration = Visit(typeDeclaration, innerNamedType);
 
                 namedTypeNode = _syntaxGenerator.AddMembers(namedTypeNode, typeDeclaration);

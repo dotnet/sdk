@@ -86,9 +86,8 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
         IEnumerable<IAssemblySymbol> LoadMatchingAssemblies(IEnumerable<IAssemblySymbol> fromAssemblies, IEnumerable<string> searchPaths, bool validateMatchingIdentity = true, bool warnOnMissingAssemblies = true);
 
         /// <summary>
-        /// Gets all metadata references stored in <see cref="CSharpCompilation" />.
+        /// The list of metadata references represented as <see cref="MetadataReference" />.
         /// </summary>
-        /// <returns>The list of metadata references represented as <see cref="MetadataReference" /></returns>
-        IEnumerable<MetadataReference> GetMetadataReferences();
+        IEnumerable<MetadataReference> MetadataReferences { get; }
     }
 }

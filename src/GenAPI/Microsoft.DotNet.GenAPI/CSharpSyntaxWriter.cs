@@ -34,50 +34,51 @@ namespace Microsoft.DotNet.GenAPI
         /// <inheritdoc />
         public override SyntaxNode? VisitInterfaceDeclaration(InterfaceDeclarationSyntax node)
         {
-            node = (InterfaceDeclarationSyntax)base.VisitInterfaceDeclaration(node)!;
-            return VisitCommonTypeDeclaration(node);
+            InterfaceDeclarationSyntax? rs = (InterfaceDeclarationSyntax?)base.VisitInterfaceDeclaration(node);
+            return rs is null ? rs : VisitCommonTypeDeclaration(rs);
         }
 
         /// <inheritdoc />
         public override SyntaxNode? VisitClassDeclaration(ClassDeclarationSyntax node)
         {
-            node = (ClassDeclarationSyntax)base.VisitClassDeclaration(node)!;
-            return VisitCommonTypeDeclaration(node);
+            ClassDeclarationSyntax? rs = (ClassDeclarationSyntax?)base.VisitClassDeclaration(node);
+            return rs is null ? rs : VisitCommonTypeDeclaration(rs);
         }
 
         /// <inheritdoc />
         public override SyntaxNode? VisitStructDeclaration(StructDeclarationSyntax node)
         {
-            node = (StructDeclarationSyntax)base.VisitStructDeclaration(node)!;
-            return VisitCommonTypeDeclaration(node);
+            StructDeclarationSyntax? rs = (StructDeclarationSyntax?)base.VisitStructDeclaration(node);
+            return rs is null ? rs : VisitCommonTypeDeclaration(node);
         }
 
         /// <inheritdoc />
         public override SyntaxNode? VisitMethodDeclaration(MethodDeclarationSyntax node)
         {
             // visit subtree first to normalize type names.
-            node = (MethodDeclarationSyntax)base.VisitMethodDeclaration(node)!;
+            MethodDeclarationSyntax? rs = (MethodDeclarationSyntax?)base.VisitMethodDeclaration(node);
+            if (rs is null) return rs;
 
-            if (node.Modifiers.Where(token => token.IsKind(SyntaxKind.AbstractKeyword)).Any() || node.Body is null)
+            if (rs.Modifiers.Where(token => token.IsKind(SyntaxKind.AbstractKeyword)).Any() || rs.Body is null)
             {
-                return node;
+                return rs;
             }
 
-            if (node.ExpressionBody != null)
+            if (rs.ExpressionBody != null)
             {
-                node = node.WithExpressionBody(null);
+                rs = rs.WithExpressionBody(null);
             }
 
-            if (node.ReturnType.ToString() != "System.Void")
+            if (rs.ReturnType.ToString() != "System.Void")
             {
-                node = node.WithBody(GetThrowNullBody(true));
+                rs = rs.WithBody(GetThrowNullBody(true));
             }
             else
             {
-                node = node.WithBody(GetEmptyBody(true));
+                rs = rs.WithBody(GetEmptyBody(true));
             }
 
-            return node.WithParameterList(node.ParameterList.WithTrailingTrivia(SyntaxFactory.Space));
+            return rs.WithParameterList(rs.ParameterList.WithTrailingTrivia(SyntaxFactory.Space));
         }
 
         /// <inheritdoc />
@@ -88,8 +89,10 @@ namespace Microsoft.DotNet.GenAPI
                 case SyntaxKind.GetAccessorDeclaration:
                 case SyntaxKind.SetAccessorDeclaration:
                     {
-                        var accessorListSyntax = (AccessorListSyntax)node.Parent!;
-                        var propertyDeclarationSyntax = (PropertyDeclarationSyntax)accessorListSyntax.Parent!;
+                        var accessorListSyntax = (AccessorListSyntax?)node.Parent;
+                        var propertyDeclarationSyntax = (PropertyDeclarationSyntax?)accessorListSyntax?.Parent;
+
+                        if (propertyDeclarationSyntax is null) return null;
 
                         if (propertyDeclarationSyntax.Modifiers.Where(token => token.IsKind(SyntaxKind.AbstractKeyword)).Any())
                         {

@@ -105,7 +105,7 @@ namespace Microsoft.DotNet.GenAPI
                     compositeFilter,
                     GetTextWriter(context.OutputPath, assemblySymbol.Name),
                     new CSharpSyntaxWriter(context.ExceptionMessage),
-                    loader.GetMetadataReferences());
+                    loader.MetadataReferences);
 
                 fileBuilder.WriteAssembly(assemblySymbol);
             }
