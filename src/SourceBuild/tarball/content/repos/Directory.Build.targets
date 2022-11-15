@@ -71,20 +71,6 @@
     <MSBuild Projects="@(_DependentProject)" Targets="Build" BuildInParallel="$(BuildInParallel)" StopOnFirstFailure="true" />
   </Target>
 
-  <!--
-    Update root repo with trailing slash until https://github.com/dotnet/arcade/pull/7498 gets figured out
-    in arcade an propegated to all repos
-  -->
-  <Target Name="UpdateBuildRepoRoot"
-          BeforeTargets="Build"
-          Condition="'$(EngCommonBuildShFile)' != ''"
-          Inputs="$(MSBuildProjectFullPath)"
-          Outputs="$(RepoCompletedSemaphorePath)UpdateBuildRepoRoot.complete" >
-    <ReplaceTextInFile InputFile="$(EngCommonBuildShFile)"
-      OldText="/p:RepoRoot=&quot;$repo_root&quot;"
-      NewText="/p:RepoRoot=&quot;$repo_root/&quot;" />
-  </Target>
-
   <Target Name="AddNoWarns"
           BeforeTargets="Build"
           Condition=" EXISTS('$(ProjectDirectory)Directory.Build.props') OR EXISTS('$(ProjectDirectory)src/Directory.Build.props') "
