@@ -24,6 +24,11 @@
 
     <UseStableVersions Condition="'$(UseStableVersions)' == ''">false</UseStableVersions>
 
+    <SourceBuildUseMonoRuntime>false</SourceBuildUseMonoRuntime>
+    <!-- These architectures are only supported with mono runtime -->
+    <SourceBuildUseMonoRuntime Condition="'$(BuildArchitecture)' == 's390x'">true</SourceBuildUseMonoRuntime>
+    <SourceBuildUseMonoRuntime Condition="'$(BuildArchitecture)' == 'ppc64le'">true</SourceBuildUseMonoRuntime>
+
     <!-- new supported portable/nonportable options.  These control whether to build portable runtime
          or portable SDK.  The PortableBuild flag is only set in runtime-portable.proj and should
          no longer be passed in.  -->
