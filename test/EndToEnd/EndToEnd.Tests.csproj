@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <TargetFramework>$(CoreSdkTargetFramework)</TargetFramework>
+    <DefineConstants Condition="'$(IslinuxPortable)' == 'true'">$(DefineConstants);LINUX_PORTABLE</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
