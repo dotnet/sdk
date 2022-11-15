@@ -1,0 +1,36 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: MichaelSimons <msimons@microsoft.com>
+Date: Tue, 15 Nov 2022 17:34:00 +0000
+Subject: [PATCH] Address Microsoft.Build.Locator prebuilt
+
+Backport: https://github.com/dotnet/format/issues/1759
+---
+ Directory.Packages.props | 2 +-
+ eng/Versions.props       | 1 +
+ 2 files changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/Directory.Packages.props b/Directory.Packages.props
+index c4bf3cf..f7e85b2 100644
+--- a/Directory.Packages.props
++++ b/Directory.Packages.props
+@@ -10,7 +10,7 @@
+     <PackageVersion Include="BenchmarkDotNet.Annotations" Version="0.12.1" />
+     <PackageVersion Include="BenchmarkDotNet" Version="0.12.1" />
+     <PackageVersion Include="Microsoft.Build.Framework" Version="$(MicrosoftBuildVersion)" />
+-    <PackageVersion Include="Microsoft.Build.Locator" Version="1.5.5" />
++    <PackageVersion Include="Microsoft.Build.Locator" Version="$(MicrosoftBuildLocatorVersion)" />
+     <PackageVersion Include="Microsoft.Build" Version="$(MicrosoftBuildVersion)"/>
+     <PackageVersion Include="Microsoft.CodeAnalysis.Analyzer.Testing" Version="1.1.2-beta1.22216.1" />
+     <PackageVersion Include="Microsoft.CodeAnalysis.Analyzers" Version="$(MicrosoftCodeAnalysisAnalyzersVersion)" />
+diff --git a/eng/Versions.props b/eng/Versions.props
+index fcd583b..2933963 100644
+--- a/eng/Versions.props
++++ b/eng/Versions.props
+@@ -14,6 +14,7 @@
+   </PropertyGroup>
+   <PropertyGroup>
+     <MicrosoftBuildVersion>17.3.0-preview-22302-02</MicrosoftBuildVersion>
++    <MicrosoftBuildLocatorVersion>1.5.5</MicrosoftBuildLocatorVersion>
+     <MicrosoftCodeAnalysisAnalyzersVersion>3.3.3</MicrosoftCodeAnalysisAnalyzersVersion>
+     <MicrosoftExtensionsDependencyInjectionVersion>7.0.0-rc.1.22426.10</MicrosoftExtensionsDependencyInjectionVersion>
+     <!-- Dependencies from https://github.com/dotnet/roslyn -->
