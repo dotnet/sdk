@@ -395,5 +395,27 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
             return Verify(commandResult.StdOut);
         }
+
+        [Theory]
+        [InlineData("basic", "BasicTemplate1")]
+        [InlineData("basic2", "BasicTemplate2")]
+        public Task CanShowHelpForTemplateWhenRequiredParamIsMissed(string templateName, string identifier)
+        {
+            string workingDirectory = CreateTemporaryFolder();
+            InstallTestTemplate($"TemplateResolution/MissedRequiredParameter/{identifier}", _log, _fixture.HomeDirectory, workingDirectory);
+
+            CommandResult commandResult = new DotnetNewCommand(_log, templateName, "--help")
+                .WithCustomHive(_fixture.HomeDirectory)
+                .WithWorkingDirectory(workingDirectory)
+                .Execute();
+
+            commandResult
+                .Should()
+                .ExitWith(0)
+                .And.NotHaveStdErr()
+                .And.HaveStdOutContaining("Template options:");
+
+            return Verify(commandResult.StdOut);
+        }
     }
 }
