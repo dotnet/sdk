@@ -5,7 +5,7 @@
     {
       "tool": {
         "name": "Microsoft.CodeAnalysis.CSharp.NetAnalyzers",
-        "version": "7.0.0",
+        "version": "8.0.0",
         "language": "en-US"
       },
       "rules": {
@@ -304,6 +304,44 @@
             ]
           }
         },
+        "CA1856": {
+          "id": "CA1856",
+          "shortDescription": "Incorrect usage of ConstantExpected attribute",
+          "fullDescription": "ConstantExpected attribute is not applied correctly on the parameter.",
+          "defaultLevel": "error",
+          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1856",
+          "properties": {
+            "category": "Performance",
+            "isEnabledByDefault": true,
+            "typeName": "CSharpConstantExpectedAnalyzer",
+            "languages": [
+              "C#"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA1857": {
+          "id": "CA1857",
+          "shortDescription": "A constant is expected for the parameter",
+          "fullDescription": "The parameter expects a constant for optimal performance.",
+          "defaultLevel": "warning",
+          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1857",
+          "properties": {
+            "category": "Performance",
+            "isEnabledByDefault": true,
+            "typeName": "CSharpConstantExpectedAnalyzer",
+            "languages": [
+              "C#"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
         "CA2014": {
           "id": "CA2014",
           "shortDescription": "Do not use stackalloc in loops",
@@ -538,7 +576,7 @@
     {
       "tool": {
         "name": "Microsoft.CodeAnalysis.NetAnalyzers",
-        "version": "7.0.0",
+        "version": "8.0.0",
         "language": "en-US"
       },
       "rules": {
@@ -5815,7 +5853,7 @@
     {
       "tool": {
         "name": "Microsoft.CodeAnalysis.VisualBasic.NetAnalyzers",
-        "version": "7.0.0",
+        "version": "8.0.0",
         "language": "en-US"
       },
       "rules": {

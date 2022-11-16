@@ -7,3 +7,5 @@ CA1421 | <https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-
 CA1852 | <https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1852> | Seal internal types |
 CA1853 | <https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1853> | Unnecessary call to 'Dictionary.ContainsKey(key)' |
 CA1855 | <https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1855> | Prefer 'Clear' over 'Fill' |
+CA1856 | <https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1856> | Incorrect usage of ConstantExpected attribute |
+CA1857 | <https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1857> | A constant is expected for the parameter |

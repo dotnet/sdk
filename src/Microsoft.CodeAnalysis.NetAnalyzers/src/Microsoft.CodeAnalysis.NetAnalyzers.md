@@ -1584,6 +1584,30 @@ It is more efficient to use 'Clear', instead of 'Fill' with default value.
 |CodeFix|True|
 ---
 
+## [CA1856](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1856): Incorrect usage of ConstantExpected attribute
+
+ConstantExpected attribute is not applied correctly on the parameter.
+
+|Item|Value|
+|-|-|
+|Category|Performance|
+|Enabled|True|
+|Severity|Error|
+|CodeFix|False|
+---
+
+## [CA1857](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1857): A constant is expected for the parameter
+
+The parameter expects a constant for optimal performance.
+
+|Item|Value|
+|-|-|
+|Category|Performance|
+|Enabled|True|
+|Severity|Warning|
+|CodeFix|False|
+---
+
 ## [CA2000](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2000): Dispose objects before losing scope
 
 If a disposable object is not explicitly disposed before all references to it are out of scope, the object will be disposed at some indeterminate time when the garbage collector runs the finalizer of the object. Because an exceptional event might occur that will prevent the finalizer of the object from running, the object should be explicitly disposed instead.

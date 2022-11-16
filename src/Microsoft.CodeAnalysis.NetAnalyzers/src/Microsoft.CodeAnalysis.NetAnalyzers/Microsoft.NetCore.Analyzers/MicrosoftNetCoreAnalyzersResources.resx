@@ -1864,6 +1864,42 @@
   <data name="UsesPreviewTypeParameterMessage" xml:space="preserve">
     <value>'{0}' uses the preview type '{1}' and needs to opt into preview features. See {2} for more information.</value>
   </data>
+  <data name="ConstantExpectedApplicationTitle" xml:space="preserve">
+    <value>Incorrect usage of ConstantExpected attribute</value>
+  </data>
+  <data name="ConstantExpectedApplicationDescription" xml:space="preserve">
+    <value>ConstantExpected attribute is not applied correctly on the parameter.</value>
+  </data>
+  <data name="ConstantExpectedUsageTitle" xml:space="preserve">
+    <value>A constant is expected for the parameter</value>
+  </data>
+  <data name="ConstantExpectedUsageDescription" xml:space="preserve">
+    <value>The parameter expects a constant for optimal performance.</value>
+  </data>
+  <data name="ConstantExpectedNotSupportedMessage" xml:space="preserve">
+    <value>The '{0}' type is not supported for ConstantExpected attribute</value>
+  </data>
+  <data name="ConstantExpectedIncompatibleConstantTypeMessage" xml:space="preserve">
+    <value>The '{0}' value is not compatible with parameter type of '{1}'</value>
+  </data>
+  <data name="ConstantExpectedInvalidBoundsMessage" xml:space="preserve">
+    <value>The '{0}' value does not fit within the parameter value bounds of '{1}' to '{2}'</value>
+  </data>
+  <data name="ConstantExpectedInvertedRangeMessage" xml:space="preserve">
+    <value>The Min and Max values are inverted</value>
+  </data>
+  <data name="ConstantExpectedOutOfBoundsMessage" xml:space="preserve">
+    <value>The constant does not fit within the value bounds of '{0}' to '{1}'</value>
+  </data>
+  <data name="ConstantExpectedInvalidMessage" xml:space="preserve">
+    <value>The constant is not of the same '{0}' type as the parameter</value>
+  </data>
+  <data name="ConstantExpectedNotConstantMessage" xml:space="preserve">
+    <value>The argument should be a constant for optimal performance</value>
+  </data>
+  <data name="ConstantExpectedAttributExpectedMessage" xml:space="preserve">
+    <value>The ConstantExpected attribute is required for the parameter due to the parent method annotation</value>
+  </data>
   <data name="SpecifyCultureForToLowerAndToUpperTitle" xml:space="preserve">
     <value>Specify a culture or use an invariant version</value>
   </data>
