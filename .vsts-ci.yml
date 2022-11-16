@@ -129,7 +129,7 @@ stages:
           - Windows_NT
         pool:
           name: NetCore1ESPool-Svc-Internal
-          demands: ImageOverride -equals build.windows.10.amd64.vs2017
+          demands: ImageOverride -equals windows.vs2017.amd64
 - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
   - template: /eng/common/templates/post-build/post-build.yml
     parameters:
