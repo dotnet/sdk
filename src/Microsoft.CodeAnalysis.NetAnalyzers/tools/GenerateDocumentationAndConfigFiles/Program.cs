@@ -733,8 +733,8 @@ Rule ID | Missing Help Link | Title |
                             using var fileStream = File.OpenRead(shippedFile);
                             var sourceText = SourceText.From(fileStream);
                             var releaseTrackingData = ReleaseTrackingHelper.ReadReleaseTrackingData(shippedFile, sourceText,
-                                onDuplicateEntryInRelease: (_1, _2, _3, _4, line) => throw new Exception($"Duplicate entry in {shippedFile} at {line.LineNumber}: '{line}'"),
-                                onInvalidEntry: (line, _2, _3, _4) => throw new Exception($"Invalid entry in {shippedFile} at {line.LineNumber}: '{line}'"),
+                                onDuplicateEntryInRelease: (_1, _2, _3, _4, line) => throw new InvalidOperationException($"Duplicate entry in {shippedFile} at {line.LineNumber}: '{line}'"),
+                                onInvalidEntry: (line, _2, _3, _4) => throw new InvalidOperationException($"Invalid entry in {shippedFile} at {line.LineNumber}: '{line}'"),
                                 isShippedFile: true);
                             releaseTrackingFilesDataBuilder.Add(releaseTrackingData);
                             versionsBuilder.AddRange(releaseTrackingData.Versions);
@@ -743,8 +743,8 @@ Rule ID | Missing Help Link | Title |
                             using var fileStreamUnshipped = File.OpenRead(unshippedFile);
                             var sourceTextUnshipped = SourceText.From(fileStreamUnshipped);
                             var releaseTrackingDataUnshipped = ReleaseTrackingHelper.ReadReleaseTrackingData(unshippedFile, sourceTextUnshipped,
-                                onDuplicateEntryInRelease: (_1, _2, _3, _4, line) => throw new Exception($"Duplicate entry in {unshippedFile} at {line.LineNumber}: '{line}'"),
-                                onInvalidEntry: (line, _2, _3, _4) => throw new Exception($"Invalid entry in {unshippedFile} at {line.LineNumber}: '{line}'"),
+                                onDuplicateEntryInRelease: (_1, _2, _3, _4, line) => throw new InvalidOperationException($"Duplicate entry in {unshippedFile} at {line.LineNumber}: '{line}'"),
+                                onInvalidEntry: (line, _2, _3, _4) => throw new InvalidOperationException($"Invalid entry in {unshippedFile} at {line.LineNumber}: '{line}'"),
                                 isShippedFile: false);
                             releaseTrackingFilesDataBuilder.Add(releaseTrackingDataUnshipped);
                         }
