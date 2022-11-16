@@ -273,10 +273,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                 
                     public class SampleClass : IControl, ISurface
                     {
-                        void IControl.Paint()
-                        {
-                        }
-                        void ISurface.Paint()
+                        public void Paint()
                         {
                         }
                     }
@@ -296,14 +293,10 @@ namespace Microsoft.DotNet.GenAPI.Tests
                 
                     public partial class SampleClass : IControl, ISurface
                     {
-                    /*
-                        void IControl.Paint()
+                        public void Paint()
                         {
+                            throw null;
                         }
-                        void ISurface.Paint()
-                        {
-                        }
-                    */
                     }
                 }
                 """);

@@ -29,7 +29,7 @@ namespace Microsoft.DotNet.GenAPI
                             type.Name,
                             accessibility: type.DeclaredAccessibility,
                             modifiers: DeclarationModifiers.From(type),
-                            baseType: syntaxGenerator.TypeExpression(type.BaseType),
+                            baseType: type.BaseType is null ? null : syntaxGenerator.TypeExpression(type.BaseType),
                             interfaceTypes: type.Interfaces.Select(i => syntaxGenerator.TypeExpression(i)));
                         break;
                     case TypeKind.Struct:
