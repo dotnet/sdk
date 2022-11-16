@@ -68,9 +68,9 @@ namespace Microsoft.DotNet.GenAPI.Tool
                 GenAPIApp.Run(new GenAPIApp.Context(
                     context.ParseResult.GetValue(assembliesOption)!,
                     context.ParseResult.GetValue(assemblyReferencesOption),
-                    context.ParseResult.GetValue(exceptionMessageOption),
-                    context.ParseResult.GetValue(headerFileOption),
                     context.ParseResult.GetValue(outputPathOption),
+                    context.ParseResult.GetValue(headerFileOption),
+                    context.ParseResult.GetValue(exceptionMessageOption),
                     context.ParseResult.GetValue(excludeAttributesFilesOption),
                     context.ParseResult.GetValue(includeVisibleOutsideOfAssemblyOption)
                 ));
