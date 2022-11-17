@@ -174,7 +174,7 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.Commands.Verify
         /// <summary>
         /// Case insensitive version for <see cref="OptionExtensions.FromAmong{TOption}(TOption, string[])"/>.
         /// </summary>
-        private static void FromAmongCaseInsensitive(Option option, string[]? allowedValues = null, string? allowedHiddenValue = null)
+        private static void FromAmongCaseInsensitive(Option<IEnumerable<UniqueForOption>> option, string[]? allowedValues = null, string? allowedHiddenValue = null)
         {
             allowedValues ??= Array.Empty<string>();
             option.AddValidator(optionResult => ValidateAllowedValues(optionResult, allowedValues, allowedHiddenValue));

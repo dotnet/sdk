@@ -14,7 +14,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery
     {
         private const int DefaultPageSize = 100;
 
-        private readonly Option<DirectoryInfo> _basePathOption = (Option<DirectoryInfo>)new Option<DirectoryInfo>("--basePath")
+        private readonly Option<DirectoryInfo> _basePathOption = new Option<DirectoryInfo>("--basePath")
         {
             Arity = ArgumentArity.ExactlyOne,
             Description = "The root dir for output for this run.",
@@ -56,7 +56,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery
             Description = "Run tests on generated metadata files.",
         };
 
-        private readonly Option<SupportedQueries[]> _queriesOption = (Option<SupportedQueries[]>)new Option<SupportedQueries[]>("--queries")
+        private readonly Option<SupportedQueries[]> _queriesOption = new Option<SupportedQueries[]>("--queries")
         {
             Arity = ArgumentArity.OneOrMore,
             Description = $"The list of providers to run. Supported providers: {string.Join(",", Enum.GetValues<SupportedQueries>())}.",
