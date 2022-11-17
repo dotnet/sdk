@@ -75,16 +75,30 @@ internal static class ExecuteHelper
             process.WaitForExit();
         }
 
-        string output = stdOutput.ToString().Trim();
-        if (logOutput && !string.IsNullOrWhiteSpace(output))
+        string output;
+        string error;
+
+        lock (stdOutput)
         {
-            outputHelper.WriteLine(output);
+            output = stdOutput.ToString().Trim();
         }
 
-        string error = stdError.ToString().Trim();
-        if (logOutput && !string.IsNullOrWhiteSpace(error))
+        lock (stdError)
         {
-            outputHelper.WriteLine(error);
+            error = stdError.ToString().Trim();
+        }
+
+        if (logOutput)
+        {
+            if (!string.IsNullOrWhiteSpace(output))
+            {
+                outputHelper.WriteLine(output);
+            }
+
+            if (string.IsNullOrWhiteSpace(error))
+            {
+                outputHelper.WriteLine(error);
+            }
         }
 
         return (process, output, error);
