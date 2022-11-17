@@ -110,7 +110,6 @@ namespace Microsoft.DotNet.GenAPI
         private SyntaxNode Visit(SyntaxNode namedTypeNode, INamedTypeSymbol namedType)
         {
             namedTypeNode = VisitInnerNamedTypes(namedTypeNode, namedType);
-            
             foreach (ISymbol member in namedType.GetMembers().Where(_symbolFilter.Include))
             {
                 SyntaxNode memberDeclaration = _syntaxGenerator.DeclarationExt(member);
