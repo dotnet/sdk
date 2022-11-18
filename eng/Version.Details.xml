@@ -199,22 +199,22 @@
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
       <Sha>1bee0afeedab9d6d9d1cf23e65daa7ea5fcc6d47</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.Razor.Tooling.Internal" Version="7.0.0-preview.5.22567.3">
+    <Dependency Name="Microsoft.CodeAnalysis.Razor.Tooling.Internal" Version="7.0.0-preview.5.22568.3">
       <Uri>https://github.com/dotnet/razor</Uri>
-      <Sha>0117dcac35944c95c6d03948586920b1ac3d5d32</Sha>
+      <Sha>65da97122841d7f79d73d1bb88198622c3305a53</Sha>
       <SourceBuild RepoName="razor-compiler" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Mvc.Razor.Extensions.Tooling.Internal" Version="7.0.0-preview.5.22412.2">
-      <Uri>https://github.com/dotnet/razor-compiler</Uri>
-      <Sha>a41514681a4db83c7cae7e17debf668d12efc1bb</Sha>
-    </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Razor.SourceGenerator.Tooling.Internal" Version="7.0.0-preview.5.22567.3">
+    <Dependency Name="Microsoft.AspNetCore.Mvc.Razor.Extensions.Tooling.Internal" Version="7.0.0-preview.5.22568.3">
       <Uri>https://github.com/dotnet/razor</Uri>
-      <Sha>0117dcac35944c95c6d03948586920b1ac3d5d32</Sha>
+      <Sha>65da97122841d7f79d73d1bb88198622c3305a53</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Sdk.Razor.SourceGenerators.Transport" Version="7.0.0-preview.5.22412.2">
-      <Uri>https://github.com/dotnet/razor-compiler</Uri>
-      <Sha>a41514681a4db83c7cae7e17debf668d12efc1bb</Sha>
+    <Dependency Name="Microsoft.AspNetCore.Razor.SourceGenerator.Tooling.Internal" Version="7.0.0-preview.5.22568.3">
+      <Uri>https://github.com/dotnet/razor</Uri>
+      <Sha>65da97122841d7f79d73d1bb88198622c3305a53</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.NET.Sdk.Razor.SourceGenerators.Transport" Version="7.0.0-preview.5.22568.3">
+      <Uri>https://github.com/dotnet/razor</Uri>
+      <Sha>65da97122841d7f79d73d1bb88198622c3305a53</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.FileProviders.Embedded" Version="8.0.0-alpha.1.22558.5">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
