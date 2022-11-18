@@ -1,0 +1,18 @@
+trigger: none
+
+jobs:
+- template: ../../src/installer/src/SourceBuild/Arcade/eng/common/templates/job/source-build-build-tarball.yml
+  parameters:
+    architecture: x64
+    excludeSdkContentTests: true
+    matrix:
+      Ubuntu2004-Offline:
+        _BootstrapPrep: false
+        _Container: mcr.microsoft.com/dotnet-buildtools/prereqs:ubuntu-20.04-20220813234344-4c008dd
+        _EnablePoison: false
+        _ExcludeOmniSharpTests: false
+        _RunOnline: false
+    name: Build_Tarball_x64
+    pool:
+      name: NetCore1ESPool-Svc-Internal
+      demands: ImageOverride -equals Build.Ubuntu.1804.Amd64
