@@ -55,7 +55,7 @@ namespace Microsoft.NET.Build.Tasks
 
         public string NetCoreTargetingPackRoot { get; set; }
         
-        public bool EnableAppHostPackDownload { get; set; }
+        public bool EnableAppHostPackDownload { get; set; } = true;
 
         [Output]
         public ITaskItem[] PackagesToDownload { get; set; }
