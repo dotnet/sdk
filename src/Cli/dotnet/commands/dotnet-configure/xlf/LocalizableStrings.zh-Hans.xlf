@@ -1,0 +1,87 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
+  <file datatype="xml" source-language="en" target-language="zh-Hans" original="../LocalizableStrings.resx">
+    <body>
+      <trans-unit id="ConfigureAddCommand">
+        <source>Add new config or platform to a solution file.</source>
+        <target state="new">Add new config or platform to a solution file.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ConfigureAddConfigAlreadyExists">
+        <source>Solution config {0} already exists.</source>
+        <target state="new">Solution config {0} already exists.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ConfigureAddCopyFromConfigDoesNotExists">
+        <source>Solution config {0} to copy from, does not exists.</source>
+        <target state="new">Solution config {0} to copy from, does not exists.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ConfigureAddCopyFromPlatformDoesNotExists">
+        <source>Solution platform {0} to copy from, does not exists.</source>
+        <target state="new">Solution platform {0} to copy from, does not exists.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ConfigureAddNewConfigOptionUpdateProjMissing">
+        <source>Update project options is not specified.</source>
+        <target state="new">Update project options is not specified.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ConfigureAddNewConfigPlatformNameMissing">
+        <source>Specify at least one config or platform to add.</source>
+        <target state="new">Specify at least one config or platform to add.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ConfigureAddOptionCopySettingsFrom">
+        <source>Existing config or platform to copy project settings from.</source>
+        <target state="new">Existing config or platform to copy project settings from.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ConfigureAddOptionNewConfigName">
+        <source>New config to add to the solution.</source>
+        <target state="new">New config to add to the solution.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ConfigureAddOptionNewPlatformName">
+        <source>New platform to add to the solution.</source>
+        <target state="new">New platform to add to the solution.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ConfigureAddOptionUpdateProjects">
+        <source>Indicates whether to update project config or platform settings.</source>
+        <target state="new">Indicates whether to update project config or platform settings.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ConfigureAddPlatformAlreadyExists">
+        <source>Solution platform {0} already exists.</source>
+        <target state="new">Solution platform {0} already exists.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ConfigureAddSlnMissing">
+        <source>Solution file does not exists.</source>
+        <target state="new">Solution file does not exists.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ConfigureArgumentSlnDescription">
+        <source>The solution file to operate on. If not specified, the command will search the current directory for one.</source>
+        <target state="new">The solution file to operate on. If not specified, the command will search the current directory for one.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ConfigureArgumentSlnName">
+        <source>SLN_FILE</source>
+        <target state="new">SLN_FILE</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ConfigureCommand">
+        <source>Configuration Manager commands for .NET CLI.</source>
+        <target state="new">Configuration Manager commands for .NET CLI.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FileHeaderMissingError">
+        <source>Expected file header not found</source>
+        <target state="new">Expected file header not found</target>
+        <note />
+      </trans-unit>
+    </body>
+  </file>
+</xliff>
