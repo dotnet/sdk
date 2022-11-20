@@ -132,10 +132,6 @@ Copyright (c) .NET Foundation. All rights reserved.
       <AppHostRuntimeIdentifier>$(RuntimeIdentifier)</AppHostRuntimeIdentifier>
       <AppHostRuntimeIdentifier Condition="'$(AppHostRuntimeIdentifier)' == ''">$(DefaultAppHostRuntimeIdentifier)</AppHostRuntimeIdentifier>
     </PropertyGroup>
-    
-    <PropertyGroup>
-      <EnableAppHostPackDownload Condition="'$(EnableAppHostPackDownload)' == '' and '$(_NuGetRestoreSupported)' != 'false'">true</EnableAppHostPackDownload>
-    </PropertyGroup>
 
     <ResolveAppHosts TargetFrameworkIdentifier="$(TargetFrameworkIdentifier)"
                      TargetFrameworkVersion="$(_TargetFrameworkVersionWithoutV)"
