@@ -146,7 +146,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                      DotNetIjwHostLibraryNameWithoutExtension="$(_DotNetIjwHostLibraryNameWithoutExtension)"
                      RuntimeGraphPath="$(BundledRuntimeIdentifierGraphFile)"
                      KnownAppHostPacks="@(KnownAppHostPack)"
-                     NuGetRestoreSupported="$(_NuGetRestoreSupported)"
+                     NuGetRestoreSupported="$([MSBuild]::ValueOrDefault('$(EnableAppHostPackDownload)', '$(_NuGetRestoreSupported)'))"
                      NetCoreTargetingPackRoot="$(NetCoreTargetingPackRoot)">
 
       <Output TaskParameter="PackagesToDownload" ItemName="_PackageToDownload" />
