@@ -57,6 +57,11 @@ public class ScrubbersDefinition
 
     public ScrubbersDefinition AddScrubber(ScrubFileByPath fileScrubber)
     {
+        if (ReferenceEquals(this, Empty))
+        {
+            return new ScrubbersDefinition().AddScrubber(fileScrubber);
+        }
+
         ByPathScrubbers.Add(fileScrubber);
         return this;
     }
