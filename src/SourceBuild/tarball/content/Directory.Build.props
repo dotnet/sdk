@@ -213,16 +213,6 @@
 
   <!-- Additional psuedo-versions that some repos depend on -->
   <ItemGroup>
-    <!-- we don't produce the Windows version of this package but that's the one core-sdk keys off of for the ASP.NET version -->
-    <ExtraPackageVersionPropsPackageInfo Include="MicrosoftAspNetCoreAppRuntimewinx64PackageVersion" Version="$(aspnetcoreOutputPackageVersion)" />
-    <!-- same thing here for CLI -->
-    <ExtraPackageVersionPropsPackageInfo Include="MicrosoftNETCoreAppRuntimewinx64Version" Version="$(runtimeOutputPackageVersion)" />
-    <!-- same thing here for toolset -->
-    <ExtraPackageVersionPropsPackageInfo Include="MicrosoftNETCoreAppRuntimewinx64PackageVersion" Version="$(runtimeOutputPackageVersion)" />
-    <!-- same thing here for core-sdk -->
-    <ExtraPackageVersionPropsPackageInfo Include="MicrosoftNETCoreAppRuntimePackageVersion" Version="$(runtimeOutputPackageVersion)" />
-    <ExtraPackageVersionPropsPackageInfo Include="MicrosoftNETCoreAppRuntimeVersion" Version="$(runtimeOutputPackageVersion)" />
-    <ExtraPackageVersionPropsPackageInfo Include="MicrosoftNETCoreAppHostPackageVersion" Version="$(runtimeOutputPackageVersion)" />
     <!-- core-sdk uses this property for ASP.NET blob directory -->
     <ExtraPackageVersionPropsPackageInfo Include="VSRedistCommonAspNetCoreTargetingPackx6430PackageVersion" Version="$(aspnetcoreOutputPackageVersion)" />
 
