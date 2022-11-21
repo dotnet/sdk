@@ -42,7 +42,6 @@
     <None Include="$(RepoRoot)LICENSE.txt" PackagePath="LICENSE.txt" Pack="true" />
   </ItemGroup>
 
-  
   <ItemGroup>
     <!--
       Update all PackageReference and ProjectReference Items to have

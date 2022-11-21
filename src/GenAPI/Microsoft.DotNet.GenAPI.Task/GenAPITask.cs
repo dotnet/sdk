@@ -3,7 +3,6 @@
 
 using Microsoft.Build.Framework;
 using Microsoft.NET.Build.Tasks;
-using static Microsoft.DotNet.GenAPI.GenAPIApp;
 
 namespace Microsoft.DotNet.GenAPI.Task
 {
