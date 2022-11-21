@@ -346,18 +346,22 @@ namespace Microsoft.CodeAnalysis.Tools
         {
             try
             {
-                // Get the latest .NET SDK instance.
+                // Get the global.json pinned SDK or latest instance.
                 var msBuildInstance = Build.Locator.MSBuildLocator.QueryVisualStudioInstances()
                     .Where(instance => instance.Version.Major >= 6)
-                    .MaxBy(instance => instance.Version);
+                    .FirstOrDefault();
                 if (msBuildInstance is null)
                 {
                     msBuildPath = null;
                     return false;
                 }
 
-                Build.Locator.MSBuildLocator.RegisterInstance(msBuildInstance);
-                msBuildPath = msBuildInstance.MSBuildPath;
+                msBuildPath = Path.EndsInDirectorySeparator(msBuildInstance.MSBuildPath)
+                    ? msBuildInstance.MSBuildPath
+                    : msBuildInstance.MSBuildPath + Path.DirectorySeparatorChar;
+
+                Build.Locator.MSBuildLocator.RegisterMSBuildPath(msBuildPath);
+
                 return true;
             }
             catch
