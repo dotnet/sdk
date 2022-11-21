@@ -9,7 +9,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Watch.BrowserRefresh
 {
-    public class WebSockerScriptInjectionTest
+    public class WebSocketScriptInjectionTest
     {
         [Fact]
         public async Task TryInjectLiveReloadScriptAsync_DoesNotInjectMarkup_IfInputDoesNotContainBodyTag()
