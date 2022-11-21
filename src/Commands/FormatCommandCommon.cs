@@ -356,12 +356,8 @@ namespace Microsoft.CodeAnalysis.Tools
                     return false;
                 }
 
-                msBuildPath = Path.EndsInDirectorySeparator(msBuildInstance.MSBuildPath)
-                    ? msBuildInstance.MSBuildPath
-                    : msBuildInstance.MSBuildPath + Path.DirectorySeparatorChar;
-
-                Build.Locator.MSBuildLocator.RegisterMSBuildPath(msBuildPath);
-
+                Build.Locator.MSBuildLocator.RegisterInstance(msBuildInstance);
+                msBuildPath = msBuildInstance.MSBuildPath;
                 return true;
             }
             catch
