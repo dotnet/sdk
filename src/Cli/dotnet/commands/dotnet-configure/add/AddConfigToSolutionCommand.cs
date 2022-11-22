@@ -26,11 +26,11 @@ namespace Microsoft.DotNet.Tools.Configure.Add
         public AddConfigToSolutionCommand(
             ParseResult parseResult) : base(parseResult)
         {
-            _fileOrDirectory = parseResult.GetValueForArgument(ConfigureCommandParser.ConfigureArgument);
-            _configName = parseResult.GetValueForOption(ConfigureAddParser.ConfigName);
-            _platformName = parseResult.GetValueForOption(ConfigureAddParser.PlatformName);
-            _copyFrom = parseResult.GetValueForOption(ConfigureAddParser.CopyFromConfig);
-            _updateProj = parseResult.GetValueForOption(ConfigureAddParser.UpdateProject);
+            _fileOrDirectory = parseResult.GetValue(ConfigureCommandParser.ConfigureArgument);
+            _configName = parseResult.GetValue(ConfigureAddParser.ConfigName);
+            _platformName = parseResult.GetValue(ConfigureAddParser.PlatformName);
+            _copyFrom = parseResult.GetValue(ConfigureAddParser.CopyFromConfig);
+            _updateProj = parseResult.GetValue(ConfigureAddParser.UpdateProject);
         }
 
         public override int Execute()
