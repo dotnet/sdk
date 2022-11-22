@@ -413,6 +413,33 @@ namespace Microsoft.NET.Build.Tests
             }
         }
 
+        [Fact]
+        public void It_does_not_build_SelfContained_due_to_PublishSelfContained_being_true()
+        {
+            string targetFramework = ToolsetInfo.CurrentTargetFramework;
+
+            var testAsset = _testAssetsManager
+                .CopyTestAsset("HelloWorld", identifier: "ItDoesNotBuildSCDueToPSC")
+                .WithSource()
+                .WithTargetFramework(targetFramework)
+                .WithProjectChanges(project =>
+                {
+                    var ns = project.Root.Name.Namespace;
+                    var propertyGroup = project.Root.Elements(ns + "PropertyGroup").First();
+                    propertyGroup.Add(new XElement(ns + "PublishSelfContained", "true"));
+                });
+
+            var buildCommand = new BuildCommand(testAsset);
+
+            buildCommand
+                .Execute()
+                .Should()
+                .Pass();
+
+            var outputDirectory = buildCommand.GetOutputDirectory(targetFramework);
+            outputDirectory.Should().NotHaveFile("hostfxr.dll"); // This file will only appear if SelfContained. 
+        }
+
         [Theory]
         [InlineData("net7.0", true)]
         [InlineData("net7.0", false)]

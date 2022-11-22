@@ -2,12 +2,10 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.IO;
 
-namespace Microsoft.DotNet.ApiCompatibility
+namespace Microsoft.DotNet.ApiSymbolExtensions
 {
     /// <summary>
     /// Loads <see cref="IAssemblySymbol"/> objects from source files, binaries or directories containing binaries.
@@ -86,5 +84,10 @@ namespace Microsoft.DotNet.ApiCompatibility
         /// <param name="warnOnMissingAssemblies">Indicates if a warning should be added to the warning list when a matching assembly is not found.</param>
         /// <returns>The list of matching assemblies represented as <see cref="IAssemblySymbol"/>.</returns>
         IEnumerable<IAssemblySymbol> LoadMatchingAssemblies(IEnumerable<IAssemblySymbol> fromAssemblies, IEnumerable<string> searchPaths, bool validateMatchingIdentity = true, bool warnOnMissingAssemblies = true);
+
+        /// <summary>
+        /// The list of metadata references represented as <see cref="MetadataReference" />.
+        /// </summary>
+        IEnumerable<MetadataReference> MetadataReferences { get; }
     }
 }

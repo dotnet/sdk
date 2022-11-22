@@ -6,6 +6,8 @@ using System.Collections.Generic;
 using System.Formats.Asn1;
 using System.IO;
 using System.Linq;
+using System.Reflection;
+using System.Security.Cryptography;
 using System.Text;
 using System.Xml.Linq;
 using FluentAssertions;
@@ -106,8 +108,6 @@ namespace Microsoft.NET.Publish.Tests
                 IsExe = true
             };
 
-            var compatibleRid = EnvironmentInfo.GetCompatibleRid(testProject.TargetFrameworks);
-
             testProject.AdditionalProperties["UseCurrentRuntimeIdentifier"] = "True";
 
             //  Use a test-specific packages folder
@@ -206,6 +206,105 @@ namespace Microsoft.NET.Publish.Tests
             }
         }
 
+        [Theory]
+        [InlineData(false, false)] // publish rid overrides rid in project file if publishing
+        [InlineData(true, false)] // publish rid doesnt override global rid
+        [InlineData(true, true)] // publish rid doesnt override global rid, even if global
+        public void PublishRuntimeIdentifierSetsRuntimeIdentifierAndDoesOrDoesntOverrideRID(bool runtimeIdentifierIsGlobal, bool publishRuntimeIdentifierIsGlobal)
+        {
+            string tfm = ToolsetInfo.CurrentTargetFramework;
+            string publishRuntimeIdentifier = "win-x64";
+            string runtimeIdentifier = "win-x86";
+
+            var testProject = new TestProject()
+            {
+                IsExe = true,
+                TargetFrameworks = tfm
+            };
+            if (!publishRuntimeIdentifierIsGlobal)
+                testProject.AdditionalProperties["PublishRuntimeIdentifier"] = publishRuntimeIdentifier;
+            if (!runtimeIdentifierIsGlobal)
+                testProject.AdditionalProperties["RuntimeIdentifier"] = runtimeIdentifier;
+            testProject.RecordProperties("RuntimeIdentifier");
+
+            List<string> args = new List<string>
+            {
+                runtimeIdentifierIsGlobal ? $"/p:RuntimeIdentifier={runtimeIdentifier}" : "",
+                publishRuntimeIdentifierIsGlobal ? $"/p:PublishRuntimeIdentifier={publishRuntimeIdentifier}" : ""
+            };
+
+            string identifier = $"PublishRuntimeIdentifierOverrides-{publishRuntimeIdentifierIsGlobal}-{runtimeIdentifierIsGlobal}";
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: identifier);
+            var publishCommand = new DotnetPublishCommand(Log);
+            publishCommand
+                .WithWorkingDirectory(Path.Combine(testAsset.TestRoot, testProject.Name))
+                .Execute(args.ToArray())
+                .Should()
+                .Pass();
+
+            string expectedRid = runtimeIdentifierIsGlobal ? runtimeIdentifier : publishRuntimeIdentifier;
+            var properties = testProject.GetPropertyValues(testAsset.TestRoot, targetFramework: tfm);
+            var finalRid = properties["RuntimeIdentifier"];
+
+            Assert.True(finalRid == expectedRid);
+        }
+
+        [WindowsOnlyFact]
+        public void PublishRuntimeIdentifierOverridesUseCurrentRuntime()
+        {
+            string tfm = ToolsetInfo.CurrentTargetFramework;
+            string publishRid = "linux-x64"; // linux is arbitrarily picked; just because it is different than a windows RID.
+            var testProject = new TestProject()
+            {
+                IsExe = true,
+                TargetFrameworks = tfm
+            };
+
+            testProject.AdditionalProperties["UseCurrentRuntimeIdentifier"] = "true";
+            testProject.AdditionalProperties["PublishRuntimeIdentifier"] = publishRid;
+            testProject.RecordProperties("RuntimeIdentifier");
+            testProject.RecordProperties("NETCoreSdkPortableRuntimeIdentifier");
+
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var publishCommand = new DotnetPublishCommand(Log);
+            publishCommand
+                .WithWorkingDirectory(Path.Combine(testAsset.TestRoot, MethodBase.GetCurrentMethod().Name))
+                .Execute()
+                .Should()
+                .Pass();
+
+            var properties = testProject.GetPropertyValues(testAsset.TestRoot, targetFramework: tfm);
+            var finalRid = properties["RuntimeIdentifier"];
+            var ucrRid = properties["NETCoreSdkPortableRuntimeIdentifier"];
+
+            Assert.True(finalRid == publishRid);
+            Assert.True(ucrRid != finalRid);
+        }
+
+        [Fact]
+        public void ImplicitRuntimeIdentifierOptOutCorrectlyOptsOut()
+        {
+            var targetFramework = ToolsetInfo.CurrentTargetFramework;
+            var runtimeIdentifier = EnvironmentInfo.GetCompatibleRid(targetFramework);
+            var testProject = new TestProject()
+            {
+                IsExe = true,
+                TargetFrameworks = targetFramework
+            };
+            testProject.AdditionalProperties["SelfContained"] = "true";
+            testProject.AdditionalProperties["UseCurrentRuntimeIdentifier"] = "false";
+
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+
+            var publishCommand = new PublishCommand(testAsset);
+            publishCommand
+                .Execute()
+                .Should()
+                .Fail()
+                .And
+                .HaveStdOutContaining("NETSDK1191");
+        }
+
         [Fact]
         public void DuplicateRuntimeIdentifiers()
         {
@@ -291,6 +390,28 @@ namespace Microsoft.NET.Publish.Tests
             var properties = _testProject.GetPropertyValues(testAsset.TestRoot, targetFramework: targetFramework, runtimeIdentifier: expectedRuntimeIdentifier);
             var resolvedRid = properties["RuntimeIdentifier"];
             Assert.True(resolvedRid == "");
+        }
+
+        [Fact]
+        public void PublishSuccessfullyWithRIDRequiringPropertyAndRuntimeIdentifiersNoRuntimeIdentifier()
+        {
+            var targetFramework = ToolsetInfo.CurrentTargetFramework;
+            var runtimeIdentifier = EnvironmentInfo.GetCompatibleRid(targetFramework);
+            var testProject = new TestProject()
+            {
+                IsExe = true,
+                TargetFrameworks = targetFramework
+            };
+
+            testProject.AdditionalProperties["RuntimeIdentifiers"] = runtimeIdentifier;
+            testProject.AdditionalProperties["PublishReadyToRun"] = "true";
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+
+            var publishCommand = new PublishCommand(testAsset);
+            publishCommand
+                .Execute()
+                .Should()
+                .Pass();
         }
     }
 }
