@@ -22,23 +22,14 @@
     </PropertyGroup>
   </Target>
 
-  <!-- GenAPIGenerateReferenceSource was the old target's name. Keep it to not break existing dev workflows. -->
-  <Target Name="GenAPIGenerateReferenceSource"
-          DependsOnTargets="GenAPIGenerateReferenceAssemblySource" />
-
   <UsingTask TaskName="Microsoft.DotNet.GenAPI.Task.GenAPITask" AssemblyFile="$(DotNetGenAPITaskAssembly)" />
 
   <Target Name="GenAPIGenerateReferenceAssemblySource"
-          DependsOnTargets="_GenAPIDontBuildProjectReferences;ResolveAssemblyReferences">
-    <ItemGroup Condition="'$(GenAPILibPath)' == ''">
-      <!-- Build out a list of directories where dependencies are located. -->
-      <_referencePathDirectories Include="@(ReferencePath->'%(RootDir)%(Directory)'->Distinct())" />
-    </ItemGroup>
-
+          DependsOnTargets="_GenAPIDontBuildProjectReferences;FindReferenceAssembliesForReferences">
     <PropertyGroup>
       <GenAPIInputAssembly Condition="'$(GenAPIInputAssembly)' == ''">@(IntermediateAssembly)</GenAPIInputAssembly>
       <GenAPITargetPath Condition="'$(GenAPITargetPath)' == ''">$(TargetDir)$(TargetName).cs</GenAPITargetPath>
-      <GenAPILibPath Condition="'$(GenAPILibPath)' == ''">@(_referencePathDirectories)</GenAPILibPath>
+      <GenAPILibPath Condition="'$(GenAPILibPath)' == ''">@(ReferencePathWithRefAssemblies)</GenAPILibPath>
       <!-- When the GenAPIGenerateReferenceAssemblySource target is invoked directly, make sure the verbosity is high
            so that the generated reference source path is printed to the console. Otherwise emit the message with
            a low verbosity so that it doesn't appear on a console but still on logs. -->
