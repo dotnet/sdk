@@ -37,12 +37,12 @@
 
     <ItemGroup>
       <GenAPIInputAssembly Include="@(IntermediateAssembly)" Condition="'@(GenAPIInputAssembly)' == ''" />
-      <GenAPILibPath Include="@(ReferencePathWithRefAssemblies)" Condition="'@(GenAPILibPath)' == ''" />
+      <GenAPIAssemblyReference Include="@(ReferencePathWithRefAssemblies)" Condition="'@(GenAPIAssemblyReference)' == ''" />
     </ItemGroup>
 
     <Microsoft.DotNet.GenAPI.Task.GenAPITask
       Assemblies="@(GenAPIInputAssembly)"
-      AssemblyReferences="@(GenAPILibPath)"
+      AssemblyReferences="@(GenAPIAssemblyReference)"
       OutputPath="$(GenAPITargetPath)"
       HeaderFile="$(GenAPIHeaderFile)"
       ExceptionMessage="$(GenAPIExceptionMessage)"
