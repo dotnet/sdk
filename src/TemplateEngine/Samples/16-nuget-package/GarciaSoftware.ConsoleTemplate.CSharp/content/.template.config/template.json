@@ -1,0 +1,8 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "Catalina Garcia",
+  "classifications": [ "Common", "Console" ],
+  "identity": "GarciaSoftware.ConsoleTemplate.CSharp",
+  "name": "Garcia Software Console Application",
+  "shortName": "garciaconsole"
+}
