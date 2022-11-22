@@ -1,30 +1,31 @@
 # .NET Template Samples
 
-This repository contains samples of templates created using the [Template Engine](https://github.com/dotnet/templating/). Custom templates can be
-used from `dotnet new` today. We are working on integrating these templates into Visaul Studio as well.
+This folder contains samples of templates done for template engine.
+These templates are supported by `dotnet new` and Visual Studio. 
+For details, on how to configure the templates to be used in Visual Studio, refer to [this article]( https://aka.ms/netcore-templates).
 
-For more general info on `dotnet new`, and the Template Engine, see the following.
- - [Announcing .NET Core Tools 1.0](https://blogs.msdn.microsoft.com/dotnet/2017/03/07/announcing-net-core-tools-1-0/)
- - [How to create your own templates for dotnet new](https://blogs.msdn.microsoft.com/dotnet/2017/04/02/how-to-create-your-own-templates-for-dotnet-new/)
+For more general info on the authoring, see:
+- [How to create custom templates](https://learn.microsoft.com/en-us/dotnet/core/tools/custom-templates)
+- [Template authoring docs in dotnet/templating Wiki](https://github.com/dotnet/templating/wiki)
 
 ## Contributing
 
-We would love community contributions here.
+We would love community contributions here. Please feel free to open the PRs to add more examples or create an [issue](https://github.com/dotnet/templating/issues/new) requesting a new example.
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for information on contributing to this project.
+See [CONTRIBUTING.md](../CONTRIBUTING.md) for information on contributing to this project.
 
-This project has adopted the code of conduct defined by the [Contributor Covenant](http://contributor-covenant.org/) 
-to clarify expected behavior in our community. For more information, see the [.NET Foundation Code of Conduct](http://www.dotnetfoundation.org/code-of-conduct).
+## Template Content Repositories
 
-## License
+[.NET default templates](https://docs.microsoft.com/en-us/dotnet/core/tools/dotnet-new-sdk-templates) are located in several repositories. You can use them as examples of more complicated templates.
 
-This project is licensed with the [MIT license](LICENSE).
+The templates are located in the following repositories:
 
-## Related Projects
-
-You should take a look at these related projects:
-
-- [Template Engine](https://github.com/dotnet/templating/)
-- [.NET Core](https://github.com/dotnet/core)
-- [ASP.NET](https://github.com/aspnet)
-- [Mono](https://github.com/mono)
+| Templates | Repository |
+|---|---|
+|Common project and item templates|[dotnet/sdk](https://github.com/dotnet/sdk)|
+|ASP.NET and Blazor templates|[dotnet/aspnetcore](https://github.com/dotnet/aspnetcore)|
+|ASP.NET Single Page Application templates| [dotnet/spa-templates](https://github.com/dotnet/spa-templates)|
+|WPF templates|[dotnet/wpf](https://github.com/dotnet/wpf)|
+|Windows Forms templates|[dotnet/winforms](https://github.com/dotnet/winforms)|
+|Test templates|[dotnet/test-templates](https://github.com/dotnet/test-templates)|
+|MAUI templates|[dotnet/maui](https://github.com/dotnet/maui)|
