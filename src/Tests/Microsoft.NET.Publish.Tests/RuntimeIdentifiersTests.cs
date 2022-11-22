@@ -356,7 +356,7 @@ namespace Microsoft.NET.Publish.Tests
 
             if ((runtimeSpecific != "false" && targetFramework == "net8.0") || runtimeSpecific == "true" && targetFramework == "net7.0")
             {
-                var properties = _testProject.GetPropertyValues(testAsset.TestRoot, targetFramework: targetFramework, runtimeIdentifier: expectedRuntimeIdentifier);
+                var properties = _testProject.GetPropertyValues(testAsset.TestRoot, targetFramework: targetFramework);
                 var resolvedRid = properties["RuntimeIdentifier"];
                 Assert.True(resolvedRid == expectedRuntimeIdentifier);
             }
@@ -387,7 +387,7 @@ namespace Microsoft.NET.Publish.Tests
                 .Should()
                 .Pass();
 
-            var properties = _testProject.GetPropertyValues(testAsset.TestRoot, targetFramework: targetFramework, runtimeIdentifier: expectedRuntimeIdentifier);
+            var properties = _testProject.GetPropertyValues(testAsset.TestRoot, targetFramework: targetFramework);
             var resolvedRid = properties["RuntimeIdentifier"];
             Assert.True(resolvedRid == "");
         }
