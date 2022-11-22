@@ -27,9 +27,7 @@
   <Target Name="GenAPIGenerateReferenceAssemblySource"
           DependsOnTargets="_GenAPIDontBuildProjectReferences;FindReferenceAssembliesForReferences">
     <PropertyGroup>
-      <GenAPIInputAssembly Condition="'$(GenAPIInputAssembly)' == ''">@(IntermediateAssembly)</GenAPIInputAssembly>
       <GenAPITargetPath Condition="'$(GenAPITargetPath)' == ''">$(TargetDir)$(TargetName).cs</GenAPITargetPath>
-      <GenAPILibPath Condition="'$(GenAPILibPath)' == ''">@(ReferencePathWithRefAssemblies)</GenAPILibPath>
       <!-- When the GenAPIGenerateReferenceAssemblySource target is invoked directly, make sure the verbosity is high
            so that the generated reference source path is printed to the console. Otherwise emit the message with
            a low verbosity so that it doesn't appear on a console but still on logs. -->
@@ -37,13 +35,18 @@
       <GenAPIVerbosity Condition="'$(GenAPIVerbosity)' == '' and '$(GenAPIGenerateReferenceAssemblySource)' != 'true'">high</GenAPIVerbosity>
     </PropertyGroup>
 
+    <ItemGroup>
+      <GenAPIInputAssembly Include="@(IntermediateAssembly)" Condition="'@(GenAPIInputAssembly)' == ''" />
+      <GenAPILibPath Include="@(ReferencePathWithRefAssemblies)" Condition="'@(GenAPILibPath)' == ''" />
+    </ItemGroup>
+
     <Microsoft.DotNet.GenAPI.Task.GenAPITask
-      Assemblies="$(GenAPIInputAssembly)"
-      AssemblyReferences="$(GenAPILibPath)"
+      Assemblies="@(GenAPIInputAssembly)"
+      AssemblyReferences="@(GenAPILibPath)"
       OutputPath="$(GenAPITargetPath)"
       HeaderFile="$(GenAPIHeaderFile)"
       ExceptionMessage="$(GenAPIExceptionMessage)"
-      ExcludeAttributesFiles="$(GenAPIExcludeAttributesList)"
+      ExcludeAttributesFiles="@(GenAPIExcludeAttributesList)"
       IncludeVisibleOutsideOfAssembly="$(GenAPIIncludeVisibleOutsideOfAssembly)" />
 
     <Message Text="Generated reference assembly source code: $(GenAPITargetPath)" Importance="$(GenAPIVerbosity)" />
