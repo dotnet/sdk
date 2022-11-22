@@ -26,7 +26,7 @@ namespace Microsoft.DotNet.Tools.Configure.Add
         public AddConfigToSolutionCommand(
             ParseResult parseResult) : base(parseResult)
         {
-            _fileOrDirectory = _parseResult.GetValueForArgument(ConfigureCommandParser.ConfigureArgument);
+            _fileOrDirectory = parseResult.GetValueForArgument(ConfigureCommandParser.ConfigureArgument);
             _configName = parseResult.GetValueForOption(ConfigureAddParser.ConfigName);
             _platformName = parseResult.GetValueForOption(ConfigureAddParser.PlatformName);
             _copyFrom = parseResult.GetValueForOption(ConfigureAddParser.CopyFromConfig);
