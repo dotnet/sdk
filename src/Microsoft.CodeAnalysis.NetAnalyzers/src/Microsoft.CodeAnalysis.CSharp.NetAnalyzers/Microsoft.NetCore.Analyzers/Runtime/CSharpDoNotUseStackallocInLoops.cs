@@ -38,7 +38,8 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
                         // foreach loops are special, in that as with other loops we don't want stackallocs
                         // in the body of the loop, but in the expression of a foreach is ok.
                         case SyntaxKind.ForEachStatement:
-                            ForEachStatementSyntax foreachStatement = (ForEachStatementSyntax)node;
+                        case SyntaxKind.ForEachVariableStatement:
+                            var foreachStatement = (CommonForEachStatementSyntax)node;
                             if (foreachStatement.Expression.Contains(ctx.Node))
                             {
                                 continue;
@@ -71,7 +72,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
                                         foreach (IOperation child in block.Operations)
                                         {
                                             if (child.Syntax.SpanStart > node.SpanStart &&
-                                                (child is IReturnOperation || (child is IBranchOperation branch && branch.BranchKind == BranchKind.Break)))
+                                                (child is IReturnOperation or IBranchOperation { BranchKind: BranchKind.Break }))
                                             {
                                                 // Err on the side of false negatives / caution and say this stackalloc is ok.
                                                 // Note, too, it's possible we're breaking out of a nested loop, and the outer loop
@@ -88,7 +89,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
                             }
 
                             // Warn as needed.
-                            if (ShouldWarn(ctx.SemanticModel.GetOperationWalkingUpParentChain(ctx.Node, default), ctx.Node))
+                            if (ShouldWarn(ctx.SemanticModel.GetOperationWalkingUpParentChain(ctx.Node, ctx.CancellationToken), ctx.Node))
                             {
                                 ctx.ReportDiagnostic(ctx.Node.CreateDiagnostic(Rule));
                             }
