@@ -14,7 +14,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
     {
         public IReadOnlyList<IOperationProvider> Operations { get; init; } = Array.Empty<IOperationProvider>();
 
-        public IVariableConfig VariableSetup { get; init; } = VariableConfig.DefaultVariableSetup();
+        public IVariableConfig VariableSetup { get; init; } = VariableConfig.Default;
 
         public IReadOnlyList<IGeneratedSymbolConfig> GeneratedSymbolMacros { get; init; } = Array.Empty<IGeneratedSymbolConfig>();
 

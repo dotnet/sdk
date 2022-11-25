@@ -30,14 +30,14 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
         public IReadOnlyList<CustomOperationModel> Operations { get; }
 
         /// <summary>
-        /// Gets the variable configuration format.
-        /// </summary>
-        public IVariableConfig VariableFormat { get; } = VariableConfig.DefaultVariableSetup();
-
-        /// <summary>
         /// Gets the prefix that is used in flags.
         /// </summary>
         public string? FlagPrefix { get; internal init; }
+
+        /// <summary>
+        /// Gets the variable configuration format.
+        /// </summary>
+        internal IVariableConfig VariableFormat { get; } = VariableConfig.Default;
 
         internal static CustomFileGlobModel FromJObject(JObject globData, string globName)
         {

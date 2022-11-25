@@ -36,7 +36,6 @@ Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.CustomFileGlo
 Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.CustomFileGlobModel.FlagPrefix.get -> string?
 Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.CustomFileGlobModel.Glob.get -> string!
 Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.CustomFileGlobModel.Operations.get -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.CustomOperationModel!>!
-Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.CustomFileGlobModel.VariableFormat.get -> Microsoft.TemplateEngine.Core.Contracts.IVariableConfig!
 Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.CustomOperationModel
 Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.CustomOperationModel.Configuration.get -> string?
 Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.CustomOperationModel.Type.get -> string?

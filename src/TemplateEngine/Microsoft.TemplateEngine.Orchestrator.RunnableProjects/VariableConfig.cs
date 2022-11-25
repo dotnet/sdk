@@ -28,15 +28,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public bool Expand { get; private init; }
 
-        internal static IVariableConfig DefaultVariableSetup()
-        {
-            return new VariableConfig(
+        internal static IVariableConfig Default { get; } =
+                new VariableConfig(
                 new Dictionary<string, string>
                 {
                     { "user", "{0}" }
                 },
                 new[] { "user" },
                 null);
-        }
     }
 }

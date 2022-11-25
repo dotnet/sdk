@@ -462,7 +462,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 operations.AddRange(FlagsConfig.FlagsDefaultSetup(customGlobModel.FlagPrefix!));
             }
 
-            IVariableConfig variableConfig = customGlobModel != null ? customGlobModel.VariableFormat : VariableConfig.DefaultVariableSetup();
+            IVariableConfig variableConfig = customGlobModel != null ? customGlobModel.VariableFormat : VariableConfig.Default;
             List<IGeneratedSymbolConfig> generatedSymbolMacros = new();
             List<BaseMacroConfig> computedMacros = new();
             List<IReplacementTokens> macroGeneratedReplacements = new();
