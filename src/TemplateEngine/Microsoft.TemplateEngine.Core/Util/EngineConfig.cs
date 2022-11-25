@@ -5,6 +5,7 @@
 
 using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
+using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Core.Contracts;
 
 namespace Microsoft.TemplateEngine.Core.Util

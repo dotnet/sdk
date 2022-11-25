@@ -1,1 +1,4 @@
 ﻿Microsoft.TemplateEngine.Abstractions.ITemplate.TemplateSourceRoot.get -> Microsoft.TemplateEngine.Abstractions.Mount.IDirectory!
+Microsoft.TemplateEngine.Abstractions.IVariableCollection
+Microsoft.TemplateEngine.Abstractions.IVariableCollection.Parent.get -> Microsoft.TemplateEngine.Abstractions.IVariableCollection?
+Microsoft.TemplateEngine.Abstractions.IVariableCollection.Parent.set -> void
