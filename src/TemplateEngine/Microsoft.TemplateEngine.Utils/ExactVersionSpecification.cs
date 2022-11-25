@@ -30,7 +30,6 @@ namespace Microsoft.TemplateEngine.Utils
             return result.HasValue && result.Value == 0;
         }
 
-        /// <inheritdoc/>
         public override string ToString() => RequiredVersion;
     }
 }

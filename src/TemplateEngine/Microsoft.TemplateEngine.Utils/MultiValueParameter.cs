@@ -67,10 +67,8 @@ namespace Microsoft.TemplateEngine.Utils
             return true;
         }
 
-        /// <inheritdoc/>
         public override string ToString() => string.Join(MultiValueSeparator.ToString(), Values);
 
-        /// <inheritdoc/>
         public override bool Equals(object? obj)
         {
             if (obj is null)
@@ -91,7 +89,6 @@ namespace Microsoft.TemplateEngine.Utils
             return Equals((MultiValueParameter)obj);
         }
 
-        /// <inheritdoc/>
         public override int GetHashCode() => Values.OrderBy(v => v).ToCsvString().GetHashCode();
 
         protected bool Equals(MultiValueParameter other)

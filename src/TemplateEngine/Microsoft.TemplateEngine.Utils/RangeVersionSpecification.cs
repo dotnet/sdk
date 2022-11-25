@@ -116,7 +116,6 @@ namespace Microsoft.TemplateEngine.Utils
             return isStartValid && isEndValid;
         }
 
-        /// <inheritdoc/>
         public override string ToString()
         {
             return $"{(IsStartInclusive ? "[" : "(")}{MinVersion}-{MaxVersion}{(IsEndInclusive ? "]" : ")")}";

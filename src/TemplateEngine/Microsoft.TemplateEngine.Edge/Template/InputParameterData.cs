@@ -50,6 +50,5 @@ public class InputParameterData
     /// </summary>
     public InputDataState InputDataState { get; }
 
-    /// <inheritdoc/>
     public override string ToString() => $"{ParameterDefinition}: {Value?.ToString() ?? "<null>"}";
 }
