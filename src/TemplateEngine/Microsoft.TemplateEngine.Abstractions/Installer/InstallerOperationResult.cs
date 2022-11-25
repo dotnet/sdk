@@ -24,7 +24,7 @@ namespace Microsoft.TemplateEngine.Abstractions.Installer
         }
 
         /// <summary>
-        /// Error code, <seealso cref="InstallerErrorCode"/>.
+        /// Gets result error code.
         /// <see cref="InstallerErrorCode.Success"/> if the operation completed successfully.
         /// </summary>
         public InstallerErrorCode Error { get; }

@@ -9,7 +9,7 @@ namespace Microsoft.TemplateEngine.Abstractions.TemplatePackage
     /// <summary>
     /// Represents the template package.
     /// Template package is a folder, .nupkg or other container that can contain single or multiple templates.
-    /// <seealso cref="ITemplatePackageProvider"/> for more information.
+    /// See <see cref="ITemplatePackageProvider"/> for more information.
     /// </summary>
     public interface ITemplatePackage
     {

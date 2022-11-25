@@ -11,13 +11,13 @@ namespace Microsoft.TemplateEngine.Abstractions.Installer
         /// <summary>
         /// Defines the key for <see cref="InstallRequest.Details"/> to specify additional NuGet sources to be used on installation. Supported by NuGet installer.
         /// </summary>
-        /// <remarks><seealso cref="NuGetSourcesSeparator"/></remarks>
+        /// <remarks><see cref="NuGetSourcesSeparator"/> defines the separator to use when multiple sources are required.</remarks>
         public const string NuGetSourcesKey = "NuGetSources";
 
         /// <summary>
         /// Defines the separator to be used when specifying multiple additional NuGet sources to be used on installation. Supported by NuGet installer.
         /// </summary>
-        /// <remarks><seealso cref="NuGetSourcesKey"/></remarks>
+        /// <remarks>Used together with <see cref="NuGetSourcesKey"/>.</remarks>
         public const char NuGetSourcesSeparator = ';';
 
         /// <summary>
