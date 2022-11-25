@@ -5,7 +5,6 @@ using System;
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Core.Expressions.Cpp2;
-using Newtonsoft.Json;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
 {
@@ -27,7 +26,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
         /// Stores the result of condition evaluation. <see cref="EvaluateCondition(ILogger, IVariableCollection)"/> should be done before accessting this property.
         /// </summary>
         /// <exception cref="InvalidOperationException">when the property is accessed prior to <see cref="EvaluateCondition(ILogger, IVariableCollection)"/> method is called.</exception>
-        [JsonIgnore]
         public bool ConditionResult
         {
             get

@@ -69,7 +69,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
         /// </summary>
         public string? DataType { get; internal init; }
 
-        protected bool TryGetIsRequiredField(JToken token, out bool result)
+        private protected bool TryGetIsRequiredField(JToken token, out bool result)
         {
             result = false;
             return (token.Type == JTokenType.Boolean || token.Type == JTokenType.String)
