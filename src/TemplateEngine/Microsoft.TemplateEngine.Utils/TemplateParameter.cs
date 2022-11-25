@@ -4,8 +4,6 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.TemplateEngine.Abstractions;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Utils
 {
@@ -13,50 +11,7 @@ namespace Microsoft.TemplateEngine.Utils
     public class TemplateParameter : ITemplateParameter, IAllowDefaultIfOptionWithoutValue
 #pragma warning restore CS0618 // Type or member is obsolete
     {
-        /// <summary>
-        /// Deserialization constructor.
-        /// </summary>
-        /// <param name="jObject"></param>
-        public TemplateParameter(JObject jObject)
-        {
-            string? name = jObject.ToString(nameof(Name));
-            if (string.IsNullOrWhiteSpace(name))
-            {
-                throw new ArgumentException($"{nameof(Name)} property should not be null or whitespace", nameof(jObject));
-            }
-
-            Name = name!;
-            Type = jObject.ToString(nameof(Type)) ?? "parameter";
-            DataType = jObject.ToString(nameof(DataType)) ?? "string";
-            Description = jObject.ToString(nameof(Description));
-
-            DefaultValue = jObject.ToString(nameof(DefaultValue));
-            DefaultIfOptionWithoutValue = jObject.ToString(nameof(DefaultIfOptionWithoutValue));
-            DisplayName = jObject.ToString(nameof(DisplayName));
-            IsName = jObject.ToBool(nameof(IsName));
-            AllowMultipleValues = jObject.ToBool(nameof(AllowMultipleValues));
-
-            if (this.IsChoice())
-            {
-                Type = "parameter";
-                Dictionary<string, ParameterChoice> choices = new Dictionary<string, ParameterChoice>(StringComparer.OrdinalIgnoreCase);
-                JObject? cdToken = jObject.Get<JObject>(nameof(Choices));
-                if (cdToken != null)
-                {
-                    foreach (JProperty cdPair in cdToken.Properties())
-                    {
-                        choices.Add(
-                            cdPair.Name.ToString(),
-                            new ParameterChoice(
-                                cdPair.Value.ToString(nameof(ParameterChoice.DisplayName)),
-                                cdPair.Value.ToString(nameof(ParameterChoice.Description))));
-                    }
-                }
-                Choices = choices;
-            }
-
-            Precedence = jObject.ToTemplateParameterPrecedence(nameof(Precedence));
-        }
+        private string? _defaultIfOptionWithoutValue;
 
         public TemplateParameter(
             string name,
@@ -91,41 +46,40 @@ namespace Microsoft.TemplateEngine.Utils
         [Obsolete("Use Description instead.")]
         public string? Documentation => Description;
 
-        [JsonProperty]
         public string Name { get; }
 
-        [JsonIgnore]
         [Obsolete("Use Precedence instead.")]
         public TemplateParameterPriority Priority => Precedence.PrecedenceDefinition.ToTemplateParameterPriority();
 
-        public TemplateParameterPrecedence Precedence { get; }
+        public TemplateParameterPrecedence Precedence { get; init; } = TemplateParameterPrecedence.Default;
 
-        [JsonProperty]
         public string Type { get; }
 
-        [JsonProperty]
-        public bool IsName { get; }
+        public bool IsName { get; init; }
 
-        [JsonProperty]
-        public string? DefaultValue { get; }
+        public string? DefaultValue { get; init; }
 
-        [JsonProperty]
-        public string DataType { get; set; }
+        public string DataType { get; }
 
-        [JsonProperty]
-        public string? DefaultIfOptionWithoutValue { get; set; }
+        public string? DefaultIfOptionWithoutValue
+        {
+            get => _defaultIfOptionWithoutValue;
+            init => _defaultIfOptionWithoutValue = value;
+        }
 
-        [JsonProperty]
-        public IReadOnlyDictionary<string, ParameterChoice>? Choices { get; }
+        public IReadOnlyDictionary<string, ParameterChoice>? Choices { get; init; }
 
-        [JsonProperty]
-        public string? Description { get; }
+        public string? Description { get; init; }
 
-        [JsonProperty]
-        public string? DisplayName { get; }
+        public string? DisplayName { get; init; }
 
-        [JsonProperty]
-        public bool AllowMultipleValues { get; }
+        public bool AllowMultipleValues { get; init; }
+
+        string? IAllowDefaultIfOptionWithoutValue.DefaultIfOptionWithoutValue
+        {
+            get => _defaultIfOptionWithoutValue;
+            set => _defaultIfOptionWithoutValue = value;
+        }
 
         public override string ToString()
         {

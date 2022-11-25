@@ -78,7 +78,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                     {
                         if (item is JObject jobj)
                         {
-                            templateParameters.Add(new TemplateParameter(jobj));
+                            templateParameters.Add(ParameterFromJObject(jobj));
                         }
                     }
                     info.ParameterDefinitions = new ParameterDefinitionSet(templateParameters);
@@ -131,6 +131,62 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 }
 
                 return info;
+            }
+
+            /// <summary>
+            /// Parses <see cref="TemplateParameter"/> from <see cref="JObject"/>.
+            /// </summary>
+            /// <param name="jObject"></param>
+            private static TemplateParameter ParameterFromJObject(JObject jObject)
+            {
+                string? name = jObject.ToString(nameof(TemplateParameter.Name));
+                if (string.IsNullOrWhiteSpace(name))
+                {
+                    throw new ArgumentException($"{nameof(TemplateParameter.Name)} property should not be null or whitespace", nameof(jObject));
+                }
+
+                string type = jObject.ToString(nameof(TemplateParameter.Type)) ?? "parameter";
+                string dataType = jObject.ToString(nameof(TemplateParameter.DataType)) ?? "string";
+                string? description = jObject.ToString(nameof(TemplateParameter.Description));
+
+                string? defaultValue = jObject.ToString(nameof(TemplateParameter.DefaultValue));
+                string? defaultIfOptionWithoutValue = jObject.ToString(nameof(TemplateParameter.DefaultIfOptionWithoutValue));
+                string? displayName = jObject.ToString(nameof(TemplateParameter.DisplayName));
+                bool isName = jObject.ToBool(nameof(TemplateParameter.IsName));
+                bool allowMultipleValues = jObject.ToBool(nameof(TemplateParameter.AllowMultipleValues));
+
+                Dictionary<string, ParameterChoice>? choices = null;
+
+                if (dataType.Equals("choice", StringComparison.OrdinalIgnoreCase))
+                {
+                    choices = new Dictionary<string, ParameterChoice>(StringComparer.OrdinalIgnoreCase);
+                    JObject? cdToken = jObject.Get<JObject>(nameof(TemplateParameter.Choices));
+                    if (cdToken != null)
+                    {
+                        foreach (JProperty cdPair in cdToken.Properties())
+                        {
+                            choices.Add(
+                                cdPair.Name.ToString(),
+                                new ParameterChoice(
+                                    cdPair.Value.ToString(nameof(ParameterChoice.DisplayName)),
+                                    cdPair.Value.ToString(nameof(ParameterChoice.Description))));
+                        }
+                    }
+                }
+
+                TemplateParameterPrecedence precedence = jObject.ToTemplateParameterPrecedence(nameof(TemplateParameter.Precedence));
+
+                return new TemplateParameter(name!, type, dataType)
+                {
+                    DisplayName = displayName,
+                    Precedence = precedence,
+                    IsName = isName,
+                    DefaultValue = defaultValue,
+                    DefaultIfOptionWithoutValue = defaultIfOptionWithoutValue,
+                    Description = description,
+                    AllowMultipleValues = allowMultipleValues,
+                    Choices = choices
+                };
             }
         }
     }

@@ -37,7 +37,7 @@ namespace Microsoft.TemplateEngine.Abstractions
 
         /// <summary>
         /// Gets parameter type.
-        /// In Orchestrator.RunnableProjects the following types are used: parameter, generated, combined, derived, bind (same as symbol types).
+        /// In Orchestrator.RunnableProjects the type is always 'parameter'.
         /// </summary>
         string Type { get; }
 

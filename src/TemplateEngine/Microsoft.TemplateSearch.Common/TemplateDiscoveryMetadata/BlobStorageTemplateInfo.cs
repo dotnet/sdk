@@ -78,7 +78,7 @@ namespace Microsoft.TemplateSearch.Common
 
         [JsonProperty(nameof(Parameters))]
         //reading manually now to support old format
-        public IParameterDefinitionSet ParameterDefinitions { get; private set; } = TemplateEngine.Abstractions.Parameters.ParameterDefinitionSet.Empty;
+        public IParameterDefinitionSet ParameterDefinitions { get; private set; } = ParameterDefinitionSet.Empty;
 
         [JsonIgnore]
         [Obsolete("Use ParameterDefinitionSet instead.")]

@@ -11,5 +11,13 @@ Microsoft.TemplateEngine.Utils.DictionaryExtensions.ConflictingKeysResolution.Pr
 Microsoft.TemplateEngine.Utils.DictionaryExtensions.ConflictingKeysResolution.Throw = 2 -> Microsoft.TemplateEngine.Utils.DictionaryExtensions.ConflictingKeysResolution
 Microsoft.TemplateEngine.Utils.IPatternMatcher
 Microsoft.TemplateEngine.Utils.IPatternMatcher.IsMatch(string! test) -> bool
+Microsoft.TemplateEngine.Utils.TemplateParameter.AllowMultipleValues.init -> void
+Microsoft.TemplateEngine.Utils.TemplateParameter.Choices.init -> void
+Microsoft.TemplateEngine.Utils.TemplateParameter.DefaultIfOptionWithoutValue.init -> void
+Microsoft.TemplateEngine.Utils.TemplateParameter.DefaultValue.init -> void
+Microsoft.TemplateEngine.Utils.TemplateParameter.Description.init -> void
+Microsoft.TemplateEngine.Utils.TemplateParameter.DisplayName.init -> void
+Microsoft.TemplateEngine.Utils.TemplateParameter.IsName.init -> void
+Microsoft.TemplateEngine.Utils.TemplateParameter.Precedence.init -> void
 static Microsoft.TemplateEngine.Utils.DictionaryExtensions.Merge<TKey, TValue>(this System.Collections.Generic.IDictionary<TKey, TValue>! dict, System.Collections.Generic.IReadOnlyDictionary<TKey, TValue>! another, Microsoft.TemplateEngine.Utils.DictionaryExtensions.ConflictingKeysResolution conflictingKeysResolution = Microsoft.TemplateEngine.Utils.DictionaryExtensions.ConflictingKeysResolution.Overwrite) -> void
 static readonly Microsoft.TemplateEngine.Utils.Glob.MatchAll -> Microsoft.TemplateEngine.Utils.IPatternMatcher!

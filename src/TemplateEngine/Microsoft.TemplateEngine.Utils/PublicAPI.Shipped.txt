@@ -109,9 +109,7 @@ Microsoft.TemplateEngine.Utils.TemplateMatchInfoExtensions
 Microsoft.TemplateEngine.Utils.TemplateParameter
 Microsoft.TemplateEngine.Utils.TemplateParameter.Choices.get -> System.Collections.Generic.IReadOnlyDictionary<string!, Microsoft.TemplateEngine.Abstractions.ParameterChoice!>?
 Microsoft.TemplateEngine.Utils.TemplateParameter.DataType.get -> string!
-Microsoft.TemplateEngine.Utils.TemplateParameter.DataType.set -> void
 Microsoft.TemplateEngine.Utils.TemplateParameter.DefaultIfOptionWithoutValue.get -> string?
-Microsoft.TemplateEngine.Utils.TemplateParameter.DefaultIfOptionWithoutValue.set -> void
 Microsoft.TemplateEngine.Utils.TemplateParameter.DefaultValue.get -> string?
 Microsoft.TemplateEngine.Utils.TemplateParameter.Description.get -> string?
 Microsoft.TemplateEngine.Utils.TemplateParameter.DisplayName.get -> string?
@@ -119,7 +117,6 @@ Microsoft.TemplateEngine.Utils.TemplateParameter.Documentation.get -> string?
 Microsoft.TemplateEngine.Utils.TemplateParameter.IsName.get -> bool
 Microsoft.TemplateEngine.Utils.TemplateParameter.Name.get -> string!
 Microsoft.TemplateEngine.Utils.TemplateParameter.Priority.get -> Microsoft.TemplateEngine.Abstractions.TemplateParameterPriority
-Microsoft.TemplateEngine.Utils.TemplateParameter.TemplateParameter(Newtonsoft.Json.Linq.JObject! jObject) -> void
 Microsoft.TemplateEngine.Utils.TemplateParameter.Type.get -> string!
 Microsoft.TemplateEngine.Utils.TemplateParameterExtensions
 Microsoft.TemplateEngine.Utils.Timing
