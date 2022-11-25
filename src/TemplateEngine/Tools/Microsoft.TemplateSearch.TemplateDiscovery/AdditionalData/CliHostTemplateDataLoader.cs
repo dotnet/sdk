@@ -23,11 +23,15 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.AdditionalData
         {
             IMountPoint? mountPoint = null;
 
-            if (templateInfo is ITemplateInfoHostJsonCache { HostData: JObject hostData })
+            if (templateInfo is ITemplateInfoHostJsonCache { HostData: string hostData })
             {
                 try
                 {
-                    return new CliHostTemplateData(hostData);
+                    if (!string.IsNullOrWhiteSpace(hostData))
+                    {
+                        JObject jObject = JObject.Parse(hostData);
+                        return new CliHostTemplateData(jObject);
+                    }
                 }
                 catch (Exception e)
                 {

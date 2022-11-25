@@ -117,7 +117,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                     using (var sr = new StreamReader(hostFile.OpenRead()))
                     using (var jsonTextReader = new JsonTextReader(sr))
                     {
-                        HostData = JObject.Load(jsonTextReader);
+                        HostData = JObject.Load(jsonTextReader).ToString(Formatting.None);
                     }
                 }
                 catch (Exception ex)
@@ -260,7 +260,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         [JsonIgnore]
         bool ITemplateInfo.HasScriptRunningPostActions { get; set; }
 
-        public JObject? HostData { get; private set; }
+        public string? HostData { get; private set; }
 
         [JsonProperty]
         public IReadOnlyList<Guid> PostActions { get; private set; } = Array.Empty<Guid>();

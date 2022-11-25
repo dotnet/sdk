@@ -50,7 +50,6 @@ Microsoft.TemplateEngine.Edge.Settings.FilteredTemplateInfo.IsPartialMatch.get -
 Microsoft.TemplateEngine.Edge.Settings.InstallationScope
 Microsoft.TemplateEngine.Edge.Settings.InstallationScope.Global = 0 -> Microsoft.TemplateEngine.Edge.Settings.InstallationScope
 Microsoft.TemplateEngine.Edge.Settings.ITemplateInfoHostJsonCache
-Microsoft.TemplateEngine.Edge.Settings.ITemplateInfoHostJsonCache.HostData.get -> Newtonsoft.Json.Linq.JObject?
 Microsoft.TemplateEngine.Edge.Settings.Scanner
 Microsoft.TemplateEngine.Edge.Settings.Scanner.Scan(string! mountPointUri) -> Microsoft.TemplateEngine.Edge.Settings.ScanResult!
 Microsoft.TemplateEngine.Edge.Settings.Scanner.Scan(string! mountPointUri, bool scanForComponents) -> Microsoft.TemplateEngine.Edge.Settings.ScanResult!

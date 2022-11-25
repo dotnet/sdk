@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.TemplateEngine.Abstractions;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Edge.Settings
 {
@@ -12,8 +11,8 @@ namespace Microsoft.TemplateEngine.Edge.Settings
     public interface ITemplateInfoHostJsonCache
     {
         /// <summary>
-        /// Full content of .host.json file.
+        /// Full content of .host.json file in JSON format.
         /// </summary>
-        JObject? HostData { get; }
+        string? HostData { get; }
     }
 }

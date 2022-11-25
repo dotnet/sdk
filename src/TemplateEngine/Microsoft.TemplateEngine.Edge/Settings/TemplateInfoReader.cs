@@ -98,7 +98,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                     info.TagsCollection = tags;
                 }
 
-                info.HostData = entry.Get<JObject>(nameof(info.HostData));
+                info.HostData = entry.Get<JObject>(nameof(info.HostData))?.ToString(Newtonsoft.Json.Formatting.None);
                 JArray? postActionsArray = entry.Get<JArray>(nameof(info.PostActions));
                 if (postActionsArray != null)
                 {
