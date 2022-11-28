@@ -21,7 +21,7 @@ namespace EndToEnd.Tests
             var directory = TestAssets.CreateTestDirectory();
             string projectDirectory = directory.FullName;
 
-            string newArgs = "console --debug:ephemeral-hive --no-restore";
+            string newArgs = "console --no-restore";
             new NewCommandShim()
                 .WithWorkingDirectory(projectDirectory)
                 .Execute(newArgs)
@@ -59,7 +59,7 @@ namespace EndToEnd.Tests
             var directory = TestAssets.CreateTestDirectory();
             string projectDirectory = directory.FullName;
 
-            string newArgs = "console --debug:ephemeral-hive --no-restore";
+            string newArgs = "console --no-restore";
             new NewCommandShim()
                 .WithWorkingDirectory(projectDirectory)
                 .Execute(newArgs)
@@ -224,7 +224,7 @@ namespace EndToEnd.Tests
             DirectoryInfo directory = TestAssets.CreateTestDirectory(identifier: templateName);
             string projectDirectory = directory.FullName;
 
-            string newArgs = $"{templateName} --debug:ephemeral-hive";
+            string newArgs = $"{templateName}";
 
             new NewCommandShim()
                 .WithWorkingDirectory(projectDirectory)
@@ -406,7 +406,7 @@ namespace EndToEnd.Tests
             DirectoryInfo directory = TestAssets.CreateTestDirectory(identifier: string.IsNullOrWhiteSpace(language) ? templateName : $"{templateName}[{language}]");
             string projectDirectory = directory.FullName;
 
-            string newArgs = $"{templateName} --debug:ephemeral-hive --no-restore";
+            string newArgs = $"{templateName} --no-restore";
             if (!string.IsNullOrWhiteSpace(language))
             {
                 newArgs += $" --language {language}";
