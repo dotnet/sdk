@@ -1,10 +1,10 @@
-The sample in this folder demonstrates:
+The sample in this folder demonstrates using `derived` parameter to:
 
- - PascalCasing a parameter value.
- - camelCasing a parameter value.
- - kebab-casing a paremeter value.
+ - PascalCase a parameter value.
+ - camelCase a parameter value.
+ - kebab-case a paremeter value.
  - Regex replace a parameter value.
- - Chaining of value forms.
+ - Chain value forms.
 
 See
 
@@ -13,7 +13,7 @@ See
 
 Details
 
- - A `derived` `type` with a value transformation is performed using `forms` (`ValueForms` type).
+ - A `derived` `type` with a value transformation is performed using [value forms](https://github.com/dotnet/templating/blob/main/docs/Value-Forms.md) (`ValueForms` type).
  - The sample uses `replace`, `titleCase`, `kebabCase`, `firstLowerCaseInvariant` and `chain` value forms.
  - More value forms can be found in [the source code](https://github.com/dotnet/templating/tree/main/src/Microsoft.TemplateEngine.Orchestrator.RunnableProjects/ValueForms).
 
