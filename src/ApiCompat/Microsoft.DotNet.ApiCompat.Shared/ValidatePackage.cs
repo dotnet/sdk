@@ -75,21 +75,7 @@ namespace Microsoft.DotNet.ApiCompat
                 // Execute the work items that were enqueued.
                 serviceProvider.ApiCompatRunner.ExecuteWorkItems();
 
-                if (serviceProvider.CompatibilityLogger.SuppressionWasLogged)
-                {
-                    if (!generateSuppressionFile)
-                    {
-                        serviceProvider.CompatibilityLogger.LogMessage(
-                        MessageImportance.High,
-                        CommonResources.BreakingChangesFound);
-                    }
-                }
-                else
-                {
-                    serviceProvider.CompatibilityLogger.LogMessage(
-                        MessageImportance.Normal,
-                        CommonResources.NoBreakingChangesFound);
-                }
+                SuppressionFileHelper.LogPackageValidationSuccessOrFailure(generateSuppressionFile, serviceProvider);
             }
 
             if (generateSuppressionFile)
