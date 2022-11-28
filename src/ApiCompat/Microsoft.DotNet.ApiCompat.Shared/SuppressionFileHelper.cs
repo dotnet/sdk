@@ -33,21 +33,23 @@ namespace Microsoft.DotNet.ApiCompat
             }
         }
 
-        // Log whether or not we found breaking changes. If we are writing to a suppression file, no need to log anything.
-        public static void LogAPICompatSuccessOrFailure(bool generateSuppressionFile, ApiCompatServiceProvider serviceProvider)
+        /// <summary>
+        /// Log whether or not we found breaking changes. If we are writing to a suppression file, no need to log anything.
+        /// </summary>
+        public static void LogApiCompatSuccessOrFailure(bool generateSuppressionFile, ICompatibilityLogger compatibilityLogger)
         {
-            if (serviceProvider.CompatibilityLogger.SuppressionWasLogged)
+            if (compatibilityLogger.SuppressionWasLogged)
             {
                 if (!generateSuppressionFile)
                 {
-                    serviceProvider.CompatibilityLogger.LogMessage(
+                    compatibilityLogger.LogMessage(
                     MessageImportance.High,
                     CommonResources.BreakingChangesFound);
                 }
             }
             else
             {
-                serviceProvider.CompatibilityLogger.LogMessage(
+                compatibilityLogger.LogMessage(
                     MessageImportance.Normal,
                     CommonResources.NoBreakingChangesFound);
             }
