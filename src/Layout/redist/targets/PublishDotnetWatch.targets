@@ -1,0 +1,23 @@
+<Project>
+  <Target Name="_PublishDotnetWatch_InputsOutputs">
+    <PropertyGroup>
+      <_DotnetWatchOutputDirectory>$(ArtifactsDir)bin\redist\$(Configuration)\dotnet\sdk\$(Version)\DotnetTools\dotnet-watch\$(Version)\tools\$(SdkTargetFramework)\any\</_DotnetWatchOutputDirectory>
+    </PropertyGroup>
+    <ItemGroup>
+      <_DotnetWatchInputFile Include="$(ArtifactsDir)bin\dotnet-watch\$(Configuration)\$(SdkTargetFramework)\**"/>
+      <_DotnetWatchOutputFile Include="@(_DotnetWatchInputFile->'$(_DotnetWatchOutputDirectory)%(RecursiveDir)%(Filename)%(Extension)')"/>
+    </ItemGroup>
+  </Target>
+
+  <Target Name="PublishDotnetWatch"
+          DependsOnTargets="_PublishDotnetWatch_InputsOutputs"
+          Inputs="@(_DotnetWatchInputFile)"
+          Outputs="@(_DotnetWatchOutputFile)">
+
+    <Copy SourceFiles="@(_DotnetWatchInputFile)" DestinationFiles="$(_DotnetWatchOutputDirectory)%(RecursiveDir)%(Filename)%(Extension)" SkipUnchangedFiles="true" />
+
+    <ItemGroup>
+      <FileWrites Include="@(_DotnetWatchOutputFile)" />
+    </ItemGroup>
+  </Target>
+</Project>
