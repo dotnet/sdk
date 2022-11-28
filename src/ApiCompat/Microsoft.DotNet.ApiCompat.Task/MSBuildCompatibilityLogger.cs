@@ -38,11 +38,14 @@ namespace Microsoft.DotNet.ApiCompat.Task
             if (_suppressionEngine.IsErrorSuppressed(suppression))
                 return false;
 
+            SuppressionWasLogged = true;
+
             _log.Log(new Message(messageLevel, string.Format(format, args), code));
 
             return true;
         }
 
-        public bool SuppressionWasLogged => _log.HasLoggedErrors;
+        /// <inheritdoc />
+        public bool SuppressionWasLogged { get; private set; }
     }
 }
