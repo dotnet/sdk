@@ -3,8 +3,8 @@
   <file datatype="xml" source-language="en" target-language="ja" original="../CommonResources.resx">
     <body>
       <trans-unit id="BreakingChangesFound">
-        <source>Either fix breaking change, or update compatibility suppression files, rebuild with \p:GenerateCompatibilitySuppressions or --generate-suppression-file.</source>
-        <target state="new">Either fix breaking change, or update compatibility suppression files, rebuild with \p:GenerateCompatibilitySuppressions or --generate-suppression-file.</target>
+        <source>API breaking changes found. If those are intentional, the APICompat suppression file can be updated by rebuilding with /p:ApiCompatGenerateSuppressionFile=true or --generate-suppression-file.</source>
+        <target state="new">API breaking changes found. If those are intentional, the APICompat suppression file can be updated by rebuilding with /p:ApiCompatGenerateSuppressionFile=true or --generate-suppression-file.</target>
         <note />
       </trans-unit>
       <trans-unit id="CreateWorkItemPerAssemblyAssembliesNotEqual">
@@ -18,8 +18,8 @@
         <note />
       </trans-unit>
       <trans-unit id="NoBreakingChangesFound">
-        <source>Package validation was successful. No breaking changes.</source>
-        <target state="new">Package validation was successful. No breaking changes.</target>
+        <source>APICompat ran successfully without finding any breaking changes.</source>
+        <target state="new">APICompat ran successfully without finding any breaking changes.</target>
         <note />
       </trans-unit>
       <trans-unit id="SuppressionsFileNotSpecified">
