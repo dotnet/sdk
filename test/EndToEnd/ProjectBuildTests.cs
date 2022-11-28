@@ -15,8 +15,6 @@ namespace EndToEnd.Tests
 {
     public class ProjectBuildTests : TestBase
     {
-        private static readonly string currentTfm = "net8.0";
-
         [Fact]
         public void ItCanNewRestoreBuildRunCleanMSBuildProject()
         {
@@ -28,13 +26,6 @@ namespace EndToEnd.Tests
                 .WithWorkingDirectory(projectDirectory)
                 .Execute(newArgs)
                 .Should().Pass();
-
-            string projectPath = Path.Combine(projectDirectory, directory.Name + ".csproj");
-            var project = XDocument.Load(projectPath);
-            var ns = project.Root.Name.Namespace;
-            project.Root.Element(ns + "PropertyGroup")
-                .Element(ns + "TargetFramework").Value = currentTfm;
-            project.Save(projectPath);
 
             new RestoreCommand()
                 .WithWorkingDirectory(projectDirectory)
@@ -80,9 +71,6 @@ namespace EndToEnd.Tests
             var ns = project.Root.Name.Namespace;
 
             project.Root.Attribute("Sdk").Value = "Microsoft.NET.Sdk.Web";
-            project.Root.Element(ns + "PropertyGroup")
-                .Element(ns + "TargetFramework").Value = currentTfm;
-
             project.Save(projectPath);
 
             new BuildCommand()
@@ -397,8 +385,6 @@ namespace EndToEnd.Tests
                 // Return net7.0 for templates that don't support
                 // net8.0 yet.
                 if (template.StartsWith("blazor")
-                    || template.StartsWith("classlib")
-                    || template.StartsWith("console")
                     || template.StartsWith("mvc")
                     || template.StartsWith("web")
                     || template.StartsWith("worker")
