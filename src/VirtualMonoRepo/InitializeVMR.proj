@@ -55,6 +55,7 @@
 
     <PropertyGroup>
       <RootRepoName>$([System.IO.Path]::GetFileName("$(RepoRoot.TrimEnd('/').TrimEnd('\\'))"))</RootRepoName>
+      <TargetRevision Condition=" '$(TargetRevision)' == '' ">@(RootRepoCommitSha)</TargetRevision>
     </PropertyGroup>
 
     <!-- Get installer's sha -->
@@ -62,14 +63,14 @@
       <Output TaskParameter="ConsoleOutput" ItemName="RootRepoCommitSha" />
     </Exec>
 
-    <Message Text="--> Initializing individual repos recursively. Starting from $(RootRepoName) / @(RootRepoCommitSha)" Importance="High" />
+    <Message Text="--> Initializing individual repos recursively. Starting from $(RootRepoName) / $(TargetRevision)" Importance="High" />
 
     <!-- We are hardcoding the package version for the root repo (installer), since there
          isn't a Version.Details.xml file to read it from.
          See https://github.com/dotnet/source-build/issues/2250 -->
     <VirtualMonoRepo_Initialize
       Repository="$(RootRepoName)"
-      Revision="@(RootRepoCommitSha)"
+      Revision="$(TargetRevision)"
       PackageVersion="8.0.100"
       Recursive="true"
       VmrPath="$(VmrDir)"
