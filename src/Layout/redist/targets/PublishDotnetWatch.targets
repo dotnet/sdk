@@ -5,14 +5,13 @@
     </PropertyGroup>
     <ItemGroup>
       <_DotnetWatchInputFile Include="$(ArtifactsDir)bin\dotnet-watch\$(Configuration)\$(SdkTargetFramework)\**"/>
-      <_DotnetWatchOutputFile Include="@(_DotnetWatchInputFile->'$(_DotnetWatchOutputDirectory)%(RecursiveDir)%(Filename)%(Extension)')"/>
     </ItemGroup>
   </Target>
 
   <Target Name="PublishDotnetWatch"
           DependsOnTargets="_PublishDotnetWatch_InputsOutputs"
           Inputs="@(_DotnetWatchInputFile)"
-          Outputs="@(_DotnetWatchOutputFile)">
+          Outputs="@(_DotnetWatchInputFile->'$(_DotnetWatchOutputDirectory)%(RecursiveDir)%(Filename)%(Extension)')">
 
     <Copy SourceFiles="@(_DotnetWatchInputFile)" DestinationFiles="$(_DotnetWatchOutputDirectory)%(RecursiveDir)%(Filename)%(Extension)" SkipUnchangedFiles="true" />
 
