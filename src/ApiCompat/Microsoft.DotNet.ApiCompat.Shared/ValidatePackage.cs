@@ -83,15 +83,14 @@ namespace Microsoft.DotNet.ApiCompat
                     {
                         serviceProvider.CompatibilityLogger.LogMessage(
                         MessageImportance.High,
-                        "Either fix breaking change, or update compatibility suppression files, rebuild with \\p:GenerateCompatibilitySuppressions or --generate-suppression-file.");
+                        CommonResources.BreakingChangesFound);
                     }
                 }
                 else
                 {
                     serviceProvider.CompatibilityLogger.LogMessage(
-                        MessageImportance.High,
-                        "Package validation was successful. No breaking changes."
-                        );
+                        MessageImportance.Normal,
+                        CommonResources.NoBreakingChangesFound);
                 }
             }
 

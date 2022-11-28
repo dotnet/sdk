@@ -36,6 +36,9 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging
         /// <param name="args">The message format arguments</param>
         void LogMessage(MessageImportance importance, string format, params string[] args);
 
+        /// <summary>
+        /// Reports whether the logger emitted a compatibility suppression.
+        /// </summary>
         bool SuppressionWasLogged { get; }
     }
 }

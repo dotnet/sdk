@@ -14,14 +14,12 @@ namespace Microsoft.DotNet.ApiCompat.Tool
     {
         private readonly ISuppressionEngine _suppressionEngine;
         private readonly MessageImportance _messageImportance;
-        private bool _suppressionWasLogged;
 
         public ConsoleCompatibilityLogger(ISuppressionEngine suppressionEngine,
             MessageImportance messageImportance)
         {
             _suppressionEngine = suppressionEngine;
             _messageImportance = messageImportance;
-            _suppressionWasLogged = false;
         }
 
         /// <inheritdoc />
@@ -46,7 +44,7 @@ namespace Microsoft.DotNet.ApiCompat.Tool
             if (_suppressionEngine.IsErrorSuppressed(suppression))
                 return false;
 
-            _suppressionWasLogged = true;
+            SuppressionWasLogged = true;
 
             TextWriter textWriter = errorOutput ? Console.Error : Console.Out;
             textWriter.WriteLine(code + ": " + string.Format(format, args));
@@ -54,6 +52,7 @@ namespace Microsoft.DotNet.ApiCompat.Tool
             return true;
         }
 
-        public bool SuppressionWasLogged => _suppressionWasLogged;
+        /// <inheritdoc />
+        public bool SuppressionWasLogged { get; private set; }
     }
 }
