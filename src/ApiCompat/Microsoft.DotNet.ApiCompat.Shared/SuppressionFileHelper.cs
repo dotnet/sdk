@@ -34,7 +34,7 @@ namespace Microsoft.DotNet.ApiCompat
         }
 
         // Log whether or not we found breaking changes. If we are writing to a suppression file, no need to log anything.
-        public static void LogPackageValidationSuccessOrFailure(bool generateSuppressionFile, ApiCompatServiceProvider serviceProvider)
+        public static void LogAPICompatSuccessOrFailure(bool generateSuppressionFile, ApiCompatServiceProvider serviceProvider)
         {
             if (serviceProvider.CompatibilityLogger.SuppressionWasLogged)
             {
