@@ -87,7 +87,7 @@ namespace Microsoft.DotNet.Watcher.Tests
             // Configure the working directory to be one level above the test app directory.
             await App.StartWatcherAsync(testAsset, workingDirectory: Path.GetFullPath(directoryInfo.Parent.FullName));
 
-            await App.AssertOutputLineEquals("XEnvironment: Development");
+            await App.AssertOutputLineEquals("Environment: Development");
         }
 
         [CoreMSBuildOnlyFact(Skip = "https://github.com/dotnet/sdk/issues/29047")]
