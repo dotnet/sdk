@@ -3,6 +3,8 @@
 //
 
 using System;
+using System.Diagnostics;
+using System.IO;
 using Microsoft.NET.TestFramework;
 using Xunit.Abstractions;
 
@@ -17,6 +19,9 @@ public abstract class DotNetWatchTestBase : IDisposable
     {
         App = new WatchableApp(logger);
         TestAssets = new TestAssetsManager(logger);
+
+        // disposes the test class if the test execution is cancelled:
+        AppDomain.CurrentDomain.ProcessExit += (_, _) => Dispose();
     }
 
     public ITestOutputHelper Logger => App.Logger;
