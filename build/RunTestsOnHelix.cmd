@@ -48,3 +48,5 @@ robocopy %HELIX_CORRELATION_PAYLOAD%\t\TestExecutionDirectoryFiles\ .\ testAsset
 set TestPackagesRoot=%CD%\assets\testpackages\
 dotnet build assets\testpackages\Microsoft.NET.TestPackages.csproj /t:Build -p:VersionPropsIsImported=false
 robocopy .\assets\testpackages\testpackages %TestExecutionDirectory%\TestPackages /s
+
+PowerShell -ExecutionPolicy ByPass "dotnet nuget locals all -l | ForEach-Object { $_.Split(' ')[1]} | Where-Object{$_ -like '*cache'} | Get-ChildItem -Recurse -File -Filter '*.dat' | Measure"
