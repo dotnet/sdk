@@ -43,3 +43,5 @@ dotnet nuget remove source dotnet-libraries --configfile %TestExecutionDirectory
 dotnet nuget remove source dotnet-tools --configfile %TestExecutionDirectory%\nuget.config
 dotnet nuget remove source dotnet-eng --configfile %TestExecutionDirectory%\nuget.config
 dotnet nuget list source --configfile %TestExecutionDirectory%\nuget.config
+
+PowerShell -ExecutionPolicy ByPass "dotnet nuget locals all -l | ForEach-Object { $_.Split(' ')[1]} | Where-Object{$_ -like '*cache'} | Get-ChildItem -Recurse -File -Filter '*.dat' | Measure"
