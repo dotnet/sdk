@@ -7,6 +7,7 @@ using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Constraints;
 using Microsoft.TemplateEngine.Abstractions.Parameters;
 using Microsoft.TemplateEngine.Utils;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Edge.Settings
@@ -98,7 +99,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                     info.TagsCollection = tags;
                 }
 
-                info.HostData = entry.Get<JObject>(nameof(info.HostData))?.ToString(Newtonsoft.Json.Formatting.None);
+                info.HostData = entry.Get<JObject>(nameof(info.HostData))?.ToString(Formatting.None);
                 JArray? postActionsArray = entry.Get<JArray>(nameof(info.PostActions));
                 if (postActionsArray != null)
                 {
@@ -134,33 +135,33 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             }
 
             /// <summary>
-            /// Parses <see cref="TemplateParameter"/> from <see cref="JObject"/>.
+            /// Parses <see cref="ITemplateParameter"/> from <see cref="JObject"/>.
             /// </summary>
             /// <param name="jObject"></param>
-            private static TemplateParameter ParameterFromJObject(JObject jObject)
+            private static ITemplateParameter ParameterFromJObject(JObject jObject)
             {
-                string? name = jObject.ToString(nameof(TemplateParameter.Name));
+                string? name = jObject.ToString(nameof(ITemplateParameter.Name));
                 if (string.IsNullOrWhiteSpace(name))
                 {
-                    throw new ArgumentException($"{nameof(TemplateParameter.Name)} property should not be null or whitespace", nameof(jObject));
+                    throw new ArgumentException($"{nameof(ITemplateParameter.Name)} property should not be null or whitespace", nameof(jObject));
                 }
 
-                string type = jObject.ToString(nameof(TemplateParameter.Type)) ?? "parameter";
-                string dataType = jObject.ToString(nameof(TemplateParameter.DataType)) ?? "string";
-                string? description = jObject.ToString(nameof(TemplateParameter.Description));
+                string type = jObject.ToString(nameof(ITemplateParameter.Type)) ?? "parameter";
+                string dataType = jObject.ToString(nameof(ITemplateParameter.DataType)) ?? "string";
+                string? description = jObject.ToString(nameof(ITemplateParameter.Description));
 
-                string? defaultValue = jObject.ToString(nameof(TemplateParameter.DefaultValue));
-                string? defaultIfOptionWithoutValue = jObject.ToString(nameof(TemplateParameter.DefaultIfOptionWithoutValue));
-                string? displayName = jObject.ToString(nameof(TemplateParameter.DisplayName));
-                bool isName = jObject.ToBool(nameof(TemplateParameter.IsName));
-                bool allowMultipleValues = jObject.ToBool(nameof(TemplateParameter.AllowMultipleValues));
+                string? defaultValue = jObject.ToString(nameof(ITemplateParameter.DefaultValue));
+                string? defaultIfOptionWithoutValue = jObject.ToString(nameof(ITemplateParameter.DefaultIfOptionWithoutValue));
+                string? displayName = jObject.ToString(nameof(ITemplateParameter.DisplayName));
+                bool isName = jObject.ToBool(nameof(ITemplateParameter.IsName));
+                bool allowMultipleValues = jObject.ToBool(nameof(ITemplateParameter.AllowMultipleValues));
 
                 Dictionary<string, ParameterChoice>? choices = null;
 
                 if (dataType.Equals("choice", StringComparison.OrdinalIgnoreCase))
                 {
                     choices = new Dictionary<string, ParameterChoice>(StringComparer.OrdinalIgnoreCase);
-                    JObject? cdToken = jObject.Get<JObject>(nameof(TemplateParameter.Choices));
+                    JObject? cdToken = jObject.Get<JObject>(nameof(ITemplateParameter.Choices));
                     if (cdToken != null)
                     {
                         foreach (JProperty cdPair in cdToken.Properties())
@@ -174,19 +175,76 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                     }
                 }
 
-                TemplateParameterPrecedence precedence = jObject.ToTemplateParameterPrecedence(nameof(TemplateParameter.Precedence));
+                TemplateParameterPrecedence precedence = jObject.ToTemplateParameterPrecedence(nameof(ITemplateParameter.Precedence));
 
-                return new TemplateParameter(name!, type, dataType)
+                return new CacheTemplateParameter(
+                    new TemplateParameter(name!, type, dataType)
+                    {
+                        DisplayName = displayName,
+                        Precedence = precedence,
+                        IsName = isName,
+                        DefaultValue = defaultValue,
+                        DefaultIfOptionWithoutValue = defaultIfOptionWithoutValue,
+                        Description = description,
+                        AllowMultipleValues = allowMultipleValues,
+                        Choices = choices
+                    });
+            }
+
+            /// <summary>
+            /// This class is overload on <see cref="ITemplateParameter"/> controlling JSON serialization for template parameters in cache.
+            /// Not all the members are required to be serialized.
+            /// </summary>
+            private class CacheTemplateParameter : ITemplateParameter
+            {
+                private readonly ITemplateParameter _parameter;
+
+                internal CacheTemplateParameter(ITemplateParameter parameter)
                 {
-                    DisplayName = displayName,
-                    Precedence = precedence,
-                    IsName = isName,
-                    DefaultValue = defaultValue,
-                    DefaultIfOptionWithoutValue = defaultIfOptionWithoutValue,
-                    Description = description,
-                    AllowMultipleValues = allowMultipleValues,
-                    Choices = choices
-                };
+                    _parameter = parameter;
+                }
+
+                public string? Description => _parameter.Description;
+
+                [JsonProperty]
+                public string Name => _parameter.Name;
+
+                [JsonProperty]
+                public TemplateParameterPrecedence Precedence => _parameter.Precedence;
+
+                [JsonProperty]
+                public string Type => _parameter.Type;
+
+                [JsonProperty]
+                public bool IsName => _parameter.IsName;
+
+                [JsonProperty]
+                public string? DefaultValue => _parameter.DefaultValue;
+
+                [JsonProperty]
+                public string? DefaultIfOptionWithoutValue => _parameter.DefaultIfOptionWithoutValue;
+
+                [JsonProperty]
+                public string DataType => _parameter.DataType;
+
+                [JsonProperty]
+                public IReadOnlyDictionary<string, ParameterChoice>? Choices => _parameter.Choices;
+
+                [JsonProperty]
+                public string? DisplayName => _parameter.DisplayName;
+
+                [JsonProperty]
+                public bool AllowMultipleValues => _parameter.AllowMultipleValues;
+
+                [Obsolete]
+                [JsonIgnore]
+                public TemplateParameterPriority Priority => _parameter.Priority;
+
+                [Obsolete]
+                [JsonIgnore]
+                public string? Documentation => _parameter.Documentation;
+
+                public bool Equals(ITemplateParameter other) => _parameter.Equals(other);
             }
         }
     }

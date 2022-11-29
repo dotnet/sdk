@@ -12,9 +12,11 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Constraints;
 using Microsoft.TemplateEngine.Abstractions.Mount;
+using Microsoft.TemplateEngine.Abstractions.Parameters;
 using Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem;
 using Microsoft.TemplateEngine.Edge.Settings;
 using Microsoft.TemplateEngine.TestHelper;
+using Microsoft.TemplateEngine.Utils;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Xunit;
@@ -147,6 +149,65 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             Assert.Equal("t1", readTemplate.Constraints[1].Type);
             Assert.Null(readTemplate.Constraints[0].Args);
             Assert.Equal(constraintInfo2.Args, readTemplate.Constraints[1].Args);
+        }
+
+        [Fact]
+        public void CanHandleParameters()
+        {
+            IEngineEnvironmentSettings environmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
+            SettingsFilePaths paths = new SettingsFilePaths(environmentSettings);
+
+            ITemplateParameter param1 = new TemplateParameter("param1", "parameter", "string");
+            ITemplateParameter param2 = new TemplateParameter("param2", "parameter", "string", new TemplateParameterPrecedence(PrecedenceDefinition.ConditionalyRequired, isRequiredCondition: "param1 == \"foo\""));
+            ITemplateParameter param3 = new TemplateParameter(
+                "param3",
+                "parameter",
+                "choice",
+                new TemplateParameterPrecedence(PrecedenceDefinition.Required),
+                defaultValue: "def",
+                defaultIfOptionWithoutValue: "def-no-value",
+                description: "desc",
+                displayName: "displ",
+                allowMultipleValues: true,
+                choices: new Dictionary<string, ParameterChoice>()
+                {
+                    { "ch1", new ParameterChoice("ch1-displ", "ch1-desc") },
+                    { "ch2", new ParameterChoice("ch2-displ", "ch2-desc") },
+                });
+
+            ITemplate template = A.Fake<ITemplate>();
+            A.CallTo(() => template.Identity).Returns("testIdentity");
+            A.CallTo(() => template.Name).Returns("testName");
+            A.CallTo(() => template.ShortNameList).Returns(new[] { "testShort" });
+            A.CallTo(() => template.MountPointUri).Returns("testMount");
+            A.CallTo(() => template.ConfigPlace).Returns(".template.config/template.json");
+            A.CallTo(() => template.ParameterDefinitions).Returns(new ParameterDefinitionSet(new[] { param1, param2, param3 }));
+            IMountPoint mountPoint = A.Fake<IMountPoint>();
+            A.CallTo(() => mountPoint.MountPointUri).Returns("testMount");
+
+            ScanResult result = new ScanResult(mountPoint, new[] { template }, Array.Empty<ILocalizationLocator>(), Array.Empty<(string AssemblyPath, Type InterfaceType, IIdentifiedComponent Instance)>());
+            TemplateCache templateCache = new TemplateCache(new[] { result }, new Dictionary<string, DateTime>(), NullLogger.Instance);
+
+            WriteObject(environmentSettings.Host.FileSystem, paths.TemplateCacheFile, templateCache);
+            var readCache = new TemplateCache(ReadObject(environmentSettings.Host.FileSystem, paths.TemplateCacheFile), NullLogger.Instance);
+
+            Assert.Single(readCache.TemplateInfo);
+            var readTemplate = readCache.TemplateInfo[0];
+            Assert.Equal(3, readTemplate.ParameterDefinitions.Count);
+            Assert.True(readTemplate.ParameterDefinitions.ContainsKey("param1"));
+            Assert.Equal(PrecedenceDefinition.Optional, readTemplate.ParameterDefinitions["param1"].Precedence.PrecedenceDefinition);
+            Assert.True(readTemplate.ParameterDefinitions.ContainsKey("param2"));
+            Assert.Equal("string", readTemplate.ParameterDefinitions["param2"].DataType);
+            Assert.Equal("param1 == \"foo\"", readTemplate.ParameterDefinitions["param2"].Precedence.IsRequiredCondition);
+            Assert.True(readTemplate.ParameterDefinitions.ContainsKey("param3"));
+            Assert.Equal("choice", readTemplate.ParameterDefinitions["param3"].DataType);
+            Assert.Equal(PrecedenceDefinition.Required, readTemplate.ParameterDefinitions["param3"].Precedence.PrecedenceDefinition);
+            Assert.Equal("def", readTemplate.ParameterDefinitions["param3"].DefaultValue);
+            Assert.Equal("def-no-value", readTemplate.ParameterDefinitions["param3"].DefaultIfOptionWithoutValue);
+            Assert.Equal("desc", readTemplate.ParameterDefinitions["param3"].Description);
+            Assert.Equal("displ", readTemplate.ParameterDefinitions["param3"].DisplayName);
+            Assert.True(readTemplate.ParameterDefinitions["param3"].AllowMultipleValues);
+            Assert.Equal(2, readTemplate.ParameterDefinitions["param3"].Choices!.Count);
         }
 
         private static JObject ReadObject(IPhysicalFileSystem fileSystem, string path)
