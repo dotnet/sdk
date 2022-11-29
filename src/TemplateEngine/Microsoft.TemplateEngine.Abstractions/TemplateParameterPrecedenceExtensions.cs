@@ -51,10 +51,7 @@ public static class TemplateParameterPrecedenceExtensions
             PrecedenceDefinition.Required => TemplateParameterPriority.Required,
             PrecedenceDefinition.Optional => TemplateParameterPriority.Optional,
             PrecedenceDefinition.Implicit => TemplateParameterPriority.Implicit,
-            PrecedenceDefinition.ConditionalyRequired => throw new ArgumentOutOfRangeException(nameof(precedenceDefinition), precedenceDefinition, "Conversion to obsolete TemplateParameterPriority is not defined for current value"),
-            PrecedenceDefinition.ConditionalyDisabled => throw new ArgumentOutOfRangeException(nameof(precedenceDefinition), precedenceDefinition, "Conversion to obsolete TemplateParameterPriority is not defined for current value"),
-            PrecedenceDefinition.Disabled => throw new ArgumentOutOfRangeException(nameof(precedenceDefinition), precedenceDefinition, "Conversion to obsolete TemplateParameterPriority is not defined for current value"),
-            _ => throw new ArgumentOutOfRangeException(nameof(precedenceDefinition), precedenceDefinition, "Conversion to obsolete TemplateParameterPriority is not defined for current value"),
+            _ => TemplateParameterPriority.Optional,
         };
     }
 }
