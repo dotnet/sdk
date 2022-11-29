@@ -184,62 +184,62 @@
       </trans-unit>
       <trans-unit id="ConstantExpectedApplicationDescription">
         <source>ConstantExpected attribute is not applied correctly on the parameter.</source>
-        <target state="new">ConstantExpected attribute is not applied correctly on the parameter.</target>
+        <target state="translated">ConstantExpected 属性がパラメーターに正しく適用されていません。</target>
         <note />
       </trans-unit>
       <trans-unit id="ConstantExpectedApplicationTitle">
         <source>Incorrect usage of ConstantExpected attribute</source>
-        <target state="new">Incorrect usage of ConstantExpected attribute</target>
+        <target state="translated">ConstantExpected 属性の使用法が正しくありません</target>
         <note />
       </trans-unit>
       <trans-unit id="ConstantExpectedAttributExpectedMessage">
         <source>The ConstantExpected attribute is required for the parameter due to the parent method annotation</source>
-        <target state="new">The ConstantExpected attribute is required for the parameter due to the parent method annotation</target>
+        <target state="translated">親メソッドの注釈により、パラメーターには ConstantExpected 属性が必要です</target>
         <note />
       </trans-unit>
       <trans-unit id="ConstantExpectedIncompatibleConstantTypeMessage">
         <source>The '{0}' value is not compatible with parameter type of '{1}'</source>
-        <target state="new">The '{0}' value is not compatible with parameter type of '{1}'</target>
+        <target state="translated">'{0}' 値は、'{1}' のパラメーターの型と互換性がありません</target>
         <note />
       </trans-unit>
       <trans-unit id="ConstantExpectedInvalidBoundsMessage">
         <source>The '{0}' value does not fit within the parameter value bounds of '{1}' to '{2}'</source>
-        <target state="new">The '{0}' value does not fit within the parameter value bounds of '{1}' to '{2}'</target>
+        <target state="translated">'{0}' の値が '{1}' から '{2}' までのパラメーター値の範囲内に収まりません</target>
         <note />
       </trans-unit>
       <trans-unit id="ConstantExpectedInvalidMessage">
         <source>The constant is not of the same '{0}' type as the parameter</source>
-        <target state="new">The constant is not of the same '{0}' type as the parameter</target>
+        <target state="translated">定数の '{0}' 型がパラメーターと同じではありません</target>
         <note />
       </trans-unit>
       <trans-unit id="ConstantExpectedInvertedRangeMessage">
         <source>The Min and Max values are inverted</source>
-        <target state="new">The Min and Max values are inverted</target>
+        <target state="translated">最小値と最大値が反転されます</target>
         <note />
       </trans-unit>
       <trans-unit id="ConstantExpectedNotConstantMessage">
         <source>The argument should be a constant for optimal performance</source>
-        <target state="new">The argument should be a constant for optimal performance</target>
+        <target state="translated">最適なパフォーマンスを得るには、引数を定数にする必要があります</target>
         <note />
       </trans-unit>
       <trans-unit id="ConstantExpectedNotSupportedMessage">
         <source>The '{0}' type is not supported for ConstantExpected attribute</source>
-        <target state="new">The '{0}' type is not supported for ConstantExpected attribute</target>
+        <target state="translated">'{0}' 型は ConstantExpected 属性ではサポートされていません</target>
         <note />
       </trans-unit>
       <trans-unit id="ConstantExpectedOutOfBoundsMessage">
         <source>The constant does not fit within the value bounds of '{0}' to '{1}'</source>
-        <target state="new">The constant does not fit within the value bounds of '{0}' to '{1}'</target>
+        <target state="translated">定数は '{0}' から '{1}' までの値の範囲内に収まりません</target>
         <note />
       </trans-unit>
       <trans-unit id="ConstantExpectedUsageDescription">
         <source>The parameter expects a constant for optimal performance.</source>
-        <target state="new">The parameter expects a constant for optimal performance.</target>
+        <target state="translated">パラメーターには、最適なパフォーマンスを得るための定数が必要です。</target>
         <note />
       </trans-unit>
       <trans-unit id="ConstantExpectedUsageTitle">
         <source>A constant is expected for the parameter</source>
-        <target state="new">A constant is expected for the parameter</target>
+        <target state="translated">パラメーターには定数が必要です</target>
         <note />
       </trans-unit>
       <trans-unit id="DataSetDataTableInDeserializableObjectGraphMessage">

@@ -184,62 +184,62 @@
       </trans-unit>
       <trans-unit id="ConstantExpectedApplicationDescription">
         <source>ConstantExpected attribute is not applied correctly on the parameter.</source>
-        <target state="new">ConstantExpected attribute is not applied correctly on the parameter.</target>
+        <target state="translated">未在參數上正確套用 ConstantExpected 屬性。</target>
         <note />
       </trans-unit>
       <trans-unit id="ConstantExpectedApplicationTitle">
         <source>Incorrect usage of ConstantExpected attribute</source>
-        <target state="new">Incorrect usage of ConstantExpected attribute</target>
+        <target state="translated">ConstantExpected 屬性的用法不正確</target>
         <note />
       </trans-unit>
       <trans-unit id="ConstantExpectedAttributExpectedMessage">
         <source>The ConstantExpected attribute is required for the parameter due to the parent method annotation</source>
-        <target state="new">The ConstantExpected attribute is required for the parameter due to the parent method annotation</target>
+        <target state="translated">由於父方法註釋，參數需要 ConstantExpected 屬性</target>
         <note />
       </trans-unit>
       <trans-unit id="ConstantExpectedIncompatibleConstantTypeMessage">
         <source>The '{0}' value is not compatible with parameter type of '{1}'</source>
-        <target state="new">The '{0}' value is not compatible with parameter type of '{1}'</target>
+        <target state="translated">'{0}' 值與 '{1}' 的參數類型不相容</target>
         <note />
       </trans-unit>
       <trans-unit id="ConstantExpectedInvalidBoundsMessage">
         <source>The '{0}' value does not fit within the parameter value bounds of '{1}' to '{2}'</source>
-        <target state="new">The '{0}' value does not fit within the parameter value bounds of '{1}' to '{2}'</target>
+        <target state="translated">'{0}' 值不符合 '{1}' 到 '{2}' 的參數值範圍</target>
         <note />
       </trans-unit>
       <trans-unit id="ConstantExpectedInvalidMessage">
         <source>The constant is not of the same '{0}' type as the parameter</source>
-        <target state="new">The constant is not of the same '{0}' type as the parameter</target>
+        <target state="translated">常數不是與參數相同的 '{0}' 類型</target>
         <note />
       </trans-unit>
       <trans-unit id="ConstantExpectedInvertedRangeMessage">
         <source>The Min and Max values are inverted</source>
-        <target state="new">The Min and Max values are inverted</target>
+        <target state="translated">最小值和最大值會反轉</target>
         <note />
       </trans-unit>
       <trans-unit id="ConstantExpectedNotConstantMessage">
         <source>The argument should be a constant for optimal performance</source>
-        <target state="new">The argument should be a constant for optimal performance</target>
+        <target state="translated">引數應為常數，以獲得最佳效能</target>
         <note />
       </trans-unit>
       <trans-unit id="ConstantExpectedNotSupportedMessage">
         <source>The '{0}' type is not supported for ConstantExpected attribute</source>
-        <target state="new">The '{0}' type is not supported for ConstantExpected attribute</target>
+        <target state="translated">ConstantExpected 屬性不支援 '{0}' 類型</target>
         <note />
       </trans-unit>
       <trans-unit id="ConstantExpectedOutOfBoundsMessage">
         <source>The constant does not fit within the value bounds of '{0}' to '{1}'</source>
-        <target state="new">The constant does not fit within the value bounds of '{0}' to '{1}'</target>
+        <target state="translated">常數不符合 '{0}' 到 '{1}' 的值範圍</target>
         <note />
       </trans-unit>
       <trans-unit id="ConstantExpectedUsageDescription">
         <source>The parameter expects a constant for optimal performance.</source>
-        <target state="new">The parameter expects a constant for optimal performance.</target>
+        <target state="translated">參數需要常數，以獲得最佳效能。</target>
         <note />
       </trans-unit>
       <trans-unit id="ConstantExpectedUsageTitle">
         <source>A constant is expected for the parameter</source>
-        <target state="new">A constant is expected for the parameter</target>
+        <target state="translated">預期參數為常數</target>
         <note />
       </trans-unit>
       <trans-unit id="DataSetDataTableInDeserializableObjectGraphMessage">
