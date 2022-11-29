@@ -202,7 +202,7 @@
     <Dependency Name="Microsoft.CodeAnalysis.Razor.Tooling.Internal" Version="7.0.0-preview.5.22579.5">
       <Uri>https://github.com/dotnet/razor</Uri>
       <Sha>a63dcc15fb36a40ae74e5d3e1a0b02116e4c2f48</Sha>
-      <SourceBuild RepoName="razor-compiler" ManagedOnly="true" />
+      <SourceBuild RepoName="razor" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.AspNetCore.Mvc.Razor.Extensions.Tooling.Internal" Version="7.0.0-preview.5.22579.5">
       <Uri>https://github.com/dotnet/razor</Uri>
