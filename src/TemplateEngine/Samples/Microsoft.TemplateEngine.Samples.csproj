@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>$(NETCoreTargetFramework)</TargetFramework>
+    <IncludeBuildOutput>False</IncludeBuildOutput>
+    <IncludeSource>False</IncludeSource>
+    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+    <OutputPath>$(ArtifactsTmpDir)</OutputPath>
+    <EnableDefaultItems>False</EnableDefaultItems>
+    <IsPackable>true</IsPackable>
+    <IsShipping>true</IsShipping>
+    <IsShippingPackage>true</IsShippingPackage>
+    <NoWarn>2008;NU5105</NoWarn>
+    <NoPackageAnalysis>true</NoPackageAnalysis>
+    <PackageId>Microsoft.TemplateEngine.Samples</PackageId>
+    <Authors>Microsoft</Authors>
+    <Description>Common Project File for Dotnet Template Samples</Description>
+    <language>en-US</language>
+    <PackageProjectUrl>https://github.com/dotnet/templating</PackageProjectUrl>
+    <PackageType>Template</PackageType>
+    <SuppressDependenciesWhenPacking>True</SuppressDependenciesWhenPacking>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Remove="Microsoft.NETCore.App" />
+    <Content Include="content\**">
+      <PackagePath>content</PackagePath>
+    </Content>
+  </ItemGroup>
+</Project>
