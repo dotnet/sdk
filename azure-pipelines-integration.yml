@@ -23,7 +23,7 @@ jobs:
         _repoName: "dotnet/format"
         _targetSolution: "format.sln"
         _branchName: "main"
-        _sha: "c4dcd04da63379e0c4e7c0bd2fa3ef0fcf44a6c1"
+        _sha: "aeca5eb55fb68bccad131b77d5e5147fe2dabddf"
 #      roslyn:
 #        _repo: "https://github.com/dotnet/roslyn"
 #        _repoName: "dotnet/roslyn"
