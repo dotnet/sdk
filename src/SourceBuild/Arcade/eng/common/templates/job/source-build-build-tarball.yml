@@ -43,7 +43,15 @@ jobs:
     - name: additionalBuildArgs
       value: --with-sdk /tarball/.dotnet
   - name: tarballDir
-    value: $(Build.StagingDirectory)/tarball
+    ${{ if eq(parameters.installerBuildResourceId, '') }}:
+      value: $(Build.SourcesDirectory)
+    ${{ else }}:
+      value: $(Build.StagingDirectory)/tarball
+  - name: installerSrcDir
+    ${{ if eq(parameters.installerBuildResourceId, '') }}:
+      value: $(Build.SourcesDirectory)/src/installer
+    ${{ else }}:
+      value: $(Build.SourcesDirectory)
   workspace:
     clean: all
 
@@ -51,19 +59,28 @@ jobs:
   - checkout: self
     clean: true
 
-  - ${{ if ne(variables['System.TeamProject'], 'public') }}:
-    - task: Bash@3
-      displayName: Setup Private Feeds Credentials
-      inputs:
-        filePath: $(Build.SourcesDirectory)/eng/common/SetupNugetSources.sh
-        arguments: $(Build.SourcesDirectory)/NuGet.config $Token
-      env:
-        Token: $(dn-bot-dnceng-artifact-feeds-rw)
+  - ${{ if ne(parameters.installerBuildResourceId, '') }}:
+    - download: ${{ parameters.installerBuildResourceId }}
+      artifact: BlobArtifacts
+      patterns: '**/dotnet-sdk-source*.tar.gz'
+      displayName: Download Source Tarball
 
-  - download: ${{ parameters.installerBuildResourceId }}
-    artifact: BlobArtifacts
-    patterns: '**/dotnet-sdk-source*.tar.gz'
-    displayName: Download Source Tarball
+    - script: |
+        set -x
+
+        resourceIdPathSegment=
+        if [[ '${{ parameters.installerBuildResourceId }}' != 'current' ]]; then
+          resourceIdPathSegment='${{ parameters.installerBuildResourceId }}/'
+        fi
+
+        mkdir -p "$(tarballDir)"
+        tarballFilePath="$(PIPELINE.WORKSPACE)/${resourceIdPathSegment}BlobArtifacts/dotnet-sdk-source*.tar.gz"
+        eval tar -ozxf "$tarballFilePath" -C "$(tarballDir)"
+        eval rm -f "$tarballFilePath"
+      displayName: Extract Tarball
+
+  - script: cp $(installerSrcDir)/NuGet.config $(tarballDir)/test/Microsoft.DotNet.SourceBuild.SmokeTests/assets/online.NuGet.Config
+    displayName: Copy Test NuGet Config
 
   - ${{ if ne(parameters.excludeSdkContentTests, 'true') }}:
     - download: ${{ parameters.installerBuildResourceId }}
@@ -83,20 +100,6 @@ jobs:
         SourceFolder: $(PIPELINE.WORKSPACE)/$(_PreviousSourceBuildArtifact)
         Contents: '*.tar.gz'
         TargetFolder: $(tarballDir)/packages/archive/
-
-  - script: |
-      set -x
-
-      resourceIdPathSegment=
-      if [[ '${{ parameters.installerBuildResourceId }}' != 'current' ]]; then
-        resourceIdPathSegment='${{ parameters.installerBuildResourceId }}/'
-      fi
-
-      mkdir -p "$(tarballDir)"
-      tarballFilePath="$(PIPELINE.WORKSPACE)/${resourceIdPathSegment}BlobArtifacts/dotnet-sdk-source*.tar.gz"
-      eval tar -ozxf "$tarballFilePath" -C "$(tarballDir)"
-      eval rm -f "$tarballFilePath"
-    displayName: Extract Tarball
 
   - script: |
       set -x
@@ -135,12 +138,17 @@ jobs:
       docker run --rm -v $(tarballDir):/tarball -w /tarball ${networkArgs} $(_Container) ./build.sh --clean-while-building ${customBuildArgs} $(additionalBuildArgs)
     displayName: Build Tarball
 
+  - ${{ if ne(variables['System.TeamProject'], 'public') }}:
+    - task: Bash@3
+      displayName: Setup Private Feeds Credentials
+      inputs:
+        filePath: $(installerSrcDir)/eng/common/SetupNugetSources.sh
+        arguments: $(tarballDir)/test/Microsoft.DotNet.SourceBuild.SmokeTests/assets/online.NuGet.Config $Token
+      env:
+        Token: $(dn-bot-dnceng-artifact-feeds-rw)
+
   - script: |
       set -x
-
-      # Use installer repo's NuGet.config during online testing to utilize internal feeds
-      rm -f $(tarballDir)/test/Microsoft.DotNet.SourceBuild.SmokeTests/assets/online.NuGet.Config
-      cp $(Build.SourcesDirectory)/NuGet.config $(tarballDir)/test/Microsoft.DotNet.SourceBuild.SmokeTests/assets/online.NuGet.Config
 
       dockerVolumeArgs="-v $(tarballDir):/tarball"
       dockerEnvArgs="-e SMOKE_TESTS_EXCLUDE_OMNISHARP=$(_ExcludeOmniSharpTests) -e SMOKE_TESTS_WARN_SDK_CONTENT_DIFFS=true"
