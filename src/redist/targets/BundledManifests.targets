@@ -82,19 +82,19 @@
     <ItemGroup>
       <ManifestContent Include="%(BundledManifests.RestoredNupkgContentPath)\data\*"
                        Condition="Exists('%(RestoredNupkgContentPath)\data')"
-                       DestinationPath="$([MSBuild]::ValueOrDefault('%(Identity)', '').ToLower())"
+                       DestinationPath="%(FeatureBand)/$([MSBuild]::ValueOrDefault('%(Identity)', '').ToLower())"
                        RestoredNupkgContentPath="%(RestoredNupkgContentPath)"
                        WorkloadManifestId="%(Identity)"/>
 
       <ManifestContent Include="%(BundledManifests.RestoredNupkgContentPath)\data\localize\*"
                        Condition="Exists('%(RestoredNupkgContentPath)\data\localize')"
-                       DestinationPath="$([MSBuild]::ValueOrDefault('%(Identity)', '').ToLower())/localize"/>
+                       DestinationPath="%(BundledManifests.FeatureBand)/$([MSBuild]::ValueOrDefault('%(Identity)', '').ToLower())/localize"/>
     </ItemGroup>
 
     <Error Text="No workload manifest content found." Condition="'@(ManifestContent->Count())' == '0'" />
     
     <Copy SourceFiles="@(ManifestContent)"
-          DestinationFolder="$(RedistLayoutPath)sdk-manifests/$(CliProductBandVersion)00/%(DestinationPath)"/>
+          DestinationFolder="$(RedistLayoutPath)sdk-manifests/%(DestinationPath)"/>
   
   </Target>
 </Project>
