@@ -487,7 +487,7 @@ The first `<Foo Condition...` is copied as-is because the `msbuild-conditional` 
 
 #### File Extensions
 
-`.sln`, `.yml`, `.yaml`, `.sh`
+`.sln`, `.yml`, `.yaml`, `.sh`, `.ps1`
 
 #### Well-known file names
 

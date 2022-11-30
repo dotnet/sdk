@@ -100,6 +100,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.OperationConfig
                         new OperationConfigDefault("**/nginx.conf", "#--", EvaluatorType.CPP, ConditionalType.HashSignLineComment),
                         new OperationConfigDefault("**/robots.txt", "#--", EvaluatorType.CPP, ConditionalType.HashSignLineComment),
                         new OperationConfigDefault("**/*.sh", "#--", EvaluatorType.CPP, ConditionalType.HashSignLineComment),
+                        new OperationConfigDefault("**/*.ps1", "#--", EvaluatorType.CPP, ConditionalType.HashSignLineComment),
                         new OperationConfigDefault("**/*.haml", "-#", EvaluatorType.CPP, ConditionalType.HamlLineComment),
                         new OperationConfigDefault("**/*.jsx", "{/*", EvaluatorType.CPP, ConditionalType.JsxBlockComment),
                         new OperationConfigDefault("**/*.tsx", "{/*", EvaluatorType.CPP, ConditionalType.JsxBlockComment),

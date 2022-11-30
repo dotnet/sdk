@@ -8,7 +8,7 @@
     <IncludeContentInPack>true</IncludeContentInPack>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <ContentTargetFolders>content</ContentTargetFolders>
-    <NoWarn>$(NoWarn);NU5128</NoWarn>
+    <NoWarn>$(NoWarn);NU5128;NU5110;NU5111</NoWarn>
     <IsPackable>true</IsPackable>
     <IsShipping>false</IsShipping>
     <NoDefaultExcludes>true</NoDefaultExcludes>
@@ -20,9 +20,5 @@
 
     <Content Include="nupkg_templates\**" />
     <None Include="nupkg_templates\**" CopyToOutputDirectory="PreserveNewest" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Remove="test_templates\TemplateWithConditionalParameters\.template.config\template.json" />
-    <None Remove="test_templates\TemplateWithConditionalParameters\Test.cs" />
   </ItemGroup>
 </Project>

@@ -300,5 +300,41 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             Assert.Equal(CreationResultStatus.InvalidParamValues, result.Status);
             Assert.Equal("userPort1, userPort2", result.ErrorMessage);
         }
+
+        [Fact]
+        internal async Task Test_CreateAsync_OnTemplateWithConditions()
+        {
+            using Bootstrapper bootstrapper = GetBootstrapper();
+            string templateLocation = GetTestTemplateLocation("TemplateWithConditions");
+            await InstallTemplateAsync(bootstrapper, templateLocation).ConfigureAwait(false);
+
+            string output = TestUtils.CreateTemporaryFolder();
+
+            IReadOnlyList<ITemplateMatchInfo> foundTemplates = await bootstrapper
+                .GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter("TestAssets.TemplateWithConditions") })
+                .ConfigureAwait(false);
+
+            Dictionary<string, string?> parameters = new()
+            {
+                { "B", "true" },
+            };
+
+            ITemplateCreationResult result = await bootstrapper
+                .CreateAsync(foundTemplates[0].Info, "Test", output, parameters)
+                .ConfigureAwait(false);
+
+            Assert.Equal(CreationResultStatus.Success, result.Status);
+
+            string targetFile = Path.Combine(output, "test.ps1");
+            Assert.True(File.Exists(targetFile));
+            Assert.Equal(
+               """
+                # comment B true
+                B true
+                common text
+
+                """.UnixifyLineBreaks(),
+               File.ReadAllText(targetFile).UnixifyLineBreaks());
+        }
     }
 }
