@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Text;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Core.Expressions.Shared;
@@ -11,7 +11,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp2
 {
     public class Cpp2StyleEvaluatorDefinition : SharedEvaluatorDefinition<Cpp2StyleEvaluatorDefinition, Cpp2StyleEvaluatorDefinition.Tokens>
     {
-        private static readonly Dictionary<Encoding, ITokenTrie> TokenCache = new();
+        private static readonly ConcurrentDictionary<Encoding, ITokenTrie> TokenCache = new();
 
         public enum Tokens
         {
