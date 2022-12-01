@@ -31,7 +31,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         }
 
         [Theory]
-        [InlineData("global.json file", "globaljson", null)]
+        [InlineData(new object?[] { "global.json file", "globaljson", null }, Skip = "https://github.com/dotnet/sdk/issues/29259")]
         [InlineData("global.json file", "globaljson", new[] { "--sdk-version", "6.0.200" })]
         [InlineData("global.json file", "globaljson", new[] { "--sdk-version", "6.0.200", "--roll-forward", "major" })]
         [InlineData("global.json file", "global.json", null)]
