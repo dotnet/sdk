@@ -12,8 +12,15 @@ namespace Microsoft.DotNet.Cli.Utils
 {
     public static class TypoCorrection
     {
+        private static readonly int s_minCurrentTokenLength = 3;
+        private static readonly int s_maxNumberOfSuggestions = 10;
+
         /// <summary>
-        /// Gets the list of tokens similar to <paramref name="currentToken"/>.
+        /// Gets the list of tokens similar to <paramref name="currentToken"/>
+        /// based on priority search:
+        /// 1. Starts with
+        /// 2. Contains - the call is restricted with <paramref name="currentToken"/> length check, minLength:3 and <param name="maxLevenshteinDistance">
+        /// 3. Levenshtein algorithm with <param name="maxLevenshteinDistance"> restriction
         /// </summary>
         /// <param name="possibleTokens">List of tokens to select from.</param>
         /// <param name="currentToken">The token that is being compared.</param>
@@ -21,26 +28,58 @@ namespace Microsoft.DotNet.Cli.Utils
         /// <returns>The enumerator to tokens similar to <paramref name="currentToken"/>.</returns>
         public static IEnumerable<string> GetSimilarTokens(IEnumerable<string> possibleTokens, string currentToken, int maxLevenshteinDistance = 3)
         {
-            int? bestDistance = null;
-            return possibleTokens
-                .Select(possibleMatch => (possibleMatch, distance: GetDistance(currentToken, possibleMatch)))
+            var possibleMatchesTuples = possibleTokens.Select(possibleMatch => (possibleMatch, distance: GetDistance(currentToken, possibleMatch)));
+
+            var matchByStartsWithTuples = possibleMatchesTuples
+               .Where(tuple => tuple.possibleMatch.StartsWith(currentToken))
+               .OrderBy(tuple => tuple.distance);
+
+            possibleMatchesTuples = possibleMatchesTuples.Except(matchByStartsWithTuples);
+
+            var matchByContainsTuples = Enumerable.Empty<(string possibleMatch, int distance)>();
+            if (currentToken.Length >= s_minCurrentTokenLength) {
+
+                matchByContainsTuples = possibleMatchesTuples
+                    .Where(tuple => tuple.possibleMatch.Contains(currentToken) && tuple.distance <= maxLevenshteinDistance)
+                    .OrderBy(tuple => tuple.distance);
+
+                possibleMatchesTuples = possibleMatchesTuples.Except(matchByContainsTuples);
+            }
+
+            var matchByLevenshteinDistance = possibleMatchesTuples
                 .Where(tuple => tuple.distance <= maxLevenshteinDistance)
                 .OrderBy(tuple => tuple.distance)
                 .ThenByDescending(tuple => GetStartsWithDistance(currentToken, tuple.possibleMatch))
-                .TakeWhile(tuple =>
-                {
-                    (string _, int distance) = tuple;
-                    bestDistance ??= distance;
-                    return distance == bestDistance;
-                })
+                .FilterByShortestDistance();
+
+            return matchByStartsWithTuples.Concat(
+                matchByContainsTuples.Concat(matchByLevenshteinDistance))
+                .Take(s_maxNumberOfSuggestions)
                 .Select(tuple => tuple.possibleMatch);
         }
 
+        // The method takes the matches with the shortest distance
+        // e.g. (razor, 2), (pazor, 2), (pazors, 3) => (razor, 2), (pazor, 2)
+        private static IEnumerable<(string possibleMatch, int distance)> FilterByShortestDistance(
+            this IEnumerable<(string possibleMatch, int distance)> possibleMatches)
+        {
+            int? bestDistance = null;
+
+            return possibleMatches.TakeWhile(tuple =>
+            {
+                (string _, int distance) = tuple;
+                bestDistance ??= distance;
+                return distance == bestDistance;
+            });
+        }
+
+        // The method finds the distance to the first mismatch between two strings
+        // e.g. (cat, cap) => 2
         private static int GetStartsWithDistance(string first, string second)
         {
             int i;
-            for (i = 0; i < first.Length && i < second.Length && first[i] == second[i]; i++)
-            { }
+            for (i = 0; i < first.Length && i < second.Length && first[i] == second[i]; i++);
+
             return i;
         }
 
@@ -58,7 +97,6 @@ namespace Microsoft.DotNet.Cli.Utils
                 throw new ArgumentNullException(nameof(second));
             }
 
-
             // Get the length of both.  If either is 0, return
             // the length of the other, since that number of insertions
             // would be required.
@@ -66,7 +104,6 @@ namespace Microsoft.DotNet.Cli.Utils
             int n = first.Length, m = second.Length;
             if (n == 0) return m;
             if (m == 0) return n;
-
 
             // Rather than maintain an entire matrix (which would require O(n*m) space),
             // just store the current row and the next row, each of which has a length m+1,
@@ -94,7 +131,6 @@ namespace Microsoft.DotNet.Cli.Utils
                     rows[nextRow][j] = Math.Min(dist1, Math.Min(dist2, dist3));
                 }
 
-
                 // Swap the current and next rows
                 if (curRow == 0)
                 {
@@ -110,7 +146,6 @@ namespace Microsoft.DotNet.Cli.Utils
 
             // Return the computed edit distance
             return rows[curRow][m];
-
         }
     }
 }
