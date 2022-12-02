@@ -49,7 +49,10 @@ namespace Microsoft.DotNet.GenAPI.Tool
                 "If specified - method bodies should throw PlatformNotSupportedException, else `throw null`.");
 
             Option<bool> includeVisibleOutsideOfAssemblyOption = new("--include-visible-outside",
-                "Include all API's not just public APIs. The default is public only.");
+                "Include internal API's. Default is false.");
+
+            Option<bool> includeEffectivelyPrivateSymbols = new("--include-private-symbols",
+                "Include public, protected and private API's. Default is public only.");
 
             RootCommand rootCommand = new("Microsoft.DotNet.GenAPI")
             {
@@ -62,6 +65,7 @@ namespace Microsoft.DotNet.GenAPI.Tool
             rootCommand.AddGlobalOption(headerFileOption);
             rootCommand.AddGlobalOption(exceptionMessageOption);
             rootCommand.AddGlobalOption(includeVisibleOutsideOfAssemblyOption);
+            rootCommand.AddGlobalOption(includeEffectivelyPrivateSymbols);
 
             rootCommand.SetHandler((InvocationContext context) =>
             {
@@ -72,7 +76,8 @@ namespace Microsoft.DotNet.GenAPI.Tool
                     context.ParseResult.GetValue(headerFileOption),
                     context.ParseResult.GetValue(exceptionMessageOption),
                     context.ParseResult.GetValue(excludeAttributesFilesOption),
-                    context.ParseResult.GetValue(includeVisibleOutsideOfAssemblyOption)
+                    context.ParseResult.GetValue(includeVisibleOutsideOfAssemblyOption),
+                    context.ParseResult.GetValue(includeEffectivelyPrivateSymbols)
                 ));
             });
 

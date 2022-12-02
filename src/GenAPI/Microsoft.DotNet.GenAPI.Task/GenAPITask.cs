@@ -44,9 +44,15 @@ namespace Microsoft.DotNet.GenAPI.Task
         public string[]? ExcludeAttributesFiles { get; set; }
 
         /// <summary>
-        /// Include all API's not just public APIs. The default is public only.
+        /// Include internal API's. Default is false
         /// </summary>
         public bool IncludeVisibleOutsideOfAssembly { get; set; }
+
+
+        /// <summary>
+        /// Include public, protected and private API's. Default is public only.
+        /// </summary>
+        public bool IncludeEffectivelyPrivateSymbols { get; set;  }
 
         protected override void ExecuteCore()
         {
@@ -57,7 +63,8 @@ namespace Microsoft.DotNet.GenAPI.Task
                 HeaderFile,
                 ExceptionMessage,
                 ExcludeAttributesFiles,
-                IncludeVisibleOutsideOfAssembly
+                IncludeVisibleOutsideOfAssembly,
+                IncludeEffectivelyPrivateSymbols
             ));
         }
     }

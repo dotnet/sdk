@@ -10,7 +10,7 @@
     <NoWarn>$(NoWarn);NU5128</NoWarn>
     <Nullable>enable</Nullable>
     <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);_AddBuildOutputToPackageCore;_AddBuildOutputToPackageDesktop</TargetsForTfmSpecificContentInPackage>
-    <_MicrosoftCodeAnalysisVersion>4.0.1</_MicrosoftCodeAnalysisVersion>
+    <_MicrosoftCodeAnalysisVersion>4.5.0-3.22601.3</_MicrosoftCodeAnalysisVersion>
     <_MicrosoftCodeAnalysisVersion Condition="'$(DotNetBuildFromSource)' == 'true'">$(MicrosoftCodeAnalysisPackageVersion)</_MicrosoftCodeAnalysisVersion>
   </PropertyGroup>
 

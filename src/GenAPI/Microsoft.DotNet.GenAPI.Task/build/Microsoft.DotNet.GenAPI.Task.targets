@@ -47,7 +47,8 @@
       HeaderFile="$(GenAPIHeaderFile)"
       ExceptionMessage="$(GenAPIExceptionMessage)"
       ExcludeAttributesFiles="@(GenAPIExcludeAttributesList)"
-      IncludeVisibleOutsideOfAssembly="$(GenAPIIncludeVisibleOutsideOfAssembly)" />
+      IncludeVisibleOutsideOfAssembly="$(GenAPIIncludeVisibleOutsideOfAssembly)"
+      IncludeEffectivelyPrivateSymbols="$(GenAPIIncludeEffectivelyPrivateSymbols)" />
 
     <Message Text="Generated reference assembly source code: $(GenAPITargetPath)" Importance="$(GenAPIVerbosity)" />
   </Target>

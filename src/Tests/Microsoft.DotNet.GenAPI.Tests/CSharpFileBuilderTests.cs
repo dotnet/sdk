@@ -170,8 +170,8 @@ namespace Microsoft.DotNet.GenAPI.Tests
                     public partial interface IPoint
                     {
                         // Property signatures:
-                        int X { get { throw null; } set { } }
-                        int Y { get { throw null; } set { } }
+                        int X { get; set; }
+                        int Y { get; set; }
                         
                         double CalculateDistance(IPoint p);
                     }
@@ -214,8 +214,10 @@ namespace Microsoft.DotNet.GenAPI.Tests
                 {
                     public class Car
                     {
-                        public int? Wheels { get; }
+                        public int? Drivers { get; }
+                        public int Wheels { get => 4; }
                         public bool IsRunning { get; set; }
+                        public bool Is4x4 { get => false; set { } }
                     }
                 }
                 """,
@@ -224,8 +226,10 @@ namespace Microsoft.DotNet.GenAPI.Tests
                 {
                     public partial class Car
                     {
-                        public int? Wheels { get { throw null; } }
+                        public int? Drivers { get { throw null; } }
+                        public int Wheels { get { throw null; } }
                         public bool IsRunning { get { throw null; } set { } }
+                        public bool Is4x4 { get { throw null; } set { } }
                     }
                 }
                 """);
@@ -295,7 +299,6 @@ namespace Microsoft.DotNet.GenAPI.Tests
                     {
                         public void Paint()
                         {
-                            throw null;
                         }
                     }
                 }
@@ -504,7 +507,84 @@ namespace Microsoft.DotNet.GenAPI.Tests
                         [AnimalType(Animal.Cat)]
                         [System.Diagnostics.Conditional("DEBUG")]
                         [System.Diagnostics.Conditional("TEST1")]
-                        public void SayHello() { throw null; }
+                        public void SayHello() { }
+                    }
+                }
+                """);
+        }
+
+        [Fact]
+        void TestFullyQualifiedNamesForDefaultEnumParameters()
+        {
+            RunTest(original: """
+                namespace Foo
+                {
+                    public enum Animal
+                    {
+                        Dog = 1,
+                        Cat = 2,
+                        Bird = 3
+                    }
+
+                    public class AnimalProperty {
+                        public Animal _animal;
+
+                        public AnimalProperty(Animal animal = Animal.Cat)
+                        {
+                            _animal = animal;
+                        }
+
+                        public int Execute(int p = 42) { return p; }
+                    }
+                }
+                """,
+                expected: """
+                namespace Foo
+                {
+                    public enum Animal
+                    {
+                        Dog = 1,
+                        Cat = 2,
+                        Bird = 3
+                    }
+                
+                    public partial class AnimalProperty {
+                        public Animal _animal;
+
+                        public AnimalProperty(Animal animal = Animal.Cat) { }
+
+                        public int Execute(int p = 42) { throw null; }
+                    }
+                }
+                """);
+        }
+
+        [Fact]
+        void TestCustomComparisonOperatorGeneration()
+        {
+            RunTest(original: """
+                namespace Foo
+                {
+                    public class Car : System.IEquatable<Car>
+                    {
+                        public bool Equals(Car c) { return true; }
+                        public override bool Equals(object o) { return true; }
+                        public override int GetHashCode() => 0;
+                        public static bool operator ==(Car lhs, Car rhs) { return true; }
+                        public static bool operator !=(Car lhs, Car rhs) { return false; }
+                    }
+                }
+                """,
+                expected: """
+                namespace Foo
+                {
+                    public partial class Car : System.IEquatable<Car>
+                    {
+                        public bool Equals(Car c) { throw null; }
+                        public override bool Equals(object o) { throw null; }
+                        public override int GetHashCode() { throw null; }
+                        public static bool operator ==(Car lhs, Car rhs) { throw null; }
+                        public static bool operator !=(Car lhs, Car rhs) { throw null; }
                     }
                 }
                 """);
