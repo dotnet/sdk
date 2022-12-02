@@ -109,7 +109,10 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier
                 }
             }
 
-            await VerifyResult(options, commandResult, string.IsNullOrEmpty(sourceFile) ? string.Empty : Path.GetDirectoryName(sourceFile)!, callerMethod)
+            await VerifyResult(
+                    options,
+                    commandResult,
+                    new CallerInfo() { CallerMethod = callerMethod, CallerSourceFile = sourceFile, ContentDirectory = commandResult.WorkingDirectory })
                 .ConfigureAwait(false);
 
             // if everything is successful - let's delete the created files (unless placed into explicitly requested dir)
@@ -120,9 +123,7 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier
         }
 
         internal static Task CreateVerificationTask(
-            string contentDir,
-            string callerDir,
-            string? callerMethodName,
+            CallerInfo callerInfo,
             TemplateVerifierOptions options,
             IPhysicalFileSystemEx fileSystem)
         {
@@ -151,9 +152,9 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier
             if (options.CustomDirectoryVerifier != null)
             {
                 return options.CustomDirectoryVerifier(
-                    contentDir,
+                    callerInfo.ContentDirectory,
                     new Lazy<IAsyncEnumerable<(string FilePath, string ScrubbedContent)>>(
-                        GetVerificationContent(contentDir, includeGlobs, excludeGlobs, options.CustomScrubbers, fileSystem)));
+                        GetVerificationContent(callerInfo.ContentDirectory, includeGlobs, excludeGlobs, options.CustomScrubbers, fileSystem)));
             }
 
             VerifySettings verifySettings = new();
@@ -173,16 +174,16 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier
             }
 
             string scenarioPrefix = options.DoNotPrependTemplateNameToScenarioName ? string.Empty : options.TemplateName;
-            if (!options.DoNotPrependCallerMethodNameToScenarioName && !string.IsNullOrEmpty(callerMethodName))
+            if (!options.DoNotPrependCallerMethodNameToScenarioName && !string.IsNullOrEmpty(callerInfo.CallerMethod))
             {
-                scenarioPrefix = callerMethodName + (string.IsNullOrEmpty(scenarioPrefix) ? null : ".") + scenarioPrefix;
+                scenarioPrefix = callerInfo.CallerMethod + (string.IsNullOrEmpty(scenarioPrefix) ? null : ".") + scenarioPrefix;
             }
             scenarioPrefix = string.IsNullOrEmpty(scenarioPrefix) ? "_" : scenarioPrefix;
             verifySettings.UseTypeName(scenarioPrefix);
             string snapshotsDir = options.SnapshotsDirectory ?? "Snapshots";
-            if (!string.IsNullOrEmpty(callerDir) && !Path.IsPathRooted(snapshotsDir))
+            if (!string.IsNullOrEmpty(callerInfo.CallerDirectory) && !Path.IsPathRooted(snapshotsDir))
             {
-                snapshotsDir = Path.Combine(callerDir, snapshotsDir);
+                snapshotsDir = Path.Combine(callerInfo.CallerDirectory, snapshotsDir);
             }
             verifySettings.UseDirectory(snapshotsDir);
             verifySettings.UseMethodName(GetScenarioName(options));
@@ -228,20 +229,19 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier
             }
 
             return Verifier.VerifyDirectory(
-                contentDir,
+                callerInfo.ContentDirectory,
                 include: (filePath) =>
                 {
-                    string relativePath = fileSystem.PathRelativeTo(filePath, contentDir);
+                    string relativePath = fileSystem.PathRelativeTo(filePath, callerInfo.ContentDirectory);
                     return includeGlobs.Any(g => g.IsMatch(relativePath)) && !excludeGlobs.Any(g => g.IsMatch(relativePath));
                 },
-                options: new EnumerationOptions()
-                {
-                    RecurseSubdirectories = true,
-                    // Workarounding Verify bug https://github.com/VerifyTests/Verify/issues/699
-                    AttributesToSkip = 0
-                },
-                fileScrubber: ExtractFileScrubber(options, contentDir, fileSystem),
-                settings: verifySettings);
+                fileScrubber: ExtractFileScrubber(options, callerInfo.ContentDirectory, fileSystem),
+                settings: verifySettings,
+                // Need to overwrite arg with CallerFileAttribute as this assembly is compiled on possibly different OS, than
+                //  the actual caller of the API.
+                //  The info is not used in any output paths of Verify (as we inject custom naming), but it is transformed via
+                //  Path utilities and checked for non-null - which can break in case of usage on different OS than was the built time one
+                sourceFile: callerInfo.CallerSourceFile);
         }
 
         private static FileScrubber? ExtractFileScrubber(TemplateVerifierOptions options, string contentDir, IPhysicalFileSystemEx fileSystem)
@@ -416,7 +416,7 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier
             }
         }
 
-        private async Task VerifyResult(TemplateVerifierOptions args, CommandResultData commandResultData, string callerDir, string callerMethodName)
+        private async Task VerifyResult(TemplateVerifierOptions args, CommandResultData commandResultData, CallerInfo callerInfo)
         {
             UsesVerifyAttribute a = new UsesVerifyAttribute();
             // https://github.com/VerifyTests/Verify/blob/d8cbe38f527d6788ecadd6205c82803bec3cdfa6/src/Verify.Xunit/Verifier.cs#L10
@@ -449,7 +449,7 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier
                     .ConfigureAwait(false);
             }
 
-            Task verifyTask = CreateVerificationTask(commandResultData.WorkingDirectory, callerDir, callerMethodName, args, _fileSystem);
+            Task verifyTask = CreateVerificationTask(callerInfo, args, _fileSystem);
 
             try
             {
@@ -471,6 +471,17 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier
                     throw;
                 }
             }
+        }
+
+        internal readonly struct CallerInfo
+        {
+            public string CallerSourceFile { get; init; }
+
+            public string? CallerMethod { get; init; }
+
+            public string ContentDirectory { get; init; }
+
+            public string CallerDirectory => string.IsNullOrEmpty(CallerSourceFile) ? string.Empty : Path.GetDirectoryName(CallerSourceFile)!;
         }
 
         private static class SpecialFiles

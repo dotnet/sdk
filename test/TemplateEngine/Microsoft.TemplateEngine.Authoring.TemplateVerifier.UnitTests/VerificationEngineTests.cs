@@ -66,7 +66,15 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.UnitTests
                         }
                     });
 
-            await VerificationEngine.CreateVerificationTask(verifyLocation, "callerLocation", null, options, fileSystem);
+            await VerificationEngine.CreateVerificationTask(
+                new VerificationEngine.CallerInfo()
+                {
+                    ContentDirectory = verifyLocation,
+                    CallerSourceFile = "callerLocation",
+                    CallerMethod = null
+                },
+                options,
+                fileSystem);
 
             resultContents.Keys.Count.Should().Be(2);
             resultContents["Program.cs"].Should().BeEquivalentTo("zz xx **");
