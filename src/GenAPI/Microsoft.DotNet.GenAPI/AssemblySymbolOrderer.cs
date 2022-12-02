@@ -44,11 +44,6 @@ namespace Microsoft.DotNet.GenAPI
             {
                 return orderedTypeDefinitionMembers.ThenBy(s => s.GetDocumentationCommentId(), StringComparer.OrdinalIgnoreCase);
             }
-            else if (members is IOrderedEnumerable<IFieldSymbol> orderedFieldDefinitionMembers)
-            {
-                // This is required due to IOrderedEnumerable being covariant on .NET Core, but not on .NET Framework
-                return orderedFieldDefinitionMembers.ThenBy(s => s.GetDocumentationCommentId(), StringComparer.OrdinalIgnoreCase);
-            }
 
             return members.OrderBy(s => (GetMemberOrder(s), s.GetDocumentationCommentId(), StringComparer.OrdinalIgnoreCase));
         }
