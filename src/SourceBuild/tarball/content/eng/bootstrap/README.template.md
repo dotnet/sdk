@@ -75,6 +75,7 @@ For the latest information about Source-Build support, please watch for announce
 ### Prerequisites
 
 The dependencies for building .NET from source can be found [here](https://github.com/dotnet/runtime/blob/main/docs/workflow/requirements/linux-requirements.md).
+In case you don't want to / cannot prepare your environment per the requirements, consider [using Docker](#building-using-docker).
 
 ### Building
 
@@ -110,7 +111,7 @@ The dependencies for building .NET from source can be found [here](https://githu
 
     ```bash
     mkdir -p $HOME/dotnet
-    tar zxf artifacts/x64/Release/dotnet-sdk-8.0.100-your-RID.tar.gz -C $HOME/dotnet
+    tar zxf artifacts/[your-arch]/Release/dotnet-sdk-8.0.100-[your-RID].tar.gz -C $HOME/dotnet
     ln -s $HOME/dotnet/dotnet /usr/bin/dotnet
     ```
     
@@ -119,6 +120,20 @@ The dependencies for building .NET from source can be found [here](https://githu
     ```bash
     dotnet --info
     ```
+
+### Building using Docker
+
+You can also build the repository using a Docker image which has the required prerequisites inside.
+The example below creates a Docker volume named `vmr` and clones and builds the VMR there.
+
+```sh
+docker run --rm -it -v vmr:/vmr -w /vmr mcr.microsoft.com/dotnet-buildtools/prereqs:centos-stream8
+git clone https://github.com/dotnet/dotnet .
+./prep.sh && ./build.sh --online
+mkdir -p $HOME/.dotnet
+tar -zxf artifacts/x64/Release/dotnet-sdk-8.0.100-centos.8-x64.tar.gz -C $HOME/.dotnet
+ln -s $HOME/.dotnet/dotnet /usr/bin/dotnet
+```
 
 ## List of components
 
