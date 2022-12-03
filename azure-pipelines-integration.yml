@@ -42,12 +42,12 @@ jobs:
         _targetSolution: "ProjectSystem.sln"
         _branchName: "main"
         _sha: "5896b880c19071eb34c0e9966295c41d2bb44142"
-      msbuild:
-        _repo: "https://github.com/dotnet/msbuild"
-        _repoName: "dotnet/msbuild"
-        _targetSolution: "MSBuild.sln"
-        _branchName: "main"
-        _sha: "14c24b2d38abe2662bd5e3bcc88c91a13655b073"
+      # msbuild:
+      #   _repo: "https://github.com/dotnet/msbuild"
+      #   _repoName: "dotnet/msbuild"
+      #   _targetSolution: "MSBuild.sln"
+      #   _branchName: "main"
+      #   _sha: "14c24b2d38abe2662bd5e3bcc88c91a13655b073"
       aspnetcore:
         _repo: "https://github.com/dotnet/aspnetcore"
         _repoName: "dotnet/aspnetcore"
