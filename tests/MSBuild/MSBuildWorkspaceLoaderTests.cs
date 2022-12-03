@@ -42,7 +42,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.MSBuild
 
         [MSBuildTheory]
         [InlineData("web")]
-        [InlineData("grpc", "CS8981")]
+        // [InlineData("grpc", "CS8981")]
         [InlineData("webapi")]
         [InlineData("razor")]
         [InlineData("mvc", "CS8602")]
