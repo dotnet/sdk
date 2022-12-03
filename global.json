@@ -5,7 +5,11 @@
     "rollForward": "major"
   },
   "tools": {
-    "dotnet": "7.0.100"
+    "dotnet": "7.0.100",
+    "vs": {
+      "version": "17.3"
+    },
+    "xcopy-msbuild": "17.3"
   },
   "msbuild-sdks": {
     "Microsoft.DotNet.Arcade.Sdk": "8.0.0-beta.22466.3"
