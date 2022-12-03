@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Microsoft.Build.Framework;
 using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.ApiCompatibility.Abstractions;
 using Microsoft.DotNet.ApiCompatibility.Logging;
@@ -12,10 +13,10 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
 {
     public class AssemblyIdentityMustMatch : IRule
     {
-        private readonly ICompatibilityLogger _log;
+        private readonly ISuppressableLog _log;
         private readonly RuleSettings _settings;
 
-        public AssemblyIdentityMustMatch(ICompatibilityLogger log,
+        public AssemblyIdentityMustMatch(ISuppressableLog log,
             RuleSettings settings,
             IRuleRegistrationContext context)
         {
@@ -101,7 +102,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                     rightMetadata.DisplayString,
                     rightIdentity));
             }
- 
+
             if (rightAssemblyVersion < leftAssemblyVersion)
             {
                 differences.Add(CreateIdentityDifference(
@@ -133,7 +134,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                     leftMetadata,
                     rightMetadata,
                     Resources.AssemblyPublicKeyTokenDoesNotMatch,
-                    GetStringRepresentation(leftAssemblyPublicKeyToken), 
+                    GetStringRepresentation(leftAssemblyPublicKeyToken),
                     GetStringRepresentation(rightAssemblyPublicKeyToken),
                     leftMetadata.DisplayString,
                     rightMetadata.DisplayString,
@@ -145,7 +146,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                     leftMetadata,
                     rightMetadata,
                     Resources.AssemblyPublicKeyTokenDoesNotMatch,
-                    GetStringRepresentation(rightAssemblyPublicKeyToken), 
+                    GetStringRepresentation(rightAssemblyPublicKeyToken),
                     GetStringRepresentation(leftAssemblyPublicKeyToken),
                     rightMetadata.DisplayString,
                     leftMetadata.DisplayString,

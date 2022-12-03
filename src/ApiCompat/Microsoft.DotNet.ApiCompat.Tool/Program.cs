@@ -7,6 +7,7 @@ using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.CommandLine.Parsing;
 using System.IO;
+using Microsoft.Build.Framework;
 using Microsoft.DotNet.ApiCompatibility.Logging;
 
 namespace Microsoft.DotNet.ApiCompat.Tool
@@ -24,7 +25,7 @@ namespace Microsoft.DotNet.ApiCompat.Tool
             Option<string[]> suppressionFilesOption = new("--suppression-file",
                 "The path to one or more suppression files to read from.")
             {
-                AllowMultipleArgumentsPerToken= true,
+                AllowMultipleArgumentsPerToken = true,
                 Arity = ArgumentArity.ZeroOrMore,
                 ArgumentHelpName = "file"
             };
@@ -147,7 +148,7 @@ namespace Microsoft.DotNet.ApiCompat.Tool
                 (string, string)[]? leftAssembliesTransformationPattern = context.ParseResult.GetValue(leftAssembliesTransformationPatternOption);
                 (string, string)[]? rightAssembliesTransformationPattern = context.ParseResult.GetValue(rightAssembliesTransformationPatternOption);
 
-                Func<ISuppressionEngine, ConsoleCompatibilityLogger> logFactory = (suppressionEngine) => new(suppressionEngine, verbosity);
+                Func<ISuppressionEngine, SuppressableConsoleLog> logFactory = (suppressionEngine) => new(suppressionEngine, verbosity);
                 ValidateAssemblies.Run(logFactory,
                     generateSuppressionFile,
                     suppressionFiles,
@@ -246,7 +247,7 @@ namespace Microsoft.DotNet.ApiCompat.Tool
                 Dictionary<string, string[]>? packageAssemblyReferences = context.ParseResult.GetValue(packageAssemblyReferencesOption);
                 Dictionary<string, string[]>? baselinePackageAssemblyReferences = context.ParseResult.GetValue(baselinePackageAssemblyReferencesOption);
 
-                Func<ISuppressionEngine, ConsoleCompatibilityLogger> logFactory = (suppressionEngine) => new(suppressionEngine, verbosity);
+                Func<ISuppressionEngine, SuppressableConsoleLog> logFactory = (suppressionEngine) => new(suppressionEngine, verbosity);
                 ValidatePackage.Run(logFactory,
                     generateSuppressionFile,
                     suppressionFiles,

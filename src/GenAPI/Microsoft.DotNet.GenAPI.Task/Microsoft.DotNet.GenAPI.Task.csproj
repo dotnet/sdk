@@ -15,14 +15,14 @@
   </PropertyGroup>
 
   <!-- SDK's task infrastructure -->
-  <ItemGroup>
+  <!-- <ItemGroup>
     <Compile Include="..\..\Tasks\Common\TaskBase.cs" LinkBase="Common" />
     <Compile Include="..\..\Tasks\Common\Logger.cs" LinkBase="Common" />
     <Compile Include="..\..\Tasks\Common\LogAdapter.cs" LinkBase="Common" />
     <Compile Include="..\..\Tasks\Common\BuildErrorException.cs" LinkBase="Common" />
     <Compile Include="..\..\Tasks\Common\Message.cs" LinkBase="Common" />
     <Compile Include="..\..\Tasks\Common\MessageLevel.cs" LinkBase="Common" />
-  </ItemGroup>
+  </ItemGroup> -->
 
   <ItemGroup>
     <!-- ExcludeAssets="Runtime" is being set to avoid adding package references and dependencies of package and project references into the package. -->
@@ -31,6 +31,7 @@
     <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="$(_MicrosoftCodeAnalysisVersion)" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="$(_MicrosoftCodeAnalysisVersion)" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="$(_MicrosoftCodeAnalysisVersion)" />
+    <ProjectReference Include="..\..\Microsoft.DotNet.ApiSymbolExtensions\Microsoft.DotNet.ApiSymbolExtensions.csproj" ExcludeAssets="runtime" />
     <!-- We carry NuGet as part of the package in case the package is used with an older SDKs or with full framework MSBuild. -->
     <PackageReference Include="NuGet.Frameworks" Version="$(NuGetBuildTasksPackageVersion)" />
     <PackageReference Include="NuGet.Packaging" Version="$(NuGetBuildTasksPackageVersion)" />

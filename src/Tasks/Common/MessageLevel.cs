@@ -11,7 +11,7 @@ using Microsoft.Build.Framework;
 
 namespace Microsoft.NET.Build.Tasks
 {
-    internal enum MessageLevel
+    public enum MessageLevel
     {
         // For efficient conversion, positive values map directly to MessageImportance:
         LowImportance = MessageImportance.Low,
