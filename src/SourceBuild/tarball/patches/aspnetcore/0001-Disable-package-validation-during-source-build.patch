@@ -1,6 +1,6 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: MichaelSimons <msimons@microsoft.com>
-Date: Mon, 5 Dec 2022 17:35:56 +0000
+Date: Mon, 5 Dec 2022 23:35:39 +0000
 Subject: [PATCH] Disable package validation during source-build
 
 ---
@@ -8,7 +8,7 @@ Subject: [PATCH] Disable package validation during source-build
  1 file changed, 1 insertion(+)
 
 diff --git a/eng/SourceBuild.props b/eng/SourceBuild.props
-index 63ebed2d9c..7a304205f2 100644
+index a034f88679..f3923138f8 100644
 --- a/eng/SourceBuild.props
 +++ b/eng/SourceBuild.props
 @@ -55,6 +55,7 @@
