@@ -16,6 +16,6 @@ index 63ebed2d9c..7a304205f2 100644
      <PropertyGroup>
        <InnerBuildArgs>$(InnerBuildArgs) /p:SourceBuildRuntimeIdentifier=$(TargetRuntimeIdentifier)</InnerBuildArgs>
 +      <InnerBuildArgs>$(InnerBuildArgs) /p:EnablePackageValidation=false</InnerBuildArgs>
-       <InnerBuildArgs Condition="'$(SourceBuildUseMonoRuntime)' == 'true'">$(InnerBuildArgs) /p:CrossgenOutput=false</InnerBuildArgs>
      </PropertyGroup>
    </Target>
+ 
