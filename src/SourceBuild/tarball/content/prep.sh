@@ -94,6 +94,9 @@ done < $SCRIPT_ROOT/packages/archive/archiveArtifacts.txt
 if [ "$installDotnet" == "true" ]; then
     echo "  Installing dotnet..."
     (source ./eng/common/tools.sh && InitializeDotNetCli true)
+
+    # TODO: Remove once runtime dependency is gone
+    bash .dotnet/dotnet-install.sh --install-dir "$SCRIPT_ROOT/.dotnet" --version 7.0.0 --runtime dotnet
 fi
 
 # Build bootstrap, if specified

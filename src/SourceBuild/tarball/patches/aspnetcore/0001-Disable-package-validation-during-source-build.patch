@@ -1,0 +1,23 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: MichaelSimons <msimons@microsoft.com>
+Date: Mon, 5 Dec 2022 23:35:39 +0000
+Subject: [PATCH] Disable package validation during source-build
+
+---
+ eng/SourceBuild.props | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/eng/SourceBuild.props b/eng/SourceBuild.props
+index 63ebed2d9c..a1f0263955 100644
+--- a/eng/SourceBuild.props
++++ b/eng/SourceBuild.props
+@@ -56,6 +56,7 @@
+     <PropertyGroup>
+       <InnerBuildArgs>$(InnerBuildArgs) /p:SourceBuildRuntimeIdentifier=$(TargetRuntimeIdentifier)</InnerBuildArgs>
+       <InnerBuildArgs Condition="'$(SourceBuildUseMonoRuntime)' == 'true'">$(InnerBuildArgs) /p:CrossgenOutput=false</InnerBuildArgs>
++      <InnerBuildArgs>$(InnerBuildArgs) /p:EnablePackageValidation=false</InnerBuildArgs>
+     </PropertyGroup>
+   </Target>
+ 
+-- 
+2.30.2.windows.1
