@@ -73,7 +73,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <Using Include="Microsoft.Extensions.Logging" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(DisableImplicitContainerBuild)' != 'true'">
+  <ItemGroup Condition="'$(EnableSdkContainerSupport)' == 'true'">
     <PackageReference Include="Microsoft.NET.Build.Containers" Version="0.2.7" />
   </ItemGroup>
 
