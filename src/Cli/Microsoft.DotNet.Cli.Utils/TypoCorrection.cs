@@ -36,8 +36,8 @@ namespace Microsoft.DotNet.Cli.Utils
                .Where(tuple => tuple.possibleMatch.StartsWith(currentToken))
                .OrderBy(tuple => tuple.distance);
 
-            var numeberOfStartsWithSuggestions = matchByStartsWithTuples.Count();
-            if (numeberOfStartsWithSuggestions >= maxNumberOfSuggestions)
+            var numberOfStartsWithSuggestions = matchByStartsWithTuples.Count();
+            if (numberOfStartsWithSuggestions >= maxNumberOfSuggestions)
             {
                 return matchByStartsWithTuples
                     .Take(maxNumberOfSuggestions)
@@ -53,8 +53,8 @@ namespace Microsoft.DotNet.Cli.Utils
                     .Where(tuple => tuple.possibleMatch.Contains(currentToken) && tuple.distance <= maxLevenshteinDistance)
                     .OrderBy(tuple => tuple.distance);
 
-                var numeberOfContainsSuggestions = matchByContainsTuples.Count();
-                if (numeberOfContainsSuggestions + numeberOfStartsWithSuggestions >= maxNumberOfSuggestions)
+                var numberOfContainsSuggestions = matchByContainsTuples.Count();
+                if (numberOfContainsSuggestions + numberOfStartsWithSuggestions >= maxNumberOfSuggestions)
                 {
                     return matchByStartsWithTuples
                         .Concat(matchByStartsWithTuples)
