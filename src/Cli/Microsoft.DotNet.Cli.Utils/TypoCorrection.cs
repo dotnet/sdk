@@ -29,8 +29,12 @@ namespace Microsoft.DotNet.Cli.Utils
             var minCurrentTokenLength = 3;
             var maxNumberOfSuggestions = 10;
 
+            var currentTokenLength = currentToken.Length;
+            var startsWithAndContainsSpecificDistanceFunc = (string possibleMatch)
+                => (possibleMatch, distance: possibleMatch.Length - currentTokenLength);
+
             var possibleMatchesTuples = possibleTokens
-                .Select(possibleMatch => (possibleMatch, distance: GetDistance(currentToken, possibleMatch)));
+                .Select(startsWithAndContainsSpecificDistanceFunc);
 
             var matchByStartsWithTuples = possibleMatchesTuples
                .Where(tuple => tuple.possibleMatch.StartsWith(currentToken))
@@ -66,6 +70,7 @@ namespace Microsoft.DotNet.Cli.Utils
             }
 
             var matchByLevenshteinDistance = possibleMatchesTuples
+                .Select(tuple => (tuple.possibleMatch, distance: GetDistance(tuple.possibleMatch, currentToken)))
                 .Where(tuple => tuple.distance <= maxLevenshteinDistance)
                 .OrderBy(tuple => tuple.distance)
                 .ThenByDescending(tuple => GetStartsWithDistance(currentToken, tuple.possibleMatch))
