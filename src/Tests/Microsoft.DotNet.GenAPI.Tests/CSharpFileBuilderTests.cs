@@ -91,14 +91,14 @@ namespace Microsoft.DotNet.GenAPI.Tests
                 expected: """
                 namespace Foo
                 {
-                    public partial class PublicClass { }
-
                     internal partial class InternalClass { }
-
-                    public sealed partial class PublicSealedClass { }
 
                     /// `partial` keyword is not added!
                     public partial class ProtectedPartialClass { }
+
+                    public partial class PublicClass { }
+
+                    public sealed partial class PublicSealedClass { }
                 }
                 """);
         }
@@ -129,21 +129,21 @@ namespace Microsoft.DotNet.GenAPI.Tests
                 expected: """
                 namespace Foo
                 {
-                    public partial struct PublicStruct { }
-
                     internal partial struct InternalStruct { }
 
-                    internal partial struct ReadonlyStruct { }
+                    public partial struct PublicReadonlyRefStruct { }
 
                     public partial struct PublicReadonlyStruct { }
 
-                    internal partial struct RecordStruct : System.IEquatable<RecordStruct> { }
+                    public partial struct PublicRefStruct { }
+
+                    public partial struct PublicStruct { }
 
                     internal partial struct ReadonlyRecordStruct : System.IEquatable<ReadonlyRecordStruct> { }
 
-                    public partial struct PublicRefStruct { }
+                    internal partial struct ReadonlyStruct { }
 
-                    public partial struct PublicReadonlyRefStruct { }
+                    internal partial struct RecordStruct : System.IEquatable<RecordStruct> { }
                 }
                 """);
         }
@@ -227,9 +227,9 @@ namespace Microsoft.DotNet.GenAPI.Tests
                     public partial class Car
                     {
                         public int? Drivers { get { throw null; } }
-                        public int Wheels { get { throw null; } }
-                        public bool IsRunning { get { throw null; } set { } }
                         public bool Is4x4 { get { throw null; } set { } }
+                        public bool IsRunning { get { throw null; } set { } }
+                        public int Wheels { get { throw null; } }
                     }
                 }
                 """);
@@ -253,8 +253,8 @@ namespace Microsoft.DotNet.GenAPI.Tests
                 {
                     internal abstract partial class Car
                     {
-                        protected abstract int? Wheels { get; }
                         public abstract bool IsRunning { get; set; }
+                        protected abstract int? Wheels { get; }
                     }
                 }
                 """);
@@ -396,8 +396,8 @@ namespace Microsoft.DotNet.GenAPI.Tests
                     {
                         public readonly bool BoolMember;
                         public readonly Kind KindMember;
-                        public Options(Kind kindVal) { }
                         public Options(Kind kindVal, bool boolVal) { }
+                        public Options(Kind kindVal) { }
                     }
                 }
                 """);
