@@ -85,10 +85,8 @@ namespace Microsoft.DotNet.GenAPI
         public override SyntaxNode? VisitOperatorDeclaration(OperatorDeclarationSyntax node)
         {
             // visit subtree first to normalize type names.
-            OperatorDeclarationSyntax? rs = (OperatorDeclarationSyntax?)base.VisitOperatorDeclaration(node);
-            if (rs is null) return rs;
-
-            return rs
+            OperatorDeclarationSyntax? rs = base.VisitOperatorDeclaration(node) as OperatorDeclarationSyntax;
+            return rs?
                 .WithBody(GetThrowNullBody())
                 .WithParameterList(rs.ParameterList.WithTrailingTrivia(SyntaxFactory.Space));
         }

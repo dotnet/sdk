@@ -168,7 +168,7 @@ namespace Microsoft.DotNet.GenAPI
         {
             /// TODO: consider to move configuration into file.
             return _adhocWorkspace.Options
-                .WithChangedOption(CSharpFormattingOptions.NewLinesForBracesInTypes, /*True*/true)
+                .WithChangedOption(CSharpFormattingOptions.NewLinesForBracesInTypes, true)
                 .WithChangedOption(CSharpFormattingOptions.NewLinesForBracesInMethods, false)
                 .WithChangedOption(CSharpFormattingOptions.NewLinesForBracesInProperties, false)
                 .WithChangedOption(CSharpFormattingOptions.NewLinesForBracesInAccessors, false)
