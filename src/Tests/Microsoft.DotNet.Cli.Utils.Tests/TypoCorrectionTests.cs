@@ -19,6 +19,16 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
         [InlineData("con", "lacon|test|consoleweb|preconsole|uninstall|ponsole|pons", "consoleweb|lacon|pons", "StartsWith & Contains & Levanshtein algorithm")]
         [InlineData("c", "lacon|test|consoleweb|preconsole|uninstall|ponsole|pons|ccs", "consoleweb|ccs", "StartsWith & Levanshtein algorithm")]
         [InlineData("c", "peacon|lecture|beacon", "", "No matches due to Contains restriction on input length")]
+        [InlineData(
+            "eac",
+            "peac|lect|beac|zeac|dect|meac|qeac|aect|oeac|xeac|necte|geacy|gueac",
+            "peac|beac|zeac|meac|qeac|oeac|xeac|geacy|gueac|lect",
+            "Contains due to max number of suggestions restriction")]
+        [InlineData(
+            "eacy",
+            "eacyy|eacyl|eacys|eacyt|eacyp|eacyzz|eacyqwe|eacyasd|eacyaa|eacynbv|eacyrfd|peacy|peacp",
+            "eacyy|eacyl|eacys|eacyt|eacyp|eacyzz|eacyaa|eacyqwe|eacyasd|eacynbv",
+            "StartsWith due to max number of suggestions restriction")]
         [Theory]
         public void TypoCorrection_BasicTest(string token, string possibleTokens, string expectedTokens, string checkedScenario)
         {

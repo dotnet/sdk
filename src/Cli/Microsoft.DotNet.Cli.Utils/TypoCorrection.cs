@@ -12,15 +12,13 @@ namespace Microsoft.DotNet.Cli.Utils
 {
     public static class TypoCorrection
     {
-        private static readonly int s_minCurrentTokenLength = 3;
-        private static readonly int s_maxNumberOfSuggestions = 10;
-
         /// <summary>
         /// Gets the list of tokens similar to <paramref name="currentToken"/>
         /// based on priority search:
         /// 1. Starts with
         /// 2. Contains - the call is restricted with <paramref name="currentToken"/> length check, minLength:3 and <param name="maxLevenshteinDistance">
         /// 3. Levenshtein algorithm with <param name="maxLevenshteinDistance"> restriction
+        /// max number of suggestion is restricted to 10 entries
         /// </summary>
         /// <param name="possibleTokens">List of tokens to select from.</param>
         /// <param name="currentToken">The token that is being compared.</param>
@@ -28,21 +26,41 @@ namespace Microsoft.DotNet.Cli.Utils
         /// <returns>The enumerator to tokens similar to <paramref name="currentToken"/>.</returns>
         public static IEnumerable<string> GetSimilarTokens(IEnumerable<string> possibleTokens, string currentToken, int maxLevenshteinDistance = 3)
         {
-            var possibleMatchesTuples = possibleTokens.Select(possibleMatch => (possibleMatch, distance: GetDistance(currentToken, possibleMatch)));
+            var minCurrentTokenLength = 3;
+            var maxNumberOfSuggestions = 10;
+
+            var possibleMatchesTuples = possibleTokens
+                .Select(possibleMatch => (possibleMatch, distance: GetDistance(currentToken, possibleMatch)));
 
             var matchByStartsWithTuples = possibleMatchesTuples
                .Where(tuple => tuple.possibleMatch.StartsWith(currentToken))
                .OrderBy(tuple => tuple.distance);
 
+            var numeberOfStartsWithSuggestions = matchByStartsWithTuples.Count();
+            if (numeberOfStartsWithSuggestions >= maxNumberOfSuggestions)
+            {
+                return matchByStartsWithTuples
+                    .Take(maxNumberOfSuggestions)
+                    .Select(tuple => tuple.possibleMatch);
+            }
+
             possibleMatchesTuples = possibleMatchesTuples.Except(matchByStartsWithTuples);
 
             var matchByContainsTuples = Enumerable.Empty<(string possibleMatch, int distance)>();
-            if (currentToken.Length >= s_minCurrentTokenLength)
+            if (currentToken.Length >= minCurrentTokenLength)
             {
-
                 matchByContainsTuples = possibleMatchesTuples
                     .Where(tuple => tuple.possibleMatch.Contains(currentToken) && tuple.distance <= maxLevenshteinDistance)
                     .OrderBy(tuple => tuple.distance);
+
+                var numeberOfContainsSuggestions = matchByContainsTuples.Count();
+                if (numeberOfContainsSuggestions + numeberOfStartsWithSuggestions >= maxNumberOfSuggestions)
+                {
+                    return matchByStartsWithTuples
+                        .Concat(matchByStartsWithTuples)
+                        .Take(maxNumberOfSuggestions)
+                        .Select(tuple => tuple.possibleMatch);
+                }
 
                 possibleMatchesTuples = possibleMatchesTuples.Except(matchByContainsTuples);
             }
@@ -55,7 +73,7 @@ namespace Microsoft.DotNet.Cli.Utils
 
             return matchByStartsWithTuples.Concat(
                 matchByContainsTuples.Concat(matchByLevenshteinDistance))
-                .Take(s_maxNumberOfSuggestions)
+                .Take(maxNumberOfSuggestions)
                 .Select(tuple => tuple.possibleMatch);
         }
 
