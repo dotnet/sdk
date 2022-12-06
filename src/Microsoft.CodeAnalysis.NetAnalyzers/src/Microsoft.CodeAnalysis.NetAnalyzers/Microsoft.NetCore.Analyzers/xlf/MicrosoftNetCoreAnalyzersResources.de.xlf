@@ -2178,8 +2178,8 @@
         <note />
       </trans-unit>
       <trans-unit id="PreventNumericIntPtrUIntPtrBehavioralChangesDescription">
-        <source>Some built in operators added in .NET 7 behave differently than the user defined operatorsi in .NET 6 and below. Some operators that used to throw in unchecked context while overflowing will not throw anymore unless wrapped within checked context, and some operators that not used to throw in checked context now would throw unless wrapped within unchecked context.</source>
-        <target state="translated">Einige integrierte Operatoren, die in .NET 7 hinzugefügt wurden, verhalten sich anders als die benutzerdefinierten Operatoren in .NET 6 und darunter. Einige Operatoren, die früher bei Überlauf im ungeprüften Kontext einen Fehler auslösten, werden nicht mehr ausgelöst, wenn sie nicht in einen geprüften Kontext eingeschlossen sind, und einige Operatoren, die früher im geprüften Kontext keinen Fehler auslösten, werden jetzt ausgelöst, wenn sie nicht in einen ungeprüften Kontext eingeschlossen sind.</target>
+        <source>Some built-in operators added in .NET 7 behave differently when overflowing than did the corresponding user-defined operators in .NET 6 and earlier versions. Some operators that previously threw in an unchecked context now don't throw unless wrapped within a checked context. Also, some operators that did not previously throw in a checked context now throw unless wrapped in an unchecked context.</source>
+        <target state="new">Some built-in operators added in .NET 7 behave differently when overflowing than did the corresponding user-defined operators in .NET 6 and earlier versions. Some operators that previously threw in an unchecked context now don't throw unless wrapped within a checked context. Also, some operators that did not previously throw in a checked context now throw unless wrapped in an unchecked context.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreventNumericIntPtrUIntPtrBehavioralChangesOperatorThrowsMessage">
@@ -2188,8 +2188,8 @@
         <note />
       </trans-unit>
       <trans-unit id="PreventNumericIntPtrUIntPtrBehavioralChangesTitle">
-        <source>Prevent from behavioral change</source>
-        <target state="translated">Verhindern von Verhaltensänderungen</target>
+        <source>Prevent behavioral change</source>
+        <target state="new">Prevent behavioral change</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvideCorrectArgumentToEnumHasFlagDescription">

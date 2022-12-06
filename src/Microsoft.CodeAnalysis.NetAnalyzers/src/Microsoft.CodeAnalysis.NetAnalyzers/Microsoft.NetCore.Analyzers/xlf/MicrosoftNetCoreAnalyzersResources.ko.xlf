@@ -2178,8 +2178,8 @@
         <note />
       </trans-unit>
       <trans-unit id="PreventNumericIntPtrUIntPtrBehavioralChangesDescription">
-        <source>Some built in operators added in .NET 7 behave differently than the user defined operatorsi in .NET 6 and below. Some operators that used to throw in unchecked context while overflowing will not throw anymore unless wrapped within checked context, and some operators that not used to throw in checked context now would throw unless wrapped within unchecked context.</source>
-        <target state="translated">.NET 7에 추가된 일부 기본 제공 연산자는 .NET 6 이하의 사용자 정의 연산자와 다르게 작동합니다. 오버플로하는 동안 검사되지 않은 컨텍스트를 throw하는 데 사용된 일부 연산자는 검사된 컨텍스트 내에서 래핑되지 않는 한 더 이상 throw되지 않으며, 이제 검사된 컨텍스트에서 throw하는 데 사용되지 않는 일부 연산자는 검사되지 않은 컨텍스트 내에서 래핑되지 않는 한 throw됩니다.</target>
+        <source>Some built-in operators added in .NET 7 behave differently when overflowing than did the corresponding user-defined operators in .NET 6 and earlier versions. Some operators that previously threw in an unchecked context now don't throw unless wrapped within a checked context. Also, some operators that did not previously throw in a checked context now throw unless wrapped in an unchecked context.</source>
+        <target state="new">Some built-in operators added in .NET 7 behave differently when overflowing than did the corresponding user-defined operators in .NET 6 and earlier versions. Some operators that previously threw in an unchecked context now don't throw unless wrapped within a checked context. Also, some operators that did not previously throw in a checked context now throw unless wrapped in an unchecked context.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreventNumericIntPtrUIntPtrBehavioralChangesOperatorThrowsMessage">
@@ -2188,8 +2188,8 @@
         <note />
       </trans-unit>
       <trans-unit id="PreventNumericIntPtrUIntPtrBehavioralChangesTitle">
-        <source>Prevent from behavioral change</source>
-        <target state="translated">동작 변경 방지</target>
+        <source>Prevent behavioral change</source>
+        <target state="new">Prevent behavioral change</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvideCorrectArgumentToEnumHasFlagDescription">
