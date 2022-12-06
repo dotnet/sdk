@@ -24,11 +24,13 @@ namespace Microsoft.DotNet.Cli.Utils
         /// <param name="currentToken">The token that is being compared.</param>
         /// <param name="maxLevenshteinDistance">the difference between two strings, default: 3.</param>
         /// <returns>The enumerator to tokens similar to <paramref name="currentToken"/>.</returns>
-        public static IEnumerable<string> GetSimilarTokens(IEnumerable<string> possibleTokens, string currentToken, int maxLevenshteinDistance = 3)
+        public static IEnumerable<string> GetSimilarTokens(
+            IEnumerable<string> possibleTokens,
+            string currentToken,
+            int maxLevenshteinDistance = 3,
+            int minCurrentTokenLength = 3,
+            int maxNumberOfSuggestions = 10)
         {
-            var minCurrentTokenLength = 3;
-            var maxNumberOfSuggestions = 10;
-
             var currentTokenLength = currentToken.Length;
             var startsWithAndContainsSpecificDistanceFunc = (string possibleMatch)
                 => (possibleMatch, distance: possibleMatch.Length - currentTokenLength);
