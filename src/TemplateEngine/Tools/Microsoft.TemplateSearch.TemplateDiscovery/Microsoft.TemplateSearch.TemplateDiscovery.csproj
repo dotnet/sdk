@@ -4,6 +4,8 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>$(NETCoreTargetFramework)</TargetFramework>
     <Nullable>enable</Nullable>
+    <IsPackable>true</IsPackable>
+    <IsShipping>false</IsShipping>
     <ImplicitUsings>enable</ImplicitUsings>
     <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
   </PropertyGroup>
