@@ -45,15 +45,22 @@
     </GetDependencyInfo>
 
     <!-- Format for productCommits-%rid%.txt:
-       installer:%commit%, %version%
-       runtime:%commit%, %version%
-       aspnetcore:%commit%, %version%
-       windowsdesktop:%commit%, %version%
-       sdk:%commit%, %version%
+       installer_commit="%commit%" installer_version="%version%"
+       runtime_commit="%commit%" runtime_version="%version%"
+       aspnetcore_commit="%commit%" aspnetcore_version="%version%"
+       windowsdesktop_commit="%commit%" windowsdesktop_version="%version%"
+       sdk_commit="%commit%" sdk_version="%version%"
     -->
+    <ItemGroup>
+      <Line Include="installer" Version="$(PackageVersion)" Commit="$(BUILD_SOURCEVERSION)" />
+      <Line Include="runtime" Version="$(DepRuntimeVersion)" Commit="$(DepRuntimeCommit)" />
+      <Line Include="aspnetcore" Version="$(DepAspNetCoreVersion)" Commit="$(DepAspNetCoreCommit)" />
+      <Line Include="windowsdesktop" Version="$(DepWindowsDesktopVersion)" Commit="$(DepWindowsDesktopCommit)" />
+      <Line Include="sdk" Version="$(DepDotNetSdkVersion)" Commit="$(DepDotNetSdkCommit)" />
+    </ItemGroup>
     <WriteLinesToFile
       File="$(ArtifactsShippingPackagesDir)productCommit-$(Rid).txt"
-      Lines="installer%3A$(BUILD_SOURCEVERSION)%2C%20$(PackageVersion)%0Aruntime%3A$(DepRuntimeCommit)%2C%20$(DepRuntimeVersion)%0Aaspnetcore%3A$(DepAspNetCoreCommit)%2C%20$(DepAspNetCoreVersion)%0Awindowsdesktop%3A$(DepWindowsDesktopCommit)%2C%20$(DepWindowsDesktopVersion)%0Asdk%3A$(DepDotNetSdkCommit)%2C%20$(DepDotNetSdkVersion)%0A"
+      Lines="@(Line->'%(Identity)_commit=&quot;%(Commit)&quot; %(Identity)_version=&quot;%(Version)&quot;', '%0A')"
       Overwrite="true"
       Encoding="ASCII"/>
 
