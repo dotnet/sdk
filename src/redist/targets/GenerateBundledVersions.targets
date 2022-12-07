@@ -48,7 +48,7 @@
        installer_commit="%commit%" installer_version="%version%"
        runtime_commit="%commit%" runtime_version="%version%"
        aspnetcore_commit="%commit%" aspnetcore_version="%version%"
-       windowsdesktop_commit="%commit%' windowsdesktop_commit="%version%"
+       windowsdesktop_commit="%commit%" windowsdesktop_version="%version%"
        sdk_commit="%commit%" sdk_version="%version%"
     -->
     <ItemGroup>
