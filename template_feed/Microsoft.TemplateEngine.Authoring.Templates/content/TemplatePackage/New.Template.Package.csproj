@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <!-- fill in the properties marked as TODO below -->
+    <PropertyGroup>
+        <PackageType>Template</PackageType>
+        <PackageVersion>1.0</PackageVersion>
+        <PackageId>New.Template.Package</PackageId>
+        <Title>TODO: fill the package name here</Title>
+        <Authors>Me</Authors>
+        <Description>TODO: fill the package description here</Description>
+        <PackageTags>dotnet-new;templates</PackageTags>
+        <TargetFramework>net7.0</TargetFramework>
+        <IncludeContentInPack>true</IncludeContentInPack>
+        <IncludeBuildOutput>false</IncludeBuildOutput>
+        <ContentTargetFolders>content</ContentTargetFolders>
+        <NoWarn>$(NoWarn);NU5128</NoWarn>
+        <NoDefaultExcludes>true</NoDefaultExcludes>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="$(EnableMSBuildTasks) == 'true'">
+        <LocalizeTemplates>false</LocalizeTemplates>
+    </PropertyGroup>
+
+    <ItemGroup Condition="$(EnableMSBuildTasks) == 'true'">
+        <PackageReference Include="Microsoft.TemplateEngine.Tasks" Version="*" PrivateAssets="all" IsImplicitlyDefined="true"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Content Include="content\**\*" Exclude="content\**\bin\**;content\**\obj\**" />
+        <Compile Remove="**\*" />
+    </ItemGroup>
+
+</Project>

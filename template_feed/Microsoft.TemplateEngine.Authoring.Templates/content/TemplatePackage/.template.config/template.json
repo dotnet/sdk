@@ -1,0 +1,31 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "Microsoft",
+  "classifications": [
+    "Template Authoring"
+  ],
+  "name": "Template Package",
+  "generatorVersions": "[1.0.0.0-*)",
+  "description": "A project for a template package containing .NET templates.",
+  "groupIdentity": "Microsoft.TemplateEngine.Authoring.TemplatePackage",
+  "precedence": "0",
+  "identity": "Microsoft.TemplateEngine.Authoring.TemplatePackage.1.0",
+  "shortName": "template-package",
+  "tags": {
+    "type": "project"
+  },
+  "sourceName": "New.Template.Package",
+  "symbols": {
+    "EnableMSBuildTasks":
+    {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "true"
+    }
+  },
+  "primaryOutputs": [
+    {
+      "path": "New.Template.Package.csproj"
+    }
+  ]
+}
