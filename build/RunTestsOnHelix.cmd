@@ -32,3 +32,6 @@ dotnet nuget list source
 REM We downloaded a special zip of files to the .nuget folder so add that as a source
 dotnet new nugetconfig
 dotnet nuget add source %DOTNET_ROOT%\.nuget --configfile nuget.config
+
+dir /AD /B *assets* /s
+dir /AD /B %TestExecutionDirectory%\*assets* /s

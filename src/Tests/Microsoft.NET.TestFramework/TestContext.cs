@@ -84,6 +84,7 @@ namespace Microsoft.NET.TestFramework
             TestContext testContext = new TestContext();
             
             bool runAsTool = false;
+            testContext.TestAssetsDirectory = Path.Combine(AppContext.BaseDirectory, "Assets");
             if (Directory.Exists(Path.Combine(AppContext.BaseDirectory, "Assets")))
             {
                 runAsTool = true;
