@@ -25,8 +25,7 @@ namespace Microsoft.DotNet.GenAPI
                 string? headerFile,
                 string? exceptionMessage,
                 string[]? excludeAttributesFiles,
-                bool includeVisibleOutsideOfAssembly,
-                bool includeEffectivelyPrivateSymbols)
+                bool includeVisibleOutsideOfAssembly)
             {
                 Assemblies = assemblies;
                 AssemblyReferences = assemblyReferences;
@@ -35,7 +34,6 @@ namespace Microsoft.DotNet.GenAPI
                 ExceptionMessage = exceptionMessage;
                 ExcludeAttributesFiles = excludeAttributesFiles;
                 IncludeVisibleOutsideOfAssembly = includeVisibleOutsideOfAssembly;
-                IncludeEffectivelyPrivateSymbols = includeEffectivelyPrivateSymbols;
             }
 
             /// <summary>
@@ -70,14 +68,9 @@ namespace Microsoft.DotNet.GenAPI
             public string[]? ExcludeAttributesFiles { get; }
 
             /// <summary>
-            /// Include internal API's. Default is false.
+            /// Include private and internal API's. Default is false.
             /// </summary>
             public bool IncludeVisibleOutsideOfAssembly { get; }
-
-            /// <summary>
-            /// Include public, protected and private API's. Default is public only.
-            /// </summary>
-            public bool IncludeEffectivelyPrivateSymbols { get; }
         }
 
         /// <summary>
@@ -98,7 +91,7 @@ namespace Microsoft.DotNet.GenAPI
                 .Add<ImplicitSymbolsFilter>()
                 .Add(new SymbolAccessibilityBasedFilter(
                     context.IncludeVisibleOutsideOfAssembly,
-                    context.IncludeEffectivelyPrivateSymbols));
+                    /*IncludeEffectivelyPrivateSymbols*/true));
 
             if (context.ExcludeAttributesFiles != null)
             {
