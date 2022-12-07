@@ -246,6 +246,12 @@ namespace EndToEnd.Tests
             //check if the template created files
             Assert.True(directory.Exists);
             Assert.True(directory.EnumerateFileSystemInfos().Any());
+
+            // delete test directory for some tests so we aren't leaving behind non-compliant nuget files
+            if (templateName.Equals("nugetconfig"))
+            {
+                directory.Delete(true);
+            }
         }
 
         [WindowsOnlyTheory]
@@ -329,7 +335,7 @@ namespace EndToEnd.Tests
         public void ItCanCreateTemplateWithDefaultFramework(string templateName)
         {
             string framework = DetectExpectedDefaultFramework(templateName);
-            TestTemplateCreateAndBuild(templateName, build: false, framework: framework);
+            TestTemplateCreateAndBuild(templateName, build: false, framework: framework, deleteTestDirectory: true);
         }
 
         /// <summary>
@@ -415,7 +421,7 @@ namespace EndToEnd.Tests
             throw new Exception("Unsupported version of SDK");
         }
 
-        private static void TestTemplateCreateAndBuild(string templateName, bool build = true, bool selfContained = false, string language = "", string framework = "")
+        private static void TestTemplateCreateAndBuild(string templateName, bool build = true, bool selfContained = false, string language = "", string framework = "", bool deleteTestDirectory = false)
         {
             DirectoryInfo directory = TestAssets.CreateTestDirectory(identifier: string.IsNullOrWhiteSpace(language) ? templateName : $"{templateName}[{language}]");
             string projectDirectory = directory.FullName;
@@ -467,6 +473,12 @@ namespace EndToEnd.Tests
                      .WithWorkingDirectory(projectDirectory)
                      .Execute(buildArgs)
                      .Should().Pass();
+            }
+
+            // delete test directory for some tests so we aren't leaving behind non-compliant package files
+            if (deleteTestDirectory)
+            {
+                directory.Delete(true);
             }
         }
     }
