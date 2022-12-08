@@ -1670,7 +1670,7 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         [Fact]
-        public void It_warns_when_targetting_netcoreapp_2_x_illink()
+        public void It_warns_when_targeting_netcoreapp_2_x_illink()
         {
             var testProject = new TestProject()
             {
