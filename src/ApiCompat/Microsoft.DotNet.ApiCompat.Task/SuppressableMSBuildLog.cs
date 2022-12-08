@@ -1,21 +1,15 @@
 ﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.DotNet.ApiCompatibility.Logging;
 using Microsoft.DotNet.ApiSymbolExtensions.Logging;
-using Microsoft.NET.Build.Tasks;
 
 namespace Microsoft.DotNet.ApiCompat.Task
 {
     internal class SuppressableMSBuildLog : MSBuildLog, ISuppressableLog
     {
         private readonly ISuppressionEngine _suppressionEngine;
-        public SuppressableMSBuildLog(Logger log, ISuppressionEngine suppressionEngine) : base(log)
+        public SuppressableMSBuildLog(NET.Build.Tasks.Logger log, ISuppressionEngine suppressionEngine) : base(log)
         {
             _suppressionEngine = suppressionEngine;
         }
@@ -30,7 +24,7 @@ namespace Microsoft.DotNet.ApiCompat.Task
                 return false;
             }
             SuppressionWasLogged = true;
-            _log.Log(new Message(messageLevel, string.Format(format, args), code));
+            _log.Log(new NET.Build.Tasks.Message((NET.Build.Tasks.MessageLevel)messageLevel, string.Format(format, args), code));
             return true;
         }
     }
