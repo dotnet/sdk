@@ -638,13 +638,13 @@ namespace Microsoft.NET.Publish.Tests
 
             // Set up a project with an invalid feature substitution, just to produce an error.
             var testProject = CreateTestProjectForILLinkTesting(targetFramework, projectName);
-            testProject.SourceFiles[$"{projectName}.xml"] = $"""
-                <linker>
-                <assembly fullname="{projectName}">
-                    <type fullname="Program" feature="featuremissingvalue" />
-                </assembly>
-                </linker>
-                """;
+            testProject.SourceFiles[$"{projectName}.xml"] = $@"
+<linker>
+  <assembly fullname=""{projectName}"">
+    <type fullname=""Program"" feature=""featuremissingvalue"" />
+  </assembly>
+</linker>
+";
             var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework)
                 .WithProjectChanges(project => AddRootDescriptor(project, $"{projectName}.xml"));
 
@@ -1517,18 +1517,17 @@ namespace Microsoft.NET.Publish.Tests
                 TargetFrameworks = targetFramework,
                 SourceFiles =
                 {
-                    ["Program.cs"] = """
+                    ["Program.cs"] = @"
                         class Program
                         {
                             static void Main() {}
-                        }
-                        """,
-                    ["Test.cshtml"] = """
+                        }",
+                    ["Test.cshtml"] = @"
                         @page
                         @{
-                            System.IO.Compression.ZipFile.OpenRead("test.zip");
+                            System.IO.Compression.ZipFile.OpenRead(""test.zip"");
                         }
-                        """,
+                    ",
                 },
                 AdditionalProperties =
                 {
@@ -1759,15 +1758,15 @@ namespace Microsoft.NET.Publish.Tests
         private void AddFeatureDefinition(TestProject testProject, string assemblyName)
         {
             // Add a feature definition that replaces the FeatureDisabled property when DisableFeature is true.
-            testProject.EmbeddedResources[substitutionsFilename] = $"""
-                <linker>
-                <assembly fullname="{assemblyName}" feature="DisableFeature" featurevalue="true">
-                    <type fullname="ClassLib">
-                    <method signature="System.Boolean get_FeatureDisabled()" body="stub" value="true" />
-                    </type>
-                </assembly>
-                </linker>
-                """;
+            testProject.EmbeddedResources[substitutionsFilename] = $@"
+<linker>
+  <assembly fullname=""{assemblyName}"" feature=""DisableFeature"" featurevalue=""true"">
+    <type fullname=""ClassLib"">
+      <method signature=""System.Boolean get_FeatureDisabled()"" body=""stub"" value=""true"" />
+    </type>
+  </assembly>
+</linker>
+";
 
             testProject.AddItem("EmbeddedResource", new Dictionary<string, string>
             {
@@ -1805,60 +1804,57 @@ namespace Microsoft.NET.Publish.Tests
             // If we're actually testing that we build with no warnings, the test will still fail.
             testProject.AdditionalProperties["WarningsNotAsErrors"] = "CS9057;";
 
-            testProject.SourceFiles[$"{projectName}.cs"] = """
-                using System;
-                using System.Reflection;
-                using System.Diagnostics.CodeAnalysis;
-                namespace TestProjectWithAnalysisWarnings
-                {
-                    public class Program
-                    {
-                        public static void Main()
-                        {
-                            IL_2075();
-                            IL_2026();
-                            _ = IL_2043;
-                            new Derived().IL_2046();
-                            new Derived().IL_2093();
-                        }
+            testProject.SourceFiles[$"{projectName}.cs"] = @"
+using System;
+using System.Reflection;
+using System.Diagnostics.CodeAnalysis;
+public class Program
+{
+    public static void Main()
+    {
+        IL_2075();
+        IL_2026();
+        _ = IL_2043;
+        new Derived().IL_2046();
+        new Derived().IL_2093();
+    }
 
-                        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicFields)]
-                        public static string typeName;
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicFields)]
+    public static string typeName;
 
-                        public static void IL_2075()
-                        {
-                            _ = Type.GetType(typeName).GetMethod("SomeMethod");
-                        }
+    public static void IL_2075()
+    {
+        _ = Type.GetType(typeName).GetMethod(""SomeMethod"");
+    }
 
-                        [RequiresUnreferencedCode("Testing analysis warning IL2026")]
-                        public static void IL_2026()
-                        {
-                        }
+    [RequiresUnreferencedCode(""Testing analysis warning IL2026"")]
+    public static void IL_2026()
+    {
+    }
 
-                        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicFields)]
-                        public static string IL_2043 {
-                            [return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicFields)]
-                            get => null;
-                        }
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicFields)]
+    public static string IL_2043 {
+        [return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicFields)]
+        get => null;
+    }
 
-                        public class Base
-                        {
-                            [RequiresUnreferencedCode("Testing analysis warning IL2046")]
-                            public virtual void IL_2046() {}
+    public class Base
+    {
+        [RequiresUnreferencedCode(""Testing analysis warning IL2046"")]
+        public virtual void IL_2046() {}
 
-                            public virtual string IL_2093() => null;
-                        }
+        public virtual string IL_2093() => null;
+    }
 
-                        public class Derived : Base
-                        {
-                            public override void IL_2046() {}
+    public class Derived : Base
+    {
+        public override void IL_2046() {}
 
-                            [return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)]
-                            public override string IL_2093() => null;
-                        }
-                    }
-                }
-                """;
+        [return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)]
+        public override string IL_2093() => null;
+    }
+}
+";
 
             return testProject;
         }
@@ -1875,17 +1871,16 @@ namespace Microsoft.NET.Publish.Tests
             };
             testProject.AdditionalProperties["PublishTrimmed"] = "true";
 
-            testProject.SourceFiles[$"{projectName}.cs"] = """
-                using System;
-                public class Program
-                {
-                    public static void Main()
-                    {
-                        TrimmableAssembly.UsedMethod();
-                        NonTrimmableAssembly.UsedMethod();
-                    }
-                }
-                """;
+            testProject.SourceFiles[$"{projectName}.cs"] = @"
+using System;
+public class Program
+{
+    public static void Main()
+    {
+        TrimmableAssembly.UsedMethod();
+        NonTrimmableAssembly.UsedMethod();
+    }
+}";
 
             var trimmableProject = new TestProject()
             {
@@ -1893,22 +1888,21 @@ namespace Microsoft.NET.Publish.Tests
                 TargetFrameworks = targetFramework
             };
 
-            trimmableProject.SourceFiles["TrimmableAssembly.cs"] = """
-                using System.Reflection;
+            trimmableProject.SourceFiles["TrimmableAssembly.cs"] = @"
+using System.Reflection;
 
-                [assembly: AssemblyMetadata("IsTrimmable", "True")]
+[assembly: AssemblyMetadata(""IsTrimmable"", ""True"")]
 
-                public static class TrimmableAssembly
-                {
-                    public static void UsedMethod()
-                    {
-                    }
+public static class TrimmableAssembly
+{
+    public static void UsedMethod()
+    {
+    }
 
-                    public static void UnusedMethod()
-                    {
-                    }
-                }
-                """;
+    public static void UnusedMethod()
+    {
+    }
+}";
             testProject.ReferencedProjects.Add(trimmableProject);
 
             var nonTrimmableProject = new TestProject()
@@ -1917,18 +1911,17 @@ namespace Microsoft.NET.Publish.Tests
                 TargetFrameworks = targetFramework
             };
 
-            nonTrimmableProject.SourceFiles["NonTrimmableAssembly.cs"] = """
-                public static class NonTrimmableAssembly
-                {
-                    public static void UsedMethod()
-                    {
-                    }
+            nonTrimmableProject.SourceFiles["NonTrimmableAssembly.cs"] = @"
+public static class NonTrimmableAssembly
+{
+    public static void UsedMethod()
+    {
+    }
 
-                    public static void UnusedMethod()
-                    {
-                    }
-                }
-                """;
+    public static void UnusedMethod()
+    {
+    }
+}";
             testProject.ReferencedProjects.Add(nonTrimmableProject);
 
             var unusedTrimmableProject = new TestProject()
@@ -1937,18 +1930,18 @@ namespace Microsoft.NET.Publish.Tests
                 TargetFrameworks = targetFramework
             };
 
-            unusedTrimmableProject.SourceFiles["UnusedTrimmableAssembly.cs"] = """
-                using System.Reflection;
+            unusedTrimmableProject.SourceFiles["UnusedTrimmableAssembly.cs"] = @"
+using System.Reflection;
 
-                [assembly: AssemblyMetadata("IsTrimmable", "True")]
+[assembly: AssemblyMetadata(""IsTrimmable"", ""True"")]
 
-                public static class UnusedTrimmableAssembly
-                {
-                    public static void UnusedMethod()
-                    {
-                    }
-                }
-                """;
+public static class UnusedTrimmableAssembly
+{
+    public static void UnusedMethod()
+    {
+    }
+}
+";
             testProject.ReferencedProjects.Add(unusedTrimmableProject);
 
             var unusedNonTrimmableProject = new TestProject()
@@ -1957,14 +1950,14 @@ namespace Microsoft.NET.Publish.Tests
                 TargetFrameworks = targetFramework
             };
 
-            unusedNonTrimmableProject.SourceFiles["UnusedNonTrimmableAssembly.cs"] = """
-                public static class UnusedNonTrimmableAssembly
-                {
-                    public static void UnusedMethod()
-                    {
-                    }
-                }
-                """;
+            unusedNonTrimmableProject.SourceFiles["UnusedNonTrimmableAssembly.cs"] = @"
+public static class UnusedNonTrimmableAssembly
+{
+    public static void UnusedMethod()
+    {
+    }
+}
+";
             testProject.ReferencedProjects.Add(unusedNonTrimmableProject);
 
             return testProject;
@@ -1987,29 +1980,28 @@ namespace Microsoft.NET.Publish.Tests
                 IsExe = true
             };
 
-            testProject.SourceFiles[$"{mainProjectName}.cs"] = """
-                using System;
-                public class Program
-                {
-                    public static void Main()
-                    {
-                        Console.WriteLine("Hello world");
-                    }
+            testProject.SourceFiles[$"{mainProjectName}.cs"] = @"
+using System;
+public class Program
+{
+    public static void Main()
+    {
+        Console.WriteLine(""Hello world"");
+    }
 
-                    public static void UnusedMethod()
-                    {
-                    }
-                """;
+    public static void UnusedMethod()
+    {
+    }
+";
 
             if (addAssemblyReference)
             {
-                testProject.SourceFiles[$"{mainProjectName}.cs"] += """
-                    public static void UseClassLib()
-                    {
-                        ClassLib.UsedMethod();
-                    }
-                }
-                """;
+                testProject.SourceFiles[$"{mainProjectName}.cs"] += @"
+    public static void UseClassLib()
+    {
+        ClassLib.UsedMethod();
+    }
+}";
             }
             else
             {
@@ -2031,38 +2023,38 @@ namespace Microsoft.NET.Publish.Tests
                 // of these tests to prevent conflicts.
                 TargetFrameworks = usePackageReference ? "netcoreapp3.0" : targetFramework,
             };
-            referenceProject.SourceFiles[$"{referenceProjectName}.cs"] = """
-                using System;
+            referenceProject.SourceFiles[$"{referenceProjectName}.cs"] = @"
+using System;
 
-                public class ClassLib
-                {
-                    public static void UsedMethod()
-                    {
-                    }
+public class ClassLib
+{
+    public static void UsedMethod()
+    {
+    }
 
-                    public void UnusedMethod()
-                    {
-                    }
+    public void UnusedMethod()
+    {
+    }
 
-                    public void UnusedMethodToRoot()
-                    {
-                    }
+    public void UnusedMethodToRoot()
+    {
+    }
 
-                    public static bool FeatureDisabled { get; }
+    public static bool FeatureDisabled { get; }
 
-                    public static void FeatureAPI()
-                    {
-                        if (FeatureDisabled)
-                            return;
+    public static void FeatureAPI()
+    {
+        if (FeatureDisabled)
+            return;
 
-                        FeatureImplementation();
-                    }
+        FeatureImplementation();
+    }
 
-                    public static void FeatureImplementation()
-                    {
-                    }
-                }
-                """;
+    public static void FeatureImplementation()
+    {
+    }
+}
+";
             if (modifyReferencedProject != null)
                 modifyReferencedProject(referenceProject);
 
@@ -2077,16 +2069,16 @@ namespace Microsoft.NET.Publish.Tests
             }
 
 
-            testProject.SourceFiles[$"{referenceProjectName}.xml"] = $"""
-                <linker>
-                <assembly fullname="{referenceProjectName}">
-                    <type fullname="ClassLib">
-                    <method name="UnusedMethodToRoot" />
-                    <method name="FeatureAPI" />
-                    </type>
-                </assembly>
-                </linker>
-                """;
+            testProject.SourceFiles[$"{referenceProjectName}.xml"] = $@"
+<linker>
+  <assembly fullname=""{referenceProjectName}"">
+    <type fullname=""ClassLib"">
+      <method name=""UnusedMethodToRoot"" />
+      <method name=""FeatureAPI"" />
+    </type>
+  </assembly>
+</linker>
+";
 
             return testProject;
         }
