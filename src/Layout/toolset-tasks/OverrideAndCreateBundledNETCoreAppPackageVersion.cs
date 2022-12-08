@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -133,7 +133,7 @@ namespace Microsoft.DotNet.Build.Tasks
             CheckAndReplaceAttribute(itemGroup
                 .Elements(ns + "KnownRuntimePack").First().Attribute("LatestRuntimeFrameworkVersion"));
 
-            // TODO: remove this once we're using an SDK that contains KnownILLinkPack.
+            // TODO: remove this once we're using an SDK that contains KnownILLinkPack: https://github.com/dotnet/installer/pull/15106
             {
                 itemGroup.Add(new XElement(ns + "KnownILLinkPack",
                     new XAttribute("Include", "Microsoft.NET.ILLink.Tasks"),
