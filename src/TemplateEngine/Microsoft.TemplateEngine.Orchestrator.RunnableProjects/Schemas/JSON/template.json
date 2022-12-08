@@ -779,7 +779,7 @@
       "minLength": 1
     },
     "sourceName": {
-      "description": "The name in the source tree to replace with the name the user specifies.",
+      "description": "The text in the source content to replace with the name the user specifies. The value of the 'sourceName' is available in built-in 'name' symbol that can be used as the source for creating other symbols and condition expressions. See important information about how to select correct 'sourceName' in https://github.com/dotnet/templating/wiki/Naming-and-default-value-forms.",
       "type": "string"
     },
     "sources": {

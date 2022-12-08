@@ -1,11 +1,15 @@
 # `sourceName` default value forms
 
+`sourceName` defines the name in the source tree to replace with the name the user specifies. The value to be replaced with can be given using the `-n` `--name` options while running a template or Name field in IDE. The template engine will look for any occurrence of the name present in the config file and replace it in file names and file contents. If no name is specified by the host, the current directory is used. The value of the `sourceName` is available in built-in `name` symbol and can be used as the source for creating other symbols and condition expressions. Therefore, it is not allowed to define `name` symbol in `symbols` in template.json configuration.
+
 When selecting a `sourceName` for a template you're authoring, keep in mind the default value forms applied to this symbol: 
 - `identity` - the value as entered by user.
 - `namespace` - the value transformed in a way to be a correct .NET namespace.  [Details](https://github.com/dotnet/templating/blob/b0b1283f8c96be35f1b65d4b0c1ec0534d86fc2f/src/Microsoft.TemplateEngine.Orchestrator.RunnableProjects/ValueForms/DefaultSafeNamespaceValueFormFactory.cs#L17-L59)
 - `class name` - the value transformed in a way to be a correct .NET class name. [Details](https://github.com/dotnet/templating/blob/b0b1283f8c96be35f1b65d4b0c1ec0534d86fc2f/src/Microsoft.TemplateEngine.Orchestrator.RunnableProjects/ValueForms/DefaultSafeNameValueFormFactory.cs#L15-L21)
 - `lower case namespace` - same as `namespace`, but lower case.
 - `lower case class name` - same as `class name`, but lower case.
+
+`sourceName` is available in template configuration as `name` variable.
 
 A good choice for `sourceName` is the value that produces distinct values under the below transformations, for example `Template.1`: 
 Form | Source | Transformed value
@@ -64,7 +68,18 @@ public class My-App //intent to use `class` form, but `identity` was used instea
    var str = "My template name is My_App"; //intent to use `identity` form, but `namespace` was used instead
 }
 ```
-
 As the result, this code won't compile as namespace and class are not using correct names.
+
+Besides using the forms in template content, it is possible to access certain form of `sourceName` via the following variables:
+- `identity`: `name{-VALUE-FORMS-}identity`, equivalent to `name`.
+- `namespace`: `name{-VALUE-FORMS-}safe_namespace`
+- `class name`: `name{-VALUE-FORMS-}safe_name`
+- `lower case namespace`: `name{-VALUE-FORMS-}lower_safe_namespace`
+- `lower case class name`: `name{-VALUE-FORMS-}lower_safe_name`
+
+You can use them in conditions or other expressions of template configuration. Example:
+```xml
+<RootNamespace Condition="'$(name)' != '$(name{-VALUE-FORMS-}safe_namespace)'">Company.ConsoleApplication1</RootNamespace>
+```
 
 For more details on value forms, refer to [the article](Value-Forms.md).
