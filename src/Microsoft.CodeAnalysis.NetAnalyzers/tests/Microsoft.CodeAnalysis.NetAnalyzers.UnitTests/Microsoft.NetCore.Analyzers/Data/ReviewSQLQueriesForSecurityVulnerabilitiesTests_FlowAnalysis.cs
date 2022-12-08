@@ -17,17 +17,17 @@ namespace Microsoft.NetCore.Analyzers.Data.UnitTests
     public class ReviewSQLQueriesForSecurityVulnerabilitiesTests_FlowAnalysis : ReviewSQLQueriesForSecurityVulnerabilitiesTests
     {
         private static DiagnosticResult GetCSharpResultAt(int line, int column, string invokedSymbol, string containingMethod)
-#pragma warning disable RS0030 // Do not used banned APIs
+#pragma warning disable RS0030 // Do not use banned APIs
             => VerifyCS.Diagnostic()
                 .WithLocation(line, column)
-#pragma warning restore RS0030 // Do not used banned APIs
+#pragma warning restore RS0030 // Do not use banned APIs
                 .WithArguments(invokedSymbol, containingMethod);
 
         private static DiagnosticResult GetBasicResultAt(int line, int column, string invokedSymbol, string containingMethod)
-#pragma warning disable RS0030 // Do not used banned APIs
+#pragma warning disable RS0030 // Do not use banned APIs
             => VerifyVB.Diagnostic()
                 .WithLocation(line, column)
-#pragma warning restore RS0030 // Do not used banned APIs
+#pragma warning restore RS0030 // Do not use banned APIs
                 .WithArguments(invokedSymbol, containingMethod);
 
         [Fact]

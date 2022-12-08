@@ -613,17 +613,17 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column, string violatingMember, string violatingParameter, string baseParameter, string baseMember)
-#pragma warning disable RS0030 // Do not used banned APIs
+#pragma warning disable RS0030 // Do not use banned APIs
             => VerifyCS.Diagnostic()
                 .WithLocation(line, column)
-#pragma warning restore RS0030 // Do not used banned APIs
+#pragma warning restore RS0030 // Do not use banned APIs
                 .WithArguments(violatingMember, violatingParameter, baseParameter, baseMember);
 
         private static DiagnosticResult GetBasicResultAt(int line, int column, string violatingMember, string violatingParameter, string baseParameter, string baseMember)
-#pragma warning disable RS0030 // Do not used banned APIs
+#pragma warning disable RS0030 // Do not use banned APIs
             => VerifyVB.Diagnostic()
                 .WithLocation(line, column)
-#pragma warning restore RS0030 // Do not used banned APIs
+#pragma warning restore RS0030 // Do not use banned APIs
                 .WithArguments(violatingMember, violatingParameter, baseParameter, baseMember);
     }
 }
