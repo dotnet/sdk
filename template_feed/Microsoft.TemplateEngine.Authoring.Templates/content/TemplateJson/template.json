@@ -1,6 +1,6 @@
 {
   "$schema": "http://json.schemastore.org/template",
-  "_comment": "See https://github.com/dotnet/templating/wiki/Reference-for-template.json for complete configuration description. Complete TODOs below and remove the _comment properties.It is recommended to use the JSON editor that supports schema hints to get more information about defined JSON properties and their description.",
+  "$comment": "See https://github.com/dotnet/templating/wiki/Reference-for-template.json for complete configuration description. Complete TODOs below and remove the _comment properties.It is recommended to use the JSON editor that supports schema hints to get more information about defined JSON properties and their description.",
   "author": "TODO: fill author name here.",
   "classifications": [
     "TODO: fill classification here. Common classifications are: Library, Test, Web etc. Each classification should be a separate element of the array."
@@ -11,15 +11,15 @@
   "identity": "New.Template.Identity",
   "shortName": "new-template",
   "tags": {
-    "_comment": "TODO: fill the language and type below. Common types are: project, item, solution.",
+    "$comment": "TODO: fill the language and type below. Common types are: project, item, solution.",
     "language": "C#",
     "type": "project"
   },
-  "_comment_sourceName": "TODO: Source name should follow these rules: https://github.com/dotnet/templating/wiki/Naming-and-default-value-forms. Source name may be removed if replacement for name is not required.",
+  "$comment_sourceName": "TODO: Source name should follow these rules: https://github.com/dotnet/templating/wiki/Naming-and-default-value-forms. Source name may be removed if replacement for name is not required.",
   "sourceName": "New.Template.1",
   "preferNameDirectory": true,
   "symbols": {
-    "_comment": "TODO: The symbols section defines variables and their values. For more details, see https://github.com/dotnet/templating/wiki/Reference-for-template.json#symbols.",
+    "$comment": "TODO: The symbols section defines variables and their values. For more details, see https://github.com/dotnet/templating/wiki/Reference-for-template.json#symbols.",
     "ExampleParameter":{
       "type": "parameter",
       "datatype": "string",
@@ -30,20 +30,20 @@
   },
   "sources": [
     {
-    "_comment": "TODO: Sources control the paths for source and target content. For more details see https://github.com/dotnet/templating/wiki/Reference-for-template.json#source-definition. If source definition is not required, remove the property."
+      "$comment": "TODO: Sources control the paths for source and target content. For more details see https://github.com/dotnet/templating/wiki/Reference-for-template.json#source-definition. If source definition is not required, remove the property."
     }
   ],
   "constraints": {
-    "_comment": "TODO: The template may define the constraints all of which must be met in order for the template to be used. For more details see https://github.com/dotnet/templating/wiki/Reference-for-template.json#template-constraints. If constraints are not required, remove the property."
+    "$comment": "TODO: The template may define the constraints all of which must be met in order for the template to be used. For more details see https://github.com/dotnet/templating/wiki/Reference-for-template.json#template-constraints. If constraints are not required, remove the property."
   },
   "primaryOutputs": [
     {
-      "_comment": "TODO: Primary outputs define the list of template files for further processing, usually post actions. If primary outputs are not required, remove the property."
+      "$comment": "TODO: Primary outputs define the list of template files for further processing, usually post actions. If primary outputs are not required, remove the property."
     }
   ],
   "postActions": [
     {
-      "_comment": "TODO: Enables actions to be performed after the project is created. For more details see https://github.com/dotnet/templating/wiki/Post-Action-Registry. If post actions are not required, remove the property."
+      "$comment": "TODO: Enables actions to be performed after the project is created. For more details see https://github.com/dotnet/templating/wiki/Post-Action-Registry. If post actions are not required, remove the property."
     }
   ]
 }
