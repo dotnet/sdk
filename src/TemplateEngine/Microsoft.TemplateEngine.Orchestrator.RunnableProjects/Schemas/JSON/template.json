@@ -765,12 +765,12 @@
     "shortName": {
       "oneOf": [
         {
-          "description": "A shorthand name for selecting the template (applies to environments where the template name is specified by the user - not selected via a GUI).",
+          "description": "A shorthand name for selecting the template in CLI environment. The template short name should be unique across all the installed templates.",
           "type": "string"
         },
         {
           "type": "array",
-          "description": "A shorthand name for selecting the template (applies to environments where the template name is specified by the user - not selected via a GUI).",
+          "description": "A shorthand name for selecting the template in CLI environment. The first element is a primary choice, and will be used in scenarios which allow only single value for the short name. The template short name should be unique across all the installed templates.",
           "items": {
             "type": "string"
           }
