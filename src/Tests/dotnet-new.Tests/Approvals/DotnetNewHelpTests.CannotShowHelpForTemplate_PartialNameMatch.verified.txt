@@ -1,6 +1,7 @@
 ﻿No templates or subcommands found matching: 'class'.
 Did you mean one of the following templates?
    dotnet new classlib -h
+   dotnet new razorclasslib -h
 Did you mean one of the following subcommands?
    dotnet new list -h
 
