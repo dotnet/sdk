@@ -86,6 +86,7 @@
 
       <_NET70RuntimePackVersion>7.0.$(VersionFeature70)</_NET70RuntimePackVersion>
       <_NET70TargetingPackVersion>7.0.$(VersionFeature70)</_NET70TargetingPackVersion>
+      <_NET70ILLinkPackVersion>7.0.100-1.22579.2</_NET70ILLinkPackVersion>
       <_WindowsDesktop70RuntimePackVersion>7.0.$(VersionFeature70)</_WindowsDesktop70RuntimePackVersion>
       <_WindowsDesktop70TargetingPackVersion>7.0.$(VersionFeature70)</_WindowsDesktop70TargetingPackVersion>
       <_AspNet70RuntimePackVersion>7.0.$(VersionFeature70)</_AspNet70RuntimePackVersion>
@@ -408,6 +409,10 @@ Copyright (c) .NET Foundation. All rights reserved.
                          ILCompilerRuntimeIdentifiers="@(ILCompilerSupportedRids, '%3B')"
                          />
 
+    <KnownILLinkPack Include="Microsoft.NET.ILLink.Tasks"
+                     TargetFramework="net8.0"
+                     ILLinkPackVersion="7.0.100-1.22606.1" />
+
     <KnownRuntimePack Include="Microsoft.NETCore.App"
                       TargetFramework="net8.0"
                       RuntimeFrameworkName="Microsoft.NETCore.App"
@@ -540,6 +545,10 @@ Copyright (c) .NET Foundation. All rights reserved.
                          ILCompilerRuntimeIdentifiers="@(ILCompilerSupportedRids, '%3B')"
                          />
 
+    <KnownILLinkPack Include="Microsoft.NET.ILLink.Tasks"
+                     TargetFramework="net7.0"
+                     ILLinkPackVersion="$(_NET70ILLinkPackVersion)" />
+
     <KnownRuntimePack Include="Microsoft.NETCore.App"
                       TargetFramework="net7.0"
                       RuntimeFrameworkName="Microsoft.NETCore.App"
@@ -665,6 +674,10 @@ Copyright (c) .NET Foundation. All rights reserved.
                         Crossgen2RuntimeIdentifiers="@(Crossgen2SupportedRids, '%3B')"
                         />
 
+    <KnownILLinkPack Include="Microsoft.NET.ILLink.Tasks"
+                     TargetFramework="net6.0"
+                     ILLinkPackVersion="$(_NET70ILLinkPackVersion)" />
+
     <KnownRuntimePack Include="Microsoft.NETCore.App"
                       TargetFramework="net6.0"
                       RuntimeFrameworkName="Microsoft.NETCore.App"
@@ -789,6 +802,10 @@ Copyright (c) .NET Foundation. All rights reserved.
                         Crossgen2RuntimeIdentifiers="@(Net50Crossgen2SupportedRids, '%3B')"
                         />
 
+    <KnownILLinkPack Include="Microsoft.NET.ILLink.Tasks"
+                     TargetFramework="net5.0"
+                     ILLinkPackVersion="$(_NET70ILLinkPackVersion)" />
+
     <KnownFrameworkReference Include="Microsoft.WindowsDesktop.App"
                               TargetFramework="net5.0"
                               RuntimeFrameworkName="Microsoft.WindowsDesktop.App"
@@ -897,6 +914,10 @@ Copyright (c) .NET Foundation. All rights reserved.
                       AppHostRuntimeIdentifiers="@(NetCore31RuntimePackRids, '%3B')"
                       />
 
+    <KnownILLinkPack Include="Microsoft.NET.ILLink.Tasks"
+                     TargetFramework="netcoreapp3.1"
+                     ILLinkPackVersion="$(_NET70ILLinkPackVersion)" />
+
     <KnownFrameworkReference Include="Microsoft.WindowsDesktop.App"
                               TargetFramework="netcoreapp3.1"
                               RuntimeFrameworkName="Microsoft.WindowsDesktop.App"
@@ -966,6 +987,10 @@ Copyright (c) .NET Foundation. All rights reserved.
                       AppHostPackVersion="$(_NETCoreApp30RuntimePackVersion)"
                       AppHostRuntimeIdentifiers="@(NetCore30RuntimePackRids, '%3B')"
                       />
+
+    <KnownILLinkPack Include="Microsoft.NET.ILLink.Tasks"
+                     TargetFramework="netcoreapp3.0"
+                     ILLinkPackVersion="$(_NET70ILLinkPackVersion)" />
 
     <KnownFrameworkReference Include="Microsoft.WindowsDesktop.App"
                               TargetFramework="netcoreapp3.0"
