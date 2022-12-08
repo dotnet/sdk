@@ -19,6 +19,15 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {
     public class UseCancellationTokenThrowIfCancellationRequestedTests
     {
+        private static IEnumerable<string> LanguageVersionsToTest_CS
+        {
+            get
+            {
+                yield return CodeAnalysis.CSharp.LanguageVersion.CSharp7.ToString();
+                yield return CodeAnalysis.CSharp.LanguageVersion.CSharp10.ToString();
+            }
+        }
+
         private static IEnumerable<string> OperationCanceledExceptionCtors
         {
             get
@@ -46,13 +55,13 @@ if ({0})
 }}";
                 }
 
-                return CartesianProduct(OperationCanceledExceptionCtors, ConditionalFormatStrings());
+                return CartesianProduct(OperationCanceledExceptionCtors, ConditionalFormatStrings(), LanguageVersionsToTest_CS);
             }
         }
 
         [Theory]
         [MemberData(nameof(Data_SimpleAffirmativeCheck_ReportedAndFixed_CS))]
-        public Task SimpleAffirmativeCheck_ReportedAndFixed_CSAsync(string operationCanceledExceptionCtor, string simpleConditionalFormatString)
+        public Task SimpleAffirmativeCheck_ReportedAndFixed_CSAsync(string operationCanceledExceptionCtor, string simpleConditionalFormatString, string languageVersion)
         {
             string testStatements = Markup(
                 FormatInvariant(
@@ -60,13 +69,15 @@ if ({0})
                     @"token.IsCancellationRequested",
                     $@"throw new {operationCanceledExceptionCtor};"), 0);
             string fixedStatements = @"token.ThrowIfCancellationRequested();";
+            var parsedVersion = (CodeAnalysis.CSharp.LanguageVersion)Enum.Parse(typeof(CodeAnalysis.CSharp.LanguageVersion), languageVersion);
 
             var test = new VerifyCS.Test
             {
                 TestCode = CS.CreateBlock(testStatements),
                 FixedCode = CS.CreateBlock(fixedStatements),
                 ExpectedDiagnostics = { CS.DiagnosticAt(0) },
-                ReferenceAssemblies = ReferenceAssemblies.Net.Net50
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
+                LanguageVersion = parsedVersion,
             };
             return test.RunAsync();
         }
@@ -149,7 +160,7 @@ else
     {2}";
                 }
 
-                return CartesianProduct(OperationCanceledExceptionCtors, ConditionalFormatStrings());
+                return CartesianProduct(OperationCanceledExceptionCtors, ConditionalFormatStrings(), LanguageVersionsToTest_CS);
             }
         }
 
@@ -290,8 +301,10 @@ public class C
 
         [Theory]
         [MemberData(nameof(Data_NegatedCheckWithElse_ReportedAndFixed_CS))]
-        public Task NegatedCheckWithElse_ReportedAndFixed_CSAsync(string operationCanceledExceptionCtor, string conditionalFormatString)
+        public Task NegatedCheckWithElse_ReportedAndFixed_CSAsync(string operationCanceledExceptionCtor, string conditionalFormatString, string languageVersion)
         {
+            var parsedVersion = (CodeAnalysis.CSharp.LanguageVersion)Enum.Parse(typeof(CodeAnalysis.CSharp.LanguageVersion), languageVersion);
+
             const string members = @"
 private CancellationToken token;
 private void DoSomething() { }";
@@ -311,7 +324,8 @@ DoSomething();";
                 TestCode = CS.CreateBlock(testStatements, members),
                 FixedCode = CS.CreateBlock(fixedStatements, members),
                 ExpectedDiagnostics = { CS.DiagnosticAt(0) },
-                ReferenceAssemblies = ReferenceAssemblies.Net.Net50
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
+                LanguageVersion = parsedVersion,
             };
             return test.RunAsync();
         }
@@ -674,6 +688,11 @@ End Class";
         private static IEnumerable<object[]> CartesianProduct(IEnumerable<object> left, IEnumerable<object> right)
         {
             return left.SelectMany(x => right.Select(y => new[] { x, y }));
+        }
+
+        private static IEnumerable<object[]> CartesianProduct(IEnumerable<object> first, IEnumerable<object> second, IEnumerable<object> third)
+        {
+            return first.SelectMany(x => second.SelectMany(y => third.Select(z => new[] { x, y, z })));
         }
 
         private static string FormatInvariant(string format, params object[] args) => string.Format(System.Globalization.CultureInfo.InvariantCulture, format, args);

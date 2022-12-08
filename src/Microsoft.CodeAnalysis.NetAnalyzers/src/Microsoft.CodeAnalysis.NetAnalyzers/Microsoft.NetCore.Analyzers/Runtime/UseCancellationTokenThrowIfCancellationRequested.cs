@@ -139,7 +139,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 if (conditional.Condition is IPropertyReferenceOperation propertyReference &&
                     SymbolEqualityComparer.Default.Equals(propertyReference.Property, IsCancellationRequestedProperty) &&
                     whenTrueUnwrapped is IThrowOperation @throw &&
-                    @throw.Exception is IObjectCreationOperation objectCreation &&
+                    @throw.GetThrownException() is IObjectCreationOperation objectCreation &&
                     IsDefaultOrTokenOperationCanceledExceptionCtor(objectCreation.Constructor))
                 {
                     isCancellationRequestedPropertyReference = propertyReference;
@@ -171,7 +171,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     unary.Operand is IPropertyReferenceOperation propertyReference &&
                     SymbolEqualityComparer.Default.Equals(propertyReference.Property, IsCancellationRequestedProperty) &&
                     whenFalseUnwrapped is IThrowOperation @throw &&
-                    @throw.Exception is IObjectCreationOperation objectCreation &&
+                    @throw.GetThrownException() is IObjectCreationOperation objectCreation &&
                     IsDefaultOrTokenOperationCanceledExceptionCtor(objectCreation.Constructor))
                 {
                     isCancellationRequestedPropertyReference = propertyReference;

@@ -146,7 +146,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     // any exceptions where a meaningful message may have been provided.  This is an attempt to reduce
                     // false positives, at the expense of potentially more false negatives in cases where a non-valuable
                     // error message was used.
-                    if (throwOperation.Exception.WalkDownConversion() is not IObjectCreationOperation objectCreationOperation ||
+                    if (throwOperation.GetThrownException() is not IObjectCreationOperation objectCreationOperation ||
                         HasPossiblyMeaningfulAdditionalArguments(objectCreationOperation))
                     {
                         return;
