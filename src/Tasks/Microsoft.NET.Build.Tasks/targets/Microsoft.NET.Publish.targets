@@ -356,10 +356,22 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Target Name="ComputeFilesToPublish"
           DependsOnTargets="PrepareForPublish;
                             ComputeResolvedFilesToPublishList;
+                            ILLink;
                             CreateReadyToRunImages;
                             GeneratePublishDependencyFile;
                             GenerateSingleFileBundle">
   </Target>
+
+  <!--
+    ============================================================
+                                        ILLink
+
+    Initially an empty placeholder target. When trimming, this
+    will be redefined to invoke ILLink to perform IL trimming.
+    The placeholder exists to allow other targets to depend on it for ordering purposes.
+    ============================================================
+    -->
+  <Target Name="ILLink" />
 
   <PropertyGroup>
     <CopyBuildOutputToPublishDirectory Condition="'$(CopyBuildOutputToPublishDirectory)'==''">true</CopyBuildOutputToPublishDirectory>

@@ -1528,7 +1528,7 @@ namespace Microsoft.NET.Publish.Tests
                         @{
                             System.IO.Compression.ZipFile.OpenRead("test.zip");
                         }
-                    """,
+                        """,
                 },
                 AdditionalProperties =
                 {
