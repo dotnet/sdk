@@ -68,7 +68,7 @@ namespace Microsoft.DotNet.GenAPI
             public string[]? ExcludeAttributesFiles { get; }
 
             /// <summary>
-            /// Include private and internal API's. Default is false.
+            /// Include internal API's. Default is false.
             /// </summary>
             public bool IncludeVisibleOutsideOfAssembly { get; }
         }
