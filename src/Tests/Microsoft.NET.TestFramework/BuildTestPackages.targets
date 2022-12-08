@@ -15,19 +15,6 @@
           Inputs="@(CreateTestAssetPackageNuPkgsInput)"
           Outputs="@(CreateTestAssetPackageNuPkgsOutput)">
     <MakeDir Directories="$(TestPackagesDir)" Condition="!Exists('$(TestPackagesDir)')"/>
-
-    <MSBuild
-      BuildInParallel="False"
-      Projects="%(TestPackageProject.ProjectPath)"
-      Targets="Restore"
-      RemoveProperties="TargetFramework" />
-
-    <MSBuild
-      BuildInParallel="False"
-      Projects="%(TestPackageProject.ProjectPath)"
-      Properties="PackageOutputPath=$(TestPackagesDir);%(TestPackageProject.MsbuildArgs);Version=%(TestPackageProject.Version)"
-      Targets="Pack"
-      RemoveProperties="TargetFramework" />
   </Target>
 
   <Target Name="SetupTestPackageProjectData"
