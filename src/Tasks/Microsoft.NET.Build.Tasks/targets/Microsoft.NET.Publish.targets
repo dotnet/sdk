@@ -15,6 +15,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     <DefaultCopyToPublishDirectoryMetadata Condition="'$(DefaultCopyToPublishDirectoryMetadata)' == ''">true</DefaultCopyToPublishDirectoryMetadata>
     <_GetChildProjectCopyToPublishDirectoryItems Condition="'$(_GetChildProjectCopyToPublishDirectoryItems)' == ''">true</_GetChildProjectCopyToPublishDirectoryItems>
     <IsPublishable Condition="'$(IsPublishable)' == ''">true</IsPublishable>
+    <!-- PublishAot depends on PublishTrimmed. This must be set early enough for the KnownILLinkPack to be restored. -->
+    <PublishTrimmed Condition="'$(PublishTrimmed)' == '' And '$(PublishAot)' == 'true'">true</PublishTrimmed>
   </PropertyGroup>
 
   <ItemDefinitionGroup>
@@ -352,7 +354,6 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Target Name="ComputeFilesToPublish"
           DependsOnTargets="PrepareForPublish;
                             ComputeResolvedFilesToPublishList;
-                            ILLink;
                             CreateReadyToRunImages;
                             GeneratePublishDependencyFile;
                             GenerateSingleFileBundle">

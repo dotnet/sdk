@@ -377,8 +377,8 @@ namespace Microsoft.NET.Build.Tasks
                     return;
                 }
             }
-            // Only add ILLink for non-AOT trimming.
-            else if (TrimmingEnabled)
+
+            if (TrimmingEnabled)
             {
                 if (!AddToolPack(ToolPackType.ILLink, _normalizedTargetFrameworkVersion, packagesToDownload, implicitPackageReferences))
                 {
