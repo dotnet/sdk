@@ -99,7 +99,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                                 SelfContained="$(SelfContained)"
                                 ReadyToRunEnabled="$(PublishReadyToRun)"
                                 ReadyToRunUseCrossgen2="$(PublishReadyToRunUseCrossgen2)"
-                                TrimmingEnabled="$(PublishTrimmed)"
+                                TrimmingEnabled="$(_IsTrimmingEnabled)"
                                 AotEnabled="$(PublishAot)"
                                 RuntimeIdentifier="$(RuntimeIdentifier)"
                                 RuntimeIdentifiers="$(RuntimeIdentifiers)"
