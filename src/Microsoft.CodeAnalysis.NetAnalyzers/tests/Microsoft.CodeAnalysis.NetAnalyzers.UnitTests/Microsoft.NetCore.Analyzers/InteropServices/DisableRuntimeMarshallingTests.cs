@@ -1622,6 +1622,7 @@ End Structure
 
             await test.RunAsync();
         }
+
         private static async Task VerifyCSAnalyzerWithAdditionalAssemblyAsync(string source, string additionalReferencedAssemblySource)
         {
             var test = new VerifyCS.Test
@@ -1654,8 +1655,7 @@ End Structure
             var test = new VerifyCS.Test
             {
                 LanguageVersion = LanguageVersion.CSharp9,
-                ReferenceAssemblies = new ReferenceAssemblies("net7.0", new PackageIdentity("Microsoft.NETCore.App.Ref", "7.0.0-preview.1.22075.6"), Path.Combine("ref", "net7.0"))
-                    .WithNuGetConfigFilePath(Path.Combine(Path.GetDirectoryName(typeof(DisableRuntimeMarshallingTests).Assembly.Location), "NuGet.config")),
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net70,
                 TestCode = source,
                 FixedCode = codeFix,
                 SolutionTransforms =
