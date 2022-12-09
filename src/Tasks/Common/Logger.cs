@@ -107,7 +107,7 @@ namespace Microsoft.NET.Build.Tasks
             DebugThrowMissingOrIncorrectCode(code, format, level);
 
             return new Message(
-                level,
+                level, 
                 text: string.Format(format, args),
                 code: code);
         }
