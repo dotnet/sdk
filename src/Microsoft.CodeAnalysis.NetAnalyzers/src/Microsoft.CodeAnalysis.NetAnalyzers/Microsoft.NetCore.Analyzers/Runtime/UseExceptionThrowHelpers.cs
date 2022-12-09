@@ -180,7 +180,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     if (SymbolEqualityComparer.Default.Equals(objectCreationOperation.Type, ane))
                     {
                         if (aneThrowIfNull is not null &&
-                            IsParameterNullCheck(condition.Condition, out IParameterReferenceOperation? nullCheckParameter))
+                            IsParameterNullCheck(condition.Condition, out IParameterReferenceOperation? nullCheckParameter) &&
+                            nullCheckParameter.Type.IsReferenceType)
                         {
                             context.ReportDiagnostic(condition.CreateDiagnostic(
                                 UseArgumentNullExceptionThrowIfNullRule,
