@@ -142,7 +142,6 @@
     <ConflictingPackageReportDir>$(BaseOutputPath)conflict-report/</ConflictingPackageReportDir>
     <PrebuiltBurndownDataFile>$(PackageReportDir)PrebuiltBurndownData.csv</PrebuiltBurndownDataFile>
     <ExternalTarballsDir>$(ProjectDir)packages/archive/</ExternalTarballsDir>
-    <TextOnlyPackageBaseDir>$(ProjectDir)packages/text-only/</TextOnlyPackageBaseDir>
     <ReferencePackagesDir>$(ProjectDir)packages/reference/</ReferencePackagesDir>
     <SourceBuiltArtifactsTarballName>Private.SourceBuilt.Artifacts</SourceBuiltArtifactsTarballName>
     <SourceBuiltPrebuiltsTarballName>Private.SourceBuilt.Prebuilts</SourceBuiltPrebuiltsTarballName>

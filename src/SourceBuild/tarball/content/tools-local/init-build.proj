@@ -27,7 +27,6 @@
       BuildLeakDetection;
       ExtractToolPackage;
       GenerateRootFs;
-      BuildTextOnlyPackages;
       PoisonPrebuiltPackages" />
   </Target>
 
@@ -152,32 +151,6 @@
   <Target Name="GenerateRootFs" Condition="'$(OS)' != 'Windows_NT'">
      <Exec Condition="$(Platform.Contains('arm')) AND '$(Platform)' != 'armel' AND '$(BuildArchitecture)' != 'arm64' AND '$(BuildArchitecture)' != 'arm'" Command="$(ArmEnvironmentVariables) $(ProjectDir)cross/build-rootfs.sh" />
      <Exec Condition="'$(Platform)' == 'armel'" Command="$(ArmEnvironmentVariables) $(ProjectDir)cross/armel/tizen-build-rootfs.sh" />
-  </Target>
-
-  <Target Name="BuildTextOnlyPackages"
-          Inputs="$(MSBuildProjectFullPath)"
-          Outputs="$(CompletedSemaphorePath)BuildTextOnlyPackages.complete">
-    <Message Importance="High" Text="[$([System.DateTime]::Now.ToString('HH:mm:ss.ff'))] Packing text-only packages." />
-
-    <ItemGroup>
-      <TextOnlyPackageNuspecFile Include="$(TextOnlyPackageBaseDir)/**/*.nuspec" />
-    </ItemGroup>
-
-    <Message Importance="High" Text="Found text only package nuspec file: %(TextOnlyPackageNuspecFile.Identity)" />
-
-    <ReplaceTextInFile
-      InputFile="%(TextOnlyPackageNuspecFile.Identity)"
-      OldText="&lt;/package&gt;"
-      NewText="&lt;files&gt;&lt;file src=&quot;.\**\*&quot;/&gt;&lt;/files&gt;&lt;/package&gt;" />
-
-    <NugetPack
-      Nuspecs="%(TextOnlyPackageNuspecFile.Identity)"
-      OutputDirectory="$(SourceBuiltPackagesPath)"
-      ExcludeEmptyDirectories="false"
-      CreateSymbolPackage="false" />
-
-    <Message Importance="High" Text="[$([System.DateTime]::Now.ToString('HH:mm:ss.ff'))] Done packing text-only packages." />
-    <WriteLinesToFile File="$(CompletedSemaphorePath)BuildTextOnlyPackages.complete" Overwrite="true" />
   </Target>
 
   <Target Name="ExtractToolPackage"
