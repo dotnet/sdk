@@ -8,7 +8,7 @@
 
 namespace Microsoft.NET.Build.Tasks
 {
-    public readonly struct Message
+    internal readonly struct Message
     {
         public readonly MessageLevel Level;
         public readonly string Code;

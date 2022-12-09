@@ -18,12 +18,12 @@ namespace Microsoft.NET.Build.Tasks
     {
         private Logger _logger;
 
-        public TaskBase(Logger logger = null)
+        internal TaskBase(Logger logger = null)
         {
             _logger = logger;
         }
 
-        public new Logger Log
+        internal new Logger Log
         {
             get
             {

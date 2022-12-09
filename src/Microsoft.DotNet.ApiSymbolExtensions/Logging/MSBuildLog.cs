@@ -7,8 +7,8 @@ namespace Microsoft.DotNet.ApiSymbolExtensions.Logging
 {
     public class MSBuildLog : ILog
     {
-        protected readonly Logger _log;
-        public MSBuildLog(Logger log)
+        internal readonly Logger _log;
+        internal MSBuildLog(Logger log)
         {
             _log = log;
         }

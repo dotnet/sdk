@@ -54,7 +54,7 @@ namespace Microsoft.NET.Build.Tasks
     /// method. <see cref="TaskBase"/> adapts that to <see
     /// cref="TaskLoggingHelper"/>.
     /// </remarks>
-    public abstract class Logger
+    internal abstract class Logger
     {
         public bool HasLoggedErrors { get; private set; }
 
