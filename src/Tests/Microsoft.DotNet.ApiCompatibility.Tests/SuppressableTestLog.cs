@@ -15,14 +15,14 @@ namespace Microsoft.DotNet.ApiCompatibility.Tests
 
         public bool LogError(Suppression suppression, string code, string format, params string[] args)
         {
-            errors.Add($"{code}: {string.Format(format, args)}");
+            errors.Add($"{code} {string.Format(format, args)}");
             return true;
         }
         public void LogError(string code, string format, params string[] args) { }
         public void LogMessage(MessageImportance importance, string format, params string[] args) { }
         public bool LogWarning(Suppression suppression, string code, string format, params string[] args)
         {
-            errors.Add($"{code}: {string.Format(format, args)}");
+            errors.Add($"{code} {string.Format(format, args)}");
             return true;
         }
         public void LogWarning(string code, string format, params string[] args) { }

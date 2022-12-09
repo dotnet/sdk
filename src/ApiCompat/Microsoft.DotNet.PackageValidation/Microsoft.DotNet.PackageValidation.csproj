@@ -16,10 +16,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Microsoft.DotNet.ApiSymbolExtensions\Microsoft.DotNet.ApiSymbolExtensions.csproj" ExcludeAssets="runtime" />
-  </ItemGroup>
-
-  <ItemGroup>
     <EmbeddedResource Update="Resources.resx" GenerateSource="true" />
   </ItemGroup>
 
