@@ -10,6 +10,9 @@ using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.Watcher.Tests;
 
+/// <summary>
+/// Base class for all tests that create dotnet watch process.
+/// </summary>
 public abstract class DotNetWatchTestBase : IDisposable
 {
     internal TestAssetsManager TestAssets { get; }

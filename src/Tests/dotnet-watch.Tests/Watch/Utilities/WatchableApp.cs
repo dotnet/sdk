@@ -134,7 +134,6 @@ namespace Microsoft.DotNet.Watcher.Tests
 
         public void Dispose()
         {
-            Logger?.WriteLine("Disposing WatchableApp");
             Process?.Dispose();
         }
     }
