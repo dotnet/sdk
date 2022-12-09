@@ -31,7 +31,8 @@ Backport: https://github.com/dotnet/source-build/issues/3049
  .../GenerateDocumentationAndConfigFiles.csproj     |  1 -
  ...umentationAndConfigFilesForBrokenRuntime.csproj |  4 +---
  src/Tools/ReleaseNotesUtil/ReleaseNotesUtil.csproj |  1 +
- 14 files changed, 10 insertions(+), 29 deletions(-)
+ .../Runtime/UseExceptionThrowHelpersFixer.cs       |  2 +-
+ 15 files changed, 11 insertions(+), 30 deletions(-)
 
 diff --git a/eng/Versions.props b/eng/Versions.props
 index a467fb579..acd5db8bc 100644
@@ -225,3 +226,16 @@ index fe90e93ca..01b64e055 100644
    </PropertyGroup>
    <ItemGroup>
      <PackageReference Include="Microsoft.CodeAnalysis" Version="$(MicrosoftCodeAnalysisVersion)" />
+diff --git a/src/NetAnalyzers/Core/Microsoft.NetCore.Analyzers/Runtime/UseExceptionThrowHelpersFixer.cs b/src/NetAnalyzers/Core/Microsoft.NetCore.Analyzers/Runtime/UseExceptionThrowHelpersFixer.cs
+index 82a3e986c..336bd2a52 100644
+--- a/src/NetAnalyzers/Core/Microsoft.NetCore.Analyzers/Runtime/UseExceptionThrowHelpersFixer.cs
++++ b/src/NetAnalyzers/Core/Microsoft.NetCore.Analyzers/Runtime/UseExceptionThrowHelpersFixer.cs
+@@ -121,7 +121,7 @@ public sealed override async Task RegisterCodeFixesAsync(CodeFixContext context)
+                             other is not null ? new SyntaxNode[] { arg, other } : new SyntaxNode[] { arg })).WithTriviaFrom(node));
+         }
+ 
+-        private sealed class CustomFixAllProvider : DocumentBasedFixAllProvider
++        private sealed class CustomFixAllProvider : Analyzer.Utilities.DocumentBasedFixAllProvider
+         {
+             public static readonly CustomFixAllProvider Instance = new();
+ 

@@ -39,7 +39,8 @@
     <RepositoryReference Include="fsharp" />
     <RepositoryReference Include="format" />
     <RepositoryReference Include="deployment-tools" />
-    <RepositoryReference Include="razor-compiler" />
+    <!-- TODO:  Enable with https://github.com/dotnet/source-build/issues/3161 -->
+    <!-- <RepositoryReference Include="razor" /> -->
   </ItemGroup>
 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
