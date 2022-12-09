@@ -99,7 +99,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                 {
                     var type = (INamedTypeSymbol)context.Symbol;
                     if (!type.IsExternallyVisible() &&
-                        !IsOkToBeUninstantiated(type, compilation,
+                        !IsOkToBeUninstantiated(type,
                             entryPointContainingType,
                             systemAttributeSymbol,
                             iConfigurationSectionHandlerSymbol,
@@ -284,7 +284,6 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
 
         private static bool IsOkToBeUninstantiated(
             INamedTypeSymbol type,
-            Compilation compilation,
             INamedTypeSymbol? entryPointContainingType,
             INamedTypeSymbol? systemAttributeSymbol,
             INamedTypeSymbol? iConfigurationSectionHandlerSymbol,
