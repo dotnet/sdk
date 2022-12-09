@@ -25,7 +25,7 @@ namespace Microsoft.DotNet.ApiCompat.Tool
             Option<string[]> suppressionFilesOption = new("--suppression-file",
                 "The path to one or more suppression files to read from.")
             {
-                AllowMultipleArgumentsPerToken = true,
+                AllowMultipleArgumentsPerToken= true,
                 Arity = ArgumentArity.ZeroOrMore,
                 ArgumentHelpName = "file"
             };
