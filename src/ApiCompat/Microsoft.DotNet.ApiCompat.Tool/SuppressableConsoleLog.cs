@@ -8,6 +8,9 @@ using Microsoft.DotNet.ApiSymbolExtensions.Logging;
 
 namespace Microsoft.DotNet.ApiCompat.Tool
 {
+    /// <summary>
+    /// Class that can log Suppressions to the Console, by implementing ConsoleLog and ISuppressableLog.
+    /// </summary>
     internal class SuppressableConsoleLog : ConsoleLog, ISuppressableLog
     {
         private readonly ISuppressionEngine _suppressionEngine;
@@ -18,7 +21,10 @@ namespace Microsoft.DotNet.ApiCompat.Tool
             _suppressionEngine = suppressionEngine;
         }
 
+        /// <inheritdoc />
         public bool LogError(Suppression suppression, string code, string format, params string[] args) => LogSuppressableMessage(Console.Error, suppression, code, format, args);
+
+        /// <inheritdoc />
         public bool LogWarning(Suppression suppression, string code, string format, params string[] args) => LogSuppressableMessage(Console.Out, suppression, code, format, args);
 
         private bool LogSuppressableMessage(TextWriter textWriter, Suppression suppression, string code, string format, params string[] args)
