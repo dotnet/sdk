@@ -589,5 +589,30 @@ namespace Microsoft.DotNet.GenAPI.Tests
                 }
                 """);
         }
+
+        [Fact]
+        void TestExplicitInterfaceImplementationMethodGeneration()
+        {
+            RunTest(original: """
+                namespace Foo
+                {
+                    public abstract class MemoryManager : System.IDisposable
+                    {
+                        void System.IDisposable.Dispose() { }
+                        public int? Owner { get; set; }
+                    }
+                }
+                """,
+                expected: """
+                namespace Foo
+                {
+                    public abstract partial class MemoryManager : System.IDisposable
+                    {
+                        private void System.IDisposable.Dispose() { }
+                    }
+                }
+                """);
+        }
+
     }
 }

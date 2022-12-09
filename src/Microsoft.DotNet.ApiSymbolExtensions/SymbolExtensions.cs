@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
+// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
@@ -56,6 +56,9 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
         public static bool IsEffectivelySealed(this ITypeSymbol type, bool includeInternals) =>
             type.IsSealed || !HasVisibleConstructor(type, includeInternals);
 
+        public static bool IsExplicitInterfaceImplementation(this ISymbol symbol) =>
+            symbol is IMethodSymbol method ? method.MethodKind == MethodKind.ExplicitInterfaceImplementation : false;
+
         private static bool HasVisibleConstructor(ITypeSymbol type, bool includeInternals)
         {
             if (type is INamedTypeSymbol namedType)
@@ -91,6 +94,7 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
                 Accessibility.Protected => includeEffectivelyPrivateSymbols || symbol.ContainingType == null || !IsEffectivelySealed(symbol.ContainingType, includeInternals),
                 Accessibility.ProtectedOrInternal => includeEffectivelyPrivateSymbols || includeInternals || symbol.ContainingType == null || !IsEffectivelySealed(symbol.ContainingType, includeInternals),
                 Accessibility.ProtectedAndInternal => includeInternals && (includeEffectivelyPrivateSymbols || symbol.ContainingType == null || !IsEffectivelySealed(symbol.ContainingType, includeInternals)),
+                Accessibility.Private => includeEffectivelyPrivateSymbols && IsExplicitInterfaceImplementation(symbol),
                 _ => includeInternals && symbol.DeclaredAccessibility != Accessibility.Private,
             };
 
