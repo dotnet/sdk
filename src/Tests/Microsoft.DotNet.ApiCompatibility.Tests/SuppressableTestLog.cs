@@ -11,7 +11,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Tests
     {
         public List<string> errors = new();
         public List<string> warnings = new();
-        public bool SuppressionWasLogged => errors.Count != 0 && warnings.Count != 0;
+        public bool SuppressionWasLogged => errors.Count != 0;
 
         public bool LogError(Suppression suppression, string code, string format, params string[] args)
         {
@@ -22,7 +22,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Tests
         public void LogMessage(MessageImportance importance, string format, params string[] args) { }
         public bool LogWarning(Suppression suppression, string code, string format, params string[] args)
         {
-            warnings.Add($"{code}: {string.Format(format, args)}");
+            errors.Add($"{code}: {string.Format(format, args)}");
             return true;
         }
         public void LogWarning(string code, string format, params string[] args) { }
