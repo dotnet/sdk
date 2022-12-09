@@ -11,24 +11,12 @@
     <_MicrosoftCodeAnalysisVersion Condition="'$(DotNetBuildFromSource)' == 'true'">$(MicrosoftCodeAnalysisPackageVersion)</_MicrosoftCodeAnalysisVersion>
   </PropertyGroup>
 
-  <!-- SDK's task infrastructure -->
-  <!-- <ItemGroup>
-    <Compile Include="..\Tasks\Common\TaskBase.cs" LinkBase="Common" />
-    <Compile Include="..\Tasks\Common\Logger.cs" LinkBase="Common" />
-    <Compile Include="..\Tasks\Common\LogAdapter.cs" LinkBase="Common" />
-    <Compile Include="..\Tasks\Common\BuildErrorException.cs" LinkBase="Common" />
-    <Compile Include="..\Tasks\Common\Message.cs" LinkBase="Common" />
-    <Compile Include="..\Tasks\Common\MessageLevel.cs" LinkBase="Common" />
-  </ItemGroup> -->
-
   <!-- Exclude files that depend on Microsoft.Build.Framework and Microsoft.Build.Utilities.Core. These will be included by users of this package. -->
   <PropertyGroup>
     <DefaultItemExcludes>$(DefaultItemExcludes);Logging\MSBuildLog.cs</DefaultItemExcludes>
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- <PackageReference Include="Microsoft.Build.Framework" Version="$(MicrosoftBuildPackageVersion)" /> -->
-    <!-- <PackageReference Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildUtilitiesCorePackageVersion)" /> -->
     <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="$(_MicrosoftCodeAnalysisVersion)" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="$(_MicrosoftCodeAnalysisVersion)" />
   </ItemGroup>
