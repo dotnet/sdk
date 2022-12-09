@@ -613,6 +613,5 @@ namespace Microsoft.DotNet.GenAPI.Tests
                 }
                 """);
         }
-
     }
 }
