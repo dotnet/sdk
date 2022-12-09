@@ -48,6 +48,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                 var internalTypes = new ConcurrentDictionary<INamedTypeSymbol, object?>();
 
                 var compilation = startContext.Compilation;
+                var entryPointContainingType = compilation.GetEntryPoint(startContext.CancellationToken)?.ContainingType;
                 var wellKnownTypeProvider = WellKnownTypeProvider.GetOrCreate(compilation);
 
                 // If the assembly being built by this compilation exposes its internals to
@@ -99,6 +100,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                     var type = (INamedTypeSymbol)context.Symbol;
                     if (!type.IsExternallyVisible() &&
                         !IsOkToBeUninstantiated(type, compilation,
+                            entryPointContainingType,
                             systemAttributeSymbol,
                             iConfigurationSectionHandlerSymbol,
                             configurationSectionSymbol,
@@ -283,6 +285,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
         private static bool IsOkToBeUninstantiated(
             INamedTypeSymbol type,
             Compilation compilation,
+            INamedTypeSymbol? entryPointContainingType,
             INamedTypeSymbol? systemAttributeSymbol,
             INamedTypeSymbol? iConfigurationSectionHandlerSymbol,
             INamedTypeSymbol? configurationSectionSymbol,
@@ -303,7 +306,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
             }
 
             // The type containing the assembly's entry point is OK.
-            if (SymbolEqualityComparer.Default.Equals(compilation.GetEntryPoint().ContainingType, type))
+            if (SymbolEqualityComparer.Default.Equals(entryPointContainingType, type))
             {
                 return true;
             }
@@ -345,6 +348,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
 
             return false;
         }
+
         public static bool IsMefExported(
             INamedTypeSymbol type,
             INamedTypeSymbol? mef1ExportAttributeSymbol,
