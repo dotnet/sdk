@@ -631,7 +631,8 @@ namespace Microsoft.NET.Build.Tasks
 
             
             // Crossgen and ILCompiler have RID-specific bits.
-            if (toolPackType is ToolPackType.Crossgen2 or ToolPackType.ILCompiler) {
+            if (toolPackType is ToolPackType.Crossgen2 or ToolPackType.ILCompiler)
+            {
                 var packNamePattern = knownPack.GetMetadata(packName + "PackNamePattern");
                 var packSupportedRuntimeIdentifiers = knownPack.GetMetadata(packName + "RuntimeIdentifiers").Split(';');
 
