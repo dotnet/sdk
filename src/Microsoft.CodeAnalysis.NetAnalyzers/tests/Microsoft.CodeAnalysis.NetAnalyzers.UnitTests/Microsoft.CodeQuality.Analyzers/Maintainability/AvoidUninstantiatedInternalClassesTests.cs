@@ -366,7 +366,7 @@ End Class",
         }
 
         [Fact]
-        public async Task CA1812_Basic_NoDiagnostic_MainMethodIsDifferentlyCasedAsync()
+        public async Task CA1812_Basic_Diagnostic_MainMethodIsDifferentlyCasedAsync()
         {
             await new VerifyVB.Test
             {
@@ -375,7 +375,7 @@ End Class",
                     OutputKind = OutputKind.ConsoleApplication,
                     Sources =
                     {
-@"Friend Class C
+@"Friend Class [|C|]
     Private Shared Sub mAiN()
     End Sub
 End Class",
