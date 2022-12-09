@@ -599,7 +599,6 @@ namespace Microsoft.DotNet.GenAPI.Tests
                     public abstract class MemoryManager : System.IDisposable
                     {
                         void System.IDisposable.Dispose() { }
-                        public int? Owner { get; set; }
                     }
                 }
                 """,
