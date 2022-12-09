@@ -1682,8 +1682,7 @@ End Structure
         {
             var test = new VerifyVB.Test
             {
-                ReferenceAssemblies = new ReferenceAssemblies("net7.0", new PackageIdentity("Microsoft.NETCore.App.Ref", "7.0.0-preview.1.22075.6"), Path.Combine("ref", "net7.0"))
-                    .WithNuGetConfigFilePath(Path.Combine(Path.GetDirectoryName(typeof(DisableRuntimeMarshallingTests).Assembly.Location), "NuGet.config")),
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net70,
                 TestCode = source,
                 FixedCode = source
             };
