@@ -263,29 +263,6 @@ class C
 
         [WorkItem(1524, "https://github.com/dotnet/roslyn-analyzers/issues/1524")]
         [Fact]
-        public async Task Diagnostic_CSharp6Async()
-        {
-            await new VerifyCS.Test
-            {
-                TestCode = @"
-using System;
-class C
-{
-    void M(int x)
-    {
-        throw new ArgumentNullException(""x"");
-    }
-}",
-                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp6,
-                ExpectedDiagnostics =
-                {
-                    GetCSharpNameofResultAt(7, 41, "x"),
-                }
-            }.RunAsync();
-        }
-
-        [WorkItem(1524, "https://github.com/dotnet/roslyn-analyzers/issues/1524")]
-        [Fact]
         public async Task NoDiagnostic_VB12Async()
         {
             await new VerifyVB.Test
@@ -302,6 +279,37 @@ End Module",
             }.RunAsync();
         }
 
+        #endregion
+
+        #region Unit tests for analyzer diagnostic(s)
+        [WorkItem(1524, "https://github.com/dotnet/roslyn-analyzers/issues/1524")]
+        [Fact]
+        public async Task Diagnostic_CSharp6Async()
+        {
+            await new VerifyCS.Test
+            {
+                TestCode = @"
+using System;
+class C
+{
+    void M(int x)
+    {
+        throw new ArgumentNullException([|""x""|]);
+    }
+}",
+                FixedCode = @"
+using System;
+class C
+{
+    void M(int x)
+    {
+        throw new ArgumentNullException(nameof(x));
+    }
+}",
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp6,
+            }.RunAsync();
+        }
+
         [WorkItem(1524, "https://github.com/dotnet/roslyn-analyzers/issues/1524")]
         [Fact]
         public async Task Diagnostic_VB14Async()
@@ -313,54 +321,69 @@ Imports System
 
 Module Mod1
     Sub f(s As String)
-        Throw New ArgumentNullException(""s"")
+        Throw New ArgumentNullException([|""s""|])
+    End Sub
+End Module",
+                FixedCode = @"
+Imports System
+
+Module Mod1
+    Sub f(s As String)
+        Throw New ArgumentNullException(NameOf(s))
     End Sub
 End Module",
                 LanguageVersion = CodeAnalysis.VisualBasic.LanguageVersion.VisualBasic14,
-                ExpectedDiagnostics =
-                {
-                    GetBasicNameofResultAt(6, 41, "s"),
-                }
             }.RunAsync();
         }
 
-        #endregion
-
-        #region Unit tests for analyzer diagnostic(s)
-
         [Fact]
-        public async Task Diagnostic_ArgumentMatchesAParameterInScopeAsync()
+        public async Task Fixer_CSharp_ArgumentMatchesAParameterInScopeAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
+            await VerifyCS.VerifyCodeFixAsync(@"
 using System;
 class C
 {
     void M(int x)
     {
-        throw new ArgumentNullException(""x"");
+        throw new ArgumentNullException([|""x""|]);
     }
 }",
-    GetCSharpNameofResultAt(7, 41, "x"));
+@"
+using System;
+class C
+{
+    void M(int x)
+    {
+        throw new ArgumentNullException(nameof(x));
+    }
+}");
         }
 
         [Fact]
-        public async Task Diagnostic_VB_ArgumentMatchesAParameterInScopeAsync()
+        public async Task Fixer_VB_ArgumentMatchesAParameterInScopeAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
+            await VerifyVB.VerifyCodeFixAsync(@"
 Imports System
 
 Module Mod1
     Sub f(s As String)
-        Throw New ArgumentNullException(""s"")
+        Throw New ArgumentNullException([|""s""|])
     End Sub
 End Module",
-    GetBasicNameofResultAt(6, 41, "s"));
+@"
+Imports System
+
+Module Mod1
+    Sub f(s As String)
+        Throw New ArgumentNullException(NameOf(s))
+    End Sub
+End Module");
         }
 
         [Fact]
-        public async Task Diagnostic_ArgumentMatchesAPropertyInScopeAsync()
+        public async Task Fixer_CSharp_ArgumentMatchesAPropertyInScopeAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
+            await VerifyCS.VerifyCodeFixAsync(@"
 using System.ComponentModel;
 
 public class Person : INotifyPropertyChanged
@@ -373,7 +396,7 @@ public class Person : INotifyPropertyChanged
         set
         {
             name = value;
-            OnPropertyChanged(""PersonName"");
+            OnPropertyChanged([|""PersonName""|]);
         }
     }
 
@@ -385,14 +408,38 @@ public class Person : INotifyPropertyChanged
             handler(this, new PropertyChangedEventArgs(propertyName));
         }
     }
-}",
-    GetCSharpNameofResultAt(14, 31, "PersonName"));
+}", @"
+using System.ComponentModel;
+
+public class Person : INotifyPropertyChanged
+{
+    private string name;
+    public event PropertyChangedEventHandler PropertyChanged;
+
+    public string PersonName {
+        get { return name; }
+        set
+        {
+            name = value;
+            OnPropertyChanged(nameof(PersonName));
+        }
+    }
+
+    protected void OnPropertyChanged(string propertyName)
+    {
+        PropertyChangedEventHandler handler = PropertyChanged;
+        if (handler != null)
+        {
+            handler(this, new PropertyChangedEventArgs(propertyName));
+        }
+    }
+}");
         }
 
         [Fact]
         public async Task Diagnostic_ArgumentMatchesAPropertyInScope2Async()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
+            await VerifyCS.VerifyCodeFixAsync(@"
 using System.ComponentModel;
 
 public class Person : INotifyPropertyChanged
@@ -406,7 +453,7 @@ public class Person : INotifyPropertyChanged
         set
         {
             name = value;
-            OnPropertyChanged(""PersonName"");
+            OnPropertyChanged([|""PersonName""|]);
         }
     }
 
@@ -428,29 +475,71 @@ public class Person : INotifyPropertyChanged
             handler(this, new PropertyChangedEventArgs(propertyName));
         }
     }
-}",
-    GetCSharpNameofResultAt(15, 31, "PersonName"));
+}", @"
+using System.ComponentModel;
+
+public class Person : INotifyPropertyChanged
+{
+    private string name;
+    public event PropertyChangedEventHandler PropertyChanged;
+
+    public string PersonName 
+    {
+        get { return name; }
+        set
+        {
+            name = value;
+            OnPropertyChanged(nameof(PersonName));
+        }
+    }
+
+    public string PersonName2
+    {
+        get { return name; }
+        set
+        {
+            name = value;
+            OnPropertyChanged(nameof(PersonName2));
+        }
+    }
+
+    protected void OnPropertyChanged(string propertyName)
+    {
+        PropertyChangedEventHandler handler = PropertyChanged;
+        if (handler != null)
+        {
+            handler(this, new PropertyChangedEventArgs(propertyName));
+        }
+    }
+}");
         }
 
         [Fact]
         public async Task Diagnostic_ArgumentNameColonParamNameAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
+            await VerifyCS.VerifyCodeFixAsync(@"
 using System;
 class C
 {
     void M(int x)
     {
-        throw new ArgumentNullException(paramName:""x"");
+        throw new ArgumentNullException(paramName:[|""x""|]);
     }
-}",
-    GetCSharpNameofResultAt(7, 51, "x"));
+}", @"
+using System;
+class C
+{
+    void M(int x)
+    {
+        throw new ArgumentNullException(paramName:nameof(x));
+    }
+}");
         }
 
         [Fact]
         public async Task Diagnostic_ArgumentNameColonPropertyNameAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
+            await VerifyCS.VerifyCodeFixAsync(@"
 using System.ComponentModel;
 
 public class Person : INotifyPropertyChanged
@@ -463,7 +552,7 @@ public class Person : INotifyPropertyChanged
         set
         {
             name = value;
-            OnPropertyChanged(propertyName:""PersonName"");
+            OnPropertyChanged(propertyName:[|""PersonName""|]);
         }
     }
 
@@ -475,14 +564,38 @@ public class Person : INotifyPropertyChanged
             handler(this, new PropertyChangedEventArgs(propertyName));
         }
     }
-}",
-    GetCSharpNameofResultAt(14, 44, "PersonName"));
+}", @"
+using System.ComponentModel;
+
+public class Person : INotifyPropertyChanged
+{
+    private string name;
+    public event PropertyChangedEventHandler PropertyChanged;
+
+    public string PersonName {
+        get { return name; }
+        set
+        {
+            name = value;
+            OnPropertyChanged(propertyName:nameof(PersonName));
+        }
+    }
+
+    protected void OnPropertyChanged(string propertyName)
+    {
+        PropertyChangedEventHandler handler = PropertyChanged;
+        if (handler != null)
+        {
+            handler(this, new PropertyChangedEventArgs(propertyName));
+        }
+    }
+}");
         }
 
         [Fact]
         public async Task Diagnostic_AnonymousFunctionMultiline1Async()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
+            await VerifyCS.VerifyCodeFixAsync(@"
 using System;
 
 class Test
@@ -491,17 +604,28 @@ class Test
     {
         Action<int> a = (int y) =>
         {
-            throw new ArgumentException(""somemessage"", ""x"");
+            throw new ArgumentException(""somemessage"", [|""x""|]);
         };
     }
-}",
-    GetCSharpNameofResultAt(10, 56, "x"));
+}", @"
+using System;
+
+class Test
+{
+    void Method(int x)
+    {
+        Action<int> a = (int y) =>
+        {
+            throw new ArgumentException(""somemessage"", nameof(x));
+        };
+    }
+}");
         }
 
         [Fact]
         public async Task Diagnostic_AnonymousFunctionMultiLine2Async()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
+            await VerifyCS.VerifyCodeFixAsync(@"
 using System;
 
 class Test
@@ -510,65 +634,100 @@ class Test
     {
         Action<int> a = (int y) =>
         {
-            throw new ArgumentException(""somemessage"", ""y"");
+            throw new ArgumentException(""somemessage"", [|""y""|]);
         };
     }
-}",
-    GetCSharpNameofResultAt(10, 56, "y"));
+}", @"
+using System;
+
+class Test
+{
+    void Method(int x)
+    {
+        Action<int> a = (int y) =>
+        {
+            throw new ArgumentException(""somemessage"", nameof(y));
+        };
+    }
+}");
         }
 
         [Fact]
         public async Task Diagnostic_AnonymousFunctionSingleLine1Async()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
+            await VerifyCS.VerifyCodeFixAsync(@"
 using System;
 
 class Test
 {
     void Method(int x)
     {
-        Action<int> a = (int y) => throw new ArgumentException(""somemessage"", ""y"");
+        Action<int> a = (int y) => throw new ArgumentException(""somemessage"", [|""y""|]);
     }
-}",
-    GetCSharpNameofResultAt(8, 79, "y"));
+}", @"
+using System;
+
+class Test
+{
+    void Method(int x)
+    {
+        Action<int> a = (int y) => throw new ArgumentException(""somemessage"", nameof(y));
+    }
+}");
         }
 
         [Fact]
         public async Task Diagnostic_AnonymousFunctionSingleLine2Async()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
+            await VerifyCS.VerifyCodeFixAsync(@"
 using System;
 
 class Test
 {
     void Method(int x)
     {
-        Action<int> a = (int y) => throw new ArgumentException(""somemessage"", ""x"");
+        Action<int> a = (int y) => throw new ArgumentException(""somemessage"", [|""x""|]);
     }
-}",
-    GetCSharpNameofResultAt(8, 79, "x"));
+}", @"
+using System;
+
+class Test
+{
+    void Method(int x)
+    {
+        Action<int> a = (int y) => throw new ArgumentException(""somemessage"", nameof(x));
+    }
+}");
         }
 
         [Fact]
         public async Task Diagnostic_AnonymousFunctionMultipleParametersAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
+            await VerifyCS.VerifyCodeFixAsync(@"
 using System;
 
 class Test
 {
     void Method(int x)
     {
-        Action<int, int> a = (j, k) => throw new ArgumentException(""somemessage"", ""x"");
+        Action<int, int> a = (j, k) => throw new ArgumentException(""somemessage"", [|""x""|]);
     }
-}",
-    GetCSharpNameofResultAt(8, 83, "x"));
+}", @"
+using System;
+
+class Test
+{
+    void Method(int x)
+    {
+        Action<int, int> a = (j, k) => throw new ArgumentException(""somemessage"", nameof(x));
+    }
+}");
         }
 
         [Fact]
         public async Task Diagnostic_LocalFunction1Async()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
+            await VerifyCS.VerifyCodeFixAsync(@"
 using System;
 
 class Test
@@ -577,17 +736,28 @@ class Test
     {
         void AnotherMethod(int y, int z)
             {
-                throw new ArgumentException(""somemessage"", ""x"");
+                throw new ArgumentException(""somemessage"", [|""x""|]);
             }
     }
-}",
-    GetCSharpNameofResultAt(10, 60, "x"));
+}", @"
+using System;
+
+class Test
+{
+    void Method(int x)
+    {
+        void AnotherMethod(int y, int z)
+            {
+                throw new ArgumentException(""somemessage"", nameof(x));
+            }
+    }
+}");
         }
 
         [Fact]
         public async Task Diagnostic_LocalFunction2Async()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
+            await VerifyCS.VerifyCodeFixAsync(@"
 using System;
 
 class Test
@@ -596,17 +766,28 @@ class Test
     {
         void AnotherMethod(int y, int z)
             {
-                throw new ArgumentException(""somemessage"", ""y"");
+                throw new ArgumentException(""somemessage"", [|""y""|]);
             }
     }
-}",
-    GetCSharpNameofResultAt(10, 60, "y"));
+}", @"
+using System;
+
+class Test
+{
+    void Method(int x)
+    {
+        void AnotherMethod(int y, int z)
+            {
+                throw new ArgumentException(""somemessage"", nameof(y));
+            }
+    }
+}");
         }
 
         [Fact]
         public async Task Diagnostic_DelegateAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
+            await VerifyCS.VerifyCodeFixAsync(@"
 using System;
 
 namespace ConsoleApp14
@@ -617,28 +798,74 @@ namespace ConsoleApp14
         {
             Action<int> x2 = delegate (int xyz)
             {
-                throw new ArgumentNullException(""xyz"");
+                throw new ArgumentNullException([|""xyz""|]);
             };
         }
     }
+}", @"
+using System;
+
+namespace ConsoleApp14
+{
+    class Program
+    {
+         class test
+        {
+            Action<int> x2 = delegate (int xyz)
+            {
+                throw new ArgumentNullException(nameof(xyz));
+            };
+        }
+    }
+}");
+        }
+
+        [Fact]
+        public async Task Fixer_CSharp_ArgumentWithCommentsAsync()
+        {
+            await VerifyCS.VerifyCodeFixAsync(@"
+using System;
+class C
+{
+    void M(int x)
+    {
+        throw new ArgumentNullException(/*Leading*/[|""x""|]/*Trailing*/);
+    }
 }",
-    GetCSharpNameofResultAt(12, 49, "xyz"));
+@"
+using System;
+class C
+{
+    void M(int x)
+    {
+        throw new ArgumentNullException(/*Leading*/nameof(x)/*Trailing*/);
+    }
+}");
+        }
+
+        [Fact]
+        public async Task Fixer_CSharp_ArgumentWithComments2Async()
+        {
+            await VerifyCS.VerifyCodeFixAsync(@"
+using System;
+class C
+{
+    void M(int x)
+    {
+        throw new ArgumentException(""Somemessage"", /*Leading*/[|""x""|]/*Trailing*/);
+    }
+}",
+@"
+using System;
+class C
+{
+    void M(int x)
+    {
+        throw new ArgumentException(""Somemessage"", /*Leading*/nameof(x)/*Trailing*/);
+    }
+}");
         }
 
         #endregion
-
-        private static DiagnosticResult GetBasicNameofResultAt(int line, int column, string name)
-#pragma warning disable RS0030 // Do not use banned APIs
-            => VerifyVB.Diagnostic()
-                .WithLocation(line, column)
-#pragma warning restore RS0030 // Do not use banned APIs
-                .WithArguments(name);
-
-        private static DiagnosticResult GetCSharpNameofResultAt(int line, int column, string name)
-#pragma warning disable RS0030 // Do not use banned APIs
-            => VerifyCS.Diagnostic()
-                .WithLocation(line, column)
-#pragma warning restore RS0030 // Do not use banned APIs
-                .WithArguments(name);
     }
 }
