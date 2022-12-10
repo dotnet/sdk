@@ -1989,12 +1989,12 @@
       </trans-unit>
       <trans-unit id="ValidateArgumentsOfPublicMethodsDescription">
         <source>An externally visible method dereferences one of its reference arguments without verifying whether that argument is 'null' ('Nothing' in Visual Basic). All reference arguments that are passed to externally visible methods should be checked against 'null'. If appropriate, throw an 'ArgumentNullException' when the argument is 'null'. If the method is designed to be called only by known assemblies, you should make the method internal.</source>
-        <target state="needs-review-translation">Une méthode visible de manière externe déréférence un de ses arguments de référence sans vérifier si cet argument a une valeur null (Nothing en Visual Basic). Tous les arguments de référence passés à des méthodes visibles de manière externe doivent faire l'objet d'une vérification permettant de déterminer s'ils ont une valeur null. Le cas échéant, ArgumentNullException doit être levé quand l'argument a une valeur null, ou vous devez ajouter une condition préalable au contrat de code pour garantir que l'argument a une valeur non null. Si la méthode est conçue pour être appelée uniquement par des assemblys connus, rendez la méthode interne.</target>
+        <target state="new">An externally visible method dereferences one of its reference arguments without verifying whether that argument is 'null' ('Nothing' in Visual Basic). All reference arguments that are passed to externally visible methods should be checked against 'null'. If appropriate, throw an 'ArgumentNullException' when the argument is 'null'. If the method is designed to be called only by known assemblies, you should make the method internal.</target>
         <note />
       </trans-unit>
       <trans-unit id="ValidateArgumentsOfPublicMethodsMessage">
         <source>In externally visible method '{0}', validate parameter '{1}' is non-null before using it. If appropriate, throw an 'ArgumentNullException' when the argument is 'null'.</source>
-        <target state="needs-review-translation">Dans la méthode '{0}' visible de manière externe, vérifiez que le paramètre '{1}' a une valeur non null avant de l'utiliser. Le cas échéant, ArgumentNullException doit être levé quand l'argument a une valeur null, ou vous devez ajouter une condition préalable au contrat de code pour garantir que l'argument a une valeur non null.</target>
+        <target state="new">In externally visible method '{0}', validate parameter '{1}' is non-null before using it. If appropriate, throw an 'ArgumentNullException' when the argument is 'null'.</target>
         <note />
       </trans-unit>
       <trans-unit id="ValidateArgumentsOfPublicMethodsTitle">
