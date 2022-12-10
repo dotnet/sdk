@@ -1988,13 +1988,13 @@
         <note />
       </trans-unit>
       <trans-unit id="ValidateArgumentsOfPublicMethodsDescription">
-        <source>An externally visible method dereferences one of its reference arguments without verifying whether that argument is null (Nothing in Visual Basic). All reference arguments that are passed to externally visible methods should be checked against null. If appropriate, throw an ArgumentNullException when the argument is null or add a Code Contract precondition asserting non-null argument. If the method is designed to be called only by known assemblies, you should make the method internal.</source>
-        <target state="translated">Um método visível externamente desreferencia um de seus argumentos de referência sem verificar se esse argumento é nulo (Nothing no Visual Basic). É necessário verificar se cada argumento de referência passado aos métodos visíveis externamente é nulo. Se necessário, gere uma exceção ArgumentNullException quando o argumento for nulo ou adicione uma pré-condição de Contrato de Código declarando o argumento como não nulo. Se o método for criado para ser chamado somente por assemblies conhecidos, faça com que ele seja interno.</target>
+        <source>An externally visible method dereferences one of its reference arguments without verifying whether that argument is 'null' ('Nothing' in Visual Basic). All reference arguments that are passed to externally visible methods should be checked against 'null'. If appropriate, throw an 'ArgumentNullException' when the argument is 'null'. If the method is designed to be called only by known assemblies, you should make the method internal.</source>
+        <target state="needs-review-translation">Um método visível externamente desreferencia um de seus argumentos de referência sem verificar se esse argumento é nulo (Nothing no Visual Basic). É necessário verificar se cada argumento de referência passado aos métodos visíveis externamente é nulo. Se necessário, gere uma exceção ArgumentNullException quando o argumento for nulo ou adicione uma pré-condição de Contrato de Código declarando o argumento como não nulo. Se o método for criado para ser chamado somente por assemblies conhecidos, faça com que ele seja interno.</target>
         <note />
       </trans-unit>
       <trans-unit id="ValidateArgumentsOfPublicMethodsMessage">
-        <source>In externally visible method '{0}', validate parameter '{1}' is non-null before using it. If appropriate, throw an ArgumentNullException when the argument is null or add a Code Contract precondition asserting non-null argument.</source>
-        <target state="translated">No método visível externamente '{0}', valide se o parâmetro '{1}' não é nulo antes de usá-lo. Se necessário, gere uma exceção ArgumentNullException quando o argumento for nulo ou adicione uma pré-condição de Contrato de Código declarando o argumento como não nulo.</target>
+        <source>In externally visible method '{0}', validate parameter '{1}' is non-null before using it. If appropriate, throw an 'ArgumentNullException' when the argument is 'null'.</source>
+        <target state="needs-review-translation">No método visível externamente '{0}', valide se o parâmetro '{1}' não é nulo antes de usá-lo. Se necessário, gere uma exceção ArgumentNullException quando o argumento for nulo ou adicione uma pré-condição de Contrato de Código declarando o argumento como não nulo.</target>
         <note />
       </trans-unit>
       <trans-unit id="ValidateArgumentsOfPublicMethodsTitle">
