@@ -1989,12 +1989,12 @@
       </trans-unit>
       <trans-unit id="ValidateArgumentsOfPublicMethodsDescription">
         <source>An externally visible method dereferences one of its reference arguments without verifying whether that argument is 'null' ('Nothing' in Visual Basic). All reference arguments that are passed to externally visible methods should be checked against 'null'. If appropriate, throw an 'ArgumentNullException' when the argument is 'null'. If the method is designed to be called only by known assemblies, you should make the method internal.</source>
-        <target state="needs-review-translation">외부에 표시되는 메서드는 인수가 null(Visual Basic의 Nothing)인지 확인하지 않고 참조 인수 중 하나를 역참조합니다. 외부에 표시되는 메서드에 전달되는 모든 참조 인수가 null인지 확인해야 합니다. 필요한 경우 인수가 null이면 ArgumentNullException을 throw하고, 그렇지 않으면 null이 아닌 인수를 어설션하는 코드 계약 사전 조건을 추가합니다. 메서드가 알려진 어셈블리에서만 호출되도록 설계되어 있으면 메서드를 internal로 설정해야 합니다.</target>
+        <target state="new">An externally visible method dereferences one of its reference arguments without verifying whether that argument is 'null' ('Nothing' in Visual Basic). All reference arguments that are passed to externally visible methods should be checked against 'null'. If appropriate, throw an 'ArgumentNullException' when the argument is 'null'. If the method is designed to be called only by known assemblies, you should make the method internal.</target>
         <note />
       </trans-unit>
       <trans-unit id="ValidateArgumentsOfPublicMethodsMessage">
         <source>In externally visible method '{0}', validate parameter '{1}' is non-null before using it. If appropriate, throw an 'ArgumentNullException' when the argument is 'null'.</source>
-        <target state="needs-review-translation">외부에 표시되는 메서드 '{0}'에서 사용하기 전에 '{1}' 매개 변수가 null이 아닌지 유효성을 검사합니다. 필요한 경우 인수가 null이면 ArgumentNullException을 throw하고, 그렇지 않으면 null이 아닌 인수를 어설션하는 코드 계약 사전 조건을 추가합니다.</target>
+        <target state="new">In externally visible method '{0}', validate parameter '{1}' is non-null before using it. If appropriate, throw an 'ArgumentNullException' when the argument is 'null'.</target>
         <note />
       </trans-unit>
       <trans-unit id="ValidateArgumentsOfPublicMethodsTitle">
