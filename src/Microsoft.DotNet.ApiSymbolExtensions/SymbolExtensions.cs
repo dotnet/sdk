@@ -92,8 +92,10 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
                     yield return baseInterface;
         }
 
-        public static bool IsVisibleOutsideOfAssembly(this ISymbol symbol, bool includeInternals,
-            bool includeEffectivelyPrivateSymbols = false, bool includeExplicitInterfaceImplementationSymbols = false) =>
+        public static bool IsVisibleOutsideOfAssembly(this ISymbol symbol,
+            bool includeInternals,
+            bool includeEffectivelyPrivateSymbols = false,
+            bool includeExplicitInterfaceImplementationSymbols = false) =>
             symbol.DeclaredAccessibility switch
             {
                 Accessibility.Public => true,

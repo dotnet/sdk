@@ -12,7 +12,8 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
         private readonly bool _includeExplicitInterfaceImplementationSymbols;
 
         public SymbolAccessibilityBasedFilter(bool includeInternalSymbols,
-            bool includeEffectivelyPrivateSymbols = false, bool includeExplicitInterfaceImplementationSymbols = false)
+            bool includeEffectivelyPrivateSymbols = false,
+            bool includeExplicitInterfaceImplementationSymbols = false)
         {
             _includeInternalSymbols = includeInternalSymbols;
             _includeEffectivelyPrivateSymbols = includeEffectivelyPrivateSymbols;
