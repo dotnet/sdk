@@ -65,12 +65,12 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             });
         }
 
-        private void AnalyzeOperation(OperationAnalysisContext context, IMethodSymbol arrayEmptyMethodSymbol, INamedTypeSymbol linqExpressionType)
+        private void AnalyzeOperation(OperationAnalysisContext context, IMethodSymbol arrayEmptyMethodSymbol, INamedTypeSymbol? linqExpressionType)
         {
-            AnalyzeOperation(context, arrayEmptyMethodSymbol, IsAttributeSyntax);
+            AnalyzeOperation(context, arrayEmptyMethodSymbol, linqExpressionType, IsAttributeSyntax);
         }
 
-        private static void AnalyzeOperation(OperationAnalysisContext context, IMethodSymbol arrayEmptyMethodSymbol, Func<SyntaxNode, bool> isAttributeSyntax)
+        private static void AnalyzeOperation(OperationAnalysisContext context, IMethodSymbol arrayEmptyMethodSymbol, INamedTypeSymbol? linqExpressionType, Func<SyntaxNode, bool> isAttributeSyntax)
         {
             IArrayCreationOperation arrayCreationExpression = (IArrayCreationOperation)context.Operation;
 
