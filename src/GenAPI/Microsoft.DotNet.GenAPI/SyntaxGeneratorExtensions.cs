@@ -69,7 +69,7 @@ namespace Microsoft.DotNet.GenAPI
             return syntaxGenerator.Declaration(symbol);
         }
 
-        // Temporary solution till corresponding Roslyn API is added: https://github.com/dotnet/arcade/issues/11895.
+        // TODO: Temporary solution till corresponding Roslyn API is added: https://github.com/dotnet/arcade/issues/11895.
         private static SyntaxNode ExplicitInterfaceImplementationMethodDeclaration(this SyntaxGenerator syntaxGenerator, IMethodSymbol method, string name, IEnumerable<SyntaxNode>? statements = null)
         {
             var decl = syntaxGenerator.MethodDeclaration(
@@ -91,20 +91,22 @@ namespace Microsoft.DotNet.GenAPI
         // this is copy/paste from private method `SyntaxGenerator.WithTypeParametersAndConstraints`
         private static SyntaxNode WithTypeParametersAndConstraintsCopyExt(this SyntaxGenerator syntaxGenerator, SyntaxNode declaration, ImmutableArray<ITypeParameterSymbol> typeParameters)
         {
-            if (typeParameters.Length > 0)
+            if (typeParameters.IsEmpty)
             {
-                declaration = syntaxGenerator.WithTypeParameters(declaration, typeParameters.Select(tp => tp.Name));
+                return declaration;
+            }
 
-                foreach (var tp in typeParameters)
+            declaration = syntaxGenerator.WithTypeParameters(declaration, typeParameters.Select(tp => tp.Name));
+
+            foreach (var tp in typeParameters)
+            {
+                if (tp.HasConstructorConstraint || tp.HasReferenceTypeConstraint || tp.HasValueTypeConstraint || tp.ConstraintTypes.Length > 0)
                 {
-                    if (tp.HasConstructorConstraint || tp.HasReferenceTypeConstraint || tp.HasValueTypeConstraint || tp.ConstraintTypes.Length > 0)
-                    {
-                        declaration = syntaxGenerator.WithTypeConstraint(declaration, tp.Name,
-                            kinds: (tp.HasConstructorConstraint ? SpecialTypeConstraintKind.Constructor : SpecialTypeConstraintKind.None)
-                                   | (tp.HasReferenceTypeConstraint ? SpecialTypeConstraintKind.ReferenceType : SpecialTypeConstraintKind.None)
-                                   | (tp.HasValueTypeConstraint ? SpecialTypeConstraintKind.ValueType : SpecialTypeConstraintKind.None),
-                            types: tp.ConstraintTypes.Select(t => syntaxGenerator.TypeExpression(t)));
-                    }
+                    declaration = syntaxGenerator.WithTypeConstraint(declaration, tp.Name,
+                        kinds: (tp.HasConstructorConstraint ? SpecialTypeConstraintKind.Constructor : SpecialTypeConstraintKind.None)
+                                | (tp.HasReferenceTypeConstraint ? SpecialTypeConstraintKind.ReferenceType : SpecialTypeConstraintKind.None)
+                                | (tp.HasValueTypeConstraint ? SpecialTypeConstraintKind.ValueType : SpecialTypeConstraintKind.None),
+                        types: tp.ConstraintTypes.Select(t => syntaxGenerator.TypeExpression(t)));
                 }
             }
 
