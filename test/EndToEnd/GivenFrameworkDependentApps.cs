@@ -47,39 +47,44 @@ namespace EndToEnd
 
         internal void ItDoesNotRollForwardToTheLatestVersion(string packageName, string minorVersion)
         {
-            var testProjectCreator = new TestProjectCreator()
-            {
-                PackageName = packageName,
-                MinorVersion = minorVersion,
-            };
-
-            var _testInstance = testProjectCreator.Create();
-
-            string projectDirectory = _testInstance.Root.FullName;
-
-            string projectPath = Path.Combine(projectDirectory, "TestAppSimple.csproj");
-
-            //  Get the resolved version of .NET Core
-            new RestoreCommand()
-                    .WithWorkingDirectory(projectDirectory)
-                    .Execute()
-                    .Should().Pass();
-
-            string assetsFilePath = Path.Combine(projectDirectory, "obj", "project.assets.json");
-            var assetsFile = new LockFileFormat().Read(assetsFilePath);
-
-            var versionInAssertsJson = GetPackageVersion(assetsFile, packageName);
-            versionInAssertsJson.Should().NotBeNull();
-
-            if (versionInAssertsJson.IsPrerelease && versionInAssertsJson.Patch == 0)
-            {
-                // if the bundled version is, for example, a prerelease of
-                // .NET Core 2.1.1, that we don't roll forward to that prerelease
-                // version for framework-dependent deployments.
+            // https://github.com/NuGet/Home/issues/8571
+            #if LINUX_PORTABLE
                 return;
-            }
+            #else
+                var testProjectCreator = new TestProjectCreator()
+                {
+                    PackageName = packageName,
+                    MinorVersion = minorVersion,
+                };
 
-            versionInAssertsJson.ToNormalizedString().Should().BeEquivalentTo(GetExpectedVersion(packageName, minorVersion));
+                var _testInstance = testProjectCreator.Create();
+
+                string projectDirectory = _testInstance.Root.FullName;
+
+                string projectPath = Path.Combine(projectDirectory, "TestAppSimple.csproj");
+
+                //  Get the resolved version of .NET Core
+                new RestoreCommand()
+                        .WithWorkingDirectory(projectDirectory)
+                        .Execute()
+                        .Should().Pass();
+
+                string assetsFilePath = Path.Combine(projectDirectory, "obj", "project.assets.json");
+                var assetsFile = new LockFileFormat().Read(assetsFilePath);
+
+                var versionInAssertsJson = GetPackageVersion(assetsFile, packageName);
+                versionInAssertsJson.Should().NotBeNull();
+
+                if (versionInAssertsJson.IsPrerelease && versionInAssertsJson.Patch == 0)
+                {
+                    // if the bundled version is, for example, a prerelease of
+                    // .NET Core 2.1.1, that we don't roll forward to that prerelease
+                    // version for framework-dependent deployments.
+                    return;
+                }
+
+                versionInAssertsJson.ToNormalizedString().Should().BeEquivalentTo(GetExpectedVersion(packageName, minorVersion));
+            #endif
         }
 
         private static NuGetVersion GetPackageVersion(LockFile lockFile, string packageName)

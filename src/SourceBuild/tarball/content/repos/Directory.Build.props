@@ -143,6 +143,7 @@
     <StandardSourceBuildArgs>$(StandardSourceBuildArgs) /p:AdditionalSourceBuiltNupkgCacheDir="$(SourceBuiltPackagesPath)"</StandardSourceBuildArgs>
     <StandardSourceBuildArgs>$(StandardSourceBuildArgs) /p:ReferencePackageNupkgCacheDir="$(ReferencePackagesDir)"</StandardSourceBuildArgs>
     <StandardSourceBuildArgs>$(StandardSourceBuildArgs) /p:PreviouslySourceBuiltNupkgCacheDir="$(PrebuiltSourceBuiltPackagesPath)"</StandardSourceBuildArgs>
+    <StandardSourceBuildArgs>$(StandardSourceBuildArgs) /p:SourceBuildUseMonoRuntime=$(SourceBuildUseMonoRuntime)</StandardSourceBuildArgs>
 
     <StandardSourceBuildCommand>$(ProjectDirectory)\build$(ShellExtension)</StandardSourceBuildCommand>
   </PropertyGroup>
