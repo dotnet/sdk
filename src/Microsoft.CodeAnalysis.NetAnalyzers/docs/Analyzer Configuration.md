@@ -831,7 +831,7 @@ Option Values: [Fully qualified names](https://github.com/dotnet/csharplang/blob
 
 Default Value: empty
 
-This option is used to include customized methods like [Select](https://learn.microsoft.com/en-us/dotnet/api/system.linq.enumerable.select?view=net-6.0) into the analysis scope.
+This option is used to include customized methods like [Select](https://learn.microsoft.com/dotnet/api/system.linq.enumerable.select?view=net-6.0) into the analysis scope.
 Consider the example:
 
 ```csharp
