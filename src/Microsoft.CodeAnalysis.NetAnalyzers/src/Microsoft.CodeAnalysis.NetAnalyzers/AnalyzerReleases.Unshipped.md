@@ -4,9 +4,9 @@
 
 Rule ID | Category | Severity | Notes
 --------|----------|----------|-------
-CA1510 | Maintainability | Info | UseExceptionThrowHelpers, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1510)
-CA1511 | Maintainability | Info | UseExceptionThrowHelpers, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1511)
-CA1512 | Maintainability | Info | UseExceptionThrowHelpers, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1512)
-CA1513 | Maintainability | Info | UseExceptionThrowHelpers, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1513)
-CA1856 | Performance | Error | ConstantExpectedAnalyzer, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1856)
-CA1857 | Performance | Warning | ConstantExpectedAnalyzer, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1857)
+CA1510 | Maintainability | Info | UseExceptionThrowHelpers, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1510)
+CA1511 | Maintainability | Info | UseExceptionThrowHelpers, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1511)
+CA1512 | Maintainability | Info | UseExceptionThrowHelpers, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1512)
+CA1513 | Maintainability | Info | UseExceptionThrowHelpers, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1513)
+CA1856 | Performance | Error | ConstantExpectedAnalyzer, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1856)
+CA1857 | Performance | Warning | ConstantExpectedAnalyzer, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1857)
