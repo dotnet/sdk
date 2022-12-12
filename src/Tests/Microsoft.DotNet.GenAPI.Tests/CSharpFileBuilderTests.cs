@@ -28,7 +28,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
         {
             var compositeFilter = new CompositeFilter()
                 .Add<ImplicitSymbolsFilter>()
-                .Add(new SymbolAccessibilityBasedFilter(true, true));
+                .Add(new SymbolAccessibilityBasedFilter(true, true, true));
             _csharpFileBuilder = new CSharpFileBuilder(compositeFilter, _stringWriter, _csharpSyntaxWriter, MetadataReferences);
         }
 

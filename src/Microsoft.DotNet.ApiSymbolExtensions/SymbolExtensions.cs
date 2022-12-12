@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation and contributors. All rights reserved.
+﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
@@ -92,15 +92,16 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
                     yield return baseInterface;
         }
 
-        public static bool IsVisibleOutsideOfAssembly(this ISymbol symbol, bool includeInternals, bool includeEffectivelyPrivateSymbols = false) =>
+        public static bool IsVisibleOutsideOfAssembly(this ISymbol symbol, bool includeInternals,
+            bool includeEffectivelyPrivateSymbols = false, bool includeExplicitInterfaceImplementationSymbols = false) =>
             symbol.DeclaredAccessibility switch
             {
                 Accessibility.Public => true,
                 Accessibility.Protected => includeEffectivelyPrivateSymbols || symbol.ContainingType == null || !IsEffectivelySealed(symbol.ContainingType, includeInternals),
                 Accessibility.ProtectedOrInternal => includeEffectivelyPrivateSymbols || includeInternals || symbol.ContainingType == null || !IsEffectivelySealed(symbol.ContainingType, includeInternals),
                 Accessibility.ProtectedAndInternal => includeInternals && (includeEffectivelyPrivateSymbols || symbol.ContainingType == null || !IsEffectivelySealed(symbol.ContainingType, includeInternals)),
-                Accessibility.Private => includeEffectivelyPrivateSymbols && IsExplicitInterfaceImplementation(symbol),
-                _ => includeInternals && symbol.DeclaredAccessibility != Accessibility.Private,
+                Accessibility.Private => includeExplicitInterfaceImplementationSymbols && IsExplicitInterfaceImplementation(symbol),
+                _ => includeInternals,
             };
 
         public static bool IsEventAdderOrRemover(this IMethodSymbol method) =>

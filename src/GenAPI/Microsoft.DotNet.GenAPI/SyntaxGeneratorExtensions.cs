@@ -80,7 +80,7 @@ namespace Microsoft.DotNet.GenAPI
                 modifiers: DeclarationModifiers.From(method),
                 statements: statements);
 
-            if (method.TypeParameters.Length > 0)
+            if (!method.TypeParameters.IsEmpty)
             {
                 decl = syntaxGenerator.WithTypeParametersAndConstraintsCopyExt(decl, method.TypeParameters);
             }
