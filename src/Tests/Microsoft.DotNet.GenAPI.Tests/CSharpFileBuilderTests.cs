@@ -607,7 +607,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                 {
                     public abstract partial class MemoryManager : System.IDisposable
                     {
-                        private void System.IDisposable.Dispose() { }
+                        void System.IDisposable.Dispose() { }
                     }
                 }
                 """);

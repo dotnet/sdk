@@ -76,7 +76,6 @@ namespace Microsoft.DotNet.GenAPI
                 name,
                 parameters: method.Parameters.Select(p => syntaxGenerator.ParameterDeclaration(p)),
                 returnType: method.ReturnType?.SpecialType == SpecialType.System_Void ? null : syntaxGenerator.TypeExpression(method.ReturnType!),
-                accessibility: method.DeclaredAccessibility,
                 modifiers: DeclarationModifiers.From(method),
                 statements: statements);
 
