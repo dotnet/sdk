@@ -80,7 +80,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             {
                 return;
             }
-            
+
             if (arrayCreationExpression.IsWithinExpressionTree(linqExpressionType))
             {
                 return;
