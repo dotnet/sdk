@@ -33,5 +33,7 @@ REM We downloaded a special zip of files to the .nuget folder so add that as a s
 dotnet new nugetconfig
 dotnet nuget add source %DOTNET_ROOT%\.nuget --configfile nuget.config
 
-dir /AD /B *TestPackages* /s
 dir /B  Assets\TestPackages\*.csproj /s
+set TestPackagesRoot=%CD%\assets\testpackages\
+dotnet build assets\testpackages\Microsoft.NET.TestPackages.csproj /t:Build
+robocopy %HELIX_CORRELATION_PAYLOAD%\assets\testpackages\testpackages %TestExecutionDirectory%\TestPackages /s
