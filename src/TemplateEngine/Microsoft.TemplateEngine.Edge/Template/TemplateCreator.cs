@@ -299,7 +299,12 @@ namespace Microsoft.TemplateEngine.Edge.Template
                         }
                         else
                         {
-                            tmpParamsWithInvalidValues.Add(paramFromTemplate.Name);
+                            if (string.IsNullOrEmpty(paramFromTemplate.Precedence.IsEnabledCondition))
+                            {
+                                tmpParamsWithInvalidValues.Add(paramFromTemplate.Name);
+                            }
+                            // in case the IsEnabledCondition is configured - we'll check if parameter needed to be resolved
+                            //   after we evaluate it's enablement condition (and for disabled parameter we do not care)
                         }
                     }
                     else
@@ -438,7 +443,8 @@ namespace Microsoft.TemplateEngine.Edge.Template
 
             if (isEvaluatedExternally)
             {
-                if (!parametersBuilder.CheckIsParametersEvaluationCorrect(template.Generator, _logger, out paramsWithInvalidValues))
+                if (!parametersBuilder.CheckIsParametersEvaluationCorrect(
+                        template.Generator, _logger, !inputParameters.ContinueOnMismatchedConditionsEvaluation, out paramsWithInvalidValues))
                 {
                     _logger.LogInformation(
                         "Parameters conditions ('IsEnbaled', 'IsRequired') evaluation supplied by host didn't match validation against internal evaluation for following parameters: [{0}]. Host requested to continue in such case: {1}",
@@ -524,7 +530,7 @@ namespace Microsoft.TemplateEngine.Edge.Template
             public LegacyParamSetWrapper(IParameterSet parameterSet)
                 : base(parameterSet.ParameterDefinitions) => _parameterSet = parameterSet;
 
-            public bool CheckIsParametersEvaluationCorrect(IGenerator generator, ILogger logger, out IReadOnlyList<string> paramsWithInvalidEvaluations) =>
+            public bool CheckIsParametersEvaluationCorrect(IGenerator generator, ILogger logger, bool throwOnError, out IReadOnlyList<string> paramsWithInvalidEvaluations) =>
                 throw new NotImplementedException();
 
             public InputDataSet Build(bool evaluateConditions, IGenerator generator, ILogger logger) => throw new NotImplementedException();

@@ -105,7 +105,10 @@ namespace Microsoft.TemplateEngine.Utils
             while (directDependants.Count > 0)
             {
                 T parent = directDependants.Dequeue();
-                directDependants.AddRange(dependantsMap[parent].Where(dependantVertices.Add));
+                if (dependantsMap.ContainsKey(parent))
+                {
+                    directDependants.AddRange(dependantsMap[parent].Where(dependantVertices.Add));
+                }
             }
 
             return _dependenciesMap.Where(p => dependantVertices.Contains(p.Key))

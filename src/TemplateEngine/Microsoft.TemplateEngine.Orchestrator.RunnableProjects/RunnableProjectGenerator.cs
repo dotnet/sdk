@@ -82,7 +82,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             {
                 throw new InvalidOperationException($"{nameof(templateData.TemplateSourceRoot)} cannot be null to continue.");
             }
-            return RunnableProjectGenerator.CreateAsync(
+            return CreateAsync(
                 environmentSettings,
                 templateConfig,
                 templateData.TemplateSourceRoot,
@@ -114,6 +114,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 throw new InvalidOperationException($"{nameof(templateData.TemplateSourceRoot)} cannot be null to continue.");
             }
 
+            RemoveDisabledParameters(parameters, templateConfig);
             IVariableCollection variables = SetupVariables(parameters, templateConfig.GlobalOperationConfig.VariableSetup);
             await templateConfig.EvaluateBindSymbolsAsync(environmentSettings, variables, cancellationToken).ConfigureAwait(false);
             cancellationToken.ThrowIfCancellationRequested();
@@ -130,12 +131,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             {
                 runSpec.SetupFileSource(source);
                 string target = Path.Combine(targetDirectory, source.Target);
-                IDirectory? sourceDirectory = templateData.TemplateSourceRoot.DirectoryInfo(source.Source);
-                if (sourceDirectory == null)
-                {
+                IDirectory? sourceDirectory =
+                    templateData.TemplateSourceRoot.DirectoryInfo(source.Source) ??
                     throw new InvalidOperationException($"Cannot access the source directory of the template: {source.Source}.");
-                }
-
                 IReadOnlyList<IFileChange2> fileChanges = orchestrator.GetFileChanges(runSpec, sourceDirectory, target);
 
                 //source and target paths in the file changes are returned relative to source passed
@@ -182,7 +180,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 logger.LogDebug($"Found {TemplateConfigFileName} at {file.GetDisplayPath()}.");
                 try
                 {
-                    IFile? hostConfigFile = RunnableProjectGenerator.FindBestHostTemplateConfigFile(source.EnvironmentSettings, file);
+                    IFile? hostConfigFile = FindBestHostTemplateConfigFile(source.EnvironmentSettings, file);
                     logger.LogDebug($"Found *{HostTemplateFileConfigBaseName} at {hostConfigFile?.GetDisplayPath()}.");
 
                     // issue here: we need to pass locale as parameter
@@ -310,6 +308,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         {
             cancellationToken.ThrowIfCancellationRequested();
 
+            RemoveDisabledParameters(parameters, runnableProjectConfig);
             IVariableCollection variables = SetupVariables(parameters, runnableProjectConfig.GlobalOperationConfig.VariableSetup);
             await runnableProjectConfig.EvaluateBindSymbolsAsync(environmentSettings, variables, cancellationToken).ConfigureAwait(false);
 
@@ -326,16 +325,22 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             {
                 runSpec.SetupFileSource(source);
                 string target = Path.Combine(targetDirectory, source.Target);
-                IDirectory? sourceDirectory = templateSourceRoot.DirectoryInfo(source.Source);
-                if (sourceDirectory == null)
-                {
+                IDirectory? sourceDirectory =
+                    templateSourceRoot.DirectoryInfo(source.Source) ??
                     throw new InvalidOperationException($"Cannot access the source directory of the template: {source.Source}.");
-                }
-
                 orchestrator.Run(runSpec, sourceDirectory, target);
             }
 
             return GetCreationResult(runnableProjectConfig);
+        }
+
+        private static void RemoveDisabledParameters(
+            IParameterSetData parameters,
+            IRunnableProjectConfig runnableProjectConfig)
+        {
+            parameters.Values
+                .Where(v => !v.IsEnabled)
+                .ForEach(p => runnableProjectConfig.RemoveParameter(p.ParameterDefinition));
         }
 
         private static IVariableCollection SetupVariables(IParameterSetData parameters, IVariableConfig variableConfig)

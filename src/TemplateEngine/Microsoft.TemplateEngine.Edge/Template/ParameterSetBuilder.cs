@@ -91,6 +91,11 @@ namespace Microsoft.TemplateEngine.Edge.Template
 
         public void SetParameterEvaluation(ITemplateParameter parameter, EvaluatedInputParameterData evaluatedParameterData)
         {
+            if (!_resolvedValues.ContainsKey(parameter))
+            {
+                return;
+            }
+
             var old = _resolvedValues[parameter];
             _resolvedValues[parameter] = new EvalData(evaluatedParameterData);
             if (old.InputDataState != InputDataState.Unset)
@@ -103,7 +108,7 @@ namespace Microsoft.TemplateEngine.Edge.Template
 
         public bool HasParameterValue(ITemplateParameter parameter) => _resolvedValues[parameter].InputDataState != InputDataState.Unset;
 
-        public bool CheckIsParametersEvaluationCorrect(IGenerator generator, ILogger logger, out IReadOnlyList<string> paramsWithInvalidEvaluations)
+        public bool CheckIsParametersEvaluationCorrect(IGenerator generator, ILogger logger, bool throwOnError, out IReadOnlyList<string> paramsWithInvalidEvaluations)
         {
             List<EvalData> evaluatedParameters = _resolvedValues.Values.ToList();
             List<EvalData> clonedParameters = evaluatedParameters.Select(v => v.Clone()).ToList();
@@ -115,7 +120,10 @@ namespace Microsoft.TemplateEngine.Edge.Template
             catch (Exception e)
             {
                 logger.LogInformation(e, "Cross-check evaluation of host provided condition evaluations failed.");
-                invalidParams.Add(e.Message);
+                if (throwOnError)
+                {
+                    throw;
+                }
             }
 
             foreach (var pair in evaluatedParameters.Zip(clonedParameters, (a, b) => (a, b)))

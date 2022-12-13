@@ -35,7 +35,7 @@ namespace Microsoft.TemplateEngine
                 return null;
             }
 
-            if (!obj.TryGetValue(key, StringComparison.OrdinalIgnoreCase, out JToken? element) || element.Type != JTokenType.String)
+            if (!obj.TryGetValue(key, StringComparison.OrdinalIgnoreCase, out JToken? element) || element.Type == JTokenType.Null)
             {
                 return null;
             }

@@ -62,6 +62,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
                 DefaultIfOptionWithoutValue = "true";
             }
 
+            if (DefaultValue == null && IsRequired != true)
+            {
+                DefaultValue = ParameterConverter.GetDefault(DataType);
+            }
+
             Choices = choicesAndDescriptions;
             AllowMultipleValues = jObject.ToBool(nameof(AllowMultipleValues));
             EnableQuotelessLiterals = jObject.ToBool(nameof(EnableQuotelessLiterals));

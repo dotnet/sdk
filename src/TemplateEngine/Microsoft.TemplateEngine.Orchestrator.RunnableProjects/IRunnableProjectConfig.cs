@@ -43,6 +43,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         /// <param name="rootVariableCollection"></param>
         void Evaluate(IVariableCollection rootVariableCollection);
 
+        /// <summary>
+        /// Removes parameter from template.
+        /// </summary>
+        /// <param name="parameter"></param>
+        void RemoveParameter(ITemplateParameter parameter);
+
         Task EvaluateBindSymbolsAsync(IEngineEnvironmentSettings settings, IVariableCollection variableCollection, CancellationToken cancellationToken);
     }
 }

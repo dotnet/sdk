@@ -16,7 +16,7 @@ internal interface IParameterSetBuilder : IParameterDefinitionSet
 
     bool HasParameterValue(ITemplateParameter parameter);
 
-    bool CheckIsParametersEvaluationCorrect(IGenerator generator, ILogger logger, out IReadOnlyList<string> paramsWithInvalidEvaluations);
+    bool CheckIsParametersEvaluationCorrect(IGenerator generator, ILogger logger, bool throwOnError, out IReadOnlyList<string> paramsWithInvalidEvaluations);
 
     InputDataSet Build(bool evaluateConditions, IGenerator generator, ILogger logger);
 

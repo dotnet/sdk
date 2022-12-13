@@ -30,40 +30,9 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Shared
 
         public static bool Evaluate(IProcessorState processor, ref int bufferLength, ref int currentBufferPosition, out bool faulted)
         {
-            bool result = Evaluate(processor, ref bufferLength, ref currentBufferPosition, out string faultedMessage, null);
+            bool result = Evaluate(processor, ref bufferLength, ref currentBufferPosition, out string faultedMessage, null, false);
             faulted = !string.IsNullOrEmpty(faultedMessage);
             return result;
-        }
-
-        public static bool Evaluate(IProcessorState processor, ref int bufferLength, ref int currentBufferPosition, out string faultedMessage, HashSet<string> referencedVariablesKeys)
-        {
-            ITokenTrie tokens = Instance.GetSymbols(processor);
-            ScopeBuilder<Operators, TTokens> builder = processor.ScopeBuilder(tokens, Map, DereferenceInLiteralsSetting);
-            string faultedSection = null;
-            IEvaluable result = builder.Build(
-                ref bufferLength,
-                ref currentBufferPosition,
-                x => faultedSection = Encoding.UTF8.GetString(x.ToArray()),
-                referencedVariablesKeys);
-
-            if (faultedSection != null)
-            {
-                faultedMessage = faultedSection;
-                return false;
-            }
-
-            try
-            {
-                object evalResult = result.Evaluate();
-                bool r = (bool)Convert.ChangeType(evalResult, typeof(bool));
-                faultedMessage = null;
-                return r;
-            }
-            catch (Exception e)
-            {
-                faultedMessage = e.Message;
-                return false;
-            }
         }
 
         /// <summary>
@@ -98,7 +67,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Shared
                 IProcessorState state = new ProcessorState(ms, res, (int)ms.Length, (int)ms.Length, cfg, NoOperationProviders);
                 int len = (int)ms.Length;
                 int pos = 0;
-                return Evaluate(state, ref len, ref pos, out faultedMessage, referencedVariablesKeys);
+                return Evaluate(state, ref len, ref pos, out faultedMessage, referencedVariablesKeys, true);
             }
         }
 
@@ -126,6 +95,66 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Shared
         protected abstract IOperatorMap<Operators, TTokens> GenerateMap();
 
         protected abstract ITokenTrie GetSymbols(IProcessorState processor);
+
+        private static bool Evaluate(
+            IProcessorState processor,
+            ref int bufferLength,
+            ref int currentBufferPosition,
+            out string faultedMessage,
+            HashSet<string> referencedVariablesKeys,
+            // indicates whether passed buffer within processor contains only the analyzed expression,
+            //  or it can possibly contain other content (e.g. the full template)
+            bool shouldProcessWholeBuffer)
+        {
+            faultedMessage = null;
+            ITokenTrie tokens = Instance.GetSymbols(processor);
+            ScopeBuilder<Operators, TTokens> builder = processor.ScopeBuilder(tokens, Map, DereferenceInLiteralsSetting);
+            string faultedSection = null;
+            IEvaluable expression = builder.Build(
+                ref bufferLength,
+                ref currentBufferPosition,
+                x => faultedSection = processor.Encoding.GetString(x.ToArray()),
+                referencedVariablesKeys);
+
+            bool result;
+            if (faultedSection != null)
+            {
+                faultedMessage = faultedSection;
+                result = false;
+            }
+            else
+            {
+                // Buffer continues after expression - let's populate error only if this is single expression evaluation
+                //  as we want to avoid creation of message that would contain whole template content after some condition
+                if (shouldProcessWholeBuffer && bufferLength != 0)
+                {
+                    faultedMessage = LocalizableStrings.Error_Evaluation_Expression_Substring +
+                                     processor.Encoding.GetString(
+                                         processor.CurrentBuffer,
+                                         currentBufferPosition,
+                                         bufferLength - currentBufferPosition);
+                }
+
+                try
+                {
+                    object evalResult = expression.Evaluate();
+                    result = (bool)Convert.ChangeType(evalResult, typeof(bool));
+                }
+                catch (Exception e)
+                {
+                    faultedMessage = faultedMessage == null
+                        ? e.Message
+                        : (faultedMessage + Environment.NewLine + e.Message);
+                    result = false;
+                }
+            }
+
+            if (!string.IsNullOrEmpty(faultedMessage))
+            {
+                processor.Config.Logger.LogInformation(LocalizableStrings.Error_Evaluation_Expression + faultedMessage);
+            }
+            return result;
+        }
 
         private static int? AttemptBooleanComparison(object left, object right)
         {

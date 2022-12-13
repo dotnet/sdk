@@ -202,6 +202,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         internal TemplateConfigModel ConfigurationModel { get; private set; }
 
+        public void RemoveParameter(ITemplateParameter parameter)
+        {
+            ConfigurationModel.RemoveSymbol(parameter.Name);
+        }
+
         public void Evaluate(IVariableCollection rootVariableCollection)
         {
             bool stable = false;
