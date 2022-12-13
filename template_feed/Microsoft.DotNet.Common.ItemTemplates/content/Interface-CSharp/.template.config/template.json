@@ -44,15 +44,6 @@
       "type": "bind",
       "binding": "msbuild:LangVersion"
     },
-    "csharp7orOlder": {
-      "type": "generated",
-      "generator": "regexMatch",
-      "datatype": "bool",
-      "parameters": {
-        "pattern": "^(ISO-1|ISO-2|[1-7]|7\\.[0-3])$",
-        "source": "langVersion"
-      }
-    },
     "csharp9orOlder": {
       "type": "generated",
       "generator": "regexMatch",
