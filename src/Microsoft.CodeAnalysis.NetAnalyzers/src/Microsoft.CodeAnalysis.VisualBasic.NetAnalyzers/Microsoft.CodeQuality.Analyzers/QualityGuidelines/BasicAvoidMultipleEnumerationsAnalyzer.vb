@@ -2,8 +2,8 @@
 
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.Diagnostics
+Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
 Imports Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumerations
-Imports Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumerations.FlowAnalysis
 
 Namespace Microsoft.CodeQuality.VisualBasic.Analyzers.QualityGuidelines
 
@@ -11,8 +11,9 @@ Namespace Microsoft.CodeQuality.VisualBasic.Analyzers.QualityGuidelines
     Partial Friend NotInheritable Class BasicAvoidMultipleEnumerationsAnalyzer
         Inherits AvoidMultipleEnumerations
 
-        Protected Overrides Function CreateOperationVisitor(context As GlobalFlowStateDictionaryAnalysisContext, wellKnownSymbolsInfo As WellKnownSymbolsInfo) As GlobalFlowStateDictionaryFlowOperationVisitor
-            Return New BasicInvocationCountDataFlowOperationVisitor(context, wellKnownSymbolsInfo)
+        Protected Overrides Function IsExpressionOfForEachStatement(node As SyntaxNode) As Boolean
+            Dim parent = TryCast(node.Parent, ForEachStatementSyntax)
+            Return parent IsNot Nothing AndAlso parent.Expression.Equals(node)
         End Function
     End Class
 End Namespace
