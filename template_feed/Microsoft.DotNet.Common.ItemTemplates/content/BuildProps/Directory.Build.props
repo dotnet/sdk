@@ -1,8 +1,8 @@
 <Project>
   <!-- See https://aka.ms/dotnet/msbuild/customize for more details on customizing your build -->
 <!--#if inherit -->
-  <Import Project="$(MSBuildThisFileDirectory)\..\Directory.Build.props"
-          Condition="Exists('$(MSBuildThisFileDirectory)\..\Directory.Build.props')" />
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))"
+          Condition="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../')) != ''" />
 <!--#endif-->
   <PropertyGroup>
 
