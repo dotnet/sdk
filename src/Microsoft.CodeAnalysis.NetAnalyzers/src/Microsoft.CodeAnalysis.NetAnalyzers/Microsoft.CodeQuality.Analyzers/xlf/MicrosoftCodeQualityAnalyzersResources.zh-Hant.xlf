@@ -457,34 +457,14 @@
         <target state="translated">ComVisibleAttribute 會判斷 COM 用戶端如何存取受控程式碼。良好的設計會要求組件明確表示 COM 的可見度。可以為整個組件設定COM 的可見度，然後再對個別的類型與類型成員進行覆寫。若此屬性不存在，則 COM 用戶端可以看到組件的內容。</target>
         <note />
       </trans-unit>
-      <trans-unit id="MarkAssembliesWithComVisibleMessageNoAttribute">
-        <source>Because {0} exposes externally visible types, mark it with ComVisible(false) at the assembly level and then mark all types within the assembly that should be exposed to COM clients with ComVisible(true).</source>
-        <target state="translated">因為 {0} 會公開外部可見的類型，所以請在組件層級將其標記為 ComVisible(false)，然後將應公開給 COM 用戶端之組件內的所有類型，標記為 ComVisible(true)。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="MarkAssembliesWithComVisibleMessageAttributeTrue">
-        <source>Consider changing the ComVisible attribute on {0} to false, and opting in at the type level.</source>
-        <target state="translated">請考慮將 {0} 上的 ComVisible 屬性變更為 false，並於類型層級選擇加入。</target>
-        <note />
-      </trans-unit>
       <trans-unit id="MarkAttributesWithAttributeUsageTitle">
         <source>Mark attributes with AttributeUsageAttribute</source>
         <target state="translated">將屬性標記為 AttributeUsageAttribute</target>
         <note />
       </trans-unit>
-      <trans-unit id="MarkAttributesWithAttributeUsageDescription">
-        <source>When you define a custom attribute, mark it by using AttributeUsageAttribute to indicate where in the source code the custom attribute can be applied. The meaning and intended usage of an attribute will determine its valid locations in code.</source>
-        <target state="translated">當您定義自訂屬性時，請使用 AttributeUsageAttribute 進行標記，以指出可以在原始程式碼的何處套用自訂屬性。屬性的意義與預期用法將可決定其在程式碼中的有效位置。</target>
-        <note />
-      </trans-unit>
       <trans-unit id="MarkAttributesWithAttributeUsageMessageDefault">
         <source>Specify AttributeUsage on {0}</source>
         <target state="translated">在 {0} 上指定 AttributeUsage</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="MarkAttributesWithAttributeUsageMessageInherited">
-        <source>Even though attribute {0} inherits AttributeUsage from its base type, you should consider explicitly specifying AttributeUsage on the type to improve code readability and documentation.</source>
-        <target state="translated">即使屬性 {0} 自其基底類型繼承 AttributeUsage，仍應考慮在類型上明確指定 AttributeUsage，以改善程式碼可讀性與記錄功能。</target>
         <note />
       </trans-unit>
       <trans-unit id="DefineAccessorsForAttributeArgumentsTitle">
@@ -1680,26 +1660,6 @@
       <trans-unit id="InvalidEntryInCodeMetricsConfigFileTitle">
         <source>Invalid entry in code metrics rule specification file</source>
         <target state="translated">程式碼度量規則規格檔案中的項目無效</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ReviewUnusedParametersTitle">
-        <source>Review unused parameters</source>
-        <target state="translated">檢閱未使用的參數</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ReviewUnusedParametersDescription">
-        <source>Avoid unused paramereters in your code. If the parameter cannot be removed, then change its name so it starts with an underscore and is optionally followed by an integer, such as '_', '_1', '_2', etc. These are treated as special discard symbol names.</source>
-        <target state="translated">請避免在您的程式碼中使用參數。如果無法移除參數，請變更其名稱，使其以底線開頭，並可選擇在後面接著整數，例如 '_'、'_1'、'_2' 等。這些會視為特殊的捨棄符號名稱。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ReviewUnusedParametersMessage">
-        <source>Parameter {0} of method {1} is never used. Remove the parameter or use it in the method body.</source>
-        <target state="translated">方法 {1} 的參數 {0} 從未使用過。請移除此參數，或將其用於方法主體中。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="RemoveUnusedParameterMessage">
-        <source>Remove unused parameter</source>
-        <target state="translated">移除未使用的參數</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotIgnoreMethodResultsTitle">

@@ -92,36 +92,6 @@
         <target state="translated">对 ISerializable 类型调用基类方法</target>
         <note />
       </trans-unit>
-      <trans-unit id="UseXmlReaderForDataSetReadXmlTitle">
-        <source>Use XmlReader for DataSet ReadXml</source>
-        <target state="translated">使用 DataSet ReadXml 的 XmlReader</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UseXmlReaderForDataSetReadXmlDescription">
-        <source>Do not use unsafe overloads of System.Data.DataSet.ReadXml. This API internally enables DTD processing on the XML reader instance used, and uses UrlResolver for resolving external XML entities. The outcome is information disclosure. Content from file system or network shares for the machine processing the XML can be exposed to attacker. In addition, an attacker can use this as a DoS vector.</source>
-        <target state="translated">不要使用 System.Data.DataSet.ReadXml 的不安全重载。此 API 在内部对所用的 XML 读取器实例启用了 DTD 处理，并使用 UrlResolver 解析外部 XML 实体。这导致了信息泄漏。供计算机处理 XML 的文件系统或网络共享内容可能会暴露给攻击者。另外，攻击者可能会将其用作 DoS 矢量。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UseXmlReaderForDataSetReadXmlMessage">
-        <source>Use XmlReader for DataSet ReadXml</source>
-        <target state="translated">使用 DataSet ReadXml 的 XmlReader</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UseXmlReaderForDataSetReadXmlSchemaTitle">
-        <source>Use XmlReader for DataSet ReadXmlSchema</source>
-        <target state="translated">使用 DataSet ReadXmlSchema 的 XmlReader</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UseXmlReaderForDataSetReadXmlSchemaDescription">
-        <source>Do not use unsafe overloads of System.Data.DataSet.ReadXmlSchema. This API internally enables DTD processing on the XML reader instance used, and uses UrlResolver for resolving external XML entities. The outcome is information disclosure. Content from file system or network shares for the machine processing the XML can be exposed to attacker. In addition, an attacker can use this as a DoS vector.</source>
-        <target state="translated">不要使用 System.Data.DataSet.ReadXmlSchema 的不安全重载。此 API 在内部对所用的 XML 读取器实例启用了 DTD 处理，并使用 UrlResolver 解析外部 XML 实体。这导致了信息泄漏。供计算机处理 XML 的文件系统或网络共享内容可能会暴露给攻击者。另外，攻击者可能会将其用作 DoS 矢量。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UseXmlReaderForDataSetReadXmlSchemaMessage">
-        <source>Use XmlReader for DataSet ReadXmlSchema</source>
-        <target state="translated">使用 DataSet ReadXmlSchema 的 XmlReader</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ReviewDataViewCollectionStringTitle">
         <source>Review DataView CollectionString</source>
         <target state="translated">评审 DataView CollectionString</target>
@@ -135,36 +105,6 @@
       <trans-unit id="ReviewDataViewCollectionStringMessage">
         <source>Review DataView CollectionString</source>
         <target state="translated">评审 DataView CollectionString</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UseXmlReaderForDataTableReadXmlTitle">
-        <source>Use XmlReader for DataTable ReadXml</source>
-        <target state="translated">使用 DataTable ReadXml 的 XmlReader</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UseXmlReaderForDataTableReadXmlDescription">
-        <source>Do not use unsafe overloads of System.Data.DataTable.ReadXml. This API internally enables DTD processing on the XML reader instance used, and uses UrlResolver for resolving external XML entities. The outcome is information disclosure. Content from file system or network shares for the machine processing the XML can be exposed to attacker. In addition, an attacker can use this as a DoS vector.</source>
-        <target state="translated">不要使用 System.Data.DataTable.ReadXml 的不安全重载。此 API 在内部对所用的 XML 读取器实例启用了 DTD 处理，并使用 UrlResolver 解析外部 XML 实体。这导致了信息泄漏。供计算机处理 XML 的文件系统或网络共享内容可能会暴露给攻击者。另外，攻击者可能会将其用作 DoS 矢量。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UseXmlReaderForDataTableReadXmlMessage">
-        <source>Use XmlReader for DataTable ReadXml</source>
-        <target state="translated">使用 DataTable ReadXml 的 XmlReader</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UseXmlReaderForDataTableReadXmlSchemaTitle">
-        <source>Use XmlReader for DataTable ReadXmlSchema</source>
-        <target state="translated">使用 DataTable ReadXmlSchema 的 XmlReader</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UseXmlReaderForDataTableReadXmlSchemaDescription">
-        <source>Checks for usage of an unsafe overload of  System.Data.DataTable.ReadXmlSchema. This API internally enables DTD processing on the XML reader instance used, and uses UrlResolver for resolving external XML entities. The outcome is information disclosure. Content from file system or network shares for the machine processing the XML can be exposed to attacker. In addition, an attacker can use this as a DoS vector.</source>
-        <target state="translated">检查 System.Data.DataTable.ReadXmlSchema 的不安全重载的使用情况。此 API 在内部对所用的 XML 读取器实例启用了 DTD 处理，并使用 UrlResolver 解析外部 XML 实体。这导致了信息泄漏。供计算机处理 XML 的文件系统或网络共享内容可能会暴露给攻击者。另外，攻击者可能会将其用作 DoS 矢量。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UseXmlReaderForDataTableReadXmlSchemaMessage">
-        <source>Use XmlReader for DataTable ReadXmlSchema</source>
-        <target state="translated">使用 DataTable ReadXmlSchema 的 XmlReader</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCatchCorruptedStateExceptions">

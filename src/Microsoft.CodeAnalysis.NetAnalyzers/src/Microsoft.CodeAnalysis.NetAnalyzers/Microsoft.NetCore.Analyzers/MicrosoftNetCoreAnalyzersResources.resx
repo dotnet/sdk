@@ -147,35 +147,11 @@
   <data name="PInvokesShouldNotBeVisibleMessage" xml:space="preserve">
     <value>P/Invoke method '{0}' should not be visible</value>
   </data>
-  <data name="PInvokeDeclarationsShouldBePortableTitle" xml:space="preserve">
-    <value>PInvoke declarations should be portable</value>
-  </data>
-  <data name="PInvokeDeclarationsShouldBePortableDescription" xml:space="preserve">
-    <value>This rule evaluates the size of each parameter and the return value of a P/Invoke, and verifies that the size of the parameter is correct when marshaled to unmanaged code on 32-bit and 64-bit operating systems.</value>
-  </data>
-  <data name="PInvokeDeclarationsShouldBePortableMessageParameter" xml:space="preserve">
-    <value>As it is declared in your code, parameter {0} of P/Invoke {1} will be {2} bytes wide on {3} platforms. This is not correct, as the actual native declaration of this API indicates it should be {4} bytes wide on {3} platforms. Consult the MSDN Platform SDK documentation for help determining what data type should be used instead of {5}.</value>
-  </data>
-  <data name="PInvokeDeclarationsShouldBePortableMessageReturn" xml:space="preserve">
-    <value>As it is declared in your code, the return type of P/Invoke {0} will be {1} bytes wide on {2} platforms. This is not correct, as the actual native declaration of this API indicates it should be {3} bytes wide on {2} platforms. Consult the MSDN Platform SDK documentation for help determining what data type should be used instead of {4}.</value>
-  </data>
   <data name="SpecifyMarshalingForPInvokeStringArgumentsTitle" xml:space="preserve">
     <value>Specify marshaling for P/Invoke string arguments</value>
   </data>
   <data name="SpecifyMarshalingForPInvokeStringArgumentsDescription" xml:space="preserve">
     <value>A platform invoke member allows partially trusted callers, has a string parameter, and does not explicitly marshal the string. This can cause a potential security vulnerability.</value>
-  </data>
-  <data name="SpecifyMarshalingForPInvokeStringArgumentsMessageParameter" xml:space="preserve">
-    <value>To reduce security risk, marshal parameter {0} as Unicode, by setting DllImport.CharSet to CharSet.Unicode, or by explicitly marshaling the parameter as UnmanagedType.LPWStr. If you need to marshal this string as ANSI or system-dependent, set BestFitMapping=false; for added security, also set ThrowOnUnmappableChar=true.</value>
-  </data>
-  <data name="SpecifyMarshalingForPInvokeStringArgumentsMessageField" xml:space="preserve">
-    <value>To reduce security risk, marshal field {0} as Unicode, by setting StructLayout.CharSet on {1} to CharSet.Unicode, or by explicitly marshaling the field as UnmanagedType.LPWStr. If you need to marshal this string as ANSI or system-dependent, use the BestFitMapping attribute to turn best-fit mapping off, and for added security, ensure ThrowOnUnmappableChar is on.</value>
-  </data>
-  <data name="SpecifyMarshalingForPInvokeStringArgumentsMessageParameterImplicitAnsi" xml:space="preserve">
-    <value>To reduce security risk, marshal parameter {0} as Unicode, by setting DllImport.CharSet to CharSet.Unicode, or by explicitly marshaling the parameter as UnmanagedType.LPWStr. If you need to marshal this string as ANSI or system-dependent, specify MarshalAs explicitly, and set BestFitMapping=false; for added security, also set ThrowOnUnmappableChar=true.</value>
-  </data>
-  <data name="SpecifyMarshalingForPInvokeStringArgumentsMessageFieldImplicitAnsi" xml:space="preserve">
-    <value>To reduce security risk, marshal field {0} as Unicode, by setting StructLayout.CharSet on {1} to CharSet.Unicode, or by explicitly marshaling the field as UnmanagedType.LPWStr. If you need to marshal this string as ANSI or system-dependent, specify MarshalAs explicitly, use the BestFitMapping attribute to turn best-fit mapping off, and for added security, to turn ThrowOnUnmappableChar on.</value>
   </data>
   <data name="UseManagedEquivalentsOfWin32ApiTitle" xml:space="preserve">
     <value>Use managed equivalents of win32 api</value>
@@ -308,15 +284,6 @@
   </data>
   <data name="InitializeStaticFieldsInlineMessage" xml:space="preserve">
     <value>Initialize all static fields in '{0}' when those fields are declared and remove the explicit static constructor</value>
-  </data>
-  <data name="DoNotCallOverridableMethodsInConstructorsTitle" xml:space="preserve">
-    <value>Do not call overridable methods in constructors</value>
-  </data>
-  <data name="DoNotCallOverridableMethodsInConstructorsDescription" xml:space="preserve">
-    <value>When a constructor calls a virtual method, the constructor for the instance that invokes the method may not have executed.</value>
-  </data>
-  <data name="DoNotCallOverridableMethodsInConstructorsMessage" xml:space="preserve">
-    <value>Do not call overridable methods in constructors</value>
   </data>
   <data name="DisposableTypesShouldDeclareFinalizerTitle" xml:space="preserve">
     <value>Disposable types should declare finalizer</value>
@@ -914,12 +881,6 @@
   </data>
   <data name="DoNotUseDSAMessage" xml:space="preserve">
     <value>Asymmetric encryption algorithm {0} is weak. Switch to an RSA with at least 2048 key size, ECDH or ECDSA algorithm instead.</value>
-  </data>
-  <data name="DoNotUseMD5" xml:space="preserve">
-    <value>Do not use insecure cryptographic algorithm MD5.</value>
-  </data>
-  <data name="DoNotUseMD5Description" xml:space="preserve">
-    <value>This type implements MD5, a cryptographically insecure hashing function. Hash collisions are computationally feasible for the MD5 and HMACMD5 algorithms. Replace this usage with a SHA-2 family hash algorithm (SHA512, SHA384, SHA256).</value>
   </data>
   <data name="DoNotUseObsoleteKDFAlgorithm" xml:space="preserve">
     <value>Do not use obsolete key derivation function</value>
@@ -2052,5 +2013,4 @@
   <data name="UseThrowHelperFix" xml:space="preserve">
     <value>Use '{0}.{1}'</value>
   </data>
-
 </root>

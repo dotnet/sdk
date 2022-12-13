@@ -457,34 +457,14 @@
         <target state="translated">ComVisibleAttribute, COM istemcilerinin yönetilen koda nasıl erişeceğini belirler. İyi bir tasarım için bütünleştirilmiş kodlar COM görünürlüğünü açıkça belirtmelidir. COM görünürlüğü bütünleştirilmiş kodun tamamı için ayarlanabilir ve sonra tek tek türler ve tür üyeleri için geçersiz kılınabilir. Bu öznitelik yoksa, bütünleştirilmiş kodun içeriğini COM istemcileri görebilir.</target>
         <note />
       </trans-unit>
-      <trans-unit id="MarkAssembliesWithComVisibleMessageNoAttribute">
-        <source>Because {0} exposes externally visible types, mark it with ComVisible(false) at the assembly level and then mark all types within the assembly that should be exposed to COM clients with ComVisible(true).</source>
-        <target state="translated">{0} öğesi dışarıdan görünen türleri kullanıma sunduğundan, bunu bütünleştirilmiş kod düzeyinde ComVisible(false) ile işaretleyin, sonra bütünleştirilmiş kodda bulunan ve COM istemcilerinin kullanımına sunulması gereken tüm türleri ComVisible(true) ile işaretleyin.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="MarkAssembliesWithComVisibleMessageAttributeTrue">
-        <source>Consider changing the ComVisible attribute on {0} to false, and opting in at the type level.</source>
-        <target state="translated">{0} öğesindeki ComVisible özniteliğini false olarak değiştirmeyi ve tür düzeyinde kabul etmeyi deneyin.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="MarkAttributesWithAttributeUsageTitle">
         <source>Mark attributes with AttributeUsageAttribute</source>
         <target state="translated">Öznitelikleri AttributeUsageAttribute ile işaretleyin</target>
         <note />
       </trans-unit>
-      <trans-unit id="MarkAttributesWithAttributeUsageDescription">
-        <source>When you define a custom attribute, mark it by using AttributeUsageAttribute to indicate where in the source code the custom attribute can be applied. The meaning and intended usage of an attribute will determine its valid locations in code.</source>
-        <target state="translated">Özel bir öznitelik tanımladığınızda, özel özniteliğin kaynak kodunun neresinde uygulanabileceğini belirtmek için bunu AttributeUsageAttribute kullanarak işaretleyin. Bir özniteliğin anlamı ve amaçlanan kullanımı, koddaki geçerli konumlarını belirler.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="MarkAttributesWithAttributeUsageMessageDefault">
         <source>Specify AttributeUsage on {0}</source>
         <target state="translated">{0} üzerinde AttributeUsage belirtin</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="MarkAttributesWithAttributeUsageMessageInherited">
-        <source>Even though attribute {0} inherits AttributeUsage from its base type, you should consider explicitly specifying AttributeUsage on the type to improve code readability and documentation.</source>
-        <target state="translated">{0} özniteliği AttributeUsage’ı temel türünden devralsa da kodun okunabilirliğini e belgeleri geliştirmek için AttributeUsage’ı açıkça belirtmeyi göz önünde bulundurmalısınız.</target>
         <note />
       </trans-unit>
       <trans-unit id="DefineAccessorsForAttributeArgumentsTitle">
@@ -1680,26 +1660,6 @@
       <trans-unit id="InvalidEntryInCodeMetricsConfigFileTitle">
         <source>Invalid entry in code metrics rule specification file</source>
         <target state="translated">Ölçüm kuralı belirtim dosyasında geçersiz giriş</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ReviewUnusedParametersTitle">
-        <source>Review unused parameters</source>
-        <target state="translated">Kullanılmayan parametreleri gözden geçirin</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ReviewUnusedParametersDescription">
-        <source>Avoid unused paramereters in your code. If the parameter cannot be removed, then change its name so it starts with an underscore and is optionally followed by an integer, such as '_', '_1', '_2', etc. These are treated as special discard symbol names.</source>
-        <target state="translated">Kodunuzda, kullanılmayan parametrelerden kaçının. Parametre kaldırılamıyorsa adını, bir alt çizgiyle başlayan ve isteğe bağlı olarak ardından tamsayı gelen ('_', '_1', '_2' gibi) bir değerle değiştirin. Bu değerler özel atılabilir değişken sembolü olarak işlenir.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ReviewUnusedParametersMessage">
-        <source>Parameter {0} of method {1} is never used. Remove the parameter or use it in the method body.</source>
-        <target state="translated">{1} yönteminin {0} parametresi hiçbir zaman kullanılmıyor. Parametreyi kaldırın veya yöntem gövdesinde kullanın.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="RemoveUnusedParameterMessage">
-        <source>Remove unused parameter</source>
-        <target state="translated">Kullanılmayan parametreyi kaldırma</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotIgnoreMethodResultsTitle">

@@ -562,21 +562,6 @@
         <target state="translated">{0} 클래스의 인스턴스를 역직렬화할 때 {1} 메서드가 위험한 메서드 {2}을(를) 호출할 수 있습니다. 잠재적인 메서드 호출은 {3}입니다.</target>
         <note />
       </trans-unit>
-      <trans-unit id="DoNotCallOverridableMethodsInConstructorsDescription">
-        <source>When a constructor calls a virtual method, the constructor for the instance that invokes the method may not have executed.</source>
-        <target state="translated">생성자에서 가상 메서드를 호출하면 메서드를 호출하는 인스턴스에 대한 생성자가 실행되지 않을 수 있습니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DoNotCallOverridableMethodsInConstructorsMessage">
-        <source>Do not call overridable methods in constructors</source>
-        <target state="translated">생성자에서 재정의 가능한 메서드를 호출하지 마세요.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DoNotCallOverridableMethodsInConstructorsTitle">
-        <source>Do not call overridable methods in constructors</source>
-        <target state="translated">생성자에서 재정의 가능한 메서드를 호출하지 마세요.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="DoNotCallToImmutableCollectionOnAnImmutableCollectionValueMessage">
         <source>Do not call {0} on an {1} value</source>
         <target state="translated">{1} 값의 {0}을(를) 호출하지 마세요.</target>
@@ -980,16 +965,6 @@
       <trans-unit id="DoNotUseInsecureRandomnessMessage">
         <source>{0} is an insecure random number generator. Use cryptographically secure random number generators when randomness is required for security.</source>
         <target state="translated">{0}은(는) 비보안 난수 생성기입니다. 보안을 위해 임의성이 필요한 경우 암호화된 보안 난수 생성기를 사용하세요.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DoNotUseMD5">
-        <source>Do not use insecure cryptographic algorithm MD5.</source>
-        <target state="translated">안전하지 않은 암호화 알고리즘 MD5를 사용하지 마세요.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DoNotUseMD5Description">
-        <source>This type implements MD5, a cryptographically insecure hashing function. Hash collisions are computationally feasible for the MD5 and HMACMD5 algorithms. Replace this usage with a SHA-2 family hash algorithm (SHA512, SHA384, SHA256).</source>
-        <target state="translated">이 형식은 안전하지 않게 암호화된 해시 알고리즘인 MD5를 구현합니다. MD5 및 HMACMD5 알고리즘에서 계산상 해시 충돌이 발생할 수 있습니다. 이 사용법을 SHA-2 패밀리 해시 알고리즘(SHA512, SHA384, SHA256)으로 바꾸세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseObsoleteKDFAlgorithm">
@@ -1872,26 +1847,6 @@
         <target state="translated">{3} '{0}'은(는) 미리 보기 방법 '{1}'을(를) 재정의하므로 미리 보기 기능을 선택해야 합니다. 자세한 내용은 {2}를 참조하세요.</target>
         <note />
       </trans-unit>
-      <trans-unit id="PInvokeDeclarationsShouldBePortableDescription">
-        <source>This rule evaluates the size of each parameter and the return value of a P/Invoke, and verifies that the size of the parameter is correct when marshaled to unmanaged code on 32-bit and 64-bit operating systems.</source>
-        <target state="translated">이 규칙은 각 매개 변수 및 P/Invoke의 반환 값의 크기를 평가하며 32비트 및 64비트 운영 체제에서 비관리 코드로 마샬링된 경우 매개 변수의 크기가 올바른지 확인합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PInvokeDeclarationsShouldBePortableMessageParameter">
-        <source>As it is declared in your code, parameter {0} of P/Invoke {1} will be {2} bytes wide on {3} platforms. This is not correct, as the actual native declaration of this API indicates it should be {4} bytes wide on {3} platforms. Consult the MSDN Platform SDK documentation for help determining what data type should be used instead of {5}.</source>
-        <target state="translated">코드에 선언된 것처럼 P/Invoke {1}의 {0} 매개 변수는 {3} 플랫폼에서 {2}바이트가 됩니다. 이 API의 실제 네이티브 선언에 따르면 {3} 플랫폼에서 {4}바이트여야 하므로 잘못된 상황입니다. {5} 대신 사용할 데이터 형식을 결정하려면 MSDN Platform SDK 문서를 참조하세요.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PInvokeDeclarationsShouldBePortableMessageReturn">
-        <source>As it is declared in your code, the return type of P/Invoke {0} will be {1} bytes wide on {2} platforms. This is not correct, as the actual native declaration of this API indicates it should be {3} bytes wide on {2} platforms. Consult the MSDN Platform SDK documentation for help determining what data type should be used instead of {4}.</source>
-        <target state="translated">코드에 선언된 것처럼 P/Invoke {0}의 반환 형식은 {2} 플랫폼에서 {1}바이트가 됩니다. 이 API의 실제 네이티브 선언에 따르면 {2} 플랫폼에서 {3}바이트여야 하므로 잘못된 상황입니다. {4} 대신 사용할 데이터 형식을 결정하려면 MSDN Platform SDK 문서를 참조하세요.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PInvokeDeclarationsShouldBePortableTitle">
-        <source>PInvoke declarations should be portable</source>
-        <target state="translated">PInvoke 선언은 이식 가능해야 합니다.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="PInvokesShouldNotBeVisibleDescription">
         <source>A public or protected method in a public type has the System.Runtime.InteropServices.DllImportAttribute attribute (also implemented by the Declare keyword in Visual Basic). Such methods should not be exposed.</source>
         <target state="translated">public 형식의 public 또는 protected 메서드에 System.Runtime.InteropServices.DllImportAttribute 특성(Visual Basic의 선언 키워드에서 구현함)이 있습니다. 이러한 메서드는 노출할 수 없습니다.</target>
@@ -2560,26 +2515,6 @@
       <trans-unit id="SpecifyMarshalingForPInvokeStringArgumentsDescription">
         <source>A platform invoke member allows partially trusted callers, has a string parameter, and does not explicitly marshal the string. This can cause a potential security vulnerability.</source>
         <target state="translated">플랫폼 호출 멤버는 부분적으로 신뢰하는 호출자를 허용하고, 문자열 매개 변수를 보유하며, 문자열을 명시적으로 마샬링하지 않습니다. 이로 인해 잠재적인 보안 취약성이 발생할 수 있습니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SpecifyMarshalingForPInvokeStringArgumentsMessageField">
-        <source>To reduce security risk, marshal field {0} as Unicode, by setting StructLayout.CharSet on {1} to CharSet.Unicode, or by explicitly marshaling the field as UnmanagedType.LPWStr. If you need to marshal this string as ANSI or system-dependent, use the BestFitMapping attribute to turn best-fit mapping off, and for added security, ensure ThrowOnUnmappableChar is on.</source>
-        <target state="translated">보안 위험을 줄이려면 {1}의 StructLayout.CharSet을 CharSet.Unicode로 설정하거나 {0} 필드를 명시적으로 UnmanagedType.LPWStr로 마샬링하여 필드를 유니코드로 마샬링하세요. 이 문자열을 ANSI 또는 시스템 설정으로 마샬링해야 하는 경우 BestFitMapping 특성을 사용하여 최적 문자 매핑을 해제하세요. 또한 ThrowOnUnmappableChar이 설정되어 있는지 확인하여 보안을 강화하세요.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SpecifyMarshalingForPInvokeStringArgumentsMessageFieldImplicitAnsi">
-        <source>To reduce security risk, marshal field {0} as Unicode, by setting StructLayout.CharSet on {1} to CharSet.Unicode, or by explicitly marshaling the field as UnmanagedType.LPWStr. If you need to marshal this string as ANSI or system-dependent, specify MarshalAs explicitly, use the BestFitMapping attribute to turn best-fit mapping off, and for added security, to turn ThrowOnUnmappableChar on.</source>
-        <target state="translated">보안 위험을 줄이려면 {1}의 StructLayout.CharSet을 CharSet.Unicode로 설정하거나 {0} 필드를 명시적으로 UnmanagedType.LPWStr로 마샬링하여 필드를 유니코드로 마샬링하세요. 이 문자열을 ANSI 또는 시스템 설정으로 마샬링해야 하는 경우 MarshalAs를 명시적으로 지정하고, BestFitMapping 특성을 사용하여 최적 문자 매핑을 해제하세요. 또한 ThrowOnUnmappableChar이 설정되어 있는지 확인하여 보안을 강화하세요.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SpecifyMarshalingForPInvokeStringArgumentsMessageParameter">
-        <source>To reduce security risk, marshal parameter {0} as Unicode, by setting DllImport.CharSet to CharSet.Unicode, or by explicitly marshaling the parameter as UnmanagedType.LPWStr. If you need to marshal this string as ANSI or system-dependent, set BestFitMapping=false; for added security, also set ThrowOnUnmappableChar=true.</source>
-        <target state="translated">보안 위험을 줄이려면 DllImport.CharSet을 CharSet.Unicode로 설정하거나 {0} 매개 변수를 명시적으로 UnmanagedType.LPWStr로 마샬링하여 매개 변수를 유니코드로 마샬링하세요. 이 문자열을 ANSI 또는 시스템 설정으로 마샬링해야 하는 경우 BestFitMapping=false를 설정하세요. 또한 ThrowOnUnmappableChar=true를 설정하여 보안을 강화하세요.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SpecifyMarshalingForPInvokeStringArgumentsMessageParameterImplicitAnsi">
-        <source>To reduce security risk, marshal parameter {0} as Unicode, by setting DllImport.CharSet to CharSet.Unicode, or by explicitly marshaling the parameter as UnmanagedType.LPWStr. If you need to marshal this string as ANSI or system-dependent, specify MarshalAs explicitly, and set BestFitMapping=false; for added security, also set ThrowOnUnmappableChar=true.</source>
-        <target state="translated">보안 위험을 줄이려면 DllImport.CharSet을 CharSet.Unicode로 설정하거나 {0} 매개 변수를 명시적으로 UnmanagedType.LPWStr로 마샬링하여 매개 변수를 유니코드로 마샬링하세요. 이 문자열을 ANSI 또는 시스템 설정으로 마샬링해야 하는 경우 MarshalAs를 명시적으로 지정하고, BestFitMapping=false를 설정하세요. 또한 ThrowOnUnmappableChar=true를 설정하여 보안을 강화하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="SpecifyMarshalingForPInvokeStringArgumentsTitle">

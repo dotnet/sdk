@@ -1,17 +1,17 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
-  <!--
-    Microsoft ResX Schema
-
+  <!-- 
+    Microsoft ResX Schema 
+    
     Version 2.0
-
-    The primary goals of this format is to allow a simple XML format
-    that is mostly human readable. The generation and parsing of the
-    various data types are done through the TypeConverter classes
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
     associated with the data types.
-
+    
     Example:
-
+    
     ... ado.net/XML headers & schema ...
     <resheader name="resmimetype">text/microsoft-resx</resheader>
     <resheader name="version">2.0</resheader>
@@ -26,36 +26,36 @@
         <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
         <comment>This is a comment</comment>
     </data>
-
-    There are any number of "resheader" rows that contain simple
+                
+    There are any number of "resheader" rows that contain simple 
     name/value pairs.
-
-    Each data row contains a name, and value. The row also contains a
-    type or mimetype. Type corresponds to a .NET class that support
-    text/value conversion through the TypeConverter architecture.
-    Classes that don't support this are serialized and stored with the
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
     mimetype set.
-
-    The mimetype is used for serialized objects, and tells the
-    ResXResourceReader how to depersist the object. This is currently not
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
     extensible. For a given mimetype the value must be set accordingly:
-
-    Note - application/x-microsoft.net.object.binary.base64 is the format
-    that the ResXResourceWriter will generate, however the reader can
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
     read any of the formats listed below.
-
+    
     mimetype: application/x-microsoft.net.object.binary.base64
-    value   : The object must be serialized with
+    value   : The object must be serialized with 
             : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
             : and then encoded with base64 encoding.
-
+    
     mimetype: application/x-microsoft.net.object.soap.base64
-    value   : The object must be serialized with
+    value   : The object must be serialized with 
             : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
             : and then encoded with base64 encoding.
 
     mimetype: application/x-microsoft.net.object.bytearray.base64
-    value   : The object must be serialized into a byte array
+    value   : The object must be serialized into a byte array 
             : using a System.ComponentModel.TypeConverter
             : and then encoded with base64 encoding.
     -->
@@ -171,24 +171,6 @@
   <data name="CallBaseClassMethodsOnISerializableTypesMessage" xml:space="preserve">
     <value>Call base class methods on ISerializable types</value>
   </data>
-  <data name="UseXmlReaderForDataSetReadXmlTitle" xml:space="preserve">
-    <value>Use XmlReader for DataSet ReadXml</value>
-  </data>
-  <data name="UseXmlReaderForDataSetReadXmlDescription" xml:space="preserve">
-    <value>Do not use unsafe overloads of System.Data.DataSet.ReadXml. This API internally enables DTD processing on the XML reader instance used, and uses UrlResolver for resolving external XML entities. The outcome is information disclosure. Content from file system or network shares for the machine processing the XML can be exposed to attacker. In addition, an attacker can use this as a DoS vector.</value>
-  </data>
-  <data name="UseXmlReaderForDataSetReadXmlMessage" xml:space="preserve">
-    <value>Use XmlReader for DataSet ReadXml</value>
-  </data>
-  <data name="UseXmlReaderForDataSetReadXmlSchemaTitle" xml:space="preserve">
-    <value>Use XmlReader for DataSet ReadXmlSchema</value>
-  </data>
-  <data name="UseXmlReaderForDataSetReadXmlSchemaDescription" xml:space="preserve">
-    <value>Do not use unsafe overloads of System.Data.DataSet.ReadXmlSchema. This API internally enables DTD processing on the XML reader instance used, and uses UrlResolver for resolving external XML entities. The outcome is information disclosure. Content from file system or network shares for the machine processing the XML can be exposed to attacker. In addition, an attacker can use this as a DoS vector.</value>
-  </data>
-  <data name="UseXmlReaderForDataSetReadXmlSchemaMessage" xml:space="preserve">
-    <value>Use XmlReader for DataSet ReadXmlSchema</value>
-  </data>
   <data name="ReviewDataViewCollectionStringTitle" xml:space="preserve">
     <value>Review DataView CollectionString</value>
   </data>
@@ -197,24 +179,6 @@
   </data>
   <data name="ReviewDataViewCollectionStringMessage" xml:space="preserve">
     <value>Review DataView CollectionString</value>
-  </data>
-  <data name="UseXmlReaderForDataTableReadXmlTitle" xml:space="preserve">
-    <value>Use XmlReader for DataTable ReadXml</value>
-  </data>
-  <data name="UseXmlReaderForDataTableReadXmlDescription" xml:space="preserve">
-    <value>Do not use unsafe overloads of System.Data.DataTable.ReadXml. This API internally enables DTD processing on the XML reader instance used, and uses UrlResolver for resolving external XML entities. The outcome is information disclosure. Content from file system or network shares for the machine processing the XML can be exposed to attacker. In addition, an attacker can use this as a DoS vector.</value>
-  </data>
-  <data name="UseXmlReaderForDataTableReadXmlMessage" xml:space="preserve">
-    <value>Use XmlReader for DataTable ReadXml</value>
-  </data>
-  <data name="UseXmlReaderForDataTableReadXmlSchemaTitle" xml:space="preserve">
-    <value>Use XmlReader for DataTable ReadXmlSchema</value>
-  </data>
-  <data name="UseXmlReaderForDataTableReadXmlSchemaDescription" xml:space="preserve">
-    <value>Checks for usage of an unsafe overload of  System.Data.DataTable.ReadXmlSchema. This API internally enables DTD processing on the XML reader instance used, and uses UrlResolver for resolving external XML entities. The outcome is information disclosure. Content from file system or network shares for the machine processing the XML can be exposed to attacker. In addition, an attacker can use this as a DoS vector.</value>
-  </data>
-  <data name="UseXmlReaderForDataTableReadXmlSchemaMessage" xml:space="preserve">
-    <value>Use XmlReader for DataTable ReadXmlSchema</value>
   </data>
   <data name="DoNotCatchCorruptedStateExceptions" xml:space="preserve">
     <value>Do Not Catch Corrupted State Exceptions</value>

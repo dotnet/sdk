@@ -562,21 +562,6 @@
         <target state="translated">將類別 {0} 的執行個體還原序列化時，方法 {1} 可以呼叫危險的方法 {2}。潛在的方法引動過程為: {3}。</target>
         <note />
       </trans-unit>
-      <trans-unit id="DoNotCallOverridableMethodsInConstructorsDescription">
-        <source>When a constructor calls a virtual method, the constructor for the instance that invokes the method may not have executed.</source>
-        <target state="translated">當建構函式呼叫虛擬方法時，可能尚未執行叫用方法之執行個體的建構函式。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DoNotCallOverridableMethodsInConstructorsMessage">
-        <source>Do not call overridable methods in constructors</source>
-        <target state="translated">請勿呼叫建構函式中的可覆寫方法</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DoNotCallOverridableMethodsInConstructorsTitle">
-        <source>Do not call overridable methods in constructors</source>
-        <target state="translated">請勿呼叫建構函式中的可覆寫方法</target>
-        <note />
-      </trans-unit>
       <trans-unit id="DoNotCallToImmutableCollectionOnAnImmutableCollectionValueMessage">
         <source>Do not call {0} on an {1} value</source>
         <target state="translated">請勿對 {1} 值呼叫 {0}</target>
@@ -980,16 +965,6 @@
       <trans-unit id="DoNotUseInsecureRandomnessMessage">
         <source>{0} is an insecure random number generator. Use cryptographically secure random number generators when randomness is required for security.</source>
         <target state="translated">{0} 是不安全的亂數產生器。當安全性需要隨機性時，請使用密碼編譯安全性亂數產生器。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DoNotUseMD5">
-        <source>Do not use insecure cryptographic algorithm MD5.</source>
-        <target state="translated">請勿使用不安全的密碼編譯演算法 MD5。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DoNotUseMD5Description">
-        <source>This type implements MD5, a cryptographically insecure hashing function. Hash collisions are computationally feasible for the MD5 and HMACMD5 algorithms. Replace this usage with a SHA-2 family hash algorithm (SHA512, SHA384, SHA256).</source>
-        <target state="translated">此類型會實作 MD5，此雜湊函數在密碼編譯方面有安全性疑慮。MD5 與 HMACMD5 演算法在運算方面可能會發生雜湊衝突。請以 SHA-2 系列雜湊演算法 (SHA512、SHA384、SHA256) 取代此用法。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseObsoleteKDFAlgorithm">
@@ -1872,26 +1847,6 @@
         <target state="translated">{3} '{0}' 會覆寫預覽方法 '{1}'，因此必須加入預覽功能。如需詳細資訊，請參閱 {2}。</target>
         <note />
       </trans-unit>
-      <trans-unit id="PInvokeDeclarationsShouldBePortableDescription">
-        <source>This rule evaluates the size of each parameter and the return value of a P/Invoke, and verifies that the size of the parameter is correct when marshaled to unmanaged code on 32-bit and 64-bit operating systems.</source>
-        <target state="translated">此規則會評估 P/Invoke 每個參數的大小以及傳回值，並會在參數於 32 位元和 64 位元作業系統上封送處理成非受控程式碼時，驗證其大小是否正確。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PInvokeDeclarationsShouldBePortableMessageParameter">
-        <source>As it is declared in your code, parameter {0} of P/Invoke {1} will be {2} bytes wide on {3} platforms. This is not correct, as the actual native declaration of this API indicates it should be {4} bytes wide on {3} platforms. Consult the MSDN Platform SDK documentation for help determining what data type should be used instead of {5}.</source>
-        <target state="translated">因為其宣告於您的程式碼中，所以 P/Invoke {1} 的參數 {0} 在 {3} 平台上將會是 {2} 個位元組寬。但這是錯誤的，因為此 API 的實際原生宣告指出，其在 {3} 平台上應為 {4} 個位元組寬。請參閱 MSDN Platform SDK 文件中的說明，決定應使用何種資料類型來取代 {5}。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PInvokeDeclarationsShouldBePortableMessageReturn">
-        <source>As it is declared in your code, the return type of P/Invoke {0} will be {1} bytes wide on {2} platforms. This is not correct, as the actual native declaration of this API indicates it should be {3} bytes wide on {2} platforms. Consult the MSDN Platform SDK documentation for help determining what data type should be used instead of {4}.</source>
-        <target state="translated">因為其宣告於您的程式碼中，因此 P/Invoke {0} 的傳回型別在 {2} 平台上將會是 {1} 個位元組寬。但這是錯誤的，因為此 API 的實際原生宣告指出，其在 {2} 平台上應為 {3} 個位元組寬。請參閱 MSDN Platform SDK 文件中的說明，決定應使用何種資料類型來取代 {4}。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PInvokeDeclarationsShouldBePortableTitle">
-        <source>PInvoke declarations should be portable</source>
-        <target state="translated">PInvoke 宣告應可攜</target>
-        <note />
-      </trans-unit>
       <trans-unit id="PInvokesShouldNotBeVisibleDescription">
         <source>A public or protected method in a public type has the System.Runtime.InteropServices.DllImportAttribute attribute (also implemented by the Declare keyword in Visual Basic). Such methods should not be exposed.</source>
         <target state="translated">公用類型中的公用方法或受保護方法，具有 System.Runtime.InteropServices.DllImportAttribute 屬性 (也由 Visual Basic 中的 Declare 關鍵字實作)。這類方法不應公開。</target>
@@ -2560,26 +2515,6 @@
       <trans-unit id="SpecifyMarshalingForPInvokeStringArgumentsDescription">
         <source>A platform invoke member allows partially trusted callers, has a string parameter, and does not explicitly marshal the string. This can cause a potential security vulnerability.</source>
         <target state="translated">平台叫用成員允許部分信任的呼叫端、具有字串參數，且不會明確地封送處理字串。如此可能會造成資訊安全漏洞。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SpecifyMarshalingForPInvokeStringArgumentsMessageField">
-        <source>To reduce security risk, marshal field {0} as Unicode, by setting StructLayout.CharSet on {1} to CharSet.Unicode, or by explicitly marshaling the field as UnmanagedType.LPWStr. If you need to marshal this string as ANSI or system-dependent, use the BestFitMapping attribute to turn best-fit mapping off, and for added security, ensure ThrowOnUnmappableChar is on.</source>
-        <target state="translated">為降低安全性風險，請將欄位 {0} 封送處理為 Unicode，方法是將 {1} 上的 StructLayout.CharSet 設為 CharSet.Unicode，或將該欄位明確封送處理為 UnmanagedType.LPWStr。如果需要將此字串封送處理為 ANSI 或與系統相依，請使用 BestFitMapping 屬性關閉自動調整對應，此外為增加安全性，請確認已開啟 ThrowOnUnmappableChar。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SpecifyMarshalingForPInvokeStringArgumentsMessageFieldImplicitAnsi">
-        <source>To reduce security risk, marshal field {0} as Unicode, by setting StructLayout.CharSet on {1} to CharSet.Unicode, or by explicitly marshaling the field as UnmanagedType.LPWStr. If you need to marshal this string as ANSI or system-dependent, specify MarshalAs explicitly, use the BestFitMapping attribute to turn best-fit mapping off, and for added security, to turn ThrowOnUnmappableChar on.</source>
-        <target state="translated">為降低安全性風險，請將欄位 {0} 封送處理為 Unicode，方法是將 {1} 上的 StructLayout.CharSet 設為 CharSet.Unicode，或將該欄位明確封送處理為 UnmanagedType.LPWStr。如果需要將此字串封送處理為 ANSI 或與系統相依，可明確地指定 MarshalAs 並使用 BestFitMapping 屬性關閉自動調整對應，此外為增加安全性，請將 ThrowOnUnmappableChar 開啟。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SpecifyMarshalingForPInvokeStringArgumentsMessageParameter">
-        <source>To reduce security risk, marshal parameter {0} as Unicode, by setting DllImport.CharSet to CharSet.Unicode, or by explicitly marshaling the parameter as UnmanagedType.LPWStr. If you need to marshal this string as ANSI or system-dependent, set BestFitMapping=false; for added security, also set ThrowOnUnmappableChar=true.</source>
-        <target state="translated">為降低安全性風險，請將參數 {0} 封送處理為 Unicode，方法是將 DllImport.CharSet 設為 CharSet.Unicode，或將該參數明確封送處理為 UnmanagedType.LPWStr。如果需要將此字串封送處理為 ANSI 或與系統相依，可以設定 BestFitMapping=false; 此外為增加安全性，也可設定 ThrowOnUnmappableChar=true。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SpecifyMarshalingForPInvokeStringArgumentsMessageParameterImplicitAnsi">
-        <source>To reduce security risk, marshal parameter {0} as Unicode, by setting DllImport.CharSet to CharSet.Unicode, or by explicitly marshaling the parameter as UnmanagedType.LPWStr. If you need to marshal this string as ANSI or system-dependent, specify MarshalAs explicitly, and set BestFitMapping=false; for added security, also set ThrowOnUnmappableChar=true.</source>
-        <target state="translated">為降低安全性風險，請將參數 {0} 封送處理為 Unicode，方法是將 DllImport.CharSet 設為 CharSet.Unicode，或將該參數明確封送處理為 UnmanagedType.LPWStr。如果需要將此字串封送處理為 ANSI 或與系統相依，可明確地指定 MarshalAs 並設定 BestFitMapping=false; 此外為增加安全性，也可設定 ThrowOnUnmappableChar=true。</target>
         <note />
       </trans-unit>
       <trans-unit id="SpecifyMarshalingForPInvokeStringArgumentsTitle">

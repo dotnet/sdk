@@ -457,34 +457,14 @@
         <target state="translated">Atrybut ComVisibleAttribute określa, w jaki sposób klienci modelu COM uzyskują dostęp do kodu zarządzanego. Zasady poprawnego projektowania nakazują, aby zestawy jawnie deklarowały widoczność modelu COM. Widoczność modelu COM można ustawić dla całego zestawu, a następnie przesłonić dla poszczególnych typów i elementów członkowskich typów. Jeśli nie ma tego atrybutu, zawartość zestawu jest widoczna dla klientów modelu COM.</target>
         <note />
       </trans-unit>
-      <trans-unit id="MarkAssembliesWithComVisibleMessageNoAttribute">
-        <source>Because {0} exposes externally visible types, mark it with ComVisible(false) at the assembly level and then mark all types within the assembly that should be exposed to COM clients with ComVisible(true).</source>
-        <target state="translated">Ponieważ zestaw {0} udostępnia typy widoczne zewnętrznie, oznacz go atrybutem ComVisible(false) na poziomie zestawu, a następnie oznacz atrybutem ComVisible(true) wszystkie typy w zestawie, które powinny być dostępne dla klientów modelu COM.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="MarkAssembliesWithComVisibleMessageAttributeTrue">
-        <source>Consider changing the ComVisible attribute on {0} to false, and opting in at the type level.</source>
-        <target state="translated">Rozważ zmianę atrybutu ComVisible dla zestawu {0} na wartość false i użycie wartości true na poziomie typów.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="MarkAttributesWithAttributeUsageTitle">
         <source>Mark attributes with AttributeUsageAttribute</source>
         <target state="translated">Oznacz atrybuty za pomocą atrybutu AttributeUsageAttribute</target>
         <note />
       </trans-unit>
-      <trans-unit id="MarkAttributesWithAttributeUsageDescription">
-        <source>When you define a custom attribute, mark it by using AttributeUsageAttribute to indicate where in the source code the custom attribute can be applied. The meaning and intended usage of an attribute will determine its valid locations in code.</source>
-        <target state="translated">Przy definiowaniu atrybutu niestandardowego oznacz go za pomocą atrybutu AttributeUsageAttribute, aby wskazać, gdzie można stosować ten atrybut niestandardowy w kodzie źródłowym. Znaczenie i zamierzone użycie atrybutu określi jego prawidłowe lokalizacje w kodzie.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="MarkAttributesWithAttributeUsageMessageDefault">
         <source>Specify AttributeUsage on {0}</source>
         <target state="translated">Określ atrybut AttributeUsage dla elementu {0}</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="MarkAttributesWithAttributeUsageMessageInherited">
-        <source>Even though attribute {0} inherits AttributeUsage from its base type, you should consider explicitly specifying AttributeUsage on the type to improve code readability and documentation.</source>
-        <target state="translated">Mimo że atrybut {0} dziedziczy atrybut AttributeUsage ze swojego typu podstawowego, rozważ jawne określenie atrybutu AttributeUsage dla typu w celu ulepszenia czytelności kodu i dokumentacji.</target>
         <note />
       </trans-unit>
       <trans-unit id="DefineAccessorsForAttributeArgumentsTitle">
@@ -1680,26 +1660,6 @@
       <trans-unit id="InvalidEntryInCodeMetricsConfigFileTitle">
         <source>Invalid entry in code metrics rule specification file</source>
         <target state="translated">Nieprawidłowy wpis w pliku specyfikacji reguły metryk kodu</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ReviewUnusedParametersTitle">
-        <source>Review unused parameters</source>
-        <target state="translated">Sprawdź nieużywane parametry</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ReviewUnusedParametersDescription">
-        <source>Avoid unused paramereters in your code. If the parameter cannot be removed, then change its name so it starts with an underscore and is optionally followed by an integer, such as '_', '_1', '_2', etc. These are treated as special discard symbol names.</source>
-        <target state="translated">Unikaj nieużywanych parametrów w kodzie. Jeśli nie można usunąć parametru, zmień jego nazwę, tak aby rozpoczynała się od znaku podkreślenia, a opcjonalnie następowała po niej liczba całkowita, taka jak „_”, „_1”, „_2” itp. Są one traktowane jako specjalne nazwy symboli odrzucenia.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ReviewUnusedParametersMessage">
-        <source>Parameter {0} of method {1} is never used. Remove the parameter or use it in the method body.</source>
-        <target state="translated">Parametr {0} metody {1} nie jest nigdy używany. Usuń parametr lub użyj go w treści metody.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="RemoveUnusedParameterMessage">
-        <source>Remove unused parameter</source>
-        <target state="translated">Usuń nieużywany parametr</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotIgnoreMethodResultsTitle">

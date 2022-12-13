@@ -562,21 +562,6 @@
         <target state="translated">Ao desserializar uma instância da classe {0}, o método {1} pode chamar o método perigoso {2}. As possíveis invocações de método são: {3}.</target>
         <note />
       </trans-unit>
-      <trans-unit id="DoNotCallOverridableMethodsInConstructorsDescription">
-        <source>When a constructor calls a virtual method, the constructor for the instance that invokes the method may not have executed.</source>
-        <target state="translated">Quando um construtor chama um método virtual, o construtor para a instância que invoca o método pode não ter sido executado.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DoNotCallOverridableMethodsInConstructorsMessage">
-        <source>Do not call overridable methods in constructors</source>
-        <target state="translated">Não chamar métodos substituíveis em construtores</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DoNotCallOverridableMethodsInConstructorsTitle">
-        <source>Do not call overridable methods in constructors</source>
-        <target state="translated">Não chamar métodos substituíveis em construtores</target>
-        <note />
-      </trans-unit>
       <trans-unit id="DoNotCallToImmutableCollectionOnAnImmutableCollectionValueMessage">
         <source>Do not call {0} on an {1} value</source>
         <target state="translated">Não chamar {0} em um valor {1}</target>
@@ -980,16 +965,6 @@
       <trans-unit id="DoNotUseInsecureRandomnessMessage">
         <source>{0} is an insecure random number generator. Use cryptographically secure random number generators when randomness is required for security.</source>
         <target state="translated">{0} é um gerador de números aleatórios não seguro. Use geradores de números aleatórios criptograficamente seguros quando a aleatoriedade for necessária para segurança.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DoNotUseMD5">
-        <source>Do not use insecure cryptographic algorithm MD5.</source>
-        <target state="translated">Não use o algoritmo de criptografia não seguro MD5.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DoNotUseMD5Description">
-        <source>This type implements MD5, a cryptographically insecure hashing function. Hash collisions are computationally feasible for the MD5 and HMACMD5 algorithms. Replace this usage with a SHA-2 family hash algorithm (SHA512, SHA384, SHA256).</source>
-        <target state="translated">Esse tipo implementa MD5, uma função de hash criptograficamente não segura. As colisões de hash são computacionalmente viáveis para os algoritmos MD5 e HMACMD5. Substitua esse uso por um algoritmo hash da família SHA-2 (SHA512, SHA384, SHA256).</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseObsoleteKDFAlgorithm">
@@ -1872,26 +1847,6 @@
         <target state="translated">{3}“{0}” substitui o método de visualização “{1}” e, portanto, precisa aceitar os recursos de visualização. Consulte {2}para obter mais informações.</target>
         <note />
       </trans-unit>
-      <trans-unit id="PInvokeDeclarationsShouldBePortableDescription">
-        <source>This rule evaluates the size of each parameter and the return value of a P/Invoke, and verifies that the size of the parameter is correct when marshaled to unmanaged code on 32-bit and 64-bit operating systems.</source>
-        <target state="translated">Essa regra avalia o tamanho de cada parâmetro e o valor retornado de um P/Invoke e verifica se o tamanho do parâmetro está correto quando o marshaling foi realizado no código não gerenciado em sistemas operacionais de 32 bits e 64 bits.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PInvokeDeclarationsShouldBePortableMessageParameter">
-        <source>As it is declared in your code, parameter {0} of P/Invoke {1} will be {2} bytes wide on {3} platforms. This is not correct, as the actual native declaration of this API indicates it should be {4} bytes wide on {3} platforms. Consult the MSDN Platform SDK documentation for help determining what data type should be used instead of {5}.</source>
-        <target state="translated">Conforme declarado em seu código, o parâmetro {0} de P/Invoke {1} terá {2} bytes nas plataformas {3}. Isso não está correto, já que a declaração nativa real desta API indica que ele deve ter {4} bytes nas plataformas {3}. Consulte a documentação do SDK da Plataforma MSDN para obter ajuda para determinar que tipo de dados deve ser usado em vez de {5}.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PInvokeDeclarationsShouldBePortableMessageReturn">
-        <source>As it is declared in your code, the return type of P/Invoke {0} will be {1} bytes wide on {2} platforms. This is not correct, as the actual native declaration of this API indicates it should be {3} bytes wide on {2} platforms. Consult the MSDN Platform SDK documentation for help determining what data type should be used instead of {4}.</source>
-        <target state="translated">Conforme declarado em seu código, o tipo de retorno de P/Invoke {0} terá {1} bytes nas plataformas {2}. Isso não está correto, já que a declaração nativa real desta API indica que ele deve ter {3} bytes nas plataformas {2}. Consulte a documentação do SDK da Plataforma MSDN para obter ajuda para determinar que tipo de dados deve ser usado em vez de {4}.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PInvokeDeclarationsShouldBePortableTitle">
-        <source>PInvoke declarations should be portable</source>
-        <target state="translated">Declarações PInvoke devem ser portáteis</target>
-        <note />
-      </trans-unit>
       <trans-unit id="PInvokesShouldNotBeVisibleDescription">
         <source>A public or protected method in a public type has the System.Runtime.InteropServices.DllImportAttribute attribute (also implemented by the Declare keyword in Visual Basic). Such methods should not be exposed.</source>
         <target state="translated">Um método público ou protegido em um tipo público tem o atributo System.Runtime.InteropServices.DllImportAttribute (implementado também pela palavra-chave Declare no Visual Basic). Esses métodos não devem ser expostos.</target>
@@ -2560,26 +2515,6 @@
       <trans-unit id="SpecifyMarshalingForPInvokeStringArgumentsDescription">
         <source>A platform invoke member allows partially trusted callers, has a string parameter, and does not explicitly marshal the string. This can cause a potential security vulnerability.</source>
         <target state="translated">Um membro de invocação de plataforma permite chamadores parcialmente confiáveis, tem um parâmetro de cadeia de caracteres e não realiza marshaling da cadeia de caracteres explicitamente. Isso pode causar uma potencial vulnerabilidade de segurança.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SpecifyMarshalingForPInvokeStringArgumentsMessageField">
-        <source>To reduce security risk, marshal field {0} as Unicode, by setting StructLayout.CharSet on {1} to CharSet.Unicode, or by explicitly marshaling the field as UnmanagedType.LPWStr. If you need to marshal this string as ANSI or system-dependent, use the BestFitMapping attribute to turn best-fit mapping off, and for added security, ensure ThrowOnUnmappableChar is on.</source>
-        <target state="translated">Para reduzir o risco de segurança, realize marshaling do campo {0} como Unicode, definindo StructLayout.CharSet em {1} como CharSet.Unicode ou realizando marshaling do campo explicitamente como UnmanagedType.LPWStr. Se você precisar realizar marshaling dessa cadeia de caracteres como ANSI ou dependente do sistema, use o atributo BestFitMapping para desativar o mapeamento de melhor ajuste e para maior segurança, ative ThrowOnUnmappableChar.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SpecifyMarshalingForPInvokeStringArgumentsMessageFieldImplicitAnsi">
-        <source>To reduce security risk, marshal field {0} as Unicode, by setting StructLayout.CharSet on {1} to CharSet.Unicode, or by explicitly marshaling the field as UnmanagedType.LPWStr. If you need to marshal this string as ANSI or system-dependent, specify MarshalAs explicitly, use the BestFitMapping attribute to turn best-fit mapping off, and for added security, to turn ThrowOnUnmappableChar on.</source>
-        <target state="translated">Para reduzir o risco de segurança, realize marshaling do campo {0} como Unicode, definindo StructLayout.CharSet em {1} como CharSet.Unicode ou realizando marshaling do campo explicitamente como UnmanagedType.LPWStr. Se você precisar realizar marshaling dessa cadeia de caracteres como ANSI ou dependente do sistema, especifique MarshalAs explicitamente, use o atributo BestFitMapping para desativar o mapeamento de melhor ajuste e para maior segurança, ative ThrowOnUnmappableChar.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SpecifyMarshalingForPInvokeStringArgumentsMessageParameter">
-        <source>To reduce security risk, marshal parameter {0} as Unicode, by setting DllImport.CharSet to CharSet.Unicode, or by explicitly marshaling the parameter as UnmanagedType.LPWStr. If you need to marshal this string as ANSI or system-dependent, set BestFitMapping=false; for added security, also set ThrowOnUnmappableChar=true.</source>
-        <target state="translated">Para reduzir o risco de segurança, realize marshaling do parâmetro {0} como Unicode, definindo DllImport.CharSet como CharSet.Unicode ou realizando marshaling do parâmetro explicitamente como UnmanagedType.LPWStr. Se você precisar realizar marshaling dessa cadeia de caracteres como ANSI ou dependente do sistema, defina BestFitMapping=false; para maior segurança, também defina ThrowOnUnmappableChar=true.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SpecifyMarshalingForPInvokeStringArgumentsMessageParameterImplicitAnsi">
-        <source>To reduce security risk, marshal parameter {0} as Unicode, by setting DllImport.CharSet to CharSet.Unicode, or by explicitly marshaling the parameter as UnmanagedType.LPWStr. If you need to marshal this string as ANSI or system-dependent, specify MarshalAs explicitly, and set BestFitMapping=false; for added security, also set ThrowOnUnmappableChar=true.</source>
-        <target state="translated">Para reduzir o risco de segurança, realize marshaling do parâmetro {0} como Unicode, definindo DllImport.CharSet como CharSet.Unicode ou realizando marshaling do parâmetro explicitamente como UnmanagedType.LPWStr. Se você precisar realizar marshaling dessa cadeia de caracteres como ANSI ou dependente do sistema, especifique MarshalAs explicitamente e defina BestFitMapping=false; para maior segurança, também defina ThrowOnUnmappableChar=true.</target>
         <note />
       </trans-unit>
       <trans-unit id="SpecifyMarshalingForPInvokeStringArgumentsTitle">
