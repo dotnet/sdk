@@ -15,10 +15,10 @@
   "precedence": "0",
   "identity": "DotNet.Common.Interface.CSharp",
   "shortName": "interface",
-  "sourceName": "IInterface1",
+  "sourceName": "Interface1",
   "primaryOutputs": [
     {
-      "path": "IInterface1.cs"
+      "path": "Interface1.cs"
     }
   ],
   "symbols": {
