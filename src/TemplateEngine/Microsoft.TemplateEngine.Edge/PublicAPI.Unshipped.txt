@@ -1,1 +1,5 @@
-﻿Microsoft.TemplateEngine.Edge.Settings.ITemplateInfoHostJsonCache.HostData.get -> string?
+﻿Microsoft.TemplateEngine.Edge.DefaultEnvironment.DefaultEnvironment(System.Collections.Generic.IReadOnlyDictionary<string!, string!>! environmentVariables) -> void
+Microsoft.TemplateEngine.Edge.Settings.ITemplateInfoHostJsonCache.HostData.get -> string?
+Microsoft.TemplateEngine.Edge.VirtualEnvironment
+Microsoft.TemplateEngine.Edge.VirtualEnvironment.VirtualEnvironment(System.Collections.Generic.IReadOnlyDictionary<string!, string!>? virtualEnvironemnt, bool includeRealEnvironment) -> void
+static Microsoft.TemplateEngine.Edge.DefaultEnvironment.FetchEnvironmentVariables() -> System.Collections.Generic.IReadOnlyDictionary<string!, string!>!

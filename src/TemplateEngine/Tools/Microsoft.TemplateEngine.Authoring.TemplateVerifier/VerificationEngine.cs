@@ -76,7 +76,11 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier
 
             TemplateVerifierOptions options = optionsAccessor.Value;
 
-            CommandResultData commandResult = RunDotnetNewCommand(options, _commandRunner, _loggerFactory, _logger);
+            RunInstantiation instantiate =
+                options.CustomInstatiation ??
+                (verifierOptions => Task.FromResult(RunDotnetNewCommand(verifierOptions, _commandRunner, _loggerFactory, _logger)));
+
+            IInstantiationResult commandResult = await instantiate(options).ConfigureAwait(false);
 
             if (options.IsCommandExpectedToFail)
             {
@@ -112,13 +116,13 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier
             await VerifyResult(
                     options,
                     commandResult,
-                    new CallerInfo() { CallerMethod = callerMethod, CallerSourceFile = sourceFile, ContentDirectory = commandResult.WorkingDirectory })
+                    new CallerInfo() { CallerMethod = callerMethod, CallerSourceFile = sourceFile, ContentDirectory = commandResult.InstantiatedContentDirectory })
                 .ConfigureAwait(false);
 
             // if everything is successful - let's delete the created files (unless placed into explicitly requested dir)
-            if (string.IsNullOrEmpty(options.OutputDirectory) && _fileSystem.DirectoryExists(commandResult.WorkingDirectory))
+            if (string.IsNullOrEmpty(options.OutputDirectory) && _fileSystem.DirectoryExists(commandResult.InstantiatedContentDirectory))
             {
-                _fileSystem.DirectoryDelete(commandResult.WorkingDirectory, true);
+                _fileSystem.DirectoryDelete(commandResult.InstantiatedContentDirectory, true);
             }
         }
 
@@ -281,7 +285,7 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier
             return r.Replace(string.Join('#', args), string.Empty);
         }
 
-        private static CommandResultData RunDotnetNewCommand(TemplateVerifierOptions options, ICommandRunner commandRunner, ILoggerFactory? loggerFactory, ILogger logger)
+        private static IInstantiationResult RunDotnetNewCommand(TemplateVerifierOptions options, ICommandRunner commandRunner, ILoggerFactory? loggerFactory, ILogger logger)
         {
             // Create temp folder and instantiate there
             string workingDir = options.OutputDirectory ?? Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
@@ -416,7 +420,7 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier
             }
         }
 
-        private async Task VerifyResult(TemplateVerifierOptions args, CommandResultData commandResultData, CallerInfo callerInfo)
+        private async Task VerifyResult(TemplateVerifierOptions args, IInstantiationResult commandResultData, CallerInfo callerInfo)
         {
             UsesVerifyAttribute a = new UsesVerifyAttribute();
             // https://github.com/VerifyTests/Verify/blob/d8cbe38f527d6788ecadd6205c82803bec3cdfa6/src/Verify.Xunit/Verifier.cs#L10
@@ -427,7 +431,7 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier
 
             if (args.VerifyCommandOutput)
             {
-                if (_fileSystem.DirectoryExists(Path.Combine(commandResultData.WorkingDirectory, SpecialFiles.StandardStreamsDir)))
+                if (_fileSystem.DirectoryExists(Path.Combine(commandResultData.InstantiatedContentDirectory, SpecialFiles.StandardStreamsDir)))
                 {
                     throw new TemplateVerificationException(
                         string.Format(
@@ -436,15 +440,15 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier
                         TemplateVerificationErrorCode.InternalError);
                 }
 
-                _fileSystem.CreateDirectory(Path.Combine(commandResultData.WorkingDirectory, SpecialFiles.StandardStreamsDir));
+                _fileSystem.CreateDirectory(Path.Combine(commandResultData.InstantiatedContentDirectory, SpecialFiles.StandardStreamsDir));
 
                 await _fileSystem.WriteAllTextAsync(
-                    Path.Combine(commandResultData.WorkingDirectory, SpecialFiles.StandardStreamsDir, SpecialFiles.StdOut + (args.StandardOutputFileExtension ?? SpecialFiles.DefaultExtension)),
+                    Path.Combine(commandResultData.InstantiatedContentDirectory, SpecialFiles.StandardStreamsDir, SpecialFiles.StdOut + (args.StandardOutputFileExtension ?? SpecialFiles.DefaultExtension)),
                     commandResultData.StdOut)
                     .ConfigureAwait(false);
 
                 await _fileSystem.WriteAllTextAsync(
-                        Path.Combine(commandResultData.WorkingDirectory, SpecialFiles.StandardStreamsDir, SpecialFiles.StdErr + (args.StandardOutputFileExtension ?? SpecialFiles.DefaultExtension)),
+                        Path.Combine(commandResultData.InstantiatedContentDirectory, SpecialFiles.StandardStreamsDir, SpecialFiles.StdErr + (args.StandardOutputFileExtension ?? SpecialFiles.DefaultExtension)),
                         commandResultData.StdErr)
                     .ConfigureAwait(false);
             }

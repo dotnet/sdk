@@ -38,16 +38,6 @@ namespace Microsoft.TemplateEngine.TestHelper
             {
                 locale = "en-US";
             }
-            var builtIns = new List<(Type, IIdentifiedComponent)>();
-            if (additionalComponents != null)
-            {
-                builtIns.AddRange(additionalComponents);
-            }
-            builtIns.AddRange(Edge.Components.AllComponents);
-            if (loadDefaultGenerator)
-            {
-                builtIns.AddRange(Orchestrator.RunnableProjects.Components.AllComponents);
-            }
 
             IEnumerable<ILoggerProvider> loggerProviders = new[] { new XunitLoggerProvider(_testOutputHelper) };
             if (addLoggerProviders != null)

@@ -10,13 +10,15 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Installer;
-using Microsoft.TemplateEngine.Abstractions.TemplateFiltering;
 using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
 using Microsoft.TemplateEngine.Edge;
 using Microsoft.TemplateEngine.Edge.Settings;
-using Microsoft.TemplateEngine.Utils;
+using Microsoft.TemplateEngine.Edge.Template;
 using ITemplateCreationResult = Microsoft.TemplateEngine.Edge.Template.ITemplateCreationResult;
+using ITemplateMatchInfo = Microsoft.TemplateEngine.Abstractions.TemplateFiltering.ITemplateMatchInfo;
+using MatchInfo = Microsoft.TemplateEngine.Abstractions.TemplateFiltering.MatchInfo;
 using TemplateCreator = Microsoft.TemplateEngine.Edge.Template.TemplateCreator;
+using WellKnownSearchFilters = Microsoft.TemplateEngine.Utils.WellKnownSearchFilters;
 
 namespace Microsoft.TemplateEngine.IDE
 {
@@ -24,7 +26,7 @@ namespace Microsoft.TemplateEngine.IDE
     {
         private readonly ITemplateEngineHost _host;
         private readonly TemplateCreator _templateCreator;
-        private readonly Edge.Settings.TemplatePackageManager _templatePackagesManager;
+        private readonly TemplatePackageManager _templatePackagesManager;
         private readonly EngineEnvironmentSettings _engineEnvironmentSettings;
 
         /// <summary>
@@ -35,19 +37,25 @@ namespace Microsoft.TemplateEngine.IDE
         /// <param name="loadDefaultComponents">if true, the default components (providers, installers, generator) will be loaded. Same as calling <see cref="LoadDefaultComponents()"/> after instance is created.</param>
         /// <param name="hostSettingsLocation">the file path to store host specific settings. Use null for default location.
         /// Note: this parameter changes only directory of host and host version specific settings. Global settings path remains unchanged.</param>
-        public Bootstrapper(ITemplateEngineHost host, bool virtualizeConfiguration, bool loadDefaultComponents = true, string? hostSettingsLocation = null)
+        /// <param name="environment">optional environment to be used (defaults to <see cref="DefaultEnvironment"/>).</param>
+        public Bootstrapper(
+            ITemplateEngineHost host,
+            bool virtualizeConfiguration,
+            bool loadDefaultComponents = true,
+            string? hostSettingsLocation = null,
+            IEnvironment? environment = null)
         {
             _host = host ?? throw new ArgumentNullException(nameof(host));
+            environment ??= new DefaultEnvironment();
 
             if (string.IsNullOrWhiteSpace(hostSettingsLocation))
             {
-                _engineEnvironmentSettings = new EngineEnvironmentSettings(host, virtualizeSettings: virtualizeConfiguration);
+                _engineEnvironmentSettings = new EngineEnvironmentSettings(host, virtualizeSettings: virtualizeConfiguration, environment: environment);
             }
             else
             {
                 string hostSettingsDir = Path.Combine(hostSettingsLocation, host.HostIdentifier);
                 string hostVersionSettingsDir = Path.Combine(hostSettingsLocation, host.HostIdentifier, host.Version);
-                IEnvironment environment = new DefaultEnvironment();
                 IPathInfo pathInfo = new DefaultPathInfo(environment, host, hostSettingsDir: hostSettingsDir, hostVersionSettingsDir: hostVersionSettingsDir);
                 _engineEnvironmentSettings = new EngineEnvironmentSettings(
                     host,
@@ -57,7 +65,7 @@ namespace Microsoft.TemplateEngine.IDE
             }
 
             _templateCreator = new TemplateCreator(_engineEnvironmentSettings);
-            _templatePackagesManager = new Edge.Settings.TemplatePackageManager(_engineEnvironmentSettings);
+            _templatePackagesManager = new TemplatePackageManager(_engineEnvironmentSettings);
             if (loadDefaultComponents)
             {
                 LoadDefaultComponents();
@@ -73,7 +81,7 @@ namespace Microsoft.TemplateEngine.IDE
             {
                 AddComponent(component.Type, component.Instance);
             }
-            foreach ((Type Type, IIdentifiedComponent Instance) component in Edge.Components.AllComponents)
+            foreach ((Type Type, IIdentifiedComponent Instance) component in Components.AllComponents)
             {
                 AddComponent(component.Type, component.Instance);
             }
@@ -103,7 +111,7 @@ namespace Microsoft.TemplateEngine.IDE
         /// <summary>
         /// Gets list of available templates, if <paramref name="filters"/> is provided returns only matching templates.
         /// </summary>
-        /// <param name="filters">List of filters to apply. See <see cref="WellKnownSearchFilters"/> for predefined filters.</param>
+        /// <param name="filters">List of filters to apply. See <see cref="Utils.WellKnownSearchFilters"/> for predefined filters.</param>
         /// <param name="exactMatchesOnly">
         /// true: templates should match all filters; false: templates should match any filter.
         /// </param>
@@ -152,6 +160,40 @@ namespace Microsoft.TemplateEngine.IDE
                 fallbackName: null,
                 outputPath: outputPath,
                 inputParameters: parameters,
+                forceCreation: false,
+                baselineName: baselineName,
+                dryRun: false,
+                cancellationToken: cancellationToken);
+        }
+
+        /// <summary>
+        /// Instantiates the template.
+        /// </summary>
+        /// <param name="info">The template to instantiate.</param>
+        /// <param name="name">The name to use.</param>
+        /// <param name="outputPath">The output directory for template instantiation.</param>
+        /// <param name="inputParameters">The template parameters.</param>
+        /// <param name="baselineName">The baseline configuration to use.</param>
+        /// <param name="cancellationToken">A cancellation token to cancel the asynchronous operation.</param>
+        /// <returns><see cref="ITemplateCreationResult"/> containing information on created template or error occurred.</returns>
+#pragma warning disable RS0027 // Public API with optional parameter(s) should have the most parameters amongst its public overloads
+#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
+        public Task<ITemplateCreationResult> CreateAsync(
+            ITemplateInfo info,
+            string? name,
+            string outputPath,
+            InputDataSet? inputParameters,
+            string? baselineName = null,
+            CancellationToken cancellationToken = default)
+#pragma warning restore RS0027 // Public API with optional parameter(s) should have the most parameters amongst its public overloads
+#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
+        {
+            return _templateCreator.InstantiateAsync(
+                info,
+                name,
+                fallbackName: null,
+                outputPath: outputPath,
+                inputParameters: inputParameters,
                 forceCreation: false,
                 baselineName: baselineName,
                 dryRun: false,

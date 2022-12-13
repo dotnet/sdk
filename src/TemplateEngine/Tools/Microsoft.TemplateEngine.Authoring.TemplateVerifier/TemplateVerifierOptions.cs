@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Extensions.Options;
+using Microsoft.TemplateEngine.Authoring.TemplateVerifier.Commands;
 using Microsoft.TemplateEngine.Utils;
 
 namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier
@@ -131,6 +132,11 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier
         /// </summary>
         public string? StandardOutputFileExtension { get; init; }
 
+        /// <summary>
+        /// Gets the delegate that performs custom generation of template output contents.
+        /// </summary>
+        public RunInstantiation? CustomInstatiation { get; private set; }
+
         // Enable if too many underlying features are asked.
         //  On the other hand if possible, we should wrap everyting and dfo not expose underlying technology to allow for change.
         // public Action<VerifySettings> VerifySettingsAdjustor { get; init; }
@@ -185,6 +191,18 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier
         public TemplateVerifierOptions WithCustomDirectoryVerifier(VerifyDirectory verifier)
         {
             CustomDirectoryVerifier = verifier;
+            return this;
+        }
+
+        /// <summary>
+        /// Adds custom template instantiator.
+        /// If custom template generator is provided it's responsible for proper instantiation of a template (as well as installation if needed) based on given options.
+        /// </summary>
+        /// <param name="instantiation"></param>
+        /// <returns></returns>
+        public TemplateVerifierOptions WithCustomInstatiation(RunInstantiation instantiation)
+        {
+            CustomInstatiation = instantiation;
             return this;
         }
     }

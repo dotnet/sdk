@@ -5,7 +5,7 @@ using Microsoft.TemplateEngine.CommandUtils;
 
 namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.Commands
 {
-    internal class CommandResultData
+    internal class CommandResultData : IInstantiationResult
     {
         public CommandResultData(int exitCode, string stdOut, string stdErr, string workingDirectory)
         {
@@ -26,5 +26,7 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.Commands
         public string StdErr { get; }
 
         public string WorkingDirectory { get; }
+
+        public string InstantiatedContentDirectory => WorkingDirectory;
     }
 }

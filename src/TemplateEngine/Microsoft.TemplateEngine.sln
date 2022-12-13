@@ -100,6 +100,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Microsoft.TemplateEngine.Co
 		tools\Shared\Microsoft.TemplateEngine.CommandUtils\TestCommand.cs = tools\Shared\Microsoft.TemplateEngine.CommandUtils\TestCommand.cs
 	EndProjectSection
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.TemplateEngine.Authoring.TemplateApiVerifier", "tools\Microsoft.TemplateEngine.Authoring.TemplateApiVerifier\Microsoft.TemplateEngine.Authoring.TemplateApiVerifier.csproj", "{449B9DDA-F18C-411E-9A74-3930652BB78A}"
+EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "template-samples", "template-samples", "{3A2D12C2-0455-4471-9EBB-91749BA3A60F}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.TemplateEngine.Samples", "dotnet-template-samples\Microsoft.TemplateEngine.Samples.csproj", "{DFB06A25-719F-4C8B-B84D-55D2D601BEF6}"
@@ -474,6 +476,18 @@ Global
 		{E8B9226E-879F-495A-BDAD-2607844D048C}.Release|x64.Build.0 = Release|Any CPU
 		{E8B9226E-879F-495A-BDAD-2607844D048C}.Release|x86.ActiveCfg = Release|Any CPU
 		{E8B9226E-879F-495A-BDAD-2607844D048C}.Release|x86.Build.0 = Release|Any CPU
+		{449B9DDA-F18C-411E-9A74-3930652BB78A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{449B9DDA-F18C-411E-9A74-3930652BB78A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{449B9DDA-F18C-411E-9A74-3930652BB78A}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{449B9DDA-F18C-411E-9A74-3930652BB78A}.Debug|x64.Build.0 = Debug|Any CPU
+		{449B9DDA-F18C-411E-9A74-3930652BB78A}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{449B9DDA-F18C-411E-9A74-3930652BB78A}.Debug|x86.Build.0 = Debug|Any CPU
+		{449B9DDA-F18C-411E-9A74-3930652BB78A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{449B9DDA-F18C-411E-9A74-3930652BB78A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{449B9DDA-F18C-411E-9A74-3930652BB78A}.Release|x64.ActiveCfg = Release|Any CPU
+		{449B9DDA-F18C-411E-9A74-3930652BB78A}.Release|x64.Build.0 = Release|Any CPU
+		{449B9DDA-F18C-411E-9A74-3930652BB78A}.Release|x86.ActiveCfg = Release|Any CPU
+		{449B9DDA-F18C-411E-9A74-3930652BB78A}.Release|x86.Build.0 = Release|Any CPU
 		{DFB06A25-719F-4C8B-B84D-55D2D601BEF6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{DFB06A25-719F-4C8B-B84D-55D2D601BEF6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DFB06A25-719F-4C8B-B84D-55D2D601BEF6}.Debug|x64.ActiveCfg = Debug|Any CPU
@@ -524,6 +538,7 @@ Global
 		{D190251C-5649-4DD6-A158-16D119116352} = {C5186341-2064-49AA-B398-CDF4302D2823}
 		{43053BC4-32B4-4404-B62D-410F367CE0CE} = {B794BF86-4185-4DCE-AC86-C27D5D966B9B}
 		{EE8CD472-D8C4-4CD0-BC84-6C305F5971AE} = {43053BC4-32B4-4404-B62D-410F367CE0CE}
+		{449B9DDA-F18C-411E-9A74-3930652BB78A} = {B794BF86-4185-4DCE-AC86-C27D5D966B9B}
 		{DFB06A25-719F-4C8B-B84D-55D2D601BEF6} = {3A2D12C2-0455-4471-9EBB-91749BA3A60F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
