@@ -40,6 +40,10 @@
         "source": "TargetFramework"
       }
     },
+    "langVersion": {
+      "type": "bind",
+      "binding": "msbuild:LangVersion"
+    },
     "csharp7orOlder": {
       "type": "generated",
       "generator": "regexMatch",
@@ -48,10 +52,6 @@
         "pattern": "^(ISO-1|ISO-2|[1-7]|7\\.[0-3])$",
         "source": "langVersion"
       }
-    },
-    "csharp8orLater": {
-      "type": "computed",
-      "value": "!csharp7orOlder"
     },
     "csharp9orOlder": {
       "type": "generated",
