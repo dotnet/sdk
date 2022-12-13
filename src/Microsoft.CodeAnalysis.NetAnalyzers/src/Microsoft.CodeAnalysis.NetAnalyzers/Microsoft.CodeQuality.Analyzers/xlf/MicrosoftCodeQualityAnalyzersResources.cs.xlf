@@ -472,11 +472,6 @@
         <target state="translated">Definujte přístupové objekty pro argumenty atributů.</target>
         <note />
       </trans-unit>
-      <trans-unit id="DefineAccessorsForAttributeArgumentsDescription">
-        <source>Attributes can define mandatory arguments that must be specified when you apply the attribute to a target. These are also known as positional arguments because they are supplied to attribute constructors as positional parameters. For every mandatory argument, the attribute should also provide a corresponding read-only property so that the value of the argument can be retrieved at execution time. Attributes can also define optional arguments, which are also known as named arguments. These arguments are supplied to attribute constructors by name and should have a corresponding read/write property.</source>
-        <target state="translated">Atributy mohou definovat povinné argumenty, které musí být zadané, když atribut použijete u nějakého cíle. Označují se také jako poziční argumenty, protože se konstruktorům atributů předávají jako poziční parametry. Pro každý povinný argument má tento atribut poskytovat také odpovídající vlastnost jen pro čtení, aby se hodnota argumentu dala načíst v době provádění. Atributy můžou definovat rovněž nepovinné argumenty, které se označují také jako pojmenované argumenty. Tyto argumenty se předávají konstruktorům atributů pomocí názvu a mají mít odpovídající vlastnost pro čtení a zápis.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="DefineAccessorsForAttributeArgumentsMessageDefault">
         <source>Add a public read-only property accessor for positional argument {0} of Attribute {1}</source>
         <target state="translated">Přidejte přístupový objekt veřejné vlastnosti jen pro čtení pro poziční argument {0} atributu {1}.</target>
@@ -675,11 +670,6 @@
       <trans-unit id="OperatorsShouldHaveSymmetricalOverloadsDescription">
         <source>A type implements the equality or inequality operator and does not implement the opposite operator.</source>
         <target state="translated">Některý typ implementuje operátor rovnosti nebo nerovnosti, ale neimplementuje opačný operátor.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="OperatorsShouldHaveSymmetricalOverloadsMessage">
-        <source>Operators should have symmetrical overloads</source>
-        <target state="translated">Operátory mají mít symetrická přetížení.</target>
         <note />
       </trans-unit>
       <trans-unit id="CollectionPropertiesShouldBeReadOnlyTitle">
@@ -905,11 +895,6 @@
       <trans-unit id="ImplementStandardExceptionConstructorsMessageMissingConstructor">
         <source>Add the following constructor to {0}: {1}</source>
         <target state="translated">Přidejte k {0} následující konstruktor: {1}.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementStandardExceptionConstructorsMessageAccessibility">
-        <source>Change the accessibility of {0} to {1}.</source>
-        <target state="translated">Změňte přístupnost {0} na {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="NestedTypesShouldNotBeVisibleTitle">

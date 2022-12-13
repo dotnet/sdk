@@ -472,11 +472,6 @@
         <target state="translated">Öznitelik bağımsız değişkenleri için erişimciler tanımlayın</target>
         <note />
       </trans-unit>
-      <trans-unit id="DefineAccessorsForAttributeArgumentsDescription">
-        <source>Attributes can define mandatory arguments that must be specified when you apply the attribute to a target. These are also known as positional arguments because they are supplied to attribute constructors as positional parameters. For every mandatory argument, the attribute should also provide a corresponding read-only property so that the value of the argument can be retrieved at execution time. Attributes can also define optional arguments, which are also known as named arguments. These arguments are supplied to attribute constructors by name and should have a corresponding read/write property.</source>
-        <target state="translated">Öznitelikler, özniteliği bir hedefe uygularken belirtilmesi gereken zorunlu bağımsız değişkenler tanımlayabilir. Bunlar öznitelik oluşturuculara konumsal parametreler olarak sağlandığından konumsal bağımsız değişkenler olarak da bilinir. Her zorunlu bağımsız değişken için yürütme zamanında bağımsız değişkenin değerinin alınabilmesi amacıyla öznitelik tarafından buna karşılık gelen salt okunur bir özellik de sağlanmalıdır. Öznitelikler, adlandırılmış bağımsız değişkenler olarak da bilinen isteğe bağlı bağımsız değişkenler de tanımlayabilir. Bu bağımsız değişkenler, öznitelik oluşturuculara ada göre sağlanır ve karşılık gelen bir okuma/yazma özelliğine sahip olmalıdır.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="DefineAccessorsForAttributeArgumentsMessageDefault">
         <source>Add a public read-only property accessor for positional argument {0} of Attribute {1}</source>
         <target state="translated">{1} Özniteliğinin {0} konumsal bağımsız değişkeni için genel bir salt okunur özellik erişimcisi ekleyin</target>
@@ -675,11 +670,6 @@
       <trans-unit id="OperatorsShouldHaveSymmetricalOverloadsDescription">
         <source>A type implements the equality or inequality operator and does not implement the opposite operator.</source>
         <target state="translated">Bir tür, eşitlik veya eşitsizlik işlecini uygular ve zıt işleci uygulamaz.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="OperatorsShouldHaveSymmetricalOverloadsMessage">
-        <source>Operators should have symmetrical overloads</source>
-        <target state="translated">İşleçler simetrik aşırı yüklemelere sahip olmalıdır</target>
         <note />
       </trans-unit>
       <trans-unit id="CollectionPropertiesShouldBeReadOnlyTitle">
@@ -905,11 +895,6 @@
       <trans-unit id="ImplementStandardExceptionConstructorsMessageMissingConstructor">
         <source>Add the following constructor to {0}: {1}</source>
         <target state="translated">{0} öğesine şu oluşturucuyu ekleyin: {1}</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementStandardExceptionConstructorsMessageAccessibility">
-        <source>Change the accessibility of {0} to {1}.</source>
-        <target state="translated">{0} öğesinin erişilebilirliğini {1} olarak değiştirin.</target>
         <note />
       </trans-unit>
       <trans-unit id="NestedTypesShouldNotBeVisibleTitle">

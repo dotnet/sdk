@@ -472,11 +472,6 @@
         <target state="translated">Определите методы доступа для аргументов атрибута</target>
         <note />
       </trans-unit>
-      <trans-unit id="DefineAccessorsForAttributeArgumentsDescription">
-        <source>Attributes can define mandatory arguments that must be specified when you apply the attribute to a target. These are also known as positional arguments because they are supplied to attribute constructors as positional parameters. For every mandatory argument, the attribute should also provide a corresponding read-only property so that the value of the argument can be retrieved at execution time. Attributes can also define optional arguments, which are also known as named arguments. These arguments are supplied to attribute constructors by name and should have a corresponding read/write property.</source>
-        <target state="translated">Атрибуты могут определять обязательные аргументы, которые требуется указать при применении атрибута к целевому объекту. Их также называют позиционными аргументами, так как они предоставляются конструкторам атрибутов в качестве позиционных параметров. Для каждого обязательного аргумента атрибут должен также предоставлять соответствующее свойство доступа только для чтения, чтобы значение аргумента можно было извлечь во время выполнения. Кроме того, атрибуты могут предоставлять необязательные аргументы, которые также называются именованными. Они предоставляются конструкторам атрибутов по имени и должны иметь соответствующее свойство чтения/записи.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="DefineAccessorsForAttributeArgumentsMessageDefault">
         <source>Add a public read-only property accessor for positional argument {0} of Attribute {1}</source>
         <target state="translated">Добавьте открытый метод доступа для свойства доступа только для чтения к позиционному аргументу {0} для атрибута {1}.</target>
@@ -675,11 +670,6 @@
       <trans-unit id="OperatorsShouldHaveSymmetricalOverloadsDescription">
         <source>A type implements the equality or inequality operator and does not implement the opposite operator.</source>
         <target state="translated">Тип реализует оператор равенства или неравенства и не реализует противоположный оператор.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="OperatorsShouldHaveSymmetricalOverloadsMessage">
-        <source>Operators should have symmetrical overloads</source>
-        <target state="translated">Перегрузки операторов должны быть симметричными</target>
         <note />
       </trans-unit>
       <trans-unit id="CollectionPropertiesShouldBeReadOnlyTitle">
@@ -905,11 +895,6 @@
       <trans-unit id="ImplementStandardExceptionConstructorsMessageMissingConstructor">
         <source>Add the following constructor to {0}: {1}</source>
         <target state="translated">Добавьте в {0} следующий конструктор: {1}</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementStandardExceptionConstructorsMessageAccessibility">
-        <source>Change the accessibility of {0} to {1}.</source>
-        <target state="translated">Измените доступность {0} на {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="NestedTypesShouldNotBeVisibleTitle">

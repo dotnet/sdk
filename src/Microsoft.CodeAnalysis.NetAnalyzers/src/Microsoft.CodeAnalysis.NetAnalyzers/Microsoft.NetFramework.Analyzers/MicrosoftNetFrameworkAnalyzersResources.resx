@@ -171,15 +171,6 @@
   <data name="CallBaseClassMethodsOnISerializableTypesMessage" xml:space="preserve">
     <value>Call base class methods on ISerializable types</value>
   </data>
-  <data name="ReviewDataViewCollectionStringTitle" xml:space="preserve">
-    <value>Review DataView CollectionString</value>
-  </data>
-  <data name="ReviewDataViewCollectionStringDescription" xml:space="preserve">
-    <value>Review code to insure that usage of System.Data.DataViewManager.DataViewSettingCollectionString input is sanitized to not contain DTD. Enabling DTD processing on the XML reader and using UrlResolver for resolving external XML entities may lead to information disclosure. Content from file system or network shares for the machine processing the XML can be exposed to attacker. In addition, an attacker can use this as a DoS vector.</value>
-  </data>
-  <data name="ReviewDataViewCollectionStringMessage" xml:space="preserve">
-    <value>Review DataView CollectionString</value>
-  </data>
   <data name="DoNotCatchCorruptedStateExceptions" xml:space="preserve">
     <value>Do Not Catch Corrupted State Exceptions</value>
   </data>
@@ -225,10 +216,6 @@
   </data>
   <data name="DoNotUseDtdProcessingOverloadsMessage" xml:space="preserve">
     <value>Unsafe overload of '{0}' method</value>
-    <comment>CA3075</comment>
-  </data>
-  <data name="DoNotUseDtdProcessingOverloads" xml:space="preserve">
-    <value>Insecure DTD Processing</value>
     <comment>CA3075</comment>
   </data>
   <data name="DoNotUseSetInnerXmlMessage" xml:space="preserve">

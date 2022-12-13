@@ -472,11 +472,6 @@
         <target state="translated">특성 인수의 접근자를 정의하세요.</target>
         <note />
       </trans-unit>
-      <trans-unit id="DefineAccessorsForAttributeArgumentsDescription">
-        <source>Attributes can define mandatory arguments that must be specified when you apply the attribute to a target. These are also known as positional arguments because they are supplied to attribute constructors as positional parameters. For every mandatory argument, the attribute should also provide a corresponding read-only property so that the value of the argument can be retrieved at execution time. Attributes can also define optional arguments, which are also known as named arguments. These arguments are supplied to attribute constructors by name and should have a corresponding read/write property.</source>
-        <target state="translated">특성은 대상에 특성을 적용할 때 지정되어야 하는 필수 인수를 정의할 수 있습니다. 필수 인수는 위치 매개 변수로 특성 생성자에 제공되기 때문에 위치 인수라고도 알려져 있습니다. 모든 필수 인수에 대해 특성은 인수 값이 실행 시간에 검색될 수 있도록 해당 읽기 전용 속성도 제공해야 합니다. 특성은 명명된 인수라고도 알려진 선택적 인수를 정의할 수도 있습니다. 선택적 인수는 특성 생성자에 이름별로 제공되며 해당 읽기/쓰기 속성을 가지고 있어야 합니다.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="DefineAccessorsForAttributeArgumentsMessageDefault">
         <source>Add a public read-only property accessor for positional argument {0} of Attribute {1}</source>
         <target state="translated">{1} 특성의 위치 인수 {0}에 대한 공개 읽기 전용 속성 접근자를 추가하세요.</target>
@@ -675,11 +670,6 @@
       <trans-unit id="OperatorsShouldHaveSymmetricalOverloadsDescription">
         <source>A type implements the equality or inequality operator and does not implement the opposite operator.</source>
         <target state="translated">형식은 같음 또는 같지 않음 연산자를 구현하지만 반대 연산자는 구현하지 않습니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="OperatorsShouldHaveSymmetricalOverloadsMessage">
-        <source>Operators should have symmetrical overloads</source>
-        <target state="translated">연산자에는 대칭 오버로드가 있어야 합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="CollectionPropertiesShouldBeReadOnlyTitle">
@@ -905,11 +895,6 @@
       <trans-unit id="ImplementStandardExceptionConstructorsMessageMissingConstructor">
         <source>Add the following constructor to {0}: {1}</source>
         <target state="translated">{1} 생성자를 {0}에 추가하세요.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementStandardExceptionConstructorsMessageAccessibility">
-        <source>Change the accessibility of {0} to {1}.</source>
-        <target state="translated">{0}의 접근성을 {1}(으)로 변경하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="NestedTypesShouldNotBeVisibleTitle">

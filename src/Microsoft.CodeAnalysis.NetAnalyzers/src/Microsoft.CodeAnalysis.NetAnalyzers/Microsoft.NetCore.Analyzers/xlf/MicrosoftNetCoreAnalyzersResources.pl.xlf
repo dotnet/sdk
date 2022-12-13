@@ -7,11 +7,6 @@
         <target state="translated">Dodaj atrybut „NonSerialized” do tego pola.</target>
         <note />
       </trans-unit>
-      <trans-unit id="AddPublicParameterlessConstructor">
-        <source>Add a public constructor that takes zero parameters</source>
-        <target state="translated">Dodaj konstruktora publicznego, który przyjmuje zero parametrów</target>
-        <note />
-      </trans-unit>
       <trans-unit id="AddSerializableAttributeCodeActionTitle">
         <source>Add Serializable attribute</source>
         <target state="translated">Dodaj atrybut Serializable</target>
@@ -170,11 +165,6 @@
       <trans-unit id="CallGCSuppressFinalizeCorrectlyTitle">
         <source>Dispose methods should call SuppressFinalize</source>
         <target state="translated">Metoda Dispose powinna wywoływać metodę SuppressFinalize</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CategoryReliability">
-        <source>Reliability</source>
-        <target state="translated">Niezawodność</target>
         <note />
       </trans-unit>
       <trans-unit id="CommaSeparator">
@@ -570,21 +560,6 @@
       <trans-unit id="DoNotCallToImmutableCollectionOnAnImmutableCollectionValueTitle">
         <source>Do not call ToImmutableCollection on an ImmutableCollection value</source>
         <target state="translated">Nie wywołuj elementu ToImmutableCollection dla wartości ImmutableCollection</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DoNotCatchCorruptedStateExceptionsInGeneralHandlersDescription">
-        <source>Do not author general catch handlers in code that receives corrupted state exceptions.</source>
-        <target state="translated">Nie twórz ogólnych procedur obsługi przechwytywania w kodzie, który odbiera wyjątki stanu uszkodzenia.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DoNotCatchCorruptedStateExceptionsInGeneralHandlersMessage">
-        <source>Do not catch corrupted state exceptions in general handlers.</source>
-        <target state="translated">Nie przechwytuj wyjątków stanu uszkodzenia w ogólnych procedurach obsługi.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DoNotCatchCorruptedStateExceptionsInGeneralHandlersTitle">
-        <source>Do not catch corrupted state exceptions in general handlers.</source>
-        <target state="translated">Nie przechwytuj wyjątków stanu uszkodzenia w ogólnych procedurach obsługi.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCreateTaskCompletionSourceWithWrongArgumentsDescription">
@@ -1017,16 +992,6 @@
         <target state="translated">Nie używaj metody ReferenceEquals z typami wartości</target>
         <note />
       </trans-unit>
-      <trans-unit id="DoNotUseSHA1">
-        <source>Do not use insecure cryptographic algorithm SHA1.</source>
-        <target state="translated">Nie używaj niezabezpieczonego algorytmu kryptograficznego SHA1.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DoNotUseSHA1Description">
-        <source>This type implements SHA1, a cryptographically insecure hashing function. Hash collisions are computationally feasible for the SHA-1 and SHA-0 algorithms. Replace this usage with a SHA-2 family hash algorithm (SHA512, SHA384, SHA256).</source>
-        <target state="translated">Ten typ implementuje niezabezpieczoną kryptograficznie funkcję skrótu SHA1. Istnieje możliwość wystąpienia kolizji skrótów w przypadku algorytmów SHA-1 i SHA-0. Zastąp to użycie algorytmem wartości skrótu z rodziny SHA-2 (SHA512, SHA384, SHA256).</target>
-        <note />
-      </trans-unit>
       <trans-unit id="DoNotUseStackallocInLoopsDescription">
         <source>Stack space allocated by a stackalloc is only released at the end of the current method's invocation.  Using it in a loop can result in unbounded stack growth and eventual stack overflow conditions.</source>
         <target state="translated">Miejsce na stosie przydzielone przy użyciu słowa kluczowego stackalloc jest zwalniane jedynie na końcu wywołania bieżącej metody. Użycie go w pętli może spowodować nieograniczone powiększanie stosu i, ostatecznie, warunki przepełnienia stosu.</target>
@@ -1220,21 +1185,6 @@
       <trans-unit id="FieldIsPreviewTypeMessageWithCustomMessagePlaceholder">
         <source>{3} '{0}''s type contains the preview type '{1}' and requires opting into preview features. See {2} for more information.</source>
         <target state="translated">{3} „{0}” — typ tego elementu zawiera typ w wersji zapoznawczej „{1}” i wymaga wyrażenia zgody na korzystanie z funkcji w wersji zapoznawczej. Aby uzyskać więcej informacji, zobacz {2}.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="FinalizersShouldCallBaseClassFinalizerDescription">
-        <source>Finalization must be propagated through the inheritance hierarchy. To guarantee this, types must call their base class Finalize method in their own Finalize method.</source>
-        <target state="translated">Finalizacja musi być propagowana w hierarchii dziedziczenia. Aby to zagwarantować, typy muszą wywoływać metodę Finalize ich klasy podstawowej we własnej metodzie Finalize.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="FinalizersShouldCallBaseClassFinalizerMessage">
-        <source>Finalizers should call base class finalizer</source>
-        <target state="translated">Finalizatory powinny wywoływać finalizator klasy podstawowej</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="FinalizersShouldCallBaseClassFinalizerTitle">
-        <source>Finalizers should call base class finalizer</source>
-        <target state="translated">Finalizatory powinny wywoływać finalizator klasy podstawowej</target>
         <note />
       </trans-unit>
       <trans-unit id="ForwardCancellationTokenToInvocationsDescription">
@@ -2242,21 +2192,6 @@
         <target state="translated">Zamień literał ciągu na literał char</target>
         <note />
       </trans-unit>
-      <trans-unit id="RethrowToPreserveStackDetailsDescription">
-        <source>An exception is rethrown and the exception is explicitly specified in the throw statement. If an exception is rethrown by specifying the exception in the throw statement, the list of method calls between the original method that threw the exception and the current method is lost.</source>
-        <target state="translated">Wyjątek jest zgłaszany ponownie i jest jawnie określony w instrukcji throw. Jeśli wyjątek zostanie zgłoszony ponownie przez określenie wyjątku w instrukcji throw, lista wywołań metod między oryginalną metodą zgłaszającą wyjątek a bieżącą metodą zostanie utracona.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="RethrowToPreserveStackDetailsMessage">
-        <source>Rethrow to preserve stack details</source>
-        <target state="translated">Zgłoś ponownie wyjątek, aby zachować szczegóły stosu</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="RethrowToPreserveStackDetailsTitle">
-        <source>Rethrow to preserve stack details</source>
-        <target state="translated">Zgłoś ponownie wyjątek, aby zachować szczegóły stosu</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ReviewCodeForDllInjectionVulnerabilitiesMessage">
         <source>Potential DLL injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</source>
         <target state="translated">Znaleziono potencjalną lukę umożliwiającą wstrzyknięcie biblioteki DLL, gdzie element „{0}” w metodzie „{1}” może zostać zanieczyszczony danymi kontrolowanymi przez użytkownika z elementu „{2}” w metodzie „{3}”.</target>
@@ -2855,16 +2790,6 @@
       <trans-unit id="UseOrdinalStringComparisonDescription">
         <source>A string comparison operation that is nonlinguistic does not set the StringComparison parameter to either Ordinal or OrdinalIgnoreCase. By explicitly setting the parameter to either StringComparison.Ordinal or StringComparison.OrdinalIgnoreCase, your code often gains speed, becomes more correct, and becomes more reliable.</source>
         <target state="translated">Operacja porównywania ciągów nieuwzględniająca zasad języka nie ustawia parametru StringComparison na wartość Ordinal ani OrdinalIgnoreCase. Jawne ustawienie parametru na wartość StringComparison.Ordinal lub StringComparison.OrdinalIgnoreCase umożliwia często przyspieszenie kodu oraz zwiększenie jego poprawności i niezawodności.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UseOrdinalStringComparisonMessageStringComparer">
-        <source>{0} passes '{1}' as the 'StringComparer' parameter to {2}. To perform a non-linguistic comparison, specify 'StringComparer.Ordinal' or 'StringComparer.OrdinalIgnoreCase' instead.</source>
-        <target state="translated">Element {0} przekazuje wartość „{1}” jako parametr „StringComparer” do metody {2}. Aby wykonać porównanie nieuwzględniające zasad języka, określ zamiast niej wartość „StringComparer.Ordinal” lub „StringComparer.OrdinalIgnoreCase”.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UseOrdinalStringComparisonMessageStringComparison">
-        <source>{0} passes '{1}' as the 'StringComparison' parameter to {2}. To perform a non-linguistic comparison, specify 'StringComparison.Ordinal' or 'StringComparison.OrdinalIgnoreCase' instead.</source>
-        <target state="translated">Element {0} przekazuje wartość „{1}” jako parametr „StringComparison” do metody {2}. Aby wykonać porównanie nieuwzględniające zasad języka, określ zamiast niej wartość „StringComparison.Ordinal” lub „StringComparison.OrdinalIgnoreCase”.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseOrdinalStringComparisonTitle">

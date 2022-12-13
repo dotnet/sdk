@@ -132,9 +132,6 @@
   <data name="DoNotCallToImmutableCollectionOnAnImmutableCollectionValueMessage" xml:space="preserve">
     <value>Do not call {0} on an {1} value</value>
   </data>
-  <data name="CategoryReliability" xml:space="preserve">
-    <value>Reliability</value>
-  </data>
   <data name="RemoveRedundantCall" xml:space="preserve">
     <value>Remove redundant call</value>
   </data>
@@ -189,12 +186,6 @@
   <data name="UseOrdinalStringComparisonDescription" xml:space="preserve">
     <value>A string comparison operation that is nonlinguistic does not set the StringComparison parameter to either Ordinal or OrdinalIgnoreCase. By explicitly setting the parameter to either StringComparison.Ordinal or StringComparison.OrdinalIgnoreCase, your code often gains speed, becomes more correct, and becomes more reliable.</value>
   </data>
-  <data name="UseOrdinalStringComparisonMessageStringComparison" xml:space="preserve">
-    <value>{0} passes '{1}' as the 'StringComparison' parameter to {2}. To perform a non-linguistic comparison, specify 'StringComparison.Ordinal' or 'StringComparison.OrdinalIgnoreCase' instead.</value>
-  </data>
-  <data name="UseOrdinalStringComparisonMessageStringComparer" xml:space="preserve">
-    <value>{0} passes '{1}' as the 'StringComparer' parameter to {2}. To perform a non-linguistic comparison, specify 'StringComparer.Ordinal' or 'StringComparer.OrdinalIgnoreCase' instead.</value>
-  </data>
   <data name="DoNotUseCountWhenAnyCanBeUsedDescription" xml:space="preserve">
     <value>For non-empty collections, Count() and LongCount() enumerate the entire sequence, while Any() stops at the first item or the first item that satisfies a condition.</value>
   </data>
@@ -240,24 +231,6 @@
   <data name="DoNotLockOnObjectsWithWeakIdentityMessage" xml:space="preserve">
     <value>Do not lock on objects with weak identity</value>
   </data>
-  <data name="DoNotCatchCorruptedStateExceptionsInGeneralHandlersTitle" xml:space="preserve">
-    <value>Do not catch corrupted state exceptions in general handlers.</value>
-  </data>
-  <data name="DoNotCatchCorruptedStateExceptionsInGeneralHandlersDescription" xml:space="preserve">
-    <value>Do not author general catch handlers in code that receives corrupted state exceptions.</value>
-  </data>
-  <data name="DoNotCatchCorruptedStateExceptionsInGeneralHandlersMessage" xml:space="preserve">
-    <value>Do not catch corrupted state exceptions in general handlers.</value>
-  </data>
-  <data name="RethrowToPreserveStackDetailsTitle" xml:space="preserve">
-    <value>Rethrow to preserve stack details</value>
-  </data>
-  <data name="RethrowToPreserveStackDetailsDescription" xml:space="preserve">
-    <value>An exception is rethrown and the exception is explicitly specified in the throw statement. If an exception is rethrown by specifying the exception in the throw statement, the list of method calls between the original method that threw the exception and the current method is lost.</value>
-  </data>
-  <data name="RethrowToPreserveStackDetailsMessage" xml:space="preserve">
-    <value>Rethrow to preserve stack details</value>
-  </data>
   <data name="DoNotRaiseReservedExceptionTypesTitle" xml:space="preserve">
     <value>Do not raise reserved exception types</value>
   </data>
@@ -293,15 +266,6 @@
   </data>
   <data name="DisposableTypesShouldDeclareFinalizerMessage" xml:space="preserve">
     <value>Disposable types should declare finalizer</value>
-  </data>
-  <data name="FinalizersShouldCallBaseClassFinalizerTitle" xml:space="preserve">
-    <value>Finalizers should call base class finalizer</value>
-  </data>
-  <data name="FinalizersShouldCallBaseClassFinalizerDescription" xml:space="preserve">
-    <value>Finalization must be propagated through the inheritance hierarchy. To guarantee this, types must call their base class Finalize method in their own Finalize method.</value>
-  </data>
-  <data name="FinalizersShouldCallBaseClassFinalizerMessage" xml:space="preserve">
-    <value>Finalizers should call base class finalizer</value>
   </data>
   <data name="ProvideCorrectArgumentsToFormattingMethodsTitle" xml:space="preserve">
     <value>Provide correct arguments to formatting methods</value>
@@ -902,12 +866,6 @@
   </data>
   <data name="DoNotUseReferenceEqualsWithValueTypesTitle" xml:space="preserve">
     <value>Do not use ReferenceEquals with value types</value>
-  </data>
-  <data name="DoNotUseSHA1" xml:space="preserve">
-    <value>Do not use insecure cryptographic algorithm SHA1.</value>
-  </data>
-  <data name="DoNotUseSHA1Description" xml:space="preserve">
-    <value>This type implements SHA1, a cryptographically insecure hashing function. Hash collisions are computationally feasible for the SHA-1 and SHA-0 algorithms. Replace this usage with a SHA-2 family hash algorithm (SHA512, SHA384, SHA256).</value>
   </data>
   <data name="DoNotUseWeakCryptographicAlgorithms" xml:space="preserve">
     <value>Do Not Use Weak Cryptographic Algorithms</value>
@@ -1655,9 +1613,6 @@
   </data>
   <data name="ProvidePublicParameterlessSafeHandleConstructorTitle" xml:space="preserve">
     <value>Provide a parameterless constructor that is as visible as the containing type for concrete types derived from 'System.Runtime.InteropServices.SafeHandle'</value>
-  </data>
-  <data name="AddPublicParameterlessConstructor" xml:space="preserve">
-    <value>Add a public constructor that takes zero parameters</value>
   </data>
   <data name="MakeParameterlessConstructorPublic" xml:space="preserve">
     <value>Make the constructor that takes zero parameters 'public'</value>

@@ -249,9 +249,6 @@
   <data name="DefineAccessorsForAttributeArgumentsTitle" xml:space="preserve">
     <value>Define accessors for attribute arguments</value>
   </data>
-  <data name="DefineAccessorsForAttributeArgumentsDescription" xml:space="preserve">
-    <value>Attributes can define mandatory arguments that must be specified when you apply the attribute to a target. These are also known as positional arguments because they are supplied to attribute constructors as positional parameters. For every mandatory argument, the attribute should also provide a corresponding read-only property so that the value of the argument can be retrieved at execution time. Attributes can also define optional arguments, which are also known as named arguments. These arguments are supplied to attribute constructors by name and should have a corresponding read/write property.</value>
-  </data>
   <data name="DefineAccessorsForAttributeArgumentsMessageDefault" xml:space="preserve">
     <value>Add a public read-only property accessor for positional argument {0} of Attribute {1}</value>
   </data>
@@ -372,9 +369,6 @@
   </data>
   <data name="OperatorsShouldHaveSymmetricalOverloadsDescription" xml:space="preserve">
     <value>A type implements the equality or inequality operator and does not implement the opposite operator.</value>
-  </data>
-  <data name="OperatorsShouldHaveSymmetricalOverloadsMessage" xml:space="preserve">
-    <value>Operators should have symmetrical overloads</value>
   </data>
   <data name="CollectionPropertiesShouldBeReadOnlyTitle" xml:space="preserve">
     <value>Collection properties should be read only</value>
@@ -510,9 +504,6 @@
   </data>
   <data name="ImplementStandardExceptionConstructorsMessageMissingConstructor" xml:space="preserve">
     <value>Add the following constructor to {0}: {1}</value>
-  </data>
-  <data name="ImplementStandardExceptionConstructorsMessageAccessibility" xml:space="preserve">
-    <value>Change the accessibility of {0} to {1}.</value>
   </data>
   <data name="NestedTypesShouldNotBeVisibleTitle" xml:space="preserve">
     <value>Nested types should not be visible</value>

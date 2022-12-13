@@ -472,11 +472,6 @@
         <target state="translated">属性引数にアクセサーを定義します</target>
         <note />
       </trans-unit>
-      <trans-unit id="DefineAccessorsForAttributeArgumentsDescription">
-        <source>Attributes can define mandatory arguments that must be specified when you apply the attribute to a target. These are also known as positional arguments because they are supplied to attribute constructors as positional parameters. For every mandatory argument, the attribute should also provide a corresponding read-only property so that the value of the argument can be retrieved at execution time. Attributes can also define optional arguments, which are also known as named arguments. These arguments are supplied to attribute constructors by name and should have a corresponding read/write property.</source>
-        <target state="translated">属性は、対象に適用するときに指定する必要のある必須の引数を定義できます。これらは、属性コンストラクターに位置指定パラメーターとして指定されるため、位置指定引数とも呼ばれます。必須の属性ごとに、属性は、引数の値を実行時に取得できるように、対応する読み取り専用プロパティも提供する必要があります。また、属性は省略可能な引数も定義できます。これは名前付き引数とも呼ばれます。これらの引数は、名前で属性コンストラクターに指定され、対応する読み取り/書き込みプロパティが必要です。</target>
-        <note />
-      </trans-unit>
       <trans-unit id="DefineAccessorsForAttributeArgumentsMessageDefault">
         <source>Add a public read-only property accessor for positional argument {0} of Attribute {1}</source>
         <target state="translated">属性 {1} の位置引数 {0} 用にパブリックな読み取り専用プロパティ アクセサーを追加します</target>
@@ -675,11 +670,6 @@
       <trans-unit id="OperatorsShouldHaveSymmetricalOverloadsDescription">
         <source>A type implements the equality or inequality operator and does not implement the opposite operator.</source>
         <target state="translated">型で等値演算子または非等値演算子を実装し、逆の働きをする演算子を実装しません。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="OperatorsShouldHaveSymmetricalOverloadsMessage">
-        <source>Operators should have symmetrical overloads</source>
-        <target state="translated">演算子は対称型オーバーロードを含まなければなりません</target>
         <note />
       </trans-unit>
       <trans-unit id="CollectionPropertiesShouldBeReadOnlyTitle">
@@ -905,11 +895,6 @@
       <trans-unit id="ImplementStandardExceptionConstructorsMessageMissingConstructor">
         <source>Add the following constructor to {0}: {1}</source>
         <target state="translated">次のコンストラクターを {0} に追加してください。{1}</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementStandardExceptionConstructorsMessageAccessibility">
-        <source>Change the accessibility of {0} to {1}.</source>
-        <target state="translated">{0} のアクセシビリティを {1} に変更します。</target>
         <note />
       </trans-unit>
       <trans-unit id="NestedTypesShouldNotBeVisibleTitle">

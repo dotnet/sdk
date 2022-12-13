@@ -92,21 +92,6 @@
         <target state="translated">ISerializable 형식에서 기본 클래스 메서드를 호출하세요.</target>
         <note />
       </trans-unit>
-      <trans-unit id="ReviewDataViewCollectionStringTitle">
-        <source>Review DataView CollectionString</source>
-        <target state="translated">DataView CollectionString을 검토하세요.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ReviewDataViewCollectionStringDescription">
-        <source>Review code to insure that usage of System.Data.DataViewManager.DataViewSettingCollectionString input is sanitized to not contain DTD. Enabling DTD processing on the XML reader and using UrlResolver for resolving external XML entities may lead to information disclosure. Content from file system or network shares for the machine processing the XML can be exposed to attacker. In addition, an attacker can use this as a DoS vector.</source>
-        <target state="translated">DTD를 포함하지 않도록 System.Data.DataViewManager.DataViewSettingCollectionString 입력의 사용이 삭제되었는지 코드를 검토하세요. XML 판독기에서 DTD 처리를 사용하고 외부 XML 엔터티를 확인하기 위해 UrlResolver를 사용하면 정보가 공개될 수 있습니다. 파일 시스템의 콘텐츠 또는 XML을 처리하는 컴퓨터의 네트워크 공유가 공격자에 노출될 수 있습니다. 또한 공격자는 이를 DoS 벡터로 사용할 수 있습니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ReviewDataViewCollectionStringMessage">
-        <source>Review DataView CollectionString</source>
-        <target state="translated">DataView CollectionString을 검토하세요.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="DoNotCatchCorruptedStateExceptions">
         <source>Do Not Catch Corrupted State Exceptions</source>
         <target state="translated">손상된 상태 예외를 catch하지 마세요.</target>
@@ -180,11 +165,6 @@
       <trans-unit id="DoNotUseDtdProcessingOverloadsMessage">
         <source>Unsafe overload of '{0}' method</source>
         <target state="translated">'{0}' 메서드의 안전하지 않은 오버로드</target>
-        <note>CA3075</note>
-      </trans-unit>
-      <trans-unit id="DoNotUseDtdProcessingOverloads">
-        <source>Insecure DTD Processing</source>
-        <target state="translated">안전하지 않은 DTD 처리</target>
         <note>CA3075</note>
       </trans-unit>
       <trans-unit id="DoNotUseSetInnerXmlMessage">

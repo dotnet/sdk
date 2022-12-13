@@ -7,11 +7,6 @@
         <target state="translated">將 'NonSerialized' 屬性新增至此欄位。</target>
         <note />
       </trans-unit>
-      <trans-unit id="AddPublicParameterlessConstructor">
-        <source>Add a public constructor that takes zero parameters</source>
-        <target state="translated">新增接受零個參數的公用建構函式</target>
-        <note />
-      </trans-unit>
       <trans-unit id="AddSerializableAttributeCodeActionTitle">
         <source>Add Serializable attribute</source>
         <target state="translated">新增可序列化屬性</target>
@@ -170,11 +165,6 @@
       <trans-unit id="CallGCSuppressFinalizeCorrectlyTitle">
         <source>Dispose methods should call SuppressFinalize</source>
         <target state="translated">Dispose 方法應該呼叫 SuppressFinalize</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CategoryReliability">
-        <source>Reliability</source>
-        <target state="translated">可靠性</target>
         <note />
       </trans-unit>
       <trans-unit id="CommaSeparator">
@@ -570,21 +560,6 @@
       <trans-unit id="DoNotCallToImmutableCollectionOnAnImmutableCollectionValueTitle">
         <source>Do not call ToImmutableCollection on an ImmutableCollection value</source>
         <target state="translated">請勿對 ImmutableCollection 值呼叫 TolmmutableCollection</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DoNotCatchCorruptedStateExceptionsInGeneralHandlersDescription">
-        <source>Do not author general catch handlers in code that receives corrupted state exceptions.</source>
-        <target state="translated">請勿在接收損毀狀態例外狀況的程式碼中，撰寫一般的 catch 處理常式。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DoNotCatchCorruptedStateExceptionsInGeneralHandlersMessage">
-        <source>Do not catch corrupted state exceptions in general handlers.</source>
-        <target state="translated">請勿在一般處理常式中擷取損毀狀態例外狀況。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DoNotCatchCorruptedStateExceptionsInGeneralHandlersTitle">
-        <source>Do not catch corrupted state exceptions in general handlers.</source>
-        <target state="translated">請勿在一般處理常式中擷取損毀狀態例外狀況。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCreateTaskCompletionSourceWithWrongArgumentsDescription">
@@ -1017,16 +992,6 @@
         <target state="translated">請勿使用有實值型別的 ReferenceEquals</target>
         <note />
       </trans-unit>
-      <trans-unit id="DoNotUseSHA1">
-        <source>Do not use insecure cryptographic algorithm SHA1.</source>
-        <target state="translated">請勿使用不安全的密碼編譯演算法 SHA1。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DoNotUseSHA1Description">
-        <source>This type implements SHA1, a cryptographically insecure hashing function. Hash collisions are computationally feasible for the SHA-1 and SHA-0 algorithms. Replace this usage with a SHA-2 family hash algorithm (SHA512, SHA384, SHA256).</source>
-        <target state="translated">此類型會實作 SHA1，此雜湊函數在密碼編譯方面有安全性疑慮。SHA-1 與 SHA-0 演算法在運算方面可能會發生雜湊衝突。請以 SHA-2 系列雜湊演算法 (SHA512、SHA384、SHA256) 取代此用法。</target>
-        <note />
-      </trans-unit>
       <trans-unit id="DoNotUseStackallocInLoopsDescription">
         <source>Stack space allocated by a stackalloc is only released at the end of the current method's invocation.  Using it in a loop can result in unbounded stack growth and eventual stack overflow conditions.</source>
         <target state="translated">stackalloc 配置的堆疊空間只會在目前方法的引動過程結束時釋出。在迴圈中使用該空間可能會造成堆疊無限增長，最終導致堆疊溢位。</target>
@@ -1220,21 +1185,6 @@
       <trans-unit id="FieldIsPreviewTypeMessageWithCustomMessagePlaceholder">
         <source>{3} '{0}''s type contains the preview type '{1}' and requires opting into preview features. See {2} for more information.</source>
         <target state="translated">{3} '{0}' 的類型包含預覽類型 '{1}'，因此必須加入預覽功能。如需詳細資訊，請參閱 {2}。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="FinalizersShouldCallBaseClassFinalizerDescription">
-        <source>Finalization must be propagated through the inheritance hierarchy. To guarantee this, types must call their base class Finalize method in their own Finalize method.</source>
-        <target state="translated">完成項必須傳播到整個繼承階層。為確保上述作業，類型必須呼叫其本身 Finalize 方法中的基底類別 Finalize 方法。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="FinalizersShouldCallBaseClassFinalizerMessage">
-        <source>Finalizers should call base class finalizer</source>
-        <target state="translated">完成項應呼叫基底類別完成項</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="FinalizersShouldCallBaseClassFinalizerTitle">
-        <source>Finalizers should call base class finalizer</source>
-        <target state="translated">完成項應呼叫基底類別完成項</target>
         <note />
       </trans-unit>
       <trans-unit id="ForwardCancellationTokenToInvocationsDescription">
@@ -2242,21 +2192,6 @@
         <target state="translated">以字元常值取代字串常值</target>
         <note />
       </trans-unit>
-      <trans-unit id="RethrowToPreserveStackDetailsDescription">
-        <source>An exception is rethrown and the exception is explicitly specified in the throw statement. If an exception is rethrown by specifying the exception in the throw statement, the list of method calls between the original method that threw the exception and the current method is lost.</source>
-        <target state="translated">會再次擲回例外狀況，並在 throw 陳述式中明確指定該例外狀況。如果在 throw 陳述式中指定例外狀況，而再次擲回了例外狀況，則方法清單會呼叫之前擲回例外狀況的原始方法，而目前的方法則會遺失。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="RethrowToPreserveStackDetailsMessage">
-        <source>Rethrow to preserve stack details</source>
-        <target state="translated">重新擲回以保存堆疊詳細資料</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="RethrowToPreserveStackDetailsTitle">
-        <source>Rethrow to preserve stack details</source>
-        <target state="translated">重新擲回以保存堆疊詳細資料</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ReviewCodeForDllInjectionVulnerabilitiesMessage">
         <source>Potential DLL injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</source>
         <target state="translated">發現潛在的插入 DLL 弱點，方法 '{1}' 中的 '{0}' 可能被來自方法 '{3}' 中 '{2}' 由使用者控制的資料所感染。</target>
@@ -2855,16 +2790,6 @@
       <trans-unit id="UseOrdinalStringComparisonDescription">
         <source>A string comparison operation that is nonlinguistic does not set the StringComparison parameter to either Ordinal or OrdinalIgnoreCase. By explicitly setting the parameter to either StringComparison.Ordinal or StringComparison.OrdinalIgnoreCase, your code often gains speed, becomes more correct, and becomes more reliable.</source>
         <target state="translated">非語言的字串比較作業不會將 StringComparison 參數設為 Ordinal 或 OrdinalIgnoreCase。將參數明確設定為 StringComparison.Ordinal 或 StringComparison.OrdinalIgnoreCase 時，程式碼通常會更快速、精確且更可靠。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UseOrdinalStringComparisonMessageStringComparer">
-        <source>{0} passes '{1}' as the 'StringComparer' parameter to {2}. To perform a non-linguistic comparison, specify 'StringComparer.Ordinal' or 'StringComparer.OrdinalIgnoreCase' instead.</source>
-        <target state="translated">{0} 會以 'StringComparison' 參數形式將 '{1}' 傳遞給 {2}。若要執行非語言比較，請改為指定 'StringComparer.Ordinal' 或 'StringComparer.OrdinalIgnoreCase'。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UseOrdinalStringComparisonMessageStringComparison">
-        <source>{0} passes '{1}' as the 'StringComparison' parameter to {2}. To perform a non-linguistic comparison, specify 'StringComparison.Ordinal' or 'StringComparison.OrdinalIgnoreCase' instead.</source>
-        <target state="translated">{0} 會以 'StringComparison' 參數形式將 '{1}' 傳遞給 {2}。若要執行非語言比較，請改為指定 'StringComparison.Ordinal' 或 'StringComparison.OrdinalIgnoreCase'。</target>
         <note />
       </trans-unit>
       <trans-unit id="UseOrdinalStringComparisonTitle">

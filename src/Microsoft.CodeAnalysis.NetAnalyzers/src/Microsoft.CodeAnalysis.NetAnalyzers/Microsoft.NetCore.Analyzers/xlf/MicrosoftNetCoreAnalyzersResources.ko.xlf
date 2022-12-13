@@ -7,11 +7,6 @@
         <target state="translated">이 필드에 'NonSerialized' 특성을 추가합니다.</target>
         <note />
       </trans-unit>
-      <trans-unit id="AddPublicParameterlessConstructor">
-        <source>Add a public constructor that takes zero parameters</source>
-        <target state="translated">매개 변수가 0인 공개 생성자를 추가합니다.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="AddSerializableAttributeCodeActionTitle">
         <source>Add Serializable attribute</source>
         <target state="translated">Serializable 특성 추가</target>
@@ -170,11 +165,6 @@
       <trans-unit id="CallGCSuppressFinalizeCorrectlyTitle">
         <source>Dispose methods should call SuppressFinalize</source>
         <target state="translated">Dispose 메서드는 SuppressFinalize를 호출해야 합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CategoryReliability">
-        <source>Reliability</source>
-        <target state="translated">안정성</target>
         <note />
       </trans-unit>
       <trans-unit id="CommaSeparator">
@@ -570,21 +560,6 @@
       <trans-unit id="DoNotCallToImmutableCollectionOnAnImmutableCollectionValueTitle">
         <source>Do not call ToImmutableCollection on an ImmutableCollection value</source>
         <target state="translated">ImmutableCollection 값의 ToImmutableCollection을 호출하지 마세요.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DoNotCatchCorruptedStateExceptionsInGeneralHandlersDescription">
-        <source>Do not author general catch handlers in code that receives corrupted state exceptions.</source>
-        <target state="translated">손상된 상태 예외를 수신하는 코드에서 일반 catch 처리기를 작성하지 마세요.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DoNotCatchCorruptedStateExceptionsInGeneralHandlersMessage">
-        <source>Do not catch corrupted state exceptions in general handlers.</source>
-        <target state="translated">일반 처리기에서 손상된 상태 예외를 catch하지 마세요.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DoNotCatchCorruptedStateExceptionsInGeneralHandlersTitle">
-        <source>Do not catch corrupted state exceptions in general handlers.</source>
-        <target state="translated">일반 처리기에서 손상된 상태 예외를 catch하지 마세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCreateTaskCompletionSourceWithWrongArgumentsDescription">
@@ -1017,16 +992,6 @@
         <target state="translated">값 형식이 있는 ReferenceEquals를 사용하면 안 됨</target>
         <note />
       </trans-unit>
-      <trans-unit id="DoNotUseSHA1">
-        <source>Do not use insecure cryptographic algorithm SHA1.</source>
-        <target state="translated">안전하지 않은 암호화 알고리즘 SHA1을 사용하지 마세요.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DoNotUseSHA1Description">
-        <source>This type implements SHA1, a cryptographically insecure hashing function. Hash collisions are computationally feasible for the SHA-1 and SHA-0 algorithms. Replace this usage with a SHA-2 family hash algorithm (SHA512, SHA384, SHA256).</source>
-        <target state="translated">이 형식은 안전하지 않게 암호화된 해시 알고리즘인 SHA1을 구현합니다. SHA-1 및 SHA-0 알고리즘에서 계산상 해시 충돌이 발생할 수 있습니다. 이 사용법을 SHA-2 패밀리 해시 알고리즘(SHA512, SHA384, SHA256)으로 바꾸세요.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="DoNotUseStackallocInLoopsDescription">
         <source>Stack space allocated by a stackalloc is only released at the end of the current method's invocation.  Using it in a loop can result in unbounded stack growth and eventual stack overflow conditions.</source>
         <target state="translated">stackalloc에서 할당된 스택 공간은 현재 메서드의 호출이 끝날 때만 릴리스됩니다. 루프에서 stackalloc를 사용하면 바인딩되지 않은 스택 증가 및 최종 스택 오버플로 조건이 발생할 수 있습니다.</target>
@@ -1220,21 +1185,6 @@
       <trans-unit id="FieldIsPreviewTypeMessageWithCustomMessagePlaceholder">
         <source>{3} '{0}''s type contains the preview type '{1}' and requires opting into preview features. See {2} for more information.</source>
         <target state="translated">{3} '{0}'의 유형에 '{1}' 미리 보기 유형이 포함되어 있으며 미리 보기 기능을 선택해야 합니다. 자세한 내용은 {2}를 참조하세요.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="FinalizersShouldCallBaseClassFinalizerDescription">
-        <source>Finalization must be propagated through the inheritance hierarchy. To guarantee this, types must call their base class Finalize method in their own Finalize method.</source>
-        <target state="translated">종료는 상속 계층 구조를 통해 전파되어야 합니다. 이를 보장하려면 형식은 고유 Finalize 메서드에서 기본 클래스 Finalize 메서드를 호출해야 합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="FinalizersShouldCallBaseClassFinalizerMessage">
-        <source>Finalizers should call base class finalizer</source>
-        <target state="translated">종료자가 기본 클래스 종료자를 호출해야 합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="FinalizersShouldCallBaseClassFinalizerTitle">
-        <source>Finalizers should call base class finalizer</source>
-        <target state="translated">종료자가 기본 클래스 종료자를 호출해야 합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="ForwardCancellationTokenToInvocationsDescription">
@@ -2242,21 +2192,6 @@
         <target state="translated">문자열 리터럴을 char 리터럴로 바꾸기</target>
         <note />
       </trans-unit>
-      <trans-unit id="RethrowToPreserveStackDetailsDescription">
-        <source>An exception is rethrown and the exception is explicitly specified in the throw statement. If an exception is rethrown by specifying the exception in the throw statement, the list of method calls between the original method that threw the exception and the current method is lost.</source>
-        <target state="translated">예외가 다시 throw되었으며 throw 문에서 해당 예외가 명시적으로 지정되었습니다. throw 문에서 예외를 지정하여 다시 throw한 경우 해당 예외를 throw한 원래 메서드와 현재 메서드 사이의 메서드 호출 목록이 손실됩니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="RethrowToPreserveStackDetailsMessage">
-        <source>Rethrow to preserve stack details</source>
-        <target state="translated">다시 throw하여 스택 정보를 유지하세요.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="RethrowToPreserveStackDetailsTitle">
-        <source>Rethrow to preserve stack details</source>
-        <target state="translated">다시 throw하여 스택 정보를 유지하세요.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ReviewCodeForDllInjectionVulnerabilitiesMessage">
         <source>Potential DLL injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</source>
         <target state="translated">'{1}' 메서드의 '{0}'이(가) '{3}' 메서드의 '{2}'에서 사용자 제어 데이터에 의해 감염될 수 있는 잠재적인 DLL 삽입 취약성이 발견되었습니다.</target>
@@ -2855,16 +2790,6 @@
       <trans-unit id="UseOrdinalStringComparisonDescription">
         <source>A string comparison operation that is nonlinguistic does not set the StringComparison parameter to either Ordinal or OrdinalIgnoreCase. By explicitly setting the parameter to either StringComparison.Ordinal or StringComparison.OrdinalIgnoreCase, your code often gains speed, becomes more correct, and becomes more reliable.</source>
         <target state="translated">비언어적 문자열 비교 작업에서는 StringComparison 매개 변수를 서수 또는 OrdinalIgnoreCase로 설정하지 않습니다. 매개 변수를 명시적으로 StringComparison.Ordinal 또는 StringComparison.OrdinalIgnoreCase로 설정하면 코드의 속도가 빨라지고, 정확도와 신뢰도가 더 높아집니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UseOrdinalStringComparisonMessageStringComparer">
-        <source>{0} passes '{1}' as the 'StringComparer' parameter to {2}. To perform a non-linguistic comparison, specify 'StringComparer.Ordinal' or 'StringComparer.OrdinalIgnoreCase' instead.</source>
-        <target state="translated">{0}에서는 '{1}'을(를) 'StringComparer' 매개 변수로 {2}에 전달합니다. 비언어적 비교 작업을 수행하려면 'StringComparer.Ordinal' 또는 'StringComparer.OrdinalIgnoreCase'를 지정하세요.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UseOrdinalStringComparisonMessageStringComparison">
-        <source>{0} passes '{1}' as the 'StringComparison' parameter to {2}. To perform a non-linguistic comparison, specify 'StringComparison.Ordinal' or 'StringComparison.OrdinalIgnoreCase' instead.</source>
-        <target state="translated">{0}에서는 '{1}'을(를) 'StringComparison' 매개 변수로 {2}에 전달합니다. 비언어적 비교 작업을 수행하려면 'StringComparison.Ordinal' 또는 'StringComparison.OrdinalIgnoreCase'를 지정하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseOrdinalStringComparisonTitle">

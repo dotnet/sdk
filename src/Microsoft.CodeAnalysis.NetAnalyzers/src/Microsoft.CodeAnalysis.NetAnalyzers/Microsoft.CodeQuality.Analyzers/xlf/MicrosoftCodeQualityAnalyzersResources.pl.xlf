@@ -472,11 +472,6 @@
         <target state="translated">Zdefiniuj metody dostępu dla argumentów atrybutów</target>
         <note />
       </trans-unit>
-      <trans-unit id="DefineAccessorsForAttributeArgumentsDescription">
-        <source>Attributes can define mandatory arguments that must be specified when you apply the attribute to a target. These are also known as positional arguments because they are supplied to attribute constructors as positional parameters. For every mandatory argument, the attribute should also provide a corresponding read-only property so that the value of the argument can be retrieved at execution time. Attributes can also define optional arguments, which are also known as named arguments. These arguments are supplied to attribute constructors by name and should have a corresponding read/write property.</source>
-        <target state="translated">Atrybuty mogą definiować argumenty obowiązkowe, które muszą zostać określone podczas stosowania atrybutu do elementu docelowego. Są one też nazywane argumentami pozycyjnymi, ponieważ są przekazywane do konstruktorów atrybutu jako parametry pozycyjne. Dla każdego argumentu obowiązkowego atrybut powinien także określać odpowiednią właściwość tylko do odczytu, która umożliwia pobranie wartości argumentu w czasie wykonywania. Atrybuty mogą także definiować argumenty opcjonalne, określane też jako argumenty nazwane. Te argumenty są przekazywane do konstruktorów atrybutu za pomocą nazwy i powinny mieć odpowiednią właściwość do odczytu i zapisu.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="DefineAccessorsForAttributeArgumentsMessageDefault">
         <source>Add a public read-only property accessor for positional argument {0} of Attribute {1}</source>
         <target state="translated">Dodaj publiczną metodę dostępu do właściwości tylko do odczytu dla argumentu pozycyjnego {0} atrybutu {1}</target>
@@ -675,11 +670,6 @@
       <trans-unit id="OperatorsShouldHaveSymmetricalOverloadsDescription">
         <source>A type implements the equality or inequality operator and does not implement the opposite operator.</source>
         <target state="translated">Typ implementuje operator równości lub nierówności i nie implementuje operatora przeciwnego.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="OperatorsShouldHaveSymmetricalOverloadsMessage">
-        <source>Operators should have symmetrical overloads</source>
-        <target state="translated">Operatory powinny mieć symetryczne przeciążenia</target>
         <note />
       </trans-unit>
       <trans-unit id="CollectionPropertiesShouldBeReadOnlyTitle">
@@ -905,11 +895,6 @@
       <trans-unit id="ImplementStandardExceptionConstructorsMessageMissingConstructor">
         <source>Add the following constructor to {0}: {1}</source>
         <target state="translated">Dodaj następujący konstruktor do elementu {0}: {1}</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementStandardExceptionConstructorsMessageAccessibility">
-        <source>Change the accessibility of {0} to {1}.</source>
-        <target state="translated">Zmień dostępność elementu {0} na {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="NestedTypesShouldNotBeVisibleTitle">

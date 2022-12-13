@@ -472,11 +472,6 @@
         <target state="translated">Definir descriptores de acceso para los argumentos de atributo</target>
         <note />
       </trans-unit>
-      <trans-unit id="DefineAccessorsForAttributeArgumentsDescription">
-        <source>Attributes can define mandatory arguments that must be specified when you apply the attribute to a target. These are also known as positional arguments because they are supplied to attribute constructors as positional parameters. For every mandatory argument, the attribute should also provide a corresponding read-only property so that the value of the argument can be retrieved at execution time. Attributes can also define optional arguments, which are also known as named arguments. These arguments are supplied to attribute constructors by name and should have a corresponding read/write property.</source>
-        <target state="translated">Los atributos pueden definir argumentos obligatorios que deben especificarse al aplicar el atributo a un destino. Estos también se conocen como argumentos posicionales porque se proporcionan a los constructores de atributos como parámetros posicionales. Para cada argumento obligatorio, el atributo debe proporcionar también una propiedad de solo lectura correspondiente, de modo que el valor del argumento se pueda recuperar en tiempo de ejecución. Los atributos pueden definir además argumentos opcionales, también conocidos como argumentos con nombre. Estos argumentos se proporcionan a los constructores de atributos por nombre y deben tener una propiedad de lectura/escritura correspondiente.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="DefineAccessorsForAttributeArgumentsMessageDefault">
         <source>Add a public read-only property accessor for positional argument {0} of Attribute {1}</source>
         <target state="translated">Agregue un descriptor de acceso de propiedades público de solo lectura para el argumento posicional {0} del atributo {1}.</target>
@@ -675,11 +670,6 @@
       <trans-unit id="OperatorsShouldHaveSymmetricalOverloadsDescription">
         <source>A type implements the equality or inequality operator and does not implement the opposite operator.</source>
         <target state="translated">Un tipo implementa el operador de igualdad o de desigualdad y no implementa el operador opuesto.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="OperatorsShouldHaveSymmetricalOverloadsMessage">
-        <source>Operators should have symmetrical overloads</source>
-        <target state="translated">Los operadores deben tener sobrecargas simétricas</target>
         <note />
       </trans-unit>
       <trans-unit id="CollectionPropertiesShouldBeReadOnlyTitle">
@@ -905,11 +895,6 @@
       <trans-unit id="ImplementStandardExceptionConstructorsMessageMissingConstructor">
         <source>Add the following constructor to {0}: {1}</source>
         <target state="translated">Agregue el constructor siguiente a {0}: {1}.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementStandardExceptionConstructorsMessageAccessibility">
-        <source>Change the accessibility of {0} to {1}.</source>
-        <target state="translated">Cambie la accesibilidad de {0} a {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="NestedTypesShouldNotBeVisibleTitle">

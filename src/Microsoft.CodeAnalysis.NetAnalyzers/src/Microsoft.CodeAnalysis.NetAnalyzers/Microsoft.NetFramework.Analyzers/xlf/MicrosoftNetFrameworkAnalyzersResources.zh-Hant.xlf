@@ -92,21 +92,6 @@
         <target state="translated">呼叫 ISerializable 類型上的基底類別方法</target>
         <note />
       </trans-unit>
-      <trans-unit id="ReviewDataViewCollectionStringTitle">
-        <source>Review DataView CollectionString</source>
-        <target state="translated">檢閱 DataView CollectionString</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ReviewDataViewCollectionStringDescription">
-        <source>Review code to insure that usage of System.Data.DataViewManager.DataViewSettingCollectionString input is sanitized to not contain DTD. Enabling DTD processing on the XML reader and using UrlResolver for resolving external XML entities may lead to information disclosure. Content from file system or network shares for the machine processing the XML can be exposed to attacker. In addition, an attacker can use this as a DoS vector.</source>
-        <target state="translated">檢閱程式碼以確保 System.Data.DataViewManager.DataViewSettingCollectionString 輸入的使用經過處理，以排除 DTD。在 XML 讀取器上啟用 DTD 處理，並使用 UrlResolver 解析外部 XML 實體，可能會造成資訊外洩。攻擊者有可能會看到為處理 XML 的電腦所提供之檔案系統或網路共用內容。此外，攻擊者還可以使用它作為 DoS 向量。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ReviewDataViewCollectionStringMessage">
-        <source>Review DataView CollectionString</source>
-        <target state="translated">檢閱 DataView CollectionString</target>
-        <note />
-      </trans-unit>
       <trans-unit id="DoNotCatchCorruptedStateExceptions">
         <source>Do Not Catch Corrupted State Exceptions</source>
         <target state="translated">請勿擷取損毀狀態例外狀況</target>
@@ -180,11 +165,6 @@
       <trans-unit id="DoNotUseDtdProcessingOverloadsMessage">
         <source>Unsafe overload of '{0}' method</source>
         <target state="translated">'{0}' 方法的不安全多載</target>
-        <note>CA3075</note>
-      </trans-unit>
-      <trans-unit id="DoNotUseDtdProcessingOverloads">
-        <source>Insecure DTD Processing</source>
-        <target state="translated">不安全的 DTD 處理</target>
         <note>CA3075</note>
       </trans-unit>
       <trans-unit id="DoNotUseSetInnerXmlMessage">

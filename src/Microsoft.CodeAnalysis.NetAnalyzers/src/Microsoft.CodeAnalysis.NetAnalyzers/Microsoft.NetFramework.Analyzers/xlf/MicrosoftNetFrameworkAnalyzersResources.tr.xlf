@@ -92,21 +92,6 @@
         <target state="translated">ISerializable türleri üzerinde temel sınıf yöntemlerini çağırın</target>
         <note />
       </trans-unit>
-      <trans-unit id="ReviewDataViewCollectionStringTitle">
-        <source>Review DataView CollectionString</source>
-        <target state="translated">DataView CollectionString’i gözden geçirin</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ReviewDataViewCollectionStringDescription">
-        <source>Review code to insure that usage of System.Data.DataViewManager.DataViewSettingCollectionString input is sanitized to not contain DTD. Enabling DTD processing on the XML reader and using UrlResolver for resolving external XML entities may lead to information disclosure. Content from file system or network shares for the machine processing the XML can be exposed to attacker. In addition, an attacker can use this as a DoS vector.</source>
-        <target state="translated">System.Data.DataViewManager.DataViewSettingCollectionString girişi kullanımının DTD içermeyecek şekilde temizlendiğinden emin olmak için kodu gözden geçirin. XML okuyucusu üzerinde DTD’yi etkinleştirmek ve dış XML varlıklarını çözümlemek için UrlResolver kullanmak bilgilerin açığa çıkarılmasına neden olabilir. XML’i işleyen makine için dosya sistemi veya ağ paylaşımlarından içerikler saldırgan için açığa çıkarılabilir. Ayrıca, bir saldırgan bunu bir DoS vektörü olarak kullanabilir.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ReviewDataViewCollectionStringMessage">
-        <source>Review DataView CollectionString</source>
-        <target state="translated">DataView CollectionString’i gözden geçirin</target>
-        <note />
-      </trans-unit>
       <trans-unit id="DoNotCatchCorruptedStateExceptions">
         <source>Do Not Catch Corrupted State Exceptions</source>
         <target state="translated">Bozuk Durum Özel Durumlarını Yakalama</target>
@@ -180,11 +165,6 @@
       <trans-unit id="DoNotUseDtdProcessingOverloadsMessage">
         <source>Unsafe overload of '{0}' method</source>
         <target state="translated">'{0}' yönteminin güvenli olmayan aşırı yükü</target>
-        <note>CA3075</note>
-      </trans-unit>
-      <trans-unit id="DoNotUseDtdProcessingOverloads">
-        <source>Insecure DTD Processing</source>
-        <target state="translated">Güvenli Olmayan DTD İşleme</target>
         <note>CA3075</note>
       </trans-unit>
       <trans-unit id="DoNotUseSetInnerXmlMessage">
