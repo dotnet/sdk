@@ -2,10 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using System.CommandLine.Binding;
 using System.CommandLine.Parsing;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.TemplateEngine.Authoring.TemplateVerifier;
 
 namespace Microsoft.TemplateEngine.Authoring.CLI.Commands.Verify
@@ -86,8 +84,8 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.Commands.Verify
             AllowMultipleArgumentsPerToken = true,
         };
 
-        public VerifyCommand(ILoggerFactory loggerFactory)
-            : base(CommandName, LocalizableStrings.command_verify_help_description, loggerFactory)
+        public VerifyCommand()
+            : base(CommandName, LocalizableStrings.command_verify_help_description)
         {
             AddArgument(_templateNameArgument);
             AddOption(_remainingArguments);
@@ -109,31 +107,33 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.Commands.Verify
             AddOption(_uniqueForOption);
         }
 
-        internal static VerifyCommandArgs ExtractArguments(VerifyCommand verifyCommand, ParseResult parseResult)
+        protected internal override VerifyCommandArgs ParseContext(ParseResult parseResult)
         {
             return new VerifyCommandArgs(
-                templateName: parseResult.GetValue(verifyCommand._templateNameArgument),
-                templateSpecificArgs: parseResult.GetValue(verifyCommand._remainingArguments),
-                templatePath: parseResult.GetValue(verifyCommand._templatePathOption),
-                snapshotsDirectory: parseResult.GetValue(verifyCommand._snapshotsDirectoryOption),
-                scenarioDistinguisher: parseResult.GetValue(verifyCommand._scenarioNameOption),
-                outputDirectory: parseResult.GetValue(verifyCommand._templateOutputPathOption),
-                disableDiffTool: parseResult.GetValue(verifyCommand._disableDiffToolOption),
-                disableDefaultVerificationExcludePatterns: parseResult.GetValue(verifyCommand._disableDefaultExcludePatternsOption),
-                verificationExcludePatterns: parseResult.GetValue(verifyCommand._excludePatternOption),
-                verificationIncludePatterns: parseResult.GetValue(verifyCommand._includePatternOption),
-                verifyCommandOutput: parseResult.GetValue(verifyCommand._verifyCommandOutputOption),
-                isCommandExpectedToFail: parseResult.GetValue(verifyCommand._isCommandExpectedToFailOption),
-                uniqueForOptions: parseResult.GetValue(verifyCommand._uniqueForOption));
+                templateName: parseResult.GetValue(_templateNameArgument),
+                templateSpecificArgs: parseResult.GetValue(_remainingArguments),
+                templatePath: parseResult.GetValue(_templatePathOption),
+                snapshotsDirectory: parseResult.GetValue(_snapshotsDirectoryOption),
+                scenarioDistinguisher: parseResult.GetValue(_scenarioNameOption),
+                outputDirectory: parseResult.GetValue(_templateOutputPathOption),
+                disableDiffTool: parseResult.GetValue(_disableDiffToolOption),
+                disableDefaultVerificationExcludePatterns: parseResult.GetValue(_disableDefaultExcludePatternsOption),
+                verificationExcludePatterns: parseResult.GetValue(_excludePatternOption),
+                verificationIncludePatterns: parseResult.GetValue(_includePatternOption),
+                verifyCommandOutput: parseResult.GetValue(_verifyCommandOutputOption),
+                isCommandExpectedToFail: parseResult.GetValue(_isCommandExpectedToFailOption),
+                uniqueForOptions: parseResult.GetValue(_uniqueForOption));
         }
 
-        protected override async Task<int> ExecuteAsync(VerifyCommandArgs args, CancellationToken cancellationToken = default)
+        protected override async Task<int> ExecuteAsync(VerifyCommandArgs args, ILoggerFactory loggerFactory, CancellationToken cancellationToken)
         {
-            Logger.LogInformation("Running the verification of {templateName}.", args.TemplateName);
+            cancellationToken.ThrowIfCancellationRequested();
+            ILogger logger = loggerFactory.CreateLogger<VerifyCommand>();
+            logger.LogInformation("Running the verification of {templateName}.", args.TemplateName);
 
             try
             {
-                VerificationEngine engine = new VerificationEngine(LoggerFactory ?? NullLoggerFactory.Instance);
+                VerificationEngine engine = new VerificationEngine(loggerFactory);
                 TemplateVerifierOptions options = new(templateName: args.TemplateName)
                 {
                     TemplatePath = args.TemplatePath,
@@ -162,14 +162,12 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.Commands.Verify
             }
             catch (Exception e)
             {
-                Logger.LogError(LocalizableStrings.command_verify_error_failed);
-                Logger.LogError(e.Message);
+                logger.LogError(LocalizableStrings.command_verify_error_failed);
+                logger.LogError(e.Message);
                 TemplateVerificationException? ex = e as TemplateVerificationException;
                 return (int)(ex?.TemplateVerificationErrorCode ?? TemplateVerificationErrorCode.InternalError);
             }
         }
-
-        protected override BinderBase<VerifyCommandArgs> GetModelBinder() => new VerifyModelBinder(this);
 
         /// <summary>
         /// Case insensitive version for <see cref="OptionExtensions.FromAmong{TOption}(TOption, string[])"/>.
@@ -190,21 +188,6 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.Commands.Verify
                     LocalizableStrings.command_verify_error_unrecognizedArguments,
                     string.Join(", ", invalidArguments.Select(arg => $"'{arg.Value}'")),
                     string.Join(", ", allowedValues.Select(allowedValue => $"'{allowedValue}'")));
-            }
-        }
-
-        private class VerifyModelBinder : BinderBase<VerifyCommandArgs>
-        {
-            private readonly VerifyCommand _verifyCommand;
-
-            internal VerifyModelBinder(VerifyCommand verifyCommand)
-            {
-                _verifyCommand = verifyCommand;
-            }
-
-            protected override VerifyCommandArgs GetBoundValue(BindingContext bindingContext)
-            {
-                return ExtractArguments(_verifyCommand, bindingContext.ParseResult);
             }
         }
     }

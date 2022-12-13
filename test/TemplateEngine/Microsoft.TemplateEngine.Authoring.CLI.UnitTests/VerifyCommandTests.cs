@@ -72,11 +72,11 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.UnitTests
         [MemberData(nameof(CanParseVerifyCommandArgsData))]
         internal void CanParseVerifyCommandArgs(string command, VerifyCommandArgs expVerifyCommandArgs)
         {
-            VerifyCommand verifyCommand = new VerifyCommand(NullLoggerFactory.Instance);
+            VerifyCommand verifyCommand = new VerifyCommand();
 
             ParseResult parseResult = verifyCommand.Parse(command);
 
-            VerifyCommandArgs args = VerifyCommand.ExtractArguments(verifyCommand, parseResult);
+            VerifyCommandArgs args = verifyCommand.ParseContext(parseResult);
 
             args.Should().BeEquivalentTo(expVerifyCommandArgs);
         }

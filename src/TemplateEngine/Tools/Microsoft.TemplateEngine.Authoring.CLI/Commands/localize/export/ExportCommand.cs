@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using System.CommandLine.Binding;
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.TemplateLocalizer.Core;
 
@@ -38,8 +37,8 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.Commands
             Description = LocalizableStrings.command_export_help_dryrun_description,
         };
 
-        public ExportCommand(ILoggerFactory loggerFactory)
-            : base(CommandName, LocalizableStrings.command_export_help_description, loggerFactory)
+        public ExportCommand()
+            : base(CommandName, LocalizableStrings.command_export_help_description)
         {
             AddArgument(_templatePathArgument);
             AddOption(_recursiveOption);
@@ -47,15 +46,27 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.Commands
             AddOption(_dryRunOption);
         }
 
-        protected override async Task<int> ExecuteAsync(ExportCommandArgs args, CancellationToken cancellationToken = default)
+        protected internal override ExportCommandArgs ParseContext(ParseResult parseResult)
         {
+            return new ExportCommandArgs(
+                templatePath: parseResult.GetValue(_templatePathArgument),
+                language: parseResult.GetValue(_languageOption),
+                recursive: parseResult.GetValue(_recursiveOption),
+                dryRun: parseResult.GetValue(_dryRunOption));
+        }
+
+        protected override async Task<int> ExecuteAsync(ExportCommandArgs args, ILoggerFactory loggerFactory, CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            ILogger logger = loggerFactory.CreateLogger<ExportCommand>();
+
             bool failed = false;
             List<string> templateJsonFiles = new();
 
             if (args.TemplatePaths == null || !args.TemplatePaths.Any())
             {
                 // This shouldn't happen since command line parser will ensure that there is at least one path.
-                Logger.LogError(LocalizableStrings.generic_log_commandExecutionFailed, CommandName);
+                logger.LogError(LocalizableStrings.generic_log_commandExecutionFailed, CommandName);
                 return 1;
             }
 
@@ -67,14 +78,14 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.Commands
                 if (filesBeforeAdd == templateJsonFiles.Count)
                 {
                     // No new files has been added by this path. This is an indication of a bad input.
-                    Logger.LogError(LocalizableStrings.command_export_log_templateJsonNotFound, templatePath);
+                    logger.LogError(LocalizableStrings.command_export_log_templateJsonNotFound, templatePath);
                     failed = true;
                 }
             }
 
             if (failed)
             {
-                Logger.LogError(LocalizableStrings.generic_log_commandExecutionFailed, CommandName);
+                logger.LogError(LocalizableStrings.generic_log_commandExecutionFailed, CommandName);
                 return 1;
             }
 
@@ -86,29 +97,30 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.Commands
                 ExportOptions exportOptions = new(args.DryRun, targetDirectory: null, args.Languages);
                 runningExportTasks.Add(
                     (templateJsonPath,
-                    new TemplateLocalizer.Core.TemplateLocalizer(LoggerFactory).ExportLocalizationFilesAsync(templateJsonPath, exportOptions, cancellationToken)));
+                    new TemplateLocalizer.Core.TemplateLocalizer(loggerFactory).ExportLocalizationFilesAsync(templateJsonPath, exportOptions, cancellationToken)));
             }
 
             try
             {
                 _ = await Task.WhenAll(runningExportTasks.Select(t => t.Task)).ConfigureAwait(false);
             }
-            catch (Exception)
+            catch (Exception e) when (e is not TaskCanceledException)
             {
                 // Task.WhenAll will only throw one of the exceptions. We need to log them all. Handle this outside of catch block.
             }
+            cancellationToken.ThrowIfCancellationRequested();
 
             foreach ((string TemplateJsonPath, Task<ExportResult> Task) pathTaskPair in runningExportTasks)
             {
                 if (pathTaskPair.Task.IsCanceled)
                 {
-                    Logger.LogWarning(LocalizableStrings.command_export_log_cancelled, pathTaskPair.TemplateJsonPath);
+                    logger.LogWarning(LocalizableStrings.command_export_log_cancelled, pathTaskPair.TemplateJsonPath);
                     continue;
                 }
                 else if (pathTaskPair.Task.IsFaulted)
                 {
                     failed = true;
-                    Logger.LogError(pathTaskPair.Task.Exception, LocalizableStrings.command_export_log_templateExportFailedWithException, pathTaskPair.TemplateJsonPath);
+                    logger.LogError(pathTaskPair.Task.Exception, LocalizableStrings.command_export_log_templateExportFailedWithException, pathTaskPair.TemplateJsonPath);
                 }
                 else
                 {
@@ -119,11 +131,9 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.Commands
                 }
             }
 
-            PrintResults(exportResults);
+            PrintResults(exportResults, logger);
             return (failed || cancellationToken.IsCancellationRequested) ? 1 : 0;
         }
-
-        protected override BinderBase<ExportCommandArgs> GetModelBinder() => new ExportModelBinder(this);
 
         /// <summary>
         /// Given a <paramref name="path"/>, finds and returns all the template.json files. The search rules are executed in the following order:
@@ -187,47 +197,28 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.Commands
             }
         }
 
-        private void PrintResults(IReadOnlyList<ExportResult> results)
+        private void PrintResults(IReadOnlyList<ExportResult> results, ILogger logger)
         {
-            using IDisposable? scope = Logger.BeginScope("Results");
-            Logger.LogInformation(LocalizableStrings.command_export_log_executionEnded, results.Count);
+            using IDisposable? scope = logger.BeginScope("Results");
+            logger.LogInformation(LocalizableStrings.command_export_log_executionEnded, results.Count);
 
             foreach (ExportResult result in results)
             {
                 if (result.Succeeded)
                 {
-                    Logger.LogInformation(LocalizableStrings.command_export_log_templateExportSucceeded, result.TemplateJsonPath);
+                    logger.LogInformation(LocalizableStrings.command_export_log_templateExportSucceeded, result.TemplateJsonPath);
                 }
                 else
                 {
                     if (result.InnerException != null)
                     {
-                        Logger.LogError(result.InnerException, LocalizableStrings.command_export_log_templateExportFailedWithException, result.TemplateJsonPath);
+                        logger.LogError(result.InnerException, LocalizableStrings.command_export_log_templateExportFailedWithException, result.TemplateJsonPath);
                     }
                     else
                     {
-                        Logger.LogError(LocalizableStrings.command_export_log_templateExportFailedWithError, result.ErrorMessage, result.TemplateJsonPath);
+                        logger.LogError(LocalizableStrings.command_export_log_templateExportFailedWithError, result.ErrorMessage, result.TemplateJsonPath);
                     }
                 }
-            }
-        }
-
-        private class ExportModelBinder : BinderBase<ExportCommandArgs>
-        {
-            private readonly ExportCommand _exportCommand;
-
-            internal ExportModelBinder(ExportCommand exportCommand)
-            {
-                _exportCommand = exportCommand;
-            }
-
-            protected override ExportCommandArgs GetBoundValue(BindingContext bindingContext)
-            {
-                return new ExportCommandArgs(
-                    templatePath: bindingContext.ParseResult.GetValue(_exportCommand._templatePathArgument),
-                    language: bindingContext.ParseResult.GetValue(_exportCommand._languageOption),
-                    recursive: bindingContext.ParseResult.GetValue(_exportCommand._recursiveOption),
-                    dryRun: bindingContext.ParseResult.GetValue(_exportCommand._dryRunOption));
             }
         }
     }
