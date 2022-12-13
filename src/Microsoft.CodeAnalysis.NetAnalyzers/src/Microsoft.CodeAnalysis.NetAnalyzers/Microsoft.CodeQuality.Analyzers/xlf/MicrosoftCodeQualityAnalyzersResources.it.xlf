@@ -1877,21 +1877,6 @@
         <target state="translated">Il membro {0} non accede ai dati di istanza e può essere contrassegnato come static</target>
         <note />
       </trans-unit>
-      <trans-unit id="ReviewVisibleEventHandlersTitle">
-        <source>Review visible event handlers</source>
-        <target state="translated">Esaminare i gestori eventi visibili</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ReviewVisibleEventHandlersDescription">
-        <source>A public or protected event-handling method was detected. Event-handling methods should not be exposed unless absolutely necessary.</source>
-        <target state="translated">È stato rilevato un metodo di gestione eventi public o protected. I metodi di gestione eventi devono essere esposti solo se assolutamente necessario.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ReviewVisibleEventHandlersMessageDefault">
-        <source>Consider making '{0}' not externally visible</source>
-        <target state="translated">Provare a rendere '{0}' non visibile esternamente</target>
-        <note />
-      </trans-unit>
       <trans-unit id="SealMethodsThatSatisfyPrivateInterfacesTitle">
         <source>Seal methods that satisfy private interfaces</source>
         <target state="translated">Impostare come sealed i metodi che soddisfano interfacce private</target>

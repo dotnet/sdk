@@ -1877,21 +1877,6 @@
         <target state="translated">成員 '{0}' 不會存取執行個體資料，因而可標記為靜態</target>
         <note />
       </trans-unit>
-      <trans-unit id="ReviewVisibleEventHandlersTitle">
-        <source>Review visible event handlers</source>
-        <target state="translated">檢閱可見的事件處理常式</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ReviewVisibleEventHandlersDescription">
-        <source>A public or protected event-handling method was detected. Event-handling methods should not be exposed unless absolutely necessary.</source>
-        <target state="translated">已偵測到公用或受保護的事件處理方法。除非絕對必要，否則不應公開事件處理方法。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ReviewVisibleEventHandlersMessageDefault">
-        <source>Consider making '{0}' not externally visible</source>
-        <target state="translated">請考慮對外隱藏 '{0}'</target>
-        <note />
-      </trans-unit>
       <trans-unit id="SealMethodsThatSatisfyPrivateInterfacesTitle">
         <source>Seal methods that satisfy private interfaces</source>
         <target state="translated">密封滿足私用介面的方法</target>

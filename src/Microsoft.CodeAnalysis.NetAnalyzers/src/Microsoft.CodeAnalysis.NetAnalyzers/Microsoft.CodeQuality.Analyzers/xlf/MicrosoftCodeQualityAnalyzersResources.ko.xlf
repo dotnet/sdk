@@ -1877,21 +1877,6 @@
         <target state="translated">'{0}' 멤버는 인스턴스 데이터에 액세스하지 않으며 static으로 표시할 수 있습니다.</target>
         <note />
       </trans-unit>
-      <trans-unit id="ReviewVisibleEventHandlersTitle">
-        <source>Review visible event handlers</source>
-        <target state="translated">표시되는 이벤트 처리기를 검토하세요.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ReviewVisibleEventHandlersDescription">
-        <source>A public or protected event-handling method was detected. Event-handling methods should not be exposed unless absolutely necessary.</source>
-        <target state="translated">public 또는 protected 이벤트 처리 메서드가 검색되었습니다. 이벤트 처리 메서드는 필요한 경우에만 표시해야 합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ReviewVisibleEventHandlersMessageDefault">
-        <source>Consider making '{0}' not externally visible</source>
-        <target state="translated">'{0}'이(가) 외부에 표시되지 않도록 하세요.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="SealMethodsThatSatisfyPrivateInterfacesTitle">
         <source>Seal methods that satisfy private interfaces</source>
         <target state="translated">private 인터페이스를 만족하는 메서드를 봉인하세요.</target>
