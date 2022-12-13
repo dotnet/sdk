@@ -84,4 +84,18 @@ Copyright (c) .NET Foundation. All rights reserved.
     </When>
   </Choose>
 
+  <!--
+  ============================================================
+    DefaultRuntimeHostConfigurationOptions
+  Defaults @(RuntimeHostConfigurationOption) items based on MSBuild properties.
+  ============================================================
+  -->
+
+  <ItemGroup>
+    <RuntimeHostConfigurationOption Include="Microsoft.AspNetCore.EnsureJsonTrimmability"
+                                    Condition="'$(EnsureJsonTrimmability)' != ''"
+                                    Value="$(EnsureJsonTrimmability)"
+                                    Trim="true" />
+  </ItemGroup>
+
 </Project>
