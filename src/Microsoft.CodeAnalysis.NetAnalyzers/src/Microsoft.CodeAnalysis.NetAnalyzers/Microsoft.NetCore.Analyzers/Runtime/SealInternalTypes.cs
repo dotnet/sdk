@@ -70,7 +70,6 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 {
                     baseTypes.Add(baseType.OriginalDefinition);
                 }
-
             }, SymbolKind.NamedType);
 
             context.RegisterCompilationEndAction(context =>

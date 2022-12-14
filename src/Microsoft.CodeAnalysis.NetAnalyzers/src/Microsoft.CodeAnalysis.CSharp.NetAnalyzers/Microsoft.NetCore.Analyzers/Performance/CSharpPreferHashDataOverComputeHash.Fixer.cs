@@ -202,7 +202,6 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Performance
                     {
                         ns = qualifiedNamespaceSyntax.ToFullString();
                     }
-
                 }
                 else if (invocationNode.Expression is MemberAccessExpressionSyntax { Expression: InvocationExpressionSyntax { Expression: MemberAccessExpressionSyntax { Expression: MemberAccessExpressionSyntax originalType } } })
                 {
