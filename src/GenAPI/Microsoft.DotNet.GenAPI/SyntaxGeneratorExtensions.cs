@@ -66,7 +66,15 @@ namespace Microsoft.DotNet.GenAPI
                 }
             }
 
-            return syntaxGenerator.Declaration(symbol);
+            try
+            {
+                return syntaxGenerator.Declaration(symbol);
+            }
+            catch (ArgumentException ex)
+            {
+                // re-throw the ArgumentException with the specified symbol that caused it.
+                throw new ArgumentException(ex.Message, symbol.ToDisplayString());
+            }
         }
 
         // TODO: Temporary solution till corresponding Roslyn API is added: https://github.com/dotnet/arcade/issues/11895.
