@@ -34,18 +34,29 @@ namespace Microsoft.DotNet.Cli
             Parser.Instance.Parse(tokenList).Invoke();
         }
 
+        private static string StripPlaceholdersFromString(string input) {
+            // Find and remove all format placeholder strings (and filled runtime strings!) of the form ['"].*['"]
+            // from an input string.
+            // This lets us do fair comparisons against strings that are translated, since the placeholders
+            // may be in various locations, and may have different quote characters in different languages.
+            return System.Text.RegularExpressions.Regex.Replace(input, @"['""](.*)['""]", string.Empty);
+        }
+
         public static void ShowHelpOrErrorIfAppropriate(this ParseResult parseResult)
         {
             if (parseResult.Errors.Any())
             {
-                var unrecognizedTokenErrors = parseResult.Errors.Where(error =>
-                    error.Message.Contains(Parser.Instance.Configuration.LocalizationResources.UnrecognizedCommandOrArgument(string.Empty).Replace("'", string.Empty)));
+                var unrecognizedTokenErrors = parseResult.Errors.Where(error => {
+                    var strippedError = StripPlaceholdersFromString(error.Message);
+                    var strippedRawResource = StripPlaceholdersFromString(Parser.Instance.Configuration.LocalizationResources.UnrecognizedCommandOrArgument(string.Empty));
+                    return strippedError.Equals(strippedRawResource, StringComparison.OrdinalIgnoreCase);
+                });
                 if (parseResult.CommandResult.Command.TreatUnmatchedTokensAsErrors ||
                     parseResult.Errors.Except(unrecognizedTokenErrors).Any())
                 {
                     throw new CommandParsingException(
                         message: string.Join(Environment.NewLine,
-                                             parseResult.Errors.Select(e => e.Message)), 
+                                             parseResult.Errors.Select(e => e.Message)),
                         parseResult: parseResult);
                 }
             }
@@ -60,7 +71,7 @@ namespace Microsoft.DotNet.Cli
 
         public static bool IsDotnetBuiltInCommand(this ParseResult parseResult)
         {
-            return string.IsNullOrEmpty(parseResult.RootSubCommandResult()) || 
+            return string.IsNullOrEmpty(parseResult.RootSubCommandResult()) ||
                 Parser.GetBuiltInCommand(parseResult.RootSubCommandResult()) != null;
         }
 
@@ -129,7 +140,7 @@ namespace Microsoft.DotNet.Cli
 
         public static bool BothArchAndOsOptionsSpecified(this ParseResult parseResult) =>
             (parseResult.HasOption(CommonOptions.ArchitectureOption) ||
-            parseResult.HasOption(CommonOptions.LongFormArchitectureOption)) && 
+            parseResult.HasOption(CommonOptions.LongFormArchitectureOption)) &&
             parseResult.HasOption(CommonOptions.OperatingSystemOption);
 
         internal static string GetCommandLineRuntimeIdentifier(this ParseResult parseResult)
@@ -206,7 +217,7 @@ namespace Microsoft.DotNet.Cli
                 !parseResult.Errors.Any(e => e.SymbolResult == optionResult))
             {
                 return optionResult.GetValueForOption(optionToGet);
-            } 
+            }
             else {
                 return default;
             }
@@ -224,7 +235,7 @@ namespace Microsoft.DotNet.Cli
                 !parseResult.Errors.Any(e => e.SymbolResult == optionResult))
             {
                 return optionResult.GetValueForOption(optionToGet);
-            } 
+            }
             else {
                 return default;
             }
