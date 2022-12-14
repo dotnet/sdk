@@ -34,7 +34,8 @@ namespace Microsoft.DotNet.Cli
             Parser.Instance.Parse(tokenList).Invoke();
         }
 
-        private static string StripPlaceholdersFromString(string input) {
+        private static string StripPlaceholdersFromString(string input)
+        {
             // Find and remove all format placeholder strings (and filled runtime strings!) of the form ['"].*['"]
             // from an input string.
             // This lets us do fair comparisons against strings that are translated, since the placeholders
@@ -46,7 +47,8 @@ namespace Microsoft.DotNet.Cli
         {
             if (parseResult.Errors.Any())
             {
-                var unrecognizedTokenErrors = parseResult.Errors.Where(error => {
+                var unrecognizedTokenErrors = parseResult.Errors.Where(error => 
+                {
                     var strippedError = StripPlaceholdersFromString(error.Message);
                     var strippedRawResource = StripPlaceholdersFromString(Parser.Instance.Configuration.LocalizationResources.UnrecognizedCommandOrArgument(string.Empty));
                     return strippedError.Equals(strippedRawResource, StringComparison.OrdinalIgnoreCase);
