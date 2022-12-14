@@ -3,6 +3,7 @@
 | [Getting Started](#getting-started) |
 | [Build & Run](#build--run) |
 | [Debugging](#debugging) |
+| [Unit testing inside virtualized environment](#unit-testing-inside-virtualized-environment) |
 | [Coding Style](#coding-style) |
 | [Branching](#branching) |
 
@@ -34,6 +35,26 @@ The steps required are outlined below.
 This repo doesn't contain an executable application anymore. We recommend to do debugging using tests.
 Add your test scenario to the [test project](https://github.com/dotnet/templating/tree/main/test/Microsoft.TemplateEngine.IDE.IntegrationTests) and debug it from IDE.
 To build, run and debug `dotnet new`, see the [instuctions in dotnet/sdk repo](https://github.com/dotnet/sdk#how-do-i-build-the-sdk).
+
+# Unit testing inside virtualized environment
+
+Unit tests can be run and debugged on a local virtualized environment supported by [Visual Studio Remote Testing](https://learn.microsoft.com/en-us/visualstudio/test/remote-testing?view=vs-2022).
+Initial configurations have been added for `WSL` and net 7.0 linux docker via [`testenvironments.json`](../testenvironments.json).
+Upon opening the Tests Explorer the advanced environments are available in the GUI: 
+
+![TestExplorrerEnvironments](TestExplorerEnvironments.png)
+
+This readme will not discuss definitive list of details for proper setup of the environments instead we defer reader to the following information sources and warn about particular gotchas:
+
+ * WSL runs
+   * Install [WSL](https://learn.microsoft.com/en-us/windows/wsl/about).
+   * Install the [distribution](https://aka.ms/wslstore) of your choice.
+   * [Install .NET Runtime](https://learn.microsoft.com/en-us/dotnet/core/install/linux-ubuntu)
+ * Docker runs
+   * Install [Docker Desktop](https://www.docker.com/products/docker-desktop/)
+   * First run of docker scenario might need elevation ([Test project does not reference any .NET NuGet adapter](https://developercommunity.visualstudio.com/t/test-project-does-not-reference-any-net-nuget-adap/1311698) error)  
+ * Third party test runners might not support this feature. Use [Visual Studio Test Explorer](https://learn.microsoft.com/en-us/visualstudio/test/run-unit-tests-with-test-explorer).
+
 
 # Coding Style #
 
