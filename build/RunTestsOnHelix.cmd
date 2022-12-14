@@ -34,6 +34,7 @@ dotnet new nugetconfig
 dotnet nuget add source %DOTNET_ROOT%\.nuget --configfile nuget.config
 
 dir /B  Assets\TestPackages\*.csproj /s
+robocopy %HELIX_CORRELATION_PAYLOAD%\t\TestExecutionDirectoryFiles\ .\ testAsset.props
 set TestPackagesRoot=%CD%\assets\testpackages\
 dotnet build assets\testpackages\Microsoft.NET.TestPackages.csproj /t:Build
 robocopy %HELIX_CORRELATION_PAYLOAD%\assets\testpackages\testpackages %TestExecutionDirectory%\TestPackages /s
