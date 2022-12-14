@@ -154,6 +154,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                         errorFlags = ErrorKind.MinMaxInverted;
                         return false;
                     }
+
                     return true;
                 }
             }
@@ -186,6 +187,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                         validationDiagnostics = null;
                         return true;
                     }
+
                     validationDiagnostics = CreateConstantOutOfBoundsRuleDiagnostic(argument, Min.ToString(), Max.ToString());
                     return false;
                 }
@@ -204,9 +206,11 @@ namespace Microsoft.NetCore.Analyzers.Performance
                             validationDiagnostics = null;
                             return true;
                         }
+
                         validationDiagnostics = CreateConstantOutOfBoundsRuleDiagnostic(argument, Min.ToString(), Max.ToString());
                         return false;
                     }
+
                     validationDiagnostics = CreateConstantInvalidConstantRuleDiagnostic(argument);
                     return false;
                 }
@@ -222,6 +226,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     integer = default;
                     return false;
                 }
+
                 integer = Convert.ToInt64(constant);
             }
             catch
@@ -229,6 +234,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 integer = default;
                 return false;
             }
+
             return true;
         }
         private static bool TryConvertUnsignedInteger(object constant, out ulong integer)
@@ -240,6 +246,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     integer = default;
                     return false;
                 }
+
                 integer = Convert.ToUInt64(constant);
             }
             catch
@@ -247,6 +254,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 integer = default;
                 return false;
             }
+
             return true;
         }
 
@@ -258,10 +266,12 @@ namespace Microsoft.NetCore.Analyzers.Performance
             {
                 return isValidSigned;
             }
+
             if (!TryConvertUnsignedInteger(constant, out _))
             {
                 isInvalid = true;
             }
+
             return isValidSigned;
         }
         private static bool TryTransformUInt64(object constant, out ulong value, out bool isInvalid)
@@ -272,10 +282,12 @@ namespace Microsoft.NetCore.Analyzers.Performance
             {
                 return isValidUnsigned;
             }
+
             if (!TryConvertSignedInteger(constant, out _))
             {
                 isInvalid = true;
             }
+
             return isValidUnsigned;
         }
 
@@ -287,12 +299,14 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 {
                     return Invalid(out value, out isInvalid);
                 }
+
                 value = Convert.ToChar(constant);
             }
             catch
             {
                 return Invalid(out value, out isInvalid);
             }
+
             isInvalid = false;
             return true;
         }
@@ -305,6 +319,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 isInvalid = false;
                 return true;
             }
+
             return Invalid(out value, out isInvalid);
         }
 
@@ -314,6 +329,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
             {
                 return Invalid(out value, out isInvalid);
             }
+
             value = Convert.ToSingle(constant);
             isInvalid = false;
             return true;
@@ -325,6 +341,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
             {
                 return Invalid(out value, out isInvalid);
             }
+
             value = Convert.ToDouble(constant);
             isInvalid = false;
             return true;

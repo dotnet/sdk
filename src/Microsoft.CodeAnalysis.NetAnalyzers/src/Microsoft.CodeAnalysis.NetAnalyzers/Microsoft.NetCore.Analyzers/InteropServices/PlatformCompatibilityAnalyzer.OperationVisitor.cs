@@ -136,6 +136,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                                 {
                                     infosBuilder.RemoveAt(index);
                                 }
+
                                 v.SupportedFirst = null;
                                 v.UnsupportedFirst = null;
                             }
@@ -146,6 +147,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                         }
                     }
                 }
+
                 return infosBuilder.Any();
             }
 

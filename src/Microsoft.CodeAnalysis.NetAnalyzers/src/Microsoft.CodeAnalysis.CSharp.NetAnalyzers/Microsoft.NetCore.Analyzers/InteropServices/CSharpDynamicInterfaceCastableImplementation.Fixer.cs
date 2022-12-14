@@ -70,6 +70,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.InteropServices
                 {
                     return null;
                 }
+
                 var methodDeclaration = generator.MethodDeclaration(method);
                 methodDeclaration = generator.WithModifiers(methodDeclaration, generator.GetModifiers(methodDeclaration).WithIsAbstract(false));
                 return generator.WithStatements(methodDeclaration, defaultMethodBodyStatements);
@@ -90,6 +91,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.InteropServices
                 {
                     propertyDeclaration = generator.WithGetAccessorStatements(propertyDeclaration, defaultMethodBodyStatements);
                 }
+
                 if (property.SetMethod is not null
                     && model.Compilation.IsSymbolAccessibleWithin(property.SetMethod, type))
                 {

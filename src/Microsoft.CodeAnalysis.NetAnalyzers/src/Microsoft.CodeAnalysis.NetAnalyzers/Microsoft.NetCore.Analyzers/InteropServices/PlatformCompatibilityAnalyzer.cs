@@ -502,6 +502,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                                         attribute.SupportedSecond = null;
                                         attribute.UnsupportedSecond = null;
                                     }
+
                                     attribute.UnsupportedFirst = null;
                                     attribute.UnsupportedMessage = null;
                                 }
@@ -706,6 +707,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                     {
                         attributes.SupportedSecond = info.Version;
                     }
+
                     attributes.UnsupportedFirst = unsupportedVersion;
                 }
                 else
@@ -753,6 +755,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                             attribute.SupportedSecond = null;
                             attribute.UnsupportedMessage = null;
                         }
+
                         attribute.Obsoleted = null;
                         attribute.ObsoletedMessage = null;
                         attribute.ObsoletedUrl = null;
@@ -802,6 +805,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 {
                     ReportUnsupportedDiagnostic(operationToSymbol.Key, context, operationName, attributes, csAttributes);
                 }
+
                 break;
             }
 
@@ -868,6 +872,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                                     platformsBuilder.Add(GetFormattedString(PlatformCompatibilityAllVersions, pName));
                                     continue;
                                 }
+
                                 platformsBuilder.Add(EncloseWithQuotes(pName));
                             }
                             else
@@ -881,6 +886,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                             {
                                 platformsBuilder.Clear();
                             }
+
                             supportedRule = false;
                             if (IsEmptyVersion(pAttribute.UnsupportedFirst))
                             {
@@ -889,6 +895,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                                     platformsBuilder.Add(AppendMessage(pAttribute, GetFormattedString(PlatformCompatibilityAllVersions, pName)));
                                     continue;
                                 }
+
                                 platformsBuilder.Add(AppendMessage(pAttribute, EncloseWithQuotes(pName)));
                             }
                             else
@@ -906,6 +913,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                     return supportedRule.GetValueOrDefault(true);
                 }
             }
+
             static DiagnosticDescriptor SwitchObsoletedRule(Callsite callsite)
             {
                 return callsite switch
@@ -957,6 +965,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                     {
                         customMessge = $"{customMessge} {attribute.ObsoletedUrl}";
                     }
+
                     message += string.Format(CultureInfo.InvariantCulture, ParenthesisWithPlaceHolder, customMessge);
                 }
                 else if (attribute.ObsoletedUrl is not null)
@@ -1126,6 +1135,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                                     platformNames.Add(GetFormattedString(PlatformCompatibilityAllVersions, pName));
                                     continue;
                                 }
+
                                 platformNames.Add(EncloseWithQuotes(pName));
                             }
                             else
@@ -1156,6 +1166,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                                         platformNames.Add(GetFormattedString(PlatformCompatibilityAllVersions, pName));
                                         continue;
                                     }
+
                                     platformNames.Add(EncloseWithQuotes(pName));
                                 }
                                 else
@@ -1177,6 +1188,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                         }
                     }
                 }
+
                 return platformNames.ToImmutable();
             }
 
@@ -1210,11 +1222,13 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                             version = supportedVersion.IsGreaterThanOrEqualTo(version) ? supportedVersion : version;
                         }
                     }
+
                     if (version != null && !IsEmptyVersion(version))
                     {
                         return true;
                     }
                 }
+
                 return false;
             }
 
@@ -1234,6 +1248,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                         return true;
                     }
                 }
+
                 return false;
             }
         }
@@ -1290,6 +1305,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 else
                     return iEvent.RemoveMethod;
             }
+
             return iEvent;
         }
 
@@ -1429,6 +1445,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
             {
                 copy.Platforms!.Add(platformName, CopyAllAttributes(new Versions(), attributes));
             }
+
             copy.IsAssemblyAttribute = copyAttributes.IsAssemblyAttribute;
             return copy;
         }
@@ -1667,6 +1684,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                     }
                 }
             }
+
             return !notSuppressedAttributes.IsEmpty;
 
             static void AddOrUpdatedDiagnostic(Versions operationAttributes,
@@ -1678,6 +1696,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                     {
                         diagnosticAttribute = new Versions();
                     }
+
                     diagnosticAttribute.SupportedFirst = (Version)operationAttributes.SupportedFirst.Clone();
                     notSuppressedAttributes[name] = diagnosticAttribute;
                 }
@@ -1776,8 +1795,10 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                         {
                             parentAttributes = new PlatformAttributes();
                         }
+
                         return;
                     }
+
                     if (s_osPlatformAttributes.Contains(attribute.AttributeClass.Name))
                     {
                         TryAddValidAttribute(ref childAttributes, attribute, relatedPlatforms);
@@ -1817,11 +1838,13 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                                                 existing.SupportedFirst = childAttribute.SupportedFirst;
                                             }
                                         }
+
                                         if (childAttribute.UnsupportedSecond != null && (existing.UnsupportedSecond == null ||
                                              childAttribute.UnsupportedSecond < existing.UnsupportedSecond))
                                         {
                                             existing.UnsupportedSecond = childAttribute.UnsupportedSecond;
                                         }
+
                                         if (existing.SupportedFirst != null &&
                                             childAttribute.SupportedFirst != null &&
                                             childAttribute.SupportedFirst > existing.SupportedFirst)
@@ -1881,6 +1904,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                                     {
                                         attributes.SupportedSecond = null;
                                     }
+
                                     if (childAttribute.UnsupportedSecond != null && childAttribute.UnsupportedSecond > attributes.UnsupportedFirst)
                                     {
                                         attributes.UnsupportedFirst = childAttribute.UnsupportedSecond;
@@ -1935,6 +1959,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                             parentAttributes.Callsite = Callsite.Empty;
                         }
                     }
+
                     parentAttributes.IsAssemblyAttribute = false;
                 }
                 else
@@ -1944,6 +1969,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                     {
                         pAttributes[platform] = attributes;
                     }
+
                     parentAttributes.Platforms = pAttributes;
                 }
 
@@ -1966,6 +1992,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                             unsupportedList.Add(platform);
                         }
                     }
+
                     if (allowList && unsupportedList.Count > 0)
                     {
                         foreach (var name in unsupportedList)
@@ -1993,6 +2020,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                     {
                         attributes.UnsupportedSecond = null;
                     }
+
                     return attributes;
                 }
             }

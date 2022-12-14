@@ -234,6 +234,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 {
                     return method;
                 }
+
                 containingSymbol = containingSymbol.ContainingSymbol;
             }
 
@@ -277,6 +278,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     return true;
                 }
             }
+
             return false;
         }
     }

@@ -35,6 +35,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                     theoryData.Add((BinaryOperatorKind)fixerData[0], (int)fixerData[1], withPredicate);
                 }
             }
+
             return theoryData;
         }
 
@@ -66,6 +67,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                     theoryData.Add((int)fixerData[0], (BinaryOperatorKind)fixerData[1], withPredicate);
                 }
             }
+
             return theoryData;
         }
 
@@ -91,6 +93,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                     theoryData.Add((BinaryOperatorKind)fixerData[0], (int)fixerData[1], withPredicate, (bool)fixerData[2]);
                 }
             }
+
             return theoryData;
         }
 
@@ -103,6 +106,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             {
                 theoryData.Add((BinaryOperatorKind)fixerData[0], (int)fixerData[1]);
             }
+
             return theoryData;
         }
 
@@ -128,6 +132,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                     theoryData.Add((int)fixerData[0], (BinaryOperatorKind)fixerData[1], withPredicate, (bool)fixerData[2]);
                 }
             }
+
             return theoryData;
         }
 
@@ -140,6 +145,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             {
                 theoryData.Add((int)fixerData[0], (BinaryOperatorKind)fixerData[1]);
             }
+
             return theoryData;
         }
     }

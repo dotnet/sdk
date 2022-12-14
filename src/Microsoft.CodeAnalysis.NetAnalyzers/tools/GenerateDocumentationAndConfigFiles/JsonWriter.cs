@@ -211,6 +211,7 @@ namespace Roslyn.Utilities
                         {
                             count++;
                         }
+
                         break;
                 }
             }

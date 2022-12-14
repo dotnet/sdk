@@ -53,6 +53,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Performance
                             {
                                 arg = arg.WithNameColon(arg.NameColon.WithName(SyntaxFactory.IdentifierName("source")));
                             }
+
                             var args = SyntaxFactory.ArgumentList(SyntaxFactory.SingletonSeparatedList(arg));
                             return SyntaxFactory.InvocationExpression(hashData, args);
                         }
@@ -69,6 +70,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Performance
                             {
                                 list[secondArgIndex] = secondArg.WithNameColon(SyntaxFactory.NameColon(SyntaxFactory.IdentifierName("start")));
                             }
+
                             var thirdArg = list[thirdArgIndex];
                             if (thirdArg.NameColon is not null)
                             {
@@ -90,6 +92,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Performance
                             {
                                 arg = arg.WithNameColon(SyntaxFactory.NameColon(SyntaxFactory.IdentifierName("source")));
                             }
+
                             var args = SyntaxFactory.ArgumentList(SyntaxFactory.SingletonSeparatedList(arg));
                             return SyntaxFactory.InvocationExpression(hashData, args);
                         }
@@ -135,6 +138,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Performance
                             break;
                         }
                 }
+
                 return root;
             }
 
@@ -165,6 +169,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Performance
                             newTrivia = AddRangeIfInteresting(newTrivia, usingStatement.GetTrailingTrivia());
                             statement = statement.WithTrailingTrivia(newTrivia);
                         }
+
                         return statement;
                     });
 

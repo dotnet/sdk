@@ -132,6 +132,7 @@ namespace Microsoft.NetFramework.Analyzers.Helpers
             {
                 return false;
             }
+
             Optional<object> value = model.GetConstantValue(node);
             return value.HasValue && value.Value == null;
         }
@@ -142,6 +143,7 @@ namespace Microsoft.NetFramework.Analyzers.Helpers
             {
                 return false;
             }
+
             Optional<object> value = model.GetConstantValue(node);
             return value.HasValue &&
                    value.Value is false;

@@ -139,6 +139,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     var renamedArgumentSyntax = generator.Argument(AsSpanStartParameterName, RefKind.None, namedStartIndexArgument.Value.Syntax);
                     invocationSyntax = generator.ReplaceNode(invocationSyntax, namedStartIndexArgument.Syntax, renamedArgumentSyntax);
                 }
+
                 var asSpanInvocationSyntax = ReplaceInvocationMethodName(generator, invocationSyntax, AsSpanName);
                 return generator.Argument(asSpanInvocationSyntax);
             }

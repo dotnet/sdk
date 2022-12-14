@@ -54,6 +54,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 {
                     return m.Parameters[0].Type.SpecialType == SpecialType.System_Char;
                 }
+
                 return false;
             });
 
@@ -89,6 +90,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 {
                     return true;
                 }
+
                 return false;
             }
         }

@@ -160,6 +160,7 @@ namespace Microsoft.NetFramework.CSharp.Analyzers.Helpers
                     }
                 }
             }
+
             return null;
         }
 
@@ -179,6 +180,7 @@ namespace Microsoft.NetFramework.CSharp.Analyzers.Helpers
                     var invocationNode = (ObjectCreationExpressionSyntax)node;
                     argList = invocationNode.ArgumentList;
                 }
+
                 if (argList != null)
                 {
                     return argList.Arguments.Select(arg => arg.Expression);
@@ -217,6 +219,7 @@ namespace Microsoft.NetFramework.CSharp.Analyzers.Helpers
             {
                 return false;
             }
+
             SyntaxKind kind = node.Kind();
             return kind is SyntaxKind.InvocationExpression or SyntaxKind.ObjectCreationExpression;
         }

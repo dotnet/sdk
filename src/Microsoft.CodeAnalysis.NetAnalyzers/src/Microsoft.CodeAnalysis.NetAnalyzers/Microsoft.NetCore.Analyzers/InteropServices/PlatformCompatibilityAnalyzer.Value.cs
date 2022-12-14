@@ -129,6 +129,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                     {
                         decodedOsPlatformNamesBuilder.Add(propertyReference.Property.Name);
                     }
+
                     return true;
                 }
 

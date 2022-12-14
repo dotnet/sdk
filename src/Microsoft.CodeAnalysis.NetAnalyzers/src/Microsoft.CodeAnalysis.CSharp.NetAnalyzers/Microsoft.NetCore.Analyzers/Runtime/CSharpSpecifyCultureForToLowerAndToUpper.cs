@@ -25,6 +25,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
             {
                 return memberBinding.Name.GetLocation();
             }
+
             return invocation.GetLocation();
         }
     }

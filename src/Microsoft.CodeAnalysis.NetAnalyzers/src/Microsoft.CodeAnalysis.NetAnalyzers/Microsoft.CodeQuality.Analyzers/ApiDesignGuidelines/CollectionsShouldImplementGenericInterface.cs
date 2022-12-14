@@ -147,6 +147,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     {
                         ReportDiagnostic(kvp.Key, kvp.Value[0]);
                     }
+
                     return;
                 }
             }

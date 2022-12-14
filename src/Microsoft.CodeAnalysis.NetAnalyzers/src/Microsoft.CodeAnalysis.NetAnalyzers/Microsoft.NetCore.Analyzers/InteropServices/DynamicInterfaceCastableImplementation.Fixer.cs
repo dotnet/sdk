@@ -34,6 +34,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
             {
                 return;
             }
+
             foreach (Diagnostic diagnostic in context.Diagnostics)
             {
                 if (diagnostic.Id == DynamicInterfaceCastableImplementationAnalyzer.InterfaceMembersMissingImplementationRuleId)
