@@ -247,7 +247,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 default:
                     variableInitializerOperation = null;
                     return false;
-            };
+            }
         }
 
         private static Diagnostic CreateDiagnostics(IInvocationOperation computeHashMethod,
