@@ -40,14 +40,14 @@ namespace Microsoft.DotNet.Cli
             // from an input string.
             // This lets us do fair comparisons against strings that are translated, since the placeholders
             // may be in various locations, and may have different quote characters in different languages.
-            return System.Text.RegularExpressions.Regex.Replace(input, @"['""](.*)['""]", string.Empty);
+            return System.Text.RegularExpressions.Regex.Replace(input, @"['""](.*?)['""]", string.Empty);
         }
 
         public static void ShowHelpOrErrorIfAppropriate(this ParseResult parseResult)
         {
             if (parseResult.Errors.Any())
             {
-                var unrecognizedTokenErrors = parseResult.Errors.Where(error => 
+                var unrecognizedTokenErrors = parseResult.Errors.Where(error =>
                 {
                     var strippedError = StripPlaceholdersFromString(error.Message);
                     var strippedRawResource = StripPlaceholdersFromString(Parser.Instance.Configuration.LocalizationResources.UnrecognizedCommandOrArgument(string.Empty));
