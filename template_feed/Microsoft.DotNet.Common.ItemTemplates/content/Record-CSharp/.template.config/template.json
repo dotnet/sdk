@@ -1,0 +1,93 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "Microsoft",
+  "classifications": [
+    "Common"
+  ],
+  "name": "Record",
+  "generatorVersions": "[1.0.0.0-*)",
+  "description": "A template for creating a record item",
+  "tags": {
+    "language": "C#",
+    "type": "item"
+  },
+  "groupIdentity": "DotNet.Common.Record",
+  "precedence": "0",
+  "identity": "DotNet.Common.Record.CSharp",
+  "shortName": "record",
+  "sourceName": "Class1",
+  "primaryOutputs": [
+    {
+      "path": "Class1.cs"
+    }
+  ],
+  "symbols": {
+    "DefaultNamespace": {
+      "type": "bind",
+      "binding": "msbuild:RootNamespace",
+      "replaces": "Company.ClassLibrary1"
+    },
+    "TargetFramework": {
+      "type": "bind",
+      "binding": "msbuild:TargetFramework"
+    },
+    "net5orLater": {
+      "type": "generated",
+      "generator": "regexMatch",
+      "datatype": "bool",
+      "parameters": {
+        "pattern": "^(net5.0|net6.0|net7.0|net8.0)$",
+        "source": "TargetFramework"
+      }
+    },
+    "net6orLater": {
+      "type": "generated",
+      "generator": "regexMatch",
+      "datatype": "bool",
+      "parameters": {
+        "pattern": "^(net6.0|net7.0|net8.0)$",
+        "source": "TargetFramework"
+      }
+    },
+    "langVersion": {
+      "type": "bind",
+      "binding": "msbuild:LangVersion"
+    },
+    "csharp8orOlder": {
+      "type": "generated",
+      "generator": "regexMatch",
+      "datatype": "bool",
+      "parameters": {
+        "pattern": "^(ISO-1|ISO-2|[1-7]|8|8\\.0|7\\.[0-3])$",
+        "source": "langVersion"
+      }
+    },
+    "csharp9": {
+      "type": "generated",
+      "generator": "regexMatch",
+      "datatype": "bool",
+      "parameters": {
+        "pattern": "^(9|9\\.0)$",
+        "source": "langVersion"
+      }
+    },
+    "csharp10orLater": {
+      "type": "computed",
+      "value": "!(csharp8orOlder || csharp9)"
+    },
+    "csharpFeature_RecordClass": {
+      "type": "computed",
+      "value": "net6orLater && csharp10orLater"
+    },
+    "csharpFeature_Record": {
+      "type": "computed",
+      "value": "net5orLater && csharp9"
+    }
+  },
+  "constraints": {
+    "csharp-only": {
+      "type": "project-capability",
+      "args": "CSharp"
+    }
+  }
+}
