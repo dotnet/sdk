@@ -6,7 +6,7 @@
   ],
   "name": "Class",
   "generatorVersions": "[1.0.0.0-*)",
-  "description": "A template for creating a class item",
+  "description": "Creates a new C# class",
   "tags": {
     "language": "C#",
     "type": "item"

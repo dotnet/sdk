@@ -6,7 +6,7 @@
   ],
   "name": "Record",
   "generatorVersions": "[1.0.0.0-*)",
-  "description": "A template for creating a record item",
+  "description": "Creates a new C# record",
   "tags": {
     "language": "C#",
     "type": "item"

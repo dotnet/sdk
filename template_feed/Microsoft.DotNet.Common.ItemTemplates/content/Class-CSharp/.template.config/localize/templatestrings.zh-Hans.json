@@ -1,5 +1,5 @@
 {
   "author": "Microsoft",
   "name": "Class",
-  "description": "A template for creating a class item"
+  "description": "Creates a new C# class"
 }

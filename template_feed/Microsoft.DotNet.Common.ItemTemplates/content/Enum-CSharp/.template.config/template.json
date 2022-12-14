@@ -6,7 +6,7 @@
   ],
   "name": "Enum",
   "generatorVersions": "[1.0.0.0-*)",
-  "description": "A template for creating an enum item",
+  "description": "Creates a new C# enum",
   "tags": {
     "language": "C#",
     "type": "item"

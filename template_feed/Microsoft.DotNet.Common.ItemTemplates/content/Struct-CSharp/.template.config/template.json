@@ -6,7 +6,7 @@
   ],
   "name": "Struct",
   "generatorVersions": "[1.0.0.0-*)",
-  "description": "A template for creating a struct item",
+  "description": "Creates a new C# struct",
   "tags": {
     "language": "C#",
     "type": "item"

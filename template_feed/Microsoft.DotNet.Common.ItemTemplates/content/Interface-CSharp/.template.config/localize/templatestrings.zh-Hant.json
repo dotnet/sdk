@@ -1,5 +1,5 @@
 {
   "author": "Microsoft",
   "name": "Interface",
-  "description": "A template for creating an interface item"
+  "description": "Creates a new C# interface"
 }

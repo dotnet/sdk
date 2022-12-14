@@ -1,5 +1,5 @@
 {
   "author": "Microsoft",
   "name": "Record",
-  "description": "A template for creating a record item"
+  "description": "Creates a new C# record"
 }
