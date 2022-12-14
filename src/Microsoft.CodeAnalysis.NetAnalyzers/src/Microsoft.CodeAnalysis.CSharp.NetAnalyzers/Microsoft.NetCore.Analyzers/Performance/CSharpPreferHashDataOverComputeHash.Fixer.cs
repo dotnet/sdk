@@ -214,7 +214,6 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Performance
                     ns = qualifiedNamespaceSyntax.ToFullString();
                 }
 
-
                 return ns;
             }
         }

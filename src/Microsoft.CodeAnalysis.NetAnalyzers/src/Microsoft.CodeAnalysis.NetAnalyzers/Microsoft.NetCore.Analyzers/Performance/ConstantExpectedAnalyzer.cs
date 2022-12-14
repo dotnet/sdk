@@ -157,7 +157,6 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 CheckParameters(methodSymbol.Parameters, interfaceMethodSymbol.Parameters);
             }
 
-
             void CheckParameters(ImmutableArray<IParameterSymbol> parameters, ImmutableArray<IParameterSymbol> baseParameters)
             {
                 if (constantExpectedContext.ValidatesAttributeImplementedFromParent(parameters, baseParameters, out var diagnostics))
@@ -569,7 +568,6 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 }
             }
         }
-
 
         protected abstract class DiagnosticHelper
         {
