@@ -2,21 +2,6 @@
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="zh-Hant" original="../MicrosoftNetFrameworkAnalyzersResources.resx">
     <body>
-      <trans-unit id="SpecifyMessageBoxOptionsTitle">
-        <source>Specify MessageBoxOptions</source>
-        <target state="translated">指定 MessageBoxOptions</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SpecifyMessageBoxOptionsDescription">
-        <source>To correctly display a message box for cultures that use a right-to-left reading order, the RightAlign and RtlReading members of the MessageBoxOptions enumeration must be passed to the Show method.</source>
-        <target state="translated">為正確顯示由右至左閱讀順序文化特性 (Culture) 的訊息方塊，必須將 MessageBoxOptions 列舉的 RightAlign 與 RtlReading 成員傳遞到 Show 方法。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SpecifyMessageBoxOptionsMessage">
-        <source>Specify MessageBoxOptions</source>
-        <target state="translated">指定 MessageBoxOptions</target>
-        <note />
-      </trans-unit>
       <trans-unit id="AvoidDuplicateAcceleratorsTitle">
         <source>Avoid duplicate accelerators</source>
         <target state="translated">避免重複的快速鍵</target>
@@ -60,21 +45,6 @@
       <trans-unit id="DoNotMarkServicedComponentsWithWebMethodMessage">
         <source>Do not mark serviced components with WebMethod</source>
         <target state="translated">請勿將 Serviced 元件標記為 WebMethod</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="MarkWindowsFormsEntryPointsWithStaThreadTitle">
-        <source>Mark Windows Forms entry points with STAThread</source>
-        <target state="translated">將 Windows Forms 進入點標記為 STAThread</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="MarkWindowsFormsEntryPointsWithStaThreadDescription">
-        <source>STAThreadAttribute indicates that the COM threading model for the application is a single-threaded apartment. This attribute must be present on the entry point of any application that uses Windows Forms; if it is omitted, the Windows components might not work correctly.</source>
-        <target state="translated">STAThreadAttribute 表示應用程式的 COM 執行緒模式是單一執行緒 Apartment。所有使用 Windows Forms 的應用程式之進入點上，都必須要有此屬性，如果省略此屬性，Windows 元件可能會無法正確運作。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="MarkWindowsFormsEntryPointsWithStaThreadMessage">
-        <source>Mark Windows Forms entry points with STAThread</source>
-        <target state="translated">將 Windows Forms 進入點標記為 STAThread</target>
         <note />
       </trans-unit>
       <trans-unit id="CallBaseClassMethodsOnISerializableTypesTitle">

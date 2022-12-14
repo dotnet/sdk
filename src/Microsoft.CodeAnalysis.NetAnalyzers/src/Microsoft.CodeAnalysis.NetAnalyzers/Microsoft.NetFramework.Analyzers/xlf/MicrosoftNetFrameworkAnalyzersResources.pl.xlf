@@ -2,21 +2,6 @@
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="pl" original="../MicrosoftNetFrameworkAnalyzersResources.resx">
     <body>
-      <trans-unit id="SpecifyMessageBoxOptionsTitle">
-        <source>Specify MessageBoxOptions</source>
-        <target state="translated">Określ argument MessageBoxOptions</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SpecifyMessageBoxOptionsDescription">
-        <source>To correctly display a message box for cultures that use a right-to-left reading order, the RightAlign and RtlReading members of the MessageBoxOptions enumeration must be passed to the Show method.</source>
-        <target state="translated">Aby prawidłowo wyświetlać okna komunikatów w krajach, w których tekst jest czytany od prawej do lewej strony, elementy członkowskie RightAlign oraz RtlReading wyliczenia MessageBoxOptions muszą zostać przekazane do metody Show.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SpecifyMessageBoxOptionsMessage">
-        <source>Specify MessageBoxOptions</source>
-        <target state="translated">Określ argument MessageBoxOptions</target>
-        <note />
-      </trans-unit>
       <trans-unit id="AvoidDuplicateAcceleratorsTitle">
         <source>Avoid duplicate accelerators</source>
         <target state="translated">Unikaj duplikowania akceleratorów</target>
@@ -60,21 +45,6 @@
       <trans-unit id="DoNotMarkServicedComponentsWithWebMethodMessage">
         <source>Do not mark serviced components with WebMethod</source>
         <target state="translated">Nie oznaczaj usługowych składników atrybutem WebMethod</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="MarkWindowsFormsEntryPointsWithStaThreadTitle">
-        <source>Mark Windows Forms entry points with STAThread</source>
-        <target state="translated">Oznacz punkty wejścia modelu Windows Forms atrybutem STAThread</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="MarkWindowsFormsEntryPointsWithStaThreadDescription">
-        <source>STAThreadAttribute indicates that the COM threading model for the application is a single-threaded apartment. This attribute must be present on the entry point of any application that uses Windows Forms; if it is omitted, the Windows components might not work correctly.</source>
-        <target state="translated">Atrybut STAThreadAttribute wskazuje, że model wątków COM dla aplikacji jest komórką jednowątkową. Ten atrybut musi być obecny w punkcie wejścia każdej aplikacji, która używa modelu Windows Forms. Jeśli zostanie pominięty, komponenty systemu Windows mogą funkcjonować nieprawidłowo.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="MarkWindowsFormsEntryPointsWithStaThreadMessage">
-        <source>Mark Windows Forms entry points with STAThread</source>
-        <target state="translated">Oznacz punkty wejścia modelu Windows Forms atrybutem STAThread</target>
         <note />
       </trans-unit>
       <trans-unit id="CallBaseClassMethodsOnISerializableTypesTitle">
