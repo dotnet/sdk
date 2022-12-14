@@ -117,15 +117,6 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="SpecifyMessageBoxOptionsTitle" xml:space="preserve">
-    <value>Specify MessageBoxOptions</value>
-  </data>
-  <data name="SpecifyMessageBoxOptionsDescription" xml:space="preserve">
-    <value>To correctly display a message box for cultures that use a right-to-left reading order, the RightAlign and RtlReading members of the MessageBoxOptions enumeration must be passed to the Show method.</value>
-  </data>
-  <data name="SpecifyMessageBoxOptionsMessage" xml:space="preserve">
-    <value>Specify MessageBoxOptions</value>
-  </data>
   <data name="AvoidDuplicateAcceleratorsTitle" xml:space="preserve">
     <value>Avoid duplicate accelerators</value>
   </data>
@@ -152,15 +143,6 @@
   </data>
   <data name="DoNotMarkServicedComponentsWithWebMethodMessage" xml:space="preserve">
     <value>Do not mark serviced components with WebMethod</value>
-  </data>
-  <data name="MarkWindowsFormsEntryPointsWithStaThreadTitle" xml:space="preserve">
-    <value>Mark Windows Forms entry points with STAThread</value>
-  </data>
-  <data name="MarkWindowsFormsEntryPointsWithStaThreadDescription" xml:space="preserve">
-    <value>STAThreadAttribute indicates that the COM threading model for the application is a single-threaded apartment. This attribute must be present on the entry point of any application that uses Windows Forms; if it is omitted, the Windows components might not work correctly.</value>
-  </data>
-  <data name="MarkWindowsFormsEntryPointsWithStaThreadMessage" xml:space="preserve">
-    <value>Mark Windows Forms entry points with STAThread</value>
   </data>
   <data name="CallBaseClassMethodsOnISerializableTypesTitle" xml:space="preserve">
     <value>Call base class methods on ISerializable types</value>
