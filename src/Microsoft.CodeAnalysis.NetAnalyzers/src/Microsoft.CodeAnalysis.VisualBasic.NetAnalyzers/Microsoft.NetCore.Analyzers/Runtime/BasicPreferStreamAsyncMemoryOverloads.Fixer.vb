@@ -35,6 +35,7 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Runtime
                     End If
                 End If
             End If
+
             Return Nothing
         End Function
 
@@ -53,6 +54,7 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Runtime
                     Next
                 End If
             Next
+
             Return False
         End Function
 
@@ -62,6 +64,7 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Runtime
             If arg1 Is Nothing Then
                 Return False
             End If
+
             Dim firstArgumentIdentifierName = TryCast(arg1.GetExpression(), IdentifierNameSyntax)
             If firstArgumentIdentifierName Is Nothing Then
                 Return False
@@ -71,6 +74,7 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Runtime
             If arg2 Is Nothing Then
                 Return False
             End If
+
             Dim literal = TryCast(arg2.GetExpression(), LiteralExpressionSyntax)
             If literal Is Nothing Then
                 Return False
@@ -89,6 +93,7 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Runtime
             If arg3 Is Nothing Then
                 Return False
             End If
+
             Dim thirdArgumentMemberAccessExpression = TryCast(arg3.GetExpression(), MemberAccessExpressionSyntax)
             If thirdArgumentMemberAccessExpression Is Nothing Then
                 Return False
@@ -100,6 +105,7 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Runtime
                 String.Equals(thirdArgumentMemberAccessExpression.Name.Identifier.Text, WellKnownMemberNames.LengthPropertyName, StringComparison.OrdinalIgnoreCase) Then
                 Return True
             End If
+
             Return False
         End Function
 
@@ -115,8 +121,10 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Runtime
                 If argument IsNot Nothing Then
                     actualNode = argument.GetExpression()
                 End If
+
                 Return generator.Argument(newName, RefKind.None, actualNode)
             End If
+
             Return node
         End Function
 
@@ -126,6 +134,7 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Runtime
             If argument IsNot Nothing Then
                 actualNode = argument.GetExpression()
             End If
+
             Return generator.MemberAccessExpression(actualNode.WithoutTrivia(), memberName)
         End Function
     End Class

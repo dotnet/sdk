@@ -39,6 +39,7 @@ Namespace Microsoft.CodeQuality.VisualBasic.Analyzers.ApiDesignGuidelines
                         If declarator.Names.Count > 1 Then
                             Continue For
                         End If
+
                         Dim firstFieldName = declarator.Names.First()
                         If TypeOf declarator?.Initializer?.Value Is ObjectCreationExpressionSyntax Then
                             Dim field = TryCast(model.GetDeclaredSymbol(firstFieldName, cancellationToken), IFieldSymbol)

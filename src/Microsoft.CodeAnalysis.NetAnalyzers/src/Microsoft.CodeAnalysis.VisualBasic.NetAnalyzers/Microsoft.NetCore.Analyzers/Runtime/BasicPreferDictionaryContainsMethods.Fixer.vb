@@ -42,6 +42,7 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Runtime
 
                         Return editor.GetChangedDocument()
                     End Function
+
                 Dim codeFixTitle = MicrosoftNetCoreAnalyzersResources.PreferDictionaryContainsKeyCodeFixTitle
                 Dim action = CodeAction.Create(codeFixTitle, ReplaceWithContainsKey, codeFixTitle)
                 context.RegisterCodeFix(action, context.Diagnostics)
@@ -56,6 +57,7 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Runtime
 
                         Return editor.GetChangedDocument()
                     End Function
+
                 Dim codeFixTitle = MicrosoftNetCoreAnalyzersResources.PreferDictionaryContainsValueCodeFixTitle
                 Dim action = CodeAction.Create(codeFixTitle, ReplaceWithContainsValue, codeFixTitle)
                 context.RegisterCodeFix(action, context.Diagnostics)

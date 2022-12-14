@@ -53,6 +53,7 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Performance
                     Dim variableDeclaratorSyntax = DirectCast(currentCreateNode, VariableDeclaratorSyntax)
                     root = RemoveNodeWithFormatting(root, variableDeclaratorSyntax)
                 End If
+
                 Return root
             End Function
 
@@ -70,6 +71,7 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Performance
                                                                       newTrivia = AddRangeIfInteresting(newTrivia, usingBlock.EndUsingStatement.GetTrailingTrivia())
                                                                       statement = statement.WithTrailingTrivia(newTrivia)
                                                                   End If
+
                                                                   Return statement
                                                               End Function)
                 Dim parent = usingBlock.Parent
@@ -92,6 +94,7 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Performance
                 If namespacePrefix IsNot Nothing Then
                     identifier = namespacePrefix + "." + identifier
                 End If
+
                 Dim argumentList = DirectCast(computeHashNode, InvocationExpressionSyntax).ArgumentList
                 Select Case computeType
                     Case PreferHashDataOverComputeHashAnalyzer.ComputeType.ComputeHash
@@ -104,6 +107,7 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Performance
                         If arg.IsNamed Then
                             arg = DirectCast(arg, SimpleArgumentSyntax).WithNameColonEquals(SyntaxFactory.NameColonEquals(SyntaxFactory.IdentifierName("source")))
                         End If
+
                         Dim args = SyntaxFactory.ArgumentList(SyntaxFactory.SingletonSeparatedList(Of ArgumentSyntax)(arg))
                         Return SyntaxFactory.InvocationExpression(hashData, args)
                     Case PreferHashDataOverComputeHashAnalyzer.ComputeType.ComputeHashSection
@@ -116,6 +120,7 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Performance
                         If secondArg.IsNamed Then
                             list(secondArgIndex) = secondArg.WithNameColonEquals(SyntaxFactory.NameColonEquals(SyntaxFactory.IdentifierName("start")))
                         End If
+
                         Dim thirdArg = DirectCast(list(thirdArgIndex), SimpleArgumentSyntax)
                         If thirdArg.IsNamed Then
                             list(thirdArgIndex) = thirdArg.WithNameColonEquals(SyntaxFactory.NameColonEquals(SyntaxFactory.IdentifierName("length")))
@@ -138,6 +143,7 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Performance
                         If firstArg.IsNamed Then
                             arg = arg.WithNameColonEquals(SyntaxFactory.NameColonEquals(SyntaxFactory.IdentifierName("source")))
                         End If
+
                         Dim args = SyntaxFactory.ArgumentList(SyntaxFactory.SingletonSeparatedList(Of ArgumentSyntax)(arg))
                         Return SyntaxFactory.InvocationExpression(hashData, args)
                     Case PreferHashDataOverComputeHashAnalyzer.ComputeType.TryComputeHash
@@ -149,6 +155,7 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Performance
                     SyntaxFactory.IdentifierName(PreferHashDataOverComputeHashAnalyzer.TryHashDataMethodName))
                         Return SyntaxFactory.InvocationExpression(hashData, argumentList)
                 End Select
+
                 Debug.Fail("there is only 3 type of ComputeHash")
                 Throw New InvalidOperationException("there is only 3 type of ComputeHash")
             End Function
@@ -188,6 +195,7 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Performance
                         End If
                     End If
                 End If
+
                 Return ns
             End Function
             Private Shared Function GetNamespacePrefixes(objectCreation As ObjectCreationExpressionSyntax) As String
@@ -198,6 +206,7 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Performance
                         Return qualifiedNamespace.ToString()
                     End If
                 End If
+
                 Return Nothing
             End Function
             Private Shared Function GetNamespacePrefixes(invocationExpression As InvocationExpressionSyntax) As String
@@ -208,6 +217,7 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Performance
                         Return originalType.Expression.ToString()
                     End If
                 End If
+
                 Return Nothing
             End Function
         End Class

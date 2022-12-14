@@ -157,6 +157,7 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Runtime
                     Return GetSyntaxNodeFromTypeConstraints(methodDeclaration.TypeParameterList, previewInterfaceConstraintSymbol)
                 End If
             Next
+
             Return Nothing
         End Function
 
