@@ -11,14 +11,14 @@
   <Target Name="Build" DependsOnTargets="PrepareOutput;InitBuild">
     <Message Text="Build Environment: $(Platform) $(Configuration) $(TargetOS) $(TargetRid)" />
 
-    <MSBuild Projects="repos\$(RootRepo).proj" Targets="Build" BuildInParallel="$(BuildInParallel)" StopOnFirstFailure="true" />
+    <MSBuild Projects="$(RepoProjectsDir)$(RootRepo).proj" Targets="Build" BuildInParallel="$(BuildInParallel)" StopOnFirstFailure="true" />
   </Target>
 
   <Target Name="RunRepoTests" DependsOnTargets="PrepareOutput;InitBuild">
     <Message Text="Build Environment: $(Platform) $(Configuration) $(TargetOS) $(TargetRid)" />
 
-    <MSBuild Projects="repos\$(RootRepoTests).proj" Targets="Build" Properties="PrepForTests=true;SkipEnsurePackagesCreated=true" BuildInParallel="$(BuildInParallel)" StopOnFirstFailure="true" />
-    <MSBuild Projects="repos\$(RootRepoTests).proj" Targets="Build" Properties="RunTests=true;SkipEnsurePackagesCreated=true" BuildInParallel="$(BuildInParallel)" StopOnFirstFailure="true" />
+    <MSBuild Projects="$(RepoProjectsDir)$(RootRepoTests).proj" Targets="Build" Properties="PrepForTests=true;SkipEnsurePackagesCreated=true" BuildInParallel="$(BuildInParallel)" StopOnFirstFailure="true" />
+    <MSBuild Projects="$(RepoProjectsDir)$(RootRepoTests).proj" Targets="Build" Properties="RunTests=true;SkipEnsurePackagesCreated=true" BuildInParallel="$(BuildInParallel)" StopOnFirstFailure="true" />
   </Target>
 
   <Target Name="PrepareOutput">
@@ -36,7 +36,7 @@
   </Target>
 
   <Target Name="InitBuild">
-    <MSBuild Projects="tools-local/init-build.proj" />
+    <MSBuild Projects="$(ToolsDir)init-build.proj" />
   </Target>
 
   <Target Name="Clean">
@@ -47,7 +47,7 @@
   <Target Name="ReportPrebuiltUsage"
           AfterTargets="Build"
           Condition="'$(SkipReportPrebuiltUsage)' != 'true'">
-    <MSBuild Projects="repos\$(RootRepo).proj" Targets="WritePrebuiltUsageData;ReportPrebuiltUsage" />
+    <MSBuild Projects="$(RepoProjectsDir)$(RootRepo).proj" Targets="WritePrebuiltUsageData;ReportPrebuiltUsage" />
   </Target>
 
   <!--
@@ -57,7 +57,7 @@
     XMLs based on the info put in artifacts/.
   -->
   <Target Name="RewritePrebuiltUsageReport">
-    <MSBuild Projects="repos\$(RootRepo).proj" Targets="ReportPrebuiltUsage" />
+    <MSBuild Projects="$(RepoProjectsDir)$(RootRepo).proj" Targets="ReportPrebuiltUsage" />
   </Target>
 
   <Target Name="ReportPoisonUsage"

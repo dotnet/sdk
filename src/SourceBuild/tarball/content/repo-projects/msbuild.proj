@@ -57,7 +57,7 @@
     </ItemGroup>
 
     <PropertyGroup>
-      <CentralVersionsSdkDir>$(ToolPackageExtractDir)%(_CentralVersionsToolPackage.Id)/</CentralVersionsSdkDir>
+      <CentralVersionsSdkDir>$(SourceBuiltSdksDir)%(_CentralVersionsToolPackage.Id)/</CentralVersionsSdkDir>
     </PropertyGroup>
 
     <Message Importance="High" Text="Setting up SDK package for UseSourceBuiltSdkOverride: %(_CentralVersionsToolPackage.Filename)" />

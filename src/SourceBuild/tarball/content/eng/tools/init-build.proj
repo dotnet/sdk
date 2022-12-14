@@ -173,7 +173,7 @@
     <!-- Allow overriding of Arcade targets for SourceBuild to enable quicker
          dev turnaround for Preview 6 -->
     <ItemGroup>
-      <OverrideArcadeFiles Include="$(ProjectDir)ArcadeOverrides/**/*" />
+      <OverrideArcadeFiles Include="$(ArcadeOverridesDir)**/*" />
     </ItemGroup>
 
     <Copy

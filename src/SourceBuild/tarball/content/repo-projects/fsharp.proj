@@ -33,7 +33,7 @@
   <Target Name="SetArcadeSdkDir"
           BeforeTargets="Build">
     <ItemGroup>
-      <EnvironmentVariables Include="ArcadeSdkDir=$(ToolPackageExtractDir)%(UseSourceBuiltSdkOverride.Identity)/" />
+      <EnvironmentVariables Include="ArcadeSdkDir=$(SourceBuiltSdksDir)%(UseSourceBuiltSdkOverride.Identity)/" />
     </ItemGroup>
   </Target>
 

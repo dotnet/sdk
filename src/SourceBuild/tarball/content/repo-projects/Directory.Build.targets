@@ -503,7 +503,7 @@
 
     <ItemGroup>
         <!-- Excluding Arcade here will keep it in the cache, because that's where we're running from.
-             Subsequent projects will get Arcade from Tools/source-built. -->
+             Subsequent projects will get Arcade from eng/source-built-sdks. -->
         <PackagePaths Include="@(_BuiltPackages)" Exclude="$(PackagesOutput)/Microsoft.DotNet.Arcade.Sdk.*.nupkg" />
     </ItemGroup>
 
@@ -593,28 +593,28 @@
     </ItemGroup>
 
     <ZipFileExtractToDirectory SourceArchive="%(_ToolPackage.Identity)"
-                               DestinationDirectory="$(ToolPackageExtractDir)%(_ToolPackage.Id)\"
+                               DestinationDirectory="$(SourceBuiltSdksDir)%(_ToolPackage.Id)\"
                                OverwriteDestination="true" />
     <ItemGroup>
-      <ExtractedToolFiles Include="$(ToolPackageExtractDir)%(_ToolPackage.Id)/**/*netcore*/*.dll" />
+      <ExtractedToolFiles Include="$(SourceBuiltSdksDir)%(_ToolPackage.Id)/**/*netcore*/*.dll" />
     </ItemGroup>
 
-    <Copy SourceFiles="@(ExtractedToolFiles)" DestinationFolder="$(ToolPackageExtractDir)/" />
+    <Copy SourceFiles="@(ExtractedToolFiles)" DestinationFolder="$(SourceBuiltSdksDir)/" />
 
     <!-- TODO: When unpacking using ZipFileExtractToDirectory, this executable file has the wrong
          permissions.  See https://github.com/dotnet/source-build/issues/2259 -->
     <Exec Command="chmod 755 git-clone-to-dir.sh"
       Condition=" '%(_ToolPackage.Id)' == 'Microsoft.DotNet.Arcade.Sdk' "
-      WorkingDirectory="$(ToolPackageExtractDir)%(_ToolPackage.Id)/tools/SourceBuild/" />
+      WorkingDirectory="$(SourceBuiltSdksDir)%(_ToolPackage.Id)/tools/SourceBuild/" />
 
     <!-- Allow overriding of Arcade targets for SourceBuild to enable quicker
          dev turnaround for Preview 6 -->
     <PropertyGroup>
       <ArcadeSDKToolPackagePath></ArcadeSDKToolPackagePath>
-      <ArcadeSDKToolPackagePath Condition=" '%(_ToolPackage.Id)' == 'Microsoft.DotNet.Arcade.Sdk' ">$(ToolPackageExtractDir)%(_ToolPackage.Id)/</ArcadeSDKToolPackagePath>
+      <ArcadeSDKToolPackagePath Condition=" '%(_ToolPackage.Id)' == 'Microsoft.DotNet.Arcade.Sdk' ">$(SourceBuiltSdksDir)%(_ToolPackage.Id)/</ArcadeSDKToolPackagePath>
     </PropertyGroup>
     <ItemGroup>
-      <OverrideArcadeFiles Include="$(ProjectDir)ArcadeOverrides/**/*" />
+      <OverrideArcadeFiles Include="$(ArcadeOverridesDir)**/*" />
     </ItemGroup>
 
     <Copy
@@ -684,7 +684,7 @@
       <EnvironmentVariables Include="SOURCE_BUILT_SDK_ID_%(UseSourceBuiltSdkOverride.Group)=%(UseSourceBuiltSdkOverride.Identity)" />
       <EnvironmentVariables Include="SOURCE_BUILT_SDK_VERSION_%(UseSourceBuiltSdkOverride.Group)=%(UseSourceBuiltSdkOverride.Version)" />
       <EnvironmentVariables Condition="'%(UseSourceBuiltSdkOverride.Location)' != ''" Include="SOURCE_BUILT_SDK_DIR_%(UseSourceBuiltSdkOverride.Group)=%(UseSourceBuiltSdkOverride.Location)/" />
-      <EnvironmentVariables Condition="'%(UseSourceBuiltSdkOverride.Location)' == ''" Include="SOURCE_BUILT_SDK_DIR_%(UseSourceBuiltSdkOverride.Group)=$(ToolPackageExtractDir)%(UseSourceBuiltSdkOverride.Identity)/" />
+      <EnvironmentVariables Condition="'%(UseSourceBuiltSdkOverride.Location)' == ''" Include="SOURCE_BUILT_SDK_DIR_%(UseSourceBuiltSdkOverride.Group)=$(SourceBuiltSdksDir)%(UseSourceBuiltSdkOverride.Identity)/" />
     </ItemGroup>
   </Target>
 
@@ -714,7 +714,7 @@
       <PlatformsRuntimeJsonFiles Include="$(PackagesDir)microsoft.netcore.platforms/*/runtime.json" />
 
       <!-- Add some other potential top-level project directories for a more specific report. -->
-      <ProjectDirectories Include="$(ToolsDir);$(TaskDirectory);$(BaseIntermediatePath)" />
+      <ProjectDirectories Include="$(SourceBuiltSdksDir);$(TaskDirectory);$(BaseIntermediatePath)" />
       <!-- Finally, scan entire source-build, in case project.assets.json ends up in an unexpected place. -->
       <ProjectDirectories Include="$(ProjectDir)" />
     </ItemGroup>
@@ -761,7 +761,7 @@
 
   <Target Name="GetAllProjectDirectories">
     <ItemGroup>
-      <AllRepoProjects Include="$(ProjectDir)repos\*.proj" />
+      <AllRepoProjects Include="$(RepoProjectsDir)*.proj" />
     </ItemGroup>
 
     <Message Importance="High" Text="Finding project directories..." />

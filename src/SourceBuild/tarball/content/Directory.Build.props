@@ -33,7 +33,7 @@
   <PropertyGroup>
     <ProjectDir>$(MSBuildThisFileDirectory)</ProjectDir>
     <TargetsDir>$(ProjectDir)targets/</TargetsDir>
-    <KeysDir>$(ProjectDir)keys/</KeysDir>
+    <KeysDir>$(ProjectDir)prereqs/keys/</KeysDir>
     <DotNetCliToolDir Condition="'$(DotNetCliToolDir)' == '' and '$(CustomDotNetSdkDir)' != ''">$([MSBuild]::EnsureTrailingSlash('$(CustomDotNetSdkDir)'))</DotNetCliToolDir>
     <DotNetCliToolDir Condition="'$(DotNetCliToolDir)' == '' and '$(DOTNET_INSTALL_DIR)' != ''">$([MSBuild]::NormalizeDirectory('$(DOTNET_INSTALL_DIR)'))</DotNetCliToolDir>
     <DotNetCliToolDir Condition="'$(DotNetCliToolDir)' == ''">$(ProjectDir).dotnet/</DotNetCliToolDir>
@@ -83,12 +83,12 @@
   </PropertyGroup>
 
   <PropertyGroup>
+    <ArcadeOverridesDir>$(RepositoryEngineeringDir)arcade-overrides/</ArcadeOverridesDir>
     <BaseOutputPath>$(ArtifactsDir)</BaseOutputPath>
     <ClonedSubmoduleGitRootDirectory Condition="'$(ClonedSubmoduleGitRootDirectory)' == ''">$(ProjectDir).git/modules/src/</ClonedSubmoduleGitRootDirectory>
-    <ToolsDir>$(ProjectDir)Tools/</ToolsDir>
-    <ToolPackageExtractDir>$(ToolsDir)source-built/</ToolPackageExtractDir>
-    <ToolsLocalDir>$(ProjectDir)tools-local/</ToolsLocalDir>
-    <TaskDirectory>$(ToolsLocalDir)tasks/</TaskDirectory>
+    <SourceBuiltSdksDir>$(ArtifactsDir)source-built-sdks/</SourceBuiltSdksDir>
+    <ToolsDir>$(RepositoryEngineeringDir)/tools/</ToolsDir>
+    <TaskDirectory>$(ToolsDir)tasks/</TaskDirectory>
 
     <XPlatTasksBinDir>$(TaskDirectory)Microsoft.DotNet.SourceBuild.Tasks.XPlat/bin/$(Configuration)/</XPlatTasksBinDir>
     <XPlatSourceBuildTasksAssembly>$(XPlatTasksBinDir)Microsoft.DotNet.SourceBuild.Tasks.XPlat.dll</XPlatSourceBuildTasksAssembly>
@@ -129,6 +129,7 @@
     <OfflineGitInfoPropsFile>$(GitInfoOfflineDir)$(RepositoryName).props</OfflineGitInfoPropsFile>
     <OfflineAllRepoPropsFile>$(GitInfoOfflineDir)AllRepoVersions.props</OfflineAllRepoPropsFile>
     <PackageReportDir>$(BaseOutputPath)prebuilt-report/</PackageReportDir>
+    <RepoProjectsDir>$(ProjectDir)/repo-projects/</RepoProjectsDir>
     <ResultingPrebuiltPackagesDir>$(PackageReportDir)prebuilt-packages/</ResultingPrebuiltPackagesDir>
     <PackageReportDataFile>$(PackageReportDir)prebuilt-usage.xml</PackageReportDataFile>
     <PoisonUsageReportFile>$(PackageReportDir)poison-usage.xml</PoisonUsageReportFile>
@@ -148,14 +149,11 @@
     <SourceBuiltArtifactsTarballUrl>https://dotnetcli.azureedge.net/source-built-artifacts/assets/</SourceBuiltArtifactsTarballUrl>
     <ArchiveArtifactsTextFileName>archiveArtifacts.txt</ArchiveArtifactsTextFileName>
     <ArchiveArtifactsTextFile>$(ExternalTarballsDir)$(ArchiveArtifactsTextFileName)</ArchiveArtifactsTextFile>
-    <BaselineDataFile>$(ToolsLocalDir)prebuilt-baseline.xml</BaselineDataFile>
+    <BaselineDataFile>$(ToolsDir)prebuilt-baseline.xml</BaselineDataFile>
     <!--Exclude tests that are failing for test enabled projects like - corefx -->
     <TestExclusionsDir>$(ProjectDir)test/exclusions/</TestExclusionsDir>
     <SmokeTestsDir>$(ProjectDir)test/Microsoft.DotNet.SourceBuild.SmokeTests/</SmokeTestsDir>
   </PropertyGroup>
-
-  <!-- Import Build tools common props file where repo-independent properties are found -->
-  <Import Project="$(ToolsDir)Build.Common.props" Condition="Exists('$(ToolsDir)Build.Common.props')" />
 
   <PropertyGroup>
     <ArmEnvironmentVariables Condition="'$(ArmEnvironmentVariables)' == ''">ROOTFS_DIR=$(BaseIntermediatePath)crossrootfs/arm</ArmEnvironmentVariables>

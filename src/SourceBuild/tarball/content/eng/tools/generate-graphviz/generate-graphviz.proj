@@ -4,10 +4,10 @@
   <Target Name="Build">
     <ItemGroup>
       <AllRepoProjects
-        Include="$(ProjectDir)repos\*.proj"
+        Include="$(ProjectDir)repo-projects\*.proj"
         Exclude="
-          $(ProjectDir)repos\known-good.proj;
-          $(ProjectDir)repos\known-good-tests.proj" />
+          $(ProjectDir)repo-projects\known-good.proj;
+          $(ProjectDir)repo-projects\known-good-tests.proj" />
     </ItemGroup>
 
     <MSBuild

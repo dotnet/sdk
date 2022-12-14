@@ -183,7 +183,7 @@ LogDateStamp=$(date +"%m%d%H%M%S")
 if [ "$alternateTarget" == "true" ]; then
   "$CLI_ROOT/dotnet" msbuild "$SCRIPT_ROOT/build.proj" -bl:$SCRIPT_ROOT/artifacts/log/Debug/BuildTests_$LogDateStamp.binlog -flp:LogFile=$SCRIPT_ROOT/artifacts/logs/BuildTests_$LogDateStamp.log -clp:v=m ${MSBUILD_ARGUMENTS[@]} "$@"
 else
-  "$CLI_ROOT/dotnet" msbuild "$SCRIPT_ROOT/tools-local/init-build.proj" -bl:$SCRIPT_ROOT/artifacts/log/Debug/BuildXPlatTasks_$LogDateStamp.binlog -flp:LogFile=$SCRIPT_ROOT/artifacts/logs/BuildXPlatTasks_$LogDateStamp.log -t:PrepareOfflineLocalTools ${MSBUILD_ARGUMENTS[@]} "$@"
+  "$CLI_ROOT/dotnet" msbuild "$SCRIPT_ROOT/eng/tools/init-build.proj" -bl:$SCRIPT_ROOT/artifacts/log/Debug/BuildXPlatTasks_$LogDateStamp.binlog -flp:LogFile=$SCRIPT_ROOT/artifacts/logs/BuildXPlatTasks_$LogDateStamp.log -t:PrepareOfflineLocalTools ${MSBUILD_ARGUMENTS[@]} "$@"
   # kill off the MSBuild server so that on future invocations we pick up our custom SDK Resolver
   "$CLI_ROOT/dotnet" build-server shutdown
 
