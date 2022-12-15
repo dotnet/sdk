@@ -594,10 +594,9 @@ class C
     }
 }";
             string fixedCode = @"
+using System;
 using System.IO;
 using System.Threading;
-using System;
-
 class C
 {
     public async void M()
@@ -906,10 +905,9 @@ Class C
 End Class
 ";
             string fixedCode = @"
+Imports System
 Imports System.IO
 Imports System.Threading
-Imports System
-
 Class C
     Public Async Sub M()
         Using s As FileStream = New FileStream(""path.txt"", FileMode.Create)
