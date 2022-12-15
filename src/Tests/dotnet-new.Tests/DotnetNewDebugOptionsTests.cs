@@ -124,8 +124,8 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             string[] createdCacheEntries = Directory.GetFileSystemEntries(home);
 
             Assert.Equal(2, createdCacheEntries.Length);
-            Assert.Contains(Path.Combine(home, ".templateengine", "packages"), createdCacheEntries);
-            Assert.True(File.Exists(Path.Combine(home, ".templateengine", "dotnetcli", Product.Version, "templatecache.json")));
+            Assert.Contains(Path.Combine(home, "packages"), createdCacheEntries);
+            Assert.True(File.Exists(Path.Combine(home, "dotnetcli", Product.Version, "templatecache.json")));
         }
 
         [Fact]
