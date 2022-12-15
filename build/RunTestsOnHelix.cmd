@@ -37,4 +37,4 @@ dir /B  Assets\TestPackages\*.csproj /s
 robocopy %HELIX_CORRELATION_PAYLOAD%\t\TestExecutionDirectoryFiles\ .\ testAsset.props
 set TestPackagesRoot=%CD%\assets\testpackages\
 dotnet build assets\testpackages\Microsoft.NET.TestPackages.csproj /t:Build -p:VersionPropsIsImported=false
-robocopy %HELIX_CORRELATION_PAYLOAD%\assets\testpackages\testpackages %TestExecutionDirectory%\TestPackages /s
+robocopy .\assets\testpackages\testpackages %TestExecutionDirectory%\TestPackages /s
