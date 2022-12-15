@@ -393,7 +393,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                  .And.HaveStdOutContaining("Version: 5.0.0")
                  .And.NotHaveStdOutContaining("Version: 5.0.1");
 
-            Assert.True(File.Exists(Path.Combine(home, "packages", "Microsoft.DotNet.Common.ProjectTemplates.5.0.5.0.0.nupkg")));
+            Assert.True(File.Exists(Path.Combine(home, ".templateengine", "packages", "Microsoft.DotNet.Common.ProjectTemplates.5.0.5.0.0.nupkg")));
 
             new DotnetNewCommand(_log, installCommandName, "Microsoft.DotNet.Common.ProjectTemplates.5.0::5.0.1")
                  .WithCustomHive(home)
@@ -419,8 +419,8 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                  .And.HaveStdOutContaining("Version: 5.0.1")
                  .And.NotHaveStdOutContaining("Version: 5.0.0");
 
-            Assert.False(File.Exists(Path.Combine(home, "packages", "Microsoft.DotNet.Common.ProjectTemplates.5.0.5.0.0.nupkg")));
-            Assert.True(File.Exists(Path.Combine(home, "packages", "Microsoft.DotNet.Common.ProjectTemplates.5.0.5.0.1.nupkg")));
+            Assert.False(File.Exists(Path.Combine(home, ".templateengine", "packages", "Microsoft.DotNet.Common.ProjectTemplates.5.0.5.0.0.nupkg")));
+            Assert.True(File.Exists(Path.Combine(home, ".templateengine", "packages", "Microsoft.DotNet.Common.ProjectTemplates.5.0.5.0.1.nupkg")));
         }
 
         [Theory]

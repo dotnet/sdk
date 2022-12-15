@@ -465,6 +465,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
             new DotnetNewCommand(Log)
                 .WithVirtualHive()
+                .WithEnvironmentVariable("DOTNET_CLI_HOME", null)
                 .WithWorkingDirectory(rootPath)
                 .Execute($"console", "--no-restore");
 
@@ -472,6 +473,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
             CommandResult result = new DotnetNewCommand(Log)
                 .WithVirtualHive()
+                .WithEnvironmentVariable("DOTNET_CLI_HOME", null)
                 .WithWorkingDirectory(rootPath)
                 .Execute($"console", "--no-restore");
 
@@ -489,6 +491,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
             new DotnetNewCommand(Log)
                 .WithVirtualHive()
+                .WithEnvironmentVariable("DOTNET_CLI_HOME", null)
                 .WithWorkingDirectory(rootPath)
                 .WithEnvironmentVariable("DOTNET_NEW_PREFERRED_LANG", "F#")
                 .Execute($"console", "--no-restore", "-n", "f1")
@@ -505,6 +508,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
             new DotnetNewCommand(Log)
                 .WithVirtualHive()
+                .WithEnvironmentVariable("DOTNET_CLI_HOME", null)
                 .WithWorkingDirectory(rootPath)
                 .Execute($"console", "--no-restore", "-n", "c1")
                 .Should().Pass();
@@ -520,6 +524,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
             new DotnetNewCommand(Log)
                 .WithVirtualHive()
+                .WithEnvironmentVariable("DOTNET_CLI_HOME", null)
                 .WithWorkingDirectory(rootPath)
                 .Execute($"console", "--no-restore", "-n", "vb1", "-lang", "vb")
                 .Should().Pass();
@@ -535,6 +540,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
             new DotnetNewCommand(Log)
                 .WithVirtualHive()
+                .WithEnvironmentVariable("DOTNET_CLI_HOME", null)
                 .WithWorkingDirectory(rootPath)
                 .WithEnvironmentVariable("DOTNET_NEW_PREFERRED_LANG", "")
                 .Execute($"console", "--no-restore", "-n", "c1")

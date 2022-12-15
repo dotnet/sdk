@@ -39,16 +39,14 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 
         protected IEngineEnvironmentSettings CreateEnvironmentSettings(GlobalArgs args, ParseResult parseResult)
         {
-            var settingsLocation = string.IsNullOrEmpty(args.DebugCustomSettingsLocation)
-                ? Environment.GetEnvironmentVariable("DOTNET_CLI_HOME")
-                : args.DebugCustomSettingsLocation;
+            ITemplateEngineHost host = _hostBuilder(parseResult);
+            IEnvironment environment = new CliEnvironment();
 
-            IEngineEnvironmentSettings environmentSettings = new EngineEnvironmentSettings(
-                _hostBuilder(parseResult),
-                settingsLocation: settingsLocation,
+            return new EngineEnvironmentSettings(
+                host,
                 virtualizeSettings: args.DebugVirtualizeSettings,
-                environment: new CliEnvironment());
-            return environmentSettings;
+                environment: environment,
+                pathInfo: new CliPathInfo(host, environment, args.DebugCustomSettingsLocation));
         }
     }
 

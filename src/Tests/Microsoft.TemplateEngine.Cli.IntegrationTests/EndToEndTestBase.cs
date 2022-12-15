@@ -4,7 +4,9 @@
 
 using System.Diagnostics;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text;
+using Microsoft.DotNet.Configurer;
 using Microsoft.NET.TestFramework;
 using Xunit;
 
@@ -40,7 +42,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
 
             string testAssetsRoot = Path.Combine(TestContext.Current.TestAssetsDirectory, "TestPackages", "dotnet-new");
 
-            Process p = Process.Start(new ProcessStartInfo
+            var startInfo = new ProcessStartInfo
             {
                 RedirectStandardError = true,
                 RedirectStandardOutput = true,
@@ -49,10 +51,22 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
                 WorkingDirectory = harnessPath,
                 FileName = "dotnet",
                 Arguments = $"Microsoft.TemplateEngine.EndToEndTestHarness.dll {builder} \"{outputPath}\" \"{testAssetsRoot}\" {args} -o \"{outputPath}\""
-            });
+            };
+
+            Process p = Process.Start(startInfo);
 
             StringBuilder errorData = new StringBuilder();
             StringBuilder outputData = new StringBuilder();
+
+            errorData.AppendLine($"TestAssetsRoot: {testAssetsRoot}");
+            errorData.AppendLine($"WorkingDirectory: {harnessPath}");
+            errorData.AppendLine($"OutputPath: {outputPath}");
+
+            var home = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "USERPROFILE" : "HOME";
+            errorData.AppendLine($"CLI_HOME: {Environment.GetEnvironmentVariable("DOTNET_CLI_HOME")}");
+            errorData.AppendLine($"HOME: {Environment.GetEnvironmentVariable(home)}");
+            errorData.AppendLine($"UserProfile: {Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)}");
+            errorData.AppendLine($"Result of CliFolderPathCalculator: {CliFolderPathCalculator.DotnetHomePath}");
 
             p.ErrorDataReceived += (sender, e) =>
             {

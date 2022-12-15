@@ -170,7 +170,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And.HaveStdOutContaining("Author: Microsoft")
                 .And.HaveStdOutContaining("dotnet new uninstall Microsoft.DotNet.Web.ProjectTemplates.5.0");
 
-            Assert.True(File.Exists(Path.Combine(home, "packages", "Microsoft.DotNet.Web.ProjectTemplates.5.0.5.0.0.nupkg")));
+            Assert.True(File.Exists(Path.Combine(home, ".templateengine", "packages", "Microsoft.DotNet.Web.ProjectTemplates.5.0.5.0.0.nupkg")));
 
             // This tests proper uninstallation of package even if there is a clash with existing folder name
             //  (this used to fail - see #4613)
@@ -198,13 +198,13 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .NotHaveStdErr()
                 .And.HaveStdOutContaining($"Currently installed items:{Environment.NewLine}(No Items)");
 
-            Assert.False(File.Exists(Path.Combine(home, "packages", "Microsoft.DotNet.Web.ProjectTemplates.5.0.5.0.0.nupkg")));
+            Assert.False(File.Exists(Path.Combine(home, ".templateengine", "packages", "Microsoft.DotNet.Web.ProjectTemplates.5.0.5.0.0.nupkg")));
         }
 
         [Fact]
         public void CanUninstallSeveralSources_LegacySyntax()
         {
-            string home = CreateTemporaryFolder(folderName: "Home");
+            string home = CreateTemporaryFolder(folderName: Path.Combine("Home", ".templateengine"));
             string workingDirectory = CreateTemporaryFolder();
             string basicFSharp = InstallTestTemplate("TemplateResolution/DifferentLanguagesGroup/BasicFSharp", _log, home, workingDirectory);
             string basicVB = InstallTestTemplate("TemplateResolution/DifferentLanguagesGroup/BasicVB", _log, home, workingDirectory);

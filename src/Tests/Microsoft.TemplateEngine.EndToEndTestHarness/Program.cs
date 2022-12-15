@@ -211,12 +211,13 @@ namespace Microsoft.TemplateEngine.EndToEndTestHarness
             builtIns.Add((typeof(ITemplatePackageProviderFactory), new BuiltInTemplatePackagesProviderFactory(testAssetsRoot)));
 
             var host = new CliTemplateEngineHost(
-                HostIdentifier,
-                HostVersion,
-                preferences,
-                builtIns,
-                new[] { "dotnetcli" },
-                outputPath);
+                            HostIdentifier,
+                            HostVersion,
+                            preferences,
+                            builtIns,
+                            new[] { "dotnetcli" },
+                            outputPath,
+                            logLevel: Extensions.Logging.LogLevel.Debug);
 
             host.VirtualizeDirectory(outputPath);
             return host;
