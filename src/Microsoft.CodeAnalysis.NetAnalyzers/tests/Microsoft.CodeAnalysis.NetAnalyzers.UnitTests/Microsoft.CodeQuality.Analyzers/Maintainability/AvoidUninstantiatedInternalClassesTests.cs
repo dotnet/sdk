@@ -17,6 +17,18 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
 {
     public class AvoidUninstantiatedInternalClassesTests
     {
+        [Fact, WorkItem(6049, "https://github.com/dotnet/roslyn-analyzers/issues/6049")]
+        public async Task CA1812_CSharp_Diagnostic_FileUninstantiatedInternalClassAsync()
+        {
+            const string source = "file class [|C|] { }";
+            await new VerifyCS.Test
+            {
+                TestCode = source,
+                FixedCode = source,
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp11,
+            }.RunAsync();
+        }
+
         [Fact]
         public async Task CA1812_CSharp_Diagnostic_UninstantiatedInternalClassAsync()
         {
