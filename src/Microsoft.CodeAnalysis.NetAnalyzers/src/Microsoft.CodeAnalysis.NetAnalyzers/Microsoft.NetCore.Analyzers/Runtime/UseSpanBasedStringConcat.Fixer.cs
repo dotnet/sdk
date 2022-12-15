@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -23,10 +22,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         private protected const string AsSpanName = nameof(MemoryExtensions.AsSpan);
         private protected const string AsSpanStartParameterName = "start";
         private protected const string ToStringName = nameof(ToString);
+        private static readonly SyntaxAnnotation s_asSpanSymbolAnnotation = new("SymbolId", "System.MemoryExtensions");
 
         private protected abstract SyntaxNode ReplaceInvocationMethodName(SyntaxGenerator generator, SyntaxNode invocationSyntax, string newName);
-
-        private protected abstract bool IsSystemNamespaceImported(Project project, IReadOnlyList<SyntaxNode> namespaceImports);
 
         private protected abstract IOperation WalkDownBuiltInImplicitConversionOnConcatOperand(IOperation operand);
 
@@ -110,13 +108,6 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
                 SyntaxNode newRoot = generator.ReplaceNode(root, concatExpressionSyntax, concatMethodInvocationSyntax);
 
-                //  Import 'System' namespace if it's absent.
-                if (!IsSystemNamespaceImported(context.Document.Project, generator.GetNamespaceImports(newRoot)))
-                {
-                    SyntaxNode systemNamespaceImport = generator.NamespaceImportDeclaration(nameof(System));
-                    newRoot = generator.AddNamespaceImports(newRoot, systemNamespaceImport);
-                }
-
                 editor.ReplaceNode(root, newRoot);
                 return editor.GetChangedDocument();
             }
@@ -140,7 +131,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     invocationSyntax = generator.ReplaceNode(invocationSyntax, namedStartIndexArgument.Syntax, renamedArgumentSyntax);
                 }
 
-                var asSpanInvocationSyntax = ReplaceInvocationMethodName(generator, invocationSyntax, AsSpanName);
+                var asSpanInvocationSyntax = ReplaceInvocationMethodName(generator, invocationSyntax, AsSpanName).WithAddImportsAnnotation().WithAdditionalAnnotations(s_asSpanSymbolAnnotation);
                 return generator.Argument(asSpanInvocationSyntax);
             }
             //  Character literals become string literals.
