@@ -33,7 +33,8 @@
   <PropertyGroup>
     <ProjectDir>$(MSBuildThisFileDirectory)</ProjectDir>
     <TargetsDir>$(ProjectDir)targets/</TargetsDir>
-    <KeysDir>$(ProjectDir)prereqs/keys/</KeysDir>
+    <PrereqsDir>$(ProjectDir)prereqs/</PrereqsDir>
+    <KeysDir>$(PrereqsDir)/keys/</KeysDir>
     <DotNetCliToolDir Condition="'$(DotNetCliToolDir)' == '' and '$(CustomDotNetSdkDir)' != ''">$([MSBuild]::EnsureTrailingSlash('$(CustomDotNetSdkDir)'))</DotNetCliToolDir>
     <DotNetCliToolDir Condition="'$(DotNetCliToolDir)' == '' and '$(DOTNET_INSTALL_DIR)' != ''">$([MSBuild]::NormalizeDirectory('$(DOTNET_INSTALL_DIR)'))</DotNetCliToolDir>
     <DotNetCliToolDir Condition="'$(DotNetCliToolDir)' == ''">$(ProjectDir).dotnet/</DotNetCliToolDir>
@@ -120,14 +121,9 @@
     <RoslynDebugPathTargetDir>$(BaseOutputPath)roslyn-debug/</RoslynDebugPathTargetDir>
     <AspNetRazorBuildServerLogDir>$(BaseOutputPath)aspnet-debug</AspNetRazorBuildServerLogDir>
     <AspNetRazorBuildServerLogFile>$(AspNetRazorBuildServerLogDir)razor-build-server.log</AspNetRazorBuildServerLogFile>
-    <!-- Dir where git info is generated during online builds. -->
-    <GitInfoOutputDir>$(BaseOutputPath)git-info/</GitInfoOutputDir>
-    <!-- Dir where git info is placed inside the tarball. -->
-    <GitInfoOfflineDir>$(ProjectDir)git-info/</GitInfoOfflineDir>
-    <OutputGitInfoPropsFile>$(GitInfoOutputDir)$(RepositoryName).props</OutputGitInfoPropsFile>
-    <ProductionAllRepoPropsFile>$(GitInfoOutputDir)AllRepoVersions.props</ProductionAllRepoPropsFile>
-    <OfflineGitInfoPropsFile>$(GitInfoOfflineDir)$(RepositoryName).props</OfflineGitInfoPropsFile>
-    <OfflineAllRepoPropsFile>$(GitInfoOfflineDir)AllRepoVersions.props</OfflineAllRepoPropsFile>
+    <GitInfoDir>$(PrereqsDir)git-info/</GitInfoDir>
+    <GitInfoRepoPropsFile>$(GitInfoDir)$(RepositoryName).props</GitInfoRepoPropsFile>
+    <GitInfoAllRepoPropsFile>$(GitInfoDir)AllRepoVersions.props</GitInfoAllRepoPropsFile>
     <PackageReportDir>$(BaseOutputPath)prebuilt-report/</PackageReportDir>
     <RepoProjectsDir>$(ProjectDir)/repo-projects/</RepoProjectsDir>
     <ResultingPrebuiltPackagesDir>$(PackageReportDir)prebuilt-packages/</ResultingPrebuiltPackagesDir>
@@ -205,8 +201,7 @@
     <ExtraPackageVersionPropsPackageInfo Include="DotnetCliInternalVersion" Version="3.0.100-$(CliInternalReleaseTag)-$(CliInternalBuildVersion)" />
   </ItemGroup>
 
-  <Import Project="$(ProductionAllRepoPropsFile)" Condition="Exists('$(ProductionAllRepoPropsFile)')" />
-  <Import Project="$(OfflineAllRepoPropsFile)" Condition="Exists('$(OfflineAllRepoPropsFile)')" />
+  <Import Project="$(GitInfoAllRepoPropsFile)" />
 
   <!-- Additional psuedo-versions that some repos depend on -->
   <ItemGroup>
