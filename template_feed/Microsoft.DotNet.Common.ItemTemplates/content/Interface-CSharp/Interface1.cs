@@ -1,4 +1,4 @@
-﻿#if (!csharpFeature_ImplicitUsings)
+﻿#if (ImplicitUsings != "enable")
 using System;
 
 #endif

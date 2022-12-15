@@ -31,6 +31,10 @@
       "type": "bind",
       "binding": "msbuild:TargetFramework"
     },
+    "ImplicitUsings": {
+      "type": "bind",
+      "binding": "msbuild:ImplicitUsings"
+    },
     "net6orLater": {
       "type": "generated",
       "generator": "regexMatch",
@@ -56,10 +60,6 @@
     "csharp10orLater": {
       "type": "computed",
       "value": "!csharp9orOlder"
-    },
-    "csharpFeature_ImplicitUsings": {
-      "type": "computed",
-      "value": "net6orLater == \"true\" && csharp10orLater == \"true\""
     },
     "csharpFeature_FileScopedNamespaces": {
       "type": "computed",
