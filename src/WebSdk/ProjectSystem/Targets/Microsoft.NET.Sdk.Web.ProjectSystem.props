@@ -27,12 +27,4 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.Sdk.Web.DefaultItems.props"
     Condition="Exists('$(MSBuildThisFileDirectory)Microsoft.NET.Sdk.Web.DefaultItems.props')"/>
-
-  <PropertyGroup>
-    <!-- Runtime feature defaults to trim unnecessary code -->
-    <!-- Not working yet -->
-    <!-- <EnsureJsonTrimmability Condition="'$(EnsureJsonTrimmability)' == '' and '$(PublishAOT)' == 'true'">true</EnsureJsonTrimmability>
-    <EnsureJsonTrimmability Condition="'$(EnsureJsonTrimmability)' == '' and '$(PublishTrimmed)' == 'true'">true</EnsureJsonTrimmability>
-    <EnsureJsonTrimmability Condition="'$(EnsureJsonTrimmability)' == ''">false</EnsureJsonTrimmability> -->
-  </PropertyGroup>
 </Project>
