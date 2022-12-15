@@ -234,6 +234,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 {
                     return method;
                 }
+
                 containingSymbol = containingSymbol.ContainingSymbol;
             }
 
@@ -264,7 +265,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
             foreach (SyncBlockingSymbol symbol in syncBlockingSymbols)
             {
-                if (symbol.Kind != kind) continue;
+                if (symbol.Kind != kind)
+                    continue;
                 if (symbol.Value.Equals(memberSymbol.OriginalDefinition))
                 {
                     Diagnostic diagnostic = context.Operation.Syntax.CreateDiagnostic(
@@ -276,6 +278,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     return true;
                 }
             }
+
             return false;
         }
     }

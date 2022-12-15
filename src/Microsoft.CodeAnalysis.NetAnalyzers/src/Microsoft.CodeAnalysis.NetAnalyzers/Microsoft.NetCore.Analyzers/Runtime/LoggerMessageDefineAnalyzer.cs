@@ -191,6 +191,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 {
                     context.ReportDiagnostic(formatExpression.CreateDiagnostic(CA2254Rule, methodSymbol.ToDisplayString(GetLanguageSpecificFormat(formatExpression))));
                 }
+
                 return;
             }
 
@@ -279,6 +280,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     arguments = parameter;
                 }
             }
+
             return message != null;
         }
     }

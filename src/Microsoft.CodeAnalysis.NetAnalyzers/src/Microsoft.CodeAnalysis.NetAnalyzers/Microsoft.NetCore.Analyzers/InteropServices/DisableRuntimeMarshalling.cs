@@ -153,6 +153,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                         var disabledRuntimeMarshallingAssemblyAnalyzer = new DisabledRuntimeMarshallingAssemblyAnalyzer(context.Compilation, autoLayoutCache);
                         disabledRuntimeMarshallingAssemblyAnalyzer.RegisterActions(context);
                     }
+
                     var delegateInteropUsageAnalyzer = new DelegateInteropUsageAnalyzer(context.Compilation, autoLayoutCache, disableRuntimeMarshallingAttribute);
                     delegateInteropUsageAnalyzer.RegisterActions(context, hasDisableRuntimeMarshallingAttribute);
                 }
@@ -169,6 +170,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 {
                     reportDiagnostic(paramLocation.CreateDiagnostic(descriptorOverride ?? FeatureUnsupportedWhenRuntimeMarshallingDisabledByRefParameters));
                 }
+
                 AnalyzeSignatureType(paramLocation, param.Type);
             }
 

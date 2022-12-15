@@ -395,7 +395,8 @@ End Namespace
             {
                 var numberOfLines = 0;
                 var index = -Environment.NewLine.Length;
-                while ((index = source.IndexOf(Environment.NewLine, index + Environment.NewLine.Length, StringComparison.Ordinal)) >= 0) numberOfLines++;
+                while ((index = source.IndexOf(Environment.NewLine, index + Environment.NewLine.Length, StringComparison.Ordinal)) >= 0)
+                    numberOfLines++;
                 return numberOfLines;
             }
         }

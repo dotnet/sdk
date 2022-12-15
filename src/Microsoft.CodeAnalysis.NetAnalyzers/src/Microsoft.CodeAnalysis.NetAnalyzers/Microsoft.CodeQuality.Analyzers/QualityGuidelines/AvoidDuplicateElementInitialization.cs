@@ -91,6 +91,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
 
                 result[parameter.Ordinal] = argument.Value.ConstantValue.Value;
             }
+
             return result.ToImmutableArray();
         }
 
@@ -122,6 +123,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                         hash = unchecked((hash * (int)0xA5555529) + _objectComparer.GetHashCode(item));
                     }
                 }
+
                 return hash;
             }
         }

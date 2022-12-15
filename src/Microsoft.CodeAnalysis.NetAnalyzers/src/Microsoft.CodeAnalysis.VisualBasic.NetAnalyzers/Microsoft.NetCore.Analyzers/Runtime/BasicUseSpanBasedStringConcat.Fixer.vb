@@ -34,17 +34,20 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Runtime
                 If importsStatement Is Nothing Then
                     Continue For
                 End If
+
                 For Each importsClause As ImportsClauseSyntax In importsStatement.ImportsClauses
                     Dim simpleClause = TryCast(importsClause, SimpleImportsClauseSyntax)
                     Dim identifierName = TryCast(simpleClause?.Name, IdentifierNameSyntax)
                     If identifierName Is Nothing Then
                         Continue For
                     End If
+
                     If identifierName.Identifier.ValueText = NameOf(System) Then
                         Return True
                     End If
                 Next
             Next
+
             Return False
         End Function
 

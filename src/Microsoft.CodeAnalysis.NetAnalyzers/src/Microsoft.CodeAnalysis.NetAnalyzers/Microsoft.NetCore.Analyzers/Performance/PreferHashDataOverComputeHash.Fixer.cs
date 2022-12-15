@@ -111,6 +111,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                         {
                             continue;
                         }
+
                         SyntaxNode root = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
                         var hashInstanceTargets = CollectTargets(root, grouping, cancellationToken);
 
@@ -142,6 +143,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     dictionary.Free(cancellationToken);
                     return null;
                 }
+
                 var hashInstanceTargets = dictionary.Values.Append(new HashInstanceTarget(chainedComputeHashList)).ToArray();
                 dictionary.Free(cancellationToken);
                 return hashInstanceTargets;
@@ -154,19 +156,23 @@ namespace Microsoft.NetCore.Analyzers.Performance
                         {
                             return false;
                         }
+
                         if (!_helper.TryGetHashCreationNode(root, d, out var createNode, out var hashCreationIndex))
                         {
                             chainedComputeHashList.Add(computeHashSyntaxHolder);
                             continue;
                         }
+
                         if (!dictionary.TryGetValue(createNode, out HashInstanceTarget hashInstanceTarget))
                         {
                             var disposeNodes = _helper.GetDisposeNodes(root, d, hashCreationIndex);
                             hashInstanceTarget = new HashInstanceTarget(createNode, disposeNodes);
                             dictionary.Add(createNode, hashInstanceTarget);
                         }
+
                         hashInstanceTarget.ComputeHashNodes.Add(computeHashSyntaxHolder);
                     }
+
                     return true;
                 }
             }
@@ -177,6 +183,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 {
                     root = _helper.FixHashInstanceTarget(root, target);
                 }
+
                 return root;
             }
         }
@@ -243,11 +250,13 @@ namespace Microsoft.NetCore.Analyzers.Performance
                                 ImmutableArray<Diagnostic> diagnostics = await fixAllContext.GetAllDiagnosticsAsync(project).ConfigureAwait(false);
                                 diagnosticsToFix.Add(new KeyValuePair<Project, ImmutableArray<Diagnostic>>(project, diagnostics));
                             }
+
                             break;
                         }
                     default:
                         return null;
                 }
+
                 return new PreferHashDataOverComputeHashFixAllCodeAction(title, fixAllContext.Solution, diagnosticsToFix, Helper);
             }
         }
@@ -263,12 +272,14 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     computeHashHolder = null;
                     return false;
                 }
+
                 var computeHashNode = root.FindNode(diagnostic.Location.SourceSpan, getInnermostNodeForTie: true);
                 if (computeHashNode is null)
                 {
                     computeHashHolder = null;
                     return false;
                 }
+
                 var hashTypeName = diagnostic.Properties[PreferHashDataOverComputeHashAnalyzer.TargetHashTypeDiagnosticPropertyKey];
 
                 computeHashHolder = new ComputeHashSyntaxHolder(computeHashNode, computeType, hashTypeName);
@@ -309,6 +320,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 {
                     return null;
                 }
+
                 var disposeNodes = new SyntaxNode[disposeCount];
 
                 for (int i = 0; i < disposeNodes.Length; i++)
@@ -318,8 +330,10 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     {
                         return null;
                     }
+
                     disposeNodes[i] = node;
                 }
+
                 return disposeNodes;
             }
 
@@ -332,6 +346,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     {
                         list.Add(t.CreateNode);
                     }
+
                     if (t.DisposeNodes is not null)
                     {
                         list.AddRange(t.DisposeNodes);
@@ -353,6 +368,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 {
                     list.Add(target.CreateNode);
                 }
+
                 if (target.DisposeNodes is not null)
                 {
                     list.AddRange(target.DisposeNodes);
@@ -393,6 +409,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     var trackedDisposeNode = root.GetCurrentNode(disposeNode);
                     root = RemoveNodeWithFormatting(root, trackedDisposeNode);
                 }
+
                 return root;
             }
             protected SyntaxNode RemoveNodeWithFormatting(SyntaxNode root, SyntaxNode nodeToRemove)
@@ -402,10 +419,12 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 {
                     option |= SyntaxRemoveOptions.KeepLeadingTrivia;
                 }
+
                 if (IsInterestingTrivia(nodeToRemove.GetTrailingTrivia()))
                 {
                     option |= SyntaxRemoveOptions.KeepTrailingTrivia;
                 }
+
                 var parent = nodeToRemove.Parent;
                 root = root.TrackNodes(parent);
                 var newParent = parent.RemoveNode(nodeToRemove, option)
@@ -420,6 +439,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 {
                     triviaList = triviaList.AddRange(triviaToAdd);
                 }
+
                 return triviaList;
             }
 

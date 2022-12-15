@@ -305,6 +305,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                         return previewSymbol;
                     }
                 }
+
                 if (SymbolIsAnnotatedAsPreview(typeParameter, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol))
                 {
                     return typeParameter;

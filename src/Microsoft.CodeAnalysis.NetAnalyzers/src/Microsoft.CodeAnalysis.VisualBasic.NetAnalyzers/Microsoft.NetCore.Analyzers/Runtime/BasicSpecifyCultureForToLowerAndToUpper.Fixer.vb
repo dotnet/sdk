@@ -64,6 +64,7 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Runtime
                 Dim newRoot = root.ReplaceNode(memberAccess, newMemberAccess)
                 Return Task.FromResult(document.WithSyntaxRoot(newRoot))
             End If
+
             Return Task.FromResult(document)
         End Function
     End Class

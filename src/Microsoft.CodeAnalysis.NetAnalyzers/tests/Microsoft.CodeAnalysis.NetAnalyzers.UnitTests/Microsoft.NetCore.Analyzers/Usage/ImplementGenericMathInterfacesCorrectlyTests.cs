@@ -801,4 +801,3 @@ partial interface IMyNumber : IEquatable<int>,
     }
 }
 
-

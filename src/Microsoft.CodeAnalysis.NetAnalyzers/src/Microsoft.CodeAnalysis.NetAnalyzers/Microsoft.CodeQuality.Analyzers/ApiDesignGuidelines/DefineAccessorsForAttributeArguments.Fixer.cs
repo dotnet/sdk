@@ -42,6 +42,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                                                              equivalenceKey: title),
                                                         diagnostic);
                             }
+
                             return;
 
                         case DefineAccessorsForAttributeArgumentsAnalyzer.MakePublicCase:
@@ -54,6 +55,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                                                                  equivalenceKey: title),
                                                         diagnostic);
                             }
+
                             return;
 
                         case DefineAccessorsForAttributeArgumentsAnalyzer.RemoveSetterCase:

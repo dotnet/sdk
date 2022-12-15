@@ -99,6 +99,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                                 }
                             }
                         }
+
                         return false;
                     }
 

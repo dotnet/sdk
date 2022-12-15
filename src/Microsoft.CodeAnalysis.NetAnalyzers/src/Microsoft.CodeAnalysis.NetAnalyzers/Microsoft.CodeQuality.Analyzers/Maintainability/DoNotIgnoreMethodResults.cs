@@ -173,6 +173,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                                     rule = ObjectCreationRule;
                                     targetMethodName = ctor.ContainingType.Name;
                                 }
+
                                 break;
 
                             case OperationKind.Invocation:

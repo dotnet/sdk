@@ -64,6 +64,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                             createChangedDocument: c => SwapArgumentsOrderAsync(context.Document, creation, paramPosition, creation.Arguments.Length, c),
                             equivalenceKey: MicrosoftNetCoreAnalyzersResources.InstantiateArgumentExceptionsCorrectlyFlipArgumentOrderCodeFixTitle);
                     }
+
                     context.RegisterCodeFix(codeAction, diagnostic);
                 }
             }
@@ -97,6 +98,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     newCreation = editor.Generator.ObjectCreationExpression(creation.Type, parameter, creation.Arguments[1].Syntax, creation.Arguments[0].Syntax);
                 }
             }
+
             editor.ReplaceNode(creation.Syntax, newCreation);
             return editor.GetChangedDocument();
         }
@@ -116,6 +118,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             {
                 return generator.NameOfExpression(generator.IdentifierName(literal.ConstantValue.Value.ToString()));
             }
+
             return expression.Syntax;
         }
     }

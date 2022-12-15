@@ -463,6 +463,7 @@ namespace TestNamespace
             {
                 input = "CType(Nothing, String)";
             }
+
             string methodParameterInAppend_vb = @"
 Imports System
 

@@ -387,7 +387,7 @@ public class C
         {{|CS0201:l.Count|}};
         {csharpFirstOrDefaultAndLastOrDefault}
     }}
-}}"; ;
+}}";
 
             var csharpTest = new VerifyCS.Test
             {
@@ -454,7 +454,8 @@ Public Class C
 
     Private Sub Use(Of U)(p As U)
     End Sub
-End Class"; ;
+End Class";
+
             var vbTest = new VerifyVB.Test
             {
                 TestState =

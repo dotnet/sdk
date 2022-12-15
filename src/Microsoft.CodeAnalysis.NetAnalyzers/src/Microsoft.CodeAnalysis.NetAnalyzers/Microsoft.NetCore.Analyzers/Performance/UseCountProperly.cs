@@ -511,6 +511,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                         default:
                             return false;
                     }
+
                     break;
                 case 1:
                     switch (binaryOperation.OperatorKind)
@@ -524,6 +525,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                         default:
                             return false;
                     }
+
                     break;
                 default:
                     return false;
@@ -559,6 +561,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                         default:
                             return false;
                     }
+
                     break;
                 case 1:
                     switch (binaryOperation.OperatorKind)
@@ -574,6 +577,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                         default:
                             return false;
                     }
+
                     break;
                 default:
                     return false;

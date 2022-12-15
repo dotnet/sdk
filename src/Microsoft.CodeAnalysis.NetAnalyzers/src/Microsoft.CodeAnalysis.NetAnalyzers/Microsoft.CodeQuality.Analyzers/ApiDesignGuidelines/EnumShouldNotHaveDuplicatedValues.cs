@@ -126,12 +126,14 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                                 {
                                     context.ReportDiagnostic(fieldOperation.CreateDiagnostic(RuleDuplicatedBitwiseValuePart, referencedField.Name));
                                 }
+
                                 break;
                             default:
                                 foreach (var childOperation in operation.Children)
                                 {
                                     visitInitializerValue(childOperation);
                                 }
+
                                 break;
                         }
                     }
@@ -145,6 +147,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                         var duplicatedField = membersByValue[field.ConstantValue];
                         context.ReportDiagnostic(field.CreateDiagnostic(RuleDuplicatedValue, field.Name, field.ConstantValue, duplicatedField.Name));
                     }
+
                     duplicates.Free(context.CancellationToken);
                     membersByValue.Free(context.CancellationToken);
                 }

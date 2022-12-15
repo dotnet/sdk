@@ -637,6 +637,7 @@ Rule ID | Missing Help Link | Title |
                 {
                     File.WriteAllText(fileWithPath, builder.ToString());
                 }
+
                 return;
 
                 async Task<bool> checkHelpLinkAsync(string helpLink)

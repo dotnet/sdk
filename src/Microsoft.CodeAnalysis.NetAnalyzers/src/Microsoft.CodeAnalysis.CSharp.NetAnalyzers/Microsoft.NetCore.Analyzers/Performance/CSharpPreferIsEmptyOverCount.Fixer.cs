@@ -25,18 +25,21 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Performance
                     {
                         countNode = binaryExpression.Left;
                     }
+
                     break;
                 case UseCountProperlyAnalyzer.OperationBinaryRight:
                     if (node is BinaryExpressionSyntax binaryExpression2)
                     {
                         countNode = binaryExpression2.Right;
                     }
+
                     break;
                 case UseCountProperlyAnalyzer.OperationEqualsArgument:
                     if (node is InvocationExpressionSyntax invocationExpression)
                     {
                         countNode = invocationExpression.ArgumentList.Arguments[0].Expression;
                     }
+
                     break;
                 case UseCountProperlyAnalyzer.OperationEqualsInstance:
                     if (node is InvocationExpressionSyntax invocationExpression2)
@@ -47,6 +50,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Performance
                             countNode = memberAccess.Expression;
                         }
                     }
+
                     break;
             }
 

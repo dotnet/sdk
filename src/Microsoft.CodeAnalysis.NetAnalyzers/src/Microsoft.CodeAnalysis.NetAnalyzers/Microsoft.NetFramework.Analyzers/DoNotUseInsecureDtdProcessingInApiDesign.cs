@@ -99,6 +99,7 @@ namespace Microsoft.NetFramework.Analyzers
                 {
                     AnalyzeBlockForXmlTextReaderDerivedTypeConstructorDecl(context);
                 }
+
                 AnalyzeBlockForXmlTextReaderDerivedTypeMethodDecl(context);
             }
 
@@ -330,6 +331,7 @@ namespace Microsoft.NetFramework.Analyzers
                         {
                             locations.Enqueue(assignment.Syntax.GetLocation());
                         }
+
                         return;
                     }
 

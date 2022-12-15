@@ -237,6 +237,7 @@ namespace Microsoft.NetFramework.Analyzers
                         {
                             AnalyzeObjectCreationInternal(context, field, fieldInitializer.Value);
                         }
+
                         break;
                     case OperationKind.VariableDeclarator:
                         var declarator = (IVariableDeclaratorOperation)context.Operation;

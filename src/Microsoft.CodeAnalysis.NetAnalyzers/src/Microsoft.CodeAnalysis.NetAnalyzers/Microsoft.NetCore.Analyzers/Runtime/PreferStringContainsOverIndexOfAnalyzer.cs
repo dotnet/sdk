@@ -136,6 +136,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                                 return;
                             }
                         }
+
                         localsToBailOut.Add(localReference.Local);
                     }
 
@@ -181,6 +182,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                                 return true;
                             }
                         }
+
                         return false;
                     }
 
@@ -194,6 +196,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                                 context.ReportDiagnostic(variableNameAndLocation.Value.CreateDiagnostic(Rule));
                             }
                         }
+
                         variableNameToOperationsMap.Free(context.CancellationToken);
                         localsToBailOut.Free(context.CancellationToken);
                     }

@@ -331,7 +331,6 @@ class GenericType<T>
             }.RunAsync();
         }
 
-
         [Fact]
         public async Task ArgumentNullExceptionThrowIfNull_EnsureSystemIsUsed()
         {

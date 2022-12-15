@@ -147,6 +147,7 @@ namespace Microsoft.Extensions.Logging.Analyzer
             {
                 templateAndArguments = $"{template}, {arguments}";
             }
+
             var methods = new[] { "LogTrace", "LogError", "LogWarning", "LogInformation", "LogDebug", "LogCritical" };
             var formats = new[]
             {

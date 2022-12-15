@@ -51,7 +51,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 }
 
                 // Only validate libraries (which will still produce some false positives, but that is acceptable)
-                if (context.Compilation.Options.OutputKind != OutputKind.DynamicallyLinkedLibrary) return;
+                if (context.Compilation.Options.OutputKind != OutputKind.DynamicallyLinkedLibrary)
+                    return;
 
                 context.RegisterSymbolAction(context =>
                 {
