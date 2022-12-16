@@ -1860,18 +1860,6 @@ A platform invoke member allows partially trusted callers, has a string paramete
 |CodeFix|True|
 ---
 
-## [CA2109](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2109): Review visible event handlers
-
-A public or protected event-handling method was detected. Event-handling methods should not be exposed unless absolutely necessary.
-
-|Item|Value|
-|-|-|
-|Category|Security|
-|Enabled|False|
-|Severity|Warning|
-|CodeFix|False|
----
-
 ## [CA2119](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2119): Seal methods that satisfy private interfaces
 
 An inheritable public type provides an overridable method implementation of an internal (Friend in Visual Basic) interface. To fix a violation of this rule, prevent the method from being overridden outside the assembly.

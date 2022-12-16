@@ -3361,27 +3361,6 @@
             ]
           }
         },
-        "CA2109": {
-          "id": "CA2109",
-          "shortDescription": "Review visible event handlers",
-          "fullDescription": "A public or protected event-handling method was detected. Event-handling methods should not be exposed unless absolutely necessary.",
-          "defaultLevel": "warning",
-          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2109",
-          "properties": {
-            "category": "Security",
-            "isEnabledByDefault": false,
-            "typeName": "ReviewVisibleEventHandlersAnalyzer",
-            "languages": [
-              "C#",
-              "Visual Basic"
-            ],
-            "tags": [
-              "PortedFromFxCop",
-              "Telemetry",
-              "EnabledRuleInAggressiveMode"
-            ]
-          }
-        },
         "CA2119": {
           "id": "CA2119",
           "shortDescription": "Seal methods that satisfy private interfaces",

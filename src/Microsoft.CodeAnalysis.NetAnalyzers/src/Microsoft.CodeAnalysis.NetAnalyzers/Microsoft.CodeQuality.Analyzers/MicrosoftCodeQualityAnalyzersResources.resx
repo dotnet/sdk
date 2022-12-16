@@ -1095,15 +1095,6 @@
   <data name="MarkMembersAsStaticMessage" xml:space="preserve">
     <value>Member '{0}' does not access instance data and can be marked as static</value>
   </data>
-  <data name="ReviewVisibleEventHandlersTitle" xml:space="preserve">
-    <value>Review visible event handlers</value>
-  </data>
-  <data name="ReviewVisibleEventHandlersDescription" xml:space="preserve">
-    <value>A public or protected event-handling method was detected. Event-handling methods should not be exposed unless absolutely necessary.</value>
-  </data>
-  <data name="ReviewVisibleEventHandlersMessageDefault" xml:space="preserve">
-    <value>Consider making '{0}' not externally visible</value>
-  </data>
   <data name="SealMethodsThatSatisfyPrivateInterfacesTitle" xml:space="preserve">
     <value>Seal methods that satisfy private interfaces</value>
   </data>

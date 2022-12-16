@@ -1877,21 +1877,6 @@
         <target state="translated">O membro '{0}' não acessa os dados da instância e pode ser marcado como estático</target>
         <note />
       </trans-unit>
-      <trans-unit id="ReviewVisibleEventHandlersTitle">
-        <source>Review visible event handlers</source>
-        <target state="translated">Examinar manipuladores de eventos visíveis</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ReviewVisibleEventHandlersDescription">
-        <source>A public or protected event-handling method was detected. Event-handling methods should not be exposed unless absolutely necessary.</source>
-        <target state="translated">Foi detectado um método de manipulação de eventos público ou protegido. Os métodos de manipulação de eventos não devem ser expostos, a menos que absolutamente necessário.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ReviewVisibleEventHandlersMessageDefault">
-        <source>Consider making '{0}' not externally visible</source>
-        <target state="translated">Considere tornar {0} não visível externamente</target>
-        <note />
-      </trans-unit>
       <trans-unit id="SealMethodsThatSatisfyPrivateInterfacesTitle">
         <source>Seal methods that satisfy private interfaces</source>
         <target state="translated">Métodos de lacre que satisfazem interfaces privadas</target>
