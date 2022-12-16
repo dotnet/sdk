@@ -21,11 +21,19 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.Commands
         /// <inheritdoc/>
         public async Task<int> InvokeAsync(InvocationContext context)
         {
-            using ILoggerFactory loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
-            TModel arguments = ParseContext(context.ParseResult);
+            ILoggerFactory? loggerFactory = null;
+            try
+            {
+                loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
+                TModel arguments = ParseContext(context.ParseResult);
 
-            //exceptions are handled by parser itself
-            return await ExecuteAsync(arguments, loggerFactory, context.GetCancellationToken()).ConfigureAwait(false);
+                //exceptions are handled by parser itself
+                return await ExecuteAsync(arguments, loggerFactory, context.GetCancellationToken()).ConfigureAwait(false);
+            }
+            finally
+            {
+                loggerFactory?.Dispose();
+            }
         }
 
         /// <inheritdoc/>
