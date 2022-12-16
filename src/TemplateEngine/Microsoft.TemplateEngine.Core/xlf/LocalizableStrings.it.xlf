@@ -4,12 +4,12 @@
     <body>
       <trans-unit id="Error_Evaluation_Expression">
         <source>Encountered following error when parsing and evaluating expression:</source>
-        <target state="new">Encountered following error when parsing and evaluating expression:</target>
+        <target state="translated">Si è verificato l'errore seguente durante l'analisi e la valutazione dell'espressione:</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_Evaluation_Expression_Substring">
         <source>Unexpected substring after parsed expression:</source>
-        <target state="new">Unexpected substring after parsed expression:</target>
+        <target state="translated">Sottostringa imprevista dopo l'espressione analizzata:</target>
         <note />
       </trans-unit>
     </body>
