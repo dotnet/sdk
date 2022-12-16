@@ -587,7 +587,6 @@ class C
 using System;
 using System.IO;
 using System.Threading;
-
 class C
 {
     public async void M()
