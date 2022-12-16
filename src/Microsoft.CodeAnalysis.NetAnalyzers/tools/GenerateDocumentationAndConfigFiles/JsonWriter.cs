@@ -180,10 +180,7 @@ namespace Roslyn.Utilities
 
                 if (c == '\"' || c == '\\' || ShouldAppendAsUnicode(c))
                 {
-                    if (b == null)
-                    {
-                        b = new StringBuilder();
-                    }
+                    b ??= new StringBuilder();
 
                     if (count > 0)
                     {

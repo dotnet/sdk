@@ -49,10 +49,7 @@ namespace Microsoft.NetFramework.Analyzers.Helpers
 
             ISymbol? symbol = GetCallerMethodSymbol(node, semanticModel);
 
-            if (symbol == null)
-            {
-                symbol = GetEnclosingTypeSymbol(node, semanticModel);
-            }
+            symbol ??= GetEnclosingTypeSymbol(node, semanticModel);
 
             return symbol;
         }
