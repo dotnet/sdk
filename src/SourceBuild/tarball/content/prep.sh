@@ -52,14 +52,15 @@ fi
 
 # Check if Private.SourceBuilt artifacts archive exists
 artifactsBaseFileName="Private.SourceBuilt.Artifacts"
-if [ -f $SCRIPT_ROOT/packages/archive/$artifactsBaseFileName.*.tar.gz ]; then
+packagesArchiveDir="$SCRIPT_ROOT/prereqs/packages/archive/"
+if [ -f ${packagesArchiveDir}${artifactsBaseFileName}.*.tar.gz ]; then
     echo "  Private.SourceBuilt.Artifacts.*.tar.gz exists...it will not be downloaded"
     downloadArtifacts=false
 fi
 
 # Check if Private.SourceBuilt prebuilts archive exists
 prebuiltsBaseFileName="Private.SourceBuilt.Prebuilts"
-if [ -f $SCRIPT_ROOT/packages/archive/$prebuiltsBaseFileName.*.tar.gz ]; then
+if [ -f ${packagesArchiveDir}${prebuiltsBaseFileName}.*.tar.gz ]; then
     echo "  Private.SourceBuilt.Prebuilts.*.tar.gz exists...it will not be downloaded"
     downloadPrebuilts=false
 fi
@@ -85,7 +86,7 @@ function DownloadArchive {
     if [[ $archiveVersionLine =~ $versionPattern ]]; then
         archiveUrl="${sourceBuiltArtifactsTarballUrl}${baseFileName}.${BASH_REMATCH[1]}.tar.gz"
         echo "  Downloading source-built $archiveType from $archiveUrl..."
-        (cd $SCRIPT_ROOT/packages/archive/ && curl --retry 5 -O $archiveUrl)
+        (cd $packagesArchiveDir && curl --retry 5 -O $archiveUrl)
     elif [ "$isRequired" == "true" ]; then
       echo "  ERROR: $notFoundMessage"
       exit -1
@@ -128,13 +129,13 @@ if [ "$buildBootstrap" == "true" ]; then
 
     # Get PackageVersions.props from existing prev-sb archive
     echo "  Retrieving PackageVersions.props from existing archive"
-    sourceBuiltArchive=`find $SCRIPT_ROOT/packages/archive -maxdepth 1 -name 'Private.SourceBuilt.Artifacts*.tar.gz'`
+    sourceBuiltArchive=`find $packagesArchiveDir -maxdepth 1 -name 'Private.SourceBuilt.Artifacts*.tar.gz'`
     if [ -f "$sourceBuiltArchive" ]; then
         tar -xzf "$sourceBuiltArchive" -C $workingDir PackageVersions.props
     fi
 
     # Run restore on project to initiate download of bootstrap packages
-    $DOTNET_SDK_PATH/dotnet restore $workingDir/buildBootstrapPreviouslySB.csproj /bl:artifacts/prep/bootstrap.binlog /fileLoggerParameters:LogFile=artifacts/prep/bootstrap.log /p:ArchiveDir="$SCRIPT_ROOT/packages/archive/" /p:BootstrapOverrideVersionsProps="$SCRIPT_ROOT/eng/bootstrap/OverrideBootstrapVersions.props"
+    $DOTNET_SDK_PATH/dotnet restore $workingDir/buildBootstrapPreviouslySB.csproj /bl:artifacts/prep/bootstrap.binlog /fileLoggerParameters:LogFile=artifacts/prep/bootstrap.log /p:ArchiveDir="$packagesArchiveDir" /p:BootstrapOverrideVersionsProps="$SCRIPT_ROOT/eng/bootstrap/OverrideBootstrapVersions.props"
 
     # Remove working directory
     rm -rf $workingDir

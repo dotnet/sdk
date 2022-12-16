@@ -23,6 +23,10 @@ CUSTOM_REF_PACKAGES_DIR=''
 CUSTOM_PACKAGES_DIR=''
 alternateTarget=false
 runningSmokeTests=false
+packagesDir="$SCRIPT_ROOT/prereqs/packages/"
+packagesArchiveDir="${packagesDir}archive/"
+packagesRestoredDir="${packagesDir}restored/"
+packagesPreviouslySourceBuiltDir="${packagesDir}previously-source-built/"
 CUSTOM_SDK_DIR=''
 
 while :; do
@@ -95,14 +99,14 @@ if [ "$CUSTOM_PACKAGES_DIR" != "" ]; then
   fi
 fi
 
-if [ -f "$SCRIPT_ROOT/packages/archive/archiveArtifacts.txt" ]; then
+if [ -f "${packagesArchiveDir}archiveArtifacts.txt" ]; then
   ARCHIVE_ERROR=0
   if [ ! -d "$SCRIPT_ROOT/.dotnet" ] && [ "$CUSTOM_SDK_DIR" == "" ]; then
     echo "ERROR: SDK not found at $SCRIPT_ROOT/.dotnet"
     ARCHIVE_ERROR=1
   fi
-  if [ ! -f $SCRIPT_ROOT/packages/archive/Private.SourceBuilt.Artifacts*.tar.gz ] && [ "$CUSTOM_PACKAGES_DIR" == "" ]; then
-    echo "ERROR: Private.SourceBuilt.Artifacts artifact not found at $SCRIPT_ROOT/packages/archive/ - Either run prep.sh or pass --with-packages parameter"
+  if [ ! -f ${packagesArchiveDir}Private.SourceBuilt.Artifacts*.tar.gz ] && [ "$CUSTOM_PACKAGES_DIR" == "" ]; then
+    echo "ERROR: Private.SourceBuilt.Artifacts artifact not found at $packagesArchiveDir - Either run prep.sh or pass --with-packages parameter"
     ARCHIVE_ERROR=1
   fi
   if [ $ARCHIVE_ERROR == 1 ]; then
@@ -131,14 +135,13 @@ else
 fi
 
 packageVersionsPath=''
-restoredPackagesDir="$SCRIPT_ROOT/packages/restored"
 
 if [[ "$CUSTOM_PACKAGES_DIR" != "" && -f "$CUSTOM_PACKAGES_DIR/PackageVersions.props" ]]; then
   packageVersionsPath="$CUSTOM_PACKAGES_DIR/PackageVersions.props"
-elif [ -d "$SCRIPT_ROOT/packages/archive" ]; then
-  sourceBuiltArchive=`find $SCRIPT_ROOT/packages/archive -maxdepth 1 -name 'Private.SourceBuilt.Artifacts*.tar.gz'`
-  if [ -f "$SCRIPT_ROOT/packages/previously-source-built/PackageVersions.props" ]; then
-    packageVersionsPath=$SCRIPT_ROOT/packages/previously-source-built/PackageVersions.props
+elif [ -d "$packagesArchiveDir" ]; then
+  sourceBuiltArchive=`find $packagesArchiveDir -maxdepth 1 -name 'Private.SourceBuilt.Artifacts*.tar.gz'`
+  if [ -f "${packagesPreviouslySourceBuiltDir}}PackageVersions.props" ]; then
+    packageVersionsPath=${packagesPreviouslySourceBuiltDir}PackageVersions.props
   elif [ -f "$sourceBuiltArchive" ]; then
     tar -xzf "$sourceBuiltArchive" -C /tmp PackageVersions.props
     packageVersionsPath=/tmp/PackageVersions.props
@@ -147,7 +150,7 @@ fi
 
 if [ ! -f "$packageVersionsPath" ]; then
   echo "Cannot find PackagesVersions.props.  Debugging info:"
-  echo "  Attempted archive path: $SCRIPT_ROOT/packages/archive"
+  echo "  Attempted archive path: $packagesArchiveDir"
   echo "  Attempted custom PVP path: $CUSTOM_PACKAGES_DIR/PackageVersions.props"
   exit 1
 fi
@@ -162,7 +165,7 @@ if [[ $arcadeSdkLine =~ $versionPattern ]]; then
   # projects overwrite this so that they use the source-built Arcade SDK instad.
   export SOURCE_BUILT_SDK_ID_ARCADE=Microsoft.DotNet.Arcade.Sdk
   export SOURCE_BUILT_SDK_VERSION_ARCADE=$ARCADE_BOOTSTRAP_VERSION
-  export SOURCE_BUILT_SDK_DIR_ARCADE=$restoredPackagesDir/ArcadeBootstrapPackage/microsoft.dotnet.arcade.sdk/$ARCADE_BOOTSTRAP_VERSION
+  export SOURCE_BUILT_SDK_DIR_ARCADE=$packagesRestoredDir/ArcadeBootstrapPackage/microsoft.dotnet.arcade.sdk/$ARCADE_BOOTSTRAP_VERSION
 fi
 
 sourceLinkLine=`grep -m 1 'MicrosoftSourceLinkCommonVersion' "$packageVersionsPath"`
@@ -174,7 +177,7 @@ fi
 echo "Found bootstrap SDK $SDK_VERSION, bootstrap Arcade $ARCADE_BOOTSTRAP_VERSION, bootstrap SourceLink $SOURCE_LINK_BOOTSTRAP_VERSION"
 
 export DOTNET_CLI_TELEMETRY_OPTOUT=1
-export NUGET_PACKAGES=$restoredPackagesDir/
+export NUGET_PACKAGES=$packagesRestoredDir/
 
 LogDateStamp=$(date +"%m%d%H%M%S")
 

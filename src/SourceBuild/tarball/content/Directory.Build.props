@@ -39,8 +39,9 @@
     <DotNetCliToolDir Condition="'$(DotNetCliToolDir)' == '' and '$(DOTNET_INSTALL_DIR)' != ''">$([MSBuild]::NormalizeDirectory('$(DOTNET_INSTALL_DIR)'))</DotNetCliToolDir>
     <DotNetCliToolDir Condition="'$(DotNetCliToolDir)' == ''">$(ProjectDir).dotnet/</DotNetCliToolDir>
     <DotnetToolCommand>$(DotNetCliToolDir)dotnet</DotnetToolCommand>
+    <PrereqsPackagesDir>$(ProjectDir)prereqs/packages/</PrereqsPackagesDir>
     <PackagesDir Condition="'$(NuGetPackageRoot)' != ''">$(NuGetPackageRoot)</PackagesDir>
-    <PackagesDir Condition="'$(PackagesDir)' == ''">$(ProjectDir)packages/restored/</PackagesDir>
+    <PackagesDir Condition="'$(PackagesDir)' == ''">$(PrereqsPackagesDir)restored/</PackagesDir>
     <ArcadeBootstrapPackageDir>$(PackagesDir)ArcadeBootstrapPackage/</ArcadeBootstrapPackageDir>
     <!-- if we're not currently building,  Visual Studio will still set this -->
     <SDK_VERSION Condition="'$(SDK_VERSION)' == ''">$(NETCoreSdkVersion)</SDK_VERSION>
@@ -105,9 +106,9 @@
     <SourceBuiltBlobFeedDir>$(IntermediatePath)blob-feed/</SourceBuiltBlobFeedDir>
     <SourceBuiltPackagesPath>$(SourceBuiltBlobFeedDir)packages/</SourceBuiltPackagesPath>
     <SourceBuiltAssetsDir>$(SourceBuiltBlobFeedDir)assets/</SourceBuiltAssetsDir>
-    <PrebuiltPackagesPath>$(ProjectDir)packages/prebuilt/</PrebuiltPackagesPath>
-    <PreviouslyRestoredPackagesPath>$(ProjectDir)packages/previouslyRestored/</PreviouslyRestoredPackagesPath>
-    <PrebuiltSourceBuiltPackagesPath>$(ProjectDir)packages/previously-source-built/</PrebuiltSourceBuiltPackagesPath>
+    <PrebuiltPackagesPath>$(PrereqsPackagesDir)prebuilt/</PrebuiltPackagesPath>
+    <PreviouslyRestoredPackagesPath>$(PrereqsPackagesDir)previouslyRestored/</PreviouslyRestoredPackagesPath>
+    <PrebuiltSourceBuiltPackagesPath>$(PrereqsPackagesDir)previously-source-built/</PrebuiltSourceBuiltPackagesPath>
     <PrebuiltSourceBuiltPackagesPath Condition="'$(CustomPrebuiltSourceBuiltPackagesPath)' != ''">$(CustomPrebuiltSourceBuiltPackagesPath)/</PrebuiltSourceBuiltPackagesPath>
     <SourceBuiltTarBallPath>$(OutputPath)</SourceBuiltTarBallPath>
     <SourceBuiltToolsetDir>$(LocalBlobStorageRoot)Sdk/</SourceBuiltToolsetDir>
@@ -138,8 +139,8 @@
     <PoisonedReportFile>$(PackageReportDir)poisoned.txt</PoisonedReportFile>
     <ConflictingPackageReportDir>$(BaseOutputPath)conflict-report/</ConflictingPackageReportDir>
     <PrebuiltBurndownDataFile>$(PackageReportDir)PrebuiltBurndownData.csv</PrebuiltBurndownDataFile>
-    <ExternalTarballsDir>$(ProjectDir)packages/archive/</ExternalTarballsDir>
-    <ReferencePackagesDir>$(ProjectDir)packages/reference/</ReferencePackagesDir>
+    <ExternalTarballsDir>$(PrereqsPackagesDir)archive/</ExternalTarballsDir>
+    <ReferencePackagesDir>$(PrereqsPackagesDir)reference/</ReferencePackagesDir>
     <SourceBuiltArtifactsTarballName>Private.SourceBuilt.Artifacts</SourceBuiltArtifactsTarballName>
     <SourceBuiltPrebuiltsTarballName>Private.SourceBuilt.Prebuilts</SourceBuiltPrebuiltsTarballName>
     <SourceBuiltArtifactsTarballUrl>https://dotnetcli.azureedge.net/source-built-artifacts/assets/</SourceBuiltArtifactsTarballUrl>
