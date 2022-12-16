@@ -34,7 +34,7 @@
         <!-- Tier 1 -->
         <RepositoryReference Include="command-line-api" />
         <RepositoryReference Include="diagnostics" />
-        <RepositoryReference Include="razor-compiler" />
+        <RepositoryReference Include="razor" />
         <RepositoryReference Include="xliff-tasks" />
         <RepositoryReference Include="roslyn" />
         <RepositoryReference Include="source-build-externals" />
