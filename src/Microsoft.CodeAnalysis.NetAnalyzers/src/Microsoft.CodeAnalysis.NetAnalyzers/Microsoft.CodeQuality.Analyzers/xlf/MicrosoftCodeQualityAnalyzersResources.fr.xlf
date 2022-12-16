@@ -1877,21 +1877,6 @@
         <target state="translated">Le membre '{0}' n'accède pas aux données d'instance et peut être marqué comme étant static</target>
         <note />
       </trans-unit>
-      <trans-unit id="ReviewVisibleEventHandlersTitle">
-        <source>Review visible event handlers</source>
-        <target state="translated">Passer en revue les gestionnaires d'événements visibles</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ReviewVisibleEventHandlersDescription">
-        <source>A public or protected event-handling method was detected. Event-handling methods should not be exposed unless absolutely necessary.</source>
-        <target state="translated">Une méthode publique ou protégée de gestion des événements a été détectée. Les méthodes de gestion des événements ne doivent pas être exposées sauf en cas d'absolue nécessité.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ReviewVisibleEventHandlersMessageDefault">
-        <source>Consider making '{0}' not externally visible</source>
-        <target state="translated">Rendre '{0}' non visible de manière externe</target>
-        <note />
-      </trans-unit>
       <trans-unit id="SealMethodsThatSatisfyPrivateInterfacesTitle">
         <source>Seal methods that satisfy private interfaces</source>
         <target state="translated">Sceller les méthodes qui satisfont les interfaces privées</target>

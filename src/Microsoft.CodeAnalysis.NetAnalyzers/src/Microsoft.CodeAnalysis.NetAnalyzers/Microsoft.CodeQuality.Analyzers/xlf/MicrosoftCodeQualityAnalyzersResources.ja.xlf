@@ -1877,21 +1877,6 @@
         <target state="translated">メンバー '{0}' はインスタンス データにアクセスしないため、static にマークできます</target>
         <note />
       </trans-unit>
-      <trans-unit id="ReviewVisibleEventHandlersTitle">
-        <source>Review visible event handlers</source>
-        <target state="translated">表示するイベント ハンドラーを確認します</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ReviewVisibleEventHandlersDescription">
-        <source>A public or protected event-handling method was detected. Event-handling methods should not be exposed unless absolutely necessary.</source>
-        <target state="translated">パブリックまたは保護されたイベント処理メソッドが検出されました。イベント処理メソッドは、どうしても必要な場合を除いて公開しないでください。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ReviewVisibleEventHandlersMessageDefault">
-        <source>Consider making '{0}' not externally visible</source>
-        <target state="translated">'{0}' の外部からの参照を不可能に設定することを検討してください</target>
-        <note />
-      </trans-unit>
       <trans-unit id="SealMethodsThatSatisfyPrivateInterfacesTitle">
         <source>Seal methods that satisfy private interfaces</source>
         <target state="translated">プライベート インターフェイスを満たすメソッドをシールします</target>

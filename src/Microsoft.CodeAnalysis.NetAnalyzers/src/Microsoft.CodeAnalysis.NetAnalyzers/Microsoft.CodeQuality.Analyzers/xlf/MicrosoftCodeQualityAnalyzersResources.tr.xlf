@@ -1877,21 +1877,6 @@
         <target state="translated">'{0}' adlı üye örnek verilerine erişmiyor ve statik olarak işaretlenebilir</target>
         <note />
       </trans-unit>
-      <trans-unit id="ReviewVisibleEventHandlersTitle">
-        <source>Review visible event handlers</source>
-        <target state="translated">Görünür olay işleyicilerini gözden geçirin</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ReviewVisibleEventHandlersDescription">
-        <source>A public or protected event-handling method was detected. Event-handling methods should not be exposed unless absolutely necessary.</source>
-        <target state="translated">Genel veya korumalı bir olay işleme yöntemi algılandı. Olay işleme yöntemleri kesinlikle gerekli olmadıkça kullanıma sunulmamalıdır.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ReviewVisibleEventHandlersMessageDefault">
-        <source>Consider making '{0}' not externally visible</source>
-        <target state="translated">'{0}' öğesini dışarıdan görünmez yapmayı deneyin</target>
-        <note />
-      </trans-unit>
       <trans-unit id="SealMethodsThatSatisfyPrivateInterfacesTitle">
         <source>Seal methods that satisfy private interfaces</source>
         <target state="translated">Özel arabirimleri karşılayan mühürleme yöntemleri</target>

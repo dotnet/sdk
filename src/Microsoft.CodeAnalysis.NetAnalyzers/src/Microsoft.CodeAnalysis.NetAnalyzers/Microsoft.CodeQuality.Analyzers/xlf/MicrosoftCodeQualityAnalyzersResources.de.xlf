@@ -1877,21 +1877,6 @@
         <target state="translated">Der Member "{0}" greift nicht auf Instanzdaten zu und kann als "static" markiert werden.</target>
         <note />
       </trans-unit>
-      <trans-unit id="ReviewVisibleEventHandlersTitle">
-        <source>Review visible event handlers</source>
-        <target state="translated">Sichtbare Ereignishandler überprüfen</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ReviewVisibleEventHandlersDescription">
-        <source>A public or protected event-handling method was detected. Event-handling methods should not be exposed unless absolutely necessary.</source>
-        <target state="translated">Es wurde eine öffentliche oder geschützte Methode zum Ereignishandling ermittelt. Methoden zum Ereignishandling dürfen nur verfügbar gemacht werden, wenn es absolut erforderlich ist.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ReviewVisibleEventHandlersMessageDefault">
-        <source>Consider making '{0}' not externally visible</source>
-        <target state="translated">Ziehen Sie in Betracht, "{0}" nicht extern sichtbar zu machen.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="SealMethodsThatSatisfyPrivateInterfacesTitle">
         <source>Seal methods that satisfy private interfaces</source>
         <target state="translated">Methoden versiegeln, die die Bedingungen privater Schnittstellen erfüllen</target>
