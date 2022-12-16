@@ -34,8 +34,7 @@
         <!-- Tier 1 -->
         <RepositoryReference Include="command-line-api" />
         <RepositoryReference Include="diagnostics" />
-        <!-- TODO:  Enable with https://github.com/dotnet/source-build/issues/3161 -->
-        <!-- <RepositoryReference Include="razor" /> -->
+        <RepositoryReference Include="razor" />
         <RepositoryReference Include="xliff-tasks" />
         <RepositoryReference Include="roslyn" />
         <RepositoryReference Include="source-build-externals" />

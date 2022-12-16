@@ -1,0 +1,183 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Chris Sienkiewicz <chsienki@microsoft.com>
+Date: Wed, 14 Dec 2022 21:05:57 -0800
+Subject: [PATCH] Disable source build by default, and opt in instead (#8019)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+* Add sln filter for source build
+
+* Use ExcludeSourceBuild instead
+
+* Put the correct default in 🤦‍♂️
+
+* Don't include npm targets when all targets are suppressed
+
+* Don't override arcade for test projects when building from source
+
+* Use default source build jobs now we don't need node
+
+Backport: https://github.com/dotnet/razor/pull/8019
+---
+ Directory.Build.props                         |  3 +++
+ Directory.Build.targets                       |  2 +-
+ azure-pipelines.yml                           | 27 +------------------
+ ...soft.NET.Sdk.Razor.SourceGenerators.csproj |  1 +
+ ...c.Razor.Extensions.Tooling.Internal.csproj |  3 ++-
+ ...CodeAnalysis.Razor.Tooling.Internal.csproj |  3 ++-
+ .../Directory.Build.props                     |  3 ++-
+ ...ft.AspNetCore.Razor.LanguageSupport.csproj |  1 +
+ 8 files changed, 13 insertions(+), 30 deletions(-)
+
+diff --git a/Directory.Build.props b/Directory.Build.props
+index efc5ca9ab..9a8caccfb 100644
+--- a/Directory.Build.props
++++ b/Directory.Build.props
+@@ -37,6 +37,9 @@
+ 
+     <!-- Working around https://github.com/microsoft/msbuild/pull/4764 -->
+     <EmbeddedResourceUseDependentUponConvention>false</EmbeddedResourceUseDependentUponConvention>
++
++    <!-- By default, nothing builds from source build. Individual projects can opt in instead -->
++    <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
+   </PropertyGroup>
+ 
+   <ItemGroup>
+diff --git a/Directory.Build.targets b/Directory.Build.targets
+index 032ac8a48..6f81feb35 100644
+--- a/Directory.Build.targets
++++ b/Directory.Build.targets
+@@ -8,7 +8,7 @@
+ 
+   <Import Project="eng\MPack.targets" />
+   <Import Project="eng\targets\Packaging.targets" />
+-  <Import Project="eng\targets\Npm.Common.targets"  Condition="'$(MSBuildProjectExtension)' == '.npmproj'" />
++  <Import Project="eng\targets\Npm.Common.targets"  Condition="'$(MSBuildProjectExtension)' == '.npmproj' and '$(_SuppressAllTargets)' != 'true'" />
+ 
+   <!-- Workaround https://github.com/dotnet/cli/issues/10528 -->
+   <PropertyGroup>
+diff --git a/azure-pipelines.yml b/azure-pipelines.yml
+index 99d81090c..ca7f31c74 100644
+--- a/azure-pipelines.yml
++++ b/azure-pipelines.yml
+@@ -110,6 +110,7 @@ stages:
+       enablePublishBuildArtifacts: true
+       enablePublishTestResults: true
+       enableTelemetry: true
++      enableSourcebuild: true
+       helixRepo: dotnet/razor
+       helixType: build.product/
+       # enableMicrobuild can't be read from a user-defined variable (Azure DevOps limitation)
+@@ -419,32 +420,6 @@ stages:
+               artifactType: Container
+               parallel: true
+ 
+-      # Source build
+-      - job: Source_Build_Managed
+-        displayName: Source-Build (Managed)
+-        variables:
+-          - _BuildConfig: Release
+-        pool:
+-          ${{ if eq(variables['System.TeamProject'], 'public') }}:
+-            name: NetCore-Public
+-            demands: ImageOverride -equals Build.Ubuntu.1804.Amd64.Open
+-          ${{ if eq(variables['System.TeamProject'], 'internal') }}:
+-            name: NetCore1ESPool-Internal
+-            demands: ImageOverride -equals Build.Ubuntu.1804.Amd64
+-        workspace:
+-          clean: all
+-        steps:
+-          - task: NodeTool@0
+-            displayName: Install Node 10.x
+-            inputs:
+-              versionSpec: 10.x
+-
+-          - powershell: npm install -g yarn
+-            displayName: Install yarn
+-            condition: succeeded()
+-
+-          - template: /eng/common/templates/steps/source-build.yml
+-
+ - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+   - stage: publishBuildAssets
+     displayName: Publish to Build Asset Registry
+diff --git a/src/Compiler/Microsoft.NET.Sdk.Razor.SourceGenerators/Microsoft.NET.Sdk.Razor.SourceGenerators.csproj b/src/Compiler/Microsoft.NET.Sdk.Razor.SourceGenerators/Microsoft.NET.Sdk.Razor.SourceGenerators.csproj
+index 27c23c278..5f8232267 100644
+--- a/src/Compiler/Microsoft.NET.Sdk.Razor.SourceGenerators/Microsoft.NET.Sdk.Razor.SourceGenerators.csproj
++++ b/src/Compiler/Microsoft.NET.Sdk.Razor.SourceGenerators/Microsoft.NET.Sdk.Razor.SourceGenerators.csproj
+@@ -9,6 +9,7 @@
+     <IsShipping>false</IsShipping>
+     <NoWarn>$(NoWarn);RS2008</NoWarn>
+     <Nullable>enable</Nullable>
++    <ExcludeFromSourceBuild>false</ExcludeFromSourceBuild>
+   </PropertyGroup>
+ 
+   <ItemGroup>
+diff --git a/src/Compiler/tools/Microsoft.AspNetCore.Mvc.Razor.Extensions.Tooling.Internal/Microsoft.AspNetCore.Mvc.Razor.Extensions.Tooling.Internal.csproj b/src/Compiler/tools/Microsoft.AspNetCore.Mvc.Razor.Extensions.Tooling.Internal/Microsoft.AspNetCore.Mvc.Razor.Extensions.Tooling.Internal.csproj
+index 63252918a..88f736348 100644
+--- a/src/Compiler/tools/Microsoft.AspNetCore.Mvc.Razor.Extensions.Tooling.Internal/Microsoft.AspNetCore.Mvc.Razor.Extensions.Tooling.Internal.csproj
++++ b/src/Compiler/tools/Microsoft.AspNetCore.Mvc.Razor.Extensions.Tooling.Internal/Microsoft.AspNetCore.Mvc.Razor.Extensions.Tooling.Internal.csproj
+@@ -1,4 +1,4 @@
+-﻿<Project Sdk="Microsoft.NET.Sdk">
++<Project Sdk="Microsoft.NET.Sdk">
+ 
+   <PropertyGroup>
+     <Description>Transport package for Razor extension binaries. For internal use only.</Description>
+@@ -6,6 +6,7 @@
+     <IsShipping>false</IsShipping>
+     <IncludeBuildOutput>false</IncludeBuildOutput>
+     <IsPackable>true</IsPackable>
++    <ExcludeFromSourceBuild>false</ExcludeFromSourceBuild>
+   </PropertyGroup>
+ 
+   <ItemGroup>
+diff --git a/src/Compiler/tools/Microsoft.CodeAnalysis.Razor.Tooling.Internal/Microsoft.CodeAnalysis.Razor.Tooling.Internal.csproj b/src/Compiler/tools/Microsoft.CodeAnalysis.Razor.Tooling.Internal/Microsoft.CodeAnalysis.Razor.Tooling.Internal.csproj
+index 19dde740a..a084f3e35 100644
+--- a/src/Compiler/tools/Microsoft.CodeAnalysis.Razor.Tooling.Internal/Microsoft.CodeAnalysis.Razor.Tooling.Internal.csproj
++++ b/src/Compiler/tools/Microsoft.CodeAnalysis.Razor.Tooling.Internal/Microsoft.CodeAnalysis.Razor.Tooling.Internal.csproj
+@@ -1,4 +1,4 @@
+-﻿<Project Sdk="Microsoft.NET.Sdk">
++<Project Sdk="Microsoft.NET.Sdk">
+ 
+   <PropertyGroup>
+     <Description>Transport package for Razor compiler binaries. For internal use only.</Description>
+@@ -6,6 +6,7 @@
+     <IsShipping>false</IsShipping>
+     <IncludeBuildOutput>false</IncludeBuildOutput>
+     <IsPackable>true</IsPackable>
++    <ExcludeFromSourceBuild>false</ExcludeFromSourceBuild>
+   </PropertyGroup>
+ 
+   <ItemGroup>
+diff --git a/src/Razor/test/Microsoft.AspNetCore.Razor.VSCode.Grammar.Test/Directory.Build.props b/src/Razor/test/Microsoft.AspNetCore.Razor.VSCode.Grammar.Test/Directory.Build.props
+index ac755a944..765281c47 100644
+--- a/src/Razor/test/Microsoft.AspNetCore.Razor.VSCode.Grammar.Test/Directory.Build.props
++++ b/src/Razor/test/Microsoft.AspNetCore.Razor.VSCode.Grammar.Test/Directory.Build.props
+@@ -1,7 +1,7 @@
+ <Project>
+   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory).., Directory.Build.props))\Directory.Build.props" />
+ 
+-  <PropertyGroup>
++  <PropertyGroup Condition="'$(DotNetBuildFromSource)' != 'true'">
+     <!--
+       The Oniguruma package for regex testing has its own Arcade & SDK independent build mechanisms that automatically look for hierarchical Directory.Build.props files.
+       Therefore, we have this file here in order to suppress the usage of the global SDK and arcade build system to enable yarn install to pass.
+@@ -10,4 +10,5 @@
+     -->
+     <_SuppressSdkImports>true</_SuppressSdkImports>
+   </PropertyGroup>
++
+ </Project>
+diff --git a/src/Shared/Microsoft.AspNetCore.Razor.LanguageSupport/Microsoft.AspNetCore.Razor.LanguageSupport.csproj b/src/Shared/Microsoft.AspNetCore.Razor.LanguageSupport/Microsoft.AspNetCore.Razor.LanguageSupport.csproj
+index a6634e072..b00f96694 100644
+--- a/src/Shared/Microsoft.AspNetCore.Razor.LanguageSupport/Microsoft.AspNetCore.Razor.LanguageSupport.csproj
++++ b/src/Shared/Microsoft.AspNetCore.Razor.LanguageSupport/Microsoft.AspNetCore.Razor.LanguageSupport.csproj
+@@ -4,6 +4,7 @@
+     <TargetFrameworks>$(DefaultNetCoreTargetFramework);netstandard2.0;$(DefaultNetFxTargetFramework)</TargetFrameworks>
+     <Description>Razor is a markup syntax for adding server-side logic to web pages. This package contains the language server library assets.</Description>
+     <EnableApiCheck>false</EnableApiCheck>
++    <ExcludeFromSourceBuild>false</ExcludeFromSourceBuild>
+   </PropertyGroup>
+ 
+ </Project>
