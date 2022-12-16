@@ -52,6 +52,10 @@
     {
       "condition": "CreateTemplateConfigFolder == true",
       "target": ".template.config/"
+    },
+    {
+      "condition": "CreateTemplateConfigFolder == false",
+      "target": "./"
     }
   ],
   "primaryOutputs": [

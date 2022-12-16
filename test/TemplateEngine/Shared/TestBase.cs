@@ -38,6 +38,8 @@ namespace Microsoft.TemplateEngine.Tests
             }
         }
 
+        internal static string TemplateFeedLocation { get; } = Path.Combine(CodeBaseRoot, "template_feed");
+
         internal static string TestTemplatesLocation { get; } = Path.Combine(CodeBaseRoot, "test", "Microsoft.TemplateEngine.TestTemplates", "test_templates");
 
         internal static string TestTemplatePackagesLocation { get; } = Path.Combine(CodeBaseRoot, "test", "Microsoft.TemplateEngine.TestTemplates", "nupkg_templates");

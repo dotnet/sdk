@@ -1,4 +1,4 @@
-{
+﻿{
   "$schema": "http://json.schemastore.org/template",
   "$comment": "See https://github.com/dotnet/templating/wiki/Reference-for-template.json for complete configuration description. Complete TODOs below and remove the $comment properties. It is recommended to use the JSON editor that supports schema hints to get more information about defined JSON properties and their description.",
   "author": "TODO: fill author name here.",

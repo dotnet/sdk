@@ -1,9 +1,9 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
     <!-- fill in the properties marked as TODO below -->
     <PropertyGroup>
         <PackageType>Template</PackageType>
         <PackageVersion>1.0</PackageVersion>
-        <PackageId>New.Template.Package</PackageId>
+        <PackageId>templatepack</PackageId>
         <Title>TODO: fill the package name here</Title>
         <Authors>Me</Authors>
         <Description>TODO: fill the package description here</Description>
@@ -16,7 +16,6 @@
         <NoDefaultExcludes>true</NoDefaultExcludes>
     </PropertyGroup>
 
-    <!--#if (EnableMSBuildTasks) -->
     <PropertyGroup>
         <LocalizeTemplates>false</LocalizeTemplates>
     </PropertyGroup>
@@ -25,7 +24,6 @@
         <PackageReference Include="Microsoft.TemplateEngine.Tasks" Version="*" PrivateAssets="all" IsImplicitlyDefined="true"/>
     </ItemGroup>
 
-    <!--#endif -->
     <ItemGroup>
         <Content Include="content\**\*" Exclude="content\**\bin\**;content\**\obj\**" />
         <Compile Remove="**\*" />

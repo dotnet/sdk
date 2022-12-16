@@ -10,7 +10,7 @@
   "groupIdentity": "Microsoft.TemplateEngine.Authoring.TemplatePackage",
   "precedence": "0",
   "identity": "Microsoft.TemplateEngine.Authoring.TemplatePackage.1.0",
-  "shortName": "template-package",
+  "shortName": "templatepack",
   "tags": {
     "type": "project"
   },
