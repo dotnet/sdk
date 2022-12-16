@@ -20,3 +20,8 @@ dotnet new --debug:ephemeral-hive
 dotnet new nugetconfig
 dotnet nuget add source $DOTNET_ROOT/.nuget --configfile nuget.config
 dotnet nuget list source
+
+cp $HELIX_CORRELATION_PAYLOAD/t/TestExecutionDirectoryFiles/testAsset.props ./
+set TestPackagesRoot=$pwd/assets/testpackages/
+dotnet build assets/testpackages/Microsoft.NET.TestPackages.csproj /t:Build -p:VersionPropsIsImported=false
+cp ./assets/testpackages/testpackages/* $TestExecutionDirectory/TestPackages
