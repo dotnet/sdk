@@ -27,9 +27,9 @@
       "binding": "msbuild:RootNamespace",
       "replaces": "Company.ClassLibrary1"
     },
-    "TargetFramework": {
+    "NETCoreSdkVersion": {
       "type": "bind",
-      "binding": "msbuild:TargetFramework"
+      "binding": "msbuild:NETCoreSdkVersion"
     },
     "ImplicitUsings": {
       "type": "bind",
@@ -40,8 +40,8 @@
       "generator": "regexMatch",
       "datatype": "bool",
       "parameters": {
-        "pattern": "^(net6.0|net7.0|net8.0)$",
-        "source": "TargetFramework"
+        "pattern": "^([6-9]\\.0\\.).*",
+        "source": "NETCoreSdkVersion"
       }
     },
     "langVersion": {
@@ -60,10 +60,6 @@
     "csharp10orLater": {
       "type": "computed",
       "value": "!csharp9orOlder"
-    },
-    "csharpFeature_ImplicitUsings": {
-      "type": "computed",
-      "value": "ImplicitUsings == \"enable\""
     },
     "csharpFeature_FileScopedNamespaces": {
       "type": "computed",

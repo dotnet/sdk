@@ -27,26 +27,26 @@
       "binding": "msbuild:RootNamespace",
       "replaces": "Company.ClassLibrary1"
     },
-    "TargetFramework": {
+    "NETCoreSdkVersion": {
       "type": "bind",
-      "binding": "msbuild:TargetFramework"
+      "binding": "msbuild:NETCoreSdkVersion"
+    },
+    "ImplicitUsings": {
+      "type": "bind",
+      "binding": "msbuild:ImplicitUsings"
     },
     "net6orLater": {
       "type": "generated",
       "generator": "regexMatch",
       "datatype": "bool",
       "parameters": {
-        "pattern": "^(net6.0|net7.0|net8.0)$",
-        "source": "TargetFramework"
+        "pattern": "^([6-9]\\.0\\.).*",
+        "source": "NETCoreSdkVersion"
       }
     },
     "langVersion": {
       "type": "bind",
       "binding": "msbuild:LangVersion"
-    },
-    "ImplicitUsings": {
-      "type": "bind",
-      "binding": "msbuild:ImplicitUsings"
     },
     "csharp9orOlder": {
       "type": "generated",
