@@ -137,8 +137,8 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 _log.WriteLine(entry);
             }
 
-          //  Assert.Equal(2, createdCacheEntries.Length);
-          //  Assert.Contains(Path.Combine(home, "packages"), createdCacheEntries);
+            //Assert.Equal(2, createdCacheEntries.Length);
+            //Assert.Contains(Path.Combine(home, "packages"), createdCacheEntries);
             Assert.True(File.Exists(Path.Combine(home, ".templateengine", "dotnetcli", Product.Version, "templatecache.json")));
         }
 
