@@ -13,7 +13,7 @@
   },
   "identity": "Microsoft.Standard.QuickStarts.DirectoryTargets",
   "shortName": "buildtargets",
-  "groupIdentity": "MSBuildDirectoryTargetsFile",
+  "groupIdentity": "MSBuild.DirectoryTargetsFile",
   "precedence": 0,
   "symbols": {
     "inherit": {
