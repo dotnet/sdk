@@ -30,7 +30,7 @@
   },
   "sources": [
     {
-      "$comment": "TODO: Sources control the paths for source and target content. For more details see https://github.com/dotnet/templating/wiki/Reference-for-template.json#source-definition. If source definition is not required, remove the property."
+      "$comment": "TODO: Sources control the paths for source and target content. For more details see https://github.com/dotnet/templating/wiki/Reference-for-template.json#source-definition. If source definition is not required, remove the property.",
       "condition": "false",
       "source": "./source-files",
       "target": "./target"
@@ -40,7 +40,7 @@
     "SampleConstraint": {
       "$comment": "TODO: The template may define the constraints all of which must be met in order for the template to be used. For more details see https://github.com/dotnet/templating/wiki/Reference-for-template.json#template-constraints. If constraints are not required, remove the property.",
       "type": "os",
-      "args": [ "Linux", "OSX", "Windows"]
+      "args": [ "Linux", "OSX", "Windows" ]
     }
   },
   "primaryOutputs": [
@@ -52,7 +52,7 @@
   ],
   "postActions": [
     {
-      "$comment": "TODO: Enables actions to be performed after the project is created. For more details see https://github.com/dotnet/templating/wiki/Post-Action-Registry. If post actions are not required, remove the property."
+      "$comment": "TODO: Enables actions to be performed after the project is created. For more details see https://github.com/dotnet/templating/wiki/Post-Action-Registry. If post actions are not required, remove the property.",
       "actionId": "84C0DA21-51C8-4541-9940-6CA19AF04EE6",
       "condition": "false",
       "id": "sample-post-action",

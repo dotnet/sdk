@@ -9,5 +9,7 @@
   "symbols/TemplateShortName/description": "The template short name.",
   "symbols/TemplateShortName/displayName": "Template short name",
   "symbols/TemplateIdentity/description": "The template identity (should be unique).",
-  "symbols/TemplateIdentity/displayName": "Template identity"
+  "symbols/TemplateIdentity/displayName": "Template identity",
+  "postActions/instructions/description": "Manual actions required",
+  "postActions/instructions/manualInstructions/default/text": "Open template.json in the editor and complete the configuration."
 }

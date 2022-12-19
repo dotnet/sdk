@@ -176,5 +176,49 @@ namespace Microsoft.TemplateEngine.Authoring.Templates.Tests
             VerificationEngine engine = new VerificationEngine(_log);
             await engine.Execute(options);
         }
+
+        [Fact]
+        public async Task TemplateJsonTest_CLI()
+        {
+            string workingDir = TestUtils.CreateTemporaryFolder();
+            string templateShortName = "template.json";
+
+            //get the template location
+            string templateLocation = Path.Combine(TemplateFeedLocation, "Microsoft.TemplateEngine.Authoring.Templates");
+
+            TemplateVerifierOptions options = new TemplateVerifierOptions(templateName: templateShortName)
+            {
+                TemplatePath = templateLocation,
+                SnapshotsDirectory = "Snapshots",
+                OutputDirectory = workingDir,
+                DoNotPrependCallerMethodNameToScenarioName = true,
+                VerifyCommandOutput = true,
+                ScenarioName = "CLI",
+            };
+            VerificationEngine engine = new VerificationEngine(_log);
+            await engine.Execute(options);
+        }
+
+        [Fact]
+        public async Task TemplatePackageTest_CLI()
+        {
+            string workingDir = TestUtils.CreateTemporaryFolder();
+            string templateShortName = "templatepack";
+
+            //get the template location
+            string templateLocation = Path.Combine(TemplateFeedLocation, "Microsoft.TemplateEngine.Authoring.Templates");
+
+            TemplateVerifierOptions options = new TemplateVerifierOptions(templateName: templateShortName)
+            {
+                TemplatePath = templateLocation,
+                SnapshotsDirectory = "Snapshots",
+                OutputDirectory = workingDir,
+                DoNotPrependCallerMethodNameToScenarioName = true,
+                VerifyCommandOutput = true,
+                ScenarioName = "CLI",
+            };
+            VerificationEngine engine = new VerificationEngine(_log);
+            await engine.Execute(options);
+        }
     }
 }

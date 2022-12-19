@@ -32,4 +32,7 @@
     <ItemGroup>
       <None Include="README.md" />
     </ItemGroup>
+    <ItemGroup>
+      <Folder Include="content\TemplatePackage\.template.config\localize\" />
+    </ItemGroup>
 </Project>

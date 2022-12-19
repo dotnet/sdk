@@ -23,4 +23,8 @@
     <None Include="Snapshots\**\*" CopyToOutputDirectory="Never" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Remove="Snapshots\templatepack.CLI.verified\templatepack\templatepack.csproj" />
+  </ItemGroup>
+
 </Project>

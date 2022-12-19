@@ -67,5 +67,18 @@
       "condition": "CreateTemplateConfigFolder != true",
       "path": "template.json"
     }
+  ],
+  "postActions": [
+    {
+      "id": "instructions",
+      "description": "Manual actions required",
+      "manualInstructions": [
+        {
+          "text": "Open template.json in the editor and complete the configuration."
+        }
+      ],
+      "actionId": "AC1156F7-BB77-4DB8-B28F-24EEBCCA1E5C",
+      "continueOnError": true
+    }
   ]
 }
