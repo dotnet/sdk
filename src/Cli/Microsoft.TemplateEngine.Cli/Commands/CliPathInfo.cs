@@ -39,7 +39,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
         private static string GetGlobalSettingsDir(string? settingsLocation)
         {
             var definedSettingsLocation = string.IsNullOrEmpty(settingsLocation)
-                ? CliFolderPathCalculator.DotnetHomePath
+                ? Path.Combine(CliFolderPathCalculator.DotnetHomePath, ".templateengine")
                 : settingsLocation;
 
             Reporter.Verbose.WriteLine($"Global Settings Location: {definedSettingsLocation}");
