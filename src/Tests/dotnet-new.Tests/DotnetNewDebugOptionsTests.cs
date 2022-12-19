@@ -26,7 +26,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         public void CanShowBasicInfoWithDebugReinit()
         {
             string home = CreateTemporaryFolder(folderName: "Home");
-            string cacheFilePath = Path.Combine(home, ".templateengine", "dotnetcli", Product.Version, "templatecache.json");
+            string cacheFilePath = Path.Combine(home, "dotnetcli", Product.Version, "templatecache.json");
 
             CommandResult commandResult = new DotnetNewCommand(_log)
                 .WithCustomHive(home)
@@ -50,7 +50,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         public void CanShowBasicInfoWithDebugRebuildCache()
         {
             string home = CreateTemporaryFolder(folderName: "Home");
-            string cacheFilePath = Path.Combine(home, ".templateengine", "dotnetcli", Product.Version, "templatecache.json");
+            string cacheFilePath = Path.Combine(home, "dotnetcli", Product.Version, "templatecache.json");
 
             CommandResult commandResult = new DotnetNewCommand(_log)
                 .WithCustomHive(home)
@@ -121,25 +121,10 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                .Execute()
                .Should().Pass().And.NotHaveStdErr();
 
-            string[] createdCacheEntries = Directory.GetFileSystemEntries(Path.Combine(home, ".templateengine"));
+            string[] createdCacheEntries = Directory.GetFileSystemEntries(Path.Combine(home));
 
-            _log.WriteLine("created Entries in .templateengine:");
-            foreach (string entry in createdCacheEntries)
-            {
-                _log.WriteLine(entry);
-            }
-
-            string[] createdCacheEntriesHome = Directory.GetFileSystemEntries(home);
-
-            _log.WriteLine("created Entries in home:");
-            foreach (string entry in createdCacheEntriesHome)
-            {
-                _log.WriteLine(entry);
-            }
-
-            //Assert.Equal(2, createdCacheEntries.Length);
-            Assert.Contains(Path.Combine(home, ".templateengine", "packages"), createdCacheEntries);
-            Assert.True(File.Exists(Path.Combine(home, ".templateengine", "dotnetcli", Product.Version, "templatecache.json")));
+            Assert.Equal(2, createdCacheEntries.Length);
+            Assert.True(File.Exists(Path.Combine(home, "dotnetcli", Product.Version, "templatecache.json")));
             Assert.True(false);
         }
 
