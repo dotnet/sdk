@@ -70,8 +70,8 @@ Template options:
                                                                           Default: false
   -f, --framework <net6.0|net7.0>                                         The target framework for the project.
                                                                           Type: choice
-                                                                            net6.0         Target net6.0
-                                                                            net7.0         Target net7.0
+                                                                            net7.0  Target net7.0
+                                                                            net6.0  Target net6.0
                                                                           Default: net7.0
   --no-restore                                                            If specified, skips the automatic restore of the project on create.
                                                                           Type: bool
@@ -86,9 +86,6 @@ Template options:
                                                                           Type: string
                                                                           Default: user.read
   --use-program-main                                                      Whether to generate an explicit Program class and Main method instead of top-level statements.
-                                                                          Type: bool
-                                                                          Default: false
-  -rrc, --razor-runtime-compilation                                       Determines if the project is configured to use Razor runtime compilation in Debug builds.
                                                                           Type: bool
                                                                           Default: false
 
