@@ -28,11 +28,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
         protected ITestOutputHelper Log { get; private set; }
 
-        public void Dispose()
-        {
-            Directory.Delete(HomeDirectory, true);
-            GC.SuppressFinalize(this);
-        }
+        public void Dispose() => Directory.Delete(HomeDirectory, true);
 
         public void InstallPackage(string packageName, string? workingDirectory = null, string? nugetSource = null)
         {
