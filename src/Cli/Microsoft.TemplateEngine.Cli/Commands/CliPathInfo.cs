@@ -44,7 +44,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 
             Reporter.Verbose.WriteLine($"Global Settings Location: {definedSettingsLocation}");
 
-            return Path.Combine(definedSettingsLocation, ".templateengine");
+            return definedSettingsLocation;
         }
 
         private static string GetDefaultHostSettingsDir(ITemplateEngineHost host, string? userDir = null, string? globalDir = null)
