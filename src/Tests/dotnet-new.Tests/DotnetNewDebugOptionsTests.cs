@@ -121,7 +121,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                .Execute()
                .Should().Pass().And.NotHaveStdErr();
 
-            string[] createdCacheEntries = Directory.GetFileSystemEntries(home, ".templateengine");
+            string[] createdCacheEntries = Directory.GetFileSystemEntries(Path.Combine(home, ".templateengine"));
 
             _log.WriteLine("created Entries in .templateengine:");
             foreach (string entry in createdCacheEntries)
@@ -138,7 +138,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             }
 
             //Assert.Equal(2, createdCacheEntries.Length);
-            //Assert.Contains(Path.Combine(home, "packages"), createdCacheEntries);
+            Assert.Contains(Path.Combine(home, ".templateengine", "packages"), createdCacheEntries);
             Assert.True(File.Exists(Path.Combine(home, ".templateengine", "dotnetcli", Product.Version, "templatecache.json")));
             Assert.True(false);
         }
