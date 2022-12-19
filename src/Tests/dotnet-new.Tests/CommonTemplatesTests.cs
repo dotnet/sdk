@@ -34,21 +34,14 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         [InlineData("global.json file", "globaljson", null)]
         [InlineData("global.json file", "globaljson", new[] { "--sdk-version", "6.0.200" })]
         [InlineData("global.json file", "globaljson", new[] { "--sdk-version", "6.0.200", "--roll-forward", "major" })]
-        [InlineData("global.json file", "global.json", null)]
-        [InlineData("global.json file", "global.json", new[] { "--sdk-version", "6.0.200" })]
-        [InlineData("global.json file", "global.json", new[] { "--sdk-version", "6.0.200", "--roll-forward", "major" })]
         [InlineData("NuGet Config", "nugetconfig", null)]
-        [InlineData("NuGet Config", "nuget.config", null)]
         [InlineData("dotnet gitignore file", "gitignore", null)]
-        [InlineData("dotnet gitignore file", ".gitignore", null)]
         [InlineData("Solution File", "sln", null)]
         [InlineData("Solution File", "solution", null)]
         [InlineData("Dotnet local tool manifest file", "tool-manifest", null)]
         [InlineData("Web Config", "webconfig", null)]
         [InlineData("EditorConfig file", "editorconfig", null)]
         [InlineData("EditorConfig file", "editorconfig", new[] { "--empty" })]
-        [InlineData("EditorConfig file", ".editorconfig", null)]
-        [InlineData("EditorConfig file", ".editorconfig", new[] { "--empty" })]
         public async void AllCommonItemsCreate(string expectedTemplateName, string templateShortName, string[]? args)
         {
             Dictionary<string, string> environmentUnderTest = new() { ["DOTNET_NOLOGO"] = false.ToString() };
