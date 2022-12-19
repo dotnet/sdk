@@ -23,10 +23,10 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         }
 
         [Theory]
-        [InlineData("emptyweb_cs-50", "web")]
-        [InlineData("mvc_cs-50", "mvc")]
-        [InlineData("mvc_fs-50", "mvc", "-lang", "F#")]
-        [InlineData("api_cs-50", "webapi")]
+        [InlineData("emptyweb_cs-latest", "web")]
+        [InlineData("mvc_cs-latest", "mvc")]
+        [InlineData("mvc_fs-latest", "mvc", "-lang", "F#")]
+        [InlineData("api_cs-latest", "webapi")]
         [InlineData("emptyweb_cs-60", "web", "-f", "net6.0")]
         [InlineData("mvc_cs-60", "mvc", "-f", "net6.0")]
         [InlineData("mvc_fs-60", "mvc", "-lang", "F#", "-f", "net6.0")]
