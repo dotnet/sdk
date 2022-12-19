@@ -125,7 +125,6 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
             Assert.Equal(2, createdCacheEntries.Length);
             Assert.True(File.Exists(Path.Combine(home, "dotnetcli", Product.Version, "templatecache.json")));
-            Assert.True(false);
         }
 
         [Fact]
