@@ -33,7 +33,7 @@
       "description": "Manual actions required",
       "manualInstructions": [
         {
-          "text": "Open *.csproj in the editor and complete the package metadata configuration. Copy the templates to 'content' folder."
+          "text": "Open *.csproj in the editor and complete the package metadata configuration. Copy the templates to 'content' folder. Fill in README.md."
         }
       ],
       "actionId": "AC1156F7-BB77-4DB8-B28F-24EEBCCA1E5C",
