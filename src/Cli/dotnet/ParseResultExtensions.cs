@@ -7,6 +7,7 @@ using System.CommandLine;
 using System.CommandLine.Parsing;
 using System.Diagnostics;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Microsoft.DotNet.Cli.Utils;
 using static Microsoft.DotNet.Cli.Parser;
 
@@ -34,14 +35,6 @@ namespace Microsoft.DotNet.Cli
             Parser.Instance.Parse(tokenList).Invoke();
         }
 
-        private static string StripPlaceholdersFromString(string input)
-        {
-            // Find and remove all format placeholder strings (and filled runtime strings!) of the form ['"].*['"]
-            // from an input string.
-            // This lets us do fair comparisons against strings that are translated, since the placeholders
-            // may be in various locations, and may have different quote characters in different languages.
-            return System.Text.RegularExpressions.Regex.Replace(input, @"['""](.*?)['""]", string.Empty);
-        }
 
         public static void ShowHelpOrErrorIfAppropriate(this ParseResult parseResult)
         {
@@ -49,9 +42,9 @@ namespace Microsoft.DotNet.Cli
             {
                 var unrecognizedTokenErrors = parseResult.Errors.Where(error =>
                 {
-                    var strippedError = StripPlaceholdersFromString(error.Message);
-                    var strippedRawResource = StripPlaceholdersFromString(Parser.Instance.Configuration.LocalizationResources.UnrecognizedCommandOrArgument(string.Empty));
-                    return strippedError.Equals(strippedRawResource, StringComparison.OrdinalIgnoreCase);
+                    // Can't really cache this access in a static or something because it implicitly depends on the environment.
+                    var rawResourcePartsForThisLocale = DistinctFormatStringParts(CommandLineValidation.LocalizableStrings.UnrecognizedCommandOrArgument);
+                    return ErrorContainsAllParts(error.Message, rawResourcePartsForThisLocale);
                 });
                 if (parseResult.CommandResult.Command.TreatUnmatchedTokensAsErrors ||
                     parseResult.Errors.Except(unrecognizedTokenErrors).Any())
@@ -61,6 +54,31 @@ namespace Microsoft.DotNet.Cli
                                              parseResult.Errors.Select(e => e.Message)),
                         parseResult: parseResult);
                 }
+            }
+
+            ///<summary>Splits a .NET format string by the format placeholders (the {N} parts) to get an array of the literal parts, to be used in message-checking</summary> 
+            static string[] DistinctFormatStringParts(string formatString)
+            {
+                return Regex.Split(formatString, @"{[0-9]+}"); // match the literal '{', followed by any of 0-9 one or more times, followed by the literal '}'
+            }
+
+
+            /// <summary>given a string and a series of parts, ensures that all parts are present in the string in sequential order</summary>
+            static bool ErrorContainsAllParts(ReadOnlySpan<char> error, string[] parts)
+            {
+                foreach(var part in parts) {
+                    var foundIndex = error.IndexOf(part);
+                    if (foundIndex != -1)
+                    {
+                        error = error.Slice(foundIndex);
+                        continue;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+                return true;
             }
         }
 
