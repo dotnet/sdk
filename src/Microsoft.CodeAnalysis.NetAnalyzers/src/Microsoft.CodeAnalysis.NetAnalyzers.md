@@ -1656,6 +1656,18 @@ The parameter expects a constant for optimal performance.
 |CodeFix|False|
 ---
 
+## [CA1858](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1858): Use 'StartsWith' instead of 'IndexOf'
+
+It is both clearer and faster to use 'StartsWith' instead of comparing the result of 'IndexOf' to zero.
+
+|Item|Value|
+|-|-|
+|Category|Performance|
+|Enabled|True|
+|Severity|Info|
+|CodeFix|True|
+---
+
 ## [CA2000](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2000): Dispose objects before losing scope
 
 If a disposable object is not explicitly disposed before all references to it are out of scope, the object will be disposed at some indeterminate time when the garbage collector runs the finalizer of the object. Because an exceptional event might occur that will prevent the finalizer of the object from running, the object should be explicitly disposed instead.
