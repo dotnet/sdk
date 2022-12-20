@@ -151,7 +151,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Shared
 
             if (!string.IsNullOrEmpty(faultedMessage))
             {
-                processor.Config.Logger.LogInformation(LocalizableStrings.Error_Evaluation_Expression + faultedMessage);
+                processor.Config.Logger.LogDebug(LocalizableStrings.Error_Evaluation_Expression + faultedMessage);
             }
             return result;
         }
