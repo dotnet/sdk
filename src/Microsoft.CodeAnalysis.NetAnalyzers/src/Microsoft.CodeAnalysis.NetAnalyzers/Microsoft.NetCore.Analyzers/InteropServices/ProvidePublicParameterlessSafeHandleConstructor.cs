@@ -59,6 +59,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 // We only want to put the diagnostic on concrete SafeHandle-derived types.
                 return;
             }
+
             foreach (var constructor in type.InstanceConstructors)
             {
                 if (constructor.Parameters.Length == 0)
@@ -68,6 +69,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                         // The parameterless constructor is as visible as the containing type, so there is no diagnostic to emit.
                         return;
                     }
+
                     context.ReportDiagnostic(constructor.CreateDiagnostic(Rule, type.Name));
                     break;
                 }

@@ -26,6 +26,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 {
                     identifier = NextIdentifier();
                 }
+
                 if (identifier is not null)
                 {
                     // The last identifier was not in use, so go back one to use it the next call.

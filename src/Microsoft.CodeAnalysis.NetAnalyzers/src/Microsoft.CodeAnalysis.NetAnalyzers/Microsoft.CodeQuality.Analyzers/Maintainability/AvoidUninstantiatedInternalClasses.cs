@@ -216,6 +216,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                                 {
                                     return namedType;
                                 }
+
                                 break;
                             }
 
@@ -246,6 +247,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                                 {
                                     return namedType;
                                 }
+
                                 break;
                             }
 

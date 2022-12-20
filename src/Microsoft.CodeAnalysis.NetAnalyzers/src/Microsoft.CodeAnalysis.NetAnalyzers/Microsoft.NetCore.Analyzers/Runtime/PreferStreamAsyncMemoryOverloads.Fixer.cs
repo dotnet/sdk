@@ -173,6 +173,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             {
                 nodeArguments = new SyntaxNode[] { replacedInvocationNode };
             }
+
             SyntaxNode newInvocationExpression = generator.InvocationExpression(asyncMethodNode, nodeArguments).WithTriviaFrom(streamInstanceNode);
 
             bool containsSystemImport = IsSystemNamespaceImported(generator.GetNamespaceImports(root));

@@ -63,6 +63,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
                     return true;
                 }
             }
+
             return false;
         }
 
@@ -90,6 +91,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
                     }
                 }
             }
+
             return false;
         }
 

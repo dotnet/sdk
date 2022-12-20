@@ -300,6 +300,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     arguments,
                     a => a.Parameter.Type.Equals(cancellationTokenType) && a.ArgumentKind == ArgumentKind.DefaultValue);
             }
+
             return false;
         }
 

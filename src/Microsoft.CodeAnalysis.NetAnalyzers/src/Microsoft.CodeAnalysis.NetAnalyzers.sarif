@@ -3075,6 +3075,26 @@
             ]
           }
         },
+        "CA1858": {
+          "id": "CA1858",
+          "shortDescription": "Use 'StartsWith' instead of 'IndexOf'",
+          "fullDescription": "It is both clearer and faster to use 'StartsWith' instead of comparing the result of 'IndexOf' to zero.",
+          "defaultLevel": "note",
+          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1858",
+          "properties": {
+            "category": "Performance",
+            "isEnabledByDefault": true,
+            "typeName": "UseStartsWithInsteadOfIndexOfComparisonWithZero",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
         "CA2000": {
           "id": "CA2000",
           "shortDescription": "Dispose objects before losing scope",
@@ -3350,27 +3370,6 @@
             "category": "Globalization",
             "isEnabledByDefault": true,
             "typeName": "PInvokeDiagnosticAnalyzer",
-            "languages": [
-              "C#",
-              "Visual Basic"
-            ],
-            "tags": [
-              "PortedFromFxCop",
-              "Telemetry",
-              "EnabledRuleInAggressiveMode"
-            ]
-          }
-        },
-        "CA2109": {
-          "id": "CA2109",
-          "shortDescription": "Review visible event handlers",
-          "fullDescription": "A public or protected event-handling method was detected. Event-handling methods should not be exposed unless absolutely necessary.",
-          "defaultLevel": "warning",
-          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2109",
-          "properties": {
-            "category": "Security",
-            "isEnabledByDefault": false,
-            "typeName": "ReviewVisibleEventHandlersAnalyzer",
             "languages": [
               "C#",
               "Visual Basic"

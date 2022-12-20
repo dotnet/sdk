@@ -2,21 +2,6 @@
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="ko" original="../MicrosoftNetFrameworkAnalyzersResources.resx">
     <body>
-      <trans-unit id="SpecifyMessageBoxOptionsTitle">
-        <source>Specify MessageBoxOptions</source>
-        <target state="translated">MessageBoxOptions를 지정하세요.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SpecifyMessageBoxOptionsDescription">
-        <source>To correctly display a message box for cultures that use a right-to-left reading order, the RightAlign and RtlReading members of the MessageBoxOptions enumeration must be passed to the Show method.</source>
-        <target state="translated">오른쪽에서 왼쪽 방향의 읽기 순서를 사용하는 문화권에 맞는 메시지 상자를 올바르게 표시하려면 MessageBoxOptions 열거형의 RightAlign 및 RtlReading 멤버가 Show 메서드로 전달되어야 합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SpecifyMessageBoxOptionsMessage">
-        <source>Specify MessageBoxOptions</source>
-        <target state="translated">MessageBoxOptions를 지정하세요.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="AvoidDuplicateAcceleratorsTitle">
         <source>Avoid duplicate accelerators</source>
         <target state="translated">중복 액셀러레이터 키를 사용하지 마세요.</target>
@@ -60,21 +45,6 @@
       <trans-unit id="DoNotMarkServicedComponentsWithWebMethodMessage">
         <source>Do not mark serviced components with WebMethod</source>
         <target state="translated">서비스 구성 요소를 WebMethod를 사용하여 표시하지 마세요.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="MarkWindowsFormsEntryPointsWithStaThreadTitle">
-        <source>Mark Windows Forms entry points with STAThread</source>
-        <target state="translated">Windows Forms 진입점을 STAThread를 사용하여 표시하세요.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="MarkWindowsFormsEntryPointsWithStaThreadDescription">
-        <source>STAThreadAttribute indicates that the COM threading model for the application is a single-threaded apartment. This attribute must be present on the entry point of any application that uses Windows Forms; if it is omitted, the Windows components might not work correctly.</source>
-        <target state="translated">STAThreadAttribute는 이 애플리케이션에 대한 COM 스레딩 모델이 단일 스레드 아파트임을 나타냅니다. 이 특성은 Windows Forms를 사용하는 애플리케이션의 진입점에 있어야 하며 이 특성이 생략된 경우 Windows 구성 요소가 올바르게 작동하지 않을 수 있습니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="MarkWindowsFormsEntryPointsWithStaThreadMessage">
-        <source>Mark Windows Forms entry points with STAThread</source>
-        <target state="translated">Windows Forms 진입점을 STAThread를 사용하여 표시하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="CallBaseClassMethodsOnISerializableTypesTitle">

@@ -3897,7 +3897,6 @@ End Module
             await VerifyVisualBasicAsync(vbCode);
         }
 
-
         [Theory]
         [InlineData("HashSet")]
         [InlineData("LinkedList")]

@@ -236,6 +236,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                         // Prevent use of unassigned variables error
                         return;
                     }
+
                     context.ReportDiagnostic(invocation.CreateDiagnostic(rule, ruleMessageMethod, ruleMessagePreferredMethod));
                 }
             },

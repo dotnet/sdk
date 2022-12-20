@@ -1947,6 +1947,18 @@
   <data name="PreventNumericIntPtrUIntPtrBehavioralChangesConversionThrowsMessage" xml:space="preserve">
     <value>Starting with .NET 7 the explicit conversion '{0}' will throw when overflowing in a checked context. Wrap the expression with an 'unchecked' statement to restore the .NET 6 behavior.</value>
   </data>
+  <data name="UseStartsWithInsteadOfIndexOfComparisonWithZeroCodeFixTitle" xml:space="preserve">
+    <value>Use 'StartsWith'</value>
+  </data>
+  <data name="UseStartsWithInsteadOfIndexOfComparisonWithZeroDescription" xml:space="preserve">
+    <value>It is both clearer and faster to use 'StartsWith' instead of comparing the result of 'IndexOf' to zero.</value>
+  </data>
+  <data name="UseStartsWithInsteadOfIndexOfComparisonWithZeroMessage" xml:space="preserve">
+    <value>Use 'StartsWith' instead of comparing the result of 'IndexOf' to 0</value>
+  </data>
+  <data name="UseStartsWithInsteadOfIndexOfComparisonWithZeroTitle" xml:space="preserve">
+    <value>Use 'StartsWith' instead of 'IndexOf'</value>
+  </data>
   <data name="UseArgumentNullExceptionThrowHelperTitle" xml:space="preserve">
     <value>Use ArgumentNullException throw helper</value>
   </data>

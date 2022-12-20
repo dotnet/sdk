@@ -10,3 +10,10 @@ CA1512 | Maintainability | Info | UseExceptionThrowHelpers, [Documentation](http
 CA1513 | Maintainability | Info | UseExceptionThrowHelpers, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1513)
 CA1856 | Performance | Error | ConstantExpectedAnalyzer, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1856)
 CA1857 | Performance | Warning | ConstantExpectedAnalyzer, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1857)
+CA1858 | Performance | Info | UseStartsWithInsteadOfIndexOfComparisonWithZero, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1858)
+
+### Removed Rules
+
+Rule ID | Category | Severity | Notes
+--------|----------|----------|-------
+CA2109 | Security | Disabled | ReviewVisibleEventHandlersAnalyzer, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2109)

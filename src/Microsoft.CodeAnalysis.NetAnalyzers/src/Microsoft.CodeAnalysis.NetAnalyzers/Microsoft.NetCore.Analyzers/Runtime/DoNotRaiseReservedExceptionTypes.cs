@@ -110,10 +110,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 {
                     continue;
                 }
-                if (set == null)
-                {
-                    set = new HashSet<INamedTypeSymbol>();
-                }
+
+                set ??= new HashSet<INamedTypeSymbol>();
+
                 set.Add(symbol);
             }
 

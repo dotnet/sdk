@@ -160,7 +160,6 @@ class C
             await VerifyCSAnalyzerAsync(source);
         }
 
-
         [Fact]
         public async Task VB_PInvokeWithClassReturnValue_Emits_Diagnostic()
         {

@@ -135,6 +135,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
             {
                 return;
             }
+
             context.RegisterOperationAction(context => OnInvocation(context, constantExpectedContext), OperationKind.Invocation);
             context.RegisterSymbolAction(context => OnMethodSymbol(context, constantExpectedContext), SymbolKind.Method);
             RegisterAttributeSyntax(context, constantExpectedContext);
@@ -156,7 +157,6 @@ namespace Microsoft.NetCore.Analyzers.Performance
             {
                 CheckParameters(methodSymbol.Parameters, interfaceMethodSymbol.Parameters);
             }
-
 
             void CheckParameters(ImmutableArray<IParameterSymbol> parameters, ImmutableArray<IParameterSymbol> baseParameters)
             {
@@ -182,6 +182,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 {
                     continue;
                 }
+
                 var v = argument.Value.WalkDownConversion();
                 if (v is IParameterReferenceOperation parameterReference &&
                     constantExpectedContext.TryCreateConstantExpectedParameter(parameterReference.Parameter, out var currConstantParameter))
@@ -190,8 +191,10 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     {
                         context.ReportDiagnostic(parameterCheckDiagnostic);
                     }
+
                     continue;
                 }
+
                 var constantValue = v.ConstantValue;
                 if (!argConstantParameter.ValidateValue(argument, constantValue, out var valueDiagnostic))
                 {
@@ -238,6 +241,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     {
                         continue;
                     }
+
                     var baseParameter = baseParameters[i];
                     if (HasConstantExpectedAttributeData(baseParameter) && !HasConstantExpectedAttributeData(parameter))
                     {
@@ -246,6 +250,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                         arraybuilder.Add(diagnostic);
                     }
                 }
+
                 diagnostics = arraybuilder.ToImmutable();
                 return diagnostics.Length is 0;
             }
@@ -391,11 +396,13 @@ namespace Microsoft.NetCore.Analyzers.Performance
                             errorFlags |= ErrorKind.MaxIsIncompatible;
                         }
                     }
+
                     if (errorFlags is not 0)
                     {
                         diagnostics = helper.GetError(errorFlags, parameterSymbol, attributeData.ApplicationSyntaxReference.GetSyntax(), "null", "null");
                         return false;
                     }
+
                     diagnostics = ImmutableArray<Diagnostic>.Empty;
                     return true;
                 }
@@ -478,6 +485,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     validationDiagnostics = argument.CreateDiagnostic(CA1857.ConstantNotConstantRule);
                     return false;
                 }
+
                 validationDiagnostics = null;
                 return true;
             }
@@ -498,6 +506,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     validationDiagnostics = CreateConstantInvalidConstantRuleDiagnostic(argument);
                     return false;
                 }
+
                 validationDiagnostics = null;
                 return true;
             }
@@ -508,11 +517,13 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 {
                     return false;
                 }
+
                 if (constant.Value is not string and not null)
                 {
                     validationDiagnostics = CreateConstantInvalidConstantRuleDiagnostic(argument);
                     return false;
                 }
+
                 validationDiagnostics = null;
                 return true;
             }
@@ -525,6 +536,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     parameter = null;
                     return false;
                 }
+
                 parameter = new StringConstantExpectedParameter(parameterSymbol);
                 return true;
             }
@@ -565,11 +577,11 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     {
                         return null;
                     }
+
                     return typedConstant.Kind == TypedConstantKind.Array ? typedConstant.Values : typedConstant.Value;
                 }
             }
         }
-
 
         protected abstract class DiagnosticHelper
         {

@@ -186,6 +186,7 @@ namespace Microsoft.NetFramework.Analyzers.Helpers
             {
                 return index;
             }
+
             for (int i = 0; i < method.Parameters.Length; i++)
             {
                 ITypeSymbol parameter = method.Parameters[i].Type;
@@ -299,16 +300,19 @@ namespace Microsoft.NetFramework.Analyzers.Helpers
             {
                 return new Version(4, 6);
             }
+
             INamedTypeSymbol typeSymbol = mscorlibAssembly.GetTypeByMetadataName(WellKnownTypeNames.SystemIOUnmanagedMemoryStream);
             if (!typeSymbol.GetMembers("FlushAsync").IsEmpty)
             {
                 return new Version(4, 5, 2);
             }
+
             typeSymbol = mscorlibAssembly.GetTypeByMetadataName(WellKnownTypeNames.SystemDiagnosticsTracingEventSource);
             if (typeSymbol != null)
             {
                 return typeSymbol.GetMembers("CurrentThreadActivityId").IsEmpty ? new Version(4, 5) : new Version(4, 5, 1);
             }
+
             return new Version(4, 0);
         }
     }

@@ -228,7 +228,6 @@ public class Test
             await VerifyAnalyzerCSAsync(csSource, "build_property.PlatformNeutralAssembly = true\nbuild_property.TargetFramework=net5.0");
         }
 
-
         [Fact]
         public async Task OnlyThrowsNotSupportedWithOsDependentStringNotWarnsAsync()
         {

@@ -189,6 +189,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                                 properties: null,
                                 args: new object[] { nameof(ArgumentNullException), "ThrowIfNull" }));
                         }
+
                         return;
                     }
 
@@ -204,6 +205,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                                 properties: null,
                                 args: new object[] { nameof(ArgumentException), "ThrowIfNullOrEmpty" }));
                         }
+
                         return;
                     }
 
@@ -242,6 +244,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                                 p.Type.IsNullableValueType() ||
                                 p.Type.TypeKind == TypeKind.Enum;
                         }
+
                         return;
                     }
 
@@ -274,6 +277,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                                 properties: null,
                                 args: new object[] { nameof(ObjectDisposedException), "ThrowIf" }));
                         }
+
                         return;
                     }
                 }, OperationKind.Throw);
@@ -441,6 +445,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                             parameterReferenceOperation = binaryOperation.LeftOperand as IParameterReferenceOperation;
                             return parameterReferenceOperation is not null;
                         }
+
                         break;
 
                     case BinaryOperatorKind.LessThanOrEqual or BinaryOperatorKind.LessThan:
@@ -453,6 +458,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                             parameterReferenceOperation = leftOperandParameterReference;
                             return true;
                         }
+
                         break;
 
                     case BinaryOperatorKind.GreaterThanOrEqual or BinaryOperatorKind.GreaterThan:
@@ -465,6 +471,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                             parameterReferenceOperation = rightOperationParameterReference;
                             return true;
                         }
+
                         break;
                 }
             }
@@ -522,6 +529,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                             parameterReferenceOperation = rightParameter;
                             return true;
                         }
+
                         break;
                 }
             }

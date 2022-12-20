@@ -55,6 +55,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Performance
                 {
                     return null;
                 }
+
                 var targetArg = attributeSyntax.ArgumentList.Arguments.FirstOrDefault(arg => arg.NameEquals.Name.IsEquivalentTo(targetNameSyntax, true));
                 return targetArg?.GetLocation();
             }

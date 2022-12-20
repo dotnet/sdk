@@ -23,6 +23,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Performance
                 argumentName = argumentSyntax.NameColon.Name.Identifier.ValueText;
                 return true;
             }
+
             return false;
         }
 
@@ -38,6 +39,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Performance
             {
                 return TryGetCharFromLiteralExpressionSyntax(containedLiteralExpressionSyntax, out charLiteral);
             }
+
             return false;
 
             static bool TryGetCharFromLiteralExpressionSyntax(LiteralExpressionSyntax sourceLiteralExpressionSyntax, out char parsedCharLiteral)
@@ -47,6 +49,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Performance
                 {
                     return true;
                 }
+
                 return false;
             }
         }

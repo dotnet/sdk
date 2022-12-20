@@ -44,6 +44,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
                             {
                                 continue;
                             }
+
                             goto case SyntaxKind.WhileStatement; // fall through
 
                         // Look for loops.  We don't bother with ad-hoc loops via gotos as we're

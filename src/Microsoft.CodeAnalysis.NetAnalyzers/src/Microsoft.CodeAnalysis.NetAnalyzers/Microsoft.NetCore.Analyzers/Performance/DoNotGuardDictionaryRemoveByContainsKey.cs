@@ -117,6 +117,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     }
                 }
             }
+
             static bool TryGetDictionaryTypeAndMethods(Compilation compilation, [NotNullWhen(true)] out IMethodSymbol? containsKey,
                             [NotNullWhen(true)] out IMethodSymbol? remove1Param, out IMethodSymbol? remove2Param)
             {
@@ -141,12 +142,14 @@ namespace Microsoft.NetCore.Analyzers.Performance
                                     case ContainsKey: containsKey = m; break;
                                     case Remove: remove1Param = m; break;
                                 }
+
                                 break;
                             case 2:
                                 if (m.Name == Remove)
                                 {
                                     remove2Param = m;
                                 }
+
                                 break;
                         }
                     }

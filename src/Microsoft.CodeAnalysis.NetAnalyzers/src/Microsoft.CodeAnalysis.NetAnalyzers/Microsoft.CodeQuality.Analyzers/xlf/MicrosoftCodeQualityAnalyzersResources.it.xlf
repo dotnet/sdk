@@ -1822,21 +1822,6 @@
         <target state="translated">Il membro {0} non accede ai dati di istanza e può essere contrassegnato come static</target>
         <note />
       </trans-unit>
-      <trans-unit id="ReviewVisibleEventHandlersTitle">
-        <source>Review visible event handlers</source>
-        <target state="translated">Esaminare i gestori eventi visibili</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ReviewVisibleEventHandlersDescription">
-        <source>A public or protected event-handling method was detected. Event-handling methods should not be exposed unless absolutely necessary.</source>
-        <target state="translated">È stato rilevato un metodo di gestione eventi public o protected. I metodi di gestione eventi devono essere esposti solo se assolutamente necessario.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ReviewVisibleEventHandlersMessageDefault">
-        <source>Consider making '{0}' not externally visible</source>
-        <target state="translated">Provare a rendere '{0}' non visibile esternamente</target>
-        <note />
-      </trans-unit>
       <trans-unit id="SealMethodsThatSatisfyPrivateInterfacesTitle">
         <source>Seal methods that satisfy private interfaces</source>
         <target state="translated">Impostare come sealed i metodi che soddisfano interfacce private</target>
@@ -1934,12 +1919,12 @@
       </trans-unit>
       <trans-unit id="ValidateArgumentsOfPublicMethodsDescription">
         <source>An externally visible method dereferences one of its reference arguments without verifying whether that argument is 'null' ('Nothing' in Visual Basic). All reference arguments that are passed to externally visible methods should be checked against 'null'. If appropriate, throw an 'ArgumentNullException' when the argument is 'null'. If the method is designed to be called only by known assemblies, you should make the method internal.</source>
-        <target state="new">An externally visible method dereferences one of its reference arguments without verifying whether that argument is 'null' ('Nothing' in Visual Basic). All reference arguments that are passed to externally visible methods should be checked against 'null'. If appropriate, throw an 'ArgumentNullException' when the argument is 'null'. If the method is designed to be called only by known assemblies, you should make the method internal.</target>
+        <target state="translated">Un metodo visibile esternamente risolve i riferimenti a uno dei relativi argomenti di riferimento senza verificare se tale argomento è 'null' ('Nothing' in Visual Basic). Tutti gli argomenti di riferimento passati a metodi visibili esternamente devono essere verificati in base a valori 'null'. Se appropriato, generare un'eccezione 'ArgumentNullException' quando l'argomento è 'null'. Se il metodo è concepito per essere chiamato solo da assembly noti, è necessario impostare il metodo come interno.</target>
         <note />
       </trans-unit>
       <trans-unit id="ValidateArgumentsOfPublicMethodsMessage">
         <source>In externally visible method '{0}', validate parameter '{1}' is non-null before using it. If appropriate, throw an 'ArgumentNullException' when the argument is 'null'.</source>
-        <target state="new">In externally visible method '{0}', validate parameter '{1}' is non-null before using it. If appropriate, throw an 'ArgumentNullException' when the argument is 'null'.</target>
+        <target state="translated">Nel metodo visibile esternamente '{0}' convalidare il parametro '{1}' in modo che non sia Null prima di usarlo. Se appropriato, generare un'eccezione 'ArgumentNullException' quando l'argomento è 'null'.</target>
         <note />
       </trans-unit>
       <trans-unit id="ValidateArgumentsOfPublicMethodsTitle">

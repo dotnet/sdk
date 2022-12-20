@@ -497,6 +497,7 @@ public enum E3
             {
                 csTest.ExpectedDiagnostics.Add(GetCSharpRenameResultAt(14, 5, "E2", "Never"));
             }
+
             if (!editorConfigText.EndsWith("Zero"))
             {
                 csTest.ExpectedDiagnostics.Add(GetCSharpRenameResultAt(21, 5, "E3", "Zero"));
@@ -542,6 +543,7 @@ End Enum"},
             {
                 vbTest.ExpectedDiagnostics.Add(GetCSharpRenameResultAt(12, 5, "E2", "Never"));
             }
+
             if (!editorConfigText.EndsWith("Zero"))
             {
                 vbTest.ExpectedDiagnostics.Add(GetCSharpRenameResultAt(18, 5, "E3", "Zero"));

@@ -49,10 +49,7 @@ namespace Microsoft.NetFramework.Analyzers.Helpers
 
             ISymbol? symbol = GetCallerMethodSymbol(node, semanticModel);
 
-            if (symbol == null)
-            {
-                symbol = GetEnclosingTypeSymbol(node, semanticModel);
-            }
+            symbol ??= GetEnclosingTypeSymbol(node, semanticModel);
 
             return symbol;
         }
@@ -132,6 +129,7 @@ namespace Microsoft.NetFramework.Analyzers.Helpers
             {
                 return false;
             }
+
             Optional<object> value = model.GetConstantValue(node);
             return value.HasValue && value.Value == null;
         }
@@ -142,6 +140,7 @@ namespace Microsoft.NetFramework.Analyzers.Helpers
             {
                 return false;
             }
+
             Optional<object> value = model.GetConstantValue(node);
             return value.HasValue &&
                    value.Value is false;

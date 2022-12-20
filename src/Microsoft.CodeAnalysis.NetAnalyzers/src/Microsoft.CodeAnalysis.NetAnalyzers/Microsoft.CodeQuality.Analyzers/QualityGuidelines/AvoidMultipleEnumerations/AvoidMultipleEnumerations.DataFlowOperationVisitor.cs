@@ -15,18 +15,19 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
 {
     internal partial class AvoidMultipleEnumerations
     {
-        internal abstract class AvoidMultipleEnumerationsFlowStateDictionaryFlowOperationVisitor : GlobalFlowStateDictionaryFlowOperationVisitor
+        internal sealed class AvoidMultipleEnumerationsFlowStateDictionaryFlowOperationVisitor : GlobalFlowStateDictionaryFlowOperationVisitor
         {
+            private readonly AvoidMultipleEnumerations _analyzer;
             private readonly WellKnownSymbolsInfo _wellKnownSymbolsInfo;
 
-            protected AvoidMultipleEnumerationsFlowStateDictionaryFlowOperationVisitor(
+            internal AvoidMultipleEnumerationsFlowStateDictionaryFlowOperationVisitor(
+                AvoidMultipleEnumerations analyzer,
                 GlobalFlowStateDictionaryAnalysisContext analysisContext,
                 WellKnownSymbolsInfo wellKnownSymbolsInfo) : base(analysisContext)
             {
+                _analyzer = analyzer;
                 _wellKnownSymbolsInfo = wellKnownSymbolsInfo;
             }
-
-            protected abstract bool IsExpressionOfForEachStatement(SyntaxNode node);
 
             public override GlobalFlowStateDictionaryAnalysisValue VisitParameterReference(IParameterReferenceOperation operation, object? argument)
             {
@@ -361,7 +362,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 // because the Operation in CFG doesn't have that information. (CFG will convert the for each operation to control flow blocks)
                 return operation.Parent is IInvocationOperation invocationOperation
                    && _wellKnownSymbolsInfo.GetEnumeratorMethods.Contains(invocationOperation.TargetMethod.OriginalDefinition)
-                   && IsExpressionOfForEachStatement(invocationOperation.Syntax);
+                   && _analyzer.IsExpressionOfForEachStatement(invocationOperation.Syntax);
             }
         }
     }
