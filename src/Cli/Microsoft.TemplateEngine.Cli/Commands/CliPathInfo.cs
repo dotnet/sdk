@@ -16,16 +16,19 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             IEnvironment environment,
             string? settingsLocation)
         {
-            UserProfileDir = GetUserProfileDir(environment);
-            GlobalSettingsDir = GetGlobalSettingsDir(settingsLocation);
-
-            ValidatePathArguments(host, GlobalSettingsDir);
-            HostSettingsDir = Path.Combine(GlobalSettingsDir, host.HostIdentifier);
+            if (string.IsNullOrWhiteSpace(host.HostIdentifier))
+            {
+                throw new ArgumentException($"{nameof(host.HostIdentifier)} of {nameof(host)} cannot be null or whitespace.", nameof(host));
+            }
 
             if (string.IsNullOrWhiteSpace(host.Version))
             {
                 throw new ArgumentException($"{nameof(host.Version)} of {nameof(host)} cannot be null or whitespace.", nameof(host));
             }
+
+            UserProfileDir = GetUserProfileDir(environment);
+            GlobalSettingsDir = GetGlobalSettingsDir(settingsLocation);
+            HostSettingsDir = Path.Combine(GlobalSettingsDir, host.HostIdentifier);
             HostVersionSettingsDir = Path.Combine(GlobalSettingsDir, host.HostIdentifier, host.Version);
         }
 
@@ -45,25 +48,13 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 
         private static string GetGlobalSettingsDir(string? settingsLocation)
         {
-            var definedSettingsLocation = string.IsNullOrEmpty(settingsLocation)
+            var definedSettingsLocation = string.IsNullOrWhiteSpace(settingsLocation)
                 ? Path.Combine(CliFolderPathCalculator.DotnetHomePath, ".templateengine")
                 : settingsLocation;
 
             Reporter.Verbose.WriteLine($"Global Settings Location: {definedSettingsLocation}");
 
             return definedSettingsLocation;
-        }
-
-        private static void ValidatePathArguments(ITemplateEngineHost host, string globalDir)
-        {
-            if (string.IsNullOrWhiteSpace(host.HostIdentifier))
-            {
-                throw new ArgumentException($"{nameof(host.HostIdentifier)} of {nameof(host)} cannot be null or whitespace.", nameof(host));
-            }
-            if (string.IsNullOrWhiteSpace(globalDir))
-            {
-                throw new ArgumentException($"{nameof(globalDir)} cannot be null or whitespace.");
-            }
         }
     }
 }
