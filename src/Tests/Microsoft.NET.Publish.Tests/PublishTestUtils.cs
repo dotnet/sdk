@@ -37,8 +37,8 @@ namespace Microsoft.NET.Publish.Tests
         // This list should contain all supported TFMs after net7.0
         public static IEnumerable<object[]> Net7Plus { get; } = new List<object[]>
         {
-            new object[] { ToolsetInfo.CurrentTargetFramework },
-            new object[] { ToolsetInfo.NextTargetFramework }
+            new object[] { "net7.0" },
+            new object[] { ToolsetInfo.CurrentTargetFramework }
         };
 #else
 #error If building for a newer TFM, please update the values above
