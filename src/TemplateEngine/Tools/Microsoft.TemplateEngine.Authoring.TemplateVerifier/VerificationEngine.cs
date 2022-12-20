@@ -10,6 +10,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.TemplateEngine.Authoring.TemplateVerifier.Commands;
 using Microsoft.TemplateEngine.CommandUtils;
 using Microsoft.TemplateEngine.Utils;
+using VerifyTests.DiffPlex;
 
 namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier
 {
