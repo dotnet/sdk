@@ -45,7 +45,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 
         private static string GetGlobalSettingsDir(string? settingsLocation)
         {
-            var definedSettingsLocation = string.IsNullOrEmpty(settingsLocation)
+            var definedSettingsLocation = string.IsNullOrWhitespace(settingsLocation)
                 ? Path.Combine(CliFolderPathCalculator.DotnetHomePath, ".templateengine")
                 : settingsLocation;
 
