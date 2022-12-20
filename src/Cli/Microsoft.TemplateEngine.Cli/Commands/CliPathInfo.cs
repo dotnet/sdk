@@ -18,8 +18,15 @@ namespace Microsoft.TemplateEngine.Cli.Commands
         {
             UserProfileDir = GetUserProfileDir(environment);
             GlobalSettingsDir = GetGlobalSettingsDir(settingsLocation);
-            HostSettingsDir = GetDefaultHostSettingsDir(host, globalDir: GlobalSettingsDir);
-            HostVersionSettingsDir = GetDefaultHostVersionSettingsDir(host, globalDir: GlobalSettingsDir);
+
+            ValidatePathArguments(host, GlobalSettingsDir);
+            HostSettingsDir = Path.Combine(GlobalSettingsDir, host.HostIdentifier);
+
+            if (string.IsNullOrWhiteSpace(host.Version))
+            {
+                throw new ArgumentException($"{nameof(host.Version)} of {nameof(host)} cannot be null or whitespace.", nameof(host));
+            }
+            HostVersionSettingsDir = Path.Combine(GlobalSettingsDir, host.HostIdentifier, host.Version);
         }
 
         public string UserProfileDir { get; }
@@ -47,34 +54,15 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             return definedSettingsLocation;
         }
 
-        private static string GetDefaultHostSettingsDir(ITemplateEngineHost host, string? userDir = null, string? globalDir = null)
-        {
-            ValidatePathArguments(host, userDir, globalDir);
-
-            return Path.Combine(globalDir ?? GetGlobalSettingsDir(userDir!), host.HostIdentifier);
-        }
-
-        private static string GetDefaultHostVersionSettingsDir(ITemplateEngineHost host, string? userDir = null, string? globalDir = null)
-        {
-            ValidatePathArguments(host, userDir, globalDir);
-
-            if (string.IsNullOrWhiteSpace(host.Version))
-            {
-                throw new ArgumentException($"{nameof(host.Version)} of {nameof(host)} cannot be null or whitespace.", nameof(host));
-            }
-
-            return Path.Combine(globalDir ?? GetGlobalSettingsDir(userDir!), host.HostIdentifier, host.Version);
-        }
-
-        private static void ValidatePathArguments(ITemplateEngineHost host, string? userDir = null, string? globalDir = null)
+        private static void ValidatePathArguments(ITemplateEngineHost host, string globalDir)
         {
             if (string.IsNullOrWhiteSpace(host.HostIdentifier))
             {
                 throw new ArgumentException($"{nameof(host.HostIdentifier)} of {nameof(host)} cannot be null or whitespace.", nameof(host));
             }
-            if (string.IsNullOrWhiteSpace(userDir) && string.IsNullOrWhiteSpace(globalDir))
+            if (string.IsNullOrWhiteSpace(globalDir))
             {
-                throw new ArgumentException($"both {nameof(userDir)} and {nameof(globalDir)} cannot be null or whitespace.", nameof(userDir));
+                throw new ArgumentException($"{nameof(globalDir)} cannot be null or whitespace.");
             }
         }
     }

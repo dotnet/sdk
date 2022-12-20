@@ -204,7 +204,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         [Fact]
         public void CanUninstallSeveralSources_LegacySyntax()
         {
-            string home = CreateTemporaryFolder(folderName: Path.Combine("Home", ".templateengine"));
+            string home = CreateTemporaryFolder(folderName: "Home");
             string workingDirectory = CreateTemporaryFolder();
             string basicFSharp = InstallTestTemplate("TemplateResolution/DifferentLanguagesGroup/BasicFSharp", _log, home, workingDirectory);
             string basicVB = InstallTestTemplate("TemplateResolution/DifferentLanguagesGroup/BasicVB", _log, home, workingDirectory);
