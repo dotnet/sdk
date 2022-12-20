@@ -1974,12 +1974,12 @@
       </trans-unit>
       <trans-unit id="ValidateArgumentsOfPublicMethodsDescription">
         <source>An externally visible method dereferences one of its reference arguments without verifying whether that argument is 'null' ('Nothing' in Visual Basic). All reference arguments that are passed to externally visible methods should be checked against 'null'. If appropriate, throw an 'ArgumentNullException' when the argument is 'null'. If the method is designed to be called only by known assemblies, you should make the method internal.</source>
-        <target state="new">An externally visible method dereferences one of its reference arguments without verifying whether that argument is 'null' ('Nothing' in Visual Basic). All reference arguments that are passed to externally visible methods should be checked against 'null'. If appropriate, throw an 'ArgumentNullException' when the argument is 'null'. If the method is designed to be called only by known assemblies, you should make the method internal.</target>
+        <target state="translated">外部可见方法会在不验证该参数是否为 "null" (Visual Basic 中为 "Nothing")的情况下取消引用其某个引用参数。应检查传递给外部可见方法的所有引用参数中是否有参数为 "null"。如果适用，在参数为 "null" 时引发 "ArgumentNullException"。如果该方法应仅由已知程序集调用，则应将该方法设置为在内部。</target>
         <note />
       </trans-unit>
       <trans-unit id="ValidateArgumentsOfPublicMethodsMessage">
         <source>In externally visible method '{0}', validate parameter '{1}' is non-null before using it. If appropriate, throw an 'ArgumentNullException' when the argument is 'null'.</source>
-        <target state="new">In externally visible method '{0}', validate parameter '{1}' is non-null before using it. If appropriate, throw an 'ArgumentNullException' when the argument is 'null'.</target>
+        <target state="translated">在外部可见的方法 "{0}" 中，在使用验证参数 "{1}" 之前，它为非 null。如果适用，请在参数为 "null" 时引发 "ArgumentNullException"。</target>
         <note />
       </trans-unit>
       <trans-unit id="ValidateArgumentsOfPublicMethodsTitle">

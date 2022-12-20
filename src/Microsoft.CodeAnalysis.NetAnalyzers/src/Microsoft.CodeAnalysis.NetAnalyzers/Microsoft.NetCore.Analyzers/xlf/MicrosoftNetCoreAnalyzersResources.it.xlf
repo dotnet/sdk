@@ -2179,7 +2179,7 @@
       </trans-unit>
       <trans-unit id="PreventNumericIntPtrUIntPtrBehavioralChangesDescription">
         <source>Some built-in operators added in .NET 7 behave differently when overflowing than did the corresponding user-defined operators in .NET 6 and earlier versions. Some operators that previously threw in an unchecked context now don't throw unless wrapped within a checked context. Also, some operators that did not previously throw in a checked context now throw unless wrapped in an unchecked context.</source>
-        <target state="new">Some built-in operators added in .NET 7 behave differently when overflowing than did the corresponding user-defined operators in .NET 6 and earlier versions. Some operators that previously threw in an unchecked context now don't throw unless wrapped within a checked context. Also, some operators that did not previously throw in a checked context now throw unless wrapped in an unchecked context.</target>
+        <target state="translated">Alcuni operatori predefiniti aggiunti in .NET 7 si comportano in modo diverso in caso di overflow rispetto ai corrispondenti operatori definiti dall'utente in .NET 6 e versioni precedenti. Alcuni operatori che in precedenza generavano in un contesto non controllato ora non generano a meno che non venga eseguito il wrapping all’interno di un contesto controllato. Inoltre, alcuni operatori che in precedenza non generavano in un contesto controllato ora generano a meno che non venga eseguito il wrapping in un contesto non controllato.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreventNumericIntPtrUIntPtrBehavioralChangesOperatorThrowsMessage">
@@ -2189,7 +2189,7 @@
       </trans-unit>
       <trans-unit id="PreventNumericIntPtrUIntPtrBehavioralChangesTitle">
         <source>Prevent behavioral change</source>
-        <target state="new">Prevent behavioral change</target>
+        <target state="translated">Prevenire la modifica funzionale</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvideCorrectArgumentToEnumHasFlagDescription">
@@ -2684,17 +2684,17 @@
       </trans-unit>
       <trans-unit id="UseArgumentExceptionThrowHelperTitle">
         <source>Use ArgumentException throw helper</source>
-        <target state="new">Use ArgumentException throw helper</target>
+        <target state="translated">Usare l'helper throw ArgumentException</target>
         <note />
       </trans-unit>
       <trans-unit id="UseArgumentNullExceptionThrowHelperTitle">
         <source>Use ArgumentNullException throw helper</source>
-        <target state="new">Use ArgumentNullException throw helper</target>
+        <target state="translated">Usare ArgumentNullException per generare l'helper</target>
         <note />
       </trans-unit>
       <trans-unit id="UseArgumentOutOfRangeExceptionThrowHelperTitle">
         <source>Use ArgumentOutOfRangeException throw helper</source>
-        <target state="new">Use ArgumentOutOfRangeException throw helper</target>
+        <target state="translated">Usare ArgumentOutOfRangeException per generare l'helper</target>
         <note />
       </trans-unit>
       <trans-unit id="UseArrayEmpty">
@@ -2914,7 +2914,7 @@
       </trans-unit>
       <trans-unit id="UseObjectDisposedExceptionThrowHelperTitle">
         <source>Use ObjectDisposedException throw helper</source>
-        <target state="new">Use ObjectDisposedException throw helper</target>
+        <target state="translated">Usare ObjectDisposedException per generare l'helper</target>
         <note />
       </trans-unit>
       <trans-unit id="UseOrdinalStringComparisonDescription">
@@ -3084,17 +3084,17 @@
       </trans-unit>
       <trans-unit id="UseThrowHelperDescription">
         <source>Throw helpers are simpler and more efficient than an if block constructing a new exception instance.</source>
-        <target state="new">Throw helpers are simpler and more efficient than an if block constructing a new exception instance.</target>
+        <target state="translated">Gli helper throw sono più semplici ed efficienti di un blocco if che costruisce una nuova istanza di eccezione.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseThrowHelperFix">
         <source>Use '{0}.{1}'</source>
-        <target state="new">Use '{0}.{1}'</target>
+        <target state="translated">Usare '{0}.{1}'</target>
         <note />
       </trans-unit>
       <trans-unit id="UseThrowHelperMessage">
         <source>Use '{0}.{1}' instead of explicitly throwing a new exception instance</source>
-        <target state="new">Use '{0}.{1}' instead of explicitly throwing a new exception instance</target>
+        <target state="translated">Usare '{0}.{1}' anziché generare in modo esplicito una nuova istanza di eccezione</target>
         <note />
       </trans-unit>
       <trans-unit id="UseValidPlatformStringDescription">
