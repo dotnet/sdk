@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <SourceBuildMSBuildSdkResolverPath>$(DotNetSdkResolversDir)$(MSBuildProjectName)\$(MSBuildProjectName).dll</SourceBuildMSBuildSdkResolverPath>
+  </PropertyGroup>
+
+  <Target Name="InstallResolver">
+    <Copy SourceFiles="$(TargetPath)" DestinationFiles="$(SourceBuildMSBuildSdkResolverPath)" />
+    <Message Importance="High" Text="Adding resolver to SDK: $(MSBuildProjectName) -> $(SourceBuildMSBuildSdkResolverPath)" />
+  </Target>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Build" Version="15.7.179" />
+    <PackageReference Include="Microsoft.Build.Framework" Version="15.7.179" />
+    <PackageReference Include="Microsoft.Build.Tasks.Core" Version="15.7.179" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="15.7.179" />
+  </ItemGroup>
+
+</Project>

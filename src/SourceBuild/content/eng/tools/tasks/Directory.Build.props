@@ -1,0 +1,29 @@
+<Project>
+  <Import Project="$([MSBuild]::GetPathOfFileAbove(Directory.Build.props, $(MSBuildThisFileDirectory)..))" />
+
+  <PropertyGroup>
+    <!-- Build all tasks as AnyCPU to match NuGet DLLs in the SDK: avoid warnings. -->
+    <Platform>AnyCPU</Platform>
+  </PropertyGroup>
+
+  <!--
+    Use some assemblies from the SDK, instead of package references. This ensures they match what's
+    found when the task is loaded by the SDK's MSBuild.
+  -->
+  <ItemGroup>
+    <SdkAssembly Include="$(SdkReferenceDir)Newtonsoft.Json.dll" />
+
+    <!--
+      Reference NuGet assemblies, except a command line assembly that causes warnings such as:
+      MSB3277: Found conflicts between different versions of "System.Collections" that could not be resolved.
+    -->
+    <SdkAssembly
+      Include="$(SdkReferenceDir)NuGet.*.dll"
+      Exclude="$(SdkReferenceDir)NuGet.CommandLine.XPlat.dll" />
+
+    <SdkAssemblyReference
+      Include="@(SdkAssembly -> '%(FileName)')"
+      HintPath="$(SdkReferenceDir)%(Identity).dll" />
+  </ItemGroup>
+
+</Project>

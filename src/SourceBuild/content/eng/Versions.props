@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!-- Repo Version Information -->
+  <PropertyGroup>
+    <VersionPrefix>0.1.0</VersionPrefix>
+    <PreReleaseVersionLabel>alpha.1</PreReleaseVersionLabel>
+  </PropertyGroup>
+  <!-- Humanizer expects us to tell the version it's building -->
+  <PropertyGroup>
+    <HumanizerCorePackageVersion>2.2.0</HumanizerCorePackageVersion>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!--
+      Building .NET from source depends on one or two tar.gz files depending on the branch's current
+      source-buildability status.
+
+      PrivateSourceBuiltArtifactsPackageVersion is a tar.gz of .NET build outputs from a previous
+      build needed to build the current version of .NET. This is always defined, because .NET needs
+      to be bootstrappable at any point in time.
+
+      PrivateSourceBuiltPrebuiltsPackageVersion is a tar.gz of assets downloaded from the internet
+      that are needed to build the current version of .NET. Early in the lifecycle of a .NET major
+      or minor release, prebuilts may be needed. When the release is mature, prebuilts are not
+      necessary, and this property is removed from the file.
+    -->
+    <PrivateSourceBuiltArtifactsPackageVersion>7.0.100.2</PrivateSourceBuiltArtifactsPackageVersion>
+  </PropertyGroup>
+</Project>

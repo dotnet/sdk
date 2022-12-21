@@ -1,0 +1,24 @@
+<Project>
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+
+  <PropertyGroup>
+    <BuildCommandArgs>$(StandardSourceBuildArgs)</BuildCommandArgs>
+    <!-- Repo has netcoreapp2.1 projects: https://github.com/dotnet/xliff-tasks/issues/508 -->
+    <BuildCommandArgs>$(BuildCommandArgs) /p:CheckEolTargetFramework=false</BuildCommandArgs>
+    <BuildCommand>$(StandardSourceBuildCommand) $(BuildCommandArgs)</BuildCommand>
+
+    <RepoApiImplemented>false</RepoApiImplemented>
+    <DependencyVersionInputRepoApiImplemented>true</DependencyVersionInputRepoApiImplemented>
+    <DeterministicBuildOptOut>true</DeterministicBuildOptOut>
+    <IsToolingProject>true</IsToolingProject>
+
+    <NuGetConfigFile>$(ProjectDirectory)NuGet.config</NuGetConfigFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <UseSourceBuiltSdkOverride Include="@(ArcadeSdkOverride)" />
+  </ItemGroup>
+
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+</Project>
+
