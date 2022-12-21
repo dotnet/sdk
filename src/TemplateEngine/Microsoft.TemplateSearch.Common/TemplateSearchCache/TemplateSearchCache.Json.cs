@@ -49,11 +49,8 @@ namespace Microsoft.TemplateSearch.Common
 
             }
 
-            JArray? data = cacheObject.Get<JArray>(nameof(TemplatePackages));
-            if (data == null)
-            {
-                throw new Exception(LocalizableStrings.TemplateSearchCache_Exception_NotValid);
-            }
+            JArray? data = cacheObject.Get<JArray>(nameof(TemplatePackages))
+                ?? throw new Exception(LocalizableStrings.TemplateSearchCache_Exception_NotValid);
             List<TemplatePackageSearchData> templatePackages = new();
             foreach (JToken templatePackage in data)
             {

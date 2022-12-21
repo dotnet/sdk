@@ -36,11 +36,8 @@ namespace Microsoft.TemplateSearch.Common
             Description = jObject.ToString(nameof(Description));
             IconUrl = jObject.ToString(nameof(IconUrl));
 
-            JArray? templatesData = jObject.Get<JArray>(nameof(Templates));
-            if (templatesData == null)
-            {
-                throw new ArgumentException($"{nameof(jObject)} doesn't have {nameof(Templates)} property or it is not an array.", nameof(jObject));
-            }
+            JArray? templatesData = jObject.Get<JArray>(nameof(Templates))
+                ?? throw new ArgumentException($"{nameof(jObject)} doesn't have {nameof(Templates)} property or it is not an array.", nameof(jObject));
             List<TemplateSearchData> templates = new List<TemplateSearchData>();
             foreach (JToken template in templatesData)
             {

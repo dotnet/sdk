@@ -272,12 +272,8 @@ namespace Microsoft.TemplateEngine.Core.Util
 
         private void ProcessFile(IFile sourceFile, string sourceRel, string targetDir, IGlobalRunSpec spec, IProcessor fallback, IEnumerable<KeyValuePair<IPathMatcher, IProcessor>> fileGlobProcessors)
         {
-            IProcessor runner = fileGlobProcessors.FirstOrDefault(x => x.Key.IsMatch(sourceRel)).Value ?? fallback;
-            if (runner == null)
-            {
-                throw new InvalidOperationException("At least one of [runner] or [fallback] cannot be null");
-            }
-
+            IProcessor runner = (fileGlobProcessors.FirstOrDefault(x => x.Key.IsMatch(sourceRel)).Value ?? fallback)
+                ?? throw new InvalidOperationException("At least one of [runner] or [fallback] cannot be null");
             if (!spec.TryGetTargetRelPath(sourceRel, out string targetRel))
             {
                 targetRel = sourceRel;

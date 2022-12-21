@@ -169,11 +169,7 @@ namespace Microsoft.TemplateSearch.Common
                             && entryValue.TryGetValue(nameof(PackToTemplateEntry.TemplateIdentificationEntry), StringComparison.OrdinalIgnoreCase, out JToken? identificationToken)
                             && identificationToken is JArray identificationArray)
                         {
-                            string? version = versionToken.Value<string>();
-                            if (version == null)
-                            {
-                                throw new Exception("Version value is null.");
-                            }
+                            string? version = versionToken.Value<string>() ?? throw new Exception("Version value is null.");
                             List<TemplateIdentificationEntry> templatesInPack = new List<TemplateIdentificationEntry>();
 
                             foreach (JToken templateIdentityInfo in identificationArray)

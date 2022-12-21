@@ -40,11 +40,14 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
                     throw new TemplateAuthoringException(string.Format(LocalizableStrings.MacroConfig_Exception_ArrayShouldContainObjects, generatedSymbolConfig.VariableName, CasesPropertyName), generatedSymbolConfig.VariableName);
                 }
                 string? condition = jobj.ToString(CasesConditionPropertyName);
-                string? value = jobj.ToString(CasesValuePropertyName);
-                if (value == null)
-                {
-                    throw new TemplateAuthoringException(string.Format(LocalizableStrings.MacroConfig_Exception_MissingValueProperty, generatedSymbolConfig.VariableName, CasesPropertyName, CasesValuePropertyName), generatedSymbolConfig.VariableName);
-                }
+                string? value = jobj.ToString(CasesValuePropertyName)
+                    ?? throw new TemplateAuthoringException(
+                        string.Format(
+                            LocalizableStrings.MacroConfig_Exception_MissingValueProperty,
+                            generatedSymbolConfig.VariableName,
+                            CasesPropertyName,
+                            CasesValuePropertyName),
+                        generatedSymbolConfig.VariableName);
                 cases.Add((condition, value));
             }
             Cases = cases;

@@ -40,11 +40,14 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
                     throw new TemplateAuthoringException(string.Format(LocalizableStrings.MacroConfig_Exception_ArrayShouldContainObjects, generatedSymbolConfig.VariableName, SymbolsPropertyName), generatedSymbolConfig.VariableName);
                 }
                 JoinType type = jobj.ToEnum(SymbolsTypePropertyName, JoinType.Const, ignoreCase: true);
-                string? value = jobj.ToString(SymbolsValuePropertyName);
-                if (value == null)
-                {
-                    throw new TemplateAuthoringException(string.Format(LocalizableStrings.MacroConfig_Exception_MissingValueProperty, generatedSymbolConfig.VariableName, SymbolsPropertyName, SymbolsValuePropertyName), generatedSymbolConfig.VariableName);
-                }
+                string? value = jobj.ToString(SymbolsValuePropertyName)
+                    ?? throw new TemplateAuthoringException(
+                        string.Format(
+                            LocalizableStrings.MacroConfig_Exception_MissingValueProperty,
+                            generatedSymbolConfig.VariableName,
+                            SymbolsPropertyName,
+                            SymbolsValuePropertyName),
+                        generatedSymbolConfig.VariableName);
                 if (type == JoinType.Ref && string.IsNullOrWhiteSpace(value))
                 {
                     throw new TemplateAuthoringException(
