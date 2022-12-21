@@ -411,7 +411,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <KnownILLinkPack Include="Microsoft.NET.ILLink.Tasks"
                      TargetFramework="net8.0"
-                     ILLinkPackVersion="7.0.100-1.22606.1" />
+                     ILLinkPackVersion="8.0.100-1.22619.1" />
 
     <KnownRuntimePack Include="Microsoft.NETCore.App"
                       TargetFramework="net8.0"
