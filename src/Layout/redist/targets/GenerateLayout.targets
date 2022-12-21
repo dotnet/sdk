@@ -187,25 +187,6 @@
       Properties="Configuration=$(Configuration);PublishDir=$(OutputPath)/FSharp" />
   </Target>
 
-  <Target Name="PublishBuiltInTools"
-          BeforeTargets="Build">
-
-    <PropertyGroup>
-      <DotnetWatchOutputDirectory>$(OutputPath)\DotnetTools\dotnet-watch\$(Version)\tools\$(SdkTargetFramework)\any\</DotnetWatchOutputDirectory>
-    </PropertyGroup>
-
-    <ItemGroup>
-      <DotNetWatchFile Include="$(ArtifactsDir)bin\dotnet-watch\$(Configuration)\$(SdkTargetFramework)\**" />
-      <DotNetWatchFile Include="$(ArtifactsDir)bin\Microsoft.AspNetCore.Watch.BrowserRefresh\$(Configuration)\netcoreapp3.1\*.dll" DeploymentSubpath="middleware" />
-      <DotNetWatchFile Include="$(ArtifactsDir)bin\Microsoft.Extensions.DotNetDeltaApplier\$(Configuration)\netstandard2.1\*.dll" DeploymentSubpath="hotreload" />
-      <DotNetWatchFile Include="$(ArtifactsDir)bin\DotNetWatchTasks\$(Configuration)\netstandard2.0\DotNetWatchTasks.dll" />
-    </ItemGroup>
-
-    <Copy
-      SourceFiles="@(DotNetWatchFile)"
-      DestinationFiles="$(DotnetWatchOutputDirectory)%(DotNetWatchFile.DeploymentSubpath)\%(RecursiveDir)%(Filename)%(Extension)" />
-  </Target>
-
   <Target Name="GenerateCliRuntimeConfigurationFiles"
           AfterTargets="Build">
     <RemoveAssetFromDepsPackages DepsFile="$(OutputPath)/$(TargetName).deps.json"

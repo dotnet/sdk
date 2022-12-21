@@ -413,6 +413,7 @@ function InitializeVisualStudioMSBuild([bool]$install, [object]$vsRequirements =
       if($vsMinVersion -lt $vsMinVersionReqd){
         Write-Host "Using xcopy-msbuild version of $defaultXCopyMSBuildVersion since VS version $vsMinVersionStr provided in global.json is not compatible"
         $xcopyMSBuildVersion = $defaultXCopyMSBuildVersion
+        $vsMajorVersion = $xcopyMSBuildVersion.Split('.')[0]
       }
       else{
         # If the VS version IS compatible, look for an xcopy msbuild package

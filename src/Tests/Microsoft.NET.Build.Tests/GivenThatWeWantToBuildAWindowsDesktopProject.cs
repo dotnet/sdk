@@ -21,7 +21,7 @@ namespace Microsoft.NET.Build.Tests
         public GivenThatWeWantToBuildAWindowsDesktopProject(ITestOutputHelper log) : base(log)
         {}
 
-        [WindowsOnlyRequiresMSBuildVersionTheory("16.7.0-preview-20310-07")]
+        [WindowsOnlyRequiresMSBuildVersionTheory("16.7.0")]
         [InlineData("UseWindowsForms")]
         [InlineData("UseWPF")]
         public void It_errors_when_missing_windows_target_platform(string propertyName)
@@ -35,17 +35,18 @@ namespace Microsoft.NET.Build.Tests
             testProject.AdditionalProperties[propertyName] = "true";
             testProject.AdditionalProperties["TargetPlatformIdentifier"] = "custom"; // Make sure we don't get windows implicitly set as the TPI
             testProject.AdditionalProperties["TargetPlatformSupported"] = "true";
+            testProject.AdditionalProperties["TargetPlatformMoniker"] = "custom,Version="; //Make sure we avoid implicitly setting an invalid TPV
             var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: propertyName);
 
             var buildCommand = new BuildCommand(testAsset);
-            buildCommand.Execute()
+            buildCommand.ExecuteWithoutRestore()
                 .Should()
                 .Fail()
                 .And
                 .HaveStdOutContaining("NETSDK1136");
         }
 
-        [WindowsOnlyRequiresMSBuildVersionTheory("16.7.0-preview-20310-07")]
+        [WindowsOnlyRequiresMSBuildVersionTheory("16.7.0")]
         [InlineData("UseWindowsForms")]
         [InlineData("UseWPF")]
         public void It_errors_when_missing_transitive_windows_target_platform(string propertyName)
@@ -154,9 +155,10 @@ namespace Microsoft.NET.Build.Tests
         public void It_builds_successfully_when_targeting_net_framework()
         {
             var testDirectory = _testAssetsManager.CreateTestDirectory().Path;
-            var newCommand = new DotnetCommand(Log, "new", "wpf", "--no-restore");
-            newCommand.WorkingDirectory = testDirectory;
-            newCommand.Execute()
+            new DotnetNewCommand(Log, "wpf", "--no-restore")
+                .WithVirtualHive()
+                .WithWorkingDirectory(testDirectory)
+                .Execute()
                 .Should()
                 .Pass();
 
@@ -193,7 +195,7 @@ namespace Microsoft.NET.Build.Tests
                 .HaveStdOutContaining("NETSDK1140");
         }
 
-        [WindowsOnlyTheory]
+        [WindowsOnlyTheory(Skip="https://github.com/dotnet/sdk/pull/29009")]
         [InlineData(true)]
         [InlineData(false)]
         public void It_succeeds_if_windows_target_platform_version_does_not_have_trailing_zeros(bool setInTargetframework)
@@ -257,10 +259,12 @@ namespace Microsoft.NET.Build.Tests
         {
             var testDir = _testAssetsManager.CreateTestDirectory();
 
-            var newCommand = new DotnetCommand(Log);
-            newCommand.WorkingDirectory = testDir.Path;
-
-            newCommand.Execute("new", "wpf", "--debug:ephemeral-hive").Should().Pass();
+            new DotnetNewCommand(Log)
+                .WithVirtualHive()
+                .WithWorkingDirectory(testDir.Path)
+                .Execute("wpf")
+                .Should()
+                .Pass();
 
             var projectPath = Path.Combine(testDir.Path, Path.GetFileName(testDir.Path) + ".csproj");
 
