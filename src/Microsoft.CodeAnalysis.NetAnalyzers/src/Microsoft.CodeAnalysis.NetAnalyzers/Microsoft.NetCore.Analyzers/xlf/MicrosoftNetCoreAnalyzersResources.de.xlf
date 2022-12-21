@@ -2869,22 +2869,22 @@
       </trans-unit>
       <trans-unit id="UseStartsWithInsteadOfIndexOfComparisonWithZeroCodeFixTitle">
         <source>Use 'StartsWith'</source>
-        <target state="new">Use 'StartsWith'</target>
+        <target state="translated">„StartsWith“ verwenden</target>
         <note />
       </trans-unit>
       <trans-unit id="UseStartsWithInsteadOfIndexOfComparisonWithZeroDescription">
         <source>It is both clearer and faster to use 'StartsWith' instead of comparing the result of 'IndexOf' to zero.</source>
-        <target state="new">It is both clearer and faster to use 'StartsWith' instead of comparing the result of 'IndexOf' to zero.</target>
+        <target state="translated">Es ist übersichtlicher und schneller, „StartsWith“ zu verwenden, statt das Ergebnis von „IndexOf“ mit null zu vergleichen.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseStartsWithInsteadOfIndexOfComparisonWithZeroMessage">
         <source>Use 'StartsWith' instead of comparing the result of 'IndexOf' to 0</source>
-        <target state="new">Use 'StartsWith' instead of comparing the result of 'IndexOf' to 0</target>
+        <target state="translated">Verwenden Sie „StartsWith“, statt das Ergebnis von „IndexOf“ mit 0 zu vergleichen</target>
         <note />
       </trans-unit>
       <trans-unit id="UseStartsWithInsteadOfIndexOfComparisonWithZeroTitle">
         <source>Use 'StartsWith' instead of 'IndexOf'</source>
-        <target state="new">Use 'StartsWith' instead of 'IndexOf'</target>
+        <target state="translated">„StartsWith“ statt „IndexOf“ verwenden</target>
         <note />
       </trans-unit>
       <trans-unit id="UseStringEqualsOverStringCompareCodeFixTitle">
