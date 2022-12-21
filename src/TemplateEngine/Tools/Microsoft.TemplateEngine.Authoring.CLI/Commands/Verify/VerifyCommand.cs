@@ -148,7 +148,8 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.Commands.Verify
                     VerifyCommandOutput = args.VerifyCommandOutput,
                     IsCommandExpectedToFail = args.IsCommandExpectedToFail,
                     UniqueFor = args.UniqueFor,
-                    DoNotPrependCallerMethodNameToScenarioName = true
+                    DoNotPrependCallerMethodNameToScenarioName = true,
+                    EnsureEmptyOutputDirectory = true
                 };
                 await engine.Execute(
                     options,
