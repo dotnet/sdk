@@ -7,8 +7,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Build.Framework;
-using Microsoft.DotNet.DarcLib;
-using Microsoft.DotNet.DarcLib.Helpers;
 using Microsoft.DotNet.DarcLib.VirtualMonoRepo;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -61,6 +59,7 @@ public class VirtualMonoRepo_Initialize : Build.Utilities.Task, ICancelableTask
 
     private IServiceProvider CreateServiceProvider() => new ServiceCollection()
         .AddLogging(b => b.AddConsole().AddFilter(l => l >= LogLevel.Information))
-        .AddVmrManagers("git", VmrPath, TmpPath, null, null)
+        .AddTransient<GitFileManagerFactory>()
+        .AddVmrManagers(sp => sp.GetRequiredService<GitFileManagerFactory>(), "git", VmrPath, TmpPath, null, null)
         .BuildServiceProvider();
 }

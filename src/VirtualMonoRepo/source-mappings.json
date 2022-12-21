@@ -105,8 +105,8 @@
             "defaultRef": "dev"
         },
         {
-            "name": "razor-compiler",
-            "defaultRemote": "https://github.com/dotnet/razor-compiler"
+            "name": "razor",
+            "defaultRemote": "https://github.com/dotnet/razor"
         },
         {
             "name": "roslyn",
