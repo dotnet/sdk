@@ -457,24 +457,9 @@
         <target state="translated">ComVisibleAttribute determina como os clientes COM acessam o código gerenciado. O bom design dita que os assemblies indicam explicitamente a visibilidade COM. A visibilidade COM pode ser definida para todo o assembly e, em seguida, substituída para tipos individuais e membros de tipo. Se o atributo não estiver presente, o conteúdo do assembly estará visível para clientes COM.</target>
         <note />
       </trans-unit>
-      <trans-unit id="MarkAssembliesWithComVisibleMessageNoAttribute">
-        <source>Because {0} exposes externally visible types, mark it with ComVisible(false) at the assembly level and then mark all types within the assembly that should be exposed to COM clients with ComVisible(true).</source>
-        <target state="translated">Já que {0} expõe os tipos visíveis externamente, marque-o com ComVisible(false) no nível de assembly e marque todos os tipos dentro do assembly que devem ser expostos a clientes COM com ComVisible(true).</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="MarkAssembliesWithComVisibleMessageAttributeTrue">
-        <source>Consider changing the ComVisible attribute on {0} to false, and opting in at the type level.</source>
-        <target state="translated">Considere alterar o atributo ComVisible em {0} para false e aceitá-lo no nível de tipo.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="MarkAttributesWithAttributeUsageTitle">
         <source>Mark attributes with AttributeUsageAttribute</source>
         <target state="translated">Marcar atributos com AttributeUsageAttribute</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="MarkAttributesWithAttributeUsageDescription">
-        <source>When you define a custom attribute, mark it by using AttributeUsageAttribute to indicate where in the source code the custom attribute can be applied. The meaning and intended usage of an attribute will determine its valid locations in code.</source>
-        <target state="translated">Quando você definir um atributo personalizado, marque-o usando AttributeUsageAttribute para indicar o local no código-fonte em que o atributo personalizado poderá ser aplicado. O significado e o uso pretendido de um atributo determinará seus locais válidos no código.</target>
         <note />
       </trans-unit>
       <trans-unit id="MarkAttributesWithAttributeUsageMessageDefault">
@@ -482,19 +467,9 @@
         <target state="translated">Especifique AttributeUsage em {0}</target>
         <note />
       </trans-unit>
-      <trans-unit id="MarkAttributesWithAttributeUsageMessageInherited">
-        <source>Even though attribute {0} inherits AttributeUsage from its base type, you should consider explicitly specifying AttributeUsage on the type to improve code readability and documentation.</source>
-        <target state="translated">Mesmo que o atributo {0} herde AttributeUsage de seu tipo base, você deve considerar especificar explicitamente AttributeUsage no tipo para melhorar a documentação e a legibilidade do código.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="DefineAccessorsForAttributeArgumentsTitle">
         <source>Define accessors for attribute arguments</source>
         <target state="translated">Definir acessadores para argumentos de atributo</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DefineAccessorsForAttributeArgumentsDescription">
-        <source>Attributes can define mandatory arguments that must be specified when you apply the attribute to a target. These are also known as positional arguments because they are supplied to attribute constructors as positional parameters. For every mandatory argument, the attribute should also provide a corresponding read-only property so that the value of the argument can be retrieved at execution time. Attributes can also define optional arguments, which are also known as named arguments. These arguments are supplied to attribute constructors by name and should have a corresponding read/write property.</source>
-        <target state="translated">Os atributos podem definir argumentos obrigatórios que devem ser especificados quando você aplica o atributo a um destino. Eles também são conhecidos como argumentos posicionais porque são fornecidos para construtores de atributo como parâmetros posicionais. Para todo argumento obrigatório, o atributo também deve fornecer uma propriedade somente leitura correspondente para que o valor do argumento possa ser recuperado no tempo de execução. Os atributos também podem definir argumentos opcionais, também conhecidos como argumentos nomeados. Esses argumentos são fornecidos aos construtores de atributo por nome e devem ter uma propriedade leitura/gravação correspondente.</target>
         <note />
       </trans-unit>
       <trans-unit id="DefineAccessorsForAttributeArgumentsMessageDefault">
@@ -695,11 +670,6 @@
       <trans-unit id="OperatorsShouldHaveSymmetricalOverloadsDescription">
         <source>A type implements the equality or inequality operator and does not implement the opposite operator.</source>
         <target state="translated">Um tipo implementa o operador de igualdade ou desigualdade e não implementa o operador oposto.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="OperatorsShouldHaveSymmetricalOverloadsMessage">
-        <source>Operators should have symmetrical overloads</source>
-        <target state="translated">Os operadores devem ter sobrecargas simétricas</target>
         <note />
       </trans-unit>
       <trans-unit id="CollectionPropertiesShouldBeReadOnlyTitle">
@@ -925,11 +895,6 @@
       <trans-unit id="ImplementStandardExceptionConstructorsMessageMissingConstructor">
         <source>Add the following constructor to {0}: {1}</source>
         <target state="translated">Adicione o construtor a seguir para {0}: {1}</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementStandardExceptionConstructorsMessageAccessibility">
-        <source>Change the accessibility of {0} to {1}.</source>
-        <target state="translated">Altere a acessibilidade de {0} para {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="NestedTypesShouldNotBeVisibleTitle">
@@ -1680,26 +1645,6 @@
       <trans-unit id="InvalidEntryInCodeMetricsConfigFileTitle">
         <source>Invalid entry in code metrics rule specification file</source>
         <target state="translated">Entrada inválida no arquivo de especificação de regra de métricas de código</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ReviewUnusedParametersTitle">
-        <source>Review unused parameters</source>
-        <target state="translated">Examinar parâmetros não utilizados</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ReviewUnusedParametersDescription">
-        <source>Avoid unused paramereters in your code. If the parameter cannot be removed, then change its name so it starts with an underscore and is optionally followed by an integer, such as '_', '_1', '_2', etc. These are treated as special discard symbol names.</source>
-        <target state="translated">Evite parâmetros não usados no código. Se o parâmetro não puder ser removido, altere seu nome para que ele comece com um sublinhado e seja seguido opcionalmente por um inteiro, como '_', '_1', '_2' etc. Esses nomes são tratados como nomes de símbolo de descarte especiais.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ReviewUnusedParametersMessage">
-        <source>Parameter {0} of method {1} is never used. Remove the parameter or use it in the method body.</source>
-        <target state="translated">O parâmetro {0} do método {1} nunca é usado. Remova o parâmetro ou use-o no corpo do método.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="RemoveUnusedParameterMessage">
-        <source>Remove unused parameter</source>
-        <target state="translated">Remover o parâmetro não utilizado</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotIgnoreMethodResultsTitle">

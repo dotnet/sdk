@@ -457,24 +457,9 @@
         <target state="translated">ComVisibleAttribute, COM istemcilerinin yönetilen koda nasıl erişeceğini belirler. İyi bir tasarım için bütünleştirilmiş kodlar COM görünürlüğünü açıkça belirtmelidir. COM görünürlüğü bütünleştirilmiş kodun tamamı için ayarlanabilir ve sonra tek tek türler ve tür üyeleri için geçersiz kılınabilir. Bu öznitelik yoksa, bütünleştirilmiş kodun içeriğini COM istemcileri görebilir.</target>
         <note />
       </trans-unit>
-      <trans-unit id="MarkAssembliesWithComVisibleMessageNoAttribute">
-        <source>Because {0} exposes externally visible types, mark it with ComVisible(false) at the assembly level and then mark all types within the assembly that should be exposed to COM clients with ComVisible(true).</source>
-        <target state="translated">{0} öğesi dışarıdan görünen türleri kullanıma sunduğundan, bunu bütünleştirilmiş kod düzeyinde ComVisible(false) ile işaretleyin, sonra bütünleştirilmiş kodda bulunan ve COM istemcilerinin kullanımına sunulması gereken tüm türleri ComVisible(true) ile işaretleyin.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="MarkAssembliesWithComVisibleMessageAttributeTrue">
-        <source>Consider changing the ComVisible attribute on {0} to false, and opting in at the type level.</source>
-        <target state="translated">{0} öğesindeki ComVisible özniteliğini false olarak değiştirmeyi ve tür düzeyinde kabul etmeyi deneyin.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="MarkAttributesWithAttributeUsageTitle">
         <source>Mark attributes with AttributeUsageAttribute</source>
         <target state="translated">Öznitelikleri AttributeUsageAttribute ile işaretleyin</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="MarkAttributesWithAttributeUsageDescription">
-        <source>When you define a custom attribute, mark it by using AttributeUsageAttribute to indicate where in the source code the custom attribute can be applied. The meaning and intended usage of an attribute will determine its valid locations in code.</source>
-        <target state="translated">Özel bir öznitelik tanımladığınızda, özel özniteliğin kaynak kodunun neresinde uygulanabileceğini belirtmek için bunu AttributeUsageAttribute kullanarak işaretleyin. Bir özniteliğin anlamı ve amaçlanan kullanımı, koddaki geçerli konumlarını belirler.</target>
         <note />
       </trans-unit>
       <trans-unit id="MarkAttributesWithAttributeUsageMessageDefault">
@@ -482,19 +467,9 @@
         <target state="translated">{0} üzerinde AttributeUsage belirtin</target>
         <note />
       </trans-unit>
-      <trans-unit id="MarkAttributesWithAttributeUsageMessageInherited">
-        <source>Even though attribute {0} inherits AttributeUsage from its base type, you should consider explicitly specifying AttributeUsage on the type to improve code readability and documentation.</source>
-        <target state="translated">{0} özniteliği AttributeUsage’ı temel türünden devralsa da kodun okunabilirliğini e belgeleri geliştirmek için AttributeUsage’ı açıkça belirtmeyi göz önünde bulundurmalısınız.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="DefineAccessorsForAttributeArgumentsTitle">
         <source>Define accessors for attribute arguments</source>
         <target state="translated">Öznitelik bağımsız değişkenleri için erişimciler tanımlayın</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DefineAccessorsForAttributeArgumentsDescription">
-        <source>Attributes can define mandatory arguments that must be specified when you apply the attribute to a target. These are also known as positional arguments because they are supplied to attribute constructors as positional parameters. For every mandatory argument, the attribute should also provide a corresponding read-only property so that the value of the argument can be retrieved at execution time. Attributes can also define optional arguments, which are also known as named arguments. These arguments are supplied to attribute constructors by name and should have a corresponding read/write property.</source>
-        <target state="translated">Öznitelikler, özniteliği bir hedefe uygularken belirtilmesi gereken zorunlu bağımsız değişkenler tanımlayabilir. Bunlar öznitelik oluşturuculara konumsal parametreler olarak sağlandığından konumsal bağımsız değişkenler olarak da bilinir. Her zorunlu bağımsız değişken için yürütme zamanında bağımsız değişkenin değerinin alınabilmesi amacıyla öznitelik tarafından buna karşılık gelen salt okunur bir özellik de sağlanmalıdır. Öznitelikler, adlandırılmış bağımsız değişkenler olarak da bilinen isteğe bağlı bağımsız değişkenler de tanımlayabilir. Bu bağımsız değişkenler, öznitelik oluşturuculara ada göre sağlanır ve karşılık gelen bir okuma/yazma özelliğine sahip olmalıdır.</target>
         <note />
       </trans-unit>
       <trans-unit id="DefineAccessorsForAttributeArgumentsMessageDefault">
@@ -695,11 +670,6 @@
       <trans-unit id="OperatorsShouldHaveSymmetricalOverloadsDescription">
         <source>A type implements the equality or inequality operator and does not implement the opposite operator.</source>
         <target state="translated">Bir tür, eşitlik veya eşitsizlik işlecini uygular ve zıt işleci uygulamaz.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="OperatorsShouldHaveSymmetricalOverloadsMessage">
-        <source>Operators should have symmetrical overloads</source>
-        <target state="translated">İşleçler simetrik aşırı yüklemelere sahip olmalıdır</target>
         <note />
       </trans-unit>
       <trans-unit id="CollectionPropertiesShouldBeReadOnlyTitle">
@@ -925,11 +895,6 @@
       <trans-unit id="ImplementStandardExceptionConstructorsMessageMissingConstructor">
         <source>Add the following constructor to {0}: {1}</source>
         <target state="translated">{0} öğesine şu oluşturucuyu ekleyin: {1}</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementStandardExceptionConstructorsMessageAccessibility">
-        <source>Change the accessibility of {0} to {1}.</source>
-        <target state="translated">{0} öğesinin erişilebilirliğini {1} olarak değiştirin.</target>
         <note />
       </trans-unit>
       <trans-unit id="NestedTypesShouldNotBeVisibleTitle">
@@ -1680,26 +1645,6 @@
       <trans-unit id="InvalidEntryInCodeMetricsConfigFileTitle">
         <source>Invalid entry in code metrics rule specification file</source>
         <target state="translated">Ölçüm kuralı belirtim dosyasında geçersiz giriş</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ReviewUnusedParametersTitle">
-        <source>Review unused parameters</source>
-        <target state="translated">Kullanılmayan parametreleri gözden geçirin</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ReviewUnusedParametersDescription">
-        <source>Avoid unused paramereters in your code. If the parameter cannot be removed, then change its name so it starts with an underscore and is optionally followed by an integer, such as '_', '_1', '_2', etc. These are treated as special discard symbol names.</source>
-        <target state="translated">Kodunuzda, kullanılmayan parametrelerden kaçının. Parametre kaldırılamıyorsa adını, bir alt çizgiyle başlayan ve isteğe bağlı olarak ardından tamsayı gelen ('_', '_1', '_2' gibi) bir değerle değiştirin. Bu değerler özel atılabilir değişken sembolü olarak işlenir.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ReviewUnusedParametersMessage">
-        <source>Parameter {0} of method {1} is never used. Remove the parameter or use it in the method body.</source>
-        <target state="translated">{1} yönteminin {0} parametresi hiçbir zaman kullanılmıyor. Parametreyi kaldırın veya yöntem gövdesinde kullanın.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="RemoveUnusedParameterMessage">
-        <source>Remove unused parameter</source>
-        <target state="translated">Kullanılmayan parametreyi kaldırma</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotIgnoreMethodResultsTitle">
