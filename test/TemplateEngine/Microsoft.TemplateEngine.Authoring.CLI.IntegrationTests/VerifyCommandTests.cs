@@ -132,7 +132,7 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.IntegrationTests
             string templateOutputDir = templateShortName;
 
             //get the template location
-            string executingAssemblyPath = this.GetType().Assembly.Location;
+            string executingAssemblyPath = GetType().Assembly.Location;
             string templateLocation = Path.Combine(TestTemplatesLocation, "TestTemplate");
 
             var cmd = new BasicCommand(
