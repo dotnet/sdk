@@ -1,5 +1,6 @@
 ﻿' Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
+Imports System.Composition
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.CodeFixes
 Imports Microsoft.CodeAnalysis.Editing
@@ -9,7 +10,7 @@ Imports Microsoft.NetCore.Analyzers.Runtime
 
 Namespace Microsoft.NetCore.VisualBasic.Analyzers.Runtime
 
-    <ExportCodeFixProvider(LanguageNames.VisualBasic)>
+    <ExportCodeFixProvider(LanguageNames.VisualBasic), [Shared]>
     Public NotInheritable Class BasicPreferStreamAsyncMemoryOverloadsFixer
 
         Inherits PreferStreamAsyncMemoryOverloadsFixer
@@ -37,25 +38,6 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Runtime
             End If
 
             Return Nothing
-        End Function
-
-        Protected Overrides Function IsSystemNamespaceImported(importList As IReadOnlyList(Of SyntaxNode)) As Boolean
-            For Each import As SyntaxNode In importList
-                Dim importsStatement = TryCast(import, ImportsStatementSyntax)
-                If importsStatement IsNot Nothing Then
-                    For Each clause As ImportsClauseSyntax In importsStatement.ImportsClauses
-                        Dim simpleClause = TryCast(clause, SimpleImportsClauseSyntax)
-                        If simpleClause IsNot Nothing Then
-                            Dim identifier = TryCast(simpleClause.Name, IdentifierNameSyntax)
-                            If identifier IsNot Nothing AndAlso String.Equals(identifier.Identifier.Text, "System", StringComparison.OrdinalIgnoreCase) Then
-                                Return True
-                            End If
-                        End If
-                    Next
-                End If
-            Next
-
-            Return False
         End Function
 
         Protected Overrides Function IsPassingZeroAndBufferLength(model As SemanticModel, bufferValueNode As SyntaxNode, offsetValueNode As SyntaxNode, countValueNode As SyntaxNode) As Boolean
