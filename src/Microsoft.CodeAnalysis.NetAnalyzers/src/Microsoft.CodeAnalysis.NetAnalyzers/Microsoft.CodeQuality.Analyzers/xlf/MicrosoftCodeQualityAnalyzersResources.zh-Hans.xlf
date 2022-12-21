@@ -457,24 +457,9 @@
         <target state="translated">ComVisibleAttribute 确定 COM 客户端访问托管代码的方法。好的设计要求程序集显式指示 COM 可见性。可为整个程序集设置 COM 可见性，然后为单个类型和类型成员重写。如果此属性不存在，则程序集的内容对 COM 客户端可见。</target>
         <note />
       </trans-unit>
-      <trans-unit id="MarkAssembliesWithComVisibleMessageNoAttribute">
-        <source>Because {0} exposes externally visible types, mark it with ComVisible(false) at the assembly level and then mark all types within the assembly that should be exposed to COM clients with ComVisible(true).</source>
-        <target state="translated">因为 {0} 公开外部可见的类型，请在程序集级别使用 ComVisible(false) 来标记它，然后使用 ComVisible(true) 来标记该程序集内应当向 COM 客户端公开的所有类型。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="MarkAssembliesWithComVisibleMessageAttributeTrue">
-        <source>Consider changing the ComVisible attribute on {0} to false, and opting in at the type level.</source>
-        <target state="translated">考虑将 {0} 的 ComVisible 属性改为 false，然后在类型级别进行选择。</target>
-        <note />
-      </trans-unit>
       <trans-unit id="MarkAttributesWithAttributeUsageTitle">
         <source>Mark attributes with AttributeUsageAttribute</source>
         <target state="translated">用 AttributeUsageAttribute 标记属性</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="MarkAttributesWithAttributeUsageDescription">
-        <source>When you define a custom attribute, mark it by using AttributeUsageAttribute to indicate where in the source code the custom attribute can be applied. The meaning and intended usage of an attribute will determine its valid locations in code.</source>
-        <target state="translated">定义自定义属性时，使用 AttributeUsageAttribute 标记该属性，指示可在源代码中应用该自定义属性的位置。属性的含义和目标用途确定其在代码中的有效位置。</target>
         <note />
       </trans-unit>
       <trans-unit id="MarkAttributesWithAttributeUsageMessageDefault">
@@ -482,19 +467,9 @@
         <target state="translated">在 {0} 上指定 AttributeUsage</target>
         <note />
       </trans-unit>
-      <trans-unit id="MarkAttributesWithAttributeUsageMessageInherited">
-        <source>Even though attribute {0} inherits AttributeUsage from its base type, you should consider explicitly specifying AttributeUsage on the type to improve code readability and documentation.</source>
-        <target state="translated">虽然属性 {0} 从其基类型继承了 AttributeUsage 属性，但你还是应该考虑在该类型中显式指定 AttributeUsage 属性，以便提高代码可读性和便于文档制作。</target>
-        <note />
-      </trans-unit>
       <trans-unit id="DefineAccessorsForAttributeArgumentsTitle">
         <source>Define accessors for attribute arguments</source>
         <target state="translated">定义属性参数的访问器</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DefineAccessorsForAttributeArgumentsDescription">
-        <source>Attributes can define mandatory arguments that must be specified when you apply the attribute to a target. These are also known as positional arguments because they are supplied to attribute constructors as positional parameters. For every mandatory argument, the attribute should also provide a corresponding read-only property so that the value of the argument can be retrieved at execution time. Attributes can also define optional arguments, which are also known as named arguments. These arguments are supplied to attribute constructors by name and should have a corresponding read/write property.</source>
-        <target state="translated">属性可以定义必需参数(在向目标应用属性时，必须指定这些参数)。这些参数也称为位置参数，因为它们被作为位置参数提供给属性构造函数。对于每个必需参数，属性还应提供相应的只读属性，以便可以在执行时检索参数值。属性还可以定义可选参数，这些参数也称为命名参数。这些参数按名称提供给属性构造函数，且应具有相应的读/写属性。</target>
         <note />
       </trans-unit>
       <trans-unit id="DefineAccessorsForAttributeArgumentsMessageDefault">
@@ -695,11 +670,6 @@
       <trans-unit id="OperatorsShouldHaveSymmetricalOverloadsDescription">
         <source>A type implements the equality or inequality operator and does not implement the opposite operator.</source>
         <target state="translated">类型实现相等运算符或不相等运算符，但不实现相反运算符。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="OperatorsShouldHaveSymmetricalOverloadsMessage">
-        <source>Operators should have symmetrical overloads</source>
-        <target state="translated">运算符应有对称重载</target>
         <note />
       </trans-unit>
       <trans-unit id="CollectionPropertiesShouldBeReadOnlyTitle">
@@ -925,11 +895,6 @@
       <trans-unit id="ImplementStandardExceptionConstructorsMessageMissingConstructor">
         <source>Add the following constructor to {0}: {1}</source>
         <target state="translated">将下列构造函数添加到 {0}: {1}</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementStandardExceptionConstructorsMessageAccessibility">
-        <source>Change the accessibility of {0} to {1}.</source>
-        <target state="translated">将 {0} 的可访问性更改为 {1}。</target>
         <note />
       </trans-unit>
       <trans-unit id="NestedTypesShouldNotBeVisibleTitle">
@@ -1680,26 +1645,6 @@
       <trans-unit id="InvalidEntryInCodeMetricsConfigFileTitle">
         <source>Invalid entry in code metrics rule specification file</source>
         <target state="translated">代码度量规则规范文件中的条目无效</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ReviewUnusedParametersTitle">
-        <source>Review unused parameters</source>
-        <target state="translated">检查未使用的参数</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ReviewUnusedParametersDescription">
-        <source>Avoid unused paramereters in your code. If the parameter cannot be removed, then change its name so it starts with an underscore and is optionally followed by an integer, such as '_', '_1', '_2', etc. These are treated as special discard symbol names.</source>
-        <target state="translated">请避免在代码中使用未使用的参数。如果无法删除该参数，请更改其名称，使其以下划线开头，也可在下划线后面跟一个整数(如 "_"、"_1"、"_2" 等)。这些被视为特殊丢弃符号名。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ReviewUnusedParametersMessage">
-        <source>Parameter {0} of method {1} is never used. Remove the parameter or use it in the method body.</source>
-        <target state="translated">从未用过方法 {1} 的参数 {0}。请删除该参数或在方法体中使用它。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="RemoveUnusedParameterMessage">
-        <source>Remove unused parameter</source>
-        <target state="translated">删除未使用的参数</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotIgnoreMethodResultsTitle">
