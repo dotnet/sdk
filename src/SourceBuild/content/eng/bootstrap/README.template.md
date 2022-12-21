@@ -10,7 +10,7 @@ What this means:
 In the VMR, you can find:
 - source files of [each product repository](#list-of-components) which are mirrored inside of their respective directories under [`src/`](https://github.com/dotnet/dotnet/tree/main/src),
 - tooling that enables [building the whole .NET product from source](https://github.com/dotnet/source-build) on Linux platforms,
-- small customizations, in the form of [patches](https://github.com/dotnet/dotnet/tree/main/src/installer/src/SourceBuild/tarball/patches), applied on top of the original code to make the build possible,
+- small customizations, in the form of [patches](https://github.com/dotnet/dotnet/tree/main/src/installer/src/SourceBuild/patches), applied on top of the original code to make the build possible,
 - *[in future]* E2E tests for the whole .NET product.
 
 Just like the development repositories, the VMR will have a release branch for every feature band (e.g. `release/8.0.1xx-preview1`).

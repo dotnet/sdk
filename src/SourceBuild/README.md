@@ -44,7 +44,7 @@ git format-patch --zero-commit --no-signature -1
 ```
 
 Then, move the patch file into this repo, at
-`src/SourceBuild/tarball/patches/<repo>`.
+`src/SourceBuild/patches/<repo>`.
 
 > If you define `PATCH_DIR` to point at the `patches` directory, you can use
 > `-o` to place the patch file directly in the right directory:

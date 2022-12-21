@@ -10,13 +10,13 @@
 {
     // Location within the VMR where the source-build patches are stored
     // These patches are applied on top of the code synchronized into the VMR
-    "patchesPath": "src/installer/src/SourceBuild/tarball/patches",
+    "patchesPath": "src/installer/src/SourceBuild/patches",
 
     // Some files are copied outside of the src/ directory into other locations
     // When files in the source paths are changed, they are automatically synchronized too
     "additionalMappings": [
         {
-            "source": "src/installer/src/SourceBuild/tarball/content",
+            "source": "src/installer/src/SourceBuild/content",
             "destination": ""
         },
         {
@@ -82,7 +82,7 @@
             "defaultRemote": "https://github.com/dotnet/installer",
             "exclude": [
                 // We don't need the tarball content in the VMR again, it's already copied in the root
-                "src/SourceBuild/tarball/content/**/*"
+                "src/SourceBuild/content/**/*"
             ]
         },
         {
