@@ -542,7 +542,9 @@ namespace Microsoft.NetCore.Analyzers.Performance
             }
         }
 
+#pragma warning disable CA1815 // Override equals and operator equals on value types
         private readonly struct AttributeConstant
+#pragma warning restore CA1815 // Override equals and operator equals on value types
         {
             public object? Min { get; }
             public object? Max { get; }
