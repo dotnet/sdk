@@ -11,9 +11,9 @@ Namespace Microsoft.CodeQuality.VisualBasic.Analyzers.QualityGuidelines
     Partial Friend NotInheritable Class BasicAvoidMultipleEnumerationsAnalyzer
         Inherits AvoidMultipleEnumerations
 
-        Protected Overrides Function IsExpressionOfForEachStatement(node As SyntaxNode) As Boolean
-            Dim parent = TryCast(node.Parent, ForEachStatementSyntax)
-            Return parent IsNot Nothing AndAlso parent.Expression.Equals(node)
+        Protected Overrides Function IsExpressionOfForEachStatement(syntax As SyntaxNode) As Boolean
+            Dim parent = TryCast(syntax.Parent, ForEachStatementSyntax)
+            Return parent IsNot Nothing AndAlso parent.Expression.Equals(syntax)
         End Function
     End Class
 End Namespace

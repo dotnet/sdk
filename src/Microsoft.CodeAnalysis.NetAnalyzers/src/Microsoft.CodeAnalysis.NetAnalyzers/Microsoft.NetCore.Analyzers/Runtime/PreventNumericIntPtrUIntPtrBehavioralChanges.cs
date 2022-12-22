@@ -55,7 +55,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
         protected abstract bool IsWithinCheckedContext(IOperation operation);
 
-        protected abstract bool IsAliasUsed(ISymbol? syntaxReferences);
+        protected abstract bool IsAliasUsed(ISymbol? symbol);
 
         protected abstract bool IsAliasUsed(SyntaxNode syntax);
 

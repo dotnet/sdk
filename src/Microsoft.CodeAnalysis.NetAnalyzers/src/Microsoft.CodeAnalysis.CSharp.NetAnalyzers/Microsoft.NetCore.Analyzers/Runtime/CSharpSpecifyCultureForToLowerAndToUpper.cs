@@ -12,11 +12,11 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
     public class CSharpSpecifyCultureForToLowerAndToUpperAnalyzer : SpecifyCultureForToLowerAndToUpperAnalyzer
     {
-        protected override Location GetMethodNameLocation(SyntaxNode invocationNode)
+        protected override Location GetMethodNameLocation(SyntaxNode node)
         {
-            Debug.Assert(invocationNode.IsKind(SyntaxKind.InvocationExpression));
+            Debug.Assert(node.IsKind(SyntaxKind.InvocationExpression));
 
-            var invocation = (InvocationExpressionSyntax)invocationNode;
+            var invocation = (InvocationExpressionSyntax)node;
             if (invocation.Expression is MemberAccessExpressionSyntax memberAccess)
             {
                 return memberAccess.Name.GetLocation();

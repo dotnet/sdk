@@ -44,9 +44,9 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Performance
             private readonly IdentifierNameSyntax _constantExpectedMinIdentifier = (IdentifierNameSyntax)SyntaxFactory.ParseName(ConstantExpectedMin);
             private readonly IdentifierNameSyntax _constantExpectedMaxIdentifier = (IdentifierNameSyntax)SyntaxFactory.ParseName(ConstantExpectedMax);
 
-            public override Location? GetMaxLocation(SyntaxNode attributeNode) => GetArgumentLocation(attributeNode, _constantExpectedMaxIdentifier);
+            public override Location? GetMaxLocation(SyntaxNode attributeSyntax) => GetArgumentLocation(attributeSyntax, _constantExpectedMaxIdentifier);
 
-            public override Location? GetMinLocation(SyntaxNode attributeNode) => GetArgumentLocation(attributeNode, _constantExpectedMinIdentifier);
+            public override Location? GetMinLocation(SyntaxNode attributeSyntax) => GetArgumentLocation(attributeSyntax, _constantExpectedMinIdentifier);
 
             private static Location? GetArgumentLocation(SyntaxNode attributeNode, IdentifierNameSyntax targetNameSyntax)
             {

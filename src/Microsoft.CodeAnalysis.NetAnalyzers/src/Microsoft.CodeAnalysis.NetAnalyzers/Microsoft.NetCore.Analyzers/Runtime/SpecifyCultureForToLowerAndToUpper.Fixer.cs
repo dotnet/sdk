@@ -51,7 +51,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 generator.IdentifierName("CurrentCulture"));
         }
 
-        protected abstract Task<Document> UseInvariantVersionAsync(Document document, SyntaxGenerator syntaxGenerator, SyntaxNode root, SyntaxNode node);
+        protected abstract Task<Document> UseInvariantVersionAsync(Document document, SyntaxGenerator generator, SyntaxNode root, SyntaxNode node);
 
         protected static string GetReplacementMethodName(string currentMethodName) => currentMethodName switch
         {
