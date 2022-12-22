@@ -28,7 +28,9 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
         {
             public Version? Obsoleted { get; set; }
             public string? ObsoletedMessage { get; set; }
+#pragma warning disable CA1056 // URI-like properties should not be strings
             public string? ObsoletedUrl { get; set; }
+#pragma warning restore CA1056 // URI-like properties should not be strings
             public Version? SupportedFirst { get; set; }
             public Version? SupportedSecond { get; set; }
             public Version? UnsupportedFirst { get; set; }
