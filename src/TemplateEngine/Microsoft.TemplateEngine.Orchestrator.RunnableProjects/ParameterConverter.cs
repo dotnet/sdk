@@ -11,7 +11,16 @@ namespace Microsoft.TemplateEngine.Utils
 {
     internal static class ParameterConverter
     {
-        public static object? ConvertParameterValueToType(
+        /// <summary>
+        /// Converts <paramref name="untypedValue"/> to data type defined in <paramref name="parameter"/>.
+        /// Supported types are: choice, bool, int, float, hex, string, text.
+        /// </summary>
+        /// <param name="host">template engine host (for logging purposes).</param>
+        /// <param name="parameter">the parameter to convert value to.</param>
+        /// <param name="untypedValue">the value to convert.</param>
+        /// <param name="valueResolutionError">the error during conversion, if any.</param>
+        /// <returns>Converted value.</returns>
+        internal static object? ConvertParameterValueToType(
             ITemplateEngineHost host,
             ITemplateParameter parameter,
             string untypedValue,
@@ -35,7 +44,13 @@ namespace Microsoft.TemplateEngine.Utils
             }
         }
 
-        public static object? InferTypeAndConvertLiteral(string literal)
+        /// <summary>
+        /// Converts <paramref name="literal"/> to closest data type.
+        /// Supported types are: bool, null, float, int, hex, string/text (in order of attempting).
+        /// </summary>
+        /// <param name="literal">the string value to convert.</param>
+        /// <returns>Converted value.</returns>
+        internal static object? InferTypeAndConvertLiteral(string literal)
         {
             if (literal == null)
             {
@@ -44,41 +59,91 @@ namespace Microsoft.TemplateEngine.Utils
 
             if (!literal.Contains("\""))
             {
-                if (string.Equals(literal, "true", StringComparison.OrdinalIgnoreCase))
+                if (TryResolveBooleanValue(literal, out bool parsedBool))
                 {
-                    return true;
+                    return parsedBool;
                 }
-
-                if (string.Equals(literal, "false", StringComparison.OrdinalIgnoreCase))
-                {
-                    return false;
-                }
-
-                if (string.Equals(literal, "null", StringComparison.OrdinalIgnoreCase))
+                if (TryResolveNullValue(literal, out _))
                 {
                     return null;
                 }
-
                 if ((literal.Contains(CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator)
-                     || literal.Contains(CultureInfo.InvariantCulture.NumberFormat.NumberDecimalSeparator))
-                    && ParserExtensions.DoubleTryParseСurrentOrInvariant(literal, out double literalDouble))
+                    || literal.Contains(CultureInfo.InvariantCulture.NumberFormat.NumberDecimalSeparator))
+                    && TryResolveFloatValue(literal, out double parsedFloat))
                 {
-                    return literalDouble;
+                    return parsedFloat;
                 }
-
-                if (long.TryParse(literal, out long literalLong))
+                if (TryResolveIntegerValue(literal, out long parsedInteger))
                 {
-                    return literalLong;
+                    return parsedInteger;
                 }
-
-                if (literal.StartsWith("0x", StringComparison.OrdinalIgnoreCase)
-                    && long.TryParse(literal.Substring(2), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out literalLong))
+                if (TryResolveHexValue(literal, out long parsedHex))
                 {
-                    return literalLong;
+                    return parsedHex;
                 }
             }
-
             return literal;
+        }
+
+        /// <summary>
+        /// Tries to convert <paramref name="literal"/> to <paramref name="dataType"/>.
+        /// If <paramref name="dataType"/> is null or empty, the type to be inferred. See <see cref="InferTypeAndConvertLiteral(string)"/> for more details.
+        /// </summary>
+        internal static bool TryConvertLiteralToDatatype(string literal, string? dataType, out object? value)
+        {
+            value = null;
+
+            if (string.IsNullOrWhiteSpace(dataType))
+            {
+                value = InferTypeAndConvertLiteral(literal);
+                return true;
+            }
+
+            if (string.Equals(dataType, "bool", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(dataType, "boolean", StringComparison.OrdinalIgnoreCase))
+            {
+                if (TryResolveBooleanValue(literal, out bool parsedBool))
+                {
+                    value = parsedBool;
+                    return true;
+                }
+                return false;
+            }
+            else if (string.Equals(dataType, "float", StringComparison.OrdinalIgnoreCase))
+            {
+                if (TryResolveFloatValue(literal, out double convertedFloat))
+                {
+                    value = convertedFloat;
+                    return true;
+                }
+                return false;
+            }
+            else if (string.Equals(dataType, "int", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(dataType, "integer", StringComparison.OrdinalIgnoreCase))
+            {
+                if (TryResolveIntegerValue(literal, out long convertedInt))
+                {
+                    value = convertedInt;
+                    return true;
+                }
+                return false;
+            }
+            else if (string.Equals(dataType, "hex", StringComparison.OrdinalIgnoreCase))
+            {
+                if (TryResolveHexValue(literal, out long convertedHex))
+                {
+                    value = convertedHex;
+                    return true;
+                }
+                return false;
+            }
+            else if (string.Equals(dataType, "text", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(dataType, "string", StringComparison.OrdinalIgnoreCase))
+            {
+                value = literal;
+                return true;
+            }
+            return false;
         }
 
         internal static string? GetDefault(string? dataType)
@@ -109,19 +174,15 @@ namespace Microsoft.TemplateEngine.Utils
         /// The data type names are case insensitive.
         /// </summary>
         /// <returns>Returns the converted value if it can be converted, throw otherwise.</returns>
-        internal static object? DataTypeSpecifiedConvertLiteral(ITemplateEngineHost host, ITemplateParameter param, string literal, out bool valueResolutionError)
+        private static object? DataTypeSpecifiedConvertLiteral(ITemplateEngineHost host, ITemplateParameter param, string literal, out bool valueResolutionError)
         {
             valueResolutionError = false;
 
             if (string.Equals(param.DataType, "bool", StringComparison.OrdinalIgnoreCase))
             {
-                if (string.Equals(literal, "true", StringComparison.OrdinalIgnoreCase))
+                if (TryResolveBooleanValue(literal, out bool parsedBool))
                 {
-                    return true;
-                }
-                else if (string.Equals(literal, "false", StringComparison.OrdinalIgnoreCase))
-                {
-                    return false;
+                    return parsedBool;
                 }
                 else
                 {
@@ -131,12 +192,12 @@ namespace Microsoft.TemplateEngine.Utils
                     // This else can also happen if there is a value but it can't be converted.
                     string? val;
 #pragma warning disable CS0618 // Type or member is obsolete - for backward compatibility
-                    while (host.OnParameterError(param, string.Empty, "ParameterValueNotSpecified", out val) && !bool.TryParse(val, out boolVal))
+                    while (host.OnParameterError(param, string.Empty, "ParameterValueNotSpecified", out val) && TryResolveBooleanValue(val, out boolVal))
 #pragma warning restore CS0618 // Type or member is obsolete
                     {
                     }
 
-                    valueResolutionError = !bool.TryParse(val, out boolVal);
+                    valueResolutionError = !TryResolveBooleanValue(val, out boolVal);
                     return boolVal;
                 }
             }
@@ -167,7 +228,7 @@ namespace Microsoft.TemplateEngine.Utils
             }
             else if (string.Equals(param.DataType, "float", StringComparison.OrdinalIgnoreCase))
             {
-                if (ParserExtensions.DoubleTryParseСurrentOrInvariant(literal, out double convertedFloat))
+                if (TryResolveFloatValue(literal, out double convertedFloat))
                 {
                     return convertedFloat;
                 }
@@ -175,19 +236,19 @@ namespace Microsoft.TemplateEngine.Utils
                 {
                     string? val;
 #pragma warning disable CS0618 // Type or member is obsolete - for backward compatibility
-                    while (host.OnParameterError(param, string.Empty, "ValueNotValidMustBeFloat", out val) && (val == null || !ParserExtensions.DoubleTryParseСurrentOrInvariant(val, out convertedFloat)))
+                    while (host.OnParameterError(param, string.Empty, "ValueNotValidMustBeFloat", out val) && (val == null || !TryResolveFloatValue(val, out convertedFloat)))
 #pragma warning restore CS0618 // Type or member is obsolete
                     {
                     }
 
-                    valueResolutionError = !ParserExtensions.DoubleTryParseСurrentOrInvariant(val, out convertedFloat);
+                    valueResolutionError = !TryResolveFloatValue(val, out convertedFloat);
                     return convertedFloat;
                 }
             }
             else if (string.Equals(param.DataType, "int", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(param.DataType, "integer", StringComparison.OrdinalIgnoreCase))
             {
-                if (long.TryParse(literal, out long convertedInt))
+                if (TryResolveIntegerValue(literal, out long convertedInt))
                 {
                     return convertedInt;
                 }
@@ -195,18 +256,18 @@ namespace Microsoft.TemplateEngine.Utils
                 {
                     string? val;
 #pragma warning disable CS0618 // Type or member is obsolete - for backward compatibility
-                    while (host.OnParameterError(param, string.Empty, "ValueNotValidMustBeInteger", out val) && (val == null || !long.TryParse(val, out convertedInt)))
+                    while (host.OnParameterError(param, string.Empty, "ValueNotValidMustBeInteger", out val) && TryResolveIntegerValue(val, out convertedInt))
 #pragma warning restore CS0618 // Type or member is obsolete
                     {
                     }
 
-                    valueResolutionError = !long.TryParse(val, out convertedInt);
+                    valueResolutionError = !TryResolveIntegerValue(val, out convertedInt);
                     return convertedInt;
                 }
             }
             else if (string.Equals(param.DataType, "hex", StringComparison.OrdinalIgnoreCase))
             {
-                if (long.TryParse(literal.Substring(2), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out long convertedHex))
+                if (TryResolveHexValue(literal, out long convertedHex))
                 {
                     return convertedHex;
                 }
@@ -214,12 +275,12 @@ namespace Microsoft.TemplateEngine.Utils
                 {
                     string? val;
 #pragma warning disable CS0618 // Type or member is obsolete - for backward compatibility
-                    while (host.OnParameterError(param, string.Empty, "ValueNotValidMustBeHex", out val) && (val == null || val.Length < 3 || !long.TryParse(val.Substring(2), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out convertedHex)))
+                    while (host.OnParameterError(param, string.Empty, "ValueNotValidMustBeHex", out val) && TryResolveHexValue(val, out convertedHex))
 #pragma warning restore CS0618 // Type or member is obsolete
                     {
                     }
 
-                    valueResolutionError = !long.TryParse(val?.Substring(2), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out convertedHex);
+                    valueResolutionError = !TryResolveHexValue(val, out convertedHex);
                     return convertedHex;
                 }
             }
@@ -295,6 +356,42 @@ namespace Microsoft.TemplateEngine.Utils
 
             match = partialMatch;
             return match != null;
+        }
+
+        private static bool TryResolveBooleanValue(string? literal, out bool parsed) => bool.TryParse(literal, out parsed);
+
+        private static bool TryResolveNullValue(string? literal, out object? parsed)
+        {
+            parsed = null;
+            if (string.Equals(literal, "null", StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+            return false;
+        }
+
+        private static bool TryResolveFloatValue(string? literal, out double parsed) => ParserExtensions.DoubleTryParseСurrentOrInvariant(literal, out parsed);
+
+        private static bool TryResolveIntegerValue(string? literal, out long parsed) => long.TryParse(literal, out parsed);
+
+        private static bool TryResolveHexValue(string? literal, out long parsed)
+        {
+            parsed = default;
+            if (literal == null)
+            {
+                return false;
+            }
+            if (literal.Length < 3)
+            {
+                return false;
+            }
+
+            if (literal.StartsWith("0x", StringComparison.OrdinalIgnoreCase)
+                  && long.TryParse(literal.Substring(2), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out parsed))
+            {
+                return true;
+            }
+            return false;
         }
     }
 }

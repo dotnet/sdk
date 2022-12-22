@@ -1,12 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using FakeItEasy;
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
@@ -118,7 +112,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             await RunnableProjectGenerator.CreateAsync(settings, runnableConfig, sourceDir, parametersData, targetDir, CancellationToken.None);
 
             //
-            // Veryfying the outputs
+            // Verifying the outputs
             //
 
             string resultContent = settings.Host.FileSystem.ReadAllText(Path.Combine(targetDir, "sourceFile"));
@@ -188,7 +182,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             _ = await RunnableProjectGenerator.CreateAsync(settings, runnableConfig, sourceDir, parametersData, targetDir, CancellationToken.None);
 
             //
-            // Veryfying the outputs
+            // Verifying the outputs
             //
 
             Assert.True(settings.Host.FileSystem.FileExists(Path.Combine(targetDir, "TestHost.cs")));
@@ -270,7 +264,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             await RunnableProjectGenerator.CreateAsync(settings, runnableConfig, sourceDir, parametersData, targetDir, CancellationToken.None);
 
             //
-            // Veryfying the outputs
+            // Verifying the outputs
             //
 
             string resultContent = settings.Host.FileSystem.ReadAllText(Path.Combine(targetDir, "sourceFile"));
@@ -284,7 +278,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             await RunnableProjectGenerator.CreateAsync(settings, runnableConfig, sourceDir, parametersData, targetDir, CancellationToken.None);
 
             //
-            // Veryfying the outputs
+            // Verifying the outputs
             //
 
             resultContent = settings.Host.FileSystem.ReadAllText(Path.Combine(targetDir, "sourceFile"));
@@ -350,7 +344,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             await RunnableProjectGenerator.CreateAsync(settings, runnableConfig, sourceDir, parametersData, targetDir, CancellationToken.None);
 
             //
-            // Veryfying the outputs
+            // Verifying the outputs
             //
 
             string resultContent = settings.Host.FileSystem.ReadAllText(Path.Combine(targetDir, "sourceFile"));
@@ -421,7 +415,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             await RunnableProjectGenerator.CreateAsync(settings, runnableConfig, sourceDir, parametersData, targetDir, CancellationToken.None);
 
             //
-            // Veryfying the outputs
+            // Verifying the outputs
             //
 
             string resultContent = settings.Host.FileSystem.ReadAllText(Path.Combine(targetDir, "sourceFile"));
@@ -516,10 +510,89 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             await RunnableProjectGenerator.CreateAsync(settings, runnableConfig, sourceDir, parametersData, targetDir, CancellationToken.None);
 
             //
-            // Veryfying the outputs
+            // Verifying the outputs
             //
 
             string resultContent = settings.Host.FileSystem.ReadAllText(Path.Combine(targetDir, "sourceFile"));
+            Assert.Equal(expectedSnippet, resultContent);
+        }
+
+        [Fact]
+        public async void CreateAsyncTest_CanConvertValueToDataType()
+        {
+            //
+            // Template content preparation
+            //
+
+            var templateConfig = new
+            {
+                identity = "test.template",
+                symbols = new
+                {
+                    envPrefixed = new
+                    {
+                        type = "bind",
+                        binding = "env:MYENVVAR",
+                        dataType = "string"
+                    },
+                    computed = new
+                    {
+                        type = "computed",
+                        value = "envPrefixed != \"\""
+                    }
+                }
+            };
+
+            string sourceSnippet = """
+            //#if (computed)
+            success
+            //#endif
+            """;
+
+            string expectedSnippet = """
+            success
+
+            """;
+
+            IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>
+            {
+                // template.json
+                { TestFileSystemUtils.DefaultConfigRelativePath, JsonConvert.SerializeObject(templateConfig, Formatting.Indented) },
+                //content
+                { "sourceFile.cs", sourceSnippet }
+            };
+
+            //
+            // Dependencies preparation and mounting
+            //
+
+            //int
+            Environment.SetEnvironmentVariable("MYENVVAR", "100");
+            IEnvironment environment = new DefaultEnvironment();
+
+            IEngineEnvironmentSettings settings = _environmentSettingsHelper.CreateEnvironment(hostIdentifier: "TestHost", virtualize: true, environment: environment);
+            string sourceBasePath = settings.GetTempVirtualizedPath();
+            string targetDir = settings.GetTempVirtualizedPath();
+
+            TestFileSystemUtils.WriteTemplateSource(settings, sourceBasePath, templateSourceFiles);
+            using IMountPoint sourceMountPoint = settings.MountPath(sourceBasePath);
+            RunnableProjectGenerator rpg = new RunnableProjectGenerator();
+            TemplateConfigModel configModel = TemplateConfigModel.FromJObject(JObject.FromObject(templateConfig));
+            RunnableProjectConfig runnableConfig = new RunnableProjectConfig(settings, rpg, configModel, sourceMountPoint.Root);
+            ParameterSetData parametersData = new ParameterSetData(runnableConfig);
+            IDirectory sourceDir = sourceMountPoint!.DirectoryInfo("/")!;
+
+            //
+            // Running the actual scenario: template files processing and generating output (including macros processing)
+            //
+
+            await RunnableProjectGenerator.CreateAsync(settings, runnableConfig, sourceDir, parametersData, targetDir, CancellationToken.None);
+
+            //
+            // Verifying the outputs
+            //
+
+            string resultContent = settings.Host.FileSystem.ReadAllText(Path.Combine(targetDir, "sourceFile.cs"));
             Assert.Equal(expectedSnippet, resultContent);
         }
 

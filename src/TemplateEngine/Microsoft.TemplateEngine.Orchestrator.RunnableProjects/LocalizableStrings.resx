@@ -185,6 +185,14 @@ Details: {1}</value>
   <data name="Authoring_TemplateRootOutsideInstallSource" xml:space="preserve">
     <value>The template root is outside the specified install source location.</value>
   </data>
+  <data name="BindSymbolEvaluator_Warning_ConversionFailure" xml:space="preserve">
+    <value>Bind symbol '{0}': failed to convert value '{1}' to datatype '{2}'. The symbol processing is skipped.</value>
+    <comment>{0} - the name of symbol in configuration, {1} - obtained value for a symbol, {2} - defined datatype for a symbol</comment>
+  </data>
+  <data name="BindSymbolEvaluator_Warning_DefaultValueConversionFailure" xml:space="preserve">
+    <value>Bind symbol '{0}': failed to convert default value '{1}' to datatype '{2}'. The default value is skipped.</value>
+    <comment>{0} - the name of symbol in configuration, {1} - default value in configuraion, {2} - defined datatype for a symbol</comment>
+  </data>
   <data name="BindSymbolEvaluator_Warning_EvaluationError" xml:space="preserve">
     <value>Failed to evaluate bind symbol '{0}', it will be skipped.</value>
     <comment>{0} - name of the symbol in configuration that cannot be evaluated</comment>

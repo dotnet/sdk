@@ -34,6 +34,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
 
             Binding = binding!;
             DefaultValue = jObject.ToString(nameof(DefaultValue));
+            DataType = jObject.ToString(nameof(DataType));
         }
 
         /// <summary>
@@ -44,6 +45,16 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
         /// <inheritdoc />
         public override string Type => TypeName;
 
+        /// <summary>
+        /// Gets default value of the symbol.
+        /// Corresponds to "defaultValue" JSON property.
+        /// </summary>
         public string? DefaultValue { get; internal init; }
+
+        /// <summary>
+        /// Gets the data type of the symbol.
+        /// Corresponds to "datatype" JSON property.
+        /// </summary>
+        public string? DataType { get; internal init; }
     }
 }

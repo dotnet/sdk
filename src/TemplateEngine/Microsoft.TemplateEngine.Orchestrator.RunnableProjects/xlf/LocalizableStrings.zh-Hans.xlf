@@ -98,6 +98,16 @@ Details: {1}</source>
         <target state="translated">模板根位于指定的安装源位置之外。</target>
         <note />
       </trans-unit>
+      <trans-unit id="BindSymbolEvaluator_Warning_ConversionFailure">
+        <source>Bind symbol '{0}': failed to convert value '{1}' to datatype '{2}'. The symbol processing is skipped.</source>
+        <target state="new">Bind symbol '{0}': failed to convert value '{1}' to datatype '{2}'. The symbol processing is skipped.</target>
+        <note>{0} - the name of symbol in configuration, {1} - obtained value for a symbol, {2} - defined datatype for a symbol</note>
+      </trans-unit>
+      <trans-unit id="BindSymbolEvaluator_Warning_DefaultValueConversionFailure">
+        <source>Bind symbol '{0}': failed to convert default value '{1}' to datatype '{2}'. The default value is skipped.</source>
+        <target state="new">Bind symbol '{0}': failed to convert default value '{1}' to datatype '{2}'. The default value is skipped.</target>
+        <note>{0} - the name of symbol in configuration, {1} - default value in configuraion, {2} - defined datatype for a symbol</note>
+      </trans-unit>
       <trans-unit id="BindSymbolEvaluator_Warning_EvaluationError">
         <source>Failed to evaluate bind symbol '{0}', it will be skipped.</source>
         <target state="translated">无法计算绑定符号“{0}”，将跳过它。</target>

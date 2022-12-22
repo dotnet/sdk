@@ -224,6 +224,24 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Bind symbol &apos;{0}&apos;: failed to convert value &apos;{1}&apos; to datatype &apos;{2}&apos;. The symbol processing is skipped..
+        /// </summary>
+        internal static string BindSymbolEvaluator_Warning_ConversionFailure {
+            get {
+                return ResourceManager.GetString("BindSymbolEvaluator_Warning_ConversionFailure", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Bind symbol &apos;{0}&apos;: failed to convert default value &apos;{1}&apos; to datatype &apos;{2}&apos;. The default value is skipped..
+        /// </summary>
+        internal static string BindSymbolEvaluator_Warning_DefaultValueConversionFailure {
+            get {
+                return ResourceManager.GetString("BindSymbolEvaluator_Warning_DefaultValueConversionFailure", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Failed to evaluate bind symbol &apos;{0}&apos;, it will be skipped..
         /// </summary>
         internal static string BindSymbolEvaluator_Warning_EvaluationError {
