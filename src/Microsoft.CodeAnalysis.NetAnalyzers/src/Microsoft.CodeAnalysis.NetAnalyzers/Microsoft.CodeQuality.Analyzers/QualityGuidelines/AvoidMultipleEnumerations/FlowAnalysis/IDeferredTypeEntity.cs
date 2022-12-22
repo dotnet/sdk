@@ -10,7 +10,9 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
     /// 2. An operation returns deferred type.
     /// 3. A set of <see cref="AbstractLocation"/>, represent all the possible value source locations.
     /// </summary>
+#pragma warning disable CA1040 // Avoid empty interfaces
     internal interface IDeferredTypeEntity
+#pragma warning restore CA1040 // Avoid empty interfaces
     {
     }
 }
