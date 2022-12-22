@@ -233,7 +233,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
 
                 integer = Convert.ToInt64(constant);
             }
-            catch
+            catch (Exception ex) when (CatchExceptionDuringConvert(ex))
             {
                 integer = default;
                 return false;
@@ -241,6 +241,10 @@ namespace Microsoft.NetCore.Analyzers.Performance
 
             return true;
         }
+
+        private static bool CatchExceptionDuringConvert(Exception ex)
+            => ex is FormatException or InvalidCastException or OverflowException or ArgumentNullException;
+
         private static bool TryConvertUnsignedInteger(object constant, out ulong integer)
         {
             try
@@ -253,7 +257,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
 
                 integer = Convert.ToUInt64(constant);
             }
-            catch
+            catch (Exception ex) when (CatchExceptionDuringConvert(ex))
             {
                 integer = default;
                 return false;
@@ -306,7 +310,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
 
                 value = Convert.ToChar(constant);
             }
-            catch
+            catch (Exception ex) when (CatchExceptionDuringConvert(ex))
             {
                 return Invalid(out value, out isInvalid);
             }
