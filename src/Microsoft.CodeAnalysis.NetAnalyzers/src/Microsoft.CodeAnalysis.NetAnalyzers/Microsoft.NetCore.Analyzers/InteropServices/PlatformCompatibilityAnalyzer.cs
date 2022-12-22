@@ -2226,7 +2226,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
             return null;
         }
 
-#pragma warning disable CA1055 // URI-like return values should not be strings
+#pragma warning disable CA1055 // URI-like return values should not be strings - https://github.com/dotnet/roslyn-analyzers/issues/6379
         private static string? PopulateUrl(AttributeData attribute)
 #pragma warning restore CA1055 // URI-like return values should not be strings
         {

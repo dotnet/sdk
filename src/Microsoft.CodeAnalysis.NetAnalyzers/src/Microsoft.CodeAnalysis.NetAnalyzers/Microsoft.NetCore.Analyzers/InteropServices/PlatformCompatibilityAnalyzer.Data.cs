@@ -28,7 +28,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
         {
             public Version? Obsoleted { get; set; }
             public string? ObsoletedMessage { get; set; }
-#pragma warning disable CA1056 // URI-like properties should not be strings
+#pragma warning disable CA1056 // URI-like properties should not be strings - https://github.com/dotnet/roslyn-analyzers/issues/6379
             public string? ObsoletedUrl { get; set; }
 #pragma warning restore CA1056 // URI-like properties should not be strings
             public Version? SupportedFirst { get; set; }

@@ -52,7 +52,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 return null;
             }
 
-#pragma warning disable CA1000 // Do not declare static members on generic types - TODO: file a tracking issue to fix these CA1000 violations
+#pragma warning disable CA1000 // Do not declare static members on generic types - https://github.com/dotnet/roslyn-analyzers/issues/6379
             public static bool TryCreate(IParameterSymbol parameterSymbol, AttributeData attributeData, T typeMin, T typeMax, [NotNullWhen(true)] out ConstantExpectedParameter? parameter)
                 => Instance.TryCreate(parameterSymbol, attributeData, typeMin, typeMax, out parameter);
             public static bool Validate(IParameterSymbol parameterSymbol, AttributeData attributeData, T typeMin, T typeMax, DiagnosticHelper diagnosticHelper, out ImmutableArray<Diagnostic> diagnostics)
