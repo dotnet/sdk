@@ -57,7 +57,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
 
                 IInvocationOperation? invocationOperation = null;
 
-                switch (conditionalOperation.Condition)
+                switch (conditionalOperation.Condition.WalkDownParentheses())
                 {
                     case IInvocationOperation iOperation:
                         invocationOperation = iOperation;
@@ -65,10 +65,6 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     case IUnaryOperation unaryOperation when unaryOperation.OperatorKind == UnaryOperatorKind.Not:
                         if (unaryOperation.Operand is IInvocationOperation operand)
                             invocationOperation = operand;
-                        break;
-                    case IParenthesizedOperation parenthesizedOperation:
-                        if (parenthesizedOperation.Operand is IInvocationOperation invocation)
-                            invocationOperation = invocation;
                         break;
                     default:
                         return;
