@@ -212,7 +212,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 }
                 else // Not a known guard method, check if annotated with guard attributes
                 {
-                    TryParseGuardAttributes(method, ref value, visitedArguments);
+                    _ = TryParseGuardAttributes(method, ref value, visitedArguments);
                 }
 
                 return value;
