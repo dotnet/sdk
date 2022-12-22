@@ -13,41 +13,43 @@ namespace Microsoft.NetCore.Analyzers.Performance
     {
         private sealed class UnmanagedHelper<T> where T : unmanaged
         {
-            private static readonly ConstantExpectedParameterFactory? _instance;
+            private static readonly ConstantExpectedParameterFactory? _instance = CreateFactory();
             private static ConstantExpectedParameterFactory Instance => _instance ?? throw new InvalidOperationException("unsupported type");
 
-            static UnmanagedHelper()
+            private static ConstantExpectedParameterFactory? CreateFactory()
             {
                 if (typeof(T) == typeof(long))
                 {
                     var helper = new UnmanagedHelper<long>.TransformHelper(TryTransformInt64);
-                    _instance = new ConstantExpectedParameterFactory((TransformHelper)(object)helper);
+                    return new ConstantExpectedParameterFactory((TransformHelper)(object)helper);
                 }
                 else if (typeof(T) == typeof(ulong))
                 {
                     var helper = new UnmanagedHelper<ulong>.TransformHelper(TryTransformUInt64);
-                    _instance = new ConstantExpectedParameterFactory((TransformHelper)(object)helper);
+                    return new ConstantExpectedParameterFactory((TransformHelper)(object)helper);
                 }
                 else if (typeof(T) == typeof(float))
                 {
                     var helper = new UnmanagedHelper<float>.TransformHelper(TryTransformSingle);
-                    _instance = new ConstantExpectedParameterFactory((TransformHelper)(object)helper);
+                    return new ConstantExpectedParameterFactory((TransformHelper)(object)helper);
                 }
                 else if (typeof(T) == typeof(double))
                 {
                     var helper = new UnmanagedHelper<double>.TransformHelper(TryTransformDouble);
-                    _instance = new ConstantExpectedParameterFactory((TransformHelper)(object)helper);
+                    return new ConstantExpectedParameterFactory((TransformHelper)(object)helper);
                 }
                 else if (typeof(T) == typeof(char))
                 {
                     var helper = new UnmanagedHelper<char>.TransformHelper(TryTransformChar);
-                    _instance = new ConstantExpectedParameterFactory((TransformHelper)(object)helper);
+                    return new ConstantExpectedParameterFactory((TransformHelper)(object)helper);
                 }
                 else if (typeof(T) == typeof(bool))
                 {
                     var helper = new UnmanagedHelper<bool>.TransformHelper(TryTransformBoolean);
-                    _instance = new ConstantExpectedParameterFactory((TransformHelper)(object)helper);
+                    return new ConstantExpectedParameterFactory((TransformHelper)(object)helper);
                 }
+
+                return null;
             }
 
             public static bool TryCreate(IParameterSymbol parameterSymbol, AttributeData attributeData, T typeMin, T typeMax, [NotNullWhen(true)] out ConstantExpectedParameter? parameter)
