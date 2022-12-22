@@ -69,7 +69,10 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     _tryTransform = tryTransform;
                 }
 
+#pragma warning disable CA1822 // Mark members as static - Suppressed for improved readability at callsites
                 public bool IsLessThan(T operand1, T operand2) => Comparer<T>.Default.Compare(operand1, operand2) < 0;
+#pragma warning restore CA1822 // Mark members as static
+
                 public bool TryTransformMin(object constant, out T value, ref ErrorKind errorFlags)
                 {
                     if (_tryTransform(constant, out value, out bool isInvalid))

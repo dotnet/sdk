@@ -12,11 +12,11 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Runtime
 
         Inherits DetectPreviewFeatureAnalyzer
 
-        Private Function IsSyntaxToken(identifier As SyntaxToken, previewInterfaceSymbol As ISymbol) As Boolean
+        Private Shared Function IsSyntaxToken(identifier As SyntaxToken, previewInterfaceSymbol As ISymbol) As Boolean
             Return identifier.ValueText.Equals(previewInterfaceSymbol.Name, StringComparison.OrdinalIgnoreCase)
         End Function
 
-        Private Function GetElementTypeForNullableAndArrayTypeNodes(parameterType As TypeSyntax) As TypeSyntax
+        Private Shared Function GetElementTypeForNullableAndArrayTypeNodes(parameterType As TypeSyntax) As TypeSyntax
             Dim ret As TypeSyntax = parameterType
             Dim loopVariable = TryCast(parameterType, NullableTypeSyntax)
             While loopVariable IsNot Nothing
