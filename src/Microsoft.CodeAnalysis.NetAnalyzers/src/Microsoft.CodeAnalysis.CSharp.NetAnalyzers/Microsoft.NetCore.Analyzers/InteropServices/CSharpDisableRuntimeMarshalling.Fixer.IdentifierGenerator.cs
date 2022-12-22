@@ -36,7 +36,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
 
             public string? NextIdentifier()
             {
-                if (_nextIdentifier == null || _nextIdentifier == int.MaxValue)
+                if (_nextIdentifier is null or int.MaxValue)
                 {
                     return null;
                 }
