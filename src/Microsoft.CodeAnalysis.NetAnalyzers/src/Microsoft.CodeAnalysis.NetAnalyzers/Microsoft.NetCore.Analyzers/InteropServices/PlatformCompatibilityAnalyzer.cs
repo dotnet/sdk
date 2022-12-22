@@ -2226,7 +2226,9 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
             return null;
         }
 
+#pragma warning disable CA1055 // URI-like return values should not be strings
         private static string? PopulateUrl(AttributeData attribute)
+#pragma warning restore CA1055 // URI-like return values should not be strings
         {
             if (attribute.NamedArguments.Length == 1 && attribute.NamedArguments[0].Key is "Url")
             {
