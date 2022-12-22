@@ -544,14 +544,15 @@ namespace Microsoft.NetCore.Analyzers.Performance
 
         private readonly struct AttributeConstant
         {
-            public readonly object? Min;
-            public readonly object? Max;
+            public object? Min { get; }
+            public object? Max { get; }
 
             public AttributeConstant(object? min, object? max)
             {
                 Min = min;
                 Max = max;
             }
+
             public static AttributeConstant Get(AttributeData attributeData)
             {
                 object? minConstant = null;
