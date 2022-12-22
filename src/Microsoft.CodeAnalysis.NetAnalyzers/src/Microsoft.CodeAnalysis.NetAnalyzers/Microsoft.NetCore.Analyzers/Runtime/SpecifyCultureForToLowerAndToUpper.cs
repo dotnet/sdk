@@ -51,7 +51,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
         private static bool IsToLowerOrToUpper(string methodName)
         {
-            return methodName == ToLowerMethodName || methodName == ToUpperMethodName;
+            // TODO: Compare symbols instead of method name.
+            return methodName is ToLowerMethodName or ToUpperMethodName;
         }
     }
 }
