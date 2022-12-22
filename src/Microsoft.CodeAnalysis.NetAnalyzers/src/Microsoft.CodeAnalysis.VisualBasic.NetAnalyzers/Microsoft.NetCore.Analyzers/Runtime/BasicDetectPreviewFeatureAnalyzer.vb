@@ -239,7 +239,7 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Runtime
             Return Nothing
         End Function
 
-        Private Function GetSyntaxNodeFromImplementsClause(implementsClause As ImplementsClauseSyntax, previewSymbol As ISymbol) As SyntaxNode
+        Private Shared Function GetSyntaxNodeFromImplementsClause(implementsClause As ImplementsClauseSyntax, previewSymbol As ISymbol) As SyntaxNode
             For Each parameter In implementsClause.InterfaceMembers
                 Dim interfacePart = TryCast(parameter.Left, IdentifierNameSyntax)
                 If interfacePart IsNot Nothing Then
