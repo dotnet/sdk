@@ -40,7 +40,7 @@
       "generator": "regexMatch",
       "datatype": "bool",
       "parameters": {
-        "pattern": "^([6-9]\\.0\\.).*",
+        "pattern": "^([6-9]\\.0\\.*)",
         "source": "NETCoreSdkVersion"
       }
     },
