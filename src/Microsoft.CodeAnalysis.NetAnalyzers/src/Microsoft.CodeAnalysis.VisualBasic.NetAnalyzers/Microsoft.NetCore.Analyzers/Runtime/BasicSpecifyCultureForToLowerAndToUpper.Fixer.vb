@@ -25,12 +25,12 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Runtime
                 Dim memberAccess = DirectCast(node.Parent, MemberAccessExpressionSyntax)
 
                 If memberAccess.Parent Is Nothing OrElse Not memberAccess.Parent.IsKind(SyntaxKind.InvocationExpression) Then
-                    Return Await SpecifyCurrentCultureWhenTheresNoArgumentListAsync(document, generator, root, memberAccess, memberAccess, cancellationToken)
+                    Return Await SpecifyCurrentCultureWhenTheresNoArgumentListAsync(document, generator, root, memberAccess, memberAccess, cancellationToken).ConfigureAwait(False)
                 End If
 
                 Dim invocation = DirectCast(memberAccess.Parent, InvocationExpressionSyntax)
                 If invocation.ArgumentList Is Nothing Then
-                    Return Await SpecifyCurrentCultureWhenTheresNoArgumentListAsync(document, generator, root, memberAccess, invocation, cancellationToken)
+                    Return Await SpecifyCurrentCultureWhenTheresNoArgumentListAsync(document, generator, root, memberAccess, invocation, cancellationToken).ConfigureAwait(False)
                 End If
 
                 Dim model = Await document.GetSemanticModelAsync(cancellationToken).ConfigureAwait(False)
