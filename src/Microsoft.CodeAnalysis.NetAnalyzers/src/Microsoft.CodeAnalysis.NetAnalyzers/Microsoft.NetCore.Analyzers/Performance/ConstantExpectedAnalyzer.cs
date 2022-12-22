@@ -15,8 +15,8 @@ namespace Microsoft.NetCore.Analyzers.Performance
     using static MicrosoftNetCoreAnalyzersResources;
     public abstract partial class ConstantExpectedAnalyzer : DiagnosticAnalyzer
     {
-        protected static readonly string ConstantExpectedAttribute = nameof(ConstantExpectedAttribute);
-        protected static readonly string ConstantExpected = nameof(ConstantExpected);
+        protected const string ConstantExpectedAttribute = nameof(ConstantExpectedAttribute);
+        protected const string ConstantExpected = nameof(ConstantExpected);
         protected const string ConstantExpectedMin = "Min";
         protected const string ConstantExpectedMax = "Max";
         private static readonly LocalizableString s_localizableApplicationTitle = CreateLocalizableResourceString(nameof(ConstantExpectedApplicationTitle));
