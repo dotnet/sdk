@@ -389,11 +389,13 @@ namespace Microsoft.NetCore.Analyzers.Security
 
                         foreach (var child in callingMethods.Keys)
                         {
+#pragma warning disable CA1854 // Prefer the 'IDictionary.TryGetValue(TKey, out TValue)' method - False positive https://github.com/dotnet/roslyn-analyzers/issues/6377
                             if (child is IMethodSymbol childMethodSymbol &&
                                 onAuthorizationMethodSymbols.ContainsKey(childMethodSymbol))
                             {
                                 results[methodSymbol].Add(child);
                             }
+#pragma warning restore CA1854 // Prefer the 'IDictionary.TryGetValue(TKey, out TValue)' method
 
                             FindAllTheSpecifiedCalleeMethods(child, visited, results);
 
