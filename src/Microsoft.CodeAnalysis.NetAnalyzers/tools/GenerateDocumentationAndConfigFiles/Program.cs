@@ -1176,7 +1176,9 @@ Rule ID | Missing Help Link | Title |
                 sortedRulesById,
                 releaseTrackingDataAndVersion);
             var directory = Directory.CreateDirectory(folder);
+#pragma warning disable CA1308 // Normalize strings to uppercase - Need to use 'ToLowerInvariant' for file names in non-Windows platforms
             var editorconfigFilePath = Path.Combine(directory.FullName, editorconfigFileName.ToLowerInvariant());
+#pragma warning restore CA1308 // Normalize strings to uppercase
             File.WriteAllText(editorconfigFilePath, text);
             return;
 
