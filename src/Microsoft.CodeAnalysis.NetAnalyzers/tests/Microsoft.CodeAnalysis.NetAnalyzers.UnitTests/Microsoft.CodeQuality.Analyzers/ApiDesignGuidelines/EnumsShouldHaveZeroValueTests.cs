@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
+using System;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
@@ -498,7 +499,7 @@ public enum E3
                 csTest.ExpectedDiagnostics.Add(GetCSharpRenameResultAt(14, 5, "E2", "Never"));
             }
 
-            if (!editorConfigText.EndsWith("Zero"))
+            if (!editorConfigText.EndsWith("Zero", StringComparison.Ordinal))
             {
                 csTest.ExpectedDiagnostics.Add(GetCSharpRenameResultAt(21, 5, "E3", "Zero"));
             }
@@ -544,7 +545,7 @@ End Enum"},
                 vbTest.ExpectedDiagnostics.Add(GetCSharpRenameResultAt(12, 5, "E2", "Never"));
             }
 
-            if (!editorConfigText.EndsWith("Zero"))
+            if (!editorConfigText.EndsWith("Zero", StringComparison.Ordinal))
             {
                 vbTest.ExpectedDiagnostics.Add(GetCSharpRenameResultAt(18, 5, "E3", "Zero"));
             }

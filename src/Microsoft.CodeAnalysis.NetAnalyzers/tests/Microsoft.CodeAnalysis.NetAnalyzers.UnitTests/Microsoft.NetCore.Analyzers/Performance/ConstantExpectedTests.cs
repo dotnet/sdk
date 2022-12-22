@@ -1105,12 +1105,12 @@ public class Test
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60,
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.Preview,
             };
-            test.TestState.Sources.Add(s_similarAttributeSource);
+            test.TestState.Sources.Add(SimilarAttributeSource);
             test.ExpectedDiagnostics.AddRange(diagnosticResults);
             await test.RunAsync();
         }
 
-        private static readonly string s_similarAttributeSource = @"#nullable enable
+        private const string SimilarAttributeSource = @"#nullable enable
 using System;
 namespace Similar
 {

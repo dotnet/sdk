@@ -15,8 +15,8 @@ namespace Microsoft.NetCore.Analyzers.Performance
     using static MicrosoftNetCoreAnalyzersResources;
     public abstract partial class ConstantExpectedAnalyzer : DiagnosticAnalyzer
     {
-        protected static readonly string ConstantExpectedAttribute = nameof(ConstantExpectedAttribute);
-        protected static readonly string ConstantExpected = nameof(ConstantExpected);
+        protected const string ConstantExpectedAttribute = nameof(ConstantExpectedAttribute);
+        protected const string ConstantExpected = nameof(ConstantExpected);
         protected const string ConstantExpectedMin = "Min";
         protected const string ConstantExpectedMax = "Max";
         private static readonly LocalizableString s_localizableApplicationTitle = CreateLocalizableResourceString(nameof(ConstantExpectedApplicationTitle));
@@ -375,7 +375,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     case SpecialType.None when parameterSymbol.Type.TypeKind == TypeKind.TypeParameter:
                         return ValidateMinMaxIsNull(parameterSymbol, attributeData, helper, out diagnostics);
                     default:
-                        diagnostics = helper.ParameterIsInvalid(parameterSymbol.Type.ToDisplayString(), attributeData.ApplicationSyntaxReference.GetSyntax());
+                        diagnostics = DiagnosticHelper.ParameterIsInvalid(parameterSymbol.Type.ToDisplayString(), attributeData.ApplicationSyntaxReference.GetSyntax());
                         return false;
                 }
 
@@ -478,7 +478,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
             /// <returns></returns>
             public abstract bool ValidateValue(IArgumentOperation argument, Optional<object> constant, [NotNullWhen(false)] out Diagnostic? validationDiagnostics);
 
-            public bool ValidateConstant(IArgumentOperation argument, Optional<object> constant, [NotNullWhen(false)] out Diagnostic? validationDiagnostics)
+            public static bool ValidateConstant(IArgumentOperation argument, Optional<object> constant, [NotNullWhen(false)] out Diagnostic? validationDiagnostics)
             {
                 if (!constant.HasValue)
                 {
@@ -492,7 +492,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
 
             public abstract bool ValidateParameterIsWithinRange(ConstantExpectedParameter subsetCandidate, IArgumentOperation argument, [NotNullWhen(false)] out Diagnostic? validationDiagnostics);
             protected Diagnostic CreateConstantInvalidConstantRuleDiagnostic(IArgumentOperation argument) => argument.CreateDiagnostic(CA1857.ConstantInvalidConstantRule, Parameter.Type.ToDisplayString());
-            protected Diagnostic CreateConstantOutOfBoundsRuleDiagnostic(IArgumentOperation argument, string minText, string maxText) => argument.CreateDiagnostic(CA1857.ConstantOutOfBoundsRule, minText, maxText);
+            protected static Diagnostic CreateConstantOutOfBoundsRuleDiagnostic(IArgumentOperation argument, string minText, string maxText) => argument.CreateDiagnostic(CA1857.ConstantOutOfBoundsRule, minText, maxText);
         }
 
         private sealed class StringConstantExpectedParameter : ConstantExpectedParameter
@@ -542,16 +542,19 @@ namespace Microsoft.NetCore.Analyzers.Performance
             }
         }
 
+#pragma warning disable CA1815 // Override equals and operator equals on value types
         private readonly struct AttributeConstant
+#pragma warning restore CA1815 // Override equals and operator equals on value types
         {
-            public readonly object? Min;
-            public readonly object? Max;
+            public object? Min { get; }
+            public object? Max { get; }
 
             public AttributeConstant(object? min, object? max)
             {
                 Min = min;
                 Max = max;
             }
+
             public static AttributeConstant Get(AttributeData attributeData)
             {
                 object? minConstant = null;
@@ -588,7 +591,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
             public abstract Location? GetMinLocation(SyntaxNode attributeSyntax);
             public abstract Location? GetMaxLocation(SyntaxNode attributeSyntax);
 
-            public ImmutableArray<Diagnostic> ParameterIsInvalid(string expectedTypeName, SyntaxNode attributeSyntax) => ImmutableArray.Create(Diagnostic.Create(CA1856.UnsupportedTypeRule, attributeSyntax.GetLocation(), expectedTypeName));
+            public static ImmutableArray<Diagnostic> ParameterIsInvalid(string expectedTypeName, SyntaxNode attributeSyntax) => ImmutableArray.Create(Diagnostic.Create(CA1856.UnsupportedTypeRule, attributeSyntax.GetLocation(), expectedTypeName));
 
             public Diagnostic MinIsIncompatible(string expectedTypeName, SyntaxNode attributeSyntax) => Diagnostic.Create(CA1856.IncompatibleConstantTypeRule, GetMinLocation(attributeSyntax)!, ConstantExpectedMin, expectedTypeName);
 

@@ -9,7 +9,7 @@ namespace Microsoft.CodeAnalysis.CSharp.NetAnalyzers.Microsoft.CodeQuality.Analy
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
     internal sealed partial class CSharpAvoidMultipleEnumerationsAnalyzer : AvoidMultipleEnumerations
     {
-        protected override bool IsExpressionOfForEachStatement(SyntaxNode node)
-            => node.Parent is ForEachStatementSyntax forEachStatementSyntax && forEachStatementSyntax.Expression.Equals(node);
+        protected override bool IsExpressionOfForEachStatement(SyntaxNode syntax)
+            => syntax.Parent is ForEachStatementSyntax forEachStatementSyntax && forEachStatementSyntax.Expression.Equals(syntax);
     }
 }

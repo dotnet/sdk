@@ -25,12 +25,12 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Runtime
                 Dim memberAccess = DirectCast(node.Parent, MemberAccessExpressionSyntax)
 
                 If memberAccess.Parent Is Nothing OrElse Not memberAccess.Parent.IsKind(SyntaxKind.InvocationExpression) Then
-                    Return Await SpecifyCurrentCultureWhenTheresNoArgumentListAsync(document, generator, root, memberAccess, memberAccess, cancellationToken)
+                    Return Await SpecifyCurrentCultureWhenTheresNoArgumentListAsync(document, generator, root, memberAccess, memberAccess, cancellationToken).ConfigureAwait(False)
                 End If
 
                 Dim invocation = DirectCast(memberAccess.Parent, InvocationExpressionSyntax)
                 If invocation.ArgumentList Is Nothing Then
-                    Return Await SpecifyCurrentCultureWhenTheresNoArgumentListAsync(document, generator, root, memberAccess, invocation, cancellationToken)
+                    Return Await SpecifyCurrentCultureWhenTheresNoArgumentListAsync(document, generator, root, memberAccess, invocation, cancellationToken).ConfigureAwait(False)
                 End If
 
                 Dim model = Await document.GetSemanticModelAsync(cancellationToken).ConfigureAwait(False)
@@ -48,7 +48,7 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Runtime
             Return document
         End Function
 
-        Private Async Function SpecifyCurrentCultureWhenTheresNoArgumentListAsync(document As Document, generator As SyntaxGenerator, root As SyntaxNode, memberAccess As MemberAccessExpressionSyntax, nodeToReplace As SyntaxNode, cancellationToken As CancellationToken) As Task(Of Document)
+        Private Shared Async Function SpecifyCurrentCultureWhenTheresNoArgumentListAsync(document As Document, generator As SyntaxGenerator, root As SyntaxNode, memberAccess As MemberAccessExpressionSyntax, nodeToReplace As SyntaxNode, cancellationToken As CancellationToken) As Task(Of Document)
             Dim model = Await document.GetSemanticModelAsync(cancellationToken).ConfigureAwait(False)
             Dim newArg = generator.Argument(CreateCurrentCultureMemberAccess(generator, model)).WithAdditionalAnnotations(Formatter.Annotation)
             Dim invocation = generator.InvocationExpression(memberAccess.WithoutTrailingTrivia(), newArg).WithAdditionalAnnotations(Formatter.Annotation)
