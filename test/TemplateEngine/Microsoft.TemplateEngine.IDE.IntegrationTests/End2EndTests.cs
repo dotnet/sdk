@@ -142,6 +142,37 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
         }
 
         [Fact]
+        internal async Task PortAndCoalesceTest_WithUserInputEqualToDefaults()
+        {
+            using Bootstrapper bootstrapper = GetBootstrapper();
+            string templateLocation = GetTestTemplateLocation("TemplateWithPortsAndCoalesce");
+            await InstallTemplateAsync(bootstrapper, templateLocation).ConfigureAwait(false);
+
+            string output = TestUtils.CreateTemporaryFolder();
+            Dictionary<string, string?> parameters = new()
+            {
+                { "userPort1", "0" },
+                { "userPort2", "0" },
+            };
+
+            IReadOnlyList<ITemplateMatchInfo> foundTemplates = await bootstrapper.GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter("TestAssets.TemplateWithPortsAndCoalesce") }).ConfigureAwait(false);
+            ITemplateCreationResult result = await bootstrapper.CreateAsync(foundTemplates[0].Info, "test-template", output, parameters).ConfigureAwait(false);
+
+            Assert.Equal(CreationResultStatus.Success, result.Status);
+
+            string targetFile = Path.Combine(output, "bar.cs");
+            Assert.True(File.Exists(targetFile));
+            string fileContent = File.ReadAllText(targetFile);
+            Assert.Equal(
+                """
+                The port is 0
+                The port is 0
+
+                """,
+                fileContent);
+        }
+
+        [Fact]
         internal async Task StringCoalesceTest_WithFallbackInput()
         {
             using Bootstrapper bootstrapper = GetBootstrapper();

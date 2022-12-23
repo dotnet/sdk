@@ -4,6 +4,7 @@
 using System;
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
+using Microsoft.TemplateEngine.Abstractions.Parameters;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
@@ -18,34 +19,33 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
         {
             if (variableCollection.TryGetValue(config.SourceVariableName, out object currentSourceValue) && currentSourceValue != null)
             {
+                // The value is equal to the coalesce recognized default value (see coalesce macro doc for details).
                 if (config.DefaultValue != null && currentSourceValue.ToString().Equals(config.DefaultValue))
                 {
                     environmentSettings.Host.Logger.LogDebug("[{macro}]: '{var}': source value '{source}' is not used, because it is equal to default value '{default}'.", nameof(CoalesceMacro), config.VariableName, currentSourceValue, config.DefaultValue);
                 }
+                // The value is not specified by user: either coming from default value or host specific default value, etc.
+                else if (variableCollection is ParameterBasedVariableCollection paramsVariableCollection &&
+                    paramsVariableCollection.ParameterSetData.TryGetValue(config.SourceVariableName, out ParameterData? parameterData) &&
+                    parameterData!.DataSource is not DataSource.User and not DataSource.DefaultIfNoValue)
+                {
+                    environmentSettings.Host.Logger.LogDebug(
+                        "[{macro}]: '{var}': source value '{source}' not specified by user (data source: '{dataSource}'), fall back.",
+                        nameof(CoalesceMacro),
+                        config.VariableName,
+                        currentSourceValue,
+                        parameterData.DataSource);
+                }
+                else if (currentSourceValue is string str && string.IsNullOrEmpty(str))
+                {
+                    //do nothing, empty value for string is equivalent to null.
+                    environmentSettings.Host.Logger.LogDebug("[{macro}]: '{var}': source value '{source}' is an empty string, fall back.", nameof(CoalesceMacro), config.VariableName, currentSourceValue);
+                }
                 else
                 {
-                    if (currentSourceValue is string str && string.IsNullOrEmpty(str))
-                    {
-                        //do nothing, empty value for string is equivalent to null.
-                        environmentSettings.Host.Logger.LogDebug("[{macro}]: '{var}': source value '{source}' is an empty string, fall back.", nameof(CoalesceMacro), config.VariableName, currentSourceValue);
-                    }
-                    else if (currentSourceValue.GetType().IsValueType && Activator.CreateInstance(currentSourceValue.GetType()).Equals(currentSourceValue))
-                    {
-                        //do nothing, the value is a value type and is a default.
-                        environmentSettings.Host.Logger.LogDebug(
-                            "[{macro}]: '{var}': source value '{source}' of type '{type}' is equivalent to its default value '{default}', fall back.",
-                            nameof(CoalesceMacro),
-                            config.VariableName,
-                            config.SourceVariableName,
-                            currentSourceValue.GetType().Name,
-                            currentSourceValue);
-                    }
-                    else
-                    {
-                        variableCollection[config.VariableName] = currentSourceValue;
-                        environmentSettings.Host.Logger.LogDebug("[{macro}]: Assigned variable '{var}' to '{value}'.", nameof(CoalesceMacro), config.VariableName, currentSourceValue);
-                        return;
-                    }
+                    variableCollection[config.VariableName] = currentSourceValue;
+                    environmentSettings.Host.Logger.LogDebug("[{macro}]: Assigned variable '{var}' to '{value}'.", nameof(CoalesceMacro), config.VariableName, currentSourceValue);
+                    return;
                 }
             }
             if (variableCollection.TryGetValue(config.FallbackVariableName, out object currentFallbackValue) && currentFallbackValue != null)

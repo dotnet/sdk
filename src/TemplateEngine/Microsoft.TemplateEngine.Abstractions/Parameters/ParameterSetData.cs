@@ -59,6 +59,12 @@ public class ParameterSetData : IParameterSetData
         });
     }
 
+    /// <summary>
+    /// Empty instance.
+    /// </summary>
+    public static IParameterSetData Empty =>
+        new ParameterSetData(new ParameterDefinitionSet((IReadOnlyDictionary<string, ITemplateParameter>?)null), System.Array.Empty<ParameterData>());
+
     /// <inheritdoc/>
     public IParameterDefinitionSet ParametersDefinition { get; }
 

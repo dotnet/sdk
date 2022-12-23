@@ -115,7 +115,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             Dictionary<string, string> jsonParameters = new(StringComparer.OrdinalIgnoreCase)
             {
                 { "sourceVariableName", JExtensions.ToJsonString("varA") },
-                { "fallbackVariableName", JExtensions.ToJsonString("varB") }
+                { "fallbackVariableName", JExtensions.ToJsonString("varB") },
+                { "defaultValue", JExtensions.ToJsonString("0") }
             };
 
             VariableCollection variables = new()
@@ -126,7 +127,32 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
 
             macro.Evaluate(environmentSettings, variables, new GeneratedSymbol("test", "coalesce", jsonParameters));
             Assert.Equal(10, variables["test"]);
-            Assert.Equal("[CoalesceMacro]: 'test': source value 'varA' of type 'Int32' is equivalent to its default value '0', fall back.", loggedMessages.First().Message);
+            Assert.Equal("[CoalesceMacro]: 'test': source value '0' is not used, because it is equal to default value '0'.", loggedMessages.First().Message);
+        }
+
+        [Fact]
+        public void GeneratedSymbolTest_ExplicitDefaultValuesArePreserved()
+        {
+            List<(LogLevel Level, string Message)> loggedMessages = new();
+            InMemoryLoggerProvider loggerProvider = new(loggedMessages);
+            IEngineEnvironmentSettings environmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true, addLoggerProviders: new[] { loggerProvider });
+
+            CoalesceMacro macro = new();
+
+            Dictionary<string, string> jsonParameters = new(StringComparer.OrdinalIgnoreCase)
+            {
+                { "sourceVariableName", JExtensions.ToJsonString("varA") },
+                { "fallbackVariableName", JExtensions.ToJsonString("varB") }
+            };
+
+            VariableCollection variables = new()
+            {
+                ["varA"] = 0,
+                ["varB"] = 10
+            };
+
+            macro.Evaluate(environmentSettings, variables, new GeneratedSymbol("test", "coalesce", jsonParameters));
+            Assert.Equal(0, variables["test"]);
         }
 
         [Fact]

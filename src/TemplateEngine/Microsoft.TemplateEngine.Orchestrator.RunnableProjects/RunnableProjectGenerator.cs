@@ -345,7 +345,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         private static IVariableCollection SetupVariables(IParameterSetData parameters, IVariableConfig variableConfig)
         {
-            IVariableCollection variables = VariableCollection.SetupVariables(parameters, variableConfig);
+            IVariableCollection variables = ParameterBasedVariableCollection.SetupParameterBasedVariables(parameters, variableConfig);
 
             foreach (Parameter param in parameters.ParametersDefinition.OfType<Parameter>())
             {
