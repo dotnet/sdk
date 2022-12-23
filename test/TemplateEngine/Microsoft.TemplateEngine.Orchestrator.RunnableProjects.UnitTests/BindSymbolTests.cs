@@ -596,6 +596,90 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             Assert.Equal(expectedSnippet, resultContent);
         }
 
+        [Fact]
+        public async void CreateAsyncTest_NoWarningOnUnknownBindingWithDefaultValue()
+        {
+            //
+            // Template content preparation
+            //
+
+            var templateConfig = new
+            {
+                identity = "test.template",
+                symbols = new
+                {
+                    env1 = new
+                    {
+                        type = "bind",
+                        binding = "env:UNKNOWN1",
+                        replaces = "%R1%",
+                        defaultValue = "envDefault"
+                    },
+                    env2 = new
+                    {
+                        type = "bind",
+                        binding = "env:UNKNOWN2",
+                        replaces = "%R2%"
+                    },
+                }
+            };
+
+            string sourceSnippet = """
+            %R1%
+            %R2%
+            """;
+
+            string expectedSnippet = """
+            envDefault
+            %R2%
+            """;
+
+            IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>
+            {
+                // template.json
+                { TestFileSystemUtils.DefaultConfigRelativePath, JsonConvert.SerializeObject(templateConfig, Formatting.Indented) },
+                //content
+                { "sourceFile", sourceSnippet }
+            };
+
+            //
+            // Dependencies preparation and mounting
+            //
+
+            List<(LogLevel Level, string Message)> loggedMessages = new();
+            InMemoryLoggerProvider loggerProvider = new(loggedMessages);
+
+            IEngineEnvironmentSettings settings = _environmentSettingsHelper.CreateEnvironment(hostIdentifier: "TestHost", virtualize: true, addLoggerProviders: new[] { loggerProvider });
+
+            string sourceBasePath = settings.GetTempVirtualizedPath();
+            string targetDir = settings.GetTempVirtualizedPath();
+
+            TestFileSystemUtils.WriteTemplateSource(settings, sourceBasePath, templateSourceFiles);
+            using IMountPoint sourceMountPoint = settings.MountPath(sourceBasePath);
+            RunnableProjectGenerator rpg = new RunnableProjectGenerator();
+            TemplateConfigModel configModel = TemplateConfigModel.FromJObject(JObject.FromObject(templateConfig));
+            RunnableProjectConfig runnableConfig = new RunnableProjectConfig(settings, rpg, configModel, sourceMountPoint.Root);
+            ParameterSetData parametersData = new ParameterSetData(runnableConfig);
+            IDirectory sourceDir = sourceMountPoint!.DirectoryInfo("/")!;
+
+            //
+            // Running the actual scenario: template files processing and generating output (including macros processing)
+            //
+
+            await RunnableProjectGenerator.CreateAsync(settings, runnableConfig, sourceDir, parametersData, targetDir, CancellationToken.None);
+
+            //
+            // Verifying the outputs
+            //
+
+            string resultContent = settings.Host.FileSystem.ReadAllText(Path.Combine(targetDir, "sourceFile"));
+            Assert.Equal(expectedSnippet, resultContent);
+
+            (LogLevel, string Message) warningMessage = Assert.Single(loggedMessages.Where(lm => lm.Level == LogLevel.Warning));
+            Assert.Equal("Failed to evaluate bind symbol 'env2', it will be skipped.", warningMessage.Message);
+            Assert.Contains(loggedMessages, lm => lm.Message == "Failed to evaluate bind symbol 'env1', the returned value is null. The default value 'envDefault' is used instead.");
+        }
+
         private class TestBindSymbolSource : IBindSymbolSource
         {
             public TestBindSymbolSource(Guid guid, string prefix = "test", bool requiresPrefixMatch = false)
