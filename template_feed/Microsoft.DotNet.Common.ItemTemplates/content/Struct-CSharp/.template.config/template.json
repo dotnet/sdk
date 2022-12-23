@@ -15,10 +15,10 @@
   "precedence": "0",
   "identity": "DotNet.Common.Struct.CSharp",
   "shortName": "struct",
-  "sourceName": "Class1",
+  "sourceName": "Struct1",
   "primaryOutputs": [
     {
-      "path": "Class1.cs"
+      "path": "Struct1.cs"
     }
   ],
   "symbols": {
@@ -46,7 +46,8 @@
     },
     "langVersion": {
       "type": "bind",
-      "binding": "msbuild:LangVersion"
+      "binding": "msbuild:LangVersion",
+      "dataType": "string"
     },
     "csharp9orOlder": {
       "type": "generated",

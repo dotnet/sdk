@@ -46,7 +46,8 @@
       },
     "langVersion": {
       "type": "bind",
-      "binding": "msbuild:LangVersion"
+      "binding": "msbuild:LangVersion",
+      "dataType": "string"
     },
     "csharp9orOlder": {
       "type": "generated",

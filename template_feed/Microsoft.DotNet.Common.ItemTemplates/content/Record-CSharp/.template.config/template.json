@@ -15,10 +15,10 @@
   "precedence": "0",
   "identity": "DotNet.Common.Record.CSharp",
   "shortName": "record",
-  "sourceName": "Class1",
+  "sourceName": "Record1",
   "primaryOutputs": [
     {
-      "path": "Class1.cs"
+      "path": "Record1.cs"
     }
   ],
   "symbols": {
@@ -51,7 +51,8 @@
     },
     "langVersion": {
       "type": "bind",
-      "binding": "msbuild:LangVersion"
+      "binding": "msbuild:LangVersion",
+      "dataType": "string"
     },
     "csharp8orOlder": {
       "type": "generated",
