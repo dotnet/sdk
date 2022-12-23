@@ -16,6 +16,8 @@
   "identity": "DotNet.Common.Interface.CSharp",
   "shortName": "interface",
   "sourceName": "Interface1",
+  "preferDefaultName": true,
+  "defaultName": "Interface1",
   "primaryOutputs": [
     {
       "path": "Interface1.cs"
@@ -27,21 +29,23 @@
       "binding": "msbuild:RootNamespace",
       "replaces": "Company.ClassLibrary1"
     },
-    "NETCoreSdkVersion": {
+    "TargetFramework": {
       "type": "bind",
-      "binding": "msbuild:NETCoreSdkVersion"
+      "binding": "msbuild:TargetFramework"
     },
     "ImplicitUsings": {
       "type": "bind",
-      "binding": "msbuild:ImplicitUsings"
+      "binding": "msbuild:ImplicitUsings",
+      "datatype": "string",
+      "defaultValue": "disable"
     },
     "net6orLater": {
       "type": "generated",
       "generator": "regexMatch",
       "datatype": "bool",
       "parameters": {
-        "pattern": "^([6-9]\\.0\\.*)",
-        "source": "NETCoreSdkVersion"
+        "pattern": "^(net6.0|net7.0|net8.0)$",
+        "source": "TargetFramework"
       }
     },
     "langVersion": {
@@ -64,7 +68,7 @@
     },
     "csharpFeature_FileScopedNamespaces": {
       "type": "computed",
-      "value": "(net6orLater == \"true\" || langVersion != \"\") && csharp10orLater == \"true\""
+      "value": "net6orLater == \"true\" && csharp10orLater == \"true\""
     }
   },
   "constraints": {

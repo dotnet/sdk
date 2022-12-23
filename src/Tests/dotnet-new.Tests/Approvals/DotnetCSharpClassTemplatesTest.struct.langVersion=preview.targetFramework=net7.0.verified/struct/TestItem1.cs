@@ -1,5 +1,5 @@
 ﻿namespace ClassLib;
-public record class Class1
+public struct TestItem1
 {
 
 }

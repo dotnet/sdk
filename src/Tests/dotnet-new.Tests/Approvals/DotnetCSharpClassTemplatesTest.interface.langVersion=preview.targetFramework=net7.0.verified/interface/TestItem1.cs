@@ -1,5 +1,5 @@
 ﻿namespace ClassLib;
-public struct Class1
+public interface TestItem1
 {
 
 }

@@ -1,6 +1,6 @@
 ﻿namespace ClassLib
 {
-    public record Class1
+    public enum TestItem1
     {
 
     }

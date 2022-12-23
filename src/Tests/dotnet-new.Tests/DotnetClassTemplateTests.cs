@@ -43,7 +43,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             string langVersion = "preview",
             string targetFramework = "net7.0")
         {
-            // prevents logging welcome message from sdk installation
+            // prevents logging a welcome message from sdk installation
             Dictionary<string, string> environmentUnderTest = new() { ["DOTNET_NOLOGO"] = false.ToString() };
 
             string expectedProjectName = $"{templateShortName}.langVersion={langVersion}.targetFramework={targetFramework}";
@@ -54,12 +54,14 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             {
                 SnapshotsDirectory = "Approvals",
                 VerifyCommandOutput = true,
-                TemplateSpecificArgs = new[] { "--name", "Class1" },
+                TemplateSpecificArgs = new[] { "--name", "TestItem1" },
                 VerificationExcludePatterns = new[]
                 {
                     "*/stderr.txt",
                     "*\\stderr.txt",
+                    // csproj file
                     $"*{projectName}.*",
+                    // restored files in obj folder
                     "*project.*.*"
                 },
                 SettingsDirectory = _fixture.HomeDirectory,

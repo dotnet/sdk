@@ -2,7 +2,7 @@
 
 namespace ClassLib
 {
-    public interface Class1
+    public struct TestItem1
     {
 
     }

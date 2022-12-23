@@ -16,6 +16,8 @@
   "identity": "DotNet.Common.Record.CSharp",
   "shortName": "record",
   "sourceName": "Record1",
+  "preferDefaultName": true,
+  "defaultName": "Record1",
   "primaryOutputs": [
     {
       "path": "Record1.cs"
@@ -27,17 +29,17 @@
       "binding": "msbuild:RootNamespace",
       "replaces": "Company.ClassLibrary1"
     },
-    "NETCoreSdkVersion": {
+    "TargetFramework": {
       "type": "bind",
-      "binding": "msbuild:NETCoreSdkVersion"
+      "binding": "msbuild:TargetFramework"
     },
     "net5orLater": {
       "type": "generated",
       "generator": "regexMatch",
       "datatype": "bool",
       "parameters": {
-        "pattern": "^([5-9]\\.0\\.).*",
-        "source": "NETCoreSdkVersion"
+        "pattern": "^(net5.0|net6.0|net7.0|net8.0)$*",
+        "source": "TargetFramework"
       }
     },
     "net6orLater": {
@@ -45,8 +47,8 @@
       "generator": "regexMatch",
       "datatype": "bool",
       "parameters": {
-        "pattern": "^([6-9]\\.0\\.*)",
-        "source": "NETCoreSdkVersion"
+        "pattern": "^(net6.0|net7.0|net8.0)$",
+        "source": "TargetFramework"
       }
     },
     "langVersion": {
@@ -78,7 +80,7 @@
     },
     "csharpFeature_RecordClass": {
       "type": "computed",
-      "value": "net6orLater && csharp10orLater"
+      "value": "net6orLater == \"true\" && csharp10orLater == \"true\""
     },
     "csharpFeature_Record": {
       "type": "computed",

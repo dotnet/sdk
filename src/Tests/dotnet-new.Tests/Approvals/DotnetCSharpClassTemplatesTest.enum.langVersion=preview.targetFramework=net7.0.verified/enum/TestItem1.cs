@@ -1,5 +1,5 @@
 ﻿namespace ClassLib;
-public interface Class1
+public enum TestItem1
 {
 
 }
