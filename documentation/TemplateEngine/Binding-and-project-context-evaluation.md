@@ -21,14 +21,14 @@ The priority of the sources are following:
 The higher value indicates higher priority.
 
 
-|Name|Description|
-|---|---|
-|`type`|`bind`|
-|`binding`| Mandatory. The name of the source and parameter in the source to take the value from. The syntax follows: `<source prefix>:<parameter name>`.|
-|`replaces`|The text to be replaced by the symbol value in the template files content.|
-|`fileRename`|The portion of template filenames to be replaced by the symbol value.| 	 
-|`defaultValue`|The value assigned to the symbol if no value was provided from external source(s).|
-
+|Name|Description|Mandatory|
+|---|---|---|
+|`type`|`bind`|yes|
+|`binding`| Mandatory. The name of the source and parameter in the source to take the value from. The syntax follows: `<source prefix>:<parameter name>`.|yes|
+|`replaces`|The text to be replaced by the symbol value in the template files content.|no|
+|`fileRename`|The portion of template filenames to be replaced by the symbol value.|no| 	 
+|`defaultValue`|The value assigned to the symbol if no value was provided from external source(s). Recommended to be used when `replaces` and/or `fileRename` is used. In case default value is not specified and no value was provided from external source(s) the replacement won't be performed. |no|
+|`dataType`|The value assigned to the symbol if no value was provided from external source(s). Allowed values are: "bool", "float", "int", "hex", "text", "string". If not specified, the value type will be inferred. In case the type of values might be ambiguous, consider specifying the desired datatype for processing. In case the conversion of value to the type fails, the symbol will be skipped from further processing. For more information about supported data types and their restrictions, refer to [data type description](Reference-for-template.json.md#parameter-symbol) for parameter symbols. |no|
  
 ##### Example  
 
