@@ -42,15 +42,6 @@
         "source": "TargetFramework"
       }
     },
-    "net6orLater": {
-      "type": "generated",
-      "generator": "regexMatch",
-      "datatype": "bool",
-      "parameters": {
-        "pattern": "^(net6.0|net7.0|net8.0)$",
-        "source": "TargetFramework"
-      }
-    },
     "langVersion": {
       "type": "bind",
       "binding": "msbuild:LangVersion",
@@ -80,7 +71,7 @@
     },
     "csharpFeature_RecordClass": {
       "type": "computed",
-      "value": "net6orLater == \"true\" && csharp10orLater == \"true\""
+      "value": "csharp10orLater == \"true\""
     },
     "csharpFeature_Record": {
       "type": "computed",
