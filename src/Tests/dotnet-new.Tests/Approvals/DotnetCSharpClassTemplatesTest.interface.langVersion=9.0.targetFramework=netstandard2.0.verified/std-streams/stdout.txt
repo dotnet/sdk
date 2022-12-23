@@ -1,3 +1,0 @@
-﻿Warning: Failed to evaluate bind symbol 'ImplicitUsings', it will be skipped.
-Warning: Failed to evaluate bind symbol 'ImplicitUsings', it will be skipped.
-The template "Interface" was created successfully.
