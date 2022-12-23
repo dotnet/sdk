@@ -43,6 +43,9 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             string langVersion = "preview",
             string targetFramework = "net7.0")
         {
+            // prevents logging welcome message from sdk installation
+            Dictionary<string, string> environmentUnderTest = new() { ["DOTNET_NOLOGO"] = false.ToString() };
+
             string expectedProjectName = $"{templateShortName}.langVersion={langVersion}.targetFramework={targetFramework}";
             string workingDir = CreateTemporaryFolder($"{nameof(DotnetCSharpClassTemplatesTest)}.{expectedProjectName}");
             string projectName = CreateTestProject(workingDir, langVersion, targetFramework);
@@ -67,6 +70,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 OutputDirectory = workingDir,
                 EnsureEmptyOutputDirectory = false
             }
+            .WithCustomEnvironment(environmentUnderTest)
             .WithCustomScrubbers(
                 ScrubbersDefinition.Empty
                     .AddScrubber(sb => sb.Replace($"_{projectName}", $"{expectedProjectName}")));
