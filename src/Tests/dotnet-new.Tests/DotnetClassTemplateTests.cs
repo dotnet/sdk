@@ -31,19 +31,21 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         [Theory]
         [InlineData("class")]
         [InlineData("class", "preview", "net7.0")]
-        // [InlineData("class", "10.0", "net6.0")]
+        [InlineData("class", "10.0", "net6.0")]
         [InlineData("class", "9.0", "netstandard2.0")]
         [InlineData("interface")]
-        //InlineData("interface", "10.0", "net6.0")]
+        [InlineData("interface", "10.0", "net6.0")]
         [InlineData("interface", "9", "netstandard2.0")]
         [InlineData("record")]
-        //[InlineData("record", "10", "net6.0")]
+        [InlineData("record", "10", "net6.0")]
         [InlineData("record", "9.0")]
         [InlineData("record", "8.0", "netstandard2.0")]
         [InlineData("struct")]
         [InlineData("struct", "10")]
+        [InlineData("struct", "10", "net6.0")]
         [InlineData("struct", "9.0", "netstandard2.0")]
         [InlineData("enum")]
+        [InlineData("enum", "10", "net6.0")]
         [InlineData("enum", "", "net7.0")]
         [InlineData("enum", "9.0", "netstandard2.0")]
         public async void DotnetCSharpClassTemplatesTest(
@@ -103,7 +105,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             }
 
             new DotnetNewCommand(Log, projectArgs.ToArray())
-                .WithVirtualHive()
+                .WithCustomHive(_fixture.HomeDirectory)
                 .WithWorkingDirectory(workingDir)
                 .Execute()
                 .Should()
