@@ -28,7 +28,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
         internal const string ToLowerMethodName = "ToLower";
         internal const string ToUpperMethodName = "ToUpper";
-        protected abstract Location GetMethodNameLocation(SyntaxNode invocationNode);
+        protected abstract Location GetMethodNameLocation(SyntaxNode node);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(Rule);
 

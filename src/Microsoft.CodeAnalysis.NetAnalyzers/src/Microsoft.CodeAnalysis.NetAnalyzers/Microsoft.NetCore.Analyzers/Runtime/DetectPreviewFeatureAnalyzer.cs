@@ -681,7 +681,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             {
                 ProcessTypeSymbolAttributes(context, typeSymbol, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol);
             }
-            else if (symbol is IMethodSymbol || symbol is IPropertySymbol)
+            else if (symbol is IMethodSymbol or IPropertySymbol)
             {
                 ProcessPropertyOrMethodAttributes(context, symbol, requiresPreviewFeaturesSymbols, virtualStaticsInInterfaces, previewFeatureAttributeSymbol);
             }

@@ -457,24 +457,9 @@
         <target state="translated">ComVisibleAttribute определяет, как COM-клиенты обращаются к управляемому коду. Принципы хорошего проектирования требуют, чтобы сборки явно указывали COM-видимость. COM-видимость можно задать для всей сборки и затем переопределить для отдельных типов и их членов. Если этот атрибут отсутствует, COM-клиенты видят содержимое сборки.</target>
         <note />
       </trans-unit>
-      <trans-unit id="MarkAssembliesWithComVisibleMessageNoAttribute">
-        <source>Because {0} exposes externally visible types, mark it with ComVisible(false) at the assembly level and then mark all types within the assembly that should be exposed to COM clients with ComVisible(true).</source>
-        <target state="translated">Так как {0} публикует типы, видимые извне, пометьте его как ComVisible(false) на уровне сборки, а затем пометьте все типы в сборке, которые должны быть предоставлены COM-клиентам как ComVisible(true).</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="MarkAssembliesWithComVisibleMessageAttributeTrue">
-        <source>Consider changing the ComVisible attribute on {0} to false, and opting in at the type level.</source>
-        <target state="translated">Рекомендуется присвоить атрибуту ComVisible {0} значение "false" и дать согласие на уровне типов.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="MarkAttributesWithAttributeUsageTitle">
         <source>Mark attributes with AttributeUsageAttribute</source>
         <target state="translated">Пометить атрибуты как AttributeUsageAttribute</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="MarkAttributesWithAttributeUsageDescription">
-        <source>When you define a custom attribute, mark it by using AttributeUsageAttribute to indicate where in the source code the custom attribute can be applied. The meaning and intended usage of an attribute will determine its valid locations in code.</source>
-        <target state="translated">Определяя настраиваемый атрибут, пометьте его с помощью AttributeUsageAttribute, чтобы указать, где можно применять исходный код этого атрибута. Значение и предназначение атрибута определяют допустимые расположения для него в коде.</target>
         <note />
       </trans-unit>
       <trans-unit id="MarkAttributesWithAttributeUsageMessageDefault">
@@ -482,19 +467,9 @@
         <target state="translated">Укажите AttributeUsage в {0}.</target>
         <note />
       </trans-unit>
-      <trans-unit id="MarkAttributesWithAttributeUsageMessageInherited">
-        <source>Even though attribute {0} inherits AttributeUsage from its base type, you should consider explicitly specifying AttributeUsage on the type to improve code readability and documentation.</source>
-        <target state="translated">Хотя атрибут {0} наследует AttributeUsage от своего базового типа, следует рассмотреть вариант явного указания AttributeUsage для типа, чтобы улучшить читаемость кода и его документирование.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="DefineAccessorsForAttributeArgumentsTitle">
         <source>Define accessors for attribute arguments</source>
         <target state="translated">Определите методы доступа для аргументов атрибута</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DefineAccessorsForAttributeArgumentsDescription">
-        <source>Attributes can define mandatory arguments that must be specified when you apply the attribute to a target. These are also known as positional arguments because they are supplied to attribute constructors as positional parameters. For every mandatory argument, the attribute should also provide a corresponding read-only property so that the value of the argument can be retrieved at execution time. Attributes can also define optional arguments, which are also known as named arguments. These arguments are supplied to attribute constructors by name and should have a corresponding read/write property.</source>
-        <target state="translated">Атрибуты могут определять обязательные аргументы, которые требуется указать при применении атрибута к целевому объекту. Их также называют позиционными аргументами, так как они предоставляются конструкторам атрибутов в качестве позиционных параметров. Для каждого обязательного аргумента атрибут должен также предоставлять соответствующее свойство доступа только для чтения, чтобы значение аргумента можно было извлечь во время выполнения. Кроме того, атрибуты могут предоставлять необязательные аргументы, которые также называются именованными. Они предоставляются конструкторам атрибутов по имени и должны иметь соответствующее свойство чтения/записи.</target>
         <note />
       </trans-unit>
       <trans-unit id="DefineAccessorsForAttributeArgumentsMessageDefault">
@@ -695,11 +670,6 @@
       <trans-unit id="OperatorsShouldHaveSymmetricalOverloadsDescription">
         <source>A type implements the equality or inequality operator and does not implement the opposite operator.</source>
         <target state="translated">Тип реализует оператор равенства или неравенства и не реализует противоположный оператор.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="OperatorsShouldHaveSymmetricalOverloadsMessage">
-        <source>Operators should have symmetrical overloads</source>
-        <target state="translated">Перегрузки операторов должны быть симметричными</target>
         <note />
       </trans-unit>
       <trans-unit id="CollectionPropertiesShouldBeReadOnlyTitle">
@@ -925,11 +895,6 @@
       <trans-unit id="ImplementStandardExceptionConstructorsMessageMissingConstructor">
         <source>Add the following constructor to {0}: {1}</source>
         <target state="translated">Добавьте в {0} следующий конструктор: {1}</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementStandardExceptionConstructorsMessageAccessibility">
-        <source>Change the accessibility of {0} to {1}.</source>
-        <target state="translated">Измените доступность {0} на {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="NestedTypesShouldNotBeVisibleTitle">
@@ -1682,26 +1647,6 @@
         <target state="translated">Недопустимая запись в файле спецификации правила метрик кода</target>
         <note />
       </trans-unit>
-      <trans-unit id="ReviewUnusedParametersTitle">
-        <source>Review unused parameters</source>
-        <target state="translated">Проверьте неиспользуемые параметры</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ReviewUnusedParametersDescription">
-        <source>Avoid unused paramereters in your code. If the parameter cannot be removed, then change its name so it starts with an underscore and is optionally followed by an integer, such as '_', '_1', '_2', etc. These are treated as special discard symbol names.</source>
-        <target state="translated">Избегайте неиспользуемых параметров в коде. Если параметр не может быть удален, измените его имя так, чтобы оно начиналось с символа подчеркивания, за которым при необходимости следует целое число, например, "_", "_1", "_2" и т. д. Эти имена рассматриваются как специальные имена для освобождаемых параметров.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ReviewUnusedParametersMessage">
-        <source>Parameter {0} of method {1} is never used. Remove the parameter or use it in the method body.</source>
-        <target state="translated">Параметр {0} метода {1} не используется. Удалите этот параметр или используйте его в теле метода.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="RemoveUnusedParameterMessage">
-        <source>Remove unused parameter</source>
-        <target state="translated">Удалите неиспользуемый параметр</target>
-        <note />
-      </trans-unit>
       <trans-unit id="DoNotIgnoreMethodResultsTitle">
         <source>Do not ignore method results</source>
         <target state="translated">Не игнорируйте результаты метода</target>
@@ -1974,12 +1919,12 @@
       </trans-unit>
       <trans-unit id="ValidateArgumentsOfPublicMethodsDescription">
         <source>An externally visible method dereferences one of its reference arguments without verifying whether that argument is 'null' ('Nothing' in Visual Basic). All reference arguments that are passed to externally visible methods should be checked against 'null'. If appropriate, throw an 'ArgumentNullException' when the argument is 'null'. If the method is designed to be called only by known assemblies, you should make the method internal.</source>
-        <target state="new">An externally visible method dereferences one of its reference arguments without verifying whether that argument is 'null' ('Nothing' in Visual Basic). All reference arguments that are passed to externally visible methods should be checked against 'null'. If appropriate, throw an 'ArgumentNullException' when the argument is 'null'. If the method is designed to be called only by known assemblies, you should make the method internal.</target>
+        <target state="translated">Видимый извне метод разыменовывает один из своих аргументов ссылки, не проверяя, имеет ли этот аргумент значение NULL (Nothing в Visual Basic). Все аргументы ссылки, передаваемые в видимые извне методы, следует проверять на значение NULL. При необходимости следует вызвать исключение ArgumentNullException, если аргумент равен NULL. Если метод предназначен для вызова только известными сборками, следует сделать его внутренним.</target>
         <note />
       </trans-unit>
       <trans-unit id="ValidateArgumentsOfPublicMethodsMessage">
         <source>In externally visible method '{0}', validate parameter '{1}' is non-null before using it. If appropriate, throw an 'ArgumentNullException' when the argument is 'null'.</source>
-        <target state="new">In externally visible method '{0}', validate parameter '{1}' is non-null before using it. If appropriate, throw an 'ArgumentNullException' when the argument is 'null'.</target>
+        <target state="translated">В видимом извне методе "{0}" перед использованием параметра "{1}" нужно убедиться, что его значение отличается от NULL. При необходимости следует вызвать исключение ArgumentNullException, если аргумент равен NULL.</target>
         <note />
       </trans-unit>
       <trans-unit id="ValidateArgumentsOfPublicMethodsTitle">

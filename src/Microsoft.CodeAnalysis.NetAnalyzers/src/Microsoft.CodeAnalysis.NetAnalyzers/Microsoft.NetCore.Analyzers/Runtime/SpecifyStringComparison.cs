@@ -86,14 +86,14 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 // https://learn.microsoft.com/dotnet/standard/base-types/best-practices-strings#string-comparisons-that-use-the-current-culture
                 if (targetMethod.ContainingType.SpecialType == SpecialType.System_String &&
                     !overloadMap.IsEmpty &&
-                    overloadMap.ContainsKey(targetMethod))
+                    overloadMap.TryGetValue(targetMethod, out var overloadMethod))
                 {
                     ReportDiagnostic(
                         Rule_CA1310,
                         oaContext,
                         invocationExpression,
                         targetMethod,
-                        overloadMap[targetMethod]);
+                        overloadMethod);
 
                     return;
                 }

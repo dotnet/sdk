@@ -7,11 +7,6 @@
         <target state="translated">이 필드에 'NonSerialized' 특성을 추가합니다.</target>
         <note />
       </trans-unit>
-      <trans-unit id="AddPublicParameterlessConstructor">
-        <source>Add a public constructor that takes zero parameters</source>
-        <target state="translated">매개 변수가 0인 공개 생성자를 추가합니다.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="AddSerializableAttributeCodeActionTitle">
         <source>Add Serializable attribute</source>
         <target state="translated">Serializable 특성 추가</target>
@@ -170,11 +165,6 @@
       <trans-unit id="CallGCSuppressFinalizeCorrectlyTitle">
         <source>Dispose methods should call SuppressFinalize</source>
         <target state="translated">Dispose 메서드는 SuppressFinalize를 호출해야 합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CategoryReliability">
-        <source>Reliability</source>
-        <target state="translated">안정성</target>
         <note />
       </trans-unit>
       <trans-unit id="CommaSeparator">
@@ -562,21 +552,6 @@
         <target state="translated">{0} 클래스의 인스턴스를 역직렬화할 때 {1} 메서드가 위험한 메서드 {2}을(를) 호출할 수 있습니다. 잠재적인 메서드 호출은 {3}입니다.</target>
         <note />
       </trans-unit>
-      <trans-unit id="DoNotCallOverridableMethodsInConstructorsDescription">
-        <source>When a constructor calls a virtual method, the constructor for the instance that invokes the method may not have executed.</source>
-        <target state="translated">생성자에서 가상 메서드를 호출하면 메서드를 호출하는 인스턴스에 대한 생성자가 실행되지 않을 수 있습니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DoNotCallOverridableMethodsInConstructorsMessage">
-        <source>Do not call overridable methods in constructors</source>
-        <target state="translated">생성자에서 재정의 가능한 메서드를 호출하지 마세요.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DoNotCallOverridableMethodsInConstructorsTitle">
-        <source>Do not call overridable methods in constructors</source>
-        <target state="translated">생성자에서 재정의 가능한 메서드를 호출하지 마세요.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="DoNotCallToImmutableCollectionOnAnImmutableCollectionValueMessage">
         <source>Do not call {0} on an {1} value</source>
         <target state="translated">{1} 값의 {0}을(를) 호출하지 마세요.</target>
@@ -585,21 +560,6 @@
       <trans-unit id="DoNotCallToImmutableCollectionOnAnImmutableCollectionValueTitle">
         <source>Do not call ToImmutableCollection on an ImmutableCollection value</source>
         <target state="translated">ImmutableCollection 값의 ToImmutableCollection을 호출하지 마세요.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DoNotCatchCorruptedStateExceptionsInGeneralHandlersDescription">
-        <source>Do not author general catch handlers in code that receives corrupted state exceptions.</source>
-        <target state="translated">손상된 상태 예외를 수신하는 코드에서 일반 catch 처리기를 작성하지 마세요.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DoNotCatchCorruptedStateExceptionsInGeneralHandlersMessage">
-        <source>Do not catch corrupted state exceptions in general handlers.</source>
-        <target state="translated">일반 처리기에서 손상된 상태 예외를 catch하지 마세요.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DoNotCatchCorruptedStateExceptionsInGeneralHandlersTitle">
-        <source>Do not catch corrupted state exceptions in general handlers.</source>
-        <target state="translated">일반 처리기에서 손상된 상태 예외를 catch하지 마세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCreateTaskCompletionSourceWithWrongArgumentsDescription">
@@ -982,16 +942,6 @@
         <target state="translated">{0}은(는) 비보안 난수 생성기입니다. 보안을 위해 임의성이 필요한 경우 암호화된 보안 난수 생성기를 사용하세요.</target>
         <note />
       </trans-unit>
-      <trans-unit id="DoNotUseMD5">
-        <source>Do not use insecure cryptographic algorithm MD5.</source>
-        <target state="translated">안전하지 않은 암호화 알고리즘 MD5를 사용하지 마세요.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DoNotUseMD5Description">
-        <source>This type implements MD5, a cryptographically insecure hashing function. Hash collisions are computationally feasible for the MD5 and HMACMD5 algorithms. Replace this usage with a SHA-2 family hash algorithm (SHA512, SHA384, SHA256).</source>
-        <target state="translated">이 형식은 안전하지 않게 암호화된 해시 알고리즘인 MD5를 구현합니다. MD5 및 HMACMD5 알고리즘에서 계산상 해시 충돌이 발생할 수 있습니다. 이 사용법을 SHA-2 패밀리 해시 알고리즘(SHA512, SHA384, SHA256)으로 바꾸세요.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="DoNotUseObsoleteKDFAlgorithm">
         <source>Do not use obsolete key derivation function</source>
         <target state="translated">사용되지 않는 키 파생 함수 사용 안 함</target>
@@ -1040,16 +990,6 @@
       <trans-unit id="DoNotUseReferenceEqualsWithValueTypesTitle">
         <source>Do not use ReferenceEquals with value types</source>
         <target state="translated">값 형식이 있는 ReferenceEquals를 사용하면 안 됨</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DoNotUseSHA1">
-        <source>Do not use insecure cryptographic algorithm SHA1.</source>
-        <target state="translated">안전하지 않은 암호화 알고리즘 SHA1을 사용하지 마세요.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DoNotUseSHA1Description">
-        <source>This type implements SHA1, a cryptographically insecure hashing function. Hash collisions are computationally feasible for the SHA-1 and SHA-0 algorithms. Replace this usage with a SHA-2 family hash algorithm (SHA512, SHA384, SHA256).</source>
-        <target state="translated">이 형식은 안전하지 않게 암호화된 해시 알고리즘인 SHA1을 구현합니다. SHA-1 및 SHA-0 알고리즘에서 계산상 해시 충돌이 발생할 수 있습니다. 이 사용법을 SHA-2 패밀리 해시 알고리즘(SHA512, SHA384, SHA256)으로 바꾸세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseStackallocInLoopsDescription">
@@ -1245,21 +1185,6 @@
       <trans-unit id="FieldIsPreviewTypeMessageWithCustomMessagePlaceholder">
         <source>{3} '{0}''s type contains the preview type '{1}' and requires opting into preview features. See {2} for more information.</source>
         <target state="translated">{3} '{0}'의 유형에 '{1}' 미리 보기 유형이 포함되어 있으며 미리 보기 기능을 선택해야 합니다. 자세한 내용은 {2}를 참조하세요.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="FinalizersShouldCallBaseClassFinalizerDescription">
-        <source>Finalization must be propagated through the inheritance hierarchy. To guarantee this, types must call their base class Finalize method in their own Finalize method.</source>
-        <target state="translated">종료는 상속 계층 구조를 통해 전파되어야 합니다. 이를 보장하려면 형식은 고유 Finalize 메서드에서 기본 클래스 Finalize 메서드를 호출해야 합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="FinalizersShouldCallBaseClassFinalizerMessage">
-        <source>Finalizers should call base class finalizer</source>
-        <target state="translated">종료자가 기본 클래스 종료자를 호출해야 합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="FinalizersShouldCallBaseClassFinalizerTitle">
-        <source>Finalizers should call base class finalizer</source>
-        <target state="translated">종료자가 기본 클래스 종료자를 호출해야 합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="ForwardCancellationTokenToInvocationsDescription">
@@ -1872,26 +1797,6 @@
         <target state="translated">{3} '{0}'은(는) 미리 보기 방법 '{1}'을(를) 재정의하므로 미리 보기 기능을 선택해야 합니다. 자세한 내용은 {2}를 참조하세요.</target>
         <note />
       </trans-unit>
-      <trans-unit id="PInvokeDeclarationsShouldBePortableDescription">
-        <source>This rule evaluates the size of each parameter and the return value of a P/Invoke, and verifies that the size of the parameter is correct when marshaled to unmanaged code on 32-bit and 64-bit operating systems.</source>
-        <target state="translated">이 규칙은 각 매개 변수 및 P/Invoke의 반환 값의 크기를 평가하며 32비트 및 64비트 운영 체제에서 비관리 코드로 마샬링된 경우 매개 변수의 크기가 올바른지 확인합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PInvokeDeclarationsShouldBePortableMessageParameter">
-        <source>As it is declared in your code, parameter {0} of P/Invoke {1} will be {2} bytes wide on {3} platforms. This is not correct, as the actual native declaration of this API indicates it should be {4} bytes wide on {3} platforms. Consult the MSDN Platform SDK documentation for help determining what data type should be used instead of {5}.</source>
-        <target state="translated">코드에 선언된 것처럼 P/Invoke {1}의 {0} 매개 변수는 {3} 플랫폼에서 {2}바이트가 됩니다. 이 API의 실제 네이티브 선언에 따르면 {3} 플랫폼에서 {4}바이트여야 하므로 잘못된 상황입니다. {5} 대신 사용할 데이터 형식을 결정하려면 MSDN Platform SDK 문서를 참조하세요.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PInvokeDeclarationsShouldBePortableMessageReturn">
-        <source>As it is declared in your code, the return type of P/Invoke {0} will be {1} bytes wide on {2} platforms. This is not correct, as the actual native declaration of this API indicates it should be {3} bytes wide on {2} platforms. Consult the MSDN Platform SDK documentation for help determining what data type should be used instead of {4}.</source>
-        <target state="translated">코드에 선언된 것처럼 P/Invoke {0}의 반환 형식은 {2} 플랫폼에서 {1}바이트가 됩니다. 이 API의 실제 네이티브 선언에 따르면 {2} 플랫폼에서 {3}바이트여야 하므로 잘못된 상황입니다. {4} 대신 사용할 데이터 형식을 결정하려면 MSDN Platform SDK 문서를 참조하세요.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PInvokeDeclarationsShouldBePortableTitle">
-        <source>PInvoke declarations should be portable</source>
-        <target state="translated">PInvoke 선언은 이식 가능해야 합니다.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="PInvokesShouldNotBeVisibleDescription">
         <source>A public or protected method in a public type has the System.Runtime.InteropServices.DllImportAttribute attribute (also implemented by the Declare keyword in Visual Basic). Such methods should not be exposed.</source>
         <target state="translated">public 형식의 public 또는 protected 메서드에 System.Runtime.InteropServices.DllImportAttribute 특성(Visual Basic의 선언 키워드에서 구현함)이 있습니다. 이러한 메서드는 노출할 수 없습니다.</target>
@@ -2179,7 +2084,7 @@
       </trans-unit>
       <trans-unit id="PreventNumericIntPtrUIntPtrBehavioralChangesDescription">
         <source>Some built-in operators added in .NET 7 behave differently when overflowing than did the corresponding user-defined operators in .NET 6 and earlier versions. Some operators that previously threw in an unchecked context now don't throw unless wrapped within a checked context. Also, some operators that did not previously throw in a checked context now throw unless wrapped in an unchecked context.</source>
-        <target state="new">Some built-in operators added in .NET 7 behave differently when overflowing than did the corresponding user-defined operators in .NET 6 and earlier versions. Some operators that previously threw in an unchecked context now don't throw unless wrapped within a checked context. Also, some operators that did not previously throw in a checked context now throw unless wrapped in an unchecked context.</target>
+        <target state="translated">.NET 7에 추가된 일부 기본 제공 연산자는 오버플로 시 .NET 6 및 이전 버전에서 해당 사용자 정의 연산자와 다르게 동작합니다. 이전에 선택되지 않은 컨텍스트에서 throw한 일부 연산자는 이제 선택한 컨텍스트 내에서 래핑되지 않는 한 throw되지 않습니다. 또한 이전에 선택한 컨텍스트에서 throw하지 않은 일부 연산자는 선택되지 않은 컨텍스트에서 래핑되지 않은 한 지금 throw합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreventNumericIntPtrUIntPtrBehavioralChangesOperatorThrowsMessage">
@@ -2189,7 +2094,7 @@
       </trans-unit>
       <trans-unit id="PreventNumericIntPtrUIntPtrBehavioralChangesTitle">
         <source>Prevent behavioral change</source>
-        <target state="new">Prevent behavioral change</target>
+        <target state="translated">동작 변경 방지</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvideCorrectArgumentToEnumHasFlagDescription">
@@ -2285,21 +2190,6 @@
       <trans-unit id="ReplaceStringLiteralWithCharLiteralCodeActionTitle">
         <source>Replace string literal with char literal</source>
         <target state="translated">문자열 리터럴을 char 리터럴로 바꾸기</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="RethrowToPreserveStackDetailsDescription">
-        <source>An exception is rethrown and the exception is explicitly specified in the throw statement. If an exception is rethrown by specifying the exception in the throw statement, the list of method calls between the original method that threw the exception and the current method is lost.</source>
-        <target state="translated">예외가 다시 throw되었으며 throw 문에서 해당 예외가 명시적으로 지정되었습니다. throw 문에서 예외를 지정하여 다시 throw한 경우 해당 예외를 throw한 원래 메서드와 현재 메서드 사이의 메서드 호출 목록이 손실됩니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="RethrowToPreserveStackDetailsMessage">
-        <source>Rethrow to preserve stack details</source>
-        <target state="translated">다시 throw하여 스택 정보를 유지하세요.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="RethrowToPreserveStackDetailsTitle">
-        <source>Rethrow to preserve stack details</source>
-        <target state="translated">다시 throw하여 스택 정보를 유지하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="ReviewCodeForDllInjectionVulnerabilitiesMessage">
@@ -2562,26 +2452,6 @@
         <target state="translated">플랫폼 호출 멤버는 부분적으로 신뢰하는 호출자를 허용하고, 문자열 매개 변수를 보유하며, 문자열을 명시적으로 마샬링하지 않습니다. 이로 인해 잠재적인 보안 취약성이 발생할 수 있습니다.</target>
         <note />
       </trans-unit>
-      <trans-unit id="SpecifyMarshalingForPInvokeStringArgumentsMessageField">
-        <source>To reduce security risk, marshal field {0} as Unicode, by setting StructLayout.CharSet on {1} to CharSet.Unicode, or by explicitly marshaling the field as UnmanagedType.LPWStr. If you need to marshal this string as ANSI or system-dependent, use the BestFitMapping attribute to turn best-fit mapping off, and for added security, ensure ThrowOnUnmappableChar is on.</source>
-        <target state="translated">보안 위험을 줄이려면 {1}의 StructLayout.CharSet을 CharSet.Unicode로 설정하거나 {0} 필드를 명시적으로 UnmanagedType.LPWStr로 마샬링하여 필드를 유니코드로 마샬링하세요. 이 문자열을 ANSI 또는 시스템 설정으로 마샬링해야 하는 경우 BestFitMapping 특성을 사용하여 최적 문자 매핑을 해제하세요. 또한 ThrowOnUnmappableChar이 설정되어 있는지 확인하여 보안을 강화하세요.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SpecifyMarshalingForPInvokeStringArgumentsMessageFieldImplicitAnsi">
-        <source>To reduce security risk, marshal field {0} as Unicode, by setting StructLayout.CharSet on {1} to CharSet.Unicode, or by explicitly marshaling the field as UnmanagedType.LPWStr. If you need to marshal this string as ANSI or system-dependent, specify MarshalAs explicitly, use the BestFitMapping attribute to turn best-fit mapping off, and for added security, to turn ThrowOnUnmappableChar on.</source>
-        <target state="translated">보안 위험을 줄이려면 {1}의 StructLayout.CharSet을 CharSet.Unicode로 설정하거나 {0} 필드를 명시적으로 UnmanagedType.LPWStr로 마샬링하여 필드를 유니코드로 마샬링하세요. 이 문자열을 ANSI 또는 시스템 설정으로 마샬링해야 하는 경우 MarshalAs를 명시적으로 지정하고, BestFitMapping 특성을 사용하여 최적 문자 매핑을 해제하세요. 또한 ThrowOnUnmappableChar이 설정되어 있는지 확인하여 보안을 강화하세요.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SpecifyMarshalingForPInvokeStringArgumentsMessageParameter">
-        <source>To reduce security risk, marshal parameter {0} as Unicode, by setting DllImport.CharSet to CharSet.Unicode, or by explicitly marshaling the parameter as UnmanagedType.LPWStr. If you need to marshal this string as ANSI or system-dependent, set BestFitMapping=false; for added security, also set ThrowOnUnmappableChar=true.</source>
-        <target state="translated">보안 위험을 줄이려면 DllImport.CharSet을 CharSet.Unicode로 설정하거나 {0} 매개 변수를 명시적으로 UnmanagedType.LPWStr로 마샬링하여 매개 변수를 유니코드로 마샬링하세요. 이 문자열을 ANSI 또는 시스템 설정으로 마샬링해야 하는 경우 BestFitMapping=false를 설정하세요. 또한 ThrowOnUnmappableChar=true를 설정하여 보안을 강화하세요.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SpecifyMarshalingForPInvokeStringArgumentsMessageParameterImplicitAnsi">
-        <source>To reduce security risk, marshal parameter {0} as Unicode, by setting DllImport.CharSet to CharSet.Unicode, or by explicitly marshaling the parameter as UnmanagedType.LPWStr. If you need to marshal this string as ANSI or system-dependent, specify MarshalAs explicitly, and set BestFitMapping=false; for added security, also set ThrowOnUnmappableChar=true.</source>
-        <target state="translated">보안 위험을 줄이려면 DllImport.CharSet을 CharSet.Unicode로 설정하거나 {0} 매개 변수를 명시적으로 UnmanagedType.LPWStr로 마샬링하여 매개 변수를 유니코드로 마샬링하세요. 이 문자열을 ANSI 또는 시스템 설정으로 마샬링해야 하는 경우 MarshalAs를 명시적으로 지정하고, BestFitMapping=false를 설정하세요. 또한 ThrowOnUnmappableChar=true를 설정하여 보안을 강화하세요.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="SpecifyMarshalingForPInvokeStringArgumentsTitle">
         <source>Specify marshaling for P/Invoke string arguments</source>
         <target state="translated">P/Invoke 문자열 인수에 대해 마샬링을 지정하세요.</target>
@@ -2684,17 +2554,17 @@
       </trans-unit>
       <trans-unit id="UseArgumentExceptionThrowHelperTitle">
         <source>Use ArgumentException throw helper</source>
-        <target state="new">Use ArgumentException throw helper</target>
+        <target state="translated">ArgumentException throw 도우미 사용</target>
         <note />
       </trans-unit>
       <trans-unit id="UseArgumentNullExceptionThrowHelperTitle">
         <source>Use ArgumentNullException throw helper</source>
-        <target state="new">Use ArgumentNullException throw helper</target>
+        <target state="translated">ArgumentNullException throw 도우미 사용</target>
         <note />
       </trans-unit>
       <trans-unit id="UseArgumentOutOfRangeExceptionThrowHelperTitle">
         <source>Use ArgumentOutOfRangeException throw helper</source>
-        <target state="new">Use ArgumentOutOfRangeException throw helper</target>
+        <target state="translated">ArgumentOutOfRangeException throw 도우미 사용</target>
         <note />
       </trans-unit>
       <trans-unit id="UseArrayEmpty">
@@ -2914,22 +2784,12 @@
       </trans-unit>
       <trans-unit id="UseObjectDisposedExceptionThrowHelperTitle">
         <source>Use ObjectDisposedException throw helper</source>
-        <target state="new">Use ObjectDisposedException throw helper</target>
+        <target state="translated">ObjectDisposedException throw 도우미 사용</target>
         <note />
       </trans-unit>
       <trans-unit id="UseOrdinalStringComparisonDescription">
         <source>A string comparison operation that is nonlinguistic does not set the StringComparison parameter to either Ordinal or OrdinalIgnoreCase. By explicitly setting the parameter to either StringComparison.Ordinal or StringComparison.OrdinalIgnoreCase, your code often gains speed, becomes more correct, and becomes more reliable.</source>
         <target state="translated">비언어적 문자열 비교 작업에서는 StringComparison 매개 변수를 서수 또는 OrdinalIgnoreCase로 설정하지 않습니다. 매개 변수를 명시적으로 StringComparison.Ordinal 또는 StringComparison.OrdinalIgnoreCase로 설정하면 코드의 속도가 빨라지고, 정확도와 신뢰도가 더 높아집니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UseOrdinalStringComparisonMessageStringComparer">
-        <source>{0} passes '{1}' as the 'StringComparer' parameter to {2}. To perform a non-linguistic comparison, specify 'StringComparer.Ordinal' or 'StringComparer.OrdinalIgnoreCase' instead.</source>
-        <target state="translated">{0}에서는 '{1}'을(를) 'StringComparer' 매개 변수로 {2}에 전달합니다. 비언어적 비교 작업을 수행하려면 'StringComparer.Ordinal' 또는 'StringComparer.OrdinalIgnoreCase'를 지정하세요.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UseOrdinalStringComparisonMessageStringComparison">
-        <source>{0} passes '{1}' as the 'StringComparison' parameter to {2}. To perform a non-linguistic comparison, specify 'StringComparison.Ordinal' or 'StringComparison.OrdinalIgnoreCase' instead.</source>
-        <target state="translated">{0}에서는 '{1}'을(를) 'StringComparison' 매개 변수로 {2}에 전달합니다. 비언어적 비교 작업을 수행하려면 'StringComparison.Ordinal' 또는 'StringComparison.OrdinalIgnoreCase'를 지정하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseOrdinalStringComparisonTitle">
@@ -3007,6 +2867,26 @@
         <target state="translated">'채우기'보다 '지우기' 선호</target>
         <note />
       </trans-unit>
+      <trans-unit id="UseStartsWithInsteadOfIndexOfComparisonWithZeroCodeFixTitle">
+        <source>Use 'StartsWith'</source>
+        <target state="new">Use 'StartsWith'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseStartsWithInsteadOfIndexOfComparisonWithZeroDescription">
+        <source>It is both clearer and faster to use 'StartsWith' instead of comparing the result of 'IndexOf' to zero.</source>
+        <target state="new">It is both clearer and faster to use 'StartsWith' instead of comparing the result of 'IndexOf' to zero.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseStartsWithInsteadOfIndexOfComparisonWithZeroMessage">
+        <source>Use 'StartsWith' instead of comparing the result of 'IndexOf' to 0</source>
+        <target state="new">Use 'StartsWith' instead of comparing the result of 'IndexOf' to 0</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseStartsWithInsteadOfIndexOfComparisonWithZeroTitle">
+        <source>Use 'StartsWith' instead of 'IndexOf'</source>
+        <target state="new">Use 'StartsWith' instead of 'IndexOf'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UseStringEqualsOverStringCompareCodeFixTitle">
         <source>Use 'string.Equals'</source>
         <target state="translated">'string.Equals' 사용</target>
@@ -3064,17 +2944,17 @@
       </trans-unit>
       <trans-unit id="UseThrowHelperDescription">
         <source>Throw helpers are simpler and more efficient than an if block constructing a new exception instance.</source>
-        <target state="new">Throw helpers are simpler and more efficient than an if block constructing a new exception instance.</target>
+        <target state="translated">throw 도우미는 새로운 예외 인스턴스를 구성하는 if 블록보다 간단하고 효율적입니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseThrowHelperFix">
         <source>Use '{0}.{1}'</source>
-        <target state="new">Use '{0}.{1}'</target>
+        <target state="translated">'{0}.{1}' 사용</target>
         <note />
       </trans-unit>
       <trans-unit id="UseThrowHelperMessage">
         <source>Use '{0}.{1}' instead of explicitly throwing a new exception instance</source>
-        <target state="new">Use '{0}.{1}' instead of explicitly throwing a new exception instance</target>
+        <target state="translated">새 예외 인스턴스를 명시적으로 throw하는 대신 '{0}.{1}' 사용</target>
         <note />
       </trans-unit>
       <trans-unit id="UseValidPlatformStringDescription">

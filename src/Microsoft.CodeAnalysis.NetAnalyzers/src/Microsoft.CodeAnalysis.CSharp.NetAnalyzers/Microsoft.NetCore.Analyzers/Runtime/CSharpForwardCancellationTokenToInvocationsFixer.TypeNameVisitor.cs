@@ -41,10 +41,9 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
                     return typeSyntax;
 
                 typeSyntax = CreateSimpleTypeSyntax(symbol);
-                if (!(typeSyntax is SimpleNameSyntax))
+                if (typeSyntax is not SimpleNameSyntax simpleNameSyntax)
                     return typeSyntax;
 
-                var simpleNameSyntax = (SimpleNameSyntax)typeSyntax;
                 if (symbol.ContainingType is not null)
                 {
                     if (symbol.ContainingType.TypeKind != TypeKind.Submission)

@@ -240,29 +240,14 @@
   <data name="MarkAssembliesWithComVisibleDescription" xml:space="preserve">
     <value>ComVisibleAttribute determines how COM clients access managed code. Good design dictates that assemblies explicitly indicate COM visibility. COM visibility can be set for the whole assembly and then overridden for individual types and type members. If this attribute is not present, the contents of the assembly are visible to COM clients.</value>
   </data>
-  <data name="MarkAssembliesWithComVisibleMessageNoAttribute" xml:space="preserve">
-    <value>Because {0} exposes externally visible types, mark it with ComVisible(false) at the assembly level and then mark all types within the assembly that should be exposed to COM clients with ComVisible(true).</value>
-  </data>
-  <data name="MarkAssembliesWithComVisibleMessageAttributeTrue" xml:space="preserve">
-    <value>Consider changing the ComVisible attribute on {0} to false, and opting in at the type level.</value>
-  </data>
   <data name="MarkAttributesWithAttributeUsageTitle" xml:space="preserve">
     <value>Mark attributes with AttributeUsageAttribute</value>
-  </data>
-  <data name="MarkAttributesWithAttributeUsageDescription" xml:space="preserve">
-    <value>When you define a custom attribute, mark it by using AttributeUsageAttribute to indicate where in the source code the custom attribute can be applied. The meaning and intended usage of an attribute will determine its valid locations in code.</value>
   </data>
   <data name="MarkAttributesWithAttributeUsageMessageDefault" xml:space="preserve">
     <value>Specify AttributeUsage on {0}</value>
   </data>
-  <data name="MarkAttributesWithAttributeUsageMessageInherited" xml:space="preserve">
-    <value>Even though attribute {0} inherits AttributeUsage from its base type, you should consider explicitly specifying AttributeUsage on the type to improve code readability and documentation.</value>
-  </data>
   <data name="DefineAccessorsForAttributeArgumentsTitle" xml:space="preserve">
     <value>Define accessors for attribute arguments</value>
-  </data>
-  <data name="DefineAccessorsForAttributeArgumentsDescription" xml:space="preserve">
-    <value>Attributes can define mandatory arguments that must be specified when you apply the attribute to a target. These are also known as positional arguments because they are supplied to attribute constructors as positional parameters. For every mandatory argument, the attribute should also provide a corresponding read-only property so that the value of the argument can be retrieved at execution time. Attributes can also define optional arguments, which are also known as named arguments. These arguments are supplied to attribute constructors by name and should have a corresponding read/write property.</value>
   </data>
   <data name="DefineAccessorsForAttributeArgumentsMessageDefault" xml:space="preserve">
     <value>Add a public read-only property accessor for positional argument {0} of Attribute {1}</value>
@@ -384,9 +369,6 @@
   </data>
   <data name="OperatorsShouldHaveSymmetricalOverloadsDescription" xml:space="preserve">
     <value>A type implements the equality or inequality operator and does not implement the opposite operator.</value>
-  </data>
-  <data name="OperatorsShouldHaveSymmetricalOverloadsMessage" xml:space="preserve">
-    <value>Operators should have symmetrical overloads</value>
   </data>
   <data name="CollectionPropertiesShouldBeReadOnlyTitle" xml:space="preserve">
     <value>Collection properties should be read only</value>
@@ -522,9 +504,6 @@
   </data>
   <data name="ImplementStandardExceptionConstructorsMessageMissingConstructor" xml:space="preserve">
     <value>Add the following constructor to {0}: {1}</value>
-  </data>
-  <data name="ImplementStandardExceptionConstructorsMessageAccessibility" xml:space="preserve">
-    <value>Change the accessibility of {0} to {1}.</value>
   </data>
   <data name="NestedTypesShouldNotBeVisibleTitle" xml:space="preserve">
     <value>Nested types should not be visible</value>
@@ -931,18 +910,6 @@
   </data>
   <data name="AvoidUsingCrefTagsWithAPrefixMessage" xml:space="preserve">
     <value>Avoid using cref tags with a prefix</value>
-  </data>
-  <data name="ReviewUnusedParametersTitle" xml:space="preserve">
-    <value>Review unused parameters</value>
-  </data>
-  <data name="ReviewUnusedParametersDescription" xml:space="preserve">
-    <value>Avoid unused paramereters in your code. If the parameter cannot be removed, then change its name so it starts with an underscore and is optionally followed by an integer, such as '_', '_1', '_2', etc. These are treated as special discard symbol names.</value>
-  </data>
-  <data name="ReviewUnusedParametersMessage" xml:space="preserve">
-    <value>Parameter {0} of method {1} is never used. Remove the parameter or use it in the method body.</value>
-  </data>
-  <data name="RemoveUnusedParameterMessage" xml:space="preserve">
-    <value>Remove unused parameter</value>
   </data>
   <data name="DoNotIgnoreMethodResultsTitle" xml:space="preserve">
     <value>Do not ignore method results</value>

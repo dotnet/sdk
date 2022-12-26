@@ -132,9 +132,6 @@
   <data name="DoNotCallToImmutableCollectionOnAnImmutableCollectionValueMessage" xml:space="preserve">
     <value>Do not call {0} on an {1} value</value>
   </data>
-  <data name="CategoryReliability" xml:space="preserve">
-    <value>Reliability</value>
-  </data>
   <data name="RemoveRedundantCall" xml:space="preserve">
     <value>Remove redundant call</value>
   </data>
@@ -147,35 +144,11 @@
   <data name="PInvokesShouldNotBeVisibleMessage" xml:space="preserve">
     <value>P/Invoke method '{0}' should not be visible</value>
   </data>
-  <data name="PInvokeDeclarationsShouldBePortableTitle" xml:space="preserve">
-    <value>PInvoke declarations should be portable</value>
-  </data>
-  <data name="PInvokeDeclarationsShouldBePortableDescription" xml:space="preserve">
-    <value>This rule evaluates the size of each parameter and the return value of a P/Invoke, and verifies that the size of the parameter is correct when marshaled to unmanaged code on 32-bit and 64-bit operating systems.</value>
-  </data>
-  <data name="PInvokeDeclarationsShouldBePortableMessageParameter" xml:space="preserve">
-    <value>As it is declared in your code, parameter {0} of P/Invoke {1} will be {2} bytes wide on {3} platforms. This is not correct, as the actual native declaration of this API indicates it should be {4} bytes wide on {3} platforms. Consult the MSDN Platform SDK documentation for help determining what data type should be used instead of {5}.</value>
-  </data>
-  <data name="PInvokeDeclarationsShouldBePortableMessageReturn" xml:space="preserve">
-    <value>As it is declared in your code, the return type of P/Invoke {0} will be {1} bytes wide on {2} platforms. This is not correct, as the actual native declaration of this API indicates it should be {3} bytes wide on {2} platforms. Consult the MSDN Platform SDK documentation for help determining what data type should be used instead of {4}.</value>
-  </data>
   <data name="SpecifyMarshalingForPInvokeStringArgumentsTitle" xml:space="preserve">
     <value>Specify marshaling for P/Invoke string arguments</value>
   </data>
   <data name="SpecifyMarshalingForPInvokeStringArgumentsDescription" xml:space="preserve">
     <value>A platform invoke member allows partially trusted callers, has a string parameter, and does not explicitly marshal the string. This can cause a potential security vulnerability.</value>
-  </data>
-  <data name="SpecifyMarshalingForPInvokeStringArgumentsMessageParameter" xml:space="preserve">
-    <value>To reduce security risk, marshal parameter {0} as Unicode, by setting DllImport.CharSet to CharSet.Unicode, or by explicitly marshaling the parameter as UnmanagedType.LPWStr. If you need to marshal this string as ANSI or system-dependent, set BestFitMapping=false; for added security, also set ThrowOnUnmappableChar=true.</value>
-  </data>
-  <data name="SpecifyMarshalingForPInvokeStringArgumentsMessageField" xml:space="preserve">
-    <value>To reduce security risk, marshal field {0} as Unicode, by setting StructLayout.CharSet on {1} to CharSet.Unicode, or by explicitly marshaling the field as UnmanagedType.LPWStr. If you need to marshal this string as ANSI or system-dependent, use the BestFitMapping attribute to turn best-fit mapping off, and for added security, ensure ThrowOnUnmappableChar is on.</value>
-  </data>
-  <data name="SpecifyMarshalingForPInvokeStringArgumentsMessageParameterImplicitAnsi" xml:space="preserve">
-    <value>To reduce security risk, marshal parameter {0} as Unicode, by setting DllImport.CharSet to CharSet.Unicode, or by explicitly marshaling the parameter as UnmanagedType.LPWStr. If you need to marshal this string as ANSI or system-dependent, specify MarshalAs explicitly, and set BestFitMapping=false; for added security, also set ThrowOnUnmappableChar=true.</value>
-  </data>
-  <data name="SpecifyMarshalingForPInvokeStringArgumentsMessageFieldImplicitAnsi" xml:space="preserve">
-    <value>To reduce security risk, marshal field {0} as Unicode, by setting StructLayout.CharSet on {1} to CharSet.Unicode, or by explicitly marshaling the field as UnmanagedType.LPWStr. If you need to marshal this string as ANSI or system-dependent, specify MarshalAs explicitly, use the BestFitMapping attribute to turn best-fit mapping off, and for added security, to turn ThrowOnUnmappableChar on.</value>
   </data>
   <data name="UseManagedEquivalentsOfWin32ApiTitle" xml:space="preserve">
     <value>Use managed equivalents of win32 api</value>
@@ -212,12 +185,6 @@
   </data>
   <data name="UseOrdinalStringComparisonDescription" xml:space="preserve">
     <value>A string comparison operation that is nonlinguistic does not set the StringComparison parameter to either Ordinal or OrdinalIgnoreCase. By explicitly setting the parameter to either StringComparison.Ordinal or StringComparison.OrdinalIgnoreCase, your code often gains speed, becomes more correct, and becomes more reliable.</value>
-  </data>
-  <data name="UseOrdinalStringComparisonMessageStringComparison" xml:space="preserve">
-    <value>{0} passes '{1}' as the 'StringComparison' parameter to {2}. To perform a non-linguistic comparison, specify 'StringComparison.Ordinal' or 'StringComparison.OrdinalIgnoreCase' instead.</value>
-  </data>
-  <data name="UseOrdinalStringComparisonMessageStringComparer" xml:space="preserve">
-    <value>{0} passes '{1}' as the 'StringComparer' parameter to {2}. To perform a non-linguistic comparison, specify 'StringComparer.Ordinal' or 'StringComparer.OrdinalIgnoreCase' instead.</value>
   </data>
   <data name="DoNotUseCountWhenAnyCanBeUsedDescription" xml:space="preserve">
     <value>For non-empty collections, Count() and LongCount() enumerate the entire sequence, while Any() stops at the first item or the first item that satisfies a condition.</value>
@@ -264,24 +231,6 @@
   <data name="DoNotLockOnObjectsWithWeakIdentityMessage" xml:space="preserve">
     <value>Do not lock on objects with weak identity</value>
   </data>
-  <data name="DoNotCatchCorruptedStateExceptionsInGeneralHandlersTitle" xml:space="preserve">
-    <value>Do not catch corrupted state exceptions in general handlers.</value>
-  </data>
-  <data name="DoNotCatchCorruptedStateExceptionsInGeneralHandlersDescription" xml:space="preserve">
-    <value>Do not author general catch handlers in code that receives corrupted state exceptions.</value>
-  </data>
-  <data name="DoNotCatchCorruptedStateExceptionsInGeneralHandlersMessage" xml:space="preserve">
-    <value>Do not catch corrupted state exceptions in general handlers.</value>
-  </data>
-  <data name="RethrowToPreserveStackDetailsTitle" xml:space="preserve">
-    <value>Rethrow to preserve stack details</value>
-  </data>
-  <data name="RethrowToPreserveStackDetailsDescription" xml:space="preserve">
-    <value>An exception is rethrown and the exception is explicitly specified in the throw statement. If an exception is rethrown by specifying the exception in the throw statement, the list of method calls between the original method that threw the exception and the current method is lost.</value>
-  </data>
-  <data name="RethrowToPreserveStackDetailsMessage" xml:space="preserve">
-    <value>Rethrow to preserve stack details</value>
-  </data>
   <data name="DoNotRaiseReservedExceptionTypesTitle" xml:space="preserve">
     <value>Do not raise reserved exception types</value>
   </data>
@@ -309,15 +258,6 @@
   <data name="InitializeStaticFieldsInlineMessage" xml:space="preserve">
     <value>Initialize all static fields in '{0}' when those fields are declared and remove the explicit static constructor</value>
   </data>
-  <data name="DoNotCallOverridableMethodsInConstructorsTitle" xml:space="preserve">
-    <value>Do not call overridable methods in constructors</value>
-  </data>
-  <data name="DoNotCallOverridableMethodsInConstructorsDescription" xml:space="preserve">
-    <value>When a constructor calls a virtual method, the constructor for the instance that invokes the method may not have executed.</value>
-  </data>
-  <data name="DoNotCallOverridableMethodsInConstructorsMessage" xml:space="preserve">
-    <value>Do not call overridable methods in constructors</value>
-  </data>
   <data name="DisposableTypesShouldDeclareFinalizerTitle" xml:space="preserve">
     <value>Disposable types should declare finalizer</value>
   </data>
@@ -326,15 +266,6 @@
   </data>
   <data name="DisposableTypesShouldDeclareFinalizerMessage" xml:space="preserve">
     <value>Disposable types should declare finalizer</value>
-  </data>
-  <data name="FinalizersShouldCallBaseClassFinalizerTitle" xml:space="preserve">
-    <value>Finalizers should call base class finalizer</value>
-  </data>
-  <data name="FinalizersShouldCallBaseClassFinalizerDescription" xml:space="preserve">
-    <value>Finalization must be propagated through the inheritance hierarchy. To guarantee this, types must call their base class Finalize method in their own Finalize method.</value>
-  </data>
-  <data name="FinalizersShouldCallBaseClassFinalizerMessage" xml:space="preserve">
-    <value>Finalizers should call base class finalizer</value>
   </data>
   <data name="ProvideCorrectArgumentsToFormattingMethodsTitle" xml:space="preserve">
     <value>Provide correct arguments to formatting methods</value>
@@ -915,12 +846,6 @@
   <data name="DoNotUseDSAMessage" xml:space="preserve">
     <value>Asymmetric encryption algorithm {0} is weak. Switch to an RSA with at least 2048 key size, ECDH or ECDSA algorithm instead.</value>
   </data>
-  <data name="DoNotUseMD5" xml:space="preserve">
-    <value>Do not use insecure cryptographic algorithm MD5.</value>
-  </data>
-  <data name="DoNotUseMD5Description" xml:space="preserve">
-    <value>This type implements MD5, a cryptographically insecure hashing function. Hash collisions are computationally feasible for the MD5 and HMACMD5 algorithms. Replace this usage with a SHA-2 family hash algorithm (SHA512, SHA384, SHA256).</value>
-  </data>
   <data name="DoNotUseObsoleteKDFAlgorithm" xml:space="preserve">
     <value>Do not use obsolete key derivation function</value>
   </data>
@@ -941,12 +866,6 @@
   </data>
   <data name="DoNotUseReferenceEqualsWithValueTypesTitle" xml:space="preserve">
     <value>Do not use ReferenceEquals with value types</value>
-  </data>
-  <data name="DoNotUseSHA1" xml:space="preserve">
-    <value>Do not use insecure cryptographic algorithm SHA1.</value>
-  </data>
-  <data name="DoNotUseSHA1Description" xml:space="preserve">
-    <value>This type implements SHA1, a cryptographically insecure hashing function. Hash collisions are computationally feasible for the SHA-1 and SHA-0 algorithms. Replace this usage with a SHA-2 family hash algorithm (SHA512, SHA384, SHA256).</value>
   </data>
   <data name="DoNotUseWeakCryptographicAlgorithms" xml:space="preserve">
     <value>Do Not Use Weak Cryptographic Algorithms</value>
@@ -1695,9 +1614,6 @@
   <data name="ProvidePublicParameterlessSafeHandleConstructorTitle" xml:space="preserve">
     <value>Provide a parameterless constructor that is as visible as the containing type for concrete types derived from 'System.Runtime.InteropServices.SafeHandle'</value>
   </data>
-  <data name="AddPublicParameterlessConstructor" xml:space="preserve">
-    <value>Add a public constructor that takes zero parameters</value>
-  </data>
   <data name="MakeParameterlessConstructorPublic" xml:space="preserve">
     <value>Make the constructor that takes zero parameters 'public'</value>
   </data>
@@ -2031,6 +1947,18 @@
   <data name="PreventNumericIntPtrUIntPtrBehavioralChangesConversionThrowsMessage" xml:space="preserve">
     <value>Starting with .NET 7 the explicit conversion '{0}' will throw when overflowing in a checked context. Wrap the expression with an 'unchecked' statement to restore the .NET 6 behavior.</value>
   </data>
+  <data name="UseStartsWithInsteadOfIndexOfComparisonWithZeroCodeFixTitle" xml:space="preserve">
+    <value>Use 'StartsWith'</value>
+  </data>
+  <data name="UseStartsWithInsteadOfIndexOfComparisonWithZeroDescription" xml:space="preserve">
+    <value>It is both clearer and faster to use 'StartsWith' instead of comparing the result of 'IndexOf' to zero.</value>
+  </data>
+  <data name="UseStartsWithInsteadOfIndexOfComparisonWithZeroMessage" xml:space="preserve">
+    <value>Use 'StartsWith' instead of comparing the result of 'IndexOf' to 0</value>
+  </data>
+  <data name="UseStartsWithInsteadOfIndexOfComparisonWithZeroTitle" xml:space="preserve">
+    <value>Use 'StartsWith' instead of 'IndexOf'</value>
+  </data>
   <data name="UseArgumentNullExceptionThrowHelperTitle" xml:space="preserve">
     <value>Use ArgumentNullException throw helper</value>
   </data>
@@ -2052,5 +1980,4 @@
   <data name="UseThrowHelperFix" xml:space="preserve">
     <value>Use '{0}.{1}'</value>
   </data>
-
 </root>

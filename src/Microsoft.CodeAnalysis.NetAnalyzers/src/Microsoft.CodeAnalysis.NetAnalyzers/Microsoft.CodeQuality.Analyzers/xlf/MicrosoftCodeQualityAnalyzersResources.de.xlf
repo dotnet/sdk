@@ -457,24 +457,9 @@
         <target state="translated">Über ComVisibleAttribute wird festgelegt, wie COM-Clients auf verwalteten Code zugreifen. Ein gutes Design gibt vor, dass Assemblys explizit auf COM-Sichtbarkeit hinweisen. COM-Sichtbarkeit kann für die ganze Assembly festgelegt und dann für einzelne Typen und Typenmember außer Kraft gesetzt werden. Wenn dieses Attribut nicht vorhanden ist, ist der Inhalt der Assembly für COM-Clients sichtbar.</target>
         <note />
       </trans-unit>
-      <trans-unit id="MarkAssembliesWithComVisibleMessageNoAttribute">
-        <source>Because {0} exposes externally visible types, mark it with ComVisible(false) at the assembly level and then mark all types within the assembly that should be exposed to COM clients with ComVisible(true).</source>
-        <target state="translated">Da "{0}" extern sichtbare Typen verfügbar macht, setzen Sie auf Assemblyebene eine Markierung mit "ComVisible(false)", und markieren Sie dann alle Typen innerhalb der Assembly, die für COM-Clients verfügbar gemacht werden sollen, mit "ComVisible(true)".</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="MarkAssembliesWithComVisibleMessageAttributeTrue">
-        <source>Consider changing the ComVisible attribute on {0} to false, and opting in at the type level.</source>
-        <target state="translated">Ziehen Sie in Betracht, das ComVisible-Attribut für "{0}" in "false" zu ändern und auf Typebene zu aktivieren.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="MarkAttributesWithAttributeUsageTitle">
         <source>Mark attributes with AttributeUsageAttribute</source>
         <target state="translated">Attribute mit AttributeUsageAttribute markieren</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="MarkAttributesWithAttributeUsageDescription">
-        <source>When you define a custom attribute, mark it by using AttributeUsageAttribute to indicate where in the source code the custom attribute can be applied. The meaning and intended usage of an attribute will determine its valid locations in code.</source>
-        <target state="translated">Wenn Sie ein benutzerdefiniertes Attribut definieren, markieren Sie es mit "AttributeUsageAttribute", um darauf hinzuweisen, wo im Quellcode das benutzerdefinierte Attribut angewendet werden kann. Die gültigen Stellen im Code werden durch die Bedeutung und beabsichtigte Verwendung eines Attributs festgelegt.</target>
         <note />
       </trans-unit>
       <trans-unit id="MarkAttributesWithAttributeUsageMessageDefault">
@@ -482,19 +467,9 @@
         <target state="translated">Geben Sie "AttributeUsage" für "{0}" an.</target>
         <note />
       </trans-unit>
-      <trans-unit id="MarkAttributesWithAttributeUsageMessageInherited">
-        <source>Even though attribute {0} inherits AttributeUsage from its base type, you should consider explicitly specifying AttributeUsage on the type to improve code readability and documentation.</source>
-        <target state="translated">Auch wenn das Attribut "{0}" die AttributeUsage von seinem Basistyp erbt, sollten Sie erwägen, AttributeUsage für den Typ explizit anzugeben, um die Lesbarkeit und Dokumentation des Codes zu verbessern.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="DefineAccessorsForAttributeArgumentsTitle">
         <source>Define accessors for attribute arguments</source>
         <target state="translated">Zugriffsmethoden für Attributargumente definieren</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DefineAccessorsForAttributeArgumentsDescription">
-        <source>Attributes can define mandatory arguments that must be specified when you apply the attribute to a target. These are also known as positional arguments because they are supplied to attribute constructors as positional parameters. For every mandatory argument, the attribute should also provide a corresponding read-only property so that the value of the argument can be retrieved at execution time. Attributes can also define optional arguments, which are also known as named arguments. These arguments are supplied to attribute constructors by name and should have a corresponding read/write property.</source>
-        <target state="translated">Attribute können obligatorische Argumente definieren, die beim Anwenden des Attributs auf ein Ziel angegeben werden müssen. Diese werden auch als positionelle Argumente bezeichnet, weil sie den Attributkonstruktoren als Positionsparameter bereitgestellt werden. Für jedes obligatorische Argument muss das Attribut auch eine entsprechende schreibgeschützte Eigenschaft angeben, damit der Wert des Arguments bei Ausführungszeit abgerufen werden kann. Attribute können zudem optionale Argumente definieren, die auch als benannte Argumente bezeichnet werden. Diese Argumente werden Attributkonstruktoren mit Namen angegeben und benötigen eine entsprechende Lese-/Schreibeigenschaft.</target>
         <note />
       </trans-unit>
       <trans-unit id="DefineAccessorsForAttributeArgumentsMessageDefault">
@@ -695,11 +670,6 @@
       <trans-unit id="OperatorsShouldHaveSymmetricalOverloadsDescription">
         <source>A type implements the equality or inequality operator and does not implement the opposite operator.</source>
         <target state="translated">Ein Typ implementiert den Operator für Gleichheit oder Ungleichheit und implementiert nicht den gegenteiligen Operator.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="OperatorsShouldHaveSymmetricalOverloadsMessage">
-        <source>Operators should have symmetrical overloads</source>
-        <target state="translated">Operatoren müssen symmetrische Überladungen aufweisen</target>
         <note />
       </trans-unit>
       <trans-unit id="CollectionPropertiesShouldBeReadOnlyTitle">
@@ -925,11 +895,6 @@
       <trans-unit id="ImplementStandardExceptionConstructorsMessageMissingConstructor">
         <source>Add the following constructor to {0}: {1}</source>
         <target state="translated">Fügen Sie "{0}" den folgenden Konstruktor hinzu: {1}.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementStandardExceptionConstructorsMessageAccessibility">
-        <source>Change the accessibility of {0} to {1}.</source>
-        <target state="translated">Ändern Sie die Zugänglichkeit von "{0}" in "{1}".</target>
         <note />
       </trans-unit>
       <trans-unit id="NestedTypesShouldNotBeVisibleTitle">
@@ -1682,26 +1647,6 @@
         <target state="translated">Ungültiger Eintrag in der Spezifikationsdatei für die Codemetrikregeln.</target>
         <note />
       </trans-unit>
-      <trans-unit id="ReviewUnusedParametersTitle">
-        <source>Review unused parameters</source>
-        <target state="translated">Nicht verwendete Parameter überprüfen</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ReviewUnusedParametersDescription">
-        <source>Avoid unused paramereters in your code. If the parameter cannot be removed, then change its name so it starts with an underscore and is optionally followed by an integer, such as '_', '_1', '_2', etc. These are treated as special discard symbol names.</source>
-        <target state="translated">Vermeiden Sie nicht verwendete Parameter in Ihrem Code. Wenn der Parameter nicht entfernt werden kann, ändern Sie dessen Namen so, dass er mit einem Unterstrich beginnt, dem optional eine Zahl angefügt wird. Beispiel: "_", "_1", "_2" usw. Diese werden als spezielle Symbolnamen für Ausschussparameter behandelt.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ReviewUnusedParametersMessage">
-        <source>Parameter {0} of method {1} is never used. Remove the parameter or use it in the method body.</source>
-        <target state="translated">Der Parameter "{0}" der Methode "{1}" wird niemals verwendet. Entfernen Sie den Parameter, oder verwenden Sie ihn im Methodentext.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="RemoveUnusedParameterMessage">
-        <source>Remove unused parameter</source>
-        <target state="translated">Nicht verwendete Parameter entfernen</target>
-        <note />
-      </trans-unit>
       <trans-unit id="DoNotIgnoreMethodResultsTitle">
         <source>Do not ignore method results</source>
         <target state="translated">Methodenergebnisse nicht ignorieren</target>
@@ -1974,12 +1919,12 @@
       </trans-unit>
       <trans-unit id="ValidateArgumentsOfPublicMethodsDescription">
         <source>An externally visible method dereferences one of its reference arguments without verifying whether that argument is 'null' ('Nothing' in Visual Basic). All reference arguments that are passed to externally visible methods should be checked against 'null'. If appropriate, throw an 'ArgumentNullException' when the argument is 'null'. If the method is designed to be called only by known assemblies, you should make the method internal.</source>
-        <target state="new">An externally visible method dereferences one of its reference arguments without verifying whether that argument is 'null' ('Nothing' in Visual Basic). All reference arguments that are passed to externally visible methods should be checked against 'null'. If appropriate, throw an 'ArgumentNullException' when the argument is 'null'. If the method is designed to be called only by known assemblies, you should make the method internal.</target>
+        <target state="translated">Eine extern sichtbare Methode dereferenziert eines ihrer Verweisargumente, ohne zu verifizieren, ob das Argument NULL ist („Nothing“ in Visual Basic). Alle Verweisargumente, die an extern sichtbare Methoden übergeben werden, müssen mit NULL überprüft werden. Lösen Sie gegebenenfalls eine „ArgumentNullException“ aus, wenn das Argument NULL ist. Wenn die Methode so konzipiert ist, dass sie nur von bekannten Assemblys aufgerufen wird, müssen Sie die Methode als intern festlegen.</target>
         <note />
       </trans-unit>
       <trans-unit id="ValidateArgumentsOfPublicMethodsMessage">
         <source>In externally visible method '{0}', validate parameter '{1}' is non-null before using it. If appropriate, throw an 'ArgumentNullException' when the argument is 'null'.</source>
-        <target state="new">In externally visible method '{0}', validate parameter '{1}' is non-null before using it. If appropriate, throw an 'ArgumentNullException' when the argument is 'null'.</target>
+        <target state="translated">Validieren Sie in der extern sichtbaren Methode „{0}“, dass der Parameter "{1}" ungleich NULL ist, bevor Sie ihn verwenden. Lösen Sie gegebenenfalls eine „ArgumentNullException“ aus, wenn das Argument NULL ist.</target>
         <note />
       </trans-unit>
       <trans-unit id="ValidateArgumentsOfPublicMethodsTitle">

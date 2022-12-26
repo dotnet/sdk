@@ -4968,6 +4968,39 @@ class Test
             await VerifyAnalyzerCSAsync(source);
         }
 
+        [Fact, WorkItem(4372, "https://github.com/dotnet/roslyn-analyzers/issues/6158")]
+        public async Task ChildApiNarrowedParentSupport_GuardingVersionShouldBeComparedWithChildVersion()
+        {
+            var source = @"
+using System;
+using System.Runtime.Versioning;
+
+[SupportedOSPlatform(""ios"")]
+[SupportedOSPlatform(""tvos"")]
+[SupportedOSPlatform(""maccatalyst"")]
+class Program
+{
+    [SupportedOSPlatform(""tvos10.2"")]
+    [SupportedOSPlatform(""ios10.3"")]
+    [SupportedOSPlatform(""maccatalyst10.3"")]
+    public static int P1 => 1;
+}
+class Test
+{
+    [SupportedOSPlatform(""ios10.0"")]
+    public void M1()
+    {
+        var rate = (OperatingSystem.IsIOSVersionAtLeast(10, 3) || OperatingSystem.IsMacCatalystVersionAtLeast(10, 3) || OperatingSystem.IsTvOSVersionAtLeast(10, 3))
+				    ? Program.P1 : 0; // guarded
+
+        if (OperatingSystem.IsIOSVersionAtLeast(10, 3) || OperatingSystem.IsMacCatalystVersionAtLeast(10, 3) || OperatingSystem.IsTvOSVersionAtLeast(10))
+            rate = [|Program.P1|]; // version of TvOS is not guarded
+    }
+}";
+
+            await VerifyAnalyzerCSAsync(source);
+        }
+
         [Fact]
         public async Task ApiAndGuardAttributeBothHasVersions_AttributeVersionWins()
         {

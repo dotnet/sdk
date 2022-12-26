@@ -1,9 +1,9 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Threading;
 using System.Threading.Tasks;
+using Analyzer.Utilities;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
@@ -30,11 +30,10 @@ namespace Microsoft.NetCore.Analyzers.Runtime
     /// </summary>
     public abstract class PreferStreamAsyncMemoryOverloadsFixer : CodeFixProvider
     {
+        private static readonly SyntaxAnnotation s_asMemorySymbolAnnotation = new("SymbolId", "System.MemoryExtensions");
+
         // Checks if the argument in the specified index has a name. If it doesn't, returns that arguments. If it does, then looks for the argument using the specified name, and returns it, or null if not found.
         protected abstract SyntaxNode? GetArgumentByPositionOrName(IInvocationOperation invocation, int index, string name, out bool isNamed);
-
-        // Verifies if a namespace has already been added to the usings/imports list.
-        protected abstract bool IsSystemNamespaceImported(IReadOnlyList<SyntaxNode> importList);
 
         // Verifies if the user passed `0` as the 1st argument (`offset`) and `buffer.Length` as the 2nd argument (`count`),
         // where `buffer` is the name of the variable passed as the 0th argument.
@@ -152,7 +151,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 SyntaxNode asMemoryInvocationNode = generator.InvocationExpression(
                     asMemoryExpressionNode,
                     namedStartNode.WithTriviaFrom(offsetNode),
-                    namedLengthNode.WithTriviaFrom(countNode));
+                    namedLengthNode.WithTriviaFrom(countNode)).WithAddImportsAnnotation().WithAdditionalAnnotations(s_asMemorySymbolAnnotation);
 
                 // Generate the new buffer argument, ensuring we include the buffer argument name if the user originally indicated one
                 replacedInvocationNode = GetNamedArgument(generator, asMemoryInvocationNode, isBufferNamed, "buffer")
@@ -175,14 +174,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             }
 
             SyntaxNode newInvocationExpression = generator.InvocationExpression(asyncMethodNode, nodeArguments).WithTriviaFrom(streamInstanceNode);
-
-            bool containsSystemImport = IsSystemNamespaceImported(generator.GetNamespaceImports(root));
-
-            // The invocation needs to be replaced before adding the import/using, it won't work the other way around
             SyntaxNode newRoot = generator.ReplaceNode(root, invocation.Syntax, newInvocationExpression.WithTriviaFrom(invocation.Syntax));
-            SyntaxNode newRootWithImports = containsSystemImport ? newRoot : generator.AddNamespaceImports(newRoot, generator.NamespaceImportDeclaration(nameof(System)));
 
-            return Task.FromResult(doc.WithSyntaxRoot(newRootWithImports));
+            return Task.FromResult(doc.WithSyntaxRoot(newRoot));
         }
     }
 }

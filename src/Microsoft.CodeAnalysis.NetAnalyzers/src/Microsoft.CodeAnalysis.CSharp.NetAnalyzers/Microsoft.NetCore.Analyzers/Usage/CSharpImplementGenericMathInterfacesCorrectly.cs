@@ -10,13 +10,13 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Usage
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
     public sealed class CSharpImplementGenericMathInterfacesCorrectly : ImplementGenericMathInterfacesCorrectly
     {
-        protected override SyntaxNode? FindTheTypeArgumentOfTheInterfaceFromTypeDeclaration(ISymbol typeSymbol, ISymbol anInterfaceSymbol)
+        protected override SyntaxNode? FindTheTypeArgumentOfTheInterfaceFromTypeDeclaration(ISymbol typeSymbol, ISymbol theInterfaceSymbol)
         {
             foreach (SyntaxReference syntaxReference in typeSymbol.DeclaringSyntaxReferences)
             {
                 SyntaxNode typeDefinition = syntaxReference.GetSyntax();
                 if (typeDefinition is BaseTypeDeclarationSyntax baseType &&
-                    FindTypeArgumentFromBaseInterfaceList(baseType.BaseList.Types, anInterfaceSymbol) is { } node)
+                    FindTypeArgumentFromBaseInterfaceList(baseType.BaseList.Types, theInterfaceSymbol) is { } node)
                 {
                     return node;
                 }

@@ -457,24 +457,9 @@
         <target state="translated">ComVisibleAttribute는 COM 클라이언트가 관리 코드에 액세스하는 방법을 결정합니다. 어셈블리가 명시적으로 COM 표시 유형 지정하는 것이 좋습니다. COM 표시 유형은 전체 어셈블리에 대해 설정된 다음 개별 형식과 형식 멤버에 대해 재정의될 수 있습니다. 이 특성이 표시되지 않는 경우 어셈블리 콘텐츠는 COM 클라이언트에 표시되지 않습니다.</target>
         <note />
       </trans-unit>
-      <trans-unit id="MarkAssembliesWithComVisibleMessageNoAttribute">
-        <source>Because {0} exposes externally visible types, mark it with ComVisible(false) at the assembly level and then mark all types within the assembly that should be exposed to COM clients with ComVisible(true).</source>
-        <target state="translated">{0}이(가) 외부에 표시되는 형식을 노출하므로 어셈블리 수준에서 ComVisible(false)로 표시한 다음 COM 클라이언트에서 ComVisible(true)로 노출되어야 하는 어셈블리 내에서 모든 형식을 표시하세요.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="MarkAssembliesWithComVisibleMessageAttributeTrue">
-        <source>Consider changing the ComVisible attribute on {0} to false, and opting in at the type level.</source>
-        <target state="translated">{0}에서 ComVisible 특성을 false로 변경하고 형식 수준에서 선택하세요.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="MarkAttributesWithAttributeUsageTitle">
         <source>Mark attributes with AttributeUsageAttribute</source>
         <target state="translated">AttributeUsageAttribute로 특성을 표시하세요.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="MarkAttributesWithAttributeUsageDescription">
-        <source>When you define a custom attribute, mark it by using AttributeUsageAttribute to indicate where in the source code the custom attribute can be applied. The meaning and intended usage of an attribute will determine its valid locations in code.</source>
-        <target state="translated">사용자 지정 특성을 정의하는 경우 AttributeUsageAttribute를 사용하여 표시하고 사용자 지정 특성이 적용될 수 있는 소스 코드 위치를 나타내세요. 특성의 의미와 용도가 해당 특성의 유효한 코드 위치를 결정합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="MarkAttributesWithAttributeUsageMessageDefault">
@@ -482,19 +467,9 @@
         <target state="translated">{0}에서 AttributeUsage를 지정하세요.</target>
         <note />
       </trans-unit>
-      <trans-unit id="MarkAttributesWithAttributeUsageMessageInherited">
-        <source>Even though attribute {0} inherits AttributeUsage from its base type, you should consider explicitly specifying AttributeUsage on the type to improve code readability and documentation.</source>
-        <target state="translated">{0} 특성이 해당 특성의 기본 형식에서 AttributeUsage를 상속해도 형식에서 AttributeUsage를 명시적으로 지정하여 코드 가독성과 문서 품질을 향상시켜야 합니다.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="DefineAccessorsForAttributeArgumentsTitle">
         <source>Define accessors for attribute arguments</source>
         <target state="translated">특성 인수의 접근자를 정의하세요.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DefineAccessorsForAttributeArgumentsDescription">
-        <source>Attributes can define mandatory arguments that must be specified when you apply the attribute to a target. These are also known as positional arguments because they are supplied to attribute constructors as positional parameters. For every mandatory argument, the attribute should also provide a corresponding read-only property so that the value of the argument can be retrieved at execution time. Attributes can also define optional arguments, which are also known as named arguments. These arguments are supplied to attribute constructors by name and should have a corresponding read/write property.</source>
-        <target state="translated">특성은 대상에 특성을 적용할 때 지정되어야 하는 필수 인수를 정의할 수 있습니다. 필수 인수는 위치 매개 변수로 특성 생성자에 제공되기 때문에 위치 인수라고도 알려져 있습니다. 모든 필수 인수에 대해 특성은 인수 값이 실행 시간에 검색될 수 있도록 해당 읽기 전용 속성도 제공해야 합니다. 특성은 명명된 인수라고도 알려진 선택적 인수를 정의할 수도 있습니다. 선택적 인수는 특성 생성자에 이름별로 제공되며 해당 읽기/쓰기 속성을 가지고 있어야 합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="DefineAccessorsForAttributeArgumentsMessageDefault">
@@ -695,11 +670,6 @@
       <trans-unit id="OperatorsShouldHaveSymmetricalOverloadsDescription">
         <source>A type implements the equality or inequality operator and does not implement the opposite operator.</source>
         <target state="translated">형식은 같음 또는 같지 않음 연산자를 구현하지만 반대 연산자는 구현하지 않습니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="OperatorsShouldHaveSymmetricalOverloadsMessage">
-        <source>Operators should have symmetrical overloads</source>
-        <target state="translated">연산자에는 대칭 오버로드가 있어야 합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="CollectionPropertiesShouldBeReadOnlyTitle">
@@ -925,11 +895,6 @@
       <trans-unit id="ImplementStandardExceptionConstructorsMessageMissingConstructor">
         <source>Add the following constructor to {0}: {1}</source>
         <target state="translated">{1} 생성자를 {0}에 추가하세요.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementStandardExceptionConstructorsMessageAccessibility">
-        <source>Change the accessibility of {0} to {1}.</source>
-        <target state="translated">{0}의 접근성을 {1}(으)로 변경하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="NestedTypesShouldNotBeVisibleTitle">
@@ -1682,26 +1647,6 @@
         <target state="translated">코드 메트릭 규착 사양 파일의 잘못된 항목</target>
         <note />
       </trans-unit>
-      <trans-unit id="ReviewUnusedParametersTitle">
-        <source>Review unused parameters</source>
-        <target state="translated">사용하지 않는 매개 변수를 검토하세요.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ReviewUnusedParametersDescription">
-        <source>Avoid unused paramereters in your code. If the parameter cannot be removed, then change its name so it starts with an underscore and is optionally followed by an integer, such as '_', '_1', '_2', etc. These are treated as special discard symbol names.</source>
-        <target state="translated">코드에 사용되지 않는 매개 변수를 사용하지 않도록 합니다. 매개 변수를 제거할 수 없는 경우 이름을 변경하여 밑줄로 시작하고 필요에 따라 뒤에 정수가 있도록 합니다(예: '_', '_1', '_2' 등). 해당 이름은 특수 무시 기호 이름으로 처리됩니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ReviewUnusedParametersMessage">
-        <source>Parameter {0} of method {1} is never used. Remove the parameter or use it in the method body.</source>
-        <target state="translated">{1} 메서드의 {0} 매개 변수가 사용되지 않았습니다. 매개 변수를 제거하거나 메서드 본문에 사용하세요.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="RemoveUnusedParameterMessage">
-        <source>Remove unused parameter</source>
-        <target state="translated">사용하지 않는 매개 변수를 제거하세요.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="DoNotIgnoreMethodResultsTitle">
         <source>Do not ignore method results</source>
         <target state="translated">메서드 결과를 무시하지 마세요.</target>
@@ -1974,12 +1919,12 @@
       </trans-unit>
       <trans-unit id="ValidateArgumentsOfPublicMethodsDescription">
         <source>An externally visible method dereferences one of its reference arguments without verifying whether that argument is 'null' ('Nothing' in Visual Basic). All reference arguments that are passed to externally visible methods should be checked against 'null'. If appropriate, throw an 'ArgumentNullException' when the argument is 'null'. If the method is designed to be called only by known assemblies, you should make the method internal.</source>
-        <target state="new">An externally visible method dereferences one of its reference arguments without verifying whether that argument is 'null' ('Nothing' in Visual Basic). All reference arguments that are passed to externally visible methods should be checked against 'null'. If appropriate, throw an 'ArgumentNullException' when the argument is 'null'. If the method is designed to be called only by known assemblies, you should make the method internal.</target>
+        <target state="translated">외부에 표시되는 메서드는 인수가 'null'(Visual Basic의 'Nothing')인지 확인하지 않고 참조 인수 중 하나를 역참조합니다. 외부에 표시되는 메서드에 전달되는 모든 참조 인수가 null인지 확인해야 합니다. 해당하는 경우 인수가 'null'이면 'ArgumentNullException'을 throw합니다. 메서드가 알려진 어셈블리에서만 호출되도록 설계되어 있으면 메서드를 internal로 설정해야 합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="ValidateArgumentsOfPublicMethodsMessage">
         <source>In externally visible method '{0}', validate parameter '{1}' is non-null before using it. If appropriate, throw an 'ArgumentNullException' when the argument is 'null'.</source>
-        <target state="new">In externally visible method '{0}', validate parameter '{1}' is non-null before using it. If appropriate, throw an 'ArgumentNullException' when the argument is 'null'.</target>
+        <target state="translated">외부에 표시되는 메서드 '{0}'에서 사용 전에 '{1}' 매개 변수가 null이 아닌지 확인합니다. 해당하는 경우 인수가 'null'이면 'ArgumentNullException'을 throw합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="ValidateArgumentsOfPublicMethodsTitle">

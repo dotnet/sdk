@@ -564,10 +564,13 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                                     }
                                 }
 
-                                if (attribute.SupportedFirst != null &&
-                                    info.Version.IsGreaterThanOrEqualTo(attribute.SupportedFirst))
+                                var checkVersion = attribute.SupportedSecond ?? attribute.SupportedFirst;
+
+                                if (checkVersion != null &&
+                                    info.Version.IsGreaterThanOrEqualTo(checkVersion))
                                 {
                                     attribute.SupportedFirst = null;
+                                    attribute.SupportedSecond = null;
                                     RemoveUnsupportedWithLessVersion(info.Version, attribute);
                                     RemoveOtherSupportsOnDifferentPlatforms(attributes, info.PlatformName);
                                 }
@@ -820,8 +823,11 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                     csPlatformNames = string.Join(CommaSeparator, csPlatformNames, PlatformCompatibilityAllPlatforms);
                 }
 
-                var rule = supportedRule ? SwitchSupportedRule(callsite) : SwitchRule(callsite, true);
-                context.ReportDiagnostic(operation.CreateDiagnostic(rule, operationName, JoinNames(platformNames), csPlatformNames));
+                if (!platformNames.IsEmpty)
+                {
+                    var rule = supportedRule ? SwitchSupportedRule(callsite) : SwitchRule(callsite, true);
+                    context.ReportDiagnostic(operation.CreateDiagnostic(rule, operationName, JoinNames(platformNames), csPlatformNames));
+                }
 
                 if (!obsoletedPlatforms.IsEmpty)
                 {
@@ -2220,7 +2226,9 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
             return null;
         }
 
+#pragma warning disable CA1055 // URI-like return values should not be strings - https://github.com/dotnet/roslyn-analyzers/issues/6379
         private static string? PopulateUrl(AttributeData attribute)
+#pragma warning restore CA1055 // URI-like return values should not be strings
         {
             if (attribute.NamedArguments.Length == 1 && attribute.NamedArguments[0].Key is "Url")
             {

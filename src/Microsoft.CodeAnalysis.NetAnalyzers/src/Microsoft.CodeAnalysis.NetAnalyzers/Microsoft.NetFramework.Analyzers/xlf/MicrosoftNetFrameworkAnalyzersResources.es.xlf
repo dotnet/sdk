@@ -62,81 +62,6 @@
         <target state="translated">Llamar a métodos de clase base en tipos ISerializable</target>
         <note />
       </trans-unit>
-      <trans-unit id="UseXmlReaderForDataSetReadXmlTitle">
-        <source>Use XmlReader for DataSet ReadXml</source>
-        <target state="translated">Usar XmlReader para DataSet ReadXml</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UseXmlReaderForDataSetReadXmlDescription">
-        <source>Do not use unsafe overloads of System.Data.DataSet.ReadXml. This API internally enables DTD processing on the XML reader instance used, and uses UrlResolver for resolving external XML entities. The outcome is information disclosure. Content from file system or network shares for the machine processing the XML can be exposed to attacker. In addition, an attacker can use this as a DoS vector.</source>
-        <target state="translated">No utilice sobrecargas no seguras de System.Data.DataSet.ReadXml. Esta API habilita internamente el procesado de DTD en la instancia utilizada del lector XML, y utiliza UrlResolver para resolver entidades XML externas. El resultado es la revelación de información. El contenido del sistema de archivos o los recursos compartidos de red de la máquina que procesa el XML pueden resultar expuestos al atacante. Además, un atacante puede usar esto como vector de denegación de servicio.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UseXmlReaderForDataSetReadXmlMessage">
-        <source>Use XmlReader for DataSet ReadXml</source>
-        <target state="translated">Usar XmlReader para DataSet ReadXml</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UseXmlReaderForDataSetReadXmlSchemaTitle">
-        <source>Use XmlReader for DataSet ReadXmlSchema</source>
-        <target state="translated">Usar XmlReader para DataSet ReadXmlSchema</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UseXmlReaderForDataSetReadXmlSchemaDescription">
-        <source>Do not use unsafe overloads of System.Data.DataSet.ReadXmlSchema. This API internally enables DTD processing on the XML reader instance used, and uses UrlResolver for resolving external XML entities. The outcome is information disclosure. Content from file system or network shares for the machine processing the XML can be exposed to attacker. In addition, an attacker can use this as a DoS vector.</source>
-        <target state="translated">No utilice sobrecargas no seguras de System.Data.DataSet.ReadXmlSchema. Esta API habilita internamente el procesado de DTD en la instancia utilizada del lector XML, y utiliza UrlResolver para resolver entidades XML externas. El resultado es la revelación de información. El contenido del sistema de archivos o los recursos compartidos de red de la máquina que procesa el XML pueden resultar expuestos al atacante. Además, un atacante puede usar esto como vector de denegación de servicio.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UseXmlReaderForDataSetReadXmlSchemaMessage">
-        <source>Use XmlReader for DataSet ReadXmlSchema</source>
-        <target state="translated">Usar XmlReader para DataSet ReadXmlSchema</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ReviewDataViewCollectionStringTitle">
-        <source>Review DataView CollectionString</source>
-        <target state="translated">Revisar DataView CollectionString</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ReviewDataViewCollectionStringDescription">
-        <source>Review code to insure that usage of System.Data.DataViewManager.DataViewSettingCollectionString input is sanitized to not contain DTD. Enabling DTD processing on the XML reader and using UrlResolver for resolving external XML entities may lead to information disclosure. Content from file system or network shares for the machine processing the XML can be exposed to attacker. In addition, an attacker can use this as a DoS vector.</source>
-        <target state="translated">Revise el código para asegurarse de que el uso de la entrada de System.Data.DataViewManager.DataViewSettingCollectionString está saneada para no contener DTD. La habilitación del procesamiento de DTD en el lector XML y el uso de UrlResolver para resolver las entidades XML externas puede provocar una revelación de información. El contenido del sistema de archivos o los recursos compartidos de red de la máquina que procesa el XML pueden resultar expuestos al atacante. Además, un atacante puede usar esto como vector de denegación de servicio.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ReviewDataViewCollectionStringMessage">
-        <source>Review DataView CollectionString</source>
-        <target state="translated">Revisar DataView CollectionString</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UseXmlReaderForDataTableReadXmlTitle">
-        <source>Use XmlReader for DataTable ReadXml</source>
-        <target state="translated">Usar XmlReader para DataTable ReadXml</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UseXmlReaderForDataTableReadXmlDescription">
-        <source>Do not use unsafe overloads of System.Data.DataTable.ReadXml. This API internally enables DTD processing on the XML reader instance used, and uses UrlResolver for resolving external XML entities. The outcome is information disclosure. Content from file system or network shares for the machine processing the XML can be exposed to attacker. In addition, an attacker can use this as a DoS vector.</source>
-        <target state="translated">No utilice sobrecargas no seguras de System.Data.DataTable.ReadXml. Esta API habilita internamente el procesado de DTD en la instancia utilizada del lector XML, y utiliza UrlResolver para resolver entidades XML externas. El resultado es la revelación de información. El contenido del sistema de archivos o los recursos compartidos de red de la máquina que procesa el XML pueden resultar expuestos al atacante. Además, un atacante puede usar esto como vector de denegación de servicio.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UseXmlReaderForDataTableReadXmlMessage">
-        <source>Use XmlReader for DataTable ReadXml</source>
-        <target state="translated">Usar XmlReader para DataTable ReadXml</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UseXmlReaderForDataTableReadXmlSchemaTitle">
-        <source>Use XmlReader for DataTable ReadXmlSchema</source>
-        <target state="translated">Usar XmlReader para DataTable ReadXmlSchema</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UseXmlReaderForDataTableReadXmlSchemaDescription">
-        <source>Checks for usage of an unsafe overload of  System.Data.DataTable.ReadXmlSchema. This API internally enables DTD processing on the XML reader instance used, and uses UrlResolver for resolving external XML entities. The outcome is information disclosure. Content from file system or network shares for the machine processing the XML can be exposed to attacker. In addition, an attacker can use this as a DoS vector.</source>
-        <target state="translated">Comprobaciones para el uso de una sobrecarga no segura de System.Data.DataTable.ReadXmlSchema. Esta API habilita internamente el procesado de DTD en la instancia utilizada del lector XML, y utiliza UrlResolver para resolver entidades XML externas. El resultado es la revelación de información. El contenido del sistema de archivos o los recursos compartidos de red de la máquina que procesa el XML pueden resultar expuestos al atacante. Además, un atacante puede usar esto como vector de denegación de servicio.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UseXmlReaderForDataTableReadXmlSchemaMessage">
-        <source>Use XmlReader for DataTable ReadXmlSchema</source>
-        <target state="translated">Usar XmlReader para DataTable ReadXmlSchema</target>
-        <note />
-      </trans-unit>
       <trans-unit id="DoNotCatchCorruptedStateExceptions">
         <source>Do Not Catch Corrupted State Exceptions</source>
         <target state="translated">No tomar excepciones de estado dañado</target>
@@ -210,11 +135,6 @@
       <trans-unit id="DoNotUseDtdProcessingOverloadsMessage">
         <source>Unsafe overload of '{0}' method</source>
         <target state="translated">Sobrecarga no segura del método "{0}"</target>
-        <note>CA3075</note>
-      </trans-unit>
-      <trans-unit id="DoNotUseDtdProcessingOverloads">
-        <source>Insecure DTD Processing</source>
-        <target state="translated">Procesamiento de DTD no seguro</target>
         <note>CA3075</note>
       </trans-unit>
       <trans-unit id="DoNotUseSetInnerXmlMessage">

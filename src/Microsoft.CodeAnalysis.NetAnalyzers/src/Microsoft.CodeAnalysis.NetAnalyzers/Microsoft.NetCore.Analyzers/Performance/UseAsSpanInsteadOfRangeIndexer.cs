@@ -116,8 +116,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                         indexerArgument = elementReference.Indices[0];
                         containingType = elementReference.ArrayReference.Type;
                     }
-                    else if (operationContext.Operation.Kind == OperationKind.None
-                        || operationContext.Operation.Kind == OperationKindEx.ImplicitIndexerReference)
+                    else if (operationContext.Operation.Kind is OperationKind.None or OperationKindEx.ImplicitIndexerReference)
                     {
                         // The forward support via the "None" operation kind is only available for C#.
                         if (operationContext.Compilation.Language != LanguageNames.CSharp)

@@ -1,6 +1,5 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
-using System;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
@@ -952,25 +951,8 @@ End Class
         {
             await new VerifyCS.Test
             {
-                ReferenceAssemblies = new ReferenceAssemblies(""), // workaround for lack of .NET 7 Preview 4 reference assemblies
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net70,
                 TestCode = @"
-namespace System
-{
-    public class Object { }
-    public abstract class ValueType { }
-    public struct Void { }
-    public class String { }
-    public interface IFormatProvider { }
-    public struct Guid
-    {
-        public static Guid Parse(string s) => default;
-        public static Guid Parse(string s, IFormatProvider provider) => default;
-    }
-}
-namespace System.Globalization
-{
-    public class CultureInfo : IFormatProvider { }
-}
 namespace Test
 {
     using System;

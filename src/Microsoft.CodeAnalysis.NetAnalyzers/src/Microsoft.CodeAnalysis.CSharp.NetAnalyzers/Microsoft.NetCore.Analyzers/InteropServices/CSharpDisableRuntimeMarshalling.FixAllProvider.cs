@@ -26,7 +26,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 if (document.Project.CompilationOptions is CSharpCompilationOptions { AllowUnsafe: false })
                 {
                     // We can't code fix if unsafe code isn't allowed.
-                    return await document.GetSyntaxRootAsync(fixAllContext.CancellationToken);
+                    return await document.GetSyntaxRootAsync(fixAllContext.CancellationToken).ConfigureAwait(false);
                 }
 
                 var editor = await DocumentEditor.CreateAsync(document, fixAllContext.CancellationToken).ConfigureAwait(false);

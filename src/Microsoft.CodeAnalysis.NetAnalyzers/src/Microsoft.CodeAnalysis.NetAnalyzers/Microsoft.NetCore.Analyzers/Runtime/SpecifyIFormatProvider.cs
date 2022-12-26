@@ -97,16 +97,19 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             var boolType = context.Compilation.GetSpecialType(SpecialType.System_Boolean);
             var guidType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemGuid);
 
-            var builder = ImmutableHashSet.CreateBuilder<INamedTypeSymbol>();
-            builder.AddIfNotNull(charType);
-            builder.AddIfNotNull(boolType);
-            builder.AddIfNotNull(stringType);
-            builder.AddIfNotNull(guidType);
-            var invariantToStringTypes = builder.ToImmutableHashSet();
+            var nullableT = context.Compilation.GetSpecialType(SpecialType.System_Nullable_T);
+            var invariantToStringMethodsBuilder = ImmutableHashSet.CreateBuilder<IMethodSymbol>();
+            AddValidToStringMethods(invariantToStringMethodsBuilder, nullableT, charType);
+            AddValidToStringMethods(invariantToStringMethodsBuilder, nullableT, boolType);
+            AddValidToStringMethods(invariantToStringMethodsBuilder, nullableT, stringType);
+            AddValidToStringMethods(invariantToStringMethodsBuilder, nullableT, guidType);
+            var invariantToStringMethods = invariantToStringMethodsBuilder.ToImmutable();
 
-            var dateTimeType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemDateTime);
-            var dateTimeOffsetType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemDateTimeOffset);
-            var timeSpanType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemTimeSpan);
+            var dateTimeToStringFormatMethod = GetToStringWithFormatStringParameter(context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemDateTime));
+
+            var dateTimeOffsetToStringFormatMethod = GetToStringWithFormatStringParameter(context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemDateTimeOffset));
+
+            var timeSpanToStringFormatMethod = GetToStringWithFormatStringParameter(context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemTimeSpan));
 
             var stringFormatMembers = stringType.GetMembers("Format").OfType<IMethodSymbol>();
 
@@ -145,6 +148,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             var installedUICulturePropertyOfComputerInfoType = computerInfoType?.GetMembers("InstalledUICulture").OfType<IPropertySymbol>().FirstOrDefault();
 
             var obsoleteAttributeType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemObsoleteAttribute);
+
+            var guidParseMethods = guidType?.GetMembers("Parse") ?? ImmutableArray<ISymbol>.Empty;
+
             #endregion
 
             context.RegisterOperationAction(oaContext =>
@@ -157,8 +163,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 targetMethod.ContainingType.IsErrorType() ||
                 (activatorType != null && activatorType.Equals(targetMethod.ContainingType)) ||
                 (resourceManagerType != null && resourceManagerType.Equals(targetMethod.ContainingType)) ||
-                IsValidToStringCall(invocationExpression, invariantToStringTypes, dateTimeType, dateTimeOffsetType, timeSpanType) ||
-                IsValidParseCall(invocationExpression, guidType))
+                IsValidToStringCall(invocationExpression, invariantToStringMethods, dateTimeToStringFormatMethod, dateTimeOffsetToStringFormatMethod, timeSpanToStringFormatMethod) ||
+                IsValidParseCall(invocationExpression, guidParseMethods))
                 {
                     return;
                 }
@@ -280,6 +286,25 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             }, OperationKind.Invocation);
         }
 
+        private static IMethodSymbol? GetToStringWithFormatStringParameter(INamedTypeSymbol? type)
+        {
+            return type?.GetMembers("ToString").OfType<IMethodSymbol>().FirstOrDefault(s => s.Parameters is [{ Type.SpecialType: SpecialType.System_String }]);
+        }
+
+        private static void AddValidToStringMethods(ImmutableHashSet<IMethodSymbol>.Builder validToStringMethodsBuilder, INamedTypeSymbol nullableT, INamedTypeSymbol? type)
+        {
+            if (type is null)
+            {
+                return;
+            }
+
+            validToStringMethodsBuilder.AddRange(GetToStringMethods(type));
+            validToStringMethodsBuilder.AddRange(GetToStringMethods(nullableT.Construct(type)));
+
+            static IEnumerable<IMethodSymbol> GetToStringMethods(INamedTypeSymbol namedTypeSymbol)
+                => namedTypeSymbol.GetMembers("ToString").OfType<IMethodSymbol>().WhereNotNull();
+        }
+
         private static IEnumerable<int> GetIndexesOfParameterType(IMethodSymbol targetMethod, INamedTypeSymbol formatProviderType)
         {
             return targetMethod.Parameters
@@ -293,17 +318,11 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             return ParameterInfo.GetParameterInfo(type, isArray, arrayRank, isParams);
         }
 
-        private static bool IsValidToStringCall(IInvocationOperation invocationOperation, ImmutableHashSet<INamedTypeSymbol> invariantToStringTypes,
-            INamedTypeSymbol? dateTimeType, INamedTypeSymbol? dateTimeOffsetType, INamedTypeSymbol? timeSpanType)
+        private static bool IsValidToStringCall(IInvocationOperation invocationOperation, ImmutableHashSet<IMethodSymbol> validToStringMethods,
+            IMethodSymbol? dateTimeToStringFormatMethod, IMethodSymbol? dateTimeOffsetToStringFormatMethod, IMethodSymbol? timeSpanToStringFormatMethod)
         {
             var targetMethod = invocationOperation.TargetMethod;
-
-            if (targetMethod.Name != "ToString")
-            {
-                return false;
-            }
-
-            if (invariantToStringTypes.Contains(UnwrapNullableValueTypes(targetMethod.ContainingType)))
+            if (validToStringMethods.Contains(targetMethod))
             {
                 return true;
             }
@@ -316,44 +335,20 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             }
 
             // Handle invariant format specifiers, see https://github.com/dotnet/roslyn-analyzers/issues/3507
-            if ((dateTimeType != null && targetMethod.ContainingType.Equals(dateTimeType)) ||
-                (dateTimeOffsetType != null && targetMethod.ContainingType.Equals(dateTimeOffsetType)))
+            if (targetMethod.Equals(dateTimeToStringFormatMethod, SymbolEqualityComparer.Default) || targetMethod.Equals(dateTimeOffsetToStringFormatMethod, SymbolEqualityComparer.Default))
             {
                 return s_dateInvariantFormats.Contains(format);
             }
 
-            if (timeSpanType != null && targetMethod.ContainingType.Equals(timeSpanType))
+            if (targetMethod.Equals(timeSpanToStringFormatMethod, SymbolEqualityComparer.Default))
             {
                 return format == "c";
             }
 
             return false;
-
-            //  Local functions
-
-            static INamedTypeSymbol UnwrapNullableValueTypes(INamedTypeSymbol typeSymbol)
-            {
-                if (typeSymbol.IsNullableValueType() && typeSymbol.TypeArguments[0] is INamedTypeSymbol nullableTypeArgument)
-                    return nullableTypeArgument;
-                return typeSymbol;
-            }
         }
 
-        private static bool IsValidParseCall(IInvocationOperation invocationOperation, INamedTypeSymbol? guidType)
-        {
-            var targetMethod = invocationOperation.TargetMethod;
-
-            if (targetMethod.Name != "Parse")
-            {
-                return false;
-            }
-
-            if (targetMethod.ContainingType.Equals(guidType))
-            {
-                return true;
-            }
-
-            return false;
-        }
+        private static bool IsValidParseCall(IInvocationOperation invocationOperation, ImmutableArray<ISymbol> guidParseMethods)
+            => guidParseMethods.Contains(invocationOperation.TargetMethod);
     }
 }
