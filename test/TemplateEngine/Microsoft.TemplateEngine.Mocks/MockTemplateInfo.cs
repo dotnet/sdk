@@ -29,6 +29,8 @@ namespace Microsoft.TemplateEngine.Mocks
 
         private string[] _shortNameList = Array.Empty<string>();
 
+        private readonly bool _preferDefaultName = true;
+
         private Guid[] _postActions = Array.Empty<Guid>();
 
         private TemplateConstraintInfo[] _constraints = Array.Empty<TemplateConstraintInfo>();
@@ -87,6 +89,8 @@ namespace Microsoft.TemplateEngine.Mocks
         }
 
         public IReadOnlyList<string> ShortNameList => _shortNameList;
+
+        public bool PreferDefaultName => _preferDefaultName;
 
         [Obsolete("Use ParameterDefinitionSet instead.")]
         IReadOnlyDictionary<string, ICacheTag> ITemplateInfo.Tags => throw new NotImplementedException();

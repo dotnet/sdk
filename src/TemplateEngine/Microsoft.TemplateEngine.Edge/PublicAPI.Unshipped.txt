@@ -3,3 +3,4 @@ Microsoft.TemplateEngine.Edge.Settings.ITemplateInfoHostJsonCache.HostData.get -
 Microsoft.TemplateEngine.Edge.VirtualEnvironment
 Microsoft.TemplateEngine.Edge.VirtualEnvironment.VirtualEnvironment(System.Collections.Generic.IReadOnlyDictionary<string!, string!>? virtualEnvironemnt, bool includeRealEnvironment) -> void
 static Microsoft.TemplateEngine.Edge.DefaultEnvironment.FetchEnvironmentVariables() -> System.Collections.Generic.IReadOnlyDictionary<string!, string!>!
+Microsoft.TemplateEngine.Edge.FilterableTemplateInfo.PreferDefaultName.get -> bool

@@ -8,3 +8,4 @@ Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions.IMacro<T>.Ev
 Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.BindSymbol.DataType.get -> string?
 Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.ConditionedConfigurationElement.EvaluateCondition(Microsoft.Extensions.Logging.ILogger! logger, Microsoft.TemplateEngine.Abstractions.IVariableCollection! variables) -> bool
 Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.TemplateConfigModel.Identity.get -> string!
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.TemplateConfigModel.PreferDefaultName.get -> bool

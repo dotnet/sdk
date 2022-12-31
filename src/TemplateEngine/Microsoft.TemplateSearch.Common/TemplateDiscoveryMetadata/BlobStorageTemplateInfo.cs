@@ -122,6 +122,9 @@ namespace Microsoft.TemplateSearch.Common
         public IReadOnlyList<string> ShortNameList { get; private set; }
 
         [JsonIgnore]
+        public bool PreferDefaultName { get; private set; }
+
+        [JsonIgnore]
         [Obsolete]
         public IReadOnlyDictionary<string, ICacheTag> Tags { get; private set; } = new Dictionary<string, ICacheTag>();
 

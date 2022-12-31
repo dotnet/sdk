@@ -49,6 +49,9 @@ namespace Microsoft.TemplateSearch.Common
         public IReadOnlyList<string> ShortNameList => TemplateInfo.ShortNameList;
 
         /// <inheritdoc/>
+        bool ITemplateInfo.PreferDefaultName => TemplateInfo.PreferDefaultName;
+
+        /// <inheritdoc/>
         public string? Author => TemplateInfo.Author;
 
         /// <inheritdoc/>

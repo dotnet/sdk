@@ -354,6 +354,11 @@ Podrobnosti: {0}.</target>
         <target state="translated">Rozpoznaly se destruktivní změny.</target>
         <note />
       </trans-unit>
+      <trans-unit id="TemplateCreator_TemplateCreationResult_Error_NoDefaultName">
+        <source>Failed to create template: the template name is not specified. Template configuration does not configure a default name that can be used when name is not specified. Specify the name for the template when instantiating or configure a default name in the template configuration.</source>
+        <target state="new">Failed to create template: the template name is not specified. Template configuration does not configure a default name that can be used when name is not specified. Specify the name for the template when instantiating or configure a default name in the template configuration.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="TemplateInfo_Warning_FailedToReadHostData">
         <source>Failed to load host data in {0} at {1}.</source>
         <target state="translated">Nepovedlo se načíst data hostitele v {0} v {1}.</target>

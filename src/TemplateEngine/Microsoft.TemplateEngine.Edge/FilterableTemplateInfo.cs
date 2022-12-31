@@ -47,6 +47,8 @@ namespace Microsoft.TemplateEngine.Edge
 
         public IReadOnlyList<string> GroupShortNameList { get; set; }
 
+        public bool PreferDefaultName { get; private set; }
+
         public IReadOnlyDictionary<string, ICacheTag> Tags { get; private set; }
 
         public IReadOnlyDictionary<string, ICacheParameter> CacheParameters { get; private set; }
@@ -92,6 +94,7 @@ namespace Microsoft.TemplateEngine.Edge
                 Precedence = source.Precedence,
                 Name = source.Name,
                 ShortName = source.ShortName,
+                PreferDefaultName = source.PreferDefaultName,
                 Tags = source.Tags,
                 CacheParameters = source.CacheParameters,
                 ParameterDefinitions = source.ParameterDefinitions,

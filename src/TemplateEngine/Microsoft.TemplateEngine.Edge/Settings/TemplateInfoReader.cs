@@ -41,6 +41,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 }
 
                 info.DefaultName = entry.ToString(nameof(DefaultName));
+                info.PreferDefaultName = entry.ToBool(nameof(PreferDefaultName));
                 info.Description = entry.ToString(nameof(Description));
                 info.GeneratorId = Guid.Parse(entry.ToString(nameof(GeneratorId)));
                 info.GroupIdentity = entry.ToString(nameof(GroupIdentity));

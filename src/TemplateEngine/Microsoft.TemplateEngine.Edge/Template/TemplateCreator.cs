@@ -103,7 +103,35 @@ namespace Microsoft.TemplateEngine.Edge.Template
                 return new TemplateCreationResult(CreationResultStatus.NotFound, templateInfo.Name, LocalizableStrings.TemplateCreator_TemplateCreationResult_Error_CouldNotLoadTemplate);
             }
 
-            string? realName = name ?? fallbackName ?? template.DefaultName;
+            string? realName = null;
+            if (!string.IsNullOrEmpty(name))
+            {
+                realName = name;
+            }
+            else if (templateInfo.PreferDefaultName)
+            {
+                if (string.IsNullOrEmpty(templateInfo.DefaultName))
+                {
+                    return new TemplateCreationResult(
+                        CreationResultStatus.TemplateIssueDetected, template.Name, LocalizableStrings.TemplateCreator_TemplateCreationResult_Error_NoDefaultName);
+                }
+                realName = templateInfo.DefaultName;
+            }
+            else
+            {
+                if (string.IsNullOrEmpty(fallbackName))
+                {
+                    if (!string.IsNullOrEmpty(templateInfo.DefaultName))
+                    {
+                        realName = templateInfo.DefaultName;
+                    }
+                }
+                else
+                {
+                    realName = fallbackName;
+                }
+            }
+
             if (string.IsNullOrWhiteSpace(realName))
             {
                 return new TemplateCreationResult(CreationResultStatus.MissingMandatoryParam, template.Name, "--name");

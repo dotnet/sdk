@@ -142,6 +142,8 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 
                 public string? DefaultName => null;
 
+                public bool PreferDefaultName => false;
+
                 public string Identity => "Static.Test.Template";
 
                 public Guid GeneratorId => Generator.Id;

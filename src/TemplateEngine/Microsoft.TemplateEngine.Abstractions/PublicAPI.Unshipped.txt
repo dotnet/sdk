@@ -2,6 +2,7 @@
 Microsoft.TemplateEngine.Abstractions.IVariableCollection
 Microsoft.TemplateEngine.Abstractions.IVariableCollection.Parent.get -> Microsoft.TemplateEngine.Abstractions.IVariableCollection?
 Microsoft.TemplateEngine.Abstractions.IVariableCollection.Parent.set -> void
+Microsoft.TemplateEngine.Abstractions.ITemplateInfo.PreferDefaultName.get -> bool
 Microsoft.TemplateEngine.Abstractions.Parameters.ParameterSetDataExtensions
 static Microsoft.TemplateEngine.Abstractions.Parameters.ParameterSetData.Empty.get -> Microsoft.TemplateEngine.Abstractions.Parameters.IParameterSetData!
 static Microsoft.TemplateEngine.Abstractions.Parameters.ParameterSetDataExtensions.GetValue(this Microsoft.TemplateEngine.Abstractions.Parameters.IParameterSetData! data, string! parameterName) -> Microsoft.TemplateEngine.Abstractions.Parameters.ParameterData!

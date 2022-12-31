@@ -133,5 +133,10 @@ namespace Microsoft.TemplateEngine.Abstractions
         IReadOnlyList<Guid> PostActions { get; }
 
         IReadOnlyList<TemplateConstraintInfo> Constraints { get; }
+
+        /// <summary>
+        /// Gets template's preference for using the default name on creation.
+        /// </summary>
+        bool PreferDefaultName { get; }
     }
 }

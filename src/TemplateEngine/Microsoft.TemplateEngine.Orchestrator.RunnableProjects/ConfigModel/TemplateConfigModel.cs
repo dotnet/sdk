@@ -60,6 +60,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
             Author = source.ToString(nameof(Author));
             Classifications = source.ArrayAsStrings(nameof(Classifications));
             DefaultName = source.ToString(nameof(DefaultName));
+            PreferDefaultName = source.ToBool(nameof(PreferDefaultName));
             Description = source.ToString(nameof(Description)) ?? string.Empty;
             GroupIdentity = source.ToString(nameof(GroupIdentity));
             Precedence = source.ToInt32(nameof(Precedence));
@@ -251,6 +252,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
         /// Indicates whether to create a directory for the template if name is specified but an output directory is not set (instead of creating the content directly in the current directory) ("preferNameDirectory" JSON property).
         /// </summary>
         public bool PreferNameDirectory { get; internal init; }
+
+        /// <summary>
+        /// Indicates whether to use the template's default name or parent folder's name for template name ("preferDefaultName: JSON property).
+        /// </summary>
+        public bool PreferDefaultName { get; internal init; }
 
         /// <summary>
         /// Gets the collection of template tags ("tags" JSON property).

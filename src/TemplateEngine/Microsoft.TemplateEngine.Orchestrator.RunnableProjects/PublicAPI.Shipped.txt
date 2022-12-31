@@ -100,8 +100,8 @@ Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.TemplateConfi
 Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.TemplateConfigModel.PlaceholderFilename.get -> string?
 Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.TemplateConfigModel.PostActionModels.get -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.PostActionModel!>!
 Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.TemplateConfigModel.Precedence.get -> int
-Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.TemplateConfigModel.PreferNameDirectory.get -> bool
 Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.TemplateConfigModel.PrimaryOutputs.get -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.PrimaryOutputModel!>!
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.TemplateConfigModel.PreferNameDirectory.get -> bool
 Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.TemplateConfigModel.ShortNameList.get -> System.Collections.Generic.IReadOnlyList<string!>!
 Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.TemplateConfigModel.SourceName.get -> string?
 Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.TemplateConfigModel.Sources.get -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.ExtendedFileSource!>!

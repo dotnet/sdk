@@ -210,6 +210,38 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             Assert.Equal(2, readTemplate.ParameterDefinitions["param3"].Choices!.Count);
         }
 
+        [Theory]
+        [InlineData(true, "defaultName")]
+        [InlineData(true, null)]
+        [InlineData(false, "anotherDefault")]
+        public void CanHandleDefaultName(bool preferDefaultName, string? defaultName)
+        {
+            IEngineEnvironmentSettings environmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
+            SettingsFilePaths paths = new SettingsFilePaths(environmentSettings);
+
+            ITemplate template = A.Fake<ITemplate>();
+            A.CallTo(() => template.Identity).Returns("testIdentity");
+            A.CallTo(() => template.Name).Returns("testName");
+            A.CallTo(() => template.ShortNameList).Returns(new[] { "testShort" });
+            A.CallTo(() => template.PreferDefaultName).Returns(preferDefaultName);
+            A.CallTo(() => template.DefaultName).Returns(defaultName);
+            A.CallTo(() => template.MountPointUri).Returns("testMount");
+            A.CallTo(() => template.ConfigPlace).Returns(".template.config/template.json");
+            IMountPoint mountPoint = A.Fake<IMountPoint>();
+            A.CallTo(() => mountPoint.MountPointUri).Returns("testMount");
+
+            ScanResult result = new ScanResult(mountPoint, new[] { template }, Array.Empty<ILocalizationLocator>(), Array.Empty<(string AssemblyPath, Type InterfaceType, IIdentifiedComponent Instance)>());
+            TemplateCache templateCache = new TemplateCache(new[] { result }, new Dictionary<string, DateTime>(), NullLogger.Instance);
+
+            WriteObject(environmentSettings.Host.FileSystem, paths.TemplateCacheFile, templateCache);
+            var readCache = new TemplateCache(ReadObject(environmentSettings.Host.FileSystem, paths.TemplateCacheFile), NullLogger.Instance);
+
+            Assert.Single(readCache.TemplateInfo);
+            var readTemplate = readCache.TemplateInfo[0];
+            Assert.Equal(preferDefaultName, readTemplate.PreferDefaultName);
+            Assert.Equal(defaultName, readTemplate.DefaultName);
+        }
+
         private static JObject ReadObject(IPhysicalFileSystem fileSystem, string path)
         {
             using (var fileStream = fileSystem.OpenRead(path))

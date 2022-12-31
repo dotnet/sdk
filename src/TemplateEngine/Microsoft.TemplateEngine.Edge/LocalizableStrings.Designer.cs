@@ -671,6 +671,15 @@ namespace Microsoft.TemplateEngine.Edge {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Failed to create template: the template name is not specified. Template configuration does not configure a default name that can be used when name is not specified. Specify the name for the template when instantiating or configure a default name in the template configuration..
+        /// </summary>
+        internal static string TemplateCreator_TemplateCreationResult_Error_NoDefaultName {
+            get {
+                return ResourceManager.GetString("TemplateCreator_TemplateCreationResult_Error_NoDefaultName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Failed to load host data in {0} at {1}..
         /// </summary>
         internal static string TemplateInfo_Warning_FailedToReadHostData {

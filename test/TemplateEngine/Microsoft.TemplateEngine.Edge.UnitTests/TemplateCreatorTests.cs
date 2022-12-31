@@ -112,6 +112,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
                 string.Empty,
                 false,
                 sourceExtension: ".csproj",
+                expectedOutputName: "./sourceFile.csproj",
                 parameters1: parameters);
         }
 
@@ -670,12 +671,68 @@ Details: Parameter conditions contain cyclic dependency: [A, B, A] that is preve
                 parameters2: parameters);
         }
 
+        private const string TemplateConfigPreferDefaultNameWithDefaultName = /*lang=json*/ """
+            {
+                "identity": "test.template",
+                "name": "tst",
+                "shortName": "tst",
+                "preferDefaultName": true,
+                "defaultName": "defaultName",
+                "sourceName": "sourceFile"
+            }
+            """;
+
+        private const string TemplateConfigPreferDefaultNameWithoutDefaultName = /*lang=json*/ """
+            {
+                "identity": "test.template",
+                "name": "tst",
+                "shortName": "tst",
+                "preferDefaultName": true,
+                "sourceName": "sourceFile"
+            }
+            """;
+
+        private const string TemplateConfigNoPreferDefaultNameWithDefaultName = /*lang=json*/ """
+            {
+                "identity": "test.template",
+                "name": "tst",
+                "shortName": "tst",
+                "preferDefaultName": false,
+                "sourceName": "sourceFile"
+            }
+            """;
+
+        [Theory]
+        [InlineData(TemplateConfigPreferDefaultNameWithDefaultName, "thisIsAName", "./thisIsAName.cs", false, "")]
+        [InlineData(TemplateConfigPreferDefaultNameWithDefaultName, null, "./defaultName.cs", false, "")]
+        [InlineData(TemplateConfigNoPreferDefaultNameWithDefaultName, null, "./tst2.cs", false, "")]
+        [InlineData(TemplateConfigPreferDefaultNameWithoutDefaultName, null, "./tst2.cs", true, "Failed to create template: the template name is not specified. Template configuration does not configure a default name that can be used when name is not specified. Specify the name for the template when instantiating or configure a default name in the template configuration.")]
+        public async void InstantiateAsync_PreferDefaultName(string templateConfig, string? name, string expectedOutputName, bool instanceFailure, string errorMessage)
+        {
+            string sourceSnippet = """
+                using System;
+
+                Console.log("Hello there, this is a test!");
+                """;
+
+            await InstantiateAsyncHelper(
+                templateConfig,
+                sourceSnippet,
+                sourceSnippet,
+                errorMessage,
+                instanceFailure,
+                name: name,
+                expectedOutputName: expectedOutputName);
+        }
+
         private async Task InstantiateAsyncHelper(
             string templateSnippet,
             string sourceSnippet,
             string expectedOutput,
             string expectedErrorMessage,
             bool instantiateShouldFail,
+            string? name = "sourceFile",
+            string expectedOutputName = "./sourceFile.cs",
             string sourceExtension = ".cs",
             IReadOnlyDictionary<string, string?>? parameters1 = null,
             IReadOnlyList<InputDataBag>? parameters2 = null)
@@ -690,7 +747,7 @@ Details: Parameter conditions contain cyclic dependency: [A, B, A] that is preve
                 { TestFileSystemUtils.DefaultConfigRelativePath, templateSnippet }
             };
 
-            string sourceFileName = "sourceFile" + sourceExtension;
+            string sourceFileName = name is null ? "sourceFile" + sourceExtension : name + sourceExtension;
 
             //content
             templateSourceFiles.Add(sourceFileName, sourceSnippet);
@@ -718,12 +775,12 @@ Details: Parameter conditions contain cyclic dependency: [A, B, A] that is preve
             {
                 res = await creator.InstantiateAsync(
                     templateInfo: runnableConfig,
-                    name: "tst",
+                    name: name,
                     fallbackName: "tst2",
                     inputParameters: parameters1!,
                     outputPath: targetDir);
             }
-            else
+            else if (parameters2 != null)
             {
                 IParameterDefinitionSet parameters = runnableConfig.ParameterDefinitions;
 
@@ -745,7 +802,7 @@ Details: Parameter conditions contain cyclic dependency: [A, B, A] that is preve
 
                     res = await creator.InstantiateAsync(
                         templateInfo: runnableConfig,
-                        name: "tst",
+                        name: name,
                         fallbackName: "tst2",
                         inputParameters: data,
                         outputPath: targetDir);
@@ -757,6 +814,17 @@ Details: Parameter conditions contain cyclic dependency: [A, B, A] that is preve
                     e.Message.Should().BeEquivalentTo(e.Message);
                     return;
                 }
+            }
+            else
+            {
+                InputDataSet parameters = new InputDataSet(runnableConfig);
+
+                res = await creator.InstantiateAsync(
+                    templateInfo: runnableConfig,
+                    name: name,
+                    fallbackName: "tst2",
+                    inputParameters: parameters,
+                    outputPath: targetDir);
             }
 
             if (instantiateShouldFail)
@@ -770,8 +838,16 @@ Details: Parameter conditions contain cyclic dependency: [A, B, A] that is preve
             {
                 res.ErrorMessage.Should().BeNull();
                 res.OutputBaseDirectory.Should().NotBeNullOrEmpty();
-                string resultContent = _engineEnvironmentSettings.Host.FileSystem
-                    .ReadAllText(Path.Combine(res.OutputBaseDirectory!, sourceFileName)).Trim();
+
+                res.CreationEffects.Should().NotBeNull();
+                res.CreationEffects!.FileChanges.Should().NotBeNullOrEmpty().And.HaveCount(1);
+                res.CreationEffects.FileChanges[0].TargetRelativePath.Should().Be(expectedOutputName);
+
+                string resultContent = File.Exists(Path.Combine(res.OutputBaseDirectory!, sourceFileName))
+                    ? _engineEnvironmentSettings.Host.FileSystem
+                    .ReadAllText(Path.Combine(res.OutputBaseDirectory!, sourceFileName)).Trim()
+                    : _engineEnvironmentSettings.Host.FileSystem
+                    .ReadAllText(Path.Combine(res.OutputBaseDirectory!, expectedOutputName)).Trim();
                 resultContent.Should().BeEquivalentTo(expectedOutput.Trim());
             }
         }
