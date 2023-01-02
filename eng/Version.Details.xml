@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.TemplateEngine.Abstractions" Version="7.0.200-alpha.1.22621.2">
+    <Dependency Name="Microsoft.TemplateEngine.Abstractions" Version="7.0.200-alpha.1.22627.6">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>01c412e0fe40730c2b96a0366b520af707e4291d</Sha>
+      <Sha>1882e9f5c9ff0a9094eb1861cd89a5b5f89ccec9</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TemplateEngine.Mocks" Version="7.0.200-alpha.1.22621.2">
+    <Dependency Name="Microsoft.TemplateEngine.Mocks" Version="7.0.200-alpha.1.22627.6">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>01c412e0fe40730c2b96a0366b520af707e4291d</Sha>
+      <Sha>1882e9f5c9ff0a9094eb1861cd89a5b5f89ccec9</Sha>
       <SourceBuild RepoName="templating" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.NETCore.App.Ref" Version="7.0.0">
@@ -105,9 +105,9 @@
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-aspnetcore</Uri>
       <Sha>bb01bbf4433e27289b99001b7de6a582879d1835</Sha>
     </Dependency>
-    <Dependency Name="NuGet.Build.Tasks" Version="6.5.0-preview.3.133">
+    <Dependency Name="NuGet.Build.Tasks" Version="6.5.0-preview.3.136">
       <Uri>https://github.com/nuget/nuget.client</Uri>
-      <Sha>dccbd304b11103e08b97abf4cf4bcc1499d9235a</Sha>
+      <Sha>743503cb3c7e9ced2602ee2e29c38d63cc339451</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NET.Test.Sdk" Version="17.5.0-release-20221220-01">
       <Uri>https://github.com/microsoft/vstest</Uri>
@@ -216,22 +216,22 @@
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-aspnetcore</Uri>
       <Sha>bb01bbf4433e27289b99001b7de6a582879d1835</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.Razor.Tooling.Internal" Version="7.0.0-preview.22619.1">
+    <Dependency Name="Microsoft.CodeAnalysis.Razor.Tooling.Internal" Version="7.0.0-preview.22622.2">
       <Uri>https://github.com/dotnet/razor</Uri>
-      <Sha>2775d3945bd37848ddfc17dc897ac3d365178439</Sha>
+      <Sha>9dcbc19acececf7f877d2fec534bce6637456efd</Sha>
       <SourceBuild RepoName="razor" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Mvc.Razor.Extensions.Tooling.Internal" Version="7.0.0-preview.22619.1">
+    <Dependency Name="Microsoft.AspNetCore.Mvc.Razor.Extensions.Tooling.Internal" Version="7.0.0-preview.22622.2">
       <Uri>https://github.com/dotnet/razor</Uri>
-      <Sha>2775d3945bd37848ddfc17dc897ac3d365178439</Sha>
+      <Sha>9dcbc19acececf7f877d2fec534bce6637456efd</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Razor.SourceGenerator.Tooling.Internal" Version="7.0.0-preview.22619.1">
+    <Dependency Name="Microsoft.AspNetCore.Razor.SourceGenerator.Tooling.Internal" Version="7.0.0-preview.22622.2">
       <Uri>https://github.com/dotnet/razor</Uri>
-      <Sha>2775d3945bd37848ddfc17dc897ac3d365178439</Sha>
+      <Sha>9dcbc19acececf7f877d2fec534bce6637456efd</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Sdk.Razor.SourceGenerators.Transport" Version="7.0.0-preview.22619.1">
+    <Dependency Name="Microsoft.NET.Sdk.Razor.SourceGenerators.Transport" Version="7.0.0-preview.22622.2">
       <Uri>https://github.com/dotnet/razor</Uri>
-      <Sha>2775d3945bd37848ddfc17dc897ac3d365178439</Sha>
+      <Sha>9dcbc19acececf7f877d2fec534bce6637456efd</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.FileProviders.Embedded" Version="7.0.0">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-aspnetcore</Uri>
