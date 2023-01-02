@@ -3,6 +3,8 @@ blazorserver
 blazorserver-empty
 blazorwasm
 blazorwasm-empty
+buildprops
+buildtargets
 classlib
 console
 editorconfig
@@ -16,12 +18,10 @@ nunit
 nunit-test
 page
 proto
-razor
 razorclasslib
 razorcomponent
 react
 sln
-solution
 tool-manifest
 viewimports
 viewstart
