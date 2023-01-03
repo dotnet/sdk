@@ -7,9 +7,9 @@
 
   <PropertyGroup>
     <OverrideTargetRid>$(TargetRid)</OverrideTargetRid>
-    <OverrideTargetRid Condition="'$(TargetOS)' == 'OSX'">osx-x64</OverrideTargetRid>
-    <OverrideTargetRid Condition="'$(TargetOS)' == 'FreeBSD'">freebsd-x64</OverrideTargetRid>
-    <OverrideTargetRid Condition="'$(TargetOS)' == 'Windows_NT'">win-x64</OverrideTargetRid>
+    <OverrideTargetRid Condition="'$(TargetOS)' == 'OSX'">osx-$(Platform)</OverrideTargetRid>
+    <OverrideTargetRid Condition="'$(TargetOS)' == 'FreeBSD'">freebsd-$(Platform)</OverrideTargetRid>
+    <OverrideTargetRid Condition="'$(TargetOS)' == 'Windows_NT'">win-$(Platform)</OverrideTargetRid>
     <OSNameOverride>$(OverrideTargetRid.Substring(0, $(OverrideTargetRid.IndexOf("-"))))</OSNameOverride>
 
     <!-- Determine target portable rid based on bootstrap SDK's portable rid -->
