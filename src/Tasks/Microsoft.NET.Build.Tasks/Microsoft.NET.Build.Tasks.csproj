@@ -57,6 +57,7 @@
     <ProjectReference Include="..\..\ApiCompat\Microsoft.DotNet.ApiCompatibility\Microsoft.DotNet.ApiCompatibility.csproj" OutputItemType="ReferenceCopyLocalPaths" ReferenceOutputAssembly="false" />
     <ProjectReference Include="..\..\ApiCompat\Microsoft.DotNet.PackageValidation\Microsoft.DotNet.PackageValidation.csproj" OutputItemType="ReferenceCopyLocalPaths" ReferenceOutputAssembly="false" />
     <ProjectReference Include="..\..\ApiCompat\Microsoft.DotNet.ApiCompat.Task\Microsoft.DotNet.ApiCompat.Task.csproj" OutputItemType="ReferenceCopyLocalPaths" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\..\Microsoft.DotNet.ApiSymbolExtensions\Microsoft.DotNet.ApiSymbolExtensions.csproj" OutputItemType="ReferenceCopyLocalPaths" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
 
@@ -125,7 +126,6 @@
       <!-- Include some of the Sdks from the Stage 0 CLI for performance tests-->
       <Stage0SdkFile Include="$(_Stage0SdksFolder)\FSharp.NET.Sdk\**" SdkName="FSharp.NET.Sdk" />
       <Stage0SdkFile Include="$(_Stage0SdksFolder)\Microsoft.NET.Sdk.WindowsDesktop\**" SdkName="Microsoft.NET.Sdk.WindowsDesktop" />
-      <Stage0SdkFile Include="$(_Stage0SdksFolder)\Microsoft.NET.ILLink.Tasks\**" SdkName="Microsoft.NET.ILLink.Tasks" />
       <LayoutFile Include="@(Stage0SdkFile)">
         <TargetPath>..\%(Stage0SdkFile.SdkName)\%(Stage0SdkFile.RecursiveDir)%(Stage0SdkFile.Filename)%(Stage0SdkFile.Extension)</TargetPath>
       </LayoutFile>
