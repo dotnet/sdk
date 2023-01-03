@@ -100,12 +100,12 @@ Details: {1}</source>
       </trans-unit>
       <trans-unit id="BindSymbolEvaluator_Warning_ConversionFailure">
         <source>Bind symbol '{0}': failed to convert value '{1}' to datatype '{2}'. The symbol processing is skipped.</source>
-        <target state="new">Bind symbol '{0}': failed to convert value '{1}' to datatype '{2}'. The symbol processing is skipped.</target>
+        <target state="translated">バインド シンボル '{0}': 値 '{1}' をデータ型 '{2}' に変換できませんでした。シンボル処理はスキップされます。</target>
         <note>{0} - the name of symbol in configuration, {1} - obtained value for a symbol, {2} - defined datatype for a symbol</note>
       </trans-unit>
       <trans-unit id="BindSymbolEvaluator_Warning_DefaultValueConversionFailure">
         <source>Bind symbol '{0}': failed to convert default value '{1}' to datatype '{2}'. The default value is skipped.</source>
-        <target state="new">Bind symbol '{0}': failed to convert default value '{1}' to datatype '{2}'. The default value is skipped.</target>
+        <target state="translated">バインド シンボル '{0}': 既定値 '{1}' をデータ型 '{2}' に変換できませんでした。既定値はスキップされます。</target>
         <note>{0} - the name of symbol in configuration, {1} - default value in configuraion, {2} - defined datatype for a symbol</note>
       </trans-unit>
       <trans-unit id="BindSymbolEvaluator_Warning_EvaluationError">

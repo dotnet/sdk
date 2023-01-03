@@ -100,12 +100,12 @@ Szczegóły: {1}</target>
       </trans-unit>
       <trans-unit id="BindSymbolEvaluator_Warning_ConversionFailure">
         <source>Bind symbol '{0}': failed to convert value '{1}' to datatype '{2}'. The symbol processing is skipped.</source>
-        <target state="new">Bind symbol '{0}': failed to convert value '{1}' to datatype '{2}'. The symbol processing is skipped.</target>
+        <target state="translated">Symbol powiązania „{0}”: nie może przekonwertować wartości „{1}” na typ danych „{2}”. Pominięto przetwarzanie symbolu.</target>
         <note>{0} - the name of symbol in configuration, {1} - obtained value for a symbol, {2} - defined datatype for a symbol</note>
       </trans-unit>
       <trans-unit id="BindSymbolEvaluator_Warning_DefaultValueConversionFailure">
         <source>Bind symbol '{0}': failed to convert default value '{1}' to datatype '{2}'. The default value is skipped.</source>
-        <target state="new">Bind symbol '{0}': failed to convert default value '{1}' to datatype '{2}'. The default value is skipped.</target>
+        <target state="translated">Symbol powiązania „{0}”: nie może przekonwertować wartości domyślnej „{1}” na typ danych „{2}”. Pominięto wartość domyślną.</target>
         <note>{0} - the name of symbol in configuration, {1} - default value in configuraion, {2} - defined datatype for a symbol</note>
       </trans-unit>
       <trans-unit id="BindSymbolEvaluator_Warning_EvaluationError">
