@@ -3,6 +3,7 @@
 
 using Microsoft.Build.Framework;
 using Microsoft.NET.Build.Tasks;
+using Microsoft.DotNet.ApiSymbolExtensions.Logging;
 
 namespace Microsoft.DotNet.GenAPI.Task
 {
@@ -44,13 +45,13 @@ namespace Microsoft.DotNet.GenAPI.Task
         public string[]? ExcludeAttributesFiles { get; set; }
 
         /// <summary>
-        /// Include all API's not just public APIs. The default is public only.
+        /// Include internal API's. Default is false.
         /// </summary>
         public bool IncludeVisibleOutsideOfAssembly { get; set; }
 
         protected override void ExecuteCore()
         {
-            GenAPIApp.Run(new GenAPIApp.Context(
+            GenAPIApp.Run(new MSBuildLog(Log), new GenAPIApp.Context(
                 Assemblies!,
                 AssemblyReferences,
                 OutputPath,

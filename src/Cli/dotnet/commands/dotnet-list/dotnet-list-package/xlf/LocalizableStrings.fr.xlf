@@ -14,7 +14,7 @@
       </trans-unit>
       <trans-unit id="CmdFormatDescription">
         <source>Specifies the output format type for the list packages command.</source>
-        <target state="new">Specifies the output format type for the list packages command.</target>
+        <target state="translated">Spécifie le type de format de sortie pour la commande list packages.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdFramework">
@@ -30,6 +30,11 @@
       <trans-unit id="CmdOutdatedDescription">
         <source>Lists packages that have newer versions. Cannot be combined with '--deprecated' or '--vulnerable' options.</source>
         <target state="translated">Liste les packages qui ont versions plus récentes. Impossible à combiner avec les options '--deprecated' ou '--vulnerable'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdOutputVersionDescription">
+        <source>Specifies the version of machine-readable output. Requires the '--format json' option.</source>
+        <target state="translated">Spécifie la version de la sortie lisible par l’ordinateur. Nécessite l’option « --format json ».</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdTransitiveDescription">
