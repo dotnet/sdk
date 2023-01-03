@@ -48,6 +48,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                 var internalTypes = new ConcurrentDictionary<INamedTypeSymbol, object?>();
 
                 var compilation = startContext.Compilation;
+                var entryPointContainingType = compilation.GetEntryPoint(startContext.CancellationToken)?.ContainingType;
                 var wellKnownTypeProvider = WellKnownTypeProvider.GetOrCreate(compilation);
 
                 // If the assembly being built by this compilation exposes its internals to
@@ -98,7 +99,8 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                 {
                     var type = (INamedTypeSymbol)context.Symbol;
                     if (!type.IsExternallyVisible() &&
-                        !IsOkToBeUninstantiated(type, compilation,
+                        !IsOkToBeUninstantiated(type,
+                            entryPointContainingType,
                             systemAttributeSymbol,
                             iConfigurationSectionHandlerSymbol,
                             configurationSectionSymbol,
@@ -284,7 +286,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
 
         private static bool IsOkToBeUninstantiated(
             INamedTypeSymbol type,
-            Compilation compilation,
+            INamedTypeSymbol? entryPointContainingType,
             INamedTypeSymbol? systemAttributeSymbol,
             INamedTypeSymbol? iConfigurationSectionHandlerSymbol,
             INamedTypeSymbol? configurationSectionSymbol,
@@ -304,14 +306,8 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                 return true;
             }
 
-            // Ignore type generated for holding top level statements
-            if (type.IsTopLevelStatementsEntryPointType())
-            {
-                return true;
-            }
-
             // The type containing the assembly's entry point is OK.
-            if (ContainsEntryPoint(type, compilation))
+            if (SymbolEqualityComparer.Default.Equals(entryPointContainingType, type))
             {
                 return true;
             }
@@ -353,6 +349,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
 
             return false;
         }
+
         public static bool IsMefExported(
             INamedTypeSymbol type,
             INamedTypeSymbol? mef1ExportAttributeSymbol,
@@ -360,81 +357,6 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
         {
             return (mef1ExportAttributeSymbol != null && type.HasAttribute(mef1ExportAttributeSymbol))
                 || (mef2ExportAttributeSymbol != null && type.HasAttribute(mef2ExportAttributeSymbol));
-        }
-
-        private static bool ContainsEntryPoint(INamedTypeSymbol type, Compilation compilation)
-        {
-            // If this type doesn't live in an application assembly (.exe), it can't contain
-            // the entry point.
-            if (compilation.Options.OutputKind is not OutputKind.ConsoleApplication and
-                not OutputKind.WindowsApplication and
-                not OutputKind.WindowsRuntimeApplication)
-            {
-                return false;
-            }
-
-            var wellKnowTypeProvider = WellKnownTypeProvider.GetOrCreate(compilation);
-            var taskSymbol = wellKnowTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemThreadingTasksTask);
-            var genericTaskSymbol = wellKnowTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemThreadingTasksTask1);
-
-            // TODO: Handle the case where Compilation.Options.MainTypeName matches this type.
-            // TODO: Test: can't have type parameters.
-            // TODO: Main in nested class? If allowed, what name does it have?
-            // TODO: Test that parameter is array of int.
-            return type.GetMembers("Main")
-                .Where(m => m is IMethodSymbol)
-                .Cast<IMethodSymbol>()
-                .Any(m => IsEntryPoint(m, taskSymbol, genericTaskSymbol));
-        }
-
-        private static bool IsEntryPoint(IMethodSymbol method, ITypeSymbol? taskSymbol, ITypeSymbol? genericTaskSymbol)
-        {
-            if (!method.IsStatic)
-            {
-                return false;
-            }
-
-            if (!IsSupportedReturnType(method, taskSymbol, genericTaskSymbol))
-            {
-                return false;
-            }
-
-            if (!method.Parameters.Any())
-            {
-                return true;
-            }
-
-            if (method.Parameters.HasMoreThan(1))
-            {
-                return false;
-            }
-
-            return true;
-        }
-
-        private static bool IsSupportedReturnType(IMethodSymbol method, ITypeSymbol? taskSymbol, ITypeSymbol? genericTaskSymbol)
-        {
-            if (method.ReturnType.SpecialType == SpecialType.System_Int32)
-            {
-                return true;
-            }
-
-            if (method.ReturnsVoid)
-            {
-                return true;
-            }
-
-            if (taskSymbol != null && Equals(method.ReturnType, taskSymbol))
-            {
-                return true;
-            }
-
-            if (genericTaskSymbol != null && Equals(method.ReturnType.OriginalDefinition, genericTaskSymbol) && ((INamedTypeSymbol)method.ReturnType).TypeArguments.Single().SpecialType == SpecialType.System_Int32)
-            {
-                return true;
-            }
-
-            return false;
         }
 
         /// <summary>
