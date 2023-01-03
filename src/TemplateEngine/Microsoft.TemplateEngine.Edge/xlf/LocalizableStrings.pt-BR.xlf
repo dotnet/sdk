@@ -356,7 +356,7 @@ Detalhes: {0}</target>
       </trans-unit>
       <trans-unit id="TemplateCreator_TemplateCreationResult_Error_NoDefaultName">
         <source>Failed to create template: the template name is not specified. Template configuration does not configure a default name that can be used when name is not specified. Specify the name for the template when instantiating or configure a default name in the template configuration.</source>
-        <target state="new">Failed to create template: the template name is not specified. Template configuration does not configure a default name that can be used when name is not specified. Specify the name for the template when instantiating or configure a default name in the template configuration.</target>
+        <target state="translated">Falha ao criar modelo: o nome do modelo não foi especificado. A configuração do modelo não define um nome padrão que possa ser usado quando o nome não for especificado. Especifique o nome do modelo ao criar uma instância ou configurar um nome padrão na configuração do modelo.</target>
         <note />
       </trans-unit>
       <trans-unit id="TemplateInfo_Warning_FailedToReadHostData">

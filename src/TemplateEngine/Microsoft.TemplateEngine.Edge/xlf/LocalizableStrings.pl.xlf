@@ -356,7 +356,7 @@ Szczegóły: {0}.</target>
       </trans-unit>
       <trans-unit id="TemplateCreator_TemplateCreationResult_Error_NoDefaultName">
         <source>Failed to create template: the template name is not specified. Template configuration does not configure a default name that can be used when name is not specified. Specify the name for the template when instantiating or configure a default name in the template configuration.</source>
-        <target state="new">Failed to create template: the template name is not specified. Template configuration does not configure a default name that can be used when name is not specified. Specify the name for the template when instantiating or configure a default name in the template configuration.</target>
+        <target state="translated">Nie można utworzyć szablonu: nie określono nazwy szablonu. Konfiguracja szablonu nie konfiguruje nazwy domyślnej, która może być używana, gdy nazwa nie jest określona. Określ nazwę szablonu podczas tworzenia wystąpienia lub konfigurowania nazwy domyślnej w konfiguracji szablonu.</target>
         <note />
       </trans-unit>
       <trans-unit id="TemplateInfo_Warning_FailedToReadHostData">

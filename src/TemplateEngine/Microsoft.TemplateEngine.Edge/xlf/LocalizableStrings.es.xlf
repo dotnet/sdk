@@ -356,7 +356,7 @@ Detalles: {0}.</target>
       </trans-unit>
       <trans-unit id="TemplateCreator_TemplateCreationResult_Error_NoDefaultName">
         <source>Failed to create template: the template name is not specified. Template configuration does not configure a default name that can be used when name is not specified. Specify the name for the template when instantiating or configure a default name in the template configuration.</source>
-        <target state="new">Failed to create template: the template name is not specified. Template configuration does not configure a default name that can be used when name is not specified. Specify the name for the template when instantiating or configure a default name in the template configuration.</target>
+        <target state="translated">Error al crear la plantilla: no se especificó el nombre de la plantilla. La configuración de la plantilla no configura un nombre predeterminado que se pueda usar cuando no se especifique el nombre. Especifique el nombre de la plantilla al crear una instancia o configurar un nombre predeterminado en la configuración de la plantilla.</target>
         <note />
       </trans-unit>
       <trans-unit id="TemplateInfo_Warning_FailedToReadHostData">
