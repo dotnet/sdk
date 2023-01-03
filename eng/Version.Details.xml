@@ -6,6 +6,11 @@
       <Sha>36a4e3d1cd606ea51bc02a85cd701668015fa8d0</Sha>
       <SourceBuild RepoName="templating" ManagedOnly="true" />
     </Dependency>
+    <Dependency Name="Microsoft.TemplateEngine.Samples" Version="8.0.100-alpha.1.23053.2">
+      <Uri>https://github.com/dotnet/templating</Uri>
+      <Sha>5ac4b97b2a0aa3a5ea7103c060f92df665750e58</Sha>
+      <SourceBuild RepoName="templating" ManagedOnly="true" />
+    </Dependency>
     <Dependency Name="Microsoft.NETCore.App.Ref" Version="8.0.0-alpha.1.22628.3">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>fa7d049aad0261f8ed6c0584f1ccf2ad08aec23c</Sha>
