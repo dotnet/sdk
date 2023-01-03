@@ -34,4 +34,5 @@ dotnet nuget list source --configfile $TestExecutionDirectory/nuget.config
 cp $HELIX_CORRELATION_PAYLOAD/t/TestExecutionDirectoryFiles/testAsset.props ./
 set TestPackagesRoot=$pwd/assets/testpackages/
 dotnet build assets/testpackages/Microsoft.NET.TestPackages.csproj /t:Build -p:VersionPropsIsImported=false
-cp ./assets/testpackages/testpackages/* $TestExecutionDirectory/TestPackages
+ls $TestPackagesRoot/testpackages/.
+cp $TestPackagesRoot/testpackages/. $TestExecutionDirectory/TestPackages -R
