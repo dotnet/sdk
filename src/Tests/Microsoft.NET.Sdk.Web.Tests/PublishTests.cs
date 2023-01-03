@@ -19,7 +19,7 @@ namespace Microsoft.NET.Sdk.Web.Tests
 
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
         [MemberData(nameof(SupportedTfms))]
-        public void TrimmingOptions_are_defaulted_correctly_on_trimmed_apps(string targetFramework)
+        public void TrimmingOptions_Are_Defaulted_Correctly_On_Trimmed_Apps(string targetFramework)
         {
             var projectName = "HelloWorld";
             var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
@@ -45,7 +45,7 @@ namespace Microsoft.NET.Sdk.Web.Tests
 
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
         [MemberData(nameof(SupportedTfms))]
-        public void TrimmingOptions_are_defaulted_correctly_on_aot_apps(string targetFramework)
+        public void TrimmingOptions_Are_Defaulted_Correctly_On_Aot_Apps(string targetFramework)
         {
             var projectName = "HelloWorld";
             var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
