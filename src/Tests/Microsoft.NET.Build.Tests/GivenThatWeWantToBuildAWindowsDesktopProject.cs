@@ -12,6 +12,7 @@ using System.Xml.Linq;
 using System.IO;
 using System.Linq;
 using System;
+using NuGet.Versioning;
 
 namespace Microsoft.NET.Build.Tests
 {
@@ -25,7 +26,7 @@ namespace Microsoft.NET.Build.Tests
         [InlineData("UseWPF")]
         public void It_errors_when_missing_windows_target_platform(string propertyName)
         {
-            var targetFramework = ToolsetInfo.NextTargetFramework;
+            var targetFramework = ToolsetInfo.CurrentTargetFramework;
             TestProject testProject = new TestProject()
             {
                 Name = "MissingTargetPlatform",
@@ -199,6 +200,16 @@ namespace Microsoft.NET.Build.Tests
         [InlineData(false)]
         public void It_succeeds_if_windows_target_platform_version_does_not_have_trailing_zeros(bool setInTargetframework)
         {
+            if (!setInTargetframework)                
+            {
+                var sdkVersion = SemanticVersion.Parse(TestContext.Current.ToolsetUnderTest.SdkVersion);
+                if (new SemanticVersion(sdkVersion.Major, sdkVersion.Minor, sdkVersion.Patch) < new SemanticVersion(7, 0, 200))
+                {
+                    //  Fixed in 7.0.200: https://github.com/dotnet/sdk/pull/29009
+                    return;
+                }
+            }
+
             var testProject = new TestProject()
             {
                 Name = "ValidWindowsVersion",
@@ -248,10 +259,12 @@ namespace Microsoft.NET.Build.Tests
         {
             var testDir = _testAssetsManager.CreateTestDirectory();
 
-            var newCommand = new DotnetCommand(Log);
-            newCommand.WorkingDirectory = testDir.Path;
-
-            newCommand.Execute("new", "wpf", "--debug:ephemeral-hive").Should().Pass();
+            new DotnetNewCommand(Log)
+                .WithVirtualHive()
+                .WithWorkingDirectory(testDir.Path)
+                .Execute("wpf")
+                .Should()
+                .Pass();
 
             var projectPath = Path.Combine(testDir.Path, Path.GetFileName(testDir.Path) + ".csproj");
 
