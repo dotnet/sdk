@@ -5,14 +5,14 @@
   <String Id="ConfirmCancelMessage">Вы действительно хотите отменить?</String>
   <String Id="ExecuteUpgradeRelatedBundleMessage">Предыдущая версия</String>
   <String Id="HelpHeader">Справка по установке</String>
-  <String Id="HelpText">/install | /repair | /uninstall | /layout [\[]"каталог"[\]] — установка, восстановление, удаление или
- создание полной локальной копии пакета в каталоге. По умолчанию —  "/install".
+  <String Id="HelpText">/install | /repair | /uninstall | /layout [\[]"каталог"[\]] — установка, восстановление, удаление или
+ создание полной локальной копии пакета в каталоге. По умолчанию —  "/install".
 
-/passive | /quiet — отображение минимального пользовательского интерфейса без запросов или работа без пользовательского интерфейса и
+/passive | /quiet — отображение минимального пользовательского интерфейса без запросов или работа без пользовательского интерфейса и
    без запросов. По умолчанию отображаются пользовательский интерфейс и все запросы.
 
-/norestart — подавление всех попыток перезагрузки. По умолчанию в пользовательском интерфейсе перед перезагрузкой отображается запрос.
-/log [\[]"log.txt"[\]] — запись журнала в указанный файл. По умолчанию файл журнала создается в папке %TEMP%.</String>
+/norestart — подавление всех попыток перезагрузки. По умолчанию в пользовательском интерфейсе перед перезагрузкой отображается запрос.
+/log [\[]"log.txt"[\]] — запись журнала в указанный файл. По умолчанию файл журнала создается в папке %TEMP%.</String>
   <String Id="HelpCloseButton">З&amp;акрыть</String>
   <String Id="InstallAcceptCheckbox">Я &amp;принимаю условия лицензии</String>
   <String Id="InstallOptionsButton">&amp;Параметры</String>
@@ -50,10 +50,10 @@
   <String Id="FirstTimeWelcomeMessage">Установка выполнена.
 
 Установлены следующие компоненты:
-    • Пакет SDK для .NET [DOTNETSDKVERSION]
-    • Среда выполнения .NET [DOTNETRUNTIMEVERSION]
-    • Среда выполнения ASP.NET Core [ASPNETCOREVERSION]
-    • Среда выполнения .NET для Windows Desktop [WINFORMSANDWPFVERSION]
+    • Пакет SDK для .NET [DOTNETSDKVERSION]
+    • Среда выполнения .NET [DOTNETRUNTIMEVERSION]
+    • Среда выполнения ASP.NET Core [ASPNETCOREVERSION]
+    • Среда выполнения .NET для Windows Desktop [WINFORMSANDWPFVERSION]
 
 Этот продукт собирает данные об использовании.
     • Чтобы получить дополнительные сведения или отказаться от использования продукта, перейдите на страницу https://aka.ms/dotnet-cli-telemetry
@@ -61,9 +61,9 @@
 Ресурсы
     • Документация по .NET: https://aka.ms/dotnet-docs
     • Документация по SDK: https://aka.ms/dotnet-sdk-docs
-    • Заметки о выпуске: https://aka.ms/dotnet7-release-notes
+    • Заметки о выпуске: https://aka.ms/dotnet[VERSIONMAJOR]-release-notes
     • Учебники: https://aka.ms/dotnet-tutorials</String>
-  <String Id="WelcomeHeaderMessage">Пакет SDK для .NET</String>
+  <String Id="WelcomeHeaderMessage">Пакет SDK для .NET</String>
   <String Id="WelcomeDescription">
     Пакет SDK для .NET используется для сборки, запуска и тестирования приложений .NET. Вы можете выбрать один из нескольких языков, использовать различные редакторы и инструменты для разработчиков, а также воспользоваться преимуществами большой экосистемы библиотек для создания веб-приложений, мобильных и классических приложений, игр и приложений Интернета вещей. Надеемся, вам понравится!</String>
   <String Id="LearnMoreTitle">Дополнительные сведения о .NET</String>
@@ -76,7 +76,7 @@
   <String Id="InstallationNoteTitle">Примечание по установке</String>
   <String Id="InstallationNote">В процессе установки будет выполнена команда, которая увеличит скорость восстановления проекта и обеспечит автономный доступ. Выполнение займет до минуты.
   </String>
-  <String Id="VisualStudioWarning">Если вы планируете использовать .NET 7.0 с Visual Studio, требуется Visual Studio 2022 версии 17.4 или более поздней. &lt;A HREF="https://aka.ms/dotnet7-release-notes"&gt;Дополнительные сведения&lt;/A&gt;.
+  <String Id="VisualStudioWarning">Если вы планируете использовать .NET [VERSIONMAJOR].[VERSIONMINOR] с Visual Studio, требуется Visual Studio 2022 версии 17.4 или более поздней. &lt;A HREF="https://aka.ms/dotnet[VERSIONMAJOR]-release-notes"&gt;Дополнительные сведения&lt;/A&gt;.
   </String>
   <String Id="LicenseAssent">Нажимая кнопку "Установить", вы принимаете следующие условия.</String>
   <String Id="InstallPathx64x86">The installation path for x64 SDK installations: &quot;[DOTNETHOME_X64]&quot; cannot be the same as for x86 SDK installations: &quot;[DOTNETHOME_X86]&quot;</String>

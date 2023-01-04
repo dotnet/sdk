@@ -19,7 +19,7 @@
   <String Id="InstallInstallButton">&amp;Installer</String>
   <String Id="InstallCloseButton">&amp;Fermer</String>
   <String Id="ProgressHeader">Avancement de l'installation</String>
-  <String Id="ProgressLabel">En cours :</String>
+  <String Id="ProgressLabel">En cours :</String>
   <String Id="OverallProgressPackageText">Initialisation...</String>
   <String Id="ProgressCancelButton">&amp;Annuler</String>
   <String Id="ModifyHeader">Modifier l'installation</String>
@@ -42,7 +42,7 @@
   <String Id="FailureRestartButton">&amp;Redémarrer</String>
   <String Id="FailureCloseButton">&amp;Fermer</String>
   <String Id="FilesInUseHeader">Fichiers en cours d'utilisation</String>
-  <String Id="FilesInUseLabel">Les applications suivantes utilisent des fichiers nécessitant une mise à jour :</String>
+  <String Id="FilesInUseLabel">Les applications suivantes utilisent des fichiers nécessitant une mise à jour :</String>
   <String Id="FilesInUseCloseRadioButton">&amp;Fermer les applications essayez de les ouvrir de nouveau.</String>
   <String Id="FilesInUseDontCloseRadioButton">&amp;Ne pas fermer les applications. Un redémarrage sera nécessaire.</String>
   <String Id="FilesInUseOkButton">&amp;OK</String>
@@ -61,11 +61,11 @@ Ce produit collecte des données d'utilisation
 Ressources
     • Documentation .NET sur https://aka.ms/dotnet-docs
     • Documentation de kit SDK sur https://aka.ms/dotnet-sdk-docs
-    • Notes de publication sur https://aka.ms/dotnet7-release-notes
+    • Notes de publication sur https://aka.ms/dotnet[VERSIONMAJOR]-release-notes
     • Tutoriels sur https://aka.ms/dotnet-tutorials</String>
   <String Id="WelcomeHeaderMessage">SDK .NET</String>
   <String Id="WelcomeDescription">
-    Le kit SDK .NET permet de générer, d'exécuter et de tester des applications .NET. Vous pouvez choisir parmi plusieurs langages, éditeurs et outils de développement. De plus, vous pouvez bénéficier d'un vaste écosystème de bibliothèques afin de générer des applications pour le web, les appareils mobiles, les ordinateurs de bureau, les jeux et l'IoT. Nous espérons que vous l'apprécierez !</String>
+    Le kit SDK .NET permet de générer, d'exécuter et de tester des applications .NET. Vous pouvez choisir parmi plusieurs langages, éditeurs et outils de développement. De plus, vous pouvez bénéficier d'un vaste écosystème de bibliothèques afin de générer des applications pour le web, les appareils mobiles, les ordinateurs de bureau, les jeux et l'IoT. Nous espérons que vous l'apprécierez !</String>
   <String Id="LearnMoreTitle">En savoir plus sur .NET</String>
   <String Id="ResourcesHeader">Ressources</String>
   <String Id="CoreDocumentationLink">&lt;A HREF="https://aka.ms/dotnet-docs"&gt;Documentation .NET&lt;/A&gt;</String>
@@ -76,7 +76,7 @@ Ressources
   <String Id="InstallationNoteTitle">Note d'installation</String>
   <String Id="InstallationNote">Une commande va être exécutée pendant le processus d'installation, ce qui va améliorer la vitesse de restauration du projet et permettre l'accès hors connexion. L'opération va prendre environ une minute.
   </String>
-  <String Id="VisualStudioWarning">Si vous comptez utiliser .NET 7.0 avec Visual Studio, Visual Studio 2022 17.4 ou une version ultérieure est nécessaire. &lt;A HREF="https://aka.ms/dotnet7-release-notes"&gt;En savoir plus&lt;/A&gt;.
+  <String Id="VisualStudioWarning">Si vous comptez utiliser .NET [VERSIONMAJOR].[VERSIONMINOR] avec Visual Studio, Visual Studio 2022 17.4 ou une version ultérieure est nécessaire. &lt;A HREF="https://aka.ms/dotnet[VERSIONMAJOR]-release-notes"&gt;En savoir plus&lt;/A&gt;.
   </String>
   <String Id="LicenseAssent">En cliquant sur Installer, vous acceptez les conditions suivantes.</String>
   <String Id="InstallPathx64x86">The installation path for x64 SDK installations: &quot;[DOTNETHOME_X64]&quot; cannot be the same as for x86 SDK installations: &quot;[DOTNETHOME_X86]&quot;</String>
