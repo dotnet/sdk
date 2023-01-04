@@ -64,9 +64,10 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 DoNotPrependCallerMethodNameToScenarioName = true,
                 ScenarioName = $"{folderName.Substring(folderName.IndexOf("-") + 1)}{GetScenarioName(arguments)}"
             }
-             .WithCustomScrubbers(
-                ScrubbersDefinition.Empty
-                .AddScrubber(sb => sb.Replace(DateTime.Now.ToString("MM/dd/yyyy"), "**/**/****")));
+            .WithCustomEnvironment(environmentUnderTest)
+            .WithCustomScrubbers(
+               ScrubbersDefinition.Empty
+               .AddScrubber(sb => sb.Replace(DateTime.Now.ToString("MM/dd/yyyy"), "**/**/****")));
 
             VerificationEngine engine = new VerificationEngine(_log);
             await engine.Execute(options)
