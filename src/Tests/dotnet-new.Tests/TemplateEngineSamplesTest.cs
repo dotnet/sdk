@@ -22,9 +22,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         {
             _log = new XunitLoggerProvider(log).CreateLogger("TestRun");
             _sharedHome = sharedHome;
-            _sharedHome.InstallPackage(
-               "Microsoft.TemplateEngine.Samples",
-               nugetSource: @"https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet8/nuget/v3/index.json");
+            _sharedHome.InstallPackage("Microsoft.TemplateEngine.Samples");
         }
 
         [Theory]
@@ -86,15 +84,11 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
                 for (int index = 0; index < args.Length; index += 2)
                 {
-                    sb.Append($"{args[index].Replace("--", "")}={args[index + 1]}");
-                    if (index < args.Length - 2)
-                    {
-                        sb.Append('.');
-                    }
+                    sb.Append($"{args[index].Replace("--", "")}={args[index + 1]}.");
                 }
             }
 
-            return sb.ToString();
+            return sb.ToString(0, Math.Max(0, sb.Length - 1));
         }
     }
 }
