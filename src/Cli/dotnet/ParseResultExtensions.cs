@@ -70,7 +70,7 @@ namespace Microsoft.DotNet.Cli
                     var foundIndex = error.IndexOf(part);
                     if (foundIndex != -1)
                     {
-                        error = error.Slice(foundIndex);
+                        error = error.Slice(foundIndex + part.Length);
                         continue;
                     }
                     else
