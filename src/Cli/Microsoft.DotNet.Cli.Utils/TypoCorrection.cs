@@ -2,17 +2,17 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 //
 
-using System.Collections.Generic;
+#nullable enable
+
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 
 namespace Microsoft.DotNet.Cli.Utils
 {
     public static class TypoCorrection
     {
-
-        private enum ComparisonRank { StartsWith = 0, Contains = 1, Levenshtein = 2, NoMatch = 999 }
-
         /// <summary>
         /// Gets the list of tokens similar to <paramref name="currentToken"/>
         /// based on priority search:
@@ -25,67 +25,74 @@ namespace Microsoft.DotNet.Cli.Utils
         /// <param name="currentToken">The token that is being compared.</param>
         /// <param name="maxLevenshteinDistance">the difference between two strings, default: 3.</param>
         /// <returns>The enumerator to tokens similar to <paramref name="currentToken"/>.</returns>
-        public static IEnumerable<string> GetSimilarTokens(
-            IEnumerable<string> possibleTokens,
-            string currentToken,
-            int maxLevenshteinDistance = 3,
-            int minCurrentTokenLength = 3,
-            int maxNumberOfSuggestions = 10)
+        public static IEnumerable<string> GetSimilarTokens(IEnumerable<string> possibleTokens, string currentToken, int maxLevenshteinDistance = 3)
         {
-            int suggestionsCounter = 0;
-            int? bestDistance = null;
+            var minCurrentTokenLength = 3;
+            var maxNumberOfSuggestions = 10;
 
-            return possibleTokens.Select(token => GetTokenRank(token, currentToken, minCurrentTokenLength, maxLevenshteinDistance))
-                .Where(rankedToken => rankedToken.Rank != ComparisonRank.NoMatch)
-                .OrderBy(rankedToken => rankedToken.Rank)
-                .ThenBy(rankedToken => rankedToken.Distance)
-                .ThenBy(rankedToken => rankedToken.Rank == ComparisonRank.Levenshtein
-                    ? GetStartsWithDistance(currentToken, rankedToken.Token)
-                    : 0)
-                .TakeWhile(rankedToken =>
+            var numberOfSuggestions = 0;
+            var currentTokenLength = currentToken.Length;
+            var possibleSuggestions = possibleTokens.Select((string possibleMatch) => new Suggestion(possibleMatch, possibleMatch.Length));
+
+            var matchByStartsWith = possibleSuggestions
+               .Where(s => s.PossibleMatch.StartsWith(currentToken))
+               .OrderBy(s => s.Distance)
+               .ToList();
+
+            numberOfSuggestions += matchByStartsWith.Count;
+            if (numberOfSuggestions >= maxNumberOfSuggestions)
+            {
+                return matchByStartsWith
+                    .Take(maxNumberOfSuggestions)
+                    .Select(s => s.PossibleMatch);
+            }
+
+            var matchByContains = new List<Suggestion>();
+            if (currentToken.Length >= minCurrentTokenLength)
+            {
+                matchByContains = possibleSuggestions
+                    .Where(s => !matchByStartsWith.Contains(s)
+                        && s.PossibleMatch.Contains(currentToken)
+                        && s.Distance - currentTokenLength <= maxLevenshteinDistance)
+                    .OrderBy(s => s.Distance)
+                    .ToList();
+
+                numberOfSuggestions += matchByContains.Count;
+                if (numberOfSuggestions >= maxNumberOfSuggestions)
                 {
-                    if (suggestionsCounter >= maxNumberOfSuggestions)
-                    {
-                        return false;
-                    }
-                    if (rankedToken.Rank == ComparisonRank.Levenshtein && bestDistance is null)
-                    {
-                        bestDistance = rankedToken.Distance;
-                    }
-                    if (rankedToken.Rank == ComparisonRank.Levenshtein && rankedToken.Distance > bestDistance)
-                    {
-                        return false;
-                    }
+                    return matchByStartsWith
+                        .Concat(matchByContains)
+                        .Take(maxNumberOfSuggestions)
+                        .Select(s => s.PossibleMatch);
+                }
+            }
 
-                    suggestionsCounter++;
+            var matchByLevenshteinDistance = possibleSuggestions
+                .Select(s => new Suggestion(s.PossibleMatch, GetDistance(s.PossibleMatch, currentToken)))
+                .Where(s => !(matchByStartsWith.Contains(s) || matchByContains.Contains(s)) && s.Distance <= maxLevenshteinDistance)
+                .OrderBy(s => s.Distance)
+                .ThenByDescending(s => GetStartsWithDistance(currentToken, s.PossibleMatch))
+                .FilterByShortestDistance()
+                .Take(maxNumberOfSuggestions - numberOfSuggestions);
 
-                    return true;
-                })
-                .Select(rankedToken => rankedToken.Token);
+            return matchByStartsWith
+                .Concat(matchByContains
+                .Concat(matchByLevenshteinDistance))
+                .Select(s => s.PossibleMatch);
         }
 
-        private static (string Token, ComparisonRank Rank, int Distance) GetTokenRank(
-            string token,
-            string matchCriteria,
-            int minCurrentTokenLength,
-            int maxLevenshteinDistance)
+        // The method takes the matches with the shortest distance
+        // e.g. (razor, 2), (pazor, 2), (pazors, 3) => (razor, 2), (pazor, 2)
+        private static IEnumerable<Suggestion> FilterByShortestDistance(this IEnumerable<Suggestion> possibleMatches)
         {
-            if (token.StartsWith(matchCriteria, StringComparison.OrdinalIgnoreCase))
-            {
-                return (token, ComparisonRank.StartsWith, token.Length - matchCriteria.Length);
-            }
-            if (matchCriteria.Length >= minCurrentTokenLength && token.Contains(matchCriteria))
-            {
-                return (token, ComparisonRank.Contains, token.Length - matchCriteria.Length);
-            }
+            int? bestDistance = null;
 
-            int distance = GetDistance(token, matchCriteria);
-            if (distance <= maxLevenshteinDistance)
+            return possibleMatches.TakeWhile(s =>
             {
-                return (token, ComparisonRank.Levenshtein, distance);
-            }
-
-            return (token, ComparisonRank.NoMatch, token.Length);
+                (string _, int distance) = (s.PossibleMatch, s.Distance);
+                bestDistance ??= distance;
+                return distance == bestDistance;
+            });
         }
 
         // The method finds the distance to the first mismatch between two strings
@@ -161,6 +168,25 @@ namespace Microsoft.DotNet.Cli.Utils
 
             // Return the computed edit distance
             return rows[curRow][m];
+        }
+
+        internal class Suggestion
+        {
+            public Suggestion(string possibleMatch, int distance)
+            {
+                PossibleMatch = possibleMatch;
+                Distance = distance;
+            }
+
+            public string PossibleMatch { get; }
+
+            public int Distance { get; }
+
+            public override bool Equals(object? obj) => obj is Suggestion suggestion && Equals(suggestion);
+
+            public bool Equals(Suggestion other) => string.Equals(PossibleMatch, other.PossibleMatch, StringComparison.OrdinalIgnoreCase);
+
+            public override int GetHashCode() => 714894035 + EqualityComparer<string>.Default.GetHashCode(PossibleMatch);
         }
     }
 }
