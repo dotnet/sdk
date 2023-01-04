@@ -7,7 +7,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 
 namespace Microsoft.DotNet.Cli.Utils
 {
@@ -32,29 +31,32 @@ namespace Microsoft.DotNet.Cli.Utils
 
             var numberOfSuggestions = 0;
             var currentTokenLength = currentToken.Length;
-            var possibleSuggestions = possibleTokens.Select((string possibleMatch) => new Suggestion(possibleMatch, possibleMatch.Length));
+            var possibleSuggestions = possibleTokens.Select((string possibleMatch) => new Suggestion(possibleMatch, possibleMatch.Length)).ToArray();
 
             var matchByStartsWith = possibleSuggestions
                .Where(s => s.PossibleMatch.StartsWith(currentToken))
+               .Select(SetSelection)
+               .Take(maxNumberOfSuggestions)
                .OrderBy(s => s.Distance)
                .ToList();
 
             numberOfSuggestions += matchByStartsWith.Count;
             if (numberOfSuggestions >= maxNumberOfSuggestions)
             {
-                return matchByStartsWith
-                    .Take(maxNumberOfSuggestions)
-                    .Select(s => s.PossibleMatch);
+                return matchByStartsWith.Select(s => s.PossibleMatch);
             }
 
             var matchByContains = new List<Suggestion>();
             if (currentToken.Length >= minCurrentTokenLength)
             {
                 matchByContains = possibleSuggestions
-                    .Where(s => !matchByStartsWith.Contains(s)
+                    .Where(s =>
+                        !s.IsSelected
                         && s.PossibleMatch.Contains(currentToken)
                         && s.Distance - currentTokenLength <= maxLevenshteinDistance)
                     .OrderBy(s => s.Distance)
+                    .Take(maxNumberOfSuggestions - numberOfSuggestions)
+                    .Select(SetSelection)
                     .ToList();
 
                 numberOfSuggestions += matchByContains.Count;
@@ -62,14 +64,14 @@ namespace Microsoft.DotNet.Cli.Utils
                 {
                     return matchByStartsWith
                         .Concat(matchByContains)
-                        .Take(maxNumberOfSuggestions)
                         .Select(s => s.PossibleMatch);
                 }
             }
 
             var matchByLevenshteinDistance = possibleSuggestions
+                .Where(s => !s.IsSelected)
                 .Select(s => new Suggestion(s.PossibleMatch, GetDistance(s.PossibleMatch, currentToken)))
-                .Where(s => !(matchByStartsWith.Contains(s) || matchByContains.Contains(s)) && s.Distance <= maxLevenshteinDistance)
+                .Where(s => s.Distance <= maxLevenshteinDistance)
                 .OrderBy(s => s.Distance)
                 .ThenByDescending(s => GetStartsWithDistance(currentToken, s.PossibleMatch))
                 .FilterByShortestDistance()
@@ -89,7 +91,7 @@ namespace Microsoft.DotNet.Cli.Utils
 
             return possibleMatches.TakeWhile(s =>
             {
-                (string _, int distance) = (s.PossibleMatch, s.Distance);
+                int distance = s.Distance;
                 bestDistance ??= distance;
                 return distance == bestDistance;
             });
@@ -170,6 +172,13 @@ namespace Microsoft.DotNet.Cli.Utils
             return rows[curRow][m];
         }
 
+        private static Suggestion SetSelection(Suggestion s)
+        {
+            s.IsSelected = true;
+
+            return s;
+        }
+
         internal class Suggestion
         {
             public Suggestion(string possibleMatch, int distance)
@@ -178,15 +187,11 @@ namespace Microsoft.DotNet.Cli.Utils
                 Distance = distance;
             }
 
+            public bool IsSelected { get; set; }
+
             public string PossibleMatch { get; }
 
-            public int Distance { get; }
-
-            public override bool Equals(object? obj) => obj is Suggestion suggestion && Equals(suggestion);
-
-            public bool Equals(Suggestion other) => string.Equals(PossibleMatch, other.PossibleMatch, StringComparison.OrdinalIgnoreCase);
-
-            public override int GetHashCode() => 714894035 + EqualityComparer<string>.Default.GetHashCode(PossibleMatch);
+            public int Distance { get; set; }
         }
     }
 }
