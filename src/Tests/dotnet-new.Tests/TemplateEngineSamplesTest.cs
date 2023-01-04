@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 //
 using System.Text;
+using EmptyFiles;
 using Microsoft.Extensions.Logging;
 using Microsoft.NET.TestFramework;
 using Microsoft.TemplateEngine.Authoring.TemplateVerifier;
@@ -52,6 +53,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             _log.LogInformation($"Template with {caseDescription}");
             Dictionary<string, string> environmentUnderTest = new() { ["DOTNET_NOLOGO"] = false.ToString() };
             TestContext.Current.AddTestEnvironmentVariables(environmentUnderTest);
+            FileExtensions.AddTextExtension(".cshtml");
 
             TemplateVerifierOptions options = new TemplateVerifierOptions(templateName: shortName)
             {
