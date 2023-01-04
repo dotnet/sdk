@@ -47,7 +47,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   </PropertyGroup>
 
 
-  <PropertyGroup Condition="'$(PublishTrimmed)' == 'true' Or '$(IsTrimmable)' == 'true' Or '$(PublishAot)' == 'true'">
+  <PropertyGroup Condition="'$(PublishTrimmed)' == 'true' Or '$(PublishAot)' == 'true'">
     <!-- Runtime feature defaults to trim unnecessary code -->
     <EnsureAspNetCoreJsonTrimmability Condition="'$(EnsureAspNetCoreJsonTrimmability)' == ''">true</EnsureAspNetCoreJsonTrimmability>
   </PropertyGroup>
