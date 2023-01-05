@@ -71,6 +71,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 GetSymbolAndAddToList("Result", WellKnownTypeNames.SystemThreadingTasksValueTask, SymbolKind.Property, syncBlockingSymbols, context.Compilation);
                 GetSymbolAndAddToList("GetResult", WellKnownTypeNames.SystemRuntimeCompilerServicesTaskAwaiter, SymbolKind.Method, syncBlockingSymbols, context.Compilation);
                 GetSymbolAndAddToList("GetResult", WellKnownTypeNames.SystemRuntimeCompilerServicesValueTaskAwaiter, SymbolKind.Method, syncBlockingSymbols, context.Compilation);
+                GetSymbolAndAddToList("Sleep", WellKnownTypeNames.SystemThreadingThread, SymbolKind.Method, syncBlockingSymbols, context.Compilation);
 
                 if (!syncBlockingTypes.Any())
                 {
