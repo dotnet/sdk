@@ -198,7 +198,7 @@
           "issues",
           "project_card"
         ],
-        "taskName": "Remind ASP.NET Core PR authors the process to follow ",
+        "taskName": "Remind ASP.NET Core PR authors the process to follow",
         "actions": [
           {
             "name": "addReply",
