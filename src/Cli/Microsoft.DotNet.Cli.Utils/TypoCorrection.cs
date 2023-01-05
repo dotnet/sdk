@@ -179,7 +179,9 @@ namespace Microsoft.DotNet.Cli.Utils
             return s;
         }
 
-        internal class Suggestion
+        // The class describes properties of a possible match token
+        // and based on these the decision for the token selection is made
+        internal sealed class Suggestion
         {
             public Suggestion(string possibleMatch, int distance)
             {
