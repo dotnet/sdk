@@ -8,19 +8,21 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 {
     public class VerifySettingsFixture : IDisposable
     {
-        private static readonly Lazy<bool> _called = new Lazy<bool>(() =>
-        {
-            DerivePathInfo(
-               (_, _, type, method) => new(
-                   directory: "Approvals",
-                   typeName: type.Name,
-                   methodName: method.Name));
+        private static readonly Lazy<bool> _called = new Lazy<bool>(
+            () =>
+            {
+                DerivePathInfo(
+                   (_, _, type, method) => new(
+                       directory: "Approvals",
+                       typeName: type.Name,
+                       methodName: method.Name));
 
-            // Customize diff output of verifier
-            VerifyDiffPlex.Initialize(OutputType.Compact);
+                // Customize diff output of verifier
+                VerifyDiffPlex.Initialize(OutputType.Compact);
 
-            return true;
-        });
+                return true;
+            },
+            LazyThreadSafetyMode.ExecutionAndPublication);
 
         public VerifySettingsFixture() => _ = _called.Value;
 
