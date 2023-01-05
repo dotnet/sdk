@@ -1980,4 +1980,22 @@
   <data name="UseThrowHelperFix" xml:space="preserve">
     <value>Use '{0}.{1}'</value>
   </data>
+  <data name="UseConcreteTypeDescription" xml:space="preserve">
+    <value>Using concrete types avoids virtual or interface call overhead and enables inlining.</value>
+  </data>
+  <data name="UseConcreteTypeForFieldMessage" xml:space="preserve">
+    <value>Change type of field '{0}' from '{1}' to '{2}' for improved performance</value>
+  </data>
+  <data name="UseConcreteTypeTitle" xml:space="preserve">
+    <value>Use concrete types when possible for improved performance</value>
+  </data>
+  <data name="UseConcreteTypeForLocalMessage" xml:space="preserve">
+    <value>Change type of variable '{0}' from '{1}' to '{2}' for improved performance</value>
+  </data>
+  <data name="UseConcreteTypeForMethodReturnMessage" xml:space="preserve">
+    <value>Change return type of method '{0}' from '{1}' to '{2}' for improved performance</value>
+  </data>
+  <data name="UseConcreteTypeForParameterMessage" xml:space="preserve">
+    <value>Change type of parameter '{0}' from '{1}' to '{2}' for improved performance</value>
+  </data>
 </root>
