@@ -89,10 +89,57 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .ConfigureAwait(false);
         }
 
+        [Theory]
+        [InlineData("class", "11.0", "net7.0")]
+        //[InlineData("class", "preview", "net7.0")]
+        //[InlineData("class", "10.0", "net6.0")]
+        //[InlineData("class", "9.0", "netstandard2.0")]
+        public async void DotnetVisualBasicClassTemplatesTest(
+            string templateShortName,
+            string langVersion = "",
+            string targetFramework = "")
+        {
+            // prevents logging a welcome message from sdk installation
+            Dictionary<string, string> environmentUnderTest = new() { ["DOTNET_NOLOGO"] = false.ToString() };
+            TestContext.Current.AddTestEnvironmentVariables(environmentUnderTest);
+
+            string folderName = GetFolderName(templateShortName, langVersion, targetFramework);
+            string workingDir = CreateTemporaryFolder($"{nameof(DotnetVisualBasicClassTemplatesTest)}.{folderName}");
+            string projectName = CreateTestProject(workingDir, langVersion, targetFramework, "VB");
+
+            TemplateVerifierOptions options = new TemplateVerifierOptions(templateName: templateShortName)
+            {
+                SnapshotsDirectory = "Approvals",
+                VerifyCommandOutput = true,
+                TemplateSpecificArgs = new[] { "--name", "TestItem1", "--language", "VB" },
+                VerificationExcludePatterns = new[]
+                {
+                    "*/stderr.txt",
+                    "*\\stderr.txt",
+                    // restored files in obj folder
+                    $"*{projectName}.vbproj.*",
+                    "*project.*.*"
+                },
+                SettingsDirectory = _fixture.HomeDirectory,
+                DotnetExecutablePath = TestContext.Current.ToolsetUnderTest.DotNetHostPath,
+                DoNotAppendTemplateArgsToScenarioName = true,
+                DoNotPrependTemplateNameToScenarioName = true,
+                ScenarioName = folderName,
+                OutputDirectory = workingDir,
+                EnsureEmptyOutputDirectory = false
+            }
+            .WithCustomEnvironment(environmentUnderTest);
+
+            VerificationEngine engine = new VerificationEngine(_logger);
+            await engine.Execute(options)
+                .ConfigureAwait(false);
+        }
+
         private string CreateTestProject(
             string workingDir,
             string langVersion,
-            string targetFramework)
+            string targetFramework,
+            string language = "")
         {
             IList<string> projectArgs = new List<string>() { "classlib", "-o", workingDir, "--name", "ClassLib" };
             if (!string.IsNullOrEmpty(langVersion))
@@ -103,6 +150,10 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             {
                 projectArgs.AddRange(new[] { "--framework", targetFramework });
             }
+            if (!string.IsNullOrEmpty(language))
+            {
+                projectArgs.AddRange(new[] { "--language", language });
+            }
 
             new DotnetNewCommand(Log, projectArgs.ToArray())
                 .WithCustomHive(_fixture.HomeDirectory)
@@ -112,12 +163,12 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .Pass()
                 .And.NotHaveStdErr();
 
-            foreach (string classFile in Directory.GetFiles(workingDir, "*.cs"))
+            foreach (string classFile in Directory.GetFiles(workingDir, "*.(cs|vb)"))
             {
                 File.Delete(classFile);
             }
 
-            return Path.GetFileNameWithoutExtension(Directory.GetFiles(workingDir, "*.csproj")?.FirstOrDefault() ?? string.Empty);
+            return Path.GetFileNameWithoutExtension(Directory.GetFiles(workingDir, "*.(csproj|vbproj)")?.FirstOrDefault() ?? string.Empty);
         }
 
         private string GetFolderName(string templateShortName, string langVersion, string targetFramework)
