@@ -7,24 +7,21 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
 {
     public class VerifySettingsFixture : IDisposable
     {
-        private static bool s_called;
-
-        public VerifySettingsFixture()
+        private static readonly Lazy<bool> Called = new Lazy<bool>(() =>
         {
-            if (s_called)
-            {
-                return;
-            }
-            s_called = true;
             DerivePathInfo(
-                (_, _, type, method) => new(
-                    directory: "Approvals",
-                    typeName: type.Name,
-                    methodName: method.Name));
+               (_, _, type, method) => new(
+                   directory: "Approvals",
+                   typeName: type.Name,
+                   methodName: method.Name));
 
             // Customize diff output of verifier
             VerifyDiffPlex.Initialize(OutputType.Compact);
-        }
+
+            return true;
+        });
+
+        public VerifySettingsFixture() => _ = Called.Value;
 
         public void Dispose() { }
     }
