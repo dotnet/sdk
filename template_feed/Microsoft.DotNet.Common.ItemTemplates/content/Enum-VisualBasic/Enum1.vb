@@ -2,8 +2,8 @@
 
 Module CompanyClassLibrary1
 
-    Public Class Class1
-
-    End Class
+    Enum Enum1
+        None = 0
+    End Enum
 
 End Module

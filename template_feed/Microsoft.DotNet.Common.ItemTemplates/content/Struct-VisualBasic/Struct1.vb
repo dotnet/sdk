@@ -2,8 +2,8 @@
 
 Module CompanyClassLibrary1
 
-    Public Class Class1
+    Structure Struct1
 
-    End Class
+    End Structure
 
 End Module

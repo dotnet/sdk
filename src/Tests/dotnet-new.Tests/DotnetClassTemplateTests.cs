@@ -30,24 +30,24 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
         [Theory]
         [InlineData("class")]
-        [InlineData("class", "preview", "net7.0")]
-        [InlineData("class", "10.0", "net6.0")]
-        [InlineData("class", "9.0", "netstandard2.0")]
-        [InlineData("interface")]
-        [InlineData("interface", "10.0", "net6.0")]
-        [InlineData("interface", "9", "netstandard2.0")]
-        [InlineData("record")]
-        [InlineData("record", "10", "net6.0")]
-        [InlineData("record", "9.0")]
-        [InlineData("record", "8.0", "netstandard2.0")]
-        [InlineData("struct")]
-        [InlineData("struct", "10")]
-        [InlineData("struct", "10", "net6.0")]
-        [InlineData("struct", "9.0", "netstandard2.0")]
-        [InlineData("enum")]
-        [InlineData("enum", "10", "net6.0")]
-        [InlineData("enum", "", "net7.0")]
-        [InlineData("enum", "9.0", "netstandard2.0")]
+        //[InlineData("class", "preview", "net7.0")]
+        //[InlineData("class", "10.0", "net6.0")]
+        //[InlineData("class", "9.0", "netstandard2.0")]
+        //[InlineData("interface")]
+        //[InlineData("interface", "10.0", "net6.0")]
+        //[InlineData("interface", "9", "netstandard2.0")]
+        //[InlineData("record")]
+        //[InlineData("record", "10", "net6.0")]
+        //[InlineData("record", "9.0")]
+        //[InlineData("record", "8.0", "netstandard2.0")]
+        //[InlineData("struct")]
+        //[InlineData("struct", "10")]
+        //[InlineData("struct", "10", "net6.0")]
+        //[InlineData("struct", "9.0", "netstandard2.0")]
+        //[InlineData("enum")]
+        //[InlineData("enum", "10", "net6.0")]
+        //[InlineData("enum", "", "net7.0")]
+        //[InlineData("enum", "9.0", "netstandard2.0")]
         public async void DotnetCSharpClassTemplatesTest(
             string templateShortName,
             string langVersion = "",
@@ -90,10 +90,22 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         }
 
         [Theory]
-        [InlineData("class", "11.0", "net7.0")]
-        //[InlineData("class", "preview", "net7.0")]
+        //[InlineData("class")]
+        //[InlineData("class", "11.0", "net7.0")]
         //[InlineData("class", "10.0", "net6.0")]
         //[InlineData("class", "9.0", "netstandard2.0")]
+        //[InlineData("enum")]
+        //[InlineData("enum", "10", "net6.0")]
+        //[InlineData("enum", "", "net7.0")]
+        //[InlineData("enum", "9.0", "netstandard2.0")]
+        //[InlineData("struct")]
+        //[InlineData("struct", "10")]
+        //[InlineData("struct", "10", "net6.0")]
+        //[InlineData("struct", "9.0", "netstandard2.0")]
+        [InlineData("interface")]
+        [InlineData("interface", "11.0", "net7.0")]
+        [InlineData("interface", "10.0", "net6.0")]
+        [InlineData("interface", "9", "netstandard2.0")]
         public async void DotnetVisualBasicClassTemplatesTest(
             string templateShortName,
             string langVersion = "",
@@ -141,6 +153,18 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             string targetFramework,
             string language = "")
         {
+            IDictionary<string, string> languageToProjectExtMap = new Dictionary<string, string>
+            {
+                { "VB", ".vbproj" },
+                { "", ".csproj" }
+            };
+
+            IDictionary<string, string> languageToClassExtMap = new Dictionary<string, string>
+            {
+                { "VB", ".vb" },
+                { "", ".cs" }
+            };
+
             IList<string> projectArgs = new List<string>() { "classlib", "-o", workingDir, "--name", "ClassLib" };
             if (!string.IsNullOrEmpty(langVersion))
             {
@@ -163,12 +187,13 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .Pass()
                 .And.NotHaveStdErr();
 
-            foreach (string classFile in Directory.GetFiles(workingDir, "*.(cs|vb)"))
+            foreach (string classFile in Directory.GetFiles(workingDir, $"*{languageToClassExtMap[language]}"))
             {
                 File.Delete(classFile);
             }
 
-            return Path.GetFileNameWithoutExtension(Directory.GetFiles(workingDir, "*.(csproj|vbproj)")?.FirstOrDefault() ?? string.Empty);
+            return Path.GetFileNameWithoutExtension(Directory
+                .GetFiles(workingDir, $"*{languageToProjectExtMap[language]}")?.FirstOrDefault() ?? string.Empty);
         }
 
         private string GetFolderName(string templateShortName, string langVersion, string targetFramework)

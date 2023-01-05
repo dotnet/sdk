@@ -2,8 +2,8 @@
 
 Module CompanyClassLibrary1
 
-    Public Class Class1
+    Interface Interface1
 
-    End Class
+    End Interface
 
 End Module
