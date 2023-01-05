@@ -23,6 +23,11 @@
     <Platform Condition="'$(Platform)' == ''">x64</Platform>
 
     <UseStableVersions Condition="'$(UseStableVersions)' == ''">false</UseStableVersions>
+
+    <SourceBuildUseMonoRuntime>false</SourceBuildUseMonoRuntime>
+    <!-- These architectures are only supported with mono runtime -->
+    <SourceBuildUseMonoRuntime Condition="'$(BuildArchitecture)' == 's390x'">true</SourceBuildUseMonoRuntime>
+    <SourceBuildUseMonoRuntime Condition="'$(BuildArchitecture)' == 'ppc64le'">true</SourceBuildUseMonoRuntime>
   </PropertyGroup>
 
   <!-- This repo's projects are entirely infrastructure and do not ship. -->
