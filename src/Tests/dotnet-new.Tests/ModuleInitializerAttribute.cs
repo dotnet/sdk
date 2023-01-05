@@ -9,17 +9,23 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 {
     public static class ModuleInitializer
     {
+        private static readonly object Locker = new object();
+
         [ModuleInitializer]
         public static void Init()
         {
-            DerivePathInfo(
+            lock (Locker)
+            {
+                DerivePathInfo(
                    (_, _, type, method) => new(
                        directory: "Approvals",
                        typeName: type.Name,
                        methodName: method.Name));
 
-            // Customize diff output of verifier
-            VerifyDiffPlex.Initialize(OutputType.Compact);
+                // Customize diff output of verifier
+                VerifyDiffPlex.Initialize(OutputType.Compact);
+
+            }
         }
     }
 }
