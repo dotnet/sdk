@@ -108,26 +108,29 @@ namespace Microsoft.NetCore.Analyzers.Performance
         {
             context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
             context.EnableConcurrentExecution();
-
-            context.RegisterSymbolStartAction(context =>
+            context.RegisterCompilationStartAction(context =>
             {
-                var coll = Collector.GetInstance(context.Compilation);
-
-                context.RegisterOperationAction(context => coll.HandleInvocation((IInvocationOperation)context.Operation), OperationKind.Invocation);
-                context.RegisterOperationAction(context => coll.HandleSimpleAssignment((ISimpleAssignmentOperation)context.Operation), OperationKind.SimpleAssignment);
-                context.RegisterOperationAction(context => coll.HandleCoalesceAssignment((ICoalesceAssignmentOperation)context.Operation), OperationKind.CoalesceAssignment);
-                context.RegisterOperationAction(context => coll.HandleDeconstructionAssignment((IDeconstructionAssignmentOperation)context.Operation), OperationKind.DeconstructionAssignment);
-                context.RegisterOperationAction(context => coll.HandleFieldInitializer((IFieldInitializerOperation)context.Operation), OperationKind.FieldInitializer);
-                context.RegisterOperationAction(context => coll.HandleVariableDeclarator((IVariableDeclaratorOperation)context.Operation), OperationKind.VariableDeclarator);
-                context.RegisterOperationAction(context => coll.HandleDeclarationExpression((IDeclarationExpressionOperation)context.Operation), OperationKind.DeclarationExpression);
-                context.RegisterOperationAction(context => coll.HandleReturn((IReturnOperation)context.Operation), OperationKind.Return);
-
-                context.RegisterSymbolEndAction(context =>
+                var voidType = context.Compilation.GetSpecialType(SpecialType.System_Void);
+                context.RegisterSymbolStartAction(context =>
                 {
-                    Report(context, coll);
-                    Collector.ReturnInstance(coll, context.CancellationToken);
-                });
-            }, SymbolKind.NamedType);
+                    var coll = Collector.GetInstance(voidType);
+
+                    context.RegisterOperationAction(context => coll.HandleInvocation((IInvocationOperation)context.Operation), OperationKind.Invocation);
+                    context.RegisterOperationAction(context => coll.HandleSimpleAssignment((ISimpleAssignmentOperation)context.Operation), OperationKind.SimpleAssignment);
+                    context.RegisterOperationAction(context => coll.HandleCoalesceAssignment((ICoalesceAssignmentOperation)context.Operation), OperationKind.CoalesceAssignment);
+                    context.RegisterOperationAction(context => coll.HandleDeconstructionAssignment((IDeconstructionAssignmentOperation)context.Operation), OperationKind.DeconstructionAssignment);
+                    context.RegisterOperationAction(context => coll.HandleFieldInitializer((IFieldInitializerOperation)context.Operation), OperationKind.FieldInitializer);
+                    context.RegisterOperationAction(context => coll.HandleVariableDeclarator((IVariableDeclaratorOperation)context.Operation), OperationKind.VariableDeclarator);
+                    context.RegisterOperationAction(context => coll.HandleDeclarationExpression((IDeclarationExpressionOperation)context.Operation), OperationKind.DeclarationExpression);
+                    context.RegisterOperationAction(context => coll.HandleReturn((IReturnOperation)context.Operation), OperationKind.Return);
+
+                    context.RegisterSymbolEndAction(context =>
+                    {
+                        Report(context, coll);
+                        Collector.ReturnInstance(coll, context.CancellationToken);
+                    });
+                }, SymbolKind.NamedType);
+            });
         }
 
         /// <summary>
