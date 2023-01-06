@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.CommandLine;
 using System.CommandLine.Parsing;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.DotNet.Cli;
@@ -41,7 +42,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Repair
         {
             _dotnetPath = dotnetDir ?? Path.GetDirectoryName(Environment.ProcessPath);
             userProfileDir ??= CliFolderPathCalculator.DotnetUserProfileFolderPath;
-            _sdkVersion = WorkloadOptionsExtensions.GetValidatedSdkVersion(parseResult.GetValueForOption(WorkloadRepairCommandParser.VersionOption), version, _dotnetPath, userProfileDir);
+            _sdkVersion = WorkloadOptionsExtensions.GetValidatedSdkVersion(parseResult.GetValueForOption(WorkloadRepairCommandParser.VersionOption), version, _dotnetPath, userProfileDir, true);
 
             var configOption = parseResult.GetValueForOption(WorkloadRepairCommandParser.ConfigOption);
             var sourceOption = parseResult.GetValueForOption(WorkloadRepairCommandParser.SourceOption);
@@ -97,25 +98,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Repair
 
         private void ReinstallWorkloadsBasedOnCurrentManifests(IEnumerable<WorkloadId> workloadIds, SdkFeatureBand sdkFeatureBand)
         {
-            if (_workloadInstaller.GetInstallationUnit().Equals(InstallationUnit.Packs))
-            {
-                var installer = _workloadInstaller.GetPackInstaller();
-
-                var packsToInstall = workloadIds
-                    .SelectMany(workloadId => _workloadResolver.GetPacksInWorkload(workloadId))
-                    .Distinct()
-                    .Select(packId => _workloadResolver.TryGetPackInfo(packId))
-                    .Where(pack => pack != null);
-
-                foreach (var packId in packsToInstall)
-                {
-                    CliTransaction.RunNew(context => installer.RepairWorkloadPack(packId, sdkFeatureBand, context));
-                }
-            }
-            else
-            {
-                throw new NotImplementedException();
-            }
+            _workloadInstaller.RepairWorkloads(workloadIds, sdkFeatureBand);
         }
     }
 }
