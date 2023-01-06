@@ -22,6 +22,10 @@ namespace Microsoft.DotNet.Tools.New.PostActionProcessors
 
         internal static Guid ActionProcessorId { get; } = new Guid("695A3659-EB40-4FF5-A6A6-C9C4E629FCB0");
 
+        private static readonly JsonSerializerOptions s_serializerOptions = new JsonSerializerOptions() { WriteIndented = true };
+
+        private static readonly JsonDocumentOptions s_deserializerOptions = new JsonDocumentOptions() { AllowTrailingCommas = true, CommentHandling = JsonCommentHandling.Skip };
+
         private const string JsonFileNameArgument = "jsonFileName";
 
         protected override bool ProcessInternal(
@@ -57,14 +61,20 @@ namespace Microsoft.DotNet.Tools.New.PostActionProcessors
                 return false;
             }
 
-            JsonNode? newJsonContent = AddElementToJson(environment.Host.FileSystem, jsonFiles[0], parentProperty, newJsonPropertyName, newJsonPropertyValue);
+            JsonNode? newJsonContent = AddElementToJson(
+                environment.Host.FileSystem,
+                jsonFiles[0],
+                parentProperty,
+                ".",
+                newJsonPropertyName,
+                newJsonPropertyValue);
 
             if (newJsonContent == null)
             {
                 return false;
             }
 
-            environment.Host.FileSystem.WriteAllText(jsonFiles[0], newJsonContent.ToJsonString());
+            environment.Host.FileSystem.WriteAllText(jsonFiles[0], newJsonContent.ToJsonString(s_serializerOptions));
 
             return true;
         }
@@ -79,9 +89,9 @@ namespace Microsoft.DotNet.Tools.New.PostActionProcessors
             return FileFindHelpers.FindFilesAtOrAbovePath(fileSystem, basePath, matchPattern: jsonFileName);
         }
 
-        private static JsonNode? AddElementToJson(IPhysicalFileSystem fileSystem, string targetJsonFile, string? propertyPath, string newJsonPropertyName, string newJsonPropertyValue)
+        private static JsonNode? AddElementToJson(IPhysicalFileSystem fileSystem, string targetJsonFile, string? propertyPath, string propertyPathSeparator, string newJsonPropertyName, string newJsonPropertyValue)
         {
-            JsonNode? jsonContent = JsonNode.Parse(fileSystem.ReadAllText(targetJsonFile));
+            JsonNode? jsonContent = JsonNode.Parse(fileSystem.ReadAllText(targetJsonFile), nodeOptions: null, documentOptions: s_deserializerOptions);
 
             if (jsonContent == null)
             {
@@ -89,7 +99,7 @@ namespace Microsoft.DotNet.Tools.New.PostActionProcessors
                 return null;
             }
 
-            JsonNode? parentProperty = FindJsonNode(jsonContent, propertyPath, ".");
+            JsonNode? parentProperty = FindJsonNode(jsonContent, propertyPath, propertyPathSeparator);
 
             if (parentProperty == null)
             {
