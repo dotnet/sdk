@@ -23,6 +23,123 @@ namespace Microsoft.DotNet.Cli.New.Tests
             _engineEnvironmentSettings = environmentSettingsHelper.CreateEnvironment(hostIdentifier: GetType().Name, virtualize: true);
         }
 
+        [Fact]
+        public void FailsWhenNoTargetJsonFileConfigured()
+        {
+            string targetBasePath = _engineEnvironmentSettings.GetTempVirtualizedPath();
+
+            IPostAction postAction = new MockPostAction
+            {
+                ActionId = DotnetModifyJsonPostActionProcessor.ActionProcessorId,
+                Args = new Dictionary<string, string>()
+                {
+                    ["parentPropertyPath"] = "person",
+                    ["newJsonPropertyName"] = "lastName",
+                    ["newJsonPropertyValue"] = "Watson"
+                }
+            };
+
+            DotnetModifyJsonPostActionProcessor processor = new DotnetModifyJsonPostActionProcessor();
+
+            bool result = processor.Process(
+                _engineEnvironmentSettings,
+                postAction,
+                new MockCreationEffects(),
+                new MockCreationResult(),
+                targetBasePath);
+            
+            Assert.False(result);
+        }
+
+        [Fact]
+        public void FailsWhenNoTargetJsonFileNotFound()
+        {
+            string targetBasePath = _engineEnvironmentSettings.GetTempVirtualizedPath();
+
+            IPostAction postAction = new MockPostAction
+            {
+                ActionId = DotnetModifyJsonPostActionProcessor.ActionProcessorId,
+                Args = new Dictionary<string, string>()
+                {
+                    ["jsonFileName"] = "nonexistingfile.json",
+                    ["parentPropertyPath"] = "person",
+                    ["newJsonPropertyName"] = "lastName",
+                    ["newJsonPropertyValue"] = "Watson"
+                }
+            };
+
+            DotnetModifyJsonPostActionProcessor processor = new DotnetModifyJsonPostActionProcessor();
+
+            bool result = processor.Process(
+                _engineEnvironmentSettings,
+                postAction,
+                new MockCreationEffects(),
+                new MockCreationResult(),
+                targetBasePath);
+
+            Assert.False(result);
+        }
+
+        [Fact]
+        public void FailsWhenNoNewJsonPropertyNameConfigured()
+        {
+            string targetBasePath = _engineEnvironmentSettings.GetTempVirtualizedPath();
+
+            CreateJsonFile(targetBasePath, "file.json", "{}");
+
+            IPostAction postAction = new MockPostAction
+            {
+                ActionId = DotnetModifyJsonPostActionProcessor.ActionProcessorId,
+                Args = new Dictionary<string, string>()
+                {
+                    ["jsonFileName"] = "file.json",
+                    ["parentPropertyPath"] = "person",
+                    ["newJsonPropertyValue"] = "Watson"
+                }
+            };
+
+            DotnetModifyJsonPostActionProcessor processor = new DotnetModifyJsonPostActionProcessor();
+
+            bool result = processor.Process(
+                _engineEnvironmentSettings,
+                postAction,
+                new MockCreationEffects(),
+                new MockCreationResult(),
+                targetBasePath);
+
+            Assert.False(result);
+        }
+
+        [Fact]
+        public void FailsWhenNoNewJsonPropertyValueConfigured()
+        {
+            string targetBasePath = _engineEnvironmentSettings.GetTempVirtualizedPath();
+
+            CreateJsonFile(targetBasePath, "file.json", "{}");
+
+            IPostAction postAction = new MockPostAction
+            {
+                ActionId = DotnetModifyJsonPostActionProcessor.ActionProcessorId,
+                Args = new Dictionary<string, string>()
+                {
+                    ["jsonFileName"] = "file.json",
+                    ["parentPropertyPath"] = "person",
+                    ["newJsonPropertyName"] = "lastName"
+                }
+            };
+
+            DotnetModifyJsonPostActionProcessor processor = new DotnetModifyJsonPostActionProcessor();
+
+            bool result = processor.Process(
+                _engineEnvironmentSettings,
+                postAction,
+                new MockCreationEffects(),
+                new MockCreationResult(),
+                targetBasePath);
+
+            Assert.False(result);
+        }
+
         [Theory]
         [MemberData(nameof(ModifyJsonPostActionTestCase.TestCases), MemberType = typeof(ModifyJsonPostActionTestCase))]
         public void CanSuccessfullyModifyJsonFile(ModifyJsonPostActionTestCase testCase)

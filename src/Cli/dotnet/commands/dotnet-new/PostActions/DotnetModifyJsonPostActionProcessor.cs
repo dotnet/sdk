@@ -38,11 +38,23 @@ namespace Microsoft.DotNet.Tools.New.PostActionProcessors
             ICreationResult templateCreationResult,
             string outputBasePath)
         {
-            IReadOnlyList<string> jsonFiles = FindJsonFile(action, environment.Host.FileSystem, outputBasePath);
+            if (!action.Args.TryGetValue(JsonFileNameArgument, out string? jsonFileName))
+            {
+                Reporter.Error.WriteLine($"{JsonFileNameArgument} not configured.");
+                return false;
+            }
 
-            if (jsonFiles.Count != 1)
+            IReadOnlyList<string> jsonFiles = FileFindHelpers.FindFilesAtOrAbovePath(environment.Host.FileSystem, outputBasePath, matchPattern: jsonFileName);
+
+            if (jsonFiles.Count == 0)
             {
                 Reporter.Error.WriteLine(LocalizableStrings.PostAction_ModifyJson_Error_NoJsonFile);
+                return false;
+            }
+
+            if (jsonFiles.Count > 1)
+            {
+                Reporter.Error.WriteLine($"More then one file found that matches {jsonFileName}");
                 return false;
             }
 
@@ -80,16 +92,6 @@ namespace Microsoft.DotNet.Tools.New.PostActionProcessors
             environment.Host.FileSystem.WriteAllText(jsonFiles[0], newJsonContent.ToJsonString(s_serializerOptions));
 
             return true;
-        }
-
-        private static IReadOnlyList<string> FindJsonFile(IPostAction action, IPhysicalFileSystem fileSystem, string basePath)
-        {
-            if (!action.Args.TryGetValue(JsonFileNameArgument, out string? jsonFileName))
-            {
-                return Array.Empty<string>();
-            }
-
-            return FileFindHelpers.FindFilesAtOrAbovePath(fileSystem, basePath, matchPattern: jsonFileName);
         }
 
         private static JsonNode? AddElementToJson(IPhysicalFileSystem fileSystem, string targetJsonFile, string? propertyPath, string propertyPathSeparator, string newJsonPropertyName, string newJsonPropertyValue)
