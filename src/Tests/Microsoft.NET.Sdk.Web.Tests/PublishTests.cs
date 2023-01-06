@@ -17,7 +17,7 @@ namespace Microsoft.NET.Sdk.Web.Tests
         {
         }
 
-        [RequiresMSBuildVersionTheory("17.0.0.32901")]
+        [Theory()]
         [MemberData(nameof(SupportedTfms))]
         public void TrimmingOptions_Are_Defaulted_Correctly_On_Trimmed_Apps(string targetFramework)
         {
@@ -43,7 +43,7 @@ namespace Microsoft.NET.Sdk.Web.Tests
                     .Should().BeTrue();
         }
 
-        [RequiresMSBuildVersionTheory("17.0.0.32901")]
+        [Theory()]
         [MemberData(nameof(SupportedTfms))]
         public void TrimmingOptions_Are_Defaulted_Correctly_On_Aot_Apps(string targetFramework)
         {
