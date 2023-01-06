@@ -29,6 +29,10 @@ Copyright (c) .NET Foundation. All rights reserved.
   <UsingTask TaskName="GetAssemblyVersion" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
   <UsingTask TaskName="GenerateSatelliteAssemblies" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
 
+  <ItemGroup Condition="'$(BuildWithFrameworkRoslyn)' == 'true'">
+    <PackageReference Include="Microsoft.Net.Compilers.Framework.Package" PrivateAssets="all" />
+  </ItemGroup>
+
   <PropertyGroup>
     <DisableStandardFrameworkResolution Condition="'$(DisableStandardFrameworkResolution)' == ''">$(_IsNETCoreOrNETStandard)</DisableStandardFrameworkResolution>
   </PropertyGroup>
