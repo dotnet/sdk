@@ -1,0 +1,136 @@
+﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+//
+
+#nullable enable
+
+using System;
+using System.Collections.Generic;
+using System.Text.Json;
+using System.Text.Json.Nodes;
+using Microsoft.DotNet.Cli.Utils;
+using Microsoft.TemplateEngine.Abstractions;
+using Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem;
+using Microsoft.TemplateEngine.Cli.PostActionProcessors;
+using Microsoft.TemplateEngine.Utils;
+
+namespace Microsoft.DotNet.Tools.New.PostActionProcessors
+{
+    internal class DotnetModifyJsonPostActionProcessor : PostActionProcessorBase
+    {
+        public override Guid Id => ActionProcessorId;
+
+        internal static Guid ActionProcessorId { get; } = new Guid("695A3659-EB40-4FF5-A6A6-C9C4E629FCB0");
+
+        private const string JsonFileNameArgument = "jsonFileName";
+
+        protected override bool ProcessInternal(
+            IEngineEnvironmentSettings environment,
+            IPostAction action,
+            ICreationEffects creationEffects,
+            ICreationResult templateCreationResult,
+            string outputBasePath)
+        {
+            IReadOnlyList<string> jsonFiles = FindJsonFile(action, environment.Host.FileSystem, outputBasePath);
+
+            if (jsonFiles.Count != 1)
+            {
+                Reporter.Error.WriteLine(LocalizableStrings.PostAction_ModifyJson_Error_NoJsonFile);
+                return false;
+            }
+
+            // args required:
+            // parent property name in json file (if not specified, assume null and add the json section to the root)
+            // optional property separation character
+            // mandatory json text that must be added.
+            action.Args.TryGetValue("parentProperty", out string? parentProperty);
+            action.Args.TryGetValue("newJsonPropertyName", out string? newJsonPropertyName);
+            action.Args.TryGetValue("newJsonPropertyValue", out string? newJsonPropertyValue);
+
+            if (newJsonPropertyName == null)
+            {
+                return false;
+            }
+
+            if (newJsonPropertyValue == null)
+            {
+                return false;
+            }
+
+            JsonNode? newJsonContent = AddElementToJson(environment.Host.FileSystem, jsonFiles[0], parentProperty, newJsonPropertyName, newJsonPropertyValue);
+
+            if (newJsonContent == null)
+            {
+                return false;
+            }
+
+            environment.Host.FileSystem.WriteAllText(jsonFiles[0], newJsonContent.ToJsonString());
+
+            return true;
+        }
+
+        private static IReadOnlyList<string> FindJsonFile(IPostAction action, IPhysicalFileSystem fileSystem, string basePath)
+        {
+            if (!action.Args.TryGetValue(JsonFileNameArgument, out string? jsonFileName))
+            {
+                return Array.Empty<string>();
+            }
+
+            return FileFindHelpers.FindFilesAtOrAbovePath(fileSystem, basePath, matchPattern: jsonFileName);
+        }
+
+        private static JsonNode? AddElementToJson(IPhysicalFileSystem fileSystem, string targetJsonFile, string? propertyPath, string newJsonPropertyName, string newJsonPropertyValue)
+        {
+            JsonNode? jsonContent = JsonNode.Parse(fileSystem.ReadAllText(targetJsonFile));
+
+            if (jsonContent == null)
+            {
+                Reporter.Error.WriteLine("json file is empty");
+                return null;
+            }
+
+            JsonNode? parentProperty = FindJsonNode(jsonContent, propertyPath, ".");
+
+            if (parentProperty == null)
+            {
+                Reporter.Error.WriteLine("parentproperty not found is empty");
+                return null;
+            }
+
+            try
+            {
+                parentProperty[newJsonPropertyName] = JsonNode.Parse(newJsonPropertyValue);
+            }
+            catch (JsonException)
+            {
+                parentProperty[newJsonPropertyName] = newJsonPropertyValue;
+            }
+
+            return jsonContent;
+        }
+
+        private static JsonNode? FindJsonNode(JsonNode content, string? nodePath, string pathSeparator)
+        {
+            if (nodePath == null)
+            {
+                return content;
+            }
+
+            string[] properties = nodePath.Split(pathSeparator);
+
+            JsonNode? node = content;
+
+            foreach (string property in properties)
+            {
+                if (node == null)
+                {
+                    return null;
+                }
+
+                node = node[property];
+            }
+
+            return node;
+        }
+    }
+}

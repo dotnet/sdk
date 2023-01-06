@@ -157,6 +157,11 @@
         <target state="translated">已成功添加对项目文件的引用。</target>
         <note />
       </trans-unit>
+      <trans-unit id="PostAction_ModifyJson_Error_NoJsonFile">
+        <source>Unable to find the json file in the solution</source>
+        <target state="new">Unable to find the json file in the solution</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PostAction_Restore_Error_FailedToDetermineProjectToRestore">
         <source>Couldn't determine files to restore.</source>
         <target state="translated">无法确定要还原的文件。</target>

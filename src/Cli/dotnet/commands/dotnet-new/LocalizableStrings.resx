@@ -308,4 +308,7 @@
     <value>Run 'dotnet workload search' to search workloads available to be installed on your SDK.</value>
     <comment>{Locked="dotnet workload search"}</comment>
   </data>
+  <data name="PostAction_ModifyJson_Error_NoJsonFile" xml:space="preserve">
+    <value>Unable to find the json file in the solution</value>
+  </data>
 </root>
