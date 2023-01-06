@@ -27,6 +27,9 @@ namespace Microsoft.DotNet.Tools.New.PostActionProcessors
         private static readonly JsonDocumentOptions s_deserializerOptions = new JsonDocumentOptions() { AllowTrailingCommas = true, CommentHandling = JsonCommentHandling.Skip };
 
         private const string JsonFileNameArgument = "jsonFileName";
+        private const string ParentPropertyPathArgument = "parentPropertyPath";
+        private const string NewJsonPropertyNameArgument = "newJsonPropertyName";
+        private const string NewJsonPropertyValueArgument = "newJsonPropertyValue";
 
         protected override bool ProcessInternal(
             IEngineEnvironmentSettings environment,
@@ -47,9 +50,9 @@ namespace Microsoft.DotNet.Tools.New.PostActionProcessors
             // parent property name in json file (if not specified, assume null and add the json section to the root)
             // optional property separation character
             // mandatory json text that must be added.
-            action.Args.TryGetValue("parentProperty", out string? parentProperty);
-            action.Args.TryGetValue("newJsonPropertyName", out string? newJsonPropertyName);
-            action.Args.TryGetValue("newJsonPropertyValue", out string? newJsonPropertyValue);
+            action.Args.TryGetValue(ParentPropertyPathArgument, out string? parentProperty);
+            action.Args.TryGetValue(NewJsonPropertyNameArgument, out string? newJsonPropertyName);
+            action.Args.TryGetValue(NewJsonPropertyValueArgument, out string? newJsonPropertyValue);
 
             if (newJsonPropertyName == null)
             {

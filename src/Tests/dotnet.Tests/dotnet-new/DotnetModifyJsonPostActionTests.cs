@@ -25,7 +25,7 @@ namespace Microsoft.DotNet.Cli.New.Tests
 
         [Theory]
         [MemberData(nameof(ModifyJsonPostActionTestCase.TestCases), MemberType = typeof(ModifyJsonPostActionTestCase))]
-        public void X(ModifyJsonPostActionTestCase testCase)
+        public void CanSuccessfullyModifyJsonFile(ModifyJsonPostActionTestCase testCase)
         {
             string targetBasePath = _engineEnvironmentSettings.GetTempVirtualizedPath();
 
@@ -77,7 +77,7 @@ namespace Microsoft.DotNet.Cli.New.Tests
                 new Dictionary<string, string>
                 {
                     ["jsonFileName"] = "jsonfile.json",
-                    ["parentProperty"] = "person",
+                    ["parentPropertyPath"] = "person",
                     ["newJsonPropertyName"] = "lastName",
                     ["newJsonPropertyValue"] = "Watson"
                 },
@@ -92,7 +92,7 @@ namespace Microsoft.DotNet.Cli.New.Tests
                 new Dictionary<string, string>
                 {
                     ["jsonFileName"] = "jsonfile.json",
-                    ["parentProperty"] = "person",
+                    ["parentPropertyPath"] = "person",
                     ["newJsonPropertyName"] = "address",
                     ["newJsonPropertyValue"] = @"{""street"": ""street name"", ""zip"": ""zipcode""}"
                 },
@@ -107,7 +107,7 @@ namespace Microsoft.DotNet.Cli.New.Tests
                 new Dictionary<string, string>
                 {
                     ["jsonFileName"] = "jsonfile.json",
-                    ["parentProperty"] = null,
+                    ["parentPropertyPath"] = null,
                     ["newJsonPropertyName"] = "secondProperty",
                     ["newJsonPropertyValue"] = "bar"
                 },
