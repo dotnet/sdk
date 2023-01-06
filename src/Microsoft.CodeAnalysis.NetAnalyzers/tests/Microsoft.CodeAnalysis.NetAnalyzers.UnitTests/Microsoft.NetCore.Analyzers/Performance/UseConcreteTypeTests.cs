@@ -46,6 +46,48 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
         }
 
         [Fact]
+        public static async Task ShouldNotTrigger2()
+        {
+            const string Source = @"
+                #nullable enable
+
+                using System.Collections.Generic;
+
+                namespace System
+                {
+                    public static partial class MemoryExtensions
+                    {
+                        public static unsafe bool SequenceEqual<T>(this ReadOnlySpan<T> span, ReadOnlySpan<T> other, IEqualityComparer<T>? comparer = null)
+                        {
+                            comparer = EqualityComparer<T>.Default;
+                            return comparer!.Equals(span[0], other[0]);
+                        }
+
+                        public static int CommonPrefixLength<T>(this Span<T> span, ReadOnlySpan<T> other, IEqualityComparer<T>? comparer)
+                        {
+                            return comparer!.Equals(span[0], other[0]) ? 0 : 1;
+                        }
+
+                        public static bool Foo()
+                        {
+                            Span<byte> s1 = stackalloc byte[2];
+                            Span<byte> s2 = stackalloc byte[2];
+                            return SequenceEqual(s1, s2, EqualityComparer<byte>.Default);
+                        }
+
+                        public static int Bar()
+                        {
+                            Span<byte> s1 = stackalloc byte[2];
+                            Span<byte> s2 = stackalloc byte[2];
+                            return CommonPrefixLength(s1, s2, EqualityComparer<byte>.Default);
+                        }
+                    }
+                }";
+
+            await TestCSAsync(Source);
+        }
+
+        [Fact]
         public static async Task ShouldTrigger1()
         {
             const string Source = @"

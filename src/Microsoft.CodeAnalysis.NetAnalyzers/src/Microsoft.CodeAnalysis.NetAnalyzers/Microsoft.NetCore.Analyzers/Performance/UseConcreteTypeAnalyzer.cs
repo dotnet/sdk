@@ -115,6 +115,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 {
                     var coll = Collector.GetInstance(voidType);
 
+                    // we accumulate a bunch of info in the collector object
                     context.RegisterOperationAction(context => coll.HandleInvocation((IInvocationOperation)context.Operation), OperationKind.Invocation);
                     context.RegisterOperationAction(context => coll.HandleSimpleAssignment((ISimpleAssignmentOperation)context.Operation), OperationKind.SimpleAssignment);
                     context.RegisterOperationAction(context => coll.HandleCoalesceAssignment((ICoalesceAssignmentOperation)context.Operation), OperationKind.CoalesceAssignment);
@@ -126,6 +127,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
 
                     context.RegisterSymbolEndAction(context =>
                     {
+                        // based on what we've collected, spit out relevant diagnostics
                         Report(context, coll);
                         Collector.ReturnInstance(coll, context.CancellationToken);
                     });
@@ -138,6 +140,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
         /// </summary>
         private static void Report(SymbolAnalysisContext context, Collector coll)
         {
+            // for all eligible private fields that are used as the receiver for a virtual call
             foreach (var field in coll.VirtualDispatchFields.Keys)
             {
                 if (coll.FieldAssignments.TryGetValue(field, out var assignments))
@@ -146,6 +149,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 }
             }
 
+            // for all eligible local variables that are used as the receiver for a virtual call
             foreach (var local in coll.VirtualDispatchLocals.Keys)
             {
                 if (coll.LocalAssignments.TryGetValue(local, out var assignments))
@@ -154,6 +158,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 }
             }
 
+            // for all eligible parameters that are used as the receiver for a virtual call
             foreach (var parameter in coll.VirtualDispatchParameters.Keys)
             {
                 if (coll.ParameterAssignments.TryGetValue(parameter, out var assignments))
@@ -168,11 +173,13 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 }
             }
 
+            // for eligible all return types of private methods
             foreach (var pair in coll.MethodReturns)
             {
                 var method = pair.Key;
                 var returns = pair.Value;
 
+                // only report the method if it never assigned to a delegate
                 if (CanUpgrade(method))
                 {
                     Report(method, method.ReturnType, returns, UseConcreteTypeForMethodReturn);
@@ -181,10 +188,15 @@ namespace Microsoft.NetCore.Analyzers.Performance
 
             void Report(ISymbol sym, ITypeSymbol fromType, PooledConcurrentSet<ITypeSymbol> assignments, DiagnosticDescriptor desc)
             {
+                // a set of the values assigned to the given symbol
                 using var types = PooledHashSet<ITypeSymbol>.GetInstance(assignments, SymbolEqualityComparer.Default);
 
+                // 'void' is the magic value we use to represent null assignment
                 var assignedNull = types.Remove(coll.Void!);
 
+                // We currently only handle the case where there is only a single consistent type of value assigned to the
+                // symbol. If there are multiple different types, we could try to find the common base for these, but it doesn't
+                // seem worth the complication.
                 if (types.Count == 1)
                 {
                     var toType = types.Single();
@@ -195,6 +207,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
 
                     if (!toType.DerivesFrom(fromType.OriginalDefinition))
                     {
+                        // can readily replace fromType by toType
                         return;
                     }
 

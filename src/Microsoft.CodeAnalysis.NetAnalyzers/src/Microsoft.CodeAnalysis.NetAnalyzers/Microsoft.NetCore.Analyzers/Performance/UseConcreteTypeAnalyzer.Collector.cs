@@ -445,13 +445,6 @@ namespace Microsoft.NetCore.Analyzers.Performance
                             break;
                         }
 
-                    case OperationKind.ParameterReference:
-                        {
-                            var paramRef = (IParameterReferenceOperation)op;
-                            RecordAssignment(paramRef.Parameter, valueType);
-                            break;
-                        }
-
                     case OperationKind.DeclarationExpression:
                         {
                             var declEx = (IDeclarationExpressionOperation)op;
