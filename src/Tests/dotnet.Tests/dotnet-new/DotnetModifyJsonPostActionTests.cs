@@ -94,12 +94,12 @@ namespace Microsoft.DotNet.Cli.New.Tests
                     ["jsonFileName"] = "jsonfile.json",
                     ["parentProperty"] = "person",
                     ["newJsonPropertyName"] = "address",
-                    ["newJsonPropertyValue"] = @"{""street"": ""streetname"", ""zip"": ""zipcode""}"
+                    ["newJsonPropertyValue"] = @"{""street"": ""street name"", ""zip"": ""zipcode""}"
                 },
                 (JsonNode modifiedJsonContent) =>
                 {
                     Assert.NotNull(modifiedJsonContent["person"]["address"]);
-                    Assert.Equal("streetname", modifiedJsonContent["person"]["address"]["street"].ToString());
+                    Assert.Equal("street name", modifiedJsonContent["person"]["address"]["street"].ToString());
                 }),
 
             new("Can add property to document root",
