@@ -18,13 +18,14 @@ cp -a $HELIX_CORRELATION_PAYLOAD/t/TestExecutionDirectoryFiles/. $TestExecutionD
 dotnet new --debug:ephemeral-hive
 
 # We downloaded a special zip of files to the .nuget folder so add that as a source
-dotnet new nugetconfig -o $TestExecutionDirectory/nuget.config
+dotnet new nugetconfig -o $TestExecutionDirectory
 dotnet nuget add source $DOTNET_ROOT/.nuget --configfile $TestExecutionDirectory/nuget.config
 dotnet nuget list source --configfile $TestExecutionDirectory/nuget.config
 
 cp $HELIX_CORRELATION_PAYLOAD/t/TestExecutionDirectoryFiles/testAsset.props ./
 export TestPackagesRoot=$(pwd)/Assets/TestPackages
-find . -name Microsoft.NET.TestPackages.csproj
+find $TestPackagesRoot -name *.csproj
+find . -name *.csproj
 dotnet build ./Assets/TestPackages/Microsoft.NET.TestPackages.csproj /t:Build -p:VersionPropsIsImported=false
-ls $TestPackagesRoot/TestPackages/.
+find $TestPackagesRoot -name *.nupkg
 cp $TestPackagesRoot/TestPackages/. $TestExecutionDirectory/TestPackages -R
