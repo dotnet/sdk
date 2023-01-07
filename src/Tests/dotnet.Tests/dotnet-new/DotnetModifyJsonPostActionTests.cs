@@ -62,6 +62,45 @@ namespace Microsoft.DotNet.Cli.New.Tests
             mockReporter.Verify(r => r.WriteLine(string.Format(Tools.New.LocalizableStrings.PostAction_ModifyJson_Error_ArgumentNotConfigured, "jsonFileName")), Times.Once);
         }
 
+        [Fact]
+        public void FailsWhenParentPropertyPathIsInvalid()
+        {
+            string targetBasePath = _engineEnvironmentSettings.GetTempVirtualizedPath();
+
+            string jsonFilePath = CreateJsonFile(targetBasePath, "json.json", @"{""property1"":{""property2"":{""property3"":""foo""}}}");
+
+            IPostAction postAction = new MockPostAction
+            {
+                ActionId = DotnetModifyJsonPostActionProcessor.ActionProcessorId,
+                Args = new Dictionary<string, string>()
+                {
+                    ["jsonFileName"] = "json.json",
+                    ["parentPropertyPath"] = "property1.propertyX.property2",
+                    ["newJsonPropertyName"] = "bar",
+                    ["newJsonPropertyValue"] = "test"
+                }
+            };
+
+            Mock<IReporter> mockReporter = new Mock<IReporter>();
+
+            mockReporter.Setup(r => r.WriteLine(It.IsAny<string>()))
+                .Verifiable();
+
+            Reporter.SetError(mockReporter.Object);
+
+            DotnetModifyJsonPostActionProcessor processor = new DotnetModifyJsonPostActionProcessor();
+
+            bool result = processor.Process(
+                _engineEnvironmentSettings,
+                postAction,
+                new MockCreationEffects(),
+                new MockCreationResult(),
+                targetBasePath);
+
+            Assert.False(result);
+            mockReporter.Verify(r => r.WriteLine(Tools.New.LocalizableStrings.PostAction_ModifyJson_Error_ParentPropertyPathInvalid), Times.Once);
+        }
+
         [Theory]
         [MemberData(nameof(ModifyJsonPostActionTestCase<Mock<IReporter>>.InvalidConfigurationTestCases), MemberType = typeof(ModifyJsonPostActionTestCase<Mock<IReporter>>))]
         public void FailsWhenMandatoryArgumentsNotConfigured(ModifyJsonPostActionTestCase<Mock<IReporter>> testCase)
@@ -95,9 +134,6 @@ namespace Microsoft.DotNet.Cli.New.Tests
             Assert.False(result);
 
             testCase.AssertionCallback(mockReporter);
-
-            //mockReporter.Verify(r => r.WriteLine(string.Format(Tools.New.LocalizableStrings.PostAction_ModifyJson_Error_ArgumentNotConfigured, "newJsonPropertyName")), Times.Once);
-
         }
 
         [Theory]
