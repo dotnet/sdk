@@ -157,9 +157,24 @@
         <target state="translated">Reference se úspěšně přidala do souboru projektu.</target>
         <note />
       </trans-unit>
+      <trans-unit id="PostAction_ModifyJson_Error_ArgumentNotConfigured">
+        <source>{0} not configured.</source>
+        <target state="new">{0} not configured.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PostAction_ModifyJson_Error_MultipleJsonFiles">
+        <source>More than one file found that matches {0}.</source>
+        <target state="new">More than one file found that matches {0}.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PostAction_ModifyJson_Error_NoJsonFile">
         <source>Unable to find the json file in the solution</source>
         <target state="new">Unable to find the json file in the solution</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PostAction_ModifyJson_Error_ParentPropertyPathInvalid">
+        <source>Parent property path could not be traversed.</source>
+        <target state="new">Parent property path could not be traversed.</target>
         <note />
       </trans-unit>
       <trans-unit id="PostAction_Restore_Error_FailedToDetermineProjectToRestore">

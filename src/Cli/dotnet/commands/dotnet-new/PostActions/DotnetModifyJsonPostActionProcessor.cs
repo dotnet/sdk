@@ -40,7 +40,7 @@ namespace Microsoft.DotNet.Tools.New.PostActionProcessors
         {
             if (!action.Args.TryGetValue(JsonFileNameArgument, out string? jsonFileName))
             {
-                Reporter.Error.WriteLine($"{JsonFileNameArgument} not configured.");
+                Reporter.Error.WriteLine(string.Format(LocalizableStrings.PostAction_ModifyJson_Error_ArgumentNotConfigured, JsonFileNameArgument));
                 return false;
             }
 
@@ -54,7 +54,7 @@ namespace Microsoft.DotNet.Tools.New.PostActionProcessors
 
             if (jsonFiles.Count > 1)
             {
-                Reporter.Error.WriteLine($"More then one file found that matches {jsonFileName}");
+                Reporter.Error.WriteLine(string.Format(LocalizableStrings.PostAction_ModifyJson_Error_MultipleJsonFiles, jsonFileName));
                 return false;
             }
 
@@ -108,7 +108,7 @@ namespace Microsoft.DotNet.Tools.New.PostActionProcessors
 
             if (parentProperty == null)
             {
-                Reporter.Error.WriteLine("parentproperty not found is empty");
+                Reporter.Error.WriteLine(LocalizableStrings.PostAction_ModifyJson_Error_ParentPropertyPathInvalid);
                 return null;
             }
 
