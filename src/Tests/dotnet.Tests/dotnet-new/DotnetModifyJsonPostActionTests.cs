@@ -6,10 +6,12 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.Json.Nodes;
+using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.New.PostActionProcessors;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Mocks;
 using Microsoft.TemplateEngine.TestHelper;
+using Moq;
 using Xunit;
 
 namespace Microsoft.DotNet.Cli.New.Tests
@@ -21,34 +23,6 @@ namespace Microsoft.DotNet.Cli.New.Tests
         public DotnetModifyJsonPostActionTests(EnvironmentSettingsHelper environmentSettingsHelper)
         {
             _engineEnvironmentSettings = environmentSettingsHelper.CreateEnvironment(hostIdentifier: GetType().Name, virtualize: true);
-        }
-
-        [Fact]
-        public void FailsWhenNoTargetJsonFileConfigured()
-        {
-            string targetBasePath = _engineEnvironmentSettings.GetTempVirtualizedPath();
-
-            IPostAction postAction = new MockPostAction
-            {
-                ActionId = DotnetModifyJsonPostActionProcessor.ActionProcessorId,
-                Args = new Dictionary<string, string>()
-                {
-                    ["parentPropertyPath"] = "person",
-                    ["newJsonPropertyName"] = "lastName",
-                    ["newJsonPropertyValue"] = "Watson"
-                }
-            };
-
-            DotnetModifyJsonPostActionProcessor processor = new DotnetModifyJsonPostActionProcessor();
-
-            bool result = processor.Process(
-                _engineEnvironmentSettings,
-                postAction,
-                new MockCreationEffects(),
-                new MockCreationResult(),
-                targetBasePath);
-            
-            Assert.False(result);
         }
 
         [Fact]
@@ -68,35 +42,12 @@ namespace Microsoft.DotNet.Cli.New.Tests
                 }
             };
 
-            DotnetModifyJsonPostActionProcessor processor = new DotnetModifyJsonPostActionProcessor();
+            Mock<IReporter> mockReporter = new Mock<IReporter>();
 
-            bool result = processor.Process(
-                _engineEnvironmentSettings,
-                postAction,
-                new MockCreationEffects(),
-                new MockCreationResult(),
-                targetBasePath);
+            mockReporter.Setup(r => r.WriteLine(It.IsAny<string>()))
+                        .Verifiable();
 
-            Assert.False(result);
-        }
-
-        [Fact]
-        public void FailsWhenNoNewJsonPropertyNameConfigured()
-        {
-            string targetBasePath = _engineEnvironmentSettings.GetTempVirtualizedPath();
-
-            CreateJsonFile(targetBasePath, "file.json", "{}");
-
-            IPostAction postAction = new MockPostAction
-            {
-                ActionId = DotnetModifyJsonPostActionProcessor.ActionProcessorId,
-                Args = new Dictionary<string, string>()
-                {
-                    ["jsonFileName"] = "file.json",
-                    ["parentPropertyPath"] = "person",
-                    ["newJsonPropertyValue"] = "Watson"
-                }
-            };
+            Reporter.SetError(mockReporter.Object);
 
             DotnetModifyJsonPostActionProcessor processor = new DotnetModifyJsonPostActionProcessor();
 
@@ -108,41 +59,50 @@ namespace Microsoft.DotNet.Cli.New.Tests
                 targetBasePath);
 
             Assert.False(result);
-        }
-
-        [Fact]
-        public void FailsWhenNoNewJsonPropertyValueConfigured()
-        {
-            string targetBasePath = _engineEnvironmentSettings.GetTempVirtualizedPath();
-
-            CreateJsonFile(targetBasePath, "file.json", "{}");
-
-            IPostAction postAction = new MockPostAction
-            {
-                ActionId = DotnetModifyJsonPostActionProcessor.ActionProcessorId,
-                Args = new Dictionary<string, string>()
-                {
-                    ["jsonFileName"] = "file.json",
-                    ["parentPropertyPath"] = "person",
-                    ["newJsonPropertyName"] = "lastName"
-                }
-            };
-
-            DotnetModifyJsonPostActionProcessor processor = new DotnetModifyJsonPostActionProcessor();
-
-            bool result = processor.Process(
-                _engineEnvironmentSettings,
-                postAction,
-                new MockCreationEffects(),
-                new MockCreationResult(),
-                targetBasePath);
-
-            Assert.False(result);
+            mockReporter.Verify(r => r.WriteLine(string.Format(Tools.New.LocalizableStrings.PostAction_ModifyJson_Error_ArgumentNotConfigured, "jsonFileName")), Times.Once);
         }
 
         [Theory]
-        [MemberData(nameof(ModifyJsonPostActionTestCase.TestCases), MemberType = typeof(ModifyJsonPostActionTestCase))]
-        public void CanSuccessfullyModifyJsonFile(ModifyJsonPostActionTestCase testCase)
+        [MemberData(nameof(ModifyJsonPostActionTestCase<Mock<IReporter>>.InvalidConfigurationTestCases), MemberType = typeof(ModifyJsonPostActionTestCase<Mock<IReporter>>))]
+        public void FailsWhenMandatoryArgumentsNotConfigured(ModifyJsonPostActionTestCase<Mock<IReporter>> testCase)
+        {
+            string targetBasePath = _engineEnvironmentSettings.GetTempVirtualizedPath();
+
+            CreateJsonFile(targetBasePath, "file.json", testCase.OriginalJsonContent);
+
+            IPostAction postAction = new MockPostAction
+            {
+                ActionId = DotnetModifyJsonPostActionProcessor.ActionProcessorId,
+                Args = testCase.PostActionArgs
+            };
+
+            Mock<IReporter> mockReporter = new Mock<IReporter>();
+
+            mockReporter.Setup(r => r.WriteLine(It.IsAny<string>()))
+                .Verifiable();
+
+            Reporter.SetError(mockReporter.Object);
+
+            DotnetModifyJsonPostActionProcessor processor = new DotnetModifyJsonPostActionProcessor();
+
+            bool result = processor.Process(
+                _engineEnvironmentSettings,
+                postAction,
+                new MockCreationEffects(),
+                new MockCreationResult(),
+                targetBasePath);
+
+            Assert.False(result);
+
+            testCase.AssertionCallback(mockReporter);
+
+            //mockReporter.Verify(r => r.WriteLine(string.Format(Tools.New.LocalizableStrings.PostAction_ModifyJson_Error_ArgumentNotConfigured, "newJsonPropertyName")), Times.Once);
+
+        }
+
+        [Theory]
+        [MemberData(nameof(ModifyJsonPostActionTestCase<JsonNode>.SuccessTestCases), MemberType = typeof(ModifyJsonPostActionTestCase<JsonNode>))]
+        public void CanSuccessfullyModifyJsonFile(ModifyJsonPostActionTestCase<JsonNode> testCase)
         {
             string targetBasePath = _engineEnvironmentSettings.GetTempVirtualizedPath();
 
@@ -181,13 +141,13 @@ namespace Microsoft.DotNet.Cli.New.Tests
         }
     }
 
-    public record ModifyJsonPostActionTestCase(
+    public record ModifyJsonPostActionTestCase<TState>(
         string TestCaseDescription,
         string OriginalJsonContent,
         Dictionary<string, string> PostActionArgs,
-        Action<JsonNode> AssertionCallback)
+        Action<TState> AssertionCallback)
     {
-        private static readonly ModifyJsonPostActionTestCase[] s_testCases =
+        private static readonly ModifyJsonPostActionTestCase<JsonNode>[] s_successTestCases =
         {
             new("Can add simple property",
                 @"{""person"":{""name"":""bob""}}",
@@ -235,11 +195,61 @@ namespace Microsoft.DotNet.Cli.New.Tests
                 })
         };
 
+        private static readonly ModifyJsonPostActionTestCase<Mock<IReporter>>[] s_invalidConfigurationTestCases =
+        {
+            new("JsonFileName argument not configured",
+                @"{}",
+                new Dictionary<string, string>
+                {
+                    ["parentPropertyPath"] = "person",
+                    ["newJsonPropertyName"] = "lastName",
+                    ["newJsonPropertyValue"] = "Watson"
+                },
+                (Mock<IReporter> errorReporter) =>
+                {
+                    errorReporter.Verify(r => r.WriteLine(string.Format(Tools.New.LocalizableStrings.PostAction_ModifyJson_Error_ArgumentNotConfigured, "jsonFileName")), Times.Once);
+                }),
+
+            new("NewJsonPropertyName argument not configured",
+                @"{}",
+                new Dictionary<string, string>
+                {
+                    ["jsonFileName"] = "file.json",
+                    ["parentPropertyPath"] = "person",
+                    ["newJsonPropertyValue"] = "Watson"
+                },
+                (Mock<IReporter> errorReporter) =>
+                {
+                    errorReporter.Verify(r => r.WriteLine(string.Format(Tools.New.LocalizableStrings.PostAction_ModifyJson_Error_ArgumentNotConfigured, "newJsonPropertyName")), Times.Once);
+                }),
+
+            new("NewJsonPropertyValue argument not configured",
+                @"{}",
+                new Dictionary<string, string>()
+                {
+                    ["jsonFileName"] = "file.json",
+                    ["parentPropertyPath"] = "person",
+                    ["newJsonPropertyName"] = "lastName"
+                },
+                (Mock<IReporter> errorReporter) =>
+                {
+                    errorReporter.Verify(r => r.WriteLine(string.Format(Tools.New.LocalizableStrings.PostAction_ModifyJson_Error_ArgumentNotConfigured, "newJsonPropertyValue")), Times.Once);
+                }),
+        };
+
         public override string ToString() => TestCaseDescription;
 
-        public static IEnumerable<object[]> TestCases()
+        public static IEnumerable<object[]> SuccessTestCases()
         {
-            foreach (ModifyJsonPostActionTestCase testCase in s_testCases)
+            foreach (ModifyJsonPostActionTestCase<JsonNode> testCase in s_successTestCases)
+            {
+                yield return new[] { testCase };
+            }
+        }
+
+        public static IEnumerable<object[]> InvalidConfigurationTestCases()
+        {
+            foreach (ModifyJsonPostActionTestCase<Mock<IReporter>> testCase in s_invalidConfigurationTestCases)
             {
                 yield return new[] { testCase };
             }
