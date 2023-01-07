@@ -68,11 +68,13 @@ namespace Microsoft.DotNet.Tools.New.PostActionProcessors
 
             if (newJsonPropertyName == null)
             {
+                Reporter.Error.WriteLine(string.Format(LocalizableStrings.PostAction_ModifyJson_Error_ArgumentNotConfigured, NewJsonPropertyNameArgument));
                 return false;
             }
 
             if (newJsonPropertyValue == null)
             {
+                Reporter.Error.WriteLine(string.Format(LocalizableStrings.PostAction_ModifyJson_Error_ArgumentNotConfigured, NewJsonPropertyValueArgument));
                 return false;
             }
 
