@@ -12,5 +12,7 @@ namespace Microsoft.DotNet.Cli
         public static readonly string CONFIGURATION_DEBUG_VALUE = "Debug";
         public static readonly string OUTPUT_TYPE = "OutputType";
         public static readonly string OUTPUT_TYPE_EXECUTABLE = "Exe";
+        public static readonly string PUBLISH_PROFILE_IMPORTED = "PublishProfileImported";
+        public static readonly string PUBLISH_PROFILE_FULL_PATH = "PublishProfileFullPath";
     }
 }

@@ -23,7 +23,7 @@ namespace Microsoft.DotNet.Cli
         private bool checkSolutions;
 
         /// <summary>
-        /// Returns dotnet CLI command-line parameters (or an empty list) to change configuration based on 
+        /// Returns dotnet CLI command-line parameters (or an empty list) to change configuration based on
         /// a boolean that may or may not exist in the targeted project.
         /// <param name="defaultedConfigurationProperty">The boolean property to check the project for. Ex: PublishRelease</param>
         /// <param name="slnOrProjectArgs">The arguments or solution passed to a dotnet invocation.</param>
@@ -92,7 +92,7 @@ namespace Microsoft.DotNet.Cli
                         {
                             return GetSlnProject(potentialSln, globalProps, slnProjectPropertytoCheck);
                         }
-                    } // If nothing can be found: that's caught by MSBuild XMake::ProcessProjectSwitch -- don't change the behavior by failing here. 
+                    } // If nothing can be found: that's caught by MSBuild XMake::ProcessProjectSwitch -- don't change the behavior by failing here.
                 }
             }
 
@@ -185,7 +185,7 @@ namespace Microsoft.DotNet.Cli
         }
 
         /// <returns>A case-insensitive dictionary of any properties passed from the user and their values.</returns>
-        private Dictionary<string, string> GetGlobalPropertiesFromUserArgs(ParseResult parseResult)
+        public Dictionary<string, string> GetGlobalPropertiesFromUserArgs(ParseResult parseResult)
         {
             Dictionary<string, string> globalProperties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 

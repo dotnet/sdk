@@ -43,30 +43,58 @@ namespace Microsoft.DotNet.Tools.Publish
             parseResult.HandleDebugSwitch();
             parseResult.ShowHelpOrErrorIfAppropriate();
 
-            var msbuildArgs = new List<string>()
-            {
-                "-target:Publish",
-                "--property:_IsPublishing=true" // This property will not hold true for MSBuild /t:Publish. VS should also inject this property when publishing in the future.
-            };
-
-            IEnumerable<string> slnOrProjectArgs = parseResult.GetValueForArgument(PublishCommandParser.SlnOrProjectArgument);
-
-            CommonOptions.ValidateSelfContainedOptions(parseResult.HasOption(PublishCommandParser.SelfContainedOption),
-                parseResult.HasOption(PublishCommandParser.NoSelfContainedOption));
-
-            msbuildArgs.AddRange(parseResult.OptionValuesToBeForwarded(PublishCommandParser.GetCommand()));
-            ReleasePropertyProjectLocator projectLocator = new ReleasePropertyProjectLocator(Environment.GetEnvironmentVariable(EnvironmentVariableNames.ENABLE_PUBLISH_RELEASE_FOR_SOLUTIONS) != null);
-            msbuildArgs.AddRange(projectLocator.GetCustomDefaultConfigurationValueIfSpecified(parseResult, MSBuildPropertyNames.PUBLISH_RELEASE,
-                slnOrProjectArgs, PublishCommandParser.ConfigurationOption) ?? Array.Empty<string>());
-            msbuildArgs.AddRange(slnOrProjectArgs ?? Array.Empty<string>());
-
             bool noRestore = parseResult.HasOption(PublishCommandParser.NoRestoreOption)
                           || parseResult.HasOption(PublishCommandParser.NoBuildOption);
 
+
+            var publishProfileProperties = DiscoverPropertiesFromPublishProfile(parseResult);
+            Console.WriteLine($"Read publish properties: {string.Join(",", publishProfileProperties)}");
+            var standardMSbuildProperties = CreatePropertyListForPublishInvocation(parseResult);
             return new PublishCommand(
-                msbuildArgs,
+                // properties defined by the selected publish profile should override any other properties,
+                // so they should be added after the other properties.
+                standardMSbuildProperties.Concat(publishProfileProperties),
                 noRestore,
-                msbuildPath);
+                msbuildPath
+            );
+
+            List<string> CreatePropertyListForPublishInvocation(ParseResult parseResult) {
+                var msbuildArgs = new List<string>()
+                    {
+                        "-target:Publish",
+                        "--property:_IsPublishing=true" // This property will not hold true for MSBuild /t:Publish. VS should also inject this property when publishing in the future.
+                    };
+
+                IEnumerable<string> slnOrProjectArgs = parseResult.GetValueForArgument(PublishCommandParser.SlnOrProjectArgument);
+
+                CommonOptions.ValidateSelfContainedOptions(parseResult.HasOption(PublishCommandParser.SelfContainedOption),
+                    parseResult.HasOption(PublishCommandParser.NoSelfContainedOption));
+
+                msbuildArgs.AddRange(parseResult.OptionValuesToBeForwarded(PublishCommandParser.GetCommand()));
+                ReleasePropertyProjectLocator projectLocator = new ReleasePropertyProjectLocator(Environment.GetEnvironmentVariable(EnvironmentVariableNames.ENABLE_PUBLISH_RELEASE_FOR_SOLUTIONS) != null);
+                msbuildArgs.AddRange(projectLocator.GetCustomDefaultConfigurationValueIfSpecified(parseResult, MSBuildPropertyNames.PUBLISH_RELEASE, slnOrProjectArgs, PublishCommandParser.ConfigurationOption) ?? Array.Empty<string>());
+                msbuildArgs.AddRange(slnOrProjectArgs ?? Array.Empty<string>());
+
+                return msbuildArgs;
+            }
+
+            List<string> DiscoverPropertiesFromPublishProfile(ParseResult parseResult)
+            {
+                ReleasePropertyProjectLocator projectLocator = new ReleasePropertyProjectLocator(Environment.GetEnvironmentVariable(EnvironmentVariableNames.ENABLE_PUBLISH_RELEASE_FOR_SOLUTIONS) != null);
+                var cliProps = projectLocator.GetGlobalPropertiesFromUserArgs(parseResult);
+                var projectInstance = projectLocator.GetTargetedProject(parseResult.GetValueForArgument(PublishCommandParser.SlnOrProjectArgument), cliProps);
+                var importedPropValue = projectInstance.GetPropertyValue(MSBuildPropertyNames.PUBLISH_PROFILE_IMPORTED);
+                if (!String.IsNullOrEmpty(importedPropValue) && bool.TryParse(importedPropValue, out var wasImported) && wasImported) {
+                    try {
+                        if (projectInstance.GetPropertyValue(MSBuildPropertyNames.PUBLISH_PROFILE_FULL_PATH) is {} fullPathPropValue) {
+                            return new ProjectInstance(fullPathPropValue).ToProjectRootElement().PropertyGroups.First().Properties.Select(p => $"--property:{p.Name}=\"{p.Value}\"").ToList();
+                        }
+                    } catch (IOException) {
+                        return new List<string>();
+                    }
+                }
+                return new List<string>();
+            };
         }
 
         public static int Run(ParseResult parseResult)
