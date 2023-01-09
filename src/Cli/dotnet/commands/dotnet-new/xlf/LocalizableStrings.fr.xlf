@@ -177,6 +177,11 @@
         <target state="new">Parent property path could not be traversed.</target>
         <note />
       </trans-unit>
+      <trans-unit id="PostAction_ModifyJson_Succeeded">
+        <source>Successfully modified {0}.</source>
+        <target state="new">Successfully modified {0}.</target>
+        <note>{0} is the name of the JSON file that has been modified.</note>
+      </trans-unit>
       <trans-unit id="PostAction_Restore_Error_FailedToDetermineProjectToRestore">
         <source>Couldn't determine files to restore.</source>
         <target state="translated">Impossible de déterminer les fichiers à restaurer.</target>

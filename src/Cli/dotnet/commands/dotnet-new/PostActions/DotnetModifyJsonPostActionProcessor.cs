@@ -93,6 +93,8 @@ namespace Microsoft.DotNet.Tools.New.PostActionProcessors
 
             environment.Host.FileSystem.WriteAllText(jsonFiles[0], newJsonContent.ToJsonString(s_serializerOptions));
 
+            Reporter.Output.WriteLine(string.Format(LocalizableStrings.PostAction_ModifyJson_Succeeded, jsonFileName));
+
             return true;
         }
 

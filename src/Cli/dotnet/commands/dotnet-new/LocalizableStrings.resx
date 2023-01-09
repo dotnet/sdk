@@ -320,4 +320,8 @@
   <data name="PostAction_ModifyJson_Error_ParentPropertyPathInvalid" xml:space="preserve">
     <value>Parent property path could not be traversed.</value>
   </data>
+  <data name="PostAction_ModifyJson_Succeeded" xml:space="preserve">
+    <value>Successfully modified {0}.</value>
+    <comment>{0} is the name of the JSON file that has been modified.</comment>
+  </data>
 </root>
