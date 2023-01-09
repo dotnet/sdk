@@ -2664,32 +2664,32 @@
       </trans-unit>
       <trans-unit id="UseConcreteTypeDescription">
         <source>Using concrete types avoids virtual or interface call overhead and enables inlining.</source>
-        <target state="new">Using concrete types avoids virtual or interface call overhead and enables inlining.</target>
+        <target state="translated">具象型を使用すると、仮想呼び出しまたはインターフェイス呼び出しのオーバーヘッドが回避され、インライン化が有効になります。</target>
         <note />
       </trans-unit>
       <trans-unit id="UseConcreteTypeForFieldMessage">
         <source>Change type of field '{0}' from '{1}' to '{2}' for improved performance</source>
-        <target state="new">Change type of field '{0}' from '{1}' to '{2}' for improved performance</target>
+        <target state="translated">パフォーマンスを向上させるために、フィールド '{0}' の型を '{1}' から '{2}' に変更します</target>
         <note />
       </trans-unit>
       <trans-unit id="UseConcreteTypeForLocalMessage">
         <source>Change type of variable '{0}' from '{1}' to '{2}' for improved performance</source>
-        <target state="new">Change type of variable '{0}' from '{1}' to '{2}' for improved performance</target>
+        <target state="translated">パフォーマンスを向上させるために、変数 '{0}' の型を '{1}' から '{2}' に変更します</target>
         <note />
       </trans-unit>
       <trans-unit id="UseConcreteTypeForMethodReturnMessage">
         <source>Change return type of method '{0}' from '{1}' to '{2}' for improved performance</source>
-        <target state="new">Change return type of method '{0}' from '{1}' to '{2}' for improved performance</target>
+        <target state="translated">パフォーマンスを向上させるために、メソッド '{0}' の戻り値の型を '{1}' から '{2}' に変更します</target>
         <note />
       </trans-unit>
       <trans-unit id="UseConcreteTypeForParameterMessage">
         <source>Change type of parameter '{0}' from '{1}' to '{2}' for improved performance</source>
-        <target state="new">Change type of parameter '{0}' from '{1}' to '{2}' for improved performance</target>
+        <target state="translated">パフォーマンスを向上させるために、パラメーター '{0}' の型を '{1}' から '{2}' に変更します</target>
         <note />
       </trans-unit>
       <trans-unit id="UseConcreteTypeTitle">
         <source>Use concrete types when possible for improved performance</source>
-        <target state="new">Use concrete types when possible for improved performance</target>
+        <target state="translated">可能な場合は具象型を使用してパフォーマンスを向上させる</target>
         <note />
       </trans-unit>
       <trans-unit id="UseContainerLevelAccessPolicy">

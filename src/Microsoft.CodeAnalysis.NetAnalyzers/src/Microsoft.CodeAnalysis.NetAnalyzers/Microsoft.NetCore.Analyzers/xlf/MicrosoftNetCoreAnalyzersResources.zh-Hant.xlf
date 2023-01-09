@@ -2664,32 +2664,32 @@
       </trans-unit>
       <trans-unit id="UseConcreteTypeDescription">
         <source>Using concrete types avoids virtual or interface call overhead and enables inlining.</source>
-        <target state="new">Using concrete types avoids virtual or interface call overhead and enables inlining.</target>
+        <target state="translated">使用具象類型可以避免虛擬或介面呼叫額外負荷，並啟用內嵌。</target>
         <note />
       </trans-unit>
       <trans-unit id="UseConcreteTypeForFieldMessage">
         <source>Change type of field '{0}' from '{1}' to '{2}' for improved performance</source>
-        <target state="new">Change type of field '{0}' from '{1}' to '{2}' for improved performance</target>
+        <target state="translated">將欄位 '{0}' 的類型從 '{1}' 變更為 '{2}' 以提高效能</target>
         <note />
       </trans-unit>
       <trans-unit id="UseConcreteTypeForLocalMessage">
         <source>Change type of variable '{0}' from '{1}' to '{2}' for improved performance</source>
-        <target state="new">Change type of variable '{0}' from '{1}' to '{2}' for improved performance</target>
+        <target state="translated">將變數 '{0}' 的類型從 '{1}' 變更為 '{2}' 以提高效能</target>
         <note />
       </trans-unit>
       <trans-unit id="UseConcreteTypeForMethodReturnMessage">
         <source>Change return type of method '{0}' from '{1}' to '{2}' for improved performance</source>
-        <target state="new">Change return type of method '{0}' from '{1}' to '{2}' for improved performance</target>
+        <target state="translated">將方法 '{0}' 的傳回型別從 '{1}' 變更為 '{2}' 以提高效能</target>
         <note />
       </trans-unit>
       <trans-unit id="UseConcreteTypeForParameterMessage">
         <source>Change type of parameter '{0}' from '{1}' to '{2}' for improved performance</source>
-        <target state="new">Change type of parameter '{0}' from '{1}' to '{2}' for improved performance</target>
+        <target state="translated">將參數 '{0}' 的類型從 '{1}' 變更為 '{2}' 以提高效能</target>
         <note />
       </trans-unit>
       <trans-unit id="UseConcreteTypeTitle">
         <source>Use concrete types when possible for improved performance</source>
-        <target state="new">Use concrete types when possible for improved performance</target>
+        <target state="translated">盡可能使用具象類型以提高效能</target>
         <note />
       </trans-unit>
       <trans-unit id="UseContainerLevelAccessPolicy">
