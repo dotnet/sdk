@@ -7,16 +7,6 @@
     <VmrDir Condition=" '$(VmrDir)' != '' ">$([MSBuild]::EnsureTrailingSlash('$(VmrDir)'))</VmrDir>
     <TmpDir Condition=" '$(TmpDir)' == '' ">$(ArtifactsDir)tmp/</TmpDir>
     <VmrDefaultBranch Condition=" '$(VmrDefaultBranch)' == '' ">main</VmrDefaultBranch>
-
-    <!-- We set this for the source build targets to work well -->
-    <TarballDir>$(VmrDir)</TarballDir>
-    <InitializeVMR>true</InitializeVMR>
-  </PropertyGroup>
-
-  <!-- Pull back in some properties from the tarball defaults -->
-  <PropertyGroup>
-    <VmrGitInfoDir>$(TarballGitInfoDir)</VmrGitInfoDir>
-    <VmrSourceDir>$(TarballSourceDir)</VmrSourceDir>
   </PropertyGroup>
 
   <UsingTask TaskName="Microsoft.DotNet.VirtualMonoRepo.Tasks.VirtualMonoRepo_Initialize" AssemblyFile="$(VirtualMonoRepoTasksAssembly)" />
@@ -36,14 +26,11 @@
   <Target Name="InitializeCleanVmr">
     <RemoveDir Directories='$(VmrDir)' Condition=" EXISTS('$(VmrDir)') " />
     <MakeDir Directories="$(VmrDir)" />
-    <MakeDir Directories="$(VmrGitInfoDir)" Condition=" '$(VmrGitInfoDir)' != '' " />
     <MakeDir Directories="$(TmpDir)" Condition=" !EXISTS('$(TmpDir)') " />
-    <MakeDir Directories="$(VmrDir)/src" />
     <Copy SourceFiles="$(MSBuildThisFileDirectory)/source-mappings.json" DestinationFolder="$(VmrDir)/src" />
 
     <Exec WorkingDirectory="$(VmrDir)" Command="git init -b $(VmrDefaultBranch)" />
-    <Exec WorkingDirectory="$(VmrDir)" Command="git add -A" />
-    <Exec WorkingDirectory="$(VmrDir)" Command="git commit -m 'Initial commit of the VMR%0D%0A%0D%0A[[ commit created by automation ]]'" />
+    <Exec WorkingDirectory="$(VmrDir)" Command="git commit --allow-empty -m 'Initial commit of the VMR%0D%0A%0D%0A[[ commit created by automation ]]'" />
   </Target>
 
   <Target Name="InitializeRepoAndDependentsRecursive">
@@ -68,7 +55,8 @@
       PackageVersion="8.0.100"
       Recursive="true"
       VmrPath="$(VmrDir)"
-      TmpPath="$(TmpDir)" />
+      TmpPath="$(TmpDir)"
+      SourceMappingsPath="$(MSBuildThisFileDirectory)/source-mappings.json" />
 
     <Message Text=" -> Done initializing individual repositories recursively" Importance="High" />
   </Target>

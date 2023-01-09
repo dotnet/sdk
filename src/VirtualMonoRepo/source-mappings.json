@@ -12,6 +12,8 @@
     // These patches are applied on top of the code synchronized into the VMR
     "patchesPath": "src/installer/src/SourceBuild/patches",
 
+    "sourceMappingsPath": "src/installer/src/VirtualMonoRepo/source-mappings.json",
+
     // Some files are copied outside of the src/ directory into other locations
     // When files in the source paths are changed, they are automatically synchronized too
     "additionalMappings": [
@@ -22,6 +24,10 @@
         {
             "source": "src/installer/eng/common",
             "destination": "eng/common"
+        },
+        {
+            "source": "src/installer/src/VirtualMonoRepo/source-mappings.json",
+            "destination": "src"
         }
     ],
 

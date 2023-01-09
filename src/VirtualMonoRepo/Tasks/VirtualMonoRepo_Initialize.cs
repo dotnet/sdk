@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Build.Framework;
+using Microsoft.DotNet.DarcLib.Helpers;
 using Microsoft.DotNet.DarcLib.VirtualMonoRepo;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -25,6 +26,9 @@ public class VirtualMonoRepo_Initialize : Build.Utilities.Task, ICancelableTask
 
     [Required]
     public string Repository { get; set; }
+
+    [Required]
+    public string SourceMappingsPath { get; set; }
 
     [Required]
     public string VmrPath { get; set; }
@@ -51,7 +55,14 @@ public class VirtualMonoRepo_Initialize : Build.Utilities.Task, ICancelableTask
         TmpPath = Path.GetFullPath(TmpPath);
 
         var vmrInitializer = _serviceProvider.Value.GetRequiredService<IVmrInitializer>();
-        await vmrInitializer.InitializeRepository(Repository, Revision, PackageVersion, Recursive, _cancellationToken.Token);
+        await vmrInitializer.InitializeRepository(
+            Repository,
+            Revision,
+            PackageVersion,
+            Recursive,
+            new NativePath(SourceMappingsPath),
+            Array.Empty<AdditionalRemote>(),
+            _cancellationToken.Token);
         return true;
     }
 
