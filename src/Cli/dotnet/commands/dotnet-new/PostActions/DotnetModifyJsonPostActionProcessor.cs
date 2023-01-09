@@ -22,9 +22,9 @@ namespace Microsoft.DotNet.Tools.New.PostActionProcessors
 
         internal static Guid ActionProcessorId { get; } = new Guid("695A3659-EB40-4FF5-A6A6-C9C4E629FCB0");
 
-        private static readonly JsonSerializerOptions s_serializerOptions = new JsonSerializerOptions() { WriteIndented = true };
+        private static readonly JsonSerializerOptions s_serializerOptions = new JsonSerializerOptions { WriteIndented = true };
 
-        private static readonly JsonDocumentOptions s_deserializerOptions = new JsonDocumentOptions() { AllowTrailingCommas = true, CommentHandling = JsonCommentHandling.Skip };
+        private static readonly JsonDocumentOptions s_deserializerOptions = new JsonDocumentOptions { AllowTrailingCommas = true, CommentHandling = JsonCommentHandling.Skip };
 
         private const string JsonFileNameArgument = "jsonFileName";
         private const string ParentPropertyPathArgument = "parentPropertyPath";
