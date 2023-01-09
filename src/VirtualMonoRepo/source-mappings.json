@@ -22,6 +22,10 @@
             "destination": ""
         },
         {
+            "source": "src/runtime/CONTRIBUTING.md",
+            "destination": ""
+        },
+        {
             "source": "src/installer/eng/common",
             "destination": "eng/common"
         },
