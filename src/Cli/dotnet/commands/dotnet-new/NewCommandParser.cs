@@ -133,6 +133,7 @@ namespace Microsoft.DotNet.Cli
                 (typeof(IPostActionProcessor), new DotnetAddPostActionProcessor()),
                 (typeof(IPostActionProcessor), new DotnetSlnPostActionProcessor()),
                 (typeof(IPostActionProcessor), new DotnetRestorePostActionProcessor()),
+                (typeof(IPostActionProcessor), new DotnetModifyJsonPostActionProcessor())
             });
             if (!disableSdkTemplates)
             {
