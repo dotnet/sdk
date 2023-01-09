@@ -88,6 +88,97 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
         }
 
         [Fact]
+        public static async Task ShouldNotTrigger3()
+        {
+            const string Source = @"
+                #nullable enable
+
+                using System;
+                using System.IO;
+
+                namespace Example
+                {
+                    internal static class C
+                    {
+                        private static Stream GetStream(int i)
+                        {
+                            if (i == 0)
+                            {
+                                return Stream.Null;
+                            }
+
+                            return new MyStream();
+                        }
+                    }
+                }
+
+                public class MyStream : MemoryStream { }
+                ";
+
+            await TestCSAsync(Source);
+        }
+
+        [Fact]
+        public static async Task ShouldNotTrigger4()
+        {
+            const string Source = @"
+                #nullable enable
+
+                using System;
+                using System.IO;
+
+                namespace Example
+                {
+                    internal partial class C
+                    {
+                        private partial Stream GetStream(int i);
+                    }
+
+                    internal partial class C
+                    {
+                        private partial Stream GetStream(int i)
+                        {
+                            return new MyStream();
+                        }
+                    }
+                }
+
+                public class MyStream : MemoryStream { }
+                ";
+
+            await TestCSAsync(Source);
+        }
+
+        [Fact]
+        public static async Task ShouldNotTrigger5()
+        {
+            const string Source = @"
+                #nullable enable
+
+                interface IFoo
+                {
+                    int M();
+                }
+
+                internal class C : IFoo
+                {
+                    int IFoo.M() => 42;
+                }
+
+                internal class Use
+                {
+                    static int Bar()
+                    {
+                        IFoo f = new C();
+                        return f.M();
+                    }
+                }
+                ";
+
+            await TestCSAsync(Source);
+        }
+
+        [Fact]
         public static async Task ShouldTrigger1()
         {
             const string Source = @"
@@ -157,6 +248,68 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 VerifyCS.Diagnostic(UseConcreteTypeAnalyzer.UseConcreteTypeForParameter)
                         .WithLocation(0)
                         .WithArguments("foo", "Example.IFoo<T>", "Example.Foo<T>"));
+        }
+
+        [Fact]
+        public static async Task ShouldTrigger3()
+        {
+            const string Source = @"
+                #nullable enable
+
+                using System;
+                using System.IO;
+
+                namespace Example
+                {
+                    internal class C
+                    {
+                        private MemoryStream? _stream;
+
+                        private Stream {|#0:GetStream|}()
+                        {
+                            return _stream ?? Create();
+                        }
+
+                        private MemoryStream Create() => new MemoryStream();
+                    }
+                }
+                ";
+
+            await TestCSAsync(Source,
+                VerifyCS.Diagnostic(UseConcreteTypeAnalyzer.UseConcreteTypeForMethodReturn)
+                        .WithLocation(0)
+                        .WithArguments("GetStream", "System.IO.Stream", "System.IO.MemoryStream"));
+        }
+
+        [Fact]
+        public static async Task ShouldTrigger4()
+        {
+            const string Source = @"
+                #nullable enable
+
+                using System;
+                using System.IO;
+
+                namespace Example
+                {
+                    internal class C
+                    {
+                        private MemoryStream? _stream;
+
+                        private Stream? {|#0:GetStream|}()
+                        {
+                            return _stream ?? Create();
+                        }
+
+                        private MemoryStream? Create() => new MemoryStream();
+                    }
+                }
+                ";
+
+            await TestCSAsync(Source,
+                VerifyCS.Diagnostic(UseConcreteTypeAnalyzer.UseConcreteTypeForMethodReturn)
+                        .WithLocation(0)
+                        .WithArguments("GetStream", "System.IO.Stream?", "System.IO.MemoryStream?"));
         }
 
         [Fact]
@@ -261,7 +414,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await TestCSAsync(Source,
                 VerifyCS.Diagnostic(UseConcreteTypeAnalyzer.UseConcreteTypeForMethodReturn)
                         .WithLocation(0)
-                        .WithArguments("Method1", "Example.IFoo?", "Example.Foo"));
+                        .WithArguments("Method1", "Example.IFoo?", "Example.Foo?"));
         }
 
         [Fact]

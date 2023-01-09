@@ -52,6 +52,8 @@ namespace Microsoft.NetCore.Analyzers.Performance
     ///   * The method must be private.
     ///
     ///   * The method must not have been assigned to a delegate.
+    ///   
+    ///   * The method must not be the implementation of a partial method definition.
     /// </remarks>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed partial class UseConcreteTypeAnalyzer : DiagnosticAnalyzer
@@ -108,6 +110,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
         {
             context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
             context.EnableConcurrentExecution();
+
             context.RegisterCompilationStartAction(context =>
             {
                 var voidType = context.Compilation.GetSpecialType(SpecialType.System_Void);
@@ -141,33 +144,42 @@ namespace Microsoft.NetCore.Analyzers.Performance
         private static void Report(SymbolAnalysisContext context, Collector coll)
         {
             // for all eligible private fields that are used as the receiver for a virtual call
-            foreach (var field in coll.VirtualDispatchFields.Keys)
+            foreach (var pair in coll.VirtualDispatchFields)
             {
+                var field = pair.Key;
+                var methods = pair.Value;
+
                 if (coll.FieldAssignments.TryGetValue(field, out var assignments))
                 {
-                    Report(field, field.Type, assignments, UseConcreteTypeForField);
+                    Report(field, field.Type, assignments, methods, UseConcreteTypeForField);
                 }
             }
 
             // for all eligible local variables that are used as the receiver for a virtual call
-            foreach (var local in coll.VirtualDispatchLocals.Keys)
+            foreach (var pair in coll.VirtualDispatchLocals)
             {
+                var local = pair.Key;
+                var methods = pair.Value;
+
                 if (coll.LocalAssignments.TryGetValue(local, out var assignments))
                 {
-                    Report(local, local.Type, assignments, UseConcreteTypeForLocal);
+                    Report(local, local.Type, assignments, methods, UseConcreteTypeForLocal);
                 }
             }
 
             // for all eligible parameters that are used as the receiver for a virtual call
-            foreach (var parameter in coll.VirtualDispatchParameters.Keys)
+            foreach (var pair in coll.VirtualDispatchParameters)
             {
+                var parameter = pair.Key;
+                var methods = pair.Value;
+
                 if (coll.ParameterAssignments.TryGetValue(parameter, out var assignments))
                 {
                     if (parameter.ContainingSymbol is IMethodSymbol method)
                     {
                         if (CanUpgrade(method))
                         {
-                            Report(parameter, parameter.Type, assignments, UseConcreteTypeForParameter);
+                            Report(parameter, parameter.Type, assignments, methods, UseConcreteTypeForParameter);
                         }
                     }
                 }
@@ -182,11 +194,11 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 // only report the method if it never assigned to a delegate
                 if (CanUpgrade(method))
                 {
-                    Report(method, method.ReturnType, returns, UseConcreteTypeForMethodReturn);
+                    Report(method, method.ReturnType, returns, null, UseConcreteTypeForMethodReturn);
                 }
             }
 
-            void Report(ISymbol sym, ITypeSymbol fromType, PooledConcurrentSet<ITypeSymbol> assignments, DiagnosticDescriptor desc)
+            void Report(ISymbol sym, ITypeSymbol fromType, PooledConcurrentSet<ITypeSymbol> assignments, PooledConcurrentSet<IMethodSymbol>? targets, DiagnosticDescriptor desc)
             {
                 // a set of the values assigned to the given symbol
                 using var types = PooledHashSet<ITypeSymbol>.GetInstance(assignments, SymbolEqualityComparer.Default);
@@ -194,37 +206,62 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 // 'void' is the magic value we use to represent null assignment
                 var assignedNull = types.Remove(coll.Void!);
 
-                // We currently only handle the case where there is only a single consistent type of value assigned to the
+                // We currently only handle the case where there is a single consistent type of value assigned to the
                 // symbol. If there are multiple different types, we could try to find the common base for these, but it doesn't
                 // seem worth the complication.
-                if (types.Count == 1)
+                if (types.Count != 1)
                 {
-                    var toType = types.Single();
-                    if (assignedNull)
-                    {
-                        toType = toType.WithNullableAnnotation(Analyzer.Utilities.Lightup.NullableAnnotation.Annotated);
-                    }
+                    return;
+                }
 
-                    if (!toType.DerivesFrom(fromType.OriginalDefinition))
-                    {
-                        // can readily replace fromType by toType
-                        return;
-                    }
+                var toType = types.Single();
+                if (assignedNull || fromType.NullableAnnotation() == Analyzer.Utilities.Lightup.NullableAnnotation.Annotated)
+                {
+                    toType = toType.WithNullableAnnotation(Analyzer.Utilities.Lightup.NullableAnnotation.Annotated);
+                }
 
-                    if (toType.TypeKind == TypeKind.Class
-                        && !SymbolEqualityComparer.Default.Equals(fromType, toType)
-                        && toType.SpecialType != SpecialType.System_Object
-                        && toType.SpecialType != SpecialType.System_Delegate)
+                if (!toType.DerivesFrom(fromType.OriginalDefinition))
+                {
+                    // can readily replace fromType by toType
+                    return;
+                }
+
+                // if any of the methods that are invoked on toType are explicit implementations of interface methods, then we don't want
+                // to recommend upgrading the type otherwise it would break those call sites
+                if (targets != null)
+                {
+                    foreach (var t in targets)
                     {
-                        var fromTypeName = GetTypeName(fromType);
-                        var toTypeName = GetTypeName(toType);
-                        var diagnostic = sym.CreateDiagnostic(desc, sym.Name, fromTypeName, toTypeName);
-                        context.ReportDiagnostic(diagnostic);
+                        foreach (var m in toType.GetMembers())
+                        {
+                            if (m.IsImplementationOfAnyExplicitInterfaceMember())
+                            {
+                                if (m.IsImplementationOfInterfaceMember(t))
+                                {
+                                    return;
+                                }
+                            }
+                        }
                     }
+                }
+
+                if (toType.TypeKind == TypeKind.Class
+                    && !SymbolEqualityComparer.Default.Equals(fromType, toType)
+                    && toType.SpecialType != SpecialType.System_Object
+                    && toType.SpecialType != SpecialType.System_Delegate)
+                {
+                    var fromTypeName = GetTypeName(fromType);
+                    var toTypeName = GetTypeName(toType);
+                    var diagnostic = sym.CreateDiagnostic(desc, sym.Name, fromTypeName, toTypeName);
+                    context.ReportDiagnostic(diagnostic);
                 }
             }
 
-            bool CanUpgrade(IMethodSymbol methodSym) => !coll.MethodsAssignedToDelegate.ContainsKey(methodSym);
+            bool CanUpgrade(IMethodSymbol methodSym)
+            {
+                return !coll.MethodsAssignedToDelegate.ContainsKey(methodSym)
+                    && methodSym.PartialDefinitionPart == null;
+            }
 
             static string GetTypeName(ITypeSymbol type) => type.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat);
         }

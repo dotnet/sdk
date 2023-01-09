@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using Analyzer.Utilities.Extensions;
+using Analyzer.Utilities.Lightup;
 using Analyzer.Utilities.PooledObjects;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Operations;
@@ -17,9 +18,9 @@ namespace Microsoft.NetCore.Analyzers.Performance
         {
             private static readonly ObjectPool<Collector> _pool = new(() => new Collector());
 
-            public ConcurrentDictionary<IFieldSymbol, bool> VirtualDispatchFields { get; } = new(SymbolEqualityComparer.Default);
-            public ConcurrentDictionary<ILocalSymbol, bool> VirtualDispatchLocals { get; } = new(SymbolEqualityComparer.Default);
-            public ConcurrentDictionary<IParameterSymbol, bool> VirtualDispatchParameters { get; } = new(SymbolEqualityComparer.Default);
+            public ConcurrentDictionary<IFieldSymbol, PooledConcurrentSet<IMethodSymbol>> VirtualDispatchFields { get; } = new(SymbolEqualityComparer.Default);
+            public ConcurrentDictionary<ILocalSymbol, PooledConcurrentSet<IMethodSymbol>> VirtualDispatchLocals { get; } = new(SymbolEqualityComparer.Default);
+            public ConcurrentDictionary<IParameterSymbol, PooledConcurrentSet<IMethodSymbol>> VirtualDispatchParameters { get; } = new(SymbolEqualityComparer.Default);
             public ConcurrentDictionary<IMethodSymbol, bool> MethodsAssignedToDelegate { get; } = new(SymbolEqualityComparer.Default);
 
             public ConcurrentDictionary<IFieldSymbol, PooledConcurrentSet<ITypeSymbol>> FieldAssignments { get; } = new(SymbolEqualityComparer.Default);
@@ -35,9 +36,9 @@ namespace Microsoft.NetCore.Analyzers.Performance
 
             private void Reset()
             {
-                VirtualDispatchFields.Clear();
-                VirtualDispatchLocals.Clear();
-                VirtualDispatchParameters.Clear();
+                DrainDictionary(VirtualDispatchFields);
+                DrainDictionary(VirtualDispatchLocals);
+                DrainDictionary(VirtualDispatchParameters);
                 MethodsAssignedToDelegate.Clear();
 
                 DrainDictionary(FieldAssignments);
@@ -47,7 +48,8 @@ namespace Microsoft.NetCore.Analyzers.Performance
 
                 Void = null;
 
-                static void DrainDictionary<T>(ConcurrentDictionary<T, PooledConcurrentSet<ITypeSymbol>> d)
+                static void DrainDictionary<T, U>(ConcurrentDictionary<T, PooledConcurrentSet<U>> d)
+                    where U : notnull
                 {
                     foreach (var kvp in d)
                     {
@@ -97,7 +99,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                                     var fieldRef = (IFieldReferenceOperation)instance;
                                     if (CanUpgrade(fieldRef.Field))
                                     {
-                                        VirtualDispatchFields[fieldRef.Field] = true;
+                                        RecordVirtualDispatch(fieldRef.Field, op.TargetMethod);
                                     }
 
                                     break;
@@ -106,14 +108,14 @@ namespace Microsoft.NetCore.Analyzers.Performance
                             case OperationKind.ParameterReference:
                                 {
                                     var parameterRef = (IParameterReferenceOperation)instance;
-                                    VirtualDispatchParameters[parameterRef.Parameter] = true;
+                                    RecordVirtualDispatch(parameterRef.Parameter, op.TargetMethod);
                                     break;
                                 }
 
                             case OperationKind.LocalReference:
                                 {
                                     var localRef = (ILocalReferenceOperation)instance;
-                                    VirtualDispatchLocals[localRef.Local] = true;
+                                    RecordVirtualDispatch(localRef.Local, op.TargetMethod);
                                     break;
                                 }
                         }
@@ -306,7 +308,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
             /// Trivial reject for methods that can't be upgraded in order to avoid wasted work.
             /// </summary>
             private static bool CanUpgrade(IMethodSymbol methodSym)
-                => methodSym.DeclaredAccessibility == Accessibility.Private && methodSym.MethodKind == MethodKind.Ordinary;
+                => methodSym.DeclaredAccessibility == Accessibility.Private && methodSym.MethodKind == MethodKind.Ordinary && !methodSym.IsImplementationOfAnyInterfaceMember();
 
             /// <summary>
             /// Trivial reject for fields that can't be upgraded in order to avoid wasted work.
@@ -361,7 +363,16 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     case OperationKind.Coalesce:
                         {
                             var colOp = (ICoalesceOperation)op;
+
+                            var oldCount = values.Count;
                             GetValueTypes(values, colOp.Value);
+
+                            if (values.Count > oldCount)
+                            {
+                                // erase any potential nullable annotations of the left-hand value since when the value is null, it doesn't get used
+                                values[^1] = values[^1].WithNullableAnnotation(Analyzer.Utilities.Lightup.NullableAnnotation.NotAnnotated);
+                            }
+
                             GetValueTypes(values, colOp.WhenNull);
                             return;
                         }
@@ -373,19 +384,9 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     case OperationKind.PropertyReference:
                     case OperationKind.MethodReference:
                     case OperationKind.LocalReference:
-                        {
-                            if (op.Type != null)
-                            {
-                                values.Add(op.Type!);
-                            }
-
-                            return;
-                        }
-
                     case OperationKind.FieldReference:
                         {
-                            var fieldRefOp = (IFieldReferenceOperation)op;
-                            if (CanUpgrade(fieldRefOp.Field))
+                            if (op.Type != null)
                             {
                                 values.Add(op.Type!);
                             }
@@ -453,6 +454,10 @@ namespace Microsoft.NetCore.Analyzers.Performance
                         }
                 }
             }
+
+            private void RecordVirtualDispatch(IFieldSymbol field, IMethodSymbol target) => VirtualDispatchFields.GetOrAdd(field, _ => PooledConcurrentSet<IMethodSymbol>.GetInstance(SymbolEqualityComparer.Default)).Add(target);
+            private void RecordVirtualDispatch(ILocalSymbol local, IMethodSymbol target) => VirtualDispatchLocals.GetOrAdd(local, _ => PooledConcurrentSet<IMethodSymbol>.GetInstance(SymbolEqualityComparer.Default)).Add(target);
+            private void RecordVirtualDispatch(IParameterSymbol parameter, IMethodSymbol target) => VirtualDispatchParameters.GetOrAdd(parameter, _ => PooledConcurrentSet<IMethodSymbol>.GetInstance(SymbolEqualityComparer.Default)).Add(target);
 
             private void RecordAssignment(IFieldSymbol field, ITypeSymbol valueType) => FieldAssignments.GetOrAdd(field, _ => PooledConcurrentSet<ITypeSymbol>.GetInstance(SymbolEqualityComparer.Default)).Add(valueType);
             private void RecordAssignment(ILocalSymbol local, ITypeSymbol valueType) => LocalAssignments.GetOrAdd(local, _ => PooledConcurrentSet<ITypeSymbol>.GetInstance(SymbolEqualityComparer.Default)).Add(valueType);
