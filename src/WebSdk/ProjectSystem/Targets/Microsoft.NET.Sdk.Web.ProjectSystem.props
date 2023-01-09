@@ -27,4 +27,5 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.Sdk.Web.DefaultItems.props"
     Condition="Exists('$(MSBuildThisFileDirectory)Microsoft.NET.Sdk.Web.DefaultItems.props')"/>
+
 </Project>
