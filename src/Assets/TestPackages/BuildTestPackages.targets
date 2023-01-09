@@ -169,7 +169,7 @@
       </BaseTestPackageProject>
 
       <BaseTestPackageProject>
-        <ProjectDir>$(TestPackagesRoot)%(Identity)/</ProjectDir>
+        <ProjectDir>$(TestPackagesRoot)/%(Identity)/</ProjectDir>
         <PackageOutput>$(TestPackagesDir)/%(NuPkgName).%(Version).nupkg</PackageOutput>
       </BaseTestPackageProject>
 
