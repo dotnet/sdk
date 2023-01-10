@@ -6,13 +6,15 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem;
 using Microsoft.TemplateEngine.Cli.PostActionProcessors;
-using Microsoft.TemplateEngine.Utils;
 
 namespace Microsoft.DotNet.Tools.New.PostActionProcessors
 {
@@ -22,9 +24,17 @@ namespace Microsoft.DotNet.Tools.New.PostActionProcessors
 
         internal static Guid ActionProcessorId { get; } = new Guid("695A3659-EB40-4FF5-A6A6-C9C4E629FCB0");
 
-        private static readonly JsonSerializerOptions s_serializerOptions = new JsonSerializerOptions { WriteIndented = true };
+        private static readonly JsonSerializerOptions s_serializerOptions = new JsonSerializerOptions
+        {
+            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+            WriteIndented = true
+        };
 
-        private static readonly JsonDocumentOptions s_deserializerOptions = new JsonDocumentOptions { AllowTrailingCommas = true, CommentHandling = JsonCommentHandling.Skip };
+        private static readonly JsonDocumentOptions s_deserializerOptions = new JsonDocumentOptions
+        {
+            AllowTrailingCommas = true,
+            CommentHandling = JsonCommentHandling.Skip
+        };
 
         private const string JsonFileNameArgument = "jsonFileName";
         private const string ParentPropertyPathArgument = "parentPropertyPath";
@@ -44,7 +54,7 @@ namespace Microsoft.DotNet.Tools.New.PostActionProcessors
                 return false;
             }
 
-            IReadOnlyList<string> jsonFiles = FileFindHelpers.FindFilesAtOrAbovePath(environment.Host.FileSystem, outputBasePath, matchPattern: jsonFileName);
+            IReadOnlyList<string> jsonFiles = FindFilesAtOrAbovePath(environment.Host.FileSystem, outputBasePath, matchPattern: jsonFileName);
 
             if (jsonFiles.Count == 0)
             {
@@ -82,7 +92,7 @@ namespace Microsoft.DotNet.Tools.New.PostActionProcessors
                 environment.Host.FileSystem,
                 jsonFiles[0],
                 parentProperty,
-                ".",
+                ":",
                 newJsonPropertyName,
                 newJsonPropertyValue);
 
@@ -141,8 +151,11 @@ namespace Microsoft.DotNet.Tools.New.PostActionProcessors
 
             foreach (string property in properties)
             {
+                Reporter.Output.WriteLine("Finding node " + property);
+
                 if (node == null)
                 {
+                    Reporter.Error.WriteLine(property + " not found");
                     return null;
                 }
 
@@ -150,6 +163,34 @@ namespace Microsoft.DotNet.Tools.New.PostActionProcessors
             }
 
             return node;
+        }
+
+        private static IReadOnlyList<string> FindFilesAtOrAbovePath(IPhysicalFileSystem fileSystem, string startPath, string matchPattern, Func<string, bool>? secondaryFilter = null)
+        {
+            string? directory = fileSystem.DirectoryExists(startPath) ? startPath : Path.GetDirectoryName(startPath);
+
+            if (directory == null)
+            {
+                throw new InvalidOperationException();
+            }
+
+            do
+            {
+                List<string> filesInDir = fileSystem.EnumerateFileSystemEntries(directory, matchPattern, SearchOption.AllDirectories).ToList();
+                List<string> matches = new();
+
+                matches = secondaryFilter == null ? filesInDir : filesInDir.Where(x => secondaryFilter(x)).ToList();
+
+                if (matches.Count > 0)
+                {
+                    return matches;
+                }
+
+                directory = Path.GetPathRoot(directory) != directory ? Directory.GetParent(directory)?.FullName : null;
+            }
+            while (directory != null);
+
+            return new List<string>();
         }
     }
 }
