@@ -150,7 +150,7 @@
                        NewText="_InitializeBuildToolFramework=&quot;%24{_OverrideArcadeInitializeBuildToolFramework-netcoreapp3.1}&quot;" />
 
     <!-- Temporary workaround for when the ci option is specified, non-zero exit are swallowed which prevents builds from failing within 
-         the tarball build preocess.  https://github.com/dotnet/source-build/issues/2307 -->
+         the build process.  https://github.com/dotnet/source-build/issues/2307 -->
     <ReplaceTextInFile InputFile="$(EngCommonToolsShFile)"
                        OldText="ExitWithExitCode 0"
                        NewText="ExitWithExitCode $exit_code" />
@@ -702,7 +702,7 @@
       <AllRestoredPackageFiles Include="$(LocalNuGetPackagesRoot)**/*.nupkg" />
       <AllRestoredPackageFiles Include="$(PackagesDir)**/*.nupkg" />
 
-      <!-- Only contains packages when building a tarball. -->
+      <!-- Only contains packages when building. -->
       <TarballPrebuiltPackageFiles Include="$(PrebuiltPackagesPath)*.nupkg" />
 
       <SourceBuiltPackageFiles Include="$(SourceBuiltBlobFeedDir)**/*.nupkg" />

@@ -7,7 +7,7 @@ SCRIPT_ROOT="$(cd -P "$( dirname "$0" )" && pwd)"
 usage() {
     echo "usage: $0 [options]"
     echo ""
-    echo "  Prepares a tarball to be built by downloading Private.SourceBuilt.Artifacts.*.tar.gz and"
+    echo "  Prepares the environment to be built by downloading Private.SourceBuilt.Artifacts.*.tar.gz and"
     echo "  installing the version of dotnet referenced in global.json"
     echo "options:"
     echo "  --bootstrap    Build a bootstrap version of previously source-built packages archive."

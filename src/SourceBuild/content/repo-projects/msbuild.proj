@@ -39,7 +39,7 @@
 
     The CentralPackageVersions SDK isn't actually source-built. We get it as a text-only prebuilt,
     but the NuGet resolver seems flaky so we're using our resolver instead. We only have access to
-    the nupkg ahead of time when building a tarball, so only enable this workaround then.
+    the nupkg ahead of time when building, so only enable this workaround then.
   -->
   <ItemGroup>
     <CentralPackageVersionsSdkOverride Include="Microsoft.Build.CentralPackageVersions" Group="CENTRAL_PACKAGE_VERSIONS" />

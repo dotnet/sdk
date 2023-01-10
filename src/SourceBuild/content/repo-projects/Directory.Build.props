@@ -39,7 +39,7 @@
 
   <!-- A human-readable description of what's building and why. -->
   <PropertyGroup>
-    <ProjectBuildReason>'$(RepositoryName) in tarball'</ProjectBuildReason>
+    <ProjectBuildReason>'$(RepositoryName)'</ProjectBuildReason>
   </PropertyGroup>
 
   <ItemGroup>
