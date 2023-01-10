@@ -18,8 +18,20 @@ cp -a $HELIX_CORRELATION_PAYLOAD/t/TestExecutionDirectoryFiles/. $TestExecutionD
 dotnet new --debug:ephemeral-hive
 
 dotnet nuget list source --configfile $TestExecutionDirectory/nuget.config
+dotnet nuget remove source dotnet6-transport --configfile $TestExecutionDirectory/nuget.config
+dotnet nuget remove source dotnet6-internal-transport --configfile $TestExecutionDirectory/nuget.config
+dotnet nuget remove source dotnet7-transport --configfile $TestExecutionDirectory/nuget.config
+dotnet nuget remove source dotnet7-internal-transport --configfile $TestExecutionDirectory/nuget.config
+dotnet nuget remove source richnav --configfile $TestExecutionDirectory/nuget.config
+dotnet nuget remove source vs-impl --configfile $TestExecutionDirectory/nuget.config
+dotnet nuget remove source dotnet-libraries-transport --configfile $TestExecutionDirectory/nuget.config
+dotnet nuget remove source dotnet-tools-transport --configfile $TestExecutionDirectory/nuget.config
+dotnet nuget remove source dotnet-libraries --configfile $TestExecutionDirectory/nuget.config
+dotnet nuget remove source dotnet-eng --configfile $TestExecutionDirectory/nuget.config
+dotnet nuget list source --configfile $TestExecutionDirectory/nuget.config
 
 cp $HELIX_CORRELATION_PAYLOAD/t/TestExecutionDirectoryFiles/testAsset.props ./
 export TestPackagesRoot=$(pwd)/Assets/TestPackages
 dotnet build ./Assets/TestPackages/Microsoft.NET.TestPackages.csproj /t:Build -p:VersionPropsIsImported=false
-cp $TestPackagesRoot/TestPackages/. $TestExecutionDirectory/TestPackages -R
+cp $TestPackagesRoot/TestPackages/. $TestExecutionDirectory/TestPackages -R -v
+find $TestExecutionDirectory/TestPackages -name *.nupkg
