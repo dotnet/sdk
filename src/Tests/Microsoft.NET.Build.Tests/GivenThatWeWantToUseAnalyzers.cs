@@ -24,6 +24,37 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [Theory]
+        [InlineData("WebApp", "EnableRequestDelegateGenerator", false)]
+        [InlineData("WebApp", "EnableRequestDelegateGenerator", true)]
+        public void It_resolves_requestdelegategenerator_correctly(string testAssetName, string property, bool isEnabled)
+        {
+            var asset = _testAssetsManager
+                .CopyTestAsset(testAssetName, identifier: "C#")
+                .WithSource()
+                .WithProjectChanges(project =>
+                {
+                    var ns = project.Root.Name.Namespace;
+                    project.Root.Add(new XElement(ns + "PropertyGroup", new XElement(property, isEnabled)));
+                });
+
+            var command = new GetValuesCommand(
+                Log,
+                asset.Path,
+                ToolsetInfo.CurrentTargetFramework,
+                "Analyzer",
+                GetValuesCommand.ValueType.Item);
+
+            command
+                .WithWorkingDirectory(asset.Path)
+                .Execute("/bl")
+                .Should().Pass();
+
+            var analyzers = command.GetValues();
+
+            Assert.Equal(isEnabled, analyzers.Any(analyzer => analyzer.Contains("Microsoft.AspNetCore.Http.Generators.dll")));
+        }
+
+        [Theory]
         [InlineData("C#", "AppWithLibrary")]
         [InlineData("VB", "AppWithLibraryVB")]
         [InlineData("F#", "AppWithLibraryFS")]
