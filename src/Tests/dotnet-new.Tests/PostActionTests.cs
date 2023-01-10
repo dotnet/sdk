@@ -946,14 +946,40 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And.HaveStdOutContaining($"The template \"{myProjectTemplateName}\" was created successfully.")
                 .And.HaveStdOutContaining("Successfully modified deployment.template.json.")
                 .And.NotHaveStdOutContaining("Manual instructions: Modify the JSON file manually.");
+        }
+
+        [Fact]
+        public void ModifyJsonFile_WithSourceNameReplacementInNewJsonProperty()
+        {
+            const string templateLocation = "PostActions/ModifyJsonFile/WithSourceNameChangeInJson";
+            const string templateName = "TestAssets.PostActions.ModifyJsonFile.WithSourceNameChangeInJson";
+
+            string home = CreateTemporaryFolder(folderName: "Home");
+            string workingDirectory = CreateTemporaryFolder();
+
+            InstallTestTemplate(templateLocation, _log, home, workingDirectory);
+
+            // Create the project that represents an IoT Edge module.  This project template must modify the
+            // deployment.template.json file that is part of the existing project that has been created in the step before.
+            new DotnetNewCommand(_log, templateName, "-o", "TheProjectName", "-n", "TheProjectName")
+                .WithCustomHive(home)
+                .WithWorkingDirectory(workingDirectory)
+                .Execute()
+                .Should()
+                .ExitWith(0)
+                .And.NotHaveStdErr()
+                .And.HaveStdOutContaining($"The template \"{templateName}\" was created successfully.")
+                .And.HaveStdOutContaining("Successfully modified testfile.json.")
+                .And.NotHaveStdOutContaining("Manual instructions: Modify the JSON file manually.");
 
             // Verify if the expected property is added to the deployment.template.json file
-            string projectDirectory = Path.Combine(workingDirectory, "ExistingProject");
-            string jsonFileContents = File.ReadAllText(Path.Combine(projectDirectory, "deployment.template.json"));
+            string projectDirectory = Path.Combine(workingDirectory, "TheProjectName");
+            string jsonFileContents = File.ReadAllText(Path.Combine(projectDirectory, "testfile.json"));
 
             JsonNode? jsonContents = JsonNode.Parse(jsonFileContents);
             Assert.NotNull(jsonContents);
-            Assert.True(jsonContents["modulesContent"]?["$edgeAgent"]?["properties.desired"]?["modules"]?["custommodule1"] != null);
+            Assert.True(jsonContents["moduleConfiguration"]?["edgeAgent"]?["properties.desired"]?["modules"]?["TheProjectName"] != null);
+            Assert.Equal("${MODULEDIR<../TheProjectName>}", jsonContents["moduleConfiguration"]?["edgeAgent"]?["properties.desired"]?["modules"]?["TheProjectName"]?.ToString());
         }
     }
 }
