@@ -68,6 +68,19 @@ namespace Microsoft.DotNet.Tools.New.PostActionProcessors
                 return false;
             }
 
+            if (creationEffects is ICreationEffects2 ce)
+            {
+                foreach (var fs in ce.FileChanges)
+                {
+                    Reporter.Output.WriteLine($"{fs.ChangeKind} = {fs.SourceRelativePath} = {fs.TargetRelativePath} ");
+                }
+            }
+
+            foreach (var x in templateCreationResult.PrimaryOutputs)
+            {
+                Reporter.Output.WriteLine(x.Path);
+            }
+
             // args required:
             // parent property name in json file (if not specified, assume null and add the json section to the root)
             // optional property separation character
@@ -86,6 +99,17 @@ namespace Microsoft.DotNet.Tools.New.PostActionProcessors
             {
                 Reporter.Error.WriteLine(string.Format(LocalizableStrings.PostAction_ModifyJson_Error_ArgumentNotConfigured, NewJsonPropertyValueArgument));
                 return false;
+            }
+
+            var sourceNameReplaceValue = DetermineSourceNameReplaceValue(creationEffects);
+
+            if (sourceNameReplaceValue != null)
+            {
+                newJsonPropertyName = newJsonPropertyName.Replace(sourceNameReplaceValue.Value.sourceName,
+                                                                  sourceNameReplaceValue.Value.replaceValue);
+
+                newJsonPropertyValue = newJsonPropertyValue.Replace(sourceNameReplaceValue.Value.sourceName,
+                                                                    sourceNameReplaceValue.Value.replaceValue);
             }
 
             JsonNode? newJsonContent = AddElementToJson(
@@ -191,6 +215,32 @@ namespace Microsoft.DotNet.Tools.New.PostActionProcessors
             while (directory != null);
 
             return new List<string>();
+        }
+
+        private static (string sourceName, string replaceValue)? DetermineSourceNameReplaceValue(ICreationEffects creationEffects)
+        {
+            if (creationEffects is ICreationEffects2 creationEffects2)
+            {
+                var projectFile = creationEffects2.FileChanges.FirstOrDefault(f => IsProjectFile(f.SourceRelativePath));
+
+                if (projectFile != null)
+                {
+                    return (sourceName: Path.GetFileNameWithoutExtension(projectFile.SourceRelativePath),
+                            replaceValue: Path.GetFileNameWithoutExtension(projectFile.TargetRelativePath));
+                }
+            }
+
+            return null;
+
+            static bool IsProjectFile(string fileName)
+            {
+                string extension = Path.GetExtension(fileName);
+
+                return extension.Equals(".csproj", StringComparison.OrdinalIgnoreCase) ||
+                       extension.Equals(".vbproj", StringComparison.OrdinalIgnoreCase) ||
+                       extension.Equals(".fsproj", StringComparison.OrdinalIgnoreCase) ||
+                       extension.Equals(".vcxproj", StringComparison.OrdinalIgnoreCase);
+            }
         }
     }
 }

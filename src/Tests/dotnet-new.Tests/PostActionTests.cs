@@ -3,7 +3,7 @@
 //
 
 using System.Runtime.InteropServices;
-using FluentAssertions;
+using System.Text.Json.Nodes;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Commands;
@@ -871,6 +871,89 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             cmd.Should().Pass()
                 .And.HaveStdOutContaining("Determining projects to restore...")
                 .And.HaveStdOutContaining("Restore succeeded.");
+        }
+
+        [Fact]
+        public void ModifyJsonFile_Basic()
+        {
+            const string templateLocation = "PostActions/ModifyJsonFile/Basic";
+            const string templateName = "TestAssets.PostActions.ModifyJsonFile.Basic";
+
+            string home = CreateTemporaryFolder(folderName: "Home");
+            string workingDirectory = CreateTemporaryFolder();
+            InstallTestTemplate(templateLocation, _log, home, workingDirectory);
+
+            new DotnetNewCommand(_log, templateName)
+                .WithCustomHive(home)
+                .WithWorkingDirectory(workingDirectory)
+                .Execute()
+                .Should()
+                .ExitWith(0)
+                .And.NotHaveStdErr()
+                .And.HaveStdOutContaining($"The template \"{templateName}\" was created successfully.")
+                .And.HaveStdOutContaining("Successfully modified testfile.json.")
+                .And.NotHaveStdOutContaining("Manual instructions: Modify the JSON file manually.");
+        }
+
+        [Fact]
+        public void ModifyJsonFile_InOtherProjectOfSameSolution()
+        {
+            const string existingProjectTemplateLocation = "PostActions/ModifyJsonFile/WithExistingProject/ExistingProject";
+            const string existingProjectTemplateName = "TestAssets.PostActions.ModifyJsonFile.WithExistingProject.ExistingProject";
+
+            const string myProjectTemplateLocation = "PostActions/ModifyJsonFile/WithExistingProject/MyTestProject";
+            const string myProjectTemplateName = "TestAssets.PostActions.ModifyJsonFile.WithExistingProject.MyProject";
+
+            string home = CreateTemporaryFolder(folderName: "Home");
+            string workingDirectory = CreateTemporaryFolder();
+
+            InstallTestTemplate(existingProjectTemplateLocation, _log, home, workingDirectory);
+            InstallTestTemplate(myProjectTemplateLocation, _log, home, workingDirectory);
+
+            // Create a solution that already contains a project that has a JSON file present.
+            // This is actually simulating an Azure IoT Edge project.
+            new DotnetNewCommand(_log, "sln", "-n", "MySolution")
+                .WithCustomHive(home)
+                .WithWorkingDirectory(workingDirectory)
+                .Execute()
+                .Should()
+                .ExitWith(0)
+                .And.NotHaveStdErr();
+
+            // Add the IoT Edge Project to the solution.  This project contains a deployment.template.json file
+            // When we add another project that represents an IoT Edge module, we want to make some modifications
+            // in that deployment.template.json file.
+            new DotnetNewCommand(_log, existingProjectTemplateName, "-o", "ExistingProject")
+                .WithCustomHive(home)
+                .WithWorkingDirectory(workingDirectory)
+                .Execute()
+                .Should()
+                .ExitWith(0)
+                .And.NotHaveStdErr()
+                .And.HaveStdOutContaining($"The template \"{existingProjectTemplateName}\" was created successfully.")
+                .And.HaveStdOutContaining("Successfully added project(s) to a solution file.")
+                .And.NotHaveStdOutContaining("Manual instructions: Add generated project to solution manually.");
+
+            // Create the project that represents an IoT Edge module.  This project template must modify the
+            // deployment.template.json file that is part of the existing project that has been created in the step before.
+            new DotnetNewCommand(_log, myProjectTemplateName, "-o", "custommodule1", "-n", "custommodule1")
+                .WithCustomHive(home)
+                .WithWorkingDirectory(workingDirectory)
+                .Execute()
+                .Should()
+                .ExitWith(0)
+                .And.NotHaveStdErr()
+                .And.HaveStdOutContaining($"The template \"{myProjectTemplateName}\" was created successfully.")
+                .And.HaveStdOutContaining("Successfully modified deployment.template.json.")
+                .And.NotHaveStdOutContaining("Manual instructions: Modify the JSON file manually.");
+
+            // Verify if the expected property is added to the deployment.template.json file
+            string projectDirectory = Path.Combine(workingDirectory, "ExistingProject");
+            string jsonFileContents = File.ReadAllText(Path.Combine(projectDirectory, "deployment.template.json"));
+
+            JsonNode? jsonContents = JsonNode.Parse(jsonFileContents);
+            Assert.NotNull(jsonContents);
+            Assert.True(jsonContents["modulesContent"]?["$edgeAgent"]?["properties.desired"]?["modules"]?["custommodule1"] != null);
         }
     }
 }
