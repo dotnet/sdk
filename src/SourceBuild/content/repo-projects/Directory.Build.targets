@@ -15,8 +15,6 @@
   <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="ValidateUsageAgainstBaseline" />
   <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="WriteBuildOutputProps" />
   <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="WritePackageUsageData" />
-  <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="WriteRestoreSourceProps" />
-  <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="WriteRestoreSourceAndVersionProps" />
   <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="WriteUsageReports" />
   <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="WriteVersionsFile" />
   <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="ZipFileExtractToDirectory" />
@@ -54,7 +52,6 @@
   </PropertyGroup>
   <!-- Source override arguments -->
   <PropertyGroup Condition="'$(SourceOverrideRepoApiImplemented)' == 'true'">
-    <RepoApiArgs>$(RepoApiArgs) /p:DotNetRestoreSourcePropsPath=$(RestoreSourcePropsPath)</RepoApiArgs>
     <RepoApiArgs>$(RepoApiArgs) /p:DotNetBuildOffline=true</RepoApiArgs>
   </PropertyGroup>
   <!-- Output placement arguments -->
@@ -333,29 +330,6 @@
     </ReadNuGetPackageInfos>
 
     <WriteLinesToFile File="$(RepoCompletedSemaphorePath)CreateBuildOutputProps.complete" Overwrite="true" />
-  </Target>
-
-  <Target Name="CreateCombinedRestoreSourceAndVersionProps"
-          BeforeTargets="Build"
-          Inputs="$(MSBuildProjectFullPath)"
-          Outputs="$(RepoCompletedSemaphorePath)CreateCombinedRestoreSourceAndVersionProps.complete">
-    <ItemGroup>
-      <_DotNetRestoreSources Include="$(ExtraRestoreSourcePath)" Condition="'$(ExtraRestoreSourcePath)' != ''"/>
-      <_DotNetRestoreSources Include="$(SourceBuiltPackagesPath)" />
-      <_DotNetRestoreSources Include="$(ReferencePackagesDir)"/>
-      <_DotNetRestoreSources Include="$(PrebuiltPackagesPath)"/>
-      <_DotNetRestoreSources Include="$(PrebuiltSourceBuiltPackagesPath)"/>
-      <PreviouslySourceBuiltPackages Include="$(SourceBuiltPackagesPath)*.nupkg"
-                                      Exclude="$(SourceBuiltPackagesPath)*.symbols.nupkg" />
-      <_AdditionalAssetDirs Include="$(SourceBuiltToolsetDir)" Condition="Exists('$(SourceBuiltToolsetDir)')" />
-    </ItemGroup>
-    <WriteRestoreSourceAndVersionProps NuGetPackages="@(PreviouslySourceBuiltPackages)"
-                                       ExtraProperties="@(ExtraPackageVersionPropsPackageInfo)"
-                                       AdditionalAssetDirs="@(_AdditionalAssetDirs)"
-                                       RestoreSources="@(_DotNetRestoreSources)"
-                                       OutputPath="$(RestoreSourcePropsPath)" />
-
-    <WriteLinesToFile File="$(RepoCompletedSemaphorePath)CreateCombinedRestoreSourceAndVersionProps.complete" Overwrite="true" />
   </Target>
 
   <Target Name="Build"
