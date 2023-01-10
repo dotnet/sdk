@@ -67,7 +67,7 @@ namespace Microsoft.DotNet.Cli.New.Tests
         {
             string targetBasePath = _engineEnvironmentSettings.GetTempVirtualizedPath();
 
-            string jsonFilePath = CreateJsonFile(targetBasePath, "json.json", @"{""property1"":{""property2"":{""property3"":""foo""}}}");
+            CreateJsonFile(targetBasePath, "json.json", @"{""property1"":{""property2"":{""property3"":""foo""}}}");
 
             IPostAction postAction = new MockPostAction
             {
@@ -75,7 +75,7 @@ namespace Microsoft.DotNet.Cli.New.Tests
                 Args = new Dictionary<string, string>()
                 {
                     ["jsonFileName"] = "json.json",
-                    ["parentPropertyPath"] = "property1.propertyX.property2",
+                    ["parentPropertyPath"] = "property1:propertyX:property2",
                     ["newJsonPropertyName"] = "bar",
                     ["newJsonPropertyValue"] = "test"
                 }
@@ -99,6 +99,40 @@ namespace Microsoft.DotNet.Cli.New.Tests
 
             Assert.False(result);
             mockReporter.Verify(r => r.WriteLine(Tools.New.LocalizableStrings.PostAction_ModifyJson_Error_ParentPropertyPathInvalid), Times.Once);
+        }
+
+        [Fact]
+        public void PropertyPathCasing()
+        {
+            string targetBasePath = _engineEnvironmentSettings.GetTempVirtualizedPath();
+
+            string jsonFilePath = CreateJsonFile(targetBasePath, "json.json", @"{""property1"":{""property2"":{""property3"":""foo""}}}");
+
+            IPostAction postAction = new MockPostAction
+            {
+                ActionId = DotnetModifyJsonPostActionProcessor.ActionProcessorId,
+                Args = new Dictionary<string, string>()
+                {
+                    ["jsonFileName"] = "json.json",
+                    ["parentPropertyPath"] = "property1:Property2",
+                    ["newJsonPropertyName"] = "bar",
+                    ["newJsonPropertyValue"] = "test"
+                }
+            };
+
+            DotnetModifyJsonPostActionProcessor processor = new DotnetModifyJsonPostActionProcessor();
+
+            bool result = processor.Process(
+                _engineEnvironmentSettings,
+                postAction,
+                new MockCreationEffects(),
+                new MockCreationResult(),
+                targetBasePath);
+
+            Assert.True(result);
+
+            JsonNode modifiedJsonContent = JsonNode.Parse(_engineEnvironmentSettings.Host.FileSystem.ReadAllText(jsonFilePath));
+            Assert.NotNull(modifiedJsonContent["property1"]["property2"]["bar"]);
         }
 
         [Theory]
@@ -228,6 +262,20 @@ namespace Microsoft.DotNet.Cli.New.Tests
                 {
                     Assert.NotNull(modifiedJsonContent["secondProperty"]);
                     Assert.Equal(@"{""firstProperty"":""foo"",""secondProperty"":""bar""}", modifiedJsonContent.ToJsonString());
+                }),
+
+            new("Can add property to sub-property",
+                @"{""rootProperty"": {""subProperty1"": {""subProperty2"":{""subProperty3"":{""name"":""test""}}}}}",
+                new Dictionary<string, string>
+                {
+                    ["jsonFileName"] = "jsonfile.json",
+                    ["parentPropertyPath"] = "rootProperty:subProperty1:subProperty2:subProperty3",
+                    ["newJsonPropertyName"] = "foo",
+                    ["newJsonPropertyValue"] = "bar"
+                },
+                (JsonNode modifiedJsonContent) =>
+                {
+                    Assert.Equal(@"{""rootProperty"":{""subProperty1"":{""subProperty2"":{""subProperty3"":{""name"":""test"",""foo"":""bar""}}}}}", modifiedJsonContent.ToJsonString());
                 })
         };
 
