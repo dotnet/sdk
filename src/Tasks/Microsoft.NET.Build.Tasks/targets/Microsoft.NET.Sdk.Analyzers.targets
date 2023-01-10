@@ -84,7 +84,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <EnableAotAnalyzer Condition="'$(EnableAotAnalyzer)' == '' And '$(PublishAot)' == 'true'">true</EnableAotAnalyzer>
 
     <!-- EnforceCodeStyleInBuild Allows code style analyzers to be disabled in bulk via msbuild if the user wants to -->
-    <EnforceCodeStyleInBuild Condition="'$(EnforceCodeStyleInBuild)' == ''">false</EnforceCodeStyleInBuild>
+    <EnforceCodeStyleInBuild Condition="'$(EnforceCodeStyleInBuild)' == ''">true</EnforceCodeStyleInBuild>
   </PropertyGroup>
 
   <!-- Establish good defaults for scenarios where no EffectiveAnalysisLevel was set (e.g. .NETFramework) -->
