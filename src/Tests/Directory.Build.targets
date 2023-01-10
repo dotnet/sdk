@@ -28,7 +28,7 @@
           LinkBase="Assets" Visible="false" />
 
   </ItemGroup>
-  
+
   <Target Name="TestAsTool" DependsOnTargets="Pack;_InnerGetTestsToRun">
     <PropertyGroup>
       <TestLocalToolFolder>$(ArtifactsTmpDir)$(ToolCommandName)\</TestLocalToolFolder>

@@ -84,7 +84,6 @@ namespace Microsoft.NET.TestFramework
             TestContext testContext = new TestContext();
             
             bool runAsTool = false;
-            testContext.TestAssetsDirectory = Path.Combine(AppContext.BaseDirectory, "Assets");
             if (Directory.Exists(Path.Combine(AppContext.BaseDirectory, "Assets")))
             {
                 runAsTool = true;
@@ -173,7 +172,6 @@ namespace Microsoft.NET.TestFramework
                 testContext.NuGetCachePath = Path.Combine(testContext.TestExecutionDirectory, ".nuget", "packages");
 
                 var testPackages = Path.Combine(testContext.TestExecutionDirectory, "Testpackages");
-                testContext.TestPackages = testPackages;
                 if (Directory.Exists(testPackages))
                 {
                     testContext.TestPackages = testPackages;
