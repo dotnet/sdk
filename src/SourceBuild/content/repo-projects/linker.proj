@@ -15,7 +15,7 @@
 
   <ItemGroup>
     <NuGetConfigFiles Include="$(ProjectDirectory)NuGet.config" />
-    <NuGetConfigFiles Include="$(ProjectDirectory)/src/external/cecil/NuGet.config" />
+    <NuGetConfigFiles Include="$(ProjectDirectory)/external/cecil/NuGet.config" />
   </ItemGroup>
 
   <ItemGroup>
