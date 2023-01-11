@@ -961,7 +961,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
             // Create the project that represents an IoT Edge module.  This project template must modify the
             // deployment.template.json file that is part of the existing project that has been created in the step before.
-            new DotnetNewCommand(_log, templateName, "-o", "TheProjectName", "-n", "TheProjectName")
+            new DotnetNewCommand(_log, templateName, "-n", "TheProjectName")
                 .WithCustomHive(home)
                 .WithWorkingDirectory(workingDirectory)
                 .Execute()
@@ -973,13 +973,64 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And.NotHaveStdOutContaining("Manual instructions: Modify the JSON file manually.");
 
             // Verify if the expected property is added to the deployment.template.json file
-            string projectDirectory = Path.Combine(workingDirectory, "TheProjectName");
-            string jsonFileContents = File.ReadAllText(Path.Combine(projectDirectory, "testfile.json"));
+            string jsonFileContents = File.ReadAllText(Path.Combine(workingDirectory, "testfile.json"));
 
             JsonNode? jsonContents = JsonNode.Parse(jsonFileContents);
             Assert.NotNull(jsonContents);
             Assert.True(jsonContents["moduleConfiguration"]?["edgeAgent"]?["properties.desired"]?["modules"]?["TheProjectName"] != null);
             Assert.Equal("${MODULEDIR<../TheProjectName>}", jsonContents["moduleConfiguration"]?["edgeAgent"]?["properties.desired"]?["modules"]?["TheProjectName"]?.ToString());
+        }
+
+        [Fact]
+        public void ModifyJsonFile_FailsWhenJsonFileNotFound()
+        {
+            const string templateLocation = "PostActions/ModifyJsonFile/FailsWhenJsonFileNotFound";
+            const string templateName = "TestAssets.PostActions.ModifyJsonFile.FailsWhenJsonFileNotFound";
+
+            string home = CreateTemporaryFolder(folderName: "Home");
+            string workingDirectory = CreateTemporaryFolder();
+
+            InstallTestTemplate(templateLocation, _log, home, workingDirectory);
+
+            // Create the project that represents an IoT Edge module.  This project template must modify the
+            // deployment.template.json file that is part of the existing project that has been created in the step before.
+            new DotnetNewCommand(_log, templateName)
+                .WithCustomHive(home)
+                .WithWorkingDirectory(workingDirectory)
+                .Execute()
+                .Should()
+                .ExitWith(0)
+                .And.HaveStdErrContaining("Unable to find the json file in the solution")
+                .And.HaveStdErrContaining("Manual instructions: Modify the JSON file manually.");
+        }
+
+        [Fact]
+        public void ModifyJsonFile_FailsWhenJsonFileNotFoundInEligableDirectories()
+        {
+            const string templateLocation = "PostActions/ModifyJsonFile/FailsWhenJsonFileNotFound";
+            const string templateName = "TestAssets.PostActions.ModifyJsonFile.FailsWhenJsonFileNotFound";
+
+            string home = CreateTemporaryFolder(folderName: "Home");
+            string workingDirectory = CreateTemporaryFolder();
+
+            InstallTestTemplate(templateLocation, _log, home, workingDirectory);
+
+            string jsonFileLocation = Path.Combine(workingDirectory, "testfile.json");
+
+            File.WriteAllText(jsonFileLocation, @"{""foo"":{""bar"":{}}}");
+
+            // Create the project that represents an IoT Edge module.  This project template must modify the
+            // deployment.template.json file that is part of the existing project that has been created in the step before.
+            new DotnetNewCommand(_log, templateName, "-o", "SolutionFolder/SomeTestFolder")
+                .WithCustomHive(home)
+                .WithWorkingDirectory(workingDirectory)
+                .Execute()
+                .Should()
+                .ExitWith(0)
+                .And.HaveStdErrContaining("Unable to find the json file in the solution")
+                .And.HaveStdErrContaining("Manual instructions: Modify the JSON file manually.");
+
+            File.Delete(jsonFileLocation);
         }
     }
 }

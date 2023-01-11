@@ -21,9 +21,4 @@
     <Content Include="nupkg_templates\**" />
     <None Include="nupkg_templates\**" CopyToOutputDirectory="Always" />
   </ItemGroup>
-  <ItemGroup>
-    <Content Remove="test_templates\PostActions\ModifyJsonFile\WithSourceNameChangeInJson\.template.config\template.json" />
-    <Content Remove="test_templates\PostActions\ModifyJsonFile\WithSourceNameChangeInJson\MyTestProject.csproj" />
-    <Content Remove="test_templates\PostActions\ModifyJsonFile\WithSourceNameChangeInJson\testfile.json" />
-  </ItemGroup>
 </Project>

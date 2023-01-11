@@ -54,7 +54,7 @@ namespace Microsoft.DotNet.Tools.New.PostActionProcessors
                 return false;
             }
 
-            IReadOnlyList<string> jsonFiles = FindFilesAtOrAbovePath(environment.Host.FileSystem, outputBasePath, matchPattern: jsonFileName);
+            IReadOnlyList<string> jsonFiles = FindFilesAtOrAbovePath(environment.Host.FileSystem, outputBasePath, matchPattern: jsonFileName, maxAllowedAboveDirectories: 1);
 
             if (jsonFiles.Count == 0)
             {
@@ -66,19 +66,6 @@ namespace Microsoft.DotNet.Tools.New.PostActionProcessors
             {
                 Reporter.Error.WriteLine(string.Format(LocalizableStrings.PostAction_ModifyJson_Error_MultipleJsonFiles, jsonFileName));
                 return false;
-            }
-
-            if (creationEffects is ICreationEffects2 ce)
-            {
-                foreach (var fs in ce.FileChanges)
-                {
-                    Reporter.Output.WriteLine($"{fs.ChangeKind} = {fs.SourceRelativePath} = {fs.TargetRelativePath} ");
-                }
-            }
-
-            foreach (var x in templateCreationResult.PrimaryOutputs)
-            {
-                Reporter.Output.WriteLine(x.Path);
             }
 
             // args required:
@@ -138,7 +125,6 @@ namespace Microsoft.DotNet.Tools.New.PostActionProcessors
 
             if (jsonContent == null)
             {
-                Reporter.Error.WriteLine("json file is empty");
                 return null;
             }
 
@@ -175,11 +161,8 @@ namespace Microsoft.DotNet.Tools.New.PostActionProcessors
 
             foreach (string property in properties)
             {
-                Reporter.Output.WriteLine("Finding node " + property);
-
                 if (node == null)
                 {
-                    Reporter.Error.WriteLine(property + " not found");
                     return null;
                 }
 
@@ -189,7 +172,12 @@ namespace Microsoft.DotNet.Tools.New.PostActionProcessors
             return node;
         }
 
-        private static IReadOnlyList<string> FindFilesAtOrAbovePath(IPhysicalFileSystem fileSystem, string startPath, string matchPattern, Func<string, bool>? secondaryFilter = null)
+        private static IReadOnlyList<string> FindFilesAtOrAbovePath(
+            IPhysicalFileSystem fileSystem,
+            string startPath,
+            string matchPattern,
+            Func<string, bool>? secondaryFilter = null,
+            int maxAllowedAboveDirectories = 250)
         {
             string? directory = fileSystem.DirectoryExists(startPath) ? startPath : Path.GetDirectoryName(startPath);
 
@@ -197,6 +185,8 @@ namespace Microsoft.DotNet.Tools.New.PostActionProcessors
             {
                 throw new InvalidOperationException();
             }
+
+            int numberOfUpLevels = 0;
 
             do
             {
@@ -211,8 +201,9 @@ namespace Microsoft.DotNet.Tools.New.PostActionProcessors
                 }
 
                 directory = Path.GetPathRoot(directory) != directory ? Directory.GetParent(directory)?.FullName : null;
+                numberOfUpLevels++;
             }
-            while (directory != null);
+            while (directory != null && numberOfUpLevels <= maxAllowedAboveDirectories);
 
             return new List<string>();
         }

@@ -25,42 +25,6 @@ namespace Microsoft.DotNet.Cli.New.Tests
             _engineEnvironmentSettings = environmentSettingsHelper.CreateEnvironment(hostIdentifier: GetType().Name, virtualize: true);
         }
 
-        [Fact]
-        public void FailsWhenNoTargetJsonFileNotFound()
-        {
-            string targetBasePath = _engineEnvironmentSettings.GetTempVirtualizedPath();
-
-            IPostAction postAction = new MockPostAction
-            {
-                ActionId = DotnetModifyJsonPostActionProcessor.ActionProcessorId,
-                Args = new Dictionary<string, string>()
-                {
-                    ["jsonFileName"] = "nonexistingfile.json",
-                    ["parentPropertyPath"] = "person",
-                    ["newJsonPropertyName"] = "lastName",
-                    ["newJsonPropertyValue"] = "Watson"
-                }
-            };
-
-            Mock<IReporter> mockReporter = new Mock<IReporter>();
-
-            mockReporter.Setup(r => r.WriteLine(It.IsAny<string>()))
-                        .Verifiable();
-
-            Reporter.SetError(mockReporter.Object);
-
-            DotnetModifyJsonPostActionProcessor processor = new DotnetModifyJsonPostActionProcessor();
-
-            bool result = processor.Process(
-                _engineEnvironmentSettings,
-                postAction,
-                new MockCreationEffects(),
-                new MockCreationResult(),
-                targetBasePath);
-
-            Assert.False(result);
-            mockReporter.Verify(r => r.WriteLine(string.Format(Tools.New.LocalizableStrings.PostAction_ModifyJson_Error_ArgumentNotConfigured, "jsonFileName")), Times.Once);
-        }
 
         [Fact]
         public void FailsWhenParentPropertyPathIsInvalid()
@@ -102,7 +66,7 @@ namespace Microsoft.DotNet.Cli.New.Tests
         }
 
         [Fact]
-        public void PropertyPathCasing()
+        public void FailsWhenPropertyPathCasingIsNotCorrect()
         {
             string targetBasePath = _engineEnvironmentSettings.GetTempVirtualizedPath();
 
