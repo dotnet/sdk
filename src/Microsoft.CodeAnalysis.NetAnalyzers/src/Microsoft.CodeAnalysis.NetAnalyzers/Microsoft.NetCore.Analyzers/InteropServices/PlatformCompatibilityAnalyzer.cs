@@ -563,10 +563,13 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                                     }
                                 }
 
-                                if (attribute.SupportedFirst != null &&
-                                    info.Version.IsGreaterThanOrEqualTo(attribute.SupportedFirst))
+                                var checkVersion = attribute.SupportedSecond ?? attribute.SupportedFirst;
+
+                                if (checkVersion != null &&
+                                    info.Version.IsGreaterThanOrEqualTo(checkVersion))
                                 {
                                     attribute.SupportedFirst = null;
+                                    attribute.SupportedSecond = null;
                                     RemoveUnsupportedWithLessVersion(info.Version, attribute);
                                     RemoveOtherSupportsOnDifferentPlatforms(attributes, info.PlatformName);
                                 }
@@ -816,8 +819,11 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                     csPlatformNames = string.Join(CommaSeparator, csPlatformNames, PlatformCompatibilityAllPlatforms);
                 }
 
-                var rule = supportedRule ? SwitchSupportedRule(callsite) : SwitchRule(callsite, true);
-                context.ReportDiagnostic(operation.CreateDiagnostic(rule, operationName, JoinNames(platformNames), csPlatformNames));
+                if (!platformNames.IsEmpty)
+                {
+                    var rule = supportedRule ? SwitchSupportedRule(callsite) : SwitchRule(callsite, true);
+                    context.ReportDiagnostic(operation.CreateDiagnostic(rule, operationName, JoinNames(platformNames), csPlatformNames));
+                }
 
                 if (!obsoletedPlatforms.IsEmpty)
                 {
