@@ -167,7 +167,6 @@
       <ReferencePackagesNuGetSourceName>reference-packages</ReferencePackagesNuGetSourceName>
       <SourceBuiltNuGetSourceName>source-built</SourceBuiltNuGetSourceName>
       <ExtraSourcesNuGetSourceName>ExtraSources</ExtraSourcesNuGetSourceName>
-      <DotNet5InternalTransportNuGetSourceName>dotnet5-internal-transport</DotNet5InternalTransportNuGetSourceName>
       <SourceBuildSources>$(PrebuiltNuGetSourceName);$(PreviouslySourceBuiltNuGetSourceName);$(ReferencePackagesNuGetSourceName);$(SourceBuiltNuGetSourceName)</SourceBuildSources>
       <SourceBuildSources Condition="'$(ExtraRestoreSourcePath)' != ''">$(SourceBuildSources);$(ExtraSourcesNuGetSourceName)</SourceBuildSources>
       <SourceBuildSources Condition="'$(VSS_NUGET_EXTERNAL_FEED_ENDPOINTS)' != '' and '$(SetUpInternalTransportFeed)' == 'true'">$(SourceBuildSources);$(DotNet5InternalTransportNuGetSourceName)</SourceBuildSources>
@@ -207,77 +206,10 @@
                             SourcePath="$(ExtraRestoreSourcePath)"
                             Condition="'$(ExtraRestoreSourcePath)' != ''" />
 
-    <!--
-      The internal transport feed is dynamically added by Arcade by a script called directly in the
-      official pipeline, so in some cases we need to do the same here.
-    -->
-    <AddSourceToNuGetConfig
-      Condition="
-        '$(VSS_NUGET_EXTERNAL_FEED_ENDPOINTS)' != '' and
-        '$(SetUpInternalTransportFeed)' == 'true'"
-      NuGetConfigFile="%(NuGetConfigFiles.Identity)"
-      SourceName="$(DotNet5InternalTransportNuGetSourceName)"
-      SourcePath="https://pkgs.dev.azure.com/dnceng/internal/_packaging/dotnet5-internal-transport/nuget/v3/index.json" />
-
     <UpdateNuGetConfigPackageSourcesMappings
       NuGetConfigFile="%(NuGetConfigFiles.Identity)"
       BuildWithOnlineSources="$(BuildWithOnlineSources)"
       SourceBuildSources="$(SourceBuildSources)" />
-
-    <!-- Update NuGet.Config files that have deprecated myget feeds -->
-    <ItemGroup>
-      <LegacyFeedMapping
-        Include="https://dotnet.myget.org/F/nuget-build/api/v3/index.json"
-        NewFeed="https://pkgs.dev.azure.com/dnceng/public/_packaging/nuget-build/nuget/v3/index.json" />
-      <LegacyFeedMapping
-        Include="https://www.myget.org/F/nugetbuild/api/v3/index.json"
-        NewFeed="https://pkgs.dev.azure.com/dnceng/public/_packaging/nuget-build/nuget/v3/index.json" />
-      <LegacyFeedMapping
-        Include="https://dotnet.myget.org/F/dotnet-corefxlab/api/v3/index.json"
-        NewFeed="https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-experimental/nuget/v3/index.json" />
-      <LegacyFeedMapping
-        Include="https://dotnet.myget.org/F/dotnet-core/api/v3/index.json"
-        NewFeed="https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json" />
-      <LegacyFeedMapping
-        Include="https://dotnet.myget.org/F/vstest/api/v3/index.json"
-        NewFeed="https://pkgs.dev.azure.com/dnceng/public/_packaging/test-tools/nuget/v3/index.json" />
-      <LegacyFeedMapping
-        Include="https://dotnet.myget.org/F/mstestv2/auth/1e768268-8c95-4e7e-9fd2-0eb1b1b69b18/api/v3/index.json"
-        NewFeed="https://pkgs.dev.azure.com/dnceng/public/_packaging/test-tools/nuget/v3/index.json" />
-      <LegacyFeedMapping
-        Include="https://dotnet.myget.org/F/roslyn/api/v3/index.json"
-        NewFeed="https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5/nuget/v3/index.json" />
-      <LegacyFeedMapping
-        Include="https://dotnet.myget.org/F/roslyn-tools/api/v3/index.json"
-        NewFeed="https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5/nuget/v3/index.json" />
-      <LegacyFeedMapping
-        Include="https://dotnet.myget.org/F/roslyn-analyzers/api/v3/index.json"
-        NewFeed="https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5/nuget/v3/index.json" />
-      <LegacyFeedMapping
-        Include="https://dotnet.myget.org/F/roslyn-master-nightly/api/v3/index.json"
-        NewFeed="https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5/nuget/v3/index.json" />
-      <LegacyFeedMapping
-        Include="https://dotnet.myget.org/F/symreader-converter/api/v3/index.json"
-        NewFeed="https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-tools/nuget/v3/index.json" />
-      <LegacyFeedMapping
-        Include="https://dotnet.myget.org/F/interactive-window/api/v3/index.json"
-        NewFeed="https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-tools/nuget/v3/index.json" />
-      <LegacyFeedMapping
-        Include="https://dotnet.myget.org/F/mstestv2/api/v3/index.json"
-        NewFeed="https://pkgs.dev.azure.com/dnceng/public/_packaging/test-tools/nuget/v3/index.json" />
-      <LegacyFeedMapping
-        Include="https://dotnet.myget.org/F/vsunittesting/api/v3/index.json"
-        NewFeed="https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-tools/nuget/v3/index.json" />
-      <LegacyFeedMapping
-        Include="https://dotnet.myget.org/F/msbuild/api/v3/index.json"
-        NewFeed="https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5/nuget/v3/index.json" />
-      <LegacyFeedMapping
-        Include="https://dotnet.myget.org/F/dotnet-buildtools/api/v3/index.json"
-        NewFeed="https://pkgs.dev.azure.com/dnceng/public/_packaging/myget-legacy/nuget/v3/index.json" />
-    </ItemGroup>
-
-    <ReplaceFeedsInNugetConfig InputFile="%(NuGetConfigFiles.Identity)"
-                               FeedMapping="@(LegacyFeedMapping)" />
 
     <WriteLinesToFile File="$(RepoCompletedSemaphorePath)UpdateNuGetConfig.complete" Overwrite="true" />
   </Target>
