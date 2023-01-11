@@ -10,9 +10,13 @@
     <BuildCommand>$(StandardSourceBuildCommand) $(BuildCommandArgs)</BuildCommand>
 
     <RepoApiImplemented>false</RepoApiImplemented>
-    <NuGetConfigFile>$(ProjectDirectory)NuGet.config</NuGetConfigFile>
     <DeterministicBuildOptOut>true</DeterministicBuildOptOut>
   </PropertyGroup>
+
+  <ItemGroup>
+    <NuGetConfigFiles Include="$(ProjectDirectory)NuGet.config" />
+    <NuGetConfigFiles Include="$(ProjectDirectory)/src/external/cecil/NuGet.config" />
+  </ItemGroup>
 
   <ItemGroup>
     <UseSourceBuiltSdkOverride Include="@(ArcadeSdkOverride)" />
