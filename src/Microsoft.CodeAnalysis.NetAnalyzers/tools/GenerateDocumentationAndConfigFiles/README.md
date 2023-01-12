@@ -21,8 +21,5 @@ Following are the precedence rules as per the values of these properties:
 
 2. For CAxxxx rules:
 
-   1. If `CodeAnalysisTreatWarningsAsErrors` and `TreatWarningsAsErrors` both are not set, no bulk settings to escalate or de-escalate warnings to errors is done.
-   2. If `CodeAnalysisTreatWarningsAsErrors` is set, it overrides `TreatWarningsAsErrors` to determine if CA warnings are bulk escalated to errors or not.
-   3. If `CodeAnalysisTreatWarningsAsErrors` is not set, it defaults to `TreatWarningsAsErrors`.
-   4. If final value of `CodeAnalysisTreatWarningsAsErrors = false`, we append all CA rule IDs to `WarningsNotAsErrors` to ensure they are not escalated to errors. Users can still bump individual rule IDs to errors by editorconfig/ruleset entry, etc.
-   5. If final value of `CodeAnalysisTreatWarningsAsErrors = true`, we append all CA rule IDs to `WarningsAsErrors` to ensure they are escalated to errors. We optimize it a bit more by avoiding this append if `TreatWarningsAsErrors` is also true, because then the compiler itself will take care of bumping all warnings to errors, and we don't need to pollute the command line with large number of CA rules IDs in a `/warnaserror+` switch. We expect this to be the most common case as well (`TreatWarningsAsErrors` is set by user to true, `CodeAnalysisTreatWarningsAsErrors` is never set and hence defaults to `true`), and we want to ensure we don't end up polluting the entire command line with CA rules IDs unless `TreatWarningsAsErrors` and `CodeAnalysisTreatWarningsAsErrors` have different settings.
+   1. If `CodeAnalysisTreatWarningsAsErrors` is set to true, enabled CA warnings are bulk escalated to errors by choosing the appropriate globalconfig file with the error severity settings.
+   2. Otherwise, if `TreatWarningsAsErrors` is set to true, this property translates to `/warnaserror` command line switch and the compiler bumps all warnings, including enabled CA warnings, to errors.
