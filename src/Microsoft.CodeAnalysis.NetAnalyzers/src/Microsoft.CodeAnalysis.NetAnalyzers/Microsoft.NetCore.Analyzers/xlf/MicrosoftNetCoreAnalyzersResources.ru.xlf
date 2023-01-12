@@ -2664,32 +2664,32 @@
       </trans-unit>
       <trans-unit id="UseConcreteTypeDescription">
         <source>Using concrete types avoids virtual or interface call overhead and enables inlining.</source>
-        <target state="new">Using concrete types avoids virtual or interface call overhead and enables inlining.</target>
+        <target state="translated">Использование конкретных типов позволяет избежать потребления ресурсов на виртуальные вызовы и вызовы интерфейса и включить встраивание.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseConcreteTypeForFieldMessage">
         <source>Change type of field '{0}' from '{1}' to '{2}' for improved performance</source>
-        <target state="new">Change type of field '{0}' from '{1}' to '{2}' for improved performance</target>
+        <target state="translated">Измените тип поля "{0}" с "{1}" на "{2}" для повышения производительности</target>
         <note />
       </trans-unit>
       <trans-unit id="UseConcreteTypeForLocalMessage">
         <source>Change type of variable '{0}' from '{1}' to '{2}' for improved performance</source>
-        <target state="new">Change type of variable '{0}' from '{1}' to '{2}' for improved performance</target>
+        <target state="translated">Измените тип переменной "{0}" с "{1}" на "{2}" для повышения производительности</target>
         <note />
       </trans-unit>
       <trans-unit id="UseConcreteTypeForMethodReturnMessage">
         <source>Change return type of method '{0}' from '{1}' to '{2}' for improved performance</source>
-        <target state="new">Change return type of method '{0}' from '{1}' to '{2}' for improved performance</target>
+        <target state="translated">Измените тип возвращаемого значения метода "{0}" с "{1}" на "{2}" для повышения производительности</target>
         <note />
       </trans-unit>
       <trans-unit id="UseConcreteTypeForParameterMessage">
         <source>Change type of parameter '{0}' from '{1}' to '{2}' for improved performance</source>
-        <target state="new">Change type of parameter '{0}' from '{1}' to '{2}' for improved performance</target>
+        <target state="translated">Измените тип параметра "{0}" с "{1}" на "{2}" для повышения производительности</target>
         <note />
       </trans-unit>
       <trans-unit id="UseConcreteTypeTitle">
         <source>Use concrete types when possible for improved performance</source>
-        <target state="new">Use concrete types when possible for improved performance</target>
+        <target state="translated">Используйте конкретные типы, когда это возможно, для повышения производительности</target>
         <note />
       </trans-unit>
       <trans-unit id="UseContainerLevelAccessPolicy">
