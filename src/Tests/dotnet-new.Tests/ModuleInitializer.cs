@@ -3,6 +3,7 @@
 //
 
 using System.Runtime.CompilerServices;
+using VerifyTests.DiffPlex;
 
 namespace Microsoft.DotNet.Cli.New.IntegrationTests
 {
