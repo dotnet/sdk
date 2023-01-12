@@ -329,19 +329,21 @@
         <DownloadFileName>$(WinFormsAndWpfSharedFxArchiveFileName)</DownloadFileName>
       </BundledLayoutComponent>
 
-      <BundledLayoutComponent Include="CombinedSharedHostAndFrameworkArchive">
-        <BaseUrl>$(CoreSetupRootUrl)$(CoreSetupBlobVersion)</BaseUrl>
-        <BaseUrl Condition=" '$(DotNetBuildFromSource)' == 'true' AND '$(DotNetBuildFromSourceFlavor)' == 'Product' ">$(CoreSetupRootUrl)</BaseUrl>
-        <DownloadFileName>$(CombinedFrameworkHostArchiveFileName)</DownloadFileName>
-        <RelativeLayoutPath></RelativeLayoutPath>
-      </BundledLayoutComponent>
-
       <BundledInstallerComponent Include="DownloadedWinFormsAndWpfSharedFrameworkInstallerFile"
                                  Condition="'$(SkipBuildingInstallers)' != 'true' And '$(InstallerExtension)' != '' And (!$(Architecture.StartsWith('arm')) or '$(Rid)' == 'win-arm64' or '$(Rid)' == 'osx-arm64')">
         <BaseUrl>$(WinFormsAndWpfSharedFxRootUrl)$(WindowsDesktopBlobVersion)</BaseUrl>
         <DownloadFileName>$(DownloadedWinFormsAndWpfSharedFrameworkInstallerFileName)</DownloadFileName>
       </BundledInstallerComponent>
     </ItemGroup>
+
+    <ItemGroup>
+      <BundledLayoutComponent Include="CombinedSharedHostAndFrameworkArchive">
+        <BaseUrl>$(CoreSetupRootUrl)$(CoreSetupBlobVersion)</BaseUrl>
+        <BaseUrl Condition=" '$(DotNetBuildFromSource)' == 'true' AND '$(DotNetBuildFromSourceFlavor)' == 'Product' ">$(CoreSetupRootUrl)</BaseUrl>
+        <DownloadFileName>$(CombinedFrameworkHostArchiveFileName)</DownloadFileName>
+        <RelativeLayoutPath></RelativeLayoutPath>
+      </BundledLayoutComponent>
+    </itemGroup>
 
   </Target>
 
