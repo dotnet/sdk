@@ -10,7 +10,6 @@ using Microsoft.NET.TestFramework.Commands;
 namespace Microsoft.DotNet.Cli.New.IntegrationTests
 {
     [UsesVerify]
-    [Collection("Verify Tests")]
     public partial class PostActionTests : BaseIntegrationTest
     {
         [Fact]
@@ -38,6 +37,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                     // for Linux Verify.NET replaces sub path /tmp/ to be {TempPath} wrongly
                     output.Replace("{TempPath}", "/tmp/");
                     output.Replace(workingDirectory, "%working directory%");
+                    output.UnixifyNewlines();
                     output.ScrubByRegex("(?<=Restoring %working directory%(\\\\|\\/)MyProject.csproj:\\n)(.*?)(?=\\nRestore succeeded)", "%RESTORE CALLBACK OUTPUT%", System.Text.RegularExpressions.RegexOptions.Singleline);
                 });
         }
@@ -91,6 +91,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                     // for Linux Verify.NET replaces sub path /tmp/ to be {TempPath} wrongly
                     output.Replace("{TempPath}", "/tmp/");
                     output.Replace(workingDirectory, "%working directory%");
+                    output.UnixifyNewlines();
                     output.ScrubByRegex("(?<=Adding a package reference Newtonsoft.Json \\(version: 13.0.1\\) to project file %working directory%(\\\\|\\/)MyProject.csproj:\\n)(.*?)(?=\\nSuccessfully added a reference to the project file.)", "%CALLBACK OUTPUT%", System.Text.RegularExpressions.RegexOptions.Singleline);
                 });
         }
@@ -121,6 +122,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                     // for Linux Verify.NET replaces sub path /tmp/ to be {TempPath} wrongly
                     output.Replace("{TempPath}", "/tmp/");
                     output.Replace(workingDirectory, "%working directory%");
+                    output.UnixifyNewlines();
                     output.ScrubByRegex("(?<=to project file %working directory%(\\\\|\\/)Project1(\\\\|\\/)Project1.csproj:\\n)(.*?)(?=\\nSuccessfully added a reference to the project file.)", "%CALLBACK OUTPUT%", System.Text.RegularExpressions.RegexOptions.Singleline);
                 });
         }
@@ -160,6 +162,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                     // for Linux Verify.NET replaces sub path /tmp/ to be {TempPath} wrongly
                     output.Replace("{TempPath}", "/tmp/");
                     output.Replace(workingDirectory, "%working directory%");
+                    output.UnixifyNewlines();
                     output.ScrubByRegex("(?<=solution folder: src\\n)(.*?)(?=\\nSuccessfully added project\\(s\\) to a solution file.)", "%CALLBACK OUTPUT%", System.Text.RegularExpressions.RegexOptions.Singleline);
                 });
         }
