@@ -15,6 +15,24 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
     public class HostingStartupTest
     {
         [Fact]
+        public async Task GetBlazorWorks()
+        {
+            // Arrange
+            var requestDelegate = GetRequestDelegate();
+            var context = new DefaultHttpContext();
+            context.Request.Path = "/";
+            var responseBody = new MemoryStream();
+            context.Response.Body = responseBody;
+
+            // Act
+            await requestDelegate(context);
+
+            // Assert
+            Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+            Assert.NotEmpty(responseBody.ToArray());
+        }
+        
+        [Fact]
         public async Task ClearSiteDataWorks()
         {
             // Arrange
