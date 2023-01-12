@@ -12,6 +12,7 @@ using Xunit.Abstractions;
 
 namespace Microsoft.TemplateEngine.IDE.IntegrationTests
 {
+    [Collection("Verify Tests")]
     public class SnapshotTests : TestBase
     {
         private readonly ILogger _log;
@@ -32,7 +33,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
                     TemplatePath = templateLocation,
                     SnapshotsDirectory = "Approvals"
                 }
-                    .WithInstantiationThroughTemplateCreatorApi(new Dictionary<string, string?>());
+                .WithInstantiationThroughTemplateCreatorApi(new Dictionary<string, string?>());
 
             VerificationEngine engine = new VerificationEngine(_log);
             return engine.Execute(options);
