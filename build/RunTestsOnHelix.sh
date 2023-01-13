@@ -17,7 +17,7 @@ cp -a $HELIX_CORRELATION_PAYLOAD/t/TestExecutionDirectoryFiles/. $TestExecutionD
 # call dotnet new so the first run message doesn't interfere with the first test
 dotnet new --debug:ephemeral-hive
 
-find /. -name nuget.config
+find $TestExecutionDirectory/. -name nuget.config
 dotnet nuget list source --configfile $TestExecutionDirectory/nuget.config
 dotnet nuget remove source dotnet6-transport --configfile $TestExecutionDirectory/nuget.config
 dotnet nuget remove source dotnet6-internal-transport --configfile $TestExecutionDirectory/nuget.config
@@ -36,3 +36,4 @@ export TestPackagesRoot=$(pwd)/Assets/TestPackages
 dotnet build ./Assets/TestPackages/Microsoft.NET.TestPackages.csproj /t:Build -p:VersionPropsIsImported=false
 cp $TestPackagesRoot/TestPackages/. $TestExecutionDirectory/TestPackages -R -v
 find $TestExecutionDirectory/TestPackages -name *.nupkg
+dotnet nuget add source $TestExecutionDirectory/TestPackages

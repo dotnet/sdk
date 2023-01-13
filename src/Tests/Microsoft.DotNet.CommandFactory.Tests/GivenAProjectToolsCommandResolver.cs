@@ -390,8 +390,7 @@ namespace Microsoft.DotNet.Tests
         {
             var nugetConfigPath = Path.Combine(testProjectDirectory, "NuGet.Config");
 
-            new DotnetCommand(Log).Execute("nuget", "list","source");
-            new DotnetCommand(Log).Execute("nuget", "list","source","--configfile", nugetConfigPath);
+            new DotnetCommand(Log).Execute("nuget", "list","source").WithWorkingDirectory(testProjectDirectory);
 
             new DotnetRestoreCommand(Log)
                 .WithWorkingDirectory(testProjectDirectory)
