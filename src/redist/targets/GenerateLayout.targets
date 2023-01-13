@@ -343,7 +343,7 @@
         <DownloadFileName>$(CombinedFrameworkHostArchiveFileName)</DownloadFileName>
         <RelativeLayoutPath></RelativeLayoutPath>
       </BundledLayoutComponent>
-    </itemGroup>
+    </ItemGroup>
 
   </Target>
 
