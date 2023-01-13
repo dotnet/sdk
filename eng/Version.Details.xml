@@ -3,7 +3,7 @@
   <ProductDependencies>
     <Dependency Name="Microsoft.TemplateEngine.Abstractions" Version="8.0.100-alpha.1.23061.3">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>bf9cf318137c92fa79278dfa67b33dbca870f40a</Sha>
+      <Sha>bf9cf318137c92fa79278dfa67b33dbca870f40a</Sha>RR
       <SourceBuild RepoName="templating" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.NETCore.App.Ref" Version="8.0.0-alpha.1.23059.14">
@@ -237,13 +237,13 @@
       <Sha>9a1c3e1b7f0c8763d4c96e593961a61a72679a7b</Sha>
       <SourceBuild RepoName="xdt" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.NetAnalyzers" Version="8.0.0-preview1.23059.1">
+    <Dependency Name="Microsoft.CodeAnalysis.NetAnalyzers" Version="8.0.0-preview1.23063.1">
       <Uri>https://github.com/dotnet/roslyn-analyzers</Uri>
-      <Sha>6f4bfac4c7ad970b59be66cd1d2bee75516348fc</Sha>
+      <Sha>afee469c0c862c6af3670d30a4b4e5ff6f8fe45c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.roslyn-analyzers" Version="3.3.4-beta1.23059.1">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.roslyn-analyzers" Version="3.3.4-beta1.23063.1">
       <Uri>https://github.com/dotnet/roslyn-analyzers</Uri>
-      <Sha>6f4bfac4c7ad970b59be66cd1d2bee75516348fc</Sha>
+      <Sha>afee469c0c862c6af3670d30a4b4e5ff6f8fe45c</Sha>
       <SourceBuild RepoName="roslyn-analyzers" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="System.CommandLine" Version="2.0.0-beta4.22564.1">
