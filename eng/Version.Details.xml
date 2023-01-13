@@ -109,9 +109,9 @@
       <Uri>https://github.com/microsoft/vstest</Uri>
       <Sha>eb05f0dec14e85a87ce98d2cd8a92b64d92c99c1</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.ILLink.Tasks" Version="8.0.0-alpha.1.23062.24">
-      <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>67743295d05777ce3701135afbbdb473d4fb4436</Sha>
+    <Dependency Name="Microsoft.NET.ILLink.Tasks" Version="8.0.100-1.23062.1">
+      <Uri>https://github.com/dotnet/linker</Uri>
+      <Sha>10bb5ae1476941dbdfe3afa327db01750232db8a</Sha>
       <SourceBuild RepoName="linker" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.NET.ILLink.Analyzers" Version="8.0.100-1.23062.1">
