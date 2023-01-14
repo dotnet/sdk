@@ -1,12 +1,12 @@
 {
   "author": "Test Asset",
   "classifications": [ "Test Asset" ],
-  "name": "TestAssets.PostActions.ModifyJsonFile.WithExistingProject.MyProject",
+  "name": "TestAssets.PostActions.AddJsonProperty.WithExistingProject.MyProject",
   "generatorVersions": "[1.0.0.0-*)",
-  "groupIdentity": "TestAssets.PostActions.ModifyJsonFile.WithExistingProject.MyProject",
+  "groupIdentity": "TestAssets.PostActions.AddJsonProperty.WithExistingProject.MyProject",
   "precedence": "100",
-  "identity": "TestAssets.PostActions.ModifyJsonFile.WithExistingProject.MyProject",
-  "shortName": "TestAssets.PostActions.ModifyJsonFile.WithExistingProject.MyProject",
+  "identity": "TestAssets.PostActions.AddJsonProperty.WithExistingProject.MyProject",
+  "shortName": "TestAssets.PostActions.AddJsonProperty.WithExistingProject.MyProject",
   "sourceName": "MyProject",
   "primaryOutputs": [
     {

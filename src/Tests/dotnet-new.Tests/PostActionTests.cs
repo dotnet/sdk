@@ -874,10 +874,10 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         }
 
         [Fact]
-        public void ModifyJsonFile_Basic()
+        public void AddJsonProperty_Basic()
         {
-            const string templateLocation = "PostActions/ModifyJsonFile/Basic";
-            const string templateName = "TestAssets.PostActions.ModifyJsonFile.Basic";
+            const string templateLocation = "PostActions/AddJsonProperty/Basic";
+            const string templateName = "TestAssets.PostActions.AddJsonProperty.Basic";
 
             string home = CreateTemporaryFolder(folderName: "Home");
             string workingDirectory = CreateTemporaryFolder();
@@ -896,13 +896,13 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         }
 
         [Fact]
-        public void ModifyJsonFile_InOtherProjectOfSameSolution()
+        public void AddJsonProperty_InOtherProjectOfSameSolution()
         {
-            const string existingProjectTemplateLocation = "PostActions/ModifyJsonFile/WithExistingProject/ExistingProject";
-            const string existingProjectTemplateName = "TestAssets.PostActions.ModifyJsonFile.WithExistingProject.ExistingProject";
+            const string existingProjectTemplateLocation = "PostActions/AddJsonProperty/WithExistingProject/ExistingProject";
+            const string existingProjectTemplateName = "TestAssets.PostActions.AddJsonProperty.WithExistingProject.ExistingProject";
 
-            const string myProjectTemplateLocation = "PostActions/ModifyJsonFile/WithExistingProject/MyTestProject";
-            const string myProjectTemplateName = "TestAssets.PostActions.ModifyJsonFile.WithExistingProject.MyProject";
+            const string myProjectTemplateLocation = "PostActions/AddJsonProperty/WithExistingProject/MyTestProject";
+            const string myProjectTemplateName = "TestAssets.PostActions.AddJsonProperty.WithExistingProject.MyProject";
 
             string home = CreateTemporaryFolder(folderName: "Home");
             string workingDirectory = CreateTemporaryFolder();
@@ -949,10 +949,10 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         }
 
         [Fact]
-        public void ModifyJsonFile_WithSourceNameReplacementInNewJsonProperty()
+        public void AddJsonProperty_WithSourceNameReplacementInNewJsonProperty()
         {
-            const string templateLocation = "PostActions/ModifyJsonFile/WithSourceNameChangeInJson";
-            const string templateName = "TestAssets.PostActions.ModifyJsonFile.WithSourceNameChangeInJson";
+            const string templateLocation = "PostActions/AddJsonProperty/WithSourceNameChangeInJson";
+            const string templateName = "TestAssets.PostActions.AddJsonProperty.WithSourceNameChangeInJson";
 
             string home = CreateTemporaryFolder(folderName: "Home");
             string workingDirectory = CreateTemporaryFolder();
@@ -982,10 +982,10 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         }
 
         [Fact]
-        public void ModifyJsonFile_FailsWhenJsonFileNotFound()
+        public void AddJsonProperty_FailsWhenJsonFileNotFound()
         {
-            const string templateLocation = "PostActions/ModifyJsonFile/FailsWhenJsonFileNotFound";
-            const string templateName = "TestAssets.PostActions.ModifyJsonFile.FailsWhenJsonFileNotFound";
+            const string templateLocation = "PostActions/AddJsonProperty/FailsWhenJsonFileNotFound";
+            const string templateName = "TestAssets.PostActions.AddJsonProperty.FailsWhenJsonFileNotFound";
 
             string home = CreateTemporaryFolder(folderName: "Home");
             string workingDirectory = CreateTemporaryFolder();
@@ -1005,10 +1005,10 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         }
 
         [Fact]
-        public void ModifyJsonFile_FailsWhenJsonFileNotFoundInEligableDirectories()
+        public void AddJsonProperty_FailsWhenJsonFileNotFoundInEligableDirectories()
         {
-            const string templateLocation = "PostActions/ModifyJsonFile/FailsWhenJsonFileNotFound";
-            const string templateName = "TestAssets.PostActions.ModifyJsonFile.FailsWhenJsonFileNotFound";
+            const string templateLocation = "PostActions/AddJsonProperty/FailsWhenJsonFileNotFound";
+            const string templateName = "TestAssets.PostActions.AddJsonProperty.FailsWhenJsonFileNotFound";
 
             string home = CreateTemporaryFolder(folderName: "Home");
             string workingDirectory = CreateTemporaryFolder();
