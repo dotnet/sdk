@@ -68,10 +68,8 @@ namespace Microsoft.DotNet.Tools.New.PostActionProcessors
                 return false;
             }
 
-            // args required:
-            // parent property name in json file (if not specified, assume null and add the json section to the root)
-            // optional property separation character
-            // mandatory json text that must be added.
+            // If no ParentPropertyPath is specified, the new JSON property must be added to the root of the
+            // document.
             action.Args.TryGetValue(ParentPropertyPathArgument, out string? parentProperty);
             action.Args.TryGetValue(NewJsonPropertyNameArgument, out string? newJsonPropertyName);
             action.Args.TryGetValue(NewJsonPropertyValueArgument, out string? newJsonPropertyValue);
