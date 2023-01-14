@@ -16,11 +16,11 @@ using Xunit;
 
 namespace Microsoft.DotNet.Cli.New.Tests
 {
-    public class DotnetModifyJsonPostActionTests : IClassFixture<EnvironmentSettingsHelper>
+    public class DotnetAddJsonPropertyPostActionTests : IClassFixture<EnvironmentSettingsHelper>
     {
         private readonly IEngineEnvironmentSettings _engineEnvironmentSettings;
 
-        public DotnetModifyJsonPostActionTests(EnvironmentSettingsHelper environmentSettingsHelper)
+        public DotnetAddJsonPropertyPostActionTests(EnvironmentSettingsHelper environmentSettingsHelper)
         {
             _engineEnvironmentSettings = environmentSettingsHelper.CreateEnvironment(hostIdentifier: GetType().Name, virtualize: true);
         }
