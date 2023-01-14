@@ -35,7 +35,7 @@ namespace Microsoft.DotNet.Cli.New.Tests
 
             IPostAction postAction = new MockPostAction
             {
-                ActionId = DotnetModifyJsonPostActionProcessor.ActionProcessorId,
+                ActionId = DotnetAddJsonPropertyPostActionProcessor.ActionProcessorId,
                 Args = new Dictionary<string, string>()
                 {
                     ["jsonFileName"] = "json.json",
@@ -52,7 +52,7 @@ namespace Microsoft.DotNet.Cli.New.Tests
 
             Reporter.SetError(mockReporter.Object);
 
-            DotnetModifyJsonPostActionProcessor processor = new DotnetModifyJsonPostActionProcessor();
+            DotnetAddJsonPropertyPostActionProcessor processor = new DotnetAddJsonPropertyPostActionProcessor();
 
             bool result = processor.Process(
                 _engineEnvironmentSettings,
@@ -74,7 +74,7 @@ namespace Microsoft.DotNet.Cli.New.Tests
 
             IPostAction postAction = new MockPostAction
             {
-                ActionId = DotnetModifyJsonPostActionProcessor.ActionProcessorId,
+                ActionId = DotnetAddJsonPropertyPostActionProcessor.ActionProcessorId,
                 Args = new Dictionary<string, string>()
                 {
                     ["jsonFileName"] = "json.json",
@@ -84,7 +84,7 @@ namespace Microsoft.DotNet.Cli.New.Tests
                 }
             };
 
-            DotnetModifyJsonPostActionProcessor processor = new DotnetModifyJsonPostActionProcessor();
+            DotnetAddJsonPropertyPostActionProcessor processor = new DotnetAddJsonPropertyPostActionProcessor();
 
             bool result = processor.Process(
                 _engineEnvironmentSettings,
@@ -109,7 +109,7 @@ namespace Microsoft.DotNet.Cli.New.Tests
 
             IPostAction postAction = new MockPostAction
             {
-                ActionId = DotnetModifyJsonPostActionProcessor.ActionProcessorId,
+                ActionId = DotnetAddJsonPropertyPostActionProcessor.ActionProcessorId,
                 Args = testCase.PostActionArgs
             };
 
@@ -120,7 +120,7 @@ namespace Microsoft.DotNet.Cli.New.Tests
 
             Reporter.SetError(mockReporter.Object);
 
-            DotnetModifyJsonPostActionProcessor processor = new DotnetModifyJsonPostActionProcessor();
+            DotnetAddJsonPropertyPostActionProcessor processor = new DotnetAddJsonPropertyPostActionProcessor();
 
             bool result = processor.Process(
                 _engineEnvironmentSettings,
@@ -146,11 +146,11 @@ namespace Microsoft.DotNet.Cli.New.Tests
 
             IPostAction postAction = new MockPostAction
             {
-                ActionId = DotnetModifyJsonPostActionProcessor.ActionProcessorId,
+                ActionId = DotnetAddJsonPropertyPostActionProcessor.ActionProcessorId,
                 Args = testCase.PostActionArgs
             };
 
-            DotnetModifyJsonPostActionProcessor processor = new DotnetModifyJsonPostActionProcessor();
+            DotnetAddJsonPropertyPostActionProcessor processor = new DotnetAddJsonPropertyPostActionProcessor();
 
             bool result = processor.Process(
                 _engineEnvironmentSettings,

@@ -18,7 +18,7 @@ using Microsoft.TemplateEngine.Cli.PostActionProcessors;
 
 namespace Microsoft.DotNet.Tools.New.PostActionProcessors
 {
-    internal class DotnetModifyJsonPostActionProcessor : PostActionProcessorBase
+    internal class DotnetAddJsonPropertyPostActionProcessor : PostActionProcessorBase
     {
         public override Guid Id => ActionProcessorId;
 
