@@ -982,6 +982,39 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         }
 
         [Fact]
+        public void AddJsonProperty_WithMultipleAddJsonPropertyActions()
+        {
+            const string templateLocation = "PostActions/AddJsonProperty/WithAddMultipleProperties";
+            const string templateName = "TestAssets.PostActions.AddJsonProperty.WithAddMultipleProperties";
+
+            string home = CreateTemporaryFolder(folderName: "Home");
+            string workingDirectory = CreateTemporaryFolder();
+
+            InstallTestTemplate(templateLocation, _log, home, workingDirectory);
+
+            new DotnetNewCommand(_log, templateName, "-n", "TheProjectName")
+                .WithCustomHive(home)
+                .WithWorkingDirectory(workingDirectory)
+                .Execute()
+                .Should()
+                .ExitWith(0)
+                .And.NotHaveStdErr()
+                .And.HaveStdOutContaining($"The template \"{templateName}\" was created successfully.")
+                .And.HaveStdOutContaining("Successfully modified testfile.json.")
+                .And.NotHaveStdOutContaining("Manual instructions: Modify the JSON file manually.");
+
+            // Verify if the expected property is added to the deployment.template.json file
+            string jsonFileContents = File.ReadAllText(Path.Combine(workingDirectory, "testfile.json"));
+
+            JsonNode? jsonContents = JsonNode.Parse(jsonFileContents);
+            Assert.NotNull(jsonContents);
+
+            Assert.NotNull(jsonContents["root"]?["prop1"]);
+            Assert.NotNull(jsonContents["root"]?["prop1"]?["prop2"]);
+            Assert.Equal("bar", jsonContents["root"]?["prop1"]?["prop2"]?.ToString());
+        }
+
+        [Fact]
         public void AddJsonProperty_FailsWhenJsonFileNotFound()
         {
             const string templateLocation = "PostActions/AddJsonProperty/FailsWhenJsonFileNotFound";

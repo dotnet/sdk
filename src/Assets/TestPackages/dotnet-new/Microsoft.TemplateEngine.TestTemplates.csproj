@@ -21,4 +21,9 @@
     <Content Include="nupkg_templates\**" />
     <None Include="nupkg_templates\**" CopyToOutputDirectory="Always" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Remove="test_templates\PostActions\AddJsonProperty\WithAddMultipleProperties\.template.config\template.json" />
+    <Content Remove="test_templates\PostActions\AddJsonProperty\WithAddMultipleProperties\MyTestProject.csproj" />
+    <Content Remove="test_templates\PostActions\AddJsonProperty\WithAddMultipleProperties\testfile.json" />
+  </ItemGroup>
 </Project>
