@@ -16,8 +16,8 @@ namespace Microsoft.DotNet.SourceBuild.Tasks.UsageReport
 {
     public class WriteUsageReports : Task
     {
-        private const string SnapshotPrefix = "PackageVersions.props.pre.";
-        private const string SnapshotSuffix = ".xml";
+        private const string SnapshotPrefix = "PackageVersions.";
+        private const string SnapshotSuffix = ".Current.props";
 
         /// <summary>
         /// Source usage data JSON file.
@@ -26,7 +26,7 @@ namespace Microsoft.DotNet.SourceBuild.Tasks.UsageReport
         public string DataFile { get; set; }
 
         /// <summary>
-        /// A set of "PackageVersions.props.pre.{repo}.xml" files. They are analyzed to find
+        /// A set of "PackageVersions.{repo}.Current.props" files. They are analyzed to find
         /// packages built during source-build, and which repo built them. This info is added to the
         /// report. New packages are associated to a repo by going through each PVP in ascending
         /// file modification order.
@@ -114,7 +114,7 @@ namespace Microsoft.DotNet.SourceBuild.Tasks.UsageReport
                     string id = usage.PackageIdentity.Id;
                     string version = usage.PackageIdentity.Version.OriginalVersion;
 
-                    string pvpIdent = WriteBuildOutputProps.GetPropertyName(id);
+                    string pvpIdent = WritePackageVersionsProps.GetPropertyName(id, WritePackageVersionsProps.VersionPropertySuffix);
 
                     var sourceBuildCreator = new StringBuilder();
                     foreach (RepoOutput output in sourceBuildRepoOutputs)
@@ -200,7 +200,7 @@ namespace Microsoft.DotNet.SourceBuild.Tasks.UsageReport
                         // Get the creation time element.
                         ?.Element(snapshot.Xml
                             .GetDefaultNamespace()
-                            .GetName(WriteBuildOutputProps.CreationTimePropertyName))
+                            .GetName(WritePackageVersionsProps.CreationTimePropertyName))
                         ?.Value;
 
                     if (string.IsNullOrEmpty(creationTime))
