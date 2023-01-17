@@ -443,6 +443,7 @@ namespace Microsoft.NET.Publish.Tests
             };
             referenceProject.SourceFiles[$"{referenceProjectName}.cs"] = @"
 using System;
+#pragma warning disable CA1050
 public class Classlib
 {
     public string Func()

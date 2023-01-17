@@ -1808,6 +1808,7 @@ namespace Microsoft.NET.Publish.Tests
 using System;
 using System.Reflection;
 using System.Diagnostics.CodeAnalysis;
+#pragma warning disable CA1050 // Declare types in namespaces
 public class Program
 {
     public static void Main()
