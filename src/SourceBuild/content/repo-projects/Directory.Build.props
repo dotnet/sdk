@@ -22,6 +22,12 @@
       Repo specific semaphore path for incremental build
     -->
     <RepoCompletedSemaphorePath>$(CompletedSemaphorePath)$(RepositoryName)/</RepoCompletedSemaphorePath>
+
+    <!-- Paths to the version props files -->
+    <CurrentSourceBuiltPackageVersionPropsPath>$(IntermediatePath)PackageVersions.$(RepositoryName).Current.props</CurrentSourceBuiltPackageVersionPropsPath>
+    <PreviouslySourceBuiltPackageVersionPropsPath>$(IntermediatePath)PackageVersions.$(RepositoryName).Previous.props</PreviouslySourceBuiltPackageVersionPropsPath>
+    <PackageVersionPropsPath>$(IntermediatePath)PackageVersions.$(RepositoryName).props</PackageVersionPropsPath>
+    <PackageVersionPropsFlowType>AllPackages</PackageVersionPropsFlowType>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(OS)' == 'Windows_NT'">
@@ -39,7 +45,7 @@
 
   <!-- A human-readable description of what's building and why. -->
   <PropertyGroup>
-    <ProjectBuildReason>'$(RepositoryName) in tarball'</ProjectBuildReason>
+    <ProjectBuildReason>'$(RepositoryName)'</ProjectBuildReason>
   </PropertyGroup>
 
   <ItemGroup>
@@ -68,7 +74,6 @@
 
     <EnvironmentVariables Include="PreReleaseVersionLabel=$(PreReleaseVersionLabel)" />
     <EnvironmentVariables Include="PackageVersionStamp=$(PreReleaseVersionLabel)" />
-    <EnvironmentVariables Include="PB_VersionStamp=$(PreReleaseVersionLabel)" />
 
     <!-- We pass '-ci', but also apply ci mode via env var for edge cases. (E.g. misbehaving inner builds.) -->
     <EnvironmentVariables Include="ContinuousIntegrationBuild=true" />

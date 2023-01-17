@@ -9,7 +9,6 @@
   <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="NuGetPack" />
   <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="ZipFileExtractToDirectory" />
   <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="ReplaceTextInFile" />
-  <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="ReplaceRegexInFiles" />
 
   <ItemGroup>
     <BuildTasksTarget Include="Restore;Build;InstallResolver" />
@@ -23,7 +22,6 @@
     <CallTarget Targets="
       UnpackTarballs;
       BuildXPlatTasks;
-      PatchPackageVersions;
       BuildLeakDetection;
       ExtractToolPackage;
       GenerateRootFs;
@@ -67,37 +65,6 @@
 
     <Copy SourceFiles="@(UnpackedSourceBuildReferencePackages)" DestinationFiles="$(ReferencePackagesDir)%(Filename)%(Extension)" />
 
-    <!-- remove some reference packages that are generated incorrectly and instead use the prebuilt checked-in version instead -->
-    <!-- relevant issues: https://github.com/dotnet/runtime/issues/44646, https://github.com/dotnet/runtime/issues/45183,
-         https://github.com/dotnet/runtime/issues/45417.   this should be fixed for the 6.0 release.                           -->
-    <ItemGroup>
-      <PrebuiltPackagesToUse Include="$(PrebuiltPackagesPath)/*.nupkg" />
-      <ReferencePackagesToOverride Include="@(PrebuiltPackagesToUse -> '$(ReferencePackagesDir)/%(Filename)%(Extension)')" />
-    </ItemGroup>
-
-    <Message Text="Overriding @(ReferencePackagesToOverride) with @(PrebuiltPackagesToUse)" Importance="High" />
-
-    <Delete Files="@(ReferencePackagesToOverride)" />
-
-    <!-- Setup the PackageVersions.props file to be a combination of source built and previously source built packages -->
-    <Copy SourceFiles="$(PrebuiltSourceBuiltPackagesPath)PackageVersions.props" DestinationFiles="$(IntermediatePath)PreviouslySourceBuiltPackageVersions.props" />
-
-    <PropertyGroup>
-      <PackageVersionsPropsFile>$(IntermediatePath)PackageVersions.props</PackageVersionsPropsFile>
-      <PackageVersionsPropsContents>
-        <![CDATA[<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="PreviouslySourceBuiltPackageVersions.props" Condition="Exists('PreviouslySourceBuiltPackageVersions.props')" />
-  <Import Project="CurrentSourceBuiltPackageVersions.props" Condition="Exists('CurrentSourceBuiltPackageVersions.props')" />
-</Project>
-]]>
-      </PackageVersionsPropsContents>
-    </PropertyGroup>
-
-    <WriteLinesToFile File="$(PackageVersionsPropsFile)"
-                      Lines="$(PackageVersionsPropsContents)"
-                      Overwrite="true" />
-
     <WriteLinesToFile File="$(CompletedSemaphorePath)UnpackTarballs.complete" Overwrite="true" />
   </Target>
 
@@ -117,16 +84,6 @@
         __ToolInitPhase=%(BuildTasksTarget.Identity)" />
 
     <WriteLinesToFile File="$(CompletedSemaphorePath)BuildXPlatTasks.complete" Overwrite="true" />
-  </Target>
-
-  <!-- TODO: Remove this when the .NET 8 artifacts tarball no longer includes MicrosoftAspNetCoreAppRuntimePackageVersion -->
-  <Target Name="PatchPackageVersions">
-    <!-- Rename MicrosoftAspNetCoreAppRuntimePackageVersion so it isn't used
-         Fixes https://github.com/dotnet/installer/issues/14492 -->
-    <ReplaceRegexInFiles
-      InputFiles="$(IntermediatePath)PreviouslySourceBuiltPackageVersions.props"
-      OldTextRegex="\bMicrosoftAspNetCoreAppRuntimePackageVersion\b"
-      NewText="__unused" />
   </Target>
 
   <Target Name="BuildLeakDetection"
