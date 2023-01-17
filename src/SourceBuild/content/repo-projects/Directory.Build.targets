@@ -13,14 +13,13 @@
   <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="UpdateJson" />
   <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="UpdateNuGetConfigPackageSourcesMappings" />
   <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="ValidateUsageAgainstBaseline" />
-  <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="WriteBuildOutputProps" />
+  <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="WritePackageVersionsProps" />
   <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="WritePackageUsageData" />
-  <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="WriteRestoreSourceProps" />
-  <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="WriteRestoreSourceAndVersionProps" />
   <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="WriteUsageReports" />
   <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="WriteVersionsFile" />
   <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="ZipFileExtractToDirectory" />
   <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="ReplaceTextInFile" />
+  <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="ReplaceRegexInFiles" />
 
   <!--
     Central property to define that a repo doesn't implement any of the Repo API. If a repo adds an
@@ -54,7 +53,6 @@
   </PropertyGroup>
   <!-- Source override arguments -->
   <PropertyGroup Condition="'$(SourceOverrideRepoApiImplemented)' == 'true'">
-    <RepoApiArgs>$(RepoApiArgs) /p:DotNetRestoreSourcePropsPath=$(RestoreSourcePropsPath)</RepoApiArgs>
     <RepoApiArgs>$(RepoApiArgs) /p:DotNetBuildOffline=true</RepoApiArgs>
   </PropertyGroup>
   <!-- Output placement arguments -->
@@ -150,7 +148,7 @@
                        NewText="_InitializeBuildToolFramework=&quot;%24{_OverrideArcadeInitializeBuildToolFramework-netcoreapp3.1}&quot;" />
 
     <!-- Temporary workaround for when the ci option is specified, non-zero exit are swallowed which prevents builds from failing within 
-         the tarball build preocess.  https://github.com/dotnet/source-build/issues/2307 -->
+         the build process.  https://github.com/dotnet/source-build/issues/2307 -->
     <ReplaceTextInFile InputFile="$(EngCommonToolsShFile)"
                        OldText="ExitWithExitCode 0"
                        NewText="ExitWithExitCode $exit_code" />
@@ -170,10 +168,8 @@
       <ReferencePackagesNuGetSourceName>reference-packages</ReferencePackagesNuGetSourceName>
       <SourceBuiltNuGetSourceName>source-built</SourceBuiltNuGetSourceName>
       <ExtraSourcesNuGetSourceName>ExtraSources</ExtraSourcesNuGetSourceName>
-      <DotNet5InternalTransportNuGetSourceName>dotnet5-internal-transport</DotNet5InternalTransportNuGetSourceName>
       <SourceBuildSources>$(PrebuiltNuGetSourceName);$(PreviouslySourceBuiltNuGetSourceName);$(ReferencePackagesNuGetSourceName);$(SourceBuiltNuGetSourceName)</SourceBuildSources>
       <SourceBuildSources Condition="'$(ExtraRestoreSourcePath)' != ''">$(SourceBuildSources);$(ExtraSourcesNuGetSourceName)</SourceBuildSources>
-      <SourceBuildSources Condition="'$(VSS_NUGET_EXTERNAL_FEED_ENDPOINTS)' != '' and '$(SetUpInternalTransportFeed)' == 'true'">$(SourceBuildSources);$(DotNet5InternalTransportNuGetSourceName)</SourceBuildSources>
     </PropertyGroup>
 
     <!-- Update the detected or manually specified NuGetConfigFile, but also allow multiple. -->
@@ -210,77 +206,10 @@
                             SourcePath="$(ExtraRestoreSourcePath)"
                             Condition="'$(ExtraRestoreSourcePath)' != ''" />
 
-    <!--
-      The internal transport feed is dynamically added by Arcade by a script called directly in the
-      official pipeline, so in some cases we need to do the same here.
-    -->
-    <AddSourceToNuGetConfig
-      Condition="
-        '$(VSS_NUGET_EXTERNAL_FEED_ENDPOINTS)' != '' and
-        '$(SetUpInternalTransportFeed)' == 'true'"
-      NuGetConfigFile="%(NuGetConfigFiles.Identity)"
-      SourceName="$(DotNet5InternalTransportNuGetSourceName)"
-      SourcePath="https://pkgs.dev.azure.com/dnceng/internal/_packaging/dotnet5-internal-transport/nuget/v3/index.json" />
-
     <UpdateNuGetConfigPackageSourcesMappings
       NuGetConfigFile="%(NuGetConfigFiles.Identity)"
       BuildWithOnlineSources="$(BuildWithOnlineSources)"
       SourceBuildSources="$(SourceBuildSources)" />
-
-    <!-- Update NuGet.Config files that have deprecated myget feeds -->
-    <ItemGroup>
-      <LegacyFeedMapping
-        Include="https://dotnet.myget.org/F/nuget-build/api/v3/index.json"
-        NewFeed="https://pkgs.dev.azure.com/dnceng/public/_packaging/nuget-build/nuget/v3/index.json" />
-      <LegacyFeedMapping
-        Include="https://www.myget.org/F/nugetbuild/api/v3/index.json"
-        NewFeed="https://pkgs.dev.azure.com/dnceng/public/_packaging/nuget-build/nuget/v3/index.json" />
-      <LegacyFeedMapping
-        Include="https://dotnet.myget.org/F/dotnet-corefxlab/api/v3/index.json"
-        NewFeed="https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-experimental/nuget/v3/index.json" />
-      <LegacyFeedMapping
-        Include="https://dotnet.myget.org/F/dotnet-core/api/v3/index.json"
-        NewFeed="https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json" />
-      <LegacyFeedMapping
-        Include="https://dotnet.myget.org/F/vstest/api/v3/index.json"
-        NewFeed="https://pkgs.dev.azure.com/dnceng/public/_packaging/test-tools/nuget/v3/index.json" />
-      <LegacyFeedMapping
-        Include="https://dotnet.myget.org/F/mstestv2/auth/1e768268-8c95-4e7e-9fd2-0eb1b1b69b18/api/v3/index.json"
-        NewFeed="https://pkgs.dev.azure.com/dnceng/public/_packaging/test-tools/nuget/v3/index.json" />
-      <LegacyFeedMapping
-        Include="https://dotnet.myget.org/F/roslyn/api/v3/index.json"
-        NewFeed="https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5/nuget/v3/index.json" />
-      <LegacyFeedMapping
-        Include="https://dotnet.myget.org/F/roslyn-tools/api/v3/index.json"
-        NewFeed="https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5/nuget/v3/index.json" />
-      <LegacyFeedMapping
-        Include="https://dotnet.myget.org/F/roslyn-analyzers/api/v3/index.json"
-        NewFeed="https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5/nuget/v3/index.json" />
-      <LegacyFeedMapping
-        Include="https://dotnet.myget.org/F/roslyn-master-nightly/api/v3/index.json"
-        NewFeed="https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5/nuget/v3/index.json" />
-      <LegacyFeedMapping
-        Include="https://dotnet.myget.org/F/symreader-converter/api/v3/index.json"
-        NewFeed="https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-tools/nuget/v3/index.json" />
-      <LegacyFeedMapping
-        Include="https://dotnet.myget.org/F/interactive-window/api/v3/index.json"
-        NewFeed="https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-tools/nuget/v3/index.json" />
-      <LegacyFeedMapping
-        Include="https://dotnet.myget.org/F/mstestv2/api/v3/index.json"
-        NewFeed="https://pkgs.dev.azure.com/dnceng/public/_packaging/test-tools/nuget/v3/index.json" />
-      <LegacyFeedMapping
-        Include="https://dotnet.myget.org/F/vsunittesting/api/v3/index.json"
-        NewFeed="https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-tools/nuget/v3/index.json" />
-      <LegacyFeedMapping
-        Include="https://dotnet.myget.org/F/msbuild/api/v3/index.json"
-        NewFeed="https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5/nuget/v3/index.json" />
-      <LegacyFeedMapping
-        Include="https://dotnet.myget.org/F/dotnet-buildtools/api/v3/index.json"
-        NewFeed="https://pkgs.dev.azure.com/dnceng/public/_packaging/myget-legacy/nuget/v3/index.json" />
-    </ItemGroup>
-
-    <ReplaceFeedsInNugetConfig InputFile="%(NuGetConfigFiles.Identity)"
-                               FeedMapping="@(LegacyFeedMapping)" />
 
     <WriteLinesToFile File="$(RepoCompletedSemaphorePath)UpdateNuGetConfig.complete" Overwrite="true" />
   </Target>
@@ -303,59 +232,67 @@
     <WriteLinesToFile File="$(RepoCompletedSemaphorePath)UpdateGlobalJsonVersions.complete" Overwrite="true" />
   </Target>
 
-  <Target Name="CreateBuildOutputProps"
+  <!-- Before a repository builds, set up the version property files that override the repo's defaults.
+       There are 3 files generated -->
+  <Target Name="CreateBuildInputProps"
           BeforeTargets="Build"
           Inputs="$(MSBuildProjectFullPath)"
-          Outputs="$(RepoCompletedSemaphorePath)CreateBuildOutputProps.complete">
+          Outputs="$(RepoCompletedSemaphorePath)CreateBuildInputProps.complete">
+
+    <ItemGroup>
+      <_CurrentSourceBuiltPackages Include="$(SourceBuiltPackagesPath)*.nupkg"
+                                   Exclude="$(SourceBuiltPackagesPath)*.symbols.nupkg" />
+      <_PreviouslyBuiltSourceBuiltPackages Include="$(PrebuiltSourceBuiltPackagesPath)*.nupkg" />
+                                      
+      <_CurrentAdditionalAssetDirs Include="$(SourceBuiltToolsetDir)" Condition="Exists('$(SourceBuiltToolsetDir)')" />
+    </ItemGroup>
+
+    <Error Condition="'$(PackageVersionPropsFlowType)' != 'AllPackages' and '$(PackageVersionPropsFlowType)' != 'DependenciesOnly'"
+      Text="Invalid PackageVersionPropsFlowType '$(PackageVersionPropsFlowType)'. Must be 'AllPackages' or 'DependenciesOnly'." />
+
     <PropertyGroup>
-      <_PackageVersionPropsBackupPath>$(PackageVersionPropsPath).pre.$(RepositoryName).xml</_PackageVersionPropsBackupPath>
+      <_VersionDetailsXml Condition="'$(PackageVersionPropsFlowType)' == 'DependenciesOnly'">$(ProjectDirectory)/eng/Version.Details.xml</_VersionDetailsXml>
     </PropertyGroup>
 
-    <ItemGroup>
-      <PreviouslySourceBuiltPackages Include="$(SourceBuiltPackagesPath)*.nupkg"
-                                      Exclude="$(SourceBuiltPackagesPath)*.symbols.nupkg" />
-      <_AdditionalAssetDirs Include="$(SourceBuiltToolsetDir)" Condition="Exists('$(SourceBuiltToolsetDir)')" />
-    </ItemGroup>
-
-    <WriteBuildOutputProps NuGetPackages="@(PreviouslySourceBuiltPackages)"
+    <!-- Write the build input properties, then save off a copy that will be used for generating usage reports later -->
+    <WritePackageVersionsProps NuGetPackages="@(_CurrentSourceBuiltPackages)"
                            ExtraProperties="@(ExtraPackageVersionPropsPackageInfo)"
-                           AdditionalAssetDirs="@(_AdditionalAssetDirs)"
+                           VersionPropsFlowType="$(PackageVersionPropsFlowType)"
+                           VersionDetails="$(_VersionDetailsXml)"
+                           AdditionalAssetDirs="@(_CurrentAdditionalAssetDirs)"
                            OutputPath="$(CurrentSourceBuiltPackageVersionPropsPath)" />
 
-    <WriteBuildOutputProps NuGetPackages="@(PreviouslySourceBuiltPackages)"
-                           IncludeCreationTimeProperty="true"
-                           OutputPath="$(_PackageVersionPropsBackupPath)" />
+    <!-- Create previously source-built inputs info -->
+    <WritePackageVersionsProps NuGetPackages="@(_PreviouslyBuiltSourceBuiltPackages)"
+                          VersionPropsFlowType="$(PackageVersionPropsFlowType)"
+                          VersionDetails="$(_VersionDetailsXml)"
+                          OutputPath="$(PreviouslySourceBuiltPackageVersionPropsPath)" />
 
-    <Message Importance="High" Text="$(RepositoryName) using package version properties saved at $(_PackageVersionPropsBackupPath) " />
+    <!-- Rename MicrosoftAspNetCoreAppRuntimePackageVersion so it isn't used
+         Fixes https://github.com/dotnet/installer/issues/14492 -->
+    <ReplaceRegexInFiles InputFiles="$(PreviouslySourceBuiltPackageVersionPropsPath)"
+                         OldTextRegex="\bMicrosoftAspNetCoreAppRuntimePackageVersion\b"
+                         NewText="__unused" />
 
-    <ReadNuGetPackageInfos PackagePaths="@(PreviouslySourceBuiltPackages)">
-      <Output TaskParameter="PackageInfoItems" ItemName="_PreviouslySourceBuiltPackageInfos" />
-    </ReadNuGetPackageInfos>
+    <!-- Write a single file that contains imports for both the current and previously built packages -->
+    <PropertyGroup>
+      <PackageVersionsPropsContents>
+        <![CDATA[<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(PreviouslySourceBuiltPackageVersionPropsPath)" />
+  <Import Project="$(CurrentSourceBuiltPackageVersionPropsPath)" />
+</Project>
+]]>
+      </PackageVersionsPropsContents>
+    </PropertyGroup>
 
-    <WriteLinesToFile File="$(RepoCompletedSemaphorePath)CreateBuildOutputProps.complete" Overwrite="true" />
-  </Target>
+    <WriteLinesToFile File="$(PackageVersionPropsPath)"
+                      Lines="$(PackageVersionsPropsContents)"
+                      Overwrite="true" />
 
-  <Target Name="CreateCombinedRestoreSourceAndVersionProps"
-          BeforeTargets="Build"
-          Inputs="$(MSBuildProjectFullPath)"
-          Outputs="$(RepoCompletedSemaphorePath)CreateCombinedRestoreSourceAndVersionProps.complete">
-    <ItemGroup>
-      <_DotNetRestoreSources Include="$(ExtraRestoreSourcePath)" Condition="'$(ExtraRestoreSourcePath)' != ''"/>
-      <_DotNetRestoreSources Include="$(SourceBuiltPackagesPath)" />
-      <_DotNetRestoreSources Include="$(ReferencePackagesDir)"/>
-      <_DotNetRestoreSources Include="$(PrebuiltPackagesPath)"/>
-      <_DotNetRestoreSources Include="$(PrebuiltSourceBuiltPackagesPath)"/>
-      <PreviouslySourceBuiltPackages Include="$(SourceBuiltPackagesPath)*.nupkg"
-                                      Exclude="$(SourceBuiltPackagesPath)*.symbols.nupkg" />
-      <_AdditionalAssetDirs Include="$(SourceBuiltToolsetDir)" Condition="Exists('$(SourceBuiltToolsetDir)')" />
-    </ItemGroup>
-    <WriteRestoreSourceAndVersionProps NuGetPackages="@(PreviouslySourceBuiltPackages)"
-                                       ExtraProperties="@(ExtraPackageVersionPropsPackageInfo)"
-                                       AdditionalAssetDirs="@(_AdditionalAssetDirs)"
-                                       RestoreSources="@(_DotNetRestoreSources)"
-                                       OutputPath="$(RestoreSourcePropsPath)" />
+    <Message Importance="High" Text="$(RepositoryName) using package version properties saved at $(CurrentSourceBuiltPackageVersionPropsPath) and $(PreviouslySourceBuiltPackageVersionPropsPath)" />
 
-    <WriteLinesToFile File="$(RepoCompletedSemaphorePath)CreateCombinedRestoreSourceAndVersionProps.complete" Overwrite="true" />
+    <WriteLinesToFile File="$(RepoCompletedSemaphorePath)CreateBuildInputProps.complete" Overwrite="true" />
   </Target>
 
   <Target Name="Build"
@@ -641,7 +578,7 @@
     <ItemGroup>
       <_PackagesNotCreatedReason Include="^ There may have been a silent failure in the submodule build. To confirm, check the build log file for undetected errors that may have prevented package creation: $(RepoConsoleLogFile)" />
       <_PackagesNotCreatedReason Include="^ This error might be a false positive if $(RepositoryName) intentionally builds no nuget packages. If so, set the SkipEnsurePackagesCreated property to true in $(MSBuildProjectFullPath)" />
-      <_PackagesNotCreatedReason Include="^ The 'bin' directory might be dirty from a previous build and the package files already existed. If so, perform a clean build, or check which packages were already in 'bin' by opening $(_PackageVersionPropsBackupPath)" />
+      <_PackagesNotCreatedReason Include="^ The 'bin' directory might be dirty from a previous build and the package files already existed. If so, perform a clean build, or check which packages were already in 'bin' by opening $(CurrentSourceBuiltPackageVersionPropsPath)" />
       <_PackagesNotCreatedReason Include="^ The packages may have been written to an unexpected directory. For example, some repos used bin/ and changed to artifacts/ to match Arcade. Check PackagesOutput in $(MSBuildProjectFullPath) (currently '$(PackagesOutput)')" />
     </ItemGroup>
 
@@ -702,7 +639,7 @@
       <AllRestoredPackageFiles Include="$(LocalNuGetPackagesRoot)**/*.nupkg" />
       <AllRestoredPackageFiles Include="$(PackagesDir)**/*.nupkg" />
 
-      <!-- Only contains packages when building a tarball. -->
+      <!-- Only contains packages when building. -->
       <TarballPrebuiltPackageFiles Include="$(PrebuiltPackagesPath)*.nupkg" />
 
       <SourceBuiltPackageFiles Include="$(SourceBuiltBlobFeedDir)**/*.nupkg" />

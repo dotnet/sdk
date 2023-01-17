@@ -102,19 +102,14 @@ fi
 if [ -f "${packagesArchiveDir}archiveArtifacts.txt" ]; then
   ARCHIVE_ERROR=0
   if [ ! -d "$SCRIPT_ROOT/.dotnet" ] && [ "$CUSTOM_SDK_DIR" == "" ]; then
-    echo "ERROR: SDK not found at $SCRIPT_ROOT/.dotnet"
+    echo "ERROR: SDK not found at '$SCRIPT_ROOT/.dotnet'. Either run prep.sh to acquire one or specify one via the --with-sdk parameter."
     ARCHIVE_ERROR=1
   fi
   if [ ! -f ${packagesArchiveDir}Private.SourceBuilt.Artifacts*.tar.gz ] && [ "$CUSTOM_PACKAGES_DIR" == "" ]; then
-    echo "ERROR: Private.SourceBuilt.Artifacts artifact not found at $packagesArchiveDir - Either run prep.sh or pass --with-packages parameter"
+    echo "ERROR: Private.SourceBuilt.Artifacts artifact not found at '$packagesArchiveDir'. Either run prep.sh to acquire it or specify one via the --with-packages parameter."
     ARCHIVE_ERROR=1
   fi
   if [ $ARCHIVE_ERROR == 1 ]; then
-    echo ""
-    echo "    Errors detected in tarball. To prep the tarball, run prep.sh while online to install an SDK"
-    echo "    and Private.SourceBuilt.Artifacts tarball.  After prepping the tarball, the tarball  can be"
-    echo "    built offline.  As an alternative to prepping the tarball, these assets can be provided using"
-    echo "    the --with-sdk and --with-packages parameters"
     exit 1
   fi
 fi
@@ -161,7 +156,7 @@ if [[ $arcadeSdkLine =~ $versionPattern ]]; then
   export ARCADE_BOOTSTRAP_VERSION=${BASH_REMATCH[1]}
 
   # Ensure that by default, the bootstrap version of the Arcade SDK is used. Source-build infra
-  # projects use bootstrap Arcade SDK, and would fail to find it in the tarball build. The repo
+  # projects use bootstrap Arcade SDK, and would fail to find it in the build. The repo
   # projects overwrite this so that they use the source-built Arcade SDK instad.
   export SOURCE_BUILT_SDK_ID_ARCADE=Microsoft.DotNet.Arcade.Sdk
   export SOURCE_BUILT_SDK_VERSION_ARCADE=$ARCADE_BOOTSTRAP_VERSION

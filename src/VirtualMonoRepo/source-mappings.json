@@ -108,7 +108,10 @@
         {
             "name": "nuget-client",
             "defaultRemote": "https://github.com/NuGet/NuGet.Client",
-            "defaultRef": "dev"
+            "defaultRef": "dev",
+            "exclude":[
+                "src/NuGet.Clients/NuGet.VisualStudio.Client"
+            ]
         },
         {
             "name": "razor",

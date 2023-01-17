@@ -53,8 +53,8 @@
         <RepositoryReference Include="aspnetcore" />
         <RepositoryReference Include="deployment-tools" />
         <RepositoryReference Include="format" />
-        <RepositoryReference Include="nuget-client" />
         <RepositoryReference Include="templating" />
+        <RepositoryReference Include="nuget-client" />
         <RepositoryReference Include="test-templates" />
 
         <!-- Tier 5 -->
