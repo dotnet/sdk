@@ -341,7 +341,8 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier
                 .WithCustomOrVirtualHive(customHiveLocation)
                 .WithCustomExecutablePath(options.DotnetExecutablePath)
                 .WithEnvironmentVariables(options.Environment)
-                .WithWorkingDirectory(workingDir);
+                .WithWorkingDirectory(workingDir)
+                .WithNoUpdateCheck();
 
             var result = commandRunner.RunCommand(command);
             // Cleanup, unless the settings dir was externally passed
