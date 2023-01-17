@@ -82,33 +82,5 @@ namespace Microsoft.TemplateEngine.Cli
                     return base.TryGetHostParamDefault(paramName, out value);
             }
         }
-
-        [Obsolete("Use " + nameof(Logger) + " instead")]
-        void ITemplateEngineHost.LogDiagnosticMessage(string message, string category, params string[] details)
-        {
-            //do nothing if used
-            //DefaultTemplateEngineHost may log these messages to Console
-        }
-
-        [Obsolete("Use " + nameof(Logger) + " instead")]
-        void ITemplateEngineHost.LogTiming(string label, TimeSpan duration, int depth)
-        {
-            //do nothing if used
-            //DefaultTemplateEngineHost may log these messages to Console
-        }
-
-        [Obsolete("Use " + nameof(Logger) + " instead")]
-        void ITemplateEngineHost.LogMessage(string message)
-        {
-            //do nothing if used
-            //DefaultTemplateEngineHost may log these messages to Console
-        }
-
-        [Obsolete("Use CreationStatusResult instead")]
-        bool ITemplateEngineHost.OnPotentiallyDestructiveChangesDetected(IReadOnlyList<IFileChange> changes, IReadOnlyList<IFileChange> destructiveChanges)
-        {
-            //return false to return TemplateCreationResult with CreationResultStatus.DestructiveChangesDetected status.
-            return false;
-        }
     }
 }
