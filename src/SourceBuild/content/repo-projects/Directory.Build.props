@@ -22,6 +22,12 @@
       Repo specific semaphore path for incremental build
     -->
     <RepoCompletedSemaphorePath>$(CompletedSemaphorePath)$(RepositoryName)/</RepoCompletedSemaphorePath>
+
+    <!-- Paths to the version props files -->
+    <CurrentSourceBuiltPackageVersionPropsPath>$(IntermediatePath)PackageVersions.$(RepositoryName).Current.props</CurrentSourceBuiltPackageVersionPropsPath>
+    <PreviouslySourceBuiltPackageVersionPropsPath>$(IntermediatePath)PackageVersions.$(RepositoryName).Previous.props</PreviouslySourceBuiltPackageVersionPropsPath>
+    <PackageVersionPropsPath>$(IntermediatePath)PackageVersions.$(RepositoryName).props</PackageVersionPropsPath>
+    <PackageVersionPropsFlowType>AllPackages</PackageVersionPropsFlowType>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(OS)' == 'Windows_NT'">
