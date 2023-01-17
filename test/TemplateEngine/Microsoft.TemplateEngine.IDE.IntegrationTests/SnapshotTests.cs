@@ -31,7 +31,10 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
                 new TemplateVerifierOptions(templateName: "TestAssets.TemplateWithPreferDefaultName")
                 {
                     TemplatePath = templateLocation,
-                    SnapshotsDirectory = "Approvals"
+                    SnapshotsDirectory = "Approvals",
+                    DoNotPrependTemplateNameToScenarioName = true,
+                    DoNotAppendTemplateArgsToScenarioName = true,
+                    ScenarioName = "Basic"
                 }
                 .WithInstantiationThroughTemplateCreatorApi(new Dictionary<string, string?>());
 
