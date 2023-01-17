@@ -56,7 +56,7 @@ Microsoft.TemplateEngine.TestHelper.MonitoredFileSystem.WatchFileChanges(string!
 Microsoft.TemplateEngine.TestHelper.MonitoredFileSystem.WriteAllText(string! path, string! value) -> void
 Microsoft.TemplateEngine.TestHelper.PackageManager
 Microsoft.TemplateEngine.TestHelper.PackageManager.Dispose() -> void
-Microsoft.TemplateEngine.TestHelper.PackageManager.GetNuGetPackage(string! templatePackName, string? version = null, NuGet.Versioning.NuGetVersion? minimumVersion = null, NuGet.Common.ILogger? logger = null) -> System.Threading.Tasks.Task<string!>!
+Microsoft.TemplateEngine.TestHelper.PackageManager.GetNuGetPackage(string! templatePackName, string? version = null, NuGet.Versioning.NuGetVersion? minimumVersion = null, NuGet.Common.ILogger? logger = null, string? downloadDirectory = null) -> System.Threading.Tasks.Task<string!>!
 Microsoft.TemplateEngine.TestHelper.PackageManager.PackageManager() -> void
 Microsoft.TemplateEngine.TestHelper.PackageManager.PackNuGetPackage(string! projectPath, NuGet.Common.ILogger? logger = null) -> string!
 Microsoft.TemplateEngine.TestHelper.SharedTestOutputHelper

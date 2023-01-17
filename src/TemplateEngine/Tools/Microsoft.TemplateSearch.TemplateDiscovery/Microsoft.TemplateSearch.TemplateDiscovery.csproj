@@ -6,6 +6,7 @@
     <Nullable>enable</Nullable>
     <IsPackable>true</IsPackable>
     <IsShipping>false</IsShipping>
+    <PackAsTool>true</PackAsTool>
     <ImplicitUsings>enable</ImplicitUsings>
     <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
   </PropertyGroup>

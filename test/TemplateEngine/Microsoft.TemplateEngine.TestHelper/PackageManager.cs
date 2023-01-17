@@ -25,10 +25,11 @@ namespace Microsoft.TemplateEngine.TestHelper
         private readonly ConcurrentDictionary<string, string> _installedPackages = new ConcurrentDictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         private static readonly Mutex PackMutex = new Mutex(false, "TemplateEngineTestPackMutex");
 
-        public async Task<string> GetNuGetPackage(string templatePackName, string? version = null, NuGetVersion? minimumVersion = null, ILogger? logger = null)
+        public async Task<string> GetNuGetPackage(string templatePackName, string? version = null, NuGetVersion? minimumVersion = null, ILogger? logger = null, string? downloadDirectory = null)
         {
             logger ??= NullLogger.Instance;
-            NuGetHelper nuGetHelper = new NuGetHelper(_packageLocation, logger);
+            string downloadDir = downloadDirectory ?? _packageLocation;
+            NuGetHelper nuGetHelper = new NuGetHelper(downloadDir, logger);
             try
             {
                 logger.LogDebug($"[NuGet Package Manager] Trying to get semaphore.");
