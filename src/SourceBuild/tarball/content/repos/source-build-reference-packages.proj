@@ -16,6 +16,8 @@
 
     <!-- SBRP builds before Arcade so it also needs the bootstrap Arcade version -->
     <UseBootstrapArcade>true</UseBootstrapArcade>
+
+    <RepoNoWarns>NU1504</RepoNoWarns>
   </PropertyGroup>
 
   <ItemGroup>
