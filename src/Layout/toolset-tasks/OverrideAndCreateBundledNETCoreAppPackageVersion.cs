@@ -53,7 +53,6 @@ namespace Microsoft.DotNet.Build.Tasks
         public static string ExecuteInternal(
             string stage0MicrosoftNETCoreAppRefPackageVersionContent,
             string microsoftNETCoreAppRefPackageVersion,
-            string microsoftNETILLinkTasksPackageVersion,
             string newSDKVersion)
         {
             var projectXml = XDocument.Parse(stage0MicrosoftNETCoreAppRefPackageVersionContent);
