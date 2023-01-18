@@ -3,7 +3,7 @@
   "$comment": "See https://aka.ms/template-json-reference for complete configuration description. Complete TODOs below and remove the $comment properties. It is recommended to use the JSON editor that supports schema hints to get more information about defined JSON properties and their description.",
   "author": "TODO: fill author name here.",
   "classifications": [
-    "TODO: fill classification here. Common classifications are: Library, Test, Web etc. Each classification should be a separate element of the array."
+    "TODO: fill classification here. Common classifications are: Library, Test, Web etc. Each classification should be a separate element of the array. For more details, see https://aka.ms/template-json-reference#classifications."
   ],
   "name": "MyTemplate",
   "description": "TODO: fill the template description here.",
