@@ -111,12 +111,14 @@ namespace Microsoft.DotNet.Build.Tasks
 
             CheckAndReplaceAttribute(itemGroup
                 .Elements(ns + "KnownFrameworkReference").First().Attribute("LatestRuntimeFrameworkVersion"));
-
             CheckAndReplaceAttribute(itemGroup
                 .Elements(ns + "KnownAppHostPack").First().Attribute("AppHostPackVersion"));
             CheckAndReplaceAttribute(itemGroup
                 .Elements(ns + "KnownCrossgen2Pack").First().Attribute("Crossgen2PackVersion"));
-
+            CheckAndReplaceAttribute(itemGroup
+                .Elements(ns + "KnownILCompilerPack").First().Attribute("ILCompilerPackVersion"));
+            CheckAndReplaceAttribute(itemGroup
+                .Elements(ns + "KnownILLinkPack").First().Attribute("ILLinkPackVersion"));
             CheckAndReplaceAttribute(itemGroup
                 .Elements(ns + "KnownRuntimePack").First().Attribute("LatestRuntimeFrameworkVersion"));
 
