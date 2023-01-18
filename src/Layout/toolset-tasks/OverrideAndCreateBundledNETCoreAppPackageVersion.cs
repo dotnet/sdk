@@ -75,7 +75,7 @@ namespace Microsoft.DotNet.Build.Tasks
                 propertyGroup.Element(ns + "BundledNETCoreAppPackageVersion").Value;
             propertyGroup.Element(ns + "BundledNETCoreAppPackageVersion").Value = microsoftNETCoreAppRefPackageVersion;
 
-            void CheckAndReplaceElement(XElement element, string newVersion = null)
+            void CheckAndReplaceElement(XElement element)
             {
                 if (element.Value != originalBundledNETCoreAppPackageVersion)
                 {
@@ -84,10 +84,10 @@ namespace Microsoft.DotNet.Build.Tasks
                         element.ToString(), element.Value, originalBundledNETCoreAppPackageVersion));
                 }
 
-                element.Value = newVersion ?? microsoftNETCoreAppRefPackageVersion;
+                element.Value = microsoftNETCoreAppRefPackageVersion;
             }
 
-            void CheckAndReplaceAttribute(XAttribute attribute, string newVersion = null)
+            void CheckAndReplaceAttribute(XAttribute attribute)
             {
                 if (attribute.Value != originalBundledNETCoreAppPackageVersion)
                 {
@@ -97,7 +97,7 @@ namespace Microsoft.DotNet.Build.Tasks
                         originalBundledNETCoreAppPackageVersion));
                 }
 
-                attribute.Value = newVersion ?? microsoftNETCoreAppRefPackageVersion;
+                attribute.Value = microsoftNETCoreAppRefPackageVersion;
             }
 
             if (!isSDKServicing)
@@ -123,8 +123,10 @@ namespace Microsoft.DotNet.Build.Tasks
                 .Elements(ns + "KnownCrossgen2Pack").First().Attribute("Crossgen2PackVersion"));
             CheckAndReplaceAttribute(itemGroup
                 .Elements(ns + "KnownILCompilerPack").First().Attribute("ILCompilerPackVersion"));
-            CheckAndReplaceAttribute(itemGroup
-                .Elements(ns + "KnownILLinkPack").First().Attribute("ILLinkPackVersion"), microsoftNETILLinkTasksPackageVersion);
+
+            // TODO: replace this with CheckAndReplaceAttribute once linker packages are produced from dotnet/runtime.
+            itemGroup.Elements(ns + "KnownILLinkPack").First().Attribute("ILLinkPackVersion").Value = microsoftNETILLinkTasksPackageVersion;
+
             CheckAndReplaceAttribute(itemGroup
                 .Elements(ns + "KnownRuntimePack").First().Attribute("LatestRuntimeFrameworkVersion"));
 
