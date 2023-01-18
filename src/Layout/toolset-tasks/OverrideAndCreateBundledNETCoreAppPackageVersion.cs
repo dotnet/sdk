@@ -35,7 +35,7 @@ namespace Microsoft.DotNet.Build.Tasks
         [Required] public string Stage0MicrosoftNETCoreAppRefPackageVersionPath { get; set; }
 
         [Required] public string MicrosoftNETCoreAppRefPackageVersion { get; set; }
-        
+
         // TODO: remove this once linker packages are produced from dotnet/runtime
         // and replace it with MicrosoftNETCoreAppRefPackageVersion.
         [Required] public string MicrosoftNETILLinkTasksPackageVersion { get; set; }
