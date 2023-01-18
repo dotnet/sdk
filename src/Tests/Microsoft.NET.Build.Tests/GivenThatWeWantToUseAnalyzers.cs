@@ -24,17 +24,21 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [Theory]
-        [InlineData("WebApp", "EnableRequestDelegateGenerator", false)]
-        [InlineData("WebApp", "EnableRequestDelegateGenerator", true)]
-        public void It_resolves_requestdelegategenerator_correctly(string testAssetName, string property, bool isEnabled)
+        [InlineData("WebApp", false)]
+        [InlineData("WebApp", true)]
+        [InlineData("WebApp", null)]
+        public void It_resolves_requestdelegategenerator_correctly(string testAssetName, bool? isEnabled)
         {
             var asset = _testAssetsManager
-                .CopyTestAsset(testAssetName, identifier: "C#")
+                .CopyTestAsset(testAssetName, identifier: isEnabled.ToString())
                 .WithSource()
                 .WithProjectChanges(project =>
                 {
-                    var ns = project.Root.Name.Namespace;
-                    project.Root.Add(new XElement(ns + "PropertyGroup", new XElement(property, isEnabled)));
+                    if (isEnabled != null)
+                    {
+                        var ns = project.Root.Name.Namespace;
+                        project.Root.Add(new XElement(ns + "PropertyGroup", new XElement("EnableRequestDelegateGenerator", isEnabled)));
+                    }
                 });
 
             var command = new GetValuesCommand(
@@ -46,12 +50,12 @@ namespace Microsoft.NET.Build.Tests
 
             command
                 .WithWorkingDirectory(asset.Path)
-                .Execute("/bl")
+                .Execute()
                 .Should().Pass();
 
             var analyzers = command.GetValues();
 
-            Assert.Equal(isEnabled, analyzers.Any(analyzer => analyzer.Contains("Microsoft.AspNetCore.Http.Generators.dll")));
+            Assert.Equal(isEnabled ?? false, analyzers.Any(analyzer => analyzer.Contains("Microsoft.AspNetCore.Http.Generators.dll")));
         }
 
         [Theory]
