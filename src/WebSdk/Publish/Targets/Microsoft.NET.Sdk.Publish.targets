@@ -36,6 +36,7 @@ Copyright (C) Microsoft Corporation. All rights reserved.
              And '$(RuntimeIdentifier)' != ''
              And !$(RuntimeIdentifier.StartsWith('win'))
              And '$(PublishIISAssets)' == ''">false</PublishIISAssets>
+    <PublishIISAssets Condition="'$(PublishAot)' == 'true' And '$(PublishIISAssets)' == ''">false</PublishIISAssets>
   </PropertyGroup>
 
   <!-- Extension points for BeforePublish and AfterPublish-->
