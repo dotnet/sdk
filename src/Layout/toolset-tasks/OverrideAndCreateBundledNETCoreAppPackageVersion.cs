@@ -35,6 +35,10 @@ namespace Microsoft.DotNet.Build.Tasks
         [Required] public string Stage0MicrosoftNETCoreAppRefPackageVersionPath { get; set; }
 
         [Required] public string MicrosoftNETCoreAppRefPackageVersion { get; set; }
+        
+        // TODO: remove this once linker packages are produced from dotnet/runtime
+        // and replace it with MicrosoftNETCoreAppRefPackageVersion.
+        [Required] public string MicrosoftNETILLinkTasksPackageVersion { get; set; }
 
         [Required] public string NewSDKVersion { get; set; }
 
@@ -46,6 +50,7 @@ namespace Microsoft.DotNet.Build.Tasks
                 ExecuteInternal(
                     File.ReadAllText(Stage0MicrosoftNETCoreAppRefPackageVersionPath),
                     MicrosoftNETCoreAppRefPackageVersion,
+                    MicrosoftNETILLinkTasksPackageVersion,
                     NewSDKVersion));
             return true;
         }
@@ -53,6 +58,7 @@ namespace Microsoft.DotNet.Build.Tasks
         public static string ExecuteInternal(
             string stage0MicrosoftNETCoreAppRefPackageVersionContent,
             string microsoftNETCoreAppRefPackageVersion,
+            string microsoftNETILLinkTasksPackageVersion,
             string newSDKVersion)
         {
             var projectXml = XDocument.Parse(stage0MicrosoftNETCoreAppRefPackageVersionContent);
@@ -69,7 +75,7 @@ namespace Microsoft.DotNet.Build.Tasks
                 propertyGroup.Element(ns + "BundledNETCoreAppPackageVersion").Value;
             propertyGroup.Element(ns + "BundledNETCoreAppPackageVersion").Value = microsoftNETCoreAppRefPackageVersion;
 
-            void CheckAndReplaceElement(XElement element)
+            void CheckAndReplaceElement(XElement element, string? newVersion = null)
             {
                 if (element.Value != originalBundledNETCoreAppPackageVersion)
                 {
@@ -78,10 +84,10 @@ namespace Microsoft.DotNet.Build.Tasks
                         element.ToString(), element.Value, originalBundledNETCoreAppPackageVersion));
                 }
 
-                element.Value = microsoftNETCoreAppRefPackageVersion;
+                element.Value = newVersion ?? microsoftNETCoreAppRefPackageVersion;
             }
 
-            void CheckAndReplaceAttribute(XAttribute attribute)
+            void CheckAndReplaceAttribute(XAttribute attribute, string? newVersion = null)
             {
                 if (attribute.Value != originalBundledNETCoreAppPackageVersion)
                 {
@@ -91,7 +97,7 @@ namespace Microsoft.DotNet.Build.Tasks
                         originalBundledNETCoreAppPackageVersion));
                 }
 
-                attribute.Value = microsoftNETCoreAppRefPackageVersion;
+                attribute.Value = newVersion ?? microsoftNETCoreAppRefPackageVersion;
             }
 
             if (!isSDKServicing)
@@ -118,7 +124,7 @@ namespace Microsoft.DotNet.Build.Tasks
             CheckAndReplaceAttribute(itemGroup
                 .Elements(ns + "KnownILCompilerPack").First().Attribute("ILCompilerPackVersion"));
             CheckAndReplaceAttribute(itemGroup
-                .Elements(ns + "KnownILLinkPack").First().Attribute("ILLinkPackVersion"));
+                .Elements(ns + "KnownILLinkPack").First().Attribute("ILLinkPackVersion"), microsoftNETILLinkTasksPackageVersion);
             CheckAndReplaceAttribute(itemGroup
                 .Elements(ns + "KnownRuntimePack").First().Attribute("LatestRuntimeFrameworkVersion"));
 
