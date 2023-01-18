@@ -82,5 +82,12 @@ namespace Microsoft.TemplateEngine.Cli
                     return base.TryGetHostParamDefault(paramName, out value);
             }
         }
+
+        [Obsolete("Use CreationStatusResult instead")]
+        bool ITemplateEngineHost.OnPotentiallyDestructiveChangesDetected(IReadOnlyList<IFileChange> changes, IReadOnlyList<IFileChange> destructiveChanges)
+        {
+            //return false to return TemplateCreationResult with CreationResultStatus.DestructiveChangesDetected status.
+            return false;
+        }
     }
 }
