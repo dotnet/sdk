@@ -36,7 +36,7 @@ Copyright (C) Microsoft Corporation. All rights reserved.
              And '$(RuntimeIdentifier)' != ''
              And !$(RuntimeIdentifier.StartsWith('win'))
              And '$(PublishIISAssets)' == ''">false</PublishIISAssets>
-    <PublishIISAssets Condition="'$(PublishAot)' == 'true' And '$(PublishIISAssets)' == ''">false</PublishIISAssets>
+    <PublishIISAssets Condition="'$(PublishIISAssets)' == '' and '$(PublishAot)' == 'true'">false</PublishIISAssets>
   </PropertyGroup>
 
   <!-- Extension points for BeforePublish and AfterPublish-->
@@ -89,7 +89,7 @@ Copyright (C) Microsoft Corporation. All rights reserved.
 
     <!-- If TrimMode has not already been set, default to partial trimming, as AspNet is not currently fully trim-compatible -->
     <!-- We allow the full trimming default with PublishAot enabled, because the parts that are not trim-compatible are not aot-compatible either -->
-    <TrimMode Condition="'$(PublishTrimmed)' == 'true' and '$(PubishAot)' != 'true' and '$(TrimMode)' == ''">partial</TrimMode>
+    <TrimMode Condition="'$(TrimMode)' == '' and '$(PublishTrimmed)' == 'true' and '$(PubishAot)' != 'true'">partial</TrimMode>
   </PropertyGroup>
 
   <!--
