@@ -75,7 +75,7 @@ namespace Microsoft.DotNet.Build.Tasks
                 propertyGroup.Element(ns + "BundledNETCoreAppPackageVersion").Value;
             propertyGroup.Element(ns + "BundledNETCoreAppPackageVersion").Value = microsoftNETCoreAppRefPackageVersion;
 
-            void CheckAndReplaceElement(XElement element, string? newVersion = null)
+            void CheckAndReplaceElement(XElement element, string newVersion = null)
             {
                 if (element.Value != originalBundledNETCoreAppPackageVersion)
                 {
@@ -87,7 +87,7 @@ namespace Microsoft.DotNet.Build.Tasks
                 element.Value = newVersion ?? microsoftNETCoreAppRefPackageVersion;
             }
 
-            void CheckAndReplaceAttribute(XAttribute attribute, string? newVersion = null)
+            void CheckAndReplaceAttribute(XAttribute attribute, string newVersion = null)
             {
                 if (attribute.Value != originalBundledNETCoreAppPackageVersion)
                 {
