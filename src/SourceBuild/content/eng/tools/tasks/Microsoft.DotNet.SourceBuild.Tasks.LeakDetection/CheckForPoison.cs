@@ -4,7 +4,6 @@
 
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
-using Mono.Cecil;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -12,6 +11,7 @@ using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 using System.Xml;
@@ -261,22 +261,10 @@ namespace Microsoft.DotNet.SourceBuild.Tasks.LeakDetection
 
             try
             {
-                memStream.Seek(0, SeekOrigin.Begin);
-                using (var asm = AssemblyDefinition.ReadAssembly(memStream))
+                AssemblyName asm = AssemblyName.GetAssemblyName(fileToCheck);
+                if (IsAssemblyPoisoned(fileToCheck))
                 {
-                    foreach (var a in asm.CustomAttributes)
-                    {
-                        foreach (var ca in a.ConstructorArguments)
-                        {
-                            if (ca.Type.Name == asm.MainModule.TypeSystem.String.Name)
-                            {
-                                if (ca.Value.ToString().Contains(PoisonMarker))
-                                {
-                                    poisonEntry.Type |= PoisonType.AssemblyAttribute;
-                                }
-                            }
-                        }
-                    }
+                    poisonEntry.Type |= PoisonType.AssemblyAttribute;
                 }
             }
             catch
@@ -285,6 +273,27 @@ namespace Microsoft.DotNet.SourceBuild.Tasks.LeakDetection
             }
 
             return poisonEntry.Type != PoisonType.None ? poisonEntry : null;
+        }
+
+        private static bool IsAssemblyPoisoned(string path)
+        {
+            byte[] buffer = File.ReadAllBytes(path);
+            byte[] marker = Encoding.UTF8.GetBytes(PoisonMarker);
+
+            // Start at end of file and go backwards
+            // Marker is likely at the end and this saves time when
+            // we encounter a poisoned file.
+            for (int j = buffer.Length - marker.Length; j >= 0; j--)
+            {
+                int i;
+                for (i = 0; i < marker.Length && buffer[j + i] == marker[i]; i++) ;
+                if (i == marker.Length)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private static PoisonedFileEntry ExtractAndCheckZipFileOnly(IEnumerable<CatalogPackageEntry> catalogedPackages, string zipToCheck, string markerFileName, string tempDir, Queue<string> futureFilesToCheck)

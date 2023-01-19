@@ -13,12 +13,6 @@
     <PackageReference Include="Microsoft.Build.Utilities.Core">
       <Version>15.7.179</Version>
     </PackageReference>
-    <ProjectReference Include="$(SubmoduleDirectory)linker/external/cecil/Mono.Cecil.csproj">
-      <SetConfiguration Condition=" '$(Configuration)' == 'Debug' ">Configuration=netstandard_Debug</SetConfiguration>
-      <SetConfiguration Condition=" '$(Configuration)' == 'Release' ">Configuration=netstandard_Release</SetConfiguration>
-      <Project>{D68133BD-1E63-496E-9EDE-4FBDBF77B486}</Project>
-      <Name>Mono.Cecil</Name>
-    </ProjectReference>
     <ProjectReference Include="../Microsoft.DotNet.SourceBuild.Tasks.XPlat/Microsoft.DotNet.SourceBuild.Tasks.XPlat.csproj" />
   </ItemGroup>
 
