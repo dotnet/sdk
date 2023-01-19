@@ -9,8 +9,7 @@
     "customizations": {
         "vscode": {
             "extensions": [
-                "ms-dotnettools.csharp",
-                "eamodio.gitlens"
+                "ms-dotnettools.csharp"
             ]
         }
     }
