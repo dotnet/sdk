@@ -1,7 +1,7 @@
 ﻿ASP.NET Core Web App (C#)
 Author: Microsoft
 Description: A project template for creating an ASP.NET Core application with example ASP.NET Core Razor Pages content
-This template contains technologies from parties other than Microsoft, see https://aka.ms/aspnetcore/8.0-third-party-notices for details.
+This template contains technologies from parties other than Microsoft, see https://aka.ms/aspnetcore/%version%-third-party-notices for details.
 
 Usage:
   dotnet new webapp [options] [template options]
