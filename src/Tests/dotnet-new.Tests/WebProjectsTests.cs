@@ -23,9 +23,9 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         }
 
         [Theory]
-        [InlineData("emptyweb_cs-latest", "web")]
-        [InlineData("mvc_cs-latest", "mvc")]
         // TODO: Reenable after https://github.com/dotnet/sdk/issues/30033 is fixed
+        // [InlineData("emptyweb_cs-latest", "web")]
+        // [InlineData("mvc_cs-latest", "mvc")]
         // [InlineData("mvc_fs-latest", "mvc", "-lang", "F#")]
         // [InlineData("api_cs-latest", "webapi")]
         [InlineData("emptyweb_cs-60", "web", "-f", "net6.0")]
