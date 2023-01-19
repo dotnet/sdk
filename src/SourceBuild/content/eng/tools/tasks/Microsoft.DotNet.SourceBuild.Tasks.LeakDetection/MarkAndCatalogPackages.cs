@@ -85,23 +85,23 @@ namespace Microsoft.DotNet.SourceBuild.Tasks.LeakDetection
                     var packageTempPath = Path.Combine(tempDir.FullName, Path.GetFileName(p.ItemSpec));
                     ZipFile.ExtractToDirectory(p.ItemSpec, packageTempPath, true);
 
-                    foreach (string f in Directory.EnumerateFiles(packageTempPath, "*", SearchOption.AllDirectories))
+                    foreach (string file in Directory.EnumerateFiles(packageTempPath, "*", SearchOption.AllDirectories))
                     {
                         // remove signatures so we don't later fail validation
-                        if (Path.GetFileName(f) == ".signature.p7s")
+                        if (Path.GetFileName(file) == ".signature.p7s")
                         {
-                            File.Delete(f);
+                            File.Delete(file);
                             continue;
                         }
 
                         var catalogFileEntry = new CatalogFileEntry();
                         packageEntry.Files.Add(catalogFileEntry);
-                        catalogFileEntry.Path = Utility.MakeRelativePath(f, packageTempPath);
+                        catalogFileEntry.Path = Utility.MakeRelativePath(file, packageTempPath);
 
                         // There seem to be some weird issues with using a file stream both for hashing and
                         // assembly loading, even closing it in between.  Use a MemoryStream to avoid issues.
                         var memStream = new MemoryStream();
-                        using (var stream = File.OpenRead(f))
+                        using (var stream = File.OpenRead(file))
                         {
                             stream.CopyTo(memStream);
                         }
@@ -113,11 +113,11 @@ namespace Microsoft.DotNet.SourceBuild.Tasks.LeakDetection
                         // Add poison marker to assemblies
                         try
                         {
-                            AssemblyName asm = AssemblyName.GetAssemblyName(f);
-                            Poison(f);
+                            AssemblyName asm = AssemblyName.GetAssemblyName(file);
+                            Poison(file);
 
                             // then get the hash of the now-poisoned file
-                            using (var stream = File.OpenRead(f))
+                            using (var stream = File.OpenRead(file))
                             {
                                 catalogFileEntry.PoisonedHash = sha.ComputeHash(stream);
                             }
@@ -174,12 +174,6 @@ namespace Microsoft.DotNet.SourceBuild.Tasks.LeakDetection
             return !Log.HasLoggedErrors;
         }
 
-        private void Poison(string path)
-        {
-            using (StreamWriter sw = File.AppendText(path))
-            {
-                sw.Write(PoisonMarker);
-            }
-        }
+        private void Poison(string path) => File.AppendAllText(path, PoisonMarker);
     }
 }
