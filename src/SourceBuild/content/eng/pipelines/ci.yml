@@ -19,11 +19,10 @@ stages:
 - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
   - template: templates/stages/vmr-scan.yml
 
-# For rolling builds we want to build the MSFT SDK first so that we can
-# compare the contents with the source-built one later.
-# This only works because we don't run this test in PRs. If we decided
-# to run this test in PRs, we would need to build the MSFT SDK there too.
-- ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+  # For rolling builds we want to build the MSFT SDK first so that we can
+  # compare the contents with the source-built one later.
+  # This only works because we don't run this test in PRs. If we decided
+  # to run this test in PRs, we would need to build the MSFT SDK there too.
   - stage: Build_MSFT_SDK
     displayName: Build MSFT SDK
     jobs:

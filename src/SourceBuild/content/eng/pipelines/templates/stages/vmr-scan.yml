@@ -1,12 +1,12 @@
 stages:
-- stage: VMR_Scan
-  displayName: VMR Scan
+- stage: Tag_n_Scan
+  displayName: Tag & Scan
   dependsOn: []
   variables:
   - template: /eng/common/templates/variables/pool-providers.yml
   jobs:
-  - job: Scan
-    displayName: VMR Scan
+  - job: Tag_n_Scan
+    displayName: Tag & Scan
     pool:
       ${{ if eq(variables['System.TeamProject'], 'public') }}:
         name: $(DncEngPublicBuildPool)
@@ -21,9 +21,15 @@ stages:
     - script: |
         source ./eng/common/tools.sh
         InitializeDotNetCli true
-        dotnet='./.dotnet/dotnet'
-        "$dotnet" tool restore
+        ./.dotnet/dotnet tool restore
       displayName: Initialize tooling
+      workingDirectory: $(Build.SourcesDirectory)/src/installer
+
+    - script: |
+        set -e
+        sha=`./.dotnet/dotnet darc vmr get-version --vmr "$(Build.SourcesDirectory)" installer`
+        echo "##vso[build.addbuildtag]installer-$sha"
+      displayName: Tag the build
       workingDirectory: $(Build.SourcesDirectory)/src/installer
 
     - script: >
