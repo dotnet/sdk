@@ -5,6 +5,7 @@
 using System.CommandLine;
 using System.CommandLine.Help;
 using System.CommandLine.Parsing;
+using System.Diagnostics;
 using System.Globalization;
 using System.Text;
 using Microsoft.TemplateEngine.Abstractions;
@@ -146,7 +147,14 @@ namespace Microsoft.TemplateEngine.Cli
             if (!string.IsNullOrWhiteSpace(DefaultValue)
                 || (Type == ParameterType.String || Type == ParameterType.Choice) && DefaultValue != null)
             {
-                option.SetDefaultValue(DefaultValue);
+                if (option is Option<string> stringOption)
+                {
+                    stringOption.SetDefaultValue(DefaultValue);
+                }
+                else
+                {
+                    Debug.Fail($"Unexpected Option type: {option.GetType()}");
+                }
             }
             option.Description = GetOptionDescription();
             return option;
