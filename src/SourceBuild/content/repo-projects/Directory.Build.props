@@ -15,6 +15,7 @@
     <RepoConsoleLogFile>$(LoggingDir)$(RepositoryName).log</RepoConsoleLogFile>
     <RedirectRepoOutputToLog Condition="'$(MinimalConsoleLogOutput)' == 'true'">&gt;&gt; $(RepoConsoleLogFile) 2&gt;&amp;1</RedirectRepoOutputToLog>
     <IsStable Condition="'$(UseStableVersions)' == 'true'">true</IsStable>
+    <NetCurrent>net8.0</NetCurrent>
 
     <PackagesOutput>$(ProjectDirectory)artifacts/packages/$(Configuration)/NonShipping/</PackagesOutput>
 
@@ -68,7 +69,7 @@
     <EnvironmentVariables Include="_InitializeDotNetCli=$(DotNetCliToolDir)" />
     <EnvironmentVariables Include="_DotNetInstallDir=$(DotNetCliToolDir)" />
     <EnvironmentVariables Include="_InitializeToolset=$(SourceBuiltSdksDir)Microsoft.DotNet.Arcade.Sdk/tools/Build.proj" Condition="'$(UseBootstrapArcade)' != 'true'" />
-    <EnvironmentVariables Include="_OverrideArcadeInitializeBuildToolFramework=net7.0" />
+    <EnvironmentVariables Include="_OverrideArcadeInitializeBuildToolFramework=$(NetCurrent)" />
 
     <EnvironmentVariables Include="DotNetUseShippingVersions=true" />
 
