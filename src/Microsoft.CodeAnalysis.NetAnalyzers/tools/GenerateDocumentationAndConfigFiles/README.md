@@ -22,4 +22,5 @@ Following are the precedence rules as per the values of these properties:
 2. For CAxxxx rules:
 
    1. If `CodeAnalysisTreatWarningsAsErrors` is set to true, enabled CA warnings are bulk escalated to errors by choosing the appropriate globalconfig file with the error severity settings.
-   2. Otherwise, if `TreatWarningsAsErrors` is set to true, this property translates to `/warnaserror` command line switch and the compiler bumps all warnings, including enabled CA warnings, to errors.
+   2. If `CodeAnalysisTreatWarningsAsErrors` is set to false and `TreatWarningsAsErrors` is set to true, we append all CA rule IDs to `WarningsNotAsErrors` to ensure they are not escalated to errors. Users can still bump individual rule IDs to errors by editorconfig/ruleset entry, etc.
+   3. Otherwise, if `TreatWarningsAsErrors` is set to true, this property translates to `/warnaserror` command line switch and the compiler bumps all warnings, including enabled CA warnings, to errors.
