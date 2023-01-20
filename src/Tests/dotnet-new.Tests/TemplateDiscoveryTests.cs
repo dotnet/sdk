@@ -27,8 +27,10 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             string testDir = CreateTemporaryFolder();
             string testTemplatesPpackagePath = PackTestNuGetPackage(_log);
             using var packageManager = new PackageManager();
-            packageManager.PackageLocation = Path.GetDirectoryName(testTemplatesPpackagePath)!;
-            string packagePath = await packageManager.GetNuGetPackage("Microsoft.Azure.WebJobs.ProjectTemplates").ConfigureAwait(false);
+            string packagePath = await packageManager.GetNuGetPackage(
+                templatePackName: "Microsoft.Azure.WebJobs.ProjectTemplates",
+                downloadDirectory: Path.GetDirectoryName(testTemplatesPpackagePath))
+                .ConfigureAwait(false);
 
             _templateDiscoveryTool.Run(
                 _log,
