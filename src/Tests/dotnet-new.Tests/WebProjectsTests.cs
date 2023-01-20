@@ -5,7 +5,6 @@
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Commands;
-using Microsoft.TemplateEngine.TestHelper;
 using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.Cli.New.IntegrationTests
@@ -131,7 +130,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
     {
         public WebProjectsFixture(IMessageSink messageSink) : base(messageSink)
         {
-            BaseWorkingDirectory = TestUtils.CreateTemporaryFolder(nameof(WebProjectsTests));
+            BaseWorkingDirectory = Utilities.CreateTemporaryFolder(nameof(WebProjectsTests));
 
             InstallPackage(TemplatePackagesPaths.MicrosoftDotNetWebProjectTemplates60Path, BaseWorkingDirectory);
             InstallPackage(TemplatePackagesPaths.MicrosoftDotNetWebProjectTemplates70Path, BaseWorkingDirectory);
