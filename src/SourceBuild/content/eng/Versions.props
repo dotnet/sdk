@@ -24,6 +24,6 @@
       or minor release, prebuilts may be needed. When the release is mature, prebuilts are not
       necessary, and this property is removed from the file.
     -->
-    <PrivateSourceBuiltArtifactsPackageVersion>7.0.100.2</PrivateSourceBuiltArtifactsPackageVersion>
+    <PrivateSourceBuiltArtifactsPackageVersion>0.1.0-8.0.100-2</PrivateSourceBuiltArtifactsPackageVersion>
   </PropertyGroup>
 </Project>

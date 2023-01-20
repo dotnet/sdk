@@ -107,45 +107,16 @@
           Condition="'$(EngCommonToolsShFile)' != ''"
           Inputs="$(MSBuildProjectFullPath)"
           Outputs="$(RepoCompletedSemaphorePath)UpdateBuildToolFramework.complete" >
-    <!-- Use a relative find in NewText to avoid regex matches with parent directories.
-         See https://github.com/dotnet/source-build/issues/1914 for details. -->
-    <PropertyGroup>
-      <ArcadeSdkReplacementText>
-      logger_path=&quot;%24toolset_dir&quot;/%24%28cd &quot;$toolset_dir&quot; &amp;&amp; find . -name Microsoft.DotNet.Arcade.Sdk.dll \( -regex &apos;.*netcoreapp2.1.*&apos; -or -regex &apos;.*net7.0.*&apos; \) )
-      </ArcadeSdkReplacementText>
 
-      <ArcadeLoggingReplacementText>
-      logger_path=&quot;%24toolset_dir&quot;/%24%28cd &quot;$toolset_dir&quot; &amp;&amp; find . -name Microsoft.DotNet.ArcadeLogging.dll \( -regex &apos;.*netcoreapp2.1.*&apos; -or -regex &apos;.*net7.0.*&apos; \) )
-      </ArcadeLoggingReplacementText>
-
-      <LoggerPathReplacementText>
-      $(ArcadeLoggingReplacementText)
-      if [[ ! -f $logger_path ]]; then
-        $(ArcadeSdkReplacementText)
-      fi
-      </LoggerPathReplacementText>
-    </PropertyGroup>
-    <!-- Arcade has added a new ArcadeLogging library (see: https://github.com/dotnet/arcade/pull/6739)
-      This adds additional scenarios when modifying tools.sh to search for the logger_path.  Source-build
-      builds arcade after the change, so the logger is no longer found in Microsoft.DotNet.Arcade.Sdk,
-      rather, it has moved to Microsoft.DotNet.ArcadeLogging.
-      The scenarios are: -->
-     <!-- 1. Repo has old tools.sh - replace with new search for logger_path from updated tools.sh which looks for ArcadeLogging first,
-          but make the source-build search changes to find the right dll. -->
-    <ReplaceTextInFile InputFile="$(EngCommonToolsShFile)"
-                       OldText="local logger_path=&quot;$toolset_dir/$_InitializeBuildToolFramework/Microsoft.DotNet.Arcade.Sdk.dll&quot;"
-                       NewText="$(LoggerPathReplacementText)" />
-    <!-- 2. Repo has updated tools.sh, replace 2 logger_path statements with source-build search equivalents to find the right dll -->
-    <ReplaceTextInFile InputFile="$(EngCommonToolsShFile)"
-                       OldText="local logger_path=&quot;$toolset_dir/$_InitializeBuildToolFramework/Microsoft.DotNet.ArcadeLogging.dll&quot;"
-                       NewText="$(ArcadeLoggingReplacementText)" />
-    <ReplaceTextInFile InputFile="$(EngCommonToolsShFile)"
-                       OldText="logger_path=&quot;$toolset_dir/$_InitializeBuildToolFramework/Microsoft.DotNet.Arcade.Sdk.dll&quot;"
-                       NewText="$(ArcadeSdkReplacementText)" />
-    <!-- 3. Repo has 3rd generation of tools.sh.  In this case, we set an override for _InitializeBuildToolFramework -->
+    <!-- Update the BuildToolFramework for repos that have not adopted the current version of Arcade-->
     <ReplaceTextInFile InputFile="$(EngCommonToolsShFile)"
                        OldText="_InitializeBuildToolFramework=&quot;netcoreapp3.1&quot;"
-                       NewText="_InitializeBuildToolFramework=&quot;%24{_OverrideArcadeInitializeBuildToolFramework-netcoreapp3.1}&quot;" />
+                       NewText="_InitializeBuildToolFramework=&quot;$(NetCurrent)&quot;"
+                       Condition="'$(UseBootstrapArcade)' != 'true'" />
+    <ReplaceTextInFile InputFile="$(EngCommonToolsShFile)"
+                       OldText="_InitializeBuildToolFramework=&quot;net7.0&quot;"
+                       NewText="_InitializeBuildToolFramework=&quot;$(NetCurrent)&quot;"
+                       Condition="'$(UseBootstrapArcade)' != 'true'" />
 
     <!-- Temporary workaround for when the ci option is specified, non-zero exit are swallowed which prevents builds from failing within 
          the build process.  https://github.com/dotnet/source-build/issues/2307 -->
