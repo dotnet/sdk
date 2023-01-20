@@ -19,7 +19,7 @@ using IReporter = Microsoft.Extensions.Tools.Internal.IReporter;
 
 namespace Microsoft.DotNet.Watcher
 {
-    public class HotReloadDotNetWatcher : IAsyncDisposable
+    internal sealed class HotReloadDotNetWatcher : IAsyncDisposable
     {
         private readonly IReporter _reporter;
         private readonly IConsole _console;
@@ -309,8 +309,8 @@ namespace Microsoft.DotNet.Watcher
             }
 
             var rootVariableName = EnvironmentVariableNames.TryGetDotNetRootVariableName(
-                project.RuntimeIdentifier,
-                project.DefaultAppHostRuntimeIdentifier,
+                project.RuntimeIdentifier ?? "",
+                project.DefaultAppHostRuntimeIdentifier ?? "",
                 project.TargetFrameworkVersion);
 
             if (rootVariableName != null && string.IsNullOrEmpty(Environment.GetEnvironmentVariable(rootVariableName)))

@@ -879,4 +879,12 @@ You may need to build the project on another operating system or architecture, o
     <value>NETSDK1193: If PublishSelfContained is set, it must be either true or false. The value given was '{0}'.</value>
     <comment>{StrBegin="NETSDK1193: "}</comment>
   </data>
+    <data name="CannotHaveSolutionLevelOutputPath" xml:space="preserve">
+    <value>NETSDK1194: The "--output" option isn't supported when building a solution.</value>
+    <comment>{StrBegin="NETSDK1194: "}</comment>
+  </data>
+  <data name="ILLinkNoValidRuntimePackageError" xml:space="preserve">
+    <value>NETSDK1195: Unable to optimize assemblies for size: a valid runtime package was not found. Either set the PublishTrimmed property to false, or use a supported target framework when publishing.</value>
+    <comment>{StrBegin="NETSDK1195: "}</comment>
+  </data>
 </root>

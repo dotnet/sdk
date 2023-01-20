@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -24,7 +25,7 @@ namespace Microsoft.DotNet.GenAPI
         /// <inheritdoc />
         public override SyntaxNode? VisitConstructorDeclaration(ConstructorDeclarationSyntax node)
         {
-            node = node.WithBody(GetEmptyBody(true))
+            node = node.WithBody(GetEmptyBody())
                        .WithParameterList(node.ParameterList.WithTrailingTrivia(SyntaxFactory.Space));
             return base.VisitConstructorDeclaration(node);
         }
@@ -32,90 +33,186 @@ namespace Microsoft.DotNet.GenAPI
         /// <inheritdoc />
         public override SyntaxNode? VisitInterfaceDeclaration(InterfaceDeclarationSyntax node)
         {
-            node = (InterfaceDeclarationSyntax)base.VisitInterfaceDeclaration(node)!;
-            return AddPartialModifier(node);
+            InterfaceDeclarationSyntax? rs = (InterfaceDeclarationSyntax?)base.VisitInterfaceDeclaration(node);
+            return rs is null ? rs : VisitCommonTypeDeclaration(rs);
         }
 
         /// <inheritdoc />
         public override SyntaxNode? VisitClassDeclaration(ClassDeclarationSyntax node)
         {
-            node = (ClassDeclarationSyntax)base.VisitClassDeclaration(node)!;
-            return AddPartialModifier(node);
+            ClassDeclarationSyntax? rs = (ClassDeclarationSyntax?)base.VisitClassDeclaration(node);
+            return rs is null ? rs : VisitCommonTypeDeclaration(rs);
         }
 
         /// <inheritdoc />
         public override SyntaxNode? VisitStructDeclaration(StructDeclarationSyntax node)
         {
-            node = (StructDeclarationSyntax)base.VisitStructDeclaration(node)!;
-            return AddPartialModifier(node);
+            StructDeclarationSyntax? rs = (StructDeclarationSyntax?)base.VisitStructDeclaration(node);
+            return rs is null ? rs : VisitCommonTypeDeclaration(rs);
         }
 
         /// <inheritdoc />
         public override SyntaxNode? VisitMethodDeclaration(MethodDeclarationSyntax node)
         {
             // visit subtree first to normalize type names.
-            node = (MethodDeclarationSyntax)base.VisitMethodDeclaration(node)!;
+            MethodDeclarationSyntax? rs = (MethodDeclarationSyntax?)base.VisitMethodDeclaration(node);
+            if (rs is null) return rs;
 
-            if (node.Modifiers.Where(token => token.IsKind(SyntaxKind.AbstractKeyword)).Any())
+            if (rs.Modifiers.Where(token => token.IsKind(SyntaxKind.AbstractKeyword)).Any() || rs.Body is null)
             {
-                return node;
+                return rs;
             }
 
-            if (node.ExpressionBody != null)
+            if (rs.ExpressionBody != null)
             {
-                node = node.WithExpressionBody(null);
+                rs = rs.WithExpressionBody(null);
             }
 
-            if (node.ReturnType.ToString() != "System.Void")
+            string returnType = rs.ReturnType.ToString();
+            if (returnType != "void" && returnType != "System.Void")
             {
-                node = node.WithBody(GetThrowNullBody(true));
+                rs = rs.WithBody(GetThrowNullBody());
             }
             else
             {
-                node = node.WithBody(GetEmptyBody(true));
+                rs = rs.WithBody(GetEmptyBody());
             }
 
-            return node.WithParameterList(node.ParameterList.WithTrailingTrivia(SyntaxFactory.Space));
+            return rs.WithParameterList(rs.ParameterList.WithTrailingTrivia(SyntaxFactory.Space));
+        }
+
+        /// <inheritdoc />
+        public override SyntaxNode? VisitOperatorDeclaration(OperatorDeclarationSyntax node)
+        {
+            // visit subtree first to normalize type names.
+            OperatorDeclarationSyntax? rs = base.VisitOperatorDeclaration(node) as OperatorDeclarationSyntax;
+            return rs?
+                .WithBody(GetThrowNullBody())
+                .WithParameterList(rs.ParameterList.WithTrailingTrivia(SyntaxFactory.Space));
+        }
+
+        /// <inheritdoc />
+        public override SyntaxNode? VisitConversionOperatorDeclaration(ConversionOperatorDeclarationSyntax node)
+        {
+            ConversionOperatorDeclarationSyntax? rs = base.VisitConversionOperatorDeclaration(node) as ConversionOperatorDeclarationSyntax;
+            return rs?
+                .WithBody(GetThrowNullBody())
+                .WithParameterList(rs.ParameterList.WithTrailingTrivia(SyntaxFactory.Space));
         }
 
         /// <inheritdoc />
         public override SyntaxNode? VisitAccessorDeclaration(AccessorDeclarationSyntax node)
         {
-            return node.Kind() switch
+            switch (node.Kind())
             {
+                case SyntaxKind.GetAccessorDeclaration:
+                case SyntaxKind.SetAccessorDeclaration:
+                    {
+                        var accessorListSyntax = (AccessorListSyntax?)node.Parent;
+                        if (accessorListSyntax?.Parent == null) break;
 
-                SyntaxKind.GetAccessorDeclaration => node.WithSemicolonToken(default)
-                                                         .WithKeyword(node.Keyword.WithTrailingTrivia(SyntaxFactory.Space))
-                                                         .WithBody(GetThrowNullBody(newLine: false)),
-                SyntaxKind.SetAccessorDeclaration => node.WithSemicolonToken(default)
-                                                         .WithKeyword(node.Keyword.WithTrailingTrivia(SyntaxFactory.Space))
-                                                         .WithBody(GetEmptyBody(newLine: false)),
-                _ => base.VisitAccessorDeclaration(node)
-            };
+                        if (accessorListSyntax?.Parent is IndexerDeclarationSyntax indexerDeclarationSyntax)
+                        {
+                            var typeDeclarationSyntax = (TypeDeclarationSyntax?)indexerDeclarationSyntax.Parent;
+
+                            if (indexerDeclarationSyntax.Modifiers.Where(token => token.IsKind(SyntaxKind.AbstractKeyword)).Any() ||
+                                (typeDeclarationSyntax != null && typeDeclarationSyntax.Keyword.IsKind(SyntaxKind.InterfaceKeyword)))
+                            {
+                                return node.WithSemicolonToken(node.SemicolonToken);
+                            }
+
+                            return ProcessPropertyDeclarationSyntax(node);
+                        }
+                        else if (accessorListSyntax?.Parent is PropertyDeclarationSyntax propertyDeclarationSyntax)
+                        {
+                            var typeDeclarationSyntax = (TypeDeclarationSyntax?)propertyDeclarationSyntax.Parent;
+
+                            if (propertyDeclarationSyntax.Modifiers.Where(token => token.IsKind(SyntaxKind.AbstractKeyword)).Any() ||
+                                (typeDeclarationSyntax != null && typeDeclarationSyntax.Keyword.IsKind(SyntaxKind.InterfaceKeyword)))
+                            {
+                                return node.WithSemicolonToken(node.SemicolonToken);
+                            }
+
+                            return ProcessPropertyDeclarationSyntax(node);
+                        }
+                    }
+                    break;
+            }
+            return base.VisitAccessorDeclaration(node);
         }
 
-        private SyntaxNode AddPartialModifier<T>(T node) where T: TypeDeclarationSyntax
+        /// Removes the specified base type from a Class/struct/interface node.
+        private static TypeDeclarationSyntax RemoveBaseType(TypeDeclarationSyntax node, string typeName)
         {
-            return node.AddModifiers(SyntaxFactory.Token(SyntaxKind.PartialKeyword).WithTrailingTrivia(SyntaxFactory.Space));
+            var baseType = node.BaseList?.Types.FirstOrDefault(x => string.Equals(x.ToString(), typeName, StringComparison.OrdinalIgnoreCase));
+            if (baseType == null)
+            {
+                // Base type not found
+                return node;
+            }
+
+            var baseTypes = node.BaseList!.Types.Remove(baseType);
+            if (baseTypes.Count == 0)
+            {
+                // No more base implementations, remove the base list entirely
+                // Make sure we update the identifier though to include the baselist trailing trivia (typically '\r\n')
+                // so the trailing opening brace gets put onto a new line.
+                return node
+                    .WithBaseList(null)
+                    .WithTrailingTrivia(node.BaseList.GetTrailingTrivia());
+            }
+            else
+            {
+                // Remove the type but retain all remaining types and trivia
+                return node.WithBaseList(node.BaseList!.WithTypes(baseTypes));
+            }
         }
 
-        private BlockSyntax GetEmptyBody(bool newLine = false)
+        private T VisitCommonTypeDeclaration<T>(T node) where T : TypeDeclarationSyntax
         {
-            BlockSyntax node = GetMethodBodyFromText(SyntaxFactory.Space.ToString(), newLine);
+            node = (T)RemoveBaseType(node, "global::System.Object");
+            return AddPartialModifier(node);
+        }
+
+        private T AddPartialModifier<T>(T node) where T: TypeDeclarationSyntax
+        {
+            if (!node.Modifiers.Any(m => m.RawKind == (int)SyntaxKind.PartialKeyword))
+            {
+                return (T)node.AddModifiers(SyntaxFactory.Token(SyntaxKind.PartialKeyword).WithTrailingTrivia(SyntaxFactory.Space));
+            }
+            return node;
+        }
+
+        private BlockSyntax GetEmptyBody()
+        {
+            BlockSyntax node = GetMethodBodyFromText(SyntaxFactory.Space.ToString());
             return node.WithOpenBraceToken(node.OpenBraceToken.WithTrailingTrivia(SyntaxFactory.Space));
         }
 
-        private BlockSyntax GetThrowNullBody(bool newLine = false)
+        private BlockSyntax GetThrowNullBody()
         {
             if (_exceptionMessage is not null)
             {
-                return GetMethodBodyFromText($" throw new PlatformNotSupportedException(\"{_exceptionMessage}\"); ", newLine);
+                return GetMethodBodyFromText($" throw new PlatformNotSupportedException(\"{_exceptionMessage}\"); ");
             }
-            return GetMethodBodyFromText(" throw null; ", newLine);
+            return GetMethodBodyFromText(" throw null; ");
+        }
+
+        private SyntaxNode? ProcessPropertyDeclarationSyntax(AccessorDeclarationSyntax node)
+        {
+            if (node.Kind() == SyntaxKind.GetAccessorDeclaration)
+            {
+                node = node.WithBody(GetThrowNullBody());
+            }
+            else if (node.Kind() == SyntaxKind.SetAccessorDeclaration)
+            {
+                node = node.WithBody(GetEmptyBody());
+            }
+            return node.WithSemicolonToken(default).WithKeyword(node.Keyword.WithTrailingTrivia(SyntaxFactory.Space));
         }
 
         private BlockSyntax GetMethodBodyFromText(string text, bool newLine = false) =>
             SyntaxFactory.Block(SyntaxFactory.ParseStatement(text))
-                         .WithTrailingTrivia(newLine ? SyntaxFactory.CarriageReturnLineFeed : SyntaxFactory.Space);
+                         .WithTrailingTrivia(SyntaxFactory.Space);
     }
 }
