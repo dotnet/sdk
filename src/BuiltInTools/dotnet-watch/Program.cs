@@ -138,7 +138,7 @@ Examples:
                 new[] { "--verbose", "-v" },
                 "Show verbose output");
 
-            verbose.AddValidator(v =>
+            verbose.Validators.Add(v =>
             {
                 if (v.FindResultFor(quiet) is not null && v.FindResultFor(verbose) is not null)
                 {

@@ -29,9 +29,9 @@ namespace Microsoft.DotNet.Cli
         {
             var command = new DocumentedCommand("add", DocsLink, LocalizableStrings.NetAddCommand);
 
-            command.AddArgument(ProjectArgument);
-            command.AddCommand(AddPackageParser.GetCommand());
-            command.AddCommand(AddProjectToProjectReferenceParser.GetCommand());
+            command.Arguments.Add(ProjectArgument);
+            command.Subcommands.Add(AddPackageParser.GetCommand());
+            command.Subcommands.Add(AddProjectToProjectReferenceParser.GetCommand());
 
             command.SetHandler((parseResult) => parseResult.HandleMissingCommand());
 

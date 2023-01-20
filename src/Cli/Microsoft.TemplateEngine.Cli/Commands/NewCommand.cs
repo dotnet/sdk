@@ -37,12 +37,12 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             this.AddGlobalOption(DebugRebuildCacheOption);
             this.AddGlobalOption(DebugShowConfigOption);
 
-            this.AddOption(SharedOptions.OutputOption);
-            this.AddOption(SharedOptions.NameOption);
-            this.AddOption(SharedOptions.DryRunOption);
-            this.AddOption(SharedOptions.ForceOption);
-            this.AddOption(SharedOptions.NoUpdateCheckOption);
-            this.AddOption(SharedOptions.ProjectPathOption);
+            this.Options.Add(SharedOptions.OutputOption);
+            this.Options.Add(SharedOptions.NameOption);
+            this.Options.Add(SharedOptions.DryRunOption);
+            this.Options.Add(SharedOptions.ForceOption);
+            this.Options.Add(SharedOptions.NoUpdateCheckOption);
+            this.Options.Add(SharedOptions.ProjectPathOption);
         }
 
         internal static Option<string?> DebugCustomSettingsLocationOption { get; } = new("--debug:custom-hive")

@@ -66,12 +66,12 @@ namespace Microsoft.DotNet.Cli
         {
             var command = new DocumentedCommand("restore", DocsLink, LocalizableStrings.AppFullName);
 
-            command.AddArgument(SlnOrProjectArgument);
-            command.AddOption(CommonOptions.DisableBuildServersOption);
+            command.Arguments.Add(SlnOrProjectArgument);
+            command.Options.Add(CommonOptions.DisableBuildServersOption);
 
             foreach (var option in FullRestoreOptions())
             {
-                command.AddOption(option);
+                command.Options.Add(option);
             }
 
             command.SetHandler(RestoreCommand.Run);
@@ -83,7 +83,7 @@ namespace Microsoft.DotNet.Cli
         {
             foreach (var option in ImplicitRestoreOptions(showHelp, useShortOptions, includeRuntimeOption, includeNoDependenciesOption))
             {
-                command.AddOption(option);
+                command.Options.Add(option);
             }
         }
 

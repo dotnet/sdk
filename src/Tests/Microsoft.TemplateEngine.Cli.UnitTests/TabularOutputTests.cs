@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 //
 
+using System.CommandLine.Completions;
 using System.Reflection;
 using Microsoft.TemplateEngine.Cli.Commands;
 using Microsoft.TemplateEngine.Cli.TabularOutput;
@@ -287,7 +288,7 @@ Dotnet 本地...  tool-manifest
             var columnOption = SharedOptionsFactory.CreateColumnsOption();
 
             //Gets suggestions defined in column options
-            List<string?> suggestedValues = columnOption.GetCompletions().Select(c => c.Label).ToList<string?>();
+            List<string?> suggestedValues = columnOption.GetCompletions(CompletionContext.Empty).Select(c => c.Label).ToList<string?>();
             suggestedValues.Sort();
 
             //Gets constants defined in TabularOutputSettings.ColumnNams

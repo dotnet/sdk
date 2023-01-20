@@ -30,10 +30,10 @@ namespace Microsoft.DotNet.Cli
         {
             var command = new DocumentedCommand("sln", DocsLink, LocalizableStrings.AppFullName);
 
-            command.AddArgument(SlnArgument);
-            command.AddCommand(SlnAddParser.GetCommand());
-            command.AddCommand(SlnListParser.GetCommand());
-            command.AddCommand(SlnRemoveParser.GetCommand());
+            command.Arguments.Add(SlnArgument);
+            command.Subcommands.Add(SlnAddParser.GetCommand());
+            command.Subcommands.Add(SlnListParser.GetCommand());
+            command.Subcommands.Add(SlnRemoveParser.GetCommand());
 
             command.SetHandler((parseResult) => parseResult.HandleMissingCommand());
 

@@ -94,7 +94,7 @@ namespace Microsoft.DotNet.Cli
                 ArgumentHelpName = CommonLocalizableStrings.VersionSuffixArgumentName
             }.ForwardAsSingle(o => $"-property:VersionSuffix={o}");
 
-        public static Argument<T> DefaultToCurrentDirectory<T>(this Argument<T> arg)
+        public static Argument<string> DefaultToCurrentDirectory(this Argument<string> arg)
         {
             arg.SetDefaultValue(PathUtility.EnsureTrailingSlash(Directory.GetCurrentDirectory()));
             return arg;
@@ -263,6 +263,18 @@ namespace Microsoft.DotNet.Cli
             parseResult.HasOption(ArchitectureOption) ||
             parseResult.HasOption(LongFormArchitectureOption) ||
             parseResult.HasOption(OperatingSystemOption);
+
+        internal static Option<T> AddCompletions<T>(this Option<T> option, Func<CompletionContext, IEnumerable<CompletionItem>> completionSource)
+        {
+            option.CompletionSources.Add(completionSource);
+            return option;
+        }
+
+        internal static Argument<T> AddCompletions<T>(this Argument<T> argument, Func<CompletionContext, IEnumerable<CompletionItem>> completionSource)
+        {
+            argument.CompletionSources.Add(completionSource);
+            return argument;
+        }
     }
 
     public enum VerbosityOptions

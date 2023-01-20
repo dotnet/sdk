@@ -31,14 +31,14 @@ namespace Microsoft.DotNet.Cli
         {
             var command = new Command("restore", LocalizableStrings.CommandDescription);
 
-            command.AddOption(ConfigOption);
-            command.AddOption(AddSourceOption);
-            command.AddOption(ToolManifestOption.WithHelpDescription(command, LocalizableStrings.ManifestPathOptionDescription));
-            command.AddOption(ToolCommandRestorePassThroughOptions.DisableParallelOption);
-            command.AddOption(ToolCommandRestorePassThroughOptions.IgnoreFailedSourcesOption);
-            command.AddOption(ToolCommandRestorePassThroughOptions.NoCacheOption);
-            command.AddOption(ToolCommandRestorePassThroughOptions.InteractiveRestoreOption);
-            command.AddOption(VerbosityOption);
+            command.Options.Add(ConfigOption);
+            command.Options.Add(AddSourceOption);
+            command.Options.Add(ToolManifestOption.WithHelpDescription(command, LocalizableStrings.ManifestPathOptionDescription));
+            command.Options.Add(ToolCommandRestorePassThroughOptions.DisableParallelOption);
+            command.Options.Add(ToolCommandRestorePassThroughOptions.IgnoreFailedSourcesOption);
+            command.Options.Add(ToolCommandRestorePassThroughOptions.NoCacheOption);
+            command.Options.Add(ToolCommandRestorePassThroughOptions.InteractiveRestoreOption);
+            command.Options.Add(VerbosityOption);
 
             command.SetHandler((parseResult) => new ToolRestoreCommand(parseResult).Execute());
 

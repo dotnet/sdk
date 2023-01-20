@@ -26,15 +26,15 @@ namespace Microsoft.DotNet.Cli
         {
             var command = new DocumentedCommand("nuget", DocsLink);
 
-            command.AddOption(new Option<bool>("--version"));
-            command.AddOption(new Option<string>(new string[] { "-v", "--verbosity" }));
+            command.Options.Add(new Option<bool>("--version"));
+            command.Options.Add(new Option<string>(new string[] { "-v", "--verbosity" }));
 
-            command.AddCommand(GetDeleteCommand());
-            command.AddCommand(GetLocalsCommand());
-            command.AddCommand(GetPushCommand());
-            command.AddCommand(GetVerifyCommand());
-            command.AddCommand(GetTrustCommand());
-            command.AddCommand(GetSignCommand());
+            command.Subcommands.Add(GetDeleteCommand());
+            command.Subcommands.Add(GetLocalsCommand());
+            command.Subcommands.Add(GetPushCommand());
+            command.Subcommands.Add(GetVerifyCommand());
+            command.Subcommands.Add(GetTrustCommand());
+            command.Subcommands.Add(GetSignCommand());
 
             command.SetHandler(NuGetCommand.Run);
 
@@ -44,13 +44,13 @@ namespace Microsoft.DotNet.Cli
         private static Command GetDeleteCommand()
         {
             var deleteCommand = new Command("delete");
-            deleteCommand.AddArgument(new Argument<IEnumerable<string>>("package-paths") { Arity = ArgumentArity.OneOrMore });
-            deleteCommand.AddOption(new Option<bool>("--force-english-output"));
-            deleteCommand.AddOption(new Option<string>(new string[] { "-s", "--source" }));
-            deleteCommand.AddOption(new Option<bool>("--non-interactive"));
-            deleteCommand.AddOption(new Option<string>(new string[] { "-k", "--api-key" }));
-            deleteCommand.AddOption(new Option<bool>("--no-service-endpoint"));
-            deleteCommand.AddOption(new Option<bool>("--interactive"));
+            deleteCommand.Arguments.Add(new Argument<IEnumerable<string>>("package-paths") { Arity = ArgumentArity.OneOrMore });
+            deleteCommand.Options.Add(new Option<bool>("--force-english-output"));
+            deleteCommand.Options.Add(new Option<string>(new string[] { "-s", "--source" }));
+            deleteCommand.Options.Add(new Option<bool>("--non-interactive"));
+            deleteCommand.Options.Add(new Option<string>(new string[] { "-k", "--api-key" }));
+            deleteCommand.Options.Add(new Option<bool>("--no-service-endpoint"));
+            deleteCommand.Options.Add(new Option<bool>("--interactive"));
 
             deleteCommand.SetHandler(NuGetCommand.Run);
 
@@ -61,12 +61,14 @@ namespace Microsoft.DotNet.Cli
         {
             var localsCommand = new Command("locals");
 
-            localsCommand.AddArgument(new Argument<string>("folders")
-                .AcceptOnlyFromAmong(new string[] { "all", "http-cache", "global-packages", "plugins-cache", "temp" }));
+            Argument<string> foldersArgument = new Argument<string>("folders");
+            foldersArgument.AcceptOnlyFromAmong(new string[] { "all", "http-cache", "global-packages", "plugins-cache", "temp" });
 
-            localsCommand.AddOption(new Option<bool>("--force-english-output"));
-            localsCommand.AddOption(new Option<bool>(new string[] { "-c", "--clear" }));
-            localsCommand.AddOption(new Option<bool>(new string[] { "-l", "--list" }));
+            localsCommand.Arguments.Add(foldersArgument);
+
+            localsCommand.Options.Add(new Option<bool>("--force-english-output"));
+            localsCommand.Options.Add(new Option<bool>(new string[] { "-c", "--clear" }));
+            localsCommand.Options.Add(new Option<bool>(new string[] { "-l", "--list" }));
 
             localsCommand.SetHandler(NuGetCommand.Run);
 
@@ -77,19 +79,19 @@ namespace Microsoft.DotNet.Cli
         {
             var pushCommand = new Command("push");
 
-            pushCommand.AddArgument(new Argument<IEnumerable<string>>("package-paths") { Arity = ArgumentArity.OneOrMore });
+            pushCommand.Arguments.Add(new Argument<IEnumerable<string>>("package-paths") { Arity = ArgumentArity.OneOrMore });
 
-            pushCommand.AddOption(new Option<bool>("--force-english-output"));
-            pushCommand.AddOption(new Option<string>(new string[] { "-s", "--source" }));
-            pushCommand.AddOption(new Option<string>(new string[] { "-ss", "--symbol-source" }));
-            pushCommand.AddOption(new Option<string>(new string[] { "-t", "--timeout" }));
-            pushCommand.AddOption(new Option<string>(new string[] { "-k", "--api-key" }));
-            pushCommand.AddOption(new Option<string>(new string[] { "-sk", "--symbol-api-key" }));
-            pushCommand.AddOption(new Option<bool>(new string[] { "-d", "--disable-buffering" }));
-            pushCommand.AddOption(new Option<bool>(new string[] { "-n", "--no-symbols" }));
-            pushCommand.AddOption(new Option<bool>("--no-service-endpoint"));
-            pushCommand.AddOption(new Option<bool>("--interactive"));
-            pushCommand.AddOption(new Option<bool>("--skip-duplicate"));
+            pushCommand.Options.Add(new Option<bool>("--force-english-output"));
+            pushCommand.Options.Add(new Option<string>(new string[] { "-s", "--source" }));
+            pushCommand.Options.Add(new Option<string>(new string[] { "-ss", "--symbol-source" }));
+            pushCommand.Options.Add(new Option<string>(new string[] { "-t", "--timeout" }));
+            pushCommand.Options.Add(new Option<string>(new string[] { "-k", "--api-key" }));
+            pushCommand.Options.Add(new Option<string>(new string[] { "-sk", "--symbol-api-key" }));
+            pushCommand.Options.Add(new Option<bool>(new string[] { "-d", "--disable-buffering" }));
+            pushCommand.Options.Add(new Option<bool>(new string[] { "-n", "--no-symbols" }));
+            pushCommand.Options.Add(new Option<bool>("--no-service-endpoint"));
+            pushCommand.Options.Add(new Option<bool>("--interactive"));
+            pushCommand.Options.Add(new Option<bool>("--skip-duplicate"));
 
             pushCommand.SetHandler(NuGetCommand.Run);
 
@@ -101,13 +103,13 @@ namespace Microsoft.DotNet.Cli
             const string fingerprint = "--certificate-fingerprint";
             var verifyCommand = new Command("verify");
 
-            verifyCommand.AddArgument(new Argument<IEnumerable<string>>("package-paths") { Arity = ArgumentArity.OneOrMore });
+            verifyCommand.Arguments.Add(new Argument<IEnumerable<string>>("package-paths") { Arity = ArgumentArity.OneOrMore });
 
-            verifyCommand.AddOption(new Option<bool>("--all"));
-            verifyCommand.AddOption(new ForwardedOption<IEnumerable<string>>(fingerprint)
+            verifyCommand.Options.Add(new Option<bool>("--all"));
+            verifyCommand.Options.Add(new ForwardedOption<IEnumerable<string>>(fingerprint)
                 .ForwardAsManyArgumentsEachPrefixedByOption(fingerprint)
                 .AllowSingleArgPerToken());
-            verifyCommand.AddOption(CommonOptions.VerbosityOption);
+            verifyCommand.Options.Add(CommonOptions.VerbosityOption);
 
             verifyCommand.SetHandler(NuGetCommand.Run);
 
@@ -118,14 +120,16 @@ namespace Microsoft.DotNet.Cli
         {
             var trustCommand = new Command("trust");
 
-            trustCommand.AddArgument(new Argument<string>("command") { Arity = ArgumentArity.ZeroOrOne }
-                         .AcceptOnlyFromAmong(new string[] { "list", "author", "repository", "source", "certificate", "remove", "sync" }));
+            Argument<string> commandArgument = new Argument<string>("command") { Arity = ArgumentArity.ZeroOrOne };
+            commandArgument.AcceptOnlyFromAmong(new string[] { "list", "author", "repository", "source", "certificate", "remove", "sync" });
 
-            trustCommand.AddOption(new Option<string>("--algorithm"));
-            trustCommand.AddOption(new Option<bool>("--allow-untrusted-root"));
-            trustCommand.AddOption(new Option<string>("--owners"));
-            trustCommand.AddOption(new Option<string>("--configfile"));
-            trustCommand.AddOption(CommonOptions.VerbosityOption);
+            trustCommand.Arguments.Add(commandArgument);
+
+            trustCommand.Options.Add(new Option<string>("--algorithm"));
+            trustCommand.Options.Add(new Option<bool>("--allow-untrusted-root"));
+            trustCommand.Options.Add(new Option<string>("--owners"));
+            trustCommand.Options.Add(new Option<string>("--configfile"));
+            trustCommand.Options.Add(CommonOptions.VerbosityOption);
 
             trustCommand.SetHandler(NuGetCommand.Run);
 
@@ -136,20 +140,20 @@ namespace Microsoft.DotNet.Cli
         {
             var signCommand = new Command("sign");
 
-            signCommand.AddArgument(new Argument<IEnumerable<string>>("package-paths") { Arity = ArgumentArity.OneOrMore });
+            signCommand.Arguments.Add(new Argument<IEnumerable<string>>("package-paths") { Arity = ArgumentArity.OneOrMore });
 
-            signCommand.AddOption(new Option<string>(new string[] { "-o", "--output" }));
-            signCommand.AddOption(new Option<string>("--certificate-path"));
-            signCommand.AddOption(new Option<string>("--certificate-store-name"));
-            signCommand.AddOption(new Option<string>("--certificate-store-location"));
-            signCommand.AddOption(new Option<string>("--certificate-subject-name"));
-            signCommand.AddOption(new Option<string>("--certificate-fingerprint"));
-            signCommand.AddOption(new Option<string>("--certificate-password"));
-            signCommand.AddOption(new Option<string>("--hash-algorithm"));
-            signCommand.AddOption(new Option<string>("--timestamper"));
-            signCommand.AddOption(new Option<string>("--timestamp-hash-algorithm"));
-            signCommand.AddOption(new Option<bool>("--overwrite"));
-            signCommand.AddOption(CommonOptions.VerbosityOption);
+            signCommand.Options.Add(new Option<string>(new string[] { "-o", "--output" }));
+            signCommand.Options.Add(new Option<string>("--certificate-path"));
+            signCommand.Options.Add(new Option<string>("--certificate-store-name"));
+            signCommand.Options.Add(new Option<string>("--certificate-store-location"));
+            signCommand.Options.Add(new Option<string>("--certificate-subject-name"));
+            signCommand.Options.Add(new Option<string>("--certificate-fingerprint"));
+            signCommand.Options.Add(new Option<string>("--certificate-password"));
+            signCommand.Options.Add(new Option<string>("--hash-algorithm"));
+            signCommand.Options.Add(new Option<string>("--timestamper"));
+            signCommand.Options.Add(new Option<string>("--timestamp-hash-algorithm"));
+            signCommand.Options.Add(new Option<bool>("--overwrite"));
+            signCommand.Options.Add(CommonOptions.VerbosityOption);
 
             signCommand.SetHandler(NuGetCommand.Run);
 

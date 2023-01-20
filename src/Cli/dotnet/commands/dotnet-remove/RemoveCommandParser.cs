@@ -30,9 +30,9 @@ namespace Microsoft.DotNet.Cli
         {
             var command = new DocumentedCommand("remove", DocsLink, LocalizableStrings.NetRemoveCommand);
 
-            command.AddArgument(ProjectArgument);
-            command.AddCommand(RemovePackageParser.GetCommand());
-            command.AddCommand(RemoveProjectToProjectReferenceParser.GetCommand());
+            command.Arguments.Add(ProjectArgument);
+            command.Subcommands.Add(RemovePackageParser.GetCommand());
+            command.Subcommands.Add(RemoveProjectToProjectReferenceParser.GetCommand());
 
             command.SetHandler((parseResult) => parseResult.HandleMissingCommand());
 

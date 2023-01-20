@@ -42,7 +42,7 @@ namespace Microsoft.DotNet.Cli
         {
             var command = new Command("install", LocalizableStrings.CommandDescription);
 
-            command.AddArgument(WorkloadIdArgument);
+            command.Arguments.Add(WorkloadIdArgument);
             AddWorkloadInstallCommandOptions(command);
 
             command.SetHandler((parseResult) => new WorkloadInstallCommand(parseResult).Execute());
@@ -54,11 +54,11 @@ namespace Microsoft.DotNet.Cli
         {
             InstallingWorkloadCommandParser.AddWorkloadInstallCommandOptions(command);
 
-            command.AddOption(SkipManifestUpdateOption);
-            command.AddOption(TempDirOption);
+            command.Options.Add(SkipManifestUpdateOption);
+            command.Options.Add(TempDirOption);
             command.AddWorkloadCommandNuGetRestoreActionConfigOptions();
-            command.AddOption(CommonOptions.VerbosityOption);
-            command.AddOption(SkipSignCheckOption);
+            command.Options.Add(CommonOptions.VerbosityOption);
+            command.Options.Add(SkipSignCheckOption);
         }
     }
 }

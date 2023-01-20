@@ -24,7 +24,7 @@ namespace Microsoft.DotNet.Cli
 
         public static Command GetCommand()
         {
-            Command.AddOption(InfoOption);
+            Command.Options.Add(InfoOption);
             return Command;
         }
 
@@ -85,14 +85,14 @@ namespace Microsoft.DotNet.Cli
         {
             var command = new DocumentedCommand("workload", DocsLink, CommonStrings.CommandDescription);
 
-            command.AddCommand(WorkloadInstallCommandParser.GetCommand());
-            command.AddCommand(WorkloadUpdateCommandParser.GetCommand());
-            command.AddCommand(WorkloadListCommandParser.GetCommand());
-            command.AddCommand(WorkloadSearchCommandParser.GetCommand());
-            command.AddCommand(WorkloadUninstallCommandParser.GetCommand());
-            command.AddCommand(WorkloadRepairCommandParser.GetCommand());
-            command.AddCommand(WorkloadRestoreCommandParser.GetCommand());
-            command.AddCommand(WorkloadElevateCommandParser.GetCommand());
+            command.Subcommands.Add(WorkloadInstallCommandParser.GetCommand());
+            command.Subcommands.Add(WorkloadUpdateCommandParser.GetCommand());
+            command.Subcommands.Add(WorkloadListCommandParser.GetCommand());
+            command.Subcommands.Add(WorkloadSearchCommandParser.GetCommand());
+            command.Subcommands.Add(WorkloadUninstallCommandParser.GetCommand());
+            command.Subcommands.Add(WorkloadRepairCommandParser.GetCommand());
+            command.Subcommands.Add(WorkloadRestoreCommandParser.GetCommand());
+            command.Subcommands.Add(WorkloadElevateCommandParser.GetCommand());
 
             command.SetHandler((parseResult) => ProcessArgs(parseResult));
 

@@ -37,9 +37,9 @@ namespace Microsoft.DotNet.Cli
         {
             var command = new Command("reference", LocalizableStrings.AppFullName);
 
-            command.AddArgument(ProjectPathArgument);
-            command.AddOption(FrameworkOption);
-            command.AddOption(InteractiveOption);
+            command.Arguments.Add(ProjectPathArgument);
+            command.Options.Add(FrameworkOption);
+            command.Options.Add(InteractiveOption);
 
             command.SetHandler((parseResult) => new AddProjectToProjectReferenceCommand(parseResult).Execute());
 

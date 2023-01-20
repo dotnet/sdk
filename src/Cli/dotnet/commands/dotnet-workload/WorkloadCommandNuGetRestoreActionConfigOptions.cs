@@ -54,10 +54,10 @@ namespace Microsoft.DotNet.Cli
 
         public static void AddWorkloadCommandNuGetRestoreActionConfigOptions(this Command command, bool Hide = false)
         {
-            command.AddOption(Hide ? HiddenDisableParallelOption : DisableParallelOption);
-            command.AddOption(Hide ? HiddenIgnoreFailedSourcesOption : IgnoreFailedSourcesOption);
-            command.AddOption(Hide ? HiddenNoCacheOption : NoCacheOption);
-            command.AddOption(Hide ? HiddenInteractiveRestoreOption : InteractiveRestoreOption);
+            command.Options.Add(Hide ? HiddenDisableParallelOption : DisableParallelOption);
+            command.Options.Add(Hide ? HiddenIgnoreFailedSourcesOption : IgnoreFailedSourcesOption);
+            command.Options.Add(Hide ? HiddenNoCacheOption : NoCacheOption);
+            command.Options.Add(Hide ? HiddenInteractiveRestoreOption : InteractiveRestoreOption);
         }
     }
 }

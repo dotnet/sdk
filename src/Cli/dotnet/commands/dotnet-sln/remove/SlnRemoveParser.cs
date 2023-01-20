@@ -29,7 +29,7 @@ namespace Microsoft.DotNet.Cli
         {
             var command = new Command("remove", LocalizableStrings.RemoveAppFullName);
 
-            command.AddArgument(ProjectPathArgument);
+            command.Arguments.Add(ProjectPathArgument);
 
             command.SetHandler((parseResult) => new RemoveProjectFromSolutionCommand(parseResult).Execute());
 

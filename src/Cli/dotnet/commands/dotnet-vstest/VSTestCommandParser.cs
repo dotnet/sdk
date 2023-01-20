@@ -23,9 +23,9 @@ namespace Microsoft.DotNet.Cli
         {
             var command = new DocumentedCommand("vstest", DocsLink);
 
-            command.AddOption(CommonOptions.TestPlatformOption);
-            command.AddOption(CommonOptions.TestFrameworkOption);
-            command.AddOption(CommonOptions.TestLoggerOption);
+            command.Options.Add(CommonOptions.TestPlatformOption);
+            command.Options.Add(CommonOptions.TestFrameworkOption);
+            command.Options.Add(CommonOptions.TestLoggerOption);
 
             command.SetHandler(VSTestCommand.Run);
 

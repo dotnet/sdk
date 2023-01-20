@@ -64,22 +64,22 @@ namespace Microsoft.DotNet.Cli
         {
             var command = new Command("install", LocalizableStrings.CommandDescription);
 
-            command.AddArgument(PackageIdArgument);
-            command.AddOption(GlobalOption.WithHelpDescription(command, LocalizableStrings.GlobalOptionDescription));
-            command.AddOption(LocalOption.WithHelpDescription(command, LocalizableStrings.LocalOptionDescription));
-            command.AddOption(ToolPathOption.WithHelpDescription(command, LocalizableStrings.ToolPathOptionDescription));
-            command.AddOption(VersionOption);
-            command.AddOption(ConfigOption);
-            command.AddOption(ToolManifestOption.WithHelpDescription(command, LocalizableStrings.ManifestPathOptionDescription));
-            command.AddOption(AddSourceOption);
-            command.AddOption(FrameworkOption);
-            command.AddOption(PrereleaseOption);
-            command.AddOption(ToolCommandRestorePassThroughOptions.DisableParallelOption);
-            command.AddOption(ToolCommandRestorePassThroughOptions.IgnoreFailedSourcesOption);
-            command.AddOption(ToolCommandRestorePassThroughOptions.NoCacheOption);
-            command.AddOption(ToolCommandRestorePassThroughOptions.InteractiveRestoreOption);
-            command.AddOption(VerbosityOption);
-            command.AddOption(ArchitectureOption);
+            command.Arguments.Add(PackageIdArgument);
+            command.Options.Add(GlobalOption.WithHelpDescription(command, LocalizableStrings.GlobalOptionDescription));
+            command.Options.Add(LocalOption.WithHelpDescription(command, LocalizableStrings.LocalOptionDescription));
+            command.Options.Add(ToolPathOption.WithHelpDescription(command, LocalizableStrings.ToolPathOptionDescription));
+            command.Options.Add(VersionOption);
+            command.Options.Add(ConfigOption);
+            command.Options.Add(ToolManifestOption.WithHelpDescription(command, LocalizableStrings.ManifestPathOptionDescription));
+            command.Options.Add(AddSourceOption);
+            command.Options.Add(FrameworkOption);
+            command.Options.Add(PrereleaseOption);
+            command.Options.Add(ToolCommandRestorePassThroughOptions.DisableParallelOption);
+            command.Options.Add(ToolCommandRestorePassThroughOptions.IgnoreFailedSourcesOption);
+            command.Options.Add(ToolCommandRestorePassThroughOptions.NoCacheOption);
+            command.Options.Add(ToolCommandRestorePassThroughOptions.InteractiveRestoreOption);
+            command.Options.Add(VerbosityOption);
+            command.Options.Add(ArchitectureOption);
 
             command.SetHandler((parseResult) => new ToolInstallCommand(parseResult).Execute());
 

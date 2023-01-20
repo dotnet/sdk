@@ -232,14 +232,14 @@ namespace Microsoft.DotNet.Workloads.Workload
 
         internal static void AddWorkloadInstallCommandOptions(Command command)
         {
-            command.AddOption(VersionOption);
-            command.AddOption(ConfigOption);
-            command.AddOption(SourceOption);
-            command.AddOption(PrintDownloadLinkOnlyOption);
-            command.AddOption(FromCacheOption);
-            command.AddOption(DownloadToCacheOption);
-            command.AddOption(IncludePreviewOption);
-            command.AddOption(FromRollbackFileOption);
+            command.Options.Add(VersionOption);
+            command.Options.Add(ConfigOption);
+            command.Options.Add(SourceOption);
+            command.Options.Add(PrintDownloadLinkOnlyOption);
+            command.Options.Add(FromCacheOption);
+            command.Options.Add(DownloadToCacheOption);
+            command.Options.Add(IncludePreviewOption);
+            command.Options.Add(FromRollbackFileOption);
         }
     }
 }

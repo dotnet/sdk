@@ -36,13 +36,13 @@ namespace Microsoft.DotNet.Cli
 
             InstallingWorkloadCommandParser.AddWorkloadInstallCommandOptions(command);
 
-            command.AddOption(TempDirOption);
-            command.AddOption(FromPreviousSdkOption);
-            command.AddOption(AdManifestOnlyOption);
+            command.Options.Add(TempDirOption);
+            command.Options.Add(FromPreviousSdkOption);
+            command.Options.Add(AdManifestOnlyOption);
             command.AddWorkloadCommandNuGetRestoreActionConfigOptions();
-            command.AddOption(CommonOptions.VerbosityOption);
-            command.AddOption(PrintRollbackOption);
-            command.AddOption(WorkloadInstallCommandParser.SkipSignCheckOption);
+            command.Options.Add(CommonOptions.VerbosityOption);
+            command.Options.Add(PrintRollbackOption);
+            command.Options.Add(WorkloadInstallCommandParser.SkipSignCheckOption);
 
             command.SetHandler((parseResult) => new WorkloadUpdateCommand(parseResult).Execute());
 

@@ -80,18 +80,18 @@ namespace Microsoft.DotNet.Cli
             // Add subcommands
             foreach (var subcommand in Subcommands)
             {
-                rootCommand.AddCommand(subcommand);
+                rootCommand.Subcommands.Add(subcommand);
             }
 
             // Add options
-            rootCommand.AddOption(DiagOption);
-            rootCommand.AddOption(VersionOption);
-            rootCommand.AddOption(InfoOption);
-            rootCommand.AddOption(ListSdksOption);
-            rootCommand.AddOption(ListRuntimesOption);
+            rootCommand.Options.Add(DiagOption);
+            rootCommand.Options.Add(VersionOption);
+            rootCommand.Options.Add(InfoOption);
+            rootCommand.Options.Add(ListSdksOption);
+            rootCommand.Options.Add(ListRuntimesOption);
 
             // Add argument
-            rootCommand.AddArgument(DotnetSubCommand);
+            rootCommand.Arguments.Add(DotnetSubCommand);
 
             return rootCommand;
         }
@@ -336,7 +336,7 @@ namespace Microsoft.DotNet.Cli
                     else if (command.Name.Equals(AddPackageParser.GetCommand().Name) || command.Name.Equals(AddCommandParser.GetCommand().Name))
                     {
                         // Don't show package completions in help
-                        AddPackageParser.CmdPackageArgument.Completions.Clear();
+                        AddPackageParser.CmdPackageArgument.CompletionSources.Clear();
                     }
 
                     base.Write(context);

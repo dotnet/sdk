@@ -62,24 +62,24 @@ namespace Microsoft.DotNet.Cli
         {
             var command = new DocumentedCommand("publish", DocsLink, LocalizableStrings.AppDescription);
 
-            command.AddArgument(SlnOrProjectArgument);
+            command.Arguments.Add(SlnOrProjectArgument);
             RestoreCommandParser.AddImplicitRestoreOptions(command, includeRuntimeOption: false, includeNoDependenciesOption: true);
-            command.AddOption(OuputOption);
-            command.AddOption(ManifestOption);
-            command.AddOption(NoBuildOption);
-            command.AddOption(SelfContainedOption);
-            command.AddOption(NoSelfContainedOption);
-            command.AddOption(NoLogoOption);
-            command.AddOption(FrameworkOption);
-            command.AddOption(RuntimeOption.WithHelpDescription(command, LocalizableStrings.RuntimeOptionDescription));
-            command.AddOption(ConfigurationOption);
-            command.AddOption(CommonOptions.VersionSuffixOption);
-            command.AddOption(CommonOptions.InteractiveMsBuildForwardOption);
-            command.AddOption(NoRestoreOption);
-            command.AddOption(CommonOptions.VerbosityOption);
-            command.AddOption(CommonOptions.ArchitectureOption);
-            command.AddOption(CommonOptions.OperatingSystemOption);
-            command.AddOption(CommonOptions.DisableBuildServersOption);
+            command.Options.Add(OuputOption);
+            command.Options.Add(ManifestOption);
+            command.Options.Add(NoBuildOption);
+            command.Options.Add(SelfContainedOption);
+            command.Options.Add(NoSelfContainedOption);
+            command.Options.Add(NoLogoOption);
+            command.Options.Add(FrameworkOption);
+            command.Options.Add(RuntimeOption.WithHelpDescription(command, LocalizableStrings.RuntimeOptionDescription));
+            command.Options.Add(ConfigurationOption);
+            command.Options.Add(CommonOptions.VersionSuffixOption);
+            command.Options.Add(CommonOptions.InteractiveMsBuildForwardOption);
+            command.Options.Add(NoRestoreOption);
+            command.Options.Add(CommonOptions.VerbosityOption);
+            command.Options.Add(CommonOptions.ArchitectureOption);
+            command.Options.Add(CommonOptions.OperatingSystemOption);
+            command.Options.Add(CommonOptions.DisableBuildServersOption);
 
             command.SetHandler(PublishCommand.Run);
 

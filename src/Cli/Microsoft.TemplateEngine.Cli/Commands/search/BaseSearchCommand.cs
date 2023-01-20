@@ -31,7 +31,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             ParentCommand = parentCommand;
             Filters = SetupFilterOptions(SupportedFilters);
 
-            this.AddArgument(NameArgument);
+            this.Arguments.Add(NameArgument);
             SetupTabularOutputOptions(this);
         }
 

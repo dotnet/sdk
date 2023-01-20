@@ -44,14 +44,14 @@ namespace Microsoft.DotNet.Cli
         {
             var command = new DocumentedCommand("clean", DocsLink, LocalizableStrings.AppFullName);
 
-            command.AddArgument(SlnOrProjectArgument);
-            command.AddOption(FrameworkOption);
-            command.AddOption(CommonOptions.RuntimeOption.WithHelpDescription(command, LocalizableStrings.RuntimeOptionDescription));
-            command.AddOption(ConfigurationOption);
-            command.AddOption(CommonOptions.InteractiveMsBuildForwardOption);
-            command.AddOption(CommonOptions.VerbosityOption);
-            command.AddOption(OutputOption);
-            command.AddOption(NoLogoOption);
+            command.Arguments.Add(SlnOrProjectArgument);
+            command.Options.Add(FrameworkOption);
+            command.Options.Add(CommonOptions.RuntimeOption.WithHelpDescription(command, LocalizableStrings.RuntimeOptionDescription));
+            command.Options.Add(ConfigurationOption);
+            command.Options.Add(CommonOptions.InteractiveMsBuildForwardOption);
+            command.Options.Add(CommonOptions.VerbosityOption);
+            command.Options.Add(OutputOption);
+            command.Options.Add(NoLogoOption);
 
             command.SetHandler(CleanCommand.Run);
 

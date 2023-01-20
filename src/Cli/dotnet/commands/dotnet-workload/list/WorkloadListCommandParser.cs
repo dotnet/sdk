@@ -33,11 +33,11 @@ namespace Microsoft.DotNet.Cli
         private static Command ConstructCommand()
         {
             var command = new Command("list", LocalizableStrings.CommandDescription);
-            command.AddOption(MachineReadableOption);
-            command.AddOption(CommonOptions.HiddenVerbosityOption);
-            command.AddOption(VersionOption);
-            command.AddOption(TempDirOption);
-            command.AddOption(IncludePreviewsOption);
+            command.Options.Add(MachineReadableOption);
+            command.Options.Add(CommonOptions.HiddenVerbosityOption);
+            command.Options.Add(VersionOption);
+            command.Options.Add(TempDirOption);
+            command.Options.Add(IncludePreviewsOption);
             command.AddWorkloadCommandNuGetRestoreActionConfigOptions(true);
 
             command.SetHandler((parseResult) => new WorkloadListCommand(parseResult).Execute());

@@ -41,12 +41,12 @@ namespace Microsoft.DotNet.Cli
         {
             var command = new Command("search", LocalizableStrings.CommandDescription);
 
-            command.AddArgument(SearchTermArgument);
+            command.Arguments.Add(SearchTermArgument);
 
-            command.AddOption(DetailOption);
-            command.AddOption(SkipOption);
-            command.AddOption(TakeOption);
-            command.AddOption(PrereleaseOption);
+            command.Options.Add(DetailOption);
+            command.Options.Add(SkipOption);
+            command.Options.Add(TakeOption);
+            command.Options.Add(PrereleaseOption);
 
             command.SetHandler((parseResult) => new ToolSearchCommand(parseResult).Execute());
 

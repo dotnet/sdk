@@ -31,9 +31,9 @@ namespace Microsoft.DotNet.Cli
         private static Command ConstructCommand()
         {
             var command = new Command("search", LocalizableStrings.CommandDescription);
-            command.AddArgument(WorkloadIdStubArgument);
-            command.AddOption(CommonOptions.HiddenVerbosityOption);
-            command.AddOption(VersionOption);
+            command.Arguments.Add(WorkloadIdStubArgument);
+            command.Options.Add(CommonOptions.HiddenVerbosityOption);
+            command.Options.Add(VersionOption);
 
             command.SetHandler((parseResult) => new WorkloadSearchCommand(parseResult).Execute());
 

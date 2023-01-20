@@ -33,9 +33,9 @@ namespace Microsoft.DotNet.Cli
         {
             var command = new Command("add", LocalizableStrings.AddAppFullName);
 
-            command.AddArgument(ProjectPathArgument);
-            command.AddOption(InRootOption);
-            command.AddOption(SolutionFolderOption);
+            command.Arguments.Add(ProjectPathArgument);
+            command.Options.Add(InRootOption);
+            command.Options.Add(SolutionFolderOption);
 
             command.SetHandler((parseResult) => new AddProjectToSolutionCommand(parseResult).Execute());
 

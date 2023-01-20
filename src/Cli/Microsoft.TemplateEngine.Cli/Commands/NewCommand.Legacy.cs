@@ -54,7 +54,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             {
                 if (!except.Contains(option))
                 {
-                    command.AddValidator(symbolResult => ValidateOptionUsage(symbolResult, option));
+                    command.Validators.Add(symbolResult => ValidateOptionUsage(symbolResult, option));
                 }
             }
 
@@ -62,7 +62,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             {
                 if (!except.Contains(argument))
                 {
-                    command.AddValidator(symbolResult => ValidateArgumentUsage(symbolResult, argument));
+                    command.Validators.Add(symbolResult => ValidateArgumentUsage(symbolResult, argument));
                 }
             }
         }
@@ -79,7 +79,12 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 
         internal void ValidateOptionUsage(CommandResult commandResult, Option option)
         {
-            OptionResult? optionResult = commandResult.Parent?.Children.FirstOrDefault(symbol => symbol.Symbol == option) as OptionResult;
+            if (commandResult.Parent is not CommandResult parentResult)
+            {
+                return;
+            }
+
+            OptionResult? optionResult = parentResult.Children.OfType<OptionResult>().FirstOrDefault(result => result.Option == option);
             if (optionResult != null)
             {
                 List<string> wrongTokens = new List<string>();
@@ -101,10 +106,15 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 
         private static void ValidateArgumentUsage(CommandResult commandResult, params Argument[] arguments)
         {
+            if (commandResult.Parent is not CommandResult parentResult)
+            {
+                return;
+            }
+
             List<string> wrongTokens = new List<string>();
             foreach (Argument argument in arguments)
             {
-                var newCommandArgument = commandResult.Parent?.Children.FirstOrDefault(symbol => symbol.Symbol == argument) as ArgumentResult;
+                var newCommandArgument = parentResult.Children.OfType<ArgumentResult>().FirstOrDefault(result => result.Argument == argument);
                 if (newCommandArgument == null)
                 {
                     continue;
@@ -126,22 +136,22 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 
         private void BuildLegacySymbols(Func<ParseResult, ITemplateEngineHost> hostBuilder)
         {
-            this.AddArgument(ShortNameArgument);
-            this.AddArgument(RemainingArguments);
+            this.Arguments.Add(ShortNameArgument);
+            this.Arguments.Add(RemainingArguments);
 
             //legacy options
             Dictionary<FilterOptionDefinition, Option> options = new Dictionary<FilterOptionDefinition, Option>();
             foreach (var filterDef in LegacyFilterDefinitions)
             {
                 options[filterDef] = filterDef.OptionFactory().AsHidden();
-                this.AddOption(options[filterDef]);
+                this.Options.Add(options[filterDef]);
             }
             LegacyFilters = options;
 
-            this.AddOption(InteractiveOption);
-            this.AddOption(AddSourceOption);
-            this.AddOption(ColumnsAllOption);
-            this.AddOption(ColumnsOption);
+            this.Options.Add(InteractiveOption);
+            this.Options.Add(AddSourceOption);
+            this.Options.Add(ColumnsAllOption);
+            this.Options.Add(ColumnsOption);
 
             this.TreatUnmatchedTokensAsErrors = true;
 

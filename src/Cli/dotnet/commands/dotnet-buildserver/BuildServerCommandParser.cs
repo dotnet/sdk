@@ -24,7 +24,7 @@ namespace Microsoft.DotNet.Cli
         {
             var command = new DocumentedCommand("build-server", DocsLink, LocalizableStrings.CommandDescription);
 
-            command.AddCommand(ServerShutdownCommandParser.GetCommand());
+            command.Subcommands.Add(ServerShutdownCommandParser.GetCommand());
 
             command.SetHandler((parseResult) => parseResult.HandleMissingCommand());
 

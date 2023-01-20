@@ -25,7 +25,7 @@ namespace Dotnet_new3
             }
 
             RootCommand rootCommand = new RootCommand();
-            rootCommand.AddCommand(New3CommandFactory.Create());
+            rootCommand.Subcommands.Add(New3CommandFactory.Create());
             return ParserFactory.CreateParser(rootCommand).Parse(args).InvokeAsync();
         }
     }

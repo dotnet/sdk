@@ -72,18 +72,18 @@ namespace Microsoft.DotNet.Cli
         {
             var command = new Command("package", LocalizableStrings.AppFullName);
 
-            command.AddOption(VerbosityOption);
-            command.AddOption(OutdatedOption);
-            command.AddOption(DeprecatedOption);
-            command.AddOption(VulnerableOption);
-            command.AddOption(FrameworkOption);
-            command.AddOption(TransitiveOption);
-            command.AddOption(PrereleaseOption);
-            command.AddOption(HighestPatchOption);
-            command.AddOption(HighestMinorOption);
-            command.AddOption(ConfigOption);
-            command.AddOption(SourceOption);
-            command.AddOption(InteractiveOption);
+            command.Options.Add(VerbosityOption);
+            command.Options.Add(OutdatedOption);
+            command.Options.Add(DeprecatedOption);
+            command.Options.Add(VulnerableOption);
+            command.Options.Add(FrameworkOption);
+            command.Options.Add(TransitiveOption);
+            command.Options.Add(PrereleaseOption);
+            command.Options.Add(HighestPatchOption);
+            command.Options.Add(HighestMinorOption);
+            command.Options.Add(ConfigOption);
+            command.Options.Add(SourceOption);
+            command.Options.Add(InteractiveOption);
 
             command.SetHandler((parseResult) => new ListPackageReferencesCommand(parseResult).Execute());
 

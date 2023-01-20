@@ -29,12 +29,12 @@ namespace Microsoft.DotNet.Cli
         {
             var command = new Command("repair", LocalizableStrings.CommandDescription);
 
-            command.AddOption(VersionOption);
-            command.AddOption(ConfigOption);
-            command.AddOption(SourceOption);
-            command.AddOption(CommonOptions.VerbosityOption);
+            command.Options.Add(VersionOption);
+            command.Options.Add(ConfigOption);
+            command.Options.Add(SourceOption);
+            command.Options.Add(CommonOptions.VerbosityOption);
             command.AddWorkloadCommandNuGetRestoreActionConfigOptions();
-            command.AddOption(WorkloadInstallCommandParser.SkipSignCheckOption);
+            command.Options.Add(WorkloadInstallCommandParser.SkipSignCheckOption);
 
             command.SetHandler((parseResult) => new WorkloadRepairCommand(parseResult).Execute());
 

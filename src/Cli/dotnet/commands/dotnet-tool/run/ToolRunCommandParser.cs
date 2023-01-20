@@ -28,8 +28,8 @@ namespace Microsoft.DotNet.Cli
         {
             var command = new Command("run", LocalizableStrings.CommandDescription);
 
-            command.AddArgument(CommandNameArgument);
-            command.AddArgument(CommandArgument);
+            command.Arguments.Add(CommandNameArgument);
+            command.Arguments.Add(CommandArgument);
 
             command.SetHandler((parseResult) => new ToolRunCommand(parseResult).Execute());
 

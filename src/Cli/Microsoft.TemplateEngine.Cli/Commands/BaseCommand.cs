@@ -190,7 +190,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             foreach (FilterOptionDefinition filterDef in filtersToSetup)
             {
                 Option newOption = GetFilterOption(filterDef);
-                this.AddOption(newOption);
+                this.Options.Add(newOption);
                 options[filterDef] = newOption;
             }
             return options;
@@ -201,8 +201,8 @@ namespace Microsoft.TemplateEngine.Cli.Commands
         /// </summary>
         protected void SetupTabularOutputOptions(ITabularOutputCommand command)
         {
-            this.AddOption(command.ColumnsAllOption);
-            this.AddOption(command.ColumnsOption);
+            this.Options.Add(command.ColumnsAllOption);
+            this.Options.Add(command.ColumnsOption);
         }
 
         private static async Task HandleGlobalOptionsAsync(

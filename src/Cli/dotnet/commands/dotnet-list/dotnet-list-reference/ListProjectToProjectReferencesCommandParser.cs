@@ -24,7 +24,7 @@ namespace Microsoft.DotNet.Cli
         {
             var command = new Command("reference", LocalizableStrings.AppFullName);
 
-            command.AddArgument(Argument);
+            command.Arguments.Add(Argument);
 
             command.SetHandler((parseResult) => new ListProjectToProjectReferencesCommand(parseResult).Execute());
 

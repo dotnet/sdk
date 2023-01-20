@@ -24,8 +24,8 @@ namespace Dotnet_new3
 
         internal CompleteCommand() : base("complete", "tab completion")
         {
-            this.AddArgument(PathArgument);
-            this.AddOption(PositionOption);
+            this.Arguments.Add(PathArgument);
+            this.Options.Add(PositionOption);
 
             this.SetHandler((InvocationContext invocationContext) => Run(invocationContext.ParseResult));
             this.IsHidden = true;

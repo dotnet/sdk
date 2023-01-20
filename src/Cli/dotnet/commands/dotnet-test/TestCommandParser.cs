@@ -89,12 +89,18 @@ namespace Microsoft.DotNet.Cli
         public static readonly Option<bool> BlameCrashOption = new ForwardedOption<bool>("--blame-crash", LocalizableStrings.CmdBlameCrashDescription)
             .ForwardAs("-property:VSTestBlameCrash=true");
 
-        public static readonly Option<string> BlameCrashDumpOption = new ForwardedOption<string>("--blame-crash-dump-type", LocalizableStrings.CmdBlameCrashDumpTypeDescription)
+        public static readonly Option<string> BlameCrashDumpOption = CreateBlameCrashDumpOption();
+
+        private static Option<string> CreateBlameCrashDumpOption()
         {
-            ArgumentHelpName = LocalizableStrings.CrashDumpTypeArgumentName,
+            Option<string> result = new ForwardedOption<string>("--blame-crash-dump-type", LocalizableStrings.CmdBlameCrashDumpTypeDescription)
+            {
+                ArgumentHelpName = LocalizableStrings.CrashDumpTypeArgumentName,
+            }
+            .ForwardAsMany(o => new[] { "-property:VSTestBlameCrash=true", $"-property:VSTestBlameCrashDumpType={o}" });
+            result.AcceptOnlyFromAmong(new string[] { "full", "mini" });
+            return result;
         }
-        .ForwardAsMany(o => new[] { "-property:VSTestBlameCrash=true", $"-property:VSTestBlameCrashDumpType={o}" })
-        .AcceptOnlyFromAmong(new string[] { "full", "mini" });
 
         public static readonly Option<bool> BlameCrashAlwaysOption = new ForwardedOption<bool>("--blame-crash-collect-always", LocalizableStrings.CmdBlameCrashCollectAlwaysDescription)
             .ForwardAsMany(o => new[] { "-property:VSTestBlameCrash=true", "-property:VSTestBlameCrashCollectAlways=true" });
@@ -102,12 +108,18 @@ namespace Microsoft.DotNet.Cli
         public static readonly Option<bool> BlameHangOption = new ForwardedOption<bool>("--blame-hang", LocalizableStrings.CmdBlameHangDescription)
             .ForwardAs("-property:VSTestBlameHang=true");
 
-        public static readonly Option<string> BlameHangDumpOption = new ForwardedOption<string>("--blame-hang-dump-type", LocalizableStrings.CmdBlameHangDumpTypeDescription)
+        public static readonly Option<string> BlameHangDumpOption = CreateBlameHangDumpOption();
+
+        private static Option<string> CreateBlameHangDumpOption()
         {
-            ArgumentHelpName = LocalizableStrings.HangDumpTypeArgumentName
+            Option<string> result = new ForwardedOption<string>("--blame-hang-dump-type", LocalizableStrings.CmdBlameHangDumpTypeDescription)
+            {
+                ArgumentHelpName = LocalizableStrings.HangDumpTypeArgumentName
+            }
+            .ForwardAsMany(o => new[] { "-property:VSTestBlameHang=true", $"-property:VSTestBlameHangDumpType={o}" });
+            result.AcceptOnlyFromAmong(new string[] { "full", "mini", "none" });
+            return result;
         }
-            .ForwardAsMany(o => new[] { "-property:VSTestBlameHang=true", $"-property:VSTestBlameHangDumpType={o}" })
-            .AcceptOnlyFromAmong(new string[] { "full", "mini", "none" });
 
         public static readonly Option<string> BlameHangTimeoutOption = new ForwardedOption<string>("--blame-hang-timeout", LocalizableStrings.CmdBlameHangTimeoutDescription)
         {
@@ -134,35 +146,35 @@ namespace Microsoft.DotNet.Cli
         {
             var command = new DocumentedCommand("test", DocsLink, LocalizableStrings.AppFullName);
             command.TreatUnmatchedTokensAsErrors = false;
-            command.AddArgument(SlnOrProjectArgument);
+            command.Arguments.Add(SlnOrProjectArgument);
 
-            command.AddOption(SettingsOption);
-            command.AddOption(ListTestsOption);
-            command.AddOption(EnvOption);
-            command.AddOption(FilterOption);
-            command.AddOption(AdapterOption);
-            command.AddOption(LoggerOption);
-            command.AddOption(OutputOption);
-            command.AddOption(DiagOption);
-            command.AddOption(NoBuildOption);
-            command.AddOption(ResultsOption);
-            command.AddOption(CollectOption);
-            command.AddOption(BlameOption);
-            command.AddOption(BlameCrashOption);
-            command.AddOption(BlameCrashDumpOption);
-            command.AddOption(BlameCrashAlwaysOption);
-            command.AddOption(BlameHangOption);
-            command.AddOption(BlameHangDumpOption);
-            command.AddOption(BlameHangTimeoutOption);
-            command.AddOption(NoLogoOption);
-            command.AddOption(ConfigurationOption);
-            command.AddOption(FrameworkOption);
-            command.AddOption(CommonOptions.RuntimeOption.WithHelpDescription(command, LocalizableStrings.RuntimeOptionDescription));
-            command.AddOption(NoRestoreOption);
-            command.AddOption(CommonOptions.InteractiveMsBuildForwardOption);
-            command.AddOption(CommonOptions.VerbosityOption);
-            command.AddOption(CommonOptions.ArchitectureOption);
-            command.AddOption(CommonOptions.OperatingSystemOption);
+            command.Options.Add(SettingsOption);
+            command.Options.Add(ListTestsOption);
+            command.Options.Add(EnvOption);
+            command.Options.Add(FilterOption);
+            command.Options.Add(AdapterOption);
+            command.Options.Add(LoggerOption);
+            command.Options.Add(OutputOption);
+            command.Options.Add(DiagOption);
+            command.Options.Add(NoBuildOption);
+            command.Options.Add(ResultsOption);
+            command.Options.Add(CollectOption);
+            command.Options.Add(BlameOption);
+            command.Options.Add(BlameCrashOption);
+            command.Options.Add(BlameCrashDumpOption);
+            command.Options.Add(BlameCrashAlwaysOption);
+            command.Options.Add(BlameHangOption);
+            command.Options.Add(BlameHangDumpOption);
+            command.Options.Add(BlameHangTimeoutOption);
+            command.Options.Add(NoLogoOption);
+            command.Options.Add(ConfigurationOption);
+            command.Options.Add(FrameworkOption);
+            command.Options.Add(CommonOptions.RuntimeOption.WithHelpDescription(command, LocalizableStrings.RuntimeOptionDescription));
+            command.Options.Add(NoRestoreOption);
+            command.Options.Add(CommonOptions.InteractiveMsBuildForwardOption);
+            command.Options.Add(CommonOptions.VerbosityOption);
+            command.Options.Add(CommonOptions.ArchitectureOption);
+            command.Options.Add(CommonOptions.OperatingSystemOption);
 
             command.SetHandler(TestCommand.Run);
 

@@ -27,8 +27,8 @@ namespace Microsoft.DotNet.Cli
         private static Command ConstructCommand()
         {
             Command command = new Command("uninstall", LocalizableStrings.CommandDescription);
-            command.AddArgument(WorkloadIdArgument);
-            command.AddOption(WorkloadInstallCommandParser.SkipSignCheckOption);
+            command.Arguments.Add(WorkloadIdArgument);
+            command.Options.Add(WorkloadInstallCommandParser.SkipSignCheckOption);
 
             command.SetHandler((parseResult) => new WorkloadUninstallCommand(parseResult).Execute());
 

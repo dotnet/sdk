@@ -78,17 +78,17 @@ namespace Microsoft.DotNet.Cli
         {
             var command = new DocumentedCommand("store", DocsLink, LocalizableStrings.AppDescription);
 
-            command.AddArgument(Argument);
-            command.AddOption(ManifestOption);
-            command.AddOption(FrameworkVersionOption);
-            command.AddOption(OutputOption);
-            command.AddOption(WorkingDirOption);
-            command.AddOption(SkipOptimizationOption);
-            command.AddOption(SkipSymbolsOption);
-            command.AddOption(CommonOptions.FrameworkOption(LocalizableStrings.FrameworkOptionDescription));
-            command.AddOption(CommonOptions.RuntimeOption.WithHelpDescription(command, LocalizableStrings.RuntimeOptionDescription));
-            command.AddOption(CommonOptions.VerbosityOption);
-			command.AddOption(CommonOptions.CurrentRuntimeOption(LocalizableStrings.CurrentRuntimeOptionDescription));
+            command.Arguments.Add(Argument);
+            command.Options.Add(ManifestOption);
+            command.Options.Add(FrameworkVersionOption);
+            command.Options.Add(OutputOption);
+            command.Options.Add(WorkingDirOption);
+            command.Options.Add(SkipOptimizationOption);
+            command.Options.Add(SkipSymbolsOption);
+            command.Options.Add(CommonOptions.FrameworkOption(LocalizableStrings.FrameworkOptionDescription));
+            command.Options.Add(CommonOptions.RuntimeOption.WithHelpDescription(command, LocalizableStrings.RuntimeOptionDescription));
+            command.Options.Add(CommonOptions.VerbosityOption);
+            command.Options.Add(CommonOptions.CurrentRuntimeOption(LocalizableStrings.CurrentRuntimeOptionDescription));
 
             command.SetHandler(StoreCommand.Run);
 

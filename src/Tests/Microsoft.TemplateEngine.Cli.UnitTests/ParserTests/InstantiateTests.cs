@@ -255,7 +255,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
 
             RootCommand rootCommand = new();
             NewCommand myCommand = (NewCommand)NewCommandFactory.Create("new", _ => host);
-            rootCommand.AddCommand(myCommand);
+            rootCommand.Subcommands.Add(myCommand);
             ParseResult parseResult = rootCommand.Parse(command);
             InstantiateCommandArgs args = InstantiateCommandArgs.FromNewCommandArgs(new NewCommandArgs(myCommand, parseResult));
             TemplateCommand templateCommand = new(myCommand, settings, packageManager, templateGroup, templateGroup.Templates.Single());
@@ -749,7 +749,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
 
             RootCommand rootCommand = new();
             NewCommand myCommand = (NewCommand)NewCommandFactory.Create("new", _ => host);
-            rootCommand.AddCommand(myCommand);
+            rootCommand.Subcommands.Add(myCommand);
             ParseResult parseResult = rootCommand.Parse(command);
             InstantiateCommandArgs args = InstantiateCommandArgs.FromNewCommandArgs(new NewCommandArgs(myCommand, parseResult));
             TemplateCommand templateCommand = new(

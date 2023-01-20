@@ -29,7 +29,7 @@ namespace Microsoft.DotNet.Tools.Help
         {
             var command = new DocumentedCommand("help", DocsLink, LocalizableStrings.AppFullName);
 
-            command.AddArgument(Argument);
+            command.Arguments.Add(Argument);
 
             command.SetHandler(HelpCommand.Run);
 

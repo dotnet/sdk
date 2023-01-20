@@ -22,7 +22,7 @@ namespace Microsoft.DotNet.Cli
         {
             Command command = new Command("restore", LocalizableStrings.CommandDescription);
 
-            command.AddArgument(RestoreCommandParser.SlnOrProjectArgument);
+            command.Arguments.Add(RestoreCommandParser.SlnOrProjectArgument);
             WorkloadInstallCommandParser.AddWorkloadInstallCommandOptions(command);
 
             command.SetHandler((parseResult) => new WorkloadRestoreCommand(parseResult).Execute());

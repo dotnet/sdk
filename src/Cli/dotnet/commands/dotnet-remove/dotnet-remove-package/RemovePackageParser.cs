@@ -33,8 +33,8 @@ namespace Microsoft.DotNet.Cli
         {
             var command = new Command("package", LocalizableStrings.AppFullName);
 
-            command.AddArgument(CmdPackageArgument);
-            command.AddOption(InteractiveOption);
+            command.Arguments.Add(CmdPackageArgument);
+            command.Options.Add(InteractiveOption);
 
             command.SetHandler((parseResult) => new RemovePackageReferenceCommand(parseResult).Execute());
 

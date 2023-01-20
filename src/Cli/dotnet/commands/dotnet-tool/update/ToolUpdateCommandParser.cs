@@ -45,21 +45,21 @@ namespace Microsoft.DotNet.Cli
         {
             var command = new Command("update", LocalizableStrings.CommandDescription);
 
-            command.AddArgument(PackageIdArgument);
-            command.AddOption(GlobalOption.WithHelpDescription(command, LocalizableStrings.GlobalOptionDescription));
-            command.AddOption(ToolPathOption.WithHelpDescription(command, LocalizableStrings.ToolPathOptionDescription));
-            command.AddOption(LocalOption.WithHelpDescription(command, LocalizableStrings.LocalOptionDescription));
-            command.AddOption(ConfigOption);
-            command.AddOption(AddSourceOption);
-            command.AddOption(FrameworkOption);
-            command.AddOption(VersionOption);
-            command.AddOption(ToolManifestOption.WithHelpDescription(command, LocalizableStrings.ManifestPathOptionDescription));
-            command.AddOption(PrereleaseOption);
-            command.AddOption(ToolCommandRestorePassThroughOptions.DisableParallelOption);
-            command.AddOption(ToolCommandRestorePassThroughOptions.IgnoreFailedSourcesOption);
-            command.AddOption(ToolCommandRestorePassThroughOptions.NoCacheOption);
-            command.AddOption(ToolCommandRestorePassThroughOptions.InteractiveRestoreOption);
-            command.AddOption(VerbosityOption);
+            command.Arguments.Add(PackageIdArgument);
+            command.Options.Add(GlobalOption.WithHelpDescription(command, LocalizableStrings.GlobalOptionDescription));
+            command.Options.Add(ToolPathOption.WithHelpDescription(command, LocalizableStrings.ToolPathOptionDescription));
+            command.Options.Add(LocalOption.WithHelpDescription(command, LocalizableStrings.LocalOptionDescription));
+            command.Options.Add(ConfigOption);
+            command.Options.Add(AddSourceOption);
+            command.Options.Add(FrameworkOption);
+            command.Options.Add(VersionOption);
+            command.Options.Add(ToolManifestOption.WithHelpDescription(command, LocalizableStrings.ManifestPathOptionDescription));
+            command.Options.Add(PrereleaseOption);
+            command.Options.Add(ToolCommandRestorePassThroughOptions.DisableParallelOption);
+            command.Options.Add(ToolCommandRestorePassThroughOptions.IgnoreFailedSourcesOption);
+            command.Options.Add(ToolCommandRestorePassThroughOptions.NoCacheOption);
+            command.Options.Add(ToolCommandRestorePassThroughOptions.InteractiveRestoreOption);
+            command.Options.Add(VerbosityOption);
 
             command.SetHandler((parseResult) => new ToolUpdateCommand(parseResult).Execute());
 

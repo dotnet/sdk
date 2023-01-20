@@ -115,7 +115,7 @@ namespace Microsoft.DotNet.Cli
             }
             else if (symbolResult.Token().Type.Equals(TokenType.Command))
             {
-                return symbolResult.Symbol.Name;
+                return ((System.CommandLine.Parsing.CommandResult)symbolResult).Command.Name;
             }
             else if (symbolResult.Token().Type.Equals(TokenType.Argument))
             {

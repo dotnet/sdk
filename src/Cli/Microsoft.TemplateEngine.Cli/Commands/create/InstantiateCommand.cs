@@ -22,23 +22,23 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             Func<ParseResult, ITemplateEngineHost> hostBuilder)
             : base(hostBuilder, "create", SymbolStrings.Command_Instantiate_Description)
         {
-            this.AddArgument(ShortNameArgument);
-            this.AddArgument(RemainingArguments);
+            this.Arguments.Add(ShortNameArgument);
+            this.Arguments.Add(RemainingArguments);
 
-            this.AddOption(SharedOptions.OutputOption);
-            this.AddOption(SharedOptions.NameOption);
-            this.AddOption(SharedOptions.DryRunOption);
-            this.AddOption(SharedOptions.ForceOption);
-            this.AddOption(SharedOptions.NoUpdateCheckOption);
-            this.AddOption(SharedOptions.ProjectPathOption);
+            this.Options.Add(SharedOptions.OutputOption);
+            this.Options.Add(SharedOptions.NameOption);
+            this.Options.Add(SharedOptions.DryRunOption);
+            this.Options.Add(SharedOptions.ForceOption);
+            this.Options.Add(SharedOptions.NoUpdateCheckOption);
+            this.Options.Add(SharedOptions.ProjectPathOption);
 
             parentCommand.AddNoLegacyUsageValidators(this);
-            this.AddValidator(symbolResult => parentCommand.ValidateOptionUsage(symbolResult, SharedOptions.OutputOption));
-            this.AddValidator(symbolResult => parentCommand.ValidateOptionUsage(symbolResult, SharedOptions.NameOption));
-            this.AddValidator(symbolResult => parentCommand.ValidateOptionUsage(symbolResult, SharedOptions.DryRunOption));
-            this.AddValidator(symbolResult => parentCommand.ValidateOptionUsage(symbolResult, SharedOptions.ForceOption));
-            this.AddValidator(symbolResult => parentCommand.ValidateOptionUsage(symbolResult, SharedOptions.NoUpdateCheckOption));
-            this.AddValidator(symbolResult => parentCommand.ValidateOptionUsage(symbolResult, SharedOptions.ProjectPathOption));
+            this.Validators.Add(symbolResult => parentCommand.ValidateOptionUsage(symbolResult, SharedOptions.OutputOption));
+            this.Validators.Add(symbolResult => parentCommand.ValidateOptionUsage(symbolResult, SharedOptions.NameOption));
+            this.Validators.Add(symbolResult => parentCommand.ValidateOptionUsage(symbolResult, SharedOptions.DryRunOption));
+            this.Validators.Add(symbolResult => parentCommand.ValidateOptionUsage(symbolResult, SharedOptions.ForceOption));
+            this.Validators.Add(symbolResult => parentCommand.ValidateOptionUsage(symbolResult, SharedOptions.NoUpdateCheckOption));
+            this.Validators.Add(symbolResult => parentCommand.ValidateOptionUsage(symbolResult, SharedOptions.ProjectPathOption));
         }
 
         internal static Argument<string> ShortNameArgument { get; } = new Argument<string>("template-short-name")
@@ -272,7 +272,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             if (candidates.Count == 1)
             {
                 TemplateCommand templateCommandToRun = candidates.Single();
-                args.Command.AddCommand(templateCommandToRun);
+                args.Command.Subcommands.Add(templateCommandToRun);
 
                 ParseResult updatedParseResult = args.ParseResult.Parser.Parse(args.ParseResult.Tokens.Select(t => t.Value).ToList());
                 return await candidates.Single().InvokeAsync(updatedParseResult, cancellationToken).ConfigureAwait(false);

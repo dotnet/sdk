@@ -51,8 +51,8 @@ namespace Microsoft.TemplateEngine.Cli.Commands
         internal static void FromAmongCaseInsensitive(this Option<string> option, string[]? allowedValues = null, string? allowedHiddenValue = null)
         {
             allowedValues ??= Array.Empty<string>();
-            option.AddValidator(optionResult => ValidateAllowedValues(optionResult, allowedValues, allowedHiddenValue));
-            option.AddCompletions(allowedValues);
+            option.Validators.Add(optionResult => ValidateAllowedValues(optionResult, allowedValues, allowedHiddenValue));
+            option.CompletionSources.Add(allowedValues);
         }
 
         /// <summary>

@@ -30,8 +30,8 @@ namespace Microsoft.DotNet.Cli
                 IsHidden = true
             };
 
-            command.AddArgument(PathArgument);
-            command.AddOption(PositionOption);
+            command.Arguments.Add(PathArgument);
+            command.Options.Add(PositionOption);
 
             command.SetHandler(CompleteCommand.Run);
 

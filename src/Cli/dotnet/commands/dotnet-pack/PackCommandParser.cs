@@ -56,18 +56,18 @@ namespace Microsoft.DotNet.Cli
         {
             var command = new DocumentedCommand("pack", DocsLink, LocalizableStrings.AppFullName);
 
-            command.AddArgument(SlnOrProjectArgument);
-            command.AddOption(OutputOption);
-            command.AddOption(NoBuildOption);
-            command.AddOption(IncludeSymbolsOption);
-            command.AddOption(IncludeSourceOption);
-            command.AddOption(ServiceableOption);
-            command.AddOption(NoLogoOption);
-            command.AddOption(CommonOptions.InteractiveMsBuildForwardOption);
-            command.AddOption(NoRestoreOption);
-            command.AddOption(CommonOptions.VerbosityOption);
-            command.AddOption(CommonOptions.VersionSuffixOption);
-            command.AddOption(ConfigurationOption);
+            command.Arguments.Add(SlnOrProjectArgument);
+            command.Options.Add(OutputOption);
+            command.Options.Add(NoBuildOption);
+            command.Options.Add(IncludeSymbolsOption);
+            command.Options.Add(IncludeSourceOption);
+            command.Options.Add(ServiceableOption);
+            command.Options.Add(NoLogoOption);
+            command.Options.Add(CommonOptions.InteractiveMsBuildForwardOption);
+            command.Options.Add(NoRestoreOption);
+            command.Options.Add(CommonOptions.VerbosityOption);
+            command.Options.Add(CommonOptions.VersionSuffixOption);
+            command.Options.Add(ConfigurationOption);
             RestoreCommandParser.AddImplicitRestoreOptions(command, includeRuntimeOption: true, includeNoDependenciesOption: true);
 
             command.SetHandler(PackCommand.Run);

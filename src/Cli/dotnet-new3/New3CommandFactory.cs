@@ -34,7 +34,7 @@ namespace Dotnet_new3
 
             newCommand.AddGlobalOption(_debugEmitTelemetryOption);
             newCommand.AddGlobalOption(_debugDisableBuiltInTemplatesOption);
-            newCommand.AddCommand(new CompleteCommand());
+            newCommand.Subcommands.Add(new CompleteCommand());
             return newCommand;
         }
     }

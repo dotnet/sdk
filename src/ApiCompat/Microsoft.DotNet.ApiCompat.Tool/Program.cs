@@ -113,14 +113,14 @@ namespace Microsoft.DotNet.ApiCompat.Tool
             rootCommand.AddGlobalOption(excludeAttributesFilesOption);
             rootCommand.AddGlobalOption(enableRuleCannotChangeParameterNameOption);
 
-            rootCommand.AddOption(leftAssembliesOption);
-            rootCommand.AddOption(rightAssembliesOption);
-            rootCommand.AddOption(strictModeOption);
-            rootCommand.AddOption(leftAssembliesReferencesOption);
-            rootCommand.AddOption(rightAssembliesReferencesOption);
-            rootCommand.AddOption(createWorkItemPerAssemblyOption);
-            rootCommand.AddOption(leftAssembliesTransformationPatternOption);
-            rootCommand.AddOption(rightAssembliesTransformationPatternOption);
+            rootCommand.Options.Add(leftAssembliesOption);
+            rootCommand.Options.Add(rightAssembliesOption);
+            rootCommand.Options.Add(strictModeOption);
+            rootCommand.Options.Add(leftAssembliesReferencesOption);
+            rootCommand.Options.Add(rightAssembliesReferencesOption);
+            rootCommand.Options.Add(createWorkItemPerAssemblyOption);
+            rootCommand.Options.Add(leftAssembliesTransformationPatternOption);
+            rootCommand.Options.Add(rightAssembliesTransformationPatternOption);
 
             rootCommand.SetHandler((InvocationContext context) =>
             {
@@ -211,15 +211,15 @@ namespace Microsoft.DotNet.ApiCompat.Tool
             };
 
             Command packageCommand = new("package", "Validates the compatibility of package assets");
-            packageCommand.AddArgument(packageArgument);
-            packageCommand.AddOption(runtimeGraphOption);
-            packageCommand.AddOption(runApiCompatOption);
-            packageCommand.AddOption(enableStrictModeForCompatibleTfmsOption);
-            packageCommand.AddOption(enableStrictModeForCompatibleFrameworksInPackageOption);
-            packageCommand.AddOption(enableStrictModeForBaselineValidationOption);
-            packageCommand.AddOption(baselinePackageOption);
-            packageCommand.AddOption(packageAssemblyReferencesOption);
-            packageCommand.AddOption(baselinePackageAssemblyReferencesOption);
+            packageCommand.Arguments.Add(packageArgument);
+            packageCommand.Options.Add(runtimeGraphOption);
+            packageCommand.Options.Add(runApiCompatOption);
+            packageCommand.Options.Add(enableStrictModeForCompatibleTfmsOption);
+            packageCommand.Options.Add(enableStrictModeForCompatibleFrameworksInPackageOption);
+            packageCommand.Options.Add(enableStrictModeForBaselineValidationOption);
+            packageCommand.Options.Add(baselinePackageOption);
+            packageCommand.Options.Add(packageAssemblyReferencesOption);
+            packageCommand.Options.Add(baselinePackageAssemblyReferencesOption);
             packageCommand.SetHandler((InvocationContext context) =>
             {
                 // If a roslyn assemblies path isn't provided, use the compiled against version from a subfolder.
@@ -268,7 +268,7 @@ namespace Microsoft.DotNet.ApiCompat.Tool
                 roslynResolver.Unregister();
             });
 
-            rootCommand.AddCommand(packageCommand);
+            rootCommand.Subcommands.Add(packageCommand);
             return rootCommand.Invoke(args);
         }
 

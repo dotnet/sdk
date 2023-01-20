@@ -62,14 +62,14 @@ namespace Microsoft.DotNet.Cli
         {
             var command = new Command("package", LocalizableStrings.AppFullName);
 
-            command.AddArgument(CmdPackageArgument);
-            command.AddOption(VersionOption);
-            command.AddOption(FrameworkOption);
-            command.AddOption(NoRestoreOption);
-            command.AddOption(SourceOption);
-            command.AddOption(PackageDirOption);
-            command.AddOption(InteractiveOption);
-            command.AddOption(PrereleaseOption);
+            command.Arguments.Add(CmdPackageArgument);
+            command.Options.Add(VersionOption);
+            command.Options.Add(FrameworkOption);
+            command.Options.Add(NoRestoreOption);
+            command.Options.Add(SourceOption);
+            command.Options.Add(PackageDirOption);
+            command.Options.Add(InteractiveOption);
+            command.Options.Add(PrereleaseOption);
 
             command.SetHandler((parseResult) => new AddPackageReferenceCommand(parseResult).Execute());
 

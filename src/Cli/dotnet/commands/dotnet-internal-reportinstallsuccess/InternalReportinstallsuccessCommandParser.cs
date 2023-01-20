@@ -25,7 +25,7 @@ namespace Microsoft.DotNet.Cli
                 IsHidden = true
             };
 
-            command.AddArgument(Argument);
+            command.Arguments.Add(Argument);
 
             command.SetHandler(InternalReportinstallsuccess.Run);
 

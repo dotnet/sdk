@@ -19,7 +19,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
         {
             this.IsHidden = true;
             this.AddAlias("-l");
-            AddValidator(ValidateParentCommandArguments);
+            this.Validators.Add(ValidateParentCommandArguments);
 
             parentCommand.AddNoLegacyUsageValidators(this, except: Filters.Values.Concat(new Symbol[] { ColumnsAllOption, ColumnsOption, NewCommand.ShortNameArgument }).ToArray());
         }
@@ -41,7 +41,8 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 
         private void ValidateParentCommandArguments(CommandResult commandResult)
         {
-            var nameArgumentResult = commandResult.Children.FirstOrDefault(symbol => symbol.Symbol == ListCommand.NameArgument);
+            var nameArgumentResult = commandResult.Children.FirstOrDefault(
+                symbol => symbol is ArgumentResult argumentResult && argumentResult.Argument == ListCommand.NameArgument);
             if (nameArgumentResult == null)
             {
                 return;

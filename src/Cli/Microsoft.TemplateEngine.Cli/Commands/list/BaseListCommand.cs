@@ -29,10 +29,10 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             ParentCommand = parentCommand;
             Filters = SetupFilterOptions(SupportedFilters);
 
-            this.AddArgument(NameArgument);
-            this.AddOption(IgnoreConstraintsOption);
-            this.AddOption(SharedOptions.OutputOption);
-            this.AddOption(SharedOptions.ProjectPathOption);
+            this.Arguments.Add(NameArgument);
+            this.Options.Add(IgnoreConstraintsOption);
+            this.Options.Add(SharedOptions.OutputOption);
+            this.Options.Add(SharedOptions.ProjectPathOption);
             SetupTabularOutputOptions(this);
         }
 

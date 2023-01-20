@@ -26,9 +26,9 @@ namespace Microsoft.DotNet.Cli
         {
             var command = new Command("shutdown", LocalizableStrings.CommandDescription);
 
-            command.AddOption(MSBuildOption);
-            command.AddOption(VbcsOption);
-            command.AddOption(RazorOption);
+            command.Options.Add(MSBuildOption);
+            command.Options.Add(VbcsOption);
+            command.Options.Add(RazorOption);
 
             command.SetHandler((parseResult) => new BuildServerShutdownCommand(parseResult).Execute());
 

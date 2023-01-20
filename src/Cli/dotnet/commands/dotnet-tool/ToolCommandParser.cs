@@ -24,13 +24,13 @@ namespace Microsoft.DotNet.Cli
         {
             var command = new DocumentedCommand("tool", DocsLink, LocalizableStrings.CommandDescription);
 
-            command.AddCommand(ToolInstallCommandParser.GetCommand());
-            command.AddCommand(ToolUninstallCommandParser.GetCommand());
-            command.AddCommand(ToolUpdateCommandParser.GetCommand());
-            command.AddCommand(ToolListCommandParser.GetCommand());
-            command.AddCommand(ToolRunCommandParser.GetCommand());
-            command.AddCommand(ToolSearchCommandParser.GetCommand());
-            command.AddCommand(ToolRestoreCommandParser.GetCommand());
+            command.Subcommands.Add(ToolInstallCommandParser.GetCommand());
+            command.Subcommands.Add(ToolUninstallCommandParser.GetCommand());
+            command.Subcommands.Add(ToolUpdateCommandParser.GetCommand());
+            command.Subcommands.Add(ToolListCommandParser.GetCommand());
+            command.Subcommands.Add(ToolRunCommandParser.GetCommand());
+            command.Subcommands.Add(ToolSearchCommandParser.GetCommand());
+            command.Subcommands.Add(ToolRestoreCommandParser.GetCommand());
 
             command.SetHandler((parseResult) => parseResult.HandleMissingCommand());
 

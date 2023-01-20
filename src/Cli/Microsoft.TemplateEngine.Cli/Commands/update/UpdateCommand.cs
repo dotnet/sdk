@@ -17,7 +17,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             : base(parentCommand, hostBuilder, "update", SymbolStrings.Command_Update_Description)
         {
             parentCommand.AddNoLegacyUsageValidators(this);
-            this.AddOption(CheckOnlyOption);
+            this.Options.Add(CheckOnlyOption);
         }
 
         internal static Option<bool> CheckOnlyOption { get; } = new(new[] { "--check-only", "--dry-run" })

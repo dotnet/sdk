@@ -55,23 +55,23 @@ namespace Microsoft.DotNet.Cli
         {
             var command = new DocumentedCommand("run", DocsLink, LocalizableStrings.AppFullName);
 
-            command.AddOption(ConfigurationOption);
-            command.AddOption(FrameworkOption);
-            command.AddOption(RuntimeOption.WithHelpDescription(command, LocalizableStrings.RuntimeOptionDescription));
-            command.AddOption(ProjectOption);
-            command.AddOption(PropertyOption);
-            command.AddOption(LaunchProfileOption);
-            command.AddOption(NoLaunchProfileOption);
-            command.AddOption(NoBuildOption);
-            command.AddOption(InteractiveOption);
-            command.AddOption(NoRestoreOption);
-            command.AddOption(SelfContainedOption);
-            command.AddOption(NoSelfContainedOption);
-            command.AddOption(CommonOptions.VerbosityOption);
-            command.AddOption(CommonOptions.ArchitectureOption);
-            command.AddOption(CommonOptions.OperatingSystemOption);
+            command.Options.Add(ConfigurationOption);
+            command.Options.Add(FrameworkOption);
+            command.Options.Add(RuntimeOption.WithHelpDescription(command, LocalizableStrings.RuntimeOptionDescription));
+            command.Options.Add(ProjectOption);
+            command.Options.Add(PropertyOption);
+            command.Options.Add(LaunchProfileOption);
+            command.Options.Add(NoLaunchProfileOption);
+            command.Options.Add(NoBuildOption);
+            command.Options.Add(InteractiveOption);
+            command.Options.Add(NoRestoreOption);
+            command.Options.Add(SelfContainedOption);
+            command.Options.Add(NoSelfContainedOption);
+            command.Options.Add(CommonOptions.VerbosityOption);
+            command.Options.Add(CommonOptions.ArchitectureOption);
+            command.Options.Add(CommonOptions.OperatingSystemOption);
 
-            command.AddArgument(ApplicationArguments);
+            command.Arguments.Add(ApplicationArguments);
 
             command.SetHandler(RunCommand.Run);
 

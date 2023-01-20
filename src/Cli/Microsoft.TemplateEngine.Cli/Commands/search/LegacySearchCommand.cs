@@ -16,7 +16,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             : base(parentCommand, hostBuilder, "--search")
         {
             this.IsHidden = true;
-            AddValidator(ValidateParentCommandArguments);
+            this.Validators.Add(ValidateParentCommandArguments);
 
             parentCommand.AddNoLegacyUsageValidators(this, except: Filters.Values.Concat(new Symbol[] { ColumnsAllOption, ColumnsOption, NewCommand.ShortNameArgument }).ToArray());
         }
@@ -38,7 +38,8 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 
         private void ValidateParentCommandArguments(CommandResult commandResult)
         {
-            var nameArgumentResult = commandResult.Children.FirstOrDefault(symbol => symbol.Symbol == NameArgument);
+            var nameArgumentResult = commandResult.Children.FirstOrDefault(
+                symbol => symbol is ArgumentResult argumentResult && argumentResult.Argument == NameArgument);
             if (nameArgumentResult == null)
             {
                 return;
