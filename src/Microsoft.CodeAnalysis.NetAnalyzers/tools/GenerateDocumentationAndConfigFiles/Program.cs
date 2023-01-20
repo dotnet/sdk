@@ -252,7 +252,7 @@ namespace GenerateDocumentationAndConfigFiles
 
                 var fileContents =
 $@"<Project>
-  {disableNetAnalyzersImport}{getCompilerVisibleProperties()}
+  {disableNetAnalyzersImport}{getCodeAnalysisTreatWarningsAsErrors()}{getCompilerVisibleProperties()}
 </Project>";
                 var directory = Directory.CreateDirectory(propsFileDir);
                 var fileWithPath = Path.Combine(directory.FullName, propsFileName);
@@ -308,6 +308,20 @@ $@"<Project>
                     Debug.Assert(!containsPortedFxCopRules);
                     return string.Empty;
                 }
+            }
+
+            string getCodeAnalysisTreatWarningsAsErrors()
+            {
+                var allRuleIds = string.Join(';', allRulesById.Keys);
+                return $@"
+  <!-- 
+    This property group handles 'CodeAnalysisTreatWarningsAsErrors = false' for the CA rule ids implemented in this package.
+  -->
+  <PropertyGroup>
+    <CodeAnalysisRuleIds>{allRuleIds}</CodeAnalysisRuleIds>
+    <EffectiveCodeAnalysisTreatWarningsAsErrors Condition=""'$(EffectiveCodeAnalysisTreatWarningsAsErrors)' == ''"">$(CodeAnalysisTreatWarningsAsErrors)</EffectiveCodeAnalysisTreatWarningsAsErrors>
+    <WarningsNotAsErrors Condition=""'$(EffectiveCodeAnalysisTreatWarningsAsErrors)' == 'false' and '$(TreatWarningsAsErrors)' == 'true'"">$(WarningsNotAsErrors);$(CodeAnalysisRuleIds)</WarningsNotAsErrors>
+  </PropertyGroup>";
             }
 
             string getCompilerVisibleProperties()
@@ -1404,6 +1418,7 @@ $@"<Project>{GetCommonContents(packageName, categories)}{GetPackageSpecificConte
                 }
 
                 stringBuilder.Append(GetMSBuildContentForPropertyAndItemOptions());
+                stringBuilder.Append(GetCodeAnalysisTreatWarningsAsErrorsTargetContents());
                 return stringBuilder.ToString();
             }
 
@@ -1592,6 +1607,22 @@ $@"<Project>{GetCommonContents(packageName, categories)}{GetPackageSpecificConte
 
                     AddItemGroupForCompilerVisibleProperties(compilerVisibleProperties, builder);
                 }
+            }
+
+            static string GetCodeAnalysisTreatWarningsAsErrorsTargetContents()
+            {
+                return $@"
+  <!--
+    Design-time target to handle 'CodeAnalysisTreatWarningsAsErrors = false' for the CA rule ids implemented in this package.
+    Note that a similar 'WarningsNotAsErrors' property group is present in the generated props file to ensure this functionality on command line builds.
+  -->
+  <Target Name=""_CodeAnalysisTreatWarningsAsErrors"" BeforeTargets=""CoreCompile"" Condition=""'$(DesignTimeBuild)' == 'true' OR '$(BuildingProject)' != 'true'"">
+    <PropertyGroup>
+      <EffectiveCodeAnalysisTreatWarningsAsErrors Condition=""'$(EffectiveCodeAnalysisTreatWarningsAsErrors)' == ''"">$(CodeAnalysisTreatWarningsAsErrors)</EffectiveCodeAnalysisTreatWarningsAsErrors>
+      <WarningsNotAsErrors Condition=""'$(EffectiveCodeAnalysisTreatWarningsAsErrors)' == 'false' and '$(TreatWarningsAsErrors)' == 'true'"">$(WarningsNotAsErrors);$(CodeAnalysisRuleIds)</WarningsNotAsErrors>
+    </PropertyGroup>
+  </Target>
+";
             }
 
             static string GetPackageSpecificContents(string packageName)
