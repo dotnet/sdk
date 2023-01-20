@@ -4,8 +4,6 @@
 
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
-using Mono.Cecil;
-using Mono.Collections.Generic;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -87,24 +85,23 @@ namespace Microsoft.DotNet.SourceBuild.Tasks.LeakDetection
                     var packageTempPath = Path.Combine(tempDir.FullName, Path.GetFileName(p.ItemSpec));
                     ZipFile.ExtractToDirectory(p.ItemSpec, packageTempPath, true);
 
-                    foreach (string f in Directory.EnumerateFiles(packageTempPath, "*", SearchOption.AllDirectories))
+                    foreach (string file in Directory.EnumerateFiles(packageTempPath, "*", SearchOption.AllDirectories))
                     {
                         // remove signatures so we don't later fail validation
-                        if (Path.GetFileName(f) == ".signature.p7s")
+                        if (Path.GetFileName(file) == ".signature.p7s")
                         {
-                            File.Delete(f);
+                            File.Delete(file);
                             continue;
                         }
 
                         var catalogFileEntry = new CatalogFileEntry();
                         packageEntry.Files.Add(catalogFileEntry);
-                        catalogFileEntry.Path = Utility.MakeRelativePath(f, packageTempPath);
-                        AssemblyDefinition asm = null;
+                        catalogFileEntry.Path = Utility.MakeRelativePath(file, packageTempPath);
 
                         // There seem to be some weird issues with using a file stream both for hashing and
                         // assembly loading, even closing it in between.  Use a MemoryStream to avoid issues.
                         var memStream = new MemoryStream();
-                        using (var stream = File.OpenRead(f))
+                        using (var stream = File.OpenRead(file))
                         {
                             stream.CopyTo(memStream);
                         }
@@ -113,49 +110,23 @@ namespace Microsoft.DotNet.SourceBuild.Tasks.LeakDetection
                         memStream.Seek(0, SeekOrigin.Begin);
                         catalogFileEntry.OriginalHash = sha.ComputeHash(memStream);
 
-                        // Now try to read it as an assembly
-                        memStream.Seek(0, SeekOrigin.Begin);
+                        // Add poison marker to assemblies
                         try
                         {
-                            asm = AssemblyDefinition.ReadAssembly(memStream, new ReaderParameters(ReadingMode.Deferred));
+                            AssemblyName asm = AssemblyName.GetAssemblyName(file);
+                            Poison(file);
+
+                            // then get the hash of the now-poisoned file
+                            using (var stream = File.OpenRead(file))
+                            {
+                                catalogFileEntry.PoisonedHash = sha.ComputeHash(stream);
+                            }
                         }
                         catch
                         {
-                            // this is okay, it's not an assembly we can read
+                            // this is okay, it's not an assembly
                         }
 
-                        // if we read it, now poison and write it back out
-                        if (asm != null)
-                        {
-                            Poison(asm);
-
-                            try
-                            {
-                                // Cecil doesn't try to do some modifications until it writes out the file,
-                                // and then throws after we've already truncated the file if it finds out it can't do them.
-                                // Write to a memory stream first and then copy to the real stream if it suceeds.  If it
-                                // fails, we won't truncate the file and we will depend on hashes instead in that case.
-                                using (var testMemStream = new MemoryStream())
-                                {
-                                    asm.Write(testMemStream);
-                                    testMemStream.Seek(0, SeekOrigin.Begin);
-                                    using (var stream = File.Open(f, FileMode.Create, FileAccess.ReadWrite))
-                                    {
-                                        testMemStream.CopyTo(stream);
-                                    }
-                                }
-
-                                // then get the hash of the now-poisoned file
-                                using (var stream = File.OpenRead(f))
-                                {
-                                    catalogFileEntry.PoisonedHash = sha.ComputeHash(stream);
-                                }
-                            }
-                            catch
-                            {
-                                // see above note in the try - this is okay.
-                            }
-                        }
                     }
 
                     if (!string.IsNullOrWhiteSpace(MarkerFileName))
@@ -203,16 +174,6 @@ namespace Microsoft.DotNet.SourceBuild.Tasks.LeakDetection
             return !Log.HasLoggedErrors;
         }
 
-        private void Poison(AssemblyDefinition asm)
-        {
-            foreach (var attr in asm.CustomAttributes)
-            {
-                if (this.AssemblyPropertiesToReplace.Any(p => p.Name == attr.AttributeType.Name))
-                {
-                    attr.ConstructorArguments.Clear();
-                    attr.ConstructorArguments.Add(new CustomAttributeArgument(asm.MainModule.TypeSystem.String, "POISONED by DotNetSourceBuild - Should not ship"));
-                }
-            }
-        }
+        private void Poison(string path) => File.AppendAllText(path, PoisonMarker);
     }
 }
