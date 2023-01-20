@@ -83,13 +83,8 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             return this.Equals(other as object);
         }
 
-        internal static new InvalidTemplateOptionResult FromParseResult(TemplateOption option, ParseResult parseResult)
+        internal static InvalidTemplateOptionResult FromParseError(TemplateOption option, ParseResult parseResult, ParseError error)
         {
-            if (!parseResult.HasErrorFor(option.Option))
-            {
-                throw new ArgumentException($"{nameof(option)} does not have an error in {nameof(parseResult)}");
-            }
-
             OptionResult? optionResult = parseResult.FindResultFor(option.Option);
             if (optionResult == null)
             {
@@ -103,23 +98,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
                 optionValue = string.Join(", ", optionResult.Tokens.Select(t => t.Value));
             }
 
-            string? errorMessage = null;
-            if (!string.IsNullOrWhiteSpace(optionResult.ErrorMessage))
-            {
-                errorMessage = optionResult.ErrorMessage;
-            }
-            else
-            {
-                foreach (var result in optionResult.Children)
-                {
-                    if (string.IsNullOrWhiteSpace(result.ErrorMessage))
-                    {
-                        continue;
-                    }
-                    errorMessage = result.ErrorMessage;
-                    break;
-                }
-            }
+            string errorMessage = !string.IsNullOrWhiteSpace(optionResult.ErrorMessage) ? optionResult.ErrorMessage : error.Message;
 
             return new InvalidTemplateOptionResult(
                     option,

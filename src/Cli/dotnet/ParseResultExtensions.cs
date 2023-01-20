@@ -181,7 +181,7 @@ namespace Microsoft.DotNet.Cli
             var optionString = shorthand ? "-p" : "--property";
             var options = parseResult.CommandResult.Children.Where(c => c.Token().Type.Equals(TokenType.Option));
             var propertyOptions = options.Where(o => o.Token().Value.Equals(optionString));
-            var propertyValues = propertyOptions.SelectMany(o => o.Children.SelectMany(c => c.Tokens.Select(t=> t.Value))).ToArray();
+            var propertyValues = propertyOptions.SelectMany(o => o.Tokens.Select(t=> t.Value)).ToArray();
             return propertyValues;
         }
 

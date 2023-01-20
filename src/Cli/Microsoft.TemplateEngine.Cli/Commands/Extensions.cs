@@ -4,6 +4,7 @@
 
 using System.CommandLine;
 using System.CommandLine.Parsing;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Constraints;
 using Microsoft.TemplateEngine.Edge;
@@ -25,24 +26,15 @@ namespace Microsoft.TemplateEngine.Cli.Commands
         /// <summary>
         /// Checks if <paramref name="parseResult"/> contains an error for <paramref name="option"/>.
         /// </summary>
-        internal static bool HasErrorFor(this ParseResult parseResult, Option option)
+        internal static bool HasErrorFor(this ParseResult parseResult, Option option, [NotNullWhen(true)] out ParseError? error)
         {
-            if (!parseResult.Errors.Any())
-            {
-                return false;
-            }
+            error = parseResult.Errors.FirstOrDefault(e => IsOptionResult(e.SymbolResult, option)
+                || IsOptionResult(e.SymbolResult?.Parent, option));
 
-            if (parseResult.Errors.Any(e => e.SymbolResult?.Symbol == option))
-            {
-                return true;
-            }
+            return error is not null;
 
-            if (parseResult.Errors.Any(e => e.SymbolResult?.Parent?.Symbol == option))
-            {
-                return true;
-            }
-
-            return false;
+            static bool IsOptionResult(SymbolResult? symbolResult, Option option)
+                => symbolResult is OptionResult optionResult && optionResult.Option == option;
         }
 
         /// <summary>
