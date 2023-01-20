@@ -151,13 +151,23 @@ namespace Microsoft.TemplateEngine.Cli
                 if (!string.IsNullOrWhiteSpace(DefaultValue)
                     || (Type == ParameterType.String || Type == ParameterType.Choice) && DefaultValue != null)
                 {
-                    if (option is Option<string> stringOption)
+                    switch (option)
                     {
-                        stringOption.SetDefaultValue(DefaultValue);
-                    }
-                    else
-                    {
-                        Debug.Fail($"Unexpected Option type: {option.GetType()}");
+                        case Option<string> stringOption:
+                            stringOption.SetDefaultValue(DefaultValue);
+                            break;
+                        case Option<bool> booleanOption:
+                            booleanOption.SetDefaultValue(bool.Parse(DefaultValue));
+                            break;
+                        case Option<long> integerOption:
+                            integerOption.SetDefaultValue(long.Parse(DefaultValue));
+                            break;
+                        case Option<float> floatOption:
+                            floatOption.SetDefaultValue(float.Parse(DefaultValue));
+                            break;
+                        default:
+                            Debug.Fail($"Unexpected Option type: {option.GetType()}");
+                            break;
                     }
                 }
             }
