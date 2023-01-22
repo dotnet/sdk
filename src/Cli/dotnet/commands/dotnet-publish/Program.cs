@@ -23,6 +23,21 @@ namespace Microsoft.DotNet.Tools.Publish
 {
     public class PublishCommand : RestoringCommand
     {
+
+        /// <summary>
+        /// The list of properties that should be forwarded from the publish profile to the publish invocation.
+        /// </summary>
+        /// <remarks>
+        /// While we could forward along every property, the intent of this array is to mimic the behavior of VS,
+        /// whose Publish operation only forwards along a few properties. Of particular interest are properties that
+        /// are set very early on in the build (RID, Configuration, etc).  The remainder will be imported during the
+        /// build via the Microsoft.Net.Sdk.Publish props and targets.
+        /// </remarks>
+        private static const string[] PropertiesToForwardFromProfile = new [] {
+            "Configuration",
+            "RuntimeIdentifier"
+        };
+
         private PublishCommand(
             IEnumerable<string> msbuildArgs,
             bool noRestore,
@@ -87,7 +102,9 @@ namespace Microsoft.DotNet.Tools.Publish
                 if (!String.IsNullOrEmpty(importedPropValue) && bool.TryParse(importedPropValue, out var wasImported) && wasImported) {
                     try {
                         if (projectInstance.GetPropertyValue(MSBuildPropertyNames.PUBLISH_PROFILE_FULL_PATH) is {} fullPathPropValue) {
-                            return new ProjectInstance(fullPathPropValue).ToProjectRootElement().PropertyGroups.First().Properties.Select(p => $"--property:{p.Name}=\"{p.Value}\"").ToList();
+                            var properties = new ProjectInstance(fullPathPropValue).ToProjectRootElement().PropertyGroups.First().Properties;
+                            var propertiesToForward = properties.Where(p => PropertiesToForwardFromProfile.Contains(p.Name));
+                            return propertiesToForward.Select(p => $"--property:{p.Name}=\"{p.Value}\"").ToList();
                         }
                     } catch (IOException) {
                         return new List<string>();
