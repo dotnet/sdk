@@ -1,15 +1,15 @@
 ﻿{
   "author": "Microsoft",
-  "name": "template.json configuration file",
-  "description": "A template for template.json configuration file for .NET template. See https://github.com/dotnet/templating/wiki/Reference-for-template.json for complete configuration description",
-  "symbols/CreateTemplateConfigFolder/description": "True when template.json should be created in .template.config folder.",
-  "symbols/CreateTemplateConfigFolder/displayName": "Create .template.config folder",
-  "symbols/TemplateName/description": "The template name.",
-  "symbols/TemplateName/displayName": "Template name",
-  "symbols/TemplateShortName/description": "The template short name.",
-  "symbols/TemplateShortName/displayName": "Template short name",
-  "symbols/TemplateIdentity/description": "The template identity (should be unique).",
-  "symbols/TemplateIdentity/displayName": "Template identity",
-  "postActions/instructions/description": "Manual actions required",
-  "postActions/instructions/manualInstructions/default/text": "Open template.json in the editor and complete the configuration."
+  "name": "konfigurační soubor template.json",
+  "description": "Šablona pro konfigurační soubor template.json pro šablonu .NET Úplný popis konfigurace najdete v https://github.com/dotnet/templating/wiki/Reference-for-template.json.",
+  "symbols/CreateTemplateConfigFolder/description": "True, pokud se má soubor template.json vytvořit ve složce .template.config.",
+  "symbols/CreateTemplateConfigFolder/displayName": "Vytvořit složku .template.config",
+  "symbols/TemplateName/description": "Název šablony.",
+  "symbols/TemplateName/displayName": "Název šablony",
+  "symbols/TemplateShortName/description": "Krátký název šablony.",
+  "symbols/TemplateShortName/displayName": "Krátký název šablony",
+  "symbols/TemplateIdentity/description": "Identita šablony (musí být jedinečná)",
+  "symbols/TemplateIdentity/displayName": "Identita šablony",
+  "postActions/instructions/description": "Vyžadují se ruční akce",
+  "postActions/instructions/manualInstructions/default/text": "Otevřete soubor template.json v editoru a dokončete konfiguraci."
 }

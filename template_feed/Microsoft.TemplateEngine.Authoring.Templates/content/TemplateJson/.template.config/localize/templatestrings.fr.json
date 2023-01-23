@@ -1,15 +1,15 @@
 ﻿{
   "author": "Microsoft",
-  "name": "template.json configuration file",
-  "description": "A template for template.json configuration file for .NET template. See https://github.com/dotnet/templating/wiki/Reference-for-template.json for complete configuration description",
-  "symbols/CreateTemplateConfigFolder/description": "True when template.json should be created in .template.config folder.",
-  "symbols/CreateTemplateConfigFolder/displayName": "Create .template.config folder",
-  "symbols/TemplateName/description": "The template name.",
-  "symbols/TemplateName/displayName": "Template name",
-  "symbols/TemplateShortName/description": "The template short name.",
-  "symbols/TemplateShortName/displayName": "Template short name",
-  "symbols/TemplateIdentity/description": "The template identity (should be unique).",
-  "symbols/TemplateIdentity/displayName": "Template identity",
-  "postActions/instructions/description": "Manual actions required",
-  "postActions/instructions/manualInstructions/default/text": "Open template.json in the editor and complete the configuration."
+  "name": "Fichier de configuration template.json",
+  "description": "Modèle pour le fichier de configuration template.json pour le modèle .NET. Voir https://github.com/dotnet/templating/wiki/Reference-for-template.json pour obtenir la description complète de la configuration",
+  "symbols/CreateTemplateConfigFolder/description": "La valeur est true quand template.json doit être créé dans le dossier .template.config.",
+  "symbols/CreateTemplateConfigFolder/displayName": "Créer un dossier .template.config",
+  "symbols/TemplateName/description": "Nom du modèle.",
+  "symbols/TemplateName/displayName": "Nom du modèle",
+  "symbols/TemplateShortName/description": "Nom court du modèle.",
+  "symbols/TemplateShortName/displayName": "Nom court du modèle",
+  "symbols/TemplateIdentity/description": "Identité du modèle (doit être unique).",
+  "symbols/TemplateIdentity/displayName": "Identité du modèle",
+  "postActions/instructions/description": "Actions annuelles requises",
+  "postActions/instructions/manualInstructions/default/text": "Ouvrez template.json dans l’éditeur et terminez la configuration."
 }

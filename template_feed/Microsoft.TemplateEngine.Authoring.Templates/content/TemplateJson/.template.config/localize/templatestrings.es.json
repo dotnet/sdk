@@ -1,15 +1,15 @@
 ﻿{
   "author": "Microsoft",
-  "name": "template.json configuration file",
-  "description": "A template for template.json configuration file for .NET template. See https://github.com/dotnet/templating/wiki/Reference-for-template.json for complete configuration description",
-  "symbols/CreateTemplateConfigFolder/description": "True when template.json should be created in .template.config folder.",
-  "symbols/CreateTemplateConfigFolder/displayName": "Create .template.config folder",
-  "symbols/TemplateName/description": "The template name.",
-  "symbols/TemplateName/displayName": "Template name",
-  "symbols/TemplateShortName/description": "The template short name.",
-  "symbols/TemplateShortName/displayName": "Template short name",
-  "symbols/TemplateIdentity/description": "The template identity (should be unique).",
-  "symbols/TemplateIdentity/displayName": "Template identity",
-  "postActions/instructions/description": "Manual actions required",
-  "postActions/instructions/manualInstructions/default/text": "Open template.json in the editor and complete the configuration."
+  "name": "Archivo de configuración plantilla.json",
+  "description": "Plantilla para el archivo de configuración template.json para la plantilla .NET. Consulte https://github.com/dotnet/templating/wiki/Reference-for-template.json para obtener la descripción completa de la configuración",
+  "symbols/CreateTemplateConfigFolder/description": "Es verdadero cuando template.json debe crearse en la carpeta .template.config.",
+  "symbols/CreateTemplateConfigFolder/displayName": "Crear carpeta .template.config",
+  "symbols/TemplateName/description": "Nombre de la plantilla.",
+  "symbols/TemplateName/displayName": "Nombre de plantilla",
+  "symbols/TemplateShortName/description": "Nombre corto de la plantilla.",
+  "symbols/TemplateShortName/displayName": "Nombre corto de la plantilla",
+  "symbols/TemplateIdentity/description": "Identidad de la plantilla (debe ser única).",
+  "symbols/TemplateIdentity/displayName": "Identidad de plantilla",
+  "postActions/instructions/description": "No se requieren acciones manuales",
+  "postActions/instructions/manualInstructions/default/text": "Abra template.json en el editor y complete la configuración."
 }

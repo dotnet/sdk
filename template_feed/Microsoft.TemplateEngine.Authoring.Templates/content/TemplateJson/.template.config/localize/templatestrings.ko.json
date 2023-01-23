@@ -1,15 +1,15 @@
 ﻿{
   "author": "Microsoft",
-  "name": "template.json configuration file",
-  "description": "A template for template.json configuration file for .NET template. See https://github.com/dotnet/templating/wiki/Reference-for-template.json for complete configuration description",
-  "symbols/CreateTemplateConfigFolder/description": "True when template.json should be created in .template.config folder.",
-  "symbols/CreateTemplateConfigFolder/displayName": "Create .template.config folder",
-  "symbols/TemplateName/description": "The template name.",
-  "symbols/TemplateName/displayName": "Template name",
-  "symbols/TemplateShortName/description": "The template short name.",
-  "symbols/TemplateShortName/displayName": "Template short name",
-  "symbols/TemplateIdentity/description": "The template identity (should be unique).",
-  "symbols/TemplateIdentity/displayName": "Template identity",
-  "postActions/instructions/description": "Manual actions required",
-  "postActions/instructions/manualInstructions/default/text": "Open template.json in the editor and complete the configuration."
+  "name": "template.json 구성 파일",
+  "description": ".NET 템플릿의 template.json 구성 파일에 대한 템플릿입니다. 전체 구성 설명은 https://github.com/dotnet/templating/wiki/Reference-for-template.json을 참조하세요.",
+  "symbols/CreateTemplateConfigFolder/description": ".template.config 폴더에 template.json을 만들어야 하는 경우 True.",
+  "symbols/CreateTemplateConfigFolder/displayName": ".template.config 폴더 만들기",
+  "symbols/TemplateName/description": "템플릿 이름입니다.",
+  "symbols/TemplateName/displayName": "템플릿 이름",
+  "symbols/TemplateShortName/description": "템플릿 약식 이름입니다.",
+  "symbols/TemplateShortName/displayName": "템플릿 약식 이름",
+  "symbols/TemplateIdentity/description": "템플릿 ID입니다(고유해야 함).",
+  "symbols/TemplateIdentity/displayName": "템플릿 ID",
+  "postActions/instructions/description": "수동 작업 필요",
+  "postActions/instructions/manualInstructions/default/text": "편집기에서 template.json을 열고 구성을 완료합니다."
 }

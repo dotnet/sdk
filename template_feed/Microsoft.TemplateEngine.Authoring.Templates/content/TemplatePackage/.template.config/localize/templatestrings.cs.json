@@ -1,7 +1,7 @@
 ﻿{
   "author": "Microsoft",
-  "name": "Template Package",
-  "description": "A project for a template package containing .NET templates.",
-  "postActions/instructions/description": "Manual actions required",
-  "postActions/instructions/manualInstructions/default/text": "Open *.csproj in the editor and complete the package metadata configuration. Copy the templates to 'content' folder. Fill in README.md."
+  "name": "Balíček šablony",
+  "description": "Projekt pro balíček šablony obsahující šablony .NET.",
+  "postActions/instructions/description": "Vyžadují se ruční akce",
+  "postActions/instructions/manualInstructions/default/text": "Otevřete soubor *.csproj v editoru a dokončete konfiguraci metadat balíčku. Zkopírujte šablony do složky content. Vyplňte README.md."
 }
