@@ -19,7 +19,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery
             Arity = ArgumentArity.ExactlyOne,
             Description = "The root dir for output for this run.",
             IsRequired = true
-        }.AcceptLegalFilePathsOnly();
+        };
 
         private readonly Option<bool> _allowPreviewPacksOption = new Option<bool>("--allowPreviewPacks")
         {
@@ -61,7 +61,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery
             Arity = ArgumentArity.OneOrMore,
             Description = $"The list of providers to run. Supported providers: {string.Join(",", Enum.GetValues<SupportedQueries>())}.",
             AllowMultipleArgumentsPerToken = true,
-        }.AcceptOnlyFromAmong(Enum.GetValues<SupportedQueries>().Select(e => e.ToString()).ToArray());
+        };
 
         private readonly Option<DirectoryInfo> _packagesPathOption = new Option<DirectoryInfo>("--packagesPath")
         {
@@ -85,23 +85,24 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery
 
         public TemplateDiscoveryCommand() : base("template-discovery", "Generates the template package search cache file based on the packages available on NuGet.org.")
         {
+            _basePathOption.AcceptLegalFilePathsOnly();
             _queriesOption.AcceptOnlyFromAmong(Enum.GetValues<SupportedQueries>().Select(e => e.ToString()).ToArray());
 
-            AddOption(_basePathOption);
-            AddOption(_allowPreviewPacksOption);
-            AddOption(_pageSizeOption);
-            AddOption(_onePageOption);
-            AddOption(_savePacksOption);
-            AddOption(_noTemplateJsonFilterOption);
-            AddOption(_testOption);
-            AddOption(_queriesOption);
-            AddOption(_packagesPathOption);
-            AddOption(_verboseOption);
-            AddOption(_diffOption);
-            AddOption(_diffOverrideCacheOption);
-            AddOption(_diffOverrideNonPackagesOption);
+            Options.Add(_basePathOption);
+            Options.Add(_allowPreviewPacksOption);
+            Options.Add(_pageSizeOption);
+            Options.Add(_onePageOption);
+            Options.Add(_savePacksOption);
+            Options.Add(_noTemplateJsonFilterOption);
+            Options.Add(_testOption);
+            Options.Add(_queriesOption);
+            Options.Add(_packagesPathOption);
+            Options.Add(_verboseOption);
+            Options.Add(_diffOption);
+            Options.Add(_diffOverrideCacheOption);
+            Options.Add(_diffOverrideNonPackagesOption);
 
-            this.TreatUnmatchedTokensAsErrors = true;
+            TreatUnmatchedTokensAsErrors = true;
             this.SetHandler(ExecuteAsync, new CommandArgsBinder(this));
         }
 

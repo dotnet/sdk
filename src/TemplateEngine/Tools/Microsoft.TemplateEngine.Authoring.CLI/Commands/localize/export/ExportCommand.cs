@@ -40,10 +40,10 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.Commands
         public ExportCommand()
             : base(CommandName, LocalizableStrings.command_export_help_description)
         {
-            AddArgument(_templatePathArgument);
-            AddOption(_recursiveOption);
-            AddOption(_languageOption);
-            AddOption(_dryRunOption);
+            Arguments.Add(_templatePathArgument);
+            Options.Add(_recursiveOption);
+            Options.Add(_languageOption);
+            Options.Add(_dryRunOption);
         }
 
         protected internal override ExportCommandArgs ParseContext(ParseResult parseResult)
