@@ -44,7 +44,6 @@ dotnet nuget remove source dotnet-libraries --configfile %TestExecutionDirectory
 dotnet nuget remove source dotnet-eng --configfile %TestExecutionDirectory%\nuget.config
 dotnet nuget list source --configfile %TestExecutionDirectory%\nuget.config
 
-dir /B  Assets\TestPackages\*.csproj /s
 robocopy %HELIX_CORRELATION_PAYLOAD%\t\TestExecutionDirectoryFiles\ .\ testAsset.props
 set TestPackagesRoot=%CD%\assets\testpackages\
 dotnet build assets\testpackages\Microsoft.NET.TestPackages.csproj /t:Build -p:VersionPropsIsImported=false

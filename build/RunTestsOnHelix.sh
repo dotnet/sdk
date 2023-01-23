@@ -20,7 +20,7 @@ dotnet new --debug:ephemeral-hive
 # We downloaded a special zip of files to the .nuget folder so add that as a source
 dotnet nuget list source --configfile $TestExecutionDirectory/NuGet.config
 dotnet nuget add source $DOTNET_ROOT/.nuget --configfile $TestExecutionDirectory/NuGet.config
-dotnet nuget list source --configfile $TestExecutionDirectory/NuGet.config
+#Remove feeds not needed for tests
 dotnet nuget remove source dotnet6-transport --configfile $TestExecutionDirectory/NuGet.config
 dotnet nuget remove source dotnet6-internal-transport --configfile $TestExecutionDirectory/NuGet.config
 dotnet nuget remove source dotnet7-transport --configfile $TestExecutionDirectory/NuGet.config
@@ -38,8 +38,5 @@ export TestPackagesRoot=$(pwd)/Assets/TestPackages
 dotnet build ./Assets/TestPackages/Microsoft.NET.TestPackages.csproj /t:Build -p:VersionPropsIsImported=false
 mkdir $TestExecutionDirectory/Testpackages
 cp $TestPackagesRoot/TestPackages/. $TestExecutionDirectory/Testpackages -R -v
-find $TestExecutionDirectory/Testpackages -iname *.nupkg
 dotnet nuget add source $TestExecutionDirectory/Testpackages
 
-find /. -iname *.nupkg
-find /. -iname nuget.config
