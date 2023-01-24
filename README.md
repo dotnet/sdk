@@ -6,7 +6,7 @@ This repository contains core functionality needed to create .NET projects that 
 
 See [dotnet/project-system](https://github.com/dotnet/project-system) for the project system work that is specific to Visual Studio.
 
-This repository also contains [common project and item templates](https://github.com/dotnet/sdk/tree/main/template_feed).
+Common project and item templates are found in [template_feed](https://github.com/dotnet/sdk/tree/main/template_feed).
 
 ## Build status
 
