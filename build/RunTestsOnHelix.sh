@@ -38,5 +38,5 @@ export TestPackagesRoot=$(pwd)/Assets/TestPackages
 dotnet build ./Assets/TestPackages/Microsoft.NET.TestPackages.csproj /t:Build -p:VersionPropsIsImported=false
 mkdir $TestExecutionDirectory/Testpackages
 cp $TestPackagesRoot/TestPackages/. $TestExecutionDirectory/Testpackages -R -v
-dotnet nuget add source $TestExecutionDirectory/Testpackages
+dotnet nuget add source $TestExecutionDirectory/Testpackages --configfile $TestExecutionDirectory/NuGet.config
 
