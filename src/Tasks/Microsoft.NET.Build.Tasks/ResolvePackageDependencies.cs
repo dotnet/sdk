@@ -279,8 +279,26 @@ namespace Microsoft.NET.Build.Tasks
 
         private void GetPackageAndFileDependencies(LockFileTarget target)
         {
-            var resolvedPackageVersions = target.Libraries
-                .ToDictionary(pkg => pkg.Name, pkg => pkg.Version.ToNormalizedString(), StringComparer.OrdinalIgnoreCase);
+            // In case of there are duplicated packages in libraries with differing versions,
+            // We skip package altogether
+            var resolvedPackageVersions = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            var duplicatedPackages = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (LockFileTargetLibrary library in target.Libraries)
+            {
+                string libraryName = library.Name;
+                if (duplicatedPackages.Contains(libraryName))
+                {
+                    continue;
+                }
+
+                if (resolvedPackageVersions.ContainsKey(libraryName))
+                {
+                    duplicatedPackages.Add(libraryName);
+                    resolvedPackageVersions.Remove(libraryName);
+                }
+
+                resolvedPackageVersions[libraryName] = library.Version.ToNormalizedString();
+            }
 
             string frameworkAlias = _targetNameToAliasMap[target.Name];
 
