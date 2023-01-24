@@ -6,7 +6,7 @@ The WebSdk repository contains code for the following packages:
 
 1. Microsoft.NET.Sdk.Web.ProjectSystem
 1. Microsoft.NET.Sdk.Publish
-31. Microsoft.NET.Sdk.Web (Meta-package containing dependency to Microsoft.NET.Sdk.Web.ProjectSystem & Microsoft.NET.Sdk.Publish)
+1. Microsoft.NET.Sdk.Web (Meta-package containing dependency to Microsoft.NET.Sdk.Web.ProjectSystem & Microsoft.NET.Sdk.Publish)
 
 `Microsoft.NET.Sdk.Web.ProjectSystem`
 ======================
