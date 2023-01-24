@@ -17,7 +17,7 @@ namespace Microsoft.DotNet.GenAPI
     {
         /// <summary>
         /// Creates a declaration matching an existing symbol.
-        ///     The reson of having this similar to `SyntaxGenerator.Declaration` extention method is that
+        ///     The reson of having this similar to `SyntaxGenerator.Declaration` extension method is that
         ///     SyntaxGenerator does not generates attributes neither for types, neiter for members.
         /// </summary>
         public static SyntaxNode DeclarationExt(this SyntaxGenerator syntaxGenerator, ISymbol symbol)
