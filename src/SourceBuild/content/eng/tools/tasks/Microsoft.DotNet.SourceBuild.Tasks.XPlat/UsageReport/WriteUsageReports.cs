@@ -195,13 +195,14 @@ namespace Microsoft.DotNet.SourceBuild.Tasks.UsageReport
                     // Get the embedded creation time if possible: the file's original metadata may
                     // have been destroyed by copying, zipping, etc.
                     string creationTime = snapshot.Xml
-                        // Get the second PropertyGroup.
-                        .Elements().Skip(1).FirstOrDefault()
-                        // Get the creation time element.
-                        ?.Element(snapshot.Xml
-                            .GetDefaultNamespace()
-                            .GetName(WritePackageVersionsProps.CreationTimePropertyName))
-                        ?.Value;
+                        // Get all elements
+                        .Elements()
+                        // Select all the subelements
+                        .SelectMany(e => e.Elements())
+                        // Find all that match the creation time property name
+                        .Where(e => e.Name == snapshot.Xml.GetDefaultNamespace().GetName(WritePackageVersionsProps.CreationTimePropertyName))
+                        // There should be only one or zero
+                        .SingleOrDefault()?.Value;
 
                     if (string.IsNullOrEmpty(creationTime))
                     {
@@ -279,7 +280,8 @@ namespace Microsoft.DotNet.SourceBuild.Tasks.UsageReport
             public static PackageVersionPropsElement[] Parse(XElement xml)
             {
                 return xml
-                    // Get the single PropertyGroup
+                    // Get the first PropertyGroup. The second PropertyGroup is 'extra properties', and the third group is the creation time.
+                    // Only select the first because the extra properties are not built packages.
                     .Elements()
                     .First()
                     // Get all *PackageVersion property elements.
