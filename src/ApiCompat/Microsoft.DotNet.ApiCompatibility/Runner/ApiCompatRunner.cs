@@ -92,8 +92,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Runner
                         if (logHeader)
                         {
                             logHeader = false;
-                            _log.LogMessage(MessageImportance.High,
-                                Resources.ApiCompatibilityHeader,
+                            _log.LogError(Resources.ApiCompatibilityHeader,
                                 difference.Left.AssemblyId,
                                 difference.Right.AssemblyId,
                                 workItem.Options.IsBaselineComparison ? difference.Left.FullPath : "left",
