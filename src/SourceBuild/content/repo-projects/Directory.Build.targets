@@ -602,7 +602,7 @@
           Outputs="$(RepoCompletedSemaphorePath)WritePrebuiltUsageData.complete">
     <!-- Save the PVP snapshot of each build step to be evaluated while building the report. -->
     <ItemGroup>
-      <PackageVersionPropsSnapshotFiles Include="$(IntermediatePath)PackageVersions.props.pre.*.xml" />
+      <PackageVersionPropsSnapshotFiles Include="$(IntermediatePath)PackageVersions.*.Current.props" />
     </ItemGroup>
     <Copy SourceFiles="@(PackageVersionPropsSnapshotFiles)" DestinationFolder="$(PackageReportDir)snapshots/" />
 
@@ -688,7 +688,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageVersionPropsSavedSnapshotFiles Include="$(PackageReportDir)snapshots/PackageVersions.props.pre.*.xml" />
+      <PackageVersionPropsSavedSnapshotFiles Include="$(PackageReportDir)snapshots/PackageVersions.*.Current.props" />
     </ItemGroup>
 
     <WriteUsageReports DataFile="$(PackageReportDataFile)"

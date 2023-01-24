@@ -62,13 +62,6 @@ namespace Microsoft.DotNet.Build.Tasks
         public string OutputPath { get; set; }
 
         /// <summary>
-        /// Adds a second PropertyGroup to the output XML containing a property with the time of
-        /// creation in UTC DateTime Ticks. This can be used to track creation time in situations
-        /// where file metadata isn't reliable or preserved.
-        /// </summary>
-        public bool IncludeCreationTimeProperty { get; set; }
-
-        /// <summary>
         /// Properties to add to the build output props, which may not exist as nupkgs.
         /// FOr example, this is used to pass the version of the CLI toolset archives.
         /// 
@@ -242,12 +235,9 @@ namespace Microsoft.DotNet.Build.Tasks
                 WriteExtraProperties(sw);
                 WriteVersionEntries(sw, additionalAssetElementsToWrite, "additional assets");
 
-                if (IncludeCreationTimeProperty)
-                {
-                    sw.WriteLine(@"  <PropertyGroup>");
-                    sw.WriteLine($@"    <{CreationTimePropertyName}>{DateTime.UtcNow.Ticks}</{CreationTimePropertyName}>");
-                    sw.WriteLine(@"  </PropertyGroup>");
-                }
+                sw.WriteLine(@"  <PropertyGroup>");
+                sw.WriteLine($@"    <{CreationTimePropertyName}>{DateTime.UtcNow.Ticks}</{CreationTimePropertyName}>");
+                sw.WriteLine(@"  </PropertyGroup>");
 
                 sw.WriteLine(@"</Project>");
             }
