@@ -19,22 +19,22 @@ namespace Microsoft.DotNet.ApiCompatibility.Tests
         public bool LogError(Suppression suppression, string code, string message)
         {
             HasLoggedSuppressions = true;
-            errors.Add($"{code}: {message}");
+            errors.Add($"{code} {message}");
 
             return true;
         }
         public void LogError(string message) => errors.Add(message);
-        public void LogError(string code, string message) => errors.Add($"{code}: {message}");
+        public void LogError(string code, string message) => errors.Add($"{code} {message}");
         
         public bool LogWarning(Suppression suppression, string code, string message)
         {
             HasLoggedSuppressions = true;
-            warnings.Add($"{code}: {message}");
+            warnings.Add($"{code} {message}");
 
             return true;
         }
         public void LogWarning(string message) => warnings.Add(message);
-        public void LogWarning(string code, string message) => warnings.Add($"{code}: {message}");
+        public void LogWarning(string code, string message) => warnings.Add($"{code} {message}");
 
         public void LogMessage(string message) { }
         public void LogMessage(MessageImportance importance, string message) { }
