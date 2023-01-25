@@ -4,6 +4,7 @@ Date: Wed, 25 Jan 2023 20:21:17 +0000
 Subject: [PATCH] Allow source-build to set UsingToolMicrosoftNetCompilers
  property
 
+backport: https://github.com/dotnet/runtime/pull/81180
 ---
  eng/Versions.props | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)

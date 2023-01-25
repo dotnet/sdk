@@ -233,7 +233,8 @@ namespace Microsoft.DotNet.SourceBuild.Tasks.LeakDetection
             {
                 return NonShippingPackagesListFiles
                     .SelectMany(item => File.ReadAllLines(item.ItemSpec))
-                    .Distinct();
+                    .Distinct()
+                    .ToList();
             }
             else
             {
