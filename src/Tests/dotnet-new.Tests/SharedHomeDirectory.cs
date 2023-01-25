@@ -65,7 +65,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And
                 .NotHaveStdErr();
 
-            new DotnetNewCommand(Log, "install", TemplatePackagesPaths.MicrosoftDotNetCommonProjectTemplates60Path, "force")
+            new DotnetNewCommand(Log, "install", TemplatePackagesPaths.MicrosoftDotNetCommonProjectTemplates60Path, "--force")
                 .WithCustomHive(HomeDirectory)
                 .Execute()
                 .Should()
