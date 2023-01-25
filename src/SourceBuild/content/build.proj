@@ -133,7 +133,7 @@
   <Target Name="CreateCreateSmokeTestPrereqsTarballIfPrereqsExist"
           Condition="'@(SmokeTestsPrereqs->Count())' != '0'">
     <PropertyGroup>
-      <SmokeTestPrereqsTarballName>$(OutputPath)dotnet-smoke-test-prereqs.$(installerOutputPackageVersion).tar.gz</SmokeTestPrereqsTarballName>
+      <SmokeTestPrereqsTarballName>$(OutputPath)dotnet-smoke-test-prereqs.$(installerOutputPackageVersion).$(TargetRid).tar.gz</SmokeTestPrereqsTarballName>
       <SmokeTestsPrereqPackagesDir>$(SmokeTestsArtifactsDir)prereq-packages/</SmokeTestsPrereqPackagesDir>
     </PropertyGroup>
 
@@ -189,7 +189,7 @@
   <Target Name="CreatePrebuiltsTarballIfPrebuiltsExist"
           Condition="'@(PrebuiltFile->Count())' != '0'">
     <PropertyGroup>
-      <TarballFilePath>$(OutputPath)$(SourceBuiltPrebuiltsTarballName).$(installerOutputPackageVersion).$(BuildArchitecture).tar.gz</TarballFilePath>
+      <TarballFilePath>$(OutputPath)$(SourceBuiltPrebuiltsTarballName).$(installerOutputPackageVersion).$(TargetRid).tar.gz</TarballFilePath>
       <TarballWorkingDir>$(ResultingPrebuiltPackagesDir)</TarballWorkingDir>
     </PropertyGroup>
 
