@@ -37,6 +37,6 @@ cp $HELIX_CORRELATION_PAYLOAD/t/TestExecutionDirectoryFiles/testAsset.props ./
 export TestPackagesRoot=$(pwd)/Assets/TestPackages
 dotnet build ./Assets/TestPackages/Microsoft.NET.TestPackages.csproj /t:Build -p:VersionPropsIsImported=false
 mkdir $TestExecutionDirectory/Testpackages
-cp $TestPackagesRoot/TestPackages/* $TestExecutionDirectory/Testpackages/. -v
+cp -v $TestPackagesRoot/TestPackages/* $TestExecutionDirectory/Testpackages/.
 dotnet nuget add source $TestExecutionDirectory/Testpackages --configfile $TestExecutionDirectory/NuGet.config
 
