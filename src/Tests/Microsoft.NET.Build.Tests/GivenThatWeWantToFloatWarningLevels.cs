@@ -273,6 +273,19 @@ namespace Microsoft.NET.Build.Tests
         [RequiresMSBuildVersionTheory("16.8")]
         public void It_maps_analysis_properties_to_globalconfig(string analysisLevel, string analysisMode, string codeAnalysisTreatWarningsAsErrors)
         {
+            // NOTE: This test will fail for "latest" analysisLevel when the "_LatestAnalysisLevel" property
+            // is bumped in Microsoft.NET.Sdk.Analyzers.targets without a corresponding change in dotnet/roslyn-analyzers
+            // repo that generates and maps to the globalconfig. This is an important regression test to ensure the
+            // "latest" analysisLevel setting keeps working as expected when moving to a newer version of the .NET SDK.
+            // Following changes are needed to ensure the failing test scenario passes again:
+            //  1. In dotnet/roslyn-analyzers repo:
+            //     a. Update "src/NetAnalyzers/Core/AnalyzerReleases.Shipped.md"to create a new release
+            //        for the prior "_LatestAnalysisLevel" value and move all the entries from
+            //        "src/NetAnalyzers/Core/AnalyzerReleases.Unshipped.md" to the shipped file.
+            //        For example, see https://github.com/dotnet/roslyn-analyzers/pull/6246.
+            //  2. In dotnet/sdk repo:
+            //     a. Consume the new Microsoft.CodeAnalysis.NetAnalyzers package with the above sha.
+
             var testProject = new TestProject
             {
                 Name = "HelloWorld",
