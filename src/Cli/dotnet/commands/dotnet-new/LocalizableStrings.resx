@@ -308,20 +308,4 @@
     <value>Run 'dotnet workload search' to search workloads available to be installed on your SDK.</value>
     <comment>{Locked="dotnet workload search"}</comment>
   </data>
-  <data name="PostAction_ModifyJson_Error_ArgumentNotConfigured" xml:space="preserve">
-    <value>{0} not configured.</value>
-  </data>
-  <data name="PostAction_ModifyJson_Error_MultipleJsonFiles" xml:space="preserve">
-    <value>More than one file found that matches {0}.</value>
-  </data>
-  <data name="PostAction_ModifyJson_Error_NoJsonFile" xml:space="preserve">
-    <value>Unable to find the json file in the solution</value>
-  </data>
-  <data name="PostAction_ModifyJson_Error_ParentPropertyPathInvalid" xml:space="preserve">
-    <value>Parent property path could not be traversed.</value>
-  </data>
-  <data name="PostAction_ModifyJson_Succeeded" xml:space="preserve">
-    <value>Successfully modified {0}.</value>
-    <comment>{0} is the name of the JSON file that has been modified.</comment>
-  </data>
 </root>
