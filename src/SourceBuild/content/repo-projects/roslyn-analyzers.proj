@@ -10,6 +10,7 @@
     <DependencyVersionInputRepoApiImplemented>false</DependencyVersionInputRepoApiImplemented>
     <LogVerbosityOptOut>true</LogVerbosityOptOut>
     <GlobalJsonFile>$(ProjectDirectory)global.json</GlobalJsonFile>
+    <PackageVersionPropsFlowType>DependenciesOnly</PackageVersionPropsFlowType>
   </PropertyGroup>
 
   <ItemGroup>
