@@ -11,7 +11,7 @@ using Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem;
 
 namespace Microsoft.TemplateEngine.Cli.PostActionProcessors
 {
-    internal class DotnetAddJsonPropertyPostActionProcessor : PostActionProcessorBase
+    internal class AddJsonPropertyPostActionProcessor : PostActionProcessorBase
     {
         private const string JsonFileNameArgument = "jsonFileName";
         private const string ParentPropertyPathArgument = "parentPropertyPath";
