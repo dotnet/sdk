@@ -1,0 +1,86 @@
+<!-- Licensed to the .NET Foundation under one or more agreements. The .NET Foundation licenses this file to you under the MIT license. -->
+<Project>
+
+  <!-- Shield this project from nonstandard Directory.Build.props/targets. -->
+  <PropertyGroup>
+    <ImportDirectoryPackagesProps>false</ImportDirectoryPackagesProps>
+    <ImportDirectoryBuildProps>false</ImportDirectoryBuildProps>
+    <ImportDirectoryBuildTargets>false</ImportDirectoryBuildTargets>
+  </PropertyGroup>
+
+  <Import Project="Sdk.props" Sdk="Microsoft.DotNet.Arcade.Sdk" />
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+
+  <!-- Import common functionality, including repo extension point. -->
+  <Import Project="$(SourceBuildArcadeTargetsFile)" />
+
+  <PropertyGroup>
+    <Copyright Condition="'$(Copyright)' == ''">$(CopyrightNetFoundation)</Copyright>
+
+    <IsPackable>true</IsPackable>
+    <IsShipping>false</IsShipping>
+    <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+
+    <!-- NuGet excludes nupkgs by default: disable this behavior. -->
+    <NoDefaultExcludes>true</NoDefaultExcludes>
+
+    <!-- Arbitrary TargetFramework to appease SDK. -->
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(SourceBuildIntermediateNupkgLicenseFile)' != ''">
+    <PackageLicenseFile>$([System.IO.Path]::GetFileName('$(SourceBuildIntermediateNupkgLicenseFile)'))</PackageLicenseFile>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(SourceBuildIntermediateNupkgLicenseFile)' != ''">
+    <None Include="$(SourceBuildIntermediateNupkgLicenseFile)" Pack="true" PackagePath="$(PackageLicenseFile)" />
+  </ItemGroup>
+
+  <Target Name="InitializeSourceBuildIntermediatePackageId"
+          DependsOnTargets="GetSourceBuildIntermediateNupkgNameConvention"
+          BeforeTargets="GenerateNuspec;InitializeStandardNuspecProperties">
+    <Error Condition="'$(GitHubRepositoryName)' == ''" Text="GitHubRepositoryName property is not defined." />
+
+    <PropertyGroup>
+      <PackageId>$(GitHubRepositoryName)</PackageId>
+      <PackageId Condition="'$(SupplementalIntermediateNupkgCategory)' != ''">$(PackageId).$(SupplementalIntermediateNupkgCategory)</PackageId>
+
+      <PackageId>$(SourceBuildIntermediateNupkgPrefix)$(PackageId)$(SourceBuildIntermediateNupkgSuffix)</PackageId>
+    </PropertyGroup>
+  </Target>
+
+  <Target Name="GetIntermediateNupkgArtifactFiles"
+          DependsOnTargets="
+            GetCategorizedIntermediateNupkgContents;
+            GetSupplementalIntermediateNupkgManifest"
+          BeforeTargets="_GetPackageFiles">
+    <ItemGroup>
+      <Content Include="@(IntermediatePackageFile->WithMetadataValue('Category', '$(SupplementalIntermediateNupkgCategory)'))" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="GetSupplementalIntermediateNupkgManifest"
+          Condition="'$(SupplementalIntermediateNupkgCategory)' == ''"
+          DependsOnTargets="InitializeSourceBuildIntermediatePackageId">
+    <PropertyGroup>
+      <SupplementalIntermediateNupkgManifestFile>$(BaseOutputPath)SupplementalIntermediatePackages.txt</SupplementalIntermediateNupkgManifestFile>
+    </PropertyGroup>
+
+    <WriteLinesToFile
+      File="$(SupplementalIntermediateNupkgManifestFile)"
+      Lines="@(SupplementalIntermediateNupkgCategory->'$(SourceBuildIntermediateNupkgPrefix)$(GitHubRepositoryName).%(Identity)$(SourceBuildIntermediateNupkgSuffix)', '%0A')"
+      Overwrite="true" />
+
+    <ItemGroup>
+      <!-- The list of supplemental package ids goes into the "main" intermediate nupkg. -->
+      <Content Include="$(SupplementalIntermediateNupkgManifestFile)" PackagePath="." />
+    </ItemGroup>
+  </Target>
+
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+  <Import Project="Sdk.targets" Sdk="Microsoft.DotNet.Arcade.Sdk" />
+
+  <Target Name="Build" />
+
+</Project>
