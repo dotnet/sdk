@@ -36,32 +36,32 @@ jobs:
     installerBuildResourceId: ${{ parameters.installerBuildResourceId }}
     matrix:
       CentOSStream8-Online:
-        _BootstrapPrep: false
+        _BootstrapPrep: true
         _Container: ${{ parameters.centOSStream8Container }}
         _EnablePoison: false
         _ExcludeOmniSharpTests: true
         _RunOnline: true
       CentOSStream8-Offline:
-        _BootstrapPrep: false
+        _BootstrapPrep: true
         _Container: ${{ parameters.centOSStream8Container }}
         _EnablePoison: false
         _ExcludeOmniSharpTests: true
         _RunOnline: false
       ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
         CentOSStream9-Offline:
-          _BootstrapPrep: false
+          _BootstrapPrep: true
           _Container: ${{ parameters.centOSStream9Container }}
           _EnablePoison: false
           _ExcludeOmniSharpTests: false
           _RunOnline: false
         Fedora36-Offline:
-          _BootstrapPrep: false
+          _BootstrapPrep: true
           _Container: ${{ parameters.fedora36Container }}
           _EnablePoison: true
           _ExcludeOmniSharpTests: false
           _RunOnline: false
         Ubuntu2004-Offline:
-          _BootstrapPrep: false
+          _BootstrapPrep: true
           _Container: ${{ parameters.ubuntu2004Container }}
           _EnablePoison: false
           _ExcludeOmniSharpTests: false
