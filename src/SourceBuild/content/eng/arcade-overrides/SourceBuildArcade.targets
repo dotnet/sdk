@@ -1,0 +1,99 @@
+<!-- Licensed to the .NET Foundation under one or more agreements. The .NET Foundation licenses this file to you under the MIT license. -->
+<Project>
+
+  <!-- Repo extensibility point. -->
+  <Import Project="$(RepositoryEngineeringDir)SourceBuild.props" Condition="Exists('$(RepositoryEngineeringDir)SourceBuild.props')" />
+
+  <PropertyGroup>
+    <SourceBuildOutputDir Condition="'$(SourceBuildOutputDir)' == ''">$([MSBuild]::NormalizeDirectory('$(ArtifactsDir)', 'source-build'))</SourceBuildOutputDir>
+    <SourceBuildSelfDir>$([MSBuild]::NormalizeDirectory('$(SourceBuildOutputDir)', 'self'))</SourceBuildSelfDir>
+    <CurrentRepoSourceBuildSourceDir>$([MSBuild]::NormalizeDirectory('$(SourceBuildSelfDir)', 'src'))</CurrentRepoSourceBuildSourceDir>
+    <CurrentRepoSourceBuildPackageCache>$([MSBuild]::NormalizeDirectory('$(SourceBuildSelfDir)', 'package-cache'))</CurrentRepoSourceBuildPackageCache>
+    <SourceBuildSelfPrebuiltReportDir>$([MSBuild]::NormalizeDirectory('$(SourceBuildSelfDir)', 'prebuilt-report'))</SourceBuildSelfPrebuiltReportDir>
+
+    <!--
+      Keep artifacts/ inside source dir so that ancestor-based file lookups find the inner repo, not
+      the outer repo. The inner repo global.json and NuGet.config files may have been modified by
+      source-build, and we want projects inside the artifacts/ dir to respect that.
+    -->
+    <CurrentRepoSourceBuildArtifactsDir>$([MSBuild]::NormalizeDirectory('$(CurrentRepoSourceBuildSourceDir)', 'artifacts'))</CurrentRepoSourceBuildArtifactsDir>
+    <CurrentRepoSourceBuildArtifactsPackagesDir>$([MSBuild]::NormalizeDirectory('$(CurrentRepoSourceBuildArtifactsDir)', 'packages', '$(Configuration)'))</CurrentRepoSourceBuildArtifactsPackagesDir>
+
+    <CurrentRepoSourceBuiltNupkgCacheDir>$([MSBuild]::NormalizeDirectory('$(CurrentRepoSourceBuildArtifactsDir)', 'obj', 'source-built-upstream-cache'))</CurrentRepoSourceBuiltNupkgCacheDir>
+
+    <PrebuiltBaselineDataFileDefault>$(RepositoryEngineeringDir)SourceBuildPrebuiltBaseline.xml</PrebuiltBaselineDataFileDefault>
+    <PrebuiltBaselineDataFile Condition="Exists('$(PrebuiltBaselineDataFileDefault)')">$(PrebuiltBaselineDataFileDefault)</PrebuiltBaselineDataFile>
+
+    <!-- By default, use the license file from the root of the repo for the intermediate nupkg. -->
+    <DetectSourceBuildIntermediateNupkgLicense Condition="'$(DetectSourceBuildIntermediateNupkgLicense)' == ''">true</DetectSourceBuildIntermediateNupkgLicense>
+
+    <EnableDefaultSourceBuildIntermediateItems Condition="'$(EnableDefaultSourceBuildIntermediateItems)' == ''">true</EnableDefaultSourceBuildIntermediateItems>
+  </PropertyGroup>
+
+  <Target Name="GetSourceBuildIntermediateNupkgNameConvention">
+    <PropertyGroup Condition="'$(SourceBuildNonPortable)' == 'true' and '$(TargetRid)' == ''">
+      <TargetRid>$([System.Runtime.InteropServices.RuntimeInformation]::RuntimeIdentifier)</TargetRid>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(TargetRid)' == ''">
+      <HostArchitecture>$([System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture.ToString().ToLowerInvariant())</HostArchitecture>
+      <SourceBuildTargetArchitecture Condition="'$(SourceBuildTargetArchitecture)' == ''">$(HostArchitecture)</SourceBuildTargetArchitecture>
+
+      <SourceBuildTargetPortableOSPlatform Condition="$([MSBuild]::IsOSPlatform('windows'))">win</SourceBuildTargetPortableOSPlatform>
+      <SourceBuildTargetPortableOSPlatform Condition="$([MSBuild]::IsOSPlatform('osx'))">osx</SourceBuildTargetPortableOSPlatform>
+      <SourceBuildTargetPortableOSPlatform Condition="$([MSBuild]::IsOSPlatform('linux'))">linux</SourceBuildTargetPortableOSPlatform>
+      <SourceBuildTargetPortableOSPlatform Condition="'$(SourceBuildTargetPortableOSPlatform)'==''">linux</SourceBuildTargetPortableOSPlatform>
+
+      <!-- By default, build for the portable OS platform with host machine architecture. -->
+      <TargetRid>$(SourceBuildTargetPortableOSPlatform)-$(SourceBuildTargetArchitecture)</TargetRid>
+    </PropertyGroup>
+
+    <!-- If this repo builds only managed outputs, no RID is used for the intermediate nupkg. -->
+    <PropertyGroup Condition="'$(SourceBuildManagedOnly)' != 'true'">
+      <SourceBuildIntermediateNupkgRid Condition="'$(SourceBuildIntermediateNupkgRid)' == ''">$(TargetRid)</SourceBuildIntermediateNupkgRid>
+    </PropertyGroup>
+
+    <PropertyGroup>
+      <SourceBuildIntermediateNupkgPrefix>Microsoft.SourceBuild.Intermediate.</SourceBuildIntermediateNupkgPrefix>
+      <SourceBuildIntermediateNupkgSuffix Condition="'$(SourceBuildIntermediateNupkgRid)' != ''">.$(SourceBuildIntermediateNupkgRid)</SourceBuildIntermediateNupkgSuffix>
+    </PropertyGroup>
+  </Target>
+
+  <!--
+    Get the list of nupkg contents, categorized into supplemental categories if necessary. By
+    default, all non-symbol-package nupkg files and tar.gz files in
+    'artifacts/packages/{configuration}' are packed in the intermediate nupkg.
+
+    To configure this, add a target to eng/SourceBuild.props with
+    'BeforeTargets="GetCategorizedIntermediateNupkgContents"' that sets up
+    'IntermediateNupkgArtifactFile' items with optional 'Category' metadata.
+
+    When 'Category' is set, this tooling produces one supplemental intermediate nupkg per named
+    category. All files not in a category are put into the "main" intermediate nupkg.
+  -->
+  <Target Name="GetCategorizedIntermediateNupkgContents">
+    <ItemGroup Condition="'$(EnableDefaultSourceBuildIntermediateItems)' == 'true'">
+      <!-- Catch-all: anything not in a category gets packed in the 'main' intermediate nupkg. -->
+      <IntermediateNupkgArtifactFile Include="$(CurrentRepoSourceBuildArtifactsPackagesDir)**\*.nupkg" />
+      <IntermediateNupkgArtifactFile Include="$(CurrentRepoSourceBuildArtifactsPackagesDir)**\*.tar.gz" />
+      <!-- Don't pack any symbol packages: not needed for downstream source-build CI. -->
+      <IntermediateNupkgArtifactFile Remove="$(CurrentRepoSourceBuildArtifactsPackagesDir)**\*.symbols.nupkg" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <IntermediateNupkgFile Include="@(IntermediateNupkgArtifactFile)" PackagePath="artifacts" />
+
+      <!-- Report goes into the 'main' intermediate nupkg. -->
+      <IntermediateNupkgFile Include="$(SourceBuildSelfPrebuiltReportDir)**\*" PackagePath="prebuilt-report" />
+    </ItemGroup>
+
+    <RemoveDuplicates Inputs="@(IntermediateNupkgFile)">
+      <Output TaskParameter="Filtered" ItemName="IntermediatePackageFile" />
+    </RemoveDuplicates>
+
+    <ItemGroup>
+      <SupplementalIntermediateNupkgCategory Include="%(IntermediatePackageFile.Category)" />
+    </ItemGroup>
+  </Target>
+
+</Project>
