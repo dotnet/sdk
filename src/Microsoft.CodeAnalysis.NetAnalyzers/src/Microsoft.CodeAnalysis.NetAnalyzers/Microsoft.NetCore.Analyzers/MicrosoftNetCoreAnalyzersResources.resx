@@ -1008,6 +1008,12 @@
   <data name="DoNotAddArchiveItemPathToTheTargetFileSystemPathMessage" xml:space="preserve">
     <value>When creating path for '{0} in method {1}' from relative archive item path to extract file and the source is an untrusted zip archive, make sure to sanitize relative archive item path '{2} in method {3}'</value>
   </data>
+  <data name="DoNotCallEnumerableCastOrOfTypeWithIncompatibleTypesTitle" xml:space="preserve">
+    <value>Do not call Enumerable.Cast&lt;T&gt; or Enumerable.OfType&lt;T&gt; with incompatible types</value>
+  </data>
+  <data name="DoNotCallEnumerableCastOrOfTypeWithIncompatibleTypesMessageOfType" xml:space="preserve">
+    <value>This call will always result in an empty sequence because type '{0}' is incompatible with type '{1}'</value>
+  </data>
   <data name="DoNotCreateTasksWithoutPassingATaskSchedulerTitle" xml:space="preserve">
     <value>Do not create tasks without passing a TaskScheduler</value>
   </data>
@@ -1721,6 +1727,15 @@
   </data>
   <data name="ModuleInitializerAttributeShouldNotBeUsedInLibrariesTitle" xml:space="preserve">
     <value>The 'ModuleInitializer' attribute should not be used in libraries</value>
+  </data>
+  <data name="DoNotCallEnumerableCastOrOfTypeWithIncompatibleTypesDescription" xml:space="preserve">
+    <value>Enumerable.Cast&lt;T&gt; and Enumerable.OfType&lt;T&gt; require compatible types to function expectedly.  
+The generic cast (IL 'unbox.any') used by the sequence returned by Enumerable.Cast&lt;T&gt; will throw InvalidCastException at runtime on elements of the types specified.  
+The generic type check (C# 'is' operator/IL 'isinst') used by Enumerable.OfType&lt;T&gt; will never succeed with elements of types specified, resulting in an empty sequence.  
+Widening and user defined conversions are not supported with generic types.</value>
+  </data>
+  <data name="DoNotCallEnumerableCastOrOfTypeWithIncompatibleTypesMessageCast" xml:space="preserve">
+    <value>Type '{0}' is incompatible with type '{1}' and cast attempts will throw InvalidCastException at runtime</value>
   </data>
   <data name="UseAsyncMethodInAsyncContextMessage" xml:space="preserve">
     <value>'{0}' synchronously blocks. Await '{1}' instead.</value>
