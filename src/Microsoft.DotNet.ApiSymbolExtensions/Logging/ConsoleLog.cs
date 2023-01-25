@@ -19,38 +19,38 @@ namespace Microsoft.DotNet.ApiSymbolExtensions.Logging
             _messageImportance = messageImportance;
 
         /// <inheritdoc />
-        public virtual void LogError(string format, params string[] args)
+        public virtual void LogError(string message)
         {
             HasLoggedErrors = true;
-            Console.Error.WriteLine(string.Format(format, args));
+            Console.Error.WriteLine(message);
         }
 
         /// <inheritdoc />
-        public virtual void LogError(string code, string format, params string[] args)
+        public virtual void LogError(string code, string message)
         {
             HasLoggedErrors = true;
-            Console.Error.WriteLine($"{code}: {string.Format(format, args)}");
+            Console.Error.WriteLine($"{code}: {message}");
         }
 
         /// <inheritdoc />
-        public virtual void LogWarning(string format, params string[] args) =>
-            Console.WriteLine(string.Format(format, args));
+        public virtual void LogWarning(string message) =>
+            Console.WriteLine(message);
 
         /// <inheritdoc />
-        public virtual void LogWarning(string code, string format, string[] args) =>
-            Console.WriteLine($"{code}: {string.Format(format, args)}");
+        public virtual void LogWarning(string code, string message) =>
+            Console.WriteLine($"{code}: {message}");
 
         /// <inheritdoc />
-        public virtual void LogMessage(string format, params string[] args) =>
-            LogMessage(MessageImportance.Normal, format, args);
+        public virtual void LogMessage(string message) =>
+            LogMessage(MessageImportance.Normal, message);
 
         /// <inheritdoc />
-        public virtual void LogMessage(MessageImportance importance, string format, params string[] args)
+        public virtual void LogMessage(MessageImportance importance, string message)
         {
             if (importance > _messageImportance)
                 return;
 
-            Console.WriteLine(string.Format(format, args));
+            Console.WriteLine(message);
         }
     }
 }

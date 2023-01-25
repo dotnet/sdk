@@ -52,8 +52,8 @@ namespace Microsoft.DotNet.PackageValidation.Validators
                         _log.LogError(
                             new Suppression(DiagnosticIds.TargetFrameworkDropped) { Target = baselineTargetFramework.ToString() },
                             DiagnosticIds.TargetFrameworkDropped,
-                            Resources.MissingTargetFramework,
-                            baselineTargetFramework.ToString());
+                            string.Format(Resources.MissingTargetFramework,
+                                baselineTargetFramework.ToString()));
                     }
                     else if (options.EnqueueApiCompatWorkItems)
                     {
@@ -77,8 +77,8 @@ namespace Microsoft.DotNet.PackageValidation.Validators
                         _log.LogError(
                             new Suppression(DiagnosticIds.TargetFrameworkDropped) { Target = baselineTargetFramework.ToString() },
                             DiagnosticIds.TargetFrameworkDropped,
-                            Resources.MissingTargetFramework,
-                            baselineTargetFramework.ToString());
+                            string.Format(Resources.MissingTargetFramework,
+                                baselineTargetFramework.ToString()));
                     }
                     else if (options.EnqueueApiCompatWorkItems)
                     {
@@ -107,9 +107,9 @@ namespace Microsoft.DotNet.PackageValidation.Validators
                             _log.LogError(
                                 new Suppression(DiagnosticIds.TargetFrameworkAndRidPairDropped) { Target = baselineTargetFramework.ToString() + "-" + baselineRuntimeSpecificAssetsRidGroup.Key },
                                 DiagnosticIds.TargetFrameworkAndRidPairDropped,
-                                Resources.MissingTargetFrameworkAndRid,
-                                baselineTargetFramework.ToString(),
-                                baselineRuntimeSpecificAssetsRidGroup.Key);
+                                string.Format(Resources.MissingTargetFrameworkAndRid,
+                                    baselineTargetFramework.ToString(),
+                                    baselineRuntimeSpecificAssetsRidGroup.Key));
                         }
                         else if (options.EnqueueApiCompatWorkItems)
                         {

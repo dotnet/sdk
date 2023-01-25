@@ -71,9 +71,9 @@ namespace Microsoft.DotNet.PackageValidation
                             Target = displayString
                         },
                         DiagnosticIds.SearchDirectoriesNotFoundForTfm,
-                        Resources.MissingSearchDirectory,
-                        targetFramework,
-                        displayString);
+                        string.Format(Resources.MissingSearchDirectory,
+                            targetFramework,
+                            displayString));
                 }
             }
 

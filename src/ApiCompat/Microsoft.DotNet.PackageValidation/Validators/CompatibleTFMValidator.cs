@@ -55,8 +55,8 @@ namespace Microsoft.DotNet.PackageValidation.Validators
                     _log.LogError(
                         new Suppression(DiagnosticIds.ApplicableCompileTimeAsset) { Target = framework.ToString() },
                         DiagnosticIds.ApplicableCompileTimeAsset,
-                        Resources.NoCompatibleCompileTimeAsset,
-                        framework.ToString());
+                        string.Format(Resources.NoCompatibleCompileTimeAsset,
+                            framework.ToString()));
                     break;
                 }
 
@@ -66,8 +66,8 @@ namespace Microsoft.DotNet.PackageValidation.Validators
                     _log.LogError(
                         new Suppression(DiagnosticIds.CompatibleRuntimeRidLessAsset) { Target = framework.ToString() },
                         DiagnosticIds.CompatibleRuntimeRidLessAsset,
-                        Resources.NoCompatibleRuntimeAsset,
-                        framework.ToString());
+                        string.Format(Resources.NoCompatibleRuntimeAsset,
+                            framework.ToString()));
                 }
                 // Invoke ApiCompat to compare the compile time asset with the runtime asset if they are not the same assembly.
                 else if (options.EnqueueApiCompatWorkItems)
@@ -87,9 +87,9 @@ namespace Microsoft.DotNet.PackageValidation.Validators
                         _log.LogError(
                             new Suppression(DiagnosticIds.CompatibleRuntimeRidSpecificAsset) { Target = framework.ToString() + "-" + rid },
                             DiagnosticIds.CompatibleRuntimeRidSpecificAsset,
-                            Resources.NoCompatibleRidSpecificRuntimeAsset,
-                            framework.ToString(),
-                            rid);
+                            string.Format(Resources.NoCompatibleRidSpecificRuntimeAsset,
+                                framework.ToString(),
+                                rid));
                     }
                     // Invoke ApiCompat to compare the compile time asset with the runtime specific asset if they are not the same and
                     // if the comparison hasn't already happened (when the runtime asset is the same as the runtime specific asset).

@@ -30,7 +30,9 @@ namespace Microsoft.DotNet.ApiCompat
 
             if (suppressionEngine.WriteSuppressionsToFile(suppressionOutputFile))
             {
-                log.LogMessage(MessageImportance.High, CommonResources.WroteSuppressions, suppressionOutputFile);
+                log.LogMessage(MessageImportance.High,
+                    string.Format(CommonResources.WroteSuppressions,
+                        suppressionOutputFile));
             }
         }
 
@@ -39,19 +41,17 @@ namespace Microsoft.DotNet.ApiCompat
         /// </summary>
         public static void LogApiCompatSuccessOrFailure(bool generateSuppressionFile, ISuppressableLog compatibilityLogger)
         {
-            if (compatibilityLogger.SuppressionWasLogged)
+            if (compatibilityLogger.HasLoggedSuppressions)
             {
                 if (!generateSuppressionFile)
                 {
-                    compatibilityLogger.LogMessage(
-                    MessageImportance.High,
-                    CommonResources.BreakingChangesFound);
+                    compatibilityLogger.LogMessage(MessageImportance.High,
+                        CommonResources.BreakingChangesFound);
                 }
             }
             else
             {
-                compatibilityLogger.LogMessage(
-                    MessageImportance.Normal,
+                compatibilityLogger.LogMessage(MessageImportance.Normal,
                     CommonResources.NoBreakingChangesFound);
             }
         }

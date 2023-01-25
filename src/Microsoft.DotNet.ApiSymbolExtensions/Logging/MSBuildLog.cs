@@ -19,30 +19,30 @@ namespace Microsoft.DotNet.ApiSymbolExtensions.Logging
             _log = log;
 
         /// <inheritdoc />
-        public virtual void LogError(string format, params string[] args) =>
-            LogCore(MessageLevel.Error, null, format, args);
+        public virtual void LogError(string message) =>
+            LogCore(MessageLevel.Error, null, message);
 
         /// <inheritdoc />
-        public virtual void LogError(string code, string format, params string[] args) =>
-            LogCore(MessageLevel.Error, code, format, args);
+        public virtual void LogError(string code, string message) =>
+            LogCore(MessageLevel.Error, code, message);
 
         /// <inheritdoc />
-        public virtual void LogWarning(string format, params string[] args) =>
-            LogCore(MessageLevel.Warning, null, format, args);
+        public virtual void LogWarning(string message) =>
+            LogCore(MessageLevel.Warning, null, message);
 
         /// <inheritdoc />
-        public virtual void LogWarning(string code, string format, string[] args) =>
-            LogCore(MessageLevel.Warning, code, format, args);
+        public virtual void LogWarning(string code, string message) =>
+            LogCore(MessageLevel.Warning, code, message);
 
         /// <inheritdoc />
-        public virtual void LogMessage(string format, params string[] args) =>
-            LogCore(MessageLevel.NormalImportance, null, format, args);
+        public virtual void LogMessage(string message) =>
+            LogCore(MessageLevel.NormalImportance, null, message);
 
         /// <inheritdoc />
-        public virtual void LogMessage(MessageImportance importance, string format, params string[] args) =>
-            LogCore((MessageLevel)importance, null, format, args);
+        public virtual void LogMessage(MessageImportance importance, string message) =>
+            LogCore((MessageLevel)importance, null, message);
 
-        private void LogCore(MessageLevel level, string? code, string format, params string[] args) =>
-            _log.Log(new Message(level, string.Format(format, args), code));
+        private void LogCore(MessageLevel level, string? code, string message) =>
+            _log.Log(new Message(level, message, code));
     }
 }

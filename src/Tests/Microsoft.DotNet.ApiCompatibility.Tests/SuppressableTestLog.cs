@@ -14,25 +14,29 @@ namespace Microsoft.DotNet.ApiCompatibility.Tests
         public List<string> warnings = new();
 
         public bool HasLoggedErrors => errors.Count != 0;
-        public bool SuppressionWasLogged => HasLoggedErrors;
+        public bool HasLoggedSuppressions { get; private set; }
 
-        public bool LogError(Suppression suppression, string code, string format, params string[] args)
+        public bool LogError(Suppression suppression, string code, string message)
         {
-            errors.Add($"{code} {string.Format(format, args)}");
+            HasLoggedSuppressions = true;
+            errors.Add($"{code}: {message}");
+
             return true;
         }
-        public void LogError(string format, params string[] args) => throw new NotImplementedException();
-        public void LogError(string code, string format, params string[] args) => throw new NotImplementedException();
+        public void LogError(string message) => errors.Add(message);
+        public void LogError(string code, string message) => errors.Add($"{code}: {message}");
         
-        public bool LogWarning(Suppression suppression, string code, string format, params string[] args)
+        public bool LogWarning(Suppression suppression, string code, string message)
         {
-            errors.Add($"{code} {string.Format(format, args)}");
+            HasLoggedSuppressions = true;
+            warnings.Add($"{code}: {message}");
+
             return true;
         }
-        public void LogWarning(string format, params string[] args) => throw new NotImplementedException();
-        public void LogWarning(string code, string format, params string[] args) => throw new NotImplementedException();
+        public void LogWarning(string message) => warnings.Add(message);
+        public void LogWarning(string code, string message) => warnings.Add($"{code}: {message}");
 
-        public void LogMessage(string format, params string[] args) => throw new NotImplementedException();
-        public void LogMessage(MessageImportance importance, string format, params string[] args) => throw new NotImplementedException();
+        public void LogMessage(string message) { }
+        public void LogMessage(MessageImportance importance, string message) { }
     }
 }

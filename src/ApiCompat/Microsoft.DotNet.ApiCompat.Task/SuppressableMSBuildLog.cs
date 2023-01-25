@@ -14,34 +14,35 @@ namespace Microsoft.DotNet.ApiCompat.Task
         private readonly ISuppressionEngine _suppressionEngine;
 
         /// <inheritdoc />
-        public bool SuppressionWasLogged { get; private set; }
+        public bool HasLoggedSuppressions { get; private set; }
 
         public SuppressableMSBuildLog(NET.Build.Tasks.Logger log,
-            ISuppressionEngine suppressionEngine) : base(log)
+            ISuppressionEngine suppressionEngine)
+            : base(log)
         {
             _suppressionEngine = suppressionEngine;
         }
 
         /// <inheritdoc />
-        public bool LogError(Suppression suppression, string code, string format, params string[] args)
+        public bool LogError(Suppression suppression, string code, string message)
         {
             if (_suppressionEngine.IsErrorSuppressed(suppression))
                 return false;
 
-            SuppressionWasLogged = true;
-            base.LogError(code, format, args);
+            HasLoggedSuppressions = true;
+            base.LogError(code, message);
 
             return true;
         }
 
         /// <inheritdoc />
-        public bool LogWarning(Suppression suppression, string code, string format, params string[] args)
+        public bool LogWarning(Suppression suppression, string code, string message)
         {
             if (_suppressionEngine.IsErrorSuppressed(suppression))
                 return false;
 
-            SuppressionWasLogged = true;
-            base.LogWarning(code, format, args);
+            HasLoggedSuppressions = true;
+            base.LogWarning(code, message);
 
             return true;
         }
