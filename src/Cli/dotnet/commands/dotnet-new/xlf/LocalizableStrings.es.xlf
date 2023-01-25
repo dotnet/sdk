@@ -157,31 +157,6 @@
         <target state="translated">Se agregó correctamente una referencia al archivo de proyecto.</target>
         <note />
       </trans-unit>
-      <trans-unit id="PostAction_ModifyJson_Error_ArgumentNotConfigured">
-        <source>{0} not configured.</source>
-        <target state="new">{0} not configured.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PostAction_ModifyJson_Error_MultipleJsonFiles">
-        <source>More than one file found that matches {0}.</source>
-        <target state="new">More than one file found that matches {0}.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PostAction_ModifyJson_Error_NoJsonFile">
-        <source>Unable to find the json file in the solution</source>
-        <target state="new">Unable to find the json file in the solution</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PostAction_ModifyJson_Error_ParentPropertyPathInvalid">
-        <source>Parent property path could not be traversed.</source>
-        <target state="new">Parent property path could not be traversed.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PostAction_ModifyJson_Succeeded">
-        <source>Successfully modified {0}.</source>
-        <target state="new">Successfully modified {0}.</target>
-        <note>{0} is the name of the JSON file that has been modified.</note>
-      </trans-unit>
       <trans-unit id="PostAction_Restore_Error_FailedToDetermineProjectToRestore">
         <source>Couldn't determine files to restore.</source>
         <target state="translated">No se pudieron determinar los archivos que se van a restaurar.</target>

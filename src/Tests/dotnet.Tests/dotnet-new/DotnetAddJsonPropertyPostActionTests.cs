@@ -35,7 +35,7 @@ namespace Microsoft.DotNet.Cli.New.Tests
 
             IPostAction postAction = new MockPostAction
             {
-                ActionId = DotnetAddJsonPropertyPostActionProcessor.ActionProcessorId,
+                ActionId = AddJsonPropertyPostActionProcessor.ActionProcessorId,
                 Args = new Dictionary<string, string>()
                 {
                     ["jsonFileName"] = "json.json",
