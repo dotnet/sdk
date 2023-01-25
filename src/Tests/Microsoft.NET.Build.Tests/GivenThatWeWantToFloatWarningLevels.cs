@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.IO;
+using System.Linq;
 using FluentAssertions;
 
 using Microsoft.NET.TestFramework;
@@ -259,5 +260,82 @@ namespace Microsoft.NET.Build.Tests
             computedEffectiveAnalysisLevel.Should().NotBe(analysisLevel);
         }
 
+        [InlineData("latest", "all", "false")]
+        [InlineData("latest", "", "true")]
+        [InlineData("5", "", "true")]
+        [InlineData("5.0", "minimum", "false")]
+        [InlineData("6", "recommended", "false")]
+        [InlineData("6.0", "", "true")]
+        [InlineData("7", "none", "true")]
+        [InlineData("7.0", "", "false")]
+        [InlineData("8", "default", "false")]
+        [InlineData("8.0", "", "true")]
+        [RequiresMSBuildVersionTheory("16.8")]
+        public void It_maps_analysis_properties_to_globalconfig(string analysisLevel, string analysisMode, string codeAnalysisTreatWarningsAsErrors)
+        {
+            var testProject = new TestProject
+            {
+                Name = "HelloWorld",
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
+                IsExe = true,
+                SourceFiles =
+                {
+                    ["Program.cs"] = @"
+                        using System;
+
+                        namespace ConsoleCore
+                        {
+                            class Program
+                            {
+                                static void Main()
+                                {
+                                }
+                            }
+                        }
+                    ",
+                },
+            };
+
+            var mergedAnalysisLevel = !string.IsNullOrEmpty(analysisMode)
+                ? $"{analysisLevel}-{analysisMode}"
+                : analysisLevel;
+            testProject.AdditionalProperties.Add("AnalysisLevel", mergedAnalysisLevel);
+            testProject.AdditionalProperties.Add("CodeAnalysisTreatWarningsAsErrors", codeAnalysisTreatWarningsAsErrors);
+
+            var testAsset = _testAssetsManager
+                .CreateTestProject(testProject, identifier: "analysisLevelPreviewConsoleApp" + ToolsetInfo.CurrentTargetFramework + analysisLevel, targetExtension: ".csproj");
+
+            var buildCommand = new GetValuesCommand(
+                Log,
+                Path.Combine(testAsset.TestRoot, testProject.Name),
+                ToolsetInfo.CurrentTargetFramework, "EffectiveAnalysisLevel")
+            {
+                DependsOnTargets = "Build"
+            };
+            var buildResult = buildCommand.Execute();
+
+            buildResult.StdErr.Should().Be(string.Empty);
+            var effectiveAnalysisLevel = buildCommand.GetValues()[0];
+            if (effectiveAnalysisLevel.EndsWith(".0"))
+                effectiveAnalysisLevel = effectiveAnalysisLevel.Substring(0, effectiveAnalysisLevel.Length - 2);
+            var effectiveAnalysisMode = !string.IsNullOrEmpty(analysisMode) ? analysisMode : "default";
+            var codeAnalysisTreatWarningsAsErrorsSuffix = codeAnalysisTreatWarningsAsErrors == "true" ? "_warnaserror" : string.Empty;
+            var expectedMappedAnalyzerConfig = $"analysislevel_{effectiveAnalysisLevel}_{effectiveAnalysisMode}{codeAnalysisTreatWarningsAsErrorsSuffix}.globalconfig";
+
+            buildCommand = new GetValuesCommand(
+                Log,
+                Path.Combine(testAsset.TestRoot, testProject.Name),
+                ToolsetInfo.CurrentTargetFramework,
+                "EditorConfigFiles",
+                GetValuesCommand.ValueType.Item)
+            {
+                DependsOnTargets = "Build"
+            };
+            buildResult = buildCommand.Execute();
+
+            buildResult.StdErr.Should().Be(string.Empty);
+            var analyzerConfigFiles = buildCommand.GetValues().Select(Path.GetFileName);
+            Assert.Single(analyzerConfigFiles.Where(file => string.Equals(file, expectedMappedAnalyzerConfig)));
+        }
     }
 }

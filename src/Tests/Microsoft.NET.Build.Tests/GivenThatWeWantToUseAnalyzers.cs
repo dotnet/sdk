@@ -134,52 +134,6 @@ namespace Microsoft.NET.Build.Tests
             }
         }
 
-        [Theory]
-        [InlineData("C#", "AppWithLibrary")]
-        [InlineData("VB", "AppWithLibraryVB")]
-        public void It_contains_latest_analysis_level_config_files(string language, string testAssetName)
-        {
-            var asset = _testAssetsManager
-                .CopyTestAsset(testAssetName, identifier: language)
-                .WithSource();
-
-            var command = new GetValuesCommand(
-                Log,
-                Path.Combine(asset.Path, "TestApp"),
-                ToolsetInfo.CurrentTargetFramework,
-                "AnalyzerConfig",
-                GetValuesCommand.ValueType.Item)
-            {
-                DependsOnTargets = "PublishNETAnalyzers"
-            };
-
-            command
-                .WithWorkingDirectory(asset.Path)
-                .Execute().Should().Pass();
-
-            var analyzerConfigs = command.GetValues();
-            Assert.NotEmpty(analyzerConfigs);
-
-            var analyzerConfigFileNames = analyzerConfigs.Select(Path.GetFileName);
-            Assert.All(analyzerConfigFileNames, name => name.EndsWith(".globalconfig"));
-
-            command = new GetValuesCommand(
-                Log,
-                Path.Combine(asset.Path, "TestApp"),
-                ToolsetInfo.CurrentTargetFramework,
-                "_LatestAnalysisLevel");
-            command.DependsOnTargets = "";
-            command.Execute().Should().Pass();
-
-            var latestAnalysisLevel = command.GetValues().Single();
-            Assert.EndsWith(latestAnalysisLevel, ".0");
-            var latestAnalysisLevelIntegral = latestAnalysisLevel.Substring(0, latestAnalysisLevel.Length - 2);
-
-            var latestAnalysisLevelConfigFileNames = analyzerConfigFileNames.Where(
-                name => name.StartsWith($"analysislevel_{latestAnalysisLevelIntegral}_", StringComparison.Ordinal));
-            Assert.NotEmpty(latestAnalysisLevelConfigFileNames);
-        }
-
         [Fact]
         public void It_resolves_multitargeted_analyzers()
         {
