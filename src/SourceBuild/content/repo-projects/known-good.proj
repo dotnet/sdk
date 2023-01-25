@@ -36,6 +36,7 @@
         <RepositoryReference Include="diagnostics" />
         <RepositoryReference Include="razor" />
         <RepositoryReference Include="xliff-tasks" />
+        <RepositoryReference Include="runtime" />
         <RepositoryReference Include="roslyn" />
         <RepositoryReference Include="source-build-externals" />
         <RepositoryReference Include="symreader" />
@@ -43,7 +44,6 @@
 
         <!-- Tier 2 -->
         <RepositoryReference Include="linker" />
-        <RepositoryReference Include="runtime" />
         <RepositoryReference Include="msbuild" />
 
         <!-- Tier 3 -->

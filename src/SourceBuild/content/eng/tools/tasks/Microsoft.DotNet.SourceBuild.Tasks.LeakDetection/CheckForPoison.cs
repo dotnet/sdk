@@ -57,6 +57,11 @@ namespace Microsoft.DotNet.SourceBuild.Tasks.LeakDetection
         /// </summary>
         public string OverrideTempPath { get; set; }
 
+        /// <summary>
+        /// Array of files containing lists of non-shipping packages
+        /// </summary>
+        public ITaskItem[] NonShippingPackagesListFiles { get; set; }
+
         private static readonly string[] ZipFileExtensions =
         {
             ".zip",
@@ -173,6 +178,7 @@ namespace Microsoft.DotNet.SourceBuild.Tasks.LeakDetection
         /// <returns>List of poisoned packages and files found and reasons for each</returns>
         internal IEnumerable<PoisonedFileEntry> GetPoisonedFiles(IEnumerable<string> initialCandidates, string catalogedPackagesFilePath, string markerFileName)
         {
+            IEnumerable<string> nonShippingPackages = GetAllNonShippingPackages();
             IEnumerable<CatalogPackageEntry> catalogedPackages = ReadCatalog(catalogedPackagesFilePath);
             var poisons = new List<PoisonedFileEntry>();
             var candidateQueue = new Queue<string>(initialCandidates);
@@ -191,6 +197,14 @@ namespace Microsoft.DotNet.SourceBuild.Tasks.LeakDetection
                 // add its contents to the list to be checked.
                 if (ZipFileExtensions.Concat(TarFileExtensions).Concat(TarGzFileExtensions).Any(e => checking.ToLowerInvariant().EndsWith(e)))
                 {
+                    Log.LogMessage($"Zip or NuPkg file to check: {checking}");
+
+                    // Skip non-shipping packages
+                    if (nonShippingPackages.Contains(Path.GetFileName(checking), StringComparer.OrdinalIgnoreCase))
+                    {
+                        continue;
+                    }
+
                     var tempCheckingDir = Path.Combine(tempDir.FullName, Path.GetFileNameWithoutExtension(checking));
                     PoisonedFileEntry result = ExtractAndCheckZipFileOnly(catalogedPackages, checking, markerFileName, tempCheckingDir, candidateQueue);
                     if (result != null)
@@ -211,6 +225,20 @@ namespace Microsoft.DotNet.SourceBuild.Tasks.LeakDetection
             tempDir.Delete(true);
 
             return poisons;
+        }
+
+        private IEnumerable<string> GetAllNonShippingPackages()
+        {
+            if (NonShippingPackagesListFiles != null)
+            {
+                return NonShippingPackagesListFiles
+                    .SelectMany(item => File.ReadAllLines(item.ItemSpec))
+                    .Distinct();
+            }
+            else
+            {
+                return Enumerable.Empty<string>();
+            }
         }
 
         private static PoisonedFileEntry CheckSingleFile(IEnumerable<CatalogPackageEntry> catalogedPackages, string rootPath, string fileToCheck)

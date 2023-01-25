@@ -125,6 +125,9 @@
     <PackageReportDir>$(BaseOutputPath)prebuilt-report/</PackageReportDir>
     <RepoProjectsDir>$(ProjectDir)/repo-projects/</RepoProjectsDir>
     <ResultingPrebuiltPackagesDir>$(PackageReportDir)prebuilt-packages/</ResultingPrebuiltPackagesDir>
+    <PackageListsDir>$(PackageReportDir)packagelists/</PackageListsDir>
+    <!-- The prefix needs to match what's defined in Arcade's source-build infra. Consider using a single property, in the future. -->
+    <NonShippingPackagesListPrefix>NonShipping.Packages.</NonShippingPackagesListPrefix>
     <PackageReportDataFile>$(PackageReportDir)prebuilt-usage.xml</PackageReportDataFile>
     <PoisonUsageReportFile>$(PackageReportDir)poison-usage.xml</PoisonUsageReportFile>
     <PoisonReportDataFile>$(PackageReportDir)poison-catalog.xml</PoisonReportDataFile>

@@ -355,6 +355,13 @@
       <SourceBuiltNupkgFiles Include="$(SourceBuiltPackagesPath)extractArtifacts/**/artifacts/*.nupkg" />
     </ItemGroup>
 
+    <ItemGroup Condition="'@(_BuiltIntermediatePackages)' != ''">
+      <NonShippingPackageLists Include="$(SourceBuiltPackagesPath)extractArtifacts/**/$(NonShippingPackagesListPrefix)*" />
+    </ItemGroup>
+
+    <!-- Copy lists of NonShipping packages to prebuilt-report dir -->
+    <Copy SourceFiles="@(NonShippingPackageLists)" DestinationFolder="$(PackageReportDir)packagelists/" />
+
     <Move
       Condition="'@(SourceBuiltNupkgFiles)' != ''"
       SourceFiles="@(SourceBuiltNupkgFiles)"

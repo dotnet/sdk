@@ -1,0 +1,26 @@
+From ed89288f65df0db02817a9d7f72b768b51b4b57a Mon Sep 17 00:00:00 2001
+From: Nikola Milosavljevic <nikolam@microsoft.com>
+Date: Tue, 24 Jan 2023 18:03:12 +0000
+Subject: [PATCH] Allow source-build to set UsingToolMicrosoftNetCompilers
+ property
+
+---
+ eng/Versions.props | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/eng/Versions.props b/eng/Versions.props
+index 3a97f80fd74..6148f6c6ae5 100644
+--- a/eng/Versions.props
++++ b/eng/Versions.props
+@@ -22,7 +22,7 @@
+     <UsingToolIbcOptimization>false</UsingToolIbcOptimization>
+     <UsingToolXliff>false</UsingToolXliff>
+     <LastReleasedStableAssemblyVersion>$(AssemblyVersion)</LastReleasedStableAssemblyVersion>
+-    <UsingToolMicrosoftNetCompilers>true</UsingToolMicrosoftNetCompilers>
++    <UsingToolMicrosoftNetCompilers Condition="'$(DotNetBuildFromSource)' != 'true'">true</UsingToolMicrosoftNetCompilers>
+   </PropertyGroup>
+   <ItemGroup>
+     <WorkloadSdkBandVersions Include="$(SdkBandVersion)" SupportsMachineArch="true" />
+-- 
+2.29.2
+

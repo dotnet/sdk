@@ -92,6 +92,7 @@
     </RemoveDuplicates>
 
     <ItemGroup>
+      <IntermediateNonShippingNupkgFile Include="@(IntermediatePackageFile)" Condition="$([System.Text.RegularExpressions.Regex]::Match(%(Identity),'[\\\\/]NonShipping[\\\\/]').Success)"/>
       <SupplementalIntermediateNupkgCategory Include="%(IntermediatePackageFile.Category)" />
     </ItemGroup>
   </Target>

@@ -70,10 +70,15 @@
 
     <Message Importance="High" Text="[$([System.DateTime]::Now.ToString('HH:mm:ss.ff'))] Checking @(FinalCliTarball) for poisoned files." />
 
+    <ItemGroup>
+      <NonShippingPackagesList Include="$(PackageListsDir)**/$(NonShippingPackagesListPrefix)*" />
+    </ItemGroup>
+
     <CheckForPoison FilesToCheck="@(FinalCliTarball)"
                     HashCatalogFilePath="$(PoisonReportDataFile)"
                     MarkerFileName="$(PoisonMarkerFile)"
-                    PoisonReportOutputFilePath="$(PoisonUsageReportFile)" />
+                    PoisonReportOutputFilePath="$(PoisonUsageReportFile)"
+                    NonShippingPackagesListFiles="@(NonShippingPackagesList)" />
 
     <WriteLinesToFile File="$(CompletedSemaphorePath)ReportPoisonUsage.complete" Overwrite="true" />
     <Message Importance="High" Text="[$([System.DateTime]::Now.ToString('HH:mm:ss.ff'))] Done checking for poison." />
