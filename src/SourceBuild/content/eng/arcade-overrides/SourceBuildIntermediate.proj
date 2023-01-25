@@ -53,7 +53,8 @@
   <Target Name="GetIntermediateNupkgArtifactFiles"
           DependsOnTargets="
             GetCategorizedIntermediateNupkgContents;
-            GetSupplementalIntermediateNupkgManifest"
+            GetSupplementalIntermediateNupkgManifest;
+            CreateNonShippingNupkgList"
           BeforeTargets="_GetPackageFiles">
     <ItemGroup>
       <Content Include="@(IntermediatePackageFile->WithMetadataValue('Category', '$(SupplementalIntermediateNupkgCategory)'))" />
@@ -77,6 +78,27 @@
       <Content Include="$(SupplementalIntermediateNupkgManifestFile)" PackagePath="." />
     </ItemGroup>
   </Target>
+
+  <!-- Create a list of non-shipping packages and include it in the intermediate package. -->
+  <Target Name="CreateNonShippingNupkgList"
+          Condition="'@(IntermediateNonShippingNupkgFile)' != ''">
+    <PropertyGroup>
+      <!-- The prefix needs to match what's defined in tarball source-build infra. Consider using a single property, in the future. -->
+      <NonShippingPackagesListPrefix>NonShipping.Packages.</NonShippingPackagesListPrefix>
+      <NonShippingPackagesList>$(CurrentRepoSourceBuildArtifactsPackagesDir)$(NonShippingPackagesListPrefix)$(GitHubRepositoryName).lst</NonShippingPackagesList>
+    </PropertyGroup>
+
+    <WriteLinesToFile
+      File="$(NonShippingPackagesList)"
+      Lines="@(IntermediateNonShippingNupkgFile->'%(Filename)%(Extension)')"
+      Overwrite="true" />
+
+    <ItemGroup>
+      <!-- The list of non-shipping packages goes into the "main" intermediate nupkg. -->
+      <Content Include="$(NonShippingPackagesList)" PackagePath="." />
+    </ItemGroup>
+  </Target>
+
 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
   <Import Project="Sdk.targets" Sdk="Microsoft.DotNet.Arcade.Sdk" />

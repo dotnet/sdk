@@ -19,6 +19,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <RepositoryReference Include="runtime" />
+  </ItemGroup>
+
+  <ItemGroup>
     <UseSourceBuiltSdkOverride Include="@(ArcadeSdkOverride)" />
   </ItemGroup>
 
