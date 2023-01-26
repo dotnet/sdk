@@ -121,6 +121,10 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         [InlineData("interface", "11.0", "net7.0")]
         [InlineData("interface", "10.0", "net6.0")]
         [InlineData("interface", "9", "netstandard2.0")]
+        [InlineData("module")]
+        [InlineData("module", "11.0", "net7.0")]
+        [InlineData("module", "10.0", "net6.0")]
+        [InlineData("module", "9", "netstandard2.0")]
         public async void DotnetVisualBasicClassTemplatesTest(
             string templateShortName,
             string langVersion = "",
