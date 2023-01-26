@@ -825,5 +825,28 @@ namespace Microsoft.DotNet.GenAPI.Tests
                     }
                     """);
         }
+
+        [Fact]
+        void TestAccessibilityGenerationForPropertyAccessors()
+        {
+            RunTest(original: """
+                    namespace Foo
+                    {
+                        public class Bar
+                        {
+                            public int P { get; protected set; }
+                        }
+                    }
+                    """,
+                expected: """
+                    namespace Foo
+                    {
+                        public partial class Bar
+                        {
+                            public int P { get { throw null; } protected set { } }
+                        }
+                    }
+                    """);
+        }
     }
 }
