@@ -13,6 +13,7 @@ using Microsoft.CodeAnalysis.Formatting;
 using Microsoft.CodeAnalysis.Options;
 using Microsoft.CodeAnalysis.Simplification;
 using Microsoft.DotNet.ApiSymbolExtensions;
+using System.Diagnostics;
 
 namespace Microsoft.DotNet.GenAPI
 {
@@ -113,9 +114,111 @@ namespace Microsoft.DotNet.GenAPI
             return namespaceNode;
         }
 
+        private static bool walkTypeSymbol(ITypeSymbol ty, HashSet<ITypeSymbol> visited, Func<ITypeSymbol, bool> f)
+        {
+            visited.Add(ty);
+            if (f(ty))
+            {
+                return true;
+            }
+            foreach(INamedTypeSymbol memberType in ty.GetTypeMembers())
+            {
+                if (!visited.Contains(memberType))
+                {
+                    if (walkTypeSymbol(memberType, visited, f))
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        private static bool IsOrContainsReferenceType(ITypeSymbol ty)
+        {
+            HashSet<ITypeSymbol> visited = new(SymbolEqualityComparer.Default);
+            return walkTypeSymbol(ty, visited, ty => ty.IsRefLikeType || ty.IsReferenceType); // assuming it covers ByReference<T>
+        }
+
+        private static bool IsOrContainsNonEmptyStruct(ITypeSymbol root)
+        {
+            HashSet<ITypeSymbol> visited = new(SymbolEqualityComparer.Default);
+            return walkTypeSymbol(root, visited, ty => {
+                if (ty.IsUnmanagedType)
+                {
+                    return true;
+                }
+
+                if (ty.IsReferenceType || ty.IsRefLikeType) // assuming it covers ByReference<T>
+                {
+                    return !SymbolEqualityComparer.Default.Equals(root, ty);
+                }
+
+                return false;
+            });
+        }
+
+        private IEnumerable<SyntaxNode> synthesizeDummyFields(INamedTypeSymbol namedType) {
+            // If it's a value type
+            if (namedType.TypeKind != TypeKind.Struct) {
+                yield break;
+            }
+
+            IEnumerable<IFieldSymbol> excludedFields = namedType.GetMembers()
+                .Where(member => !_symbolFilter.Include(member) && member is IFieldSymbol)
+                .Select(m => (IFieldSymbol)m);
+            
+            if (excludedFields.Any())
+            {
+                IEnumerable<IFieldSymbol> genericTypedFields = excludedFields.Where(f => f.Type is INamedTypeSymbol ty && ty.IsGenericType);
+
+                foreach(IFieldSymbol genericField in genericTypedFields)
+                {
+                    // TODO: do that thing with generic types.
+                }
+
+                bool hasRefPrivateField = excludedFields.Any(f => IsOrContainsReferenceType(f.Type));
+
+                Debugger.Launch();
+                if (hasRefPrivateField)
+                {
+                    // add reference type dummy field
+                    yield return dummyField(SyntaxKind.ObjectKeyword, "_dummy");
+
+                    // add int field
+                    yield return dummyField(SyntaxKind.IntKeyword, "_dummyPrimitive");
+                }
+                else
+                {
+                    bool hasNonEmptyStructPrivateField = excludedFields.Any(f => IsOrContainsNonEmptyStruct(f.Type));
+                    
+                    if (hasNonEmptyStructPrivateField)
+                    {
+                        // add int field
+                        yield return dummyField(SyntaxKind.IntKeyword, "_dummyPrimitive");
+                    }
+                }
+            }
+        }
+
+        private static SyntaxNode dummyField(SyntaxKind predefinedType, string fieldName)
+        {
+            return SyntaxFactory.FieldDeclaration(
+                SyntaxFactory.VariableDeclaration(
+                    SyntaxFactory.PredefinedType(
+                        SyntaxFactory.Token(predefinedType)))
+                .WithVariables(
+                    SyntaxFactory.SingletonSeparatedList<Microsoft.CodeAnalysis.CSharp.Syntax.VariableDeclaratorSyntax>(
+                        SyntaxFactory.VariableDeclarator(
+                            SyntaxFactory.Identifier(fieldName))))
+            ).WithModifiers(SyntaxFactory.TokenList(new []{SyntaxFactory.Token(SyntaxKind.PrivateKeyword)}));
+        }
+
         private SyntaxNode Visit(SyntaxNode namedTypeNode, INamedTypeSymbol namedType)
         {
             IEnumerable<ISymbol> members = namedType.GetMembers().Where(_symbolFilter.Include);
+
+            namedTypeNode = _syntaxGenerator.AddMembers(namedTypeNode, synthesizeDummyFields(namedType));
 
             foreach (ISymbol member in members.Order())
             {

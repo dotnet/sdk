@@ -10,6 +10,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.ApiSymbolExtensions;
 using Microsoft.DotNet.ApiSymbolExtensions.Tests;
+using System.Diagnostics;
 
 namespace Microsoft.DotNet.GenAPI.Tests
 {
@@ -42,6 +43,8 @@ namespace Microsoft.DotNet.GenAPI.Tests
         private void RunTest(string original, string expected)
         {
             IAssemblySymbol assemblySymbol = SymbolFactory.GetAssemblyFromSyntax(original, enableNullable: true);
+
+            Debugger.Break();
             _csharpFileBuilder.WriteAssembly(assemblySymbol);
 
             StringBuilder stringBuilder = _stringWriter.GetStringBuilder();
@@ -54,7 +57,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
 
             /// compare SyntaxTree and not string representation
             Assert.True(resultedSyntaxTree.IsEquivalentTo(expectedSyntaxTree),
-                $"Expected:\n{expected}\nResulted:\n{resultedString}");
+                $"Expectoid:\n{expected}\nResulted:\n{resultedString}");
         }
 
         [Fact]
@@ -758,6 +761,57 @@ namespace Microsoft.DotNet.GenAPI.Tests
                         public static explicit operator Digit(byte b) { throw null; }
 
                         public static implicit operator byte(Digit d) { throw null; }
+                    }
+                }
+                """);
+        }
+
+        [Fact]
+        void TestSynthesizePrivateFieldsForValueTypes()
+        {
+            RunTest(original: """
+                using System;
+
+                namespace Foo
+                {
+                    public struct Bar
+                    {
+                        #pragma warning disable 0169
+                        private IntPtr intPtr;
+                    }
+                }
+                """,
+                expected: """
+                namespace Foo
+                {
+                    public partial struct Bar
+                    {
+                        private int _dummyPrimitive;
+                    }
+                }
+                """);
+        }
+
+        [Fact]
+        void TestSynthesizePrivateFieldsForReferenceTypes()
+        {
+            RunTest(original: """
+                namespace Foo
+                {
+                    public struct Bar
+                    {
+                        #pragma warning disable 0169
+                        private object field;
+                    }
+                }
+                """,
+                expected: """
+                namespace Foo
+                {
+                    public partial struct Bar
+                    {
+                        private object _dummy;
+                        private int _dummyPrimitive;
                     }
                 }
                 """);
