@@ -357,4 +357,30 @@ namespace Microsoft.DotNet.GenAPI.Tests
                 exceptionMessage);
         }
     }
+
+    public class FieldDeclarationSyntaxRewriterTests : SyntaxRewriterTests
+    {
+        [Fact]
+        public void TestConstantFieldGeneration()
+        {
+            CompareSyntaxTree<FieldDeclarationSyntaxRewriter>(original: """
+                namespace Foo
+                {
+                    class Bar
+                    {
+                        public static const int CurrentEra = 0;
+                    }
+                }
+                """,
+                expected: """
+                namespace Foo
+                {
+                    class Bar
+                    {
+                        public const int CurrentEra = 0;
+                    }
+                }
+                """);
+        }
+    }
 }

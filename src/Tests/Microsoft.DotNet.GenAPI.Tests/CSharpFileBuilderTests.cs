@@ -848,5 +848,28 @@ namespace Microsoft.DotNet.GenAPI.Tests
                     }
                     """);
         }
+
+        [Fact]
+        public void TestConstantFieldGeneration()
+        {
+            RunTest(original: """
+                namespace Foo
+                {
+                    public class Bar
+                    {
+                        public const int CurrentEra = 0;
+                    }
+                }
+                """,
+                expected: """
+                namespace Foo
+                {
+                    public partial class Bar
+                    {
+                        public const int CurrentEra = 0;
+                    }
+                }
+                """);
+        }
     }
 }
