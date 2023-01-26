@@ -260,19 +260,31 @@ namespace Microsoft.NET.Build.Tests
             computedEffectiveAnalysisLevel.Should().NotBe(analysisLevel);
         }
 
-        [InlineData("latest", "all", "false")]
-        [InlineData("latest", "", "true")]
-        [InlineData("5", "", "true")]
-        [InlineData("5.0", "minimum", "false")]
-        [InlineData("6", "recommended", "false")]
-        [InlineData("6.0", "", "true")]
-        [InlineData("7", "none", "true")]
-        [InlineData("7.0", "", "false")]
-        [InlineData("8", "default", "false")]
-        [InlineData("8.0", "", "true")]
+        [InlineData("latest", "all", "false", "")]
+        [InlineData("latest", "", "true", "")]
+        [InlineData("latest", "all", "false", "Design")]
+        [InlineData("latest", "", "true", "Documentation")]
+        [InlineData("5", "", "true", "")]
+        [InlineData("5.0", "minimum", "false", "")]
+        [InlineData("5", "", "true", "Globalization")]
+        [InlineData("5.0", "minimum", "false", "Interoperability")]
+        [InlineData("6", "recommended", "false", "")]
+        [InlineData("6.0", "", "true", "")]
+        [InlineData("6", "recommended", "false", "Maintainability")]
+        [InlineData("6.0", "", "true", "Naming")]
+        [InlineData("7", "none", "true", "")]
+        [InlineData("7.0", "", "false", "")]
+        [InlineData("7", "none", "true", "Performance")]
+        [InlineData("7.0", "", "false", "Reliability")]
+        [InlineData("8", "default", "false", "")]
+        [InlineData("8.0", "", "true", "")]
+        [InlineData("8", "default", "false", "Security")]
+        [InlineData("8.0", "", "true", "Usage")]
         [RequiresMSBuildVersionTheory("16.8")]
-        public void It_maps_analysis_properties_to_globalconfig(string analysisLevel, string analysisMode, string codeAnalysisTreatWarningsAsErrors)
+        public void It_maps_analysis_properties_to_globalconfig(string analysisLevel, string analysisMode, string codeAnalysisTreatWarningsAsErrors, string category)
         {
+            // Documentation: https://learn.microsoft.com/dotnet/core/project-sdk/msbuild-props#code-analysis-properties
+
             // NOTE: This test will fail for "latest" analysisLevel when the "_LatestAnalysisLevel" property
             // is bumped in Microsoft.NET.Sdk.Analyzers.targets without a corresponding change in dotnet/roslyn-analyzers
             // repo that generates and maps to the globalconfig. This is an important regression test to ensure the
@@ -309,19 +321,27 @@ namespace Microsoft.NET.Build.Tests
                 },
             };
 
+            var analysisLevelPropertyName = "AnalysisLevel";
+            var effectiveAnalysisLevelPropertyName = "EffectiveAnalysisLevel";
+            if (!string.IsNullOrEmpty(category))
+            {
+                analysisLevelPropertyName += category;
+                effectiveAnalysisLevelPropertyName += category;
+            }
+
             var mergedAnalysisLevel = !string.IsNullOrEmpty(analysisMode)
                 ? $"{analysisLevel}-{analysisMode}"
                 : analysisLevel;
-            testProject.AdditionalProperties.Add("AnalysisLevel", mergedAnalysisLevel);
+            testProject.AdditionalProperties.Add(analysisLevelPropertyName, mergedAnalysisLevel);
             testProject.AdditionalProperties.Add("CodeAnalysisTreatWarningsAsErrors", codeAnalysisTreatWarningsAsErrors);
 
             var testAsset = _testAssetsManager
-                .CreateTestProject(testProject, identifier: "analysisLevelPreviewConsoleApp" + ToolsetInfo.CurrentTargetFramework + analysisLevel, targetExtension: ".csproj");
+                .CreateTestProject(testProject, identifier: "analysisLevelPreviewConsoleApp" + ToolsetInfo.CurrentTargetFramework + analysisLevel + category, targetExtension: ".csproj");
 
             var buildCommand = new GetValuesCommand(
                 Log,
                 Path.Combine(testAsset.TestRoot, testProject.Name),
-                ToolsetInfo.CurrentTargetFramework, "EffectiveAnalysisLevel")
+                ToolsetInfo.CurrentTargetFramework, effectiveAnalysisLevelPropertyName)
             {
                 DependsOnTargets = "Build"
             };
@@ -333,7 +353,7 @@ namespace Microsoft.NET.Build.Tests
                 effectiveAnalysisLevel = effectiveAnalysisLevel.Substring(0, effectiveAnalysisLevel.Length - 2);
             var effectiveAnalysisMode = !string.IsNullOrEmpty(analysisMode) ? analysisMode : "default";
             var codeAnalysisTreatWarningsAsErrorsSuffix = codeAnalysisTreatWarningsAsErrors == "true" ? "_warnaserror" : string.Empty;
-            var expectedMappedAnalyzerConfig = $"analysislevel_{effectiveAnalysisLevel}_{effectiveAnalysisMode}{codeAnalysisTreatWarningsAsErrorsSuffix}.globalconfig";
+            var expectedMappedAnalyzerConfig = $"analysislevel{category.ToLowerInvariant()}_{effectiveAnalysisLevel}_{effectiveAnalysisMode}{codeAnalysisTreatWarningsAsErrorsSuffix}.globalconfig";
 
             buildCommand = new GetValuesCommand(
                 Log,
@@ -347,8 +367,10 @@ namespace Microsoft.NET.Build.Tests
             buildResult = buildCommand.Execute();
 
             buildResult.StdErr.Should().Be(string.Empty);
-            var analyzerConfigFiles = buildCommand.GetValues().Select(Path.GetFileName);
-            Assert.Single(analyzerConfigFiles.Where(file => string.Equals(file, expectedMappedAnalyzerConfig)));
+            var analyzerConfigFiles = buildCommand.GetValues();
+            var expectedAnalyzerConfigFiles = analyzerConfigFiles.Where(file => string.Equals(Path.GetFileName(file), expectedMappedAnalyzerConfig));
+            var expectedAnalyzerConfigFile = Assert.Single(expectedAnalyzerConfigFiles);
+            File.Exists(expectedAnalyzerConfigFile).Should().BeTrue();
         }
 
         [InlineData("none", "false", new string[] { })]
