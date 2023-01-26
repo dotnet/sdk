@@ -19,7 +19,7 @@ namespace Microsoft.NET.Build.Tests
     public class GivenThatWeWantToBuildAWindowsDesktopProject : SdkTest
     {
         public GivenThatWeWantToBuildAWindowsDesktopProject(ITestOutputHelper log) : base(log)
-        {}
+        { }
 
         [WindowsOnlyRequiresMSBuildVersionTheory("16.7.0")]
         [InlineData("UseWindowsForms")]
@@ -151,7 +151,7 @@ namespace Microsoft.NET.Build.Tests
             getValuesCommand.GetValues().Should().BeEquivalentTo(new[] { "true" });
         }
 
-        [WindowsOnlyRequiresMSBuildVersionFact("17.0.0.32901")]
+        [Fact(Skip="https://github.com/dotnet/sdk/issues/29968")]
         public void It_builds_successfully_when_targeting_net_framework()
         {
             var testDirectory = _testAssetsManager.CreateTestDirectory().Path;
@@ -167,8 +167,10 @@ namespace Microsoft.NET.Build.Tests
             var project = XDocument.Load(projFile);
             var ns = project.Root.Name.Namespace;
             project.Root.Elements(ns + "PropertyGroup").Elements(ns + "TargetFramework").Single().Value = "net472";
-            //  The template sets Nullable to "enable", which isn't supported on .NET Framework
+            // The template sets Nullable to "enable", which isn't supported on .NET Framework
             project.Root.Elements(ns + "PropertyGroup").Elements(ns + "Nullable").Remove();
+            // The template sets ImplicitUsings to "enable", which isn't supported on .NET Framework
+            project.Root.Elements(ns + "PropertyGroup").Elements(ns + "ImplicitUsings").Remove();
             project.Save(projFile);
 
             var buildCommand = new BuildCommand(Log, testDirectory);
@@ -259,10 +261,12 @@ namespace Microsoft.NET.Build.Tests
         {
             var testDir = _testAssetsManager.CreateTestDirectory();
 
-            var newCommand = new DotnetCommand(Log);
-            newCommand.WorkingDirectory = testDir.Path;
-
-            newCommand.Execute("new", "wpf", "--debug:ephemeral-hive").Should().Pass();
+            new DotnetNewCommand(Log)
+                .WithVirtualHive()
+                .WithWorkingDirectory(testDir.Path)
+                .Execute("wpf")
+                .Should()
+                .Pass();
 
             var projectPath = Path.Combine(testDir.Path, Path.GetFileName(testDir.Path) + ".csproj");
 
@@ -416,7 +420,7 @@ namespace Microsoft.NET.Build.Tests
 
             var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework + useWindowsSDKPreview + windowsSdkPackageVersion);
 
-            string referencedWindowsSdkVersion =  GetReferencedWindowsSdkVersion(testAsset);
+            string referencedWindowsSdkVersion = GetReferencedWindowsSdkVersion(testAsset);
 
             //  The patch version of the Windows SDK Ref pack will change over time, so we use a '*' in the expected version to indicate that and replace it with
             //  the 4th part of the version number of the resolved package.
