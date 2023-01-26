@@ -448,11 +448,12 @@ namespace Microsoft.NET.Build.Tests
                 },
             };
 
-            testProject.AdditionalProperties.Add("AnalysisLevel", $"8-{analysisMode}");
+            var analysisLevel = $"8-{analysisMode}";
+            testProject.AdditionalProperties.Add("AnalysisLevel", analysisLevel);
             testProject.AdditionalProperties.Add("CodeAnalysisTreatWarningsAsErrors", codeAnalysisTreatWarningsAsErrors);
 
             var testAsset = _testAssetsManager
-                .CreateTestProject(testProject, identifier: "analysisLevelConsoleApp" + ToolsetInfo.CurrentTargetFramework + "8", targetExtension: ".csproj");
+                .CreateTestProject(testProject, identifier: "analysisLevelConsoleApp" + ToolsetInfo.CurrentTargetFramework + analysisLevel + $"Warnaserror:{codeAnalysisTreatWarningsAsErrors}", targetExtension: ".csproj");
 
             var buildCommand = new BuildCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
             var buildResult = buildCommand.Execute();
