@@ -74,10 +74,10 @@ namespace Microsoft.DotNet.GenAPI
 
             SyntaxNode compilationUnit = _syntaxGenerator.CompilationUnit(namespaceSyntaxNodes)
                 .WithAdditionalAnnotations(Formatter.Annotation, Simplifier.Annotation)
-                .NormalizeWhitespace()
                 .Rewrite<TypeDeclarationSyntaxRewriter>()
                 .Rewrite<BodyBlockSyntaxRewriter>(_exceptionMessage)
-                .Rewrite<FieldDeclarationSyntaxRewriter>();
+                .Rewrite<FieldDeclarationSyntaxRewriter>()
+                .NormalizeWhitespace();
 
             Document document = project.AddDocument(assembly.Name, compilationUnit);
 
