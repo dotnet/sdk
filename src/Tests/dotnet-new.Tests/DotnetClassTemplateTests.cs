@@ -102,7 +102,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             VerificationEngine engine = new VerificationEngine(_logger);
             await engine.Execute(options).ConfigureAwait(false);
 
-            ValidateInstantiatedProject(workingDir, projectName);
+            ValidateInstantiatedProject(workingDir);
         }
 
         [Theory]
@@ -180,7 +180,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             VerificationEngine engine = new VerificationEngine(_logger);
             await engine.Execute(options).ConfigureAwait(false);
 
-            ValidateInstantiatedProject(workingDir, projectName);
+            ValidateInstantiatedProject(workingDir);
         }
 
         private string CreateTestProject(
@@ -232,9 +232,9 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .GetFiles(workingDir, $"*{languageToProjectExtMap[language]}")?.FirstOrDefault() ?? string.Empty);
         }
 
-        private void ValidateInstantiatedProject(string workingDir, string projectName)
+        private void ValidateInstantiatedProject(string workingDir)
         {
-            new DotnetBuildCommand(_log, projectName)
+            new DotnetBuildCommand(_log)
                 .WithWorkingDirectory(workingDir)
                 .Execute()
                 .Should()
