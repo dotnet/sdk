@@ -8,7 +8,12 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 namespace Microsoft.DotNet.GenAPI.SyntaxRewriter
 {
     /// <summary>
-    /// Removes multiline formatting for one line statements.
+    /// Removes multiline formatting for one line statements:
+    /// ```int Execute() {
+    ///     throw null;
+    /// }```
+    /// =>
+    /// ```int Execute() { throw null; }```
     /// </summary>
     public class OneLineStatementSyntaxRewriter : CSharpSyntaxRewriter
     {
