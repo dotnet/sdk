@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 //
 
+using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
 using Microsoft.NET.TestFramework;
 
@@ -24,7 +25,10 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         internal static string CreateTemporaryFolder([CallerMemberName] string caller = "Unnamed", string customName = "")
         {
             string baseDir = Path.Combine(GetTestExecutionTempFolder(), caller, customName);
-            lock (string.Intern(baseDir.ToLowerInvariant()))
+
+            var locker = new NamedMonitor();
+
+            lock (locker[string.Intern(baseDir.ToLowerInvariant())])
             {
                 string workingDir = Path.Combine(baseDir, DateTime.UtcNow.ToString("yyyyMMddHHmmssfff"));
                 if (!Directory.Exists(workingDir))
@@ -47,6 +51,13 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 }
                 return workingDir;
             }
+        }
+
+        internal class NamedMonitor
+        {
+            private readonly ConcurrentDictionary<string, object> _dictionary = new ConcurrentDictionary<string, object>();
+
+            public object this[string name] => _dictionary.GetOrAdd(name, _ => new object());
         }
     }
 }
