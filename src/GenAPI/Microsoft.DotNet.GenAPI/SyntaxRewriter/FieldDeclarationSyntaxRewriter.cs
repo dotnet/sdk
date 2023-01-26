@@ -14,6 +14,7 @@ namespace Microsoft.DotNet.GenAPI.SyntaxRewriter
     /// </summary>
     public class FieldDeclarationSyntaxRewriter : CSharpSyntaxRewriter
     {
+        /// <inheritdoc />
         public override SyntaxNode? VisitFieldDeclaration(FieldDeclarationSyntax node)
         {
             SyntaxTokenList modifiers = node.Modifiers;
