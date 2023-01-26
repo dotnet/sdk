@@ -16,7 +16,6 @@ namespace Microsoft.DotNet.GenAPI.Tests
     public class CSharpFileBuilderTests
     {
         private readonly StringWriter _stringWriter = new();
-        private readonly CSharpSyntaxWriter _csharpSyntaxWriter = new(null);
         private readonly IAssemblySymbolWriter _csharpFileBuilder;
 
         class AllowAllFilter : ISymbolFilter
@@ -29,15 +28,17 @@ namespace Microsoft.DotNet.GenAPI.Tests
             var compositeFilter = new CompositeFilter()
                 .Add<ImplicitSymbolsFilter>()
                 .Add(new SymbolAccessibilityBasedFilter(true, true, true));
-            _csharpFileBuilder = new CSharpFileBuilder(compositeFilter, _stringWriter, _csharpSyntaxWriter, MetadataReferences);
+            _csharpFileBuilder = new CSharpFileBuilder(compositeFilter, _stringWriter, null, MetadataReferences);
         }
 
-        private static IEnumerable<MetadataReference> MetadataReferences { get => new List<MetadataReference> { MetadataReference.CreateFromFile(typeof(Object).Assembly!.Location!) }; }
-
-        private static SyntaxTree GetSyntaxTree(string syntax)
+        private static IEnumerable<MetadataReference> MetadataReferences
         {
-            return CSharpSyntaxTree.ParseText(syntax);
+            get => new List<MetadataReference> {
+                MetadataReference.CreateFromFile(typeof(Object).Assembly!.Location!) };
         }
+
+        private static SyntaxTree GetSyntaxTree(string syntax) =>
+            CSharpSyntaxTree.ParseText(syntax);
 
         private void RunTest(string original, string expected)
         {
@@ -785,6 +786,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                 }
                 """);
         }
+
         [Fact]
         void TestExplicitInterfaceImplementationPropertyGeneration()
         {
