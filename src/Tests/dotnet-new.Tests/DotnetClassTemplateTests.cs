@@ -100,8 +100,9 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                }));
 
             VerificationEngine engine = new VerificationEngine(_logger);
-            await engine.Execute(options)
-                .ConfigureAwait(false);
+            await engine.Execute(options).ConfigureAwait(false);
+
+            ValidateInstantiatedProject(workingDir, projectName);
         }
 
         [Theory]
@@ -177,8 +178,9 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                }));
 
             VerificationEngine engine = new VerificationEngine(_logger);
-            await engine.Execute(options)
-                .ConfigureAwait(false);
+            await engine.Execute(options).ConfigureAwait(false);
+
+            ValidateInstantiatedProject(workingDir, projectName);
         }
 
         private string CreateTestProject(
@@ -228,6 +230,18 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
             return Path.GetFileNameWithoutExtension(Directory
                 .GetFiles(workingDir, $"*{languageToProjectExtMap[language]}")?.FirstOrDefault() ?? string.Empty);
+        }
+
+        private void ValidateInstantiatedProject(string workingDir, string projectName)
+        {
+            new DotnetBuildCommand(_log, projectName)
+                .WithWorkingDirectory(workingDir)
+                .Execute()
+                .Should()
+                .Pass()
+                .And.NotHaveStdErr();
+
+            Directory.Delete(workingDir, true);
         }
 
         private string GetFolderName(string templateShortName, string langVersion, string targetFramework)
