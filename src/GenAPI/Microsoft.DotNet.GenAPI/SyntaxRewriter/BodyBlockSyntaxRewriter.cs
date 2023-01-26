@@ -13,17 +13,17 @@ namespace Microsoft.DotNet.GenAPI.SyntaxRewriter
     /// modify visited constructor, method declarations SyntaxNodes in depth-first order.
     /// Rewrites body with default implementation details.
     /// </summary>
-    public class BodySyntaxRewriter : CSharpSyntaxRewriter
+    public class BodyBlockSyntaxRewriter : CSharpSyntaxRewriter
     {
         private readonly string? _exceptionMessage;
 
-        public BodySyntaxRewriter(string? exceptionMessage)
+        public BodyBlockSyntaxRewriter(string? exceptionMessage)
         {
             _exceptionMessage = exceptionMessage;
         }
 
         public static SyntaxNode Execute(SyntaxNode node, string? exceptionMessage = null) =>
-            new BodySyntaxRewriter(exceptionMessage).Visit(node);
+            new BodyBlockSyntaxRewriter(exceptionMessage).Visit(node);
 
         /// <inheritdoc />
         public override SyntaxNode? VisitConstructorDeclaration(ConstructorDeclarationSyntax node)

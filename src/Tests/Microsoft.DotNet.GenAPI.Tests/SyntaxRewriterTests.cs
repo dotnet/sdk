@@ -195,7 +195,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
         public void TestMethodDeclaration()
         {
             string? exceptionMessage = null;
-            CompareSyntaxTree<BodySyntaxRewriter>(original: """
+            CompareSyntaxTree<BodyBlockSyntaxRewriter>(original: """
                 namespace A
                 {
                     class B
@@ -224,7 +224,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
         public void TestMethodDeclarationWithExceptionMessage()
         {
             string? exceptionMessage = "Not implemented";
-            CompareSyntaxTree<BodySyntaxRewriter>(original: """
+            CompareSyntaxTree<BodyBlockSyntaxRewriter>(original: """
                 namespace A
                 {
                     class B
@@ -253,7 +253,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
         public void TestPropertyDeclaration()
         {
             string? exceptionMessage = null;
-            CompareSyntaxTree<BodySyntaxRewriter>(original: """
+            CompareSyntaxTree<BodyBlockSyntaxRewriter>(original: """
                 namespace A
                 {
                     class B
@@ -282,7 +282,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
         public void TestPropertyDeclarationWithExceptionMessage()
         {
             string? exceptionMessage = "Not implemented";
-            CompareSyntaxTree<BodySyntaxRewriter>(original: """
+            CompareSyntaxTree<BodyBlockSyntaxRewriter>(original: """
                 namespace A
                 {
                     class B
@@ -311,7 +311,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
         public void TestCustomOperatorDeclaration()
         {
             string? exceptionMessage = null;
-            CompareSyntaxTree<BodySyntaxRewriter>(original: """
+            CompareSyntaxTree<BodyBlockSyntaxRewriter>(original: """
                 namespace A
                 {
                     class B
@@ -336,7 +336,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
         public void TestCustomOperatorDeclarationWithExceptionMessage()
         {
             string? exceptionMessage = "Not implemented";
-            CompareSyntaxTree<BodySyntaxRewriter>(original: """
+            CompareSyntaxTree<BodyBlockSyntaxRewriter>(original: """
                 namespace A
                 {
                     class B
