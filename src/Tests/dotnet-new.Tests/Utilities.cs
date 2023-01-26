@@ -10,6 +10,8 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 {
     internal static class Utilities
     {
+        private static NamedMonitor locker = new NamedMonitor();
+
         /// <summary>
         /// Gets a folder that dotnet-new.IntegrationTests tests can use for temp files.
         /// </summary>
@@ -26,9 +28,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         {
             string baseDir = Path.Combine(GetTestExecutionTempFolder(), caller, customName);
 
-            var locker = new NamedMonitor();
-
-            lock (locker[string.Intern(baseDir.ToLowerInvariant())])
+            lock (locker[baseDir.ToLowerInvariant()])
             {
                 string workingDir = Path.Combine(baseDir, DateTime.UtcNow.ToString("yyyyMMddHHmmssfff"));
                 if (!Directory.Exists(workingDir))
