@@ -14,6 +14,7 @@ using Microsoft.TemplateEngine.Cli.TabularOutput;
 using Microsoft.TemplateEngine.Edge;
 using Microsoft.TemplateEngine.Edge.Settings;
 using Microsoft.TemplateEngine.Utils;
+using Newtonsoft.Json;
 using NuGet.Credentials;
 using NuGet.Versioning;
 
@@ -203,6 +204,7 @@ namespace Microsoft.TemplateEngine.Cli
                 string[] splitByColons = installArg.Split(new[] { "::" }, StringSplitOptions.RemoveEmptyEntries);
                 string identifier = splitByColons[0];
                 string? version = splitByColons.Length > 1 ? splitByColons[1] : null;
+                // For niget packages this is the package's name and not a path
                 foreach (string expandedIdentifier in InstallRequestPathResolution.ExpandMaskedPath(identifier, _engineEnvironmentSettings))
                 {
                     installRequests.Add(new InstallRequest(expandedIdentifier, version, details: details, force: args.Force));
@@ -234,6 +236,7 @@ namespace Microsoft.TemplateEngine.Cli
             }
             Reporter.Output.WriteLine();
 
+            // Validation step is here
             bool validated = await ValidateInstallationRequestsAsync(args, installRequests, cancellationToken).ConfigureAwait(false);
             if (!validated)
             {
@@ -381,7 +384,14 @@ namespace Microsoft.TemplateEngine.Cli
 
             foreach (var installRequest in installRequests)
             {
-                var foundPackage = unmanagedTemplatePackages.FirstOrDefault(package => string.Equals(package.Id, installRequest.PackageIdentifier, StringComparison.OrdinalIgnoreCase));
+                // If the identifier received is a path, get the template.json and then collect the actual identifier for the template
+                var installRequestIdentifier = installRequest.PackageIdentifier;
+                if (File.Exists(installRequest.PackageIdentifier + "/.template.config/template.json"))
+                {
+                    installRequestIdentifier = GetFolderTemplateIdentifier(installRequest.PackageIdentifier);
+                }
+
+                var foundPackage = unmanagedTemplatePackages.FirstOrDefault(package => string.Equals(package.Id, installRequestIdentifier, StringComparison.OrdinalIgnoreCase));
                 if (foundPackage != default)
                 {
                     invalidTemplatePackages.Add((installRequest, foundPackage));
@@ -843,6 +853,19 @@ namespace Microsoft.TemplateEngine.Cli
                             result.ErrorMessage).Bold().Red());
                     break;
             }
+        }
+
+        private string GetFolderTemplateIdentifier(string pathToTemplate)
+        {
+            string jsonString = File.ReadAllText(pathToTemplate);
+            ITemplateInfo? templateInfo = JsonConvert.DeserializeObject<ITemplateInfo>(jsonString);
+
+            if (templateInfo is null)
+            {
+                return string.Empty;
+            }
+
+            return templateInfo.Identity;
         }
     }
 }
