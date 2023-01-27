@@ -151,7 +151,6 @@ namespace Microsoft.DotNet.GenAPI
 
     public static class SyntaxNodeExtensions
     {
-        public static SyntaxNode Rewrite<T>(this SyntaxNode node) where T : CSharpSyntaxRewriter, new() => new T().Visit(node);
         public static SyntaxNode Rewrite(this SyntaxNode node, CSharpSyntaxRewriter rewriter) => rewriter.Visit(node);
     }
 }

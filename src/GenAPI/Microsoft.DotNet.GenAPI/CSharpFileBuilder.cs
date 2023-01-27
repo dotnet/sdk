@@ -74,9 +74,9 @@ namespace Microsoft.DotNet.GenAPI
 
             SyntaxNode compilationUnit = _syntaxGenerator.CompilationUnit(namespaceSyntaxNodes)
                 .WithAdditionalAnnotations(Formatter.Annotation, Simplifier.Annotation)
-                .Rewrite<TypeDeclarationSyntaxRewriter>()
+                .Rewrite(new TypeDeclarationSyntaxRewriter())
                 .Rewrite(new BodyBlockSyntaxRewriter(_exceptionMessage))
-                .Rewrite<FieldDeclarationSyntaxRewriter>()
+                .Rewrite(new FieldDeclarationSyntaxRewriter())
                 .NormalizeWhitespace();
 
             Document document = project.AddDocument(assembly.Name, compilationUnit);
@@ -85,7 +85,7 @@ namespace Microsoft.DotNet.GenAPI
             document = Formatter.FormatAsync(document, DefineFormattingOptions()).Result;
 
             document.GetSyntaxRootAsync().Result!
-                .Rewrite<OneLineStatementSyntaxRewriter>()
+                .Rewrite(new OneLineStatementSyntaxRewriter())
                 .WriteTo(_textWriter);
         }
 
