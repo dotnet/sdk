@@ -28,7 +28,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         {
             string baseDir = Path.Combine(GetTestExecutionTempFolder(), caller, customName);
 
-            lock (Locker[baseDir.ToLowerInvariant()])
+            lock (Locker[baseDir])
             {
                 string workingDir = Path.Combine(baseDir, DateTime.UtcNow.ToString("yyyyMMddHHmmssfff"));
                 if (!Directory.Exists(workingDir))
@@ -55,7 +55,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
         internal class NamedMonitor
         {
-            private readonly ConcurrentDictionary<string, object> _dictionary = new ConcurrentDictionary<string, object>();
+            private readonly ConcurrentDictionary<string, object> _dictionary = new ConcurrentDictionary<string, object>(StringComparer.OrdinalIgnoreCase);
 
             public object this[string name] => _dictionary.GetOrAdd(name, _ => new object());
         }
