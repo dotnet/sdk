@@ -9,9 +9,10 @@
     <BundledManifests Include="Microsoft.NET.Sdk.macOS" FeatureBand="$(MauiFeatureBand)" Version="$(XamarinMacOSWorkloadManifestVersion)" />
     <BundledManifests Include="Microsoft.NET.Sdk.Maui" FeatureBand="$(MauiFeatureBand)" Version="$(MauiWorkloadManifestVersion)" />
     <BundledManifests Include="Microsoft.NET.Sdk.tvOS" FeatureBand="$(MauiFeatureBand)" Version="$(XamarinTvOSWorkloadManifestVersion)" />
+    <!-- Bundled Manifests are ordered by the reference here - verify before altering -->
+    <BundledManifests Include="Microsoft.NET.Workload.Mono.ToolChain" FeatureBand="$(NetFeatureBand)" Version="$(MonoWorkloadManifestVersion)" />
     <BundledManifests Include="Microsoft.NET.Workload.Emscripten.net6" FeatureBand="$(NetFeatureBand)" Version="$(EmscriptenWorkloadManifestVersion)" />
     <BundledManifests Include="Microsoft.NET.Workload.Emscripten.net7" FeatureBand="$(NetFeatureBand)" Version="$(EmscriptenWorkloadManifestVersion)" />
-    <BundledManifests Include="Microsoft.NET.Workload.Mono.ToolChain" FeatureBand="$(NetFeatureBand)" Version="$(MonoWorkloadManifestVersion)" />
     <BundledManifests Include="Microsoft.NET.Workload.Mono.ToolChain.net6" FeatureBand="$(NetFeatureBand)" Version="$(MonoWorkloadManifestVersion)" />
     <BundledManifests Include="Microsoft.NET.Workload.Mono.ToolChain.net7" FeatureBand="$(NetFeatureBand)" Version="$(MonoWorkloadManifestVersion)" />
   </ItemGroup>
