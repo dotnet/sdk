@@ -149,7 +149,7 @@ namespace Microsoft.DotNet.GenAPI
         }
     }
 
-    public static class SyntaxNodeExtensions
+    internal static class SyntaxNodeExtensions
     {
         public static SyntaxNode Rewrite(this SyntaxNode node, CSharpSyntaxRewriter rewriter) => rewriter.Visit(node);
     }

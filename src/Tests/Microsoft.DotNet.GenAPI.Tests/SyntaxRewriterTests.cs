@@ -17,9 +17,8 @@ namespace Microsoft.DotNet.GenAPI.Tests
         protected void Compare(CSharpSyntaxRewriter rewriter, string original, string expected)
         {
             StringWriter _stringWriter = new();
-            CSharpSyntaxTree.ParseText(original)
-                .GetRoot()
-                .Rewrite(rewriter)
+            SyntaxNode root = CSharpSyntaxTree.ParseText(original).GetRoot();
+            rewriter.Visit(root)
                 .WriteTo(_stringWriter);
 
             StringBuilder stringBuilder = _stringWriter.GetStringBuilder();
@@ -32,9 +31,8 @@ namespace Microsoft.DotNet.GenAPI.Tests
         protected void CompareSyntaxTree(CSharpSyntaxRewriter rewriter, string original, string expected)
         {
             StringWriter _stringWriter = new();
-            CSharpSyntaxTree.ParseText(original)
-                .GetRoot()
-                .Rewrite(rewriter)
+            SyntaxNode root = CSharpSyntaxTree.ParseText(original).GetRoot();
+            rewriter.Visit(root)
                 .WriteTo(_stringWriter);
 
             StringBuilder stringBuilder = _stringWriter.GetStringBuilder();
