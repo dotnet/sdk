@@ -47,7 +47,7 @@ namespace Microsoft.TemplateEngine.Cli.PostActionProcessors
                 return false;
             }
 
-            IReadOnlyList<string> jsonFiles = FindFilesAtOrAbovePath(environment.Host.FileSystem, outputBasePath, matchPattern: jsonFileName, maxAllowedAboveDirectories: 1);
+            IReadOnlyList<string> jsonFiles = FindFilesInCurrentProjectOrSolutionFolder(environment.Host.FileSystem, outputBasePath, matchPattern: jsonFileName, maxAllowedAboveDirectories: 1);
 
             if (jsonFiles.Count == 0)
             {
@@ -165,7 +165,7 @@ namespace Microsoft.TemplateEngine.Cli.PostActionProcessors
             return node;
         }
 
-        private static IReadOnlyList<string> FindFilesAtOrAbovePath(
+        private static IReadOnlyList<string> FindFilesInCurrentProjectOrSolutionFolder(
             IPhysicalFileSystem fileSystem,
             string startPath,
             string matchPattern,
