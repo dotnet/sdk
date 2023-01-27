@@ -22,9 +22,6 @@ namespace Microsoft.DotNet.GenAPI.SyntaxRewriter
             _exceptionMessage = exceptionMessage;
         }
 
-        public static SyntaxNode Execute(SyntaxNode node, string? exceptionMessage = null) =>
-            new BodyBlockSyntaxRewriter(exceptionMessage).Visit(node);
-
         /// <inheritdoc />
         public override SyntaxNode? VisitConstructorDeclaration(ConstructorDeclarationSyntax node)
         {

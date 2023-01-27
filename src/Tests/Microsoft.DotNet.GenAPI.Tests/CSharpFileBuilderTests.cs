@@ -53,7 +53,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
             SyntaxTree resultedSyntaxTree = GetSyntaxTree(resultedString);
             SyntaxTree expectedSyntaxTree = GetSyntaxTree(expected);
 
-            /// compare SyntaxTree and not string representation
+            // compare SyntaxTree and not string representation
             Assert.True(resultedSyntaxTree.IsEquivalentTo(expectedSyntaxTree),
                 $"Expected:\n{expected}\nResulted:\n{resultedString}");
         }

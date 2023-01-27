@@ -75,7 +75,7 @@ namespace Microsoft.DotNet.GenAPI
             SyntaxNode compilationUnit = _syntaxGenerator.CompilationUnit(namespaceSyntaxNodes)
                 .WithAdditionalAnnotations(Formatter.Annotation, Simplifier.Annotation)
                 .Rewrite<TypeDeclarationSyntaxRewriter>()
-                .Rewrite<BodyBlockSyntaxRewriter>(_exceptionMessage)
+                .Rewrite(new BodyBlockSyntaxRewriter(_exceptionMessage))
                 .Rewrite<FieldDeclarationSyntaxRewriter>()
                 .NormalizeWhitespace();
 
