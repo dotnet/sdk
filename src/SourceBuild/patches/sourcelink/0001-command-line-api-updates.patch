@@ -1,0 +1,25 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Michael Simons <msimons@microsoft.com>
+Date: Fri, 27 Jan 2023 17:50:38 +0000
+Subject: [PATCH] command-line-api updates
+
+Updates necessary to build with the command-line-api version included in source-build.
+
+Backport: https://github.com/dotnet/sourcelink/issues/945
+---
+ src/dotnet-sourcelink/Program.cs | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/dotnet-sourcelink/Program.cs b/src/dotnet-sourcelink/Program.cs
+index 0803734..9affcf5 100644
+--- a/src/dotnet-sourcelink/Program.cs
++++ b/src/dotnet-sourcelink/Program.cs
+@@ -64,7 +64,7 @@ private static string GetSourceLinkVersion()
+ 
+         private static RootCommand GetRootCommand()
+         {
+-            var authArg = new Option<string>(new[] { "--auth", "-a" }, "Authentication method").FromAmong(AuthenticationMethod.Basic);
++            var authArg = new Option<string>(new[] { "--auth", "-a" }, "Authentication method").AcceptOnlyFromAmong(AuthenticationMethod.Basic);
+             var userArg = new Option<string>(new[] { "--user", "-u" }, "Username to use to authenticate") { Arity = ArgumentArity.ExactlyOne };
+             var passwordArg = new Option<string>(new[] { "--password", "-p" }, "Password to use to authenticate") { Arity = ArgumentArity.ExactlyOne };
+ 

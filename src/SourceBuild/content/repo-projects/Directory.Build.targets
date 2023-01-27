@@ -111,12 +111,10 @@
     <!-- Update the BuildToolFramework for repos that have not adopted the current version of Arcade-->
     <ReplaceTextInFile InputFile="$(EngCommonToolsShFile)"
                        OldText="_InitializeBuildToolFramework=&quot;netcoreapp3.1&quot;"
-                       NewText="_InitializeBuildToolFramework=&quot;$(NetCurrent)&quot;"
-                       Condition="'$(UseBootstrapArcade)' != 'true'" />
+                       NewText="_InitializeBuildToolFramework=&quot;$(NetCurrent)&quot;" />
     <ReplaceTextInFile InputFile="$(EngCommonToolsShFile)"
                        OldText="_InitializeBuildToolFramework=&quot;net7.0&quot;"
-                       NewText="_InitializeBuildToolFramework=&quot;$(NetCurrent)&quot;"
-                       Condition="'$(UseBootstrapArcade)' != 'true'" />
+                       NewText="_InitializeBuildToolFramework=&quot;$(NetCurrent)&quot;" />
 
     <!-- Temporary workaround for when the ci option is specified, non-zero exit are swallowed which prevents builds from failing within 
          the build process.  https://github.com/dotnet/source-build/issues/2307 -->
