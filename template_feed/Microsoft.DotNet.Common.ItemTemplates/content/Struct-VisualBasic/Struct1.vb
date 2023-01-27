@@ -1,6 +1,4 @@
-﻿Imports System
-
-Module CompanyClassLibrary1
+﻿Module CompanyClassLibrary1
 
     Structure Struct1
 

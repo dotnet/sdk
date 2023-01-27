@@ -1,6 +1,4 @@
-﻿Imports System
-
-Module ClassLib
+﻿Module ClassLib
 
     Interface TestItem1
 

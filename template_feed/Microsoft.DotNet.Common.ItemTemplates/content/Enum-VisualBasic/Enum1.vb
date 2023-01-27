@@ -1,6 +1,4 @@
-﻿Imports System
-
-Module CompanyClassLibrary1
+﻿Module CompanyClassLibrary1
 
     Enum Enum1
         None = 0
