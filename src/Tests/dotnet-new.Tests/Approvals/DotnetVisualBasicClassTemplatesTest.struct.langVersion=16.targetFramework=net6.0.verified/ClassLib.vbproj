@@ -1,1 +1,9 @@
-﻿
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>ClassLib</RootNamespace>
+    <TargetFramework>net6.0</TargetFramework>
+    <LangVersion>16</LangVersion>
+  </PropertyGroup>
+
+</Project>
