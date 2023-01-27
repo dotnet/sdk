@@ -1,7 +1,7 @@
-﻿{
+{
   "author": "Microsoft",
   "name": "template.json 구성 파일",
-  "description": ".NET 템플릿의 template.json 구성 파일에 대한 템플릿입니다. 전체 구성 설명은 https://github.com/dotnet/templating/wiki/Reference-for-template.json을 참조하세요.",
+  "description": ".NET 템플릿의 template.json 구성 파일에 대한 템플릿입니다. 전체 구성 설명은 https://aka.ms/template-json-reference을 참조하세요.",
   "symbols/CreateTemplateConfigFolder/description": ".template.config 폴더에 template.json을 만들어야 하는 경우 True.",
   "symbols/CreateTemplateConfigFolder/displayName": ".template.config 폴더 만들기",
   "symbols/TemplateName/description": "템플릿 이름입니다.",

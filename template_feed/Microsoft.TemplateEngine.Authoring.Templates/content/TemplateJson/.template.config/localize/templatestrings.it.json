@@ -1,7 +1,7 @@
-﻿{
+{
   "author": "Microsoft",
   "name": "File di configurazione template.json",
-  "description": "Il modello per il file di configurazione template.json per il modello .NET. Per una descrizione completa della configurazione, vedere https://github.com/dotnet/templating/wiki/Reference-for-template.json",
+  "description": "Il modello per il file di configurazione template.json per il modello .NET. Per una descrizione completa della configurazione, vedere https://aka.ms/template-json-reference",
   "symbols/CreateTemplateConfigFolder/description": "È true quando template.json deve essere creato nella cartella .template.config.",
   "symbols/CreateTemplateConfigFolder/displayName": "Creare la cartella .template.config",
   "symbols/TemplateName/description": "Il nome del modello.",

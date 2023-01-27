@@ -1,7 +1,7 @@
-﻿{
+{
   "author": "Microsoft",
   "name": "plik konfiguracji template.json",
-  "description": "Szablon pliku konfiguracji template.json dla szablonu platformy .NET. Aby uzyskać pełny opis konfiguracji, zobacz https://github.com/dotnet/templating/wiki/Reference-for-template.json.",
+  "description": "Szablon pliku konfiguracji template.json dla szablonu platformy .NET. Aby uzyskać pełny opis konfiguracji, zobacz https://aka.ms/template-json-reference.",
   "symbols/CreateTemplateConfigFolder/description": "Wartość True podczas tworzenia pliku template.json w folderze .template.config.",
   "symbols/CreateTemplateConfigFolder/displayName": "Utwórz folder .template.config",
   "symbols/TemplateName/description": "Nazwa szablonu.",

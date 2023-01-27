@@ -27,13 +27,4 @@
       <PackagePath>content</PackagePath>
     </Content>
   </ItemGroup>
-  <ItemGroup>
-    <Content Remove="content\README.md" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="README.md" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="content\TemplatePackage\.template.config\localize\" />
-  </ItemGroup>
 </Project>

@@ -1,7 +1,7 @@
-﻿{
+{
   "author": "Microsoft",
   "name": "template.json yapılandırma dosyası",
-  "description": ".NET şablonunun template.json yapılandırma dosyası için şablon. Tam yapılandırma açıklaması için https://github.com/dotnet/templating/wiki/Reference-for-template.json sayfasına bakın",
+  "description": ".NET şablonunun template.json yapılandırma dosyası için şablon. Tam yapılandırma açıklaması için https://aka.ms/template-json-reference sayfasına bakın",
   "symbols/CreateTemplateConfigFolder/description": ".template.config klasöründe template.json dosyası oluşturulması gerekiyorsa “Doğru” değerini alır.",
   "symbols/CreateTemplateConfigFolder/displayName": ".template.config klasörü oluşturun",
   "symbols/TemplateName/description": "Şablonun adı.",

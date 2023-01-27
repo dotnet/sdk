@@ -6,7 +6,7 @@
   ],
   "name": "template.json configuration file",
   "generatorVersions": "[1.0.0.0-*)",
-  "description": "A template for template.json configuration file for .NET template. See https://github.com/dotnet/templating/wiki/Reference-for-template.json for complete configuration description",
+  "description": "A template for template.json configuration file for .NET template. See https://aka.ms/template-json-reference for complete configuration description.",
   "groupIdentity": "Microsoft.TemplateEngine.Authoring.TemplateJson",
   "precedence": "0",
   "identity": "Microsoft.TemplateEngine.Authoring.TemplateJson.1.0",
@@ -51,11 +51,17 @@
   "sources": [
     {
       "condition": "CreateTemplateConfigFolder == true",
-      "target": ".template.config/"
+      "target": ".template.config/",
+      "rename": {
+        "_template.json": "template.json"
+      }
     },
     {
       "condition": "CreateTemplateConfigFolder == false",
-      "target": "./"
+      "target": "./",
+      "rename": {
+        "_template.json": "template.json"
+      }
     }
   ],
   "primaryOutputs": [
