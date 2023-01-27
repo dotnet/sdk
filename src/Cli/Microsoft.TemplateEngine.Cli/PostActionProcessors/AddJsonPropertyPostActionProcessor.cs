@@ -84,12 +84,12 @@ namespace Microsoft.TemplateEngine.Cli.PostActionProcessors
             if (sourceNameReplaceValue != null)
             {
                 newJsonPropertyName = newJsonPropertyName.Replace(
-                                                            sourceNameReplaceValue.Value.sourceName,
-                                                            sourceNameReplaceValue.Value.replaceValue);
+                                                            sourceNameReplaceValue.Value.SourceName,
+                                                            sourceNameReplaceValue.Value.ReplaceValue);
 
                 newJsonPropertyValue = newJsonPropertyValue.Replace(
-                                                                sourceNameReplaceValue.Value.sourceName,
-                                                                sourceNameReplaceValue.Value.replaceValue);
+                                                                sourceNameReplaceValue.Value.SourceName,
+                                                                sourceNameReplaceValue.Value.ReplaceValue);
             }
 
             JsonNode? newJsonContent = AddElementToJson(
@@ -201,7 +201,7 @@ namespace Microsoft.TemplateEngine.Cli.PostActionProcessors
             return new List<string>();
         }
 
-        private static (string sourceName, string replaceValue)? DetermineSourceNameReplaceValue(ICreationEffects creationEffects)
+        private static (string SourceName, string ReplaceValue)? DetermineSourceNameReplaceValue(ICreationEffects creationEffects)
         {
             if (creationEffects is ICreationEffects2 creationEffects2)
             {
@@ -209,8 +209,8 @@ namespace Microsoft.TemplateEngine.Cli.PostActionProcessors
 
                 if (projectFile != null)
                 {
-                    return (sourceName: Path.GetFileNameWithoutExtension(projectFile.SourceRelativePath),
-                            replaceValue: Path.GetFileNameWithoutExtension(projectFile.TargetRelativePath));
+                    return (SourceName: Path.GetFileNameWithoutExtension(projectFile.SourceRelativePath),
+                            ReplaceValue: Path.GetFileNameWithoutExtension(projectFile.TargetRelativePath));
                 }
             }
 
