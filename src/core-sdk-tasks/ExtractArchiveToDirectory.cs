@@ -32,6 +32,11 @@ namespace Microsoft.DotNet.Build.Tasks
         /// </summary>
         public bool CleanDestination { get; set; }
 
+        /// <summary>
+        /// A list of directories, semicolon deliminated, relative to the root of the archive to include. If empty all directories will be copied.
+        /// </summary>
+        public string DirectoriesToCopy { get; set; }
+
         protected override bool ValidateParameters()
         {
             base.ValidateParameters();
@@ -73,13 +78,41 @@ namespace Microsoft.DotNet.Build.Tasks
             {
                 if (ValidateParameters())
                 {
+                    if (DirectoriesToCopy != null && DirectoriesToCopy.Length != 0)
+                    {
+                        var zip = new ZipArchive(File.OpenRead(SourceArchive));
+                        string loc = DestinationDirectory;
+                        foreach (var entry in zip.Entries)
+                        {
+                            foreach (var directory in DirectoriesToCopy.Split(';'))
+                            {
+                                if (entry.FullName.Contains(directory))
+                                {
+                                    string dirBuilder = loc;
+                                    foreach (var pathPart in Path.GetDirectoryName(entry.FullName).Split('/'))
+                                    {
+                                        if (!Directory.Exists(Path.Combine(dirBuilder, pathPart)))
+                                        {
+                                            Directory.CreateDirectory(Path.Combine(dirBuilder, pathPart));
+                                        }
+                                        dirBuilder = Path.Combine(dirBuilder, pathPart);
+                                    }
+                                    Log.LogMessage(Path.GetDirectoryName(entry.FullName));
+                                    entry.ExtractToFile(Path.Combine(loc, entry.FullName));
+                                }
+                            }
+                        }
+                    }
+                    else
+                    { 
 #if NETFRAMEWORK
-                    //  .NET Framework doesn't have overload to overwrite files
-                    ZipFile.ExtractToDirectory(SourceArchive, DestinationDirectory);
+                        //  .NET Framework doesn't have overload to overwrite files
+                        ZipFile.ExtractToDirectory(SourceArchive, DestinationDirectory);
 #else
-                    ZipFile.ExtractToDirectory(SourceArchive, DestinationDirectory, overwriteFiles: true);
-#endif
 
+                        ZipFile.ExtractToDirectory(SourceArchive, DestinationDirectory, overwriteFiles: true);
+#endif
+                    }
                 }
                 else
                 {
