@@ -278,6 +278,11 @@
 
   <Target Name="GenerateWorkloadManifestsWxs"
           DependsOnTargets="ValidateBundledManifestSigning">
+    <ItemGroup>
+      <_Manifests Include="@(BundledManifests)">
+        <RestoredMsiPathInNupkg>$([MSBuild]::NormalizePath($([System.IO.Directory]::GetFiles('%(RestoredMsiNupkgContentPath)/data/', '*$(MsiArchitectureForWorkloadManifests).msi'))))</RestoredMsiPathInNupkg>
+      </_Manifests>
+    </ItemGroup>
     <PropertyGroup>
       <WorkloadManifestsWxsPath>$(IntermediateOutputPath)WorkloadManifests.wxs</WorkloadManifestsWxsPath>
       <WorkloadManifestsWxsContent>
@@ -287,7 +292,7 @@
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
     <Fragment>
         <PackageGroup Id="PG_WorkloadManifests">
-            @(BundledManifests->'<MsiPackage SourceFile="%(RestoredMsiPathInNupkg)">
+            @(_Manifests->'<MsiPackage SourceFile="%(RestoredMsiPathInNupkg)">
                 <MsiProperty Name="DOTNETHOME" Value="[DOTNETHOME]" />
             </MsiPackage>', '
             ')
