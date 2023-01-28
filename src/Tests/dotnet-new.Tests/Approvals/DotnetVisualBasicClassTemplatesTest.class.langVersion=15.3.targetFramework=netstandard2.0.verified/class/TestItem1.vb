@@ -1,6 +1,4 @@
-﻿Imports System
-
-Module ClassLib
+﻿Module ClassLib
 
     Public Class TestItem1
 

@@ -1,5 +1,3 @@
-﻿Imports System
-
-Module ClassLib
+﻿Module ClassLib
 
 End Module
