@@ -1,7 +1,7 @@
-{
+﻿{
   "author": "Microsoft",
   "name": "template.json 設定檔",
-  "description": ".NET 範本的 template.json 設定檔範本。如需完整的設定描述，請參閱 https://aka.ms/template-json-reference",
+  "description": "A template for template.json configuration file for .NET template. See https://aka.ms/template-json-reference for complete configuration description.",
   "symbols/CreateTemplateConfigFolder/description": "當應該在 .template.config 資料夾中建立 template.json 時為 true。",
   "symbols/CreateTemplateConfigFolder/displayName": "建立 .template.config 資料夾",
   "symbols/TemplateName/description": "範本名稱。",
