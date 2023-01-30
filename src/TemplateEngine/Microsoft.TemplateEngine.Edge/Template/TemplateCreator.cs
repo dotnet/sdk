@@ -406,48 +406,6 @@ namespace Microsoft.TemplateEngine.Edge.Template
             }
         }
 
-        /// <summary>
-        /// Checks that all required parameters are provided. If a missing one is found, a value may be provided via host.OnParameterError
-        /// but it's up to the caller / UI to decide how to act.
-        /// Returns true if there are any missing params, false otherwise.
-        /// </summary>
-        /// <param name="templateParams"></param>
-        /// <param name="parametersBuilder"></param>
-        /// <param name="missingParamNames"></param>
-        /// <returns></returns>
-        private bool CheckForMissingRequiredParameters(InputDataSet templateParams, IParameterSetBuilder parametersBuilder, out IList<string> missingParamNames)
-        {
-            ITemplateEngineHost host = _environmentSettings.Host;
-            bool anyMissingParams = false;
-            missingParamNames = new List<string>();
-
-            foreach (InputParameterData evaluatedParameterData in templateParams.Values.Where(v => v.GetEvaluatedPrecedence() == EvaluatedPrecedence.Required && v.InputDataState == InputDataState.Unset))
-            {
-                string? newParamValue;
-                const int _MAX_RETRIES = 3;
-                int retries = 0;
-#pragma warning disable CS0618 // Type or member is obsolete - for backward compatibility
-                while (host.OnParameterError(evaluatedParameterData.ParameterDefinition, string.Empty, "Missing required parameter", out newParamValue)
-#pragma warning restore CS0618 // Type or member is obsolete
-                       && string.IsNullOrEmpty(newParamValue)
-                       && ++retries < _MAX_RETRIES)
-                {
-                }
-
-                if (!string.IsNullOrEmpty(newParamValue))
-                {
-                    parametersBuilder.SetParameterValue(evaluatedParameterData.ParameterDefinition, newParamValue!, DataSource.HostOnError);
-                }
-                else
-                {
-                    missingParamNames.Add(evaluatedParameterData.ParameterDefinition.Name);
-                    anyMissingParams = true;
-                }
-            }
-
-            return anyMissingParams;
-        }
-
         private InputDataSet? EvaluateConditionalParameters(
             IParameterSetBuilder parametersBuilder,
             InputDataSet inputParameters,
@@ -531,11 +489,13 @@ namespace Microsoft.TemplateEngine.Edge.Template
                 return false;
             }
 
-            bool missingParams = CheckForMissingRequiredParameters(evaluatedParams!, parameterSetBuilder, out IList<string> missingParamNames);
+            IEnumerable<string> missingParams = evaluatedParams!.Values
+                .Where(v => v.GetEvaluatedPrecedence() == EvaluatedPrecedence.Required && v.InputDataState == InputDataState.Unset)
+                .Select(v => v.ParameterDefinition.Name);
 
-            if (missingParams)
+            if (missingParams.Any())
             {
-                failureResult = new TemplateCreationResult(CreationResultStatus.MissingMandatoryParam, template.Name, string.Join(", ", missingParamNames));
+                failureResult = new TemplateCreationResult(CreationResultStatus.MissingMandatoryParam, template.Name, string.Join(", ", missingParams));
                 templateParams = null;
                 return false;
             }

@@ -128,7 +128,7 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier
         public bool DoNotPrependCallerMethodNameToScenarioName { get; init; }
 
         /// <summary>
-        /// <see langword="true" />, if the output directory has to be empty before the test execuion.
+        /// <see langword="true" />, if the output directory has to be empty before the test execution.
         /// </summary>
         public bool EnsureEmptyOutputDirectory { get; init; } = true;
 

@@ -120,16 +120,9 @@ Microsoft.TemplateEngine.Abstractions.ITemplateEngineHost.BuiltInComponents.get 
 Microsoft.TemplateEngine.Abstractions.ITemplateEngineHost.FallbackHostTemplateConfigNames.get -> System.Collections.Generic.IReadOnlyList<string!>!
 Microsoft.TemplateEngine.Abstractions.ITemplateEngineHost.FileSystem.get -> Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem.IPhysicalFileSystem!
 Microsoft.TemplateEngine.Abstractions.ITemplateEngineHost.HostIdentifier.get -> string!
-Microsoft.TemplateEngine.Abstractions.ITemplateEngineHost.LogDiagnosticMessage(string! message, string! category, params string![]! details) -> void
 Microsoft.TemplateEngine.Abstractions.ITemplateEngineHost.Logger.get -> Microsoft.Extensions.Logging.ILogger!
 Microsoft.TemplateEngine.Abstractions.ITemplateEngineHost.LoggerFactory.get -> Microsoft.Extensions.Logging.ILoggerFactory!
-Microsoft.TemplateEngine.Abstractions.ITemplateEngineHost.LogMessage(string! message) -> void
-Microsoft.TemplateEngine.Abstractions.ITemplateEngineHost.LogTiming(string! label, System.TimeSpan duration, int depth) -> void
-Microsoft.TemplateEngine.Abstractions.ITemplateEngineHost.OnConfirmPartialMatch(string! name) -> bool
-Microsoft.TemplateEngine.Abstractions.ITemplateEngineHost.OnCriticalError(string! code, string! message, string! currentFile, long currentPosition) -> void
-Microsoft.TemplateEngine.Abstractions.ITemplateEngineHost.OnNonCriticalError(string! code, string! message, string! currentFile, long currentPosition) -> bool
 Microsoft.TemplateEngine.Abstractions.ITemplateEngineHost.OnPotentiallyDestructiveChangesDetected(System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.IFileChange!>! changes, System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.IFileChange!>! destructiveChanges) -> bool
-Microsoft.TemplateEngine.Abstractions.ITemplateEngineHost.OnSymbolUsed(string! symbol, object! value) -> void
 Microsoft.TemplateEngine.Abstractions.ITemplateEngineHost.TryGetHostParamDefault(string! paramName, out string? value) -> bool
 Microsoft.TemplateEngine.Abstractions.ITemplateEngineHost.Version.get -> string!
 Microsoft.TemplateEngine.Abstractions.ITemplateEngineHost.VirtualizeDirectory(string! path) -> void
@@ -437,7 +430,6 @@ Microsoft.TemplateEngine.Abstractions.ISimpleConfigModifiers.BaselineName.get ->
 Microsoft.TemplateEngine.Abstractions.ITemplate.Configuration.get -> Microsoft.TemplateEngine.Abstractions.Mount.IFileSystemInfo!
 Microsoft.TemplateEngine.Abstractions.ITemplate.Generator.get -> Microsoft.TemplateEngine.Abstractions.IGenerator!
 Microsoft.TemplateEngine.Abstractions.ITemplate.LocaleConfiguration.get -> Microsoft.TemplateEngine.Abstractions.Mount.IFileSystemInfo?
-Microsoft.TemplateEngine.Abstractions.ITemplateEngineHost.OnParameterError(Microsoft.TemplateEngine.Abstractions.ITemplateParameter! parameter, string! receivedValue, string! message, out string? newValue) -> bool
 Microsoft.TemplateEngine.Abstractions.ITemplateParameter.AllowMultipleValues.get -> bool
 Microsoft.TemplateEngine.Abstractions.ITemplateInfo.Constraints.get -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.Constraints.TemplateConstraintInfo!>!
 Microsoft.TemplateEngine.Abstractions.ITemplateInfo.PostActions.get -> System.Collections.Generic.IReadOnlyList<System.Guid>!

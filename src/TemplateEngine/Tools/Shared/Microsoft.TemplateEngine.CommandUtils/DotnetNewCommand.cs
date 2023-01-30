@@ -33,12 +33,6 @@ namespace Microsoft.TemplateEngine.CommandUtils
             return this;
         }
 
-        internal DotnetNewCommand WithNoUpdateCheck(s)
-        {
-            Arguments.Add("--no-update-check");
-            return this;
-        }
-
         internal DotnetNewCommand WithCustomOrVirtualHive(string? path)
         {
             return string.IsNullOrEmpty(path) ? WithVirtualHive() : WithCustomHive(path);

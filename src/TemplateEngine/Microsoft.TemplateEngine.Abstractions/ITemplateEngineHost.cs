@@ -67,30 +67,6 @@ namespace Microsoft.TemplateEngine.Abstractions
 
         #region Obsolete
 
-        [Obsolete("Use " + nameof(Logger) + " instead.")]
-        void LogTiming(string label, TimeSpan duration, int depth);
-
-        [Obsolete("Use " + nameof(Logger) + " instead.")]
-        void LogMessage(string message);
-
-        [Obsolete("Use " + nameof(Logger) + " instead.")]
-        void OnCriticalError(string code, string message, string currentFile, long currentPosition);
-
-        [Obsolete("Use " + nameof(Logger) + " instead.")]
-        bool OnNonCriticalError(string code, string message, string currentFile, long currentPosition);
-
-        [Obsolete("The method is deprecated.")]
-        bool OnParameterError(ITemplateParameter parameter, string receivedValue, string message, out string? newValue);
-
-        [Obsolete("The method is deprecated.")]
-        void OnSymbolUsed(string symbol, object value);
-
-        [Obsolete("Use " + nameof(Logger) + " instead.")]
-        void LogDiagnosticMessage(string message, string category, params string[] details);
-
-        [Obsolete("The method is deprecated.")]
-        bool OnConfirmPartialMatch(string name);
-
         /// <summary>
         /// Action to be done when potentially destructive changes on template instantiation are detected.
         /// The host can implement it as needed: prompt user, show error, etc.

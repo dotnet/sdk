@@ -12,36 +12,45 @@ namespace Microsoft.TemplateEngine.Utils
     internal static class ParameterConverter
     {
         /// <summary>
-        /// Converts <paramref name="untypedValue"/> to data type defined in <paramref name="parameter"/>.
+        /// Tries to convert <paramref name="untypedValue"/> to data type defined in <paramref name="parameter"/>.
         /// Supported types are: choice, bool, int, float, hex, string, text.
         /// </summary>
-        /// <param name="host">template engine host (for logging purposes).</param>
         /// <param name="parameter">the parameter to convert value to.</param>
         /// <param name="untypedValue">the value to convert.</param>
-        /// <param name="valueResolutionError">the error during conversion, if any.</param>
-        /// <returns>Converted value.</returns>
-        internal static object? ConvertParameterValueToType(
-            ITemplateEngineHost host,
+        /// <param name="convertedValue">the converted value, if the conversion was successful.</param>
+        /// <returns>True if the conversion was successful.</returns>
+        internal static bool TryConvertParameterValueToType(
             ITemplateParameter parameter,
             string untypedValue,
-            out bool valueResolutionError)
+            out object? convertedValue)
         {
-            if (untypedValue == null)
+            convertedValue = null;
+            if (parameter.IsChoice())
             {
-                valueResolutionError = false;
-                return null;
+                if (parameter.AllowMultipleValues)
+                {
+                    List<string> val =
+                        untypedValue
+                            .TokenizeMultiValueParameter()
+                            .Select(t => ResolveChoice(t, parameter))
+                            .Where(r => !string.IsNullOrEmpty(r))
+                            .Select(r => r!)
+                            .ToList();
+                    if (val.Count <= 1)
+                    {
+                        convertedValue = val.Count == 0 ? string.Empty : val[0];
+                        return true;
+                    }
+                    convertedValue = new MultiValueParameter(val);
+                    return true;
+                }
+                else
+                {
+                    convertedValue = ResolveChoice(untypedValue, parameter);
+                    return convertedValue != null;
+                }
             }
-
-            if (!string.IsNullOrEmpty(parameter.DataType))
-            {
-                object? convertedValue = DataTypeSpecifiedConvertLiteral(host, parameter, untypedValue, out valueResolutionError);
-                return convertedValue;
-            }
-            else
-            {
-                valueResolutionError = false;
-                return InferTypeAndConvertLiteral(untypedValue);
-            }
+            return TryConvertLiteralToDatatype(untypedValue, parameter.DataType, out convertedValue);
         }
 
         /// <summary>
@@ -162,162 +171,18 @@ namespace Microsoft.TemplateEngine.Utils
             };
         }
 
-        /// <summary>
-        /// For explicitly data-typed variables, attempt to convert the variable value to the specified type.
-        /// Data type names:
-        ///     - choice
-        ///     - bool
-        ///     - float
-        ///     - int
-        ///     - hex
-        ///     - text
-        /// The data type names are case insensitive.
-        /// </summary>
-        /// <returns>Returns the converted value if it can be converted, throw otherwise.</returns>
-        private static object? DataTypeSpecifiedConvertLiteral(ITemplateEngineHost host, ITemplateParameter param, string literal, out bool valueResolutionError)
-        {
-            valueResolutionError = false;
-
-            if (string.Equals(param.DataType, "bool", StringComparison.OrdinalIgnoreCase))
-            {
-                if (TryResolveBooleanValue(literal, out bool parsedBool))
-                {
-                    return parsedBool;
-                }
-                else
-                {
-                    bool boolVal = false;
-                    // Note: if the literal is ever null, it is probably due to a problem in TemplateCreator.Instantiate()
-                    // which takes care of making null bool -> true as appropriate.
-                    // This else can also happen if there is a value but it can't be converted.
-                    string? val;
-#pragma warning disable CS0618 // Type or member is obsolete - for backward compatibility
-                    while (host.OnParameterError(param, string.Empty, "ParameterValueNotSpecified", out val) && TryResolveBooleanValue(val, out boolVal))
-#pragma warning restore CS0618 // Type or member is obsolete
-                    {
-                    }
-
-                    valueResolutionError = !TryResolveBooleanValue(val, out boolVal);
-                    return boolVal;
-                }
-            }
-            else if (param.IsChoice())
-            {
-                if (param.AllowMultipleValues)
-                {
-                    List<string> val =
-                        literal
-                            .TokenizeMultiValueParameter()
-                            .Select(t => ResolveChoice(host, t, param))
-                            .Where(r => !string.IsNullOrEmpty(r))
-                            .Select(r => r!)
-                            .ToList();
-                    if (val.Count <= 1)
-                    {
-                        return val.Count == 0 ? string.Empty : val[0];
-                    }
-
-                    return new MultiValueParameter(val);
-                }
-                else
-                {
-                    string? val = ResolveChoice(host, literal, param);
-                    valueResolutionError = val == null;
-                    return val;
-                }
-            }
-            else if (string.Equals(param.DataType, "float", StringComparison.OrdinalIgnoreCase))
-            {
-                if (TryResolveFloatValue(literal, out double convertedFloat))
-                {
-                    return convertedFloat;
-                }
-                else
-                {
-                    string? val;
-#pragma warning disable CS0618 // Type or member is obsolete - for backward compatibility
-                    while (host.OnParameterError(param, string.Empty, "ValueNotValidMustBeFloat", out val) && (val == null || !TryResolveFloatValue(val, out convertedFloat)))
-#pragma warning restore CS0618 // Type or member is obsolete
-                    {
-                    }
-
-                    valueResolutionError = !TryResolveFloatValue(val, out convertedFloat);
-                    return convertedFloat;
-                }
-            }
-            else if (string.Equals(param.DataType, "int", StringComparison.OrdinalIgnoreCase)
-                || string.Equals(param.DataType, "integer", StringComparison.OrdinalIgnoreCase))
-            {
-                if (TryResolveIntegerValue(literal, out long convertedInt))
-                {
-                    return convertedInt;
-                }
-                else
-                {
-                    string? val;
-#pragma warning disable CS0618 // Type or member is obsolete - for backward compatibility
-                    while (host.OnParameterError(param, string.Empty, "ValueNotValidMustBeInteger", out val) && TryResolveIntegerValue(val, out convertedInt))
-#pragma warning restore CS0618 // Type or member is obsolete
-                    {
-                    }
-
-                    valueResolutionError = !TryResolveIntegerValue(val, out convertedInt);
-                    return convertedInt;
-                }
-            }
-            else if (string.Equals(param.DataType, "hex", StringComparison.OrdinalIgnoreCase))
-            {
-                if (TryResolveHexValue(literal, out long convertedHex))
-                {
-                    return convertedHex;
-                }
-                else
-                {
-                    string? val;
-#pragma warning disable CS0618 // Type or member is obsolete - for backward compatibility
-                    while (host.OnParameterError(param, string.Empty, "ValueNotValidMustBeHex", out val) && TryResolveHexValue(val, out convertedHex))
-#pragma warning restore CS0618 // Type or member is obsolete
-                    {
-                    }
-
-                    valueResolutionError = !TryResolveHexValue(val, out convertedHex);
-                    return convertedHex;
-                }
-            }
-            else if (string.Equals(param.DataType, "text", StringComparison.OrdinalIgnoreCase)
-                || string.Equals(param.DataType, "string", StringComparison.OrdinalIgnoreCase))
-            {
-                // "text" is a valid data type, but doesn't need any special handling.
-                return literal;
-            }
-            else
-            {
-                return literal;
-            }
-        }
-
-        private static string? ResolveChoice(ITemplateEngineHost host, string? literal, ITemplateParameter param)
+        private static string? ResolveChoice(string? literal, ITemplateParameter param)
         {
             if (TryResolveChoiceValue(literal, param, out string? match))
             {
                 return match;
             }
 
-            //TODO: here we should likely reevaluate once again after the conditions - but that is another posibility for infinite cycle
+            //TODO: here we should likely reevaluate once again after the conditions - but that is another possibility for infinite cycle
             if (literal == null && param.Precedence.PrecedenceDefinition != PrecedenceDefinition.Required)
             {
                 return param.DefaultValue;
             }
-
-#pragma warning disable CS0618 // Type or member is obsolete - for backward compatibility
-            if (
-                host.OnParameterError(param, string.Empty, "ValueNotValid:" + string.Join(",", param.Choices!.Keys), out string? val)
-                && TryResolveChoiceValue(val, param, out string? match2))
-            {
-                return match2;
-            }
-#pragma warning restore CS0618 // Type or member is obsolete
-
             return literal == string.Empty ? string.Empty : null;
         }
 

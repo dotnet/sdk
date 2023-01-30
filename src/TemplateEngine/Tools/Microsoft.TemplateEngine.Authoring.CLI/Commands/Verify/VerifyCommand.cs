@@ -87,24 +87,24 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.Commands.Verify
         public VerifyCommand()
             : base(CommandName, LocalizableStrings.command_verify_help_description)
         {
-            AddArgument(_templateNameArgument);
-            AddOption(_remainingArguments);
-            AddOption(_templatePathOption);
-            AddOption(_templateOutputPathOption);
-            AddOption(_snapshotsDirectoryOption);
-            AddOption(_scenarioNameOption);
-            AddOption(_disableDiffToolOption);
-            AddOption(_disableDefaultExcludePatternsOption);
-            AddOption(_excludePatternOption);
-            AddOption(_includePatternOption);
-            AddOption(_verifyCommandOutputOption);
-            AddOption(_isCommandExpectedToFailOption);
+            Arguments.Add(_templateNameArgument);
+            Options.Add(_remainingArguments);
+            Options.Add(_templatePathOption);
+            Options.Add(_templateOutputPathOption);
+            Options.Add(_snapshotsDirectoryOption);
+            Options.Add(_scenarioNameOption);
+            Options.Add(_disableDiffToolOption);
+            Options.Add(_disableDefaultExcludePatternsOption);
+            Options.Add(_excludePatternOption);
+            Options.Add(_includePatternOption);
+            Options.Add(_verifyCommandOutputOption);
+            Options.Add(_isCommandExpectedToFailOption);
             FromAmongCaseInsensitive(
                 _uniqueForOption,
                 Enum.GetNames(typeof(UniqueForOption))
                     .Where(v => !v.Equals(UniqueForOption.None.ToString(), StringComparison.OrdinalIgnoreCase))
                     .ToArray());
-            AddOption(_uniqueForOption);
+            Options.Add(_uniqueForOption);
         }
 
         protected internal override VerifyCommandArgs ParseContext(ParseResult parseResult)
@@ -176,8 +176,8 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.Commands.Verify
         private static void FromAmongCaseInsensitive(Option<IEnumerable<UniqueForOption>> option, string[]? allowedValues = null, string? allowedHiddenValue = null)
         {
             allowedValues ??= Array.Empty<string>();
-            option.AddValidator(optionResult => ValidateAllowedValues(optionResult, allowedValues, allowedHiddenValue));
-            option.AddCompletions(allowedValues);
+            option.Validators.Add(optionResult => ValidateAllowedValues(optionResult, allowedValues, allowedHiddenValue));
+            option.CompletionSources.Add(allowedValues);
         }
 
         private static void ValidateAllowedValues(OptionResult optionResult, string[] allowedValues, string? allowedHiddenValue = null)

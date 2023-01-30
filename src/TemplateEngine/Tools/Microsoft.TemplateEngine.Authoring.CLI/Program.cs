@@ -13,8 +13,8 @@ namespace Microsoft.TemplateEngine.Authoring.CLI
         internal static Task<int> Main(string[] args)
         {
             RootCommand rootCommand = new("dotnet-template-authoring");
-            rootCommand.AddCommand(new LocalizeCommand());
-            rootCommand.AddCommand(new VerifyCommand());
+            rootCommand.Subcommands.Add(new LocalizeCommand());
+            rootCommand.Subcommands.Add(new VerifyCommand());
 
             return CreateParser(rootCommand).Parse(args).InvokeAsync();
         }

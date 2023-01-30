@@ -56,6 +56,12 @@ namespace Microsoft.TemplateEngine.CommandUtils
             return this;
         }
 
+        internal TestCommand WithNoUpdateCheck()
+        {
+            Arguments.Add("--no-update-check");
+            return this;
+        }
+
         internal ProcessStartInfo GetProcessStartInfo(params string[] args)
         {
             SdkCommandSpec commandSpec = CreateCommandSpec(args);

@@ -35,7 +35,7 @@ A tutorial on how to create the template package can be find [here](https://lear
 |---|---|---|
 |`identity`|A unique name for this template|yes|
 |`author`|The author of the template|no|
-|`classifications`|Zero or more characteristics of the template which may be used in search. In this field you define the values shown as Tags in `dotnet new`|no|
+|<a name="classifications"></a>`classifications`| Zero or more characteristics of the template which are shown in the tabular output of `dotnet new list` and `dotnet new search` as "Tags". It is possible to filter the templates based on them using `--tag` option. In Visual Studio those items are shown in New Project Dialog in the available list of templates together with template name, description and language. Common classifications are: `Library`, `Test`, `Web` etc. |no|
 |`name`|The name for the template. This is displayed as the template name when using `dotnet new` and Visual Studio.|yes|
 |`groupIdentity`|The ID of the group this template belongs to. This allows multiple templates to be displayed as one, with the the decision for which one to use based on the template options. |no|
 |`tags`|You can use tags to improve the metadata of your project. Well-known tags are: `language` and `type`. To specify the template language, use the tag `language`. To specify the template type, use the tag `type`. Supported types are: `project`, `item`, `solution`.|no|

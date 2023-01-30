@@ -20,9 +20,6 @@ Microsoft.TemplateEngine.Edge.DefaultTemplateEngineHost.FileSystem.get -> Micros
 Microsoft.TemplateEngine.Edge.DefaultTemplateEngineHost.HostIdentifier.get -> string!
 Microsoft.TemplateEngine.Edge.DefaultTemplateEngineHost.Logger.get -> Microsoft.Extensions.Logging.ILogger!
 Microsoft.TemplateEngine.Edge.DefaultTemplateEngineHost.LoggerFactory.get -> Microsoft.Extensions.Logging.ILoggerFactory!
-Microsoft.TemplateEngine.Edge.DefaultTemplateEngineHost.OnLogTiming.get -> System.Action<string!, System.TimeSpan, int>?
-Microsoft.TemplateEngine.Edge.DefaultTemplateEngineHost.OnLogTiming.set -> void
-Microsoft.TemplateEngine.Edge.DefaultTemplateEngineHost.RegisterDiagnosticLogger(string! category, System.Action<string!, string![]!>! messageHandler) -> void
 Microsoft.TemplateEngine.Edge.DefaultTemplateEngineHost.Version.get -> string!
 Microsoft.TemplateEngine.Edge.DefaultTemplateEngineHost.VirtualizeDirectory(string! path) -> void
 Microsoft.TemplateEngine.Edge.EngineEnvironmentSettings

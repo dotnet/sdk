@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
+
 namespace Microsoft.TemplateEngine.Abstractions.Parameters
 {
     public enum DataSource
@@ -21,8 +23,9 @@ namespace Microsoft.TemplateEngine.Abstractions.Parameters
         HostDefault,
 
         /// <summary>
-        /// Value obtained via <see cref="ITemplateEngineHost.OnParameterError"/>.
+        /// Value obtained via ITemplateEngineHost.OnParameterError.
         /// </summary>
+        [Obsolete("The value is not used anymore due to ITemplateEngineHost.OnParameterError was removed.")]
         HostOnError,
 
         /// <summary>

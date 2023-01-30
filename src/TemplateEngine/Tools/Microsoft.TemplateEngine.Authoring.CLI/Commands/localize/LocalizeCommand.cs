@@ -10,7 +10,7 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.Commands
         internal LocalizeCommand()
             : base("localize")
         {
-            this.AddCommand(new ExportCommand());
+            this.Subcommands.Add(new ExportCommand());
         }
     }
 }
