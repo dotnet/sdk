@@ -274,6 +274,7 @@
         <BaseUrl Condition=" '$(DotNetBuildFromSource)' == 'true' AND '$(DotNetBuildFromSourceFlavor)' == 'Product' ">$(AspNetCoreSharedFxRootUrl)</BaseUrl>
         <DownloadFileName>$(AspNetCoreSharedFxArchiveFileName)</DownloadFileName>
         <RelativeLayoutPath></RelativeLayoutPath>
+        <DirectoriesToCopy>shared/Microsoft.AspNetCore.App</DirectoriesToCopy>
       </BundledLayoutComponent>
 
       <!-- The AspNet does not provide native MacOS PKG installers at this time; we use AspNet archives.
@@ -334,6 +335,7 @@
       <BundledLayoutComponent Include="WinFormsAndWpfSharedFxArchiveFile">
         <BaseUrl>$(WinFormsAndWpfSharedFxRootUrl)$(WindowsDesktopBlobVersion)</BaseUrl>
         <DownloadFileName>$(WinFormsAndWpfSharedFxArchiveFileName)</DownloadFileName>
+        <DirectoriesToCopy>shared/Microsoft.WindowsDesktop.App</DirectoriesToCopy>
       </BundledLayoutComponent>
 
       <BundledInstallerComponent Include="DownloadedWinFormsAndWpfSharedFrameworkInstallerFile"
@@ -447,7 +449,8 @@
 
   <Target Name="LayoutBundledComponents">
     <ExtractArchiveToDirectory SourceArchive="%(BundledLayoutComponent.DownloadDestination)"
-                               DestinationDirectory="$(RedistLayoutPath)/%(BundledLayoutComponent.RelativeLayoutPath)" />
+                               DestinationDirectory="$(RedistLayoutPath)/%(BundledLayoutComponent.RelativeLayoutPath)"
+                               DirectoriesToCopy="%(BundledLayoutComponent.DirectoriesToCopy)"/>
 
     <Copy SourceFiles="@(BundledLayoutPackageDownloadFilesWithDestination)"
           DestinationFiles="@(BundledLayoutPackageDownloadFilesWithDestination->'%(DestinationPath)')"
