@@ -34,6 +34,7 @@
         <!-- Tier 1 -->
         <RepositoryReference Include="command-line-api" />
         <RepositoryReference Include="diagnostics" />
+        <RepositoryReference Include="emsdk" />
         <RepositoryReference Include="razor" />
         <RepositoryReference Include="xliff-tasks" />
         <RepositoryReference Include="runtime" />
