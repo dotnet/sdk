@@ -35,7 +35,7 @@ namespace Microsoft.DotNet.Build.Tasks
         /// <summary>
         /// A list of directories, semicolon deliminated, relative to the root of the archive to include. If empty all directories will be copied.
         /// </summary>
-        public string DirectoriesToCopy { get; set; }
+        public ITaskItem[] DirectoriesToCopy { get; set; }
 
         protected override bool ValidateParameters()
         {
@@ -84,19 +84,15 @@ namespace Microsoft.DotNet.Build.Tasks
                         string loc = DestinationDirectory;
                         foreach (var entry in zip.Entries)
                         {
-                            foreach (var directory in DirectoriesToCopy.Split(';'))
+                            foreach (var directory in DirectoriesToCopy)
                             {
-                                if (entry.FullName.Contains(directory))
+                                if (entry.FullName.StartsWith(directory.ItemSpec))
                                 {
-                                    string dirBuilder = loc;
-                                    foreach (var pathPart in Path.GetDirectoryName(entry.FullName).Split('/'))
+                                    if (!Directory.Exists(Path.Combine(DestinationDirectory, Path.GetDirectoryName(entry.FullName))))
                                     {
-                                        if (!Directory.Exists(Path.Combine(dirBuilder, pathPart)))
-                                        {
-                                            Directory.CreateDirectory(Path.Combine(dirBuilder, pathPart));
-                                        }
-                                        dirBuilder = Path.Combine(dirBuilder, pathPart);
+                                        Directory.CreateDirectory(Path.Combine(DestinationDirectory, Path.GetDirectoryName(entry.FullName)));
                                     }
+
                                     Log.LogMessage(Path.GetDirectoryName(entry.FullName));
                                     entry.ExtractToFile(Path.Combine(loc, entry.FullName));
                                 }
