@@ -66,13 +66,13 @@ namespace Microsoft.DotNet.GenAPI.SyntaxRewriter
             }
         }
 
-        private T VisitCommonTypeDeclaration<T>(T node) where T : TypeDeclarationSyntax
+        private static T VisitCommonTypeDeclaration<T>(T node) where T : TypeDeclarationSyntax
         {
             node = (T)RemoveBaseType(node, "global::System.Object");
             return AddPartialModifier(node);
         }
 
-        private T AddPartialModifier<T>(T node) where T : TypeDeclarationSyntax
+        private static T AddPartialModifier<T>(T node) where T : TypeDeclarationSyntax
         {
             if (!node.Modifiers.Any(m => m.RawKind == (int)SyntaxKind.PartialKeyword))
             {
