@@ -129,6 +129,13 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <BundledLayoutComponent Include="CombinedSharedHostAndFrameworkArchive">
+        <BaseUrl>$(CoreSetupRootUrl)$(CoreSetupBlobVersion)</BaseUrl>
+        <BaseUrl Condition=" '$(DotNetBuildFromSource)' == 'true' AND '$(DotNetBuildFromSourceFlavor)' == 'Product' ">$(CoreSetupRootUrl)</BaseUrl>
+        <DownloadFileName>$(CombinedFrameworkHostArchiveFileName)</DownloadFileName>
+        <RelativeLayoutPath></RelativeLayoutPath>
+      </BundledLayoutComponent>
+
       <BundledLayoutPackage Include="MicrosoftNetCoreAppTargetingPackNupkg">
         <PackageName>Microsoft.NETCore.App.Ref</PackageName>
         <PackageVersion>$(MicrosoftNETCoreAppRefPackageVersion)</PackageVersion>
@@ -323,6 +330,7 @@
         <PackageVersion>$(MicrosoftWindowsDesktopAppRefPackageVersion)</PackageVersion>
         <TargetFramework>$(TargetFramework)</TargetFramework>
         <RelativeLayoutPath>packs/%(PackageName)/%(PackageVersion)</RelativeLayoutPath>
+        <DirectoriesToCopy>shared/Microsoft.WindowsDesktop.App</DirectoriesToCopy>
       </BundledLayoutPackage>
 
       <BundledLayoutComponent Include="WinFormsAndWpfSharedFxArchiveFile">
@@ -335,15 +343,6 @@
         <BaseUrl>$(WinFormsAndWpfSharedFxRootUrl)$(WindowsDesktopBlobVersion)</BaseUrl>
         <DownloadFileName>$(DownloadedWinFormsAndWpfSharedFrameworkInstallerFileName)</DownloadFileName>
       </BundledInstallerComponent>
-    </ItemGroup>
-
-    <ItemGroup>
-      <BundledLayoutComponent Include="CombinedSharedHostAndFrameworkArchive">
-        <BaseUrl>$(CoreSetupRootUrl)$(CoreSetupBlobVersion)</BaseUrl>
-        <BaseUrl Condition=" '$(DotNetBuildFromSource)' == 'true' AND '$(DotNetBuildFromSourceFlavor)' == 'Product' ">$(CoreSetupRootUrl)</BaseUrl>
-        <DownloadFileName>$(CombinedFrameworkHostArchiveFileName)</DownloadFileName>
-        <RelativeLayoutPath></RelativeLayoutPath>
-      </BundledLayoutComponent>
     </ItemGroup>
 
   </Target>
