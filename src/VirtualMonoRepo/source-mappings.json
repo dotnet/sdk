@@ -76,6 +76,10 @@
             "defaultRemote": "https://github.com/dotnet/diagnostics"
         },
         {
+            "name": "emsdk",
+            "defaultRemote": "https://github.com/dotnet/emsdk"
+        },
+        {
             "name": "format",
             "defaultRemote": "https://github.com/dotnet/format"
         },
