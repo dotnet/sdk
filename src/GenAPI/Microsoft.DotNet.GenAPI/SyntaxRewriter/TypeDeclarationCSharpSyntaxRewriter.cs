@@ -16,7 +16,7 @@ namespace Microsoft.DotNet.GenAPI.SyntaxRewriter
     /// - adds partial keyword
     /// - remove Object from a list of base types.
     /// </summary>
-    public class TypeDeclarationSyntaxRewriter : CSharpSyntaxRewriter
+    public class TypeDeclarationCSharpSyntaxRewriter : CSharpSyntaxRewriter
     {
         /// <inheritdoc />
         public override SyntaxNode? VisitInterfaceDeclaration(InterfaceDeclarationSyntax node)

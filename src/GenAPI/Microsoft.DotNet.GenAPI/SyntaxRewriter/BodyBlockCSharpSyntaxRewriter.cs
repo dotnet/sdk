@@ -13,11 +13,11 @@ namespace Microsoft.DotNet.GenAPI.SyntaxRewriter
     /// modify visited constructor, method declarations SyntaxNodes in depth-first order.
     /// Rewrites body with default implementation details.
     /// </summary>
-    public class BodyBlockSyntaxRewriter : CSharpSyntaxRewriter
+    public class BodyBlockCSharpSyntaxRewriter : CSharpSyntaxRewriter
     {
         private readonly string? _exceptionMessage;
 
-        public BodyBlockSyntaxRewriter(string? exceptionMessage)
+        public BodyBlockCSharpSyntaxRewriter(string? exceptionMessage)
         {
             _exceptionMessage = exceptionMessage;
         }

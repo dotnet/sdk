@@ -10,9 +10,9 @@ namespace Microsoft.DotNet.GenAPI.SyntaxRewriter
 {
     /// <summary>
     /// Removes static keyword if field has both static and const modifiers.
-    /// Fixes the https://github.com/dotnet/arcade/issues/11934 issue.
+    /// TODO: remove when https://github.com/dotnet/arcade/issues/11934 issue is fixed.
     /// </summary>
-    public class FieldDeclarationSyntaxRewriter : CSharpSyntaxRewriter
+    public class FieldDeclarationCSharpSyntaxRewriter : CSharpSyntaxRewriter
     {
         /// <inheritdoc />
         public override SyntaxNode? VisitFieldDeclaration(FieldDeclarationSyntax node)

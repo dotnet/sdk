@@ -148,9 +148,4 @@ namespace Microsoft.DotNet.GenAPI
             return decl.ReplaceNode(decl.ReturnType, SyntaxFactory.IdentifierName(SyntaxFactory.Identifier(string.Empty)));
         }
     }
-
-    internal static class SyntaxNodeExtensions
-    {
-        public static SyntaxNode Rewrite(this SyntaxNode node, CSharpSyntaxRewriter rewriter) => rewriter.Visit(node);
-    }
 }

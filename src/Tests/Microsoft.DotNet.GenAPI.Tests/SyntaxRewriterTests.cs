@@ -47,12 +47,12 @@ namespace Microsoft.DotNet.GenAPI.Tests
         }
     }
 
-    public class OneLineStatementSyntaxRewriterTests : SyntaxRewriterTests
+    public class SingleLineStatementCSharpSyntaxRewriterTests : SyntaxRewriterTests
     {
         [Fact]
         public void TestEmptyMethodBody()
         {
-            Compare(new OneLineStatementSyntaxRewriter(),
+            Compare(new SingleLineStatementCSharpSyntaxRewriter(),
                 original: """
                 namespace A
                 {
@@ -76,7 +76,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
         [Fact]
         public void TestMethodBodyWithSingleStatement()
         {
-            Compare(new OneLineStatementSyntaxRewriter(),
+            Compare(new SingleLineStatementCSharpSyntaxRewriter(),
                 original: """
                 namespace A
                 {
@@ -102,7 +102,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
         [Fact]
         public void TestMethodBodyWithSingleStatementInOneLine()
         {
-            Compare(new OneLineStatementSyntaxRewriter(),
+            Compare(new SingleLineStatementCSharpSyntaxRewriter(),
                 original: """
                 namespace A
                 {
@@ -129,7 +129,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
        [Fact]
         public void TestRemoveSystemObjectAsBaseClass()
         {
-            CompareSyntaxTree(new TypeDeclarationSyntaxRewriter(),
+            CompareSyntaxTree(new TypeDeclarationCSharpSyntaxRewriter(),
                 original: """
                 namespace A
                 {
@@ -151,7 +151,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
         [Fact]
         public void TestAddPartialKeyword()
         {
-            CompareSyntaxTree(new TypeDeclarationSyntaxRewriter(),
+            CompareSyntaxTree(new TypeDeclarationCSharpSyntaxRewriter(),
                 original: """
                 namespace A
                 {
@@ -173,7 +173,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
         [Fact]
         public void TestPartialTypeDeclaration()
         {
-            CompareSyntaxTree(new TypeDeclarationSyntaxRewriter(),
+            CompareSyntaxTree(new TypeDeclarationCSharpSyntaxRewriter(),
                 original: """
                 namespace A
                 {
@@ -198,7 +198,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
         [Fact]
         public void TestMethodDeclaration()
         {
-            CompareSyntaxTree(new BodyBlockSyntaxRewriter(null),
+            CompareSyntaxTree(new BodyBlockCSharpSyntaxRewriter(null),
                 original: """
                 namespace A
                 {
@@ -226,7 +226,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
         [Fact]
         public void TestMethodDeclarationWithExceptionMessage()
         {
-            CompareSyntaxTree(new BodyBlockSyntaxRewriter("Not implemented"),
+            CompareSyntaxTree(new BodyBlockCSharpSyntaxRewriter("Not implemented"),
                 original: """
                 namespace A
                 {
@@ -254,7 +254,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
         [Fact]
         public void TestPropertyDeclaration()
         {
-            CompareSyntaxTree(new BodyBlockSyntaxRewriter(null),
+            CompareSyntaxTree(new BodyBlockCSharpSyntaxRewriter(null),
                 original: """
                 namespace A
                 {
@@ -282,7 +282,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
         [Fact]
         public void TestPropertyDeclarationWithExceptionMessage()
         {
-            CompareSyntaxTree(new BodyBlockSyntaxRewriter("Not implemented"),
+            CompareSyntaxTree(new BodyBlockCSharpSyntaxRewriter("Not implemented"),
                 original: """
                 namespace A
                 {
@@ -310,7 +310,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
         [Fact]
         public void TestCustomOperatorDeclaration()
         {
-            CompareSyntaxTree(new BodyBlockSyntaxRewriter(null),
+            CompareSyntaxTree(new BodyBlockCSharpSyntaxRewriter(null),
                 original: """
                 namespace A
                 {
@@ -334,7 +334,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
         [Fact]
         public void TestCustomOperatorDeclarationWithExceptionMessage()
         {
-            CompareSyntaxTree(new BodyBlockSyntaxRewriter("Not implemented"),
+            CompareSyntaxTree(new BodyBlockCSharpSyntaxRewriter("Not implemented"),
                 original: """
                 namespace A
                 {
@@ -361,7 +361,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
         [Fact]
         public void TestConstantFieldGeneration()
         {
-            CompareSyntaxTree(new FieldDeclarationSyntaxRewriter(),
+            CompareSyntaxTree(new FieldDeclarationCSharpSyntaxRewriter(),
                 original: """
                 namespace Foo
                 {

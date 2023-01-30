@@ -15,12 +15,12 @@ namespace Microsoft.DotNet.GenAPI.SyntaxRewriter
     /// =>
     /// ```int Execute() { throw null; }```
     /// </summary>
-    public class OneLineStatementSyntaxRewriter : CSharpSyntaxRewriter
+    public class SingleLineStatementCSharpSyntaxRewriter : CSharpSyntaxRewriter
     {
         /// <inheritdoc />
         public override SyntaxNode? VisitMethodDeclaration(MethodDeclarationSyntax node)
         {
-            var body = node.Body;
+            BlockSyntax? body = node.Body;
             if (body != null && body.Statements.Count == 1)
             {
                 body = body
