@@ -1,7 +1,7 @@
 ﻿{
   "author": "Microsoft",
   "name": "Файл конфигурации template.json",
-  "description": "A template for template.json configuration file for .NET template. See https://aka.ms/template-json-reference for complete configuration description.",
+  "description": "Шаблон для файла конфигурации template.json для шаблона .NET. Полное описание конфигурации см. на странице https://aka.ms/template-json-reference.",
   "symbols/CreateTemplateConfigFolder/description": "Принимает значение true, если template.json необходимо создать в папке .template.config.",
   "symbols/CreateTemplateConfigFolder/displayName": "Создать папку .template.config",
   "symbols/TemplateName/description": "Имя шаблона.",

@@ -1,7 +1,7 @@
 ﻿{
   "author": "Microsoft",
   "name": "template.json configuration file",
-  "description": "A template for template.json configuration file for .NET template. See https://aka.ms/template-json-reference for complete configuration description.",
+  "description": ".NET テンプレート用の template.json 構成ファイルのテンプレート。構成の詳細については、「https://aka.ms/template-json-reference」を参照してください。",
   "symbols/CreateTemplateConfigFolder/description": ".template.config フォルダーに template.json を作成する必要がある場合は True。",
   "symbols/CreateTemplateConfigFolder/displayName": "Create .template.config folder",
   "symbols/TemplateName/description": "テンプレート名。",
