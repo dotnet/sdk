@@ -31,7 +31,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.PostActionTests
             IPostAction postAction = new MockPostAction
             {
                 ActionId = AddJsonPropertyPostActionProcessor.ActionProcessorId,
-                Args = new Dictionary<string, string>()
+                Args = new Dictionary<string, string>
                 {
                     ["jsonFileName"] = "json.json",
                     ["parentPropertyPath"] = "property1:propertyX:property2",
@@ -182,7 +182,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.PostActionTests
         Dictionary<string, string?> PostActionArgs,
         Action<TState> AssertionCallback)
     {
-        private static readonly ModifyJsonPostActionTestCase<JsonNode>[] s_successTestCases =
+        private static readonly ModifyJsonPostActionTestCase<JsonNode>[] _successTestCases =
         {
             new(
                 "Can add simple property",
@@ -248,7 +248,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.PostActionTests
                 })
         };
 
-        private static readonly ModifyJsonPostActionTestCase<Mock<IReporter>>[] s_invalidConfigurationTestCases =
+        private static readonly ModifyJsonPostActionTestCase<Mock<IReporter>>[] _invalidConfigurationTestCases =
         {
             new(
                 "JsonFileName argument not configured",
@@ -297,7 +297,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.PostActionTests
 
         public static IEnumerable<object[]> SuccessTestCases()
         {
-            foreach (ModifyJsonPostActionTestCase<JsonNode> testCase in s_successTestCases)
+            foreach (ModifyJsonPostActionTestCase<JsonNode> testCase in _successTestCases)
             {
                 yield return new[] { testCase };
             }
@@ -305,7 +305,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.PostActionTests
 
         public static IEnumerable<object[]> InvalidConfigurationTestCases()
         {
-            foreach (ModifyJsonPostActionTestCase<Mock<IReporter>> testCase in s_invalidConfigurationTestCases)
+            foreach (ModifyJsonPostActionTestCase<Mock<IReporter>> testCase in _invalidConfigurationTestCases)
             {
                 yield return new[] { testCase };
             }

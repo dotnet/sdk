@@ -29,7 +29,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         [InlineData("PostActions/RestoreNuGet/CustomTargetPathFiles", "TestAssets.PostActions.RestoreNuGet.CustomTargetPathFiles", "./Custom/Path/")]
         [InlineData("PostActions/RestoreNuGet/CustomSourceTargetPath", "TestAssets.PostActions.RestoreNuGet.CustomSourceTargetPath", "./Target/Output/")]
         [InlineData("PostActions/RestoreNuGet/CustomSourceTargetPathFiles", "TestAssets.PostActions.RestoreNuGet.CustomSourceTargetPathFiles", "./Target/Output/")]
-        public void Restore_Basic(string templateLocation, string templateName, string targetSubfolder = "")
+        public Task Restore_Basic(string templateLocation, string templateName, string targetSubfolder = "")
         {
             string home = CreateTemporaryFolder(folderName: "Home");
             string workingDirectory = CreateTemporaryFolder();
@@ -49,15 +49,27 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             Assert.True(File.Exists(Path.Combine(workingDirectory, targetSubfolder, $"MyProject.csproj")));
             Assert.True(File.Exists(Path.Combine(workingDirectory, targetSubfolder, $"Program.cs")));
 
-            new DotnetBuildCommand(_log, "--no-restore")
+            CommandResult commandResult = new DotnetBuildCommand(_log, "--no-restore")
                 .WithWorkingDirectory(Path.Combine(workingDirectory, targetSubfolder))
-                .Execute()
+                .Execute();
+
+            commandResult
                 .Should()
                 .ExitWith(0)
                 .And
-                .NotHaveStdErr()
-                .And.HaveStdOutContaining("Build succeeded.")
-                .And.HaveStdOutContaining("MyProject");
+                .NotHaveStdErr();
+
+            return Verify(commandResult.StdOut)
+                .UniqueForOSPlatform()
+                .AddScrubber(output =>
+                {
+                    output.Replace("{TempPath}", "/tmp/");
+                    output.Replace(workingDirectory, "%working directory%");
+                    output.UnixifyNewlines();
+                    
+                });
+                //.And.HaveStdOutContaining("Build succeeded.")
+                //.And.HaveStdOutContaining("MyProject");
         }
 
         [Fact]
