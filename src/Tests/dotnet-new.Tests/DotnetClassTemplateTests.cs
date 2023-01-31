@@ -126,10 +126,12 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         [InlineData("module", "16", "net7.0")]
         [InlineData("module", "latest", "net6.0")]
         [InlineData("module", "15.3", "netstandard2.0")]
+        [InlineData("module", "15.5", "netstandard2.0", "CustomFileName")]
         public async void DotnetVisualBasicClassTemplatesTest(
             string templateShortName,
             string langVersion = "",
-            string targetFramework = "")
+            string targetFramework = "",
+            string fileName = "")
         {
             // prevents logging a welcome message from sdk installation
             Dictionary<string, string> environmentUnderTest = new() { ["DOTNET_NOLOGO"] = false.ToString() };
@@ -143,7 +145,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             {
                 SnapshotsDirectory = "Approvals",
                 VerifyCommandOutput = true,
-                TemplateSpecificArgs = new[] { "--name", "TestItem1", "--language", "VB" },
+                TemplateSpecificArgs = new[] { "--name", string.IsNullOrWhiteSpace(fileName) ? "TestItem1" : fileName, "--language", "VB" },
                 VerificationExcludePatterns = new[]
                 {
                     "*/stderr.txt",

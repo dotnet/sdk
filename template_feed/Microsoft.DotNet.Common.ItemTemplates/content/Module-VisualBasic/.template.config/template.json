@@ -23,13 +23,6 @@
       "path": "Module1.vb"
     }
   ],
-  "symbols": {
-    "DefaultNamespace": {
-      "type": "bind",
-      "binding": "msbuild:RootNamespace",
-      "replaces": "Module1"
-    }
-  },
   "constraints": {
     "visualbasic-only": {
       "type": "project-capability",
