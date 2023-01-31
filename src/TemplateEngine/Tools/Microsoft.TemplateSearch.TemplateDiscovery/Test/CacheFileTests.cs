@@ -24,7 +24,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Test
             sdkVersion = "5.0.100";
             Console.WriteLine($"Running tests on .NET {sdkVersion} for: {legacyMetadataPath}.");
             workingDirectory = TestUtils.CreateTemporaryFolder(sdkVersion);
-            UseSdkVersion(workingDirectory, requestedSdkVersion: sdkVersion, resolvedVersionPattern: "5.0.", rollForward: "latestFeature");
+            UseSdkVersion(workingDirectory, requestedSdkVersion: sdkVersion, resolvedVersionPattern: "5.0.1", rollForward: "latestPatch");
             CanSearchWhileInstantiating(workingDirectory, legacyMetadataPath);
             CanCheckUpdates(workingDirectory, legacyMetadataPath);
             CanUpdate(workingDirectory, legacyMetadataPath);
@@ -33,7 +33,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Test
             sdkVersion = "5.0.400";
             Console.WriteLine($"Running tests on .NET {sdkVersion} for: {legacyMetadataPath}.");
             workingDirectory = TestUtils.CreateTemporaryFolder(sdkVersion);
-            UseSdkVersion(workingDirectory, requestedSdkVersion: sdkVersion, resolvedVersionPattern: "5.0.", rollForward: "latestFeature");
+            UseSdkVersion(workingDirectory, requestedSdkVersion: sdkVersion, resolvedVersionPattern: "5.0.4", rollForward: "latestPatch");
             CanSearch(workingDirectory, legacyMetadataPath);
             CanCheckUpdates(workingDirectory, legacyMetadataPath);
             CanUpdate(workingDirectory, legacyMetadataPath);
@@ -41,7 +41,43 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Test
             //6.0.100
             sdkVersion = "6.0.100";
             workingDirectory = TestUtils.CreateTemporaryFolder(sdkVersion);
-            UseSdkVersion(workingDirectory, requestedSdkVersion: "6.0.100", resolvedVersionPattern: "6.0.", rollForward: "latestFeature");
+            UseSdkVersion(workingDirectory, requestedSdkVersion: sdkVersion, resolvedVersionPattern: "6.0.1", rollForward: "latestPatch");
+            Console.WriteLine($"Running tests on .NET {sdkVersion} for: {legacyMetadataPath}.");
+            CanSearch(workingDirectory, legacyMetadataPath);
+            Console.WriteLine($"Running tests on .NET {sdkVersion} for: {metadataPath}.");
+            CanSearch(workingDirectory, metadataPath);
+
+            //6.0.300
+            sdkVersion = "6.0.300";
+            workingDirectory = TestUtils.CreateTemporaryFolder(sdkVersion);
+            UseSdkVersion(workingDirectory, requestedSdkVersion: sdkVersion, resolvedVersionPattern: "6.0.3", rollForward: "latestPatch");
+            Console.WriteLine($"Running tests on .NET {sdkVersion} for: {legacyMetadataPath}.");
+            CanSearch(workingDirectory, legacyMetadataPath);
+            Console.WriteLine($"Running tests on .NET {sdkVersion} for: {metadataPath}.");
+            CanSearch(workingDirectory, metadataPath);
+
+            //6.0.400
+            sdkVersion = "6.0.400";
+            workingDirectory = TestUtils.CreateTemporaryFolder(sdkVersion);
+            UseSdkVersion(workingDirectory, requestedSdkVersion: sdkVersion, resolvedVersionPattern: "6.0.4", rollForward: "latestPatch");
+            Console.WriteLine($"Running tests on .NET {sdkVersion} for: {legacyMetadataPath}.");
+            CanSearch(workingDirectory, legacyMetadataPath);
+            Console.WriteLine($"Running tests on .NET {sdkVersion} for: {metadataPath}.");
+            CanSearch(workingDirectory, metadataPath);
+
+            //7.0.100
+            sdkVersion = "7.0.100";
+            workingDirectory = TestUtils.CreateTemporaryFolder(sdkVersion);
+            UseSdkVersion(workingDirectory, requestedSdkVersion: sdkVersion, resolvedVersionPattern: "7.0.1", rollForward: "latestPatch");
+            Console.WriteLine($"Running tests on .NET {sdkVersion} for: {legacyMetadataPath}.");
+            CanSearch(workingDirectory, legacyMetadataPath);
+            Console.WriteLine($"Running tests on .NET {sdkVersion} for: {metadataPath}.");
+            CanSearch(workingDirectory, metadataPath);
+
+            //7.0.200
+            sdkVersion = "7.0.200";
+            workingDirectory = TestUtils.CreateTemporaryFolder(sdkVersion);
+            UseSdkVersion(workingDirectory, requestedSdkVersion: sdkVersion, resolvedVersionPattern: "7.0.2", rollForward: "latestPatch");
             Console.WriteLine($"Running tests on .NET {sdkVersion} for: {legacyMetadataPath}.");
             CanSearch(workingDirectory, legacyMetadataPath);
             Console.WriteLine($"Running tests on .NET {sdkVersion} for: {metadataPath}.");
@@ -80,7 +116,8 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Test
         private static void CanSearchWhileInstantiating(string workingDirectory, string cacheFilePath)
         {
             var settingsPath = TestUtils.CreateTemporaryFolder();
-            new DotnetNewCommand(TestOutputLogger.Instance, "func", "--debug:custom-hive", settingsPath)
+            new DotnetNewCommand(TestOutputLogger.Instance, "func")
+                .WithCustomHive(settingsPath)
                 .WithoutTelemetry()
                 .WithWorkingDirectory(workingDirectory)
                 .WithEnvironmentVariable("DOTNET_NEW_SEARCH_FILE_OVERRIDE", cacheFilePath)
@@ -94,7 +131,8 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Test
         private static void CanCheckUpdates(string workingDirectory, string cacheFilePath)
         {
             var settingsPath = TestUtils.CreateTemporaryFolder();
-            new DotnetNewCommand(TestOutputLogger.Instance, "--install", "Microsoft.Azure.WebJobs.ItemTemplates::2.1.1785", "--debug:custom-hive", settingsPath)
+            new DotnetNewCommand(TestOutputLogger.Instance, "--install", "Microsoft.Azure.WebJobs.ItemTemplates::2.1.1785")
+                .WithCustomHive(settingsPath)
               .WithoutTelemetry()
               .WithWorkingDirectory(workingDirectory)
               .WithEnvironmentVariable("DOTNET_NEW_SEARCH_FILE_OVERRIDE", cacheFilePath)
@@ -103,7 +141,8 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Test
               .ExitWith(0)
               .And.NotHaveStdErr();
 
-            new DotnetNewCommand(TestOutputLogger.Instance, "--update-check", "--debug:custom-hive", settingsPath)
+            new DotnetNewCommand(TestOutputLogger.Instance, "--update-check")
+                .WithCustomHive(settingsPath)
                 .WithoutTelemetry()
                 .WithWorkingDirectory(workingDirectory)
                 .WithEnvironmentVariable("DOTNET_NEW_SEARCH_FILE_OVERRIDE", cacheFilePath)
@@ -119,7 +158,8 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Test
         private static void CanUpdate(string workingDirectory, string cacheFilePath)
         {
             var settingsPath = TestUtils.CreateTemporaryFolder();
-            new DotnetNewCommand(TestOutputLogger.Instance, "--install", "Microsoft.Azure.WebJobs.ItemTemplates::2.1.1785", "--debug:custom-hive", settingsPath)
+            new DotnetNewCommand(TestOutputLogger.Instance, "--install", "Microsoft.Azure.WebJobs.ItemTemplates::2.1.1785")
+                .WithCustomHive(settingsPath)
                 .WithoutTelemetry()
                 .WithWorkingDirectory(workingDirectory)
                 .WithEnvironmentVariable("DOTNET_NEW_SEARCH_FILE_OVERRIDE", cacheFilePath)
@@ -128,7 +168,8 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Test
                 .ExitWith(0)
                 .And.NotHaveStdErr();
 
-            new DotnetNewCommand(TestOutputLogger.Instance, "--update-apply", "--debug:custom-hive", settingsPath)
+            new DotnetNewCommand(TestOutputLogger.Instance, "--update-apply")
+                .WithCustomHive(settingsPath)
                 .WithoutTelemetry()
                 .WithWorkingDirectory(workingDirectory)
                 .WithEnvironmentVariable("DOTNET_NEW_SEARCH_FILE_OVERRIDE", cacheFilePath)
@@ -144,7 +185,8 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Test
         private static void CanSearch(string workingDirectory, string cacheFilePath)
         {
             var settingsPath = TestUtils.CreateTemporaryFolder();
-            new DotnetNewCommand(TestOutputLogger.Instance, "func", "--search", "--debug:custom-hive", settingsPath)
+            new DotnetNewCommand(TestOutputLogger.Instance, "func", "--search")
+                .WithCustomHive(settingsPath)
                 .WithoutTelemetry()
                 .WithWorkingDirectory(workingDirectory)
                 .WithEnvironmentVariable("DOTNET_NEW_SEARCH_FILE_OVERRIDE", cacheFilePath)
@@ -158,6 +200,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Test
 
         private static void CreateGlobalJson(string directory, string sdkVersion, string rollForward = "latestMinor", bool allowPrerelease = false)
         {
+            Console.WriteLine($"set {sdkVersion} in global.json under {directory}.");
             string prereleaseSection = allowPrerelease ? @", ""allowPrerelease"": ""true""" : string.Empty;
             string jsonContent = $@"{{ ""sdk"": {{ ""version"": ""{sdkVersion}"", ""rollForward"": ""{rollForward}"" {prereleaseSection}}} }}";
             File.WriteAllText(Path.Combine(directory, "global.json"), jsonContent);

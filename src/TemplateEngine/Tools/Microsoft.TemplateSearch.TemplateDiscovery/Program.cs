@@ -7,10 +7,10 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery
 {
     internal class Program
     {
-        private static async Task Main(string[] args)
+        private static async Task<int> Main(string[] args)
         {
             Command rootCommand = new TemplateDiscoveryCommand();
-            await rootCommand.InvokeAsync(args).ConfigureAwait(false);
+            return await rootCommand.InvokeAsync(args).ConfigureAwait(false);
         }
     }
 }
