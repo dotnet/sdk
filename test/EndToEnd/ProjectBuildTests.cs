@@ -103,14 +103,14 @@ namespace EndToEnd.Tests
                 .Execute(newArgs)
                 .Should().Pass();
 
-            string publishArgs="-r win-arm64";
+            string publishArgs = "-r win-arm64";
             new PublishCommand()
                 .WithWorkingDirectory(projectDirectory)
                 .Execute(publishArgs)
                 .Should().Pass();
 
             var selfContainedPublishDir = new DirectoryInfo(projectDirectory)
-                .Sub("bin").Sub("Debug").GetDirectories().FirstOrDefault()
+                .Sub("bin").Sub(TargetFramework != "current" ? "Debug" : "Release").GetDirectories().FirstOrDefault()
                 .Sub("win-arm64").Sub("publish");
 
             selfContainedPublishDir.Should().HaveFilesMatching("System.Windows.Forms.dll", SearchOption.TopDirectoryOnly);
@@ -137,14 +137,14 @@ namespace EndToEnd.Tests
                 .Execute(newArgs)
                 .Should().Pass();
 
-            string publishArgs="-r win-arm64";
+            string publishArgs = "-r win-arm64";
             new PublishCommand()
                 .WithWorkingDirectory(projectDirectory)
                 .Execute(publishArgs)
                 .Should().Pass();
 
             var selfContainedPublishDir = new DirectoryInfo(projectDirectory)
-                .Sub("bin").Sub("Debug").GetDirectories().FirstOrDefault()
+                .Sub("bin").Sub(TargetFramework != "current" ? "Debug" : "Release").GetDirectories().FirstOrDefault()
                 .Sub("win-arm64").Sub("publish");
 
             selfContainedPublishDir.Should().HaveFilesMatching("PresentationCore.dll", SearchOption.TopDirectoryOnly);
@@ -433,13 +433,13 @@ namespace EndToEnd.Tests
                 {
                     buildArgs += $" --framework {framework}";
                 }
-                
+
                 // Remove this (or formalize it) after https://github.com/dotnet/installer/issues/12479 is resolved.
                 if (language == "F#")
                 {
                     buildArgs += $" /p:_NETCoreSdkIsPreview=true";
                 }
-            
+
                 string dotnetRoot = Path.GetDirectoryName(RepoDirectoriesProvider.DotnetUnderTest);
                 new BuildCommand()
                      .WithEnvironmentVariable("PATH", dotnetRoot) // override PATH since razor rely on PATH to find dotnet
