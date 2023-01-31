@@ -66,10 +66,9 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                     output.Replace("{TempPath}", "/tmp/");
                     output.Replace(workingDirectory, "%working directory%");
                     output.UnixifyNewlines();
-                    
                 });
-                //.And.HaveStdOutContaining("Build succeeded.")
-                //.And.HaveStdOutContaining("MyProject");
+            //.And.HaveStdOutContaining("Build succeeded.")
+            //.And.HaveStdOutContaining("MyProject");
         }
 
         [Fact]
