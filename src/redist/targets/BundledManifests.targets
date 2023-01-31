@@ -1,6 +1,5 @@
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
-    <NetFeatureBandPrerelease>8.0.100-alpha.1</NetFeatureBandPrerelease>
     <NetFeatureBand>8.0.100</NetFeatureBand>
   </PropertyGroup>
   <ItemGroup>
@@ -11,12 +10,12 @@
     <BundledManifests Include="Microsoft.NET.Sdk.Maui" FeatureBand="$(MauiFeatureBand)" Version="$(MauiWorkloadManifestVersion)" />
     <BundledManifests Include="Microsoft.NET.Sdk.tvOS" FeatureBand="$(MauiFeatureBand)" Version="$(XamarinTvOSWorkloadManifestVersion)" />
     <!-- Bundled Manifests are ordered by the reference here - verify before altering -->
-    <BundledManifests Include="Microsoft.NET.Workload.Mono.ToolChain.Current" FeatureBand="$(NetFeatureBandPrerelease)" Version="$(MonoWorkloadManifestVersion)" />
-    <BundledManifests Include="Microsoft.NET.Workload.Emscripten.Current" FeatureBand="$(NetFeatureBandPrerelease)" Version="$(EmscriptenWorkloadManifestVersion)" />
-    <BundledManifests Include="Microsoft.NET.Workload.Emscripten.net6" FeatureBand="$(NetFeatureBandPrerelease)" Version="$(EmscriptenWorkloadManifestVersion)" />
-    <BundledManifests Include="Microsoft.NET.Workload.Emscripten.net7" FeatureBand="$(NetFeatureBandPrerelease)" Version="$(EmscriptenWorkloadManifestVersion)" />
-    <BundledManifests Include="Microsoft.NET.Workload.Mono.ToolChain.net6" FeatureBand="$(NetFeatureBandPrerelease)" Version="$(MonoWorkloadManifestVersion)" />
-    <BundledManifests Include="Microsoft.NET.Workload.Mono.ToolChain.net7" FeatureBand="$(NetFeatureBandPrerelease)" Version="$(MonoWorkloadManifestVersion)" />
+    <BundledManifests Include="Microsoft.NET.Workload.Mono.ToolChain.Current" FeatureBand="$(MonoWorkloadFeatureBand)" Version="$(MonoWorkloadManifestVersion)" />
+    <BundledManifests Include="Microsoft.NET.Workload.Emscripten.Current" FeatureBand="$(EmscriptenWorkloadFeatureBand)" Version="$(EmscriptenWorkloadManifestVersion)" />
+    <BundledManifests Include="Microsoft.NET.Workload.Emscripten.net6" FeatureBand="$(EmscriptenWorkloadFeatureBand)" Version="$(EmscriptenWorkloadManifestVersion)" />
+    <BundledManifests Include="Microsoft.NET.Workload.Emscripten.net7" FeatureBand="$(EmscriptenWorkloadFeatureBand)" Version="$(EmscriptenWorkloadManifestVersion)" />
+    <BundledManifests Include="Microsoft.NET.Workload.Mono.ToolChain.net6" FeatureBand="$(MonoWorkloadFeatureBand)" Version="$(MonoWorkloadManifestVersion)" />
+    <BundledManifests Include="Microsoft.NET.Workload.Mono.ToolChain.net7" FeatureBand="$(MonoWorkloadFeatureBand)" Version="$(MonoWorkloadManifestVersion)" />
   </ItemGroup>
 
   <!-- Calculate NuGet package IDs for bundled manifests -->
