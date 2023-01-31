@@ -1,6 +1,6 @@
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
-    <NetFeatureBandPrerelease>8.0.100-$(PreReleaseVersionLabel).$(PreReleaseVersionIteration)</NetFeatureBandPrerelease>
+    <NetFeatureBandPrerelease>8.0.100-alpha.1</NetFeatureBandPrerelease>
     <NetFeatureBand>8.0.100</NetFeatureBand>
   </PropertyGroup>
   <ItemGroup>
