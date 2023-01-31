@@ -21,7 +21,6 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.PostActionTests
             _engineEnvironmentSettings = environmentSettingsHelper.CreateEnvironment(hostIdentifier: GetType().Name, virtualize: true);
         }
 
-
         [Fact]
         public void FailsWhenParentPropertyPathIsInvalid()
         {
