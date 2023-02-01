@@ -112,7 +112,6 @@
     <Dependency Name="Microsoft.NET.ILLink.Tasks" Version="8.0.0-preview.2.23101.2">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>842ec4aaa723daaf2ce5d6d8931d09773ae55831</Sha>
-      <SourceBuild RepoName="linker" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.NET.ILLink.Analyzers" Version="8.0.100-1.23067.1">
       <Uri>https://github.com/dotnet/linker</Uri>
