@@ -59,7 +59,7 @@ namespace Microsoft.Build.Tasks
         private static string HashWithNormalizedCasing(string text){
             var utf8UpperBytes = System.Text.Encoding.UTF8.GetBytes(text.ToUpperInvariant());
 #if NETFRAMEWORK
-            var crypt = new System.Security.Cryptography.SHA256.Create();
+            var crypt = System.Security.Cryptography.SHA256.Create();
             var hash = new System.Text.StringBuilder();
             byte[] crypto = crypt.ComputeHash(utf8UpperBytes);
             foreach (byte theByte in crypto)
