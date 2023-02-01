@@ -1,7 +1,3 @@
-﻿Module ClassLib
+﻿Public Interface TestItem1
 
-    Interface TestItem1
-
-    End Interface
-
-End Module
+End Interface

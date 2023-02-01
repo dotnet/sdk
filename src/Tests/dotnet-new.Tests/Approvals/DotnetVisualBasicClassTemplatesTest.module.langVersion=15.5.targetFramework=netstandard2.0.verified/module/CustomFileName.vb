@@ -1,3 +1,3 @@
-﻿Module CustomFileName
+﻿Public Module CustomFileName
 
 End Module

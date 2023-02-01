@@ -1,7 +1,3 @@
-﻿Module CompanyClassLibrary1
+﻿Public Interface Interface1
 
-    Interface Interface1
-
-    End Interface
-
-End Module
+End Interface

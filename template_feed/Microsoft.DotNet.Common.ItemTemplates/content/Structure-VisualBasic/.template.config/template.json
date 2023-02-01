@@ -4,7 +4,7 @@
   "classifications": [
     "Common"
   ],
-  "name": "Struct",
+  "name": "Structure",
   "generatorVersions": "[1.0.0.0-*)",
   "description": "Creates a new Visual Basic structure",
   "tags": {
@@ -13,23 +13,19 @@
   },
   "groupIdentity": "DotNet.Common.Struct",
   "precedence": "0",
-  "identity": "DotNet.Common.Struct.VisualBasic",
-  "shortName": "struct",
-  "sourceName": "Struct1",
+  "identity": "DotNet.Common.Structure.VisualBasic",
+  "shortName": [
+    "struct",
+    "structure"
+  ],
+  "sourceName": "Structure1",
   "preferDefaultName": true,
-  "defaultName": "Struct1",
+  "defaultName": "Structure1",
   "primaryOutputs": [
     {
-      "path": "Struct1.vb"
+      "path": "Structure1.vb"
     }
   ],
-  "symbols": {
-    "DefaultNamespace": {
-      "type": "bind",
-      "binding": "msbuild:RootNamespace",
-      "replaces": "CompanyClassLibrary1"
-    }
-  },
   "constraints": {
     "visualbasic-only": {
       "type": "project-capability",

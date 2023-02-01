@@ -1,7 +1,3 @@
-﻿Module ClassLib
+﻿Public Class TestItem1
 
-    Public Class TestItem1
-
-    End Class
-
-End Module
+End Class

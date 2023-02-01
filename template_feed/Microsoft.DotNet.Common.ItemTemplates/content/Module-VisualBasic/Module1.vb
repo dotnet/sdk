@@ -1,3 +1,3 @@
-﻿Module Module1
+﻿Public Module Module1
 
 End Module

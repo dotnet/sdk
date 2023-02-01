@@ -1,3 +1,3 @@
-﻿Module TestItem1
+﻿Public Module TestItem1
 
 End Module
