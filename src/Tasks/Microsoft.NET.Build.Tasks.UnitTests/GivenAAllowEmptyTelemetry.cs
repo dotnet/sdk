@@ -8,16 +8,24 @@ using System.Text;
 using FluentAssertions;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Tasks;
+using Microsoft.Build.Utilities;
 using Xunit;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests
 {
     public class GivenAAllowEmptyTelemetry
     {
-        [Theory]
-        [InlineData("Property1")]
-        [InlineData("Property1=")]
-        public void WhenInvokeWithoutValueItSendValueAsNull(string eventData)
+        private static ITaskItem CreateHashItem(string key, string value = null, Nullable<bool> hash = null) {
+            var item = new TaskItem(key);
+            item.SetMetadata("Value", value);
+            if(hash.HasValue) {
+                item.SetMetadata("Hash", hash.Value.ToString());
+            }
+            return item;
+        }
+
+        [Fact]
+        public void WhenInvokeWithoutValueItSendValueAsNull()
         {
             var engine = new MockBuildEngine5();
 
@@ -25,12 +33,16 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             {
                 BuildEngine = engine,
                 EventName = "My event name",
-                EventData = eventData
+                EventData = new ITaskItem[] {
+                    CreateHashItem("Property1"),
+                    CreateHashItem("Property2", "")
+                }
             };
 
             telemetryTask.Execute();
 
             engine.Log.Should().Contain("'Property1' = 'null'");
+            engine.Log.Should().Contain("'Property2' = 'null'");
         }
 
         [Fact]
@@ -42,7 +54,10 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             {
                 BuildEngine = engine,
                 EventName = "My event name",
-                EventData = "Property1=EE2493A167D24F00996DE7C8E769EAE6;Property1=4ADE3D2622CA400B8B95A039DF540037"
+                EventData = new ITaskItem[] {
+                    CreateHashItem("Property1", "EE2493A167D24F00996DE7C8E769EAE6"),
+                    CreateHashItem("Property1", "4ADE3D2622CA400B8B95A039DF540037")
+                }
             };
 
             bool retVal = telemetryTask.Execute();
@@ -51,23 +66,6 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 
             engine.Log.Should().NotContain("EE2493A167D24F00996DE7C8E769EAE6");
             engine.Log.Should().Contain("4ADE3D2622CA400B8B95A039DF540037");
-        }
-
-        [Fact]
-        public void WhenInvokeWithInvalidEventDataItThrows()
-        {
-            var engine = new MockBuildEngine5();
-
-            AllowEmptyTelemetry telemetryTask = new AllowEmptyTelemetry
-            {
-                BuildEngine = engine,
-                EventName = "My event name",
-                EventData = "Property1=Value1;=Value2"
-            };
-
-            Action a = () => telemetryTask.Execute();
-
-            a.Should().Throw<ArgumentException>();
         }
 
         [Fact]
@@ -85,6 +83,27 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 
             retVal.Should().BeTrue();
             engine.Log.Should().Contain(telemetryTask.EventName);
+        }
+
+        [Fact]
+        public void WhenHashIsRequestedValueIsHashed()
+        {
+            var engine = new MockBuildEngine5();
+
+            AllowEmptyTelemetry telemetryTask = new AllowEmptyTelemetry
+            {
+                BuildEngine = engine,
+                EventName = "My event name",
+                EventData = new ITaskItem[] {
+                    CreateHashItem("Property1", "hi", true),
+                    CreateHashItem("Property2", "hello", false)
+                }
+            };
+
+            telemetryTask.Execute();
+            // first property should be hashed
+            engine.Log.Should().Contain("'Property1' = 'cd6f6854353f68f47c9c93217c5084bc66ea1af918ae1518a2d715a1885e1fcb'");
+            engine.Log.Should().Contain("'Property2' = 'hello'");
         }
 
         /// <summary>
@@ -121,9 +140,11 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             public void LogTelemetry(string eventName, IDictionary<string, string> properties)
             {
                 string message = $"Received telemetry event '{eventName}'{Environment.NewLine}";
-                foreach (string key in properties?.Keys)
-                {
-                    message += $"  Property '{key}' = '{properties[key]}'{Environment.NewLine}";
+                if (properties is not null) {
+                    foreach (string key in properties.Keys)
+                    {
+                        message += $"  Property '{key}' = '{properties[key]}'{Environment.NewLine}";
+                    }
                 }
 
                 lock (_lockObj)
