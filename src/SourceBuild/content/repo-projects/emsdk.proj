@@ -8,8 +8,8 @@
     <OverrideTargetRid Condition="'$(TargetOS)' == 'Windows_NT'">win-$(Platform)</OverrideTargetRid>
 
     <_platformIndex>$(OverrideTargetRid.LastIndexOf('-'))</_platformIndex>
-    <TargetOS>$(NETCoreSdkRuntimeIdentifier.Substring(0, $(_platformIndex)))</TargetOS>
-    <TargetArch>$(NETCoreSdkPortableRuntimeIdentifier.Substring($(_platformIndex)))</TargetArch>
+    <TargetOS>$(OverrideTargetRid.Substring(0, $(_platformIndex)))</TargetOS>
+    <TargetArch>$(OverrideTargetRid.Substring($(_platformIndex)))</TargetArch>
 
     <BuildCommandArgs>$(StandardSourceBuildArgs)</BuildCommandArgs>
     <BuildCommandArgs>$(BuildCommandArgs) /p:PackageRid=$(OverrideTargetRid)</BuildCommandArgs>
