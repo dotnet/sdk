@@ -126,7 +126,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
 
     public class TypeDeclarationSyntaxRewriterTests : SyntaxRewriterTests
     {
-       [Fact]
+        [Fact]
         public void TestRemoveSystemObjectAsBaseClass()
         {
             CompareSyntaxTree(new TypeDeclarationCSharpSyntaxRewriter(),
