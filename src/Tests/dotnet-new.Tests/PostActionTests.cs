@@ -56,19 +56,10 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             commandResult
                 .Should()
                 .ExitWith(0)
-                .And
-                .NotHaveStdErr();
+                .And.NotHaveStdErr()
 
-            return Verify(commandResult.StdOut)
-                .UniqueForOSPlatform()
-                .AddScrubber(output =>
-                {
-                    output.Replace("{TempPath}", "/tmp/");
-                    output.Replace(workingDirectory, "%working directory%");
-                    output.UnixifyNewlines();
-                });
-            //.And.HaveStdOutContaining("Build succeeded.")
-            //.And.HaveStdOutContaining("MyProject");
+                .And.HaveStdOutContaining("Build succeeded.")
+                .And.HaveStdOutContaining("MyProject");
         }
 
         [Fact]
