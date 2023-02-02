@@ -24,7 +24,6 @@ using Command = System.CommandLine.Command;
 using Microsoft.Extensions.Logging;
 using Microsoft.DotNet.Tools;
 using System.CommandLine.Parsing;
-using System.Diagnostics;
 
 namespace Microsoft.DotNet.Cli
 {
@@ -75,7 +74,6 @@ namespace Microsoft.DotNet.Cli
 
             static CliTemplateEngineHost GetEngineHost(ParseResult parseResult)
             {
-                Debugger.Launch();
                 bool disableSdkTemplates = parseResult.GetValue(s_disableSdkTemplatesOption);
                 bool disableProjectContext = parseResult.GetValue(s_disableProjectContextEvaluationOption)
                     || Env.GetEnvironmentVariableAsBool(EnableProjectContextEvaluationEnvVarName);
