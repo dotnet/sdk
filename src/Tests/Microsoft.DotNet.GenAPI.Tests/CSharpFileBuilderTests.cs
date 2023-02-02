@@ -1116,5 +1116,42 @@ namespace Microsoft.DotNet.GenAPI.Tests
                     }
                     """);
         }
+
+        [Fact]
+        public void TestBaseTypeConstructorWithObsoleteAttribute()
+        {
+            RunTest(original: """
+                    namespace Foo
+                    {
+                        public class B
+                        {
+                            public B(int p1, string p2) { }
+                            [System.Obsolete("Constructor is deprecated.", true)]
+                            public B(int p1) { }
+                        }
+
+                        public class C : B
+                        {
+                            public C() : base(1, "") { }
+                        }
+                    }
+                    """,
+                expected: """
+                    namespace Foo
+                    {
+                        public partial class B
+                        {
+                            public B(int p1, string p2) { }
+                            [System.Obsolete("Constructor is deprecated.", true)]
+                            public B(int p1) { }
+                        }
+                    
+                        public partial class C : B
+                        {
+                            public C() : base(default, default!) { }
+                        }
+                    }
+                    """);
+        }
     }
 }

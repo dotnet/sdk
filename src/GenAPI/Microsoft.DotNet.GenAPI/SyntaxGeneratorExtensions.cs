@@ -2,11 +2,8 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Data.Common;
 using System.Linq;
-using System.Security.AccessControl;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Editing;
 using Microsoft.CodeAnalysis.CSharp;
@@ -46,10 +43,17 @@ namespace Microsoft.DotNet.GenAPI
                 {
                     INamedTypeSymbol? baseType = method.ContainingType.BaseType;
                     // If the base type does not have default constructor.
-                    if (baseType != null && !baseType.Constructors.IsEmpty && baseType.Constructors.Where(c => c.Parameters.IsEmpty).Count() == 0)
+                    if (baseType != null && !baseType.Constructors.IsEmpty && baseType.Constructors.All(c => !c.Parameters.IsEmpty))
                     {
-                        ConstructorDeclarationSyntax declaration = (ConstructorDeclarationSyntax)syntaxGenerator.Declaration(method);
-                        return declaration.WithInitializer(GenerateBaseConstructorInitializer(baseType.Constructors));
+                        IOrderedEnumerable<IMethodSymbol> baseTypeConstructors = baseType.Constructors
+                            .Where(c => !c.GetAttributes().Any(a => a.IsObsoleteWithUsageTreatedAsCompilationError()))
+                            .OrderBy(c => c.Parameters.Count());
+
+                        if (baseTypeConstructors.Any())
+                        {
+                            ConstructorDeclarationSyntax declaration = (ConstructorDeclarationSyntax)syntaxGenerator.Declaration(method);
+                            return declaration.WithInitializer(GenerateBaseConstructorInitializer(baseTypeConstructors.First()));
+                        }
                     }
                 }
             }
@@ -65,15 +69,14 @@ namespace Microsoft.DotNet.GenAPI
             }
         }
 
-        private static ConstructorInitializerSyntax GenerateBaseConstructorInitializer(ImmutableArray<IMethodSymbol> baseTypeConstructors)
+        private static ConstructorInitializerSyntax GenerateBaseConstructorInitializer(IMethodSymbol baseTypeConstructor)
         {
             ConstructorInitializerSyntax constructorInitializer = SyntaxFactory.ConstructorInitializer(SyntaxKind.BaseConstructorInitializer);
 
-            IMethodSymbol baseConstructor = baseTypeConstructors.OrderBy(c => c.Parameters.Count()).First();
-            foreach (IParameterSymbol parameter in baseConstructor.Parameters)
+            foreach (IParameterSymbol parameter in baseTypeConstructor.Parameters)
             {
                 IdentifierNameSyntax identifier;
-                if (parameter.Type.IsValueType)
+                if (parameter.Type.IsValueType || parameter.NullableAnnotation == NullableAnnotation.Annotated)
                     identifier = SyntaxFactory.IdentifierName("default");
                 else
                     identifier = SyntaxFactory.IdentifierName("default!");
