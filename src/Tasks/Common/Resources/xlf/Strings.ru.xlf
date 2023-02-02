@@ -726,8 +726,8 @@ The following are names of parameters or literal values and should not be transl
         <note>{StrBegin="NETSDK1093: "}</note>
       </trans-unit>
       <trans-unit id="PublishProfileNotPresent">
-        <source>NETSDK1198: A publish profile with the name '{0}' was not found in the project. Set the PublishProfile property to a valid file name</source>
-        <target state="new">NETSDK1198: A publish profile with the name '{0}' was not found in the project. Set the PublishProfile property to a valid file name</target>
+        <source>NETSDK1198: A publish profile with the name '{0}' was not found in the project. Set the PublishProfile property to a valid file name.</source>
+        <target state="new">NETSDK1198: A publish profile with the name '{0}' was not found in the project. Set the PublishProfile property to a valid file name.</target>
         <note>{StrBegin="NETSDK1198: "}</note>
       </trans-unit>
       <trans-unit id="PublishReadyToRunRequiresVersion30">
