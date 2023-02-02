@@ -11,7 +11,8 @@ namespace Microsoft.Build.Tasks
     /// </summary>
     public sealed class AllowEmptyTelemetry : TaskBase
     {
-        public AllowEmptyTelemetry() {
+        public AllowEmptyTelemetry()
+        {
             EventData = Array.Empty<ITaskItem>();
             EventName = String.Empty;
         }
@@ -26,9 +27,12 @@ namespace Microsoft.Build.Tasks
 
         protected override void ExecuteCore()
         {
-            if (EventData == null) {
+            if (EventData == null)
+            {
                 (BuildEngine as IBuildEngine5)?.LogTelemetry(EventName, null);
-            } else {
+            }
+            else
+            {
                 IDictionary<string, string> properties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
                 foreach (var item in EventData)
                 {
@@ -38,7 +42,8 @@ namespace Microsoft.Build.Tasks
                     var value = hasValue ? item.GetMetadata("Value") : null;
                     var hasHash = availableNames.Contains("Hash");
                     var hash = hasHash ? bool.Parse(item.GetMetadata("Hash")) : false;
-                    if (hash && value != null) {
+                    if (hash && value != null)
+                    {
                         value = HashWithNormalizedCasing(value);
                     }
                     if (String.IsNullOrEmpty(value))
@@ -56,7 +61,8 @@ namespace Microsoft.Build.Tasks
 
         // A local copy of Sha256Hasher.HashWithNormalizedCasing from the Microsoft.DotNet.Cli.Utils project.
         // We don't want to introduce a project<->project dependency, and the logic is straightforward enough.
-        private static string HashWithNormalizedCasing(string text){
+        private static string HashWithNormalizedCasing(string text)
+        {
             var utf8UpperBytes = System.Text.Encoding.UTF8.GetBytes(text.ToUpperInvariant());
 #if NETFRAMEWORK
             var crypt = System.Security.Cryptography.SHA256.Create();
