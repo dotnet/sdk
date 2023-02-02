@@ -17,9 +17,11 @@ internal static class Config
     public const string PrereqsPathEnv = "SMOKE_TESTS_PREREQS_PATH";
     public const string CustomPackagesPathEnv = "SMOKE_TESTS_CUSTOM_PACKAGES_PATH";
     public const string SdkTarballPathEnv = "SMOKE_TESTS_SDK_TARBALL_PATH";
+    public const string SourceBuiltArtifactsPathEnv = "SMOKE_TESTS_SOURCEBUILT_ARTIFACTS_PATH";
     public const string TargetRidEnv = "SMOKE_TESTS_TARGET_RID";
     public const string WarnPoisonDiffsEnv = "SMOKE_TESTS_WARN_POISON_DIFFS";
     public const string WarnSdkContentDiffsEnv = "SMOKE_TESTS_WARN_SDK_CONTENT_DIFFS";
+    public const string RunningInCIEnv = "SMOKE_TESTS_RUNNING_IN_CI";
 
     public static string DotNetDirectory { get; } =
         Environment.GetEnvironmentVariable(DotNetDirectoryEnv) ?? Path.Combine(Directory.GetCurrentDirectory(), ".dotnet");
@@ -30,6 +32,8 @@ internal static class Config
     public static string? PrereqsPath { get; } = Environment.GetEnvironmentVariable(PrereqsPathEnv);
     public static string? CustomPackagesPath { get; } = Environment.GetEnvironmentVariable(CustomPackagesPathEnv);
     public static string? SdkTarballPath { get; } = Environment.GetEnvironmentVariable(SdkTarballPathEnv);
+    public static string? SourceBuiltArtifactsPath { get; } = Environment.GetEnvironmentVariable(SourceBuiltArtifactsPathEnv) ??
+        throw new InvalidOperationException($"'{Config.SourceBuiltArtifactsPathEnv}' must be specified");
     public static string TargetRid { get; } = Environment.GetEnvironmentVariable(TargetRidEnv) ??
         throw new InvalidOperationException($"'{Config.TargetRidEnv}' must be specified");
     public static string TargetArchitecture { get; } = TargetRid.Split('-')[1];
@@ -37,4 +41,8 @@ internal static class Config
         bool.TryParse(Environment.GetEnvironmentVariable(WarnPoisonDiffsEnv), out bool excludeOnlineTests) && excludeOnlineTests;
     public static bool WarnOnSdkContentDiffs { get; } =
         bool.TryParse(Environment.GetEnvironmentVariable(WarnSdkContentDiffsEnv), out bool excludeOnlineTests) && excludeOnlineTests;
+
+    // Indicates whether the tests are being run in the context of a CI pipeline
+    public static bool RunningInCI { get; } =
+        bool.TryParse(Environment.GetEnvironmentVariable(RunningInCIEnv), out bool runningInCI) && runningInCI;
 }
