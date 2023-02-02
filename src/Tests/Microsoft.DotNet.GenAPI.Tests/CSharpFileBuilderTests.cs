@@ -44,7 +44,6 @@ namespace Microsoft.DotNet.GenAPI.Tests
         {
             IAssemblySymbol assemblySymbol = SymbolFactory.GetAssemblyFromSyntax(original, enableNullable: true);
 
-            Debugger.Break();
             _csharpFileBuilder.WriteAssembly(assemblySymbol);
 
             StringBuilder stringBuilder = _stringWriter.GetStringBuilder();
@@ -57,7 +56,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
 
             /// compare SyntaxTree and not string representation
             Assert.True(resultedSyntaxTree.IsEquivalentTo(expectedSyntaxTree),
-                $"Expectoid:\n{expected}\nResulted:\n{resultedString}");
+                $"Expected:\n{expected}\nResulted:\n{resultedString}");
         }
 
         [Fact]
@@ -815,6 +814,25 @@ namespace Microsoft.DotNet.GenAPI.Tests
                     }
                 }
                 """);
+        }
+
+        [Fact]
+        void TestSynthesizePrivateFieldsForGenericTypes()
+        {
+            Debugger.Break();
+            RunTest(original: """
+                namespace Foo
+                {
+                    public struct Bar<T>
+                    {
+                        #pragma warning disable 0169
+                        private T _field;
+                    }
+                }
+            """,
+            expected: """
+            k
+            """);
         }
     }
 }

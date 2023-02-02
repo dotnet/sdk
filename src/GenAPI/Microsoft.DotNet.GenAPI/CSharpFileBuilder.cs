@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.CSharp.Formatting;
 using Microsoft.CodeAnalysis.Editing;
 using Microsoft.CodeAnalysis.Formatting;
@@ -158,6 +159,21 @@ namespace Microsoft.DotNet.GenAPI
             });
         }
 
+        private SyntaxList<AttributeListSyntax> fromAttributeData(IEnumerable<AttributeData> attrData)
+        {
+            IEnumerable<SyntaxNode?> syntaxNodes = attrData.Select(ad => ad.ApplicationSyntaxReference?.GetSyntax(new System.Threading.CancellationToken(false)));
+            IEnumerable<AttributeListSyntax?> asNodes = syntaxNodes.Select(sn => {
+                if (sn is AttributeSyntax ass) {
+                    SeparatedSyntaxList<AttributeSyntax> singletonList = SyntaxFactory.SingletonSeparatedList<AttributeSyntax>(ass);
+                    AttributeListSyntax alSyntax = SyntaxFactory.AttributeList(singletonList);
+                    return alSyntax;
+                }
+                return null;
+            });
+            List<AttributeListSyntax> asList = asNodes.Where(a => a != null).OfType<AttributeListSyntax>().ToList();
+            return SyntaxFactory.List(asList);
+        }
+
         private IEnumerable<SyntaxNode> synthesizeDummyFields(INamedTypeSymbol namedType) {
             // If it's a value type
             if (namedType.TypeKind != TypeKind.Struct) {
@@ -168,25 +184,26 @@ namespace Microsoft.DotNet.GenAPI
                 .Where(member => !_symbolFilter.Include(member) && member is IFieldSymbol)
                 .Select(m => (IFieldSymbol)m);
             
+            // Debugger.Break();
+            
             if (excludedFields.Any())
             {
                 IEnumerable<IFieldSymbol> genericTypedFields = excludedFields.Where(f => f.Type is INamedTypeSymbol ty && ty.IsGenericType);
 
                 foreach(IFieldSymbol genericField in genericTypedFields)
                 {
-                    // TODO: do that thing with generic types.
+                    yield return dummyField(genericField.Type.ToDisplayString(), genericField.Name, fromAttributeData(genericField.GetAttributes()));
                 }
 
                 bool hasRefPrivateField = excludedFields.Any(f => IsOrContainsReferenceType(f.Type));
 
-                Debugger.Launch();
                 if (hasRefPrivateField)
                 {
                     // add reference type dummy field
-                    yield return dummyField(SyntaxKind.ObjectKeyword, "_dummy");
+                    yield return dummyField("object", "_dummy", new());
 
                     // add int field
-                    yield return dummyField(SyntaxKind.IntKeyword, "_dummyPrimitive");
+                    yield return dummyField("int", "_dummyPrimitive", new());
                 }
                 else
                 {
@@ -195,23 +212,23 @@ namespace Microsoft.DotNet.GenAPI
                     if (hasNonEmptyStructPrivateField)
                     {
                         // add int field
-                        yield return dummyField(SyntaxKind.IntKeyword, "_dummyPrimitive");
+                        yield return dummyField("int", "_dummyPrimitive", new());
                     }
                 }
             }
         }
 
-        private static SyntaxNode dummyField(SyntaxKind predefinedType, string fieldName)
+        private static SyntaxNode dummyField(string typ, string fieldName, SyntaxList<AttributeListSyntax> attrs)
         {
             return SyntaxFactory.FieldDeclaration(
                 SyntaxFactory.VariableDeclaration(
-                    SyntaxFactory.PredefinedType(
-                        SyntaxFactory.Token(predefinedType)))
+                    SyntaxFactory.ParseTypeName(typ))
                 .WithVariables(
                     SyntaxFactory.SingletonSeparatedList<Microsoft.CodeAnalysis.CSharp.Syntax.VariableDeclaratorSyntax>(
                         SyntaxFactory.VariableDeclarator(
                             SyntaxFactory.Identifier(fieldName))))
-            ).WithModifiers(SyntaxFactory.TokenList(new []{SyntaxFactory.Token(SyntaxKind.PrivateKeyword)}));
+            ).WithModifiers(SyntaxFactory.TokenList(new []{SyntaxFactory.Token(SyntaxKind.PrivateKeyword)})
+            ).WithAttributeLists(attrs);
         }
 
         private SyntaxNode Visit(SyntaxNode namedTypeNode, INamedTypeSymbol namedType)
