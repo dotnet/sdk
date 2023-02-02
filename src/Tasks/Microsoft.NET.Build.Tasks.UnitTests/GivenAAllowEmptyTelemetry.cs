@@ -11,14 +11,16 @@ using Microsoft.Build.Tasks;
 using Microsoft.Build.Utilities;
 using Xunit;
 
+#nullable enable
+
 namespace Microsoft.NET.Build.Tasks.UnitTests
 {
     public class GivenAAllowEmptyTelemetry
     {
-        private static ITaskItem CreateHashItem(string key, string value = null, Nullable<bool> hash = null) {
+        private static ITaskItem CreateHashItem(string key, string? value = null, bool? hash = null) {
             var item = new TaskItem(key);
             item.SetMetadata("Value", value);
-            if(hash.HasValue) {
+            if(hash is not null) {
                 item.SetMetadata("Hash", hash.Value.ToString());
             }
             return item;
@@ -83,6 +85,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 
             retVal.Should().BeTrue();
             engine.Log.Should().Contain(telemetryTask.EventName);
+            engine.Log.Should().NotContain("Property"); // shouldn't have any logged properties since none were supplied
         }
 
         [Fact]
