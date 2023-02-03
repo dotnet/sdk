@@ -1153,5 +1153,79 @@ namespace Microsoft.DotNet.GenAPI.Tests
                     }
                     """);
         }
+
+        [Fact]
+        public void TestObsoleteBaseTypeConstructorWithoutErrorParameter()
+        {
+            RunTest(original: """
+                    namespace Foo
+                    {
+                        public class B
+                        {
+                            public B(int p1, string p2) { }
+                            [System.Obsolete("Constructor is deprecated.")]
+                            public B(int p1) { }
+                        }
+
+                        public class C : B
+                        {
+                            public C() : base(1, "") { }
+                        }
+                    }
+                    """,
+                expected: """
+                    namespace Foo
+                    {
+                        public partial class B
+                        {
+                            public B(int p1, string p2) { }
+                            [System.Obsolete("Constructor is deprecated.")]
+                            public B(int p1) { }
+                        }
+                    
+                        public partial class C : B
+                        {
+                            public C() : base(default) { }
+                        }
+                    }
+                    """);
+        }
+
+        [Fact]
+        public void TestObsoleteBaseTypeConstructorWithoutMessageParameter()
+        {
+            RunTest(original: """
+                    namespace Foo
+                    {
+                        public class B
+                        {
+                            public B(int p1, string p2) { }
+                            [System.Obsolete(null)]
+                            public B(int p1) { }
+                        }
+
+                        public class C : B
+                        {
+                            public C() : base(1, "") { }
+                        }
+                    }
+                    """,
+                expected: """
+                    namespace Foo
+                    {
+                        public partial class B
+                        {
+                            public B(int p1, string p2) { }
+                            [System.Obsolete(null)]
+                            public B(int p1) { }
+                        }
+                    
+                        public partial class C : B
+                        {
+                            public C() : base(default) { }
+                        }
+                    }
+                    """);
+        }
     }
 }

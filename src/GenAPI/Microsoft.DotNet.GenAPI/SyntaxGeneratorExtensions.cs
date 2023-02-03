@@ -47,7 +47,7 @@ namespace Microsoft.DotNet.GenAPI
                     {
                         IOrderedEnumerable<IMethodSymbol> baseTypeConstructors = baseType.Constructors
                             .Where(c => !c.GetAttributes().Any(a => a.IsObsoleteWithUsageTreatedAsCompilationError()))
-                            .OrderBy(c => c.Parameters.Count());
+                            .OrderBy(c => c.Parameters.Length);
 
                         if (baseTypeConstructors.Any())
                         {

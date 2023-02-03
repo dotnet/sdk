@@ -25,13 +25,13 @@ namespace Microsoft.DotNet.GenAPI.SyntaxRewriter
             if (body != null)
             {
                 body = body
-                    .WithOpenBraceToken(body.OpenBraceToken.WithTrailingTrivia(SyntaxFactory.Space))
-                    .WithCloseBraceToken(body.CloseBraceToken.WithLeadingTrivia());
+                    .WithOpenBraceToken(body.OpenBraceToken.WithTrailingTrivia())
+                    .WithCloseBraceToken(body.CloseBraceToken.WithLeadingTrivia(SyntaxFactory.Space));
 
-                if (body.Statements.Count == 1)
+                if (body.Statements.Any() && !body.Statements[0].FullSpan.IsEmpty)
                 {
                     body = body
-                        .WithCloseBraceToken(body.CloseBraceToken.WithLeadingTrivia(SyntaxFactory.Space))
+                        .WithOpenBraceToken(body.OpenBraceToken.WithTrailingTrivia(SyntaxFactory.Space))
                         .WithStatements(new(body.Statements[0].WithoutLeadingTrivia().WithoutTrailingTrivia()));
                 }
             }
@@ -65,13 +65,13 @@ namespace Microsoft.DotNet.GenAPI.SyntaxRewriter
                     if (body != null)
                     {
                         body = body
-                            .WithOpenBraceToken(body.OpenBraceToken.WithTrailingTrivia(SyntaxFactory.Space))
-                            .WithCloseBraceToken(body.CloseBraceToken.WithLeadingTrivia());
+                        .WithOpenBraceToken(body.OpenBraceToken.WithTrailingTrivia())
+                        .WithCloseBraceToken(body.CloseBraceToken.WithLeadingTrivia(SyntaxFactory.Space));
 
-                        if (body.Statements.Count == 1)
+                        if (body.Statements.Any() && !body.Statements[0].FullSpan.IsEmpty)
                         {
                             body = body
-                                .WithCloseBraceToken(body.CloseBraceToken.WithLeadingTrivia(SyntaxFactory.Space))
+                                .WithOpenBraceToken(body.OpenBraceToken.WithTrailingTrivia(SyntaxFactory.Space))
                                 .WithStatements(new(body.Statements[0].WithoutLeadingTrivia().WithoutTrailingTrivia()));
                         }
                     }
