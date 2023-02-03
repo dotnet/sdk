@@ -76,6 +76,7 @@ namespace Microsoft.DotNet.GenAPI
             foreach (IParameterSymbol parameter in baseTypeConstructor.Parameters)
             {
                 IdentifierNameSyntax identifier;
+                // If the parameter's type is known to be a value type or has top-level nullability annotation
                 if (parameter.Type.IsValueType || parameter.NullableAnnotation == NullableAnnotation.Annotated)
                     identifier = SyntaxFactory.IdentifierName("default");
                 else
