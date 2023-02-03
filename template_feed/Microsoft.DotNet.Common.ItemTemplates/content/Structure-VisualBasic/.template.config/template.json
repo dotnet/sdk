@@ -13,7 +13,7 @@
   },
   "groupIdentity": "DotNet.Common.Struct",
   "precedence": "0",
-  "identity": "DotNet.Common.Structure.VisualBasic",
+  "identity": "DotNet.Common.Struct.VisualBasic",
   "shortName": [
     "struct",
     "structure"
