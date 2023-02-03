@@ -26,6 +26,84 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
 #pragma warning restore RS0030 // Do not use banned APIs
 
         [Fact]
+        public async Task XmlTextReaderDerivedTypeWithEmptyConstructorPriorToNet452ShouldGenerateDiagnosticAsync()
+        {
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = ReferenceAssemblies.NetFramework.Net45.Default,
+                TestCode = @"
+using System;
+using System.Xml;
+
+namespace TestNamespace
+{
+    class TestClass : XmlTextReader
+    {
+        public TestClass () {}
+    }
+}",
+                ExpectedDiagnostics =
+                {
+                    GetCA3077ConstructorCSharpResultAt(9, 16, "TestClass"),
+                },
+            }.RunAsync();
+
+            await new VerifyVB.Test
+            {
+                ReferenceAssemblies = ReferenceAssemblies.NetFramework.Net45.Default,
+                TestCode = @"
+Imports System.Xml
+
+Namespace TestNamespace
+    Class TestClass
+        Inherits XmlTextReader
+        Public Sub New()
+        End Sub
+    End Class
+End Namespace",
+                ExpectedDiagnostics =
+                {
+                    GetCA3077ConstructorBasicResultAt(7, 20, "TestClass"),
+                },
+            }.RunAsync();
+        }
+
+        [Fact]
+        public async Task XmlTextReaderDerivedTypeWithEmptyConstructorAfterNet452ShouldNotGenerateDiagnosticAsync()
+        {
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = ReferenceAssemblies.NetFramework.Net452.Default,
+                TestCode = @"
+using System;
+using System.Xml;
+
+namespace TestNamespace
+{
+    class TestClass : XmlTextReader
+    {
+        public TestClass () {}
+    }
+}",
+            }.RunAsync();
+
+            await new VerifyVB.Test
+            {
+                ReferenceAssemblies = ReferenceAssemblies.NetFramework.Net452.Default,
+                TestCode = @"
+Imports System.Xml
+
+Namespace TestNamespace
+    Class TestClass
+        Inherits XmlTextReader
+        Public Sub New()
+        End Sub
+    End Class
+End Namespace",
+            }.RunAsync();
+        }
+
+        [Fact]
         public async Task XmlTextReaderDerivedTypeNoCtorSetUrlResolverToXmlResolverMethodShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
