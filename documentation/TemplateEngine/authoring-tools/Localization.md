@@ -30,7 +30,7 @@ In case the post action uses more than one `manualInstructions`, `id` should be 
 
 ## Automatic generation of localization files
 
-The localization files can be generated automatically as part of a build using the `LocalizeTemplates` MSBuild task from the [`Microsoft.TemplateEngine.Tasks`](https://www.nuget.org/packages/Microsoft.TemplateEngine.Tasks) package.
+The localization files can be generated automatically as part of a build using the `LocalizeTemplates` MSBuild task from the [`Microsoft.TemplateEngine.Tasks`](https://www.nuget.org/packages/Microsoft.TemplateEngine.Authoring.Tasks) package.
 The task is meant to be used in template package project and will create the JSON files after the project is built.
 The task supports the configuration using following properties:
 - `LocalizableTemplatesPath` - the folder containing templates to be localized. Default value: `.`.
@@ -45,7 +45,7 @@ Example of usage:
 </PropertyGroup>
 
 <ItemGroup>
-   <PackageReference Include="Microsoft.TemplateEngine.Tasks" Version="1.0.0.0" PrivateAssets="all" IsImplicitlyDefined="true" />
+   <PackageReference Include="Microsoft.TemplateEngine.Authoring.Tasks" Version="1.0.0.0" PrivateAssets="all" IsImplicitlyDefined="true" />
 </ItemGroup>
 ```
 
@@ -58,26 +58,31 @@ See the [link](https://aka.ms/AllAboutLoc) for more details.
 
 ### Repo is using arcade
 
-`Microsoft.TemplateEngine.Tasks` is included to `Microsoft.DotNet.Arcade.Sdk`.
+`Microsoft.TemplateEngine.Authoring.Tasks` is included to `Microsoft.DotNet.Arcade.Sdk`.
 To start localizing the templates, enable the following property in template package project: `<UsingToolTemplateLocalizer>true</UsingToolTemplateLocalizer>`. This enables generating localization JSON files on the build.
 Arcade has all the configuration applied that allows to automatically detect template package project and handover JSON files for localization and receive the back.
 After the translation is done, the repo receives the PR replacing original English values in generated files with localized one.
 
 ### Repo is not using arcade
-`Microsoft.TemplateEngine.Tasks` may be still manually added to engineering or directly to template package project as explained above.
+`Microsoft.TemplateEngine.Authoring.Tasks` may be still manually added to engineering or directly to template package project as explained above.
 In addition to that, localization handover process should be changed as following:
 - `LocalizeTemplates` task generates ready files to be used including `<lang code>` in filename. OneLocBuild should receive the file without language code: `templatestrings.json`. The localization pipeline should rename the `templatestrings.en.json` to `templatestrings.json` and include it to localization project JSON to be translated.
 - please work with your localization developer advocate to ensure that
   - localization files are handed back in JSON format and to original location
 After the translation is done, the repo should receive the PR replacing original English values in generated JSON files with localized ones. It is important to ensure that files are handed over to original location (`.template.config\localize` folder).
 
-It is recommended to setup a way to update `Microsoft.TemplateEngine.Tasks` package version, however it is not recommended to update it on each daily build. 
+It is recommended to setup a way to update `Microsoft.TemplateEngine.Authoring.Tasks` package version, however it is not recommended to update it on each daily build. 
 The package is released with each build of dotnet/templating repo, even if there are no changes. Therefore, updating the version on each build might be superfluous. It is recommended to update the version when the next preview or stable version is released.
 
 ## 3rd party templates localization
 
-- Include `LocalizeTemplates` task from `Microsoft.TemplateEngine.Tasks` as explained above. `Microsoft.TemplateEngine.Tasks` is available on [NuGet.org](https://www.nuget.org/packages/Microsoft.TemplateEngine.Tasks).
+- Include `LocalizeTemplates` task from `Microsoft.TemplateEngine.Authoring.Tasks` as explained above. `Microsoft.TemplateEngine.Authoring.Tasks` is available on [NuGet.org](https://www.nuget.org/packages/Microsoft.TemplateEngine.Authoring.Tasks).
 - Control the languages to be used with `TemplateLanguages` property.
 - Translate the content in generated JSON files using any suitable means prior to distributing template package.
 
- It is recommended to update `Microsoft.TemplateEngine.Tasks` package version when the next preview or stable version is released.
+ It is recommended to update `Microsoft.TemplateEngine.Authoring.Tasks` package version when the next preview or stable version is released.
+
+
+ ## Notes
+
+ Prior to .NET SDK 7.0.2xx, `Microsoft.TemplateEngine.Authoring.Tasks` package was distributed as [`Microsoft.TemplateEngine.Tasks`](https://www.nuget.org/packages/Microsoft.TemplateEngine.Tasks). Please consider switching to new package.
