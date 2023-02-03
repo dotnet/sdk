@@ -194,6 +194,21 @@ End Class
 ");
         }
 
+        [Fact]
+        public async Task NoDiagnosticCases_ArrayToImmutableArray()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Collections.Generic;
+using System.Collections.Immutable;
+
+public class C
+{
+    public ImmutableArray<Type> Types = new[] { typeof(int) }.ToImmutableArray();
+}
+");
+        }
+
         #endregion
 
         #region Diagnostic Tests
