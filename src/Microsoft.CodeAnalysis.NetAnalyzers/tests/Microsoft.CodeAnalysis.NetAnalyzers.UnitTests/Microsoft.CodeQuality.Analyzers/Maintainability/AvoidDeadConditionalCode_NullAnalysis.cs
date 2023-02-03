@@ -7059,5 +7059,38 @@ public class C
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp8,
             }.RunAsync();
         }
+
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
+        [Fact, WorkItem(6453, "https://github.com/dotnet/roslyn-analyzers/issues/6453")]
+        public async Task IndexedNullCompare_NoDiagnosticAsync()
+        {
+            await VerifyCSharpAnalyzerAsync(@"
+using System.Collections.Generic;
+
+sealed class Data
+{
+    public object Value { get; }
+    public Data(object value)
+    {
+        Value = value;
+    }
+}
+
+static class Test
+{
+    static void Filter(List<Data> list, int j)
+    {
+        for (int i = 0; i < list.Count - 1; i++)
+        {
+            if (list[i + 1].Value != null) continue;
+            if (list[i].Value == null) continue; // <-------- CA1508 False positive
+            list.RemoveAt(i);
+        }
+    }
+}
+");
+        }
     }
 }

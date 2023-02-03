@@ -315,12 +315,12 @@ $@"<Project>
                 var allRuleIds = string.Join(';', allRulesById.Keys);
                 return $@"
   <!-- 
-    This property group handles 'CodeAnalysisTreatWarningsAsErrors' for the CA rule ids implemented in this package.
+    This property group handles 'CodeAnalysisTreatWarningsAsErrors = false' for the CA rule ids implemented in this package.
   -->
   <PropertyGroup>
     <CodeAnalysisRuleIds>{allRuleIds}</CodeAnalysisRuleIds>
-    <WarningsNotAsErrors Condition=""'$(CodeAnalysisTreatWarningsAsErrors)' == 'false'"">$(WarningsNotAsErrors);$(CodeAnalysisRuleIds)</WarningsNotAsErrors>
-    <WarningsAsErrors Condition=""'$(CodeAnalysisTreatWarningsAsErrors)' == 'true' and '$(TreatWarningsAsErrors)' != 'true'"">$(WarningsAsErrors);$(CodeAnalysisRuleIds)</WarningsAsErrors>
+    <EffectiveCodeAnalysisTreatWarningsAsErrors Condition=""'$(EffectiveCodeAnalysisTreatWarningsAsErrors)' == ''"">$(CodeAnalysisTreatWarningsAsErrors)</EffectiveCodeAnalysisTreatWarningsAsErrors>
+    <WarningsNotAsErrors Condition=""'$(EffectiveCodeAnalysisTreatWarningsAsErrors)' == 'false' and '$(TreatWarningsAsErrors)' == 'true'"">$(WarningsNotAsErrors);$(CodeAnalysisRuleIds)</WarningsNotAsErrors>
   </PropertyGroup>";
             }
 
@@ -794,12 +794,15 @@ Rule ID | Missing Help Link | Title |
                 {
                     var analysisLevelVersionString = GetNormalizedVersionStringForEditorconfigFileNameSuffix(version);
 
-                    foreach (var analysisMode in Enum.GetValues(typeof(AnalysisMode)))
+                    foreach (var warnAsError in new[] { true, false })
                     {
-                        CreateGlobalConfig(version, isShippedVersion, analysisLevelVersionString, (AnalysisMode)analysisMode!, releaseTrackingData, category: null);
-                        foreach (var category in categories!)
+                        foreach (var analysisMode in Enum.GetValues(typeof(AnalysisMode)))
                         {
-                            CreateGlobalConfig(version, isShippedVersion, analysisLevelVersionString, (AnalysisMode)analysisMode!, releaseTrackingData, category);
+                            CreateGlobalConfig(version, isShippedVersion, analysisLevelVersionString, (AnalysisMode)analysisMode!, warnAsError, releaseTrackingData, category: null);
+                            foreach (var category in categories!)
+                            {
+                                CreateGlobalConfig(version, isShippedVersion, analysisLevelVersionString, (AnalysisMode)analysisMode!, warnAsError, releaseTrackingData, category);
+                            }
                         }
                     }
                 }
@@ -809,12 +812,14 @@ Rule ID | Missing Help Link | Title |
                     bool isShippedVersion,
                     string analysisLevelVersionString,
                     AnalysisMode analysisMode,
+                    bool warnAsError,
                     ImmutableArray<ReleaseTrackingData> releaseTrackingData,
                     string? category)
                 {
                     var analysisLevelPropName = "AnalysisLevel";
                     var title = $"Rules from '{version}' release with '{analysisMode}' analysis mode";
                     var description = $"Rules with enabled-by-default state from '{version}' release with '{analysisMode}' analysis mode. Rules that are first released in a version later than '{version}' are disabled.";
+
                     if (category != null)
                     {
                         analysisLevelPropName += category;
@@ -822,13 +827,23 @@ Rule ID | Missing Help Link | Title |
                         description = $"'{category}' {description}";
                     }
 
+#pragma warning disable CA1308 // Normalize strings to uppercase
+                    var globalconfigFileName = $"{analysisLevelPropName}_{analysisLevelVersionString}_{analysisMode!.ToString()!.ToLowerInvariant()}";
+#pragma warning restore CA1308 // Normalize strings to uppercase
+
+                    if (warnAsError)
+                    {
+                        globalconfigFileName += "_warnaserror";
+                        title += " escalated to 'error' severity";
+                        description += " Enabled rules with 'warning' severity are escalated to 'error' severity to respect 'CodeAnalysisTreatWarningsAsErrors' MSBuild property.";
+                    }
+
                     CreateGlobalconfig(
                         analyzerGlobalconfigsDir,
-#pragma warning disable CA1308 // Normalize strings to uppercase
-                                $"{analysisLevelPropName}_{analysisLevelVersionString}_{analysisMode!.ToString()!.ToLowerInvariant()}.editorconfig",
-#pragma warning restore CA1308 // Normalize strings to uppercase
-                                    title,
+                        $"{globalconfigFileName}.globalconfig",
+                        title,
                         description,
+                        warnAsError,
                         analysisMode,
                         category,
                         allRulesById,
@@ -1158,34 +1173,37 @@ Rule ID | Missing Help Link | Title |
 
         private static void CreateGlobalconfig(
             string folder,
-            string editorconfigFileName,
-            string editorconfigTitle,
-            string editorconfigDescription,
+            string fileName,
+            string title,
+            string description,
+            bool warnAsError,
             AnalysisMode analysisMode,
             string? category,
             SortedList<string, DiagnosticDescriptor> sortedRulesById,
             (ImmutableArray<ReleaseTrackingData> releaseTrackingData, Version version, bool isShippedVersion) releaseTrackingDataAndVersion)
         {
-            Debug.Assert(editorconfigFileName.EndsWith(".editorconfig", StringComparison.Ordinal));
+            Debug.Assert(fileName.EndsWith(".globalconfig", StringComparison.Ordinal));
 
             var text = GetGlobalconfigText(
-                editorconfigTitle,
-                editorconfigDescription,
+                title,
+                description,
+                warnAsError,
                 analysisMode,
                 category,
                 sortedRulesById,
                 releaseTrackingDataAndVersion);
             var directory = Directory.CreateDirectory(folder);
 #pragma warning disable CA1308 // Normalize strings to uppercase - Need to use 'ToLowerInvariant' for file names in non-Windows platforms
-            var editorconfigFilePath = Path.Combine(directory.FullName, editorconfigFileName.ToLowerInvariant());
+            var configFilePath = Path.Combine(directory.FullName, fileName.ToLowerInvariant());
 #pragma warning restore CA1308 // Normalize strings to uppercase
-            File.WriteAllText(editorconfigFilePath, text);
+            File.WriteAllText(configFilePath, text);
             return;
 
             // Local functions
             static string GetGlobalconfigText(
-                string editorconfigTitle,
-                string editorconfigDescription,
+                string title,
+                string description,
+                bool warnAsError,
                 AnalysisMode analysisMode,
                 string? category,
                 SortedList<string, DiagnosticDescriptor> sortedRulesById,
@@ -1200,8 +1218,8 @@ Rule ID | Missing Help Link | Title |
                 {
                     result.AppendLine(@"# NOTE: Requires **VS2019 16.7** or later");
                     result.AppendLine();
-                    result.AppendLine($@"# {editorconfigTitle}");
-                    result.AppendLine($@"# Description: {editorconfigDescription}");
+                    result.AppendLine($@"# {title}");
+                    result.AppendLine($@"# Description: {description}");
                     result.AppendLine();
                     result.AppendLine($@"is_global = true");
                     result.AppendLine();
@@ -1240,6 +1258,11 @@ Rule ID | Missing Help Link | Title |
                         }
 
                         var (isEnabledByDefault, severity) = GetEnabledByDefaultAndSeverity(rule, analysisMode);
+                        if (warnAsError && severity == DiagnosticSeverity.Warning && isEnabledByDefault)
+                        {
+                            severity = DiagnosticSeverity.Error;
+                        }
+
                         if (rule.IsEnabledByDefault == isEnabledByDefault &&
                             severity == rule.DefaultSeverity)
                         {
@@ -1443,8 +1466,14 @@ $@"<Project>{GetCommonContents(packageName, categories)}{GetPackageSpecificConte
       <_GlobalAnalyzerConfigAnalysisMode_{trimmedPackageName} Condition=""'$(_GlobalAnalyzerConfigAnalysisMode_{trimmedPackageName})' == 'AllDisabledByDefault'"">{nameof(AnalysisMode.None)}</_GlobalAnalyzerConfigAnalysisMode_{trimmedPackageName}>
       <_GlobalAnalyzerConfigAnalysisMode_{trimmedPackageName} Condition=""'$(_GlobalAnalyzerConfigAnalysisMode_{trimmedPackageName})' == ''"">{nameof(AnalysisMode.Default)}</_GlobalAnalyzerConfigAnalysisMode_{trimmedPackageName}>
 
+      <!-- Default 'EffectiveCodeAnalysisTreatWarningsAsErrors' to 'CodeAnalysisTreatWarningsAsErrors' for escalating relevant code analysis warnings to errors. -->
+      <!-- We use a separate property to allow users to override 'CodeAnalysisTreatWarningsAsErrors' implementation from .NET7 or older SDK, which had a known issue: https://github.com/dotnet/roslyn-analyzers/issues/6281 -->
+      <EffectiveCodeAnalysisTreatWarningsAsErrors Condition=""'$(EffectiveCodeAnalysisTreatWarningsAsErrors)' == ''"">$(CodeAnalysisTreatWarningsAsErrors)</EffectiveCodeAnalysisTreatWarningsAsErrors>
+      <!-- Choose GlobalAnalyzerConfig file with '_warnaserror' suffix if 'EffectiveCodeAnalysisTreatWarningsAsErrors' is 'true'. -->
+      <_GlobalAnalyzerConfigFileName_{trimmedPackageName}_WarnAsErrorSuffix Condition=""'$(EffectiveCodeAnalysisTreatWarningsAsErrors)' == 'true'"">_warnaserror</_GlobalAnalyzerConfigFileName_{trimmedPackageName}_WarnAsErrorSuffix>
+
       <!-- GlobalAnalyzerConfig file name based on user specified package version '{packageVersionPropName}', if any. We replace '.' with '_' to map the version string to file name suffix. -->
-      <_GlobalAnalyzerConfigFileName_{trimmedPackageName} Condition=""'$({packageVersionPropName})' != ''"">{analysisLevelPropName}_$({packageVersionPropName}.Replace(""."",""_""))_$(_GlobalAnalyzerConfigAnalysisMode_{trimmedPackageName}).editorconfig</_GlobalAnalyzerConfigFileName_{trimmedPackageName}>
+      <_GlobalAnalyzerConfigFileName_{trimmedPackageName} Condition=""'$({packageVersionPropName})' != ''"">{analysisLevelPropName}_$({packageVersionPropName}.Replace(""."",""_""))_$(_GlobalAnalyzerConfigAnalysisMode_{trimmedPackageName})$(_GlobalAnalyzerConfigFileName_{trimmedPackageName}_WarnAsErrorSuffix).globalconfig</_GlobalAnalyzerConfigFileName_{trimmedPackageName}>
       <_GlobalAnalyzerConfigFileName_{trimmedPackageName}>$(_GlobalAnalyzerConfigFileName_{trimmedPackageName}.ToLowerInvariant())</_GlobalAnalyzerConfigFileName_{trimmedPackageName}>
 
       <_GlobalAnalyzerConfigDir_{trimmedPackageName} Condition=""'$(_GlobalAnalyzerConfigDir_{trimmedPackageName})' == ''"">$(MSBuildThisFileDirectory)config</_GlobalAnalyzerConfigDir_{trimmedPackageName}>
@@ -1493,10 +1522,9 @@ $@"<Project>{GetCommonContents(packageName, categories)}{GetPackageSpecificConte
 
       <!-- {effectiveAnalysisLevelPropName} is used to differentiate from user specified strings (such as 'none')
            and an implied numerical option (such as '4') -->
-      <!-- TODO: Remove hard-coded constants such as 4.0, 5.0 and 6.0 used below once these are exposed as properties from the SDK -->
-      <{effectiveAnalysisLevelPropName} Condition=""'$({analysisLevelPropName})' == 'none' or '$({analysisLevelPrefixPropName})' == 'none'"">4.0</{effectiveAnalysisLevelPropName}>
-      <{effectiveAnalysisLevelPropName} Condition=""'$({analysisLevelPropName})' == 'latest' or '$({analysisLevelPrefixPropName})' == 'latest'"">6.0</{effectiveAnalysisLevelPropName}>
-      <{effectiveAnalysisLevelPropName} Condition=""'$({analysisLevelPropName})' == 'preview' or '$({analysisLevelPrefixPropName})' == 'preview'"">7.0</{effectiveAnalysisLevelPropName}>
+      <{effectiveAnalysisLevelPropName} Condition=""'$({analysisLevelPropName})' == 'none' or '$({analysisLevelPrefixPropName})' == 'none'"">$(_NoneAnalysisLevel)</{effectiveAnalysisLevelPropName}>
+      <{effectiveAnalysisLevelPropName} Condition=""'$({analysisLevelPropName})' == 'latest' or '$({analysisLevelPrefixPropName})' == 'latest'"">$(_LatestAnalysisLevel)</{effectiveAnalysisLevelPropName}>
+      <{effectiveAnalysisLevelPropName} Condition=""'$({analysisLevelPropName})' == 'preview' or '$({analysisLevelPrefixPropName})' == 'preview'"">$(_PreviewAnalysisLevel)</{effectiveAnalysisLevelPropName}>
 
       <!-- Set {effectiveAnalysisLevelPropName} to the value of {analysisLevelPropName} if it is a version number -->
       <{effectiveAnalysisLevelPropName} Condition=""'$({effectiveAnalysisLevelPropName})' == '' And
@@ -1584,14 +1612,13 @@ $@"<Project>{GetCommonContents(packageName, categories)}{GetPackageSpecificConte
             {
                 return $@"
   <!--
-    Design-time target to handle 'CodeAnalysisTreatWarningsAsErrors' for the CA rule ids implemented in this package.
-    Note that similar 'WarningsNotAsErrors' and 'WarningsAsErrors'
-    property groups are present in the generated props file to ensure this functionality on command line builds.
+    Design-time target to handle 'CodeAnalysisTreatWarningsAsErrors = false' for the CA rule ids implemented in this package.
+    Note that a similar 'WarningsNotAsErrors' property group is present in the generated props file to ensure this functionality on command line builds.
   -->
   <Target Name=""_CodeAnalysisTreatWarningsAsErrors"" BeforeTargets=""CoreCompile"" Condition=""'$(DesignTimeBuild)' == 'true' OR '$(BuildingProject)' != 'true'"">
     <PropertyGroup>
-      <WarningsNotAsErrors Condition=""'$(CodeAnalysisTreatWarningsAsErrors)' == 'false'"">$(WarningsNotAsErrors);$(CodeAnalysisRuleIds)</WarningsNotAsErrors>
-	  <WarningsAsErrors Condition=""'$(CodeAnalysisTreatWarningsAsErrors)' == 'true' and '$(TreatWarningsAsErrors)' != 'true'"">$(WarningsAsErrors);$(CodeAnalysisRuleIds)</WarningsAsErrors>
+      <EffectiveCodeAnalysisTreatWarningsAsErrors Condition=""'$(EffectiveCodeAnalysisTreatWarningsAsErrors)' == ''"">$(CodeAnalysisTreatWarningsAsErrors)</EffectiveCodeAnalysisTreatWarningsAsErrors>
+      <WarningsNotAsErrors Condition=""'$(EffectiveCodeAnalysisTreatWarningsAsErrors)' == 'false' and '$(TreatWarningsAsErrors)' == 'true'"">$(WarningsNotAsErrors);$(CodeAnalysisRuleIds)</WarningsNotAsErrors>
     </PropertyGroup>
   </Target>
 ";

@@ -164,9 +164,6 @@ namespace Microsoft.NetFramework.Analyzers
                 internal bool IsSecureResolver { get; set; }
                 internal bool IsConstructedInCodeBlock { get; set; }
 
-                // this constructor is used for keep track of XmlReaderSettings not created in the code block
-                internal XmlReaderSettingsEnvironment() { }
-
                 // this constructor is used for keep track of XmlReaderSettings craeted in the code block
                 internal XmlReaderSettingsEnvironment(bool isTargetFrameworkSecure)
                 {
