@@ -185,10 +185,10 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.Commands.Verify
             var invalidArguments = optionResult.Tokens.Where(token => !allowedValues.Append(allowedHiddenValue).Contains(token.Value, StringComparer.OrdinalIgnoreCase)).ToList();
             if (invalidArguments.Any())
             {
-                optionResult.ErrorMessage = string.Format(
+                optionResult.AddError(string.Format(
                     LocalizableStrings.command_verify_error_unrecognizedArguments,
                     string.Join(", ", invalidArguments.Select(arg => $"'{arg.Value}'")),
-                    string.Join(", ", allowedValues.Select(allowedValue => $"'{allowedValue}'")));
+                    string.Join(", ", allowedValues.Select(allowedValue => $"'{allowedValue}'"))));
             }
         }
     }
