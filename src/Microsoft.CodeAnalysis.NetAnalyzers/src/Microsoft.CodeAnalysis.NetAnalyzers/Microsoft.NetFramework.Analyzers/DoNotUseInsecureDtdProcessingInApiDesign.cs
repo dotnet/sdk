@@ -87,8 +87,7 @@ namespace Microsoft.NetFramework.Analyzers
                 Version targetFrameworkVersion)
             {
                 _xmlTypes = xmlTypes;
-                _isFrameworkSecure = targetFrameworkVersion != null
-                    && targetFrameworkVersion >= s_minSecureFxVersion;
+                _isFrameworkSecure = targetFrameworkVersion >= s_minSecureFxVersion;
             }
 
             public void AnalyzeOperationBlock(OperationBlockStartAnalysisContext context)
