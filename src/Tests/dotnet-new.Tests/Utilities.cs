@@ -27,11 +27,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             lock (string.Intern(baseDir.ToLowerInvariant()))
             {
                 string workingDir = Path.Combine(baseDir, DateTime.UtcNow.ToString("yyyyMMddHHmmssfff"));
-                if (!Directory.Exists(workingDir))
-                {
-                    Directory.CreateDirectory(workingDir);
-                }
-                else
+                if (Directory.Exists(workingDir))
                 {
                     //simple logic for counts if DateTime.UtcNow is not unique
                     int counter = 1;
@@ -43,8 +39,9 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                     {
                         throw new Exception("Failed to create temp directory after 100 attempts");
                     }
-                    Directory.CreateDirectory(workingDir + "_" + counter);
+                    workingDir = workingDir + "_" + counter;
                 }
+                Directory.CreateDirectory(workingDir);
                 return workingDir;
             }
         }
