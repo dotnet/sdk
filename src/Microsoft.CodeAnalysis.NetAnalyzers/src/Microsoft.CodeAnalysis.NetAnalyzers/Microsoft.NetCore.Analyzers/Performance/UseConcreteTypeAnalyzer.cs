@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Immutable;
 using System.Linq;
 using Analyzer.Utilities;
@@ -18,18 +19,19 @@ namespace Microsoft.NetCore.Analyzers.Performance
     // ====================
     // Detect arrays/collections of interface types which could be replaced with arrays/collections of concrete types
     // Suggest to upgrade members of tuples returned from a method
-    // only suggest a replacement type if it reduces the number of virtual/interface calls
+    // Suggest to upgrade Task<IFoo> to Task<Foo>
+    // Only suggest a replacement type if it reduces the number of virtual/interface calls
 
     /// <summary>
-    /// Identifies locals/fields/parameters/return types which can be switched to a concrete type to eliminate virtual/interface dispatch.
+    /// Identifies locals/fields/properties/parameters/return types which can be switched to a concrete type to eliminate virtual/interface dispatch.
     /// </summary>
     /// <remarks>
     /// First, we collect a bunch of state:
     ///
-    ///   * For all locals/fields/parameters/returns within the named type, we create bags representing the types having been assigned to each.
+    ///   * For all locals/fields/properties/parameters/returns within the named type, we create bags representing the types having been assigned to each.
     ///     This state will be used to know if we can 'upgrade' the element's type.
     ///
-    ///   * For all locals/fields/parameters within the named type, we keep track of when they are used as 'this' for a virtual/interface call.
+    ///   * For all locals/fields/properties/parameters within the named type, we keep track of when they are used as 'this' for a virtual/interface call.
     ///     This state will be used to filter out diagnostics for those locals/fields/parameters which aren't inducing virtual/interface calls.
     ///     There's no sense in upgrading those elements if they aren't the source of virtual/interface calls.
     ///
@@ -37,19 +39,17 @@ namespace Microsoft.NetCore.Analyzers.Performance
     ///
     /// Once all this state has been collected, we perform the actual analysis:
     ///
-    ///   * Based on the bags of types being assigned to each local/field/parameter, if there is only one type being assigned and this
+    ///   * Based on the bags of types being assigned to each local/field/property/parameter, if there is only one type being assigned and this
     ///   type is more specialized than what the element's type is, then we suggest upgrading the element's type accordingly.
     ///
     ///   * Based on the bags of types being returned by each method, if there is only one type being returned and this type is more specialized
     ///   than what was there before, then we suggest upgrading the return type accordingly.
     ///
-    /// Several constraints are applied before we suggest modifying a method signature (either one of its parameters or its return type):
+    /// Several constraints are applied before we suggest modifying a method or property signature (either one of its parameters or its return type):
     ///
-    ///   * The method cannot be implementing any interface.
+    ///   * The method/property cannot be implementing any interface.
     ///
-    ///   * The method cannot be virtual, abstract, or be an override.
-    ///
-    ///   * The method must be private.
+    ///   * The method/property cannot be virtual, abstract, or be an override.
     ///
     ///   * The method must not have been assigned to a delegate.
     ///   
@@ -64,6 +64,16 @@ namespace Microsoft.NetCore.Analyzers.Performance
             RuleId,
             CreateLocalizableResourceString(nameof(UseConcreteTypeTitle)),
             CreateLocalizableResourceString(nameof(UseConcreteTypeForMethodReturnMessage)),
+            DiagnosticCategory.Performance,
+            RuleLevel.IdeSuggestion,
+            CreateLocalizableResourceString(nameof(UseConcreteTypeDescription)),
+            isPortedFxCopRule: false,
+            isDataflowRule: false);
+
+        internal static readonly DiagnosticDescriptor UseConcreteTypeForProperty = DiagnosticDescriptorHelper.Create(
+            RuleId,
+            CreateLocalizableResourceString(nameof(UseConcreteTypeTitle)),
+            CreateLocalizableResourceString(nameof(UseConcreteTypeForPropertyMessage)),
             DiagnosticCategory.Performance,
             RuleLevel.IdeSuggestion,
             CreateLocalizableResourceString(nameof(UseConcreteTypeDescription)),
@@ -114,9 +124,18 @@ namespace Microsoft.NetCore.Analyzers.Performance
             context.RegisterCompilationStartAction(context =>
             {
                 var voidType = context.Compilation.GetSpecialType(SpecialType.System_Void);
+                var publicOrInternalColl = Collector.GetInstance(voidType, symbol => context.Options.MatchesConfiguredVisibility(UseConcreteTypeForMethodReturn, symbol, context.Compilation, SymbolVisibilityGroup.Private));
+
                 context.RegisterSymbolStartAction(context =>
                 {
-                    var coll = Collector.GetInstance(voidType);
+                    var namedType = (INamedTypeSymbol)context.Symbol;
+                    if (namedType.TypeKind == TypeKind.Interface)
+                    {
+                        // nothing to do here
+                        return;
+                    }
+
+                    var coll = Collector.GetInstance(voidType, symbol => context.Options.MatchesConfiguredVisibility(UseConcreteTypeForMethodReturn, symbol, context.Compilation, SymbolVisibilityGroup.Private));
 
                     // we accumulate a bunch of info in the collector object
                     context.RegisterOperationAction(context => coll.HandleInvocation((IInvocationOperation)context.Operation), OperationKind.Invocation);
@@ -124,26 +143,37 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     context.RegisterOperationAction(context => coll.HandleCoalesceAssignment((ICoalesceAssignmentOperation)context.Operation), OperationKind.CoalesceAssignment);
                     context.RegisterOperationAction(context => coll.HandleDeconstructionAssignment((IDeconstructionAssignmentOperation)context.Operation), OperationKind.DeconstructionAssignment);
                     context.RegisterOperationAction(context => coll.HandleFieldInitializer((IFieldInitializerOperation)context.Operation), OperationKind.FieldInitializer);
+                    context.RegisterOperationAction(context => coll.HandlePropertyInitializer((IPropertyInitializerOperation)context.Operation), OperationKind.PropertyInitializer);
                     context.RegisterOperationAction(context => coll.HandleVariableDeclarator((IVariableDeclaratorOperation)context.Operation), OperationKind.VariableDeclarator);
                     context.RegisterOperationAction(context => coll.HandleDeclarationExpression((IDeclarationExpressionOperation)context.Operation), OperationKind.DeclarationExpression);
                     context.RegisterOperationAction(context => coll.HandleReturn((IReturnOperation)context.Operation), OperationKind.Return);
 
                     context.RegisterSymbolEndAction(context =>
                     {
-                        // based on what we've collected, spit out relevant diagnostics
-                        Report(context, coll);
+                        // remove any collected state having to do with non-private symbols, we'll tackle that later
+                        publicOrInternalColl.ExtractNonPrivate(coll);
+
+                        // based on what we've collected, spit out relevant diagnostics for private symbols
+                        Report(context.ReportDiagnostic, coll);
                         Collector.ReturnInstance(coll, context.CancellationToken);
                     });
                 }, SymbolKind.NamedType);
+
+                context.RegisterCompilationEndAction(context =>
+                {
+                    // based on what we've collected, spit out relevant diagnostics for public or internal symbols
+                    Report(context.ReportDiagnostic, publicOrInternalColl);
+                    Collector.ReturnInstance(publicOrInternalColl, context.CancellationToken);
+                });
             });
         }
 
         /// <summary>
         /// Given all the accumulated analysis state, generate the diagnostics.
         /// </summary>
-        private static void Report(SymbolAnalysisContext context, Collector coll)
+        private static void Report(Action<Diagnostic> reportDiag, Collector coll)
         {
-            // for all eligible private fields that are used as the receiver for a virtual call
+            // for all eligible fields that are used as the receiver for a virtual call
             foreach (var pair in coll.VirtualDispatchFields)
             {
                 var field = pair.Key;
@@ -151,7 +181,19 @@ namespace Microsoft.NetCore.Analyzers.Performance
 
                 if (coll.FieldAssignments.TryGetValue(field, out var assignments))
                 {
-                    Report(field, field.Type, assignments, methods, UseConcreteTypeForField);
+                    Evaluate(field, field.Type, assignments, methods, UseConcreteTypeForField);
+                }
+            }
+
+            // for all eligible properties that are used as the receiver for a virtual call
+            foreach (var pair in coll.VirtualDispatchProperties)
+            {
+                var property = pair.Key;
+                var methods = pair.Value;
+
+                if (coll.PropertyAssignments.TryGetValue(property, out var assignments))
+                {
+                    Evaluate(property, property.Type, assignments, methods, UseConcreteTypeForProperty);
                 }
             }
 
@@ -163,7 +205,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
 
                 if (coll.LocalAssignments.TryGetValue(local, out var assignments))
                 {
-                    Report(local, local.Type, assignments, methods, UseConcreteTypeForLocal);
+                    Evaluate(local, local.Type, assignments, methods, UseConcreteTypeForLocal);
                 }
             }
 
@@ -179,26 +221,26 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     {
                         if (CanUpgrade(method))
                         {
-                            Report(parameter, parameter.Type, assignments, methods, UseConcreteTypeForParameter);
+                            Evaluate(parameter, parameter.Type, assignments, methods, UseConcreteTypeForParameter);
                         }
                     }
                 }
             }
 
-            // for eligible all return types of private methods
+            // for all eligible return types of methods
             foreach (var pair in coll.MethodReturns)
             {
                 var method = pair.Key;
                 var returns = pair.Value;
 
-                // only report the method if it never assigned to a delegate
+                // only report the method if it is never assigned to a delegate
                 if (CanUpgrade(method))
                 {
-                    Report(method, method.ReturnType, returns, null, UseConcreteTypeForMethodReturn);
+                    Evaluate(method, method.ReturnType, returns, null, UseConcreteTypeForMethodReturn);
                 }
             }
 
-            void Report(ISymbol sym, ITypeSymbol fromType, PooledConcurrentSet<ITypeSymbol> assignments, PooledConcurrentSet<IMethodSymbol>? targets, DiagnosticDescriptor desc)
+            void Evaluate(ISymbol sym, ITypeSymbol fromType, PooledConcurrentSet<ITypeSymbol> assignments, PooledConcurrentSet<IMethodSymbol>? targets, DiagnosticDescriptor desc)
             {
                 // a set of the values assigned to the given symbol
                 using var types = PooledHashSet<ITypeSymbol>.GetInstance(assignments, SymbolEqualityComparer.Default);
@@ -222,7 +264,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
 
                 if (!toType.DerivesFrom(fromType.OriginalDefinition))
                 {
-                    // can readily replace fromType by toType
+                    // can't readily replace fromType by toType
                     return;
                 }
 
@@ -253,15 +295,11 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     var fromTypeName = GetTypeName(fromType);
                     var toTypeName = GetTypeName(toType);
                     var diagnostic = sym.CreateDiagnostic(desc, sym.Name, fromTypeName, toTypeName);
-                    context.ReportDiagnostic(diagnostic);
+                    reportDiag(diagnostic);
                 }
             }
 
-            bool CanUpgrade(IMethodSymbol methodSym)
-            {
-                return !coll.MethodsAssignedToDelegate.ContainsKey(methodSym)
-                    && methodSym.PartialDefinitionPart == null;
-            }
+            bool CanUpgrade(IMethodSymbol methodSym) => !coll.MethodsAssignedToDelegate.ContainsKey(methodSym);
 
             static string GetTypeName(ITypeSymbol type) => type.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat);
         }

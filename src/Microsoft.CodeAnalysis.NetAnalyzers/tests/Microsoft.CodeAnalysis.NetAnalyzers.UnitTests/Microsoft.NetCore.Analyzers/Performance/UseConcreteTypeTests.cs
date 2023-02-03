@@ -12,6 +12,207 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
     public static partial class UseConcreteTypeTests
     {
         [Fact]
+        public static async Task ShouldNotTrigger_VirtualOverrides()
+        {
+            const string Source = @"
+                internal class Foo {}
+
+                internal class Base
+                {
+                    public virtual object GetObj() => new object();
+                }
+
+                internal class Derived : Base
+                {
+                    public override object GetObj() => new Foo();
+                }
+            ";
+
+            await TestCSAsync(Source, $"dotnet_code_quality.CA1859.api_surface = public,private,internal");
+        }
+
+        [Fact]
+        public static async Task ShouldNotTrigger_ParameterAssignment()
+        {
+            const string Source = @"
+                class Foo
+                {
+                    static void Main()
+                    {
+                        Test(typeof(Foo));
+                    }
+
+                    private static void Test(object elementType)
+                    {
+                        elementType = elementType.ToString();
+                    }
+                }";
+
+            await TestCSAsync(Source);
+        }
+
+        [Fact]
+        public static async Task ShouldNotTrigger_ConflictingReturns()
+        {
+            const string Source = @"
+                using System;
+
+                class C
+                {
+                    private object Foo(int i)
+                    {
+                        C c = new C();
+                        if (i == 0)
+                        {
+                            return false;
+                        }
+                        return c;
+                    }
+                }";
+
+            await TestCSAsync(Source);
+        }
+
+        [Fact]
+        public static async Task ShouldNotTrigger_Switch()
+        {
+            const string Source = @"
+                using System.Collections.Generic;
+
+                class Foo
+                {
+                    private static object Test(int arg)
+                    {
+                        if (arg > 4)
+                            return new List<string>();
+
+                        return arg switch
+                        {
+                            0 => new List<int>(),
+                            1 => new HashSet<int>(),
+                            _ => new Dictionary<long, int>(),
+                        };
+                    }
+                }";
+
+            await TestCSAsync(Source);
+        }
+
+        [Fact]
+        public static async Task ShouldNotTrigger_ValidatePublicSymbolUsage()
+        {
+            const string Source = @"
+                #nullable enable
+
+                using System;
+                using System.Collections.Generic;
+
+                namespace Example
+                {
+                    public interface IFoo
+                    {
+                        public void M();
+                    }   
+
+                    public class Foo : IFoo
+                    {
+                        public void M() {}
+                    }
+
+                    public class C1
+                    {
+                        internal void M(IFoo foo)
+                        {
+                            foo.M();
+                        }
+
+                        public void M2()
+                        {
+                            M(new Foo());
+                        }
+                    }
+
+                    public class C2
+                    {
+                        public void M(C1 c1, IFoo f)
+                        {
+                            c1.M(f);
+                        }
+                    }
+                }";
+
+            await TestCSAsync(Source, $"dotnet_code_quality.CA1859.api_surface = public,private,internal");
+        }
+
+        [Theory]
+        [InlineData("private", "", true)]
+        [InlineData("private", "private", true)]
+        [InlineData("private", "public", false)]
+        [InlineData("private", "public,private", true)]
+        [InlineData("public", "", false)]
+        [InlineData("public", "private", false)]
+        [InlineData("public", "public", true)]
+        [InlineData("public", "public,private", true)]
+        public static async Task ConfigTest(string accessibility, string editorConfigText, bool trigger)
+        {
+            var source = $@"
+                namespace Example
+                {{
+                    public interface IFoo
+                    {{
+                        void Bar();
+                    }}
+
+                    public class Foo : IFoo
+                    {{
+                        public void Bar() {{ }}
+                    }}
+
+                    public static class Tester
+                    {{
+                        {accessibility} static void M1(IFoo {{|#0:foo|}})
+                        {{
+                            foo.Bar();
+                        }}
+
+                        private static void M2()
+                        {{
+                            M1(new Foo());
+                        }}
+                    }}
+                }}";
+
+            if (trigger)
+            {
+                if (string.IsNullOrEmpty(editorConfigText))
+                {
+                    await TestCSAsync(source,
+                        VerifyCS.Diagnostic(UseConcreteTypeAnalyzer.UseConcreteTypeForParameter)
+                                .WithLocation(0)
+                                .WithArguments("foo", "Example.IFoo", "Example.Foo"));
+                }
+                else
+                {
+                    await TestCSAsync(source, $"dotnet_code_quality.CA1859.api_surface = {editorConfigText}",
+                        VerifyCS.Diagnostic(UseConcreteTypeAnalyzer.UseConcreteTypeForParameter)
+                                .WithLocation(0)
+                                .WithArguments("foo", "Example.IFoo", "Example.Foo"));
+                }
+            }
+            else
+            {
+                if (string.IsNullOrEmpty(editorConfigText))
+                {
+                    await TestCSAsync(source);
+                }
+                else
+                {
+                    await TestCSAsync(source, $"dotnet_code_quality.CA1859.api_surface = {editorConfigText}");
+                }
+            }
+        }
+
+        [Fact]
         public static async Task ShouldNotTrigger1()
         {
             const string Source = @"
@@ -179,6 +380,36 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
         }
 
         [Fact]
+        public static async Task ShouldTrigger_InterpolatedString_Mameof()
+        {
+            const string Source = @"
+                namespace Example
+                {
+                    public class C1
+                    {
+                        private object {|#0:M0|}()
+                        {
+                            var x = 1;
+                            return $""Hello {x}"";
+                        }
+
+                        private object {|#1:M1|}()
+                        {
+                            return nameof(M1);
+                        }
+                    }
+                }";
+
+            await TestCSAsync(Source,
+                VerifyCS.Diagnostic(UseConcreteTypeAnalyzer.UseConcreteTypeForMethodReturn)
+                        .WithLocation(0)
+                        .WithArguments("M0", "object", "string"),
+                VerifyCS.Diagnostic(UseConcreteTypeAnalyzer.UseConcreteTypeForMethodReturn)
+                        .WithLocation(1)
+                        .WithArguments("M1", "object", "string"));
+        }
+
+        [Fact]
         public static async Task ShouldTrigger1()
         {
             const string Source = @"
@@ -209,6 +440,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 }";
 
             await TestCSAsync(Source,
+                "dotnet_code_quality.CA1859.api_surface = all",
                 VerifyCS.Diagnostic(UseConcreteTypeAnalyzer.UseConcreteTypeForParameter)
                         .WithLocation(0)
                         .WithArguments("foo", "Example.IFoo<T>", "Example.Foo<int>"));
@@ -359,7 +591,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
         public static async Task Conditional()
         {
             const string Source = @"
-#nullable enable
+            #nullable enable
             namespace Example
             {
                 public interface IFoo
@@ -804,6 +1036,75 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
         }
 
         [Fact]
+        public static async Task Properties()
+        {
+            const string Source = @"
+#nullable enable
+            using System;
+
+            namespace Example
+            {
+                public interface IFoo
+                {
+                    void Bar();
+                }
+
+                public class Foo : IFoo
+                {
+                    public void Bar() {}
+                }
+
+                public class Test
+                {
+                    private Foo _f = new Foo();
+
+                    private IFoo {|#0:P0|} { get { return new Foo(); } }
+                    private IFoo {|#1:P1|} { get; } = new Foo();
+                    private IFoo {|#2:P2|} => new Foo();
+                    private IFoo {|#3:P3|} => _f;
+                    private IFoo {|#4:P4|} { get { return _f; } }
+                    private IFoo? {|#5:P5|} { get; set; }
+                    private IFoo? P6 { get; set; }
+
+                    public void M(IFoo ifoo)
+                    {
+                        P5 = new Foo();
+                        P6 = ifoo;
+
+                        // induce virtual calls to trigger the diags
+                        P0.Bar();
+                        P1.Bar();
+                        P2.Bar();
+                        P3.Bar();
+                        P4.Bar();
+                        P5.Bar();
+                        P6.Bar();
+                    }
+                }
+            }";
+
+            await TestCSAsync(Source,
+                VerifyCS.Diagnostic(UseConcreteTypeAnalyzer.UseConcreteTypeForProperty)
+                        .WithLocation(0)
+                       .WithArguments("P0", "Example.IFoo", "Example.Foo"),
+                VerifyCS.Diagnostic(UseConcreteTypeAnalyzer.UseConcreteTypeForProperty)
+                        .WithLocation(1)
+                        .WithArguments("P1", "Example.IFoo", "Example.Foo"),
+                VerifyCS.Diagnostic(UseConcreteTypeAnalyzer.UseConcreteTypeForProperty)
+                        .WithLocation(2)
+                        .WithArguments("P2", "Example.IFoo", "Example.Foo"),
+                VerifyCS.Diagnostic(UseConcreteTypeAnalyzer.UseConcreteTypeForProperty)
+                        .WithLocation(3)
+                        .WithArguments("P3", "Example.IFoo", "Example.Foo"),
+                VerifyCS.Diagnostic(UseConcreteTypeAnalyzer.UseConcreteTypeForProperty)
+                        .WithLocation(4)
+                        .WithArguments("P4", "Example.IFoo", "Example.Foo"),
+                VerifyCS.Diagnostic(UseConcreteTypeAnalyzer.UseConcreteTypeForProperty)
+                        .WithLocation(5)
+                        .WithArguments("P5", "Example.IFoo?", "Example.Foo?"));
+        }
+
+        [Fact]
         public static async Task Methods()
         {
             const string Source = @"
@@ -908,6 +1209,30 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net70,
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.Preview,
             };
+
+            test.ExpectedDiagnostics.AddRange(diagnosticResults);
+            await test.RunAsync();
+        }
+
+        private static async Task TestCSAsync(string source, string editorConfigText, params DiagnosticResult[] diagnosticResults)
+        {
+            var test = new VerifyCS.Test
+            {
+                TestCode = source,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net70,
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.Preview,
+                TestState =
+                {
+                    AnalyzerConfigFiles =
+                    {
+                        ("/.editorconfig", $@"root = true
+[*]
+{editorConfigText}
+")
+                    }
+                }
+            };
+
             test.ExpectedDiagnostics.AddRange(diagnosticResults);
             await test.RunAsync();
         }

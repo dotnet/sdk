@@ -2753,6 +2753,11 @@ Widening and user defined conversions are not supported with generic types.</tar
         <target state="translated">パフォーマンスを向上させるために、パラメーター '{0}' の型を '{1}' から '{2}' に変更します</target>
         <note />
       </trans-unit>
+      <trans-unit id="UseConcreteTypeForPropertyMessage">
+        <source>Change type of property '{0}' from '{1}' to '{2}' for improved performance</source>
+        <target state="new">Change type of property '{0}' from '{1}' to '{2}' for improved performance</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UseConcreteTypeTitle">
         <source>Use concrete types when possible for improved performance</source>
         <target state="translated">可能な場合は具象型を使用してパフォーマンスを向上させる</target>

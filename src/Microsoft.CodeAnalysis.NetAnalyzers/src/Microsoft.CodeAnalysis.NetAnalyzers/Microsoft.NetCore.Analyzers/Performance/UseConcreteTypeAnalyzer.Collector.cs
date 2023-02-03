@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,16 +20,21 @@ namespace Microsoft.NetCore.Analyzers.Performance
             private static readonly ObjectPool<Collector> _pool = new(() => new Collector());
 
             public ConcurrentDictionary<IFieldSymbol, PooledConcurrentSet<IMethodSymbol>> VirtualDispatchFields { get; } = new(SymbolEqualityComparer.Default);
+            public ConcurrentDictionary<IPropertySymbol, PooledConcurrentSet<IMethodSymbol>> VirtualDispatchProperties { get; } = new(SymbolEqualityComparer.Default);
             public ConcurrentDictionary<ILocalSymbol, PooledConcurrentSet<IMethodSymbol>> VirtualDispatchLocals { get; } = new(SymbolEqualityComparer.Default);
             public ConcurrentDictionary<IParameterSymbol, PooledConcurrentSet<IMethodSymbol>> VirtualDispatchParameters { get; } = new(SymbolEqualityComparer.Default);
-            public ConcurrentDictionary<IMethodSymbol, bool> MethodsAssignedToDelegate { get; } = new(SymbolEqualityComparer.Default);
 
             public ConcurrentDictionary<IFieldSymbol, PooledConcurrentSet<ITypeSymbol>> FieldAssignments { get; } = new(SymbolEqualityComparer.Default);
+            public ConcurrentDictionary<IPropertySymbol, PooledConcurrentSet<ITypeSymbol>> PropertyAssignments { get; } = new(SymbolEqualityComparer.Default);
             public ConcurrentDictionary<ILocalSymbol, PooledConcurrentSet<ITypeSymbol>> LocalAssignments { get; } = new(SymbolEqualityComparer.Default);
             public ConcurrentDictionary<IParameterSymbol, PooledConcurrentSet<ITypeSymbol>> ParameterAssignments { get; } = new(SymbolEqualityComparer.Default);
+
             public ConcurrentDictionary<IMethodSymbol, PooledConcurrentSet<ITypeSymbol>> MethodReturns { get; } = new(SymbolEqualityComparer.Default);
 
+            public ConcurrentDictionary<IMethodSymbol, bool> MethodsAssignedToDelegate { get; } = new(SymbolEqualityComparer.Default);
+
             public INamedTypeSymbol? Void { get; private set; }
+            private Func<ISymbol, bool>? _checkVisibility;
 
             private Collector()
             {
@@ -37,16 +43,21 @@ namespace Microsoft.NetCore.Analyzers.Performance
             private void Reset()
             {
                 DrainDictionary(VirtualDispatchFields);
+                DrainDictionary(VirtualDispatchProperties);
                 DrainDictionary(VirtualDispatchLocals);
                 DrainDictionary(VirtualDispatchParameters);
-                MethodsAssignedToDelegate.Clear();
 
                 DrainDictionary(FieldAssignments);
+                DrainDictionary(PropertyAssignments);
                 DrainDictionary(LocalAssignments);
                 DrainDictionary(ParameterAssignments);
+
                 DrainDictionary(MethodReturns);
 
+                MethodsAssignedToDelegate.Clear();
+
                 Void = null;
+                _checkVisibility = null;
 
                 static void DrainDictionary<T, U>(ConcurrentDictionary<T, PooledConcurrentSet<U>> d)
                     where U : notnull
@@ -60,10 +71,11 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 }
             }
 
-            public static Collector GetInstance(INamedTypeSymbol voidType)
+            public static Collector GetInstance(INamedTypeSymbol voidType, Func<ISymbol, bool> visibilityChecker)
             {
                 var c = _pool.Allocate();
                 c.Void = voidType;
+                c._checkVisibility = visibilityChecker;
                 return c;
             }
 
@@ -105,10 +117,14 @@ namespace Microsoft.NetCore.Analyzers.Performance
                                     break;
                                 }
 
-                            case OperationKind.ParameterReference:
+                            case OperationKind.PropertyReference:
                                 {
-                                    var parameterRef = (IParameterReferenceOperation)instance;
-                                    RecordVirtualDispatch(parameterRef.Parameter, op.TargetMethod);
+                                    var propertyRef = (IPropertyReferenceOperation)instance;
+                                    if (CanUpgrade(propertyRef.Property, false))
+                                    {
+                                        RecordVirtualDispatch(propertyRef.Property, op.TargetMethod);
+                                    }
+
                                     break;
                                 }
 
@@ -118,11 +134,18 @@ namespace Microsoft.NetCore.Analyzers.Performance
                                     RecordVirtualDispatch(localRef.Local, op.TargetMethod);
                                     break;
                                 }
+
+                            case OperationKind.ParameterReference:
+                                {
+                                    var parameterRef = (IParameterReferenceOperation)instance;
+                                    RecordVirtualDispatch(parameterRef.Parameter, op.TargetMethod);
+                                    break;
+                                }
                         }
                     }
                 }
 
-                bool canUpgrade = CanUpgrade(op.TargetMethod);
+                bool canUpgradeMethod = CanUpgrade(op.TargetMethod);
 
                 foreach (var arg in op.Arguments)
                 {
@@ -143,7 +166,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                                 RecordAssignment(arg.Value, arg.Parameter.Type);
                             }
 
-                            if (canUpgrade)
+                            if (canUpgradeMethod)
                             {
                                 var valueTypes = GetValueTypes(arg.Value);
                                 foreach (var valueType in valueTypes)
@@ -247,6 +270,27 @@ namespace Microsoft.NetCore.Analyzers.Performance
             }
 
             /// <summary>
+            /// Record the type of values used to initialize properties.
+            /// </summary>
+            public void HandlePropertyInitializer(IPropertyInitializerOperation op)
+            {
+                if (CanUpgrade(op))
+                {
+                    var valueTypes = GetValueTypes(op.Value);
+                    foreach (var valueType in valueTypes)
+                    {
+                        foreach (var property in op.InitializedProperties)
+                        {
+                            if (CanUpgrade(property, false))
+                            {
+                                RecordAssignment(property, valueType);
+                            }
+                        }
+                    }
+                }
+            }
+
+            /// <summary>
             /// Record the type of values used to initialize locals.
             /// </summary>
             public void HandleVariableDeclarator(IVariableDeclaratorOperation op)
@@ -281,40 +325,38 @@ namespace Microsoft.NetCore.Analyzers.Performance
             }
 
             /// <summary>
-            /// Record the type of values returned by a given method.
+            /// Record the type of values returned by a given method or property.
             /// </summary>
             public void HandleReturn(IReturnOperation op)
             {
                 if (op.ReturnedValue != null)
                 {
-                    if (op.SemanticModel!.GetEnclosingSymbol(op.Syntax.SpanStart) is IMethodSymbol methodSym && CanUpgrade(methodSym))
+                    var c = op.SemanticModel!.GetEnclosingSymbol(op.Syntax.SpanStart);
+
+                    if (c is IMethodSymbol methodSym)
                     {
-                        var valueTypes = GetValueTypes(op.ReturnedValue);
-                        foreach (var valueType in valueTypes)
+                        if (methodSym.AssociatedSymbol is IPropertySymbol propertySym)
                         {
-                            RecordAssignment(methodSym, valueType);
+                            if (CanUpgrade(propertySym, false))
+                            {
+                                var valueTypes = GetValueTypes(op.ReturnedValue);
+                                foreach (var valueType in valueTypes)
+                                {
+                                    RecordAssignment(propertySym, valueType);
+                                }
+                            }
+                        }
+                        else if (CanUpgrade(methodSym))
+                        {
+                            var valueTypes = GetValueTypes(op.ReturnedValue);
+                            foreach (var valueType in valueTypes)
+                            {
+                                RecordReturn(methodSym, valueType);
+                            }
                         }
                     }
                 }
             }
-
-            /// <summary>
-            /// Trivial reject for types that can't be upgraded in order to avoid wasted work.
-            /// </summary>
-            private static bool CanUpgrade(IOperation target)
-                => target.Type == null || (!target.Type.IsSealed && !target.Type.IsValueType);
-
-            /// <summary>
-            /// Trivial reject for methods that can't be upgraded in order to avoid wasted work.
-            /// </summary>
-            private static bool CanUpgrade(IMethodSymbol methodSym)
-                => methodSym.DeclaredAccessibility == Accessibility.Private && methodSym.MethodKind == MethodKind.Ordinary && !methodSym.IsImplementationOfAnyInterfaceMember();
-
-            /// <summary>
-            /// Trivial reject for fields that can't be upgraded in order to avoid wasted work.
-            /// </summary>
-            private static bool CanUpgrade(IFieldSymbol fieldSym)
-                => fieldSym.DeclaredAccessibility == Accessibility.Private;
 
             private List<ITypeSymbol> GetValueTypes(IOperation op)
             {
@@ -333,6 +375,10 @@ namespace Microsoft.NetCore.Analyzers.Performance
                             {
                                 // use 'void' as a marker for a null assignment
                                 values.Add(Void!);
+                            }
+                            else if (op.Type != null)
+                            {
+                                values.Add(op.Type);
                             }
 
                             return;
@@ -385,10 +431,15 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     case OperationKind.MethodReference:
                     case OperationKind.LocalReference:
                     case OperationKind.FieldReference:
+                    case OperationKind.InstanceReference:
+                    case OperationKind.SwitchExpression:
+                    case OperationKind.InterpolatedString:
+                    case OperationKind.NameOf:
+                    case OperationKind.SizeOf:
                         {
                             if (op.Type != null)
                             {
-                                values.Add(op.Type!);
+                                values.Add(op.Type);
                             }
 
                             return;
@@ -402,13 +453,6 @@ namespace Microsoft.NetCore.Analyzers.Performance
                                 MethodsAssignedToDelegate[target.Method] = true;
                             }
 
-                            return;
-                        }
-
-                    case OperationKind.InstanceReference:
-                        {
-                            var instRef = (IInstanceReferenceOperation)op;
-                            values.Add(instRef.Type!);
                             return;
                         }
                 }
@@ -439,6 +483,19 @@ namespace Microsoft.NetCore.Analyzers.Performance
                             break;
                         }
 
+                    case OperationKind.PropertyReference:
+                        {
+                            var propertyRef = (IPropertyReferenceOperation)op;
+
+                            // only consider properties that are being compiled, not properties from imported types
+                            if (propertyRef.Property.DeclaringSyntaxReferences.Length > 0)
+                            {
+                                RecordAssignment(propertyRef.Property, valueType);
+                            }
+
+                            break;
+                        }
+
                     case OperationKind.LocalReference:
                         {
                             var localRef = (ILocalReferenceOperation)op;
@@ -455,14 +512,157 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 }
             }
 
+            /// <summary>
+            /// Removes all non-private symbols from a source collector, and puts them in 'this'.
+            /// </summary>
+            public void ExtractNonPrivate(Collector source)
+            {
+                foreach (var pair in source.VirtualDispatchFields)
+                {
+                    var field = pair.Key;
+                    if (!field.IsPrivate())
+                    {
+                        source.VirtualDispatchFields.TryRemove(field, out var value);
+                        foreach (var method in value)
+                        {
+                            RecordVirtualDispatch(field, method);
+                        }
+                    }
+                }
+
+                foreach (var pair in source.VirtualDispatchProperties)
+                {
+                    var property = pair.Key;
+                    if (!property.IsPrivate())
+                    {
+                        source.VirtualDispatchProperties.TryRemove(property, out var value);
+                        foreach (var method in value)
+                        {
+                            RecordVirtualDispatch(property, method);
+                        }
+                    }
+                }
+
+                foreach (var pair in source.VirtualDispatchParameters)
+                {
+                    var parameter = pair.Key;
+                    if (parameter.ContainingSymbol is IMethodSymbol method)
+                    {
+                        if (!method.IsPrivate())
+                        {
+                            source.VirtualDispatchParameters.TryRemove(parameter, out var value);
+                            foreach (var m in value)
+                            {
+                                RecordVirtualDispatch(parameter, m);
+                            }
+                        }
+                    }
+                }
+
+                foreach (var pair in source.FieldAssignments)
+                {
+                    var field = pair.Key;
+                    if (!field.IsPrivate())
+                    {
+                        source.FieldAssignments.TryRemove(field, out var value);
+                        foreach (var type in value)
+                        {
+                            RecordAssignment(field, type);
+                        }
+                    }
+                }
+
+                foreach (var pair in source.PropertyAssignments)
+                {
+                    var property = pair.Key;
+                    if (!property.IsPrivate())
+                    {
+                        source.PropertyAssignments.TryRemove(property, out var value);
+                        foreach (var type in value)
+                        {
+                            RecordAssignment(property, type);
+                        }
+                    }
+                }
+
+                foreach (var pair in source.ParameterAssignments)
+                {
+                    var parameter = pair.Key;
+                    if (parameter.ContainingSymbol is IMethodSymbol method)
+                    {
+                        if (!method.IsPrivate())
+                        {
+                            source.ParameterAssignments.TryRemove(parameter, out var value);
+                            foreach (var type in value)
+                            {
+                                RecordAssignment(parameter, type);
+                            }
+                        }
+                    }
+                }
+
+                foreach (var pair in source.MethodReturns)
+                {
+                    var method = pair.Key;
+                    if (!method.IsPrivate())
+                    {
+                        source.MethodReturns.TryRemove(method, out var value);
+                        foreach (var type in value)
+                        {
+                            RecordReturn(method, type);
+                        }
+                    }
+                }
+            }
+
+            /// <summary>
+            /// Trivial reject for types that can't be upgraded in order to avoid wasted work.
+            /// </summary>
+            private static bool CanUpgrade(IOperation target)
+                => target.Type == null || (!target.Type.IsSealed && !target.Type.IsValueType);
+
+            /// <summary>
+            /// Trivial reject for methods that can't be upgraded in order to avoid wasted work.
+            /// </summary>
+            private bool CanUpgrade(IMethodSymbol methodSym)
+                => _checkVisibility!(methodSym)
+                && methodSym.MethodKind == MethodKind.Ordinary
+                && !methodSym.IsImplementationOfAnyInterfaceMember()
+                && !methodSym.IsOverride
+                && !methodSym.IsVirtual
+                && methodSym.PartialDefinitionPart == null;
+
+            /// <summary>
+            /// Trivial reject for fields that can't be upgraded in order to avoid wasted work.
+            /// </summary>
+            private bool CanUpgrade(IFieldSymbol fieldSym)
+                => _checkVisibility!(fieldSym);
+
+            /// <summary>
+            /// Trivial reject for properties that can't be upgraded in order to avoid wasted work.
+            /// </summary>
+            private bool CanUpgrade(IPropertySymbol propSym, bool setter)
+            {
+                var m = setter ? propSym.SetMethod : propSym.GetMethod;
+
+                return _checkVisibility!(m)
+                    && !m.IsImplementationOfAnyInterfaceMember()
+                    && !m.IsOverride
+                    && !m.IsVirtual
+                    && m.PartialDefinitionPart == null;
+            }
+
             private void RecordVirtualDispatch(IFieldSymbol field, IMethodSymbol target) => VirtualDispatchFields.GetOrAdd(field, _ => PooledConcurrentSet<IMethodSymbol>.GetInstance(SymbolEqualityComparer.Default)).Add(target);
+            private void RecordVirtualDispatch(IPropertySymbol property, IMethodSymbol target) => VirtualDispatchProperties.GetOrAdd(property, _ => PooledConcurrentSet<IMethodSymbol>.GetInstance(SymbolEqualityComparer.Default)).Add(target);
             private void RecordVirtualDispatch(ILocalSymbol local, IMethodSymbol target) => VirtualDispatchLocals.GetOrAdd(local, _ => PooledConcurrentSet<IMethodSymbol>.GetInstance(SymbolEqualityComparer.Default)).Add(target);
             private void RecordVirtualDispatch(IParameterSymbol parameter, IMethodSymbol target) => VirtualDispatchParameters.GetOrAdd(parameter, _ => PooledConcurrentSet<IMethodSymbol>.GetInstance(SymbolEqualityComparer.Default)).Add(target);
 
             private void RecordAssignment(IFieldSymbol field, ITypeSymbol valueType) => FieldAssignments.GetOrAdd(field, _ => PooledConcurrentSet<ITypeSymbol>.GetInstance(SymbolEqualityComparer.Default)).Add(valueType);
+            private void RecordAssignment(IPropertySymbol property, ITypeSymbol valueType) => PropertyAssignments.GetOrAdd(property.OriginalDefinition, _ => PooledConcurrentSet<ITypeSymbol>.GetInstance(SymbolEqualityComparer.Default)).Add(valueType);
             private void RecordAssignment(ILocalSymbol local, ITypeSymbol valueType) => LocalAssignments.GetOrAdd(local, _ => PooledConcurrentSet<ITypeSymbol>.GetInstance(SymbolEqualityComparer.Default)).Add(valueType);
             private void RecordAssignment(IParameterSymbol parameter, ITypeSymbol valueType) => ParameterAssignments.GetOrAdd(parameter.OriginalDefinition, _ => PooledConcurrentSet<ITypeSymbol>.GetInstance(SymbolEqualityComparer.Default)).Add(valueType);
-            private void RecordAssignment(IMethodSymbol method, ITypeSymbol valueType) => MethodReturns.GetOrAdd(method, _ => PooledConcurrentSet<ITypeSymbol>.GetInstance(SymbolEqualityComparer.Default)).Add(valueType);
+
+            private void RecordReturn(IMethodSymbol method, ITypeSymbol valueType) => MethodReturns.GetOrAdd(method, _ => PooledConcurrentSet<ITypeSymbol>.GetInstance(SymbolEqualityComparer.Default)).Add(valueType);
         }
     }
 }
