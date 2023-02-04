@@ -3,7 +3,7 @@
 
 #nullable enable
 
-using Microsoft.DotNet.ApiCompatibility.Abstractions;
+using Microsoft.DotNet.ApiCompatibility.Mapping;
 using Microsoft.DotNet.ApiCompatibility.Rules;
 using Moq;
 using Xunit;
@@ -16,7 +16,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Tests.Mappers
         public void MemberMapper_Ctor_PropertiesSet()
         {
             IRuleRunner ruleRunner = Mock.Of<IRuleRunner>();
-            MapperSettings mapperSettings = new();
+            IMapperSettings mapperSettings = Mock.Of<IMapperSettings>();
             int rightSetSize = 5;
             ITypeMapper containingType = Mock.Of<ITypeMapper>();
 

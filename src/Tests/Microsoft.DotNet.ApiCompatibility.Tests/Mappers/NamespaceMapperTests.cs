@@ -6,7 +6,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
-using Microsoft.DotNet.ApiCompatibility.Abstractions;
+using Microsoft.DotNet.ApiCompatibility.Mapping;
 using Microsoft.DotNet.ApiCompatibility.Rules;
 using Microsoft.DotNet.ApiSymbolExtensions.Tests;
 using Moq;
@@ -20,7 +20,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Tests.Mappers
         public void NamespaceMapper_Ctor_PropertiesSet()
         {
             IRuleRunner ruleRunner = Mock.Of<IRuleRunner>();
-            MapperSettings mapperSettings = new();
+            IMapperSettings mapperSettings = Mock.Of<IMapperSettings>();
             int rightSetSize = 5;
             IAssemblyMapper assemblyMapper = Mock.Of<IAssemblyMapper>();
 
@@ -35,7 +35,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Tests.Mappers
         [Fact]
         public void NamespaceMapper_GetTypesWithoutLeftAndRight_EmptyResult()
         {
-            NamespaceMapper namespaceMapper = new(Mock.Of<IRuleRunner>(), new MapperSettings(), rightSetSize: 1, Mock.Of<IAssemblyMapper>());
+            NamespaceMapper namespaceMapper = new(Mock.Of<IRuleRunner>(), Mock.Of<IMapperSettings>(), rightSetSize: 1, Mock.Of<IAssemblyMapper>());
             Assert.Empty(namespaceMapper.GetTypes());
         }
 
@@ -59,7 +59,7 @@ namespace NamespaceMapper
                 MetadataInformation.DefaultLeft);
             ElementContainer<IAssemblySymbol> right = new(SymbolFactory.GetAssemblyFromSyntax(rightSyntax),
                 MetadataInformation.DefaultRight);
-            AssemblyMapper assemblyMapper = new(Mock.Of<IRuleRunner>(), new MapperSettings(), rightSetSize: 1);
+            AssemblyMapper assemblyMapper = new(Mock.Of<IRuleRunner>(), new ApiComparerSettings(), rightSetSize: 1);
             assemblyMapper.AddElement(left, ElementSide.Left);
             assemblyMapper.AddElement(right, ElementSide.Right);
 

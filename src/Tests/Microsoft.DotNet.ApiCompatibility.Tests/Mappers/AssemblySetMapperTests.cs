@@ -6,7 +6,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
-using Microsoft.DotNet.ApiCompatibility.Abstractions;
+using Microsoft.DotNet.ApiCompatibility.Mapping;
 using Microsoft.DotNet.ApiCompatibility.Rules;
 using Moq;
 using Xunit;
@@ -19,7 +19,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Tests.Mappers
         public void AssemblySetMapper_Ctor_PropertiesSet()
         {
             IRuleRunner ruleRunner = Mock.Of<IRuleRunner>();
-            MapperSettings mapperSettings = new();
+            IMapperSettings mapperSettings = Mock.Of<IMapperSettings>();
             int rightSetSize = 5;
 
             AssemblySetMapper assemblySetMapper = new(ruleRunner, mapperSettings, rightSetSize);
@@ -33,7 +33,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Tests.Mappers
         [Fact]
         public void AssemblySetMapper_GetAssembliesWithoutLeftAndRight_EmptyResult()
         {
-            AssemblySetMapper assemblySetMapper = new(Mock.Of<IRuleRunner>(), new MapperSettings(), rightSetSize: 1);
+            AssemblySetMapper assemblySetMapper = new(Mock.Of<IRuleRunner>(), Mock.Of<IMapperSettings>(), rightSetSize: 1);
             Assert.Empty(assemblySetMapper.GetAssemblies());
             Assert.Equal(0, assemblySetMapper.AssemblyCount);
         }
@@ -119,7 +119,7 @@ namespace NamespaceInAssemblyD
             IReadOnlyList<ElementContainer<IAssemblySymbol>> left = SymbolFactoryExtensions.GetElementContainersFromSyntaxes(leftSyntaxes);
             IReadOnlyList<ElementContainer<IAssemblySymbol>> right1 = SymbolFactoryExtensions.GetElementContainersFromSyntaxes(rightSyntaxes1);
             IReadOnlyList<ElementContainer<IAssemblySymbol>> right2 = SymbolFactoryExtensions.GetElementContainersFromSyntaxes(rightSyntaxes2);
-            AssemblySetMapper assemblySetMapper = new(Mock.Of<IRuleRunner>(), new MapperSettings(), rightSetSize: 2);
+            AssemblySetMapper assemblySetMapper = new(Mock.Of<IRuleRunner>(), new ApiComparerSettings(), rightSetSize: 2);
             assemblySetMapper.AddElement(left, ElementSide.Left);
             assemblySetMapper.AddElement(right1, ElementSide.Right);
             assemblySetMapper.AddElement(right2, ElementSide.Right, 1);

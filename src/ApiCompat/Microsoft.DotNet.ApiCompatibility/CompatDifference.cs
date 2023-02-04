@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.ApiSymbolExtensions;
 
-namespace Microsoft.DotNet.ApiCompatibility.Abstractions
+namespace Microsoft.DotNet.ApiCompatibility
 {
     /// <summary>
     /// Class representing a difference of compatibility, containing detailed information about it.
@@ -71,7 +71,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Abstractions
         }
 
         /// <summary>
-        /// Create a compat difference object with default left and right metadata for which the difference occurred.
+        /// Create a compatibility difference object with default left and right metadata for which the difference occurred.
         /// </summary>
         public static CompatDifference CreateWithDefaultMetadata(string diagnosticId, string message, DifferenceType type, string? memberId) =>
             new(MetadataInformation.DefaultLeft,
@@ -82,7 +82,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Abstractions
                 memberId);
 
         /// <summary>
-        /// Create a compat difference object with default left and right metadata for which the difference occurred.
+        /// Create a compatibility difference object with default left and right metadata for which the difference occurred.
         /// </summary>
         public static CompatDifference CreateWithDefaultMetadata(string diagnosticId, string message, DifferenceType type, ISymbol member) =>
             new(MetadataInformation.DefaultLeft,
@@ -127,7 +127,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Abstractions
 
         /// <inheritdoc />
         public static bool operator ==(CompatDifference left, CompatDifference right) => left.Equals(right);
-        
+
         /// <inheritdoc />
         public static bool operator !=(CompatDifference left, CompatDifference right) => !(left == right);
     }

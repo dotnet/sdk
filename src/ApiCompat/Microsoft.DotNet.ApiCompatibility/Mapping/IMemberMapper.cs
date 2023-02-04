@@ -3,7 +3,7 @@
 
 using Microsoft.CodeAnalysis;
 
-namespace Microsoft.DotNet.ApiCompatibility.Abstractions
+namespace Microsoft.DotNet.ApiCompatibility.Mapping
 {
     /// <summary>
     /// Interface that represents a mapping between two <see cref="ISymbol"/> objects.
@@ -11,7 +11,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Abstractions
     public interface IMemberMapper : IElementMapper<ISymbol>
     {
         /// <summary>
-        /// The containg type of this member.
+        /// The containing type of this member.
         /// </summary>
         ITypeMapper ContainingType { get; }
     }

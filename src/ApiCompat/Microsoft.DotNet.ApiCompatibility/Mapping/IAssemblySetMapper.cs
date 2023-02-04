@@ -4,7 +4,7 @@
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 
-namespace Microsoft.DotNet.ApiCompatibility.Abstractions
+namespace Microsoft.DotNet.ApiCompatibility.Mapping
 {
     /// <summary>
     /// Interface that represents a mapping between two lists of <see cref="IAssemblySymbol"/>.
@@ -18,7 +18,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Abstractions
 
         /// <summary>
         /// Gets the assembly mappers built from the provided lists of <see cref="IAssemblySymbol"/>.
-        /// <returns>The list of <see cref="AssemblyMapper"/> representing the underlying assemblies.</returns>
+        /// <returns>The list of <see cref="IAssemblyMapper"/> representing the underlying assemblies.</returns>
         /// </summary>
         IEnumerable<IAssemblyMapper> GetAssemblies();
     }

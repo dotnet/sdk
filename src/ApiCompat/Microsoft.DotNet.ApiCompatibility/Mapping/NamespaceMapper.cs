@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.ApiCompatibility.Rules;
 
-namespace Microsoft.DotNet.ApiCompatibility.Abstractions
+namespace Microsoft.DotNet.ApiCompatibility.Mapping
 {
     /// <summary>
     /// Object that represents a mapping between two <see cref="INamespaceSymbol"/> objects.
@@ -26,16 +26,16 @@ namespace Microsoft.DotNet.ApiCompatibility.Abstractions
         /// </summary>
         /// <param name="settings">The settings used to diff the elements in the mapper.</param>
         /// <param name="rightSetSize">The number of elements in the right set to compare.</param>
-        /// <param name="typeforwardsOnly">Indicates if <see cref="GetTypes"/> should only return typeforwards.</param>
+        /// <param name="typeforwardsOnly">Indicates if <see cref="GetTypes"/> should only return type forwards.</param>
         public NamespaceMapper(IRuleRunner ruleRunner,
-            MapperSettings settings,
+            IMapperSettings settings,
             int rightSetSize,
             IAssemblyMapper containingAssembly,
             bool typeforwardsOnly = false)
             : base(ruleRunner, settings, rightSetSize)
         {
             ContainingAssembly = containingAssembly;
-            _types = new Dictionary<ITypeSymbol, ITypeMapper>(Settings.EqualityComparer);
+            _types = new Dictionary<ITypeSymbol, ITypeMapper>(Settings.SymbolEqualityComparer);
             _typeforwardsOnly = typeforwardsOnly;
         }
 
@@ -45,9 +45,9 @@ namespace Microsoft.DotNet.ApiCompatibility.Abstractions
             if (!_expandedTree)
             {
                 // if the typeforwardsOnly flag is specified it means this namespace is already
-                // populated with the resolved typeforwards by the assembly mapper and that we 
+                // populated with the resolved type forwards by the assembly mapper and that we 
                 // didn't find this namespace in the initial assembly. So we avoid getting the types
-                // as that would return the types defined in the assembly where the typeforwardes
+                // as that would return the types defined in the assembly where the type forwards
                 // were resolved from.
                 if (!_typeforwardsOnly)
                 {
@@ -88,7 +88,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Abstractions
 
             foreach (ITypeSymbol type in types)
             {
-                if (Settings.Filter.Include(type))
+                if (Settings.SymbolFilter.Include(type))
                 {
                     if (!_types.TryGetValue(type, out ITypeMapper? mapper))
                     {

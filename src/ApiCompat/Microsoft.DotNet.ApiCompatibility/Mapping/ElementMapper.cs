@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.DotNet.ApiCompatibility.Rules;
 
-namespace Microsoft.DotNet.ApiCompatibility.Abstractions
+namespace Microsoft.DotNet.ApiCompatibility.Mapping
 {
     /// <summary>
     /// Class that represents a mapping in between two objects of type <see cref="T"/>.
@@ -21,7 +21,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Abstractions
         public T?[] Right { get; private set; }
 
         /// <inheritdoc />
-        public MapperSettings Settings { get; }
+        public IMapperSettings Settings { get; }
 
         /// <summary>
         /// The rule runner to perform api comparison checks.
@@ -34,7 +34,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Abstractions
         /// <param name="settings">The settings used to diff the elements in the mapper.</param>
         /// <param name="rightSetSize">The number of elements in the right set to compare.</param>
         public ElementMapper(IRuleRunner ruleRunner,
-            MapperSettings settings,
+            IMapperSettings settings,
             int rightSetSize)
         {
             if (rightSetSize < 1)

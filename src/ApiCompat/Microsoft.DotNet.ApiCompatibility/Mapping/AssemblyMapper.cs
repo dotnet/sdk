@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.ApiCompatibility.Rules;
 
-namespace Microsoft.DotNet.ApiCompatibility.Abstractions
+namespace Microsoft.DotNet.ApiCompatibility.Mapping
 {
     /// <summary>
     /// Object that represents a mapping between multiple <see cref="IAssemblySymbol"/> objects.
@@ -30,7 +30,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Abstractions
         /// <param name="rightSetSize">The number of elements in the right set to compare.</param>
         /// <param name="containingAssemblySet">The containing assembly set. Null, if the assembly isn't part of a set.</param>
         public AssemblyMapper(IRuleRunner ruleRunner,
-            MapperSettings settings,
+            IMapperSettings settings,
             int rightSetSize,
             IAssemblySetMapper? containingAssemblySet = null)
             : base(ruleRunner, settings, rightSetSize)
@@ -43,7 +43,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Abstractions
         {
             if (_namespaces == null)
             {
-                _namespaces = new Dictionary<INamespaceSymbol, INamespaceMapper>(Settings.EqualityComparer);
+                _namespaces = new Dictionary<INamespaceSymbol, INamespaceMapper>(Settings.SymbolEqualityComparer);
                 AddOrCreateMappers(Left, ElementSide.Left);
 
                 for (int i = 0; i < Right.Length; i++)
@@ -59,7 +59,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Abstractions
                         return;
                     }
 
-                    Dictionary<INamespaceSymbol, List<INamedTypeSymbol>> typeForwards = ResolveTypeForwards(assemblyContainer, side, Settings.EqualityComparer, setIndex);
+                    Dictionary<INamespaceSymbol, List<INamedTypeSymbol>> typeForwards = ResolveTypeForwards(assemblyContainer, side, Settings.SymbolEqualityComparer, setIndex);
 
                     Queue<INamespaceSymbol> queue = new();
                     queue.Enqueue(assemblyContainer.Element.GlobalNamespace);
@@ -74,7 +74,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Abstractions
                             {
                                 mapper.AddForwardedTypes(types, side, setIndex);
 
-                                // remove the typeforwards for this namespace as we did
+                                // remove the type forwards for this namespace as we did
                                 // find and instance of the namespace on the current assembly
                                 // and we don't want to create a mapper with the namespace in
                                 // the assembly where the forwarded type is defined.
@@ -86,7 +86,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Abstractions
                             queue.Enqueue(child);
                     }
 
-                    // If the current assembly didn't have a namespace symbol for the resolved typeforwards
+                    // If the current assembly didn't have a namespace symbol for the resolved type forwards
                     // use the namespace symbol in the assembly where the forwarded type is defined.
                     // But create the mapper with typeForwardsOnly setting to not visit types defined in the target assembly.
                     foreach (KeyValuePair<INamespaceSymbol, List<INamedTypeSymbol>> kvp in typeForwards)
@@ -133,7 +133,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Abstractions
                         else
                         {
                             // If we should warn on missing references and we are unable to resolve the type forward, then we should log a diagnostic
-                            if (Settings.WarnOnMissingReferences)
+                            if (Settings.WithReferences)
                             {
                                 _assemblyLoadErrors.Add(new CompatDifference(
                                     side == ElementSide.Left ? assembly.MetadataInformation : MetadataInformation.DefaultLeft,

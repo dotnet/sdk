@@ -3,17 +3,23 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.ApiSymbolExtensions;
 
-namespace Microsoft.DotNet.ApiCompatibility
+namespace Microsoft.DotNet.ApiCompatibility.Comparer
 {
-    internal class DefaultSymbolsEqualityComparer : IEqualityComparer<ISymbol>
+    /// <summary>
+    /// Defines methods to support the comparison of <see cref="ISymbol"/> for equality.
+    /// </summary>
+    public class SymbolEqualityComparer : IEqualityComparer<ISymbol>
     {
+        /// <inheritdoc />
         public bool Equals(ISymbol? x, ISymbol? y) =>
             string.Equals(x != null ? GetKey(x) : null, y != null ? GetKey(y) : null, StringComparison.OrdinalIgnoreCase);
 
-        public int GetHashCode(ISymbol obj) => GetKey(obj).GetHashCode();
+        /// <inheritdoc />
+        public int GetHashCode([DisallowNull] ISymbol obj) => GetKey(obj).GetHashCode();
 
         private static string GetKey(ISymbol symbol)
         {

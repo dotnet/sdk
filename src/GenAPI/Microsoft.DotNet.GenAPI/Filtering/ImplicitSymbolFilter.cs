@@ -2,14 +2,14 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.CodeAnalysis;
-using Microsoft.DotNet.ApiSymbolExtensions;
+using Microsoft.DotNet.ApiSymbolExtensions.Filtering;
 
-namespace Microsoft.DotNet.GenAPI
+namespace Microsoft.DotNet.GenAPI.Filtering
 {
     /// <summary>
     /// Filter out implicitly generated members for properties, events, etc.
     /// </summary>
-    public class ImplicitSymbolsFilter : ISymbolFilter
+    public class ImplicitSymbolFilter : ISymbolFilter
     {
         /// <summary>
         /// Determines whether implicitly generated symbols <see cref="ISymbol"/> should be included.

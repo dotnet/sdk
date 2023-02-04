@@ -4,7 +4,7 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.ApiCompatibility.Rules;
 
-namespace Microsoft.DotNet.ApiCompatibility.Abstractions
+namespace Microsoft.DotNet.ApiCompatibility.Mapping
 {
     /// <summary>
     /// Object that represents a mapping between two <see cref="ISymbol"/> objects.
@@ -20,7 +20,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Abstractions
         /// <param name="settings">The settings used to diff the elements in the mapper.</param>
         /// <param name="rightSetSize">The number of elements in the right set to compare.</param>
         public MemberMapper(IRuleRunner ruleRunner,
-            MapperSettings settings,
+            IMapperSettings settings,
             int rightSetSize,
             ITypeMapper containingType)
             : base(ruleRunner, settings, rightSetSize)

@@ -4,7 +4,7 @@
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 
-namespace Microsoft.DotNet.ApiCompatibility.Abstractions
+namespace Microsoft.DotNet.ApiCompatibility.Mapping
 {
     /// <summary>
     /// Interface that represents a mapping between multiple <see cref="IAssemblySymbol"/> objects.
@@ -24,9 +24,9 @@ namespace Microsoft.DotNet.ApiCompatibility.Abstractions
         IEnumerable<CompatDifference> AssemblyLoadErrors { get; }
 
         /// <summary>
-        /// Gets the mappers for the namespaces contained in <see cref="ElementMapper{T}.Left"/> and <see cref="ElementMapper{T}.Right"/>
+        /// Gets the mappers for the namespaces contained in <see cref="IElementMapper{T}.Left"/> and <see cref="IElementMapper{T}.Right"/>
         /// </summary>
-        /// <returns>The list of <see cref="NamespaceMapper"/>.</returns>
+        /// <returns>The list of <see cref="INamespaceMapper"/>.</returns>
         IEnumerable<INamespaceMapper> GetNamespaces();
     }
 }

@@ -5,13 +5,13 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 
-namespace Microsoft.DotNet.ApiSymbolExtensions
+namespace Microsoft.DotNet.ApiSymbolExtensions.Filtering
 {
     /// <summary>
     /// Implements the composite pattern, group the list of <see cref="ISymbol"/> and interact with them
     /// the same way as a single instance of a <see cref="ISymbol"/> object.
     /// </summary>
-    public class CompositeFilter : ISymbolFilter
+    public class CompositeSymbolFilter : ISymbolFilter
     {
         private readonly List<ISymbolFilter> _innerFilters = new();
 
@@ -20,14 +20,14 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
         /// </summary>
         /// <param name="symbol"><see cref="ISymbol"/> to evaluate.</param>
         /// <returns>True to include the <paramref name="symbol"/> or false to filter it out.</returns>
-        public bool Include(ISymbol member) => _innerFilters.All(f => f.Include(member));
+        public bool Include(ISymbol symbol) => _innerFilters.All(f => f.Include(symbol));
 
         /// <summary>
         /// Construct and add a new filter object to a list of filters.
         /// </summary>
         /// <typeparam name="T"><see cref="ISymbolFilter" /> to evaluate.</typeparam>
         /// <returns>Returns the current instance of the class.</returns>
-        public CompositeFilter Add<T>() where T : ISymbolFilter, new()
+        public CompositeSymbolFilter Add<T>() where T : ISymbolFilter, new()
         {
             _innerFilters.Add(new T());
             return this;
@@ -38,7 +38,7 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
         /// </summary>
         /// <typeparam name="T"><see cref="ISymbolFilter" /> to evaluate.</typeparam>
         /// <returns>Returns the current instance of the class.</returns>
-        public CompositeFilter Add(ISymbolFilter filter)
+        public CompositeSymbolFilter Add(ISymbolFilter filter)
         {
             _innerFilters.Add(filter);
             return this;

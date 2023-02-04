@@ -3,15 +3,18 @@
 
 using Microsoft.CodeAnalysis;
 
-namespace Microsoft.DotNet.ApiSymbolExtensions
+namespace Microsoft.DotNet.ApiSymbolExtensions.Filtering
 {
-    public class SymbolAccessibilityBasedFilter : ISymbolFilter
+    /// <summary>
+    /// Implements the logic of filtering out symbols based on a provided accessibility level (i.e. public / internal).
+    /// </summary>
+    public class AccessibilitySymbolFilter : ISymbolFilter
     {
         private readonly bool _includeInternalSymbols;
         private readonly bool _includeEffectivelyPrivateSymbols;
         private readonly bool _includeExplicitInterfaceImplementationSymbols;
 
-        public SymbolAccessibilityBasedFilter(bool includeInternalSymbols,
+        public AccessibilitySymbolFilter(bool includeInternalSymbols,
             bool includeEffectivelyPrivateSymbols = false,
             bool includeExplicitInterfaceImplementationSymbols = false)
         {
@@ -20,6 +23,7 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
             _includeExplicitInterfaceImplementationSymbols = includeExplicitInterfaceImplementationSymbols;
         }
 
+        /// <inheritdoc />
         public bool Include(ISymbol symbol) =>
             symbol.IsVisibleOutsideOfAssembly(_includeInternalSymbols,
                 _includeEffectivelyPrivateSymbols, _includeExplicitInterfaceImplementationSymbols);

@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Microsoft.DotNet.ApiCompatibility.Abstractions
+namespace Microsoft.DotNet.ApiCompatibility
 {
     /// <summary>
     /// Struct containing the assembly's relevant information, used to distinguish different tuple comparisons

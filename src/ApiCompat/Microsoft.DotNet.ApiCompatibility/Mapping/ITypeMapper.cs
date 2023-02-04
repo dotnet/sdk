@@ -4,7 +4,7 @@
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 
-namespace Microsoft.DotNet.ApiCompatibility.Abstractions
+namespace Microsoft.DotNet.ApiCompatibility.Mapping
 {
     /// <summary>
     /// Interface that represents a mapping between two <see cref="ITypeSymbol"/> objects.
@@ -14,7 +14,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Abstractions
     public interface ITypeMapper : IElementMapper<ITypeSymbol>
     {
         /// <summary>
-        /// The containg namespace of this type.
+        /// The containing namespace of this type.
         /// </summary>
         INamespaceMapper ContainingNamespace { get; }
 
@@ -31,13 +31,13 @@ namespace Microsoft.DotNet.ApiCompatibility.Abstractions
         /// <summary>
         /// Gets the nested types within the mapped types.
         /// </summary>
-        /// <returns>The list of <see cref="TypeMapper"/> representing the nested types.</returns>
+        /// <returns>The list of <see cref="ITypeMapper"/> representing the nested types.</returns>
         IEnumerable<ITypeMapper> GetNestedTypes();
 
         /// <summary>
         /// Gets the members defined in this type.
         /// </summary>
-        /// <returns>The list of <see cref="MemberMapper"/> representing the members.</returns>
+        /// <returns>The list of <see cref="IMemberMapper"/> representing the members.</returns>
         IEnumerable<IMemberMapper> GetMembers();
     }
 }

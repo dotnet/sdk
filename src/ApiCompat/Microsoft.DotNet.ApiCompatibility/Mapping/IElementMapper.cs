@@ -3,7 +3,7 @@
 
 using System.Collections.Generic;
 
-namespace Microsoft.DotNet.ApiCompatibility.Abstractions
+namespace Microsoft.DotNet.ApiCompatibility.Mapping
 {
     /// <summary>
     /// Interface that represents a mapping in between two objects of type <see cref="T"/>.
@@ -21,9 +21,9 @@ namespace Microsoft.DotNet.ApiCompatibility.Abstractions
         T?[] Right { get; }
 
         /// <summary>
-        /// The <see cref="MapperSettings"/> used to diff <see cref="Left"/> and <see cref="Right"/>.
+        /// The <see cref="IMapperSettings"/> used to diff <see cref="Left"/> and <see cref="Right"/>.
         /// </summary>
-        MapperSettings Settings { get; }
+        IMapperSettings Settings { get; }
 
         /// <summary>
         /// Adds an element to the mapping given the <paramref name="side"/> and the <paramref name="setIndex"/>.
@@ -44,8 +44,8 @@ namespace Microsoft.DotNet.ApiCompatibility.Abstractions
         /// Runs the rules found by the rule driver on the element mapper and returns a list of differences.
         /// </summary>
         /// <returns>A list containing the list of differences for each possible combination of
-        /// (<see cref="ElementMapper{T}.Left"/>, <see cref="ElementMapper{T}.Right"/>).
-        /// One list of <see cref="CompatDifference"/> per the number of right elements that the <see cref="ElementMapper{T}"/> contains.</returns>
+        /// (<see cref="IElementMapper{T}.Left"/>, <see cref="IElementMapper{T}.Right"/>).
+        /// One list of <see cref="CompatDifference"/> per the number of right elements that the <see cref="IElementMapper{T}"/> contains.</returns>
         IEnumerable<CompatDifference> GetDifferences();
     }
 }

@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.ApiCompatibility.Rules;
 
-namespace Microsoft.DotNet.ApiCompatibility.Abstractions
+namespace Microsoft.DotNet.ApiCompatibility.Mapping
 {
     /// <summary>
     /// Object that represents a mapping between two lists of <see cref="IAssemblySymbol"/>.
@@ -23,7 +23,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Abstractions
         /// <param name="settings">The settings used to diff the elements in the mapper.</param>
         /// <param name="rightSetSize">The number of elements in the right set to compare.</param>
         public AssemblySetMapper(IRuleRunner ruleRunner,
-            MapperSettings settings,
+            IMapperSettings settings,
             int rightSetSize)
             : base(ruleRunner, settings, rightSetSize) { }
 
@@ -32,7 +32,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Abstractions
         {
             if (_assemblies == null)
             {
-                _assemblies = new Dictionary<IAssemblySymbol, IAssemblyMapper>(Settings.EqualityComparer);
+                _assemblies = new Dictionary<IAssemblySymbol, IAssemblyMapper>(Settings.SymbolEqualityComparer);
                 AddOrCreateMappers(Left, ElementSide.Left);
 
                 for (int i = 0; i < Right.Length; i++)

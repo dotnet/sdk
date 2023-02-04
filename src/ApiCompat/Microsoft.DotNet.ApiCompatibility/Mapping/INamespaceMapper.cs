@@ -4,7 +4,7 @@
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 
-namespace Microsoft.DotNet.ApiCompatibility.Abstractions
+namespace Microsoft.DotNet.ApiCompatibility.Mapping
 {
     /// <summary>
     /// Interface that represents a mapping between two <see cref="INamespaceSymbol"/> objects.
@@ -19,7 +19,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Abstractions
         IAssemblyMapper ContainingAssembly { get; }
 
         /// <summary>
-        /// Gets all the <see cref="TypeMapper"/> representing the types defined in the namespace including the typeforwards.
+        /// Gets all the <see cref="TypeMapper"/> representing the types defined in the namespace including the type forwards.
         /// </summary>
         /// <returns>The mapper representing the types in the namespace</returns>
         IEnumerable<ITypeMapper> GetTypes();

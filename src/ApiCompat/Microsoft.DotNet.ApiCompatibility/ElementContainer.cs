@@ -3,12 +3,12 @@
 
 using Microsoft.CodeAnalysis;
 
-namespace Microsoft.DotNet.ApiCompatibility.Abstractions
+namespace Microsoft.DotNet.ApiCompatibility
 {
     /// <summary>
     /// Class to wrap an Element of T with it's <see cref="MetadataInformation"/>.
     /// </summary>
-    /// <typeparam name="T">The type of the Element that is holded</typeparam>
+    /// <typeparam name="T">The type of the Element that is held</typeparam>
     public class ElementContainer<T> where T : ISymbol
     {
         /// <summary>

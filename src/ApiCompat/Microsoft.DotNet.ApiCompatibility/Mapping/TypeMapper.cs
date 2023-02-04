@@ -7,7 +7,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.ApiCompatibility.Rules;
 using Microsoft.DotNet.ApiSymbolExtensions;
 
-namespace Microsoft.DotNet.ApiCompatibility.Abstractions
+namespace Microsoft.DotNet.ApiCompatibility.Mapping
 {
     /// <summary>
     /// Object that represents a mapping between two <see cref="ITypeSymbol"/> objects.
@@ -31,7 +31,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Abstractions
         /// <param name="settings">The settings used to diff the elements in the mapper.</param>
         /// <param name="rightSetSize">The number of elements in the right set to compare.</param>
         public TypeMapper(IRuleRunner ruleRunner,
-            MapperSettings settings,
+            IMapperSettings settings,
             int rightSetSize,
             INamespaceMapper containingNamespace,
             ITypeMapper? containingType = null)
@@ -84,7 +84,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Abstractions
         {
             if (_nestedTypes == null)
             {
-                _nestedTypes = new Dictionary<ITypeSymbol, ITypeMapper>(Settings.EqualityComparer);
+                _nestedTypes = new Dictionary<ITypeSymbol, ITypeMapper>(Settings.SymbolEqualityComparer);
 
                 AddOrCreateMappers(Left, ElementSide.Left);
                 for (int i = 0; i < Right.Length; i++)
@@ -102,7 +102,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Abstractions
 
                     foreach (INamedTypeSymbol nestedType in symbol.GetTypeMembers())
                     {
-                        if (Settings.Filter.Include(nestedType))
+                        if (Settings.SymbolFilter.Include(nestedType))
                         {
                             if (!_nestedTypes.TryGetValue(nestedType, out ITypeMapper? mapper))
                             {
@@ -123,7 +123,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Abstractions
         {
             if (_members == null)
             {
-                _members = new Dictionary<ISymbol, IMemberMapper>(Settings.EqualityComparer);
+                _members = new Dictionary<ISymbol, IMemberMapper>(Settings.SymbolEqualityComparer);
 
                 AddOrCreateMappers(Left, ElementSide.Left);
                 for (int i = 0; i < Right.Length; i++)
@@ -145,7 +145,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Abstractions
                         // for enums. The reason why we should filter it out, is because we could have a case
                         // where one side was loaded with references and one that was loaded without, if that is the case
                         // we would compare __value vs null and emit some warnings.
-                        if (Settings.Filter.Include(member) && member is not ITypeSymbol && !IsSpecialEnumField(member))
+                        if (Settings.SymbolFilter.Include(member) && member is not ITypeSymbol && !IsSpecialEnumField(member))
                         {
                             if (!_members.TryGetValue(member, out IMemberMapper? mapper))
                             {
@@ -162,7 +162,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Abstractions
         }
 
         private bool IsSpecialEnumField(ISymbol member) =>
-            !Settings.WarnOnMissingReferences &&
+            !Settings.WithReferences &&
             member is IFieldSymbol &&
             member.Name == "value__" &&
             // When running without references, Roslyn doesn't set the type kind as enum. Compare by name instead.
