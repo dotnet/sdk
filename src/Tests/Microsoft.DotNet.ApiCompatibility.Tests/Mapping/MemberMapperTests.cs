@@ -8,7 +8,7 @@ using Microsoft.DotNet.ApiCompatibility.Rules;
 using Moq;
 using Xunit;
 
-namespace Microsoft.DotNet.ApiCompatibility.Tests.Mappers
+namespace Microsoft.DotNet.ApiCompatibility.Tests.Mapping
 {
     public class MemberMapperTests
     {

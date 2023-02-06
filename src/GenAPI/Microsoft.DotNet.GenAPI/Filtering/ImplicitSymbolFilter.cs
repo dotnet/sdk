@@ -16,12 +16,12 @@ namespace Microsoft.DotNet.GenAPI.Filtering
         /// </summary>
         /// <param name="symbol"><see cref="ISymbol"/> to evaluate.</param>
         /// <returns>True to include the <paramref name="symbol"/> or false to filter it out.</returns>
-        public bool Include(ISymbol member)
+        public bool Include(ISymbol symbol)
         {
-            if (member is IMethodSymbol method)
+            if (symbol is IMethodSymbol method)
             {
-                if (member.IsImplicitlyDeclared ||
-                    member.Kind == SymbolKind.NamedType ||
+                if (method.IsImplicitlyDeclared ||
+                    method.Kind == SymbolKind.NamedType ||
                     method.MethodKind == MethodKind.PropertyGet ||
                     method.MethodKind == MethodKind.PropertySet ||
                     method.MethodKind == MethodKind.EventAdd ||

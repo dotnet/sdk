@@ -12,7 +12,7 @@ using Microsoft.DotNet.ApiSymbolExtensions.Tests;
 using Moq;
 using Xunit;
 
-namespace Microsoft.DotNet.ApiCompatibility.Tests.Mappers
+namespace Microsoft.DotNet.ApiCompatibility.Tests.Mapping
 {
     public class NamespaceMapperTests
     {
