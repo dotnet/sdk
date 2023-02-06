@@ -4,7 +4,7 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.ApiCompatibility.Rules;
 
-namespace Microsoft.DotNet.ApiCompatibility.Mapping
+namespace Microsoft.DotNet.ApiCompatibility.Mappers
 {
     /// <summary>
     /// Object that represents a mapping between two <see cref="ISymbol"/> objects.

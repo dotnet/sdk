@@ -7,7 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.ApiSymbolExtensions;
 
-namespace Microsoft.DotNet.ApiCompatibility.Comparer
+namespace Microsoft.DotNet.ApiCompatibility.Comparers
 {
     /// <summary>
     /// Defines methods to support the comparison of <see cref="ISymbol"/> for equality.

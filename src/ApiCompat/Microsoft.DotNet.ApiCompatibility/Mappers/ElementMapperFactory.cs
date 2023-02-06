@@ -3,7 +3,7 @@
 
 using Microsoft.DotNet.ApiCompatibility.Rules;
 
-namespace Microsoft.DotNet.ApiCompatibility.Mapping
+namespace Microsoft.DotNet.ApiCompatibility.Mappers
 {
     /// <summary>
     /// Factory to create an ElementMapper instance.

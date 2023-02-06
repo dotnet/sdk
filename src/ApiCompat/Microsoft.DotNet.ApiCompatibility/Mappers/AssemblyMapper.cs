@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.ApiCompatibility.Rules;
 
-namespace Microsoft.DotNet.ApiCompatibility.Mapping
+namespace Microsoft.DotNet.ApiCompatibility.Mappers
 {
     /// <summary>
     /// Object that represents a mapping between multiple <see cref="IAssemblySymbol"/> objects.
@@ -91,15 +91,15 @@ namespace Microsoft.DotNet.ApiCompatibility.Mapping
                     // But create the mapper with typeForwardsOnly setting to not visit types defined in the target assembly.
                     foreach (KeyValuePair<INamespaceSymbol, List<INamedTypeSymbol>> kvp in typeForwards)
                     {
-                        INamespaceMapper mapper = AddMapper(kvp.Key, checkIfExists: true, typeforwardsOnly: true);
+                        INamespaceMapper mapper = AddMapper(kvp.Key, checkIfExists: true, typeForwardsOnly: true);
                         mapper.AddForwardedTypes(kvp.Value, side, setIndex);
                     }
 
-                    INamespaceMapper AddMapper(INamespaceSymbol ns, bool checkIfExists = false, bool typeforwardsOnly = false)
+                    INamespaceMapper AddMapper(INamespaceSymbol ns, bool checkIfExists = false, bool typeForwardsOnly = false)
                     {
                         if (!_namespaces.TryGetValue(ns, out INamespaceMapper? mapper))
                         {
-                            mapper = new NamespaceMapper(RuleRunner, Settings, Right.Length, this, typeforwardsOnly: typeforwardsOnly);
+                            mapper = new NamespaceMapper(RuleRunner, Settings, Right.Length, this, typeforwardsOnly: typeForwardsOnly);
                             _namespaces.Add(ns, mapper);
                         }
                         else if (checkIfExists && mapper.GetElement(side, setIndex) != null)

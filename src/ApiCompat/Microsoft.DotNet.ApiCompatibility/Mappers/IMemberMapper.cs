@@ -3,7 +3,7 @@
 
 using Microsoft.CodeAnalysis;
 
-namespace Microsoft.DotNet.ApiCompatibility.Mapping
+namespace Microsoft.DotNet.ApiCompatibility.Mappers
 {
     /// <summary>
     /// Interface that represents a mapping between two <see cref="ISymbol"/> objects.

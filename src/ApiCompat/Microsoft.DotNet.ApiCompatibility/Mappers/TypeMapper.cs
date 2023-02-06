@@ -7,7 +7,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.ApiCompatibility.Rules;
 using Microsoft.DotNet.ApiSymbolExtensions;
 
-namespace Microsoft.DotNet.ApiCompatibility.Mapping
+namespace Microsoft.DotNet.ApiCompatibility.Mappers
 {
     /// <summary>
     /// Object that represents a mapping between two <see cref="ITypeSymbol"/> objects.

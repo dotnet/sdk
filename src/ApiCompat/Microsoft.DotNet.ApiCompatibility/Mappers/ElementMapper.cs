@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.DotNet.ApiCompatibility.Rules;
 
-namespace Microsoft.DotNet.ApiCompatibility.Mapping
+namespace Microsoft.DotNet.ApiCompatibility.Mappers
 {
     /// <summary>
     /// Class that represents a mapping in between two objects of type <see cref="T"/>.

@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using Microsoft.DotNet.ApiCompatibility.Mapping;
+using Microsoft.DotNet.ApiCompatibility.Mappers;
 
 namespace Microsoft.DotNet.ApiCompatibility.Rules
 {

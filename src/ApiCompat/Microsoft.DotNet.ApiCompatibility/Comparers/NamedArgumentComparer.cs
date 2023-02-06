@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.CodeAnalysis;
 
-namespace Microsoft.DotNet.ApiCompatibility.Comparer
+namespace Microsoft.DotNet.ApiCompatibility.Comparers
 {
     /// <summary>
     /// Defines methods to support the comparison of named arguments for equality.

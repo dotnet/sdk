@@ -7,7 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 
-namespace Microsoft.DotNet.ApiCompatibility.Comparer
+namespace Microsoft.DotNet.ApiCompatibility.Comparers
 {
     /// <summary>
     /// Defines methods to support the comparison of <see cref="AttributeData"/> for equality.
