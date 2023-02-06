@@ -8,7 +8,7 @@ using Microsoft.CodeAnalysis.Editing;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Collections.Generic;
-using Microsoft.DotNet.ApiSymbolExtensions;
+using Microsoft.DotNet.ApiSymbolExtensions.Filtering;
 
 namespace Microsoft.DotNet.GenAPI
 {
