@@ -237,12 +237,6 @@
                           VersionDetails="$(_VersionDetailsXml)"
                           OutputPath="$(PreviouslySourceBuiltPackageVersionPropsPath)" />
 
-    <!-- Rename MicrosoftAspNetCoreAppRuntimePackageVersion so it isn't used
-         Fixes https://github.com/dotnet/installer/issues/14492 -->
-    <ReplaceRegexInFiles InputFiles="$(PreviouslySourceBuiltPackageVersionPropsPath)"
-                         OldTextRegex="\bMicrosoftAspNetCoreAppRuntimePackageVersion\b"
-                         NewText="__unused" />
-
     <!-- Write a single file that contains imports for both the current and previously built packages -->
     <PropertyGroup>
       <PackageVersionsPropsContents>
