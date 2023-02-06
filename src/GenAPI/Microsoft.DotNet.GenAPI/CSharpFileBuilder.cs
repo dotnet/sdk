@@ -13,7 +13,7 @@ using Microsoft.CodeAnalysis.Editing;
 using Microsoft.CodeAnalysis.Formatting;
 using Microsoft.CodeAnalysis.Options;
 using Microsoft.CodeAnalysis.Simplification;
-using Microsoft.DotNet.ApiSymbolExtensions;
+using Microsoft.DotNet.ApiSymbolExtensions.Filtering;
 using Microsoft.DotNet.GenAPI.SyntaxRewriter;
 
 namespace Microsoft.DotNet.GenAPI
@@ -101,7 +101,7 @@ namespace Microsoft.DotNet.GenAPI
 
             foreach (INamedTypeSymbol typeMember in typeMembers.Order())
             {
-                SyntaxNode typeDeclaration = _syntaxGenerator.DeclarationExt(typeMember);
+                SyntaxNode typeDeclaration = _syntaxGenerator.DeclarationExt(typeMember, _symbolFilter);
 
                 foreach (AttributeData attribute in typeMember.GetAttributes()
                     .Where(a => a.AttributeClass != null && _symbolFilter.Include(a.AttributeClass)))
@@ -254,7 +254,7 @@ namespace Microsoft.DotNet.GenAPI
 
             foreach (ISymbol member in members.Order())
             {
-                SyntaxNode memberDeclaration = _syntaxGenerator.DeclarationExt(member);
+                SyntaxNode memberDeclaration = _syntaxGenerator.DeclarationExt(member, _symbolFilter);
 
                 foreach (AttributeData attribute in member.GetAttributes()
                     .Where(a => a.AttributeClass != null && _symbolFilter.Include(a.AttributeClass)))
