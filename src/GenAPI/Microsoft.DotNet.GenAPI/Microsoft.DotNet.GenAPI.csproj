@@ -11,6 +11,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="$(_MicrosoftCodeAnalysisVersion)" />
     <ProjectReference Include="..\..\Microsoft.DotNet.ApiSymbolExtensions\Microsoft.DotNet.ApiSymbolExtensions.csproj" />
+    <ProjectReference Include="..\..\Tests\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
   </ItemGroup>
 
 </Project>

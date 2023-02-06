@@ -109,6 +109,7 @@ namespace Microsoft.DotNet.GenAPI
                 textWriter.Write(ReadHeaderFile(context.HeaderFile));
 
                 using CSharpFileBuilder fileBuilder = new(
+                    null, // TODO: remove this.
                     compositeFilter,
                     textWriter,
                     new CSharpSyntaxWriter(context.ExceptionMessage),
