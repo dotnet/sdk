@@ -2,12 +2,13 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Collections.Immutable;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Editing;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using System.Collections.Generic;
+using Microsoft.DotNet.ApiSymbolExtensions;
 
 namespace Microsoft.DotNet.GenAPI
 {
@@ -18,7 +19,7 @@ namespace Microsoft.DotNet.GenAPI
         ///     The reason of having this similar to `SyntaxGenerator.Declaration` extension method is that
         ///     SyntaxGenerator does not generates attributes neither for types, neither for members.
         /// </summary>
-        public static SyntaxNode DeclarationExt(this SyntaxGenerator syntaxGenerator, ISymbol symbol)
+        public static SyntaxNode DeclarationExt(this SyntaxGenerator syntaxGenerator, ISymbol symbol, ISymbolFilter symbolFilter)
         {
             if (symbol.Kind == SymbolKind.NamedType)
             {
@@ -42,17 +43,21 @@ namespace Microsoft.DotNet.GenAPI
                 if (method.MethodKind == MethodKind.Constructor)
                 {
                     INamedTypeSymbol? baseType = method.ContainingType.BaseType;
-                    // If the base type does not have default constructor.
-                    if (baseType != null && !baseType.Constructors.IsEmpty && baseType.Constructors.All(c => !c.Parameters.IsEmpty))
+                    if (baseType != null)
                     {
-                        IOrderedEnumerable<IMethodSymbol> baseTypeConstructors = baseType.Constructors
-                            .Where(c => !c.GetAttributes().Any(a => a.IsObsoleteWithUsageTreatedAsCompilationError()))
-                            .OrderBy(c => c.Parameters.Length);
-
-                        if (baseTypeConstructors.Any())
+                        IEnumerable<IMethodSymbol> baseConstructors = baseType.Constructors.Where(symbolFilter.Include);
+                        // If the base type does not have default constructor.
+                        if (baseConstructors.Any() && baseConstructors.All(c => !c.Parameters.IsEmpty))
                         {
-                            ConstructorDeclarationSyntax declaration = (ConstructorDeclarationSyntax)syntaxGenerator.Declaration(method);
-                            return declaration.WithInitializer(GenerateBaseConstructorInitializer(baseTypeConstructors.First()));
+                            IOrderedEnumerable<IMethodSymbol> baseTypeConstructors = baseConstructors
+                                .Where(c => c.GetAttributes().All(a => !a.IsObsoleteWithUsageTreatedAsCompilationError()))
+                                .OrderBy(c => c.Parameters.Length);
+
+                            if (baseTypeConstructors.Any())
+                            {
+                                ConstructorDeclarationSyntax declaration = (ConstructorDeclarationSyntax)syntaxGenerator.Declaration(method);
+                                return declaration.WithInitializer(GenerateBaseConstructorInitializer(baseTypeConstructors.First()));
+                            }
                         }
                     }
                 }
