@@ -7,8 +7,8 @@ using System.IO;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.CSharp.Formatting;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Editing;
 using Microsoft.CodeAnalysis.Formatting;
 using Microsoft.CodeAnalysis.Options;
@@ -179,7 +179,8 @@ namespace Microsoft.DotNet.GenAPI
             return SyntaxFactory.List(asList);
         }
 
-        private IEnumerable<SyntaxNode> synthesizeDummyFields(INamedTypeSymbol namedType) {
+        private IEnumerable<SyntaxNode> synthesizeDummyFields(INamedTypeSymbol namedType)
+        {
             // If it's a value type
             if (namedType.TypeKind != TypeKind.Struct) {
                 yield break;
