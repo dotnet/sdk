@@ -117,9 +117,6 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="BreakingChangesFound" xml:space="preserve">
-    <value>API breaking changes found. If those are intentional, the APICompat suppression file can be updated by rebuilding with /p:ApiCompatGenerateSuppressionFile=true or --generate-suppression-file.</value>
-  </data>
   <data name="CreateWorkItemPerAssemblyAssembliesNotEqual" xml:space="preserve">
     <value>When enqueuing work items per assembly, the number of passed in left and right assemblies must be equal.</value>
   </data>

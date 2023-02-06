@@ -16,7 +16,6 @@ namespace Microsoft.DotNet.GenAPI.Tests
     public class CSharpFileBuilderTests
     {
         private readonly StringWriter _stringWriter = new();
-        private readonly CSharpSyntaxWriter _csharpSyntaxWriter = new(null);
         private readonly IAssemblySymbolWriter _csharpFileBuilder;
 
         class AllowAllFilter : ISymbolFilter
@@ -29,15 +28,17 @@ namespace Microsoft.DotNet.GenAPI.Tests
             var compositeFilter = new CompositeFilter()
                 .Add<ImplicitSymbolsFilter>()
                 .Add(new SymbolAccessibilityBasedFilter(true, true, true));
-            _csharpFileBuilder = new CSharpFileBuilder(compositeFilter, _stringWriter, _csharpSyntaxWriter, MetadataReferences);
+            _csharpFileBuilder = new CSharpFileBuilder(compositeFilter, _stringWriter, null, MetadataReferences);
         }
 
-        private static IEnumerable<MetadataReference> MetadataReferences { get => new List<MetadataReference> { MetadataReference.CreateFromFile(typeof(Object).Assembly!.Location!) }; }
-
-        private static SyntaxTree GetSyntaxTree(string syntax)
+        private static IEnumerable<MetadataReference> MetadataReferences
         {
-            return CSharpSyntaxTree.ParseText(syntax);
+            get => new List<MetadataReference> {
+                MetadataReference.CreateFromFile(typeof(Object).Assembly!.Location!) };
         }
+
+        private static SyntaxTree GetSyntaxTree(string syntax) =>
+            CSharpSyntaxTree.ParseText(syntax);
 
         private void RunTest(string original, string expected)
         {
@@ -53,7 +54,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
             SyntaxTree resultedSyntaxTree = GetSyntaxTree(resultedString);
             SyntaxTree expectedSyntaxTree = GetSyntaxTree(expected);
 
-            /// compare SyntaxTree and not string representation
+            // compare SyntaxTree and not string representation
             Assert.True(resultedSyntaxTree.IsEquivalentTo(expectedSyntaxTree),
                 $"Expected:\n{expected}\nResulted:\n{resultedString}");
         }
@@ -762,6 +763,209 @@ namespace Microsoft.DotNet.GenAPI.Tests
                     }
                 }
                 """);
+        }
+
+        [Fact]
+        void TestDestructorGeneration()
+        {
+            RunTest(original: """
+                namespace Foo
+                {
+                    public class Bar
+                    {
+                        ~Bar() {}
+                    }
+                }
+                """,
+                expected: """
+                namespace Foo
+                {
+                    public partial class Bar
+                    {
+                        ~Bar() {}
+                    }
+                }
+                """);
+        }
+
+        [Fact]
+        void TestExplicitInterfaceImplementationPropertyGeneration()
+        {
+            RunTest(original: """
+                    namespace Foo
+                    {
+                        public interface IFoo
+                        {
+                            int FooField { get; set; }
+                            void FooMethod();
+                        }
+
+                        public class Bar : IFoo
+                        {
+                            int BarField { get; set; }
+                            int IFoo.FooField { get; set; }
+
+                            void IFoo.FooMethod() { }
+                        }
+                    }
+                    """,
+                expected: """
+                    namespace Foo
+                    {
+                        public partial class Bar : IFoo
+                        {
+                            int IFoo.FooField { get { throw null; } set { } }
+                            void IFoo.FooMethod() { }
+                        }
+
+                        public partial interface IFoo
+                        {
+                            int FooField { get; set; }
+                            void FooMethod();
+                        }
+                    }
+                    """);
+        }
+
+        [Fact]
+        void TestAccessibilityGenerationForPropertyAccessors()
+        {
+            RunTest(original: """
+                    namespace Foo
+                    {
+                        public class Bar
+                        {
+                            public int P { get; protected set; }
+                        }
+                    }
+                    """,
+                expected: """
+                    namespace Foo
+                    {
+                        public partial class Bar
+                        {
+                            public int P { get { throw null; } protected set { } }
+                        }
+                    }
+                    """);
+        }
+
+        [Fact]
+        public void TestConstantFieldGeneration()
+        {
+            RunTest(original: """
+                namespace Foo
+                {
+                    public class Bar
+                    {
+                        public const int CurrentEra = 0;
+                    }
+                }
+                """,
+                expected: """
+                namespace Foo
+                {
+                    public partial class Bar
+                    {
+                        public const int CurrentEra = 0;
+                    }
+                }
+                """
+            );
+        }
+
+        [Fact]
+        public void TestTypeParameterVarianceGeneration()
+        {
+            RunTest(original: """
+                namespace Foo
+                {
+                    public delegate void Action<in T>(T obj);
+                    public partial interface IAsyncEnumerable<out T>
+                    {
+                    }
+                }
+                """,
+                expected: """
+                namespace Foo
+                {
+                    public delegate void Action<in T>(T obj);
+                    public partial interface IAsyncEnumerable<out T>
+                    {
+                    }
+                }
+                """
+            );
+        }
+
+        [Fact]
+        public void TestRefMembersGeneration()
+        {
+            RunTest(original: """
+                namespace Foo
+                {
+                    public class Bar<T>
+                    {
+                    #pragma warning disable CS8597
+                        public ref T GetPinnableReference() { throw null; }
+                        public ref readonly T this[int index] { get { throw null; } }
+                        public ref int P { get { throw null; } }
+                    #pragma warning restore CS8597
+                    }
+                }
+                """,
+                expected: """
+                namespace Foo
+                {
+                    public partial class Bar<T>
+                    {
+                    #pragma warning disable CS8597
+                        public ref readonly T this[int index] { get { throw null; } }
+                        public ref int P { get { throw null; } }
+                        public ref T GetPinnableReference() { throw null; }
+                    #pragma warning restore CS8597
+                    }
+                }
+                """
+            );
+        }
+
+        [Fact]
+        public void TestDefaultConstraintOnOverrideGeneration()
+        {
+            RunTest(original: """
+                namespace Foo
+                {
+                    public abstract partial class A
+                    {
+                        public abstract TResult? Accept<TResult>(int a);
+                    }
+
+                    public sealed partial class B : A
+                    {
+                    #pragma warning disable CS8597
+                        public override TResult? Accept<TResult>(int a) where TResult : default { throw null; }
+                    #pragma warning restore CS8597
+                    } 
+                }
+                """,
+                expected: """
+                namespace Foo
+                {
+                    public abstract partial class A
+                    {
+                        public abstract TResult? Accept<TResult>(int a);
+                    }
+
+                    public sealed partial class B : A
+                    {
+                    #pragma warning disable CS8597
+                        public override TResult? Accept<TResult>(int a) where TResult : default { throw null; }
+                    #pragma warning restore CS8597
+                    }
+                }
+                """
+            );
         }
 
         [Fact]
