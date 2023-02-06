@@ -756,6 +756,8 @@ namespace Microsoft.DotNet.GenAPI.Tests
                 {
                     public readonly partial struct Digit
                     {
+                        private int _dummyPrimitive;
+                        
                         public Digit(byte digit) { }
                         public static explicit operator Digit(byte b) { throw null; }
 
