@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Xunit;
-using Xunit.Abstractions;
 using System.Text.Json;
 using System;
 using System.Collections.Generic;
@@ -35,10 +33,7 @@ namespace Microsoft.DotNet.GenAPI
 
         private readonly IEnumerable<MetadataReference> _metadataReferences;
 
-        private readonly ITestOutputHelper? _output;
-
         public CSharpFileBuilder(
-            ITestOutputHelper? output,
             ISymbolFilter symbolFilter,
             TextWriter textWriter,
             CSharpSyntaxRewriter syntaxRewriter,
@@ -52,7 +47,6 @@ namespace Microsoft.DotNet.GenAPI
             _syntaxGenerator = SyntaxGenerator.GetGenerator(_adhocWorkspace, LanguageNames.CSharp);
 
             _metadataReferences = metadataReferences;
-            _output = output;
         }
 
         /// <inheritdoc />
@@ -190,8 +184,6 @@ namespace Microsoft.DotNet.GenAPI
             IEnumerable<IFieldSymbol> excludedFields = namedType.GetMembers()
                 .Where(member => !_symbolFilter.Include(member) && member is IFieldSymbol)
                 .Select(m => (IFieldSymbol)m);
-
-            _output?.WriteLine($"Len excluded: {excludedFields.Count()}");
             
             if (excludedFields.Any())
             {
@@ -204,7 +196,6 @@ namespace Microsoft.DotNet.GenAPI
 
                 foreach(IFieldSymbol genericField in genericTypedFields)
                 {
-                    _output?.WriteLine($"GenField: {genericField}");
                     yield return dummyField(genericField.Type.ToDisplayString(), genericField.Name, fromAttributeData(genericField.GetAttributes()));
                 }
 

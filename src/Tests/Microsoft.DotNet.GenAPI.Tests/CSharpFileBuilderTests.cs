@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Xunit;
-using Xunit.Abstractions;
 using System;
 using System.IO;
 using System.Text;
@@ -11,7 +10,6 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.ApiSymbolExtensions;
 using Microsoft.DotNet.ApiSymbolExtensions.Tests;
-using System.Diagnostics;
 
 namespace Microsoft.DotNet.GenAPI.Tests
 {
@@ -20,20 +18,18 @@ namespace Microsoft.DotNet.GenAPI.Tests
         private readonly StringWriter _stringWriter = new();
         private readonly CSharpSyntaxWriter _csharpSyntaxWriter = new(null);
         private readonly IAssemblySymbolWriter _csharpFileBuilder;
-        private readonly ITestOutputHelper output;
 
         class AllowAllFilter : ISymbolFilter
         {
             public bool Include(ISymbol symbol) => true;
         }
 
-        public CSharpFileBuilderTests(ITestOutputHelper output)
+        public CSharpFileBuilderTests()
         {
             var compositeFilter = new CompositeFilter()
                 .Add<ImplicitSymbolsFilter>()
                 .Add(new SymbolAccessibilityBasedFilter(true, true, true));
-            this.output = output;
-            _csharpFileBuilder = new CSharpFileBuilder(output, compositeFilter, _stringWriter, _csharpSyntaxWriter, MetadataReferences);
+            _csharpFileBuilder = new CSharpFileBuilder(compositeFilter, _stringWriter, _csharpSyntaxWriter, MetadataReferences);
         }
 
         private static IEnumerable<MetadataReference> MetadataReferences { get => new List<MetadataReference> { MetadataReference.CreateFromFile(typeof(Object).Assembly!.Location!) }; }
