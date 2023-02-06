@@ -3,9 +3,9 @@
 
 using Microsoft.CodeAnalysis;
 using System.Collections.Generic;
-using Microsoft.DotNet.ApiCompatibility.Mappers;
+using Microsoft.DotNet.ApiCompatibility.Mapping;
 using Microsoft.DotNet.ApiCompatibility.Rules;
-using Microsoft.DotNet.ApiCompatibility.Comparers;
+using Microsoft.DotNet.ApiCompatibility.Comparing;
 using Microsoft.DotNet.ApiSymbolExtensions.Filtering;
 
 namespace Microsoft.DotNet.ApiCompatibility
@@ -41,7 +41,7 @@ namespace Microsoft.DotNet.ApiCompatibility
             bool withReferences = false)
         {
             SymbolFilter = symbolFilter ?? new AccessibilitySymbolFilter(includeInternalSymbols);
-            SymbolEqualityComparer = symbolEqualityComparer ?? new Comparers.SymbolEqualityComparer();
+            SymbolEqualityComparer = symbolEqualityComparer ?? new Comparing.SymbolEqualityComparer();
             AttributeDataEqualityComparer = attributeDataEqualityComparer ?? new AttributeDataEqualityComparer(SymbolEqualityComparer, new TypedConstantEqualityComparer(SymbolEqualityComparer));
             IncludeInternalSymbols = includeInternalSymbols;
             StrictMode = strictMode;

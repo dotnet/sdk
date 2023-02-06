@@ -3,7 +3,7 @@
 
 using System;
 using Microsoft.DotNet.ApiCompatibility;
-using Microsoft.DotNet.ApiCompatibility.Comparers;
+using Microsoft.DotNet.ApiCompatibility.Comparing;
 using Microsoft.DotNet.ApiCompatibility.Logging;
 using Microsoft.DotNet.ApiCompatibility.Rules;
 using Microsoft.DotNet.ApiCompatibility.Runner;

@@ -2,7 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.s
 
 using System.Collections.Generic;
-using Microsoft.DotNet.ApiCompatibility.Mappers;
+using Microsoft.DotNet.ApiCompatibility.Mapping;
 
 namespace Microsoft.DotNet.ApiCompatibility.Rules
 {

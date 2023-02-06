@@ -7,7 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 
-namespace Microsoft.DotNet.ApiCompatibility.Comparers
+namespace Microsoft.DotNet.ApiCompatibility.Comparing
 {
     /// <summary>
     /// Defines methods to support the comparison of <see cref="TypedConstant"/> for equality.
