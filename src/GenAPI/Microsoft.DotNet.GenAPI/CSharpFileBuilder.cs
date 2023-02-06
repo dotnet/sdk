@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Text.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -15,7 +14,6 @@ using Microsoft.CodeAnalysis.Formatting;
 using Microsoft.CodeAnalysis.Options;
 using Microsoft.CodeAnalysis.Simplification;
 using Microsoft.DotNet.ApiSymbolExtensions;
-using System.Diagnostics;
 
 namespace Microsoft.DotNet.GenAPI
 {
@@ -119,10 +117,12 @@ namespace Microsoft.DotNet.GenAPI
         private static bool walkTypeSymbol(ITypeSymbol ty, HashSet<ITypeSymbol> visited, Func<ITypeSymbol, bool> f)
         {
             visited.Add(ty);
+
             if (f(ty))
             {
                 return true;
             }
+
             foreach(INamedTypeSymbol memberType in ty.GetTypeMembers())
             {
                 if (!visited.Contains(memberType))
@@ -133,6 +133,7 @@ namespace Microsoft.DotNet.GenAPI
                     }
                 }
             }
+            
             return false;
         }
 
@@ -145,13 +146,14 @@ namespace Microsoft.DotNet.GenAPI
         private static bool IsOrContainsNonEmptyStruct(ITypeSymbol root)
         {
             HashSet<ITypeSymbol> visited = new(SymbolEqualityComparer.Default);
+
             return walkTypeSymbol(root, visited, ty => {
                 if (ty.IsUnmanagedType)
                 {
                     return true;
                 }
 
-                if (ty.IsReferenceType || ty.IsRefLikeType) // assuming it covers ByReference<T>
+                if (ty.IsReferenceType || ty.IsRefLikeType)
                 {
                     return !SymbolEqualityComparer.Default.Equals(root, ty);
                 }
@@ -162,13 +164,15 @@ namespace Microsoft.DotNet.GenAPI
 
         private SyntaxList<AttributeListSyntax> fromAttributeData(IEnumerable<AttributeData> attrData)
         {
-            IEnumerable<SyntaxNode?> syntaxNodes = attrData.Select(ad => ad.ApplicationSyntaxReference?.GetSyntax(new System.Threading.CancellationToken(false)));
+            IEnumerable<SyntaxNode?> syntaxNodes = attrData.Select(ad =>
+                ad.ApplicationSyntaxReference?.GetSyntax(new System.Threading.CancellationToken(false)));
             IEnumerable<AttributeListSyntax?> asNodes = syntaxNodes.Select(sn => {
                 if (sn is AttributeSyntax ass) {
                     SeparatedSyntaxList<AttributeSyntax> singletonList = SyntaxFactory.SingletonSeparatedList<AttributeSyntax>(ass);
                     AttributeListSyntax alSyntax = SyntaxFactory.AttributeList(singletonList);
                     return alSyntax;
                 }
+
                 return null;
             });
             List<AttributeListSyntax> asList = asNodes.Where(a => a != null).OfType<AttributeListSyntax>().ToList();
@@ -196,7 +200,10 @@ namespace Microsoft.DotNet.GenAPI
 
                 foreach(IFieldSymbol genericField in genericTypedFields)
                 {
-                    yield return dummyField(genericField.Type.ToDisplayString(), genericField.Name, fromAttributeData(genericField.GetAttributes()));
+                    yield return dummyField(
+                        genericField.Type.ToDisplayString(),
+                        genericField.Name,
+                        fromAttributeData(genericField.GetAttributes()));
                 }
 
                 bool hasRefPrivateField = excludedFields.Any(f => IsOrContainsReferenceType(f.Type));
