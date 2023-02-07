@@ -37,7 +37,8 @@ while :; do
     lowerI="$(echo $1 | awk '{print tolower($0)}')"
     case $lowerI in
         --clean-while-building)
-            MSBUILD_ARGUMENTS+=( "-p:CleanWhileBuilding=true")
+            # TODO: Reenable with https://github.com/dotnet/source-build/issues/3233
+            # MSBUILD_ARGUMENTS+=( "-p:CleanWhileBuilding=true")
             ;;
         --online)
             MSBUILD_ARGUMENTS+=( "-p:BuildWithOnlineSources=true")
