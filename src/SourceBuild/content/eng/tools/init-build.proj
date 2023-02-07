@@ -6,7 +6,6 @@
   <Import Project="$(GitInfoAllRepoPropsFile)" />
 
   <UsingTask AssemblyFile="$(LeakDetectionTasksAssembly)" TaskName="MarkAndCatalogPackages" />
-  <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="NuGetPack" />
   <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="ZipFileExtractToDirectory" />
   <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="ReplaceTextInFile" />
 
