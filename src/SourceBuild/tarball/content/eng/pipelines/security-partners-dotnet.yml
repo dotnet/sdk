@@ -1,5 +1,18 @@
 trigger: none
 
+variables:
+- name: cfsNPMWarnLevel
+  value: none
+
+- name: cfsNugetWarnLevel
+  value: none
+
+- name: myGetWarnLevel
+  value: none
+
+- name: NuGetSecurityAnalysisWarningLevel
+  value: none
+
 jobs:
 - template: ../../src/installer/src/SourceBuild/Arcade/eng/common/templates/job/source-build-build-tarball.yml
   parameters:
