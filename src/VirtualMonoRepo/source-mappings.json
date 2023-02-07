@@ -64,6 +64,10 @@
             ]
         },
         {
+            "name": "cecil",
+            "defaultRemote": "https://github.com/dotnet/cecil"
+        },
+        {
             "name": "command-line-api",
             "defaultRemote": "https://github.com/dotnet/command-line-api"
         },
@@ -93,16 +97,6 @@
             "exclude": [
                 // We don't need the tarball content in the VMR again, it's already copied in the root
                 "src/SourceBuild/content/**/*"
-            ]
-        },
-        {
-            "name": "linker",
-            "defaultRemote": "https://github.com/dotnet/linker",
-            "exclude": [
-                "external/cecil/**/*.dll",
-                "external/cecil/**/*.exe",
-                "external/cecil/**/*.pdb",
-                "external/cecil/**/*.mdb"
             ]
         },
         {

@@ -44,7 +44,6 @@
         <RepositoryReference Include="xdt" />
 
         <!-- Tier 2 -->
-        <RepositoryReference Include="linker" />
         <RepositoryReference Include="msbuild" />
 
         <!-- Tier 3 -->
