@@ -468,7 +468,7 @@
           AfterTargets="RemoveBuiltPackagesFromCache"
           Condition=" '$(CleanWhileBuilding)' == 'true' ">
 
-    <!-- Make a copy of the build logs & project.assets.json files-->
+    <!-- Make a copy of the build logs & project.assets.json files -->
     <PropertyGroup>
       <BuildLogsDir>$(ProjectDirectory)artifacts/buildLogs</BuildLogsDir>
       <BuildObjDir>$(ProjectDirectory)artifacts/buildObj</BuildObjDir>
