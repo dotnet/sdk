@@ -30,7 +30,10 @@ namespace Microsoft.DotNet.GenAPI
                     case TypeKind.Struct:
                     case TypeKind.Interface:
                         TypeDeclarationSyntax typeDeclaration = (TypeDeclarationSyntax)syntaxGenerator.Declaration(symbol);
-                        return typeDeclaration.WithMembers(new SyntaxList<MemberDeclarationSyntax>());
+                        return typeDeclaration
+                            .WithBaseList(syntaxGenerator.GetBaseTypeList(type, symbolFilter))
+                            .WithMembers(new SyntaxList<MemberDeclarationSyntax>());
+
                     case TypeKind.Enum:
                         EnumDeclarationSyntax enumDeclaration = (EnumDeclarationSyntax)syntaxGenerator.Declaration(symbol);
                         return enumDeclaration.WithMembers(new SeparatedSyntaxList<EnumMemberDeclarationSyntax>());
@@ -91,6 +94,21 @@ namespace Microsoft.DotNet.GenAPI
             }
 
             return constructorInitializer;
+        }
+
+        private static BaseListSyntax? GetBaseTypeList(this SyntaxGenerator syntaxGenerator,
+            INamedTypeSymbol type,
+            ISymbolFilter symbolFilter)
+        {
+            List<BaseTypeSyntax> baseTypes = new();
+
+            if (type.TypeKind == TypeKind.Class && type.BaseType != null && symbolFilter.Include(type.BaseType))
+            {
+                baseTypes.Add(SyntaxFactory.SimpleBaseType((TypeSyntax)syntaxGenerator.TypeExpression(type.BaseType)));
+            }
+
+            baseTypes.AddRange(type.Interfaces.Where(symbolFilter.Include).Select(i => SyntaxFactory.SimpleBaseType((TypeSyntax)syntaxGenerator.TypeExpression(i))));
+            return baseTypes.Count == 0 ? null : SyntaxFactory.BaseList(SyntaxFactory.SeparatedList(baseTypes));
         }
     }
 }
