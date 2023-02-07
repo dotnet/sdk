@@ -17,7 +17,7 @@ namespace Microsoft.DotNet.SourceBuild.Tasks.UsageReport
     public class WriteUsageReports : Task
     {
         private const string SnapshotPrefix = "PackageVersions.";
-        private const string SnapshotSuffix = ".Current.props";
+        private const string SnapshotSuffix = ".Snapshot.props";
 
         /// <summary>
         /// Source usage data JSON file.
@@ -26,7 +26,7 @@ namespace Microsoft.DotNet.SourceBuild.Tasks.UsageReport
         public string DataFile { get; set; }
 
         /// <summary>
-        /// A set of "PackageVersions.{repo}.Current.props" files. They are analyzed to find
+        /// A set of "PackageVersions.{repo}.Snapshot.props" files. They are analyzed to find
         /// packages built during source-build, and which repo built them. This info is added to the
         /// report. New packages are associated to a repo by going through each PVP in ascending
         /// file modification order.
