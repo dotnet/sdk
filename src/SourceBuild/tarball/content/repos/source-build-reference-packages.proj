@@ -4,7 +4,11 @@
   <PropertyGroup>
     <LocalNuGetPackageCacheDirectory>$(BaseIntermediatePath)source-build-reference-package-cache</LocalNuGetPackageCacheDirectory>
 
-    <BuildCommand>$(StandardSourceBuildCommand) $(StandardSourceBuildArgs) /p:LocalNuGetPackageCacheDirectory=$(LocalNuGetPackageCacheDirectory)</BuildCommand>
+    <BuildCommandArgs>$(StandardSourceBuildArgs)</BuildCommandArgs>
+    <BuildCommandArgs>$(BuildCommandArgs) /p:MicrosoftNetCoreIlasmPackageRuntimeId=$(NETCoreSdkRuntimeIdentifier)</BuildCommandArgs>
+    <BuildCommandArgs>$(BuildCommandArgs) /p:LocalNuGetPackageCacheDirectory=$(LocalNuGetPackageCacheDirectory)</BuildCommandArgs>
+
+    <BuildCommand>$(StandardSourceBuildCommand) $(BuildCommandArgs)</BuildCommand>
 
     <NuGetConfigFile>$(ProjectDirectory)NuGet.config</NuGetConfigFile>
     <GlobalJsonFile>$(ProjectDirectory)global.json</GlobalJsonFile>

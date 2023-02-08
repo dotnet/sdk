@@ -12,6 +12,7 @@ jobs:
         _EnablePoison: false
         _ExcludeOmniSharpTests: false
         _RunOnline: false
+        _WithPreviousSDK: false
     name: Build_Tarball_x64
     pool:
       name: NetCore1ESPool-Svc-Internal
