@@ -152,20 +152,9 @@ namespace Microsoft.DotNet.GenAPI
         private static bool IsOrContainsNonEmptyStruct(ITypeSymbol root)
         {
             HashSet<ITypeSymbol> visited = new(SymbolEqualityComparer.Default);
-
-            return WalkTypeSymbol(root, visited, ty => {
-                if (ty.IsUnmanagedType)
-                {
-                    return true;
-                }
-
-                if (ty.IsReferenceType || ty.IsRefLikeType)
-                {
-                    return !SymbolEqualityComparer.Default.Equals(root, ty);
-                }
-
-                return false;
-            });
+            return WalkTypeSymbol(root, visited, ty => 
+                ty.IsUnmanagedType || 
+                    ((ty.IsReferenceType || ty.IsRefLikeType) && !SymbolEqualityComparer.Default.Equals(root, ty)));
         }
 
         // Convert IEnumerable<AttributeData> to a SyntaxList<AttributeListSyntax>.
