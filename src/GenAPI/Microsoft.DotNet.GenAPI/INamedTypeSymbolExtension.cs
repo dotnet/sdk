@@ -10,7 +10,7 @@ namespace Microsoft.DotNet.GenAPI
     {
         public static bool HasIndexer(this INamedTypeSymbol type)
         {
-            return type.GetMembers().Where(m => m is IPropertySymbol).Select(m => (IPropertySymbol)m).Any(m => m.IsIndexer);
+            return type.GetMembers().Any(member => member is IPropertySymbol propertySymbol && propertySymbol.IsIndexer);
         }
     }
 }

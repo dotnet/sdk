@@ -96,6 +96,7 @@ namespace Microsoft.DotNet.GenAPI
             return constructorInitializer;
         }
 
+        // Gets the list of base class and interfaces for a given symbol <see cref="INamedTypeSymbol"/>.
         private static BaseListSyntax? GetBaseTypeList(this SyntaxGenerator syntaxGenerator,
             INamedTypeSymbol type,
             ISymbolFilter symbolFilter)
@@ -107,8 +108,11 @@ namespace Microsoft.DotNet.GenAPI
                 baseTypes.Add(SyntaxFactory.SimpleBaseType((TypeSyntax)syntaxGenerator.TypeExpression(type.BaseType)));
             }
 
+            // includes only interfaces that were not filtered out by the given <see cref="ISymbolFilter"/>.
             baseTypes.AddRange(type.Interfaces.Where(symbolFilter.Include).Select(i => SyntaxFactory.SimpleBaseType((TypeSyntax)syntaxGenerator.TypeExpression(i))));
-            return baseTypes.Count == 0 ? null : SyntaxFactory.BaseList(SyntaxFactory.SeparatedList(baseTypes));
+            return baseTypes.Count > 0 ?
+                SyntaxFactory.BaseList(SyntaxFactory.SeparatedList(baseTypes)) :
+                null;
         }
     }
 }
