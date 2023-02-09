@@ -8,7 +8,6 @@ using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Formatting;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Editing;
 using Microsoft.CodeAnalysis.Formatting;
 using Microsoft.CodeAnalysis.Options;
@@ -122,141 +121,14 @@ namespace Microsoft.DotNet.GenAPI
             return namespaceNode;
         }
 
-        // Visit a type and all its members, checking for cycles. Return true if the visitor returns true.
-        private static bool WalkTypeSymbol(ITypeSymbol ty, HashSet<ITypeSymbol> visited, Func<ITypeSymbol, bool> f)
-        {
-            visited.Add(ty);
-
-            if (f(ty))
-            {
-                return true;
-            }
-
-            foreach(INamedTypeSymbol memberType in ty.GetTypeMembers())
-            {
-                if (!visited.Contains(memberType))
-                {
-                    if (WalkTypeSymbol(memberType, visited, f))
-                    {
-                        return true;
-                    }
-                }
-            }
-            
-            return false;
-        }
-
-        // Walk type with predicate that checks if a type is a reference type or ref-like (e.g. ByReference<T>).
-        private static bool IsOrContainsReferenceType(ITypeSymbol ty)
-        {
-            HashSet<ITypeSymbol> visited = new(SymbolEqualityComparer.Default);
-            return WalkTypeSymbol(ty, visited, ty => ty.IsRefLikeType || ty.IsReferenceType);
-        }
-
-        // Walk type with predicate that checks if a type is unmanaged or a reference that's not the root.
-        private static bool IsOrContainsNonEmptyStruct(ITypeSymbol root)
-        {
-            HashSet<ITypeSymbol> visited = new(SymbolEqualityComparer.Default);
-            return WalkTypeSymbol(root, visited, ty => 
-                ty.IsUnmanagedType || 
-                    ((ty.IsReferenceType || ty.IsRefLikeType) && !SymbolEqualityComparer.Default.Equals(root, ty)));
-        }
-
-        // Convert IEnumerable<AttributeData> to a SyntaxList<AttributeListSyntax>.
-        private static SyntaxList<AttributeListSyntax> FromAttributeData(IEnumerable<AttributeData> attrData)
-        {
-            IEnumerable<SyntaxNode?> syntaxNodes = attrData.Select(ad =>
-                ad.ApplicationSyntaxReference?.GetSyntax(new System.Threading.CancellationToken(false)));
-            IEnumerable<AttributeListSyntax?> asNodes = syntaxNodes.Select(sn => {
-                if (sn is AttributeSyntax ass) {
-                    SeparatedSyntaxList<AttributeSyntax> singletonList = SyntaxFactory.SingletonSeparatedList<AttributeSyntax>(ass);
-                    AttributeListSyntax alSyntax = SyntaxFactory.AttributeList(singletonList);
-                    return alSyntax;
-                }
-
-                return null;
-            });
-            List<AttributeListSyntax> asList = asNodes.Where(a => a != null).OfType<AttributeListSyntax>().ToList();
-            return SyntaxFactory.List(asList);
-        }
-
-        // Build dummy field from a type, field name, and attribute list.
-        private static SyntaxNode CreateDummyField(string typ, string fieldName, SyntaxList<AttributeListSyntax> attrs)
-        {
-            return SyntaxFactory.FieldDeclaration(
-                SyntaxFactory.VariableDeclaration(
-                    SyntaxFactory.ParseTypeName(typ))
-                .WithVariables(
-                    SyntaxFactory.SingletonSeparatedList<Microsoft.CodeAnalysis.CSharp.Syntax.VariableDeclaratorSyntax>(
-                        SyntaxFactory.VariableDeclarator(
-                            SyntaxFactory.Identifier(fieldName))))
-            ).WithModifiers(SyntaxFactory.TokenList(new []{SyntaxFactory.Token(SyntaxKind.PrivateKeyword)})
-            ).WithAttributeLists(attrs);
-        }
-
-        // SynthesizeDummyFields yields private fields for the namedType, because they can be part of the API contract.
-        // - A struct containing a field that is a reference type cannot be used as a reference.
-        // - A struct containing nonempty fields needs to be fully initialized. (See "definite assignment" rules)
-        //   - "non-empty" means either unmanaged types like ints and enums, or reference types that are not the root.
-        // - A struct containing generic fields cannot have struct layout cycles.
-        private static IEnumerable<SyntaxNode> SynthesizeDummyFields(ISymbolFilter symbolFilter, INamedTypeSymbol namedType)
-        {
-            // Collect all excluded fields
-            IEnumerable<IFieldSymbol> excludedFields = namedType.GetMembers()
-                .Where(member => !symbolFilter.Include(member) && member is IFieldSymbol)
-                .Select(m => (IFieldSymbol)m);
-            
-            if (excludedFields.Any())
-            {
-                // Collect generic excluded fields
-                IEnumerable<IFieldSymbol> genericTypedFields = excludedFields.Where(f => {
-                    if (f.Type is INamedTypeSymbol ty) {
-                        return ty.IsGenericType;
-                    }
-                    return f.Type is ITypeParameterSymbol;
-                });
-
-                // Add a dummy field for each generic excluded field
-                foreach(IFieldSymbol genericField in genericTypedFields)
-                {
-                    yield return CreateDummyField(
-                        genericField.Type.ToDisplayString(),
-                        genericField.Name,
-                        FromAttributeData(genericField.GetAttributes()));
-                }
-
-                bool hasRefPrivateField = excludedFields.Any(f => IsOrContainsReferenceType(f.Type));
-
-                // If any field's type is transitively a reference type.
-                if (hasRefPrivateField)
-                {
-                    // add reference type dummy field
-                    yield return CreateDummyField("object", "_dummy", new());
-
-                    // add int field
-                    yield return CreateDummyField("int", "_dummyPrimitive", new());
-                }
-                else
-                {
-                    bool hasNonEmptyStructPrivateField = excludedFields.Any(f => IsOrContainsNonEmptyStruct(f.Type));
-                    
-                    // Otherwise, if the field transitively contains a field whose type is non-empty.
-                    if (hasNonEmptyStructPrivateField)
-                    {
-                        // add int field
-                        yield return CreateDummyField("int", "_dummyPrimitive", new());
-                    }
-                }
-            }
-        }
-
         private SyntaxNode Visit(SyntaxNode namedTypeNode, INamedTypeSymbol namedType)
         {
             IEnumerable<ISymbol> members = namedType.GetMembers().Where(_symbolFilter.Include);
 
             // If it's a value type
-            if (namedType.TypeKind == TypeKind.Struct) {
-                namedTypeNode = _syntaxGenerator.AddMembers(namedTypeNode, SynthesizeDummyFields(_symbolFilter, namedType));
+            if (namedType.TypeKind == TypeKind.Struct)
+            {
+                namedTypeNode = _syntaxGenerator.AddMembers(namedTypeNode, namedType.SynthesizeDummyFields(_symbolFilter));
             }
 
             foreach (ISymbol member in members.Order())
