@@ -70,9 +70,9 @@ namespace Microsoft.TemplateEngine.Cli
 
         public string? ThirdPartyNotices => _templateInfo.ThirdPartyNotices;
 
-        public IReadOnlyDictionary<string, IBaselineInfo> BaselineInfo => _templateInfo.BaselineInfo;
-
         public bool PreferDefaultName => _templateInfo.PreferDefaultName;
+
+        public IReadOnlyDictionary<string, IBaselineInfo> BaselineInfo => _templateInfo.BaselineInfo;
 
         [Obsolete]
         public bool HasScriptRunningPostActions { get => _templateInfo.HasScriptRunningPostActions; set => _templateInfo.HasScriptRunningPostActions = value; }

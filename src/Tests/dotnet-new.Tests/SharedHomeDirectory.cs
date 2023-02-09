@@ -29,7 +29,11 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
         protected ITestOutputHelper Log { get; private set; }
 
-        public void Dispose() => Directory.Delete(HomeDirectory, true);
+        public void Dispose()
+        {
+            Directory.Delete(HomeDirectory, true);
+            GC.SuppressFinalize(this);
+        }
 
         public void InstallPackage(string packageName, string? workingDirectory = null, string? nugetSource = null)
         {
@@ -70,6 +74,14 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             new DotnetNewCommand(Log, "install", TemplatePackagesPaths.MicrosoftDotNetCommonProjectTemplates60Path)
                 .WithCustomHive(HomeDirectory)
                 .WithDebug()
+                .Execute()
+                .Should()
+                .ExitWith(0)
+                .And
+                .NotHaveStdErr();
+
+            new DotnetNewCommand(Log, "install", TemplatePackagesPaths.MicrosoftDotNetCommonProjectTemplates70Path)
+                .WithCustomHive(HomeDirectory)
                 .Execute()
                 .Should()
                 .ExitWith(0)
