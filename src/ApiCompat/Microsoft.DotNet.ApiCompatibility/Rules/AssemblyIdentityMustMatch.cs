@@ -5,18 +5,18 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Microsoft.CodeAnalysis;
-using Microsoft.DotNet.ApiCompatibility.Abstractions;
 using Microsoft.DotNet.ApiCompatibility.Logging;
+using Microsoft.DotNet.ApiSymbolExtensions.Logging;
 
 namespace Microsoft.DotNet.ApiCompatibility.Rules
 {
     public class AssemblyIdentityMustMatch : IRule
     {
-        private readonly ICompatibilityLogger _log;
-        private readonly RuleSettings _settings;
+        private readonly ISuppressableLog _log;
+        private readonly IRuleSettings _settings;
 
-        public AssemblyIdentityMustMatch(ICompatibilityLogger log,
-            RuleSettings settings,
+        public AssemblyIdentityMustMatch(ISuppressableLog log,
+            IRuleSettings settings,
             IRuleRegistrationContext context)
         {
             _log = log;

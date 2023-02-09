@@ -1,4 +1,5 @@
 ﻿angular
+api
 blazorserver
 blazorserver-empty
 blazorwasm
@@ -12,9 +13,11 @@ gitignore
 globaljson
 grpc
 mstest
+mstest-playwright
 mvc
 nugetconfig
 nunit
+nunit-playwright
 nunit-test
 page
 proto

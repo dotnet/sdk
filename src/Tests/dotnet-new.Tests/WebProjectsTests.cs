@@ -10,7 +10,6 @@ using Xunit.Abstractions;
 namespace Microsoft.DotNet.Cli.New.IntegrationTests
 {
     [UsesVerify]
-    [Collection("Verify Tests")]
     public class WebProjectsTests : BaseIntegrationTest, IClassFixture<WebProjectsFixture>
     {
         private readonly WebProjectsFixture _fixture;
@@ -131,7 +130,9 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         public WebProjectsFixture(IMessageSink messageSink) : base(messageSink)
         {
             BaseWorkingDirectory = Utilities.CreateTemporaryFolder(nameof(WebProjectsTests));
+
             InstallPackage(TemplatePackagesPaths.MicrosoftDotNetWebProjectTemplates60Path, BaseWorkingDirectory);
+            InstallPackage(TemplatePackagesPaths.MicrosoftDotNetWebProjectTemplates70Path, BaseWorkingDirectory);
         }
 
         internal string BaseWorkingDirectory { get; private set; }
