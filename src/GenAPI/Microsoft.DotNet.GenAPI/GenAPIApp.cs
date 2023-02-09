@@ -4,16 +4,17 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.ApiSymbolExtensions;
+using Microsoft.DotNet.ApiSymbolExtensions.Filtering;
 using Microsoft.DotNet.ApiSymbolExtensions.Logging;
+using Microsoft.DotNet.GenAPI.Filtering;
 
 namespace Microsoft.DotNet.GenAPI
 {
     /// <summary>
-    /// Class to standertize initilization and running of GenAPI tool.
-    ///     Shared between CLI and MSBuild tasks frontends.
+    /// Class to standardize initialization and running of GenAPI tool.
+    /// Shared between CLI and MSBuild tasks frontends.
     /// </summary>
     public static class GenAPIApp
     {
@@ -88,16 +89,16 @@ namespace Microsoft.DotNet.GenAPI
                 loader.AddReferenceSearchPaths(context.AssemblyReferences);
             }
 
-            var compositeFilter = new CompositeFilter()
-                .Add<ImplicitSymbolsFilter>()
-                .Add(new SymbolAccessibilityBasedFilter(
+            var compositeSymbolFilter = new CompositeSymbolFilter()
+                .Add<ImplicitSymbolFilter>()
+                .Add(new AccessibilitySymbolFilter(
                     context.IncludeVisibleOutsideOfAssembly,
                     includeEffectivelyPrivateSymbols: true,
                     includeExplicitInterfaceImplementationSymbols: true));
 
             if (context.ExcludeAttributesFiles != null)
             {
-                compositeFilter.Add(new AttributeSymbolFilter(context.ExcludeAttributesFiles));
+                compositeSymbolFilter.Add(new AttributeSymbolFilter(context.ExcludeAttributesFiles));
             }
 
             IReadOnlyList<IAssemblySymbol?> assemblySymbols = loader.LoadAssemblies(context.Assemblies);
@@ -109,9 +110,9 @@ namespace Microsoft.DotNet.GenAPI
                 textWriter.Write(ReadHeaderFile(context.HeaderFile));
 
                 using CSharpFileBuilder fileBuilder = new(
-                    compositeFilter,
+                    compositeSymbolFilter,
                     textWriter,
-                    new CSharpSyntaxWriter(context.ExceptionMessage),
+                    context.ExceptionMessage,
                     loader.MetadataReferences);
 
                 fileBuilder.WriteAssembly(assemblySymbol);
@@ -121,7 +122,7 @@ namespace Microsoft.DotNet.GenAPI
             {
                 foreach (Diagnostic warning in roslynDiagnostics)
                 {
-                    logger.LogWarning(warning.Id, $"RoslynDiagnostic: '{warning.ToString()}'");
+                    logger.LogWarning(warning.Id, $"RoslynDiagnostic: '{warning}'");
                 }
             }
 

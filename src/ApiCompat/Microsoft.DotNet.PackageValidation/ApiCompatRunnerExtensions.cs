@@ -3,7 +3,7 @@
 
 using System.Collections.Generic;
 using System.IO;
-using Microsoft.DotNet.ApiCompatibility.Abstractions;
+using Microsoft.DotNet.ApiCompatibility;
 using Microsoft.DotNet.ApiCompatibility.Logging;
 using Microsoft.DotNet.ApiCompatibility.Runner;
 using NuGet.ContentModel;
@@ -65,15 +65,11 @@ namespace Microsoft.DotNet.PackageValidation
 
                 if (package.AssemblyReferences != null && !package.AssemblyReferences.TryGetValue(targetFramework, out assemblyReferences))
                 {
-                    log.LogWarning(
-                        new Suppression(DiagnosticIds.SearchDirectoriesNotFoundForTfm)
-                        {
-                            Target = displayString
-                        },
+                    log.LogWarning(new Suppression(DiagnosticIds.SearchDirectoriesNotFoundForTfm) { Target = displayString },
                         DiagnosticIds.SearchDirectoriesNotFoundForTfm,
-                        Resources.MissingSearchDirectory,
-                        targetFramework,
-                        displayString);
+                        string.Format(Resources.MissingSearchDirectory,
+                            targetFramework,
+                            displayString));
                 }
             }
 
