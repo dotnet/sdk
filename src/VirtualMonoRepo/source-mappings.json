@@ -60,7 +60,8 @@
             "exclude": [
                 "src/submodules/MessagePack-CSharp/**/*.dll",
                 "**/samples/**/jquery-validation-unobtrusive/.bower.json",
-                "**/samples/**/jquery-validation-unobtrusive/*.js"
+                "**/samples/**/jquery-validation-unobtrusive/*.js",
+                "src/SignalR/clients/java/signalr/gradle/wrapper/gradle-wrapper.jar"
             ]
         },
         {
