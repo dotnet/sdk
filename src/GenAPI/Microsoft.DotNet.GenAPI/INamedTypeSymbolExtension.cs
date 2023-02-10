@@ -131,6 +131,7 @@ namespace Microsoft.DotNet.GenAPI
             }
         }
 
+        // Check that the named type is fully bound in all its type arguments.
         public static bool IsBoundGenericType(this INamedTypeSymbol namedType)
         {
             foreach (var arg in namedType.TypeArguments)
