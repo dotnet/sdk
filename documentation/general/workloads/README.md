@@ -7,7 +7,7 @@ Some of the design docs for workloads are in the [dotnet/designs](https://github
 - [.NET Optional SDK Workloads](https://github.com/dotnet/designs/blob/main/accepted/2020/workloads/workloads.md)
 - [MSBuild SDK Resolvers and optional workloads](https://github.com/dotnet/designs/blob/main/accepted/2020/workloads/workload-resolvers.md)
 - [.NET SDK Workload Manifests](https://github.com/dotnet/designs/blob/main/accepted/2020/workloads/workload-manifest.md)
-- [Workload installation](https://github.com/dotnet/designs/pull/188)
+- [Workload installation](https://github.com/dotnet/designs/blob/main/accepted/2021/workloads/workload-installation.md)
 
 Other documentation for workloads is in this repo:
 
@@ -19,3 +19,4 @@ Other documentation for workloads is in this repo:
 - [Workload description localization](https://github.com/dotnet/sdk/pull/21189)
 - [Grouping multiple packs into one MSI](https://github.com/dotnet/sdk/issues/21741)
 - [Handling workload assets across major .NET versions](cross-version-workloads.md)
+- [Workload History](workload-history.md)
