@@ -1025,12 +1025,17 @@ namespace Microsoft.DotNet.GenAPI.Tests
         void TestSynthesizePrivateFieldsForGenericTypes()
         {
             RunTest(original: """
+                using System.Collections.Generic;
+
                 namespace Foo
                 {
                     public struct Bar<T>
                     {
                         #pragma warning disable 0169
                         private T _field;
+
+                        #pragma warning disable 0169
+                        private List<int> _field2;
                     }
                 }
                 """,
