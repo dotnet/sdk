@@ -104,6 +104,7 @@ namespace Microsoft.DotNet.Cli
             command.AddCommand(WorkloadRestoreCommandParser.GetCommand());
             command.AddCommand(WorkloadCleanCommandParser.GetCommand());
             command.AddCommand(WorkloadElevateCommandParser.GetCommand());
+            command.AddCommand(WorkloadHistoryCommandParser.GetCommand());
 
             command.SetHandler((parseResult) => ProcessArgs(parseResult));
 
