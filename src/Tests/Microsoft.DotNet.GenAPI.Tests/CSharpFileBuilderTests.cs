@@ -1025,17 +1025,12 @@ namespace Microsoft.DotNet.GenAPI.Tests
         void TestSynthesizePrivateFieldsForGenericTypes()
         {
             RunTest(original: """
-                using System.Collections.Generic;
-
                 namespace Foo
                 {
                     public struct Bar<T>
                     {
                         #pragma warning disable 0169
                         private T _field;
-
-                        #pragma warning disable 0169
-                        private List<int> _field2;
                     }
                 }
                 """,
@@ -1045,6 +1040,34 @@ namespace Microsoft.DotNet.GenAPI.Tests
                     public partial struct Bar<T>
                     {
                         private T _field;
+                    }
+                }
+                """);
+        }
+
+        [Fact]
+        void TestSynthesizePrivateFieldsForNestedGenericTypes()
+        {
+            RunTest(original: """
+                using System.Collections.Generic;
+
+                namespace Foo
+                {
+                    public struct Bar<T> where T : notnull
+                    {
+                        #pragma warning disable 0169
+                        private Dictionary<int, List<T>> _field;
+                    }
+                }
+                """,
+            expected: """
+                namespace Foo
+                {
+                    public partial struct Bar<T>
+                    {
+                        private System.Collections.Generic.Dictionary<int, System.Collections.Generic.List<T>> _field;
+                        private object _dummy;
+                        private int _dummyPrimitive;
                     }
                 }
                 """);

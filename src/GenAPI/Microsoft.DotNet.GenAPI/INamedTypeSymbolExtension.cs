@@ -99,7 +99,7 @@ namespace Microsoft.DotNet.GenAPI
                 // Collect generic excluded fields
                 IEnumerable<IFieldSymbol> genericTypedFields = excludedFields.Where(f => {
                     if (f.Type is INamedTypeSymbol ty) {
-                        return ty.IsBoundGenericType();
+                        return !ty.IsBoundGenericType();
                     }
                     return f.Type is ITypeParameterSymbol;
                 });
@@ -142,7 +142,10 @@ namespace Microsoft.DotNet.GenAPI
 
                 if (arg is INamedTypeSymbol nt)
                 {
-                    return nt.IsBoundGenericType();
+                    if (!nt.IsBoundGenericType())
+                    {
+                        return false;
+                    }
                 }
             }
 
