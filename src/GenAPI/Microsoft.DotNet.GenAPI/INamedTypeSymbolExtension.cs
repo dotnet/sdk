@@ -105,13 +105,14 @@ namespace Microsoft.DotNet.GenAPI
                 });
 
                 // Add a dummy field for each generic excluded field
-                foreach(IFieldSymbol genericField in genericTypedFields)
-                {
-                    yield return CreateDummyField(
-                        genericField.Type.ToDisplayString(),
-                        genericField.Name,
-                        FromAttributeData(genericField.GetAttributes()));
-                }
+                // // TODO: add this back when we properly handle generic fields.
+                // foreach(IFieldSymbol genericField in genericTypedFields)
+                // {
+                //     yield return CreateDummyField(
+                //         genericField.Type.ToDisplayString(),
+                //         genericField.Name,
+                //         FromAttributeData(genericField.GetAttributes()));
+                // }
 
                 // If any field's type is transitively a reference type.
                 if (excludedFields.Any(f => IsOrContainsReferenceType(f.Type)))
