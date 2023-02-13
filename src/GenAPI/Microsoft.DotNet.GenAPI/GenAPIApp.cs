@@ -117,6 +117,7 @@ namespace Microsoft.DotNet.GenAPI
                 textWriter.Write(ReadHeaderFile(context.HeaderFile));
 
                 using CSharpFileBuilder fileBuilder = new(
+                    logger,
                     compositeSymbolFilter,
                     textWriter,
                     context.ExceptionMessage,

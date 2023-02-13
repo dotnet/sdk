@@ -14,6 +14,7 @@ using Microsoft.CodeAnalysis.Formatting;
 using Microsoft.CodeAnalysis.Options;
 using Microsoft.CodeAnalysis.Simplification;
 using Microsoft.DotNet.ApiSymbolExtensions.Filtering;
+using Microsoft.DotNet.ApiSymbolExtensions.Logging;
 using Microsoft.DotNet.GenAPI.SyntaxRewriter;
 
 namespace Microsoft.DotNet.GenAPI
@@ -23,6 +24,7 @@ namespace Microsoft.DotNet.GenAPI
     /// </summary>
     public class CSharpFileBuilder : IAssemblySymbolWriter, IDisposable
     {
+        ILog _logger;
         private readonly TextWriter _textWriter;
         private readonly ISymbolFilter _symbolFilter;
         private readonly string? _exceptionMessage;
@@ -34,12 +36,14 @@ namespace Microsoft.DotNet.GenAPI
         private readonly IEnumerable<MetadataReference> _metadataReferences;
 
         public CSharpFileBuilder(
+            ILog logger,
             ISymbolFilter symbolFilter,
             TextWriter textWriter,
             string? exceptionMessage,
             bool includeAssemblyAttributes,
             IEnumerable<MetadataReference> metadataReferences)
         {
+            _logger = logger;
             _textWriter = textWriter;
             _symbolFilter = symbolFilter;
             _exceptionMessage = exceptionMessage;
@@ -180,7 +184,8 @@ namespace Microsoft.DotNet.GenAPI
 
         private SyntaxNode GenerateAssemblyAttributes(IAssemblySymbol assembly, SyntaxNode compilationUnit)
         {
-            foreach (var attribute in assembly.GetAttributes())
+            foreach (var attribute in assembly.GetAttributes()
+                .Where(a => a.AttributeClass != null && _symbolFilter.Include(a.AttributeClass)))
             {
                 compilationUnit = _syntaxGenerator.AddAttributes(compilationUnit, _syntaxGenerator.Attribute(attribute)
                     .WithTrailingTrivia(SyntaxFactory.LineFeed));
@@ -198,6 +203,10 @@ namespace Microsoft.DotNet.GenAPI
                     compilationUnit = _syntaxGenerator.AddAttributes(compilationUnit,
                         _syntaxGenerator.Attribute("System.Runtime.CompilerServices.TypeForwardedToAttribute",
                             SyntaxFactory.TypeOfExpression(typeSyntaxNode)).WithTrailingTrivia(SyntaxFactory.LineFeed));
+                }
+                else
+                {
+                    _logger.LogWarning(string.Format("Could not find matching assembly: '{0}' in any of the search directories.", $"{symbol.ContainingAssembly.Name}.dll"));
                 }
             }
 
