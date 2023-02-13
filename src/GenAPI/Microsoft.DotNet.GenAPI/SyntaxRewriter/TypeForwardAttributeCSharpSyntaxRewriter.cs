@@ -30,7 +30,7 @@ namespace Microsoft.DotNet.GenAPI.SyntaxRewriter
 
             foreach (IdentifierNameSyntax argument in typeArgumentList.Arguments)
             {
-                newArguments = newArguments.Add(argument.WithIdentifier(SyntaxFactory.Identifier("")));
+                newArguments = newArguments.Add(argument.WithIdentifier(SyntaxFactory.Identifier(string.Empty)));
             }
 
             typeArgumentList = typeArgumentList.WithArguments(newArguments);
