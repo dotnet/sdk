@@ -42,7 +42,8 @@ namespace Microsoft.DotNet.GenAPI.Tests
                 .Add<ImplicitSymbolFilter>()
                 .Add(new AccessibilitySymbolFilter(includeInternalSymbols,
                     includeEffectivelyPrivateSymbols, includeExplicitInterfaceImplementationSymbols));
-            IAssemblySymbolWriter csharpFileBuilder = new CSharpFileBuilder(compositeFilter, stringWriter, null, MetadataReferences);
+            IAssemblySymbolWriter csharpFileBuilder = new CSharpFileBuilder(compositeFilter,
+                stringWriter, null, false, MetadataReferences);
 
             IAssemblySymbol assemblySymbol = SymbolFactory.GetAssemblyFromSyntax(original, enableNullable: true);
             csharpFileBuilder.WriteAssembly(assemblySymbol);
