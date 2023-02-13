@@ -19,8 +19,6 @@ namespace Microsoft.DotNet.GenAPI.SyntaxRewriter
     {
         public override SyntaxNode? VisitGenericName(GenericNameSyntax node)
         {
-            GenericNameSyntax? rs = (GenericNameSyntax?)base.VisitGenericName(node);
-
             TypeArgumentListSyntax typeArgumentList = node.TypeArgumentList;
             SeparatedSyntaxList<TypeSyntax> newArguments = new();
 
