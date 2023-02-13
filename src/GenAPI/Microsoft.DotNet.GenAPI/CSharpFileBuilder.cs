@@ -82,23 +82,21 @@ namespace Microsoft.DotNet.GenAPI
                 .Rewrite(new BodyBlockCSharpSyntaxRewriter(_exceptionMessage))
                 .NormalizeWhitespace();
 
+            if (_includeAssemblyAttributes)
+            {
+                compilationUnit = GenerateAssemblyAttributes(assembly, compilationUnit);
+            }
+
+            compilationUnit = GenerateForwardedTypeAssemblyAttributes(assembly, compilationUnit);
+
             Document document = project.AddDocument(assembly.Name, compilationUnit);
 
             document = Simplifier.ReduceAsync(document).Result;
             document = Formatter.FormatAsync(document, DefineFormattingOptions()).Result;
 
-            if (_includeAssemblyAttributes)
-            {
-                GenerateAssemblyAttributes(assembly, compilationUnit)
-                    .WriteTo(_textWriter);
-            }
-
-            GenerateForwardedTypeAssemblyAttributes(assembly, compilationUnit)
-                .Rewrite(new TypeForwardAttributeCSharpSyntaxRewriter())
-                .WriteTo(_textWriter);
-
             document.GetSyntaxRootAsync().Result!
                 .Rewrite(new SingleLineStatementCSharpSyntaxRewriter())
+                .Rewrite(new TypeForwardAttributeCSharpSyntaxRewriter())
                 .WriteTo(_textWriter);
         }
 

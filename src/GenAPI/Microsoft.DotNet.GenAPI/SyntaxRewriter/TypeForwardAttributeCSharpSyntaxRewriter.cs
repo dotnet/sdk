@@ -19,6 +19,12 @@ namespace Microsoft.DotNet.GenAPI.SyntaxRewriter
     {
         public override SyntaxNode? VisitGenericName(GenericNameSyntax node)
         {
+            // skip if not of `typeof(Type<A,B,C>)` format
+            if (node.Parent == null || node.Parent.Parent == null || node.Parent.Parent is not TypeOfExpressionSyntax)
+            {
+                return node;
+            }
+
             TypeArgumentListSyntax typeArgumentList = node.TypeArgumentList;
             SeparatedSyntaxList<TypeSyntax> newArguments = new();
 
