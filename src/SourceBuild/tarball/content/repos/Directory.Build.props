@@ -15,7 +15,6 @@
     <MinimalConsoleLogOutput Condition="'$(MinimalConsoleLogOutput)' == ''">true</MinimalConsoleLogOutput>
     <RepoConsoleLogFile>$(LoggingDir)$(RepositoryName).log</RepoConsoleLogFile>
     <RedirectRepoOutputToLog Condition="'$(MinimalConsoleLogOutput)' == 'true'">&gt;&gt; $(RepoConsoleLogFile) 2&gt;&amp;1</RedirectRepoOutputToLog>
-    <IsStable Condition="'$(UseStableVersions)' == 'true'">true</IsStable>
 
     <PackagesOutput>$(ProjectDirectory)artifacts/packages/$(Configuration)/NonShipping/</PackagesOutput>
 
@@ -99,6 +98,9 @@
     <EnvironmentVariables Include="DeterministicSourcePaths=false" Condition="'$(DeterministicBuildOptOut)' == 'true'" />
 
     <EnvironmentVariables Include="SourceRoot=$(ProjectDirectory)" />
+
+    <!-- https://github.com/dotnet/source-build/issues/3081 -->
+    <EnvironmentVariables Include="CheckEolTargetFramework=false" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(EnableExtraDebugging)' == 'true'">
