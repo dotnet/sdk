@@ -1092,7 +1092,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                 {
                     public readonly partial struct Bar<T>
                     {
-                        private readonly System.Collections.Generic.List<Bar<T>> k__BackingField;
+                        private readonly System.Collections.Generic.List<Bar<T>> _Baz_k__BackingField;
                         private readonly object _dummy;
                         private readonly int _dummyPrimitive;
                         public System.Collections.Generic.List<Bar<T>> Baz { get { throw null; } }

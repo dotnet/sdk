@@ -113,17 +113,9 @@ namespace Microsoft.DotNet.GenAPI
                 // Add a dummy field for each generic excluded field
                 foreach(IFieldSymbol genericField in genericTypedFields)
                 {
-                    String fieldName = genericField.Name;
-                    int i = fieldName.LastIndexOf('>');
-
-                    if (i >= 0)
-                    {
-                        fieldName = fieldName.Remove(0, i+1);
-                    }
-
                     yield return CreateDummyField(
                         genericField.Type.ToDisplayString(),
-                        fieldName,
+                        genericField.Name.Replace('<', '_').Replace('>', '_'),
                         FromAttributeData(genericField.GetAttributes()),
                         namedType.IsReadOnly);
                 }
