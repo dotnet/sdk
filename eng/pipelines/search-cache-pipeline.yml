@@ -17,7 +17,7 @@ parameters:
 
 pool:
   name: NetCore1ESPool-Internal
-  demands: ImageOverride -equals 1es-ubuntu-2004
+  demands: ImageOverride -equals Build.Ubuntu.2204.Amd64
 
 steps:
 - checkout: self
