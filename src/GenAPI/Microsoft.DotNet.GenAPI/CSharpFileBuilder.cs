@@ -208,7 +208,7 @@ namespace Microsoft.DotNet.GenAPI
                 {
                     _logger.LogWarning(string.Format(
                         "Could not resolve type '{0}' in containing assembly '{1}' via type forward. Make sure that the assembly is provided as a reference and contains the type.",
-                        symbol.ToString(),
+                        symbol.ToDisplayString(),
                         $"{symbol.ContainingAssembly.Name}.dll"));
                 }
             }
