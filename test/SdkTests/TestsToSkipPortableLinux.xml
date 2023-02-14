@@ -7,5 +7,13 @@
     <Method Name="Microsoft.NET.Publish.Tests.GivenThatWeWantToPublishAWebApp.It_should_publish_framework_dependent_for_2x"
             Skip="true"
             Reason="https://github.com/NuGet/Home/issues/8571"/>
+
+    <Method Name="Microsoft.NET.Publish.Tests.GivenThatWeWantToPublishAWebApp.PublishWebAppWithPublishProfile"
+            Skip="true"
+            Reason="https://github.com/NuGet/Home/issues/8571"/>
+
+    <Method Name="Microsoft.NET.Publish.Tests.GivenThatWeWantToPublishAWebApp.It_should_publish_self_contained_for_2x"
+            Skip="true"
+            Reason="https://github.com/NuGet/Home/issues/8571"/>
   </SkippedTests>
 </Tests>
