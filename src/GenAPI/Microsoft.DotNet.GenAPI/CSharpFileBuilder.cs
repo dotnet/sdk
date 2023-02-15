@@ -164,6 +164,8 @@ namespace Microsoft.DotNet.GenAPI
                 }
 
                 SyntaxNode memberDeclaration = _syntaxGenerator.DeclarationExt(member, _symbolFilter);
+                
+                // Console.WriteLine(((MemberDeclarationSyntax)memberDeclaration).ToFullString());
 
                 foreach (AttributeData attribute in member.GetAttributes()
                     .Where(a => a.AttributeClass != null && _symbolFilter.Include(a.AttributeClass)))

@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Xunit;
+using Xunit.Abstractions;
 using System;
 using System.IO;
 using System.Text;
@@ -17,6 +18,38 @@ namespace Microsoft.DotNet.GenAPI.Tests
 {
     public class CSharpFileBuilderTests
     {
+        public CSharpFileBuilderTests(ITestOutputHelper output)
+        {
+            var converter = new Converter(output);
+            Console.SetOut(converter);
+        }
+
+    private class Converter : TextWriter
+    {
+        ITestOutputHelper _output;
+        public Converter(ITestOutputHelper output)
+        {
+            _output = output;
+        }
+        public override Encoding Encoding
+        {
+            get { return Encoding.Default; }
+        }
+        public override void WriteLine(string message)
+        {
+            _output.WriteLine(message);
+        }
+        public override void WriteLine(string format, params object[] args)
+        {
+            _output.WriteLine(format, args);
+        }
+
+        public override void Write(char value)
+        {
+            throw new NotSupportedException("This text writer only supports WriteLine(string) and WriteLine(string, params object[]).");
+        }
+    }
+
         class AllowAllFilter : ISymbolFilter
         {
             public bool Include(ISymbol symbol) => true;
@@ -1388,6 +1421,37 @@ namespace Microsoft.DotNet.GenAPI.Tests
                     }
                     """,
                 includeInternalSymbols: false);
+        }
+
+        [Fact]
+        public void TestMethodNewKeywordReturnType()
+        {
+            Console.WriteLine("FooBar");
+            RunTest(original: """
+                    namespace A
+                    {
+                        public class Foo<T>
+                        {
+                            #pragma warning disable 0109
+                            #pragma warning disable 8597
+                            public static new int Default { get { throw null; } } 
+
+                            #pragma warning disable 0109
+                            public new bool Add(T item) => true;
+                        }
+                    }
+                    """,
+                    expected: """
+                    namespace A
+                    {
+                        public partial class Foo<T>
+                        {
+                            public static new int Default { get { throw null; } }
+
+                            public new bool Add(T item) => true;
+                        }
+                    }
+                    """);
         }
     }
 }
