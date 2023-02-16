@@ -47,5 +47,4 @@
   <Import Project="targets\GeneratePKG.targets" />
   <Import Project="targets\GenerateInstallers.targets" />
   <Import Project="targets\Badge.targets" />
-  <Import Project="targets\Checksum.targets" />
 </Project>
