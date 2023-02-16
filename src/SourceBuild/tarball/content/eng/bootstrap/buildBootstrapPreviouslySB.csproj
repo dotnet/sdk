@@ -78,7 +78,7 @@
       Properties="SourcePath=$(RestorePackagesPath);DestinationPath=$(UnpackedTarPath);PackageName=%(PackageDownload.Identity);PackageVersion=%(PackageDownload.Version)" />
 
     <!-- override PVP with bootstrap-override package versions -->
-    <Message Text="  Overriding previously-source-built package versions with $(BootstrapOverrideVersionsProps)" Importance="High" />
+    <Message Text="  Overriding previously-source-built package versions with $(BootstrapOverrideVersionsProps)" Importance="High" Condition="Exists('$(BootstrapOverrideVersionsProps)')" />
     <ReadLinesFromFile File="$(UnpackedTarPath)/PackageVersions.props">
       <Output TaskParameter="Lines" ItemName="OriginalPackageVersionLines" />
     </ReadLinesFromFile>
@@ -94,10 +94,12 @@
     <WriteLinesToFile File="$(UnpackedTarPath)/PackageVersions.props"
                       Lines="@(OriginalPackageVersionLines)"
                       Overwrite="true"
+                      Condition="Exists('$(BootstrapOverrideVersionsProps)')"
     />
     <WriteLinesToFile File="$(UnpackedTarPath)/PackageVersions.props"
                       Lines="@(BootstrapPackageVersionLines)"
                       Overwrite="false"
+                      Condition="Exists('$(BootstrapOverrideVersionsProps)')"
     />
 
 
