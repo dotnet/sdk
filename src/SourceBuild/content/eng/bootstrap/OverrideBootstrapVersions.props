@@ -7,9 +7,5 @@
      <MicrosoftNETHostModelVersion>$(NonshippingRuntimeVersionFor700)</MicrosoftNETHostModelVersion>
      <MicrosoftNETCoreTestHostVersion>$(NonshippingRuntimeVersionFor700)</MicrosoftNETCoreTestHostVersion>
      <RuntimeLinuxX64MicrosoftNETCoreTestHostVersion>$(NonshippingRuntimeVersionFor700)</RuntimeLinuxX64MicrosoftNETCoreTestHostVersion>
-
-     <MicrosoftNETSdkILVersion>7.0.0</MicrosoftNETSdkILVersion>
-     <MicrosoftNETCoreILAsmVersion>7.0.0</MicrosoftNETCoreILAsmVersion>
-     <MicrosoftNETCoreILDAsmVersion>7.0.0</MicrosoftNETCoreILDAsmVersion>
   </PropertyGroup>
 </Project>
