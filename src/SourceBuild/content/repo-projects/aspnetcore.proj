@@ -24,12 +24,6 @@
 
     <LogVerbosityOptOut>true</LogVerbosityOptOut>
 
-    <RepoApiImplemented>false</RepoApiImplemented>
-    <DependencyVersionInputRepoApiImplemented>true</DependencyVersionInputRepoApiImplemented>
-
-    <GlobalJsonFile>$(ProjectDirectory)global.json</GlobalJsonFile>
-    <NuGetConfigFile>$(ProjectDirectory)NuGet.config</NuGetConfigFile>
-
     <!-- CS0618 - Caused from deprecated IOperation.Children in
                   Microsoft.CodeAnalysis 4.3.0, but aspnetcore references version 4.2.0.
                   Requires https://github.com/dotnet/source-build/issues/2482
@@ -61,10 +55,6 @@
     <RepositoryReference Include="msbuild" />
     <RepositoryReference Include="roslyn" />
     <RepositoryReference Include="roslyn-analyzers" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <UseSourceBuiltSdkOverride Include="@(ArcadeSdkOverride)" />
   </ItemGroup>
 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />

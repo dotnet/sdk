@@ -4,10 +4,6 @@
   <PropertyGroup>
     <BuildCommand>$(StandardSourceBuildCommand) $(StandardSourceBuildArgs)</BuildCommand>
 
-    <GlobalJsonFile>$(ProjectDirectory)global.json</GlobalJsonFile>
-    <NuGetConfigFile>$(ProjectDirectory)NuGet.config</NuGetConfigFile>
-    <OutputPlacementRepoApiImplemented>false</OutputPlacementRepoApiImplemented>
-
     <!-- NU1507 - https://github.com/dotnet/razor-compiler/issues/242
                   Occurs when using NuGet central package management without defining any Package Source Mappings. -->
     <RepoNoWarns>NU1507</RepoNoWarns>
@@ -15,10 +11,6 @@
 
   <ItemGroup>
     <RepositoryReference Include="arcade" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <UseSourceBuiltSdkOverride Include="@(ArcadeSdkOverride)" />
   </ItemGroup>
 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />

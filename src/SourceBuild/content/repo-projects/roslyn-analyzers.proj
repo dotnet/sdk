@@ -6,10 +6,7 @@
     <BuildCommandArgs>$(BuildCommandArgs) $(FlagParameterPrefix)warnAsError $(ArcadeFalseBoolBuildArg)</BuildCommandArgs>
     <BuildCommand>$(StandardSourceBuildCommand) $(BuildCommandArgs)</BuildCommand>
 
-    <RepoApiImplemented>false</RepoApiImplemented>
-    <DependencyVersionInputRepoApiImplemented>false</DependencyVersionInputRepoApiImplemented>
     <LogVerbosityOptOut>true</LogVerbosityOptOut>
-    <GlobalJsonFile>$(ProjectDirectory)global.json</GlobalJsonFile>
     <PackageVersionPropsFlowType>DependenciesOnly</PackageVersionPropsFlowType>
   </PropertyGroup>
 
@@ -20,10 +17,6 @@
   <ItemGroup>
     <RepositoryReference Include="runtime" />
     <RepositoryReference Include="roslyn" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <UseSourceBuiltSdkOverride Include="@(ArcadeSdkOverride)" />
   </ItemGroup>
 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />

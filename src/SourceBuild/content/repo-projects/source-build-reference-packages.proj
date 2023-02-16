@@ -10,17 +10,9 @@
 
     <BuildCommand>$(StandardSourceBuildCommand) $(BuildCommandArgs)</BuildCommand>
 
-    <NuGetConfigFile>$(ProjectDirectory)NuGet.config</NuGetConfigFile>
-    <GlobalJsonFile>$(ProjectDirectory)global.json</GlobalJsonFile>
-    <OutputPlacementRepoApiImplemented>false</OutputPlacementRepoApiImplemented>
-
     <!-- SBRP builds before Arcade so it also needs the bootstrap Arcade version -->
     <UseBootstrapArcade>true</UseBootstrapArcade>
   </PropertyGroup>
-
-  <ItemGroup>
-    <UseSourceBuiltSdkOverride Include="@(ArcadeBootstrapSdkOverride)" />
-  </ItemGroup>
 
   <Target Name="AddLocalNuGetPackageCacheDirectory" BeforeTargets="Build">
     <MakeDir Condition="'$(LocalNuGetPackageCacheDirectory)' != ''"
