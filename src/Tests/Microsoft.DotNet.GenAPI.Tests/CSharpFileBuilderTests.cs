@@ -1406,6 +1406,18 @@ namespace Microsoft.DotNet.GenAPI.Tests
                             internal Foo() : base(1) { }
                         }
                     }
+                    namespace B
+                    {
+                        public class Bar
+                        {
+                            public Bar(int a) { }
+                        }
+                    
+                        public class Foo : Bar
+                        {
+                            private Foo() : base(1) { }
+                        }
+                    }
                     """,
                 expected: """
                     namespace A
@@ -1416,6 +1428,86 @@ namespace Microsoft.DotNet.GenAPI.Tests
                         }
 
                         public partial class Foo : Bar
+                        {
+                            internal Foo() : base(default) { }
+                        }
+                    }
+                    namespace B
+                    {
+                        public partial class Bar
+                        {
+                            public Bar(int a) { }
+                        }
+                    
+                        public partial class Foo : Bar
+                        {
+                            internal Foo() : base(default) { }
+                        }
+                    }
+                    """,
+                includeInternalSymbols: false);
+        }
+
+        [Fact]
+        public void TestPrivateDefaultConstructorGeneration()
+        {
+            RunTest(original: """
+                    namespace A
+                    {
+                        public class Bar
+                        {
+                            public Bar(int a) { }
+                        }
+
+                        public class Foo : Bar
+                        {
+                            private Foo() : base(1) { }
+                        }
+                    }
+                    """,
+                expected: """
+                    namespace A
+                    {
+                        public partial class Bar
+                        {
+                            public Bar(int a) { }
+                        }
+
+                        public partial class Foo : Bar
+                        {
+                            private Foo() : base(default) { }
+                        }
+                    }
+                    """,
+                includeEffectivelyPrivateSymbols: true);
+        }
+
+        [Fact]
+        public void TestInternalDefaultConstructorGenerationForGenericType()
+        {
+            RunTest(original: """
+                    namespace A
+                    {
+                        public class Bar
+                        {
+                            public Bar(int a) { }
+                        }
+
+                        public class Foo<T> : Bar
+                        {
+                            internal Foo() : base(1) { }
+                        }
+                    }
+                    """,
+                expected: """
+                    namespace A
+                    {
+                        public partial class Bar
+                        {
+                            public Bar(int a) { }
+                        }
+
+                        public partial class Foo<T> : Bar
                         {
                             internal Foo() : base(default) { }
                         }

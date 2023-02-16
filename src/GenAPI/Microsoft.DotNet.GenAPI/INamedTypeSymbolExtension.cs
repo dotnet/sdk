@@ -169,9 +169,19 @@ namespace Microsoft.DotNet.GenAPI
                 IEnumerable<IMethodSymbol> baseConstructors = namedType.BaseType.Constructors.Where(symbolFilter.Include);
                 if (baseConstructors.Any() && baseConstructors.All(c => !c.Parameters.IsEmpty))
                 {
+                    SyntaxKind visibility = SyntaxKind.InternalKeyword;
+
+                    if ((symbolFilter is AccessibilitySymbolFilter accessibilityFilter && accessibilityFilter.IncludeInternalSymbols) ||
+                        (symbolFilter is CompositeSymbolFilter compositeSymbolFilter &&
+                            compositeSymbolFilter.Filters.Any(f => f is AccessibilitySymbolFilter accessibilityFilter &&
+                                accessibilityFilter.IncludeInternalSymbols)))
+                    {
+                        visibility = SyntaxKind.PrivateKeyword;
+                    }
+
                     yield return SyntaxFactory.ConstructorDeclaration(
                         new SyntaxList<AttributeListSyntax>(),
-                        SyntaxFactory.TokenList(new[] { SyntaxFactory.Token(SyntaxKind.InternalKeyword) }),
+                        SyntaxFactory.TokenList(new[] { SyntaxFactory.Token(visibility) }),
                         SyntaxFactory.Identifier(namedType.ToDisplayString()),
                         SyntaxFactory.ParameterList(),
                         default!,
