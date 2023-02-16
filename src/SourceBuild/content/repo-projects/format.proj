@@ -4,10 +4,6 @@
   <PropertyGroup>
     <BuildCommand>$(ProjectDirectory)eng\common\build$(ShellExtension) $(StandardSourceBuildArgs)</BuildCommand>
 
-    <GlobalJsonFile>$(ProjectDirectory)global.json</GlobalJsonFile>
-    <NuGetConfigFile>$(ProjectDirectory)NuGet.config</NuGetConfigFile>
-    <OutputPlacementRepoApiImplemented>false</OutputPlacementRepoApiImplemented>
-
     <!-- CS9057 - Caused by incoherency of analyzer assemblies during pre-release builds. -->
     <RepoNoWarns>CS9057</RepoNoWarns>
   </PropertyGroup>
@@ -16,10 +12,6 @@
     <RepositoryReference Include="roslyn" />
     <RepositoryReference Include="roslyn-analyzers" />
     <RepositoryReference Include="source-build-externals" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <UseSourceBuiltSdkOverride Include="@(ArcadeSdkOverride)" />
   </ItemGroup>
 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />

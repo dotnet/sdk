@@ -2,7 +2,6 @@
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
   <PropertyGroup>
-    <RepoApiImplemented>false</RepoApiImplemented>
     <SkipEnsurePackagesCreated>true</SkipEnsurePackagesCreated>
   </PropertyGroup>
 
