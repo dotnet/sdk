@@ -62,10 +62,10 @@ namespace Microsoft.NetCore.Analyzers.Security
             {
                 var compilation = compilationStartAnalysisContext.Compilation;
                 var wellKnownTypeProvider = WellKnownTypeProvider.GetOrCreate(compilation);
-
-                if (!wellKnownTypeProvider.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeInteropServicesDllImportAttribute, out INamedTypeSymbol? dllImportAttributeTypeSymbol) ||
-                    !wellKnownTypeProvider.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeInteropServicesDefaultDllImportSearchPathsAttribute, out INamedTypeSymbol? defaultDllImportSearchPathsAttributeTypeSymbol) ||
-                    compilationStartAnalysisContext.Compilation.SyntaxTrees.FirstOrDefault() is not SyntaxTree tree)
+                if ((!wellKnownTypeProvider.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeInteropServicesDllImportAttribute, out INamedTypeSymbol? dllImportAttributeTypeSymbol)
+                        & !wellKnownTypeProvider.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeInteropServicesLibraryImportAttribute, out INamedTypeSymbol? libraryImportAttributeTypeSymbol))
+                    || !wellKnownTypeProvider.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeInteropServicesDefaultDllImportSearchPathsAttribute, out INamedTypeSymbol? defaultDllImportSearchPathsAttributeTypeSymbol)
+                    || compilationStartAnalysisContext.Compilation.SyntaxTrees.FirstOrDefault() is not SyntaxTree tree)
                 {
                     return;
                 }
@@ -79,21 +79,25 @@ namespace Microsoft.NetCore.Analyzers.Security
                     defaultValue: UnsafeBits);
                 var defaultDllImportSearchPathsAttributeOnAssembly = compilation.Assembly.GetAttributes().FirstOrDefault(o => o.AttributeClass.Equals(defaultDllImportSearchPathsAttributeTypeSymbol));
 
+                // Does not analyze local functions. To analyze local functions, we'll need to use RegisterSyntaxAction.
                 compilationStartAnalysisContext.RegisterSymbolAction(symbolAnalysisContext =>
                 {
-                    var symbol = symbolAnalysisContext.Symbol;
+                    var symbol = (IMethodSymbol)symbolAnalysisContext.Symbol;
 
-                    if (!symbol.IsExtern || !symbol.IsStatic)
+                    // LibraryImport methods will be partial, and the generated implementation will have a non-null PartialDefinitionPart property
+                    if (!symbol.IsExtern || !symbol.IsStatic || symbol.PartialDefinitionPart != null)
                     {
                         return;
                     }
 
                     var dllImportAttribute = symbol.GetAttributes().FirstOrDefault(s => s.AttributeClass.Equals(dllImportAttributeTypeSymbol));
+                    var libraryImportAttribute = symbol.GetAttributes().FirstOrDefault(s => s.AttributeClass.Equals(libraryImportAttributeTypeSymbol));
                     var defaultDllImportSearchPathsAttribute = symbol.GetAttributes().FirstOrDefault(s => s.AttributeClass.Equals(defaultDllImportSearchPathsAttributeTypeSymbol));
 
-                    if (dllImportAttribute != null)
+                    if (dllImportAttribute != null || libraryImportAttribute != null)
                     {
-                        var constructorArguments = dllImportAttribute.ConstructorArguments;
+                        AttributeData primaryAttribute = libraryImportAttribute ?? dllImportAttribute!;
+                        var constructorArguments = primaryAttribute.ConstructorArguments;
 
                         if (constructorArguments.IsEmpty)
                         {
