@@ -19,6 +19,8 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
         private readonly bool _skipManifestUpdate;
         private readonly IReadOnlyCollection<string> _workloadIds;
 
+        public bool IsRunningRestore { get; set; }
+
         public WorkloadInstallCommand(
             ParseResult parseResult,
             IReporter reporter = null,
@@ -64,63 +66,83 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
         public override int Execute()
         {
             bool usedRollback = !string.IsNullOrWhiteSpace(_fromRollbackDefinition);
-            if (_printDownloadLinkOnly)
+
+            WorkloadHistoryRecorder recorder = new WorkloadHistoryRecorder(_workloadResolver, _workloadInstaller);
+            recorder.HistoryRecord.CommandName = IsRunningRestore ? "restore" : "install";
+            recorder.HistoryRecord.WorkloadArguments = _workloadIds.Select(id => id.ToString()).ToList();
+
+            try
             {
-                Reporter.WriteLine(string.Format(LocalizableStrings.ResolvingPackageUrls, string.Join(", ", _workloadIds)));
-
-                //  Take the union of the currently installed workloads and the ones that are being requested.  This is so that if there are updates to the manifests
-                //  which require new packs for currently installed workloads, those packs will be downloaded.
-                //  If the packs are already installed, they won't be included in the results
-                var existingWorkloads = GetInstalledWorkloads(false);
-                var workloadsToDownload = existingWorkloads.Union(_workloadIds.Select(id => new WorkloadId(id))).ToList();
-
-                var packageUrls = GetPackageDownloadUrlsAsync(workloadsToDownload, _skipManifestUpdate, _includePreviews).GetAwaiter().GetResult();
-
-                Reporter.WriteLine("==allPackageLinksJsonOutputStart==");
-                Reporter.WriteLine(JsonSerializer.Serialize(packageUrls, new JsonSerializerOptions() { WriteIndented = true }));
-                Reporter.WriteLine("==allPackageLinksJsonOutputEnd==");
-            }
-            else if (!string.IsNullOrWhiteSpace(_downloadToCacheOption))
-            {
-                try
+                if (usedRollback)
                 {
+                    //  TODO: get rollback contents
+                    recorder.HistoryRecord.RollbackFileContents = null;
+                }
+
+                if (_printDownloadLinkOnly)
+                {
+                    Reporter.WriteLine(string.Format(LocalizableStrings.ResolvingPackageUrls, string.Join(", ", _workloadIds)));
+
                     //  Take the union of the currently installed workloads and the ones that are being requested.  This is so that if there are updates to the manifests
                     //  which require new packs for currently installed workloads, those packs will be downloaded.
                     //  If the packs are already installed, they won't be included in the results
                     var existingWorkloads = GetInstalledWorkloads(false);
                     var workloadsToDownload = existingWorkloads.Union(_workloadIds.Select(id => new WorkloadId(id))).ToList();
 
-                    DownloadToOfflineCacheAsync(workloadsToDownload, new DirectoryPath(_downloadToCacheOption), _skipManifestUpdate, _includePreviews).Wait();
-                }
-                catch (Exception e)
-                {
-                    throw new GracefulException(string.Format(LocalizableStrings.WorkloadCacheDownloadFailed, e.Message), e, isUserError: false);
-                }
-            }
-            else if (_skipManifestUpdate && usedRollback)
-            {
-                throw new GracefulException(string.Format(LocalizableStrings.CannotCombineSkipManifestAndRollback, 
-                    WorkloadInstallCommandParser.SkipManifestUpdateOption.Name, InstallingWorkloadCommandParser.FromRollbackFileOption.Name,
-                    WorkloadInstallCommandParser.SkipManifestUpdateOption.Name, InstallingWorkloadCommandParser.FromRollbackFileOption.Name), isUserError: true);
-            }
-            else
-            {
-                try
-                {
-                    InstallWorkloads(
-                        _workloadIds.Select(id => new WorkloadId(id)),
-                        _skipManifestUpdate,
-                        _includePreviews,
-                        string.IsNullOrWhiteSpace(_fromCacheOption) ? null : new DirectoryPath(_fromCacheOption));
-                }
-                catch (Exception e)
-                {
-                    // Don't show entire stack trace
-                    throw new GracefulException(string.Format(LocalizableStrings.WorkloadInstallationFailed, e.Message), e, isUserError: false);
-                }
-            }
+                    var packageUrls = GetPackageDownloadUrlsAsync(workloadsToDownload, _skipManifestUpdate, _includePreviews).GetAwaiter().GetResult();
 
-            _workloadInstaller.Shutdown();
+                    Reporter.WriteLine("==allPackageLinksJsonOutputStart==");
+                    Reporter.WriteLine(JsonSerializer.Serialize(packageUrls, new JsonSerializerOptions() { WriteIndented = true }));
+                    Reporter.WriteLine("==allPackageLinksJsonOutputEnd==");
+                }
+                else if (!string.IsNullOrWhiteSpace(_downloadToCacheOption))
+                {
+                    try
+                    {
+                        //  Take the union of the currently installed workloads and the ones that are being requested.  This is so that if there are updates to the manifests
+                        //  which require new packs for currently installed workloads, those packs will be downloaded.
+                        //  If the packs are already installed, they won't be included in the results
+                        var existingWorkloads = GetInstalledWorkloads(false);
+                        var workloadsToDownload = existingWorkloads.Union(_workloadIds.Select(id => new WorkloadId(id))).ToList();
+
+                        recorder.Run(() => DownloadToOfflineCacheAsync(workloadsToDownload, new DirectoryPath(_downloadToCacheOption), _skipManifestUpdate, _includePreviews).Wait());
+                    }
+                    catch (Exception e)
+                    {
+                        throw new GracefulException(string.Format(LocalizableStrings.WorkloadCacheDownloadFailed, e.Message), e, isUserError: false);
+                    }
+                }
+                else if (_skipManifestUpdate && usedRollback)
+                {
+                    throw new GracefulException(string.Format(LocalizableStrings.CannotCombineSkipManifestAndRollback,
+                        WorkloadInstallCommandParser.SkipManifestUpdateOption.Name, InstallingWorkloadCommandParser.FromRollbackFileOption.Name,
+                        WorkloadInstallCommandParser.SkipManifestUpdateOption.Name, InstallingWorkloadCommandParser.FromRollbackFileOption.Name), isUserError: true);
+                }
+                else
+                {
+                    recorder.Run(() =>
+                    {
+                        try
+                        {
+                            InstallWorkloads(
+                                _workloadIds.Select(id => new WorkloadId(id)),
+                                _skipManifestUpdate,
+                                _includePreviews,
+                                string.IsNullOrWhiteSpace(_fromCacheOption) ? null : new DirectoryPath(_fromCacheOption));
+                        }
+                        catch (Exception e)
+                        {
+                            // Don't show entire stack trace
+                            throw new GracefulException(string.Format(LocalizableStrings.WorkloadInstallationFailed, e.Message), e, isUserError: false);
+                        }
+                    });
+                }
+            }
+            finally
+            {
+                _workloadInstaller.Shutdown();
+            }
+            
             return _workloadInstaller.ExitCode;
         }
 

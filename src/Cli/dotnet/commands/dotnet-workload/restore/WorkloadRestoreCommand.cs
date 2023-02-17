@@ -38,6 +38,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Restore
 
             var workloadInstallCommand = new WorkloadInstallCommand(_result,
                 workloadIds: allWorkloadId.Select(a => a.ToString()).ToList().AsReadOnly());
+            workloadInstallCommand.IsRunningRestore = true;
 
             workloadInstallCommand.Execute();
             return 0;

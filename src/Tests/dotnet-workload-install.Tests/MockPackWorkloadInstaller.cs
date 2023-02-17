@@ -22,6 +22,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         public bool FailingRollback;
         public bool FailingGarbageCollection;
         private readonly string FailingPack;
+        List<WorkloadHistoryRecord> HistoryRecords = new();
 
         public IWorkloadResolver WorkloadResolver { get; set; }
 
@@ -114,6 +115,16 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             }
 
             return packs.Select(p => new WorkloadDownload(p.ResolvedPackageId, p.ResolvedPackageId, p.Version));
+        }
+
+        public void WriteWorkloadHistoryRecord(WorkloadHistoryRecord workloadHistoryRecord)
+        {
+            HistoryRecords.Add(workloadHistoryRecord);
+        }
+
+        public IEnumerable<WorkloadHistoryRecord> GetWorkloadHistoryRecords()
+        {
+            return HistoryRecords;
         }
 
         public void Shutdown()

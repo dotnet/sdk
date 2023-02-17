@@ -48,52 +48,71 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
 
         public override int Execute()
         {
-            if (!string.IsNullOrWhiteSpace(_downloadToCacheOption))
-            {
-                try
-                {
-                    DownloadToOfflineCacheAsync(new DirectoryPath(_downloadToCacheOption), _includePreviews).Wait();
-                }
-                catch (Exception e)
-                {
-                    throw new GracefulException(string.Format(LocalizableStrings.WorkloadCacheDownloadFailed, e.Message), e, isUserError: false);
-                }
-            }
-            else if (_printDownloadLinkOnly)
-            {
-                var packageUrls = GetUpdatablePackageUrlsAsync(_includePreviews).GetAwaiter().GetResult();
-                Reporter.WriteLine("==allPackageLinksJsonOutputStart==");
-                Reporter.WriteLine(JsonSerializer.Serialize(packageUrls, new JsonSerializerOptions() { WriteIndented = true }));
-                Reporter.WriteLine("==allPackageLinksJsonOutputEnd==");
-            }
-            else if (_adManifestOnlyOption)
-            {
-                _workloadManifestUpdater.UpdateAdvertisingManifestsAsync(_includePreviews, string.IsNullOrWhiteSpace(_fromCacheOption) ? null : new DirectoryPath(_fromCacheOption)).Wait();
-                Reporter.WriteLine();
-                Reporter.WriteLine(LocalizableStrings.WorkloadUpdateAdManifestsSucceeded);
-            }
-            else if (_printRollbackDefinitionOnly)
-            {
-                var workloadSet = WorkloadSet.FromManifests(_workloadResolver.GetInstalledManifests());
+            WorkloadHistoryRecorder recorder = new WorkloadHistoryRecorder(_workloadResolver, _workloadInstaller);
+            recorder.HistoryRecord.CommandName = "update";
+            //recorder.HistoryRecord.WorkloadArguments = _workloadIds.Select(id => id.ToString()).ToList();
 
-                Reporter.WriteLine("==workloadRollbackDefinitionJsonOutputStart==");
-                Reporter.WriteLine(workloadSet.ToJson());
-                Reporter.WriteLine("==workloadRollbackDefinitionJsonOutputEnd==");
-            }
-            else
+            bool usedRollback = !string.IsNullOrWhiteSpace(_fromRollbackDefinition);
+            if (usedRollback)
             {
-                try
-                {
-                    UpdateWorkloads(_includePreviews, string.IsNullOrWhiteSpace(_fromCacheOption) ? null : new DirectoryPath(_fromCacheOption));
-                }
-                catch (Exception e)
-                {
-                    // Don't show entire stack trace
-                    throw new GracefulException(string.Format(LocalizableStrings.WorkloadUpdateFailed, e.Message), e, isUserError: false);
-                }
+                //  TODO: get rollback contents
+                recorder.HistoryRecord.RollbackFileContents = null;
             }
 
-            _workloadInstaller.Shutdown();
+            try
+            {
+                if (!string.IsNullOrWhiteSpace(_downloadToCacheOption))
+                {
+                    try
+                    {
+                        recorder.Run(() => DownloadToOfflineCacheAsync(new DirectoryPath(_downloadToCacheOption), _includePreviews).Wait());
+                    }
+                    catch (Exception e)
+                    {
+                        throw new GracefulException(string.Format(LocalizableStrings.WorkloadCacheDownloadFailed, e.Message), e, isUserError: false);
+                    }
+                }
+                else if (_printDownloadLinkOnly)
+                {
+                    var packageUrls = GetUpdatablePackageUrlsAsync(_includePreviews).GetAwaiter().GetResult();
+                    Reporter.WriteLine("==allPackageLinksJsonOutputStart==");
+                    Reporter.WriteLine(JsonSerializer.Serialize(packageUrls, new JsonSerializerOptions() { WriteIndented = true }));
+                    Reporter.WriteLine("==allPackageLinksJsonOutputEnd==");
+                }
+                else if (_adManifestOnlyOption)
+                {
+                    recorder.Run(() => _workloadManifestUpdater.UpdateAdvertisingManifestsAsync(_includePreviews, string.IsNullOrWhiteSpace(_fromCacheOption) ? null : new DirectoryPath(_fromCacheOption)).Wait());
+                    Reporter.WriteLine();
+                    Reporter.WriteLine(LocalizableStrings.WorkloadUpdateAdManifestsSucceeded);
+                }
+                else if (_printRollbackDefinitionOnly)
+                {
+                    var manifestInfo = WorkloadRollbackInfo.FromManifests(_workloadResolver.GetInstalledManifests());
+                    Reporter.WriteLine("==workloadRollbackDefinitionJsonOutputStart==");
+                    Reporter.WriteLine(manifestInfo.ToJson());
+                    Reporter.WriteLine("==workloadRollbackDefinitionJsonOutputEnd==");
+                }
+                else
+                {
+                    recorder.Run(() =>
+                    {
+                        try
+                        {
+                            UpdateWorkloads(_includePreviews, string.IsNullOrWhiteSpace(_fromCacheOption) ? null : new DirectoryPath(_fromCacheOption));
+                        }
+                        catch (Exception e)
+                        {
+                            // Don't show entire stack trace
+                            throw new GracefulException(string.Format(LocalizableStrings.WorkloadUpdateFailed, e.Message), e, isUserError: false);
+                        }
+                    });
+                }
+            }
+            finally
+            {
+                _workloadInstaller.Shutdown();
+            }
+            
             return _workloadInstaller.ExitCode;
         }
 

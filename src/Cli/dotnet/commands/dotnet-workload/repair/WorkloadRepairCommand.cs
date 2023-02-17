@@ -58,32 +58,41 @@ namespace Microsoft.DotNet.Workloads.Workload.Repair
 
         public override int Execute()
         {
+            WorkloadHistoryRecorder recorder = new WorkloadHistoryRecorder(_workloadResolver, _workloadInstaller);
+            recorder.HistoryRecord.CommandName = "uninstall";
+
             try
             {
-                Reporter.WriteLine();
-
-                var workloadIds = _workloadInstaller.GetWorkloadInstallationRecordRepository().GetInstalledWorkloads(new SdkFeatureBand(_sdkVersion));
-
-                if (!workloadIds.Any())
+                recorder.Run(() =>
                 {
-                    Reporter.WriteLine(LocalizableStrings.NoWorkloadsToRepair);
-                    return 0;
-                }
+                    try
+                    {
+                        Reporter.WriteLine();
 
-                Reporter.WriteLine(string.Format(LocalizableStrings.RepairingWorkloads, string.Join(" ", workloadIds)));
+                        var workloadIds = _workloadInstaller.GetWorkloadInstallationRecordRepository().GetInstalledWorkloads(new SdkFeatureBand(_sdkVersion));
 
-                ReinstallWorkloadsBasedOnCurrentManifests(workloadIds, new SdkFeatureBand(_sdkVersion));
+                        if (!workloadIds.Any())
+                        {
+                            Reporter.WriteLine(LocalizableStrings.NoWorkloadsToRepair);
+                            return;
+                        }
 
-                WorkloadInstallCommand.TryRunGarbageCollection(_workloadInstaller, Reporter, Verbosity, workloadSetVersion => _workloadResolverFactory.CreateForWorkloadSet(_dotnetPath, _sdkVersion.ToString(), _userProfileDir, workloadSetVersion));
+                        Reporter.WriteLine(string.Format(LocalizableStrings.RepairingWorkloads, string.Join(" ", workloadIds)));
 
-                Reporter.WriteLine();
-                Reporter.WriteLine(string.Format(LocalizableStrings.RepairSucceeded, string.Join(" ", workloadIds)));
-                Reporter.WriteLine();
-            }
-            catch (Exception e)
-            {
-                // Don't show entire stack trace
-                throw new GracefulException(string.Format(LocalizableStrings.WorkloadRepairFailed, e.Message), e, isUserError: false);
+                        ReinstallWorkloadsBasedOnCurrentManifests(workloadIds, new SdkFeatureBand(_sdkVersion));
+
+                        WorkloadInstallCommand.TryRunGarbageCollection(_workloadInstaller, Reporter, Verbosity);
+
+                        Reporter.WriteLine();
+                        Reporter.WriteLine(string.Format(LocalizableStrings.RepairSucceeded, string.Join(" ", workloadIds)));
+                        Reporter.WriteLine();
+                    }
+                    catch (Exception e)
+                    {
+                        // Don't show entire stack trace
+                        throw new GracefulException(string.Format(LocalizableStrings.WorkloadRepairFailed, e.Message), e, isUserError: false);
+                    }
+                });
             }
             finally
             {
