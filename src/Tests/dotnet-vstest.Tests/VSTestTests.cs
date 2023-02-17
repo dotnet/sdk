@@ -124,6 +124,30 @@ namespace Microsoft.DotNet.Cli.VSTest.Tests
             result.StartInfo.EnvironmentVariables[dotnetRoot].Should().Be(Path.GetDirectoryName(dotnet));
         }
 
+        [Fact]
+        public void ItShouldAcceptMultipleLoggers() {
+            var testProjectDirectory = this.CopyAndRestoreVSTestDotNetCoreTestApp();
+
+            var configuration = Environment.GetEnvironmentVariable("CONFIGURATION") ?? "Debug";
+
+            new BuildCommand(Log, testProjectDirectory)
+                .Execute()
+                .Should().Pass();
+
+            var outputDll = Path.Combine(testProjectDirectory, "bin", configuration, ToolsetInfo.CurrentTargetFramework, "VSTestTestRunParameters.dll");
+
+            // Call test
+            CommandResult result = new DotnetVSTestCommand(Log)
+                                        .Execute(new[] {
+                                            outputDll,
+                                            "--logger:console;verbosity=normal",
+                                            "--logger:trx"
+                                        });
+
+            // Verify
+            result.ExitCode.Should().Be(0);
+        }
+
         private string CopyAndRestoreVSTestDotNetCoreTestApp([CallerMemberName] string callingMethod = "")
         {
             // Copy VSTestCore project in output directory of project dotnet-vstest.Tests
