@@ -543,6 +543,16 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             }
         }
 
+        public void WriteWorkloadHistoryRecord(WorkloadHistoryRecord workloadHistoryRecord)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IEnumerable<WorkloadHistoryRecord> GetWorkloadHistoryRecords()
+        {
+            throw new NotImplementedException();
+        }
+
         public void Shutdown()
         {
             Log?.LogMessage("Shutting down");
