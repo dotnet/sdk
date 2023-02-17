@@ -141,11 +141,18 @@ namespace Microsoft.DotNet.Cli.VSTest.Tests
                                         .Execute(new[] {
                                             outputDll,
                                             "--logger:console;verbosity=normal",
-                                            "--logger:trx"
+                                            "--logger:trx",
+                                            "--",
+                                            "TestRunParameters.Parameter(name=\"myParam\",",
+                                            "value=\"value\")",
+                                            "TestRunParameters.Parameter(name=\"myParam2\",",
+                                            "value=\"value",
+                                            "with",
+                                            "space\")"
                                         });
 
             // Verify
-            result.ExitCode.Should().Be(0);
+            result.ExitCode.Should().Be(0, $"Should have executed successfully, but got: {result.StdOut}");
         }
 
         private string CopyAndRestoreVSTestDotNetCoreTestApp([CallerMemberName] string callingMethod = "")
