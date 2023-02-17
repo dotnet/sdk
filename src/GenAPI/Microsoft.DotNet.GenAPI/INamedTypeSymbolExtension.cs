@@ -171,10 +171,12 @@ namespace Microsoft.DotNet.GenAPI
                 {
                     SyntaxKind visibility = SyntaxKind.InternalKeyword;
 
-                    if ((symbolFilter is AccessibilitySymbolFilter accessibilityFilter && accessibilityFilter.IncludeInternalSymbols) ||
+                    Func<ISymbolFilter, bool> IncludeInternalSymbols = filter =>
+                        filter is AccessibilitySymbolFilter accessibilityFilter && accessibilityFilter.IncludeInternalSymbols;
+
+                    if (IncludeInternalSymbols(symbolFilter) ||
                         (symbolFilter is CompositeSymbolFilter compositeSymbolFilter &&
-                            compositeSymbolFilter.Filters.Any(f => f is AccessibilitySymbolFilter accessibilityFilter &&
-                                accessibilityFilter.IncludeInternalSymbols)))
+                            compositeSymbolFilter.Filters.Any(filter => IncludeInternalSymbols(filter))))
                     {
                         visibility = SyntaxKind.PrivateKeyword;
                     }
@@ -185,7 +187,7 @@ namespace Microsoft.DotNet.GenAPI
                         SyntaxFactory.Identifier(namedType.ToDisplayString()),
                         SyntaxFactory.ParameterList(),
                         default!,
-                        default(BlockSyntax)!).WithInitializer(baseConstructors.First().GenerateBaseConstructorInitializer()); ;
+                        default(BlockSyntax)!).WithInitializer(baseConstructors.First().GenerateBaseConstructorInitializer());
                 }
             }
         }
