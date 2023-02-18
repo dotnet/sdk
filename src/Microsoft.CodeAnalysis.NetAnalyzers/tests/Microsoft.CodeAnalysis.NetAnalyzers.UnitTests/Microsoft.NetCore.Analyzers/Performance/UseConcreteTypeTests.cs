@@ -12,6 +12,31 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
     public static partial class UseConcreteTypeTests
     {
         [Fact]
+        public static async Task ShouldNotTrigger_Visibility()
+        {
+            await TestCSAsync(@"
+                internal class C
+                {
+                    internal object Obj = new Nested();
+                    internal object GetObj() => new Nested();
+
+                    private sealed class Nested { }
+
+                    public void Test(object o)
+                    {
+                        o.ToString();
+                    }
+
+                    public void Foo()
+                    {
+                        Obj.ToString();
+                        Test(new Nested());
+                    }
+                }
+            ", $"dotnet_code_quality.CA1859.api_surface = private,internal");
+        }
+
+        [Fact]
         public static async Task ShouldNotTrigger_VirtualOverrides()
         {
             const string Source = @"

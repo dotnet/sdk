@@ -240,10 +240,10 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 }
             }
 
-            void Evaluate(ISymbol sym, ITypeSymbol fromType, PooledConcurrentSet<ITypeSymbol> assignments, PooledConcurrentSet<IMethodSymbol>? targets, DiagnosticDescriptor desc)
+            void Evaluate(ISymbol affectedSymbol, ITypeSymbol fromType, PooledConcurrentSet<ITypeSymbol> typesAssigned, PooledConcurrentSet<IMethodSymbol>? targets, DiagnosticDescriptor desc)
             {
-                // a set of the values assigned to the given symbol
-                using var types = PooledHashSet<ITypeSymbol>.GetInstance(assignments, SymbolEqualityComparer.Default);
+                // set of the values assigned to the given symbol
+                using var types = PooledHashSet<ITypeSymbol>.GetInstance(typesAssigned, SymbolEqualityComparer.Default);
 
                 // 'void' is the magic value we use to represent null assignment
                 var assignedNull = types.Remove(coll.Void!);
@@ -287,16 +287,40 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     }
                 }
 
-                if (toType.TypeKind == TypeKind.Class
-                    && !SymbolEqualityComparer.Default.Equals(fromType, toType)
-                    && toType.SpecialType != SpecialType.System_Object
-                    && toType.SpecialType != SpecialType.System_Delegate)
+                if (toType.TypeKind != TypeKind.Class)
                 {
-                    var fromTypeName = GetTypeName(fromType);
-                    var toTypeName = GetTypeName(toType);
-                    var diagnostic = sym.CreateDiagnostic(desc, sym.Name, fromTypeName, toTypeName);
-                    reportDiag(diagnostic);
+                    // we only deal with classes
+                    return;
                 }
+
+                if (SymbolEqualityComparer.Default.Equals(fromType, toType))
+                {
+                    // don't recommend upgrading the type to itself
+                    return;
+                }
+
+                if (toType.SpecialType is SpecialType.System_Object or SpecialType.System_Delegate)
+                {
+                    // skip these special types
+                    return;
+                }
+
+                if (affectedSymbol.IsExternallyVisible() && !toType.IsExternallyVisible())
+                {
+                    // if the affected symbol is externally visible, then the suggested type must be externally visible too
+                    return;
+                }
+
+                if (!toType.GetResultantVisibility().IsAtLeastAsVisibleAs(affectedSymbol.GetResultantVisibility()))
+                {
+                    // the suggested type must have equal or greater visibility than the affected symbol.
+                    return;
+                }
+
+                var fromTypeName = GetTypeName(fromType);
+                var toTypeName = GetTypeName(toType);
+                var diagnostic = affectedSymbol.CreateDiagnostic(desc, affectedSymbol.Name, fromTypeName, toTypeName);
+                reportDiag(diagnostic);
             }
 
             bool CanUpgrade(IMethodSymbol methodSym) => !coll.MethodsAssignedToDelegate.ContainsKey(methodSym);
