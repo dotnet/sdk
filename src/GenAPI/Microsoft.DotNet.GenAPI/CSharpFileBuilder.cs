@@ -5,6 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security.Policy;
+using System.Xml.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Formatting;
@@ -137,6 +139,30 @@ namespace Microsoft.DotNet.GenAPI
             return namespaceNode;
         }
 
+        // TODO: implement this logic
+        // Name hiding through inheritance occurs when classes or structs redeclare names that were inherited from base classes.This type of name hiding takes one of the following forms:
+        // - A constant, field, property, event, or type introduced in a class or struct hides all base class members with the same name.
+        // - A method introduced in a class or struct hides all non-method base class members with the same name, and all base class methods with the same signature(§7.6).
+        // - An indexer introduced in a class or struct hides all base class indexers with the same signature(§7.6) .
+        private static bool HidesBaseMember(ISymbol member, ISymbolFilter symbolFilter)
+        {
+            if (member.IsOverride)
+            {
+                return false;
+            }
+            if (member.ContainingType.BaseType is not INamedTypeSymbol baseType)
+            {
+                return false;
+            }
+            foreach (ISymbol baseMember in baseType.GetMembers(member.Name))
+            {
+                return symbolFilter.Include(baseMember);
+                // more checks
+                //return true;
+            }
+            return false;
+        }
+
         private SyntaxNode Visit(SyntaxNode namedTypeNode, INamedTypeSymbol namedType)
         {
             IEnumerable<ISymbol> members = namedType.GetMembers().Where(_symbolFilter.Include);
@@ -164,7 +190,7 @@ namespace Microsoft.DotNet.GenAPI
                 }
 
                 SyntaxNode memberDeclaration = _syntaxGenerator.DeclarationExt(member, _symbolFilter);
-                
+
                 // Console.WriteLine(((MemberDeclarationSyntax)memberDeclaration).ToFullString());
 
                 foreach (AttributeData attribute in member.GetAttributes()
@@ -176,6 +202,12 @@ namespace Microsoft.DotNet.GenAPI
                 if (member is INamedTypeSymbol nestedTypeSymbol)
                 {
                     memberDeclaration = Visit(memberDeclaration, nestedTypeSymbol);
+                }
+
+                if (HidesBaseMember(member, _symbolFilter))
+                {
+                    var mods = _syntaxGenerator.GetModifiers(memberDeclaration);
+                    memberDeclaration = _syntaxGenerator.WithModifiers(memberDeclaration, mods.WithIsNew(true));
                 }
 
                 namedTypeNode = _syntaxGenerator.AddMembers(namedTypeNode, memberDeclaration);

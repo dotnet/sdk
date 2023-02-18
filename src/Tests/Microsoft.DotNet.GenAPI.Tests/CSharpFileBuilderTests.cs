@@ -24,31 +24,31 @@ namespace Microsoft.DotNet.GenAPI.Tests
             Console.SetOut(converter);
         }
 
-    private class Converter : TextWriter
-    {
-        ITestOutputHelper _output;
-        public Converter(ITestOutputHelper output)
+        private class Converter : TextWriter
         {
-            _output = output;
-        }
-        public override Encoding Encoding
-        {
-            get { return Encoding.Default; }
-        }
-        public override void WriteLine(string message)
-        {
-            _output.WriteLine(message);
-        }
-        public override void WriteLine(string format, params object[] args)
-        {
-            _output.WriteLine(format, args);
-        }
+            ITestOutputHelper _output;
+            public Converter(ITestOutputHelper output)
+            {
+                _output = output;
+            }
+            public override Encoding Encoding
+            {
+                get { return Encoding.Default; }
+            }
+            public override void WriteLine(string message)
+            {
+                _output.WriteLine(message);
+            }
+            public override void WriteLine(string format, params object[] args)
+            {
+                _output.WriteLine(format, args);
+            }
 
-        public override void Write(char value)
-        {
-            throw new NotSupportedException("This text writer only supports WriteLine(string) and WriteLine(string, params object[]).");
+            public override void Write(char value)
+            {
+                throw new NotSupportedException("This text writer only supports WriteLine(string) and WriteLine(string, params object[]).");
+            }
         }
-    }
 
         class AllowAllFilter : ISymbolFilter
         {
@@ -1426,29 +1426,102 @@ namespace Microsoft.DotNet.GenAPI.Tests
         [Fact]
         public void TestMethodNewKeywordReturnType()
         {
-            Console.WriteLine("FooBar");
             RunTest(original: """
                     namespace A
                     {
-                        public class Foo<T>
-                        {
-                            #pragma warning disable 0109
-                            #pragma warning disable 8597
-                            public static new int Default { get { throw null; } } 
+                        using System;
+                        public partial class C {
+                            public int Foo;
+                            public const int Bar = 29;
+                            public int Baz { get; }
+                            #pragma warning disable 8618
+                            public event EventHandler MyEvent;
+                            #pragma warning disable 8625
+                            public void Do() => MyEvent(default(object), default(EventArgs));
+                            public void Do(float f) {}
+                            public static void DoStatic() {}
+                            public class MyNestedClass {}
+                            public struct MyNestedStruct {}
+                            public class MyNestedGenericClass<T> {}
+                            public struct MyNestedGenericStruct<T> {}
+                            public C this[int i]
+                            {
+                              get => default(C)!;
+                              set {}
+                            }
 
-                            #pragma warning disable 0109
-                            public new bool Add(T item) => true;
+                        }
+                        public class D : C {
+                            public new int Foo;
+                            public new const int Bar = 30;
+                            public new int Baz { get; set; }
+                            public new event EventHandler MyEvent;
+                            public new void Do() => MyEvent(default(object), default(EventArgs));
+                            public void Do(int i) {}
+                            public new static void DoStatic() {}
+                            public new class MyNestedClass {}
+                            public new struct MyNestedStruct {}
+                            public new class MyNestedGenericClass<T> {}
+                            public new struct MyNestedGenericStruct<T> {}
+                            public new D this[int i]
+                            {
+                              get => default(D)!;
+                              set {}
+                            }
+                        }
+                        public class E : C {
+                            public new int Bar;
+                            public new const int Do = 30;
+                            public new int Foo { get; set; }
+                            public new event EventHandler MyNestedClass;
+                            public new void Baz() => MyNestedClass(default(object), default(EventArgs));
+                            public new void MyNestedStruct(double d) {} 
                         }
                     }
                     """,
                     expected: """
                     namespace A
                     {
-                        public partial class Foo<T>
+                        public partial class C
                         {
-                            public static new int Default { get { throw null; } }
+                            public const int Bar = 29;
+                            public int Foo;
+                            public int Baz { get { throw null; } }
+                            public C this[int i] { get { throw null; } set {} }
+                            public event System.EventHandler MyEvent { add {} remove {} }
+                            public void Do() {}
+                            public void Do(float f) {}
+                            public static void DoStatic() {}
+                            public partial class MyNestedClass {}
+                            public partial class MyNestedGenericClass<T> {}
+                            public partial struct MyNestedGenericStruct<T> {}
+                            public partial struct MyNestedStruct {}
+                        }
 
-                            public new bool Add(T item) => true;
+                        public partial class D : C
+                        {
+                            public new const int Bar = 30;
+                            public new int Foo;
+                            public new int Baz { get { throw null; } set {} }
+                            public new D this[int i] { get { throw null; } set {} }
+                            public new event System.EventHandler MyEvent { add {} remove {} }
+                            public new void Do() {}
+                            public new void Do(int i) {}
+                            public new static void DoStatic() {}
+                            public new partial class MyNestedClass {}
+                            public new partial class MyNestedGenericClass<T> {}
+                            public new partial struct MyNestedGenericStruct<T> {}
+                            public new partial struct MyNestedStruct {}
+                        }
+
+                        public partial class E : C
+                        {
+                            public new int Bar;
+                            public new const int Do = 30;
+                            public new int Foo { get { throw null; } set {} }
+                            public new event System.EventHandler MyNestedClass { add {} remove {} }
+                            public new void Baz() {}
+                            public new void MyNestedStruct(double d) {}
                         }
                     }
                     """);
