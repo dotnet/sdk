@@ -62,9 +62,11 @@ namespace Microsoft.NetCore.Analyzers.Security
             {
                 var compilation = compilationStartAnalysisContext.Compilation;
                 var wellKnownTypeProvider = WellKnownTypeProvider.GetOrCreate(compilation);
-                if ((!wellKnownTypeProvider.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeInteropServicesDllImportAttribute, out INamedTypeSymbol? dllImportAttributeTypeSymbol)
-                        & !wellKnownTypeProvider.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeInteropServicesLibraryImportAttribute, out INamedTypeSymbol? libraryImportAttributeTypeSymbol))
-                    || !wellKnownTypeProvider.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeInteropServicesDefaultDllImportSearchPathsAttribute, out INamedTypeSymbol? defaultDllImportSearchPathsAttributeTypeSymbol)
+                var dllImportTypeIsPresent = wellKnownTypeProvider.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeInteropServicesDllImportAttribute, out INamedTypeSymbol? dllImportAttributeTypeSymbol);
+                var libraryImportTypeIsPresent = wellKnownTypeProvider.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeInteropServicesLibraryImportAttribute, out INamedTypeSymbol? libraryImportAttributeTypeSymbol);
+                var dllImportSearchDirectoryTypeIsPresent = wellKnownTypeProvider.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeInteropServicesDefaultDllImportSearchPathsAttribute, out INamedTypeSymbol? defaultDllImportSearchPathsAttributeTypeSymbol);
+
+                if ((!dllImportTypeIsPresent && !libraryImportTypeIsPresent) || !dllImportSearchDirectoryTypeIsPresent
                     || compilationStartAnalysisContext.Compilation.SyntaxTrees.FirstOrDefault() is not SyntaxTree tree)
                 {
                     return;
@@ -85,7 +87,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                     var symbol = (IMethodSymbol)symbolAnalysisContext.Symbol;
 
                     // LibraryImport methods will be partial, and the generated implementation will have a non-null PartialDefinitionPart property
-                    if (!symbol.IsExtern || !symbol.IsStatic || symbol.PartialDefinitionPart != null)
+                    if (!symbol.IsStatic || symbol.PartialDefinitionPart != null)
                     {
                         return;
                     }

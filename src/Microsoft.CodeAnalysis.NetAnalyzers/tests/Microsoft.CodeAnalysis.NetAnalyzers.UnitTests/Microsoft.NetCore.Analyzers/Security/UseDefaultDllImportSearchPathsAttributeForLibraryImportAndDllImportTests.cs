@@ -18,7 +18,7 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 	// which will ignore all the configuration about the search algorithm.
 	// Fow now, this rule didn't take Known Dlls into consideration.
 	// If it is needed in the future, we can recover this rule.
-	public class UseDefaultDllImportSearchPathsAttributeWithLibraryImportTests
+	public class UseDefaultDllImportSearchPathsAttributeWithLibraryImportAndDllImportTests
 	{
 		private async Task RunAnalyzerAsync(string source, string generatedSource, params DiagnosticResult[] diagnostics)
 		{
@@ -61,10 +61,11 @@ namespace System.Runtime.InteropServices
 }
 ";
 
-		private const string MessageBoxImplementation_NoDllImport = @"
+		private const string MessageBoxImplementation_DllImport = @"
 partial class TestClass
 {
-    public static partial int MessageBox(IntPtr hWnd, String text, String caption, uint type) => 0;
+	[DllImport(""user32.dll"")]
+    public static extern partial int MessageBox(IntPtr hWnd, String text, String caption, uint type);
 }
 ";
 
@@ -86,7 +87,7 @@ partial class TestClass
         MessageBox(new IntPtr(0), ""Hello World!"", ""Hello Dialog"", 0);
     }
 }" + LibraryImportAttribute;
-			string generated = MessageBoxImplementation_NoDllImport;
+			string generated = MessageBoxImplementation_DllImport;
 
 			await RunAnalyzerAsync(source, generated,
 				GetCSharpResultAt(8, 31, UseDefaultDllImportSearchPathsAttribute.UseDefaultDllImportSearchPathsAttributeRule, "MessageBox"));
@@ -109,7 +110,7 @@ partial class TestClass
         MessageBox(new IntPtr(0), ""Hello World!"", ""Hello Dialog"", 0);
     }
 }" + LibraryImportAttribute;
-			var generated = MessageBoxImplementation_NoDllImport;
+			var generated = MessageBoxImplementation_DllImport;
 			await RunAnalyzerAsync(source, generated,
 				GetCSharpResultAt(8, 31, UseDefaultDllImportSearchPathsAttribute.UseDefaultDllImportSearchPathsAttributeRule, "MessageBox"));
 		}
@@ -131,7 +132,7 @@ partial class TestClass
         MessageBox(new IntPtr(0), ""Hello World!"", ""Hello Dialog"", 0);
     }
 }" + LibraryImportAttribute;
-			var generated = MessageBoxImplementation_NoDllImport;
+			var generated = MessageBoxImplementation_DllImport;
 			await RunAnalyzerAsync(source, generated,
 				GetCSharpResultAt(8, 31, UseDefaultDllImportSearchPathsAttribute.UseDefaultDllImportSearchPathsAttributeRule, "MessageBox"));
 
@@ -155,7 +156,7 @@ partial class TestClass
         MessageBox(new IntPtr(0), ""Hello World!"", ""Hello Dialog"", 0);
     }
 }" + LibraryImportAttribute;
-			var generated = MessageBoxImplementation_NoDllImport;
+			var generated = MessageBoxImplementation_DllImport;
 			await RunAnalyzerAsync(source, generated, 
 				GetCSharpResultAt(9, 31, UseDefaultDllImportSearchPathsAttribute.DoNotUseUnsafeDllImportSearchPathRule, "AssemblyDirectory"));
 		}
@@ -178,7 +179,7 @@ partial class TestClass
         MessageBox(new IntPtr(0), ""Hello World!"", ""Hello Dialog"", 0);
     }
 }" + LibraryImportAttribute;
-			var generated = MessageBoxImplementation_NoDllImport;
+			var generated = MessageBoxImplementation_DllImport;
 			await RunAnalyzerAsync(source, generated, GetCSharpResultAt(9, 31, UseDefaultDllImportSearchPathsAttribute.DoNotUseUnsafeDllImportSearchPathRule, "AssemblyDirectory"));
 		}
 
@@ -199,7 +200,7 @@ partial class TestClass
     {
         MessageBox(new IntPtr(0), ""Hello World!"", ""Hello Dialog"", 0);
     }
-}" + LibraryImportAttribute; var generated = MessageBoxImplementation_NoDllImport;
+}" + LibraryImportAttribute; var generated = MessageBoxImplementation_DllImport;
 				await RunAnalyzerAsync(source, generated, GetCSharpResultAt(9, 31, UseDefaultDllImportSearchPathsAttribute.DoNotUseUnsafeDllImportSearchPathRule,
 					"AssemblyDirectory, ApplicationDirectory"));
 		}
@@ -222,7 +223,7 @@ partial class TestClass
         MessageBox(new IntPtr(0), ""Hello World!"", ""Hello Dialog"", 0);
     }
 }" + LibraryImportAttribute; 
-			var generated = MessageBoxImplementation_NoDllImport;
+			var generated = MessageBoxImplementation_DllImport;
 			await RunAnalyzerAsync(source, generated, GetCSharpResultAt(9, 31, UseDefaultDllImportSearchPathsAttribute.DoNotUseUnsafeDllImportSearchPathRule,
 					"LegacyBehavior"));
 		}
@@ -244,7 +245,7 @@ partial class TestClass
     {
         MessageBox(new IntPtr(0), ""Hello World!"", ""Hello Dialog"", 0);
     }
-}" + LibraryImportAttribute; var generated = MessageBoxImplementation_NoDllImport;
+}" + LibraryImportAttribute; var generated = MessageBoxImplementation_DllImport;
 				await RunAnalyzerAsync(source, generated, GetCSharpResultAt(9, 31, UseDefaultDllImportSearchPathsAttribute.DoNotUseUnsafeDllImportSearchPathRule,
 					"UseDllDirectoryForDependencies"));
 		}
@@ -267,7 +268,7 @@ partial class TestClass
     {
         MessageBox(new IntPtr(0), ""Hello World!"", ""Hello Dialog"", 0);
     }
-}" + LibraryImportAttribute; var generated = MessageBoxImplementation_NoDllImport;
+}" + LibraryImportAttribute; var generated = MessageBoxImplementation_DllImport;
 					await RunAnalyzerAsync(source, generated, GetCSharpResultAt(10, 31, UseDefaultDllImportSearchPathsAttribute.DoNotUseUnsafeDllImportSearchPathRule,
 					"AssemblyDirectory"));
 		}
@@ -291,7 +292,7 @@ partial class TestClass
     {
         MessageBox(new IntPtr(0), ""Hello World!"", ""Hello Dialog"", 0);
     }
-}" + LibraryImportAttribute; var generated = MessageBoxImplementation_NoDllImport;
+}" + LibraryImportAttribute; var generated = MessageBoxImplementation_DllImport;
 					await RunAnalyzerAsync(source, generated, GetCSharpResultAt(11, 31, UseDefaultDllImportSearchPathsAttribute.DoNotUseUnsafeDllImportSearchPathRule,
 					"ApplicationDirectory"));
 		}
@@ -316,7 +317,7 @@ partial class TestClass
         MessageBox(new IntPtr(0), ""Hello World!"", ""Hello Dialog"", 0);
     }
 }" + LibraryImportAttribute; 
-			var generated = MessageBoxImplementation_NoDllImport;
+			var generated = MessageBoxImplementation_DllImport;
 			await RunAnalyzerAsync(source, generated, GetCSharpResultAt(11, 31, UseDefaultDllImportSearchPathsAttribute.DoNotUseUnsafeDllImportSearchPathRule,
 					"AssemblyDirectory"));
 		}
@@ -343,7 +344,7 @@ partial class TestClass
         MessageBox(new IntPtr(0), ""Hello World!"", ""Hello Dialog"", 0);
     }
 }" + LibraryImportAttribute;
-			var generated = MessageBoxImplementation_NoDllImport;
+			var generated = MessageBoxImplementation_DllImport;
 			var config = ("/.editorconfig", $@"root = true
 
 [*]
@@ -374,7 +375,7 @@ partial class TestClass
         MessageBox(new IntPtr(0), ""Hello World!"", ""Hello Dialog"", 0);
     }
 }" + LibraryImportAttribute;
-			var generated = MessageBoxImplementation_NoDllImport;
+			var generated = MessageBoxImplementation_DllImport;
 			var config = ("/.editorconfig", $@"root = true
 
 [*]
@@ -405,7 +406,7 @@ partial class TestClass
         MessageBox(new IntPtr(0), ""Hello World!"", ""Hello Dialog"", 0);
     }
 }" + LibraryImportAttribute;
-			var generated = MessageBoxImplementation_NoDllImport;
+			var generated = MessageBoxImplementation_DllImport;
 			var config = ("/.editorconfig", $@"root = true
 
 [*]
@@ -414,26 +415,6 @@ partial class TestClass
 			await RunAnalyzerWithConfigAsync(source, generated, config, GetCSharpResultAt(9, 31,
 										UseDefaultDllImportSearchPathsAttribute.DoNotUseUnsafeDllImportSearchPathRule,
 										"UserDirectories"));
-		}
-
-		[Fact]
-		public async Task Test_NoAttribute_NoDiagnosticAsync()
-		{
-			var source = @"
-using System;
-using System.Runtime.InteropServices;
-
-partial class TestClass
-{
-    public static partial int MessageBox(IntPtr hWnd, String text, String caption, uint type);
-
-    public void TestMethod()
-    {
-        MessageBox(new IntPtr(0), ""Hello World!"", ""Hello Dialog"", 0);
-    }
-}" + LibraryImportAttribute;
-			var generated = MessageBoxImplementation_NoDllImport;
-			await RunAnalyzerAsync(source, generated);
 		}
 
 		// user32.dll will be searched in UserDirectories, which is specified by DllImportSearchPath and is good.
@@ -455,7 +436,7 @@ partial class TestClass
         MessageBox(new IntPtr(0), ""Hello World!"", ""Hello Dialog"", 0);
     }
 }" + LibraryImportAttribute;
-			var generated = MessageBoxImplementation_NoDllImport;
+			var generated = MessageBoxImplementation_DllImport;
 			await RunAnalyzerAsync(source, generated);
 		}
 
@@ -481,7 +462,7 @@ partial class TestClass
         MessageBox(new IntPtr(0), ""Hello World!"", ""Hello Dialog"", 0);
     }
 }" + LibraryImportAttribute;
-			var generated = MessageBoxImplementation_NoDllImport;
+			var generated = MessageBoxImplementation_DllImport;
 			var config = ("/.editorconfig", $@"root = true
 
 [*]
@@ -510,7 +491,7 @@ partial class TestClass
         MessageBox(new IntPtr(0), ""Hello World!"", ""Hello Dialog"", 0);
     }
 }" + LibraryImportAttribute;
-			var generated = MessageBoxImplementation_NoDllImport;
+			var generated = MessageBoxImplementation_DllImport;
 			var config = ("/.editorconfig", $@"root = true
 
 [*]
@@ -540,7 +521,7 @@ partial class TestClass
         MessageBox(new IntPtr(0), ""Hello World!"", ""Hello Dialog"", 0);
     }
 }" + LibraryImportAttribute;
-			var generated = MessageBoxImplementation_NoDllImport;
+			var generated = MessageBoxImplementation_DllImport;
 			await RunAnalyzerAsync(source, generated);
 		}
 
@@ -561,7 +542,7 @@ partial class TestClass
     {
     }
 }" + LibraryImportAttribute;
-			var generated = MessageBoxImplementation_NoDllImport;
+			var generated = MessageBoxImplementation_DllImport;
 			await RunAnalyzerAsync(source, generated);
 		}
 
@@ -583,8 +564,25 @@ partial class TestClass
     {
     }
 }" + LibraryImportAttribute;
-			var generated = MessageBoxImplementation_NoDllImport;
+			var generated = MessageBoxImplementation_DllImport;
 			await RunAnalyzerAsync(source, generated);
+		}
+
+		[Fact]
+		public async Task Test_DllImportAndLibraryImportWarnsOnLibraryImport()
+		{
+			var source = @"
+using System;
+using System.Runtime.InteropServices;
+
+internal partial class TestClass
+{
+    [LibraryImport(""user32.dll"")]
+    public static partial int MessageBox(IntPtr hWnd, String text, String caption, uint type);
+} " + LibraryImportAttribute;
+			var generated = MessageBoxImplementation_DllImport;
+			await RunAnalyzerAsync(source, generated, GetCSharpResultAt(8, 31,
+				UseDefaultDllImportSearchPathsAttribute.UseDefaultDllImportSearchPathsAttributeRule, "MessageBox"));
 		}
 
 		// [LibraryImport] is set with an absolute path, which will let the [DefaultDllImportSearchPaths] be ignored.
@@ -606,7 +604,7 @@ partial class TestClass
         MessageBox(new IntPtr(0), ""Hello World!"", ""Hello Dialog"", 0);
     }
 }" + LibraryImportAttribute;
-			var generated = MessageBoxImplementation_NoDllImport;
+			var generated = MessageBoxImplementation_DllImport;
 			await RunAnalyzerAsync(source, generated);
 		}
 
@@ -628,7 +626,7 @@ partial class TestClass
         MessageBox(new IntPtr(0), ""Hello World!"", ""Hello Dialog"", 0);
     }
 }" + LibraryImportAttribute;
-			var generated = MessageBoxImplementation_NoDllImport;
+			var generated = MessageBoxImplementation_DllImport;
 			await RunAnalyzerAsync(source, generated);
 		}
 
@@ -650,7 +648,7 @@ partial class TestClass
         MessageBox(new IntPtr(0), ""Hello World!"", ""Hello Dialog"", 0);
     }
 }" + LibraryImportAttribute;
-			var generated = MessageBoxImplementation_NoDllImport;
+			var generated = MessageBoxImplementation_DllImport;
 			await RunAnalyzerAsync(source, generated);
 		}
 
