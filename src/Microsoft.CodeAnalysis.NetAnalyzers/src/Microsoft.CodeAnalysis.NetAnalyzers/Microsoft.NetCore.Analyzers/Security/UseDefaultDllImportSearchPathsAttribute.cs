@@ -62,11 +62,20 @@ namespace Microsoft.NetCore.Analyzers.Security
             {
                 var compilation = compilationStartAnalysisContext.Compilation;
                 var wellKnownTypeProvider = WellKnownTypeProvider.GetOrCreate(compilation);
-                var dllImportTypeIsPresent = wellKnownTypeProvider.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeInteropServicesDllImportAttribute, out INamedTypeSymbol? dllImportAttributeTypeSymbol);
-                var libraryImportTypeIsPresent = wellKnownTypeProvider.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeInteropServicesLibraryImportAttribute, out INamedTypeSymbol? libraryImportAttributeTypeSymbol);
-                var dllImportSearchDirectoryTypeIsPresent = wellKnownTypeProvider.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeInteropServicesDefaultDllImportSearchPathsAttribute, out INamedTypeSymbol? defaultDllImportSearchPathsAttributeTypeSymbol);
+                var dllImportSearchDirectoryTypeIsPresent = wellKnownTypeProvider.TryGetOrCreateTypeByMetadataName(
+                    WellKnownTypeNames.SystemRuntimeInteropServicesDefaultDllImportSearchPathsAttribute,
+                    out INamedTypeSymbol? defaultDllImportSearchPathsAttributeTypeSymbol);
+                if (!dllImportSearchDirectoryTypeIsPresent)
+                    return;
 
-                if ((!dllImportTypeIsPresent && !libraryImportTypeIsPresent) || !dllImportSearchDirectoryTypeIsPresent
+                var dllImportTypeIsPresent = wellKnownTypeProvider.TryGetOrCreateTypeByMetadataName(
+                    WellKnownTypeNames.SystemRuntimeInteropServicesDllImportAttribute,
+                    out INamedTypeSymbol? dllImportAttributeTypeSymbol);
+                var libraryImportTypeIsPresent = wellKnownTypeProvider.TryGetOrCreateTypeByMetadataName(
+                    WellKnownTypeNames.SystemRuntimeInteropServicesLibraryImportAttribute,
+                    out INamedTypeSymbol? libraryImportAttributeTypeSymbol);
+
+                if ((!dllImportTypeIsPresent && !libraryImportTypeIsPresent)
                     || compilationStartAnalysisContext.Compilation.SyntaxTrees.FirstOrDefault() is not SyntaxTree tree)
                 {
                     return;
