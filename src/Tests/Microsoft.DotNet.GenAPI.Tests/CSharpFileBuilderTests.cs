@@ -1479,6 +1479,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                         }
                     }
                     """,
+                includeInternalSymbols: true,
                 includeEffectivelyPrivateSymbols: true);
         }
 

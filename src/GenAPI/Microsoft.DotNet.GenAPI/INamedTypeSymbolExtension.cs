@@ -161,22 +161,27 @@ namespace Microsoft.DotNet.GenAPI
             return true;
         }
 
-        // Synthesize an internal default constructor for the type with implicit default constructor and the base type without.
+        /// <summary>
+        /// Synthesize an internal default constructor for the type with implicit default constructor and the base type without.
+        /// </summary>
+        /// <param name="namedType">A loaded named type symbol <see cref="INamedTypeSymbol"/>.</param>
+        /// <param name="symbolFilter">Assembly symbol filter <see cref="ISymbolFilter"/>.</param>
         public static IEnumerable<SyntaxNode> TryGetInternalDefaultConstructor(this INamedTypeSymbol namedType, ISymbolFilter symbolFilter)
         {
-            if (!namedType.Constructors.Where(symbolFilter.Include).Any() && namedType.BaseType != null)
+            if (namedType.BaseType != null && !namedType.Constructors.Any(symbolFilter.Include))
             {
                 IEnumerable<IMethodSymbol> baseConstructors = namedType.BaseType.Constructors.Where(symbolFilter.Include);
                 if (baseConstructors.Any() && baseConstructors.All(c => !c.Parameters.IsEmpty))
                 {
                     SyntaxKind visibility = SyntaxKind.InternalKeyword;
 
-                    Func<ISymbolFilter, bool> IncludeInternalSymbols = filter =>
+                    Func<ISymbolFilter, bool> includeInternalSymbols = filter =>
                         filter is AccessibilitySymbolFilter accessibilityFilter && accessibilityFilter.IncludeInternalSymbols;
 
-                    if (IncludeInternalSymbols(symbolFilter) ||
+                    // Use the `Private` visibility if internal symbols are not filtered out.
+                    if (includeInternalSymbols(symbolFilter) ||
                         (symbolFilter is CompositeSymbolFilter compositeSymbolFilter &&
-                            compositeSymbolFilter.Filters.Any(filter => IncludeInternalSymbols(filter))))
+                            compositeSymbolFilter.Filters.Any(filter => includeInternalSymbols(filter))))
                     {
                         visibility = SyntaxKind.PrivateKeyword;
                     }
@@ -192,7 +197,11 @@ namespace Microsoft.DotNet.GenAPI
             }
         }
 
-        // Synthesize a base class initializer.
+        /// <summary>
+        /// Synthesize a base class initializer. 
+        /// </summary>
+        /// <param name="baseTypeConstructor">Represents a base class constructor <see cref="IMethodSymbol"/>.</param>
+        /// <returns>Returns the syntax node <see cref="ConstructorInitializerSyntax"/>.</returns>
         public static ConstructorInitializerSyntax GenerateBaseConstructorInitializer(this IMethodSymbol baseTypeConstructor)
         {
             ConstructorInitializerSyntax constructorInitializer = SyntaxFactory.ConstructorInitializer(SyntaxKind.BaseConstructorInitializer);

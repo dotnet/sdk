@@ -10,25 +10,22 @@ namespace Microsoft.DotNet.ApiSymbolExtensions.Filtering
     /// </summary>
     public class AccessibilitySymbolFilter : ISymbolFilter
     {
-        private readonly bool _includeInternalSymbols;
-        private readonly bool _includeEffectivelyPrivateSymbols;
-        private readonly bool _includeExplicitInterfaceImplementationSymbols;
-
-        public bool IncludeInternalSymbols { get => _includeInternalSymbols; }
-        public bool IncludeEffectivelyPrivateSymbols { get => _includeEffectivelyPrivateSymbols; }
+        public bool IncludeExplicitInterfaceImplementationSymbols { get; }
+        public bool IncludeInternalSymbols { get; }
+        public bool IncludeEffectivelyPrivateSymbols { get; }
 
         public AccessibilitySymbolFilter(bool includeInternalSymbols,
             bool includeEffectivelyPrivateSymbols = false,
             bool includeExplicitInterfaceImplementationSymbols = false)
         {
-            _includeInternalSymbols = includeInternalSymbols;
-            _includeEffectivelyPrivateSymbols = includeEffectivelyPrivateSymbols;
-            _includeExplicitInterfaceImplementationSymbols = includeExplicitInterfaceImplementationSymbols;
+            IncludeInternalSymbols = includeInternalSymbols;
+            IncludeEffectivelyPrivateSymbols = includeEffectivelyPrivateSymbols;
+            IncludeExplicitInterfaceImplementationSymbols = includeExplicitInterfaceImplementationSymbols;
         }
 
         /// <inheritdoc />
         public bool Include(ISymbol symbol) =>
-            symbol.IsVisibleOutsideOfAssembly(_includeInternalSymbols,
-                _includeEffectivelyPrivateSymbols, _includeExplicitInterfaceImplementationSymbols);
+            symbol.IsVisibleOutsideOfAssembly(IncludeInternalSymbols,
+                IncludeEffectivelyPrivateSymbols, IncludeExplicitInterfaceImplementationSymbols);
     }
 }
