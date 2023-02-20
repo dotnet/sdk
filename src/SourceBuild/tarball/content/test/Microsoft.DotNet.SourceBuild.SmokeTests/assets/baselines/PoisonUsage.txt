@@ -1079,6 +1079,12 @@
   <File Path="Microsoft.DotNet.SharedFramework.Sdk.x.y.z/tools/netx.y/System.Text.Json.dll">
     <Type>AssemblyAttribute</Type>
   </File>
+  <File Path="Microsoft.DotNet.SignTool.x.y.z/lib/netx.y/Microsoft.ApplicationInsights.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.SignTool.x.y.z/lib/netx.y/Microsoft.ApplicationInsights.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
   <File Path="Microsoft.DotNet.SignTool.x.y.z/lib/netx.y/Newtonsoft.Json.dll">
     <Type>AssemblyAttribute</Type>
   </File>
@@ -1131,6 +1137,12 @@
     <Type>AssemblyAttribute</Type>
   </File>
   <File Path="Microsoft.DotNet.SignTool.x.y.z/lib/netx.y/System.Runtime.CompilerServices.Unsafe.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.SignTool.x.y.z/tools/netx.y/Microsoft.ApplicationInsights.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.SignTool.x.y.z/tools/netx.y/Microsoft.ApplicationInsights.dll">
     <Type>AssemblyAttribute</Type>
   </File>
   <File Path="Microsoft.DotNet.SignTool.x.y.z/tools/netx.y/Newtonsoft.Json.dll">
