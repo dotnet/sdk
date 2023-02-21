@@ -94,6 +94,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                        //.ScrubAndReplace(
                        //    "Warning: Failed to evaluate bind symbol \'langVersion\', it will be skipped.",
                        //    string.Empty);
+                       Assert.DoesNotContain("Warning: Failed to evaluate bind symbol \'langVersion\', it will be skipped.", content.ToString());
                        content.ScrubByRegex("Using home directory.*set by the 'DOTNET_CLI_HOME' environment variable.*Global Settings Location:.*SharedHomeDirectory(\\\\|\\/)\\d{17}", string.Empty, System.Text.RegularExpressions.RegexOptions.Singleline);
                        content.ScrubByRegex("\\[.*", string.Empty);
                        content.ScrubByRegex("  Missing 'precedence'.", string.Empty);
@@ -169,6 +170,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                        //.ScrubAndReplace(
                        //    "Warning: Failed to evaluate bind symbol \'langVersion\', it will be skipped.",
                        //    string.Empty);
+                       Assert.DoesNotContain("Warning: Failed to evaluate bind symbol \'langVersion\', it will be skipped.", content.ToString());
                        content.ScrubByRegex("Using home directory.*set by the 'DOTNET_CLI_HOME' environment variable.*Global Settings Location:.*SharedHomeDirectory(\\\\|\\/)\\d{17}", string.Empty, System.Text.RegularExpressions.RegexOptions.Singleline);
                        content.ScrubByRegex("\\[.*", string.Empty);
                        content.ScrubByRegex("  Missing 'precedence'.", string.Empty);
