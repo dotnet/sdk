@@ -136,12 +136,13 @@ namespace Microsoft.DotNet.Cli.VSTest.Tests
 
             var outputDll = Path.Combine(testProjectDirectory, "bin", configuration, ToolsetInfo.CurrentTargetFramework, "VSTestTestRunParameters.dll");
 
+            var logFileName = $"{Path.GetTempFileName()}.trx";
             // Call test
             CommandResult result = new DotnetVSTestCommand(Log)
                                         .Execute(new[] {
                                             outputDll,
                                             "--logger:console;verbosity=normal",
-                                            "--logger:trx",
+                                            $"--logger:trx;LogFileName={logFileName}",
                                             "--",
                                             "TestRunParameters.Parameter(name=\"myParam\",",
                                             "value=\"value\")",
@@ -152,6 +153,46 @@ namespace Microsoft.DotNet.Cli.VSTest.Tests
                                         });
 
             // Verify
+            if (!TestContext.IsLocalized())
+            {
+                result.StdOut.Should().NotMatch("The test run parameter argument '*' is invalid.");
+                result.StdOut.Should().Contain("Total tests: 1");
+                result.StdOut.Should().Contain("Passed: 1");
+                result.StdOut.Should().Contain("Passed VSTestTestRunParameters");
+            }
+            result.ExitCode.Should().Be(0, $"Should have executed successfully, but got: {result.StdOut}");
+
+            var testResultsDirectory = new FileInfo(Path.Combine(Environment.CurrentDirectory, "TestResults", logFileName));
+            testResultsDirectory.Exists.Should().BeTrue("expected the test results file to be created");
+        }
+
+        [Fact]
+        public void ItShouldAcceptNoLoggers() {
+            var testProjectDirectory = this.CopyAndRestoreVSTestDotNetCoreTestApp();
+
+            var configuration = Environment.GetEnvironmentVariable("CONFIGURATION") ?? "Debug";
+
+            new BuildCommand(Log, testProjectDirectory)
+                .Execute()
+                .Should().Pass();
+
+            var outputDll = Path.Combine(testProjectDirectory, "bin", configuration, ToolsetInfo.CurrentTargetFramework, "VSTestTestRunParameters.dll");
+
+            // Call test
+            CommandResult result = new DotnetVSTestCommand(Log)
+                                        .Execute(new[] {
+                                            outputDll,
+                                            "--",
+                                            "TestRunParameters.Parameter(name=\"myParam\",",
+                                            "value=\"value\")",
+                                            "TestRunParameters.Parameter(name=\"myParam2\",",
+                                            "value=\"value",
+                                            "with",
+                                            "space\")"
+                                        });
+
+            //Verify
+            // since there are no loggers, all we have to go on it the exit code
             result.ExitCode.Should().Be(0, $"Should have executed successfully, but got: {result.StdOut}");
         }
 
