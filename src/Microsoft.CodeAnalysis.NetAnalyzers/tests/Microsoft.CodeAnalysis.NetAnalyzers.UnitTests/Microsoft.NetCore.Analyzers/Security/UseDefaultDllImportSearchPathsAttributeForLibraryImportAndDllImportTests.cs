@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -40,6 +39,7 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
             {
                 test.TestState.AnalyzerConfigFiles.Add(editorConfig.Value);
             }
+
             await test.RunAsync();
         }
 
