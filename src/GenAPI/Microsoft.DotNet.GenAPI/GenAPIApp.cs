@@ -112,12 +112,12 @@ namespace Microsoft.DotNet.GenAPI
 
             if (context.ExcludeAttributesFiles != null)
             {
-                compositeSymbolFilter.Add(new DocIdExcludeListSymbolFilter(context.ExcludeAttributesFiles));
+                compositeSymbolFilter.Add(new DocIdSymbolFilter(context.ExcludeAttributesFiles));
             }
 
             if (context.ExcludeApiFiles != null)
             {
-                compositeSymbolFilter.Add(new DocIdExcludeListSymbolFilter(context.ExcludeApiFiles));
+                compositeSymbolFilter.Add(new DocIdSymbolFilter(context.ExcludeApiFiles));
             }
 
             IReadOnlyList<IAssemblySymbol?> assemblySymbols = loader.LoadAssemblies(context.Assemblies);

@@ -11,11 +11,11 @@ namespace Microsoft.DotNet.ApiSymbolExtensions.Filtering
     /// Implements the logic of filtering out api.
     /// Reads the file with the list of attributes, types, members in DocId format.
     /// </summary>
-    public class DocIdExcludeListSymbolFilter : ISymbolFilter
+    public class DocIdSymbolFilter : ISymbolFilter
     {
         private readonly HashSet<string> _docIdsToExclude;
 
-        public DocIdExcludeListSymbolFilter(string[] docIdsToExcludeFiles)
+        public DocIdSymbolFilter(string[] docIdsToExcludeFiles)
         {
             _docIdsToExclude = new HashSet<string>(ReadDocIdsAttributes(docIdsToExcludeFiles));
         }
