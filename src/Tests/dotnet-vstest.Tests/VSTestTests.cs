@@ -192,14 +192,7 @@ namespace Microsoft.DotNet.Cli.VSTest.Tests
                                         });
 
             //Verify
-            // Verify
-            if (!TestContext.IsLocalized())
-            {
-                result.StdOut.Should().NotMatch("The test run parameter argument '*' is invalid.");
-                result.StdOut.Should().Contain("Total tests: 1");
-                result.StdOut.Should().Contain("Passed: 1");
-                result.StdOut.Should().Contain("Passed VSTestTestRunParameters");
-            }
+            // since there are no loggers, all we have to go on it the exit code
             result.ExitCode.Should().Be(0, $"Should have executed successfully, but got: {result.StdOut}");
         }
 
