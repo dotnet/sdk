@@ -15,6 +15,9 @@ namespace Microsoft.DotNet.ApiSymbolExtensions.Filtering
     {
         public CompositeSymbolFilter() => Filters = new();
 
+        /// <summary>
+        /// List on inner filters.
+        /// </summary>
         public List<ISymbolFilter> Filters { get; }
 
         /// <summary>

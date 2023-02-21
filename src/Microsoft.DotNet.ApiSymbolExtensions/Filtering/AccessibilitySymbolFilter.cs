@@ -10,9 +10,20 @@ namespace Microsoft.DotNet.ApiSymbolExtensions.Filtering
     /// </summary>
     public class AccessibilitySymbolFilter : ISymbolFilter
     {
-        public bool IncludeExplicitInterfaceImplementationSymbols { get; }
+        /// <summary>
+        /// Include internal API.
+        /// </summary>
         public bool IncludeInternalSymbols { get; }
+
+        /// <summary>
+        /// Include effectively private API.
+        /// </summary>
         public bool IncludeEffectivelyPrivateSymbols { get; }
+
+        /// <summary>
+        /// Include explicit interface implementation API.
+        /// </summary>
+        public bool IncludeExplicitInterfaceImplementationSymbols { get; }
 
         public AccessibilitySymbolFilter(bool includeInternalSymbols,
             bool includeEffectivelyPrivateSymbols = false,
