@@ -28,9 +28,9 @@ namespace Microsoft.DotNet.Cli
             return Command;
         }
 
-        internal static void ShowWorkloadsInfo(IWorkloadInfoHelper workloadInfoHelper = null, IReporter reporter = null)
+        internal static void ShowWorkloadsInfo(ParseResult parseResult, IWorkloadInfoHelper workloadInfoHelper = null, IReporter reporter = null)
         {
-            workloadInfoHelper ??= new WorkloadInfoHelper();
+            workloadInfoHelper ??= new WorkloadInfoHelper(parseResult);
             IEnumerable<WorkloadId> installedList = workloadInfoHelper.InstalledSdkWorkloadIds;
             InstalledWorkloadsCollection installedWorkloads = workloadInfoHelper.AddInstalledVsWorkloads(installedList);
             reporter ??= Cli.Utils.Reporter.Output;
@@ -75,7 +75,7 @@ namespace Microsoft.DotNet.Cli
         {
             if (parseResult.HasOption(InfoOption) && parseResult.RootSubCommandResult() == "workload")
             {
-                ShowWorkloadsInfo();
+                ShowWorkloadsInfo(parseResult);
                 return 0;
             }
             return parseResult.HandleMissingCommand();

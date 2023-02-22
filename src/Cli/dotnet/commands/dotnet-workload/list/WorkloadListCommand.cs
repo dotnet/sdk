@@ -26,7 +26,7 @@ namespace Microsoft.DotNet.Workloads.Workload.List
         private readonly IWorkloadInfoHelper _workloadListHelper;
 
         public WorkloadListCommand(
-            ParseResult result,
+            ParseResult parseResult,
             IReporter reporter = null,
             IWorkloadInstallationRecordRepository workloadRecordRepo = null,
             string currentSdkVersion = null,
@@ -36,11 +36,12 @@ namespace Microsoft.DotNet.Workloads.Workload.List
             INuGetPackageDownloader nugetPackageDownloader = null,
             IWorkloadManifestUpdater workloadManifestUpdater = null,
             IWorkloadResolver workloadResolver = null
-        ) : base(result, CommonOptions.HiddenVerbosityOption, reporter, tempDirPath, nugetPackageDownloader)
+        ) : base(parseResult, CommonOptions.HiddenVerbosityOption, reporter, tempDirPath, nugetPackageDownloader)
         {
             _workloadListHelper = new WorkloadInfoHelper(
+                parseResult,
                 Verbosity,
-                result?.GetValue(WorkloadListCommandParser.VersionOption) ?? null,
+                parseResult?.GetValue(WorkloadListCommandParser.VersionOption) ?? null,
                 VerifySignatures,
                 Reporter,
                 workloadRecordRepo,
@@ -50,9 +51,9 @@ namespace Microsoft.DotNet.Workloads.Workload.List
                 workloadResolver
             );
 
-            _machineReadableOption = result.GetValue(WorkloadListCommandParser.MachineReadableOption);
+            _machineReadableOption = parseResult.GetValue(WorkloadListCommandParser.MachineReadableOption);
 
-            _includePreviews = result.GetValue(WorkloadListCommandParser.IncludePreviewsOption);
+            _includePreviews = parseResult.GetValue(WorkloadListCommandParser.IncludePreviewsOption);
             string userProfileDir1 = userProfileDir ?? CliFolderPathCalculator.DotnetUserProfileFolderPath;
 
             _workloadManifestUpdater = workloadManifestUpdater ?? new WorkloadManifestUpdater(Reporter,
