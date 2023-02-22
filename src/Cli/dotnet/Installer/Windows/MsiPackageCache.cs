@@ -196,7 +196,11 @@ namespace Microsoft.DotNet.Installer.Windows
             if (!File.Exists(destinationFile))
             {
                 // See https://github.com/dotnet/sdk/issues/28450
-                FileAccessRetrier.RetryOnMoveAccessFailure(() => File.Move(sourceFile, destinationFile));
+                // Moving a file copies the ACE of the original owner and will not inherit the complete DACL from
+                // the containing directory. For example, the ACEs for Everyone and Built-in Users can be dropped
+                // while the original user retains full access.
+                FileAccessRetrier.RetryOnMoveAccessFailure(() => File.Copy(sourceFile, destinationFile));
+                FileAccessRetrier.RetryOnMoveAccessFailure(() => File.Delete(sourceFile));
                 Log?.LogMessage($"Moved '{sourceFile}' to '{destinationFile}'");
 
                 FileInfo fi = new(destinationFile);
