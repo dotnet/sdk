@@ -95,8 +95,11 @@ namespace Microsoft.NetCore.Analyzers.Security
                 {
                     var symbol = (IMethodSymbol)symbolAnalysisContext.Symbol;
 
-                    // LibraryImport methods will be partial, and the generated implementation will have a non-null PartialDefinitionPart property
-                    if (!symbol.IsStatic || symbol.PartialDefinitionPart != null)
+                    if (!(symbol.IsStatic
+                        // DllImport will always be extern. LibraryImport might not be extern but will be partial.
+                        && (symbol.IsExtern || symbol.PartialImplementationPart != null)
+                        // We do not want to warn on the PartialImplementationPart of LibraryImports. This will also be null for non-partial DllImports.
+                        && symbol.PartialDefinitionPart == null))
                     {
                         return;
                     }
