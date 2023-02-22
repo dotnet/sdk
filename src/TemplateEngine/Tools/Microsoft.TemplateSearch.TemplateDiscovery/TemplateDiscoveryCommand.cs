@@ -106,40 +106,19 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery
             this.SetHandler(ExecuteAsync, new CommandArgsBinder(this));
         }
 
-        private static async Task<int> ExecuteAsync(CommandArgs config)
+        private static async Task ExecuteAsync(CommandArgs config, CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             Verbose.IsEnabled = config.Verbose;
-            var cts = new CancellationTokenSource();
-            Console.CancelKeyPress += (s, e) =>
+            IPackCheckerFactory factory = config.LocalPackagePath == null ? new NuGetPackSourceCheckerFactory() : new TestPackCheckerFactory();
+            PackSourceChecker packSourceChecker = await factory.CreatePackSourceCheckerAsync(config, cancellationToken).ConfigureAwait(false);
+            PackSourceCheckResult checkResults = await packSourceChecker.CheckPackagesAsync(cancellationToken).ConfigureAwait(false);
+            (string metadataPath, string legacyMetadataPath) = PackCheckResultReportWriter.WriteResults(config.OutputPath, checkResults);
+            if (config.TestEnabled)
             {
-                Console.WriteLine("Canceling...");
-                cts.Cancel();
-                e.Cancel = true;
-            };
-
-            try
-            {
-                IPackCheckerFactory factory = config.LocalPackagePath == null ? new NuGetPackSourceCheckerFactory() : new TestPackCheckerFactory();
-                PackSourceChecker packSourceChecker = await factory.CreatePackSourceCheckerAsync(config, cts.Token).ConfigureAwait(false);
-                PackSourceCheckResult checkResults = await packSourceChecker.CheckPackagesAsync(cts.Token).ConfigureAwait(false);
-                (string metadataPath, string legacyMetadataPath) = PackCheckResultReportWriter.WriteResults(config.OutputPath, checkResults);
-                if (config.TestEnabled)
-                {
-                    CacheFileTests.RunTests(metadataPath, legacyMetadataPath);
-                }
-                return 0;
+                CacheFileTests.RunTests(metadataPath, legacyMetadataPath);
             }
-            catch (TaskCanceledException)
-            {
-                Console.WriteLine("Operation was cancelled.");
-                return 2;
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine($"Error occured: {e}");
-                return 1;
-            }
-
         }
 
         private class CommandArgsBinder : BinderBase<CommandArgs>

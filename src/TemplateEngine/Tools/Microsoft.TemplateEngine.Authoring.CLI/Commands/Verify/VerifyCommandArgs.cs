@@ -18,7 +18,7 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.Commands.Verify
         }
 
         public VerifyCommandArgs(
-            string templateName,
+            string? templateName,
             string? templatePath,
             string? templateSpecificArgs,
             string? snapshotsDirectory,
@@ -31,7 +31,7 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.Commands.Verify
             bool verifyCommandOutput,
             bool isCommandExpectedToFail,
             IEnumerable<UniqueForOption>? uniqueForOptions)
-        : this(templateName, templateSpecificArgs)
+        : this(templateName ?? string.Empty, templateSpecificArgs)
         {
             TemplatePath = templatePath;
             SnapshotsDirectory = snapshotsDirectory;

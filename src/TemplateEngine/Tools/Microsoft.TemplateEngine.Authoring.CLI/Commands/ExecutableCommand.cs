@@ -19,13 +19,13 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.Commands
         }
 
         /// <inheritdoc/>
-        public async Task<int> InvokeAsync(InvocationContext context)
+        public async Task<int> InvokeAsync(InvocationContext context, CancellationToken cancellationToken = default)
         {
             using ILoggerFactory loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
             TModel arguments = ParseContext(context.ParseResult);
 
             //exceptions are handled by parser itself
-            return await ExecuteAsync(arguments, loggerFactory, context.GetCancellationToken()).ConfigureAwait(false);
+            return await ExecuteAsync(arguments, loggerFactory, cancellationToken).ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
