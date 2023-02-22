@@ -48,7 +48,8 @@ namespace Microsoft.DotNet.Cli.Telemetry
         /// </summary>
         private static string Stringify(object value)
         {
-            if (value is null) {
+            if (value is null)
+            {
                 return null;
             }
             if (value is IEnumerable<string> enumerable)
@@ -59,7 +60,8 @@ namespace Microsoft.DotNet.Cli.Telemetry
             {
                 return string.Join(";", enumerableOfObjects);
             }
-            if (value is object[] arr) {
+            if (value is object[] arr)
+            {
                 return string.Join(";", arr);
             }
             return value.ToString();

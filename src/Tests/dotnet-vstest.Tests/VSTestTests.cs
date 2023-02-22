@@ -125,7 +125,8 @@ namespace Microsoft.DotNet.Cli.VSTest.Tests
         }
 
         [Fact]
-        public void ItShouldAcceptMultipleLoggers() {
+        public void ItShouldAcceptMultipleLoggers()
+        {
             var testProjectDirectory = this.CopyAndRestoreVSTestDotNetCoreTestApp();
 
             var configuration = Environment.GetEnvironmentVariable("CONFIGURATION") ?? "Debug";
@@ -167,7 +168,8 @@ namespace Microsoft.DotNet.Cli.VSTest.Tests
         }
 
         [Fact]
-        public void ItShouldAcceptNoLoggers() {
+        public void ItShouldAcceptNoLoggers()
+        {
             var testProjectDirectory = this.CopyAndRestoreVSTestDotNetCoreTestApp();
 
             var configuration = Environment.GetEnvironmentVariable("CONFIGURATION") ?? "Debug";
