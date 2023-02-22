@@ -9,6 +9,7 @@ parameters:
 
   # The following parameters aren't expected to be passed in rather they are used for encapsulation
   # -----------------------------------------------------------------------------------------------
+  alpine317Container: mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.17-20230214152931-7f13c75
   centOSStream8Container: mcr.microsoft.com/dotnet-buildtools/prereqs:centos-stream8-20220809204800-17a4aab
   centOSStream9Container: mcr.microsoft.com/dotnet-buildtools/prereqs:centos-stream9-20220107135047-4cd394c
   debian11Arm64Container: mcr.microsoft.com/dotnet-buildtools/prereqs:debian-11-arm64v8-20220812185233-b286fae
@@ -50,6 +51,13 @@ jobs:
         _RunOnline: false
         _WithPreviousSDK: false
       ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
+        Alpine317-Offline:
+          _BootstrapPrep: true
+          _Container: ${{ parameters.alpine317Container }}
+          _EnablePoison: false
+          _ExcludeOmniSharpTests: true
+          _RunOnline: false
+          _WithPreviousSDK: false
         CentOSStream8-WithPreviousSDK:
           _BootstrapPrep: false
           _Container: ${{ parameters.centOSStream8Container }}
