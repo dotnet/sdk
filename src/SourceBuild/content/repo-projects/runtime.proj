@@ -49,6 +49,7 @@
   <!-- Repository References -->
   <ItemGroup>
       <RepositoryReference Include="arcade" />
+      <RepositoryReference Include="cecil" />
       <RepositoryReference Include="symreader" />
       <RepositoryReference Include="source-build-externals" />
   </ItemGroup>
