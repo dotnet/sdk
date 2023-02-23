@@ -1499,6 +1499,41 @@ namespace Microsoft.DotNet.GenAPI.Tests
                 includeInternalSymbols: false,
                 allowUnsafe: true);
         }
+
+        [Fact]
+        public void TestUnsafeMethodGeneration()
+        {
+            RunTest(original: """
+                    namespace A
+                    {
+                        public unsafe class A
+                        {
+                            public virtual void F(char* p) {}
+                        }
+
+                        public class B: A
+                        {
+                            public unsafe override void F(char* p) {}
+                        }
+                    }
+                    """,
+                expected: """
+                    namespace A
+                    {
+                        public partial class A
+                        {
+                            public virtual unsafe void F(char* p) { }
+                        }
+
+                        public partial class B : A
+                        {
+                            public override unsafe void F(char* p) { }
+                        }
+                    }
+                    """,
+                includeInternalSymbols: false,
+                allowUnsafe: true);
+        }
     }
 
 }
