@@ -681,6 +681,14 @@ namespace Microsoft.NET.Build.Tasks
                             targetIlcPack.SetMetadata(MetadataKeys.NuGetPackageId, targetIlcPackName);
                             targetIlcPack.SetMetadata(MetadataKeys.NuGetPackageVersion, packVersion);
                             TargetILCompilerPacks = new[] { targetIlcPack };
+
+                            if (EnableRuntimePackDownload)
+                            {
+                                // We need to download the target runtime pack
+                                TaskItem runtimePackToDownload = new TaskItem(targetIlcPackName);
+                                runtimePackToDownload.SetMetadata(MetadataKeys.Version, packVersion);
+                                packagesToDownload.Add(runtimePackToDownload);
+                            }
                         }
                     }
                     break;
