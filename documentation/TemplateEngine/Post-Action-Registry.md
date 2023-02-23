@@ -31,6 +31,22 @@ Used to restore NuGet packages after project create.
       - `files` (string|array) (optional):
         - `string`: A semicolon delimited list of files that should be restored. If specified, the primary outputs will be ignored for processing. If not specified, matching primary outputs are restored.
         - `array`: An array of files that should be restored. If specified, the primary outputs will be ignored for processing. If not specified, matching primary outputs are restored.
+
+      Note: the file path specified in `files` is used as glob pattern matching relative source path that starts with `./`. If none of the patterns is matched, matching primary outputs are restored.
+
+      Given that relative source paths are:
+      - ./src/Client/Client.csproj
+      - ./src/Client/Client.Library.csproj
+      - ./src/Client/Client.Test.csproj
+      
+      The following patterns can be used.
+      |Description|Glob Pattern|
+      |-|-|
+      |Exact path matching single project|`./src/Client/Client.Test.csproj`|
+      |Wildcard `*` matching multiple projects|`./src/Client/Client.*.csproj`|
+      |Globstar `**` recursively matching multiple layers of directories|`**/Client.Library.csproj;**/Client.csproj`|
+      |File name without parent path matching the project with the same name|`Client.Library.csproj`|
+
  - **Supported in**:
    - `dotnet new3`
    - `dotnet new` (2.0.0 or higher)
@@ -77,7 +93,29 @@ Restores the files mentioned in `files` argument. The primary outputs will be ig
   "actionId": "210D431B-A78B-4D2F-B762-4ED3E3EA9025",
   "continueOnError": true,
   "args": {
-    "files": ["Client/Client.csproj", "Server/Server.csproj"]
+    "files": ["./Client/Client.csproj", "./Server/Server.csproj"]
+  }
+}]
+```
+
+If none of files mentioned in `files` argument is matched, the primary outputs will be restored.
+
+```
+"primaryOutputs": [
+  {
+    "path": "Primary/Output/PrimaryOutput.csproj"        // will be restored
+  }
+],
+"postActions": [{
+  "condition": "(!skipRestore)",
+  "description": "Restore NuGet packages required by this project.",
+  "manualInstructions": [{
+    "text": "Run 'dotnet restore'"
+  }],
+  "actionId": "210D431B-A78B-4D2F-B762-4ED3E3EA9025",
+  "continueOnError": true,
+  "args": {
+    "files": ["Client/Client.csproj"]        // This will not match any project because relative source path starts with "./"
   }
 }]
 ```
