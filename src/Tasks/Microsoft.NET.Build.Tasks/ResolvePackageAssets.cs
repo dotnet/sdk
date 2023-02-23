@@ -407,6 +407,7 @@ namespace Microsoft.NET.Build.Tasks
 
             foreach (var item in _logMessages)
             {
+                string.Compare()
                 Log.Log(
                     new Message(
                         text: item.ItemSpec,

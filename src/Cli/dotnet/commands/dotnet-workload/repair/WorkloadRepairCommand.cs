@@ -38,7 +38,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Repair
             string tempDirPath = null,
             string version = null,
             string userProfileDir = null)
-            : base(parseResult, reporter: reporter, nugetPackageDownloader: nugetPackageDownloader)
+            : base(parseResult, reporter: reporter, tempDirPath: tempDirPath, nugetPackageDownloader: nugetPackageDownloader)
         {
             _dotnetPath = dotnetDir ?? Path.GetDirectoryName(Environment.ProcessPath);
             userProfileDir ??= CliFolderPathCalculator.DotnetUserProfileFolderPath;
