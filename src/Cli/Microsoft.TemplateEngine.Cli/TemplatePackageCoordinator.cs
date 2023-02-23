@@ -3,7 +3,6 @@
 //
 
 using System.CommandLine;
-using System.Diagnostics;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Constraints;
@@ -359,7 +358,6 @@ namespace Microsoft.TemplateEngine.Cli
 
         private static void InitializeNuGetCredentialService(bool interactive)
         {
-            Debugger.Launch();
             try
             {
                 DefaultCredentialServiceUtility.SetupDefaultCredentialService(new CliNuGetLogger(), !interactive);
