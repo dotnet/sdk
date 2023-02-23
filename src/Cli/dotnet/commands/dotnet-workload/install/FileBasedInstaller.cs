@@ -487,7 +487,16 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
         public IEnumerable<WorkloadHistoryRecord> GetWorkloadHistoryRecords()
         {
-            throw new NotImplementedException();
+            List<WorkloadHistoryRecord> historyRecords = new();
+
+            foreach (var file in Directory.GetFiles(GetWorkloadHistoryDirectory(), "*.json"))
+            {
+                //  TODO: Handle corrupted files
+                var historyRecord = JsonSerializer.Deserialize<WorkloadHistoryRecord>(File.ReadAllText(file));
+                historyRecords.Add(historyRecord);
+            }
+
+            return historyRecords;
         }
 
         public void Shutdown()

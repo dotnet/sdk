@@ -40,5 +40,49 @@ namespace Microsoft.DotNet.Workloads.Workload
 
         //  Possibly we should add this in the future, but it requires changes to the IAL which to some degree break the abstraction
         //public List<(string id, string version)> InstalledWorkloadPacks { get; set;}
+
+        public bool Equals(WorkloadHistoryState other)
+        {
+            if (ManifestVersions.Count != other.ManifestVersions.Count)
+            {
+                return false;
+            }
+            foreach (var manifestId in ManifestVersions.Keys)
+            {
+                if (!other.ManifestVersions.TryGetValue(manifestId, out string otherManifestVersion) ||
+                    ManifestVersions[manifestId] != otherManifestVersion)
+                {
+                    return false;
+                }
+            }
+
+            return new HashSet<string>(InstalledWorkloads).SetEquals(other.InstalledWorkloads);
+        }
+
+        public override bool Equals(object other)
+        {
+            if (other is WorkloadHistoryState otherState)
+            {
+                return Equals(otherState);
+            }
+            return false;
+        }
+
+        public override int GetHashCode()
+        {
+            HashCode hc = new HashCode();
+            foreach (var kvp in ManifestVersions)
+            {
+                hc.Add(kvp.Key);
+                hc.Add(kvp.Value);
+            }
+
+            foreach (var workload in InstalledWorkloads)
+            {
+                hc.Add(workload);
+            }
+
+            return hc.ToHashCode();
+        }
     }
 }
