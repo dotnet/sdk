@@ -12,6 +12,7 @@ using Microsoft.DotNet.Configurer;
 using Microsoft.DotNet.Workloads.Workload.Install;
 using Microsoft.DotNet.Workloads.Workload.Install.InstallRecord;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
+using Microsoft.TemplateEngine.Cli.Commands;
 using Product = Microsoft.DotNet.Cli.Utils.Product;
 
 namespace Microsoft.DotNet.Workloads.Workload.List
@@ -49,7 +50,7 @@ namespace Microsoft.DotNet.Workloads.Workload.List
                 workloadManifestProvider, dotnetPath,
                 currentSdkReleaseVersion.ToString(), userProfileDir);
 
-            var restoreConfig = new RestoreActionConfig(Interactive: parseResult.HasOption(CommonOptions.InteractiveOption));
+            var restoreConfig = new RestoreActionConfig(Interactive: parseResult.HasOption(SharedOptions.InteractiveOption));
 
             Installer = WorkloadInstallerFactory.GetWorkloadInstaller(
                 reporter,
