@@ -18,6 +18,8 @@ using Microsoft.DotNet.Tools.Help;
 using Microsoft.DotNet.Tools.MSBuild;
 using Microsoft.DotNet.Tools.New;
 using Microsoft.DotNet.Tools.NuGet;
+using Microsoft.TemplateEngine.Cli.Commands.InteractiveMode;
+using static System.Net.Mime.MediaTypeNames;
 using Command = System.CommandLine.Command;
 using CommandResult = System.CommandLine.Parsing.CommandResult;
 
@@ -149,6 +151,7 @@ namespace Microsoft.DotNet.Cli
             .UseSuggestDirective()
             .DisablePosixBinding()
             .UseTokenReplacer(TokenPerLine)
+            .AddMiddleware((context, next) => InteractiveMode.EnterInteractiveMode(context, next))
             .Build();
 
         private static CommandLineBuilder UseParseErrorReporting(this CommandLineBuilder builder, string commandName)
