@@ -172,6 +172,7 @@ namespace Microsoft.TemplateEngine.Cli
         /// </summary>
         internal async Task<NewCommandStatus> EnterInstallFlowAsync(InstallCommandArgs args, CancellationToken cancellationToken)
         {
+            System.Diagnostics.Debugger.Launch();
             _ = args ?? throw new ArgumentNullException(nameof(args));
             _ = args.TemplatePackages ?? throw new ArgumentNullException(nameof(args.TemplatePackages));
             if (!args.TemplatePackages.Any())
@@ -346,7 +347,14 @@ namespace Microsoft.TemplateEngine.Cli
                     }
                     else
                     {
-                        Reporter.Error.WriteLine(LocalizableStrings.TemplatePackageCoordinator_Uninstall_Error_GenericError, uninstallResult.TemplatePackage.DisplayName, uninstallResult.ErrorMessage);
+                        if (uninstallResult.Error != InstallerErrorCode.CorruptedGlobalSettings)
+                        {
+                            Reporter.Error.WriteLine(LocalizableStrings.TemplatePackageCoordinator_Uninstall_Error_GenericError, uninstallResult.TemplatePackage.DisplayName, uninstallResult.ErrorMessage);
+                        }
+                        else
+                        {
+                            Reporter.Error.WriteLine(LocalizableStrings.TemplatePackageCoordinator_Error_CorruptedGlobalSettings, uninstallResult.ErrorMessage);
+                        }
                         result = NewCommandStatus.InstallFailed;
                     }
                 }
@@ -774,6 +782,18 @@ namespace Microsoft.TemplateEngine.Cli
                               string.Format(
                                   LocalizableStrings.TemplatePackageCoordinator_lnstall_Error_InvalidPackage,
                                   packageToInstall).Bold().Red());
+                        break;
+                    case InstallerErrorCode.UnavailableGlobalSettings:
+                        Reporter.Error.WriteLine(
+                              string.Format(
+                                  LocalizableStrings.TemplatePackageCoordinator_Error_UnavailableGlobalSettings,
+                                  result.ErrorMessage).Bold().Red());
+                        break;
+                    case InstallerErrorCode.CorruptedGlobalSettings:
+                        Reporter.Error.WriteLine(
+                              string.Format(
+                                  LocalizableStrings.TemplatePackageCoordinator_Error_CorruptedGlobalSettings,
+                                  result.ErrorMessage).Bold().Red());
                         break;
                     case InstallerErrorCode.GenericError:
                     default:

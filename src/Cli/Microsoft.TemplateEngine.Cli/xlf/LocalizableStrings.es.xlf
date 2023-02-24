@@ -827,6 +827,11 @@ The header is followed by the list of parameters and their errors (might be seve
         <target state="translated">Para usar el paquete de plantillas integrado, desinstale manualmente el paquete de plantillas instalado con:</target>
         <note>followed by command to uninstall package</note>
       </trans-unit>
+      <trans-unit id="TemplatePackageCoordinator_Error_CorruptedGlobalSettings">
+        <source>Somehow the operation led to this corruption: {0}</source>
+        <target state="new">Somehow the operation led to this corruption: {0}</target>
+        <note />
+      </trans-unit>
       <trans-unit id="TemplatePackageCoordinator_Error_PackageForTemplateNotFound">
         <source>Could not find the template package containing template '{0}'</source>
         <target state="translated">No encontró el paquete de plantillas que contiene la plantilla "{0}"</target>
@@ -845,6 +850,11 @@ The header is followed by the list of parameters and their errors (might be seve
       <trans-unit id="TemplatePackageCoordinator_Error_TemplateIncludedToPackages">
         <source>The template '{0}' is included to the packages:</source>
         <target state="translated">La plantilla "{0}" se incluye en los paquetes:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TemplatePackageCoordinator_Error_UnavailableGlobalSettings">
+        <source>It could not do the operation because {0}</source>
+        <target state="new">It could not do the operation because {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="TemplatePackageCoordinator_Install_ConstraintsNotice">

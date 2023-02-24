@@ -814,4 +814,10 @@ The header is followed by the list of parameters and their errors (might be seve
   <data name="UnexpectedResult" xml:space="preserve">
     <value>Template generation ended with unexpected result: '{0}'. Details: {1}</value>
   </data>
+  <data name="TemplatePackageCoordinator_Error_CorruptedGlobalSettings" xml:space="preserve">
+    <value>Somehow the operation led to this corruption: {0}</value>
+  </data>
+  <data name="TemplatePackageCoordinator_Error_UnavailableGlobalSettings" xml:space="preserve">
+    <value>It could not do the operation because {0}</value>
+  </data>
 </root>

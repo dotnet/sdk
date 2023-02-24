@@ -1496,6 +1496,15 @@ namespace Microsoft.TemplateEngine.Cli {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Somehow the operation led to this corruption: {0}.
+        /// </summary>
+        internal static string TemplatePackageCoordinator_Error_CorruptedGlobalSettings {
+            get {
+                return ResourceManager.GetString("TemplatePackageCoordinator_Error_CorruptedGlobalSettings", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Could not find the template package containing template &apos;{0}&apos;.
         /// </summary>
         internal static string TemplatePackageCoordinator_Error_PackageForTemplateNotFound {
@@ -1528,6 +1537,15 @@ namespace Microsoft.TemplateEngine.Cli {
         internal static string TemplatePackageCoordinator_Error_TemplateIncludedToPackages {
             get {
                 return ResourceManager.GetString("TemplatePackageCoordinator_Error_TemplateIncludedToPackages", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to It could not do the operation because {0}.
+        /// </summary>
+        internal static string TemplatePackageCoordinator_Error_UnavailableGlobalSettings {
+            get {
+                return ResourceManager.GetString("TemplatePackageCoordinator_Error_UnavailableGlobalSettings", resourceCulture);
             }
         }
         
