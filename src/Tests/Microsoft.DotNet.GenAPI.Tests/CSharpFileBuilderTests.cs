@@ -1545,6 +1545,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                         {
                             public Bar(int a) { }
                         }
+
                         public class Foo : Bar
                         {
                             internal Foo() : base(1) { }
@@ -1570,6 +1571,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                         {
                             public Bar(int a) { }
                         }
+
                         public partial class Foo : Bar
                         {
                             internal Foo() : base(default) { }
@@ -1601,6 +1603,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                         {
                             public Bar(int a) { }
                         }
+
                         public class Foo : Bar
                         {
                             private Foo() : base(1) { }
@@ -1614,6 +1617,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                         {
                             public Bar(int a) { }
                         }
+
                         public partial class Foo : Bar
                         {
                             private Foo() : base(default) { }
@@ -1634,6 +1638,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                         {
                             public Bar(int a) { }
                         }
+
                         public class Foo<T> : Bar
                         {
                             internal Foo() : base(1) { }
@@ -1647,6 +1652,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                         {
                             public Bar(int a) { }
                         }
+
                         public partial class Foo<T> : Bar
                         {
                             internal Foo() : base(default) { }
@@ -1666,6 +1672,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                         {
                             public Bar() { }
                         }
+
                         public class Foo : Bar
                         {
                         }
