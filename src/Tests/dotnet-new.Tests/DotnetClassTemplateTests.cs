@@ -90,10 +90,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                    if (path.Replace(Path.DirectorySeparatorChar, '/') == "std-streams/stdout.txt")
                    {
                        content
-                       .UnixifyNewlines()
-                       .ScrubAndReplace(
-                           "Warning: Failed to evaluate bind symbol \'langVersion\', it will be skipped.",
-                           string.Empty);
+                       .UnixifyNewlines();
 
                        content.ScrubAndReplace("\n", string.Empty);
                    }
@@ -170,10 +167,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                    if (path.Replace(Path.DirectorySeparatorChar, '/') == "std-streams/stdout.txt")
                    {
                        content
-                       .UnixifyNewlines()
-                       .ScrubAndReplace(
-                           "Warning: Failed to evaluate bind symbol \'langVersion\', it will be skipped.",
-                           string.Empty);
+                       .UnixifyNewlines();
 
                        content.ScrubAndReplace("\n", string.Empty);
                    }
