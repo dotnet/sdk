@@ -1,9 +1,12 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Runtime.DoNotCallEnumerableCastOrOfTypeWithIncompatibleTypesAnalyzer,
@@ -80,6 +83,94 @@ namespace System.Linq
     }
 }
 ");
+        }
+
+        [Fact]
+        public async Task DynamicCSharp()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System.Linq;
+
+class C
+{
+    public void M()
+    {
+        dynamic x = null;
+        _ = x.ToString();
+        int[] numbers = new int[] { 1, 2, 3 };
+        var v = from dynamic d in numbers select (int)d;
+        _ = v.ToArray();
+    }
+}
+");
+        }
+
+        [Fact]
+        public async Task ValueTupleCasesCSharp()
+        {
+            var x = from (int min, int max) pair in new[] { (1, 2), (-10, -3) } select pair;
+            _ = x.ToArray();
+
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System.Linq;
+
+class C
+{
+    public void M()
+    {
+        var x = from (int min, int max) pair in new[] { (1, 2), (-10, -3) } select pair;
+        _= x.ToArray();
+    }
+}");
+        }
+
+        [Fact]
+        public async Task RegExCasesCSharp()
+        {
+            var actualSet = new HashSet<(int start, int end)>(
+                       Regex.Match(".", "abc").Groups
+                       .Cast<Group>()
+                       .Select(g => (start: g.Index, end: g.Index + g.Length)));
+
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
+
+class C
+{
+    public void M()
+    {
+            var actualSet = new HashSet<(int start, int end)>(
+                       Regex.Match(""."", ""abc"").Groups
+                       .Cast<Group>()
+                       .Select(g => (start: g.Index, end: g.Index + g.Length)));
+    }
+}");
+        }
+
+        [Fact]
+        public async Task MultipleTypesCasesCSharp()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+
+public sealed class MultiContainer : IEnumerable<int>, IEnumerable<long>
+{
+    IEnumerator IEnumerable.GetEnumerator() => null;
+    IEnumerator<int> IEnumerable<int>.GetEnumerator() => null;
+    IEnumerator<long> IEnumerable<long>.GetEnumerator() => null;
+
+    public static void M()
+    {
+        _ = new MultiContainer().OfType<int>();
+        _ = new MultiContainer().OfType<long>();
+        _ = new MultiContainer().OfType<string>();
+    }
+}");
         }
 
         [Fact]
@@ -406,6 +497,8 @@ class C
         [Fact]
         public async Task NullableValueTypeCasesCSharp()
         {
+            _ = Enumerable.Range(1, 5).Cast<int?>().ToArray();
+            _ = new int?[] { 123 }.Cast<int>().ToArray();
             _ = new ValueType[] { StringComparison.OrdinalIgnoreCase, null }.Cast<StringComparison?>().ToArray();
 
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -426,13 +519,56 @@ class C
         _ = (new object[0]).Cast<IntEnum?>();
         _ = (new IntEnum?[0]).Cast<object>();
 
+        // nullable value types
+        _ = (new bool[0]).Cast<bool?>();
+        _ = (new bool?[0]).Cast<bool>();
+        _ = (new byte[0]).Cast<byte?>();
+        _ = (new byte?[0]).Cast<byte>();
+        _ = (new short[0]).Cast<short?>();
+        _ = (new short?[0]).Cast<short>();
+        _ = Enumerable.Range(1, 5).Cast<int?>();
+        _ = (new int?[0]).Cast<int>();
+        _ = (new long[0]).Cast<long?>();
+        _ = (new long?[0]).Cast<long>();
+        _ = (new float[0]).Cast<float?>();
+        _ = (new float?[0]).Cast<float>();
+        _ = (new double[0]).Cast<double?>();
+        _ = (new double?[0]).Cast<double>();
+
+
+        // Nullable<T>
+        _ = (new bool[0]).Cast<bool?>();
+        _ = (new Nullable<bool>[0]).Cast<bool>();
+        _ = (new byte[0]).Cast<Nullable<byte>>();
+        _ = (new Nullable<byte>[0]).Cast<byte>();
+        _ = (new short[0]).Cast<Nullable<short>>();
+        _ = (new Nullable<short>[0]).Cast<short>();
+        _ = Enumerable.Range(1, 5).Cast<Nullable<int>>();
+        _ = (new Nullable<int>[0]).Cast<int>();
+        _ = (new long[0]).Cast<Nullable<long>>();
+        _ = (new Nullable<long>[0]).Cast<long>();
+        _ = (new float[0]).Cast<Nullable<float>>();
+        _ = (new Nullable<float>[0]).Cast<float>();
+        _ = (new double[0]).Cast<Nullable<double>>();
+        _ = (new Nullable<double>[0]).Cast<double>();
+
+        // nullable value types
+        _ = (new byte[0]).Cast<byte?>();
+        _ = (new byte?[0]).Cast<byte>();
+        _ = (new short[0]).Cast<short?>();
+        _ = (new short?[0]).Cast<short>();
+        _ = Enumerable.Range(1, 5).Cast<int?>();
+        _ = (new int?[0]).Cast<int>();
+        _ = (new long[0]).Cast<long?>();
+        _ = (new long?[0]).Cast<long>();
+
         // base class
         _ = (new Enum[0]).Cast<IntEnum?>();
         _ = (new IntEnum?[0]).Cast<Enum>();
         _ = {|#10:(new int?[0]).Cast<Enum>()|};
         _ = {|#11:(new Enum[0]).Cast<int?>()|};
 
-        // value type
+        // System.ValueType
         _ = (new Enum[0]).Cast<ValueType>();
         _ = Array.Empty<ValueType>().Cast<IntEnum?>();
         _ = (new IntEnum?[0]).Cast<ValueType>();
@@ -494,8 +630,14 @@ class C
         [Fact]
         public async Task GenericCastsCSharp()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
+            await new VerifyCS.Test
+            {
+                LanguageVersion = LanguageVersion.CSharp8,
+                TestCode = @"
+using System;
 using System.Linq;
+
+#nullable enable
 
 struct Struct : IInterface {}
 interface IInterface {}
@@ -598,13 +740,29 @@ class C : IInterface
     {
         (new TStruct[0]).Cast<int>(); // int is a struct
         (new TStruct[0]).Cast<object>(); // can always cast to object
-        {|#50:(new TStruct[0]).Cast<string>()|}; // string is not is a struct
+        {|#50:(new TStruct[0]).Cast<string>()|}; // string is not struct
+        {|#51:(new TStruct[0]).Cast<string?>()|};
 
         (new int[0]).Cast<TStruct>(); // int is a struct
-        (new object[0]).Cast<TStruct>(); // can always cast to object
-        {|#51:(new string[0]).Cast<TStruct>()|}; // string is not is a struct
+        (new object[0]).Cast<TStruct>(); // can always cast from object
+        {|#52:(new string[0]).Cast<TStruct>()|}; // string is not struct
+        {|#53:(new string?[0]).Cast<TStruct>()|};
+
+        (new Nullable<TStruct>[0]).Cast<TStruct>();
+        (new TStruct[0]).Cast<Nullable<TStruct>>();
+        (new Nullable<TStruct>[0]).Cast<int>(); // int is a struct
+        (new Nullable<TStruct>[0]).Cast<int?>();
+        (new Nullable<TStruct>[0]).Cast<object>(); // can always cast to object
+        (new Nullable<TStruct>[0]).Cast<object?>();
+        {|#54:(new Nullable<TStruct>[0]).Cast<string>()|}; // string is not struct
+        {|#55:(new Nullable<TStruct>[0]).Cast<string?>()|};
+
+        (new int[0]).Cast<TStruct?>(); // int is a struct
+        (new object[0]).Cast<TStruct?>(); // can always cast from object
+        {|#56:(new string[0]).Cast<TStruct?>()|}; // string is not struct
     }
 }",
+                ExpectedDiagnostics = {
     VerifyCS.Diagnostic(castRule).WithLocation(10).WithArguments("TClassC", "string"),
     VerifyCS.Diagnostic(castRule).WithLocation(11).WithArguments("string", "TClassC"),
 
@@ -633,8 +791,14 @@ class C : IInterface
     VerifyCS.Diagnostic(castRule).WithLocation(41).WithArguments("int", "TStructInterface"),
 
     VerifyCS.Diagnostic(castRule).WithLocation(50).WithArguments("TStruct", "string"),
-    VerifyCS.Diagnostic(castRule).WithLocation(51).WithArguments("string", "TStruct")
-);
+    VerifyCS.Diagnostic(castRule).WithLocation(51).WithArguments("TStruct", "string?"),
+    VerifyCS.Diagnostic(castRule).WithLocation(52).WithArguments("string", "TStruct"),
+    VerifyCS.Diagnostic(castRule).WithLocation(53).WithArguments("string?", "TStruct"),
+    VerifyCS.Diagnostic(castRule).WithLocation(54).WithArguments("TStruct?", "string"),
+    VerifyCS.Diagnostic(castRule).WithLocation(55).WithArguments("TStruct?", "string?"),
+    VerifyCS.Diagnostic(castRule).WithLocation(56).WithArguments("string", "TStruct?"),
+                }
+            }.RunAsync();
         }
 
         [Fact]

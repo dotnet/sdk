@@ -1886,7 +1886,7 @@ Widening and user defined conversions are not supported with generic types.
 |-|-|
 |Category|Reliability|
 |Enabled|True|
-|Severity|Info|
+|Severity|Warning|
 |CodeFix|False|
 ---
 

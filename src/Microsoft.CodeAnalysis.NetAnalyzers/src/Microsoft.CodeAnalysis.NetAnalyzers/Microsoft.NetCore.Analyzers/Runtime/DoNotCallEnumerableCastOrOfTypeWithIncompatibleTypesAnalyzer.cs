@@ -30,7 +30,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                                                                              s_localizableTitle,
                                                                              s_localizableCastMessage,
                                                                              DiagnosticCategory.Reliability,
-                                                                             RuleLevel.IdeSuggestion,
+                                                                             RuleLevel.BuildWarning,
                                                                              s_localizableDescription,
                                                                              isPortedFxCopRule: false,
                                                                              isDataflowRule: false);
@@ -39,7 +39,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                                                                              s_localizableTitle,
                                                                              s_localizableOfTypeMessage,
                                                                              DiagnosticCategory.Reliability,
-                                                                             RuleLevel.IdeSuggestion,
+                                                                             RuleLevel.BuildWarning,
                                                                              s_localizableDescription,
                                                                              isPortedFxCopRule: false,
                                                                              isDataflowRule: false);
@@ -118,15 +118,28 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                             return (operation.Type as IArrayTypeSymbol)?.ElementType;
                         }
 
-                        if (operation.Type?.OriginalDefinition?.SpecialType == SpecialType.System_Collections_Generic_IEnumerable_T)
+                        if (operation.Type.OriginalDefinition.SpecialType == SpecialType.System_Collections_Generic_IEnumerable_T)
                         {
                             return GetIEnumerableTParam(operation.Type);
                         }
 
-                        var r = operation?.Type?.AllInterfaces.FirstOrDefault(t => t.OriginalDefinition.SpecialType == SpecialType.System_Collections_Generic_IEnumerable_T);
-                        if (r is not null)
+                        INamedTypeSymbol? enumerableInterface = null;
+                        foreach (var t in operation.Type.AllInterfaces)
                         {
-                            return GetIEnumerableTParam(r);
+                            if (t.OriginalDefinition.SpecialType == SpecialType.System_Collections_Generic_IEnumerable_T)
+                            {
+                                if (enumerableInterface is not null)
+                                {
+                                    return null; // if the type implements IEnumerable<T> multiple times, give up
+                                }
+
+                                enumerableInterface = t;
+                            }
+                        }
+
+                        if (enumerableInterface is not null)
+                        {
+                            return GetIEnumerableTParam(enumerableInterface);
                         }
 
                         if (operation is IParenthesizedOperation parenthesizedOperation)
@@ -170,6 +183,11 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             // as a problem in correctly. We don't want another IDE0004
             static bool CastWillAlwaysFail(ITypeSymbol castFrom, ITypeSymbol castTo)
             {
+                castFrom = castFrom.GetNullableValueTypeUnderlyingType()
+                    ?? castFrom.GetUnderlyingValueTupleTypeOrThis();
+                castTo = castTo.GetNullableValueTypeUnderlyingType()
+                    ?? castTo.GetUnderlyingValueTupleTypeOrThis();
+
                 if (castFrom.TypeKind == TypeKind.Error
                    || castTo.TypeKind == TypeKind.Error)
                 {
@@ -189,21 +207,6 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     return false;
                 }
 
-                static ITypeSymbol UnwrapNullableValueType(ITypeSymbol typeSymbol)
-                {
-                    if (typeSymbol.IsValueType
-                        && typeSymbol.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T
-                        && ((INamedTypeSymbol)typeSymbol).TypeArguments[0] is var nullableTypeArgument)
-                    {
-                        return nullableTypeArgument;
-                    }
-
-                    return typeSymbol;
-                }
-
-                castFrom = UnwrapNullableValueType(castFrom);
-                castTo = UnwrapNullableValueType(castTo);
-
                 static bool IsUnconstrainedTypeParameter(ITypeParameterSymbol typeParameterSymbol)
                     => !typeParameterSymbol.HasValueTypeConstraint
                     && typeParameterSymbol.ConstraintTypes.IsEmpty;
@@ -217,6 +220,10 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
                 switch (castFrom.OriginalDefinition.TypeKind, castTo.OriginalDefinition.TypeKind)
                 {
+                    case (TypeKind.Dynamic, _):
+                    case (_, TypeKind.Dynamic):
+                        return false;
+
                     case (TypeKind.TypeParameter, _):
                         var castFromTypeParam = (ITypeParameterSymbol)castFrom.OriginalDefinition;
                         if (IsUnconstrainedTypeParameter(castFromTypeParam))
