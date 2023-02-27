@@ -54,7 +54,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             string targetFramework = "")
         {
             // prevents logging a welcome message from sdk installation
-            Dictionary<string, string> environmentUnderTest = new() { ["DOTNET_NOLOGO"] = false.ToString() };
+            Dictionary<string, string> environmentUnderTest = new() { ["DOTNET_NOLOGO"] = false.ToString(), ["DOTNET_CLI_CONTEXT_VERBOSE"] = "true" };
             TestContext.Current.AddTestEnvironmentVariables(environmentUnderTest);
 
             string folderName = GetFolderName(templateShortName, langVersion, targetFramework);
@@ -91,6 +91,10 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                    {
                        content
                        .UnixifyNewlines();
+                       Assert.DoesNotContain("Warning: Failed to evaluate bind symbol \'langVersion\', it will be skipped.", content.ToString());
+                       content.ScrubByRegex("Using home directory.*set by the 'DOTNET_CLI_HOME' environment variable.*Global Settings Location:.*SharedHomeDirectory(\\\\|\\/)\\d{17}", string.Empty, System.Text.RegularExpressions.RegexOptions.Singleline);
+                       content.ScrubByRegex("\\[.*", string.Empty);
+                       content.ScrubByRegex("  Missing 'precedence'.", string.Empty);
 
                        content.ScrubAndReplace("\n", string.Empty);
                    }
@@ -131,7 +135,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             string fileName = "")
         {
             // prevents logging a welcome message from sdk installation
-            Dictionary<string, string> environmentUnderTest = new() { ["DOTNET_NOLOGO"] = false.ToString() };
+            Dictionary<string, string> environmentUnderTest = new() { ["DOTNET_NOLOGO"] = false.ToString(), ["DOTNET_CLI_CONTEXT_VERBOSE"] = "true" };
             TestContext.Current.AddTestEnvironmentVariables(environmentUnderTest);
 
             string folderName = GetFolderName(templateShortName, langVersion, targetFramework);
@@ -168,6 +172,10 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                    {
                        content
                        .UnixifyNewlines();
+                       Assert.DoesNotContain("Warning: Failed to evaluate bind symbol \'langVersion\', it will be skipped.", content.ToString());
+                       content.ScrubByRegex("Using home directory.*set by the 'DOTNET_CLI_HOME' environment variable.*Global Settings Location:.*SharedHomeDirectory(\\\\|\\/)\\d{17}", string.Empty, System.Text.RegularExpressions.RegexOptions.Singleline);
+                       content.ScrubByRegex("\\[.*", string.Empty);
+                       content.ScrubByRegex("  Missing 'precedence'.", string.Empty);
 
                        content.ScrubAndReplace("\n", string.Empty);
                    }
