@@ -102,6 +102,11 @@ namespace Microsoft.DotNet.Tools.Publish
                 ReleasePropertyProjectLocator projectLocator = new ReleasePropertyProjectLocator(Environment.GetEnvironmentVariable(EnvironmentVariableNames.ENABLE_PUBLISH_RELEASE_FOR_SOLUTIONS) != null);
                 var cliProps = projectLocator.GetGlobalPropertiesFromUserArgs(parseResult);
                 var projectInstance = projectLocator.GetTargetedProject(parseResult.GetValueForArgument(PublishCommandParser.SlnOrProjectArgument), cliProps);
+                // this can happen if the project wasn't loadable, or if we're at a solution context
+                if (projectInstance == null)
+                {
+                    return new List<string>();
+                }
                 var importedPropValue = projectInstance.GetPropertyValue(MSBuildPropertyNames.PUBLISH_PROFILE_IMPORTED);
                 if (!String.IsNullOrEmpty(importedPropValue) && bool.TryParse(importedPropValue, out var wasImported) && wasImported) {
                     try {
