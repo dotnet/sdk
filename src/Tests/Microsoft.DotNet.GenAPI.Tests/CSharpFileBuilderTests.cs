@@ -1112,7 +1112,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                 {
                     internal class Bar<T> {}
 
-                    public struct Foo<T> where T : notnull
+                    public struct Foo<T>
                     {
                         #pragma warning disable 0169
                         // as the includeInternalSymbols field is set to false and the Bar<> class is internal -
