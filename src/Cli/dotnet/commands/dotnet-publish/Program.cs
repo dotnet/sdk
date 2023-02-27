@@ -34,12 +34,14 @@ namespace Microsoft.DotNet.Tools.Publish
         /// build via the Microsoft.Net.Sdk.Publish props and targets.
         /// </remarks>
         private static string[] PropertiesToForwardFromProfile = new [] {
-            "LastUsedBuildConfiguration",
             "Configuration",
+            "LastUsedBuildConfiguration",
+            "LastUsedPlatform",
             "Platform",
+            "RuntimeIdentifier",
+            "RuntimeIdentifiers",
             "TargetFramework",
             "TargetFrameworks",
-            "RuntimeIdentifier"
         };
 
         private PublishCommand(
