@@ -33,8 +33,12 @@ namespace Microsoft.DotNet.Tools.Publish
         /// are set very early on in the build (RID, Configuration, etc).  The remainder will be imported during the
         /// build via the Microsoft.Net.Sdk.Publish props and targets.
         /// </remarks>
-        private static const string[] PropertiesToForwardFromProfile = new [] {
+        private static string[] PropertiesToForwardFromProfile = new [] {
+            "LastUsedBuildConfiguration",
             "Configuration",
+            "Platform",
+            "TargetFramework",
+            "TargetFrameworks",
             "RuntimeIdentifier"
         };
 
