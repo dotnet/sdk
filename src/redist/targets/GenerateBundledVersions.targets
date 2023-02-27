@@ -63,7 +63,7 @@
       <VersionFeature21>30</VersionFeature21>
       <VersionFeature31>32</VersionFeature31>
       <VersionFeature50>17</VersionFeature50>
-      <VersionFeature60>$([MSBuild]::Add($(VersionFeature), 14))</VersionFeature60>
+      <VersionFeature60>$([MSBuild]::Add($(VersionFeature), 13))</VersionFeature60>
   </PropertyGroup>
 
   <Target Name="GenerateBundledVersionsProps" DependsOnTargets="SetupBundledComponents">
