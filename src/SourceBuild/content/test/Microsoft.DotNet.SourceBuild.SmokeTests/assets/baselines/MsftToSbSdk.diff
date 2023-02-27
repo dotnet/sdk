@@ -82,45 +82,6 @@ index ------------
  ./sdk/x.y.z/cs/Microsoft.DotNet.Cli.Sln.Internal.resources.dll
  ./sdk/x.y.z/cs/Microsoft.DotNet.Cli.Utils.resources.dll
 @@ ------------ @@
- ./sdk/x.y.z/cs/Microsoft.TemplateEngine.Orchestrator.RunnableProjects.resources.dll
- ./sdk/x.y.z/cs/Microsoft.TemplateEngine.Utils.resources.dll
- ./sdk/x.y.z/cs/Microsoft.TemplateSearch.Common.resources.dll
--./sdk/x.y.z/cs/Microsoft.TestPlatform.Build.resources.dll
--./sdk/x.y.z/cs/Microsoft.TestPlatform.CommunicationUtilities.resources.dll
--./sdk/x.y.z/cs/Microsoft.TestPlatform.CoreUtilities.resources.dll
--./sdk/x.y.z/cs/Microsoft.TestPlatform.CrossPlatEngine.resources.dll
--./sdk/x.y.z/cs/Microsoft.TestPlatform.Utilities.resources.dll
--./sdk/x.y.z/cs/Microsoft.TestPlatform.VsTestConsole.TranslationLayer.resources.dll
--./sdk/x.y.z/cs/Microsoft.VisualStudio.TestPlatform.Client.resources.dll
--./sdk/x.y.z/cs/Microsoft.VisualStudio.TestPlatform.Common.resources.dll
--./sdk/x.y.z/cs/Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll
- ./sdk/x.y.z/cs/MSBuild.resources.dll
--./sdk/x.y.z/cs/NuGet.Build.Tasks.Console.resources.dll
--./sdk/x.y.z/cs/NuGet.Build.Tasks.resources.dll
--./sdk/x.y.z/cs/NuGet.CommandLine.XPlat.resources.dll
--./sdk/x.y.z/cs/NuGet.Commands.resources.dll
--./sdk/x.y.z/cs/NuGet.Common.resources.dll
--./sdk/x.y.z/cs/NuGet.Configuration.resources.dll
--./sdk/x.y.z/cs/NuGet.Credentials.resources.dll
--./sdk/x.y.z/cs/NuGet.DependencyResolver.Core.resources.dll
--./sdk/x.y.z/cs/NuGet.Frameworks.resources.dll
--./sdk/x.y.z/cs/NuGet.LibraryModel.resources.dll
--./sdk/x.y.z/cs/NuGet.Localization.resources.dll
--./sdk/x.y.z/cs/NuGet.PackageManagement.resources.dll
--./sdk/x.y.z/cs/NuGet.Packaging.Core.resources.dll
--./sdk/x.y.z/cs/NuGet.Packaging.resources.dll
--./sdk/x.y.z/cs/NuGet.ProjectModel.resources.dll
--./sdk/x.y.z/cs/NuGet.Protocol.resources.dll
--./sdk/x.y.z/cs/NuGet.Resolver.resources.dll
--./sdk/x.y.z/cs/NuGet.Versioning.resources.dll
--./sdk/x.y.z/cs/NuGet.VisualStudio.Contracts.resources.dll
- ./sdk/x.y.z/cs/System.CommandLine.resources.dll
--./sdk/x.y.z/cs/Test.Utility.resources.dll
--./sdk/x.y.z/cs/vstest.console.resources.dll
- ./sdk/x.y.z/Current/
- ./sdk/x.y.z/Current/Microsoft.Common.CrossTargeting.targets/
- ./sdk/x.y.z/Current/Microsoft.Common.CrossTargeting.targets/ImportAfter/
-@@ ------------ @@
  ./sdk/x.y.z/datacollector.runtimeconfig.json
  ./sdk/x.y.z/de/
  ./sdk/x.y.z/de/dotnet.resources.dll
@@ -132,45 +93,6 @@ index ------------
  ./sdk/x.y.z/de/Microsoft.Deployment.DotNet.Releases.resources.dll
  ./sdk/x.y.z/de/Microsoft.DotNet.Cli.Sln.Internal.resources.dll
  ./sdk/x.y.z/de/Microsoft.DotNet.Cli.Utils.resources.dll
-@@ ------------ @@
- ./sdk/x.y.z/de/Microsoft.TemplateEngine.Orchestrator.RunnableProjects.resources.dll
- ./sdk/x.y.z/de/Microsoft.TemplateEngine.Utils.resources.dll
- ./sdk/x.y.z/de/Microsoft.TemplateSearch.Common.resources.dll
--./sdk/x.y.z/de/Microsoft.TestPlatform.Build.resources.dll
--./sdk/x.y.z/de/Microsoft.TestPlatform.CommunicationUtilities.resources.dll
--./sdk/x.y.z/de/Microsoft.TestPlatform.CoreUtilities.resources.dll
--./sdk/x.y.z/de/Microsoft.TestPlatform.CrossPlatEngine.resources.dll
--./sdk/x.y.z/de/Microsoft.TestPlatform.Utilities.resources.dll
--./sdk/x.y.z/de/Microsoft.TestPlatform.VsTestConsole.TranslationLayer.resources.dll
--./sdk/x.y.z/de/Microsoft.VisualStudio.TestPlatform.Client.resources.dll
--./sdk/x.y.z/de/Microsoft.VisualStudio.TestPlatform.Common.resources.dll
--./sdk/x.y.z/de/Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll
- ./sdk/x.y.z/de/MSBuild.resources.dll
--./sdk/x.y.z/de/NuGet.Build.Tasks.Console.resources.dll
--./sdk/x.y.z/de/NuGet.Build.Tasks.resources.dll
--./sdk/x.y.z/de/NuGet.CommandLine.XPlat.resources.dll
--./sdk/x.y.z/de/NuGet.Commands.resources.dll
--./sdk/x.y.z/de/NuGet.Common.resources.dll
--./sdk/x.y.z/de/NuGet.Configuration.resources.dll
--./sdk/x.y.z/de/NuGet.Credentials.resources.dll
--./sdk/x.y.z/de/NuGet.DependencyResolver.Core.resources.dll
--./sdk/x.y.z/de/NuGet.Frameworks.resources.dll
--./sdk/x.y.z/de/NuGet.LibraryModel.resources.dll
--./sdk/x.y.z/de/NuGet.Localization.resources.dll
--./sdk/x.y.z/de/NuGet.PackageManagement.resources.dll
--./sdk/x.y.z/de/NuGet.Packaging.Core.resources.dll
--./sdk/x.y.z/de/NuGet.Packaging.resources.dll
--./sdk/x.y.z/de/NuGet.ProjectModel.resources.dll
--./sdk/x.y.z/de/NuGet.Protocol.resources.dll
--./sdk/x.y.z/de/NuGet.Resolver.resources.dll
--./sdk/x.y.z/de/NuGet.Versioning.resources.dll
--./sdk/x.y.z/de/NuGet.VisualStudio.Contracts.resources.dll
- ./sdk/x.y.z/de/System.CommandLine.resources.dll
--./sdk/x.y.z/de/Test.Utility.resources.dll
--./sdk/x.y.z/de/vstest.console.resources.dll
- ./sdk/x.y.z/dotnet.deps.json
- ./sdk/x.y.z/dotnet.dll
- ./sdk/x.y.z/dotnet.runtimeconfig.json
 @@ ------------ @@
  ./sdk/x.y.z/DotnetTools/dotnet-format/Microsoft.CodeAnalysis.CSharp.Features.dll
  ./sdk/x.y.z/DotnetTools/dotnet-format/Microsoft.CodeAnalysis.CSharp.Workspaces.dll
@@ -284,54 +206,11 @@ index ------------
  ./sdk/x.y.z/es/Microsoft.DotNet.Cli.Sln.Internal.resources.dll
  ./sdk/x.y.z/es/Microsoft.DotNet.Cli.Utils.resources.dll
 @@ ------------ @@
- ./sdk/x.y.z/es/Microsoft.TemplateEngine.Orchestrator.RunnableProjects.resources.dll
- ./sdk/x.y.z/es/Microsoft.TemplateEngine.Utils.resources.dll
- ./sdk/x.y.z/es/Microsoft.TemplateSearch.Common.resources.dll
--./sdk/x.y.z/es/Microsoft.TestPlatform.Build.resources.dll
--./sdk/x.y.z/es/Microsoft.TestPlatform.CommunicationUtilities.resources.dll
--./sdk/x.y.z/es/Microsoft.TestPlatform.CoreUtilities.resources.dll
--./sdk/x.y.z/es/Microsoft.TestPlatform.CrossPlatEngine.resources.dll
--./sdk/x.y.z/es/Microsoft.TestPlatform.Utilities.resources.dll
--./sdk/x.y.z/es/Microsoft.TestPlatform.VsTestConsole.TranslationLayer.resources.dll
--./sdk/x.y.z/es/Microsoft.VisualStudio.TestPlatform.Client.resources.dll
--./sdk/x.y.z/es/Microsoft.VisualStudio.TestPlatform.Common.resources.dll
--./sdk/x.y.z/es/Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll
  ./sdk/x.y.z/es/MSBuild.resources.dll
--./sdk/x.y.z/es/NuGet.Build.Tasks.Console.resources.dll
--./sdk/x.y.z/es/NuGet.Build.Tasks.resources.dll
--./sdk/x.y.z/es/NuGet.CommandLine.XPlat.resources.dll
--./sdk/x.y.z/es/NuGet.Commands.resources.dll
--./sdk/x.y.z/es/NuGet.Common.resources.dll
--./sdk/x.y.z/es/NuGet.Configuration.resources.dll
--./sdk/x.y.z/es/NuGet.Credentials.resources.dll
--./sdk/x.y.z/es/NuGet.DependencyResolver.Core.resources.dll
--./sdk/x.y.z/es/NuGet.Frameworks.resources.dll
--./sdk/x.y.z/es/NuGet.LibraryModel.resources.dll
--./sdk/x.y.z/es/NuGet.Localization.resources.dll
--./sdk/x.y.z/es/NuGet.PackageManagement.resources.dll
--./sdk/x.y.z/es/NuGet.Packaging.Core.resources.dll
--./sdk/x.y.z/es/NuGet.Packaging.resources.dll
--./sdk/x.y.z/es/NuGet.ProjectModel.resources.dll
--./sdk/x.y.z/es/NuGet.Protocol.resources.dll
--./sdk/x.y.z/es/NuGet.Resolver.resources.dll
--./sdk/x.y.z/es/NuGet.Versioning.resources.dll
--./sdk/x.y.z/es/NuGet.VisualStudio.Contracts.resources.dll
  ./sdk/x.y.z/es/System.CommandLine.resources.dll
--./sdk/x.y.z/es/Test.Utility.resources.dll
--./sdk/x.y.z/es/vstest.console.resources.dll
  ./sdk/x.y.z/Extensions/
 -./sdk/x.y.z/Extensions/cs/
--./sdk/x.y.z/Extensions/cs/Microsoft.TestPlatform.Extensions.BlameDataCollector.resources.dll
--./sdk/x.y.z/Extensions/cs/Microsoft.TestPlatform.Extensions.EventLogCollector.resources.dll
--./sdk/x.y.z/Extensions/cs/Microsoft.TestPlatform.TestHostRuntimeProvider.resources.dll
--./sdk/x.y.z/Extensions/cs/Microsoft.VisualStudio.TestPlatform.Extensions.Html.TestLogger.resources.dll
--./sdk/x.y.z/Extensions/cs/Microsoft.VisualStudio.TestPlatform.Extensions.Trx.TestLogger.resources.dll
 -./sdk/x.y.z/Extensions/de/
--./sdk/x.y.z/Extensions/de/Microsoft.TestPlatform.Extensions.BlameDataCollector.resources.dll
--./sdk/x.y.z/Extensions/de/Microsoft.TestPlatform.Extensions.EventLogCollector.resources.dll
--./sdk/x.y.z/Extensions/de/Microsoft.TestPlatform.TestHostRuntimeProvider.resources.dll
--./sdk/x.y.z/Extensions/de/Microsoft.VisualStudio.TestPlatform.Extensions.Html.TestLogger.resources.dll
--./sdk/x.y.z/Extensions/de/Microsoft.VisualStudio.TestPlatform.Extensions.Trx.TestLogger.resources.dll
 -./sdk/x.y.z/Extensions/dump/
 -./sdk/x.y.z/Extensions/dump/DumpMinitool.arm64.exe
 -./sdk/x.y.z/Extensions/dump/DumpMinitool.arm64.exe.config
@@ -340,35 +219,10 @@ index ------------
 -./sdk/x.y.z/Extensions/dump/DumpMinitool.x86.exe
 -./sdk/x.y.z/Extensions/dump/DumpMinitool.x86.exe.config
 -./sdk/x.y.z/Extensions/es/
--./sdk/x.y.z/Extensions/es/Microsoft.TestPlatform.Extensions.BlameDataCollector.resources.dll
--./sdk/x.y.z/Extensions/es/Microsoft.TestPlatform.Extensions.EventLogCollector.resources.dll
--./sdk/x.y.z/Extensions/es/Microsoft.TestPlatform.TestHostRuntimeProvider.resources.dll
--./sdk/x.y.z/Extensions/es/Microsoft.VisualStudio.TestPlatform.Extensions.Html.TestLogger.resources.dll
--./sdk/x.y.z/Extensions/es/Microsoft.VisualStudio.TestPlatform.Extensions.Trx.TestLogger.resources.dll
 -./sdk/x.y.z/Extensions/fr/
--./sdk/x.y.z/Extensions/fr/Microsoft.TestPlatform.Extensions.BlameDataCollector.resources.dll
--./sdk/x.y.z/Extensions/fr/Microsoft.TestPlatform.Extensions.EventLogCollector.resources.dll
--./sdk/x.y.z/Extensions/fr/Microsoft.TestPlatform.TestHostRuntimeProvider.resources.dll
--./sdk/x.y.z/Extensions/fr/Microsoft.VisualStudio.TestPlatform.Extensions.Html.TestLogger.resources.dll
--./sdk/x.y.z/Extensions/fr/Microsoft.VisualStudio.TestPlatform.Extensions.Trx.TestLogger.resources.dll
 -./sdk/x.y.z/Extensions/it/
--./sdk/x.y.z/Extensions/it/Microsoft.TestPlatform.Extensions.BlameDataCollector.resources.dll
--./sdk/x.y.z/Extensions/it/Microsoft.TestPlatform.Extensions.EventLogCollector.resources.dll
--./sdk/x.y.z/Extensions/it/Microsoft.TestPlatform.TestHostRuntimeProvider.resources.dll
--./sdk/x.y.z/Extensions/it/Microsoft.VisualStudio.TestPlatform.Extensions.Html.TestLogger.resources.dll
--./sdk/x.y.z/Extensions/it/Microsoft.VisualStudio.TestPlatform.Extensions.Trx.TestLogger.resources.dll
 -./sdk/x.y.z/Extensions/ja/
--./sdk/x.y.z/Extensions/ja/Microsoft.TestPlatform.Extensions.BlameDataCollector.resources.dll
--./sdk/x.y.z/Extensions/ja/Microsoft.TestPlatform.Extensions.EventLogCollector.resources.dll
--./sdk/x.y.z/Extensions/ja/Microsoft.TestPlatform.TestHostRuntimeProvider.resources.dll
--./sdk/x.y.z/Extensions/ja/Microsoft.VisualStudio.TestPlatform.Extensions.Html.TestLogger.resources.dll
--./sdk/x.y.z/Extensions/ja/Microsoft.VisualStudio.TestPlatform.Extensions.Trx.TestLogger.resources.dll
 -./sdk/x.y.z/Extensions/ko/
--./sdk/x.y.z/Extensions/ko/Microsoft.TestPlatform.Extensions.BlameDataCollector.resources.dll
--./sdk/x.y.z/Extensions/ko/Microsoft.TestPlatform.Extensions.EventLogCollector.resources.dll
--./sdk/x.y.z/Extensions/ko/Microsoft.TestPlatform.TestHostRuntimeProvider.resources.dll
--./sdk/x.y.z/Extensions/ko/Microsoft.VisualStudio.TestPlatform.Extensions.Html.TestLogger.resources.dll
--./sdk/x.y.z/Extensions/ko/Microsoft.VisualStudio.TestPlatform.Extensions.Trx.TestLogger.resources.dll
 -./sdk/x.y.z/Extensions/Microsoft.Diagnostics.NETCore.Client.dll
  ./sdk/x.y.z/Extensions/Microsoft.TestPlatform.Extensions.BlameDataCollector.dll
  ./sdk/x.y.z/Extensions/Microsoft.TestPlatform.Extensions.EventLogCollector.dll
@@ -376,41 +230,11 @@ index ------------
  ./sdk/x.y.z/Extensions/Microsoft.VisualStudio.TestPlatform.Extensions.Html.TestLogger.dll
  ./sdk/x.y.z/Extensions/Microsoft.VisualStudio.TestPlatform.Extensions.Trx.TestLogger.dll
 -./sdk/x.y.z/Extensions/pl/
--./sdk/x.y.z/Extensions/pl/Microsoft.TestPlatform.Extensions.BlameDataCollector.resources.dll
--./sdk/x.y.z/Extensions/pl/Microsoft.TestPlatform.Extensions.EventLogCollector.resources.dll
--./sdk/x.y.z/Extensions/pl/Microsoft.TestPlatform.TestHostRuntimeProvider.resources.dll
--./sdk/x.y.z/Extensions/pl/Microsoft.VisualStudio.TestPlatform.Extensions.Html.TestLogger.resources.dll
--./sdk/x.y.z/Extensions/pl/Microsoft.VisualStudio.TestPlatform.Extensions.Trx.TestLogger.resources.dll
 -./sdk/x.y.z/Extensions/pt-BR/
--./sdk/x.y.z/Extensions/pt-BR/Microsoft.TestPlatform.Extensions.BlameDataCollector.resources.dll
--./sdk/x.y.z/Extensions/pt-BR/Microsoft.TestPlatform.Extensions.EventLogCollector.resources.dll
--./sdk/x.y.z/Extensions/pt-BR/Microsoft.TestPlatform.TestHostRuntimeProvider.resources.dll
--./sdk/x.y.z/Extensions/pt-BR/Microsoft.VisualStudio.TestPlatform.Extensions.Html.TestLogger.resources.dll
--./sdk/x.y.z/Extensions/pt-BR/Microsoft.VisualStudio.TestPlatform.Extensions.Trx.TestLogger.resources.dll
 -./sdk/x.y.z/Extensions/ru/
--./sdk/x.y.z/Extensions/ru/Microsoft.TestPlatform.Extensions.BlameDataCollector.resources.dll
--./sdk/x.y.z/Extensions/ru/Microsoft.TestPlatform.Extensions.EventLogCollector.resources.dll
--./sdk/x.y.z/Extensions/ru/Microsoft.TestPlatform.TestHostRuntimeProvider.resources.dll
--./sdk/x.y.z/Extensions/ru/Microsoft.VisualStudio.TestPlatform.Extensions.Html.TestLogger.resources.dll
--./sdk/x.y.z/Extensions/ru/Microsoft.VisualStudio.TestPlatform.Extensions.Trx.TestLogger.resources.dll
 -./sdk/x.y.z/Extensions/tr/
--./sdk/x.y.z/Extensions/tr/Microsoft.TestPlatform.Extensions.BlameDataCollector.resources.dll
--./sdk/x.y.z/Extensions/tr/Microsoft.TestPlatform.Extensions.EventLogCollector.resources.dll
--./sdk/x.y.z/Extensions/tr/Microsoft.TestPlatform.TestHostRuntimeProvider.resources.dll
--./sdk/x.y.z/Extensions/tr/Microsoft.VisualStudio.TestPlatform.Extensions.Html.TestLogger.resources.dll
--./sdk/x.y.z/Extensions/tr/Microsoft.VisualStudio.TestPlatform.Extensions.Trx.TestLogger.resources.dll
 -./sdk/x.y.z/Extensions/zh-Hans/
--./sdk/x.y.z/Extensions/zh-Hans/Microsoft.TestPlatform.Extensions.BlameDataCollector.resources.dll
--./sdk/x.y.z/Extensions/zh-Hans/Microsoft.TestPlatform.Extensions.EventLogCollector.resources.dll
--./sdk/x.y.z/Extensions/zh-Hans/Microsoft.TestPlatform.TestHostRuntimeProvider.resources.dll
--./sdk/x.y.z/Extensions/zh-Hans/Microsoft.VisualStudio.TestPlatform.Extensions.Html.TestLogger.resources.dll
--./sdk/x.y.z/Extensions/zh-Hans/Microsoft.VisualStudio.TestPlatform.Extensions.Trx.TestLogger.resources.dll
 -./sdk/x.y.z/Extensions/zh-Hant/
--./sdk/x.y.z/Extensions/zh-Hant/Microsoft.TestPlatform.Extensions.BlameDataCollector.resources.dll
--./sdk/x.y.z/Extensions/zh-Hant/Microsoft.TestPlatform.Extensions.EventLogCollector.resources.dll
--./sdk/x.y.z/Extensions/zh-Hant/Microsoft.TestPlatform.TestHostRuntimeProvider.resources.dll
--./sdk/x.y.z/Extensions/zh-Hant/Microsoft.VisualStudio.TestPlatform.Extensions.Html.TestLogger.resources.dll
--./sdk/x.y.z/Extensions/zh-Hant/Microsoft.VisualStudio.TestPlatform.Extensions.Trx.TestLogger.resources.dll
  ./sdk/x.y.z/fr/
  ./sdk/x.y.z/fr/dotnet.resources.dll
 -./sdk/x.y.z/fr/Microsoft.Build.NuGetSdkResolver.resources.dll
@@ -421,45 +245,6 @@ index ------------
  ./sdk/x.y.z/fr/Microsoft.Deployment.DotNet.Releases.resources.dll
  ./sdk/x.y.z/fr/Microsoft.DotNet.Cli.Sln.Internal.resources.dll
  ./sdk/x.y.z/fr/Microsoft.DotNet.Cli.Utils.resources.dll
-@@ ------------ @@
- ./sdk/x.y.z/fr/Microsoft.TemplateEngine.Orchestrator.RunnableProjects.resources.dll
- ./sdk/x.y.z/fr/Microsoft.TemplateEngine.Utils.resources.dll
- ./sdk/x.y.z/fr/Microsoft.TemplateSearch.Common.resources.dll
--./sdk/x.y.z/fr/Microsoft.TestPlatform.Build.resources.dll
--./sdk/x.y.z/fr/Microsoft.TestPlatform.CommunicationUtilities.resources.dll
--./sdk/x.y.z/fr/Microsoft.TestPlatform.CoreUtilities.resources.dll
--./sdk/x.y.z/fr/Microsoft.TestPlatform.CrossPlatEngine.resources.dll
--./sdk/x.y.z/fr/Microsoft.TestPlatform.Utilities.resources.dll
--./sdk/x.y.z/fr/Microsoft.TestPlatform.VsTestConsole.TranslationLayer.resources.dll
--./sdk/x.y.z/fr/Microsoft.VisualStudio.TestPlatform.Client.resources.dll
--./sdk/x.y.z/fr/Microsoft.VisualStudio.TestPlatform.Common.resources.dll
--./sdk/x.y.z/fr/Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll
- ./sdk/x.y.z/fr/MSBuild.resources.dll
--./sdk/x.y.z/fr/NuGet.Build.Tasks.Console.resources.dll
--./sdk/x.y.z/fr/NuGet.Build.Tasks.resources.dll
--./sdk/x.y.z/fr/NuGet.CommandLine.XPlat.resources.dll
--./sdk/x.y.z/fr/NuGet.Commands.resources.dll
--./sdk/x.y.z/fr/NuGet.Common.resources.dll
--./sdk/x.y.z/fr/NuGet.Configuration.resources.dll
--./sdk/x.y.z/fr/NuGet.Credentials.resources.dll
--./sdk/x.y.z/fr/NuGet.DependencyResolver.Core.resources.dll
--./sdk/x.y.z/fr/NuGet.Frameworks.resources.dll
--./sdk/x.y.z/fr/NuGet.LibraryModel.resources.dll
--./sdk/x.y.z/fr/NuGet.Localization.resources.dll
--./sdk/x.y.z/fr/NuGet.PackageManagement.resources.dll
--./sdk/x.y.z/fr/NuGet.Packaging.Core.resources.dll
--./sdk/x.y.z/fr/NuGet.Packaging.resources.dll
--./sdk/x.y.z/fr/NuGet.ProjectModel.resources.dll
--./sdk/x.y.z/fr/NuGet.Protocol.resources.dll
--./sdk/x.y.z/fr/NuGet.Resolver.resources.dll
--./sdk/x.y.z/fr/NuGet.Versioning.resources.dll
--./sdk/x.y.z/fr/NuGet.VisualStudio.Contracts.resources.dll
- ./sdk/x.y.z/fr/System.CommandLine.resources.dll
--./sdk/x.y.z/fr/Test.Utility.resources.dll
--./sdk/x.y.z/fr/vstest.console.resources.dll
- ./sdk/x.y.z/FSharp/
- ./sdk/x.y.z/FSharp/cs/
- ./sdk/x.y.z/FSharp/cs/FSharp.Build.resources.dll
 @@ ------------ @@
  ./sdk/x.y.z/FSharp/ru/FSharp.Core.resources.dll
  ./sdk/x.y.z/FSharp/ru/FSharp.DependencyManager.Nuget.resources.dll
@@ -497,41 +282,7 @@ index ------------
  ./sdk/x.y.z/it/Microsoft.DotNet.Cli.Sln.Internal.resources.dll
  ./sdk/x.y.z/it/Microsoft.DotNet.Cli.Utils.resources.dll
 @@ ------------ @@
- ./sdk/x.y.z/it/Microsoft.TemplateEngine.Orchestrator.RunnableProjects.resources.dll
- ./sdk/x.y.z/it/Microsoft.TemplateEngine.Utils.resources.dll
- ./sdk/x.y.z/it/Microsoft.TemplateSearch.Common.resources.dll
--./sdk/x.y.z/it/Microsoft.TestPlatform.Build.resources.dll
--./sdk/x.y.z/it/Microsoft.TestPlatform.CommunicationUtilities.resources.dll
--./sdk/x.y.z/it/Microsoft.TestPlatform.CoreUtilities.resources.dll
--./sdk/x.y.z/it/Microsoft.TestPlatform.CrossPlatEngine.resources.dll
--./sdk/x.y.z/it/Microsoft.TestPlatform.Utilities.resources.dll
--./sdk/x.y.z/it/Microsoft.TestPlatform.VsTestConsole.TranslationLayer.resources.dll
--./sdk/x.y.z/it/Microsoft.VisualStudio.TestPlatform.Client.resources.dll
--./sdk/x.y.z/it/Microsoft.VisualStudio.TestPlatform.Common.resources.dll
--./sdk/x.y.z/it/Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll
- ./sdk/x.y.z/it/MSBuild.resources.dll
--./sdk/x.y.z/it/NuGet.Build.Tasks.Console.resources.dll
--./sdk/x.y.z/it/NuGet.Build.Tasks.resources.dll
--./sdk/x.y.z/it/NuGet.CommandLine.XPlat.resources.dll
--./sdk/x.y.z/it/NuGet.Commands.resources.dll
--./sdk/x.y.z/it/NuGet.Common.resources.dll
--./sdk/x.y.z/it/NuGet.Configuration.resources.dll
--./sdk/x.y.z/it/NuGet.Credentials.resources.dll
--./sdk/x.y.z/it/NuGet.DependencyResolver.Core.resources.dll
--./sdk/x.y.z/it/NuGet.Frameworks.resources.dll
--./sdk/x.y.z/it/NuGet.LibraryModel.resources.dll
--./sdk/x.y.z/it/NuGet.Localization.resources.dll
--./sdk/x.y.z/it/NuGet.PackageManagement.resources.dll
--./sdk/x.y.z/it/NuGet.Packaging.Core.resources.dll
--./sdk/x.y.z/it/NuGet.Packaging.resources.dll
--./sdk/x.y.z/it/NuGet.ProjectModel.resources.dll
--./sdk/x.y.z/it/NuGet.Protocol.resources.dll
--./sdk/x.y.z/it/NuGet.Resolver.resources.dll
--./sdk/x.y.z/it/NuGet.Versioning.resources.dll
--./sdk/x.y.z/it/NuGet.VisualStudio.Contracts.resources.dll
  ./sdk/x.y.z/it/System.CommandLine.resources.dll
--./sdk/x.y.z/it/Test.Utility.resources.dll
--./sdk/x.y.z/it/vstest.console.resources.dll
  ./sdk/x.y.z/ja/
  ./sdk/x.y.z/ja/dotnet.resources.dll
 -./sdk/x.y.z/ja/Microsoft.Build.NuGetSdkResolver.resources.dll
@@ -543,41 +294,7 @@ index ------------
  ./sdk/x.y.z/ja/Microsoft.DotNet.Cli.Sln.Internal.resources.dll
  ./sdk/x.y.z/ja/Microsoft.DotNet.Cli.Utils.resources.dll
 @@ ------------ @@
- ./sdk/x.y.z/ja/Microsoft.TemplateEngine.Orchestrator.RunnableProjects.resources.dll
- ./sdk/x.y.z/ja/Microsoft.TemplateEngine.Utils.resources.dll
- ./sdk/x.y.z/ja/Microsoft.TemplateSearch.Common.resources.dll
--./sdk/x.y.z/ja/Microsoft.TestPlatform.Build.resources.dll
--./sdk/x.y.z/ja/Microsoft.TestPlatform.CommunicationUtilities.resources.dll
--./sdk/x.y.z/ja/Microsoft.TestPlatform.CoreUtilities.resources.dll
--./sdk/x.y.z/ja/Microsoft.TestPlatform.CrossPlatEngine.resources.dll
--./sdk/x.y.z/ja/Microsoft.TestPlatform.Utilities.resources.dll
--./sdk/x.y.z/ja/Microsoft.TestPlatform.VsTestConsole.TranslationLayer.resources.dll
--./sdk/x.y.z/ja/Microsoft.VisualStudio.TestPlatform.Client.resources.dll
--./sdk/x.y.z/ja/Microsoft.VisualStudio.TestPlatform.Common.resources.dll
--./sdk/x.y.z/ja/Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll
- ./sdk/x.y.z/ja/MSBuild.resources.dll
--./sdk/x.y.z/ja/NuGet.Build.Tasks.Console.resources.dll
--./sdk/x.y.z/ja/NuGet.Build.Tasks.resources.dll
--./sdk/x.y.z/ja/NuGet.CommandLine.XPlat.resources.dll
--./sdk/x.y.z/ja/NuGet.Commands.resources.dll
--./sdk/x.y.z/ja/NuGet.Common.resources.dll
--./sdk/x.y.z/ja/NuGet.Configuration.resources.dll
--./sdk/x.y.z/ja/NuGet.Credentials.resources.dll
--./sdk/x.y.z/ja/NuGet.DependencyResolver.Core.resources.dll
--./sdk/x.y.z/ja/NuGet.Frameworks.resources.dll
--./sdk/x.y.z/ja/NuGet.LibraryModel.resources.dll
--./sdk/x.y.z/ja/NuGet.Localization.resources.dll
--./sdk/x.y.z/ja/NuGet.PackageManagement.resources.dll
--./sdk/x.y.z/ja/NuGet.Packaging.Core.resources.dll
--./sdk/x.y.z/ja/NuGet.Packaging.resources.dll
--./sdk/x.y.z/ja/NuGet.ProjectModel.resources.dll
--./sdk/x.y.z/ja/NuGet.Protocol.resources.dll
--./sdk/x.y.z/ja/NuGet.Resolver.resources.dll
--./sdk/x.y.z/ja/NuGet.Versioning.resources.dll
--./sdk/x.y.z/ja/NuGet.VisualStudio.Contracts.resources.dll
  ./sdk/x.y.z/ja/System.CommandLine.resources.dll
--./sdk/x.y.z/ja/Test.Utility.resources.dll
--./sdk/x.y.z/ja/vstest.console.resources.dll
  ./sdk/x.y.z/ko/
  ./sdk/x.y.z/ko/dotnet.resources.dll
 -./sdk/x.y.z/ko/Microsoft.Build.NuGetSdkResolver.resources.dll
@@ -589,41 +306,7 @@ index ------------
  ./sdk/x.y.z/ko/Microsoft.DotNet.Cli.Sln.Internal.resources.dll
  ./sdk/x.y.z/ko/Microsoft.DotNet.Cli.Utils.resources.dll
 @@ ------------ @@
- ./sdk/x.y.z/ko/Microsoft.TemplateEngine.Orchestrator.RunnableProjects.resources.dll
- ./sdk/x.y.z/ko/Microsoft.TemplateEngine.Utils.resources.dll
- ./sdk/x.y.z/ko/Microsoft.TemplateSearch.Common.resources.dll
--./sdk/x.y.z/ko/Microsoft.TestPlatform.Build.resources.dll
--./sdk/x.y.z/ko/Microsoft.TestPlatform.CommunicationUtilities.resources.dll
--./sdk/x.y.z/ko/Microsoft.TestPlatform.CoreUtilities.resources.dll
--./sdk/x.y.z/ko/Microsoft.TestPlatform.CrossPlatEngine.resources.dll
--./sdk/x.y.z/ko/Microsoft.TestPlatform.Utilities.resources.dll
--./sdk/x.y.z/ko/Microsoft.TestPlatform.VsTestConsole.TranslationLayer.resources.dll
--./sdk/x.y.z/ko/Microsoft.VisualStudio.TestPlatform.Client.resources.dll
--./sdk/x.y.z/ko/Microsoft.VisualStudio.TestPlatform.Common.resources.dll
--./sdk/x.y.z/ko/Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll
- ./sdk/x.y.z/ko/MSBuild.resources.dll
--./sdk/x.y.z/ko/NuGet.Build.Tasks.Console.resources.dll
--./sdk/x.y.z/ko/NuGet.Build.Tasks.resources.dll
--./sdk/x.y.z/ko/NuGet.CommandLine.XPlat.resources.dll
--./sdk/x.y.z/ko/NuGet.Commands.resources.dll
--./sdk/x.y.z/ko/NuGet.Common.resources.dll
--./sdk/x.y.z/ko/NuGet.Configuration.resources.dll
--./sdk/x.y.z/ko/NuGet.Credentials.resources.dll
--./sdk/x.y.z/ko/NuGet.DependencyResolver.Core.resources.dll
--./sdk/x.y.z/ko/NuGet.Frameworks.resources.dll
--./sdk/x.y.z/ko/NuGet.LibraryModel.resources.dll
--./sdk/x.y.z/ko/NuGet.Localization.resources.dll
--./sdk/x.y.z/ko/NuGet.PackageManagement.resources.dll
--./sdk/x.y.z/ko/NuGet.Packaging.Core.resources.dll
--./sdk/x.y.z/ko/NuGet.Packaging.resources.dll
--./sdk/x.y.z/ko/NuGet.ProjectModel.resources.dll
--./sdk/x.y.z/ko/NuGet.Protocol.resources.dll
--./sdk/x.y.z/ko/NuGet.Resolver.resources.dll
--./sdk/x.y.z/ko/NuGet.Versioning.resources.dll
--./sdk/x.y.z/ko/NuGet.VisualStudio.Contracts.resources.dll
  ./sdk/x.y.z/ko/System.CommandLine.resources.dll
--./sdk/x.y.z/ko/Test.Utility.resources.dll
--./sdk/x.y.z/ko/vstest.console.resources.dll
  ./sdk/x.y.z/Microsoft.ApplicationInsights.dll
  ./sdk/x.y.z/Microsoft.AspNetCore.DeveloperCertificates.XPlat.dll
 +./sdk/x.y.z/Microsoft.Bcl.AsyncInterfaces.dll
@@ -667,41 +350,7 @@ index ------------
  ./sdk/x.y.z/pl/Microsoft.DotNet.Cli.Sln.Internal.resources.dll
  ./sdk/x.y.z/pl/Microsoft.DotNet.Cli.Utils.resources.dll
 @@ ------------ @@
- ./sdk/x.y.z/pl/Microsoft.TemplateEngine.Orchestrator.RunnableProjects.resources.dll
- ./sdk/x.y.z/pl/Microsoft.TemplateEngine.Utils.resources.dll
- ./sdk/x.y.z/pl/Microsoft.TemplateSearch.Common.resources.dll
--./sdk/x.y.z/pl/Microsoft.TestPlatform.Build.resources.dll
--./sdk/x.y.z/pl/Microsoft.TestPlatform.CommunicationUtilities.resources.dll
--./sdk/x.y.z/pl/Microsoft.TestPlatform.CoreUtilities.resources.dll
--./sdk/x.y.z/pl/Microsoft.TestPlatform.CrossPlatEngine.resources.dll
--./sdk/x.y.z/pl/Microsoft.TestPlatform.Utilities.resources.dll
--./sdk/x.y.z/pl/Microsoft.TestPlatform.VsTestConsole.TranslationLayer.resources.dll
--./sdk/x.y.z/pl/Microsoft.VisualStudio.TestPlatform.Client.resources.dll
--./sdk/x.y.z/pl/Microsoft.VisualStudio.TestPlatform.Common.resources.dll
--./sdk/x.y.z/pl/Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll
- ./sdk/x.y.z/pl/MSBuild.resources.dll
--./sdk/x.y.z/pl/NuGet.Build.Tasks.Console.resources.dll
--./sdk/x.y.z/pl/NuGet.Build.Tasks.resources.dll
--./sdk/x.y.z/pl/NuGet.CommandLine.XPlat.resources.dll
--./sdk/x.y.z/pl/NuGet.Commands.resources.dll
--./sdk/x.y.z/pl/NuGet.Common.resources.dll
--./sdk/x.y.z/pl/NuGet.Configuration.resources.dll
--./sdk/x.y.z/pl/NuGet.Credentials.resources.dll
--./sdk/x.y.z/pl/NuGet.DependencyResolver.Core.resources.dll
--./sdk/x.y.z/pl/NuGet.Frameworks.resources.dll
--./sdk/x.y.z/pl/NuGet.LibraryModel.resources.dll
--./sdk/x.y.z/pl/NuGet.Localization.resources.dll
--./sdk/x.y.z/pl/NuGet.PackageManagement.resources.dll
--./sdk/x.y.z/pl/NuGet.Packaging.Core.resources.dll
--./sdk/x.y.z/pl/NuGet.Packaging.resources.dll
--./sdk/x.y.z/pl/NuGet.ProjectModel.resources.dll
--./sdk/x.y.z/pl/NuGet.Protocol.resources.dll
--./sdk/x.y.z/pl/NuGet.Resolver.resources.dll
--./sdk/x.y.z/pl/NuGet.Versioning.resources.dll
--./sdk/x.y.z/pl/NuGet.VisualStudio.Contracts.resources.dll
  ./sdk/x.y.z/pl/System.CommandLine.resources.dll
--./sdk/x.y.z/pl/Test.Utility.resources.dll
--./sdk/x.y.z/pl/vstest.console.resources.dll
  ./sdk/x.y.z/pt-BR/
  ./sdk/x.y.z/pt-BR/dotnet.resources.dll
 -./sdk/x.y.z/pt-BR/Microsoft.Build.NuGetSdkResolver.resources.dll
@@ -712,45 +361,6 @@ index ------------
  ./sdk/x.y.z/pt-BR/Microsoft.Deployment.DotNet.Releases.resources.dll
  ./sdk/x.y.z/pt-BR/Microsoft.DotNet.Cli.Sln.Internal.resources.dll
  ./sdk/x.y.z/pt-BR/Microsoft.DotNet.Cli.Utils.resources.dll
-@@ ------------ @@
- ./sdk/x.y.z/pt-BR/Microsoft.TemplateEngine.Orchestrator.RunnableProjects.resources.dll
- ./sdk/x.y.z/pt-BR/Microsoft.TemplateEngine.Utils.resources.dll
- ./sdk/x.y.z/pt-BR/Microsoft.TemplateSearch.Common.resources.dll
--./sdk/x.y.z/pt-BR/Microsoft.TestPlatform.Build.resources.dll
--./sdk/x.y.z/pt-BR/Microsoft.TestPlatform.CommunicationUtilities.resources.dll
--./sdk/x.y.z/pt-BR/Microsoft.TestPlatform.CoreUtilities.resources.dll
--./sdk/x.y.z/pt-BR/Microsoft.TestPlatform.CrossPlatEngine.resources.dll
--./sdk/x.y.z/pt-BR/Microsoft.TestPlatform.Utilities.resources.dll
--./sdk/x.y.z/pt-BR/Microsoft.TestPlatform.VsTestConsole.TranslationLayer.resources.dll
--./sdk/x.y.z/pt-BR/Microsoft.VisualStudio.TestPlatform.Client.resources.dll
--./sdk/x.y.z/pt-BR/Microsoft.VisualStudio.TestPlatform.Common.resources.dll
--./sdk/x.y.z/pt-BR/Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll
- ./sdk/x.y.z/pt-BR/MSBuild.resources.dll
--./sdk/x.y.z/pt-BR/NuGet.Build.Tasks.Console.resources.dll
--./sdk/x.y.z/pt-BR/NuGet.Build.Tasks.resources.dll
--./sdk/x.y.z/pt-BR/NuGet.CommandLine.XPlat.resources.dll
--./sdk/x.y.z/pt-BR/NuGet.Commands.resources.dll
--./sdk/x.y.z/pt-BR/NuGet.Common.resources.dll
--./sdk/x.y.z/pt-BR/NuGet.Configuration.resources.dll
--./sdk/x.y.z/pt-BR/NuGet.Credentials.resources.dll
--./sdk/x.y.z/pt-BR/NuGet.DependencyResolver.Core.resources.dll
--./sdk/x.y.z/pt-BR/NuGet.Frameworks.resources.dll
--./sdk/x.y.z/pt-BR/NuGet.LibraryModel.resources.dll
--./sdk/x.y.z/pt-BR/NuGet.Localization.resources.dll
--./sdk/x.y.z/pt-BR/NuGet.PackageManagement.resources.dll
--./sdk/x.y.z/pt-BR/NuGet.Packaging.Core.resources.dll
--./sdk/x.y.z/pt-BR/NuGet.Packaging.resources.dll
--./sdk/x.y.z/pt-BR/NuGet.ProjectModel.resources.dll
--./sdk/x.y.z/pt-BR/NuGet.Protocol.resources.dll
--./sdk/x.y.z/pt-BR/NuGet.Resolver.resources.dll
--./sdk/x.y.z/pt-BR/NuGet.Versioning.resources.dll
--./sdk/x.y.z/pt-BR/NuGet.VisualStudio.Contracts.resources.dll
- ./sdk/x.y.z/pt-BR/System.CommandLine.resources.dll
--./sdk/x.y.z/pt-BR/Test.Utility.resources.dll
--./sdk/x.y.z/pt-BR/vstest.console.resources.dll
- ./sdk/x.y.z/ref/
- ./sdk/x.y.z/ref/Microsoft.Build.Framework.dll
- ./sdk/x.y.z/ref/Microsoft.Build.Utilities.Core.dll
 @@ ------------ @@
  ./sdk/x.y.z/Roslyn/bincore/ru/Microsoft.CodeAnalysis.CSharp.resources.dll
  ./sdk/x.y.z/Roslyn/bincore/ru/Microsoft.CodeAnalysis.resources.dll
@@ -774,45 +384,6 @@ index ------------
  ./sdk/x.y.z/ru/Microsoft.DotNet.Cli.Sln.Internal.resources.dll
  ./sdk/x.y.z/ru/Microsoft.DotNet.Cli.Utils.resources.dll
 @@ ------------ @@
- ./sdk/x.y.z/ru/Microsoft.TemplateEngine.Orchestrator.RunnableProjects.resources.dll
- ./sdk/x.y.z/ru/Microsoft.TemplateEngine.Utils.resources.dll
- ./sdk/x.y.z/ru/Microsoft.TemplateSearch.Common.resources.dll
--./sdk/x.y.z/ru/Microsoft.TestPlatform.Build.resources.dll
--./sdk/x.y.z/ru/Microsoft.TestPlatform.CommunicationUtilities.resources.dll
--./sdk/x.y.z/ru/Microsoft.TestPlatform.CoreUtilities.resources.dll
--./sdk/x.y.z/ru/Microsoft.TestPlatform.CrossPlatEngine.resources.dll
--./sdk/x.y.z/ru/Microsoft.TestPlatform.Utilities.resources.dll
--./sdk/x.y.z/ru/Microsoft.TestPlatform.VsTestConsole.TranslationLayer.resources.dll
--./sdk/x.y.z/ru/Microsoft.VisualStudio.TestPlatform.Client.resources.dll
--./sdk/x.y.z/ru/Microsoft.VisualStudio.TestPlatform.Common.resources.dll
--./sdk/x.y.z/ru/Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll
- ./sdk/x.y.z/ru/MSBuild.resources.dll
--./sdk/x.y.z/ru/NuGet.Build.Tasks.Console.resources.dll
--./sdk/x.y.z/ru/NuGet.Build.Tasks.resources.dll
--./sdk/x.y.z/ru/NuGet.CommandLine.XPlat.resources.dll
--./sdk/x.y.z/ru/NuGet.Commands.resources.dll
--./sdk/x.y.z/ru/NuGet.Common.resources.dll
--./sdk/x.y.z/ru/NuGet.Configuration.resources.dll
--./sdk/x.y.z/ru/NuGet.Credentials.resources.dll
--./sdk/x.y.z/ru/NuGet.DependencyResolver.Core.resources.dll
--./sdk/x.y.z/ru/NuGet.Frameworks.resources.dll
--./sdk/x.y.z/ru/NuGet.LibraryModel.resources.dll
--./sdk/x.y.z/ru/NuGet.Localization.resources.dll
--./sdk/x.y.z/ru/NuGet.PackageManagement.resources.dll
--./sdk/x.y.z/ru/NuGet.Packaging.Core.resources.dll
--./sdk/x.y.z/ru/NuGet.Packaging.resources.dll
--./sdk/x.y.z/ru/NuGet.ProjectModel.resources.dll
--./sdk/x.y.z/ru/NuGet.Protocol.resources.dll
--./sdk/x.y.z/ru/NuGet.Resolver.resources.dll
--./sdk/x.y.z/ru/NuGet.Versioning.resources.dll
--./sdk/x.y.z/ru/NuGet.VisualStudio.Contracts.resources.dll
- ./sdk/x.y.z/ru/System.CommandLine.resources.dll
--./sdk/x.y.z/ru/Test.Utility.resources.dll
--./sdk/x.y.z/ru/vstest.console.resources.dll
- ./sdk/x.y.z/RuntimeIdentifierGraph.json
- ./sdk/x.y.z/runtimes/
- ./sdk/x.y.z/runtimes/any/
-@@ ------------ @@
  ./sdk/x.y.z/runtimes/win/lib/netx.y/Microsoft.Win32.SystemEvents.dll
  ./sdk/x.y.z/runtimes/win/lib/netx.y/System.Diagnostics.EventLog.dll
  ./sdk/x.y.z/runtimes/win/lib/netx.y/System.Diagnostics.EventLog.Messages.dll
@@ -833,48 +404,6 @@ index ------------
  ./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/targets/TransformTargets/Transforms/EnvironmentWithLocation.transform
  ./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/
 -./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/net472/
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/net472/cs/
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/net472/cs/Microsoft.NET.Sdk.Publish.Tasks.resources.dll
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/net472/de/
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/net472/de/Microsoft.NET.Sdk.Publish.Tasks.resources.dll
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/net472/es/
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/net472/es/Microsoft.NET.Sdk.Publish.Tasks.resources.dll
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/net472/fr/
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/net472/fr/Microsoft.NET.Sdk.Publish.Tasks.resources.dll
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/net472/it/
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/net472/it/Microsoft.NET.Sdk.Publish.Tasks.resources.dll
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/net472/ja/
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/net472/ja/Microsoft.NET.Sdk.Publish.Tasks.resources.dll
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/net472/ko/
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/net472/ko/Microsoft.NET.Sdk.Publish.Tasks.resources.dll
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/net472/Microsoft.Bcl.AsyncInterfaces.dll
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/net472/Microsoft.NET.Sdk.Publish.Tasks.dll
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/net472/Microsoft.NET.Sdk.Publish.Tasks.dll.config
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/net472/Microsoft.Web.Delegation.dll
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/net472/Microsoft.Web.Deployment.dll
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/net472/Microsoft.Web.Deployment.Tracing.dll
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/net472/Microsoft.Web.XmlTransform.dll
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/net472/pl/
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/net472/pl/Microsoft.NET.Sdk.Publish.Tasks.resources.dll
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/net472/pt-BR/
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/net472/pt-BR/Microsoft.NET.Sdk.Publish.Tasks.resources.dll
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/net472/ru/
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/net472/ru/Microsoft.NET.Sdk.Publish.Tasks.resources.dll
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/net472/System.Buffers.dll
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/net472/System.Memory.dll
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/net472/System.Numerics.Vectors.dll
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/net472/System.Runtime.CompilerServices.Unsafe.dll
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/net472/System.Security.Cryptography.ProtectedData.dll
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/net472/System.Text.Encodings.Web.dll
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/net472/System.Text.Json.dll
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/net472/System.Threading.Tasks.Extensions.dll
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/net472/System.ValueTuple.dll
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/net472/tr/
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/net472/tr/Microsoft.NET.Sdk.Publish.Tasks.resources.dll
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/net472/zh-Hans/
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/net472/zh-Hans/Microsoft.NET.Sdk.Publish.Tasks.resources.dll
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/net472/zh-Hant/
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/net472/zh-Hant/Microsoft.NET.Sdk.Publish.Tasks.resources.dll
  ./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/netx.y/
  ./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/netx.y/cs/
  ./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/netx.y/cs/Microsoft.NET.Sdk.Publish.Tasks.resources.dll
@@ -911,32 +440,19 @@ index ------------
  ./sdk/x.y.z/Sdks/NuGet.Build.Tasks.Pack/buildCrossTargeting/NuGet.Build.Tasks.Pack.targets
  ./sdk/x.y.z/Sdks/NuGet.Build.Tasks.Pack/CoreCLR/
 -./sdk/x.y.z/Sdks/NuGet.Build.Tasks.Pack/CoreCLR/cs/
--./sdk/x.y.z/Sdks/NuGet.Build.Tasks.Pack/CoreCLR/cs/NuGet.Build.Tasks.Pack.resources.dll
 -./sdk/x.y.z/Sdks/NuGet.Build.Tasks.Pack/CoreCLR/de/
--./sdk/x.y.z/Sdks/NuGet.Build.Tasks.Pack/CoreCLR/de/NuGet.Build.Tasks.Pack.resources.dll
 -./sdk/x.y.z/Sdks/NuGet.Build.Tasks.Pack/CoreCLR/es/
--./sdk/x.y.z/Sdks/NuGet.Build.Tasks.Pack/CoreCLR/es/NuGet.Build.Tasks.Pack.resources.dll
 -./sdk/x.y.z/Sdks/NuGet.Build.Tasks.Pack/CoreCLR/fr/
--./sdk/x.y.z/Sdks/NuGet.Build.Tasks.Pack/CoreCLR/fr/NuGet.Build.Tasks.Pack.resources.dll
 -./sdk/x.y.z/Sdks/NuGet.Build.Tasks.Pack/CoreCLR/it/
--./sdk/x.y.z/Sdks/NuGet.Build.Tasks.Pack/CoreCLR/it/NuGet.Build.Tasks.Pack.resources.dll
 -./sdk/x.y.z/Sdks/NuGet.Build.Tasks.Pack/CoreCLR/ja/
--./sdk/x.y.z/Sdks/NuGet.Build.Tasks.Pack/CoreCLR/ja/NuGet.Build.Tasks.Pack.resources.dll
 -./sdk/x.y.z/Sdks/NuGet.Build.Tasks.Pack/CoreCLR/ko/
--./sdk/x.y.z/Sdks/NuGet.Build.Tasks.Pack/CoreCLR/ko/NuGet.Build.Tasks.Pack.resources.dll
  ./sdk/x.y.z/Sdks/NuGet.Build.Tasks.Pack/CoreCLR/NuGet.Build.Tasks.Pack.dll
 -./sdk/x.y.z/Sdks/NuGet.Build.Tasks.Pack/CoreCLR/pl/
--./sdk/x.y.z/Sdks/NuGet.Build.Tasks.Pack/CoreCLR/pl/NuGet.Build.Tasks.Pack.resources.dll
 -./sdk/x.y.z/Sdks/NuGet.Build.Tasks.Pack/CoreCLR/pt-BR/
--./sdk/x.y.z/Sdks/NuGet.Build.Tasks.Pack/CoreCLR/pt-BR/NuGet.Build.Tasks.Pack.resources.dll
 -./sdk/x.y.z/Sdks/NuGet.Build.Tasks.Pack/CoreCLR/ru/
--./sdk/x.y.z/Sdks/NuGet.Build.Tasks.Pack/CoreCLR/ru/NuGet.Build.Tasks.Pack.resources.dll
 -./sdk/x.y.z/Sdks/NuGet.Build.Tasks.Pack/CoreCLR/tr/
--./sdk/x.y.z/Sdks/NuGet.Build.Tasks.Pack/CoreCLR/tr/NuGet.Build.Tasks.Pack.resources.dll
 -./sdk/x.y.z/Sdks/NuGet.Build.Tasks.Pack/CoreCLR/zh-Hans/
--./sdk/x.y.z/Sdks/NuGet.Build.Tasks.Pack/CoreCLR/zh-Hans/NuGet.Build.Tasks.Pack.resources.dll
 -./sdk/x.y.z/Sdks/NuGet.Build.Tasks.Pack/CoreCLR/zh-Hant/
--./sdk/x.y.z/Sdks/NuGet.Build.Tasks.Pack/CoreCLR/zh-Hant/NuGet.Build.Tasks.Pack.resources.dll
 +./sdk/x.y.z/Sdks/NuGet.Build.Tasks.Pack/CoreCLR/NuGet.Commands.dll
 +./sdk/x.y.z/Sdks/NuGet.Build.Tasks.Pack/CoreCLR/NuGet.Common.dll
 +./sdk/x.y.z/Sdks/NuGet.Build.Tasks.Pack/CoreCLR/NuGet.Configuration.dll
@@ -950,32 +466,19 @@ index ------------
 +./sdk/x.y.z/Sdks/NuGet.Build.Tasks.Pack/CoreCLR/NuGet.Versioning.dll
  ./sdk/x.y.z/Sdks/NuGet.Build.Tasks.Pack/Desktop/
 -./sdk/x.y.z/Sdks/NuGet.Build.Tasks.Pack/Desktop/cs/
--./sdk/x.y.z/Sdks/NuGet.Build.Tasks.Pack/Desktop/cs/NuGet.Build.Tasks.Pack.resources.dll
 -./sdk/x.y.z/Sdks/NuGet.Build.Tasks.Pack/Desktop/de/
--./sdk/x.y.z/Sdks/NuGet.Build.Tasks.Pack/Desktop/de/NuGet.Build.Tasks.Pack.resources.dll
 -./sdk/x.y.z/Sdks/NuGet.Build.Tasks.Pack/Desktop/es/
--./sdk/x.y.z/Sdks/NuGet.Build.Tasks.Pack/Desktop/es/NuGet.Build.Tasks.Pack.resources.dll
 -./sdk/x.y.z/Sdks/NuGet.Build.Tasks.Pack/Desktop/fr/
--./sdk/x.y.z/Sdks/NuGet.Build.Tasks.Pack/Desktop/fr/NuGet.Build.Tasks.Pack.resources.dll
 -./sdk/x.y.z/Sdks/NuGet.Build.Tasks.Pack/Desktop/it/
--./sdk/x.y.z/Sdks/NuGet.Build.Tasks.Pack/Desktop/it/NuGet.Build.Tasks.Pack.resources.dll
 -./sdk/x.y.z/Sdks/NuGet.Build.Tasks.Pack/Desktop/ja/
--./sdk/x.y.z/Sdks/NuGet.Build.Tasks.Pack/Desktop/ja/NuGet.Build.Tasks.Pack.resources.dll
 -./sdk/x.y.z/Sdks/NuGet.Build.Tasks.Pack/Desktop/ko/
--./sdk/x.y.z/Sdks/NuGet.Build.Tasks.Pack/Desktop/ko/NuGet.Build.Tasks.Pack.resources.dll
  ./sdk/x.y.z/Sdks/NuGet.Build.Tasks.Pack/Desktop/NuGet.Build.Tasks.Pack.dll
 -./sdk/x.y.z/Sdks/NuGet.Build.Tasks.Pack/Desktop/pl/
--./sdk/x.y.z/Sdks/NuGet.Build.Tasks.Pack/Desktop/pl/NuGet.Build.Tasks.Pack.resources.dll
 -./sdk/x.y.z/Sdks/NuGet.Build.Tasks.Pack/Desktop/pt-BR/
--./sdk/x.y.z/Sdks/NuGet.Build.Tasks.Pack/Desktop/pt-BR/NuGet.Build.Tasks.Pack.resources.dll
 -./sdk/x.y.z/Sdks/NuGet.Build.Tasks.Pack/Desktop/ru/
--./sdk/x.y.z/Sdks/NuGet.Build.Tasks.Pack/Desktop/ru/NuGet.Build.Tasks.Pack.resources.dll
 -./sdk/x.y.z/Sdks/NuGet.Build.Tasks.Pack/Desktop/tr/
--./sdk/x.y.z/Sdks/NuGet.Build.Tasks.Pack/Desktop/tr/NuGet.Build.Tasks.Pack.resources.dll
 -./sdk/x.y.z/Sdks/NuGet.Build.Tasks.Pack/Desktop/zh-Hans/
--./sdk/x.y.z/Sdks/NuGet.Build.Tasks.Pack/Desktop/zh-Hans/NuGet.Build.Tasks.Pack.resources.dll
 -./sdk/x.y.z/Sdks/NuGet.Build.Tasks.Pack/Desktop/zh-Hant/
--./sdk/x.y.z/Sdks/NuGet.Build.Tasks.Pack/Desktop/zh-Hant/NuGet.Build.Tasks.Pack.resources.dll
 +./sdk/x.y.z/Sdks/NuGet.Build.Tasks.Pack/Desktop/NuGet.Commands.dll
 +./sdk/x.y.z/Sdks/NuGet.Build.Tasks.Pack/Desktop/NuGet.Common.dll
 +./sdk/x.y.z/Sdks/NuGet.Build.Tasks.Pack/Desktop/NuGet.Configuration.dll
@@ -1045,45 +548,6 @@ index ------------
  ./sdk/x.y.z/tr/Microsoft.DotNet.Cli.Sln.Internal.resources.dll
  ./sdk/x.y.z/tr/Microsoft.DotNet.Cli.Utils.resources.dll
 @@ ------------ @@
- ./sdk/x.y.z/tr/Microsoft.TemplateEngine.Orchestrator.RunnableProjects.resources.dll
- ./sdk/x.y.z/tr/Microsoft.TemplateEngine.Utils.resources.dll
- ./sdk/x.y.z/tr/Microsoft.TemplateSearch.Common.resources.dll
--./sdk/x.y.z/tr/Microsoft.TestPlatform.Build.resources.dll
--./sdk/x.y.z/tr/Microsoft.TestPlatform.CommunicationUtilities.resources.dll
--./sdk/x.y.z/tr/Microsoft.TestPlatform.CoreUtilities.resources.dll
--./sdk/x.y.z/tr/Microsoft.TestPlatform.CrossPlatEngine.resources.dll
--./sdk/x.y.z/tr/Microsoft.TestPlatform.Utilities.resources.dll
--./sdk/x.y.z/tr/Microsoft.TestPlatform.VsTestConsole.TranslationLayer.resources.dll
--./sdk/x.y.z/tr/Microsoft.VisualStudio.TestPlatform.Client.resources.dll
--./sdk/x.y.z/tr/Microsoft.VisualStudio.TestPlatform.Common.resources.dll
--./sdk/x.y.z/tr/Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll
- ./sdk/x.y.z/tr/MSBuild.resources.dll
--./sdk/x.y.z/tr/NuGet.Build.Tasks.Console.resources.dll
--./sdk/x.y.z/tr/NuGet.Build.Tasks.resources.dll
--./sdk/x.y.z/tr/NuGet.CommandLine.XPlat.resources.dll
--./sdk/x.y.z/tr/NuGet.Commands.resources.dll
--./sdk/x.y.z/tr/NuGet.Common.resources.dll
--./sdk/x.y.z/tr/NuGet.Configuration.resources.dll
--./sdk/x.y.z/tr/NuGet.Credentials.resources.dll
--./sdk/x.y.z/tr/NuGet.DependencyResolver.Core.resources.dll
--./sdk/x.y.z/tr/NuGet.Frameworks.resources.dll
--./sdk/x.y.z/tr/NuGet.LibraryModel.resources.dll
--./sdk/x.y.z/tr/NuGet.Localization.resources.dll
--./sdk/x.y.z/tr/NuGet.PackageManagement.resources.dll
--./sdk/x.y.z/tr/NuGet.Packaging.Core.resources.dll
--./sdk/x.y.z/tr/NuGet.Packaging.resources.dll
--./sdk/x.y.z/tr/NuGet.ProjectModel.resources.dll
--./sdk/x.y.z/tr/NuGet.Protocol.resources.dll
--./sdk/x.y.z/tr/NuGet.Resolver.resources.dll
--./sdk/x.y.z/tr/NuGet.Versioning.resources.dll
--./sdk/x.y.z/tr/NuGet.VisualStudio.Contracts.resources.dll
- ./sdk/x.y.z/tr/System.CommandLine.resources.dll
--./sdk/x.y.z/tr/Test.Utility.resources.dll
--./sdk/x.y.z/tr/vstest.console.resources.dll
- ./sdk/x.y.z/trustedroots/
- ./sdk/x.y.z/trustedroots/codesignctl.pem
- ./sdk/x.y.z/trustedroots/timestampctl.pem
-@@ ------------ @@
  ./sdk/x.y.z/vstest.console.runtimeconfig.json
  ./sdk/x.y.z/zh-Hans/
  ./sdk/x.y.z/zh-Hans/dotnet.resources.dll
@@ -1096,41 +560,7 @@ index ------------
  ./sdk/x.y.z/zh-Hans/Microsoft.DotNet.Cli.Sln.Internal.resources.dll
  ./sdk/x.y.z/zh-Hans/Microsoft.DotNet.Cli.Utils.resources.dll
 @@ ------------ @@
- ./sdk/x.y.z/zh-Hans/Microsoft.TemplateEngine.Orchestrator.RunnableProjects.resources.dll
- ./sdk/x.y.z/zh-Hans/Microsoft.TemplateEngine.Utils.resources.dll
- ./sdk/x.y.z/zh-Hans/Microsoft.TemplateSearch.Common.resources.dll
--./sdk/x.y.z/zh-Hans/Microsoft.TestPlatform.Build.resources.dll
--./sdk/x.y.z/zh-Hans/Microsoft.TestPlatform.CommunicationUtilities.resources.dll
--./sdk/x.y.z/zh-Hans/Microsoft.TestPlatform.CoreUtilities.resources.dll
--./sdk/x.y.z/zh-Hans/Microsoft.TestPlatform.CrossPlatEngine.resources.dll
--./sdk/x.y.z/zh-Hans/Microsoft.TestPlatform.Utilities.resources.dll
--./sdk/x.y.z/zh-Hans/Microsoft.TestPlatform.VsTestConsole.TranslationLayer.resources.dll
--./sdk/x.y.z/zh-Hans/Microsoft.VisualStudio.TestPlatform.Client.resources.dll
--./sdk/x.y.z/zh-Hans/Microsoft.VisualStudio.TestPlatform.Common.resources.dll
--./sdk/x.y.z/zh-Hans/Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll
- ./sdk/x.y.z/zh-Hans/MSBuild.resources.dll
--./sdk/x.y.z/zh-Hans/NuGet.Build.Tasks.Console.resources.dll
--./sdk/x.y.z/zh-Hans/NuGet.Build.Tasks.resources.dll
--./sdk/x.y.z/zh-Hans/NuGet.CommandLine.XPlat.resources.dll
--./sdk/x.y.z/zh-Hans/NuGet.Commands.resources.dll
--./sdk/x.y.z/zh-Hans/NuGet.Common.resources.dll
--./sdk/x.y.z/zh-Hans/NuGet.Configuration.resources.dll
--./sdk/x.y.z/zh-Hans/NuGet.Credentials.resources.dll
--./sdk/x.y.z/zh-Hans/NuGet.DependencyResolver.Core.resources.dll
--./sdk/x.y.z/zh-Hans/NuGet.Frameworks.resources.dll
--./sdk/x.y.z/zh-Hans/NuGet.LibraryModel.resources.dll
--./sdk/x.y.z/zh-Hans/NuGet.Localization.resources.dll
--./sdk/x.y.z/zh-Hans/NuGet.PackageManagement.resources.dll
--./sdk/x.y.z/zh-Hans/NuGet.Packaging.Core.resources.dll
--./sdk/x.y.z/zh-Hans/NuGet.Packaging.resources.dll
--./sdk/x.y.z/zh-Hans/NuGet.ProjectModel.resources.dll
--./sdk/x.y.z/zh-Hans/NuGet.Protocol.resources.dll
--./sdk/x.y.z/zh-Hans/NuGet.Resolver.resources.dll
--./sdk/x.y.z/zh-Hans/NuGet.Versioning.resources.dll
--./sdk/x.y.z/zh-Hans/NuGet.VisualStudio.Contracts.resources.dll
  ./sdk/x.y.z/zh-Hans/System.CommandLine.resources.dll
--./sdk/x.y.z/zh-Hans/Test.Utility.resources.dll
--./sdk/x.y.z/zh-Hans/vstest.console.resources.dll
  ./sdk/x.y.z/zh-Hant/
  ./sdk/x.y.z/zh-Hant/dotnet.resources.dll
 -./sdk/x.y.z/zh-Hant/Microsoft.Build.NuGetSdkResolver.resources.dll
@@ -1141,42 +571,3 @@ index ------------
  ./sdk/x.y.z/zh-Hant/Microsoft.Deployment.DotNet.Releases.resources.dll
  ./sdk/x.y.z/zh-Hant/Microsoft.DotNet.Cli.Sln.Internal.resources.dll
  ./sdk/x.y.z/zh-Hant/Microsoft.DotNet.Cli.Utils.resources.dll
-@@ ------------ @@
- ./sdk/x.y.z/zh-Hant/Microsoft.TemplateEngine.Orchestrator.RunnableProjects.resources.dll
- ./sdk/x.y.z/zh-Hant/Microsoft.TemplateEngine.Utils.resources.dll
- ./sdk/x.y.z/zh-Hant/Microsoft.TemplateSearch.Common.resources.dll
--./sdk/x.y.z/zh-Hant/Microsoft.TestPlatform.Build.resources.dll
--./sdk/x.y.z/zh-Hant/Microsoft.TestPlatform.CommunicationUtilities.resources.dll
--./sdk/x.y.z/zh-Hant/Microsoft.TestPlatform.CoreUtilities.resources.dll
--./sdk/x.y.z/zh-Hant/Microsoft.TestPlatform.CrossPlatEngine.resources.dll
--./sdk/x.y.z/zh-Hant/Microsoft.TestPlatform.Utilities.resources.dll
--./sdk/x.y.z/zh-Hant/Microsoft.TestPlatform.VsTestConsole.TranslationLayer.resources.dll
--./sdk/x.y.z/zh-Hant/Microsoft.VisualStudio.TestPlatform.Client.resources.dll
--./sdk/x.y.z/zh-Hant/Microsoft.VisualStudio.TestPlatform.Common.resources.dll
--./sdk/x.y.z/zh-Hant/Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll
- ./sdk/x.y.z/zh-Hant/MSBuild.resources.dll
--./sdk/x.y.z/zh-Hant/NuGet.Build.Tasks.Console.resources.dll
--./sdk/x.y.z/zh-Hant/NuGet.Build.Tasks.resources.dll
--./sdk/x.y.z/zh-Hant/NuGet.CommandLine.XPlat.resources.dll
--./sdk/x.y.z/zh-Hant/NuGet.Commands.resources.dll
--./sdk/x.y.z/zh-Hant/NuGet.Common.resources.dll
--./sdk/x.y.z/zh-Hant/NuGet.Configuration.resources.dll
--./sdk/x.y.z/zh-Hant/NuGet.Credentials.resources.dll
--./sdk/x.y.z/zh-Hant/NuGet.DependencyResolver.Core.resources.dll
--./sdk/x.y.z/zh-Hant/NuGet.Frameworks.resources.dll
--./sdk/x.y.z/zh-Hant/NuGet.LibraryModel.resources.dll
--./sdk/x.y.z/zh-Hant/NuGet.Localization.resources.dll
--./sdk/x.y.z/zh-Hant/NuGet.PackageManagement.resources.dll
--./sdk/x.y.z/zh-Hant/NuGet.Packaging.Core.resources.dll
--./sdk/x.y.z/zh-Hant/NuGet.Packaging.resources.dll
--./sdk/x.y.z/zh-Hant/NuGet.ProjectModel.resources.dll
--./sdk/x.y.z/zh-Hant/NuGet.Protocol.resources.dll
--./sdk/x.y.z/zh-Hant/NuGet.Resolver.resources.dll
--./sdk/x.y.z/zh-Hant/NuGet.Versioning.resources.dll
--./sdk/x.y.z/zh-Hant/NuGet.VisualStudio.Contracts.resources.dll
- ./sdk/x.y.z/zh-Hant/System.CommandLine.resources.dll
--./sdk/x.y.z/zh-Hant/Test.Utility.resources.dll
--./sdk/x.y.z/zh-Hant/vstest.console.resources.dll
- ./shared/
- ./shared/Microsoft.AspNetCore.App/
- ./shared/Microsoft.AspNetCore.App/x.y.z/
