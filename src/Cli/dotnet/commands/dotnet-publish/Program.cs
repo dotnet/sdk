@@ -101,7 +101,7 @@ namespace Microsoft.DotNet.Tools.Publish
             {
                 ReleasePropertyProjectLocator projectLocator = new ReleasePropertyProjectLocator(Environment.GetEnvironmentVariable(EnvironmentVariableNames.ENABLE_PUBLISH_RELEASE_FOR_SOLUTIONS) != null);
                 var cliProps = projectLocator.GetGlobalPropertiesFromUserArgs(parseResult);
-                var projectInstance = projectLocator.GetTargetedProject(parseResult.GetValueForArgument(PublishCommandParser.SlnOrProjectArgument), cliProps);
+                var projectInstance = projectLocator.GetTargetedProject(parseResult.GetValueForArgument(PublishCommandParser.SlnOrProjectArgument), cliProps, MSBuildPropertyNames.PUBLISH_RELEASE);
                 // this can happen if the project wasn't loadable, or if we're at a solution context
                 if (projectInstance == null)
                 {

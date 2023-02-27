@@ -680,7 +680,7 @@ public static class Program
             .HaveStdOutContaining("PublishRelease");
 
             var releaseAssetPath = System.IO.Path.Combine(helloWorldAsset.Path, "bin", "Release", ToolsetInfo.CurrentTargetFramework, "HelloWorld.dll");
-            Assert.False(File.Exists(releaseAssetPath)); // build will produce a debug asset, need to make sure this doesn't exist either.       
+            Assert.False(File.Exists(releaseAssetPath)); // build will produce a debug asset, need to make sure this doesn't exist either.
         }
 
         [Theory]
@@ -794,16 +794,8 @@ public static class Program
             .Execute("/p:PublishProfile=test");
 
             publishOutput.Should().Pass();
-            var releaseAssetPath = System.IO.Path.Combine(helloWorldAsset.Path, "bin", "Release", ToolsetInfo.CurrentTargetFramework, rid, "HelloWorld.dll");
-            if (config == "Debug")
-            {
-                Assert.True(File.Exists(releaseAssetPath)); // We ignore Debug configuration and override it, IF its custom though, we dont use publishrelease.
-            }
-            else
-            {
-                Assert.False(File.Exists(releaseAssetPath)); // build will produce a debug asset, need to make sure this doesn't exist either.       
-                publishOutput.Should().HaveStdOutContaining("PublishRelease");
-            }
+            var configAssetPath = System.IO.Path.Combine(helloWorldAsset.Path, "bin", config, ToolsetInfo.CurrentTargetFramework, rid, "HelloWorld.dll");
+            Assert.True(File.Exists(configAssetPath)); // We cannot ignore Debug configuration and override it, because it's set as a globalproperty during publish.
         }
 
         [Fact]
@@ -1098,7 +1090,7 @@ public static class Program
                .Should()
                .Pass()
                .And
-               .NotHaveStdErrContaining("NETSDK1191"); // Publish Properties Requiring RID Checks 
+               .NotHaveStdErrContaining("NETSDK1191"); // Publish Properties Requiring RID Checks
         }
 
         [Fact]
