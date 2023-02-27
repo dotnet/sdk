@@ -61,9 +61,8 @@ public class SdkContentTests : SmokeTests
 
         private static IEnumerable<string> GetExclusionFilters(string exceptionFilePath, string sdkType)
         {
-            string[] lines = File.ReadAllLines(exceptionFilePath);
             int prefixSkip = sdkType.Length + 1;
-            return lines
+            return File.ReadAllLines(exceptionFilePath)
                 .Where(line => line.StartsWith(sdkType + ",")) // process only specific sdk exclusions
                 .Select(line =>
                 {
