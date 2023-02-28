@@ -1,4 +1,4 @@
-From 30e113f3ed92e152b7ffb9d633e505bc67331290 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Matt Thalman <mthalman@microsoft.com>
 Date: Mon, 27 Feb 2023 14:02:25 -0600
 Subject: [PATCH] Enable packable projects for razor
@@ -48,3 +48,4 @@ index 7216edbe7..c1fbd3af4 100644
 +    <IsPackable>true</IsPackable>
      <ExcludeFromSourceBuild>false</ExcludeFromSourceBuild>
    </PropertyGroup>
+ 
