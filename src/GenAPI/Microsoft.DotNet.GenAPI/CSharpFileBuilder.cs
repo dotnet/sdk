@@ -139,7 +139,64 @@ namespace Microsoft.DotNet.GenAPI
             return namespaceNode;
         }
 
-        // TODO: implement this logic
+        private static string GetNonInterfaceName(string name)
+        {
+            int idx = name.LastIndexOf('.');
+            return (idx > 0) ? name.Substring(idx + 1) : name;
+        }
+
+        // Compare the equality of two method signatures for the purpose of emitting a "new"
+        // keyword on a method's return type. This is *not* meant to be complete implementation,
+        // but rather a heuristic to check that one method may hide another.
+        private static bool SignatureEquals(IMethodSymbol? method, IMethodSymbol? baseMethod)
+        {
+            if (method == null || baseMethod == null)
+            {
+                return false;
+            }
+
+            if (method.Equals(baseMethod, SymbolEqualityComparer.Default))
+            {
+                return true;
+            }
+
+            if (GetNonInterfaceName(method.Name) != GetNonInterfaceName(baseMethod.Name))
+            {
+                return false;
+            }
+
+            if (method.Arity != baseMethod.Arity || method.Parameters.Length != baseMethod.Parameters.Length)
+            {
+                return false;
+            }
+
+            // compare parameter types
+            for (int i = 0; i < method.Parameters.Length; i++)
+            {
+                if (!method.Parameters[i].Type.Equals(baseMethod.Parameters[i].Type, SymbolEqualityComparer.Default))
+                {
+                    return false;
+                }
+            }
+
+            if (method.IsVararg != baseMethod.IsVararg)
+            {
+                return false;
+            }
+
+            // compare type constraints
+            // TODO: should we be checking the type parameters' respective constraints?
+            for (int i = 0; i < method.TypeParameters.Length; i++)
+            {
+                if (!method.TypeParameters[i].Equals(baseMethod.TypeParameters[i], SymbolEqualityComparer.Default))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
         // Name hiding through inheritance occurs when classes or structs redeclare names that were inherited from base classes.This type of name hiding takes one of the following forms:
         // - A constant, field, property, event, or type introduced in a class or struct hides all base class members with the same name.
         // - A method introduced in a class or struct hides all non-method base class members with the same name, and all base class methods with the same signature(§7.6).
@@ -150,17 +207,34 @@ namespace Microsoft.DotNet.GenAPI
             {
                 return false;
             }
+
             if (member.ContainingType.BaseType is not INamedTypeSymbol baseType)
             {
                 return false;
             }
-            foreach (ISymbol baseMember in baseType.GetMembers(member.Name))
+
+            if (member is IMethodSymbol method)
             {
-                return symbolFilter.Include(baseMember);
-                // more checks
-                //return true;
+                // If they're methods, compare their names and signatures.
+                return baseType.GetMembers(member.Name).Where(baseMember => baseMember.Kind != SymbolKind.Method)
+                               .Any(symbolFilter.Include)
+                    || baseType.GetMembers(member.Name)
+                               .Where(baseMember => baseMember is IMethodSymbol baseMethod && SignatureEquals(method, baseMethod))
+                               .Any(symbolFilter.Include);
             }
-            return false;
+            else if (member is IPropertySymbol prop && prop.IsIndexer)
+            {
+                // If they're indexers, compare their signatures.
+                return baseType.GetMembers(member.Name)
+                               .Where(baseMember => baseMember is IPropertySymbol baseProperty
+                                                    && (SignatureEquals(prop.GetMethod, baseProperty.GetMethod) || SignatureEquals(prop.SetMethod, baseProperty.SetMethod)))
+                               .Any(symbolFilter.Include);
+            }
+            else
+            {
+                // For all other kinds of members, compare their names.
+                return baseType.GetMembers(member.Name).Any(symbolFilter.Include);
+            }
         }
 
         private SyntaxNode Visit(SyntaxNode namedTypeNode, INamedTypeSymbol namedType)
@@ -206,7 +280,7 @@ namespace Microsoft.DotNet.GenAPI
 
                 if (HidesBaseMember(member, _symbolFilter))
                 {
-                    var mods = _syntaxGenerator.GetModifiers(memberDeclaration);
+                    DeclarationModifiers mods = _syntaxGenerator.GetModifiers(memberDeclaration);
                     memberDeclaration = _syntaxGenerator.WithModifiers(memberDeclaration, mods.WithIsNew(true));
                 }
 

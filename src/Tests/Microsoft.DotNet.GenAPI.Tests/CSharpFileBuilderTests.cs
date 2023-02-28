@@ -1506,7 +1506,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                             public new D this[int i] { get { throw null; } set {} }
                             public new event System.EventHandler MyEvent { add {} remove {} }
                             public new void Do() {}
-                            public new void Do(int i) {}
+                            public void Do(int i) {}
                             public new static void DoStatic() {}
                             public new partial class MyNestedClass {}
                             public new partial class MyNestedGenericClass<T> {}
