@@ -59,10 +59,10 @@ public class SdkContentTests : SmokeTests
         private static IEnumerable<string> RemoveExclusions(IEnumerable<string> files, IEnumerable<string> exclusions) =>
             files.Where(item => !exclusions.Any(p => FileSystemName.MatchesSimpleExpression(p, item)));
 
-        private static IEnumerable<string> GetExclusionFilters(string exceptionFilePath, string sdkType)
+        private static IEnumerable<string> GetExclusionFilters(string exclusionsFilePath, string sdkType)
         {
             int prefixSkip = sdkType.Length + 1;
-            return File.ReadAllLines(exceptionFilePath)
+            return File.ReadAllLines(exclusionsFilePath)
                 .Where(line => line.StartsWith(sdkType + ",")) // process only specific sdk exclusions
                 .Select(line =>
                 {
