@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Enumeration;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Xunit.Abstractions;
@@ -27,15 +28,15 @@ public class SdkContentTests : SmokeTests
     {
         const string msftFileListingFileName = "msftSdkFiles.txt";
         const string sbFileListingFileName = "sbSdkFiles.txt";
-        WriteTarballFileList(Config.MsftSdkTarballPath, msftFileListingFileName, isPortable: true);
-        WriteTarballFileList(Config.SdkTarballPath, sbFileListingFileName, isPortable: false);
+        WriteTarballFileList(Config.MsftSdkTarballPath, msftFileListingFileName, isPortable: true, "msft");
+        WriteTarballFileList(Config.SdkTarballPath, sbFileListingFileName, isPortable: false, "sb");
 
         string diff = BaselineHelper.DiffFiles(msftFileListingFileName, sbFileListingFileName, OutputHelper);
         diff = RemoveDiffMarkers(diff);
         BaselineHelper.CompareContents("MsftToSbSdk.diff", diff, OutputHelper, Config.WarnOnSdkContentDiffs);
     }
 
-    private void WriteTarballFileList(string? tarballPath, string outputFileName, bool isPortable)
+    private void WriteTarballFileList(string? tarballPath, string outputFileName, bool isPortable, string sdkType)
     {
         if (!File.Exists(tarballPath))
         {
@@ -46,9 +47,31 @@ public class SdkContentTests : SmokeTests
         fileListing = BaselineHelper.RemoveRids(fileListing, isPortable);
         fileListing = BaselineHelper.RemoveVersions(fileListing);
         IEnumerable<string> files = fileListing.Split(Environment.NewLine).OrderBy(path => path);
+        files = RemoveExclusions(
+                    files,
+                    GetExclusionFilters(
+                        Path.Combine(BaselineHelper.GetAssetsDirectory(), "SdkDiffExclusions.txt"),
+                        sdkType));
 
         File.WriteAllLines(outputFileName, files);
     }
+
+        private static IEnumerable<string> RemoveExclusions(IEnumerable<string> files, IEnumerable<string> exclusions) =>
+            files.Where(item => !exclusions.Any(p => FileSystemName.MatchesSimpleExpression(p, item)));
+
+        private static IEnumerable<string> GetExclusionFilters(string exclusionsFilePath, string sdkType)
+        {
+            int prefixSkip = sdkType.Length + 1;
+            return File.ReadAllLines(exclusionsFilePath)
+                .Where(line => line.StartsWith(sdkType + ",")) // process only specific sdk exclusions
+                .Select(line =>
+                {
+                    // Ignore comments
+                    var index = line.IndexOf('#');
+                    return index >= 0 ? line[prefixSkip..index].TrimEnd() : line[prefixSkip..];
+                })
+                .ToList();
+        }
 
     private static string RemoveDiffMarkers(string source)
     {
