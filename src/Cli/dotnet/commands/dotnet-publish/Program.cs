@@ -69,7 +69,6 @@ namespace Microsoft.DotNet.Tools.Publish
 
 
             var publishProfileProperties = DiscoverPropertiesFromPublishProfile(parseResult);
-            Console.WriteLine($"Read publish properties: {string.Join(",", publishProfileProperties)}");
             var standardMSbuildProperties = CreatePropertyListForPublishInvocation(parseResult);
             return new PublishCommand(
                 // properties defined by the selected publish profile should override any other properties,
