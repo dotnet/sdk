@@ -3,6 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Linq;
+using System.Runtime.CompilerServices;
 using Xunit;
 
 namespace Microsoft.DotNet.SourceBuild.SmokeTests;
@@ -12,14 +14,29 @@ namespace Microsoft.DotNet.SourceBuild.SmokeTests;
 /// </summary>
 internal class SkippableFactAttribute : FactAttribute
 {
-    public SkippableFactAttribute(string envName, bool skipOnNullOrWhiteSpace = false, bool skipOnTrue = false) =>
-        CheckEnvs(skipOnNullOrWhiteSpace, skipOnTrue, (skip) => Skip = skip, envName);
+    public SkippableFactAttribute([CallerMemberName] string name = "") =>
+        CheckIncluded(name, (skip) => Skip = skip);
 
-    public SkippableFactAttribute(string[] envNames, bool skipOnNullOrWhiteSpace = false, bool skipOnTrue = false) =>
-        CheckEnvs(skipOnNullOrWhiteSpace, skipOnTrue, (skip) => Skip = skip, envNames);
+    public SkippableFactAttribute(string envName, bool skipOnNullOrWhiteSpace = false, bool skipOnTrue = false, [CallerMemberName] string testName = "") =>
+        CheckEnvs(skipOnNullOrWhiteSpace, skipOnTrue, (skip) => Skip = skip, testName, envName);
 
-    public static void CheckEnvs(bool skipOnNullOrWhiteSpace, bool skipOnTrue, Action<string> setSkip, params string[] envNames)
+    public SkippableFactAttribute(string[] envNames, bool skipOnNullOrWhiteSpace = false, bool skipOnTrue = false, [CallerMemberName] string testName = "") =>
+        CheckEnvs(skipOnNullOrWhiteSpace, skipOnTrue, (skip) => Skip = skip, testName, envNames);
+
+    public static void CheckIncluded(string methodName, Action<string> setSkip)
     {
+        var included = Config.IncludedTests;
+        if (included.Length != 0 && !included.Contains(methodName))
+        {
+            setSkip($"Skipping because `{methodName}` is not included");
+            return;
+        }
+    }
+
+    public static void CheckEnvs(bool skipOnNullOrWhiteSpace, bool skipOnTrue, Action<string> setSkip, string testName, params string[] envNames)
+    {
+        CheckIncluded(testName, setSkip);
+
         foreach (string envName in envNames)
         {
             string? envValue = Environment.GetEnvironmentVariable(envName);

@@ -13,7 +13,7 @@ public class DotNetWatchTests : SmokeTests
 {
     public DotNetWatchTests(ITestOutputHelper outputHelper) : base(outputHelper) { }
 
-    [Fact]
+    [SkippableFact()]
     public void WatchTests()
     {
         string projectDirectory = DotNetHelper.ExecuteNew(DotNetTemplate.Console.GetName(), nameof(DotNetWatchTests));

@@ -19,9 +19,9 @@ public class BasicScenarioTests : SmokeTests
 {
     public BasicScenarioTests(ITestOutputHelper outputHelper) : base(outputHelper) { }
 
-    [Theory]
+    [SkippableTheory()]
     [MemberData(nameof(GetScenarioObjects))]
-    public void VerifyScenario(TestScenario scenario) => scenario.Execute(DotNetHelper);
+    public void VerifyBasicScenario(TestScenario scenario) => scenario.Execute(DotNetHelper);
 
     private static IEnumerable<object[]> GetScenarioObjects() => GetScenarios().Select(scenario => new object[] { scenario });
 
