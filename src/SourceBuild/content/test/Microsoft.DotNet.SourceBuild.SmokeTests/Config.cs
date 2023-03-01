@@ -11,6 +11,7 @@ internal static class Config
 {
     public const string DotNetDirectoryEnv = "SMOKE_TESTS_DOTNET_DIR";
     public const string ExcludeOmniSharpEnv = "SMOKE_TESTS_EXCLUDE_OMNISHARP";
+    public const string IncludeTestsEnv = "SMOKE_TESTS_INCLUDE";
     public const string MsftSdkTarballPathEnv = "SMOKE_TESTS_MSFT_SDK_TARBALL_PATH";
     public const string PoisonReportPathEnv = "SMOKE_TESTS_POISON_REPORT_PATH";
     public const string PortableRidEnv = "SMOKE_TESTS_PORTABLE_RID";
@@ -45,4 +46,13 @@ internal static class Config
     // Indicates whether the tests are being run in the context of a CI pipeline
     public static bool RunningInCI { get; } =
         bool.TryParse(Environment.GetEnvironmentVariable(RunningInCIEnv), out bool runningInCI) && runningInCI;
+
+    public static string[] IncludedTests
+    {
+        get
+        {
+            var include = Environment.GetEnvironmentVariable(IncludeTestsEnv);
+            return include == null ? Array.Empty<string>() : include.Split(',');
+        }
+    }
 }
