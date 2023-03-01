@@ -158,5 +158,25 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.IntegrationTests
             // Demonstrate well handling of dot files - workarounding Verify bug https://github.com/VerifyTests/Verify/issues/699
             await engine.Execute(options).ConfigureAwait(false);
         }
+
+        [Fact]
+        public async void VerificationEngine_InstallsToCustomLocation_WithSettingsDirectorySpecified()
+        {
+            var settingsPath = TestUtils.CreateTemporaryFolder();
+            TemplateVerifierOptions options = new TemplateVerifierOptions(templateName: "editorconfig")
+            {
+                TemplateSpecificArgs = new[] { "--empty" },
+                VerifyCommandOutput = false,
+                SettingsDirectory = settingsPath
+            };
+
+            VerificationEngine engine = new VerificationEngine(_log);
+            Func<Task> executeTask = () => engine.Execute(options);
+            await executeTask
+                .Should()
+                .NotThrowAsync();
+
+            Assert.True(Directory.GetFileSystemEntries(settingsPath).Length != 0);
+        }
     }
 }

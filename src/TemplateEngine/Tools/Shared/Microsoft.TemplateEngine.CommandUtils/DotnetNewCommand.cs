@@ -33,11 +33,6 @@ namespace Microsoft.TemplateEngine.CommandUtils
             return this;
         }
 
-        internal DotnetNewCommand WithCustomOrVirtualHive(string? path)
-        {
-            return string.IsNullOrEmpty(path) ? WithVirtualHive() : WithCustomHive(path);
-        }
-
         internal DotnetNewCommand WithoutCustomHive()
         {
             _hiveSet = true;

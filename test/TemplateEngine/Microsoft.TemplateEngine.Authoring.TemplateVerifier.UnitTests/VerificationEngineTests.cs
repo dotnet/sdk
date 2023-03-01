@@ -107,7 +107,6 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.UnitTests
                 .Should()
                 .ThrowAsync<TemplateVerificationException>()
                 .Where(e => e.TemplateVerificationErrorCode == TemplateVerificationErrorCode.InstantiationFailed);
-
         }
 
         [Fact]

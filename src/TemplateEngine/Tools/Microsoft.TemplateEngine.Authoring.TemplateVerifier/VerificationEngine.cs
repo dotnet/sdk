@@ -337,8 +337,18 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier
                 cmdArgs.Add(options.TemplateName);
             }
 
-            var command = new DotnetNewCommand(loggerFactory?.CreateLogger(typeof(DotnetCommand)) ?? logger, cmdArgs.ToArray())
-                .WithCustomOrVirtualHive(customHiveLocation)
+            var command = new DotnetNewCommand(loggerFactory?.CreateLogger(typeof(DotnetCommand)) ?? logger, cmdArgs.ToArray());
+
+            if (!string.IsNullOrEmpty(customHiveLocation))
+            {
+                command.WithCustomHive(customHiveLocation);
+            }
+            else
+            {
+                command.WithoutCustomHive();
+            }
+
+            command
                 .WithCustomExecutablePath(options.DotnetExecutablePath)
                 .WithEnvironmentVariables(options.Environment)
                 .WithWorkingDirectory(workingDir)
