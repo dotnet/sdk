@@ -1,0 +1,29 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Michael Simons <msimons@microsoft.com>
+Date: Wed, 1 Mar 2023 00:08:32 +0000
+Subject: [PATCH] Fix for item-based msbuild pattern
+
+Backport: https://github.com/dotnet/runtime/issues/82795
+---
+ src/tasks/Crossgen2Tasks/Microsoft.NET.CrossGen.targets | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
+
+diff --git a/src/tasks/Crossgen2Tasks/Microsoft.NET.CrossGen.targets b/src/tasks/Crossgen2Tasks/Microsoft.NET.CrossGen.targets
+index 251336540b5..72a3537a5ce 100644
+--- a/src/tasks/Crossgen2Tasks/Microsoft.NET.CrossGen.targets
++++ b/src/tasks/Crossgen2Tasks/Microsoft.NET.CrossGen.targets
+@@ -346,7 +346,13 @@ Copyright (c) .NET Foundation. All rights reserved.
+                             _CreateR2RImages;
+                             _CreateR2RSymbols">
+ 
+-    <AllowEmptyTelemetry EventName="ReadyToRun" EventData="PublishReadyToRunUseCrossgen2=$(PublishReadyToRunUseCrossgen2);Crossgen2PackVersion=%(ResolvedCrossgen2Pack.NuGetPackageVersion);CompileListCount=@(_ReadyToRunCompileList->Count());FailedCount=@(_ReadyToRunCompilationFailures->Count())" />
++    <ItemGroup>
++       <_R2RCrossgenTelemetry Include="PublishReadyToRunUseCrossgen2" Value="$(PublishReadyToRunUseCrossgen2)" />
++       <_R2RCrossgenTelemetry Include="Crossgen2PackVersion" Value="%(ResolvedCrossgen2Pack.NuGetPackageVersion)" />
++       <_R2RCrossgenTelemetry Include="CompileListCount" Value="@(_ReadyToRunCompileList->Count())" />
++       <_R2RCrossgenTelemetry Include="FailedCount" Value="@(_ReadyToRunCompilationFailures->Count())" />
++    </ItemGroup>
++    <AllowEmptyTelemetry EventName="ReadyToRun" EventData="@(_R2RCrossgenTelemetry)" />
+ 
+     <NETSdkError Condition="'@(_ReadyToRunCompilationFailures)' != ''" ResourceName="ReadyToRunCompilationFailed" />
+ 

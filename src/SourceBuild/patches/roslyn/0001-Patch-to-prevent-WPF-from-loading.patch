@@ -1,0 +1,23 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Michael Simons <msimons@microsoft.com>
+Date: Wed, 1 Mar 2023 00:59:46 +0000
+Subject: [PATCH] Patch to prevent WPF from loading
+
+Backport: https://github.com/dotnet/source-build/issues/3280
+---
+ src/Tools/IdeBenchmarks/IdeBenchmarks.csproj | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/Tools/IdeBenchmarks/IdeBenchmarks.csproj b/src/Tools/IdeBenchmarks/IdeBenchmarks.csproj
+index cf0e1886b83..2ee6d355401 100644
+--- a/src/Tools/IdeBenchmarks/IdeBenchmarks.csproj
++++ b/src/Tools/IdeBenchmarks/IdeBenchmarks.csproj
+@@ -7,7 +7,7 @@
+     <TargetFramework>net472</TargetFramework>
+     <IsShipping>false</IsShipping>
+     <NoWarn>$(NoWarn),CA2007</NoWarn>
+-    <UseWpf>true</UseWpf>
++    <UseWpf Condition="'$(DotNetBuildFromSource)' != 'true'">true</UseWpf>
+   </PropertyGroup>
+   <ItemGroup>
+     <PackageReference Include="BenchmarkDotNet" Version="$(BenchmarkDotNetVersion)" />
