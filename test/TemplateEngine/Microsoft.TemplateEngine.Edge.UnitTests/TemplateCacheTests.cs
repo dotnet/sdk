@@ -8,12 +8,14 @@ using System.Linq;
 #endif
 using System.Globalization;
 using FakeItEasy;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Constraints;
 using Microsoft.TemplateEngine.Abstractions.Mount;
 using Microsoft.TemplateEngine.Abstractions.Parameters;
 using Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem;
+using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
 using Microsoft.TemplateEngine.Edge.Settings;
 using Microsoft.TemplateEngine.TestHelper;
 using Microsoft.TemplateEngine.Utils;
@@ -75,7 +77,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 
                 ScanResult result = new ScanResult(mountPoint, new[] { template }, locators, Array.Empty<(string AssemblyPath, Type InterfaceType, IIdentifiedComponent Instance)>());
 
-                TemplateCache templateCache = new TemplateCache(new[] { result }, new Dictionary<string, DateTime>(), NullLogger.Instance);
+                TemplateCache templateCache = new TemplateCache(Array.Empty<ITemplatePackage>(), new[] { result }, new Dictionary<string, DateTime>(), NullLogger.Instance);
 
                 Assert.Equal(currentCulture, templateCache.Locale);
                 Assert.Equal("testIdentity", templateCache.TemplateInfo.Single().Identity);
@@ -96,18 +98,13 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             Guid postAction1 = Guid.NewGuid();
             Guid postAction2 = Guid.NewGuid();
 
-            ITemplate template = A.Fake<ITemplate>();
-            A.CallTo(() => template.Identity).Returns("testIdentity");
-            A.CallTo(() => template.Name).Returns("testName");
-            A.CallTo(() => template.ShortNameList).Returns(new[] { "testShort" });
-            A.CallTo(() => template.MountPointUri).Returns("testMount");
-            A.CallTo(() => template.ConfigPlace).Returns(".template.config/template.json");
+            var template = GetFakedTemplate("testIdentity", "testMount", "testName");
             A.CallTo(() => template.PostActions).Returns(new[] { postAction1, postAction2 });
             IMountPoint mountPoint = A.Fake<IMountPoint>();
             A.CallTo(() => mountPoint.MountPointUri).Returns("testMount");
 
             ScanResult result = new ScanResult(mountPoint, new[] { template }, Array.Empty<ILocalizationLocator>(), Array.Empty<(string AssemblyPath, Type InterfaceType, IIdentifiedComponent Instance)>());
-            TemplateCache templateCache = new TemplateCache(new[] { result }, new Dictionary<string, DateTime>(), NullLogger.Instance);
+            TemplateCache templateCache = new TemplateCache(Array.Empty<ITemplatePackage>(), new[] { result }, new Dictionary<string, DateTime>(), NullLogger.Instance);
 
             WriteObject(environmentSettings.Host.FileSystem, paths.TemplateCacheFile, templateCache);
             var readCache = new TemplateCache(ReadObject(environmentSettings.Host.FileSystem, paths.TemplateCacheFile), NullLogger.Instance);
@@ -126,18 +123,13 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             TemplateConstraintInfo constraintInfo1 = new TemplateConstraintInfo("t1", null);
             TemplateConstraintInfo constraintInfo2 = new TemplateConstraintInfo("t1", "{[ \"one\", \"two\"]}");
 
-            ITemplate template = A.Fake<ITemplate>();
-            A.CallTo(() => template.Identity).Returns("testIdentity");
-            A.CallTo(() => template.Name).Returns("testName");
-            A.CallTo(() => template.ShortNameList).Returns(new[] { "testShort" });
-            A.CallTo(() => template.MountPointUri).Returns("testMount");
-            A.CallTo(() => template.ConfigPlace).Returns(".template.config/template.json");
+            var template = GetFakedTemplate("testIdentity", "testMount", "testName");
             A.CallTo(() => template.Constraints).Returns(new[] { constraintInfo1, constraintInfo2 });
             IMountPoint mountPoint = A.Fake<IMountPoint>();
             A.CallTo(() => mountPoint.MountPointUri).Returns("testMount");
 
             ScanResult result = new ScanResult(mountPoint, new[] { template }, Array.Empty<ILocalizationLocator>(), Array.Empty<(string AssemblyPath, Type InterfaceType, IIdentifiedComponent Instance)>());
-            TemplateCache templateCache = new TemplateCache(new[] { result }, new Dictionary<string, DateTime>(), NullLogger.Instance);
+            TemplateCache templateCache = new TemplateCache(Array.Empty<ITemplatePackage>(), new[] { result }, new Dictionary<string, DateTime>(), NullLogger.Instance);
 
             WriteObject(environmentSettings.Host.FileSystem, paths.TemplateCacheFile, templateCache);
             var readCache = new TemplateCache(ReadObject(environmentSettings.Host.FileSystem, paths.TemplateCacheFile), NullLogger.Instance);
@@ -175,18 +167,13 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
                     { "ch2", new ParameterChoice("ch2-displ", "ch2-desc") },
                 });
 
-            ITemplate template = A.Fake<ITemplate>();
-            A.CallTo(() => template.Identity).Returns("testIdentity");
-            A.CallTo(() => template.Name).Returns("testName");
-            A.CallTo(() => template.ShortNameList).Returns(new[] { "testShort" });
-            A.CallTo(() => template.MountPointUri).Returns("testMount");
-            A.CallTo(() => template.ConfigPlace).Returns(".template.config/template.json");
+            var template = GetFakedTemplate("testIdentity", "testMount", "testName");
             A.CallTo(() => template.ParameterDefinitions).Returns(new ParameterDefinitionSet(new[] { param1, param2, param3 }));
             IMountPoint mountPoint = A.Fake<IMountPoint>();
             A.CallTo(() => mountPoint.MountPointUri).Returns("testMount");
 
             ScanResult result = new ScanResult(mountPoint, new[] { template }, Array.Empty<ILocalizationLocator>(), Array.Empty<(string AssemblyPath, Type InterfaceType, IIdentifiedComponent Instance)>());
-            TemplateCache templateCache = new TemplateCache(new[] { result }, new Dictionary<string, DateTime>(), NullLogger.Instance);
+            TemplateCache templateCache = new TemplateCache(Array.Empty<ITemplatePackage>(), new[] { result }, new Dictionary<string, DateTime>(), NullLogger.Instance);
 
             WriteObject(environmentSettings.Host.FileSystem, paths.TemplateCacheFile, templateCache);
             var readCache = new TemplateCache(ReadObject(environmentSettings.Host.FileSystem, paths.TemplateCacheFile), NullLogger.Instance);
@@ -219,19 +206,14 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             IEngineEnvironmentSettings environmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
             SettingsFilePaths paths = new SettingsFilePaths(environmentSettings);
 
-            ITemplate template = A.Fake<ITemplate>();
-            A.CallTo(() => template.Identity).Returns("testIdentity");
-            A.CallTo(() => template.Name).Returns("testName");
-            A.CallTo(() => template.ShortNameList).Returns(new[] { "testShort" });
+            var template = GetFakedTemplate("testIdentity", "testMount", "testName");
             A.CallTo(() => template.PreferDefaultName).Returns(preferDefaultName);
             A.CallTo(() => template.DefaultName).Returns(defaultName);
-            A.CallTo(() => template.MountPointUri).Returns("testMount");
-            A.CallTo(() => template.ConfigPlace).Returns(".template.config/template.json");
             IMountPoint mountPoint = A.Fake<IMountPoint>();
             A.CallTo(() => mountPoint.MountPointUri).Returns("testMount");
 
             ScanResult result = new ScanResult(mountPoint, new[] { template }, Array.Empty<ILocalizationLocator>(), Array.Empty<(string AssemblyPath, Type InterfaceType, IIdentifiedComponent Instance)>());
-            TemplateCache templateCache = new TemplateCache(new[] { result }, new Dictionary<string, DateTime>(), NullLogger.Instance);
+            TemplateCache templateCache = new TemplateCache(Array.Empty<ITemplatePackage>(), new[] { result }, new Dictionary<string, DateTime>(), NullLogger.Instance);
 
             WriteObject(environmentSettings.Host.FileSystem, paths.TemplateCacheFile, templateCache);
             var readCache = new TemplateCache(ReadObject(environmentSettings.Host.FileSystem, paths.TemplateCacheFile), NullLogger.Instance);
@@ -240,6 +222,118 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             var readTemplate = readCache.TemplateInfo[0];
             Assert.Equal(preferDefaultName, readTemplate.PreferDefaultName);
             Assert.Equal(defaultName, readTemplate.DefaultName);
+        }
+
+        [Fact]
+        public void ProducesCorrectWarningOnOverlappingIdentity_ManagedCandidatesOnly()
+        {
+            var overlappingIdentity = "testIdentity";
+
+            var templateA = GetFakedTemplate(overlappingIdentity, "testMountA", "TemplateA");
+            var managedTPA = GetFakedManagedTemplatePackage("testMountA", "PackageA");
+
+            var templateB = GetFakedTemplate(overlappingIdentity, "testMountB", "TemplateB");
+            var managedTPB = GetFakedManagedTemplatePackage("testMountB", "PackageB");
+
+            var templateC = GetFakedTemplate(overlappingIdentity, "testMountC", "TemplateC");
+            var managedTPC = GetFakedManagedTemplatePackage("testMountC", "PackageC");
+
+            List<(LogLevel, string)> loggedMessages = new List<(LogLevel, string)>();
+            InMemoryLoggerProvider loggerProvider = new InMemoryLoggerProvider(loggedMessages);
+
+            var expectedOutput = "The following templates use the same identity 'testIdentity':" +
+                $"{Environment.NewLine}  • 'TemplateA' from 'PackageA'" +
+                $"{Environment.NewLine}  • 'TemplateB' from 'PackageB'" +
+                $"{Environment.NewLine}The template from 'TemplateC' will be used. To resolve this conflict, uninstall the conflicting template packages.";
+
+            ScanResult result = new ScanResult(A.Fake<IMountPoint>(), new[] { templateA, templateB, templateC }, Array.Empty<ILocalizationLocator>(), Array.Empty<(string AssemblyPath, Type InterfaceType, IIdentifiedComponent Instance)>());
+            _ = new TemplateCache(new[] { managedTPA, managedTPB, managedTPC }, new[] { result }, new Dictionary<string, DateTime>(), loggerProvider.CreateLogger(string.Empty));
+
+            var warningMessages = loggedMessages.Where(log => log.Item1 == LogLevel.Warning);
+            Assert.Single(warningMessages);
+            Assert.Contains(expectedOutput, warningMessages.Single().Item2);
+        }
+
+        [Fact]
+        public void ProducesCorrectOutputOnOverlappingIdentity_ManagedAndUnmanagedCandidates()
+        {
+            var overlappingIdentity = "testIdentity";
+
+            var templateA = GetFakedTemplate(overlappingIdentity, "testMountA", "TemplateA");
+            var managedTPA = GetFakedManagedTemplatePackage("testMountA", "PackageA");
+
+            var templateB = GetFakedTemplate(overlappingIdentity, "testMountB", "TemplateB");
+            var managedTPB = GetFakedTemplatePackage("testMountB");
+
+            var templateC = GetFakedTemplate(overlappingIdentity, "testMountC", "TemplateC");
+            var managedTPC = GetFakedManagedTemplatePackage("testMountC", "PackageC");
+
+            List<(LogLevel, string)> loggedMessages = new List<(LogLevel, string)>();
+            InMemoryLoggerProvider loggerProvider = new InMemoryLoggerProvider(loggedMessages);
+
+            var expectedOutput = "The following templates use the same identity 'testIdentity':" +
+                $"{Environment.NewLine}  • 'TemplateA' from 'PackageA'" +
+                $"{Environment.NewLine}The template from 'TemplateC' will be used. To resolve this conflict, uninstall the conflicting template packages.";
+
+            ScanResult result = new ScanResult(A.Fake<IMountPoint>(), new[] { templateA, templateB, templateC }, Array.Empty<ILocalizationLocator>(), Array.Empty<(string AssemblyPath, Type InterfaceType, IIdentifiedComponent Instance)>());
+            _ = new TemplateCache(new[] { managedTPA, managedTPB, managedTPC }, new[] { result }, new Dictionary<string, DateTime>(), loggerProvider.CreateLogger(string.Empty));
+
+            var warningMessages = loggedMessages.Where(log => log.Item1 == LogLevel.Warning);
+            Assert.Single(warningMessages);
+            Assert.Contains(expectedOutput, warningMessages.Single().Item2);
+        }
+
+        [Fact]
+        public void NoOutputOnOverlappingIdentity_UnmanagedCandidateWins()
+        {
+            var overlappingIdentity = "testIdentity";
+
+            var templateA = GetFakedTemplate(overlappingIdentity, "testMountA", "TemplateA");
+            var managedTPA = GetFakedManagedTemplatePackage("testMountA", "PackageA");
+
+            var templateB = GetFakedTemplate(overlappingIdentity, "testMountB", "TemplateB");
+            var managedTPB = GetFakedManagedTemplatePackage("testMountB", "PackageB");
+
+            var templateC = GetFakedTemplate(overlappingIdentity, "testMountC", "TemplateC");
+            var managedTPC = GetFakedTemplatePackage("testMountC");
+
+            List<(LogLevel, string)> loggedMessages = new List<(LogLevel, string)>();
+            InMemoryLoggerProvider loggerProvider = new InMemoryLoggerProvider(loggedMessages);
+
+            ScanResult result = new ScanResult(A.Fake<IMountPoint>(), new[] { templateA, templateB, templateC }, Array.Empty<ILocalizationLocator>(), Array.Empty<(string AssemblyPath, Type InterfaceType, IIdentifiedComponent Instance)>());
+            _ = new TemplateCache(new[] { managedTPA, managedTPB, managedTPC }, new[] { result }, new Dictionary<string, DateTime>(), loggerProvider.CreateLogger(string.Empty));
+
+            var warningMessages = loggedMessages.Where(log => log.Item1 == LogLevel.Warning);
+            Assert.Empty(warningMessages);
+        }
+
+        private ITemplate GetFakedTemplate(string identity, string mountPointUri, string name)
+        {
+            ITemplate template = A.Fake<ITemplate>();
+            A.CallTo(() => template.Identity).Returns(identity);
+            A.CallTo(() => template.MountPointUri).Returns(mountPointUri);
+            A.CallTo(() => template.Name).Returns(name);
+            A.CallTo(() => template.ConfigPlace).Returns(".template.config/template.json");
+            A.CallTo(() => template.ShortNameList).Returns(new[] { "testShort" });
+
+            return template;
+        }
+
+        private IManagedTemplatePackage GetFakedManagedTemplatePackage(string mountPointUri, string displayName)
+        {
+            var managedTemplatePackage = A.Fake<IManagedTemplatePackage>();
+            A.CallTo(() => managedTemplatePackage.MountPointUri).Returns(mountPointUri);
+            A.CallTo(() => managedTemplatePackage.DisplayName).Returns(displayName);
+
+            return managedTemplatePackage;
+        }
+
+        private ITemplatePackage GetFakedTemplatePackage(string mountPointUri)
+        {
+            var managedTemplatePackage = A.Fake<ITemplatePackage>();
+            A.CallTo(() => managedTemplatePackage.MountPointUri).Returns(mountPointUri);
+
+            return managedTemplatePackage;
         }
 
         private static JObject ReadObject(IPhysicalFileSystem fileSystem, string path)

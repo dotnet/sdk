@@ -330,7 +330,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 }
             });
             cancellationToken.ThrowIfCancellationRequested();
-            cache = new TemplateCache(scanResults, mountPoints, _logger);
+            cache = new TemplateCache(allTemplatePackages, scanResults, mountPoints, _logger);
             foreach (var scanResult in scanResults)
             {
                 scanResult?.Dispose();

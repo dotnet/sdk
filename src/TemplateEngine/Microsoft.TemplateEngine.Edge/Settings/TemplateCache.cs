@@ -5,8 +5,10 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Text;
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
+using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -14,30 +16,48 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 {
     internal class TemplateCache
     {
+        private const string BulletSymbol = "\u2022";
+
         private readonly ILogger _logger;
 
-        public TemplateCache(ScanResult?[] scanResults, Dictionary<string, DateTime> mountPoints, ILogger logger)
+        public TemplateCache(IReadOnlyList<ITemplatePackage> allTemplatePackages, ScanResult?[] scanResults, Dictionary<string, DateTime> mountPoints, ILogger logger)
         {
             _logger = logger;
+
             // We need this dictionary to de-duplicate templates that have same identity
             // notice that IEnumerable<ScanResult> that we get in is order by priority which means
-            // last template with same Identity wins, others are ignored...
-            var templateDeduplicationDictionary = new Dictionary<string, (ITemplate Template, ILocalizationLocator? Localization)>();
+            // last template with same Identity will win, others will be ignored...
+            var templateDeduplicationDictionary = new Dictionary<string, IList<(ITemplate Template, ITemplatePackage TemplatePackage, ILocalizationLocator? Localization)>>();
             foreach (var scanResult in scanResults)
             {
                 if (scanResult == null)
                 {
                     continue;
                 }
+
                 foreach (ITemplate template in scanResult.Templates)
                 {
-                    templateDeduplicationDictionary[template.Identity] = (template, GetBestLocalizationLocatorMatch(scanResult.Localizations, template.Identity));
+                    var templatePackage = allTemplatePackages.FirstOrDefault(tp => tp.MountPointUri == template.MountPointUri);
+
+                    if (templateDeduplicationDictionary.ContainsKey(template.Identity))
+                    {
+                        templateDeduplicationDictionary[template.Identity].Add((template, templatePackage, GetBestLocalizationLocatorMatch(scanResult.Localizations, template.Identity)));
+                    }
+                    else
+                    {
+                        templateDeduplicationDictionary[template.Identity] = new List<(ITemplate Template, ITemplatePackage TemplatePackage, ILocalizationLocator? Localization)>
+                        {
+                            (template, templatePackage, GetBestLocalizationLocatorMatch(scanResult.Localizations, template.Identity))
+                        };
+                    }
                 }
             }
 
             var templates = new List<TemplateInfo>();
-            foreach (var newTemplate in templateDeduplicationDictionary.Values)
+            foreach (var duplicatedIdentities in templateDeduplicationDictionary)
             {
+                // last template with same Identity wins, others will be ignored due to applied deduplication logic
+                var newTemplate = duplicatedIdentities.Value.Last();
                 templates.Add(new TemplateInfo(newTemplate.Template, newTemplate.Localization, logger));
             }
 
@@ -45,6 +65,8 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             Locale = CultureInfo.CurrentUICulture.Name;
             TemplateInfo = templates;
             MountPointsInfo = mountPoints;
+
+            PrintOverlappingIdentityWarning(templateDeduplicationDictionary);
         }
 
         public TemplateCache(JObject? contentJobject, ILogger logger)
@@ -138,6 +160,35 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             }
             while (currentCulture.Name != CultureInfo.InvariantCulture.Name);
             return null;
+        }
+
+        // add warning for the case when there is an attempt to overwrite existing managed by new managed template
+        private void PrintOverlappingIdentityWarning(IDictionary<string, IList<(ITemplate Template, ITemplatePackage TemplatePackage, ILocalizationLocator? Localization)>> templateDeduplicationDictionary)
+        {
+            foreach (var identityToTemplates in templateDeduplicationDictionary)
+            {
+                // we print the message only if managed template wins and we have > 1 managed templates with overlapping identities
+                var lastTemplate = identityToTemplates.Value.Last();
+                var managedTemplates = identityToTemplates.Value.Where(templateInto => templateInto.TemplatePackage is IManagedTemplatePackage).Except(new[] { lastTemplate });
+                if (lastTemplate.TemplatePackage is IManagedTemplatePackage managedPackage && managedTemplates.Any())
+                {
+                    var templatesList = new StringBuilder();
+                    foreach (var (templateName, packageId, _) in managedTemplates)
+                    {
+                        templatesList.AppendLine(string.Format(
+                            LocalizableStrings.TemplatePackageManager_Warning_DetectedTemplatesIdentityConflict_Subentry,
+                            BulletSymbol,
+                            templateName.Name,
+                            (packageId as IManagedTemplatePackage)?.DisplayName));
+                    }
+
+                    _logger.LogWarning(string.Format(
+                            LocalizableStrings.TemplatePackageManager_Warning_DetectedTemplatesIdentityConflict,
+                            identityToTemplates.Key,
+                            templatesList.ToString().TrimEnd(Environment.NewLine.ToCharArray()),
+                            lastTemplate.Template.Name));
+                }
+            }
         }
     }
 }

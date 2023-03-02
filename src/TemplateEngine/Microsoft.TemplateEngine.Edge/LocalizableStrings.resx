@@ -395,4 +395,20 @@ Template cache will be recreated on the next run.</value>
     <value>'IWorkloadsInfoProvider' component provided by host provided some duplicated workloads (duplicates: {0}). Duplicates will be skipped.</value>
     <comment>{0} is the list of duplicates</comment>
   </data>
+  <data name="TemplatePackageManager_Warning_DetectedTemplatesIdentityConflict" xml:space="preserve">
+    <value>
+The following templates use the same identity '{0}':
+{1}
+The template from '{2}' will be used. To resolve this conflict, uninstall the conflicting template packages.</value>
+    <comment>
+The following templates use the same identity 'IDENTITY':
+  * 'TEMPLATE' from 'PACKAGE_ID'
+The template from 'PACKAGE_ID' will be used. To resolve this conflict, uninstall the conflicting template packages.
+    </comment>
+  </data>
+  <data name="TemplatePackageManager_Warning_DetectedTemplatesIdentityConflict_Subentry" xml:space="preserve">
+    <value>  {0} '{1}' from '{2}'</value>
+    <comment>* 'TEMPLATE' from 'PACKAGE_ID'</comment>
+  </data>
 </root>
+

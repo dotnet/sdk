@@ -719,6 +719,27 @@ namespace Microsoft.TemplateEngine.Edge {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to 
+        ///The following templates use the same identity &apos;{0}&apos;:
+        ///{1}
+        ///The template from &apos;{2}&apos; will be used. To resolve this conflict, uninstall the conflicting template packages..
+        /// </summary>
+        internal static string TemplatePackageManager_Warning_DetectedTemplatesIdentityConflict {
+            get {
+                return ResourceManager.GetString("TemplatePackageManager_Warning_DetectedTemplatesIdentityConflict", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to   {0} &apos;{1}&apos; from &apos;{2}&apos;.
+        /// </summary>
+        internal static string TemplatePackageManager_Warning_DetectedTemplatesIdentityConflict_Subentry {
+            get {
+                return ResourceManager.GetString("TemplatePackageManager_Warning_DetectedTemplatesIdentityConflict_Subentry", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Multiple &apos;IWorkloadsInfoProvider&apos; components provided by host ({0}), therefore &apos;WorkloadConstraint&apos; cannot be properly initialized..
         /// </summary>
         internal static string WorkloadConstraint_Error_MismatchedProviders {
