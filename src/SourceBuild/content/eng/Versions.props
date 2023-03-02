@@ -25,6 +25,6 @@
       necessary, and this property is removed from the file.
     -->
     <PrivateSourceBuiltArtifactsPackageVersion>0.1.0-8.0.100-5.centos.8-x64</PrivateSourceBuiltArtifactsPackageVersion>
-    <PrivateSourceBuiltPrebuiltsPackageVersion>0.1.0-8.0.100-6.centos.8-x64</PrivateSourceBuiltPrebuiltsPackageVersion>
+    <PrivateSourceBuiltPrebuiltsPackageVersion>0.1.0-8.0.100-8.centos.8-x64</PrivateSourceBuiltPrebuiltsPackageVersion>
   </PropertyGroup>
 </Project>
