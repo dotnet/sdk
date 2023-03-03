@@ -50,7 +50,7 @@ namespace Microsoft.DotNet.Watcher.Tests
         [InlineData(new[] { "--", "run", "args" }, "args")]
         public async Task Arguments(string[] arguments, string expectedApplicationArgs)
         {
-            var testAsset = TestAssets.CopyTestAsset("WatchHotReloadApp")
+            var testAsset = TestAssets.CopyTestAsset("WatchHotReloadApp", identifier: string.Join(",", arguments))
                 .WithSource()
                 .Path;
 
