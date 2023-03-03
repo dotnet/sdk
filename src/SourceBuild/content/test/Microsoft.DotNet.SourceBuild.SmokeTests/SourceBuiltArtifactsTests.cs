@@ -13,7 +13,7 @@ public class SourceBuiltArtifactsTests : SmokeTests
 {
     public SourceBuiltArtifactsTests(ITestOutputHelper outputHelper) : base(outputHelper) { }
 
-    [SkippableFact()]
+    [Fact]
     public void VerifyVersionFile()
     {
         string outputDir = Path.Combine(Directory.GetCurrentDirectory(), "sourcebuilt-artifacts");
