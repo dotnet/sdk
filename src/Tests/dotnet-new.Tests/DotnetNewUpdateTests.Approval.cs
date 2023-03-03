@@ -28,5 +28,29 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
             return Verify(commandResult.StdOut);
         }
+
+        [Fact]
+        public Task CanShowError_WhenGlobalSettingsFileIsCorrupted()
+        {
+            string homeDirectory = CreateTemporaryFolder();
+            new DotnetNewCommand(_log, "install", "Microsoft.DotNet.Common.ProjectTemplates.5.0::5.0.0")
+                .WithCustomHive(homeDirectory)
+                .WithoutBuiltInTemplates()
+                .Execute()
+                .Should()
+                .Pass()
+                .And.HaveStdOutContaining("console");
+
+            var globalSettingsFile = Path.Combine(homeDirectory, "packages.json");
+            File.WriteAllText(globalSettingsFile, string.Empty);
+
+            CommandResult commandResult = new DotnetNewCommand(_log, "uninstall", "TemplateWithRequiredParameters")
+                .WithCustomHive(homeDirectory)
+                .WithoutBuiltInTemplates()
+                .Execute();
+            commandResult.Should().Fail();
+            return Verify(commandResult.StdOut)
+                .AddScrubber(output => output.ScrubAndReplace(globalSettingsFile, "%GLOBAL SETTINGS FILE%"));
+        }
     }
 }
