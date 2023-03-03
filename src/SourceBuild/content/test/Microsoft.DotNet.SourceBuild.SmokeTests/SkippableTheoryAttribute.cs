@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Runtime.CompilerServices;
 using Xunit;
 
 namespace Microsoft.DotNet.SourceBuild.SmokeTests;
@@ -12,12 +11,9 @@ namespace Microsoft.DotNet.SourceBuild.SmokeTests;
 /// </summary>
 internal class SkippableTheoryAttribute : TheoryAttribute
 {
-    public SkippableTheoryAttribute([CallerMemberName] string testName = "") =>
-        SkippableFactAttribute.CheckIncluded(testName, (skip) => Skip = skip);
+    public SkippableTheoryAttribute(string envName, bool skipOnNullOrWhiteSpace = false, bool skipOnTrue = false) =>
+        SkippableFactAttribute.CheckEnvs(skipOnNullOrWhiteSpace, skipOnTrue, (skip) => Skip = skip, envName);
 
-    public SkippableTheoryAttribute(string envName, bool skipOnNullOrWhiteSpace = false, bool skipOnTrue = false, [CallerMemberName] string testName = "") =>
-        SkippableFactAttribute.CheckEnvs(skipOnNullOrWhiteSpace, skipOnTrue, (skip) => Skip = skip, testName, envName);
-
-    public SkippableTheoryAttribute(string[] envNames, bool skipOnNullOrWhiteSpace = false, bool skipOnTrue = false, [CallerMemberName] string testName = "") =>
-        SkippableFactAttribute.CheckEnvs(skipOnNullOrWhiteSpace, skipOnTrue, (skip) => Skip = skip, testName, envNames);
+    public SkippableTheoryAttribute(string[] envNames, bool skipOnNullOrWhiteSpace = false, bool skipOnTrue = false) =>
+        SkippableFactAttribute.CheckEnvs(skipOnNullOrWhiteSpace, skipOnTrue, (skip) => Skip = skip, envNames);
 }
