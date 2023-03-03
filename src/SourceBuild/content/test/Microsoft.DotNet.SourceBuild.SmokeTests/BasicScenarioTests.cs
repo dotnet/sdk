@@ -21,7 +21,7 @@ public class BasicScenarioTests : SmokeTests
 
     [Theory]
     [MemberData(nameof(GetScenarioObjects))]
-    public void VerifyBasicScenario(TestScenario scenario) => scenario.Execute(DotNetHelper);
+    public void VerifyScenario(TestScenario scenario) => scenario.Execute(DotNetHelper);
 
     private static IEnumerable<object[]> GetScenarioObjects() => GetScenarios().Select(scenario => new object[] { scenario });
 

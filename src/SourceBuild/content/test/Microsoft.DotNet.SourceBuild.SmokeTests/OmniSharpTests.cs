@@ -34,7 +34,7 @@ public class OmniSharpTests : SmokeTests
     [InlineData(DotNetTemplate.WebApi)]
     [InlineData(DotNetTemplate.Worker)]
     [InlineData(DotNetTemplate.XUnit)]
-    public async void VerifyOmniSharpScenario(DotNetTemplate template)
+    public async void VerifyScenario(DotNetTemplate template)
     {
         await InitializeOmniSharp();
 
