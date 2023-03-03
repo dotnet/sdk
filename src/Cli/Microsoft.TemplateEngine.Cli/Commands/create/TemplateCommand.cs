@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using System.CommandLine.Parsing;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Constraints;
@@ -123,6 +124,9 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 
         internal Option<string>? BaselineOption { get; }
 
+        internal Option<bool>? InteractiveOption { get; }
+
+        // string key is the name of the option
         internal IReadOnlyDictionary<string, TemplateOption> TemplateOptions => _templateSpecificOptions;
 
         internal CliTemplateInfo Template => _template;
@@ -214,6 +218,35 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             }
 
             return instantiateTask.Result;
+        }
+
+        // Check what arguments were passed in the command line on invocation nd convert as needed
+        internal void GetPassedArguments(IReadOnlyList<SymbolResult> parsedArgs)
+        {
+            return;
+        }
+
+        // Check what is still missing for sucessfull creation
+        // Figure out the type to return for the function,
+        // or if we will have multiple functions with different types
+        internal void GetMissingArguments(
+            ParseResult parseResult,
+            List<string> setParameters,
+            List<TemplateOption> passedOptions)
+        {
+            var remainingOptions = TemplateOptions.Where(option => !passedOptions.Contains(option.Value));
+            foreach (var option in remainingOptions)
+            {
+                yield return option;
+            }
+
+            foreach (var parameter in Template.ParameterDefinitions.AsReadonlyDictionary())
+            {
+                if (!setParameters.Contains(parameter.Key))
+                {
+                    yield return parameter;
+                }
+            }
         }
 
         private void DisplayConstraintResults(IReadOnlyList<TemplateConstraintResult> constraintResults, TemplateCommandArgs templateArgs)

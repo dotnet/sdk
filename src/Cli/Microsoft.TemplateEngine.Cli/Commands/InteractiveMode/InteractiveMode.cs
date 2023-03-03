@@ -4,7 +4,6 @@
 
 using System.CommandLine;
 using System.CommandLine.Invocation;
-using System.CommandLine.Parsing;
 
 namespace Microsoft.TemplateEngine.Cli.Commands.InteractiveMode
 {
@@ -14,28 +13,33 @@ namespace Microsoft.TemplateEngine.Cli.Commands.InteractiveMode
         {
             if (context.ParseResult.CommandResult.Command.Name == "new")
             {
-                var parsedArgs = context.ParseResult.CommandResult.Children;
-                var enterInteractiveMode = ShouldEnterInteractiveMode(parsedArgs);
+                TemplateCommand? templateCommand = context.ParseResult.CommandResult.Command as TemplateCommand;
+                if (templateCommand is null)
+                {
+                    return;
+                }
+
+                var enterInteractiveMode = ShouldEnterInteractiveMode(context.ParseResult, templateCommand);
                 if (enterInteractiveMode)
                 {
                     // TODO: add the default skip key
-                    context.Console.WriteLine("Currently under development, not all features implemented yet");
                     // TODO: short name validation. right now we are assuming that the provided template exists and is valid
+
+                    context.Console.WriteLine("Currently under development, not all features implemented yet");
                     context.Console.WriteLine("Creating a new <language> <template name> project. Press 's' to skip defaults");
 
-                    // Check the parser for arguments that we already have
-                    var nameOption = parsedArgs.OfType<OptionResult>().Where(option => option.Option.Name == "name");
-                    string? name;
-                    if (!nameOption.Any())
+                    // tracks if we received all information necessary to instantiate the template
+                    bool commandComplete = false;
+                    while (!commandComplete)
                     {
-                        context.Console.Write($"Choose a name for project: ");
-                        name = Console.ReadLine();
+                        var missingParam = templateCommand.GetMissingArguments();
+                        context.Console.WriteLine(GetMissingArguments(missingParam));
+                        var paramValue = Console.ReadLine();
+                        // Try to cast value, and then check if valid. Maybe put in a loop in case value was not valid
+                        // Add to the command line text to reparse later
                     }
-                    name = (string?)nameOption.First().GetValueOrDefault();
-                    // Ask missing basic template questions
-                    // name
-                    // output path
 
+                    // After everything is done reparse the command line input and execute the result
                 }
             }
             await next(context).ConfigureAwait(false);
@@ -43,38 +47,32 @@ namespace Microsoft.TemplateEngine.Cli.Commands.InteractiveMode
 
         // True if we should ask user input interactively
         // False if we should just continue with the pipeline
-        public static bool ShouldEnterInteractiveMode(IReadOnlyList<SymbolResult> parsedArgs)
+        internal static bool ShouldEnterInteractiveMode(ParseResult parsedArgs, TemplateCommand command)
         {
-            bool interactiveOptionValue;
-            var interactiveOption = parsedArgs.OfType<OptionResult>().Where(option => option.Option.Name == "interactive");
-            if (!interactiveOption.Any())
+            // TODO: find a better way to query for the option
+            // TODO: Better handling of this option when executing
+            bool interactiveOptionValue = false;
+            if (command.InteractiveOption is not null)
             {
-                return false;
+                interactiveOptionValue = parsedArgs.GetValue(command.InteractiveOption);
             }
 
-            var inter = interactiveOption.First().GetValueOrDefault();
-            if (inter is null)
-            {
-                interactiveOptionValue = false;
-            }
-            else
-            {
-                interactiveOptionValue = true;
-            }
+            var envVariable = Environment.GetEnvironmentVariable("DOTNETNEWINTERACTIVE");
+            bool envVariableValue = Convert.ToBoolean(envVariable);
 
-            // Hard coded for now
-            // bool envVariable = Environment.GetEnvironmentVariable("DOTNETNEWINTERACTIVE");
-            bool envVriable = true;
-
-            // hard coded for now
-            // Check if current environment supports what we want to do (If we need any fancy stuff)
-            bool supportsInteractiveMode = true;
-            if ((interactiveOptionValue || envVriable) && supportsInteractiveMode)
+            if ((interactiveOptionValue || envVariableValue) && DoesSupportInteractive())
             {
                 return true;
             }
 
             return false;
+        }
+
+        internal static bool DoesSupportInteractive()
+        {
+            // hard coded for now
+            // Check if current environment supports what we want to do (If we need any fancy stuff)
+            return true;
         }
     }
 }
