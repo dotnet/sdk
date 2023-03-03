@@ -19,7 +19,7 @@ public class BasicScenarioTests : SmokeTests
 {
     public BasicScenarioTests(ITestOutputHelper outputHelper) : base(outputHelper) { }
 
-    [SkippableTheory()]
+    [Theory]
     [MemberData(nameof(GetScenarioObjects))]
     public void VerifyBasicScenario(TestScenario scenario) => scenario.Execute(DotNetHelper);
 

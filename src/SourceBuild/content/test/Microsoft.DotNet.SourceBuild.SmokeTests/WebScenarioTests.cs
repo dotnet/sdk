@@ -18,7 +18,7 @@ public class WebScenarioTests : SmokeTests
 {
     public WebScenarioTests(ITestOutputHelper outputHelper) : base(outputHelper) { }
 
-    [SkippableTheory()]
+    [Theory]
     [MemberData(nameof(GetScenarioObjects))]
     public void VerifyWebScenario(TestScenario scenario) => scenario.Execute(DotNetHelper);
 
