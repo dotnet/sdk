@@ -78,8 +78,23 @@ namespace Microsoft.DotNet.Watcher.Tests
         public async Task<string> ReadProcessIdentifierFromOutput()
             => await AssertOutputLineStartsWith("Process identifier =");
 
-        public void Start(IEnumerable<string> arguments, string workingDirectory, [CallerMemberName] string name = null)
+        private void Prepare(string projectRootPath)
         {
+            if (_prepared)
+            {
+                return;
+            }
+
+            var buildCommand = new BuildCommand(Logger, projectRootPath);
+            buildCommand.Execute().Should().Pass();
+
+            _prepared = true;
+        }
+
+        public void Start(string projectRootPath, IEnumerable<string> arguments, string workingDirectory = null, string name = null)
+        {
+            Prepare(projectRootPath);
+
             var args = new List<string>
             {
                 "watch",
@@ -89,7 +104,7 @@ namespace Microsoft.DotNet.Watcher.Tests
 
             var commandSpec = new DotnetCommand(Logger, args.ToArray())
             {
-                WorkingDirectory = workingDirectory,
+                WorkingDirectory = workingDirectory ?? projectRootPath,
             };
 
             commandSpec.WithEnvironmentVariable("DOTNET_USE_POLLING_FILE_WATCHER", "true");
@@ -104,30 +119,15 @@ namespace Microsoft.DotNet.Watcher.Tests
             Process.Start();
         }
 
-        public void Prepare(string projectRootPath)
+        public async Task StartWatcherAsync(string projectRootPath, IEnumerable<string> applicationArguments = null, string workingDirectory = null, [CallerMemberName] string name = null)
         {
-            if (_prepared)
-            {
-                return;
-            }
-
-            var buildCommand = new BuildCommand(Logger, projectRootPath);
-            buildCommand.Execute().Should().Pass();
-
-            _prepared = true;
-        }
-
-        public async Task StartWatcherAsync(string projectRootPath, IEnumerable<string> arguments = null, string workingDirectory = null, [CallerMemberName] string name = null)
-        {
-            Prepare(projectRootPath);
-
             var args = new[] { "run", "--" };
-            if (arguments != null)
+            if (applicationArguments != null)
             {
-                args = args.Concat(arguments).ToArray();
+                args = args.Concat(applicationArguments).ToArray();
             }
 
-            Start(args, workingDirectory ?? projectRootPath, name);
+            Start(projectRootPath, args, workingDirectory, name);
 
             await AssertOutputLineStartsWith(WatchStartedMessage);
         }
