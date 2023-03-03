@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using System.CommandLine.Parsing;
 using Microsoft.TemplateEngine.Authoring.CLI.Commands;
 using Microsoft.TemplateEngine.Authoring.CLI.Commands.Verify;
 
@@ -16,10 +15,10 @@ namespace Microsoft.TemplateEngine.Authoring.CLI
             rootCommand.Subcommands.Add(new LocalizeCommand());
             rootCommand.Subcommands.Add(new VerifyCommand());
 
-            return CreateParser(rootCommand).Parse(args).InvokeAsync();
+            return GetCommandLineConfiguration(rootCommand).InvokeAsync(args);
         }
 
-        internal static Parser CreateParser(Command command)
+        internal static CommandLineConfiguration GetCommandLineConfiguration(Command command)
         {
             CommandLineBuilder builder = new CommandLineBuilder(command)
                    .UseDefaults()
