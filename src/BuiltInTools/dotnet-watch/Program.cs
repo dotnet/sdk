@@ -303,6 +303,7 @@ Examples:
 
             var context = new DotNetWatchContext
             {
+                HotReloadEnabled = enableHotReload,
                 ProcessSpec = new ProcessSpec
                 {
                     WorkingDirectory = workingDirectory,

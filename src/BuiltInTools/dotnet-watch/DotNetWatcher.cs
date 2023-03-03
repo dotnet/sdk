@@ -92,7 +92,7 @@ namespace Microsoft.DotNet.Watcher
                     currentRunCancellationSource.Token))
                 using (var fileSetWatcher = new FileSetWatcher(fileSet, _reporter))
                 {
-                    _reporter.Verbose($"Running {processSpec.ShortDisplayName()} with the following arguments: {string.Join(" ", processSpec.Arguments)}");
+                    _reporter.Verbose($"Running {processSpec.ShortDisplayName()} with the following arguments: '{string.Join(" ", processSpec.Arguments)}'");
                     var processTask = _processRunner.RunAsync(processSpec, combinedCancellationSource.Token);
 
                     _reporter.Output("Started", emoji: "🚀");
@@ -106,7 +106,7 @@ namespace Microsoft.DotNet.Watcher
                         finishedTask = await Task.WhenAny(processTask, fileSetTask, cancelledTaskSource.Task);
                         if (finishedTask == fileSetTask
                             && fileSetTask.Result is FileItem fileItem &&
-                            await _staticFileHandler.TryHandleFileChange(context, fileItem, combinedCancellationSource.Token))
+                            await _staticFileHandler.TryHandleFileChange(context.BrowserRefreshServer, fileItem, combinedCancellationSource.Token))
                         {
                             // We're able to handle the file change event without doing a full-rebuild.
                         }

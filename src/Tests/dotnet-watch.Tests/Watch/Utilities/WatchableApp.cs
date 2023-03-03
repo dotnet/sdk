@@ -73,11 +73,6 @@ namespace Microsoft.DotNet.Watcher.Tests
             await AssertOutputLineStartsWith(WatchExitedMessage);
         }
 
-        // Process ID is insufficient because PID's may be reused. Process identifier also includes other info to distinguish
-        // between different process instances.
-        public async Task<string> ReadProcessIdentifierFromOutput()
-            => await AssertOutputLineStartsWith("Process identifier =");
-
         private void Prepare(string projectRootPath)
         {
             if (_prepared)
@@ -91,7 +86,7 @@ namespace Microsoft.DotNet.Watcher.Tests
             _prepared = true;
         }
 
-        public void Start(string projectRootPath, IEnumerable<string> arguments, string workingDirectory = null, string name = null)
+        public void Start(string projectRootPath, IEnumerable<string> arguments, string workingDirectory = null, TestFlags testFlags = TestFlags.RunningAsTest, string name = null)
         {
             Prepare(projectRootPath);
 
@@ -108,7 +103,7 @@ namespace Microsoft.DotNet.Watcher.Tests
             };
 
             commandSpec.WithEnvironmentVariable("DOTNET_USE_POLLING_FILE_WATCHER", "true");
-            commandSpec.WithEnvironmentVariable("__DOTNET_WATCH_RUNNING_AS_TEST", "true");
+            commandSpec.WithEnvironmentVariable("__DOTNET_WATCH_TEST_FLAGS", testFlags.ToString());
 
             foreach (var env in EnvironmentVariables)
             {
@@ -119,7 +114,12 @@ namespace Microsoft.DotNet.Watcher.Tests
             Process.Start();
         }
 
-        public async Task StartWatcherAsync(string projectRootPath, IEnumerable<string> applicationArguments = null, string workingDirectory = null, [CallerMemberName] string name = null)
+        public async Task StartWatcherAsync(
+            string projectRootPath,
+            IEnumerable<string> applicationArguments = null,
+            string workingDirectory = null,
+            TestFlags testFlags = TestFlags.RunningAsTest,
+            [CallerMemberName] string name = null)
         {
             var args = new[] { "run", "--" };
             if (applicationArguments != null)
@@ -127,7 +127,7 @@ namespace Microsoft.DotNet.Watcher.Tests
                 args = args.Concat(applicationArguments).ToArray();
             }
 
-            Start(projectRootPath, args, workingDirectory, name);
+            Start(projectRootPath, args, workingDirectory, testFlags, name);
 
             await AssertOutputLineStartsWith(WatchStartedMessage);
         }
