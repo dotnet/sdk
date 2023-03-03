@@ -63,6 +63,6 @@ public class SourceBuiltArtifactsTests : SmokeTests
 
     private void ExtractFileFromTarball(string tarballPath, string filePath, string outputDir)
     {
-        ExecuteHelper.ExecuteProcessValidateExitCode("tar", $"xzf {tarballPath} -C {outputDir} {filePath}", OutputHelper);
+        ExecuteHelper.ExecuteProcessValidateExitCode("tar", $"--wildcards -xzf {tarballPath} -C {outputDir} {filePath}", OutputHelper);
     }
 }
