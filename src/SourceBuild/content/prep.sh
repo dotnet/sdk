@@ -9,10 +9,12 @@ usage() {
     echo ""
     echo "  Prepares the environment to be built by downloading Private.SourceBuilt.Artifacts.*.tar.gz and"
     echo "  installing the version of dotnet referenced in global.json"
+    echo "options:"
+    echo "  --no-bootstrap Don't replace portable packages in the download source-built artifacts"
     echo ""
 }
 
-buildBootstrap=false
+buildBootstrap=true
 positional_args=()
 while :; do
     if [ $# -le 0 ]; then
@@ -23,6 +25,9 @@ while :; do
         "-?"|-h|--help)
             usage
             exit 0
+            ;;
+        --no-bootstrap)
+            buildBootstrap=false
             ;;
         *)
             positional_args+=("$1")
@@ -69,15 +74,14 @@ function DownloadArchive {
     baseFileName="$2"
     isRequired="$3"
 
-    sourceBuiltArtifactsTarballUrl="https://dotnetcli.azureedge.net/source-built-artifacts/assets/"
     packageVersionsPath="$SCRIPT_ROOT/eng/Versions.props"
     notFoundMessage="No source-built $archiveType found to download..."
 
     echo "  Looking for source-built $archiveType to download..."
-    archiveVersionLine=`grep -m 1 "<PrivateSourceBuilt${archiveType}PackageVersion>" "$packageVersionsPath" || :`
-    versionPattern="<PrivateSourceBuilt${archiveType}PackageVersion>(.*)</PrivateSourceBuilt${archiveType}PackageVersion>"
+    archiveVersionLine=`grep -m 1 "<PrivateSourceBuilt${archiveType}Url>" "$packageVersionsPath" || :`
+    versionPattern="<PrivateSourceBuilt${archiveType}Url>(.*)</PrivateSourceBuilt${archiveType}Url>"
     if [[ $archiveVersionLine =~ $versionPattern ]]; then
-        archiveUrl="${sourceBuiltArtifactsTarballUrl}${baseFileName}.${BASH_REMATCH[1]}.tar.gz"
+        archiveUrl="${BASH_REMATCH[1]}"
         echo "  Downloading source-built $archiveType from $archiveUrl..."
         (cd $packagesArchiveDir && curl --retry 5 -O $archiveUrl)
     elif [ "$isRequired" == "true" ]; then
@@ -124,7 +128,9 @@ fi
 # Read the eng/Versions.props to get the archives to download and download them
 if [ "$downloadArtifacts" == "true" ]; then
     DownloadArchive "Artifacts" $artifactsBaseFileName "true"
-    BootstrapArtifacts
+    if [ "$buildBootstrap" == "true" ]; then
+        BootstrapArtifacts
+    fi
 fi
 
 if [ "$downloadPrebuilts" == "true" ]; then
