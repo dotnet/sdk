@@ -43,7 +43,7 @@ namespace Microsoft.DotNet.Cli.New.Tests
 
             var parseResult = Parser.Instance.Parse(new string[] { "dotnet" });
             IWorkloadsRepositoryEnumerator workloadsEnumerator = new WorkloadInfoHelper(
-                parseResult,
+                isInteractive: false,
                 currentSdkVersion: "1.2.3",
                 workloadRecordRepo: repoMock.Object,
                 workloadResolver: resolverMock.Object);
