@@ -390,10 +390,10 @@ Pamięć podręczna szablonów zostanie ponownie utworzona przy następnym uruch
 The following templates use the same identity '{0}':
 {1}
 The template from '{2}' will be used. To resolve this conflict, uninstall the conflicting template packages.</source>
-        <target state="new">
-The following templates use the same identity '{0}':
+        <target state="translated">
+Następujące szablony używają tej samej tożsamości '{0}':
 {1}
-The template from '{2}' will be used. To resolve this conflict, uninstall the conflicting template packages.</target>
+Szablon '{2}' zostanie użyty. Aby rozwiązać ten konflikt, odinstaluj niezgodne pakiety szablonów.</target>
         <note>
 The following templates use the same identity 'IDENTITY':
   * 'TEMPLATE' from 'PACKAGE_ID'
@@ -402,7 +402,7 @@ The template from 'PACKAGE_ID' will be used. To resolve this conflict, uninstall
       </trans-unit>
       <trans-unit id="TemplatePackageManager_Warning_DetectedTemplatesIdentityConflict_Subentry">
         <source>  {0} '{1}' from '{2}'</source>
-        <target state="new">  {0} '{1}' from '{2}'</target>
+        <target state="translated">  {0} '{1}' z '{2}'</target>
         <note>* 'TEMPLATE' from 'PACKAGE_ID'</note>
       </trans-unit>
       <trans-unit id="WorkloadConstraint_Error_MismatchedProviders">

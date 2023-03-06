@@ -390,10 +390,10 @@ Template cache will be recreated on the next run.</source>
 The following templates use the same identity '{0}':
 {1}
 The template from '{2}' will be used. To resolve this conflict, uninstall the conflicting template packages.</source>
-        <target state="new">
-The following templates use the same identity '{0}':
+        <target state="translated">
+以下模板使用相同的标识“{0}”:
 {1}
-The template from '{2}' will be used. To resolve this conflict, uninstall the conflicting template packages.</target>
+将使用“{2}”中的模板。要解决此冲突，请卸载冲突的模板包。</target>
         <note>
 The following templates use the same identity 'IDENTITY':
   * 'TEMPLATE' from 'PACKAGE_ID'
@@ -402,7 +402,7 @@ The template from 'PACKAGE_ID' will be used. To resolve this conflict, uninstall
       </trans-unit>
       <trans-unit id="TemplatePackageManager_Warning_DetectedTemplatesIdentityConflict_Subentry">
         <source>  {0} '{1}' from '{2}'</source>
-        <target state="new">  {0} '{1}' from '{2}'</target>
+        <target state="translated">  {0}来自“{2}”的“{1}”</target>
         <note>* 'TEMPLATE' from 'PACKAGE_ID'</note>
       </trans-unit>
       <trans-unit id="WorkloadConstraint_Error_MismatchedProviders">

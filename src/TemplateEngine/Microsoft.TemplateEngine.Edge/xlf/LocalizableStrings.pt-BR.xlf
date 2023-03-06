@@ -390,10 +390,10 @@ O cache do modelo será recriado na próxima execução.</target>
 The following templates use the same identity '{0}':
 {1}
 The template from '{2}' will be used. To resolve this conflict, uninstall the conflicting template packages.</source>
-        <target state="new">
-The following templates use the same identity '{0}':
+        <target state="translated">
+Os seguintes modelos usam a mesma identidade '{0}':
 {1}
-The template from '{2}' will be used. To resolve this conflict, uninstall the conflicting template packages.</target>
+O modelo de '{2}' será usado. Para resolver esse conflito, desinstale os pacotes de modelos em conflito.</target>
         <note>
 The following templates use the same identity 'IDENTITY':
   * 'TEMPLATE' from 'PACKAGE_ID'
@@ -402,7 +402,7 @@ The template from 'PACKAGE_ID' will be used. To resolve this conflict, uninstall
       </trans-unit>
       <trans-unit id="TemplatePackageManager_Warning_DetectedTemplatesIdentityConflict_Subentry">
         <source>  {0} '{1}' from '{2}'</source>
-        <target state="new">  {0} '{1}' from '{2}'</target>
+        <target state="translated">  {0} '{1}' de '{2}'</target>
         <note>* 'TEMPLATE' from 'PACKAGE_ID'</note>
       </trans-unit>
       <trans-unit id="WorkloadConstraint_Error_MismatchedProviders">

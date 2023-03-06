@@ -390,10 +390,10 @@ Template cache will be recreated on the next run.</source>
 The following templates use the same identity '{0}':
 {1}
 The template from '{2}' will be used. To resolve this conflict, uninstall the conflicting template packages.</source>
-        <target state="new">
-The following templates use the same identity '{0}':
+        <target state="translated">
+다음 템플릿은 동일한 ID '{0}'을(를) 사용합니다:
 {1}
-The template from '{2}' will be used. To resolve this conflict, uninstall the conflicting template packages.</target>
+'{2}'의 템플릿이 사용됩니다. 이 충돌을 해결하려면 충돌하는 템플릿 패키지를 제거하세요.</target>
         <note>
 The following templates use the same identity 'IDENTITY':
   * 'TEMPLATE' from 'PACKAGE_ID'
@@ -402,7 +402,7 @@ The template from 'PACKAGE_ID' will be used. To resolve this conflict, uninstall
       </trans-unit>
       <trans-unit id="TemplatePackageManager_Warning_DetectedTemplatesIdentityConflict_Subentry">
         <source>  {0} '{1}' from '{2}'</source>
-        <target state="new">  {0} '{1}' from '{2}'</target>
+        <target state="translated">  {2}의 {0} '{1}'</target>
         <note>* 'TEMPLATE' from 'PACKAGE_ID'</note>
       </trans-unit>
       <trans-unit id="WorkloadConstraint_Error_MismatchedProviders">

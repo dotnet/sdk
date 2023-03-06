@@ -390,10 +390,10 @@ Template cache will be recreated on the next run.</source>
 The following templates use the same identity '{0}':
 {1}
 The template from '{2}' will be used. To resolve this conflict, uninstall the conflicting template packages.</source>
-        <target state="new">
-The following templates use the same identity '{0}':
+        <target state="translated">
+Следующие шаблоны используют одинаковые идентификаторы '{0}':
 {1}
-The template from '{2}' will be used. To resolve this conflict, uninstall the conflicting template packages.</target>
+Будет использован шаблон '{2}'. Чтобы устранить этот конфликт, удалите конфликтующие пакеты шаблонов.</target>
         <note>
 The following templates use the same identity 'IDENTITY':
   * 'TEMPLATE' from 'PACKAGE_ID'
@@ -402,7 +402,7 @@ The template from 'PACKAGE_ID' will be used. To resolve this conflict, uninstall
       </trans-unit>
       <trans-unit id="TemplatePackageManager_Warning_DetectedTemplatesIdentityConflict_Subentry">
         <source>  {0} '{1}' from '{2}'</source>
-        <target state="new">  {0} '{1}' from '{2}'</target>
+        <target state="translated">  {0} '{1}' из '{2}'</target>
         <note>* 'TEMPLATE' from 'PACKAGE_ID'</note>
       </trans-unit>
       <trans-unit id="WorkloadConstraint_Error_MismatchedProviders">
