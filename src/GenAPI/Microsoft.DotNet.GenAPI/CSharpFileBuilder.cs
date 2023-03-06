@@ -10,6 +10,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Formatting;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Editing;
+using Microsoft.CodeAnalysis.FindSymbols;
 using Microsoft.CodeAnalysis.Formatting;
 using Microsoft.CodeAnalysis.Options;
 using Microsoft.CodeAnalysis.Simplification;
@@ -144,7 +145,9 @@ namespace Microsoft.DotNet.GenAPI
                 // If the method is ExplicitInterfaceImplementation and is derived from an interface that was filtered out, we must filter out it either.
                 if (member is IMethodSymbol method &&
                     method.MethodKind == MethodKind.ExplicitInterfaceImplementation &&
-                    method.ExplicitInterfaceImplementations.Any(m => !_symbolFilter.Include(m.ContainingSymbol)))
+                    method.ExplicitInterfaceImplementations.Any(m => !_symbolFilter.Include(m.ContainingSymbol) ||
+                        // if explicit interface implementation method has inaccessible type argument
+                        m.ContainingType.HasInaccessibleTypeArgument(_symbolFilter)))
                 {
                     continue;
                 }
@@ -163,7 +166,16 @@ namespace Microsoft.DotNet.GenAPI
                     memberDeclaration = Visit(memberDeclaration, nestedTypeSymbol);
                 }
 
-                namedTypeNode = _syntaxGenerator.AddMembers(namedTypeNode, memberDeclaration);
+                try
+                {
+                    namedTypeNode = _syntaxGenerator.AddMembers(namedTypeNode, memberDeclaration);
+                }
+                catch (InvalidOperationException e)
+                {
+                    // re-throw the InvalidOperationException with the symbol that caused it.
+                    throw new InvalidOperationException($"Adding member {member.ToDisplayString()} to the " +
+                        $"named type {namedTypeNode.ToString()} failed with an exception {e.Message}");
+                }
             }
 
             return namedTypeNode;

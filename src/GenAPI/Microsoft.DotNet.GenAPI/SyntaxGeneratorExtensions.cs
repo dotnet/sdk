@@ -9,6 +9,8 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Collections.Generic;
 using Microsoft.DotNet.ApiSymbolExtensions.Filtering;
+using System.Security.AccessControl;
+using Microsoft.VisualBasic;
 
 namespace Microsoft.DotNet.GenAPI
 {
@@ -58,8 +60,16 @@ namespace Microsoft.DotNet.GenAPI
 
                             if (baseTypeConstructors.Any())
                             {
+                                IMethodSymbol constructor = baseTypeConstructors.First();
+
                                 ConstructorDeclarationSyntax declaration = (ConstructorDeclarationSyntax)syntaxGenerator.Declaration(method);
-                                return declaration.WithInitializer(baseTypeConstructors.First().GenerateBaseConstructorInitializer());
+                                if (!declaration.Modifiers.Any(m => m.RawKind == (int)SyntaxKind.UnsafeKeyword) &&
+                                    // if at least one parameter of a base constructor is raw pointer type
+                                    constructor.Parameters.Any(p => p.Type.TypeKind == TypeKind.Pointer))
+                                {
+                                    declaration = declaration.AddModifiers(SyntaxFactory.Token(SyntaxKind.UnsafeKeyword));
+                                }
+                                return declaration.WithInitializer(constructor.GenerateBaseConstructorInitializer());
                             }
                         }
                     }
@@ -107,8 +117,10 @@ namespace Microsoft.DotNet.GenAPI
                 baseTypes.Add(SyntaxFactory.SimpleBaseType((TypeSyntax)syntaxGenerator.TypeExpression(type.BaseType)));
             }
 
-            // includes only interfaces that were not filtered out by the given <see cref="ISymbolFilter"/>.
-            baseTypes.AddRange(type.Interfaces.Where(symbolFilter.Include).Select(i => SyntaxFactory.SimpleBaseType((TypeSyntax)syntaxGenerator.TypeExpression(i))));
+            // includes only interfaces that were not filtered out by the given <see cref="ISymbolFilter"/> or none of TypeParameters were filtered out.
+            baseTypes.AddRange(type.Interfaces
+                .Where(i => symbolFilter.Include(i) && !i.HasInaccessibleTypeArgument(symbolFilter))
+                .Select(i => SyntaxFactory.SimpleBaseType((TypeSyntax)syntaxGenerator.TypeExpression(i))));
             return baseTypes.Count > 0 ?
                 SyntaxFactory.BaseList(SyntaxFactory.SeparatedList(baseTypes)) :
                 null;
