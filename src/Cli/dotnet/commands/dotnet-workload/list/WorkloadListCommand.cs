@@ -14,6 +14,7 @@ using Microsoft.DotNet.Configurer;
 using Microsoft.DotNet.Workloads.Workload.Install;
 using Microsoft.DotNet.Workloads.Workload.Install.InstallRecord;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
+using Microsoft.TemplateEngine.Cli.Commands;
 using InformationStrings = Microsoft.DotNet.Workloads.Workload.LocalizableStrings;
 
 namespace Microsoft.DotNet.Workloads.Workload.List
@@ -39,7 +40,7 @@ namespace Microsoft.DotNet.Workloads.Workload.List
         ) : base(parseResult, CommonOptions.HiddenVerbosityOption, reporter, tempDirPath, nugetPackageDownloader)
         {
             _workloadListHelper = new WorkloadInfoHelper(
-                parseResult,
+                parseResult.HasOption(SharedOptions.InteractiveOption),
                 Verbosity,
                 parseResult?.GetValue(WorkloadListCommandParser.VersionOption) ?? null,
                 VerifySignatures,

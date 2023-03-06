@@ -23,7 +23,7 @@ namespace Microsoft.DotNet.Workloads.Workload.List
         private readonly string _targetSdkVersion;
 
         public WorkloadInfoHelper(
-            ParseResult parseResult,
+            bool isInteractive,
             VerbosityOptions verbosity = VerbosityOptions.normal,
             string targetSdkVersion = null,
             bool? verifySignatures = null,
@@ -50,7 +50,7 @@ namespace Microsoft.DotNet.Workloads.Workload.List
                 workloadManifestProvider, dotnetPath,
                 currentSdkReleaseVersion.ToString(), userProfileDir);
 
-            var restoreConfig = new RestoreActionConfig(Interactive: parseResult.HasOption(SharedOptions.InteractiveOption));
+            var restoreConfig = new RestoreActionConfig(Interactive: isInteractive);
 
             Installer = WorkloadInstallerFactory.GetWorkloadInstaller(
                 reporter,

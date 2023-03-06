@@ -9,6 +9,7 @@ using System.Linq;
 using Microsoft.DotNet.Workloads.Workload.Install;
 using Microsoft.DotNet.Workloads.Workload.List;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
+using Microsoft.TemplateEngine.Cli.Commands;
 using CommonStrings = Microsoft.DotNet.Workloads.Workload.LocalizableStrings;
 using IReporter = Microsoft.DotNet.Cli.Utils.IReporter;
 
@@ -30,7 +31,7 @@ namespace Microsoft.DotNet.Cli
 
         internal static void ShowWorkloadsInfo(ParseResult parseResult, IWorkloadInfoHelper workloadInfoHelper = null, IReporter reporter = null)
         {
-            workloadInfoHelper ??= new WorkloadInfoHelper(parseResult);
+            workloadInfoHelper ??= new WorkloadInfoHelper(parseResult.HasOption(SharedOptions.InteractiveOption));
             IEnumerable<WorkloadId> installedList = workloadInfoHelper.InstalledSdkWorkloadIds;
             InstalledWorkloadsCollection installedWorkloads = workloadInfoHelper.AddInstalledVsWorkloads(installedList);
             reporter ??= Cli.Utils.Reporter.Output;
