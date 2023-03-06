@@ -109,6 +109,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.OperationConfig
                         new OperationConfigDefault("**/*.bas", "'", EvaluatorType.VB, ConditionalType.VB),
                         new OperationConfigDefault("**/*.vb", "'", EvaluatorType.VB, ConditionalType.VB),
                         new OperationConfigDefault("**/*.xaml", "<!--", EvaluatorType.CPP, ConditionalType.Xml),
+                        new OperationConfigDefault("**/*.axaml", "<!--", EvaluatorType.CPP, ConditionalType.Xml),
                         new OperationConfigDefault("**/*.sln", "#-", EvaluatorType.CPP, ConditionalType.HashSignLineComment),
                         new OperationConfigDefault("**/*.yaml", "#-", EvaluatorType.CPP, ConditionalType.HashSignLineComment),
                         new OperationConfigDefault("**/*.yml", "#-", EvaluatorType.CPP, ConditionalType.HashSignLineComment),

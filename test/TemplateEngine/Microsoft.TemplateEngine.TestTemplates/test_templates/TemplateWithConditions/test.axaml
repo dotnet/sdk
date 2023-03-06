@@ -1,0 +1,23 @@
+<!--#if A-->
+<!-- comment A is true -->
+<Application xmlns="https://github.com/something"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="App">
+<!--#else-->
+<!-- comment A is false -->
+<Application xmlns="https://github.com/something"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="App"
+             RequestedThemeVariant="Default">
+<!--#endif-->
+
+    <Application.Styles>
+        <!--#if B-->
+        <!-- comment B is true -->
+        <FluentTheme Mode="Light" />
+        <!--#else-->
+        <!-- comment B is false -->
+        <FluentTheme />
+        <!--#endif-->
+    </Application.Styles>
+</Application>

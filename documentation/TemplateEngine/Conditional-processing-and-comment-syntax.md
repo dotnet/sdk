@@ -355,7 +355,7 @@ Changing from `////#else` to `//#else` the result will be
 
 #### File Extensions
 
-`.*htm`, `.*html`, `.jsp`, `.asp`, `.aspx`, `.nuspec`, `.xslt`, `.xsd`, `.vsixmanifest`, `.vsct`, `.storyboard`, `.axml`, `.plist`, `.xib`, `.strings`, `.xml`, `.xaml`, `.md`.
+`.*htm`, `.*html`, `.jsp`, `.asp`, `.aspx`, `.nuspec`, `.xslt`, `.xsd`, `.vsixmanifest`, `.vsct`, `.storyboard`, `.axml`, `.plist`, `.xib`, `.strings`, `.xml`, `.xaml`, `.axaml`, `.md`.
 
 #### Well known XML file names
 

@@ -356,16 +356,12 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
 
             Assert.Equal(CreationResultStatus.Success, result.Status);
 
-            string targetFile = Path.Combine(output, "test.ps1");
-            Assert.True(File.Exists(targetFile));
-            Assert.Equal(
-               """
-                # comment B true
-                B true
-                common text
-
-                """.UnixifyLineBreaks(),
-               File.ReadAllText(targetFile).UnixifyLineBreaks());
+            foreach (var expectResult in ExpectedOutputWithConditions())
+            {
+                string targetFile = Path.Combine(output, expectResult.Key);
+                Assert.True(File.Exists(targetFile));
+                Assert.Equal(expectResult.Value.UnixifyLineBreaks(), File.ReadAllText(targetFile).UnixifyLineBreaks());
+            }
         }
 
         [Theory]
@@ -425,6 +421,105 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             Assert.Equal(
                 "Failed to create template: the template name is not specified. Template configuration does not configure a default name that can be used when name is not specified. Specify the name for the template when instantiating or configure a default name in the template configuration.",
                 result.ErrorMessage);
+        }
+
+        private Dictionary<string, string> ExpectedOutputWithConditions()
+        {
+            var expects = new Dictionary<string, string>
+            {
+                {
+".dockerignore",
+@"# comment bar
+bar
+baz
+"
+                },
+                {
+".editorconfig",
+@"# comment bar
+bar
+baz
+"
+                },
+                {
+".gitattributes",
+@"# comment bar
+bar
+baz
+"
+                },
+                {
+".gitignore",
+@"# comment bar
+bar
+baz
+"
+                },
+                {
+"Dockerfile",
+@"# comment bar
+bar
+baz
+"
+                },
+                {
+"nuget.config",
+@"<!-- comment bar -->
+bar
+baz
+"
+                },
+                {
+"test.axaml",
+@"<!-- comment A is false -->
+<Application xmlns=""https://github.com/something""
+             xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
+             x:Class=""App""
+             RequestedThemeVariant=""Default"">
+
+    <Application.Styles>
+        <!-- comment B is true -->
+        <FluentTheme Mode=""Light"" />
+    </Application.Styles>
+</Application>"
+                },
+                {
+"test.cake",
+@"// comment bar
+bar
+baz
+"
+                },
+                {
+"test.md",
+@"<!-- comment bar -->
+bar
+baz
+"
+                },
+                {
+"test.ps1",
+@"# comment B true
+B true
+common text
+"
+                },
+                {
+"test.sln",
+@"# comment bar
+bar
+baz
+"
+                },
+                {
+"test.yaml",
+@"# comment bar
+bar
+baz
+"
+                }
+            };
+            return expects;
         }
     }
 }
