@@ -5,14 +5,11 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Security.Policy;
-using System.Xml.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Formatting;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Editing;
-using Microsoft.CodeAnalysis.FindSymbols;
 using Microsoft.CodeAnalysis.Formatting;
 using Microsoft.CodeAnalysis.Options;
 using Microsoft.CodeAnalysis.Simplification;
@@ -27,7 +24,7 @@ namespace Microsoft.DotNet.GenAPI
     /// </summary>
     public class CSharpFileBuilder : IAssemblySymbolWriter, IDisposable
     {
-        ILog _logger;
+        private readonly ILog _logger;
         private readonly TextWriter _textWriter;
         private readonly ISymbolFilter _symbolFilter;
         private readonly string? _exceptionMessage;
@@ -133,7 +130,9 @@ namespace Microsoft.DotNet.GenAPI
         private static string GetNonInterfaceName(string name)
         {
             int idx = name.LastIndexOf('.');
-            return (idx > 0) ? name.Substring(idx + 1) : name;
+            return (idx > 0) ?
+                name.Remove(0, idx) :
+                name;
         }
 
         // Compare the equality of two method signatures for the purpose of emitting a "new"
@@ -141,7 +140,7 @@ namespace Microsoft.DotNet.GenAPI
         // but rather a heuristic to check that one method may hide another.
         private static bool SignatureEquals(IMethodSymbol? method, IMethodSymbol? baseMethod)
         {
-            if (method == null || baseMethod == null)
+            if (method is null || baseMethod is null)
             {
                 return false;
             }
@@ -192,7 +191,7 @@ namespace Microsoft.DotNet.GenAPI
         // - A constant, field, property, event, or type introduced in a class or struct hides all base class members with the same name.
         // - A method introduced in a class or struct hides all non-method base class members with the same name, and all base class methods with the same signature(§7.6).
         // - An indexer introduced in a class or struct hides all base class indexers with the same signature(§7.6) .
-        private static bool HidesBaseMember(ISymbol member, ISymbolFilter symbolFilter)
+        private bool HidesBaseMember(ISymbol member)
         {
             if (member.IsOverride)
             {
@@ -207,24 +206,25 @@ namespace Microsoft.DotNet.GenAPI
             if (member is IMethodSymbol method)
             {
                 // If they're methods, compare their names and signatures.
-                return baseType.GetMembers(member.Name).Where(baseMember => baseMember.Kind != SymbolKind.Method)
-                               .Any(symbolFilter.Include)
-                    || baseType.GetMembers(member.Name)
-                               .Where(baseMember => baseMember is IMethodSymbol baseMethod && SignatureEquals(method, baseMethod))
-                               .Any(symbolFilter.Include);
+                return baseType.GetMembers(member.Name)
+                    .Any(baseMember => _symbolFilter.Include(baseMember) &&
+                         (baseMember.Kind != SymbolKind.Method ||
+                          SignatureEquals(method, (IMethodSymbol)baseMember)));
             }
             else if (member is IPropertySymbol prop && prop.IsIndexer)
             {
                 // If they're indexers, compare their signatures.
                 return baseType.GetMembers(member.Name)
-                               .Where(baseMember => baseMember is IPropertySymbol baseProperty
-                                                    && (SignatureEquals(prop.GetMethod, baseProperty.GetMethod) || SignatureEquals(prop.SetMethod, baseProperty.SetMethod)))
-                               .Any(symbolFilter.Include);
+                    .Any(baseMember => baseMember is IPropertySymbol baseProperty &&
+                         _symbolFilter.Include(baseMember) &&
+                         (SignatureEquals(prop.GetMethod, baseProperty.GetMethod) ||
+                          SignatureEquals(prop.SetMethod, baseProperty.SetMethod)));
             }
             else
             {
                 // For all other kinds of members, compare their names.
-                return baseType.GetMembers(member.Name).Any(symbolFilter.Include);
+                return baseType.GetMembers(member.Name)
+                    .Any(_symbolFilter.Include);
             }
         }
 
@@ -266,10 +266,10 @@ namespace Microsoft.DotNet.GenAPI
                     memberDeclaration = Visit(memberDeclaration, nestedTypeSymbol);
                 }
 
-                if (HidesBaseMember(member, _symbolFilter))
+                if (HidesBaseMember(member))
                 {
                     DeclarationModifiers mods = _syntaxGenerator.GetModifiers(memberDeclaration);
-                    memberDeclaration = _syntaxGenerator.WithModifiers(memberDeclaration, mods.WithIsNew(true));
+                    memberDeclaration = _syntaxGenerator.WithModifiers(memberDeclaration, mods.WithIsNew(isNew: true));
                 }
 
                 try
@@ -280,7 +280,7 @@ namespace Microsoft.DotNet.GenAPI
                 {
                     // re-throw the InvalidOperationException with the symbol that caused it.
                     throw new InvalidOperationException($"Adding member {member.ToDisplayString()} to the " +
-                        $"named type {namedTypeNode.ToString()} failed with an exception {e.Message}");
+                        $"named type {namedTypeNode} failed with an exception {e.Message}");
                 }
             }
 
@@ -289,7 +289,7 @@ namespace Microsoft.DotNet.GenAPI
 
         private SyntaxNode GenerateAssemblyAttributes(IAssemblySymbol assembly, SyntaxNode compilationUnit)
         {
-            foreach (var attribute in assembly.GetAttributes()
+            foreach (AttributeData? attribute in assembly.GetAttributes()
                 .Where(a => a.AttributeClass != null && _symbolFilter.Include(a.AttributeClass)))
             {
                 compilationUnit = _syntaxGenerator.AddAttributes(compilationUnit, _syntaxGenerator.Attribute(attribute)
