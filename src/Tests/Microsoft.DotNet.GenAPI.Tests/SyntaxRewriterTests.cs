@@ -472,6 +472,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                 {
                     public class Foo
                     {
+                        public Foo(int a) { }
                         public Foo(int a, out int b) { b = 1; }
                     }
                 }
@@ -481,6 +482,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                 {
                     public class Foo
                     {
+                        public Foo(int a) { }
                         public Foo(int a, out int b) { throw new PlatformNotSupportedException("Not implemented"); }
                     }
                 }
