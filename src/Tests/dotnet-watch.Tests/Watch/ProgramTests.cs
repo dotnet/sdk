@@ -42,12 +42,13 @@ namespace Microsoft.DotNet.Watcher.Tests
         [Theory]
         [InlineData(new[] { "--no-hot-reload", "run" }, "")]
         [InlineData(new[] { "--no-hot-reload", "run", "args" }, "args")]
-        [InlineData(new[] { "--no-hot-reload", "--", "run", "args" }, "args")]
+        [InlineData(new[] { "--no-hot-reload", "--", "run", "args" }, "run,args")]
         [InlineData(new[] { "--no-hot-reload" }, "")]
         [InlineData(new string[] {}, "")]
         [InlineData(new[] { "run" }, "")]
         [InlineData(new[] { "run", "args" }, "args")]
-        [InlineData(new[] { "--", "run", "args" }, "args")]
+        [InlineData(new[] { "--", "run", "args" }, "run,args")]
+        [InlineData(new[] { "abc" }, "abc")]
         public async Task Arguments(string[] arguments, string expectedApplicationArgs)
         {
             var testAsset = TestAssets.CopyTestAsset("WatchHotReloadApp", identifier: string.Join(",", arguments))
@@ -98,6 +99,50 @@ namespace Microsoft.DotNet.Watcher.Tests
 
             // not expected to find verbose output of dotnet watch
             Assert.DoesNotContain(App.Process.Output, l => l.Contains("Running dotnet with the following arguments"));
+        }
+
+        [Theory]
+        [InlineData("P1", "argP1")]
+        [InlineData("P and Q and \"R\"", "argPQR")]
+        public async Task ArgumentsFromLaunchSettings_Watch(string profileName, string expectedArgs)
+        {
+            var testAsset = TestAssets.CopyTestAsset("WatchAppWithLaunchSettings")
+                .WithSource()
+                .Path;
+
+            App.Start(testAsset, arguments: new[]
+            {
+                "--verbose",
+                "--no-hot-reload",
+                "-lp",
+                profileName
+            });
+
+            Assert.Equal(expectedArgs, await App.AssertOutputLineStartsWith("Arguments: "));
+
+            Assert.Contains(App.Process.Output, l => l.Contains($"Found named launch profile '{profileName}'."));
+            Assert.Contains(App.Process.Output, l => l.Contains("Hot Reload disabled by command line switch."));
+        }
+
+        [Theory]
+        [InlineData("P1", "argP1")]
+        [InlineData("P and Q and \"R\"", "argPQR")]
+        public async Task ArgumentsFromLaunchSettings_HotReload(string profileName, string expectedArgs)
+        {
+            var testAsset = TestAssets.CopyTestAsset("WatchAppWithLaunchSettings")
+                .WithSource()
+                .Path;
+
+            App.Start(testAsset, arguments: new[]
+            {
+                "--verbose",
+                "-lp",
+                profileName
+            });
+
+            Assert.Equal(expectedArgs, await App.AssertOutputLineStartsWith("Arguments: "));
+
+            Assert.Contains(App.Process.Output, l => l.Contains($"Found named launch profile '{profileName}'."));
         }
     }
 }
