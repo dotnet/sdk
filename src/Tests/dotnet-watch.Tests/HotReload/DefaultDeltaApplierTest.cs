@@ -30,7 +30,7 @@ namespace Microsoft.DotNet.Watcher.Tools
             };
 
             // Act
-            await applier.InitializeAsync(context, default);
+            await applier.Initialize(context, default);
 
             // Assert
             Assert.Equal("debug", process.EnvironmentVariables["DOTNET_MODIFIABLE_ASSEMBLIES"]);
