@@ -44,7 +44,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             var globalSettingsFile = Path.Combine(homeDirectory, "packages.json");
             File.WriteAllText(globalSettingsFile, string.Empty);
 
-            CommandResult commandResult = new DotnetNewCommand(_log, "uninstall", "TemplateWithRequiredParameters")
+            CommandResult commandResult = new DotnetNewCommand(_log, "update")
                 .WithCustomHive(homeDirectory)
                 .WithoutBuiltInTemplates()
                 .Execute();
