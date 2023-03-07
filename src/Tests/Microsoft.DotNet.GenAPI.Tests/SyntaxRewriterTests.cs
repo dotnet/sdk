@@ -462,6 +462,30 @@ namespace Microsoft.DotNet.GenAPI.Tests
                 }
                 """);
         }
+
+        [Fact]
+        public void TestConstructorWithReferenceParameters()
+        {
+            CompareSyntaxTree(new BodyBlockCSharpSyntaxRewriter("Not implemented"),
+                original: """
+                namespace A
+                {
+                    public class Foo
+                    {
+                        public Foo(int a, out int b) { b = 1; }
+                    }
+                }
+                """,
+                expected: """
+                namespace A
+                {
+                    public class Foo
+                    {
+                        public Foo(int a, out int b) { throw new PlatformNotSupportedException("Not implemented"); }
+                    }
+                }
+                """);
+        }
     }
 
     public class TypeForwardAttributeCSharpSyntaxRewriterTests : SyntaxRewriterTests
