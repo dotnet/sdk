@@ -57,7 +57,8 @@ namespace Microsoft.DotNet.GenAPI
 
             IEnumerable<AttributeListSyntax?> asNodes = syntaxNodes.Select(sn =>
             {
-                if (sn is AttributeSyntax atSyntax) {
+                if (sn is AttributeSyntax atSyntax)
+                {
                     SeparatedSyntaxList<AttributeSyntax> singletonList = SyntaxFactory.SingletonSeparatedList<AttributeSyntax>(atSyntax);
                     AttributeListSyntax alSyntax = SyntaxFactory.AttributeList(singletonList);
                     return alSyntax;
@@ -108,8 +109,10 @@ namespace Microsoft.DotNet.GenAPI
             if (excludedFields.Any())
             {
                 // Collect generic excluded fields
-                IEnumerable<IFieldSymbol> genericTypedFields = excludedFields.Where(f => {
-                    if (f.Type is INamedTypeSymbol ty) {
+                IEnumerable<IFieldSymbol> genericTypedFields = excludedFields.Where(f =>
+                {
+                    if (f.Type is INamedTypeSymbol ty)
+                    {
                         return !ty.IsBoundGenericType() && symbolFilter.Include(ty);
                     }
                     return f.Type is ITypeParameterSymbol;

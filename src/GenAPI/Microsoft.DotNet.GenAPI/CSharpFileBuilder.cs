@@ -127,14 +127,6 @@ namespace Microsoft.DotNet.GenAPI
             return namespaceNode;
         }
 
-        private static string GetNonInterfaceName(string name)
-        {
-            int idx = name.LastIndexOf('.');
-            return (idx > 0) ?
-                name.Remove(0, idx) :
-                name;
-        }
-
         // Compare the equality of two method signatures for the purpose of emitting a "new"
         // keyword on a method's return type. This is *not* meant to be complete implementation,
         // but rather a heuristic to check that one method may hide another.
@@ -150,7 +142,7 @@ namespace Microsoft.DotNet.GenAPI
                 return true;
             }
 
-            if (GetNonInterfaceName(method.Name) != GetNonInterfaceName(baseMethod.Name))
+            if (method.Name != baseMethod.Name)
             {
                 return false;
             }
@@ -169,19 +161,11 @@ namespace Microsoft.DotNet.GenAPI
                 }
             }
 
+            // TODO: GenAPI does not currently preserve __arglist as a parameter.
+            // Add test case for this branch when that is fixed.
             if (method.IsVararg != baseMethod.IsVararg)
             {
                 return false;
-            }
-
-            // compare type constraints
-            // TODO: should we be checking the type parameters' respective constraints?
-            for (int i = 0; i < method.TypeParameters.Length; i++)
-            {
-                if (!method.TypeParameters[i].Equals(baseMethod.TypeParameters[i], SymbolEqualityComparer.Default))
-                {
-                    return false;
-                }
             }
 
             return true;

@@ -1770,13 +1770,13 @@ namespace Microsoft.DotNet.GenAPI.Tests
         }
 
         [Fact]
-        public void TestMethodNewKeywordReturnType()
+        public void NewKeywordWhenBaseMethodIsHidden()
         {
             RunTest(original: """
                     namespace A
                     {
                         using System;
-                        public partial class C {
+                        public partial class C : IFun {
                             public int Foo;
                             public const int Bar = 29;
                             public int Baz { get; }
@@ -1786,6 +1786,9 @@ namespace Microsoft.DotNet.GenAPI.Tests
                             public void Do() => MyEvent(default(object), default(EventArgs));
                             public void Do(float f) {}
                             public static void DoStatic() {}
+                            public void Fun() {}
+                            public void Gen<T>() {}
+                            public void Zoo() {}
                             public class MyNestedClass {}
                             public struct MyNestedStruct {}
                             public class MyNestedGenericClass<T> {}
@@ -1804,6 +1807,8 @@ namespace Microsoft.DotNet.GenAPI.Tests
                             public new void Do() => MyEvent(default(object), default(EventArgs));
                             public void Do(int i) {}
                             public new static void DoStatic() {}
+                            public new void Fun() {}
+                            public new void Gen<T>() where T : IComparable {}
                             public new class MyNestedClass {}
                             public new struct MyNestedStruct {}
                             public new class MyNestedGenericClass<T> {}
@@ -1820,14 +1825,18 @@ namespace Microsoft.DotNet.GenAPI.Tests
                             public new int Foo { get; set; }
                             public new event EventHandler MyNestedClass;
                             public new void Baz() => MyNestedClass(default(object), default(EventArgs));
-                            public new void MyNestedStruct(double d) {} 
+                            public new void MyNestedStruct(double d) {}
+                            public new void Zoo() {}
+                        }
+                        public interface IFun {
+                            void Fun();
                         }
                     }
                     """,
                     expected: """
                     namespace A
                     {
-                        public partial class C
+                        public partial class C : IFun
                         {
                             public const int Bar = 29;
                             public int Foo;
@@ -1837,6 +1846,9 @@ namespace Microsoft.DotNet.GenAPI.Tests
                             public void Do() {}
                             public void Do(float f) {}
                             public static void DoStatic() {}
+                            public void Fun() {}
+                            public void Gen<T>() {}
+                            public void Zoo() {}
                             public partial class MyNestedClass {}
                             public partial class MyNestedGenericClass<T> {}
                             public partial struct MyNestedGenericStruct<T> {}
@@ -1852,6 +1864,8 @@ namespace Microsoft.DotNet.GenAPI.Tests
                             public new void Do() {}
                             public void Do(int i) {}
                             public new static void DoStatic() {}
+                            public new void Fun() {}
+                            public new void Gen<T>() where T : System.IComparable {}
                             public new partial class MyNestedClass {}
                             public new partial class MyNestedGenericClass<T> {}
                             public new partial struct MyNestedGenericStruct<T> {}
@@ -1865,6 +1879,10 @@ namespace Microsoft.DotNet.GenAPI.Tests
                             public new event System.EventHandler MyNestedClass { add {} remove {} }
                             public new void Baz() {}
                             public new void MyNestedStruct(double d) {}
+                            public new void Zoo() {}
+                        }
+                        public partial interface IFun {
+                            void Fun();
                         }
                     }
                     """);
