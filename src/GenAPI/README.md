@@ -1,6 +1,8 @@
 # Microsoft.DotNet.GenAPI
 
-`Microsoft.DotNet.GenAPI` (with its associated drivers `Microsoft.DotNet.GenAPI.Tool`/`Microsoft.DotNet.GenAPI.Task`) generates C# source from a reference assembly. The generated source contains stub declarations for types and members, where declarations preserve the API contract of the original source.
+`Microsoft.DotNet.GenAPI` (with its command line driver `Microsoft.DotNet.GenAPI.Tool` and MSBuild task `Microsoft.DotNet.GenAPI.Task`) generates C# source from an assembly. The generated source contains stub declarations for types and members, where declarations preserve the API contract of the original source.
+
+`Microsoft.DotNet.GenAPI` loads an assembly and any explicitly defined references, and visits all of its symbols recursively. Based symbol accessibility and how it affects the API contract, each visitor will use a `SyntaxGenerator` to reconstruct a `SyntaxNode` for that symbol. Following this phase, various `CSharpSyntaxRewriter` implementations will fix up that syntax tree. For example, they will add dummy method bodies, flatten simple definitions into a single line, removes `object` from base types, adds the `partial` keyword, and remove generic type arguments.
 
 ```
 Usage:
