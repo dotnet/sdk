@@ -71,7 +71,8 @@ namespace Microsoft.DotNet.Watcher.Tests
             {
                 "run",
                 "-f",         // dotnet watch does not recognize this arg -> dotnet run arg
-                "net6.0",     
+                "net6.0",
+                "--property:AssemblyVersion=1.2.3.4",
                 "--",         // the following args are not dotnet watch args
                 "-v",         // dotnet run arg
                 "minimal",
@@ -80,6 +81,7 @@ namespace Microsoft.DotNet.Watcher.Tests
             });
 
             Assert.Equal("-v", await App.AssertOutputLineStartsWith("Arguments = "));
+            Assert.Equal("WatchHotReloadAppMultiTfm, Version=1.2.3.4, Culture=neutral, PublicKeyToken=null", await App.AssertOutputLineStartsWith("AssemblyName = "));
             Assert.Equal(".NETCoreApp,Version=v6.0", await App.AssertOutputLineStartsWith("TFM = "));
 
             // expected output from build (-v minimal):
