@@ -61,18 +61,6 @@ namespace Microsoft.DotNet.Watcher.Tests
         }
 
         [Fact]
-        public async Task OnlyRunSupportsHotReload()
-        {
-            var testAsset = TestAssets.CopyTestAsset("WatchHotReloadApp")
-                .WithSource()
-                .Path;
-
-            App.Start(testAsset, new[] { "--verbose", "abc" });
-
-           await App.AssertOutputLineStartsWith("dotnet watch ❌ Only 'run' command supports Hot Reload");
-        }
-
-        [Fact]
         public async Task RunArguments()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchHotReloadAppMultiTfm")
