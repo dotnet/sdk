@@ -3,10 +3,13 @@
 
 #nullable enable
 
+using System;
 using System.Collections.Generic;
 using System.CommandLine;
 using System.CommandLine.Invocation;
+using System.Linq;
 
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.DotNet.Watcher.Tools;
 using Microsoft.Extensions.Tools.Internal;
 
@@ -57,9 +60,14 @@ Examples:
 
     private const string NoLaunchProfileOptionName = "--no-launch-profile";
     private const string LaunchProfileOptionName = "--launch-profile";
+    private const string TargetFrameworkOptionName = "--framework";
+    private const string BuildPropertyOptionName = "--property";
 
     public string? Project { get; init; }
     public string? LaunchProfileName { get; init; }
+    public string? TargetFramework { get; init; }
+    public IReadOnlyList<(string name, string value)>? BuildProperties { get; init; }
+    public bool BinaryLogger { get; init; }
     public bool NoLaunchProfile { get; init; }
     public bool Quiet { get; init; }
     public bool Verbose { get; init; }
@@ -94,6 +102,20 @@ Examples:
         var launchProfileRunOption = new Option<string>(new[] { "-lp", LaunchProfileOptionName }) { IsHidden = true };
         var noLaunchProfileRunOption = new Option<bool>(new[] { NoLaunchProfileOptionName }) { IsHidden = true };
 
+        var targetFrameworkOption = new Option<string>(new[] { "-f", "--framework" }, "The target framework to run for. The target framework must also be specified in the project file.");
+        var propertyOption = new Option<string[]>(new[] { "--property" }, "Properties to be passed to MSBuild.");
+
+        propertyOption.AddValidator(v =>
+        {
+            var invalidProperty = v.GetValue(propertyOption)?.FirstOrDefault(
+                property => !(property.IndexOf('=') is > 0 and var index && index < property.Length - 1 && property[..index].Trim().Length > 0));
+
+            if (invalidProperty != null)
+            {
+                v.ErrorMessage = $"Invalid property format: '{invalidProperty}'. Expected 'name=value'.";
+            }
+        });
+
         var noHotReloadOption = new Option<bool>("--no-hot-reload", "Suppress hot reload for supported apps.");
         var nonInteractiveOption = new Option<bool>(
             "--non-interactive",
@@ -103,35 +125,45 @@ Examples:
         var remainingWatchArgs = new Argument<string[]>("forwardedArgs", "Arguments to pass to the child dotnet process.");
         var remainingRunArgs = new Argument<string[]>(name: null);
 
-        var runCommand = new Command("run")
-        {
-            quietOption,
-            verboseOption,
-            noHotReloadOption,
-            nonInteractiveOption,
-            longProjectOption,
-            shortProjectOption,
-            launchProfileRunOption,
-            noLaunchProfileRunOption,
-            listOption,
-            remainingRunArgs,
-        };
+        var runCommand = new Command("run") { IsHidden = true };
+        var rootCommand = new RootCommand(Description);
+        addOptions(runCommand);
+        addOptions(rootCommand);
 
-        runCommand.IsHidden = true;
-
-        var rootCommand = new RootCommand(Description)
+        void addOptions(Command command)
         {
-            quietOption,
-            verboseOption,
-            noHotReloadOption,
-            nonInteractiveOption,
-            longProjectOption,
-            shortProjectOption,
-            launchProfileWatchOption,
-            noLaunchProfileWatchOption,
-            listOption,
-            runCommand,
-            remainingWatchArgs
+            command.Add(quietOption);
+            command.Add(verboseOption);
+            command.Add(noHotReloadOption);
+            command.Add(nonInteractiveOption);
+            command.Add(longProjectOption);
+            command.Add(shortProjectOption);
+
+            if (command == runCommand)
+            {
+                command.Add(launchProfileRunOption);
+                command.Add(noLaunchProfileRunOption);
+            }
+            else
+            {
+                command.Add(launchProfileWatchOption);
+                command.Add(noLaunchProfileWatchOption);
+            }
+
+            command.Add(targetFrameworkOption);
+            command.Add(propertyOption);
+
+            command.Add(listOption);
+
+            if (command == runCommand)
+            {
+                command.Add(remainingRunArgs);
+            }
+            else
+            {
+                command.Add(runCommand);
+                command.Add(remainingWatchArgs);
+            }
         };
 
         CommandLineOptions? options = null;
@@ -172,6 +204,9 @@ Examples:
                 Project = projectValue,
                 LaunchProfileName = parseResults.GetValue(launchProfileWatchOption),
                 NoLaunchProfile = parseResults.GetValue(noLaunchProfileWatchOption),
+                TargetFramework = parseResults.GetValue(targetFrameworkOption),
+                BuildProperties = parseResults.GetValue(propertyOption)?
+                    .Select(p => (p[..p.IndexOf('=')].Trim(), p[(p.IndexOf('=') + 1)..])).ToArray(),
                 RemainingArguments = parseResults.GetValue(remainingWatchArgs),
                 RunOptions = runOptions,
             };
@@ -188,6 +223,23 @@ Examples:
         {
             // Arguments are passed to dotnet and the first argument is interpreted as a command.
             argsBuilder.Add("run");
+
+            // add options that are applicable to dotnet run:
+
+            if (TargetFramework != null)
+            {
+                argsBuilder.Add(TargetFrameworkOptionName);
+                argsBuilder.Add(TargetFramework);
+            }
+
+            if (BuildProperties != null)
+            {
+                foreach (var (name, value) in BuildProperties)
+                {
+                    argsBuilder.Add(BuildPropertyOptionName);
+                    argsBuilder.Add($"{name}={value}");
+                }
+            }
         }
 
         argsBuilder.AddRange(RemainingArguments);

@@ -5,9 +5,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.CommandLine;
-using System.CommandLine.Invocation;
-using System.CommandLine.Parsing;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -20,7 +17,6 @@ using Microsoft.DotNet.Watcher.Internal;
 using Microsoft.DotNet.Watcher.Tools;
 using Microsoft.Extensions.Tools.Internal;
 using IConsole = Microsoft.Extensions.Tools.Internal.IConsole;
-using Resources = Microsoft.DotNet.Watcher.Tools.Resources;
 
 namespace Microsoft.DotNet.Watcher
 {
@@ -112,7 +108,7 @@ namespace Microsoft.DotNet.Watcher
 
                 if (options.List)
                 {
-                    return await ListFilesAsync(_reporter, options.Project, _cts.Token);
+                    return await ListFilesAsync(options, _reporter, _cts.Token);
                 }
                 else
                 {
@@ -164,12 +160,15 @@ namespace Microsoft.DotNet.Watcher
             watchOptions.NonInteractive = options.NonInteractive;
 
             var fileSetFactory = new MsBuildFileSetFactory(
-                _reporter,
                 watchOptions,
+                _reporter,
                 _muxerPath,
                 projectFile,
+                options.TargetFramework,
+                options.BuildProperties,
+                outputSink: null,
                 waitOnError: true,
-                trace: false);
+                trace: true);
 
             if (FileWatcherFactory.IsPollingEnabled)
             {
@@ -179,7 +178,7 @@ namespace Microsoft.DotNet.Watcher
             var projectDirectory = Path.GetDirectoryName(projectFile);
             Debug.Assert(projectDirectory != null);
 
-            var projectGraph = TryReadProject(projectFile);
+            var projectGraph = TryReadProject(projectFile, options);
 
             bool enableHotReload;
             if (options.NoHotReload)
@@ -221,6 +220,8 @@ namespace Microsoft.DotNet.Watcher
                 Reporter = _reporter,
                 SuppressMSBuildIncrementalism = watchOptions.SuppressMSBuildIncrementalism,
                 LaunchSettingsProfile = launchProfile,
+                TargetFramework = options.TargetFramework,
+                BuildProperties = options.BuildProperties,
             };
 
             if (enableHotReload)
@@ -237,11 +238,25 @@ namespace Microsoft.DotNet.Watcher
             return 0;
         }
 
-        private ProjectGraph? TryReadProject(string project)
+        private ProjectGraph? TryReadProject(string project, CommandLineOptions options)
         {
+            var globalOptions = new Dictionary<string, string>();
+            if (options.TargetFramework != null)
+            {
+                globalOptions.Add("TargetFramework", options.TargetFramework);
+            }
+
+            if (options.BuildProperties != null)
+            {
+                foreach (var (name, value) in options.BuildProperties)
+                {
+                    globalOptions[name] = value;
+                }
+            }
+
             try
             {
-                return new ProjectGraph(project);
+                return new ProjectGraph(project, globalOptions);
             }
             catch (Exception ex)
             {
@@ -272,15 +287,15 @@ namespace Microsoft.DotNet.Watcher
         }
 
         private async Task<int> ListFilesAsync(
+            CommandLineOptions options,
             IReporter reporter,
-            string? project,
             CancellationToken cancellationToken)
         {
             // TODO multiple projects should be easy enough to add here
             string projectFile;
             try
             {
-                projectFile = MsBuildProjectFinder.FindMsBuildProject(_workingDirectory, project);
+                projectFile = MsBuildProjectFinder.FindMsBuildProject(_workingDirectory, options.Project);
             }
             catch (FileNotFoundException ex)
             {
@@ -289,10 +304,13 @@ namespace Microsoft.DotNet.Watcher
             }
 
             var fileSetFactory = new MsBuildFileSetFactory(
-                reporter,
                 DotNetWatchOptions.Default,
+                reporter,
                 _muxerPath,
                 projectFile,
+                options.TargetFramework,
+                options.BuildProperties,
+                outputSink: null,
                 waitOnError: false,
                 trace: false);
 
