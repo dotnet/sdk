@@ -752,5 +752,35 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             return Verify(commandResult.FormatOutputStreams())
                 .UseParameters(setName);
         }
+
+        [Theory]
+        [InlineData("webapirepro;--use-minimal-apis;--auth;None", "minimal_api_noauth")]
+        [InlineData("webapirepro;--use-minimal-apis;--auth;IndividualB2C", "minimal_api_individualb2c")]
+        public Task Investigate(string args, string name)
+        {
+            string homeDir = CreateTemporaryFolder();
+            string workingDirectory = CreateTemporaryFolder();
+            InstallTestTemplate("WebApi-CSharp_Repro", _log, homeDir);
+
+            var commandArgs = $"{args};-n;{name}".Split(';');
+            new DotnetNewCommand(_log, commandArgs)
+                    .WithCustomHive(homeDir)
+                    .WithWorkingDirectory(workingDirectory)
+                    .Execute()
+                    .Should()
+                    .ExitWith(0)
+                    .And.NotHaveStdErr();
+
+            new DotnetBuildCommand(_log, name)
+                .WithWorkingDirectory(workingDirectory)
+                .Execute()
+                .Should()
+                .Pass()
+                .And.NotHaveStdErr();
+
+            var programPath = Path.Combine(workingDirectory, name, "Program.cs");
+            var fileContent = File.ReadAllText(programPath);
+            return Verify(fileContent).UseParameters(name);
+        }
     }
 }
