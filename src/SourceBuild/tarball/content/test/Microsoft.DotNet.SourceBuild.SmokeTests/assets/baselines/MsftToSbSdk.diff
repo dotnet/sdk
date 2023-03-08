@@ -456,7 +456,7 @@ index ------------
 +./sdk/x.y.z/FSharp/runtimes/win/lib/netx.y/System.Diagnostics.EventLog.Messages.dll
  ./sdk/x.y.z/FSharp/runtimes/win/lib/netx.y/System.Drawing.Common.dll
  ./sdk/x.y.z/FSharp/runtimes/win/lib/netx.y/System.Security.Cryptography.Pkcs.dll
- ./sdk/x.y.z/FSharp/runtimes/win/lib/netx.y/System.Security.Cryptography.ProtectedData.dll
+-./sdk/x.y.z/FSharp/runtimes/win/lib/netx.y/System.Security.Cryptography.ProtectedData.dll
  ./sdk/x.y.z/FSharp/runtimes/win/lib/netx.y/System.Windows.Extensions.dll
  ./sdk/x.y.z/FSharp/System.CodeDom.dll
  ./sdk/x.y.z/FSharp/System.Configuration.ConfigurationManager.dll
@@ -734,11 +734,6 @@ index ------------
  ./sdk/x.y.z/Roslyn/bincore/ru/Microsoft.CodeAnalysis.CSharp.resources.dll
  ./sdk/x.y.z/Roslyn/bincore/ru/Microsoft.CodeAnalysis.resources.dll
  ./sdk/x.y.z/Roslyn/bincore/ru/Microsoft.CodeAnalysis.VisualBasic.resources.dll
-+./sdk/x.y.z/Roslyn/bincore/runtimes/
-+./sdk/x.y.z/Roslyn/bincore/runtimes/win/
-+./sdk/x.y.z/Roslyn/bincore/runtimes/win/lib/
-+./sdk/x.y.z/Roslyn/bincore/runtimes/win/lib/netx.y/
-+./sdk/x.y.z/Roslyn/bincore/runtimes/win/lib/netx.y/System.Text.Encoding.CodePages.dll
 +./sdk/x.y.z/Roslyn/bincore/System.Collections.Immutable.dll
 +./sdk/x.y.z/Roslyn/bincore/System.Reflection.Metadata.dll
 +./sdk/x.y.z/Roslyn/bincore/System.Text.Encoding.CodePages.dll
