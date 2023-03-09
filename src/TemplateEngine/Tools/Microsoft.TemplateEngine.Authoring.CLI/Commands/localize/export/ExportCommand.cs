@@ -17,23 +17,20 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.Commands
             Description = LocalizableStrings.command_export_help_templatePath_description,
         };
 
-        private readonly Option<IEnumerable<string>> _languageOption = new("-l")
+        private readonly Option<IEnumerable<string>> _languageOption = new("language", new[] { "--language", "-l" })
         {
-            Name = "--language",
             Description = LocalizableStrings.command_export_help_language_description,
             Arity = ArgumentArity.OneOrMore,
             AllowMultipleArgumentsPerToken = true,
         };
 
-        private readonly Option<bool> _recursiveOption = new("-r")
+        private readonly Option<bool> _recursiveOption = new("recursive", new[] { "--recursive", "-r" })
         {
-            Name = "--recursive",
             Description = LocalizableStrings.command_export_help_recursive_description,
         };
 
-        private readonly Option<bool> _dryRunOption = new("-d")
+        private readonly Option<bool> _dryRunOption = new("dry-run", new[] { "--dry-run", "-d" })
         {
-            Name = "--dry-run",
             Description = LocalizableStrings.command_export_help_dryrun_description,
         };
 

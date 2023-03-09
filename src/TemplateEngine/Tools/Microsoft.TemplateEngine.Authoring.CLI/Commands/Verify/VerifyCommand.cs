@@ -19,65 +19,65 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.Commands.Verify
             Arity = new ArgumentArity(1, 1)
         };
 
-        private readonly Option<string> _remainingArguments = new Option<string>("--template-args")
+        private readonly Option<string> _remainingArguments = new Option<string>("template-args", new[] { "--template-args" })
         {
             Description = "Template specific arguments - all joined into single enquoted string. Any needed quotations of actual arguments has to be escaped.",
             Arity = new ArgumentArity(0, 1)
         };
 
-        private readonly Option<string> _templatePathOption = new(new[] { "-p", "--template-path" })
+        private readonly Option<string> _templatePathOption = new("template-path", new[] { "-p", "--template-path" })
         {
             Description = LocalizableStrings.command_verify_help_templatePath_description,
         };
 
-        private readonly Option<string> _templateOutputPathOption = new(new[] { "-o", "--output" })
+        private readonly Option<string> _templateOutputPathOption = new("output", new[] { "-o", "--output" })
         {
             Description = LocalizableStrings.command_verify_help_outputPath_description,
         };
 
-        private readonly Option<string> _snapshotsDirectoryOption = new(new[] { "-d", "--snapshots-directory" })
+        private readonly Option<string> _snapshotsDirectoryOption = new("snapshots-directory", new[] { "-d", "--snapshots-directory" })
         {
             Description = LocalizableStrings.command_verify_help_snapshotsDirPath_description,
         };
 
-        private readonly Option<string> _scenarioNameOption = new(new[] { "--scenario-name" })
+        private readonly Option<string> _scenarioNameOption = new("scenario-name", new[] { "--scenario-name" })
         {
             Description = LocalizableStrings.command_verify_help_scenarioName_description,
         };
 
-        private readonly Option<bool> _disableDiffToolOption = new("--disable-diff-tool")
+        private readonly Option<bool> _disableDiffToolOption = new("disable-diff-tool", new[] { "--disable-diff-tool" })
         {
             Description = LocalizableStrings.command_verify_help_disableDiffTool_description,
         };
 
-        private readonly Option<bool> _disableDefaultExcludePatternsOption = new("--disable-default-exclude-patterns")
+        private readonly Option<bool> _disableDefaultExcludePatternsOption = new("disable-default-exclude-patterns", new[] { "--disable-default-exclude-patterns" })
         {
             Description = LocalizableStrings.command_verify_help_disableDefaultExcludes_description,
         };
 
-        private readonly Option<IEnumerable<string>> _excludePatternOption = new("--exclude-pattern")
+        private readonly Option<IEnumerable<string>> _excludePatternOption = new("exclude-pattern", new[] { "--exclude-pattern" })
         {
             Description = LocalizableStrings.command_verify_help_customExcludes_description,
             Arity = new ArgumentArity(0, 999)
         };
 
-        private readonly Option<IEnumerable<string>> _includePatternOption = new("--include-pattern")
+        private readonly Option<IEnumerable<string>> _includePatternOption = new("include-pattern", new[] { "--include-pattern" })
         {
             Description = LocalizableStrings.command_verify_help_customIncludes_description,
             Arity = new ArgumentArity(0, 999)
         };
 
-        private readonly Option<bool> _verifyCommandOutputOption = new("--verify-std")
+        private readonly Option<bool> _verifyCommandOutputOption = new("verify-std", new[] { "--verify-std" })
         {
             Description = LocalizableStrings.command_verify_help_verifyOutputs_description,
         };
 
-        private readonly Option<bool> _isCommandExpectedToFailOption = new("--fail-expected")
+        private readonly Option<bool> _isCommandExpectedToFailOption = new("fail-expected", new[] { "--fail-expected" })
         {
             Description = LocalizableStrings.command_verify_help_expectFailure_description,
         };
 
-        private readonly Option<IEnumerable<UniqueForOption>> _uniqueForOption = new("--unique-for")
+        private readonly Option<IEnumerable<UniqueForOption>> _uniqueForOption = new("unique-for", new[] { "--unique-for" })
         {
             Description = LocalizableStrings.command_verify_help_uniqueFor_description,
             Arity = new ArgumentArity(0, 999),
