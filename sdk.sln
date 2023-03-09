@@ -413,6 +413,25 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.DotNet.GenAPI.Tas
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.NET.Sdk.Web.Tests", "src\Tests\Microsoft.NET.Sdk.Web.Tests\Microsoft.NET.Sdk.Web.Tests.csproj", "{B8A61A5C-A9A4-45C5-97E3-CB368358682F}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WaskSdk", "WaskSdk", "{CDFC2484-82B7-4780-87BF-3F085AF6179A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sdk", "Sdk", "{2F4F6D3E-C7E5-422F-B3EC-BB9C4B1C40D9}"
+	ProjectSection(SolutionItems) = preProject
+		src\WasmSdk\Sdk\Sdk.props = src\WasmSdk\Sdk\Sdk.props
+		src\WasmSdk\Sdk\Sdk.targets = src\WasmSdk\Sdk\Sdk.targets
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Targets", "Targets", "{EB695B91-69A0-4DF9-AE8D-F0EB912694B6}"
+	ProjectSection(SolutionItems) = preProject
+		src\WasmSdk\Targets\Microsoft.NET.Sdk.WebAssembly.Current.props = src\WasmSdk\Targets\Microsoft.NET.Sdk.WebAssembly.Current.props
+		src\WasmSdk\Targets\Microsoft.NET.Sdk.WebAssembly.Current.targets = src\WasmSdk\Targets\Microsoft.NET.Sdk.WebAssembly.Current.targets
+		src\WasmSdk\Targets\Wasm.web.config = src\WasmSdk\Targets\Wasm.web.config
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tasks", "Tasks", "{88C202CF-C6EF-4CE3-BD24-6F3827252358}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.NET.Sdk.WebAssembly.Tasks", "src\WasmSdk\Tasks\Microsoft.NET.Sdk.WebAssembly.Tasks.csproj", "{5E28DD4E-0400-4F0B-85D7-B23289C9F06E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -799,6 +818,10 @@ Global
 		{B8A61A5C-A9A4-45C5-97E3-CB368358682F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B8A61A5C-A9A4-45C5-97E3-CB368358682F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B8A61A5C-A9A4-45C5-97E3-CB368358682F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5E28DD4E-0400-4F0B-85D7-B23289C9F06E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5E28DD4E-0400-4F0B-85D7-B23289C9F06E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5E28DD4E-0400-4F0B-85D7-B23289C9F06E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5E28DD4E-0400-4F0B-85D7-B23289C9F06E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -944,6 +967,11 @@ Global
 		{5F74AD67-A4AD-4660-A63C-844DAAF354C4} = {95D8B040-FD7F-4C86-8E47-341AF630EDA9}
 		{C419AE2D-D318-49EB-8ECA-6A5DC13FE4EA} = {95D8B040-FD7F-4C86-8E47-341AF630EDA9}
 		{B8A61A5C-A9A4-45C5-97E3-CB368358682F} = {580D1AE7-AA8F-4912-8B76-105594E00B3B}
+		{CDFC2484-82B7-4780-87BF-3F085AF6179A} = {22AB674F-ED91-4FBC-BFEE-8A1E82F9F05E}
+		{2F4F6D3E-C7E5-422F-B3EC-BB9C4B1C40D9} = {CDFC2484-82B7-4780-87BF-3F085AF6179A}
+		{EB695B91-69A0-4DF9-AE8D-F0EB912694B6} = {CDFC2484-82B7-4780-87BF-3F085AF6179A}
+		{88C202CF-C6EF-4CE3-BD24-6F3827252358} = {CDFC2484-82B7-4780-87BF-3F085AF6179A}
+		{5E28DD4E-0400-4F0B-85D7-B23289C9F06E} = {88C202CF-C6EF-4CE3-BD24-6F3827252358}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FB8F26CE-4DE6-433F-B32A-79183020BBD6}
