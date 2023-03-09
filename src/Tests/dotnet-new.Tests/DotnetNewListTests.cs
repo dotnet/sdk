@@ -542,11 +542,11 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         }
 
         [Theory]
-        [InlineData("author", "Author")]
-        [InlineData("type", "Type")]
-        [InlineData("tags", "Tags")]
-        [InlineData("language", "Language")]
-        public void TemplateWithSpecifiedColumnOutput(string columnName, string columnHeader)
+        [InlineData("author", "Author", "Microsoft")]
+        [InlineData("type", "Type", "")]
+        [InlineData("tags", "Tags", "Solution")]
+        [InlineData("language", "Language", "")]
+        public void TemplateWithSpecifiedColumnOutput(string columnName, string columnHeader, string columnValue)
         {
             string home = CreateTemporaryFolder(folderName: "Home");
             string workingDirectory = CreateTemporaryFolder();
@@ -565,8 +565,8 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .ExitWith(0)
                 .And.NotHaveStdErr()
                 .And.HaveStdOutContaining("These templates matched your input:")
-                .And.HaveStdOutMatching($"Template Name                                 Short Name                  {columnHeader}");
-            //.And.HaveStdOutMatching($"Solution File                                 sln,solution                {columnValue}");
+                .And.HaveStdOutMatching($"Template Name\\s+Short Name\\s+{columnHeader}")
+                .And.HaveStdOutMatching($"Solution File\\s+sln,solution\\s+{columnValue}");
         }
 
         [Theory]
