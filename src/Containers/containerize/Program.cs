@@ -3,8 +3,13 @@
 
 using System.CommandLine;
 using System.CommandLine.Parsing;
-using containerize;
 
-#pragma warning disable CA1852
+namespace containerize;
 
-return await new ContainerizeCommand().InvokeAsync(args).ConfigureAwait(false);
+internal class Program
+{
+    private static Task<int> Main(string[] args)
+    {
+        return new ContainerizeCommand().InvokeAsync(args);
+    }
+}

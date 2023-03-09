@@ -7,9 +7,6 @@ using System.Reflection;
 using System.Resources;
 using System.Runtime.CompilerServices;
 
-[assembly: NeutralResourcesLanguage("en")]
-[assembly: InternalsVisibleTo("Test.Microsoft.NET.Build.Containers")]
-
 namespace Microsoft.NET.Build.Containers.Resources
 {
     /// <summary>

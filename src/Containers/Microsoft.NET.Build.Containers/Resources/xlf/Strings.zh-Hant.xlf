@@ -1,0 +1,102 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
+  <file datatype="xml" source-language="en" target-language="zh-Hant" original="../Strings.resx">
+    <body>
+      <trans-unit id="AmazonRegistryFailed">
+        <source>CONTAINER1002: Request to Amazon Elastic Container Registry failed prematurely. This is often caused when the target repository does not exist in the registry.</source>
+        <target state="new">CONTAINER1002: Request to Amazon Elastic Container Registry failed prematurely. This is often caused when the target repository does not exist in the registry.</target>
+        <note>{StrBegin="CONTAINER1002: "}</note>
+      </trans-unit>
+      <trans-unit id="BlobUploadFailed">
+        <source>CONTAINER1001: Failed to upload blob to {0}; received {1} with detail {2}.</source>
+        <target state="new">CONTAINER1001: Failed to upload blob to {0}; received {1} with detail {2}.</target>
+        <note>{StrBegin="CONTAINER1001: "}</note>
+      </trans-unit>
+      <trans-unit id="CouldntDeserializeJsonToken">
+        <source>CONTAINER1007: Could not deserialize token from JSON.</source>
+        <target state="new">CONTAINER1007: Could not deserialize token from JSON.</target>
+        <note>{StrBegin="CONTAINER1007: "}</note>
+      </trans-unit>
+      <trans-unit id="DockerInfoFailed">
+        <source>CONTAINER3002: Failed to get docker info({0})\n{1}\n{2}</source>
+        <target state="new">CONTAINER3002: Failed to get docker info({0})\n{1}\n{2}</target>
+        <note>{StrBegin="CONTAINER3002: "}</note>
+      </trans-unit>
+      <trans-unit id="DockerProcessCreationFailed">
+        <source>CONTAINER3001: Failed creating docker process.</source>
+        <target state="new">CONTAINER3001: Failed creating docker process.</target>
+        <note>{StrBegin="CONTAINER3001: "}</note>
+      </trans-unit>
+      <trans-unit id="DontKnowHowToPullImages">
+        <source>CONTAINER1010: Don't know how to pull images from local daemons at the moment.</source>
+        <target state="new">CONTAINER1010: Don't know how to pull images from local daemons at the moment.</target>
+        <note>{StrBegin="CONTAINER1010: "}</note>
+      </trans-unit>
+      <trans-unit id="FailedRetrievingCredentials">
+        <source>CONTAINER1008: Failed retrieving credentials for "{0}": {1}</source>
+        <target state="new">CONTAINER1008: Failed retrieving credentials for "{0}": {1}</target>
+        <note>{StrBegin="CONTAINER1008: "}</note>
+      </trans-unit>
+      <trans-unit id="ImageLoadFailed">
+        <source>CONTAINER1009: Failed to load image to local Docker daemon. stdout: {0}</source>
+        <target state="new">CONTAINER1009: Failed to load image to local Docker daemon. stdout: {0}</target>
+        <note>{StrBegin="CONTAINER1009: "}</note>
+      </trans-unit>
+      <trans-unit id="InvalidImageName">
+        <source>CONTAINER2005: The first character of the image name must be a lowercase letter or a digit.</source>
+        <target state="new">CONTAINER2005: The first character of the image name must be a lowercase letter or a digit.</target>
+        <note>{StrBegin="CONTAINER2005: "}</note>
+      </trans-unit>
+      <trans-unit id="InvalidTokenResponse">
+        <source>CONTAINER1003: Token response had neither token nor access_token.</source>
+        <target state="new">CONTAINER1003: Token response had neither token nor access_token.</target>
+        <note>{StrBegin="CONTAINER1003: "}</note>
+      </trans-unit>
+      <trans-unit id="MissingLayerNode">
+        <source>CONTAINER2006: Tried to get layer information but there is no layer node?</source>
+        <target state="new">CONTAINER2006: Tried to get layer information but there is no layer node?</target>
+        <note>{StrBegin="CONTAINER2006: "}</note>
+      </trans-unit>
+      <trans-unit id="MissingLinkToRegistry">
+        <source>CONTAINER2004: Unable to download layer with descriptor '{0}' from registry '{1}' because it does not exist.</source>
+        <target state="new">CONTAINER2004: Unable to download layer with descriptor '{0}' from registry '{1}' because it does not exist.</target>
+        <note>{StrBegin="CONTAINER2004: "}</note>
+      </trans-unit>
+      <trans-unit id="NoRequestUriSpecified">
+        <source>CONTAINER1004: No RequestUri specified.</source>
+        <target state="new">CONTAINER1004: No RequestUri specified.</target>
+        <note>{StrBegin="CONTAINER1004: "}</note>
+      </trans-unit>
+      <trans-unit id="RegistryPushFailed">
+        <source>CONTAINER1005: Registry push failed.</source>
+        <target state="new">CONTAINER1005: Registry push failed.</target>
+        <note>{StrBegin="CONTAINER1005: "}</note>
+      </trans-unit>
+      <trans-unit id="TooManyRetries">
+        <source>CONTAINER1006: Too many retries, stopping.</source>
+        <target state="new">CONTAINER1006: Too many retries, stopping.</target>
+        <note>{StrBegin="CONTAINER1006: "}</note>
+      </trans-unit>
+      <trans-unit id="UnknownDaemonType">
+        <source>CONTAINER2002: Unknown local container daemon type '{0}'. Valid local container daemon types are {1}.</source>
+        <target state="new">CONTAINER2002: Unknown local container daemon type '{0}'. Valid local container daemon types are {1}.</target>
+        <note>{StrBegin="CONTAINER2002: "}</note>
+      </trans-unit>
+      <trans-unit id="UnknownMediaType">
+        <source>CONTAINER2003: The manifest for {0}:{1} from registry {2} was an unknown type: {3}. Please raise an issue at https://github.com/dotnet/sdk-container-builds/issues with this message.</source>
+        <target state="new">CONTAINER2003: The manifest for {0}:{1} from registry {2} was an unknown type: {3}. Please raise an issue at https://github.com/dotnet/sdk-container-builds/issues with this message.</target>
+        <note>{StrBegin="CONTAINER2003: "}</note>
+      </trans-unit>
+      <trans-unit id="UnrecognizedMediaType">
+        <source>CONTAINER2001: Unrecognized mediaType '{0}'.</source>
+        <target state="new">CONTAINER2001: Unrecognized mediaType '{0}'.</target>
+        <note>{StrBegin="CONTAINER2001: "}</note>
+      </trans-unit>
+      <trans-unit id="_Test">
+        <source>Value for unit test {0}</source>
+        <target state="new">Value for unit test {0}</target>
+        <note>Used only for unit test</note>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>
