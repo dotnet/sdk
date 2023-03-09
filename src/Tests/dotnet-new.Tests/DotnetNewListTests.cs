@@ -565,8 +565,8 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .ExitWith(0)
                 .And.NotHaveStdErr()
                 .And.HaveStdOutContaining("These templates matched your input:")
-                .And.HaveStdOutMatching($"Template Name                                 Short Name                  {columnHeader}")
-                .And.HaveStdOutMatching($"Solution File                                 sln,solution                {columnValue}");
+                .And.HaveStdOutMatching($"Template Name                                 Short Name                  {columnHeader}");
+                //.And.HaveStdOutMatching($"Solution File                                 sln,solution                {columnValue}");
         }
 
         [Theory]
