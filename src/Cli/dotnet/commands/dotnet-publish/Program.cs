@@ -34,14 +34,14 @@ namespace Microsoft.DotNet.Tools.Publish
         /// build via the Microsoft.Net.Sdk.Publish props and targets.
         /// </remarks>
         private static string[] PropertiesToForwardFromProfile = new [] {
-            "Configuration",
-            "LastUsedBuildConfiguration",
-            "LastUsedPlatform",
-            "Platform",
-            "RuntimeIdentifier",
-            "RuntimeIdentifiers",
-            "TargetFramework",
-            "TargetFrameworks",
+            MSBuildPropertyNames.CONFIGURATION,
+            MSBuildPropertyNames.LAST_USED_BUILD_CONFIGURATION,
+            MSBuildPropertyNames.LAST_USED_PLATFORM,
+            MSBuildPropertyNames.PLATFORM,
+            MSBuildPropertyNames.RUNTIME_IDENTIFIER,
+            MSBuildPropertyNames.RUNTIME_IDENTIFIERS,
+            MSBuildPropertyNames.TARGET_FRAMEWORK,
+            MSBuildPropertyNames.TARGET_FRAMEWORKS,
         };
 
         private PublishCommand(
@@ -98,12 +98,21 @@ namespace Microsoft.DotNet.Tools.Publish
                 return msbuildArgs;
             }
 
+            /// <summary>
+            /// Evaulates the project specified by the user and returns the list of properties that should be forwarded
+            /// to the actual call to the Publish MSBuild target. These properties are derived by the publish profile (if any)
+            /// specified by the user on the command line. If no publish profile is specified, this method returns an empty list.
+            /// If a publish profile is specified, it is loaded as a standalone file and specific properties are pulled out of it if they exist.
+            /// If it is specified but does not exist, we do not error because the current behavior of the build is to silently ignore
+            /// missing profiles.
+            /// </summary>
             List<string> DiscoverPropertiesFromPublishProfile(ParseResult parseResult)
             {
                 ReleasePropertyProjectLocator projectLocator = new ReleasePropertyProjectLocator(Environment.GetEnvironmentVariable(EnvironmentVariableNames.ENABLE_PUBLISH_RELEASE_FOR_SOLUTIONS) != null);
                 var cliProps = projectLocator.GetGlobalPropertiesFromUserArgs(parseResult);
-                var projectInstance = projectLocator.GetTargetedProject(parseResult.GetValueForArgument(PublishCommandParser.SlnOrProjectArgument), cliProps, MSBuildPropertyNames.PUBLISH_RELEASE);
-                // this can happen if the project wasn't loadable, or if we're at a solution context
+                var solutionOrProjectToPublish = parseResult.GetValueForArgument(PublishCommandParser.SlnOrProjectArgument);
+                var projectInstance = projectLocator.GetTargetedProject(solutionOrProjectToPublish, cliProps, includeSolutions: false);
+                // this can happen if the project wasn't loadable
                 if (projectInstance == null)
                 {
                     return new List<string>();

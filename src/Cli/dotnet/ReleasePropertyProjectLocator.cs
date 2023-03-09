@@ -67,7 +67,7 @@ namespace Microsoft.DotNet.Cli
 
         /// <param name="slnProjectPropertytoCheck">A property to enforce if we are looking into SLN files. If projects disagree on the property, throws exception.</param>
         /// <returns>A project instance that will be targeted to publish/pack, etc. null if one does not exist.</returns>
-        public ProjectInstance GetTargetedProject(IEnumerable<string> slnOrProjectArgs, Dictionary<string, string> globalProps, string slnProjectPropertytoCheck = "")
+        public ProjectInstance GetTargetedProject(IEnumerable<string> slnOrProjectArgs, Dictionary<string, string> globalProps, string slnProjectPropertytoCheck = "", bool includeSolutions = true)
         {
             string potentialProject = "";
 
@@ -85,6 +85,11 @@ namespace Microsoft.DotNet.Cli
                     }
                     catch (GracefulException)
                     {
+                        if (!includeSolutions)
+                        {
+                            continue;
+                        }
+
                         // Fall back to looking for a solution if multiple project files are found.
                         string potentialSln = Directory.GetFiles(arg, "*.sln", SearchOption.TopDirectoryOnly).FirstOrDefault();
 
