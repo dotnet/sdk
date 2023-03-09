@@ -13,7 +13,7 @@
     <BuildCommandArgs>$(StandardSourceBuildArgs.Replace('-bl', '-nobl'))</BuildCommandArgs>
 
     <BuildCommand>$(StandardSourceBuildCommand) $(BuildCommandArgs)</BuildCommand>
-    <BuildCommand Condition="$(Platform.Contains('arm')) AND '$(BuildArchitecture)' != 'arm64'">$(ArmEnvironmentVariables) $(StandardSourceBuildCommand) $(BuildCommandArgs)</BuildCommand>
+    <BuildCommand Condition="$(Platform.Contains('arm')) AND '$(BuildArchitecture)' != 'arm64' AND '$(BuildArchitecture)' != 'arm'">$(ArmEnvironmentVariables) $(StandardSourceBuildCommand) $(BuildCommandArgs)</BuildCommand>
 
     <CleanCommand>$(ProjectDirectory)/clean$(ShellExtension)</CleanCommand>
   </PropertyGroup>
