@@ -18,7 +18,8 @@
         <RepositoryReference Include="runtime" />
       </ItemGroup>
     </When>
-    <When Condition="$(Platform.Contains('arm')) AND '$(BuildArchitecture)' != 'arm64'">
+    <!-- Originally used to capture arm platforms. Now with support, left as an extension point for bringing up new architectures in the future. -->
+    <When Condition="'true' == 'false'">
       <ItemGroup>
         <RepositoryReference Include="runtime" />
       </ItemGroup>
