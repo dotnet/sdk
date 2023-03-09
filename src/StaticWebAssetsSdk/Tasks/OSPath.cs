@@ -5,7 +5,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace Microsoft.AspNetCore.StaticWebAssets
+namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
 {
     internal static class OSPath
     {
