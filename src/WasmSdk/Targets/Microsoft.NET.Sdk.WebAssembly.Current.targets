@@ -42,8 +42,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <BlazorWebAssemblySdkDirectoryRoot Condition="'$(BlazorWebAssemblySdkDirectoryRoot)'==''">$(MSBuildThisFileDirectory)..\</BlazorWebAssemblySdkDirectoryRoot>
     <_BlazorWebAssemblySdkTasksTFM Condition=" '$(MSBuildRuntimeType)' == 'Core'">net8.0</_BlazorWebAssemblySdkTasksTFM>
     <_BlazorWebAssemblySdkTasksTFM Condition=" '$(MSBuildRuntimeType)' != 'Core'">net472</_BlazorWebAssemblySdkTasksTFM>
-    <_BlazorWebAssemblySdkTasksAssembly>$(BlazorWebAssemblySdkDirectoryRoot)tools\$(_BlazorWebAssemblySdkTasksTFM)\Microsoft.NET.Sdk.BlazorWebAssembly.Tasks.dll</_BlazorWebAssemblySdkTasksAssembly>
-    <_BlazorWebAssemblySdkToolAssembly>$(BlazorWebAssemblySdkDirectoryRoot)tools\net8.0\Microsoft.NET.Sdk.BlazorWebAssembly.Tool.dll</_BlazorWebAssemblySdkToolAssembly>
+    <_BlazorWebAssemblySdkTasksAssembly>$(BlazorWebAssemblySdkDirectoryRoot)tools\$(_BlazorWebAssemblySdkTasksTFM)\Microsoft.NET.Sdk.WebAssembly.Tasks.dll</_BlazorWebAssemblySdkTasksAssembly>
   </PropertyGroup>
 
   <UsingTask TaskName="Microsoft.NET.Sdk.BlazorWebAssembly.GenerateBlazorWebAssemblyBootJson" AssemblyFile="$(_BlazorWebAssemblySdkTasksAssembly)" />
@@ -628,19 +627,6 @@ Copyright (c) .NET Foundation. All rights reserved.
       <Output TaskParameter="CompressedFiles" ItemName="_BlazorPublishGZipCompressedFile" />
       <Output TaskParameter="CompressedFiles" ItemName="FileWrites" />
     </GZipCompress>
-
-    <BrotliCompress
-      OutputDirectory="$(_CompressedFileOutputPath)"
-      FilesToCompress="@(_BrotliFileToCompressForPublish)"
-      CompressionLevel="$(_BlazorBrotliCompressionLevel)"
-      SkipIfOutputIsNewer="$(_BlazorWebAssemblyBrotliIncremental)"
-      ToolAssembly="$(_BlazorWebAssemblySdkToolAssembly)"
-      ToolExe="$(_DotNetHostFileName)"
-      ToolPath="$(_DotNetHostDirectory)">
-
-      <Output TaskParameter="CompressedFiles" ItemName="_BlazorPublishBrotliCompressedFile" />
-      <Output TaskParameter="CompressedFiles" ItemName="FileWrites" />
-    </BrotliCompress>
 
     <ItemGroup>
       <_BlazorPublishGZipCompressedFile>
