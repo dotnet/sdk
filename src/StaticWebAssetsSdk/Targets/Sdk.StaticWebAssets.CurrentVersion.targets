@@ -31,7 +31,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <_StaticWebAssetsSdkTasksTFM Condition=" '$(MSBuildRuntimeType)' == 'Core'">net8.0</_StaticWebAssetsSdkTasksTFM>
     <_StaticWebAssetsSdkTasksTFM Condition=" '$(_StaticWebAssetsSdkTasksTFM)' == ''">net472</_StaticWebAssetsSdkTasksTFM>
     <StaticWebAssetsSdkBuildTasksAssembly>$(StaticWebAssetsSdkBuildTasksDirectoryRoot)$(_StaticWebAssetsSdkTasksTFM)\Microsoft.NET.Sdk.StaticWebAssets.Tasks.dll</StaticWebAssetsSdkBuildTasksAssembly>
-    <_StaticWebAssetsSdkToolAssembly>$(StaticWebAssetsSdkDirectoryRoot)..\Microsoft.Net.Sdk.Razor\tools\rzc.dll</_StaticWebAssetsSdkToolAssembly>
+    <_StaticWebAssetsSdkToolAssembly>$(StaticWebAssetsSdkDirectoryRoot)..\Microsoft.NET.Sdk.Razor\tools\rzc.dll</_StaticWebAssetsSdkToolAssembly>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(DOTNET_HOST_PATH)' == ''">
