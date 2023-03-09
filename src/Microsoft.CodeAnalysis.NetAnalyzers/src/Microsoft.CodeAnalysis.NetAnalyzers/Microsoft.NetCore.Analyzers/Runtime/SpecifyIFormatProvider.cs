@@ -233,7 +233,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
                         if (currentCallHasNullFormatProvider)
                         {
-                            oaContext.ReportDiagnostic(invocationExpression.CreateDiagnostic(IFormatProviderOptionalRule));
+                            oaContext.ReportDiagnostic(invocationExpression.CreateDiagnostic(IFormatProviderOptionalRule,
+                                targetMethod.ToDisplayString(SymbolDisplayFormats.ShortSymbolDisplayFormat)));
                             diagnosticReported = true;
                         }
                     }
