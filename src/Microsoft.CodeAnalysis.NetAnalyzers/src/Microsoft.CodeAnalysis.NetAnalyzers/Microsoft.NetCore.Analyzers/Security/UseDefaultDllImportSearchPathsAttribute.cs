@@ -62,10 +62,21 @@ namespace Microsoft.NetCore.Analyzers.Security
             {
                 var compilation = compilationStartAnalysisContext.Compilation;
                 var wellKnownTypeProvider = WellKnownTypeProvider.GetOrCreate(compilation);
+                var dllImportSearchDirectoryTypeIsPresent = wellKnownTypeProvider.TryGetOrCreateTypeByMetadataName(
+                    WellKnownTypeNames.SystemRuntimeInteropServicesDefaultDllImportSearchPathsAttribute,
+                    out INamedTypeSymbol? defaultDllImportSearchPathsAttributeTypeSymbol);
+                if (!dllImportSearchDirectoryTypeIsPresent)
+                    return;
 
-                if (!wellKnownTypeProvider.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeInteropServicesDllImportAttribute, out INamedTypeSymbol? dllImportAttributeTypeSymbol) ||
-                    !wellKnownTypeProvider.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeInteropServicesDefaultDllImportSearchPathsAttribute, out INamedTypeSymbol? defaultDllImportSearchPathsAttributeTypeSymbol) ||
-                    compilationStartAnalysisContext.Compilation.SyntaxTrees.FirstOrDefault() is not SyntaxTree tree)
+                var dllImportTypeIsPresent = wellKnownTypeProvider.TryGetOrCreateTypeByMetadataName(
+                    WellKnownTypeNames.SystemRuntimeInteropServicesDllImportAttribute,
+                    out INamedTypeSymbol? dllImportAttributeTypeSymbol);
+                var libraryImportTypeIsPresent = wellKnownTypeProvider.TryGetOrCreateTypeByMetadataName(
+                    WellKnownTypeNames.SystemRuntimeInteropServicesLibraryImportAttribute,
+                    out INamedTypeSymbol? libraryImportAttributeTypeSymbol);
+
+                if ((!dllImportTypeIsPresent && !libraryImportTypeIsPresent)
+                    || compilationStartAnalysisContext.Compilation.SyntaxTrees.FirstOrDefault() is not SyntaxTree tree)
                 {
                     return;
                 }
@@ -79,21 +90,28 @@ namespace Microsoft.NetCore.Analyzers.Security
                     defaultValue: UnsafeBits);
                 var defaultDllImportSearchPathsAttributeOnAssembly = compilation.Assembly.GetAttributes().FirstOrDefault(o => o.AttributeClass.Equals(defaultDllImportSearchPathsAttributeTypeSymbol));
 
+                // Does not analyze local functions. To analyze local functions, we'll need to use RegisterSyntaxAction.
                 compilationStartAnalysisContext.RegisterSymbolAction(symbolAnalysisContext =>
                 {
-                    var symbol = symbolAnalysisContext.Symbol;
+                    var symbol = (IMethodSymbol)symbolAnalysisContext.Symbol;
 
-                    if (!symbol.IsExtern || !symbol.IsStatic)
+                    if (!(symbol.IsStatic
+                        // DllImport will always be extern. LibraryImport might not be extern but will be partial.
+                        && (symbol.IsExtern || symbol.PartialImplementationPart != null)
+                        // We do not want to warn on the PartialImplementationPart of LibraryImports. This will also be null for non-partial DllImports.
+                        && symbol.PartialDefinitionPart == null))
                     {
                         return;
                     }
 
                     var dllImportAttribute = symbol.GetAttributes().FirstOrDefault(s => s.AttributeClass.Equals(dllImportAttributeTypeSymbol));
+                    var libraryImportAttribute = symbol.GetAttributes().FirstOrDefault(s => s.AttributeClass.Equals(libraryImportAttributeTypeSymbol));
                     var defaultDllImportSearchPathsAttribute = symbol.GetAttributes().FirstOrDefault(s => s.AttributeClass.Equals(defaultDllImportSearchPathsAttributeTypeSymbol));
 
-                    if (dllImportAttribute != null)
+                    if (dllImportAttribute != null || libraryImportAttribute != null)
                     {
-                        var constructorArguments = dllImportAttribute.ConstructorArguments;
+                        AttributeData primaryAttribute = libraryImportAttribute ?? dllImportAttribute!;
+                        var constructorArguments = primaryAttribute.ConstructorArguments;
 
                         if (constructorArguments.IsEmpty)
                         {
