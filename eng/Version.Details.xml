@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.TemplateEngine.Abstractions" Version="8.0.100-preview.3.23159.5">
+    <Dependency Name="Microsoft.TemplateEngine.Abstractions" Version="8.0.100-preview.3.23160.4">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>e0618d9f9662bc063cffff5d2719e3c449bbf82b</Sha>
+      <Sha>729640b4592d9bb922143cc978bfc8e54309b198</Sha>
       <SourceBuild RepoName="templating" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.NETCore.App.Ref" Version="8.0.0-preview.3.23160.2">
@@ -42,26 +42,26 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>a923c644067c4a37f0bb7c7a331a791d2e51c183</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Build" Version="17.6.0-preview-23159-04">
+    <Dependency Name="Microsoft.Build" Version="17.6.0-preview-23160-01">
       <Uri>https://github.com/dotnet/msbuild</Uri>
-      <Sha>a0c282787d59ca9a449ded85175f39030e5077b8</Sha>
+      <Sha>15dea1b35cc21461d56f3fefcc332664da5840f7</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Build.Localization" Version="17.6.0-preview-23159-04">
+    <Dependency Name="Microsoft.Build.Localization" Version="17.6.0-preview-23160-01">
       <Uri>https://github.com/dotnet/msbuild</Uri>
-      <Sha>a0c282787d59ca9a449ded85175f39030e5077b8</Sha>
+      <Sha>15dea1b35cc21461d56f3fefcc332664da5840f7</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.FSharp.Compiler" Version="12.5.0-beta.23158.5">
+    <Dependency Name="Microsoft.FSharp.Compiler" Version="12.5.0-beta.23159.2">
       <Uri>https://github.com/dotnet/fsharp</Uri>
-      <Sha>225eaa6ddb994e7c74c7eac1e301f688366f1b78</Sha>
+      <Sha>99ecffb8525b48caf64ac3108680b7b251fb4e89</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.fsharp" Version="7.0.300-beta.23158.5">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.fsharp" Version="7.0.300-beta.23159.2">
       <Uri>https://github.com/dotnet/fsharp</Uri>
-      <Sha>225eaa6ddb994e7c74c7eac1e301f688366f1b78</Sha>
+      <Sha>99ecffb8525b48caf64ac3108680b7b251fb4e89</Sha>
       <SourceBuild RepoName="fsharp" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="dotnet-format" Version="8.0.405501">
+    <Dependency Name="dotnet-format" Version="8.0.416001">
       <Uri>https://github.com/dotnet/format</Uri>
-      <Sha>2cb3e68c6b9a966114572fd63f2a20d2cb54a288</Sha>
+      <Sha>cfda11c56b4b2549414d2f64a70d774373fe6681</Sha>
       <SourceBuildTarball RepoName="format" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="4.6.0-2.23152.6">
