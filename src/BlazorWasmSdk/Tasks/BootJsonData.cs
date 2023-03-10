@@ -126,5 +126,15 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
         /// </summary>
         Invariant = 2,
     }
+
+    [DataContract]
+    public class AdditionalAsset
+    {
+        [DataMember(Name = "hash")]
+        public string Hash { get; set; }
+
+        [DataMember(Name = "behavior")]
+        public string Behavior { get; set; }
+    }
 #pragma warning restore IDE1006 // Naming Styles
 }

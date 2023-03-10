@@ -13,6 +13,7 @@ using System.Runtime.Serialization.Json;
 using System.Text;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
+using Microsoft.NET.Sdk.WebAssembly;
 using ResourceHashesByNameDictionary = System.Collections.Generic.Dictionary<string, string>;
 
 namespace Microsoft.NET.Sdk.BlazorWebAssembly
@@ -270,15 +271,5 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
         {
             return (lazyLoadedAssembly = LazyLoadedAssemblies?.SingleOrDefault(a => a.ItemSpec == fileName)) != null;
         }
-    }
-
-    [DataContract]
-    public class AdditionalAsset
-    {
-        [DataMember(Name = "hash")]
-        public string Hash { get; set; }
-
-        [DataMember(Name = "behavior")]
-        public string Behavior { get; set; }
     }
 }

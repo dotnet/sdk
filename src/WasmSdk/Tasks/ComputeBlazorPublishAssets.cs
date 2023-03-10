@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
+using Microsoft.NET.Sdk.WebAssembly;
 
 namespace Microsoft.NET.Sdk.BlazorWebAssembly
 {

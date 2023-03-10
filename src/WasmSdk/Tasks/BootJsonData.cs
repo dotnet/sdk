@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Runtime.Serialization;
 using ResourceHashesByNameDictionary = System.Collections.Generic.Dictionary<string, string>;
 
-namespace Microsoft.NET.Sdk.BlazorWebAssembly
+namespace Microsoft.NET.Sdk.WebAssembly
 {
 #pragma warning disable IDE1006 // Naming Styles
     /// <summary>
@@ -125,6 +125,16 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
         /// Do not load any icu data files.
         /// </summary>
         Invariant = 2,
+    }
+
+    [DataContract]
+    public class AdditionalAsset
+    {
+        [DataMember(Name = "hash")]
+        public string Hash { get; set; }
+
+        [DataMember(Name = "behavior")]
+        public string Behavior { get; set; }
     }
 #pragma warning restore IDE1006 // Naming Styles
 }
