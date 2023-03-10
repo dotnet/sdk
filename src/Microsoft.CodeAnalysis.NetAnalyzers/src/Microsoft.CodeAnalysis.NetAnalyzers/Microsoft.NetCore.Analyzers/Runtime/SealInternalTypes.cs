@@ -60,7 +60,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     !type.IsStatic &&
                     !type.IsSealed &&
                     !type.IsExternallyVisible() &&
-                    !type.HasAttribute(comImportAttributeType))
+                    !type.HasAttribute(comImportAttributeType) &&
+                    !type.IsTopLevelStatementsEntryPointType())
                 {
                     candidateTypes.Add(type);
                 }

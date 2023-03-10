@@ -2,6 +2,7 @@
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
+using Test.Utilities;
 using Xunit;
 
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
@@ -202,6 +203,20 @@ End Class";
         #endregion
 
         #region No Diagnostic
+        [Fact, WorkItem(6141, "https://github.com/dotnet/roslyn-analyzers/issues/6141")]
+        public Task TopLevelStatementsProgram()
+        {
+            return new VerifyCS.Test()
+            {
+                TestState =
+                {
+                    Sources = { "System.Console.WriteLine();" },
+                    OutputKind = OutputKind.ConsoleApplication,
+                },
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9,
+            }.RunAsync();
+        }
+
         [Fact]
         public Task PublicClassType_NoDiagnostic_CS()
         {
