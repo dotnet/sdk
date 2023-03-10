@@ -145,3 +145,5 @@ jobs:
         ArtifactName: 'Formatting Check'
       continueOnError: true
       condition: not(succeeded())
+      
+- template: /eng/common/templates/jobs/source-build.yml

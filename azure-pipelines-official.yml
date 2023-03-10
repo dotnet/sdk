@@ -133,12 +133,16 @@ stages:
         displayName: Windows Build
       - task: CodeQL3000Finalize@0
         displayName: CodeQL Finalize
+
+  - template: /eng/common/templates/jobs/source-build.yml
+
   # Publish to Build Asset Registry
   - template: /eng/common/templates/job/publish-build-assets.yml
     parameters:
       publishUsingPipelines: true
       dependsOn:
         - OfficialBuild
+        - Source_Build_Managed
       pool:
         vmImage: windows-2019
 
