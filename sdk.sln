@@ -425,10 +425,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Targets", "Targets", "{C5C7
 		src\StaticWebAssetsSdk\Targets\Microsoft.NET.Sdk.StaticWebAssets.props = src\StaticWebAssetsSdk\Targets\Microsoft.NET.Sdk.StaticWebAssets.props
 		src\StaticWebAssetsSdk\Targets\Microsoft.NET.Sdk.StaticWebAssets.ScopedCss.5_0.targets = src\StaticWebAssetsSdk\Targets\Microsoft.NET.Sdk.StaticWebAssets.ScopedCss.5_0.targets
 		src\StaticWebAssetsSdk\Targets\Microsoft.NET.Sdk.StaticWebAssets.ScopedCss.targets = src\StaticWebAssetsSdk\Targets\Microsoft.NET.Sdk.StaticWebAssets.ScopedCss.targets
-		src\StaticWebAssetsSdk\Targets\Microsoft.NET.Sdk.StaticWebAssets.StaticWebAssets.5_0.targets = src\StaticWebAssetsSdk\Targets\Microsoft.NET.Sdk.StaticWebAssets.StaticWebAssets.5_0.targets
-		src\StaticWebAssetsSdk\Targets\Microsoft.NET.Sdk.StaticWebAssets.StaticWebAssets.Pack.CrossTargeting.targets = src\StaticWebAssetsSdk\Targets\Microsoft.NET.Sdk.StaticWebAssets.StaticWebAssets.Pack.CrossTargeting.targets
-		src\StaticWebAssetsSdk\Targets\Microsoft.NET.Sdk.StaticWebAssets.StaticWebAssets.Pack.targets = src\StaticWebAssetsSdk\Targets\Microsoft.NET.Sdk.StaticWebAssets.StaticWebAssets.Pack.targets
-		src\StaticWebAssetsSdk\Targets\Microsoft.NET.Sdk.StaticWebAssets.StaticWebAssets.targets = src\StaticWebAssetsSdk\Targets\Microsoft.NET.Sdk.StaticWebAssets.StaticWebAssets.targets
+		src\StaticWebAssetsSdk\Targets\Microsoft.NET.Sdk.StaticWebAssets.5_0.targets = src\StaticWebAssetsSdk\Targets\Microsoft.NET.Sdk.StaticWebAssets.5_0.targets
+		src\StaticWebAssetsSdk\Targets\Microsoft.NET.Sdk.StaticWebAssets.Pack.CrossTargeting.targets = src\StaticWebAssetsSdk\Targets\Microsoft.NET.Sdk.StaticWebAssets.Pack.CrossTargeting.targets
+		src\StaticWebAssetsSdk\Targets\Microsoft.NET.Sdk.StaticWebAssets.Pack.targets = src\StaticWebAssetsSdk\Targets\Microsoft.NET.Sdk.StaticWebAssets.Pack.targets
+		src\StaticWebAssetsSdk\Targets\Microsoft.NET.Sdk.StaticWebAssets.targets = src\StaticWebAssetsSdk\Targets\Microsoft.NET.Sdk.StaticWebAssets.targets
 		src\StaticWebAssetsSdk\Targets\Sdk.StaticWebAssets.CurrentVersion.props = src\StaticWebAssetsSdk\Targets\Sdk.StaticWebAssets.CurrentVersion.props
 		src\StaticWebAssetsSdk\Targets\Sdk.StaticWebAssets.CurrentVersion.targets = src\StaticWebAssetsSdk\Targets\Sdk.StaticWebAssets.CurrentVersion.targets
 	EndProjectSection

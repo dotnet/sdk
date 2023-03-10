@@ -1,6 +1,6 @@
 <!--
 ***********************************************************************************************
-Microsoft.NET.Sdk.StaticWebAssets.StaticWebAssets.targets
+Microsoft.NET.Sdk.StaticWebAssets.targets
 
 WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and have
           created a backup copy.  Incorrect changes to this file will make it
@@ -831,5 +831,5 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     </Target>
 
-    <Import Project="Microsoft.NET.Sdk.StaticWebAssets.StaticWebAssets.Pack.targets" />
+    <Import Project="Microsoft.NET.Sdk.StaticWebAssets.Pack.targets" />
 </Project>
