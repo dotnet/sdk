@@ -4,6 +4,8 @@
 
 using System.CommandLine;
 using System.CommandLine.Invocation;
+using Microsoft.TemplateEngine.Abstractions;
+using Microsoft.TemplateEngine.Edge.Settings;
 
 namespace Microsoft.TemplateEngine.Cli.Commands.InteractiveMode
 {
@@ -13,7 +15,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands.InteractiveMode
         {
             if (context.ParseResult.CommandResult.Command.Name == "new")
             {
-                TemplateCommand? templateCommand = context.ParseResult.CommandResult.Command as TemplateCommand;
+                NewCommand? templateCommand = context.ParseResult.CommandResult.Command as NewCommand;
                 if (templateCommand is null)
                 {
                     return;
@@ -24,16 +26,24 @@ namespace Microsoft.TemplateEngine.Cli.Commands.InteractiveMode
                 {
                     // TODO: add the default skip key
                     // TODO: short name validation. right now we are assuming that the provided template exists and is valid
-
                     context.Console.WriteLine("Currently under development, not all features implemented yet");
-                    context.Console.WriteLine("Creating a new <language> <template name> project. Press 's' to skip defaults");
+
+                    InteractiveQuerying questionCollection = new InteractiveQuerying();
+                    context.Console.WriteLine(questionCollection.OpeningMessage("<language>", "<template Name>", "s"));
 
                     // tracks if we received all information necessary to instantiate the template
                     bool commandComplete = false;
+                    var questions = questionCollection.Questions();
+
+                    while (questions.MoveNext())
+                    {
+                        var currentQuestion = questions.Current;
+                        context.Console.WriteLine(questions.currentQuestion.GetQuery());
+                    }
+
                     while (!commandComplete)
                     {
-                        var missingParam = templateCommand.GetMissingArguments();
-                        context.Console.WriteLine(GetMissingArguments(missingParam));
+                        //context.Console.WriteLine(GetMissingArguments(missingParam));
                         var paramValue = Console.ReadLine();
                         // Try to cast value, and then check if valid. Maybe put in a loop in case value was not valid
                         // Add to the command line text to reparse later
@@ -47,14 +57,14 @@ namespace Microsoft.TemplateEngine.Cli.Commands.InteractiveMode
 
         // True if we should ask user input interactively
         // False if we should just continue with the pipeline
-        internal static bool ShouldEnterInteractiveMode(ParseResult parsedArgs, TemplateCommand command)
+        internal static bool ShouldEnterInteractiveMode(ParseResult parsedArgs, NewCommand command)
         {
             // TODO: find a better way to query for the option
             // TODO: Better handling of this option when executing
             bool interactiveOptionValue = false;
-            if (command.InteractiveOption is not null)
+            if (NewCommand.InteractiveTemplateOption is not null)
             {
-                interactiveOptionValue = parsedArgs.GetValue(command.InteractiveOption);
+                interactiveOptionValue = parsedArgs.GetValue(NewCommand.InteractiveTemplateOption);
             }
 
             var envVariable = Environment.GetEnvironmentVariable("DOTNETNEWINTERACTIVE");
@@ -73,6 +83,19 @@ namespace Microsoft.TemplateEngine.Cli.Commands.InteractiveMode
             // hard coded for now
             // Check if current environment supports what we want to do (If we need any fancy stuff)
             return true;
+        }
+
+        internal static ITemplateInfo GetTemplate(
+            ParseResult parseResult,
+            TemplatePackageManager templatePackageManager)
+        {
+            // Why do we get the templates, and then the template groups?
+            IReadOnlyList<ITemplateInfo> templates =
+                Task.Run(async () => await templatePackageManager.GetTemplatesAsync(default).ConfigureAwait(false)).GetAwaiter().GetResult();
+
+            // IEnumerable<TemplateGroup> templateGroups = TemplateGroup.FromTemplateList(CliTemplateInfo.FromTemplateInfo(templates, hostSpecificDataLoader));
+            // TODO: Make this work when instantiating more than one template at a time
+            return templates.First(template => template.ShortNameList.Contains("something on parseResult"));
         }
     }
 }

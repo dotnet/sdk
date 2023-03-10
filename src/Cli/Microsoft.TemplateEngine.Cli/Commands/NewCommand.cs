@@ -35,6 +35,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             this.AddGlobalOption(DebugReinitOption);
             this.AddGlobalOption(DebugRebuildCacheOption);
             this.AddGlobalOption(DebugShowConfigOption);
+            this.AddGlobalOption(InteractiveTemplateOption);
 
             this.AddOption(SharedOptions.OutputOption);
             this.AddOption(SharedOptions.NameOption);
@@ -77,6 +78,13 @@ namespace Microsoft.TemplateEngine.Cli.Commands
         internal static Option<bool> DebugShowConfigOption { get; } = new(new[] { "--debug:show-config", "--debug:showconfig" })
         {
             Description = SymbolStrings.Option_Debug_ShowConfig,
+            IsHidden = true
+        };
+
+        internal static Option<bool> InteractiveTemplateOption { get; } = new("--interactiveTemplate")
+        {
+            // TODO: link the right description here
+            Description = SymbolStrings.Option_Interactive,
             IsHidden = true
         };
 

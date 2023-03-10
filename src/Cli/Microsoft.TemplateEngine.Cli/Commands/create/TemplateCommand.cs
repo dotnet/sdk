@@ -124,8 +124,6 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 
         internal Option<string>? BaselineOption { get; }
 
-        internal Option<bool>? InteractiveOption { get; }
-
         // string key is the name of the option
         internal IReadOnlyDictionary<string, TemplateOption> TemplateOptions => _templateSpecificOptions;
 
@@ -221,15 +219,20 @@ namespace Microsoft.TemplateEngine.Cli.Commands
         }
 
         // Check what arguments were passed in the command line on invocation nd convert as needed
-        internal void GetPassedArguments(IReadOnlyList<SymbolResult> parsedArgs)
+        internal Dictionary<string, string> GetPassedArguments(IReadOnlyList<SymbolResult> parsedArgs)
         {
-            return;
+            // return a dictionary where the key is the name of the parameter, and the value is the value of the parameter
+            // as entered by user input IN THE COMMAND LINE ON COMMAND CALL
+            return new Dictionary<string, string>()
+            {
+                { "name", "value" }
+            };
         }
 
         // Check what is still missing for sucessfull creation
         // Figure out the type to return for the function,
         // or if we will have multiple functions with different types
-        internal void GetMissingArguments(
+        internal IEnumerable<KeyValuePair<string, ITemplateParameter>> GetMissingArguments(
             ParseResult parseResult,
             List<string> setParameters,
             List<TemplateOption> passedOptions)
@@ -237,7 +240,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             var remainingOptions = TemplateOptions.Where(option => !passedOptions.Contains(option.Value));
             foreach (var option in remainingOptions)
             {
-                yield return option;
+                // yield return option;
             }
 
             foreach (var parameter in Template.ParameterDefinitions.AsReadonlyDictionary())
