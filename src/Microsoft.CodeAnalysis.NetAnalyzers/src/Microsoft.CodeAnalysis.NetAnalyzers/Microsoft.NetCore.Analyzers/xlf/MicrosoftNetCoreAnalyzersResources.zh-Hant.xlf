@@ -999,18 +999,18 @@ Widening and user defined conversions are not supported with generic types.</tar
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseReferenceEqualsWithValueTypesComparerMessage">
-        <source>Do not pass an argument with value type '{0}' to the 'Equals' method on 'ReferenceEqualityComparer'. Due to value boxing, this call to 'Equals' will always return 'false'.</source>
-        <target state="translated">請勿對 'ReferenceEqualityComparer' 上的 'Equals' 方法，傳遞實值型別為 '{0}' 的引數。因為值會進行 boxing，而造成對 'Equals' 的呼叫一律會傳回 'false'。</target>
+        <source>Do not pass an argument with value type '{0}' to the 'Equals' method on 'ReferenceEqualityComparer'. Due to value boxing, this call to 'Equals' can return an unexpected result. Consider using 'EqualityComparer' instead, or pass reference type arguments if you intend to use 'ReferenceEqualityComparer'.</source>
+        <target state="needs-review-translation">請勿對 'ReferenceEqualityComparer' 上的 'Equals' 方法，傳遞實值型別為 '{0}' 的引數。因為值會進行 boxing，而造成對 'Equals' 的呼叫一律會傳回 'false'。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseReferenceEqualsWithValueTypesDescription">
-        <source>Value type typed arguments are uniquely boxed for each call to this method, therefore the result is always false.</source>
-        <target state="translated">每次呼叫此方法時，實值型別所輸入的引數，都是經過 Box 的唯一值，因此其結果一律會是 False。</target>
+        <source>Value type typed arguments are uniquely boxed for each call to this method, therefore the result can be unexpected.</source>
+        <target state="needs-review-translation">每次呼叫此方法時，實值型別所輸入的引數，都是經過 Box 的唯一值，因此其結果一律會是 False。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseReferenceEqualsWithValueTypesMethodMessage">
-        <source>Do not pass an argument with value type '{0}' to 'ReferenceEquals'. Due to value boxing, this call to 'ReferenceEquals' will always return 'false'.</source>
-        <target state="translated">請勿將實值型別為 '{0}' 的引數，傳遞至 'ReferenceEquals'。因為值會進行 Boxing，而造成對 'ReferenceEquals' 的呼叫一律會傳回 'false'。</target>
+        <source>Do not pass an argument with value type '{0}' to 'ReferenceEquals'. Due to value boxing, this call to 'ReferenceEquals' can return an unexpected result. Consider using 'Equals' instead, or pass reference type arguments if you intend to use 'ReferenceEquals'.</source>
+        <target state="needs-review-translation">請勿將實值型別為 '{0}' 的引數，傳遞至 'ReferenceEquals'。因為值會進行 Boxing，而造成對 'ReferenceEquals' 的呼叫一律會傳回 'false'。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseReferenceEqualsWithValueTypesTitle">

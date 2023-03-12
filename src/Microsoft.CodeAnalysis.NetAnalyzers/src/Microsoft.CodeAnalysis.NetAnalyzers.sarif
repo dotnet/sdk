@@ -3281,7 +3281,7 @@
         "CA2013": {
           "id": "CA2013",
           "shortDescription": "Do not use ReferenceEquals with value types",
-          "fullDescription": "Value type typed arguments are uniquely boxed for each call to this method, therefore the result is always false.",
+          "fullDescription": "Value type typed arguments are uniquely boxed for each call to this method, therefore the result can be unexpected.",
           "defaultLevel": "warning",
           "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2013",
           "properties": {
