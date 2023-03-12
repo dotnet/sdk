@@ -272,6 +272,11 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     case (TypeKind.Class, TypeKind.Interface):
                         return castFrom.IsSealed && !castFrom.AllInterfaces.Contains(castTo);
 
+                    case (TypeKind.Interface, TypeKind.Struct):
+                        return !castTo.AllInterfaces.Contains(castFrom);
+                    case (TypeKind.Struct, TypeKind.Interface):
+                        return !castFrom.AllInterfaces.Contains(castTo);
+
                     case (TypeKind.Class, TypeKind.Enum):
                         return castFrom.OriginalDefinition.SpecialType is not SpecialType.System_Enum
                                                                       and not SpecialType.System_ValueType;
