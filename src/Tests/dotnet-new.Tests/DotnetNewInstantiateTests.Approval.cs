@@ -765,8 +765,8 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             var commandArgs = $"{args};-n;{name}".Split(';');
             new DotnetNewCommand(_log, commandArgs)
                     .WithCustomHive(homeDir)
-                    .WithWorkingDirectory(workingDirectory)
                     .WithDebug()
+                    .WithWorkingDirectory(workingDirectory)
                     .Execute()
                     .Should()
                     .ExitWith(0)
@@ -775,7 +775,6 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             new DotnetBuildCommand(_log, name)
                 .WithWorkingDirectory(workingDirectory)
                 .Execute()
-                .WithDebug()
                 .Should()
                 .Pass()
                 .And.NotHaveStdErr();
