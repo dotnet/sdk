@@ -74,16 +74,15 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <!-- Wire-up static web assets -->
   <PropertyGroup>
-    <ResolveStaticWebAssetsInputsDependsOn>
-      $(ResolveStaticWebAssetsInputsDependsOn);
-      _AddBlazorWasmStaticWebAssets;
-    </ResolveStaticWebAssetsInputsDependsOn>
-
     <GenerateStaticWebAssetsPublishManifestDependsOn Condition="'$(WasmBuildingForNestedPublish)' != 'true'">
       $(GenerateStaticWebAssetsPublishManifestDependsOn);
       _BlazorCompressPublishFiles;
     </GenerateStaticWebAssetsPublishManifestDependsOn>
 
+    <AddWasmStaticWebAssetsDependsOn>
+      $(AddWasmStaticWebAssetsDependsOn);
+      _ResolveBlazorWasmOutputs;
+    </AddWasmStaticWebAssetsDependsOn>
   </PropertyGroup>
 
   <Import Project="Microsoft.NET.Sdk.BlazorWebAssembly.ServiceWorkerAssetsManifest.targets" Condition="'$(ServiceWorkerAssetsManifest)' != ''" />
@@ -124,7 +123,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       ContentRoot="$(OutputPath)wwwroot"
       BasePath="$(StaticWebAssetBasePath)"
     >
-      <Output TaskParameter="Assets" ItemName="_BlazorStaticWebAsset" />
+      <Output TaskParameter="Assets" ItemName="_BlazorJSStaticWebAsset" />
     </DefineStaticWebAssets>
 
     <PropertyGroup>
@@ -136,6 +135,11 @@ Copyright (c) .NET Foundation. All rights reserved.
       that change from build to build. Runtime assets contribute to the bulk of the download size. Compressing it
       has the most benefit while avoiding any ongoing costs to the dev inner loop.
     -->
+
+    <ItemGroup>
+      <_BlazorStaticWebAsset Include="@(_BlazorJSStaticWebAsset)" />
+      <_BlazorStaticWebAsset Include="@(WasmStaticWebAsset)" />
+    </ItemGroup>
 
     <ComputeBlazorFilesToCompress Assets="@(_BlazorStaticWebAsset)">
       <Output TaskParameter="AssetsToCompress" ItemName="_GzipFileToCompressForBuild" />
@@ -157,10 +161,8 @@ Copyright (c) .NET Foundation. All rights reserved.
       <_BlazorGzipStaticWebAsset Include="@(_BlazorBuildGZipCompressedFile->'%(FullPath)')" />
     </ItemGroup>
 
-  </Target>
-
-  <Target Name="_AddBlazorWasmStaticWebAssets" DependsOnTargets="_ResolveBlazorWasmOutputs">
     <ItemGroup>
+      <WasmStaticWebAsset Include="@(_BlazorJSStaticWebAsset)" />
       <StaticWebAsset Include="@(_BlazorGzipStaticWebAsset)" />
     </ItemGroup>
   </Target>

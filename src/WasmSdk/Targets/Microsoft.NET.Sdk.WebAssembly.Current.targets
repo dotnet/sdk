@@ -109,6 +109,9 @@ Copyright (c) .NET Foundation. All rights reserved.
       GeneratePublishWasmBootJson;
     </GenerateStaticWebAssetsPublishManifestDependsOn>
 
+    <AddWasmStaticWebAssetsDependsOn>
+      ResolveWasmOutputs;
+    </AddWasmStaticWebAssetsDependsOn>
   </PropertyGroup>
 
   <Target Name="_WasmNativeForBuild" DependsOnTargets="_GatherWasmFilesToBuild;WasmBuildApp" Condition="'$(UsingBrowserRuntimeWorkload)' == 'true'" />
@@ -174,7 +177,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       ContentRoot="$(OutputPath)wwwroot"
       BasePath="$(StaticWebAssetBasePath)"
     >
-      <Output TaskParameter="Assets" ItemName="_BlazorStaticWebAsset" />
+      <Output TaskParameter="Assets" ItemName="WasmStaticWebAsset" />
     </DefineStaticWebAssets>
 
     <DefineStaticWebAssets
@@ -219,13 +222,11 @@ Copyright (c) .NET Foundation. All rights reserved.
     >
       <Output TaskParameter="Assets" ItemName="_BuildBlazorBootJsonStaticWebAsset" />
     </DefineStaticWebAssets>
-
-    <!-- MF: Sync _BlazorStaticWebAsset -->
   </Target>
 
-  <Target Name="_AddWasmStaticWebAssets" DependsOnTargets="_ResolveWasmOutputs">
+  <Target Name="_AddWasmStaticWebAssets" DependsOnTargets="$(AddWasmStaticWebAssetsDependsOn)">
     <ItemGroup>
-      <StaticWebAsset Include="@(_BlazorStaticWebAsset)" />
+      <StaticWebAsset Include="@(WasmStaticWebAsset)" />
       <StaticWebAsset Include="@(_BuildBlazorBootJsonStaticWebAsset)" />
     </ItemGroup>
   </Target>
@@ -242,7 +243,7 @@ Copyright (c) .NET Foundation. All rights reserved.
         Condition="'%(StaticWebAsset.AssetTraitName)' == 'JSModule' and '%(StaticWebAsset.AssetTraitValue)' == 'JSLibraryModule' and '%(AssetKind)' != 'Publish'" />
     </ItemGroup>
 
-    <GetFileHash Files="@(_BlazorStaticWebAsset->'%(OriginalItemSpec)')" Algorithm="SHA256" HashEncoding="base64">
+    <GetFileHash Files="@(WasmStaticWebAsset->'%(OriginalItemSpec)')" Algorithm="SHA256" HashEncoding="base64">
       <Output TaskParameter="Items" ItemName="_BlazorOutputWithHash" />
     </GetFileHash>
 
