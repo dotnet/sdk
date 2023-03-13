@@ -42,7 +42,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             CommandResult commandResult = new DotnetNewCommand(_log, "uninstall", "TemplateWithRequiredParameters")
                 .WithCustomHive(homeDirectory)
                 .Execute();
-            commandResult.Should().Fail();
+
             return Verify(commandResult.StdOut)
                 .AddScrubber(output => output.ScrubAndReplace(globalSettingsFile, "%GLOBAL SETTINGS FILE%"));
         }

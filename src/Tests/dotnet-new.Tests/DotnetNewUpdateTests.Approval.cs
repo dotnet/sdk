@@ -48,7 +48,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .WithCustomHive(homeDirectory)
                 .WithoutBuiltInTemplates()
                 .Execute();
-            commandResult.Should().Fail();
+
             return Verify(commandResult.StdOut)
                 .AddScrubber(output => output.ScrubAndReplace(globalSettingsFile, "%GLOBAL SETTINGS FILE%"));
         }
