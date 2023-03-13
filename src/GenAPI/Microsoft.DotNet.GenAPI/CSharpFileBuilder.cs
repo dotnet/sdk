@@ -13,6 +13,7 @@ using Microsoft.CodeAnalysis.Editing;
 using Microsoft.CodeAnalysis.Formatting;
 using Microsoft.CodeAnalysis.Options;
 using Microsoft.CodeAnalysis.Simplification;
+using Microsoft.DotNet.ApiSymbolExtensions;
 using Microsoft.DotNet.ApiSymbolExtensions.Filtering;
 using Microsoft.DotNet.ApiSymbolExtensions.Logging;
 using Microsoft.DotNet.GenAPI.SyntaxRewriter;
@@ -174,8 +175,7 @@ namespace Microsoft.DotNet.GenAPI
 
         private SyntaxNode GenerateAssemblyAttributes(IAssemblySymbol assembly, SyntaxNode compilationUnit)
         {
-            foreach (AttributeData? attribute in assembly.GetAttributes()
-                .Where(a => a.AttributeClass != null && _symbolFilter.Include(a.AttributeClass)))
+            foreach (AttributeData? attribute in assembly.GetAttributes().ExcludeNonVisibleOutsideOfAssembly(_symbolFilter))
             {
                 compilationUnit = _syntaxGenerator.AddAttributes(compilationUnit, _syntaxGenerator.Attribute(attribute)
                     .WithTrailingTrivia(SyntaxFactory.LineFeed));

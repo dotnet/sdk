@@ -8,6 +8,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.DotNet.ApiSymbolExtensions.Filtering;
+using Microsoft.DotNet.ApiSymbolExtensions;
 
 namespace Microsoft.DotNet.GenAPI
 {
@@ -106,7 +107,8 @@ namespace Microsoft.DotNet.GenAPI
             if (excludedFields.Any())
             {
                 // Collect generic excluded fields
-                IEnumerable<IFieldSymbol> genericTypedFields = excludedFields.Where(f => {
+                IEnumerable<IFieldSymbol> genericTypedFields = excludedFields.Where(f =>
+                {
                     if (f.Type is INamedTypeSymbol ty) {
                         return !ty.IsBoundGenericType() && symbolFilter.Include(ty);
                     }
@@ -121,10 +123,9 @@ namespace Microsoft.DotNet.GenAPI
                 // Add a dummy field for each generic excluded field
                 foreach (IFieldSymbol genericField in genericTypedFields)
                 {
-                    yield return CreateDummyField(
-                        genericField.Type.ToDisplayString(),
+                    yield return CreateDummyField(genericField.Type.ToDisplayString(),
                         NormalizeIdentifier(genericField.Name),
-                        FromAttributeData(genericField.GetAttributes()),
+                        FromAttributeData(genericField.GetAttributes().ExcludeNonVisibleOutsideOfAssembly(symbolFilter)),
                         namedType.IsReadOnly);
                 }
 
