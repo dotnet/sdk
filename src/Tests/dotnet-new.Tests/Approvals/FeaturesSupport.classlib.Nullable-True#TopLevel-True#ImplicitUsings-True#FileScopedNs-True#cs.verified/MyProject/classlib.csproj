@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>%FRAMEWORK%</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <LangVersion>%LANG%</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
