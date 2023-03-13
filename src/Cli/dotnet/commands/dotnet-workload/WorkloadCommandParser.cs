@@ -9,6 +9,7 @@ using System.Linq;
 using Microsoft.DotNet.Workloads.Workload.Install;
 using Microsoft.DotNet.Workloads.Workload.List;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
+using Microsoft.TemplateEngine.Cli.Commands;
 using CommonStrings = Microsoft.DotNet.Workloads.Workload.LocalizableStrings;
 using IReporter = Microsoft.DotNet.Cli.Utils.IReporter;
 
@@ -28,9 +29,16 @@ namespace Microsoft.DotNet.Cli
             return Command;
         }
 
-        internal static void ShowWorkloadsInfo(IWorkloadInfoHelper workloadInfoHelper = null, IReporter reporter = null)
+        internal static void ShowWorkloadsInfo(ParseResult parseResult = null, IWorkloadInfoHelper workloadInfoHelper = null, IReporter reporter = null)
         {
-            workloadInfoHelper ??= new WorkloadInfoHelper();
+            if(workloadInfoHelper != null)
+            {
+                workloadInfoHelper ??= new WorkloadInfoHelper(parseResult.HasOption(SharedOptions.InteractiveOption));
+            }
+            else
+            {
+                workloadInfoHelper ??= new WorkloadInfoHelper(false);
+            }
             IEnumerable<WorkloadId> installedList = workloadInfoHelper.InstalledSdkWorkloadIds;
             InstalledWorkloadsCollection installedWorkloads = workloadInfoHelper.AddInstalledVsWorkloads(installedList);
             reporter ??= Cli.Utils.Reporter.Output;
@@ -67,7 +75,6 @@ namespace Microsoft.DotNet.Cli
                 reporter.Write($"{separator}{CommonStrings.WorkloadInstallTypeColumn}:");
                 reporter.WriteLine($"       {WorkloadInstallerFactory.GetWorkloadInstallType(new SdkFeatureBand(workloadFeatureBand), workloadManifest.ManifestPath).ToString(),align}"
                 );
-                reporter.WriteLine("");
             }
         }
 
@@ -75,7 +82,8 @@ namespace Microsoft.DotNet.Cli
         {
             if (parseResult.HasOption(InfoOption) && parseResult.RootSubCommandResult() == "workload")
             {
-                ShowWorkloadsInfo();
+                ShowWorkloadsInfo(parseResult);
+                Cli.Utils.Reporter.Output.WriteLine("");
                 return 0;
             }
             return parseResult.HandleMissingCommand();
