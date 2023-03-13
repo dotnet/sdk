@@ -59,13 +59,6 @@
 
   </Target>
 
-  <PropertyGroup>
-      <VersionFeature21>30</VersionFeature21>
-      <VersionFeature31>32</VersionFeature31>
-      <VersionFeature50>17</VersionFeature50>
-      <VersionFeature60>$([MSBuild]::Add($(VersionFeature), 11))</VersionFeature60>
-  </PropertyGroup>
-
   <Target Name="GenerateBundledVersionsProps" DependsOnTargets="SetupBundledComponents">
     <PropertyGroup>
       <BundledVersionsPropsFileName>Microsoft.NETCoreSdk.BundledVersions.props</BundledVersionsPropsFileName>
