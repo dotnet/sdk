@@ -72,7 +72,6 @@
             "Program.MinimalAPIs.WindowsOrNoAuth.cs": "Program.cs"
           },
           "exclude": [
-            "Program.cs",
             "Program.MinimalAPIs.OrgOrIndividualB2CAuth.cs"
           ]
         },
@@ -82,7 +81,6 @@
             "Program.MinimalAPIs.OrgOrIndividualB2CAuth.cs": "Program.cs"
           },
           "exclude": [
-            "Program.cs",
             "Program.MinimalAPIs.WindowsOrNoAuth.cs"
           ]
         },

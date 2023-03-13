@@ -766,6 +766,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             new DotnetNewCommand(_log, commandArgs)
                     .WithCustomHive(homeDir)
                     .WithWorkingDirectory(workingDirectory)
+                    .WithDebug()
                     .Execute()
                     .Should()
                     .ExitWith(0)
@@ -774,6 +775,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             new DotnetBuildCommand(_log, name)
                 .WithWorkingDirectory(workingDirectory)
                 .Execute()
+                .WithDebug()
                 .Should()
                 .Pass()
                 .And.NotHaveStdErr();
