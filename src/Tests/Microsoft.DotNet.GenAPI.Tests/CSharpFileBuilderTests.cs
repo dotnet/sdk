@@ -41,7 +41,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
             StringWriter stringWriter = new();
 
             var compositeFilter = new CompositeSymbolFilter()
-                .Add<ImplicitSymbolFilter>()
+                .Add(new ImplicitSymbolFilter())
                 .Add(new AccessibilitySymbolFilter(includeInternalSymbols,
                     includeEffectivelyPrivateSymbols, includeExplicitInterfaceImplementationSymbols));
             IAssemblySymbolWriter csharpFileBuilder = new CSharpFileBuilder(new ConsoleLog(MessageImportance.Low),
