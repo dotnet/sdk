@@ -241,6 +241,15 @@ namespace Microsoft.TemplateEngine.Edge {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Failed to read installed template packages list at {0}. It might be due to the file is corrupted. Please review this file manually and fix the errors in JSON structure, or remove the file to clear up the list of list installed packages and reinstall them again. Details of the error: {1}..
+        /// </summary>
+        internal static string GlobalSettings_Error_CorruptedSettings {
+            get {
+                return ResourceManager.GetString("GlobalSettings_Error_CorruptedSettings", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to {0} can be installed by several installers. Specify the installer name to be used..
         /// </summary>
         internal static string GlobalSettingsTemplatePackageProvider_InstallResult_Error_MultipleInstallersCanBeUsed {

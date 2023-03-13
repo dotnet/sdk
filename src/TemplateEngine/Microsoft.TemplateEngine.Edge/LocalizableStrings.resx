@@ -410,5 +410,8 @@ The template from 'PACKAGE_ID' will be used. To resolve this conflict, uninstall
     <value>  {0} '{1}' from '{2}'</value>
     <comment>* 'TEMPLATE' from 'PACKAGE_ID'</comment>
   </data>
+  <data name="GlobalSettings_Error_CorruptedSettings" xml:space="preserve">
+    <value>Failed to read installed template packages list at {0}. It might be due to the file is corrupted. Please review this file manually and fix the errors in JSON structure, or remove the file to clear up the list of list installed packages and reinstall them again. Details of the error: {1}.</value>
+  </data>
 </root>
 

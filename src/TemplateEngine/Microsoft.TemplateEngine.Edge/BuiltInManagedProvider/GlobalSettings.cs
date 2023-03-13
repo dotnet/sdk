@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Installer;
 using Microsoft.TemplateEngine.Edge.Settings;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
@@ -98,6 +99,11 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
                     }
 
                     return packages;
+                }
+                catch (JsonReaderException ex)
+                {
+                    var wrappedEx = new JsonReaderException(string.Format(LocalizableStrings.GlobalSettings_Error_CorruptedSettings, _globalSettingsFile, ex.Message), ex);
+                    throw wrappedEx;
                 }
                 catch (Exception)
                 {
