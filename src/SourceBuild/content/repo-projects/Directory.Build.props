@@ -1,7 +1,7 @@
 <Project>
 
   <PropertyGroup>
-    <RepositoryName Condition="'$(RepositoryName)' == ''">$(MSBuildProjectName)</RepositoryName>
+    <RepositoryName>$(MSBuildProjectName)</RepositoryName>
   </PropertyGroup>
 
   <Import Project="$([MSBuild]::GetPathOfFileAbove(Directory.Build.props, $(MSBuildThisFileDirectory)..))" />
