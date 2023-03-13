@@ -544,6 +544,30 @@ The configuration details options are identical in both situations, they only di
 |`operations.condition`|A boolean expression whose result determines whether or not to use this custom operation. If this is not provided, the operation is used.|no|
 |`operations.configuration`|The details of the operation configuration. Each type of operation has its own configuration options, as detailed below.|yes|
 
+SpecialCustomOperations can be used for adding conditions for handling files with extensions not listed in [Conditional processing and comment syntax](../docs/Conditional-processing-and-comment-syntax.md#introduction).
+
+```JSON
+{
+  "SpecialCustomOperations": {
+    "**.axml": {
+      "operations": [
+        {
+          "type": "conditional",
+          "configuration": {
+            "endif": [ "#endif", "<!--#endif" ],
+            "actionableIf": [ "<!--#if" ],
+            "actionableElse": [ "#else", "<!--#else" ],
+            "actionableElseif": [ "#elseif", "<!--#elseif", "#elif", "<!--#elif" ],
+            "trim": true,
+            "wholeLine": true,
+            "evaluator": "C++"
+          }
+        }
+      ]
+    }
+  }
+}
+```
 
 #### Balanced nesting
 This operation type is designed to be used in conjunction with a conditional operation, to help maintain the proper commenting on conditional, and the text they may optionally emit. See the section on configuring a custom conditional operation for more details.
