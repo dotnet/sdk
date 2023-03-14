@@ -1,1 +1,8 @@
-﻿
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>%FRAMEWORK%</TargetFramework>
+    <LangVersion>%LANG%</LangVersion>
+  </PropertyGroup>
+
+</Project>

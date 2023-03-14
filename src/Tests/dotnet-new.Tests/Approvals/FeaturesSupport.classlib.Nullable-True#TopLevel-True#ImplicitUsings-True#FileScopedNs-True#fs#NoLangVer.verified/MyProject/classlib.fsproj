@@ -2,8 +2,11 @@
 
   <PropertyGroup>
     <TargetFramework>%FRAMEWORK%</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="Library.fs" />
+  </ItemGroup>
 
 </Project>
