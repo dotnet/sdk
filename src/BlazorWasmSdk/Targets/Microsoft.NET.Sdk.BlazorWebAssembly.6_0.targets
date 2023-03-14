@@ -68,7 +68,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <DisableAutoWasmBuildApp>true</DisableAutoWasmBuildApp>
     <DisableAutoWasmPublishApp>true</DisableAutoWasmPublishApp>
     <EnableDefaultWasmAssembliesToBundle>false</EnableDefaultWasmAssembliesToBundle>
-    <WasmNestedPublishAppDependsOn>_GatherWasmFilesToPublish;$(WasmNestedPublishAppDependsOn)</WasmNestedPublishAppDependsOn>
+    <WasmNestedPublishAppDependsOn>_GatherBlazorFilesToPublish;$(WasmNestedPublishAppDependsOn)</WasmNestedPublishAppDependsOn>
     <BlazorEnableCompression Condition="'$(WasmBuildingForNestedPublish)' == 'true'">false</BlazorEnableCompression>
     <_WasmNestedPublishAppPreTarget>ComputeFilesToPublish</_WasmNestedPublishAppPreTarget>
   </PropertyGroup>
@@ -88,9 +88,9 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Import Project="Microsoft.NET.Sdk.BlazorWebAssembly.ServiceWorkerAssetsManifest.targets" Condition="'$(ServiceWorkerAssetsManifest)' != ''" />
 
-  <Target Name="_BlazorWasmNativeForBuild" DependsOnTargets="_GatherWasmFilesToBuild;WasmBuildApp" Condition="'$(UsingBrowserRuntimeWorkload)' == 'true'" />
+  <Target Name="_BlazorWasmNativeForBuild" DependsOnTargets="_GatherBlazorFilesToBuild;WasmBuildApp" Condition="'$(UsingBrowserRuntimeWorkload)' == 'true'" />
 
-  <Target Name="_GatherWasmFilesToBuild">
+  <Target Name="_GatherBlazorFilesToBuild">
     <ItemGroup>
       <WasmAssembliesToBundle Condition="'%(WasmAssembliesToBundle.FileName)' == 'Microsoft.JSInterop.WebAssembly'" AOT_InternalForceToInterpret="true" />
     </ItemGroup>
@@ -175,7 +175,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     DependsOnTargets="PrepareResourceNames;ComputeIntermediateSatelliteAssemblies;ResolveAssemblyReferences"
     BeforeTargets="PrepareForPublish" />
 
-  <Target Name="_GatherWasmFilesToPublish">
+  <Target Name="_GatherBlazorFilesToPublish">
     <ItemGroup>
       <WasmAssembliesToBundle Condition="'%(WasmAssembliesToBundle.FileName)' == 'Microsoft.JSInterop.WebAssembly'" AOT_InternalForceToInterpret="true" />
     </ItemGroup>
