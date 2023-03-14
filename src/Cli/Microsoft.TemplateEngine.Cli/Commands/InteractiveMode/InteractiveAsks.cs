@@ -19,6 +19,12 @@ namespace Microsoft.TemplateEngine.Cli.Commands.InteractiveMode
         // Tree or List depending on future implementation choices
         // I do not know how to use generic types T_T
         private List<UserQuery<string>> parametersTree;
+        private List<string> parametersToNotAsk = new List<string>
+        {
+            "TargetFrameworkOverride",
+            "langVersion",
+            "skipRestore"
+        };
 
         public InteractiveQuerying()
         {
@@ -29,19 +35,13 @@ namespace Microsoft.TemplateEngine.Cli.Commands.InteractiveMode
             InstantiateCommandArgs knownArgs,
             TemplateCommand template)
         {
-            // Some hard coded values first, just to get the hang of it
             // Assumption: no decisions tree for the prototype
-            if (knownArgs.ShortName is null)
-            {
-                parametersTree.Add(new UserQuery<string>("Name", "Please enter the name for project: "));
-            }
-
             var missingParams = template.GetMissingArguments(knownArgs.RemainingArguments);
 
             foreach (var parameter in missingParams)
             {
                 // Can this check be used, or will we need more details to consider this?
-                if (parameter.Value.Type == "parameter")
+                if (parameter.Value.Type == "parameter" && !parametersToNotAsk.Contains(parameter.Key))
                 {
                     parametersTree.Add(new UserQuery<string>(parameter.Value.Name, $"Please enter parameter {parameter.Value.Name}"));
                 }
@@ -77,6 +77,11 @@ namespace Microsoft.TemplateEngine.Cli.Commands.InteractiveMode
         public Type GetValueType()
         {
             return typeof(T);
+        }
+
+        public string GetParameterName()
+        {
+            return parameterName;
         }
     }
 }

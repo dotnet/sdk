@@ -4,6 +4,7 @@
 
 using System.CommandLine;
 using System.CommandLine.Invocation;
+using System.CommandLine.Parsing;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Edge;
 using Microsoft.TemplateEngine.Edge.Settings;
@@ -23,7 +24,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands.InteractiveMode
                     return;
                 }
 
-                var enterInteractiveMode = ShouldEnterInteractiveMode(context.ParseResult, instantiateCommand);
+                var enterInteractiveMode = ShouldEnterInteractiveMode(context.ParseResult);
                 if (enterInteractiveMode)
                 {
                     // TODO: add the default skip key
@@ -47,7 +48,11 @@ namespace Microsoft.TemplateEngine.Cli.Commands.InteractiveMode
                     IEnumerable<TemplateGroup> templateGroups = TemplateGroup.FromTemplateList(CliTemplateInfo.FromTemplateInfo(templates, hostSpecificDataLoader));
                     // --- End of env workaround
 
-                    InstantiateCommandArgs knownArgs = new InstantiateCommandArgs(instantiateCommand, context.ParseResult);
+                    var knownArgs = GetArgs(context.ParseResult);
+                    if (knownArgs is null)
+                    {
+                        return;
+                    }
 
                     InteractiveQuerying queries = new InteractiveQuerying();
                     TemplateCommand? templateCommand = GetTemplate(
@@ -61,12 +66,13 @@ namespace Microsoft.TemplateEngine.Cli.Commands.InteractiveMode
                         return;
                     }
 
-                    string language = templateCommand.LanguageOption is not null ? templateCommand.LanguageOption.ToString() : "<Default Language>";
-                    context.Console.WriteLine(InteractiveModePrompts.OpeningMessage(language, templateCommand.Template.Name, "skip button to register"));
+                    context.Console.WriteLine(InteractiveModePrompts.OpeningMessage("<Default Language>", templateCommand.Template.Name, "skip button"));
 
                     queries.SetQuestions(knownArgs, templateCommand);
 
                     var questionsToAsk = queries.Questions();
+                    // TODO: adjust to different input types
+                    Dictionary<string, string> paramsToAdd = new Dictionary<string, string>();
 
                     while (questionsToAsk.MoveNext())
                     {
@@ -76,18 +82,39 @@ namespace Microsoft.TemplateEngine.Cli.Commands.InteractiveMode
                         {
                             context.Console.WriteLine(currentQuestion.GetQuery());
                             var paramValue = Console.ReadLine();
-                            if (paramValue is not null && paramValue.GetType() == currentQuestion.GetValueType())
+                            if (paramValue is not null
+                                && paramValue != string.Empty
+                                && paramValue.GetType() == currentQuestion.GetValueType())
                             {
-                                // Necessary checks to see if value by customer is good
-                                // only supporting string now
+                                // only supporting string for now
+                                paramsToAdd.Add(currentQuestion.GetParameterName(), paramValue);
+                                rightInfoCollected = true;
+                                //TODO: Necessary checks to see if value by customer is good
+                            }
+                            if (paramValue == string.Empty)
+                            {
+                                rightInfoCollected = true;
                             }
                         }
                     }
 
+                    // Hard coded for now bc I cannot find where this information would be in the parser / parserResult
+                    // Need to get input given by user
+                    string commandLineCall = $"dotnet new {templateCommand.Template.ShortNameList[0]}";
+                    foreach (var param in paramsToAdd)
+                    {
+                        commandLineCall += ($" --{param.Key} {param.Value}");
+                    }
                     // After everything is done reparse the command line input and execute the result
+
+                    Parser parser = ParserFactory.CreateParser(context.ParseResult.RootCommandResult.Command);
+                    parser.Invoke(commandLineCall);
                 }
             }
-            await next(context).ConfigureAwait(false);
+            else
+            {
+                await next(context).ConfigureAwait(false);
+            }
         }
 
         internal static InstantiateCommand? GetInstantiateCommand(Command command)
@@ -101,20 +128,40 @@ namespace Microsoft.TemplateEngine.Cli.Commands.InteractiveMode
             else
             {
                 instantiateCommand = newCommand.Subcommands.First(command => command.Name == "create") as InstantiateCommand;
-
             }
 
             return instantiateCommand;
         }
 
-        internal static bool ShouldEnterInteractiveMode(ParseResult parsedArgs, InstantiateCommand command)
+        internal static InstantiateCommandArgs? GetArgs(ParseResult parseResult)
+        {
+            NewCommand? newCommand = parseResult.CommandResult.Command as NewCommand;
+            InstantiateCommandArgs? knownArgs = null;
+            if (newCommand is null)
+            {
+                var instantiateCommand = parseResult.CommandResult.Command as InstantiateCommand;
+                if (instantiateCommand is not null)
+                {
+                    knownArgs = new InstantiateCommandArgs(instantiateCommand, parseResult);
+                }
+            }
+            else
+            {
+                var newCommandArgs = new NewCommandArgs(newCommand, parseResult);
+                knownArgs = InstantiateCommandArgs.FromNewCommandArgs(newCommandArgs);
+            }
+
+            return knownArgs;
+        }
+
+        internal static bool ShouldEnterInteractiveMode(ParseResult parsedArgs)
         {
             // TODO: find a better way to query for the option
             // TODO: Better handling of this option when executing
             bool interactiveOptionValue = false;
-            if (InstantiateCommand.InteractiveTemplateOption is not null)
+            if (NewCommand.InteractiveTemplateOption is not null)
             {
-                interactiveOptionValue = parsedArgs.GetValue(InstantiateCommand.InteractiveTemplateOption);
+                interactiveOptionValue = parsedArgs.GetValue(NewCommand.InteractiveTemplateOption);
             }
 
             var envVariable = Environment.GetEnvironmentVariable("DOTNETNEWINTERACTIVE");
@@ -149,6 +196,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands.InteractiveMode
                 {
                     foreach (CliTemplateInfo template in templateGrouping)
                     {
+                        // Make some additional check based on user input match (like template language)
                         try
                         {
                             TemplateCommand command = new(
