@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using System.CommandLine.Binding;
+using System.CommandLine.Invocation;
 using Microsoft.TemplateSearch.TemplateDiscovery.NuGet;
 using Microsoft.TemplateSearch.TemplateDiscovery.PackChecking;
 using Microsoft.TemplateSearch.TemplateDiscovery.Results;
@@ -105,7 +105,26 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery
             Options.Add(_diffOverrideNonPackagesOption);
 
             TreatUnmatchedTokensAsErrors = true;
-            this.SetHandler(ExecuteAsync, new CommandArgsBinder(this));
+            SetHandler(async (InvocationContext ctx, CancellationToken cancellationToken) =>
+            {
+                var config = new CommandArgs(ctx.BindingContext.ParseResult.GetValue(_basePathOption) ?? throw new Exception("Output path is not set"))
+                {
+                    LocalPackagePath = ctx.BindingContext.ParseResult.GetValue(_packagesPathOption),
+                    PageSize = ctx.BindingContext.ParseResult.GetValue(_pageSizeOption),
+                    SaveCandidatePacks = ctx.BindingContext.ParseResult.GetValue(_savePacksOption),
+                    RunOnlyOnePage = ctx.BindingContext.ParseResult.GetValue(_onePageOption),
+                    IncludePreviewPacks = ctx.BindingContext.ParseResult.GetValue(_allowPreviewPacksOption),
+                    DontFilterOnTemplateJson = ctx.BindingContext.ParseResult.GetValue(_noTemplateJsonFilterOption),
+                    Verbose = ctx.BindingContext.ParseResult.GetValue(_verboseOption),
+                    TestEnabled = ctx.BindingContext.ParseResult.GetValue(_testOption),
+                    Queries = ctx.BindingContext.ParseResult.GetValue(_queriesOption) ?? Array.Empty<SupportedQueries>(),
+                    DiffMode = ctx.BindingContext.ParseResult.GetValue(_diffOption),
+                    DiffOverrideSearchCacheLocation = ctx.BindingContext.ParseResult.GetValue(_diffOverrideCacheOption),
+                    DiffOverrideKnownPackagesLocation = ctx.BindingContext.ParseResult.GetValue(_diffOverrideNonPackagesOption),
+                };
+
+                await ExecuteAsync(config, cancellationToken).ConfigureAwait(false);
+            });
         }
 
         private static async Task ExecuteAsync(CommandArgs config, CancellationToken cancellationToken)
@@ -122,35 +141,5 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery
                 CacheFileTests.RunTests(metadataPath, legacyMetadataPath);
             }
         }
-
-        private class CommandArgsBinder : BinderBase<CommandArgs>
-        {
-            private readonly TemplateDiscoveryCommand _command;
-
-            internal CommandArgsBinder(TemplateDiscoveryCommand command)
-            {
-                _command = command;
-            }
-
-            protected override CommandArgs GetBoundValue(BindingContext bindingContext)
-            {
-                return new CommandArgs(bindingContext.ParseResult.GetValue(_command._basePathOption) ?? throw new Exception("Output path is not set"))
-                {
-                    LocalPackagePath = bindingContext.ParseResult.GetValue(_command._packagesPathOption),
-                    PageSize = bindingContext.ParseResult.GetValue(_command._pageSizeOption),
-                    SaveCandidatePacks = bindingContext.ParseResult.GetValue(_command._savePacksOption),
-                    RunOnlyOnePage = bindingContext.ParseResult.GetValue(_command._onePageOption),
-                    IncludePreviewPacks = bindingContext.ParseResult.GetValue(_command._allowPreviewPacksOption),
-                    DontFilterOnTemplateJson = bindingContext.ParseResult.GetValue(_command._noTemplateJsonFilterOption),
-                    Verbose = bindingContext.ParseResult.GetValue(_command._verboseOption),
-                    TestEnabled = bindingContext.ParseResult.GetValue(_command._testOption),
-                    Queries = bindingContext.ParseResult.GetValue(_command._queriesOption) ?? Array.Empty<SupportedQueries>(),
-                    DiffMode = bindingContext.ParseResult.GetValue(_command._diffOption),
-                    DiffOverrideSearchCacheLocation = bindingContext.ParseResult.GetValue(_command._diffOverrideCacheOption),
-                    DiffOverrideKnownPackagesLocation = bindingContext.ParseResult.GetValue(_command._diffOverrideNonPackagesOption),
-                };
-            }
-        }
-
     }
 }
