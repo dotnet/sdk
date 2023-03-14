@@ -128,6 +128,9 @@ Copyright (c) .NET Foundation. All rights reserved.
                    ResourceName="PublishProfileNotPresent" 
                    FormatArguments="$(PublishProfile)"/>
 
+    <NETSdkError Condition="'@(TargetILCompilerPack)' == '' and '@(HostILCompilerPack)' == ''"
+                 ResourceName="AotNoValidRuntimePackageError" />
+
     <!-- Projects in a solution cannot have conflicting configurations. This checks if PublishRelease conflicted at runtime to avoid extra project evaluations.
     SolutionExt is used to check if we are publishing a solution. Will be undefined if not.-->
     <NETSdkError Condition="'$(_IsPublishing)' == 'true' and
