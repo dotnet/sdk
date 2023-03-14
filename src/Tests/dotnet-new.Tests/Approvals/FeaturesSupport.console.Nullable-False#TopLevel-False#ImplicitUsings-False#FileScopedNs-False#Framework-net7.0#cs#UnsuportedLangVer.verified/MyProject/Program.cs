@@ -1,4 +1,5 @@
 ﻿using System;
+
 namespace console
 {
     class Program
