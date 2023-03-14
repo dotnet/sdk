@@ -66,14 +66,6 @@
 
   </Target>
 
-  <PropertyGroup>
-      <VersionFeature21>30</VersionFeature21>
-      <VersionFeature31>32</VersionFeature31>
-      <VersionFeature50>17</VersionFeature50>
-      <VersionFeature60>14</VersionFeature60>
-      <VersionFeature70>2</VersionFeature70>
-  </PropertyGroup>
-
   <Target Name="GenerateBundledVersionsProps" DependsOnTargets="SetupBundledComponents">
     <PropertyGroup>
       <BundledVersionsPropsFileName>Microsoft.NETCoreSdk.BundledVersions.props</BundledVersionsPropsFileName>
