@@ -6,31 +6,37 @@ namespace Microsoft.TemplateEngine.Cli.Commands.InteractiveMode
 {
     // Class to hold messages for the questions in interactive mode while in development
     // TODO: check and transfer messages to some place for translation
+    internal static class InteractiveModePrompts
+    {
+        public static string OpeningMessage(string programmingLanguage, string templateName, string accetpDefaultsKey)
+        {
+            return $"Creating a new {programmingLanguage} {templateName} project. Press '{accetpDefaultsKey}' to skip defaults";
+        }
+    }
+
     internal class InteractiveQuerying
     {
         // Tree or List depending on future implementation choices
         // I do not know how to use generic types T_T
-        private List<UserQuery<string>> parametersTree = new List<UserQuery<string>>();
+        private List<UserQuery<string>> parametersTree;
 
         public InteractiveQuerying()
         {
-            GetQuestions();
+            parametersTree = new List<UserQuery<string>>();
         }
 
-        public string OpeningMessage(string programmingLanguage, string templateName, string accetpDefaultsKey)
-        {
-            return $"Creating a new {programmingLanguage} {templateName} project. Press '{accetpDefaultsKey}' to skip defaults";
-        }
-
-        public void GetQuestions()
+        public void SetQuestions(
+            InstantiateCommandArgs knownArgs,
+            TemplateCommand template)
         {
             // Some hard coded values first, just to get the hang of it
-            // Assuming no decisions tree for the prototype
+            // Assumption: no decisions tree for the prototype
+            if (knownArgs.ShortName is null)
+            {
+                parametersTree.Add(new UserQuery<string>("Name", "Please enter the name for project: "));
+            }
 
-            parametersTree.Add(new UserQuery<string>("name", "Please enter the name for project: "));
-
-            // I would like to use the information that we have on TemplateCommand.cs, but not sure we would be able to get it at this moment
-            var missingParams = TemplateCommand.GetMissingArguments();
+            var missingParams = template.GetMissingArguments(knownArgs.RemainingArguments);
 
             foreach (var parameter in missingParams)
             {
@@ -52,7 +58,6 @@ namespace Microsoft.TemplateEngine.Cli.Commands.InteractiveMode
 
     }
 
-    // TODO: a better way to do this?
     internal class UserQuery<T>
     {
         private string parameterName;
@@ -67,6 +72,11 @@ namespace Microsoft.TemplateEngine.Cli.Commands.InteractiveMode
         public string GetQuery()
         {
             return parameterMessage;
+        }
+
+        public Type GetValueType()
+        {
+            return typeof(T);
         }
     }
 }

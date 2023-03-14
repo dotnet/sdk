@@ -5,6 +5,7 @@
 using System.CommandLine;
 using System.CommandLine.Invocation;
 using Microsoft.TemplateEngine.Abstractions;
+using Microsoft.TemplateEngine.Edge;
 using Microsoft.TemplateEngine.Edge.Settings;
 
 namespace Microsoft.TemplateEngine.Cli.Commands.InteractiveMode
@@ -13,40 +14,74 @@ namespace Microsoft.TemplateEngine.Cli.Commands.InteractiveMode
     {
         public static async Task EnterInteractiveMode(InvocationContext context, Func<InvocationContext, Task> next)
         {
-            if (context.ParseResult.CommandResult.Command.Name == "new")
+            // TODO: make sure we have access to Instantiate command
+            if (context.ParseResult.CommandResult.Command.Name == "new" || context.ParseResult.CommandResult.Command.Name == "create")
             {
-                NewCommand? templateCommand = context.ParseResult.CommandResult.Command as NewCommand;
-                if (templateCommand is null)
+                InstantiateCommand? instantiateCommand = GetInstantiateCommand(context.ParseResult.CommandResult.Command);
+                if (instantiateCommand is null)
                 {
                     return;
                 }
 
-                var enterInteractiveMode = ShouldEnterInteractiveMode(context.ParseResult, templateCommand);
+                var enterInteractiveMode = ShouldEnterInteractiveMode(context.ParseResult, instantiateCommand);
                 if (enterInteractiveMode)
                 {
                     // TODO: add the default skip key
                     // TODO: short name validation. right now we are assuming that the provided template exists and is valid
                     context.Console.WriteLine("Currently under development, not all features implemented yet");
 
-                    InteractiveQuerying questionCollection = new InteractiveQuerying();
-                    context.Console.WriteLine(questionCollection.OpeningMessage("<language>", "<template Name>", "s"));
+                    // --- Workaround to get the environmental settings at this stage. Firgure this out later
+                    ITemplateEngineHost host = instantiateCommand.Host(context.ParseResult);
+                    IEnvironment environment = new CliEnvironment();
+                    IEngineEnvironmentSettings settings = new EngineEnvironmentSettings(
+                        host,
+                        environment: environment,
+                        pathInfo: new CliPathInfo(host, environment, null));
 
-                    // tracks if we received all information necessary to instantiate the template
-                    bool commandComplete = false;
-                    var questions = questionCollection.Questions();
+                    TemplatePackageManager templatePackageManager = new(settings);
+                    HostSpecificDataLoader? hostSpecificDataLoader = new(settings);
 
-                    while (questions.MoveNext())
+                    IReadOnlyList<ITemplateInfo> templates =
+                        Task.Run(async () => await templatePackageManager.GetTemplatesAsync(default).ConfigureAwait(false)).GetAwaiter().GetResult();
+
+                    IEnumerable<TemplateGroup> templateGroups = TemplateGroup.FromTemplateList(CliTemplateInfo.FromTemplateInfo(templates, hostSpecificDataLoader));
+                    // --- End of env workaround
+
+                    InstantiateCommandArgs knownArgs = new InstantiateCommandArgs(instantiateCommand, context.ParseResult);
+
+                    InteractiveQuerying queries = new InteractiveQuerying();
+                    TemplateCommand? templateCommand = GetTemplate(
+                        knownArgs,
+                        settings,
+                        templateGroups,
+                        templatePackageManager);
+
+                    if (templateCommand is null)
                     {
-                        var currentQuestion = questions.Current;
-                        context.Console.WriteLine(questions.currentQuestion.GetQuery());
+                        return;
                     }
 
-                    while (!commandComplete)
+                    string language = templateCommand.LanguageOption is not null ? templateCommand.LanguageOption.ToString() : "<Default Language>";
+                    context.Console.WriteLine(InteractiveModePrompts.OpeningMessage(language, templateCommand.Template.Name, "skip button to register"));
+
+                    queries.SetQuestions(knownArgs, templateCommand);
+
+                    var questionsToAsk = queries.Questions();
+
+                    while (questionsToAsk.MoveNext())
                     {
-                        //context.Console.WriteLine(GetMissingArguments(missingParam));
-                        var paramValue = Console.ReadLine();
-                        // Try to cast value, and then check if valid. Maybe put in a loop in case value was not valid
-                        // Add to the command line text to reparse later
+                        var currentQuestion = questionsToAsk.Current;
+                        bool rightInfoCollected = false;
+                        while (!rightInfoCollected)
+                        {
+                            context.Console.WriteLine(currentQuestion.GetQuery());
+                            var paramValue = Console.ReadLine();
+                            if (paramValue is not null && paramValue.GetType() == currentQuestion.GetValueType())
+                            {
+                                // Necessary checks to see if value by customer is good
+                                // only supporting string now
+                            }
+                        }
                     }
 
                     // After everything is done reparse the command line input and execute the result
@@ -55,16 +90,31 @@ namespace Microsoft.TemplateEngine.Cli.Commands.InteractiveMode
             await next(context).ConfigureAwait(false);
         }
 
-        // True if we should ask user input interactively
-        // False if we should just continue with the pipeline
-        internal static bool ShouldEnterInteractiveMode(ParseResult parsedArgs, NewCommand command)
+        internal static InstantiateCommand? GetInstantiateCommand(Command command)
+        {
+            NewCommand? newCommand = command as NewCommand;
+            InstantiateCommand? instantiateCommand;
+            if (newCommand is null)
+            {
+                instantiateCommand = command as InstantiateCommand;
+            }
+            else
+            {
+                instantiateCommand = newCommand.Subcommands.First(command => command.Name == "create") as InstantiateCommand;
+
+            }
+
+            return instantiateCommand;
+        }
+
+        internal static bool ShouldEnterInteractiveMode(ParseResult parsedArgs, InstantiateCommand command)
         {
             // TODO: find a better way to query for the option
             // TODO: Better handling of this option when executing
             bool interactiveOptionValue = false;
-            if (NewCommand.InteractiveTemplateOption is not null)
+            if (InstantiateCommand.InteractiveTemplateOption is not null)
             {
-                interactiveOptionValue = parsedArgs.GetValue(NewCommand.InteractiveTemplateOption);
+                interactiveOptionValue = parsedArgs.GetValue(InstantiateCommand.InteractiveTemplateOption);
             }
 
             var envVariable = Environment.GetEnvironmentVariable("DOTNETNEWINTERACTIVE");
@@ -85,17 +135,71 @@ namespace Microsoft.TemplateEngine.Cli.Commands.InteractiveMode
             return true;
         }
 
-        internal static ITemplateInfo GetTemplate(
-            ParseResult parseResult,
+        internal static TemplateCommand? GetTemplate(
+            InstantiateCommandArgs args,
+            IEngineEnvironmentSettings environmentSettings,
+            IEnumerable<TemplateGroup> templateGroups,
             TemplatePackageManager templatePackageManager)
         {
-            // Why do we get the templates, and then the template groups?
-            IReadOnlyList<ITemplateInfo> templates =
-                Task.Run(async () => await templatePackageManager.GetTemplatesAsync(default).ConfigureAwait(false)).GetAwaiter().GetResult();
+            TemplateConstraintManager constraintManager = new(environmentSettings);
 
-            // IEnumerable<TemplateGroup> templateGroups = TemplateGroup.FromTemplateList(CliTemplateInfo.FromTemplateInfo(templates, hostSpecificDataLoader));
-            // TODO: Make this work when instantiating more than one template at a time
-            return templates.First(template => template.ShortNameList.Contains("something on parseResult"));
+            foreach (TemplateGroup templateGroup in templateGroups.Where(template => template.ShortNames.Contains(args.ShortName)))
+            {
+                foreach (IGrouping<int, CliTemplateInfo> templateGrouping in GetAllowedTemplates(constraintManager, templateGroup).GroupBy(g => g.Precedence).OrderByDescending(g => g.Key))
+                {
+                    foreach (CliTemplateInfo template in templateGrouping)
+                    {
+                        try
+                        {
+                            TemplateCommand command = new(
+                                args.Command,
+                                environmentSettings,
+                                templatePackageManager,
+                                templateGroup,
+                                template);
+
+                            // simplify this for now to just return one template
+                            return command;
+                        }
+                        catch (InvalidTemplateParametersException e)
+                        {
+                            Console.Error.WriteLine(LocalizableStrings.GenericWarning, e.Message);
+                        }
+                    }
+                }
+            }
+            return null;
         }
+
+        private static IEnumerable<CliTemplateInfo> GetAllowedTemplates(TemplateConstraintManager constraintManager, TemplateGroup templateGroup)
+        {
+            //if at least one template in the group has constraint, they must be evaluated
+            if (templateGroup.Templates.SelectMany(t => t.Constraints).Any())
+            {
+                CancellationTokenSource cancellationTokenSource = new();
+                Task<IEnumerable<CliTemplateInfo>> constraintEvaluationTask = templateGroup.GetAllowedTemplatesAsync(constraintManager, cancellationTokenSource.Token);
+                Task.Run(async () =>
+                {
+                    try
+                    {
+                        await constraintEvaluationTask.WaitAsync(cancellationTokenSource.Token).ConfigureAwait(false);
+                    }
+                    catch (TaskCanceledException)
+                    {
+                        //do nothing
+                    }
+                }).GetAwaiter().GetResult();
+
+                if (constraintEvaluationTask.IsCompletedSuccessfully)
+                {
+                    //return only allowed templates
+                    return constraintEvaluationTask.Result;
+                }
+                //if evaluation task fails, all the templates in a group are considered as allowed.
+                //in case the template may not be run, it will fail during instantiation.
+            }
+            return templateGroup.Templates;
+        }
+
     }
 }

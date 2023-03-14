@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using System.CommandLine.Parsing;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Constraints;
@@ -218,37 +217,28 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             return instantiateTask.Result;
         }
 
-        // Check what arguments were passed in the command line on invocation nd convert as needed
-        internal Dictionary<string, string> GetPassedArguments(IReadOnlyList<SymbolResult> parsedArgs)
-        {
-            // return a dictionary where the key is the name of the parameter, and the value is the value of the parameter
-            // as entered by user input IN THE COMMAND LINE ON COMMAND CALL
-            return new Dictionary<string, string>()
-            {
-                { "name", "value" }
-            };
-        }
-
         // Check what is still missing for sucessfull creation
         // Figure out the type to return for the function,
         // or if we will have multiple functions with different types
         internal IEnumerable<KeyValuePair<string, ITemplateParameter>> GetMissingArguments(
-            ParseResult parseResult,
-            List<string> setParameters,
-            List<TemplateOption> passedOptions)
+            string[] userEnteredParams)
+        // List<TemplateOption> passedOptions)
         {
-            var remainingOptions = TemplateOptions.Where(option => !passedOptions.Contains(option.Value));
-            foreach (var option in remainingOptions)
-            {
-                // yield return option;
-            }
+            //var remainingOptions = TemplateOptions.Where(option => !passedOptions.Contains(option.Value));
+            //foreach (var option in remainingOptions)
+            //{
+            //    // yield return option;
+            //}
 
-            foreach (var parameter in Template.ParameterDefinitions.AsReadonlyDictionary())
+            var templateParams = Template.ParameterDefinitions.AsReadonlyDictionary();
+
+            foreach (var param in templateParams)
             {
-                if (!setParameters.Contains(parameter.Key))
+                if (!userEnteredParams.Contains(param.Key))
                 {
-                    yield return parameter;
+                    yield return param;
                 }
+
             }
         }
 

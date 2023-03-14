@@ -24,6 +24,8 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             this.AddArgument(ShortNameArgument);
             this.AddArgument(RemainingArguments);
 
+            this.AddGlobalOption(InteractiveTemplateOption);
+
             this.AddOption(SharedOptions.OutputOption);
             this.AddOption(SharedOptions.NameOption);
             this.AddOption(SharedOptions.DryRunOption);
@@ -38,7 +40,16 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             this.AddValidator(symbolResult => parentCommand.ValidateOptionUsage(symbolResult, SharedOptions.ForceOption));
             this.AddValidator(symbolResult => parentCommand.ValidateOptionUsage(symbolResult, SharedOptions.NoUpdateCheckOption));
             this.AddValidator(symbolResult => parentCommand.ValidateOptionUsage(symbolResult, SharedOptions.ProjectPathOption));
+
+            Host = hostBuilder;
         }
+
+        internal static Option<bool> InteractiveTemplateOption { get; } = new("--interactiveTemplate")
+        {
+            // TODO: link the right description here
+            Description = SymbolStrings.Option_Interactive,
+            IsHidden = true
+        };
 
         internal static Argument<string> ShortNameArgument { get; } = new Argument<string>("template-short-name")
         {
@@ -51,6 +62,8 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             Description = SymbolStrings.Command_Instantiate_Argument_TemplateOptions,
             Arity = new ArgumentArity(0, 999)
         };
+
+        internal Func<ParseResult, ITemplateEngineHost> Host { get; }
 
         internal IReadOnlyList<Option> PassByOptions { get; } = new Option[]
         {
