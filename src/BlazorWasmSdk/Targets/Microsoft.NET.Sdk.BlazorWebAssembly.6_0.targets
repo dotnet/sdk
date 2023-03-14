@@ -163,7 +163,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     </ItemGroup>
 
     <ItemGroup>
-      <WasmStaticWebAsset Include="@(_BlazorJSStaticWebAsset)" />
+      <StaticWebAsset Include="@(_BlazorJSStaticWebAsset)" />
       <StaticWebAsset Include="@(_BlazorGzipStaticWebAsset)" />
     </ItemGroup>
   </Target>
