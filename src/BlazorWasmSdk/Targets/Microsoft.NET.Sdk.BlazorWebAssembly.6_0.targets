@@ -10,6 +10,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 ***********************************************************************************************
 -->
 <Project ToolsVersion="14.0">
+  <Import Sdk="Microsoft.NET.Sdk.WebAssembly" Project="Sdk.targets" />
 
   <PropertyGroup>
     <EnableDefaultContentItems Condition=" '$(EnableDefaultContentItems)' == '' ">true</EnableDefaultContentItems>
