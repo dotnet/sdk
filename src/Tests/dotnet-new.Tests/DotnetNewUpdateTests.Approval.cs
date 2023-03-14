@@ -50,7 +50,14 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .Execute();
 
             return Verify(commandResult.StdOut)
-                .AddScrubber(output => output.ScrubAndReplace(globalSettingsFile, "%GLOBAL SETTINGS FILE%"));
+                .AddScrubber(output => output.ScrubAndReplace(globalSettingsFile, "%GLOBAL SETTINGS FILE%"))
+                .AddScrubber(output =>
+                {
+                    output.UnixifyNewlines()
+                          .ScrubAndReplace("All template packages are up-to-date.", string.Empty);
+
+                    output.ScrubAndReplace("\n", string.Empty);
+                });
         }
     }
 }
