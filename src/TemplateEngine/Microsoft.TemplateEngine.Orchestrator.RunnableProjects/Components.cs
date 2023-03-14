@@ -7,6 +7,7 @@ using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.OperationConfig;
+using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Validation;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
@@ -60,6 +61,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 (typeof(IGeneratedSymbolMacro), RegexMatchMacro),
                 (typeof(IMacro), SwitchMacro),
                 (typeof(IGeneratedSymbolMacro), SwitchMacro),
+
+                (typeof(ITemplateValidatorFactory), new MandatoryValidationFactory()),
+                (typeof(ITemplateValidatorFactory), new MandatoryLocalizationValidationFactory()),
             };
     }
 }

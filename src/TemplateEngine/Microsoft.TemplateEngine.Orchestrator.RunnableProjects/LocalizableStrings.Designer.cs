@@ -79,7 +79,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Choice parameter {0} is invalid. It allows multiple values (&apos;AllowMultipleValues=true&apos;), while some of the configured choices contain separator characters ({1}). Invalid choices: {2}.
+        ///   Looks up a localized string similar to Choice parameter &apos;{0}&apos; is invalid. It allows multiple values (&apos;AllowMultipleValues=true&apos;), while some of the configured choices contain separator characters ({1}). Invalid choices: {2}.
         /// </summary>
         internal static string Authoring_InvalidMultichoiceSymbol {
             get {

@@ -8,7 +8,9 @@ using Microsoft.TemplateEngine.Abstractions.Mount;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Localization;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Serialization;
+using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Validation;
 using Microsoft.TemplateEngine.TestHelper;
+using Microsoft.TemplateEngine.Utils;
 using Xunit;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.TemplateConfigTests
@@ -303,7 +305,7 @@ false,
         #region Validation Tests
 
         [Fact]
-        public void CanValidatePostActionWithoutLocalization()
+        public async Task CanValidatePostActionWithoutLocalization()
         {
             IEngineEnvironmentSettings environmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
             string tempFolder = environmentSettings.GetTempVirtualizedPath();
@@ -348,17 +350,19 @@ false,
             IFile? locFile = mountPoint.FileInfo(localizationFile);
             Assert.NotNull(locFile);
 
-            using var runnableProjectConfig = new RunnableProjectConfig(environmentSettings, generator, templateConfigFile);
-            var localizationModel = LocalizationModelDeserializer.Deserialize(locFile);
-            Assert.True(runnableProjectConfig.VerifyLocalizationModel(localizationModel, locFile));
+            using var runnableProjectConfig = new RunnableProjectConfig(environmentSettings, generator, templateConfigFile, localeConfigFile: locFile);
+            await runnableProjectConfig.ValidateAsync(ValidationScope.Instantiation, default).ConfigureAwait(false);
 
-            runnableProjectConfig.ConfigurationModel.Localize(localizationModel);
+            Assert.NotNull(runnableProjectConfig.Localization);
+            Assert.True(runnableProjectConfig.Localization.IsValid);
+
+            runnableProjectConfig.Localize();
             runnableProjectConfig.ConfigurationModel.PostActionModels.Single(model => model.Id == "pa0" && model.Description == "localizedDescription");
             runnableProjectConfig.ConfigurationModel.PostActionModels.Single(model => model.Id != "pa0" && model.Description == "text");
         }
 
         [Fact]
-        public void CanValidatePostActionWithDefaultInstructionLocalization()
+        public async Task CanValidatePostActionWithDefaultInstructionLocalization()
         {
             TemplateConfigModel baseConfig = new TemplateConfigModel("Test")
             {
@@ -401,16 +405,18 @@ false,
             IFile? locFile = mountPoint.FileInfo(localizationFile);
             Assert.NotNull(locFile);
 
-            using var runnableProjectConfig = new RunnableProjectConfig(environmentSettings, A.Fake<IGenerator>(), templateConfigFile);
-            var localizationModel = LocalizationModelDeserializer.Deserialize(locFile);
-            Assert.True(runnableProjectConfig.VerifyLocalizationModel(localizationModel, locFile));
+            using var runnableProjectConfig = new RunnableProjectConfig(environmentSettings, generator, templateConfigFile, localeConfigFile: locFile);
+            await runnableProjectConfig.ValidateAsync(ValidationScope.Instantiation, default).ConfigureAwait(false);
 
-            runnableProjectConfig.ConfigurationModel.Localize(localizationModel);
+            Assert.NotNull(runnableProjectConfig.Localization);
+            Assert.True(runnableProjectConfig.Localization.IsValid);
+
+            runnableProjectConfig.Localize();
             runnableProjectConfig.ConfigurationModel.PostActionModels.Single(model => model.Id == "pa0" && model.ManualInstructionInfo[0].Text == "localized");
         }
 
         [Fact]
-        public void CannotValidatePostActionWithExtraInstructionLocalization()
+        public async Task CannotValidatePostActionWithExtraInstructionLocalization()
         {
             TemplateConfigModel baseConfig = new TemplateConfigModel("Test")
             {
@@ -465,20 +471,24 @@ false,
             IFile? locFile = mountPoint.FileInfo(localizationFilename);
             Assert.NotNull(locFile);
 
-            using var runnableProjectConfig = new RunnableProjectConfig(environmentSettings, A.Fake<IGenerator>(), templateConfigFile);
-            var localizationModel = LocalizationModelDeserializer.Deserialize(locFile);
-            Assert.False(runnableProjectConfig.VerifyLocalizationModel(localizationModel, locFile));
+            using var runnableProjectConfig = new RunnableProjectConfig(environmentSettings, generator, templateConfigFile, localeConfigFile: locFile);
+            await runnableProjectConfig.ValidateAsync(ValidationScope.Instantiation, default).ConfigureAwait(false);
 
-            var warningMessages = loggedMessages.Where(log => log.Item1 == LogLevel.Warning);
-            Assert.Single(warningMessages);
-            Assert.Contains(
+            Assert.NotNull(runnableProjectConfig.Localization);
+            Assert.False(runnableProjectConfig.Localization.IsValid);
+
+            IValidationEntry validationError = Assert.Single(runnableProjectConfig.Localization.ValidationErrors);
+
+            Assert.Equal(IValidationEntry.SeverityLevel.Error, validationError.Severity);
+            Assert.Equal("LOC001", validationError.Code);
+            Assert.Equal(
                 string.Format(LocalizableStrings.Authoring_InvalidManualInstructionLocalizationIndex, "extra", "pa0"),
-                warningMessages.Single().Item2);
-            Assert.Contains(localizationFilename, warningMessages.Single().Item2);
+                validationError.ErrorMessage);
+            Assert.Equal("/" + localizationFilename, runnableProjectConfig.Localization.File.FullPath);
         }
 
         [Fact]
-        public void CannotValidateExtraPostActionLocalization()
+        public async Task CannotValidateExtraPostActionLocalization()
         {
             TemplateConfigModel baseConfig = new TemplateConfigModel("Test")
             {
@@ -533,22 +543,24 @@ false,
             IFile? locFile = mountPoint.FileInfo(localizationFile);
             Assert.NotNull(locFile);
 
-            using var runnableProjectConfig = new RunnableProjectConfig(environmentSettings, A.Fake<IGenerator>(), templateConfigFile);
-            var localizationModel = LocalizationModelDeserializer.Deserialize(locFile);
-            Assert.False(runnableProjectConfig.VerifyLocalizationModel(localizationModel, locFile));
+            using var runnableProjectConfig = new RunnableProjectConfig(environmentSettings, generator, templateConfigFile, localeConfigFile: locFile);
+            await runnableProjectConfig.ValidateAsync(ValidationScope.Instantiation, default).ConfigureAwait(false);
 
-            var warningMessages = loggedMessages.Where(log => log.Item1 == LogLevel.Warning);
-            Assert.Single(warningMessages);
+            Assert.NotNull(runnableProjectConfig.Localization);
+            Assert.False(runnableProjectConfig.Localization.IsValid);
 
-            Assert.Contains(
+            IValidationEntry validationError = Assert.Single(runnableProjectConfig.Localization.ValidationErrors);
+
+            Assert.Equal(IValidationEntry.SeverityLevel.Error, validationError.Severity);
+            Assert.Equal("LOC002", validationError.Code);
+            Assert.Equal(
                string.Format(LocalizableStrings.Authoring_InvalidPostActionLocalizationIndex, "pa1"),
-               warningMessages.Single().Item2);
+               validationError.ErrorMessage);
         }
-
         #endregion
 
         [Fact]
-        public void CanLocalizeParameters()
+        public async Task CanLocalizeParameters()
         {
             TemplateConfigModel baseConfig = new TemplateConfigModel("Test")
             {
@@ -558,6 +570,7 @@ false,
                 {
                     new ParameterSymbol("test")
                     {
+                        DataType = "choice",
                         Description = "not localized",
                         DisplayName = "not localized",
                         Choices = new Dictionary<string, ParameterChoice>
@@ -579,6 +592,7 @@ false,
             """;
 
             IEngineEnvironmentSettings environmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
+            RunnableProjectGenerator generator = new();
             string tempFolder = _environmentSettingsHelper.CreateTemporaryFolder();
             string localizationFile = string.Format(DefaultLocalizeConfigRelativePath, "de-DE");
 
@@ -586,14 +600,25 @@ false,
 
             using IMountPoint mountPoint = environmentSettings.MountPath(tempFolder);
 
-            IFile? locFile = mountPoint.FileInfo(Path.Combine(tempFolder, localizationFile));
+            IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>
+            {
+                // template.json
+                { TestFileSystemUtils.DefaultConfigRelativePath, baseConfig.ToJsonString() }
+            };
+            environmentSettings.WriteTemplateSource(tempFolder, templateSourceFiles);
+
+            IFile? templateConfigFile = mountPoint.FileInfo(TestFileSystemUtils.DefaultConfigRelativePath);
+            Assert.NotNull(templateConfigFile);
+            IFile? locFile = mountPoint.FileInfo(localizationFile);
             Assert.NotNull(locFile);
 
-            var runnableProjectConfig = new RunnableProjectConfig(environmentSettings, A.Fake<IGenerator>(), baseConfig, A.Fake<IDirectory>());
-            LocalizationModel localizationModel = LocalizationModelDeserializer.Deserialize(mountPoint.FileInfo(localizationFile)!);
-            Assert.True(runnableProjectConfig.VerifyLocalizationModel(localizationModel, locFile));
+            using var runnableProjectConfig = new RunnableProjectConfig(environmentSettings, generator, templateConfigFile, localeConfigFile: locFile);
+            await runnableProjectConfig.ValidateAsync(ValidationScope.Instantiation, default).ConfigureAwait(false);
 
-            runnableProjectConfig.ConfigurationModel.Localize(localizationModel);
+            Assert.NotNull(runnableProjectConfig.Localization);
+            Assert.True(runnableProjectConfig.Localization.IsValid);
+
+            runnableProjectConfig.Localize();
             ParameterSymbol actualSymbol = runnableProjectConfig.ConfigurationModel.Symbols.OfType<ParameterSymbol>().Single(s => s.Name == "test");
 
             Assert.Equal("localized displayName", actualSymbol.DisplayName);

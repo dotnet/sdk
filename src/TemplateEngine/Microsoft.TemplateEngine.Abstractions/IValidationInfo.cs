@@ -8,6 +8,11 @@ namespace Microsoft.TemplateEngine.Abstractions
     public interface IValidationInfo
     {
         /// <summary>
+        /// <see langword="true"/> when the template is valid to be used.
+        /// </summary>
+        bool IsValid { get; }
+
+        /// <summary>
         /// Gets the results of template validation.
         /// </summary>
         IReadOnlyList<IValidationEntry> ValidationErrors { get; }

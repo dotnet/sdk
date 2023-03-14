@@ -22,11 +22,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         string ITemplateInfo.ConfigPlace => ConfigFile?.FullPath ?? throw new InvalidOperationException("Configuration file is not initialized, are you using test constructor?");
 
-        IFileSystemInfo? ITemplate.LocaleConfiguration => _localeConfigFile;
+        IFileSystemInfo? ITemplate.LocaleConfiguration => _localizaitonInfo?.File;
 
         IFileSystemInfo? ITemplate.HostSpecificConfiguration => _hostConfigFile;
 
-        string? ITemplateInfo.LocaleConfigPlace => _localeConfigFile?.FullPath;
+        string? ITemplateInfo.LocaleConfigPlace => _localizaitonInfo?.File.FullPath;
 
         string? ITemplateInfo.HostConfigPlace => _hostConfigFile?.FullPath;
 

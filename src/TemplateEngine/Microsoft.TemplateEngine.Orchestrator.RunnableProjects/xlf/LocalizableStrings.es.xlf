@@ -14,8 +14,8 @@
 {1} is a single-word identifier string. Such as "myPostAction".</note>
       </trans-unit>
       <trans-unit id="Authoring_InvalidMultichoiceSymbol">
-        <source>Choice parameter {0} is invalid. It allows multiple values ('AllowMultipleValues=true'), while some of the configured choices contain separator characters ({1}). Invalid choices: {2}</source>
-        <target state="translated">El parámetro de opción {0} no es válido. Permite varios valores ('AllowMultipleValues=true'), mientras que algunas de las opciones configuradas contienen caracteres separadores ({1}). Opciones no válidas: {2}</target>
+        <source>Choice parameter '{0}' is invalid. It allows multiple values ('AllowMultipleValues=true'), while some of the configured choices contain separator characters ({1}). Invalid choices: {2}</source>
+        <target state="needs-review-translation">El parámetro de opción {0} no es válido. Permite varios valores ('AllowMultipleValues=true'), mientras que algunas de las opciones configuradas contienen caracteres separadores ({1}). Opciones no válidas: {2}</target>
         <note>{0} is the offending symbol name, {1} is a set of separator characters, {2} is a csv list of offending choice values</note>
       </trans-unit>
       <trans-unit id="Authoring_InvalidPostActionLocalizationIndex">

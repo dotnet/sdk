@@ -15,6 +15,7 @@ using Microsoft.TemplateEngine.Abstractions.Parameters;
 using Microsoft.TemplateEngine.Core;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Core.Expressions.Cpp2;
+using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Validation;
 using Microsoft.TemplateEngine.Utils;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
@@ -37,7 +38,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         }
 
         /// <inheritdoc/>
-        Task<ITemplate?> IGenerator.LoadTemplateAsync(IEngineEnvironmentSettings settings, ITemplateLocator templateLocator, string? baselineName, CancellationToken cancellationToken)
+        async Task<ITemplate?> IGenerator.LoadTemplateAsync(IEngineEnvironmentSettings settings, ITemplateLocator templateLocator, string? baselineName, CancellationToken cancellationToken)
         {
             IMountPoint? mountPoint = null;
             IFile? configFile = null;
@@ -45,7 +46,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             {
                 if (!settings.TryGetMountPoint(templateLocator.MountPointUri, out mountPoint))
                 {
-                    return Task.FromResult((ITemplate?)null);
+                    return null;
                 }
                 if (mountPoint == null)
                 {
@@ -54,7 +55,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 configFile = mountPoint.FileInfo(templateLocator.ConfigPlace);
                 if (configFile == null)
                 {
-                    return Task.FromResult((ITemplate?)null);
+                    return null;
                 }
                 IFile? localeConfig = null;
                 IFile? hostTemplateConfigFile = null;
@@ -64,16 +65,18 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     hostTemplateConfigFile = string.IsNullOrWhiteSpace(extendedTemplateLocator.HostConfigPlace) ? null : mountPoint.FileInfo(extendedTemplateLocator.HostConfigPlace!);
                 }
 
-                return Task.FromResult((ITemplate?)new RunnableProjectConfig(settings, this, configFile, hostTemplateConfigFile, localeConfig, baselineName));
+                RunnableProjectConfig loadedTemplate = new RunnableProjectConfig(settings, this, configFile, hostTemplateConfigFile, localeConfig, baselineName);
+                await loadedTemplate.ValidateAsync(ValidationScope.Instantiation, cancellationToken).ConfigureAwait(false);
+                if (loadedTemplate.Localization != null && loadedTemplate.Localization.IsValid)
+                {
+                    loadedTemplate.Localize();
+                }
+
+                return loadedTemplate;
             }
             catch (InvalidOperationException)
             {
                 throw;
-            }
-            catch (TemplateValidationException)
-            {
-                //do nothing
-                //template validation prints all required information
             }
             catch (NotSupportedException ex)
             {
@@ -90,7 +93,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 //unexpected error - print details
                 settings.Host.Logger.LogError(LocalizableStrings.Authoring_TemplateNotInstalled_Message, configFile?.GetDisplayPath(), ex);
             }
-            return Task.FromResult((ITemplate?)null);
+            return null;
         }
 
         /// <summary>
@@ -234,8 +237,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         [Obsolete]
         IList<ITemplate> IGenerator.GetTemplatesAndLangpacksFromDir(IMountPoint source, out IList<ILocalizationLocator> localizations)
         {
-            IReadOnlyList<ScannedTemplateInfo> foundTemplates = Task.Run(async () => await GetTemplatesFromMountPointInternalAsync(source, default).ConfigureAwait(false)).GetAwaiter().GetResult();
-            localizations = foundTemplates.SelectMany(t => t.Localizations.Values).ToList();
+            IReadOnlyList<ScannedTemplateInfo> foundTemplates =
+                      Task.Run(async () => await GetTemplatesFromMountPointInternalAsync(source, default).ConfigureAwait(false)).GetAwaiter().GetResult();
+
+            localizations = foundTemplates.SelectMany(t => t.Localizations.Values).OfType<ILocalizationLocator>().ToList();
 
             return foundTemplates.Select(t => (ITemplate)new LegacyTemplate(t, this)).ToList();
         }
@@ -266,14 +271,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                       ?? throw new NotSupportedException(string.Format(LocalizableStrings.RunnableProjectGenerator_Exception_LocaleConfigShouldBeFile, localeFileConfig.GetDisplayPath()));
                 }
 
-                var templateConfiguration = new RunnableProjectConfig(templateFileConfig.MountPoint.EnvironmentSettings, this, templateFile, hostTemplateConfigFile, localeFile, baselineName);
-                template = templateConfiguration;
+                RunnableProjectConfig loadedTemplate = new RunnableProjectConfig(templateFileConfig.MountPoint.EnvironmentSettings, this, templateFile, hostTemplateConfigFile, localeFile, baselineName);
+                Task.Run(async () => await loadedTemplate.ValidateAsync(ValidationScope.Instantiation, CancellationToken.None).ConfigureAwait(false)).GetAwaiter().GetResult();
+                template = loadedTemplate;
                 return true;
-            }
-            catch (TemplateValidationException)
-            {
-                //do nothing
-                //template validation prints all required information
             }
             catch (NotSupportedException ex)
             {
@@ -332,7 +333,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             return GetCreationResult(runnableProjectConfig);
         }
 
-        internal Task<IReadOnlyList<ScannedTemplateInfo>> GetTemplatesFromMountPointInternalAsync(IMountPoint source, CancellationToken cancellationToken)
+        internal async Task<IReadOnlyList<ScannedTemplateInfo>> GetTemplatesFromMountPointInternalAsync(IMountPoint source, CancellationToken cancellationToken)
         {
             _ = source ?? throw new ArgumentNullException(nameof(source));
             ILogger logger = source.EnvironmentSettings.Host.LoggerFactory.CreateLogger<RunnableProjectGenerator>();
@@ -345,13 +346,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 logger.LogDebug($"Found {TemplateConfigFileName} at {file.GetDisplayPath()}.");
                 try
                 {
-                    templateList.Add(new ScannedTemplateInfo(source.EnvironmentSettings, this, file));
-
-                }
-                catch (TemplateValidationException)
-                {
-                    //do nothing
-                    //template validation prints all required information
+                    var discoveredTemplate = new ScannedTemplateInfo(source.EnvironmentSettings, this, file);
+                    await discoveredTemplate.ValidateAsync(ValidationScope.Scanning, cancellationToken).ConfigureAwait(false);
+                    cancellationToken.ThrowIfCancellationRequested();
+                    templateList.Add(discoveredTemplate);
                 }
                 catch (NotSupportedException ex)
                 {
@@ -369,7 +367,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     logger.LogError(LocalizableStrings.Authoring_TemplateNotInstalled_Message, file.GetDisplayPath(), ex);
                 }
             }
-            return Task.FromResult((IReadOnlyList<ScannedTemplateInfo>)templateList);
+            return templateList;
         }
 
         private static void RemoveDisabledParameters(
@@ -482,6 +480,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             public IReadOnlyList<Guid> PostActions => _templateInfo.ConfigurationModel.PostActionModels.Select(pam => pam.ActionId).ToArray();
 
             public IReadOnlyList<TemplateConstraintInfo> Constraints => _templateInfo.ConfigurationModel.Constraints;
+
+            public bool IsValid => !ValidationErrors.Any(e => e.Severity == IValidationEntry.SeverityLevel.Error);
 
             public IReadOnlyList<IValidationEntry> ValidationErrors => _templateInfo.ValidationErrors;
 

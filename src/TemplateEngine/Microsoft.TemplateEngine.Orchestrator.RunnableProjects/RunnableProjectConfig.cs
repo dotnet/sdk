@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -47,7 +48,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         private static readonly string[] DefaultPlaceholderFilenames = new[] { "-.-", "_._" };
         private readonly Dictionary<Guid, string> _guidToGuidPrefixMap = new();
 
-        private readonly IFile? _localeConfigFile;
+        private readonly TemplateLocalizationInfo? _localizaitonInfo;
         private readonly IFile? _hostConfigFile;
 
         private IReadOnlyList<FileSourceMatchInfo>? _sources;
@@ -57,27 +58,26 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         private IReadOnlyList<ICreationPath>? _evaluatedPrimaryOutputs;
         private IReadOnlyList<IPostAction>? _evaluatedPostActions;
 
+        /// <summary>
+        /// Instantiation constructor - loads template with specific localization.
+        /// </summary>
         internal RunnableProjectConfig(IEngineEnvironmentSettings settings, IGenerator generator, IFile templateFile, IFile? hostConfigFile = null, IFile? localeConfigFile = null, string? baselineName = null)
             : base(settings, generator, templateFile, baselineName)
         {
             _hostConfigFile = hostConfigFile;
-            _localeConfigFile = localeConfigFile;
 
             SourceMountPoint = templateFile.MountPoint;
 
-            if (_localeConfigFile != null)
+            if (localeConfigFile != null)
             {
                 try
                 {
-                    LocalizationModel locModel = LocalizationModelDeserializer.Deserialize(_localeConfigFile);
-                    if (VerifyLocalizationModel(locModel, _localeConfigFile))
-                    {
-                        ConfigurationModel.Localize(locModel);
-                    }
+                    LocalizationModel locModel = LocalizationModelDeserializer.Deserialize(localeConfigFile);
+                    _localizaitonInfo = new TemplateLocalizationInfo(ParseLocFileName(localeConfigFile) ?? CultureInfo.InvariantCulture, locModel, localeConfigFile);
                 }
                 catch (Exception ex)
                 {
-                    Logger.LogWarning(LocalizableStrings.LocalizationModelDeserializer_Error_FailedToParse, _localeConfigFile.GetDisplayPath());
+                    Logger.LogWarning(LocalizableStrings.LocalizationModelDeserializer_Error_FailedToParse, localeConfigFile.GetDisplayPath());
                     Logger.LogDebug("Details: {0}", ex);
                 }
             }
@@ -169,6 +169,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         /// </summary>
         internal IMountPoint SourceMountPoint { get; }
 
+        internal TemplateLocalizationInfo? Localization => _localizaitonInfo;
+
         internal IReadOnlyList<IReplacementTokens> SymbolFilenameReplacements
         {
             get
@@ -177,6 +179,22 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 return _symbolFilenameReplacements;
             }
         }
+
+        internal override IReadOnlyDictionary<CultureInfo, TemplateLocalizationInfo> Localizations =>
+             _localizaitonInfo is null
+                ? new Dictionary<CultureInfo, TemplateLocalizationInfo>()
+                : new Dictionary<CultureInfo, TemplateLocalizationInfo>()
+                {
+                    { _localizaitonInfo.Locale, _localizaitonInfo }
+                };
+
+        internal override IReadOnlyDictionary<string, IFile> HostFiles =>
+            _hostConfigFile is null
+                ? new Dictionary<string, IFile>()
+                : new Dictionary<string, IFile>()
+                {
+                    { ParseHostFileName(_hostConfigFile.Name), _hostConfigFile }
+                };
 
         public void RemoveParameter(ITemplateParameter parameter)
         {
@@ -242,6 +260,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             return bindSymbolEvaluator.EvaluateBindSymbolsAsync(bindSymbols, variableCollection, cancellationToken);
         }
+
+        internal void Localize() => ConfigurationModel.Localize(Localizations.Single().Value.Model);
 
         // If the token is a string:
         //      check if its a valid file in the same directory as the sourceFile.

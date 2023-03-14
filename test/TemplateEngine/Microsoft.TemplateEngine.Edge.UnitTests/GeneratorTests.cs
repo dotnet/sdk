@@ -210,6 +210,8 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 
                 public IFileSystemInfo? HostSpecificConfiguration => null;
 
+                public bool IsValid => true;
+
                 public IReadOnlyList<IValidationEntry> ValidationErrors => Array.Empty<IValidationEntry>();
 
                 public IReadOnlyDictionary<string, ILocalizationLocator> Localizations { get; } = new Dictionary<string, ILocalizationLocator>();

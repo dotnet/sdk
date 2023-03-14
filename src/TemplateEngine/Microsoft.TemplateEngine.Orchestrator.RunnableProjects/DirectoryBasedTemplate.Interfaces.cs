@@ -3,16 +3,21 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Constraints;
+using Microsoft.TemplateEngine.Abstractions.Mount;
 using Microsoft.TemplateEngine.Abstractions.Parameters;
+using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel;
+using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Localization;
+using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Validation;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
-    internal abstract partial class DirectoryBasedTemplate : ITemplateMetadata, ITemplateLocator
+    internal abstract partial class DirectoryBasedTemplate : ITemplateMetadata, ITemplateLocator, ITemplateValidationInfo, IValidationInfo
     {
-        string ITemplateMetadata.Identity => TemplateIdentity;
+        string ITemplateMetadata.Identity => ConfigurationModel.Identity;
 
         Guid ITemplateLocator.GeneratorId => Generator.Id;
 
@@ -28,7 +33,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         int ITemplateMetadata.Precedence => ConfigurationModel.Precedence;
 
-        string ITemplateMetadata.Name => ConfigurationModel.Name ?? throw new TemplateValidationException("Template configuration should have name defined");
+        string ITemplateMetadata.Name => ConfigurationModel.Name ?? string.Empty;
 
         IReadOnlyList<string> ITemplateMetadata.ShortNameList => ConfigurationModel.ShortNameList ?? new List<string>();
 
@@ -49,8 +54,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         IReadOnlyList<TemplateConstraintInfo> ITemplateMetadata.Constraints => ConfigurationModel.Constraints;
 
         bool ITemplateMetadata.PreferDefaultName => ConfigurationModel.PreferDefaultName;
-        
-        public IReadOnlyList<IValidationEntry> ValidationErrors => throw new NotImplementedException();
 
         public bool IsValid => !ValidationErrors.Any(e => e.Severity == IValidationEntry.SeverityLevel.Error);
 

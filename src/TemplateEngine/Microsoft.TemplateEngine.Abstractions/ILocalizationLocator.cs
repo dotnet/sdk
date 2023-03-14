@@ -9,7 +9,7 @@ namespace Microsoft.TemplateEngine.Abstractions
     /// <summary>
     /// Represents a localization file for a template.
     /// </summary>
-    public interface ILocalizationLocator
+    public interface ILocalizationLocator : IValidationInfo
     {
         /// <summary>
         /// Gets the locale of the localizations.

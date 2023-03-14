@@ -126,7 +126,7 @@
 {1} is a single-word identifier string. Such as "myPostAction".</comment>
   </data>
   <data name="Authoring_InvalidMultichoiceSymbol" xml:space="preserve">
-    <value>Choice parameter {0} is invalid. It allows multiple values ('AllowMultipleValues=true'), while some of the configured choices contain separator characters ({1}). Invalid choices: {2}</value>
+    <value>Choice parameter '{0}' is invalid. It allows multiple values ('AllowMultipleValues=true'), while some of the configured choices contain separator characters ({1}). Invalid choices: {2}</value>
     <comment>{0} is the offending symbol name, {1} is a set of separator characters, {2} is a csv list of offending choice values</comment>
   </data>
   <data name="Authoring_InvalidPostActionLocalizationIndex" xml:space="preserve">

@@ -22,12 +22,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
     /// </summary>
     internal class ScannedTemplateInfo : DirectoryBasedTemplate, IScanTemplateInfo
     {
-        internal const string HostTemplateFileConfigBaseName = ".host.json";
-        internal const string LocalizationFilePrefix = "templatestrings.";
-        internal const string LocalizationFileExtension = ".json";
-
         private readonly IReadOnlyDictionary<string, IFile> _hostConfigFiles;
-        private readonly IReadOnlyDictionary<CultureInfo, TemplateLocalization> _localizations;
+        private readonly IReadOnlyDictionary<CultureInfo, TemplateLocalizationInfo> _localizations;
 
         /// <summary>
         /// Creates instance of the class based on configuration from <paramref name="templateFile"/>.
@@ -38,13 +34,17 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             _localizations = FindLocalizations();
         }
 
-        public IReadOnlyDictionary<string, ILocalizationLocator> Localizations => _localizations.ToDictionary(l => l.Key.Name, l => (ILocalizationLocator)l.Value);
+        IReadOnlyDictionary<string, ILocalizationLocator> IScanTemplateInfo.Localizations => _localizations.ToDictionary(l => l.Key.Name, l => (ILocalizationLocator)l.Value);
 
         public IReadOnlyDictionary<string, string> HostConfigFiles => _hostConfigFiles.ToDictionary(f => f.Key, f => f.Value.FullPath);
 
         public override IFile ConfigFile => base.ConfigFile ?? throw new InvalidOperationException();
 
         public override IDirectory ConfigDirectory => base.ConfigDirectory ?? throw new InvalidOperationException();
+
+        internal override IReadOnlyDictionary<CultureInfo, TemplateLocalizationInfo> Localizations => _localizations;
+
+        internal override IReadOnlyDictionary<string, IFile> HostFiles => _hostConfigFiles;
 
         /// <summary>
         /// Attempts to find the host configuration files.
@@ -55,16 +55,16 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             foreach (IFile hostFile in ConfigDirectory.EnumerateFiles($"*{HostTemplateFileConfigBaseName}", SearchOption.TopDirectoryOnly))
             {
-                allHostFilesForTemplate.Add(hostFile.Name.Replace(HostTemplateFileConfigBaseName, string.Empty), hostFile);
-                Logger.LogDebug($"Found *{HostTemplateFileConfigBaseName} at {hostFile.GetDisplayPath()}.");
+                allHostFilesForTemplate.Add(ParseHostFileName(hostFile.Name), hostFile);
+                Logger.LogDebug($"Found host configuration file at {hostFile.GetDisplayPath()}.");
             }
 
             return allHostFilesForTemplate;
         }
 
-        private IReadOnlyDictionary<CultureInfo, TemplateLocalization> FindLocalizations()
+        private IReadOnlyDictionary<CultureInfo, TemplateLocalizationInfo> FindLocalizations()
         {
-            Dictionary<CultureInfo, TemplateLocalization> localizations = new();
+            Dictionary<CultureInfo, TemplateLocalizationInfo> localizations = new();
             IDirectory? localizeFolder = ConfigDirectory.DirectoryInfo("localize");
             if (localizeFolder == null || !localizeFolder.Exists)
             {
@@ -73,23 +73,16 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             foreach (IFile locFile in localizeFolder.EnumerateFiles(LocalizationFilePrefix + "*" + LocalizationFileExtension, SearchOption.AllDirectories))
             {
-                string localeStr = locFile.Name.Substring(LocalizationFilePrefix.Length, locFile.Name.Length - LocalizationFilePrefix.Length - LocalizationFileExtension.Length);
-
-                CultureInfo? locale = CultureInfo.GetCultures(CultureTypes.AllCultures).FirstOrDefault(c => c.Name.Equals(localeStr, StringComparison.OrdinalIgnoreCase));
+                CultureInfo? locale = ParseLocFileName(locFile);
                 if (locale == null)
                 {
                     Logger.LogWarning(LocalizableStrings.LocalizationModelDeserializer_Error_FailedToParse, locFile.GetDisplayPath());
-                    Logger.LogWarning(LocalizableStrings.LocalizationModelDeserializer_Error_UnknownLocale, localeStr);
                     continue;
                 }
-
                 try
                 {
                     LocalizationModel locModel = LocalizationModelDeserializer.Deserialize(locFile);
-                    if (VerifyLocalizationModel(locModel, locFile))
-                    {
-                        localizations[locale] = new TemplateLocalization(locale, locModel, locFile);
-                    }
+                    localizations[locale] = new TemplateLocalizationInfo(locale, locModel, locFile);
                 }
                 catch (Exception ex)
                 {
@@ -98,36 +91,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 }
             }
             return localizations;
-        }
-
-        private class TemplateLocalization : ILocalizationLocator
-        {
-            public TemplateLocalization(CultureInfo locale, LocalizationModel model, IFile file)
-            {
-                Locale = locale;
-                Model = model;
-                File = file;
-            }
-
-            string ILocalizationLocator.Locale => Locale.Name;
-
-            string ILocalizationLocator.ConfigPlace => File.FullPath;
-
-            string ILocalizationLocator.Identity => throw new NotImplementedException();
-
-            string? ILocalizationLocator.Author => Model.Author;
-
-            string? ILocalizationLocator.Name => Model.Name;
-
-            string? ILocalizationLocator.Description => Model.Description;
-
-            IReadOnlyDictionary<string, IParameterSymbolLocalizationModel> ILocalizationLocator.ParameterSymbols => Model.ParameterSymbols;
-
-            internal CultureInfo Locale { get; }
-
-            internal LocalizationModel Model { get; }
-
-            internal IFile File { get; }
         }
     }
 }

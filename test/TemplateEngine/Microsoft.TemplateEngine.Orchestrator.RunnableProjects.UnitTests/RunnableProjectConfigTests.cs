@@ -11,6 +11,7 @@ using Microsoft.TemplateEngine.Abstractions.Mount;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Serialization;
+using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Validation;
 using Microsoft.TemplateEngine.TestHelper;
 using Newtonsoft.Json.Linq;
 using Xunit;
@@ -83,7 +84,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
         [InlineData(InvalidMultiChoiceDefinition, false, true)]
         [InlineData(ValidChoiceDefinition, true, true)]
         [InlineData(InvalidMultiChoiceDefinition, true, false)]
-        public void PerformTemplateValidation_ChoiceValuesValidation(string paramDefintion, bool isMultichoice, bool expectedToBeValid)
+        public async Task PerformTemplateValidation_ChoiceValuesValidation(string paramDefintion, bool isMultichoice, bool expectedToBeValid)
         {
             //
             // Template content preparation
@@ -121,28 +122,29 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
 
             List<(LogLevel, string)> loggedMessages = new();
             InMemoryLoggerProvider loggerProvider = new(loggedMessages);
-            IEngineEnvironmentSettings environment = _environmentSettingsHelper.CreateEnvironment(addLoggerProviders: new[] { loggerProvider });
-            string sourceBasePath = environment.GetTempVirtualizedPath();
+            IEngineEnvironmentSettings environmentSettings = _environmentSettingsHelper.CreateEnvironment(addLoggerProviders: new[] { loggerProvider });
+            string sourceBasePath = environmentSettings.GetTempVirtualizedPath();
 
-            TestFileSystemUtils.WriteTemplateSource(environment, sourceBasePath, templateSourceFiles);
-            using IMountPoint sourceMountPoint = environment.MountPath(sourceBasePath);
+            TestFileSystemUtils.WriteTemplateSource(environmentSettings, sourceBasePath, templateSourceFiles);
+            using IMountPoint sourceMountPoint = environmentSettings.MountPath(sourceBasePath);
             RunnableProjectGenerator rpg = new();
+
+            using RunnableProjectConfig templateConfig = new RunnableProjectConfig(environmentSettings, rpg, config, sourceMountPoint.Root);
+            await templateConfig.ValidateAsync(ValidationScope.Instantiation, default).ConfigureAwait(false);
 
             if (expectedToBeValid)
             {
-                using RunnableProjectConfig runnableConfig = new RunnableProjectConfig(environment, rpg, config, sourceMountPoint.Root);
-                Assert.Empty(loggedMessages.Where(l => l.Item1 >= LogLevel.Warning));
+                Assert.True(templateConfig.IsValid);
+                Assert.Empty(templateConfig.ValidationErrors.Where(e => e.Severity is IValidationEntry.SeverityLevel.Error or IValidationEntry.SeverityLevel.Warning));
             }
             else
             {
-                TemplateValidationException exc = Assert.Throws<TemplateValidationException>(() => new RunnableProjectConfig(environment, rpg, config, sourceMountPoint.Root));
-                Assert.Contains("The template configuration ", exc.Message);
-                Assert.Contains(" is not valid.", exc.Message);
-                _ = Assert.Single(loggedMessages.Where(l => l.Item1 >= LogLevel.Warning));
-                string errorMessage = loggedMessages.First(l => l.Item1 >= LogLevel.Warning).Item2;
-                Assert.Contains(
-                    "Choice parameter  is invalid. It allows multiple values ('AllowMultipleValues=true'), while some of the configured choices contain separator characters ('|', ','). Invalid choices: {First|Choice}",
-                    errorMessage);
+                Assert.False(templateConfig.IsValid);
+                IValidationEntry validationError = Assert.Single(templateConfig.ValidationErrors, e => e.Severity is IValidationEntry.SeverityLevel.Error or IValidationEntry.SeverityLevel.Warning);
+                Assert.Equal("MV004", validationError.Code);
+                Assert.Equal(
+                    "Choice parameter 'ParamA' is invalid. It allows multiple values ('AllowMultipleValues=true'), while some of the configured choices contain separator characters ('|', ','). Invalid choices: {First|Choice}",
+                    validationError.ErrorMessage);
             }
         }
     }
