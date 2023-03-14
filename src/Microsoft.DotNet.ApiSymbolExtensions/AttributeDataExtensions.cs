@@ -19,23 +19,24 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
         /// </summary>
         public static bool IsVisibleOutsideOfAssembly(this AttributeData attributeData,
             ISymbolFilter symbolFilter,
-            bool excludeWithArgumentsNotVisibleOutsideOfAssembly = true) =>
+            bool excludeWithTypeArgumentsNotVisibleOutsideOfAssembly = true) =>
             attributeData.AttributeClass != null &&
             symbolFilter.Include(attributeData.AttributeClass) &&
-            !HasArgumentsNotVisibleOutsideOfAssembly(attributeData, symbolFilter);
+            (!excludeWithTypeArgumentsNotVisibleOutsideOfAssembly ||
+             !HasTypeArgumentsNotVisibleOutsideOfAssembly(attributeData, symbolFilter));
 
         /// <summary>
         /// Excludes <see cref="AttributeData"/> that is not visible outside of an assembly.
         /// </summary>
         public static ImmutableArray<AttributeData> ExcludeNonVisibleOutsideOfAssembly(this ImmutableArray<AttributeData> attributes,
             ISymbolFilter symbolFilter,
-            bool excludeWithArgumentsNotVisibleOutsideOfAssembly = true) =>
-            attributes.Where(attribute => attribute.IsVisibleOutsideOfAssembly(symbolFilter, excludeWithArgumentsNotVisibleOutsideOfAssembly)).ToImmutableArray();
+            bool excludeWithTypeArgumentsNotVisibleOutsideOfAssembly = true) =>
+            attributes.Where(attribute => attribute.IsVisibleOutsideOfAssembly(symbolFilter, excludeWithTypeArgumentsNotVisibleOutsideOfAssembly)).ToImmutableArray();
 
         /// <summary>
         /// Checks if an <see cref="AttributeData"/> has <see cref="INamedTypeSymbol"/> arguments that point to a <see cref="Type"/> that isn't visible outside of the containing assembly.
         /// </summary>
-        public static bool HasArgumentsNotVisibleOutsideOfAssembly(this AttributeData attributeData, ISymbolFilter symbolFilter) =>
+        public static bool HasTypeArgumentsNotVisibleOutsideOfAssembly(this AttributeData attributeData, ISymbolFilter symbolFilter) =>
             attributeData.NamedArguments.Select(namedArgument => namedArgument.Value)
                 .Concat(attributeData.ConstructorArguments)
                 .Any(typedConstant => typedConstant.Kind == TypedConstantKind.Type
