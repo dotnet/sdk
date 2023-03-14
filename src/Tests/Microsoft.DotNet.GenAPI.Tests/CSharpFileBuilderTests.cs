@@ -1846,7 +1846,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                     namespace A
                     {
                         using System;
-                        public partial class C : IFun, IExplicit {
+                        public partial class C : IFun, IExplicit, IExplicit2 {
                             public int Foo;
                             public const int Bar = 29;
                             public int Baz { get; }
@@ -1857,6 +1857,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                             public void Do() => MyEvent(default(object), default(EventArgs));
                             public void Do(float f) {}
                             public static void DoStatic() {}
+                            public void Explicit2() {}
                             public void Fun() {}
                             public void Gen<T>() {}
                             public void Zoo() {}
@@ -1870,11 +1871,12 @@ namespace Microsoft.DotNet.GenAPI.Tests
                               set {}
                             }
                         }
-                        public class D : C {
+                        public class D : C, IExplicit, IExplicit2 {
                             public new int Foo;
                             public new const int Bar = 30;
                             public new int Baz { get; set; }
                             public new event EventHandler MyEvent;
+                            void IExplicit2.Explicit2() {}
                             public new void Do() => MyEvent(default(object), default(EventArgs));
                             public void Do(int i) {}
                             public new static void DoStatic() {}
@@ -1903,6 +1905,9 @@ namespace Microsoft.DotNet.GenAPI.Tests
                         public interface IExplicit {
                             void Explicit();
                         }
+                        public interface IExplicit2 {
+                            void Explicit2();
+                        }
                         public interface IFun {
                             void Fun();
                         }
@@ -1911,7 +1916,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                     expected: """
                     namespace A
                     {
-                        public partial class C : IFun, IExplicit
+                        public partial class C : IFun, IExplicit, IExplicit2
                         {
                             public const int Bar = 29;
                             public int Foo;
@@ -1922,6 +1927,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                             public void Do() {}
                             public void Do(float f) {}
                             public static void DoStatic() {}
+                            public void Explicit2() {}
                             public void Fun() {}
                             public void Gen<T>() {}
                             public void Zoo() {}
@@ -1930,13 +1936,14 @@ namespace Microsoft.DotNet.GenAPI.Tests
                             public partial struct MyNestedGenericStruct<T> {}
                             public partial struct MyNestedStruct {}
                         }
-                        public partial class D : C
+                        public partial class D : C, IExplicit, IExplicit2
                         {
                             public new const int Bar = 30;
                             public new int Foo;
                             public new int Baz { get { throw null; } set {} }
                             public new D this[int i] { get { throw null; } set {} }
                             public new event System.EventHandler MyEvent { add {} remove {} }
+                            void IExplicit2.Explicit2() {}
                             public new void Do() {}
                             public void Do(int i) {}
                             public new static void DoStatic() {}
@@ -1960,6 +1967,9 @@ namespace Microsoft.DotNet.GenAPI.Tests
                         }
                         public partial interface IExplicit {
                             void Explicit();
+                        }
+                        public partial interface IExplicit2 {
+                            void Explicit2();
                         }
                         public partial interface IFun {
                             void Fun();
