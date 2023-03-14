@@ -1776,12 +1776,13 @@ namespace Microsoft.DotNet.GenAPI.Tests
                     namespace A
                     {
                         using System;
-                        public partial class C : IFun {
+                        public partial class C : IFun, IExplicit {
                             public int Foo;
                             public const int Bar = 29;
                             public int Baz { get; }
                             #pragma warning disable 8618
                             public event EventHandler MyEvent;
+                            void IExplicit.Explicit() {}
                             #pragma warning disable 8625
                             public void Do() => MyEvent(default(object), default(EventArgs));
                             public void Do(float f) {}
@@ -1807,6 +1808,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                             public new void Do() => MyEvent(default(object), default(EventArgs));
                             public void Do(int i) {}
                             public new static void DoStatic() {}
+                            public void Explicit() {}
                             public new void Fun() {}
                             public new void Gen<T>() where T : IComparable {}
                             public new class MyNestedClass {}
@@ -1828,6 +1830,9 @@ namespace Microsoft.DotNet.GenAPI.Tests
                             public new void MyNestedStruct(double d) {}
                             public new void Zoo() {}
                         }
+                        public interface IExplicit {
+                            void Explicit();
+                        }
                         public interface IFun {
                             void Fun();
                         }
@@ -1836,13 +1841,14 @@ namespace Microsoft.DotNet.GenAPI.Tests
                     expected: """
                     namespace A
                     {
-                        public partial class C : IFun
+                        public partial class C : IFun, IExplicit
                         {
                             public const int Bar = 29;
                             public int Foo;
                             public int Baz { get { throw null; } }
                             public C this[int i] { get { throw null; } set {} }
                             public event System.EventHandler MyEvent { add {} remove {} }
+                            void IExplicit.Explicit() {}
                             public void Do() {}
                             public void Do(float f) {}
                             public static void DoStatic() {}
@@ -1864,6 +1870,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                             public new void Do() {}
                             public void Do(int i) {}
                             public new static void DoStatic() {}
+                            public void Explicit() {}
                             public new void Fun() {}
                             public new void Gen<T>() where T : System.IComparable {}
                             public new partial class MyNestedClass {}
@@ -1880,6 +1887,9 @@ namespace Microsoft.DotNet.GenAPI.Tests
                             public new void Baz() {}
                             public new void MyNestedStruct(double d) {}
                             public new void Zoo() {}
+                        }
+                        public partial interface IExplicit {
+                            void Explicit();
                         }
                         public partial interface IFun {
                             void Fun();
