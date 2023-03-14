@@ -369,7 +369,7 @@ namespace Microsoft.NET.Build.Tasks
                 }
             }
             
-            if (AotEnabled)
+            if (AotEnabled && _normalizedTargetFrameworkVersion.Major >= 7)
             {
                 if (!AddToolPack(ToolPackType.ILCompiler, _normalizedTargetFrameworkVersion, packagesToDownload, implicitPackageReferences))
                 {
