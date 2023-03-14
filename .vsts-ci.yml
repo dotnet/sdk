@@ -75,7 +75,7 @@ stages:
           name: NetCore1ESPool-Svc-Internal
           demands: ImageOverride -equals windows.vs2022preview.amd64
       ${{ if eq(variables['System.TeamProject'], 'public') }}:
-        helixTargetQueue: Windows.Amd64.VS2022.Pre.Open
+        helixTargetQueue: windows.amd64.server2022.open
       ${{ if ne(variables['System.TeamProject'], 'public') }}:
         helixTargetQueue: Windows.Amd64.VS2022.Pre
       strategy:
@@ -105,7 +105,7 @@ stages:
             name: NetCore1ESPool-Svc-Internal
             demands: ImageOverride -equals windows.vs2022preview.amd64
         ${{ if eq(variables['System.TeamProject'], 'public') }}:
-          helixTargetQueue: Windows.Amd64.VS2022.Pre.Open
+          helixTargetQueue: windows.amd64.server2022.open
         ${{ if ne(variables['System.TeamProject'], 'public') }}:
           helixTargetQueue: Windows.Amd64.VS2022.Pre
         strategy:
