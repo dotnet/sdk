@@ -6,6 +6,7 @@ using System.IO;
 using System.Runtime.Serialization.Json;
 using FluentAssertions;
 using Microsoft.Build.Framework;
+using Microsoft.NET.Sdk.WebAssembly;
 using Moq;
 using Xunit;
 
