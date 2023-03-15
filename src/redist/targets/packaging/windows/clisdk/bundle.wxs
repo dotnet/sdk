@@ -216,6 +216,7 @@
         being installed.
       -->
       <ExePackage SourceFile="$(var.FinalizerExeSourcePath)"
+                  Cache="always"
                   DetectCondition="WixBundleAction >= 3"
                   Id="Finalizer"
                   InstallCondition="WixBundleAction >= 4"

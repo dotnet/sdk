@@ -11,6 +11,7 @@
   <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="RemoveInternetSourcesFromNuGetConfig" />
   <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="ReplaceFeedsInNuGetConfig" />
   <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="UpdateJson" />
+  <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="UpdateNuGetConfigPackageSourcesMappings" />
   <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="ValidateUsageAgainstBaseline" />
   <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="WriteBuildOutputProps" />
   <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="WritePackageUsageData" />
@@ -176,6 +177,19 @@
           Condition="'$(NuGetConfigFile)' != '' OR '@(NuGetConfigFiles)' != ''"
           Inputs="$(MSBuildProjectFullPath)"
           Outputs="$(RepoCompletedSemaphorePath)UpdateNuGetConfig.complete">
+
+    <PropertyGroup>
+      <PrebuiltNuGetSourceName>prebuilt</PrebuiltNuGetSourceName>
+      <PreviouslySourceBuiltNuGetSourceName>previously-source-built</PreviouslySourceBuiltNuGetSourceName>
+      <ReferencePackagesNuGetSourceName>reference-packages</ReferencePackagesNuGetSourceName>
+      <SourceBuiltNuGetSourceName>source-built</SourceBuiltNuGetSourceName>
+      <ExtraSourcesNuGetSourceName>ExtraSources</ExtraSourcesNuGetSourceName>
+      <DotNet5InternalTransportNuGetSourceName>dotnet5-internal-transport</DotNet5InternalTransportNuGetSourceName>
+      <SourceBuildSources>$(PrebuiltNuGetSourceName);$(PreviouslySourceBuiltNuGetSourceName);$(ReferencePackagesNuGetSourceName);$(SourceBuiltNuGetSourceName)</SourceBuildSources>
+      <SourceBuildSources Condition="'$(ExtraRestoreSourcePath)' != ''">$(SourceBuildSources);$(ExtraSourcesNuGetSourceName)</SourceBuildSources>
+      <SourceBuildSources Condition="'$(VSS_NUGET_EXTERNAL_FEED_ENDPOINTS)' != '' and '$(SetUpInternalTransportFeed)' == 'true'">$(SourceBuildSources);$(DotNet5InternalTransportNuGetSourceName)</SourceBuildSources>
+    </PropertyGroup>
+
     <!-- Update the detected or manually specified NuGetConfigFile, but also allow multiple. -->
     <ItemGroup>
       <NuGetConfigFiles Include="$(NuGetConfigFile)" />
@@ -187,26 +201,26 @@
       KeepFeedPrefixes="@(KeepFeedPrefixes)" />
 
     <AddSourceToNuGetConfig NuGetConfigFile="%(NuGetConfigFiles.Identity)"
-                            SourceName="prebuilt"
+                            SourceName="$(PrebuiltNuGetSourceName)"
                             SourcePath="$(PrebuiltPackagesPath)"
                             />
 
     <AddSourceToNuGetConfig NuGetConfigFile="%(NuGetConfigFiles.Identity)"
-                            SourceName="previously-source-built"
+                            SourceName="$(PreviouslySourceBuiltNuGetSourceName)"
                             SourcePath="$(PrebuiltSourceBuiltPackagesPath)"
                             />
 
     <AddSourceToNuGetConfig NuGetConfigFile="%(NuGetConfigFiles.Identity)"
-                            SourceName="reference-packages"
+                            SourceName="$(ReferencePackagesNuGetSourceName)"
                             SourcePath="$(ReferencePackagesDir)"
                             />
 
     <AddSourceToNuGetConfig NuGetConfigFile="%(NuGetConfigFiles.Identity)"
-                            SourceName="source-built"
+                            SourceName="$(SourceBuiltNuGetSourceName)"
                             SourcePath="$(SourceBuiltPackagesPath)" />
 
     <AddSourceToNuGetConfig NuGetConfigFile="%(NuGetConfigFiles.Identity)"
-                            SourceName="ExtraSources"
+                            SourceName="$(ExtraSourcesNuGetSourceName)"
                             SourcePath="$(ExtraRestoreSourcePath)"
                             Condition="'$(ExtraRestoreSourcePath)' != ''" />
 
@@ -219,8 +233,13 @@
         '$(VSS_NUGET_EXTERNAL_FEED_ENDPOINTS)' != '' and
         '$(SetUpInternalTransportFeed)' == 'true'"
       NuGetConfigFile="%(NuGetConfigFiles.Identity)"
-      SourceName="dotnet5-internal-transport"
+      SourceName="$(DotNet5InternalTransportNuGetSourceName)"
       SourcePath="https://pkgs.dev.azure.com/dnceng/internal/_packaging/dotnet5-internal-transport/nuget/v3/index.json" />
+
+    <UpdateNuGetConfigPackageSourcesMappings
+      NuGetConfigFile="%(NuGetConfigFiles.Identity)"
+      BuildWithOnlineSources="$(BuildWithOnlineSources)"
+      SourceBuildSources="$(SourceBuildSources)" />
 
     <!-- Update NuGet.Config files that have deprecated myget feeds -->
     <ItemGroup>
