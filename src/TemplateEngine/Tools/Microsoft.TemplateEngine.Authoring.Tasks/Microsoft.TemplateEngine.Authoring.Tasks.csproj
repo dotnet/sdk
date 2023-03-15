@@ -15,6 +15,8 @@
     <PackageReference Include="Microsoft.Build.Utilities.Core" />
     <PackageReference Update="@(PackageReference)" PrivateAssets="All" />
     <ProjectReference Include="$(ToolsDir)\Microsoft.TemplateEngine.TemplateLocalizer.Core\Microsoft.TemplateEngine.TemplateLocalizer.Core.csproj" />
+    <ProjectReference Include="$(SrcDir)Microsoft.TemplateEngine.Edge\Microsoft.TemplateEngine.Edge.csproj" />
+    <ProjectReference Include="$(SrcDir)Microsoft.TemplateEngine.Orchestrator.RunnableProjects\Microsoft.TemplateEngine.Orchestrator.RunnableProjects.csproj" />
     <ProjectReference Update="@(ProjectReference)" PrivateAssets="All" />
   </ItemGroup>
 

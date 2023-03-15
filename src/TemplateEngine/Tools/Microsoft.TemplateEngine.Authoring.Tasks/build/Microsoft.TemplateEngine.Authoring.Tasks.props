@@ -1,6 +1,16 @@
 ﻿<Project>
   <PropertyGroup>
 
+    <ValidateTemplates Condition="'$(ValidateTemplates)' == ''">true</ValidateTemplates>
+
+    <!-- 
+      The directory containing your templates to be validated.
+      All the folders under this directory will be searched for "/.template.config/template.json" files.
+      If not provided, the directory from which the build was initiated will be used.
+    -->
+    
+    <ValidateTemplatesPath Condition="'$(ValidateTemplatesPath)' == ''">.</ValidateTemplatesPath>
+
     <!-- 
       Set this to true to create and update your templatestrings.xx.json files based on the content of your templates.json files. 
       If the value is not true, the rest of the properties related to localization are ignored.

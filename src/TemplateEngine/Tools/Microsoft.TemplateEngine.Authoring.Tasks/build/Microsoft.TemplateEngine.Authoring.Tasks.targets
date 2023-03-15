@@ -9,4 +9,11 @@
   <Target Name="LocalizeTemplatesAfterBuild" Condition="'$(LocalizeTemplates)' == 'true'" BeforeTargets="AfterBuild">
     <LocalizeTemplates TemplateFolder="$(LocalizableTemplatesPath)" SearchSubfolders="true" Languages="$(TemplateLanguages)"/>
   </Target>
+
+  <UsingTask TaskName="ValidateTemplates" AssemblyFile="$(TemplatingTasksAssembly)" Condition="'$(MSBuildRuntimeType)' != 'Full'" />
+  <UsingTask TaskName="ValidateTemplates" AssemblyFile="$(TemplatingTasksAssembly)" Condition="'$(MSBuildRuntimeType)' == 'Full'" TaskFactory="TaskHostFactory"/>
+
+  <Target Name="ValidateTemplatesAfterBuild" Condition="'$(ValidateTemplates)' == 'true'" BeforeTargets="AfterBuild" AfterTargets="LocalizeTemplatesAfterBuild">
+    <ValidateTemplates TemplateLocation="$(ValidateTemplatesPath)"/>
+  </Target>
 </Project>

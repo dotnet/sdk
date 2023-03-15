@@ -117,24 +117,33 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="Command_Localize_Log_ExportTaskFailed" xml:space="preserve">
+  <data name="Localize_Log_ExportTaskFailed" xml:space="preserve">
     <value>Failed to export localization files for 'template.json' file under the path '{0}': {1}.</value>
     <comment>Do not localize: 'template.json'</comment>
   </data>
-  <data name="Command_Localize_Log_FileProcessingCancelled" xml:space="preserve">
+  <data name="Localize_Log_FileProcessingCancelled" xml:space="preserve">
     <value>'LocalizeTemplates' stopped processing the following file, because the operation was cancelled: {0}</value>
     <comment>Do not localize: 'LocalizeTemplates'.
 {0} is the full path to a file, such as 'C:/Users/someguy/Desktop/template.json'</comment>
   </data>
-  <data name="Command_Localize_Log_TemplateFolderNotSet" xml:space="preserve">
-    <value>The property 'TemplateFolder' should be set for 'LocalizeTemplates' target.</value>
-    <comment>Do not localize: 
-- 'TemplateFolder'
-- 'LocalizeTemplates'
-'Target' and 'property' are referring to MSBuild concepts with the same names.</comment>
-  </data>
-  <data name="Command_Localize_Log_TemplateJsonNotFound" xml:space="preserve">
+  <data name="Localize_Log_TemplateJsonNotFound" xml:space="preserve">
     <value>Failed to find 'template.json' file under the path '{0}'.</value>
     <comment>Do not localize: 'template.json'</comment>
+  </data>
+  <data name="Log_Error_MissingRequiredProperty" xml:space="preserve">
+    <value>The property '{0}' should be set for '{1}' target.</value>
+    <comment>'Target' and 'property' are referring to MSBuild concepts with the same names.</comment>
+  </data>
+  <data name="Validate_Log_FoundTemplate" xml:space="preserve">
+    <value>Location '{0}': found {1} templates.</value>
+    <comment>{0} - path configured for scanning the templates, {1} - the number of templates found.</comment>
+  </data>
+  <data name="Validate_Log_TemplateConfiguration_Subcategory" xml:space="preserve">
+    <value>Template configuration</value>
+    <comment>this is subcategory of the error message displayed after build</comment>
+  </data>
+  <data name="Validate_Log_TemplateLocalization_Subcategory" xml:space="preserve">
+    <value>Template localization</value>
+    <comment>this is subcategory of the error message displayed after build</comment>
   </data>
 </root>

@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Build.Framework;
 using Microsoft.Extensions.Logging;
+using Microsoft.TemplateEngine.Authoring.Tasks.Tasks;
 using Microsoft.TemplateEngine.Authoring.Tasks.Utilities;
 using Microsoft.TemplateEngine.TemplateLocalizer.Core;
 
@@ -45,7 +46,7 @@ namespace Microsoft.TemplateEngine.Authoring.Tasks
         {
             if (string.IsNullOrWhiteSpace(TemplateFolder))
             {
-                Log.LogError(LocalizableStrings.Command_Localize_Log_TemplateFolderNotSet);
+                Log.LogError(LocalizableStrings.Log_Error_MissingRequiredProperty, nameof(TemplateFolder), nameof(LocalizeTemplates));
                 return false;
             }
 
@@ -53,7 +54,7 @@ namespace Microsoft.TemplateEngine.Authoring.Tasks
 
             if (templateJsonFiles.Count == 0)
             {
-                Log.LogError(LocalizableStrings.Command_Localize_Log_TemplateJsonNotFound, TemplateFolder);
+                Log.LogError(LocalizableStrings.Localize_Log_TemplateJsonNotFound, TemplateFolder);
                 return false;
             }
 
@@ -86,7 +87,7 @@ namespace Microsoft.TemplateEngine.Authoring.Tasks
             {
                 if (pathTaskPair.Task.IsCanceled)
                 {
-                    Log.LogError(LocalizableStrings.Command_Localize_Log_FileProcessingCancelled, pathTaskPair.TemplateJsonPath);
+                    Log.LogError(LocalizableStrings.Localize_Log_FileProcessingCancelled, pathTaskPair.TemplateJsonPath);
                 }
                 else if (pathTaskPair.Task.IsFaulted)
                 {
@@ -101,7 +102,7 @@ namespace Microsoft.TemplateEngine.Authoring.Tasks
                     {
                         if (!string.IsNullOrWhiteSpace(result.ErrorMessage))
                         {
-                            Log.LogError(LocalizableStrings.Command_Localize_Log_ExportTaskFailed, result.TemplateJsonPath, result.ErrorMessage);
+                            Log.LogError(LocalizableStrings.Localize_Log_ExportTaskFailed, result.TemplateJsonPath, result.ErrorMessage);
                         }
                         else if (result.InnerException != null)
                         {

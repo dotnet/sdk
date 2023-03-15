@@ -63,36 +63,63 @@ namespace Microsoft.TemplateEngine.Authoring.Tasks {
         /// <summary>
         ///   Looks up a localized string similar to Failed to export localization files for &apos;template.json&apos; file under the path &apos;{0}&apos;: {1}..
         /// </summary>
-        internal static string Command_Localize_Log_ExportTaskFailed {
+        internal static string Localize_Log_ExportTaskFailed {
             get {
-                return ResourceManager.GetString("Command_Localize_Log_ExportTaskFailed", resourceCulture);
+                return ResourceManager.GetString("Localize_Log_ExportTaskFailed", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to &apos;LocalizeTemplates&apos; stopped processing the following file, because the operation was cancelled: {0}.
         /// </summary>
-        internal static string Command_Localize_Log_FileProcessingCancelled {
+        internal static string Localize_Log_FileProcessingCancelled {
             get {
-                return ResourceManager.GetString("Command_Localize_Log_FileProcessingCancelled", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The property &apos;TemplateFolder&apos; should be set for &apos;LocalizeTemplates&apos; target..
-        /// </summary>
-        internal static string Command_Localize_Log_TemplateFolderNotSet {
-            get {
-                return ResourceManager.GetString("Command_Localize_Log_TemplateFolderNotSet", resourceCulture);
+                return ResourceManager.GetString("Localize_Log_FileProcessingCancelled", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Failed to find &apos;template.json&apos; file under the path &apos;{0}&apos;..
         /// </summary>
-        internal static string Command_Localize_Log_TemplateJsonNotFound {
+        internal static string Localize_Log_TemplateJsonNotFound {
             get {
-                return ResourceManager.GetString("Command_Localize_Log_TemplateJsonNotFound", resourceCulture);
+                return ResourceManager.GetString("Localize_Log_TemplateJsonNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The property &apos;{0}&apos; should be set for &apos;{1}&apos; target..
+        /// </summary>
+        internal static string Log_Error_MissingRequiredProperty {
+            get {
+                return ResourceManager.GetString("Log_Error_MissingRequiredProperty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Location &apos;{0}&apos;: found {1} templates..
+        /// </summary>
+        internal static string Validate_Log_FoundTemplate {
+            get {
+                return ResourceManager.GetString("Validate_Log_FoundTemplate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Template configuration.
+        /// </summary>
+        internal static string Validate_Log_TemplateConfiguration_Subcategory {
+            get {
+                return ResourceManager.GetString("Validate_Log_TemplateConfiguration_Subcategory", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Template localization.
+        /// </summary>
+        internal static string Validate_Log_TemplateLocalization_Subcategory {
+            get {
+                return ResourceManager.GetString("Validate_Log_TemplateLocalization_Subcategory", resourceCulture);
             }
         }
     }
