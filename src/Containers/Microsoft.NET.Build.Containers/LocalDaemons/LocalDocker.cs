@@ -6,6 +6,7 @@ using System.Formats.Tar;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using Microsoft.DotNet.Cli.Utils;
 using Microsoft.NET.Build.Containers.Resources;
 
 namespace Microsoft.NET.Build.Containers;
@@ -56,22 +57,16 @@ internal sealed class LocalDocker : ILocalDaemon
 
     public Task<bool> IsAvailableAsync(CancellationToken cancellationToken)
     {
-        return IsAvailableIntAsync(sync: false, cancellationToken);
+        return Task.FromResult(IsAvailable());
     }
 
     ///<inheritdoc/>
     public bool IsAvailable()
     {
-        //it is safe to call Task.Result here, as when sync is true, the method is fully synchronous
-        return IsAvailableIntAsync(sync: true, cancellationToken: default).Result;
-    }
-
-    private async Task<bool> IsAvailableIntAsync(bool sync, CancellationToken cancellationToken)
-    {
         try
         {
             //it is safe to call Task.Result here, as when sync is true, the method is fully synchronous
-            JsonDocument config = sync ? GetConfigAsync(sync: true, cancellationToken).Result : await GetConfigAsync(sync: false, cancellationToken).ConfigureAwait(false);
+            JsonDocument config = GetConfig();
 
             if (!config.RootElement.TryGetProperty("ServerErrors", out JsonElement errorProperty))
             {
@@ -100,56 +95,27 @@ internal sealed class LocalDocker : ILocalDaemon
     /// Gets docker configuration.
     /// </summary>
     /// <param name="sync">when <see langword="true"/>, the method is executed synchronously.</param>
-    /// <param name="cancellationToken"></param>
     /// <exception cref="DockerLoadException">when failed to retrieve docker configuration.</exception>
-    internal static async Task<JsonDocument> GetConfigAsync(bool sync, CancellationToken cancellationToken)
+    internal static JsonDocument GetConfig()
     {
-        cancellationToken.ThrowIfCancellationRequested();
-        var psi = new ProcessStartInfo("docker", "info --format=\"{{json .}}\"")
+        Process proc = new()
         {
-            RedirectStandardOutput = true,
-            RedirectStandardError = true
+            StartInfo = new ProcessStartInfo("docker", "info --format=\"{{json .}}\"")
         };
-        Process proc = Process.Start(psi) ?? throw new DockerLoadException(Resource.GetString(nameof(Strings.DockerProcessCreationFailed)));
 
-        if (!sync)
-        {
-            await proc.WaitForExitAsync(cancellationToken).ConfigureAwait(false);
-        }
-        else
-        {
-            proc.WaitForExit();
-        }
+        Command dockerCommand = new(proc);
+        dockerCommand.CaptureStdOut();
+        dockerCommand.CaptureStdErr();
+        CommandResult dockerCommandResult = dockerCommand.Execute();
 
-        cancellationToken.ThrowIfCancellationRequested();
-
-
-        if (proc.ExitCode != 0)
+        if (dockerCommandResult.ExitCode != 0)
         {
-            if (!sync)
-            {
-                throw new DockerLoadException(Resource.FormatString(
-                    nameof(Strings.DockerInfoFailed),
-                    proc.ExitCode,
-                    await proc.StandardOutput.ReadToEndAsync(cancellationToken).ConfigureAwait(false)));
-            }
-            else
-            {
-            	throw new DockerLoadException(Resource.FormatString(
-                    nameof(Strings.DockerInfoFailed),
-                    proc.ExitCode,
-                    proc.StandardOutput.ReadToEnd()));
-            }
+            throw new DockerLoadException(Resource.FormatString(
+                nameof(Strings.DockerInfoFailed),
+                dockerCommandResult.ExitCode,
+                dockerCommandResult.StdOut));
         }
-
-        if (!sync)
-        {
-            return await JsonDocument.ParseAsync(proc.StandardOutput.BaseStream, cancellationToken: cancellationToken).ConfigureAwait(false);
-        }
-        else
-        {
-            return JsonDocument.Parse(proc.StandardOutput.BaseStream);
-        }
+        return JsonDocument.Parse(dockerCommandResult.StdOut);
     }
 
     private static async Task WriteImageToStreamAsync(BuiltImage image, ImageReference sourceReference, ImageReference destinationReference, Stream imageStream, CancellationToken cancellationToken)
