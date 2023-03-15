@@ -149,7 +149,7 @@ namespace Microsoft.NET.Sdk.WebAssembly
                         Log.LogMessage(MessageImportance.Low, "Candidate '{0}' is defined as an app assembly.", resource.ItemSpec);
                         resourceList = resourceData.assembly;
                     }
-                    else if (string.Equals(assetTraitName, "BlazorWebAssemblyResource", StringComparison.OrdinalIgnoreCase) &&
+                    else if (string.Equals(assetTraitName, "WasmResource", StringComparison.OrdinalIgnoreCase) &&
                             string.Equals(assetTraitValue, "native", StringComparison.OrdinalIgnoreCase))
                     {
                         Log.LogMessage(MessageImportance.Low, "Candidate '{0}' is defined as a native application resource.", resource.ItemSpec);
@@ -172,7 +172,7 @@ namespace Microsoft.NET.Sdk.WebAssembly
                         AddResourceToList(resource, resourceList, targetPath);
                         continue;
                     } 
-                    else if (string.Equals("BlazorWebAssemblyResource", assetTraitName, StringComparison.OrdinalIgnoreCase) &&
+                    else if (string.Equals("WasmResource", assetTraitName, StringComparison.OrdinalIgnoreCase) &&
                              assetTraitValue.StartsWith("extension:", StringComparison.OrdinalIgnoreCase))
                     {
                         Log.LogMessage(MessageImportance.Low, "Candidate '{0}' is defined as an extension resource '{1}'.", resource.ItemSpec, assetTraitValue);

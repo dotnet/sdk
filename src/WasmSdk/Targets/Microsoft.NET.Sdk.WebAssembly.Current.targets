@@ -182,7 +182,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <DefineStaticWebAssets
       CandidateAssets="@(_WasmConfigFileCandidates)"
-      AssetTraitName="BlazorWebAssemblyResource"
+      AssetTraitName="WasmResource"
       AssetTraitValue="settings"
       RelativePathFilter="appsettings*.json"
     >
@@ -190,7 +190,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     </DefineStaticWebAssets>
 
     <ItemGroup>
-      <!-- Update the config blazor static web asset since we've given it a trait -->
+      <!-- Update the boot config static web asset since we've given it a trait -->
       <StaticWebAsset Remove="@(_WasmJsConfigStaticWebAsset)" />
       <StaticWebAsset Include="@(_WasmJsConfigStaticWebAsset)" />
 
@@ -198,89 +198,83 @@ Copyright (c) .NET Foundation. All rights reserved.
     </ItemGroup>
 
     <PropertyGroup>
-      <_BlazorBuildBootJsonPath>$(IntermediateOutputPath)blazor.boot.json</_BlazorBuildBootJsonPath>
+      <_WasmBuildBootJsonPath>$(IntermediateOutputPath)blazor.boot.json</_WasmBuildBootJsonPath>
     </PropertyGroup>
 
     <ItemGroup>
-      <_BuildBlazorBootJson
-        Include="$(_BlazorBuildBootJsonPath)"
+      <_BuildWasmBootJson
+        Include="$(_WasmBuildBootJsonPath)"
         RelativePath="_framework/blazor.boot.json" />
     </ItemGroup>
 
     <DefineStaticWebAssets
-      CandidateAssets="@(_BuildBlazorBootJson)"
+      CandidateAssets="@(_BuildWasmBootJson)"
       SourceId="$(PackageId)"
       SourceType="Computed"
       AssetKind="Build"
       AssetRole="Primary"
-      AssetTraitName="BlazorWebAssemblyResource"
+      AssetTraitName="WasmResource"
       AssetTraitValue="manifest"
       CopyToOutputDirectory="PreserveNewest"
       CopyToPublishDirectory="Never"
       ContentRoot="$(OutDir)wwwroot"
       BasePath="$(StaticWebAssetBasePath)"
     >
-      <Output TaskParameter="Assets" ItemName="_BuildBlazorBootJsonStaticWebAsset" />
+      <Output TaskParameter="Assets" ItemName="_BuildWasmBootJsonStaticWebAsset" />
     </DefineStaticWebAssets>
   </Target>
 
   <Target Name="_AddWasmStaticWebAssets" DependsOnTargets="$(AddWasmStaticWebAssetsDependsOn)">
     <ItemGroup>
       <StaticWebAsset Include="@(WasmStaticWebAsset)" />
-      <StaticWebAsset Include="@(_BuildBlazorBootJsonStaticWebAsset)" />
+      <StaticWebAsset Include="@(_BuildWasmBootJsonStaticWebAsset)" />
     </ItemGroup>
   </Target>
 
   <Target Name="_GenerateBuildWasmBootJson" DependsOnTargets="ResolveStaticWebAssetsInputs">
     <PropertyGroup>
-      <_BlazorBuildBootJsonPath>$(IntermediateOutputPath)blazor.boot.json</_BlazorBuildBootJsonPath>
+      <_WasmBuildBootJsonPath>$(IntermediateOutputPath)blazor.boot.json</_WasmBuildBootJsonPath>
       <_BlazorWebAssemblyLoadAllGlobalizationData Condition="'$(BlazorWebAssemblyLoadAllGlobalizationData)' == ''">false</_BlazorWebAssemblyLoadAllGlobalizationData>
     </PropertyGroup>
 
     <ItemGroup>
-      <_BlazorJsModuleCandidatesForBuild
+      <_WasmJsModuleCandidatesForBuild
         Include="@(StaticWebAsset)"
         Condition="'%(StaticWebAsset.AssetTraitName)' == 'JSModule' and '%(StaticWebAsset.AssetTraitValue)' == 'JSLibraryModule' and '%(AssetKind)' != 'Publish'" />
     </ItemGroup>
 
     <GetFileHash Files="@(WasmStaticWebAsset->'%(OriginalItemSpec)')" Algorithm="SHA256" HashEncoding="base64">
-      <Output TaskParameter="Items" ItemName="_BlazorOutputWithHash" />
+      <Output TaskParameter="Items" ItemName="_WasmOutputWithHash" />
     </GetFileHash>
 
     <ComputeStaticWebAssetsTargetPaths
-      Assets="@(_BlazorJsModuleCandidatesForBuild)"
+      Assets="@(_WasmJsModuleCandidatesForBuild)"
       PathPrefix=""
       UseAlternatePathDirectorySeparator="true"
     >
-      <Output TaskParameter="AssetsWithTargetPath" ItemName="_BlazorJsModuleCandidatesForBuildWithTargetPath" />
+      <Output TaskParameter="AssetsWithTargetPath" ItemName="_WasmJsModuleCandidatesForBuildWithTargetPath" />
     </ComputeStaticWebAssetsTargetPaths>
 
-    <GetFileHash Files="@(_BlazorJsModuleCandidatesForBuildWithTargetPath)" Algorithm="SHA256" HashEncoding="base64">
-      <Output TaskParameter="Items" ItemName="_BlazorOutputWithHash" />
+    <GetFileHash Files="@(_WasmJsModuleCandidatesForBuildWithTargetPath)" Algorithm="SHA256" HashEncoding="base64">
+      <Output TaskParameter="Items" ItemName="_WasmOutputWithHash" />
     </GetFileHash>
 
 
     <GenerateWasmBootJson
       AssemblyPath="@(IntermediateAssembly)"
-      Resources="@(_BlazorOutputWithHash)"
+      Resources="@(_WasmOutputWithHash)"
       DebugBuild="true"
       LinkerEnabled="false"
       CacheBootResources="$(BlazorCacheBootResources)"
-      OutputPath="$(_BlazorBuildBootJsonPath)"
-      ConfigurationFiles="@(_BlazorJsConfigStaticWebAsset)"
+      OutputPath="$(_WasmBuildBootJsonPath)"
+      ConfigurationFiles="@(_WasmJsConfigStaticWebAsset)"
       LazyLoadedAssemblies="@(BlazorWebAssemblyLazyLoad)"
       InvariantGlobalization="$(InvariantGlobalization)"
       LoadAllICUData="$(_BlazorWebAssemblyLoadAllGlobalizationData)" />
 
     <ItemGroup>
-      <FileWrites Include="$(_BlazorBuildBootJsonPath)" />
+      <FileWrites Include="$(_WasmBuildBootJsonPath)" />
     </ItemGroup>
-
-  </Target>
-
-  <!-- Just print a message here, static web assets takes care of all the copying -->
-  <Target Name="_WasmCopyFilesToOutputDirectory" AfterTargets="CopyFilesToOutputDirectory">
-    <Message Importance="High" Text="$(MSBuildProjectName) (Blazor output) -&gt; $(TargetDir)wwwroot" Condition="'$(CopyBuildOutputToOutputDirectory)' == 'true' and '$(SkipCopyBuildProduct)'!='true'" />
   </Target>
 
   <!-- Publish starts here -->
@@ -307,9 +301,9 @@ Copyright (c) .NET Foundation. All rights reserved.
     -->
 
     <ItemGroup>
-      <_BlazorPublishPrefilteredAssets
+      <_WasmPublishPrefilteredAssets
         Include="@(StaticWebAsset)"
-        Condition="'%(StaticWebAsset.AssetTraitName)' == 'BlazorWebAssemblyResource' or '%(StaticWebAsset.AssetTraitName)' == 'Culture' or '%(AssetRole)' == 'Alternative'" />
+        Condition="'%(StaticWebAsset.AssetTraitName)' == 'WasmResource' or '%(StaticWebAsset.AssetTraitName)' == 'Culture' or '%(AssetRole)' == 'Alternative'" />
     </ItemGroup>
 
     <ItemGroup>
@@ -327,20 +321,20 @@ Copyright (c) .NET Foundation. All rights reserved.
       WasmAotAssets="@(WasmNativeAsset)"
       InvariantGlobalization="$(_BlazorInvariantGlobalization)"
       CopySymbols="$(CopyOutputSymbolsToPublishDirectory)"
-      ExistingAssets="@(_BlazorPublishPrefilteredAssets)"
+      ExistingAssets="@(_WasmPublishPrefilteredAssets)"
       DotNetJsVersion="$(_DotNetJsVersion)"
     >
-      <Output TaskParameter="NewCandidates" ItemName="_NewBlazorPublishStaticWebAssets" />
+      <Output TaskParameter="NewCandidates" ItemName="_NewWasmPublishStaticWebAssets" />
       <Output TaskParameter="FilesToRemove" ItemName="_PublishResolvedFilesToRemove" />
     </ComputeWasmPublishAssets>
 
     <ItemGroup>
       <ResolvedFileToPublish Remove="@(_PublishResolvedFilesToRemove)" />
-      <StaticWebAsset Include="@(_NewBlazorPublishStaticWebAssets)" />
+      <StaticWebAsset Include="@(_NewWasmPublishStaticWebAssets)" />
       <PublishBlazorBootStaticWebAsset 
         Include="@(StaticWebAsset)"
         Condition="'%(AssetKind)' != 'Build' and 
-                    (('%(StaticWebAsset.AssetTraitName)' == 'BlazorWebAssemblyResource' and '%(StaticWebAsset.AssetTraitValue)' != 'manifest' and '%(StaticWebAsset.AssetTraitValue)' != 'boot') or
+                    (('%(StaticWebAsset.AssetTraitName)' == 'WasmResource' and '%(StaticWebAsset.AssetTraitValue)' != 'manifest' and '%(StaticWebAsset.AssetTraitValue)' != 'boot') or
                     '%(StaticWebAsset.AssetTraitName)' == 'Culture')" />
     </ItemGroup>
   </Target>
@@ -359,7 +353,7 @@ Copyright (c) .NET Foundation. All rights reserved.
         <AssetKind>Publish</AssetKind>
         <AssetMode>All</AssetMode>
         <AssetRole>Primary</AssetRole>
-        <AssetTraitName>BlazorWebAssemblyResource</AssetTraitName>
+        <AssetTraitName>WasmResource</AssetTraitName>
         <AssetTraitValue>extension:%(BlazorPublishExtension.ExtensionName)</AssetTraitValue>
         <CopyToOutputDirectory>Never</CopyToOutputDirectory>
         <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
@@ -371,7 +365,6 @@ Copyright (c) .NET Foundation. All rights reserved.
       <Output TaskParameter="Assets" ItemName="StaticWebAsset" />
       <Output TaskParameter="Assets" ItemName="_BlazorExtensionsCandidatesForPublish" />
     </DefineStaticWebAssets>
-
   </Target>
 
   <Target Name="_AddWasmWebConfigFile" AfterTargets="ILLink">
@@ -386,18 +379,18 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Target Name="_AddPublishWasmBootJsonToStaticWebAssets">
     <ItemGroup>
-      <_PublishBlazorBootJson
+      <_PublishWasmBootJson
         Include="$(IntermediateOutputPath)blazor.publish.boot.json"
         RelativePath="_framework/blazor.boot.json" />
     </ItemGroup>
 
     <DefineStaticWebAssets
-      CandidateAssets="@(_PublishBlazorBootJson)"
+      CandidateAssets="@(_PublishWasmBootJson)"
       SourceId="$(PackageId)"
       SourceType="Computed"
       AssetKind="Publish"
       AssetRole="Primary"
-      AssetTraitName="BlazorWebAssemblyResource"
+      AssetTraitName="WasmResource"
       AssetTraitValue="manifest"
       CopyToOutputDirectory="Never"
       CopyToPublishDirectory="PreserveNewest"
@@ -411,43 +404,43 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Target Name="GeneratePublishWasmBootJson">
 
     <ItemGroup>
-      <_BlazorPublishAsset
+      <_WasmPublishAsset
         Include="@(StaticWebAsset)"
-        Condition="'%(AssetKind)' != 'Build' and '%(StaticWebAsset.AssetTraitValue)' != 'manifest' and ('%(StaticWebAsset.AssetTraitName)' == 'BlazorWebAssemblyResource' or '%(StaticWebAsset.AssetTraitName)' == 'Culture') and '%(StaticWebAsset.AssetTraitValue)' != 'boot'" />
+        Condition="'%(AssetKind)' != 'Build' and '%(StaticWebAsset.AssetTraitValue)' != 'manifest' and ('%(StaticWebAsset.AssetTraitName)' == 'WasmResource' or '%(StaticWebAsset.AssetTraitName)' == 'Culture') and '%(StaticWebAsset.AssetTraitValue)' != 'boot'" />
 
-      <_BlazorPublishConfigFile
+      <_WasmPublishConfigFile
         Include="@(StaticWebAsset)"
-        Condition="'%(StaticWebAsset.AssetTraitName)' == 'BlazorWebAssemblyResource' and '%(StaticWebAsset.AssetTraitValue)' == 'settings'"/>
+        Condition="'%(StaticWebAsset.AssetTraitName)' == 'WasmResource' and '%(StaticWebAsset.AssetTraitValue)' == 'settings'"/>
 
-      <_BlazorJsModuleCandidatesForPublish
+      <_WasmJsModuleCandidatesForPublish
         Include="@(StaticWebAsset)"
         Condition="'%(StaticWebAsset.AssetTraitName)' == 'JSModule' and '%(StaticWebAsset.AssetTraitValue)' == 'JSLibraryModule' and '%(AssetKind)' != 'Build'" />
 
       <!-- We remove the extensions since they are added to the list of static web assets but we need to compute the target path for them -->
-      <_BlazorPublishAsset Remove="@(_BlazorExtensionsCandidatesForPublish)" />
+      <_WasmPublishAsset Remove="@(_BlazorExtensionsCandidatesForPublish)" />
 
     </ItemGroup>
 
     <ComputeStaticWebAssetsTargetPaths
-      Assets="@(_BlazorJsModuleCandidatesForPublish);@(_BlazorExtensionsCandidatesForPublish)"
+      Assets="@(_WasmJsModuleCandidatesForPublish);@(_BlazorExtensionsCandidatesForPublish)"
       PathPrefix=""
       UseAlternatePathDirectorySeparator="true"
     >
-      <Output TaskParameter="AssetsWithTargetPath" ItemName="_BlazorCandidatesForPublishWithTargetPath" />
+      <Output TaskParameter="AssetsWithTargetPath" ItemName="_WasmCandidatesForPublishWithTargetPath" />
     </ComputeStaticWebAssetsTargetPaths>
 
-    <GetFileHash Files="@(_BlazorPublishAsset);@(_BlazorCandidatesForPublishWithTargetPath)" Algorithm="SHA256" HashEncoding="base64">
-      <Output TaskParameter="Items" ItemName="_BlazorPublishBootResourceWithHash" />
+    <GetFileHash Files="@(_WasmPublishAsset);@(_WasmCandidatesForPublishWithTargetPath)" Algorithm="SHA256" HashEncoding="base64">
+      <Output TaskParameter="Items" ItemName="_WasmPublishBootResourceWithHash" />
     </GetFileHash>
 
     <GenerateWasmBootJson
       AssemblyPath="@(IntermediateAssembly)"
-      Resources="@(_BlazorPublishBootResourceWithHash)"
+      Resources="@(_WasmPublishBootResourceWithHash)"
       DebugBuild="false"
       LinkerEnabled="$(PublishTrimmed)"
       CacheBootResources="$(BlazorCacheBootResources)"
       OutputPath="$(IntermediateOutputPath)blazor.publish.boot.json"
-      ConfigurationFiles="@(_BlazorPublishConfigFile)"
+      ConfigurationFiles="@(_WasmPublishConfigFile)"
       LazyLoadedAssemblies="@(BlazorWebAssemblyLazyLoad)"
       InvariantGlobalization="$(InvariantGlobalization)"
       LoadAllICUData="$(_BlazorWebAssemblyLoadAllGlobalizationData)" />

@@ -28,7 +28,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                         ("Extension", ".dll"),
                         ("FileHash", "abcdefghikjlmnopqrstuvwxyz"),
                         ("RelativePath", "_framework/My.Assembly1.dll"),
-                        ("AssetTraitName", "BlazorWebAssemblyResource"),
+                        ("AssetTraitName", "WasmResource"),
                         ("AssetTraitValue", "runtime")),
 
                     CreateResourceTaskItem(
@@ -36,7 +36,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                         ("Extension", ".dll"),
                         ("FileHash", "012345678901234567890123456789"),
                         ("RelativePath", "_framework/My.Assembly2.dll"),
-                        ("AssetTraitName", "BlazorWebAssemblyResource"),
+                        ("AssetTraitName", "WasmResource"),
                         ("AssetTraitValue", "runtime")),
 
                     CreateResourceTaskItem(
@@ -44,7 +44,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                         ("Extension", ".pdb"),
                         ("FileHash", "pdbhashpdbhashpdbhash"),
                         ("RelativePath", "_framework/SomePdb.pdb"),
-                        ("AssetTraitName", "BlazorWebAssemblyResource"),
+                        ("AssetTraitName", "WasmResource"),
                         ("AssetTraitValue", "symbol")),
 
                     CreateResourceTaskItem(
@@ -52,14 +52,14 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                         ("Extension", ".pdb"),
                         ("FileHash", "pdbdefghikjlmnopqrstuvwxyz"),
                         ("RelativePath", "_framework/My.Assembly1.pdb"),
-                        ("AssetTraitName", "BlazorWebAssemblyResource"),
+                        ("AssetTraitName", "WasmResource"),
                         ("AssetTraitValue", "symbol")),
 
                     CreateResourceTaskItem(
                         ("FileName", "some-runtime-file"),
                         ("RelativePath", "some-runtime-file"),
                         ("FileHash", "runtimehashruntimehash"),
-                        ("AssetTraitName", "BlazorWebAssemblyResource"),
+                        ("AssetTraitName", "WasmResource"),
                         ("AssetTraitValue", "native")),
 
                     CreateResourceTaskItem(
@@ -92,7 +92,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                         ("FileHash", "my-custom-extensionhash"),
                         ("RelativePath", "my-custom-extension.blz"),
                         ("TargetPath", "_bin/my-custom-extension.blz"),
-                        ("AssetTraitName", "BlazorWebAssemblyResource"),
+                        ("AssetTraitName", "WasmResource"),
                         ("AssetTraitValue", "extension:custom-extension")),
                 }
             };

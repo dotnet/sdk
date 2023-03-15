@@ -113,7 +113,7 @@ namespace Microsoft.NET.Sdk.WebAssembly
                         var newRelativePath = $"_framework/{cacheBustedDotNetJSFileName}";
                         newDotNetJs.SetMetadata("RelativePath", newRelativePath);
 
-                        newDotNetJs.SetMetadata("AssetTraitName", "BlazorWebAssemblyResource");
+                        newDotNetJs.SetMetadata("AssetTraitName", "WasmResource");
                         newDotNetJs.SetMetadata("AssetTraitValue", "native");
 
                         assetCandidates.Add(newDotNetJs);
@@ -227,7 +227,7 @@ namespace Microsoft.NET.Sdk.WebAssembly
                 case ".dll":
                     if (string.IsNullOrEmpty(candidate.GetMetadata("AssetTraitName")))
                     {
-                        candidate.SetMetadata("AssetTraitName", "BlazorWebAssemblyResource");
+                        candidate.SetMetadata("AssetTraitName", "WasmResource");
                         candidate.SetMetadata("AssetTraitValue", "runtime");
                     }
                     if (string.Equals(candidate.GetMetadata("ResolvedFrom"), "{HintPathFromItem}", StringComparison.Ordinal))
@@ -238,11 +238,11 @@ namespace Microsoft.NET.Sdk.WebAssembly
                 case ".wasm":
                 case ".blat":
                 case ".dat" when filename.StartsWith("icudt"):
-                    candidate.SetMetadata("AssetTraitName", "BlazorWebAssemblyResource");
+                    candidate.SetMetadata("AssetTraitName", "WasmResource");
                     candidate.SetMetadata("AssetTraitValue", "native");
                     break;
                 case ".pdb":
-                    candidate.SetMetadata("AssetTraitName", "BlazorWebAssemblyResource");
+                    candidate.SetMetadata("AssetTraitName", "WasmResource");
                     candidate.SetMetadata("AssetTraitValue", "symbol");
                     candidate.RemoveMetadata("OriginalItemSpec");
                     break;

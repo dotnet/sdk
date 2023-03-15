@@ -373,7 +373,7 @@ namespace Microsoft.NET.Sdk.WebAssembly
                 var assetTraitName = asset.GetMetadata("AssetTraitName");
                 switch (assetTraitName)
                 {
-                    case "BlazorWebAssemblyResource":
+                    case "WasmResource":
                         ITaskItem newAsemblyAsset = null;
                         if (linkedAssets.TryGetValue(asset.ItemSpec, out var linked))
                         {
@@ -614,6 +614,6 @@ namespace Microsoft.NET.Sdk.WebAssembly
 
         private static bool IsCulture(string traitName) => string.Equals(traitName, "Culture", StringComparison.Ordinal);
 
-        private static bool IsWebAssemblyResource(string traitName) => string.Equals(traitName, "BlazorWebAssemblyResource", StringComparison.Ordinal);
+        private static bool IsWebAssemblyResource(string traitName) => string.Equals(traitName, "WasmResource", StringComparison.Ordinal);
     }
 }
