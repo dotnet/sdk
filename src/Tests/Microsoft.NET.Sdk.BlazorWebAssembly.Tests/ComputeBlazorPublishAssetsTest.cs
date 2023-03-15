@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
+using Microsoft.NET.Sdk.WebAssembly;
 using Moq;
 using Xunit;
 
@@ -20,7 +21,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         public void UpdatesAssets_WithLinked_Assemblies()
         {
             // Arrange
-            var taskInstance = new ComputeBlazorPublishAssets
+            var taskInstance = new ComputeWasmPublishAssets
             {
                 ExistingAssets = CreateLinkingExistingAssets(),
                 ResolvedFilesToPublish = CreateLinkingResolvedFilesToPublish(),
@@ -7941,7 +7942,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         public void Updates()
         {
             // Arrange
-            var taskInstance = new ComputeBlazorPublishAssets
+            var taskInstance = new ComputeWasmPublishAssets
             {
                 ExistingAssets = CreateExistingAssets(),
                 ResolvedFilesToPublish = CreateResolvedFilesToPublish(),

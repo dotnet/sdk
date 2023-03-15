@@ -10,11 +10,11 @@ using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Microsoft.NET.Sdk.WebAssembly;
 
-namespace Microsoft.NET.Sdk.BlazorWebAssembly
+namespace Microsoft.NET.Sdk.WebAssembly
 {
     // This task does the build work of processing the project inputs and producing a set of pseudo-static web assets
     // specific to Blazor.
-    public class ComputeBlazorBuildAssets : Task
+    public class ComputeWasmBuildAssets : Task
     {
         [Required]
         public ITaskItem[] Candidates { get; set; }

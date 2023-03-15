@@ -10,7 +10,7 @@ using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Microsoft.NET.Sdk.WebAssembly;
 
-namespace Microsoft.NET.Sdk.BlazorWebAssembly
+namespace Microsoft.NET.Sdk.WebAssembly
 {
     // This target computes the list of publish static web assets based on the changes that happen during publish and the list of build static
     // web assets.
@@ -26,7 +26,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
     //   * We update static web assets for satellite assemblies and compressed assets accordingly.
     // * Look at the list of "native" assets and determine whether we need to create new publish assets for the current build assets or if we need to
     //   update the native assets because the app was ahead of time compiled.
-    public class ComputeBlazorPublishAssets : Task
+    public class ComputeWasmPublishAssets : Task
     {
         [Required]
         public ITaskItem[] ResolvedFilesToPublish { get; set; }
@@ -525,7 +525,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
         {
             foreach (var candidate in ResolvedFilesToPublish)
             {
-                if (ComputeBlazorBuildAssets.ShouldFilterCandidate(candidate, TimeZoneSupport, InvariantGlobalization, CopySymbols, out var reason))
+                if (ComputeWasmBuildAssets.ShouldFilterCandidate(candidate, TimeZoneSupport, InvariantGlobalization, CopySymbols, out var reason))
                 {
                     Log.LogMessage(MessageImportance.Low, "Skipping asset '{0}' because '{1}'", candidate.ItemSpec, reason);
                     if (!resolvedFilesToPublishToRemove.ContainsKey(candidate.ItemSpec))

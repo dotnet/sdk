@@ -16,9 +16,9 @@ using Microsoft.Build.Utilities;
 using Microsoft.NET.Sdk.WebAssembly;
 using ResourceHashesByNameDictionary = System.Collections.Generic.Dictionary<string, string>;
 
-namespace Microsoft.NET.Sdk.BlazorWebAssembly
+namespace Microsoft.NET.Sdk.WebAssembly
 {
-    public class GenerateBlazorWebAssemblyBootJson : Task
+    public class GenerateWasmBootJson : Task
     {
         [Required]
         public string AssemblyPath { get; set; }
