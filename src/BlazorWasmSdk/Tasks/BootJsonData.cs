@@ -11,7 +11,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
     /// <summary>
     /// Defines the structure of a Blazor boot JSON file
     /// </summary>
-    internal class BootJsonData50
+    public class BootJsonData50
     {
         /// <summary>
         /// Gets the name of the assembly with the application entry point
@@ -56,7 +56,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
         public ICUDataMode50 icuDataMode { get; set; }
     }
 
-    internal class ResourcesData50
+    public class ResourcesData50
     {
         /// <summary>
         /// .NET Wasm runtime resources (dotnet.wasm, dotnet.js) etc.
@@ -107,7 +107,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
 
     }
 
-    internal enum ICUDataMode50 : int
+    public enum ICUDataMode50 : int
     {
         // Note that the numeric values are serialized and used in JS code, so don't change them without also updating the JS code
     
@@ -128,7 +128,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
     }
 
     [DataContract]
-    internal class AdditionalAsset50
+    public class AdditionalAsset50
     {
         [DataMember(Name = "hash")]
         public string Hash { get; set; }
