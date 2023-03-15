@@ -128,10 +128,10 @@ Copyright (c) .NET Foundation. All rights reserved.
     <PropertyGroup>
       <_BlazorEnableTimeZoneSupport>$(BlazorEnableTimeZoneSupport)</_BlazorEnableTimeZoneSupport>
       <_BlazorEnableTimeZoneSupport Condition="'$(_BlazorEnableTimeZoneSupport)' == ''">true</_BlazorEnableTimeZoneSupport>
-      <_BlazorInvariantGlobalization>$(InvariantGlobalization)</_BlazorInvariantGlobalization>
-      <_BlazorInvariantGlobalization Condition="'$(_BlazorInvariantGlobalization)' == ''">true</_BlazorInvariantGlobalization>
-      <_BlazorCopyOutputSymbolsToOutputDirectory>$(CopyOutputSymbolsToOutputDirectory)</_BlazorCopyOutputSymbolsToOutputDirectory>
-      <_BlazorCopyOutputSymbolsToOutputDirectory Condition="'$(_BlazorCopyOutputSymbolsToOutputDirectory)'==''">true</_BlazorCopyOutputSymbolsToOutputDirectory>
+      <_WasmInvariantGlobalization>$(InvariantGlobalization)</_WasmInvariantGlobalization>
+      <_WasmInvariantGlobalization Condition="'$(_WasmInvariantGlobalization)' == ''">true</_WasmInvariantGlobalization>
+      <_WasmCopyOutputSymbolsToOutputDirectory>$(CopyOutputSymbolsToOutputDirectory)</_WasmCopyOutputSymbolsToOutputDirectory>
+      <_WasmCopyOutputSymbolsToOutputDirectory Condition="'$(_WasmCopyOutputSymbolsToOutputDirectory)'==''">true</_WasmCopyOutputSymbolsToOutputDirectory>
       <_BlazorWebAssemblyLoadAllGlobalizationData>$(BlazorWebAssemblyLoadAllGlobalizationData)</_BlazorWebAssemblyLoadAllGlobalizationData>
       <_BlazorWebAssemblyLoadAllGlobalizationData Condition="'$(_BlazorWebAssemblyLoadAllGlobalizationData)' == ''">false</_BlazorWebAssemblyLoadAllGlobalizationData>
 
@@ -158,8 +158,8 @@ Copyright (c) .NET Foundation. All rights reserved.
       SatelliteAssemblies="@(ReferenceSatellitePaths)"
       ProjectSatelliteAssemblies="@(IntermediateSatelliteAssembliesWithTargetPath)"
       TimeZoneSupport="$(_BlazorEnableTimeZoneSupport)"
-      InvariantGlobalization="$(_BlazorInvariantGlobalization)"
-      CopySymbols="$(_BlazorCopyOutputSymbolsToOutputDirectory)"
+      InvariantGlobalization="$(_WasmInvariantGlobalization)"
+      CopySymbols="$(_WasmCopyOutputSymbolsToOutputDirectory)"
       OutputPath="$(OutputPath)"
     >
       <Output TaskParameter="AssetCandidates" ItemName="_BuildAssetsCandidates" />
@@ -288,13 +288,6 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <!-- Wasm's Nested publish is run just to build the native bits. We don't need to run blazor targets for that -->
   <Target Name="ProcessPublishFilesForWasm" DependsOnTargets="_ResolveWasmConfiguration;LoadStaticWebAssetsBuildManifest" AfterTargets="ILLink" Condition="'$(WasmBuildingForNestedPublish)' != 'true'">
-    <PropertyGroup>
-      <_BlazorAotEnabled>$(UsingBrowserRuntimeWorkload)</_BlazorAotEnabled>
-      <_BlazorAotEnabled Condition="'$(_BlazorAotEnabled)' == ''">false</_BlazorAotEnabled>
-      <_BlazorLinkerEnabled>$(PublishTrimmed)</_BlazorLinkerEnabled>
-      <_BlazorLinkerEnabled Condition="'$(_BlazorLinkerEnabled)' == ''">true</_BlazorLinkerEnabled>
-    </PropertyGroup>
-
     <!-- The list of static web assets already contains all the assets from the build. We want to correct certain assets that might
          have changed as part of the publish process. We are going to do so as follows:
          * We will update Blazor runtime asset dlls if we are running PublishTrimmed
@@ -321,7 +314,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       TimeZoneSupport="$(_BlazorEnableTimeZoneSupport)"
       PublishPath="$(PublishDir)"
       WasmAotAssets="@(WasmNativeAsset)"
-      InvariantGlobalization="$(_BlazorInvariantGlobalization)"
+      InvariantGlobalization="$(_WasmInvariantGlobalization)"
       CopySymbols="$(CopyOutputSymbolsToPublishDirectory)"
       ExistingAssets="@(_WasmPublishPrefilteredAssets)"
       DotNetJsVersion="$(_DotNetJsVersion)"
@@ -333,6 +326,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ItemGroup>
       <ResolvedFileToPublish Remove="@(_PublishResolvedFilesToRemove)" />
       <StaticWebAsset Include="@(_NewWasmPublishStaticWebAssets)" />
+
+      <!-- TODO: Probably doesn't do anything as of now, original https://github.com/dotnet/aspnetcore/pull/34798 -->
       <PublishBlazorBootStaticWebAsset 
         Include="@(StaticWebAsset)"
         Condition="'%(AssetKind)' != 'Build' and 
