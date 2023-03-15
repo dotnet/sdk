@@ -22,7 +22,7 @@ public class DockerRegistryManager
         if (!new LocalDocker(testOutput.WriteLine).IsAvailable()) {
             throw new InvalidOperationException("Docker daemon is not started, tests cannot run");
         }
-        CommandResult processResult = new BasicCommand(testOutput, "docker", "run", "--rm", "--publish", "5010:5000", "--detach", "registry:2").Execute();
+        CommandResult processResult = new BasicCommand(testOutput, "docker", "run", "--rm", "--platform", "linux/amd64", "--publish", "5010:5000", "--detach", "registry:2").Execute();
         processResult.Should().Pass().And.HaveStdOut();
         using var reader = new StringReader(processResult.StdOut!);
         s_registryContainerId = reader.ReadLine();
