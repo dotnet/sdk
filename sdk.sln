@@ -413,7 +413,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.DotNet.GenAPI.Tas
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.NET.Sdk.Web.Tests", "src\Tests\Microsoft.NET.Sdk.Web.Tests\Microsoft.NET.Sdk.Web.Tests.csproj", "{B8A61A5C-A9A4-45C5-97E3-CB368358682F}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WaskSdk", "WaskSdk", "{CDFC2484-82B7-4780-87BF-3F085AF6179A}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WasmSdk", "WasmSdk", "{CDFC2484-82B7-4780-87BF-3F085AF6179A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sdk", "Sdk", "{2F4F6D3E-C7E5-422F-B3EC-BB9C4B1C40D9}"
 	ProjectSection(SolutionItems) = preProject

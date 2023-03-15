@@ -11,9 +11,9 @@ using System.Reflection;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Json;
 using System.Text;
+using System.Xml;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
-using Microsoft.NET.Sdk.WebAssembly;
 using ResourceHashesByNameDictionary = System.Collections.Generic.Dictionary<string, string>;
 
 namespace Microsoft.NET.Sdk.WebAssembly
@@ -40,6 +40,8 @@ namespace Microsoft.NET.Sdk.WebAssembly
         public string InvariantGlobalization { get; set; }
 
         public ITaskItem[] ConfigurationFiles { get; set; }
+
+        public ITaskItem[] Extensions { get; set; }
 
         [Required]
         public string OutputPath { get; set; }
@@ -171,7 +173,7 @@ namespace Microsoft.NET.Sdk.WebAssembly
                         Debug.Assert(!string.IsNullOrEmpty(targetPath), "Target path for '{0}' must exist.", resource.ItemSpec);
                         AddResourceToList(resource, resourceList, targetPath);
                         continue;
-                    } 
+                    }
                     else if (string.Equals("WasmResource", assetTraitName, StringComparison.OrdinalIgnoreCase) &&
                              assetTraitValue.StartsWith("extension:", StringComparison.OrdinalIgnoreCase))
                     {
@@ -233,6 +235,22 @@ namespace Microsoft.NET.Sdk.WebAssembly
                 foreach (var configFile in ConfigurationFiles)
                 {
                     result.config.Add(Path.GetFileName(configFile.ItemSpec));
+                }
+            }
+
+            if (Extensions != null && Extensions.Length > 0)
+            {
+                var configSerializer = new DataContractJsonSerializer(typeof(Dictionary<string, object>), new DataContractJsonSerializerSettings
+                {
+                    UseSimpleDictionaryFormat = true
+                });
+
+                result.extensions = new Dictionary<string, Dictionary<string, object>> ();
+                foreach (var configExtension in Extensions)
+                {
+                    var key = configExtension.GetMetadata("key");
+                    var config = (Dictionary<string, object>)configSerializer.ReadObject(File.OpenRead(configExtension.ItemSpec));
+                    result.extensions[key] = config;
                 }
             }
 

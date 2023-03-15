@@ -54,6 +54,11 @@ namespace Microsoft.NET.Sdk.WebAssembly
         /// Gets or sets the <see cref="ICUDataMode"/> that determines how icu files are loaded.
         /// </summary>
         public ICUDataMode icuDataMode { get; set; }
+
+        /// <summary>
+        /// Gets or sets configuration extensions.
+        /// </summary>
+        public Dictionary<string, Dictionary<string, object>> extensions { get; set; }
     }
 
     public class ResourcesData

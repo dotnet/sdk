@@ -260,6 +260,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     </GetFileHash>
 
 
+
     <GenerateWasmBootJson
       AssemblyPath="@(IntermediateAssembly)"
       Resources="@(_WasmOutputWithHash)"
@@ -270,7 +271,8 @@ Copyright (c) .NET Foundation. All rights reserved.
       ConfigurationFiles="@(_WasmJsConfigStaticWebAsset)"
       LazyLoadedAssemblies="@(BlazorWebAssemblyLazyLoad)"
       InvariantGlobalization="$(InvariantGlobalization)"
-      LoadAllICUData="$(_BlazorWebAssemblyLoadAllGlobalizationData)" />
+      LoadAllICUData="$(_BlazorWebAssemblyLoadAllGlobalizationData)"
+      Extensions="@(WasmBootConfigExtension)" />
 
     <ItemGroup>
       <FileWrites Include="$(_WasmBuildBootJsonPath)" />
@@ -443,7 +445,8 @@ Copyright (c) .NET Foundation. All rights reserved.
       ConfigurationFiles="@(_WasmPublishConfigFile)"
       LazyLoadedAssemblies="@(BlazorWebAssemblyLazyLoad)"
       InvariantGlobalization="$(InvariantGlobalization)"
-      LoadAllICUData="$(_BlazorWebAssemblyLoadAllGlobalizationData)" />
+      LoadAllICUData="$(_BlazorWebAssemblyLoadAllGlobalizationData)"
+      Extensions="@(WasmBootConfigExtension)" />
 
     <ItemGroup>
       <FileWrites Include="$(IntermediateOutputPath)blazor.publish.boot.json" />
