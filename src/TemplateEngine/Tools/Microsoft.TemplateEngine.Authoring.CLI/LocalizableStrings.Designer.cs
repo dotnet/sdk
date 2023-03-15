@@ -162,6 +162,105 @@ namespace Microsoft.TemplateEngine.Authoring.CLI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Validates the templates at given location..
+        /// </summary>
+        internal static string command_validate_help_description {
+            get {
+                return ResourceManager.GetString("command_validate_help_description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The location of template(s) to validate..
+        /// </summary>
+        internal static string command_validate_help_locationArg_description {
+            get {
+                return ResourceManager.GetString("command_validate_help_locationArg_description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &lt;no entries&gt;.
+        /// </summary>
+        internal static string command_validate_info_no_entries {
+            get {
+                return ResourceManager.GetString("command_validate_info_no entries", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Location &apos;{0}&apos;: found {1} templates..
+        /// </summary>
+        internal static string command_validate_info_scanning_completed {
+            get {
+                return ResourceManager.GetString("command_validate_info_scanning_completed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Scanning location &apos;{0}&apos; for the templates...
+        /// </summary>
+        internal static string command_validate_info_scanning_in_progress {
+            get {
+                return ResourceManager.GetString("command_validate_info_scanning_in_progress", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Template {0}: the template is not valid..
+        /// </summary>
+        internal static string command_validate_info_summary_invalid {
+            get {
+                return ResourceManager.GetString("command_validate_info_summary_invalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &apos;{0}&apos; localization for the template {1}: the localization file is not valid. The localization will be skipped..
+        /// </summary>
+        internal static string command_validate_info_summary_loc_invalid {
+            get {
+                return ResourceManager.GetString("command_validate_info_summary_loc_invalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &apos;{0}&apos; localization for the template {1}: the localization file is valid..
+        /// </summary>
+        internal static string command_validate_info_summary_loc_valid {
+            get {
+                return ResourceManager.GetString("command_validate_info_summary_loc_valid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Template {0}: the template is valid..
+        /// </summary>
+        internal static string command_validate_info_summary_valid {
+            get {
+                return ResourceManager.GetString("command_validate_info_summary_valid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Found template {0}:.
+        /// </summary>
+        internal static string command_validate_info_template_header {
+            get {
+                return ResourceManager.GetString("command_validate_info_template_header", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Found localization &apos;{0}&apos; for template {1}:.
+        /// </summary>
+        internal static string command_validate_info_template_loc_header {
+            get {
+                return ResourceManager.GetString("command_validate_info_template_loc_header", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Verification Failed..
         /// </summary>
         internal static string command_verify_error_failed {

@@ -14,6 +14,7 @@ namespace Microsoft.TemplateEngine.Authoring.CLI
             RootCommand rootCommand = new("dotnet-template-authoring");
             rootCommand.Subcommands.Add(new LocalizeCommand());
             rootCommand.Subcommands.Add(new VerifyCommand());
+            rootCommand.Subcommands.Add(new ValidateCommand());
 
             return GetCommandLineConfiguration(rootCommand).InvokeAsync(args);
         }

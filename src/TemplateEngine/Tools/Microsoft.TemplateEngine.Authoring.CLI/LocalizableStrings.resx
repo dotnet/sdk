@@ -161,6 +161,48 @@ Do not localize: "template.json"</comment>
     <value>Failed to find "template.json" file under the path "{0}".</value>
     <comment>Do not localize: "template.json"</comment>
   </data>
+  <data name="command_validate_help_description" xml:space="preserve">
+    <value>Validates the templates at given location.</value>
+  </data>
+  <data name="command_validate_help_locationArg_description" xml:space="preserve">
+    <value>The location of template(s) to validate.</value>
+  </data>
+  <data name="command_validate_info_no entries" xml:space="preserve">
+    <value>&lt;no entries&gt;</value>
+    <comment>used when there is no entries in the list</comment>
+  </data>
+  <data name="command_validate_info_scanning_completed" xml:space="preserve">
+    <value>Location '{0}': found {1} templates.</value>
+    <comment>{0} - file path to templates to scan; {1} - count of templates found.</comment>
+  </data>
+  <data name="command_validate_info_scanning_in_progress" xml:space="preserve">
+    <value>Scanning location '{0}' for the templates..</value>
+    <comment>{0} - file path to templates to scan</comment>
+  </data>
+  <data name="command_validate_info_summary_invalid" xml:space="preserve">
+    <value>Template {0}: the template is not valid.</value>
+    <comment>{0} - template name and identity in format name (identity)</comment>
+  </data>
+  <data name="command_validate_info_summary_loc_invalid" xml:space="preserve">
+    <value>'{0}' localization for the template {1}: the localization file is not valid. The localization will be skipped.</value>
+    <comment>{1} - template name and identity in format name (identity), {0} - locale in format en-US</comment>
+  </data>
+  <data name="command_validate_info_summary_loc_valid" xml:space="preserve">
+    <value>'{0}' localization for the template {1}: the localization file is valid.</value>
+    <comment>{1} - template name and identity in format name (identity), {0} - locale in format en-US</comment>
+  </data>
+  <data name="command_validate_info_summary_valid" xml:space="preserve">
+    <value>Template {0}: the template is valid.</value>
+    <comment>{0} - template name and identity in format name (identity)</comment>
+  </data>
+  <data name="command_validate_info_template_header" xml:space="preserve">
+    <value>Found template {0}:</value>
+    <comment>The header is followed by list of issues found in the template. {0} - template name and identity in format name (identity)</comment>
+  </data>
+  <data name="command_validate_info_template_loc_header" xml:space="preserve">
+    <value>Found localization '{0}' for template {1}:</value>
+    <comment>The header is followed by list of issues found in the template localization. {1} - template name and identity in format name (identity), {0} - locale in format en-US</comment>
+  </data>
   <data name="command_verify_error_failed" xml:space="preserve">
     <value>Verification Failed.</value>
   </data>

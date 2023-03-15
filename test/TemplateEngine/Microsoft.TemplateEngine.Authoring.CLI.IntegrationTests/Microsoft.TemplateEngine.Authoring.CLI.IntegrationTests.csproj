@@ -15,5 +15,12 @@
   <ItemGroup>
     <Compile Include="..\Shared\**\*.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="Snapshots\**\*" />
+    <Content Include="Snapshots\**\*" />
+    <None Include="Snapshots\**\*" CopyToOutputDirectory="Never" />
+  </ItemGroup>
+
   
 </Project>

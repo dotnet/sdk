@@ -85,7 +85,28 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             }
             MountPointScanSource source = GetOrCreateMountPointScanInfoForInstallSource(mountPointUri);
             cancellationToken.ThrowIfCancellationRequested();
-            return ScanMountPointForTemplatesAsync(source, cancellationToken);
+            return ScanMountPointForTemplatesAsync(source, cancellationToken: cancellationToken);
+        }
+
+        /// <summary>
+        /// Scans mount point for templates.
+        /// </summary>
+        /// <remarks>
+        /// The mount point will not be disposed by the <see cref="Scanner"/>. Use <see cref="ScanResult.Dispose"/> to dispose mount point.
+        /// </remarks>
+        public Task<ScanResult> ScanAsync(
+            string mountPointUri,
+            bool logValidationResults = true,
+            bool returnInvalidTemplates = false,
+            CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrWhiteSpace(mountPointUri))
+            {
+                throw new ArgumentException($"{nameof(mountPointUri)} should not be null or empty");
+            }
+            MountPointScanSource source = GetOrCreateMountPointScanInfoForInstallSource(mountPointUri);
+            cancellationToken.ThrowIfCancellationRequested();
+            return ScanMountPointForTemplatesAsync(source, logValidationResults, returnInvalidTemplates, cancellationToken);
         }
 
         private MountPointScanSource GetOrCreateMountPointScanInfoForInstallSource(string sourceLocation)
@@ -207,7 +228,11 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             return true;
         }
 
-        private async Task<ScanResult> ScanMountPointForTemplatesAsync(MountPointScanSource source, CancellationToken cancellationToken)
+        private async Task<ScanResult> ScanMountPointForTemplatesAsync(
+            MountPointScanSource source,
+            bool logValidationResults = true,
+            bool returnInvalidTemplates = false,
+            CancellationToken cancellationToken = default)
         {
             _ = source ?? throw new ArgumentNullException(nameof(source));
 
@@ -215,15 +240,19 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             foreach (IGenerator generator in _environmentSettings.Components.OfType<IGenerator>())
             {
                 IReadOnlyList<IScanTemplateInfo> templateList = await generator.GetTemplatesFromMountPointAsync(source.MountPoint, cancellationToken).ConfigureAwait(false);
-                LogScanningResults(source, templateList, generator);
 
-                IEnumerable<IScanTemplateInfo> validTemplates = templateList.Where(t => t.IsValid);
+                if (logValidationResults)
+                {
+                    LogScanningResults(source, templateList, generator);
+                }
+
+                IEnumerable<IScanTemplateInfo> validTemplates = templateList.Where(t => t.IsValid || returnInvalidTemplates);
                 templates.AddRange(validTemplates);
                 source.FoundTemplates |= validTemplates.Any();
             }
 
             //backward compatibility
-            var localizationLocators = templates.SelectMany(t => t.Localizations.Values.Where(li => li.IsValid)).ToList();
+            var localizationLocators = templates.SelectMany(t => t.Localizations.Values.Where(li => li.IsValid || returnInvalidTemplates)).ToList();
             return new ScanResult(source.MountPoint, templates, localizationLocators, Array.Empty<(string, Type, IIdentifiedComponent)>());
         }
 
@@ -283,25 +312,24 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
         private void LogScanningResults(MountPointScanSource source, IReadOnlyList<IScanTemplateInfo> foundTemplates, IGenerator generator)
         {
-            ILogger logger = _environmentSettings.Host.Logger;
-            logger.LogDebug("Scanning mount point '{0}' by generator '{1}': found {2} templates", source.MountPoint.MountPointUri, generator.Id, foundTemplates.Count);
+            _logger.LogDebug("Scanning mount point '{0}' by generator '{1}': found {2} templates", source.MountPoint.MountPointUri, generator.Id, foundTemplates.Count);
             foreach (IScanTemplateInfo template in foundTemplates)
             {
                 string templateDisplayName = GetTemplateDisplayName(template);
-                logger.LogDebug("Found template {0}", templateDisplayName);
+                _logger.LogDebug("Found template {0}", templateDisplayName);
 
                 LogValidationEntries(
-                    logger,
+                    _logger,
                     string.Format(LocalizableStrings.Scanner_Validation_Error_Header, templateDisplayName),
                     template.ValidationErrors,
                     IValidationEntry.SeverityLevel.Error);
                 LogValidationEntries(
-                    logger,
+                    _logger,
                     string.Format(LocalizableStrings.Scanner_Validation_Warning_Header, templateDisplayName),
                     template.ValidationErrors,
                     IValidationEntry.SeverityLevel.Warning);
                 LogValidationEntries(
-                    logger,
+                    _logger,
                     string.Format(LocalizableStrings.Scanner_Validation_Info_Header, templateDisplayName),
                     template.ValidationErrors,
                     IValidationEntry.SeverityLevel.Info);
@@ -311,17 +339,17 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                     ILocalizationLocator localizationInfo = locator.Value;
 
                     LogValidationEntries(
-                        logger,
+                        _logger,
                         string.Format(LocalizableStrings.Scanner_Validation_LocError_Header, templateDisplayName, localizationInfo.Locale),
                         localizationInfo.ValidationErrors,
                         IValidationEntry.SeverityLevel.Error);
                     LogValidationEntries(
-                        logger,
+                        _logger,
                         string.Format(LocalizableStrings.Scanner_Validation_LocWarning_Header, templateDisplayName, localizationInfo.Locale),
                         localizationInfo.ValidationErrors,
                         IValidationEntry.SeverityLevel.Warning);
                     LogValidationEntries(
-                        logger,
+                        _logger,
                         string.Format(LocalizableStrings.Scanner_Validation_LocInfo_Header, templateDisplayName, localizationInfo.Locale),
                         localizationInfo.ValidationErrors,
                         IValidationEntry.SeverityLevel.Info);
@@ -329,11 +357,11 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
                 if (!template.IsValid)
                 {
-                    logger.LogError(LocalizableStrings.Scanner_Validation_InvalidTemplate, templateDisplayName);
+                    _logger.LogError(LocalizableStrings.Scanner_Validation_InvalidTemplate, templateDisplayName);
                 }
                 foreach (ILocalizationLocator invalidLoc in template.Localizations.Values.Where(li => !li.IsValid))
                 {
-                    logger.LogWarning(LocalizableStrings.Scanner_Validation_InvalidTemplateLoc, invalidLoc.Locale, templateDisplayName);
+                    _logger.LogWarning(LocalizableStrings.Scanner_Validation_InvalidTemplateLoc, invalidLoc.Locale, templateDisplayName);
                 }
             }
 
