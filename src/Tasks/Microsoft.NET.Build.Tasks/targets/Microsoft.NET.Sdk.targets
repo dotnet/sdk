@@ -30,7 +30,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <UsingTask TaskName="GenerateSatelliteAssemblies" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
 
   <ItemGroup Condition="'$(BuildWithFrameworkRoslyn)' == 'true' and '$(MicrosoftNetCompilersToolsetPackageVersion)' != ''">
-    <PackageReference Include="Microsoft.Net.Compilers.Framework.Package" PrivateAssets="all" Version="$(MicrosoftNetCompilersToolsetPackageVersion)"/>
+    <PackageReference Include="Microsoft.Net.Compilers.Toolset.Framework" PrivateAssets="all" Version="$(MicrosoftNetCompilersToolsetPackageVersion)"/>
   </ItemGroup>
 
   <PropertyGroup>
