@@ -14,7 +14,7 @@ public sealed class ProjectInitializer
 
     static ProjectInitializer()
     {
-        var relativePath = Path.Combine("..", "packaging", "build", "Microsoft.NET.Build.Containers.targets");
+        var relativePath = Path.Combine("..", "..", "Containers", "packaging", "build", "Microsoft.NET.Build.Containers.targets");
         var targetsFile = CurrentFile.Relative(relativePath);
         var propsFile = Path.ChangeExtension(targetsFile, ".props");
         _combinedTargetsLocation = CombineFiles(propsFile, targetsFile);
