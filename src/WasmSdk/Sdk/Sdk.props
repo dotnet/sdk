@@ -16,7 +16,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   </PropertyGroup>
 
   <PropertyGroup>
-    <_WebAssemblyPropsFile Condition="'$(_BlazorWebAssemblyPropsFile)' == ''">$(MSBuildThisFileDirectory)..\targets\Microsoft.NET.Sdk.WebAssembly.Current.props</_WebAssemblyPropsFile>
+    <_WebAssemblyPropsFile Condition="'$(_WebAssemblyPropsFile)' == ''">$(MSBuildThisFileDirectory)..\targets\Microsoft.NET.Sdk.WebAssembly.Current.props</_WebAssemblyPropsFile>
   </PropertyGroup>
 
   <Import Project="$(_WebAssemblyPropsFile)" />

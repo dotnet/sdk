@@ -10,7 +10,6 @@ Copyright (c) .NET Foundation. All rights reserved.
 ***********************************************************************************************
 -->
 <Project ToolsVersion="14.0">
-  <Import Sdk="Microsoft.NET.Sdk.WebAssembly" Project="Sdk.targets" />
 
   <PropertyGroup>
     <EnableDefaultContentItems Condition=" '$(EnableDefaultContentItems)' == '' ">true</EnableDefaultContentItems>
@@ -19,6 +18,8 @@ Copyright (c) .NET Foundation. All rights reserved.
         This must be configured before it's initialized in the .NET SDK targets (which are imported by the Razor SDK). -->
     <SuppressTrimAnalysisWarnings Condition="'$(SuppressTrimAnalysisWarnings)' == '' And '$(TrimmerDefaultAction)' != 'link'">true</SuppressTrimAnalysisWarnings>
   </PropertyGroup>
+
+  <Import Sdk="Microsoft.NET.Sdk.WebAssembly" Project="Sdk.targets" />
 
   <PropertyGroup>
     <!-- Paths to tools, tasks, and extensions are calculated relative to the BlazorWebAssemblySdkDirectoryRoot. This can be modified to test a local build. -->
@@ -59,8 +60,6 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <!-- Don't generate a NETSDK1151 error if a non self-contained Exe references a Blazor Exe -->
     <ShouldBeValidatedAsExecutableReference>false</ShouldBeValidatedAsExecutableReference>
-
-    <_TargetingNET60OrLater Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND $([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '6.0'))">true</_TargetingNET60OrLater>
 
     <!-- JS Modules -->
     <!-- We disable the manifest generation because we are going to inline the modules in the blazor.boot.json manifest -->
