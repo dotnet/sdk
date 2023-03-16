@@ -107,23 +107,25 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery
             TreatUnmatchedTokensAsErrors = true;
             SetHandler(async (InvocationContext ctx, CancellationToken cancellationToken) =>
             {
-                var config = new CommandArgs(ctx.BindingContext.ParseResult.GetValue(_basePathOption) ?? throw new Exception("Output path is not set"))
+                var config = new CommandArgs(ctx.ParseResult.GetValue(_basePathOption) ?? throw new Exception("Output path is not set"))
                 {
-                    LocalPackagePath = ctx.BindingContext.ParseResult.GetValue(_packagesPathOption),
-                    PageSize = ctx.BindingContext.ParseResult.GetValue(_pageSizeOption),
-                    SaveCandidatePacks = ctx.BindingContext.ParseResult.GetValue(_savePacksOption),
-                    RunOnlyOnePage = ctx.BindingContext.ParseResult.GetValue(_onePageOption),
-                    IncludePreviewPacks = ctx.BindingContext.ParseResult.GetValue(_allowPreviewPacksOption),
-                    DontFilterOnTemplateJson = ctx.BindingContext.ParseResult.GetValue(_noTemplateJsonFilterOption),
-                    Verbose = ctx.BindingContext.ParseResult.GetValue(_verboseOption),
-                    TestEnabled = ctx.BindingContext.ParseResult.GetValue(_testOption),
-                    Queries = ctx.BindingContext.ParseResult.GetValue(_queriesOption) ?? Array.Empty<SupportedQueries>(),
-                    DiffMode = ctx.BindingContext.ParseResult.GetValue(_diffOption),
-                    DiffOverrideSearchCacheLocation = ctx.BindingContext.ParseResult.GetValue(_diffOverrideCacheOption),
-                    DiffOverrideKnownPackagesLocation = ctx.BindingContext.ParseResult.GetValue(_diffOverrideNonPackagesOption),
+                    LocalPackagePath = ctx.ParseResult.GetValue(_packagesPathOption),
+                    PageSize = ctx.ParseResult.GetValue(_pageSizeOption),
+                    SaveCandidatePacks = ctx.ParseResult.GetValue(_savePacksOption),
+                    RunOnlyOnePage = ctx.ParseResult.GetValue(_onePageOption),
+                    IncludePreviewPacks = ctx.ParseResult.GetValue(_allowPreviewPacksOption),
+                    DontFilterOnTemplateJson = ctx.ParseResult.GetValue(_noTemplateJsonFilterOption),
+                    Verbose = ctx.ParseResult.GetValue(_verboseOption),
+                    TestEnabled = ctx.ParseResult.GetValue(_testOption),
+                    Queries = ctx.ParseResult.GetValue(_queriesOption) ?? Array.Empty<SupportedQueries>(),
+                    DiffMode = ctx.ParseResult.GetValue(_diffOption),
+                    DiffOverrideSearchCacheLocation = ctx.ParseResult.GetValue(_diffOverrideCacheOption),
+                    DiffOverrideKnownPackagesLocation = ctx.ParseResult.GetValue(_diffOverrideNonPackagesOption),
                 };
 
                 await ExecuteAsync(config, cancellationToken).ConfigureAwait(false);
+
+                return 0;
             });
         }
 
