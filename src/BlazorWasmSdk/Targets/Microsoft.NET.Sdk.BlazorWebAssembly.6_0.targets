@@ -33,6 +33,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <UsingTask TaskName="Microsoft.NET.Sdk.BlazorWebAssembly.GzipCompress" AssemblyFile="$(_BlazorWebAssemblySdkTasksAssembly)" />
   <UsingTask TaskName="Microsoft.NET.Sdk.BlazorWebAssembly.CreateBlazorTrimmerRootDescriptorFile" AssemblyFile="$(_BlazorWebAssemblySdkTasksAssembly)" />
   <UsingTask TaskName="Microsoft.NET.Sdk.BlazorWebAssembly.ComputeBlazorFilesToCompress" AssemblyFile="$(_BlazorWebAssemblySdkTasksAssembly)" />
+  <UsingTask TaskName="Microsoft.NET.Sdk.BlazorWebAssembly.GenerateBlazorBootExtensionJson" AssemblyFile="$(_BlazorWebAssemblySdkTasksAssembly)" />
 
   <PropertyGroup>
     <SelfContained>true</SelfContained>
@@ -84,6 +85,14 @@ Copyright (c) .NET Foundation. All rights reserved.
       $(AddWasmStaticWebAssetsDependsOn);
       _ResolveBlazorWasmOutputs;
     </AddWasmStaticWebAssetsDependsOn>
+    <GenerateBuildWasmBootJsonDependsOn>
+      $(GenerateBuildWasmBootJsonDependsOn);
+      GenerateBlazorBootExtensionJson;
+    </GenerateBuildWasmBootJsonDependsOn>
+    <GeneratePublishWasmBootJsonDependsOn>
+      $(GeneratePublishWasmBootJsonDependsOn);
+      GenerateBlazorBootExtensionJson;
+    </GeneratePublishWasmBootJsonDependsOn>
   </PropertyGroup>
 
   <Import Project="Microsoft.NET.Sdk.BlazorWebAssembly.ServiceWorkerAssetsManifest.targets" Condition="'$(ServiceWorkerAssetsManifest)' != ''" />
@@ -254,6 +263,19 @@ Copyright (c) .NET Foundation. All rights reserved.
 
       <StaticWebAsset Include="@(_BlazorPublishGZipCompressedFile->'%(FullPath)')" />
       <StaticWebAsset Include="@(_BlazorPublishBrotliCompressedFile->'%(FullPath)')" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="GenerateBlazorBootExtensionJson">
+    <PropertyGroup>
+      <_BlazorBuildBootExtensionJsonPath>$(IntermediateOutputPath)blazor.boot-extension.json</_BlazorBuildBootExtensionJsonPath>
+    </PropertyGroup>
+
+    <GenerateBlazorBootExtensionJson OutputPath="$(_BlazorBuildBootExtensionJsonPath)" />
+
+    <ItemGroup>
+      <FileWrites Include="$(_BlazorBuildBootExtensionJsonPath)" />
+      <WasmBootConfigExtension Include="$(_BlazorBuildBootExtensionJsonPath)" Key="blazor" />
     </ItemGroup>
   </Target>
 

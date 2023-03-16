@@ -112,6 +112,11 @@ Copyright (c) .NET Foundation. All rights reserved.
     <AddWasmStaticWebAssetsDependsOn>
       ResolveWasmOutputs;
     </AddWasmStaticWebAssetsDependsOn>
+    <GenerateBuildWasmBootJsonDependsOn>
+      ResolveStaticWebAssetsInputs;
+    </GenerateBuildWasmBootJsonDependsOn>
+    <GeneratePublishWasmBootJsonDependsOn>
+    </GeneratePublishWasmBootJsonDependsOn>
   </PropertyGroup>
 
   <Target Name="_WasmNativeForBuild" DependsOnTargets="_GatherWasmFilesToBuild;WasmBuildApp" Condition="'$(UsingBrowserRuntimeWorkload)' == 'true'" />
@@ -231,7 +236,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     </ItemGroup>
   </Target>
 
-  <Target Name="_GenerateBuildWasmBootJson" DependsOnTargets="ResolveStaticWebAssetsInputs">
+  <Target Name="_GenerateBuildWasmBootJson" DependsOnTargets="$(GenerateBuildWasmBootJsonDependsOn)">
     <PropertyGroup>
       <_WasmBuildBootJsonPath>$(IntermediateOutputPath)blazor.boot.json</_WasmBuildBootJsonPath>
       <_BlazorWebAssemblyLoadAllGlobalizationData Condition="'$(BlazorWebAssemblyLoadAllGlobalizationData)' == ''">false</_BlazorWebAssemblyLoadAllGlobalizationData>
@@ -398,7 +403,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     </DefineStaticWebAssets>
   </Target>
 
-  <Target Name="GeneratePublishWasmBootJson">
+  <Target Name="GeneratePublishWasmBootJson" DependsOnTargets="$(GeneratePublishWasmBootJsonDependsOn)">
 
     <ItemGroup>
       <_WasmPublishAsset
