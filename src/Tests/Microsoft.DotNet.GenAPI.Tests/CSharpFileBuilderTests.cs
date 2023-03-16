@@ -1838,6 +1838,28 @@ namespace Microsoft.DotNet.GenAPI.Tests
                     """,
                 includeInternalSymbols: false);
         }
+
+        [Fact]
+        public void TestTypeForwardedToAssemblyAttributes()
+        {
+            RunTest(original: """
+                [assembly: System.Runtime.CompilerServices.TypeForwardedTo(typeof(System.TupleExtensions))]
+                [assembly: System.Runtime.CompilerServices.TypeForwardedTo(typeof(System.ValueTuple))]
+                [assembly: System.Runtime.CompilerServices.TypeForwardedTo(typeof(System.ValueTuple<>))]
+                [assembly: System.Runtime.CompilerServices.TypeForwardedTo(typeof(System.ValueTuple<,>))]
+                [assembly: System.Runtime.CompilerServices.TypeForwardedTo(typeof(System.ValueTuple<,,>))]
+                [assembly: System.Runtime.CompilerServices.TypeForwardedTo(typeof(System.ValueTuple<,,,>))]
+                [assembly: System.Runtime.CompilerServices.TypeForwardedTo(typeof(System.ValueTuple<,,,,>))]
+                [assembly: System.Runtime.CompilerServices.TypeForwardedTo(typeof(System.ValueTuple<,,,,,>))]
+                [assembly: System.Runtime.CompilerServices.TypeForwardedTo(typeof(System.ValueTuple<,,,,,,>))]
+                [assembly: System.Runtime.CompilerServices.TypeForwardedTo(typeof(System.ValueTuple<,,,,,,,>))]
+                namespace A {}
+                """,
+                expected: """
+                namespace A {}
+                """,
+            includeInternalSymbols: false);
+        }
     }
 }
 
