@@ -119,7 +119,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       ResolveStaticWebAssetsInputs;
     </GenerateBuildWasmBootJsonDependsOn>
     <GeneratePublishWasmBootJsonDependsOn>
-      $(GenerateBuildWasmBootJsonDependsOn);
+      $(GeneratePublishWasmBootJsonDependsOn);
     </GeneratePublishWasmBootJsonDependsOn>
   </PropertyGroup>
 
