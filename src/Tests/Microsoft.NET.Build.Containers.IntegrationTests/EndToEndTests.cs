@@ -156,7 +156,7 @@ public class EndToEndTests
         newProjectDir.Create();
         privateNuGetAssets.Create();
 
-        var packageDirPath = Path.Combine(Assembly.GetExecutingAssembly().Location, "..", "..", "package");
+        var packageDirPath = Path.Combine(TestContext.Current.TestExecutionDirectory, "Container", "package");
         var packagedir = new DirectoryInfo(packageDirPath);
 
         // do not pollute the primary/global NuGet package store with the private package(s)

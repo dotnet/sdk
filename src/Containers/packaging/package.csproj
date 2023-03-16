@@ -72,6 +72,6 @@
     <!-- Hacky workaround for the fact that we don't publish the package yet. -->
     <Target Name="CopyNupkgToCustomFolder" AfterTargets="Pack">
         <Copy SourceFiles="../../../artifacts/packages/$(Configuration)/Shipping/Microsoft.NET.Build.Containers.$(Version).nupkg"
-            DestinationFiles="../../../artifacts/bin/Microsoft.NET.Build.Containers.IntegrationTests/$(Configuration)/package/Microsoft.NET.Build.Containers.$(Version).nupkg" />
+            DestinationFiles="$(ArtifactsTmpDir)Container/package/Microsoft.NET.Build.Containers.$(Version).nupkg" />
     </Target>
 </Project>
