@@ -50,6 +50,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <_AggressiveAttributeTrimming Condition="'$(_AggressiveAttributeTrimming)' == ''">true</_AggressiveAttributeTrimming>
     <DebuggerSupport Condition="'$(DebuggerSupport)' == '' and '$(Configuration)' != 'Debug'">false</DebuggerSupport>
     <BlazorCacheBootResources Condition="'$(BlazorCacheBootResources)' == ''">true</BlazorCacheBootResources>
+    <WasmFingerprintDotnetJs>true</WasmFingerprintDotnetJs>
 
     <!-- Turn off parts of the build that do not apply to WASM projects -->
     <GenerateDependencyFile>false</GenerateDependencyFile>

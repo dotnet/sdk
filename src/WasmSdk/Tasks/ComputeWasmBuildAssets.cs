@@ -43,6 +43,8 @@ namespace Microsoft.NET.Sdk.WebAssembly
         [Required]
         public bool CopySymbols { get; set; }
 
+        public bool FingerprintDotNetJs { get; set; }
+
         [Output]
         public ITaskItem[] AssetCandidates { get; set; }
 
@@ -97,7 +99,7 @@ namespace Microsoft.NET.Sdk.WebAssembly
                     }
 
                     var destinationSubPath = candidate.GetMetadata("DestinationSubPath");
-                    if (candidate.GetMetadata("FileName") == "dotnet" && candidate.GetMetadata("Extension") == ".js")
+                    if (candidate.GetMetadata("FileName") == "dotnet" && candidate.GetMetadata("Extension") == ".js" && FingerprintDotNetJs)
                     {
                         var itemHash = FileHasher.GetFileHash(candidate.ItemSpec);
                         var cacheBustedDotNetJSFileName = $"dotnet.{candidate.GetMetadata("NuGetPackageVersion")}.{itemHash}.js";

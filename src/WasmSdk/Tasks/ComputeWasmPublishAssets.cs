@@ -52,6 +52,8 @@ namespace Microsoft.NET.Sdk.WebAssembly
         [Required]
         public string DotNetJsVersion { get; set; }
 
+        public bool FingerprintDotNetJs { get; set; }
+
         [Output]
         public ITaskItem[] NewCandidates { get; set; }
 
@@ -192,7 +194,7 @@ namespace Microsoft.NET.Sdk.WebAssembly
                 {
                     var aotDotNetJs = WasmAotAssets.SingleOrDefault(a => $"{a.GetMetadata("FileName")}{a.GetMetadata("Extension")}" == "dotnet.js");
                     ITaskItem newDotNetJs = null;
-                    if (aotDotNetJs != null)
+                    if (aotDotNetJs != null && FingerprintDotNetJs)
                     {
                         newDotNetJs = new TaskItem(Path.GetFullPath(aotDotNetJs.ItemSpec), asset.CloneCustomMetadata());
                         newDotNetJs.SetMetadata("OriginalItemSpec", aotDotNetJs.ItemSpec);
