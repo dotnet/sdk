@@ -110,12 +110,15 @@ Copyright (c) .NET Foundation. All rights reserved.
     </GenerateStaticWebAssetsPublishManifestDependsOn>
 
     <AddWasmStaticWebAssetsDependsOn>
+      $(AddWasmStaticWebAssetsDependsOn);
       ResolveWasmOutputs;
     </AddWasmStaticWebAssetsDependsOn>
     <GenerateBuildWasmBootJsonDependsOn>
+      $(GenerateBuildWasmBootJsonDependsOn);
       ResolveStaticWebAssetsInputs;
     </GenerateBuildWasmBootJsonDependsOn>
     <GeneratePublishWasmBootJsonDependsOn>
+      $(GenerateBuildWasmBootJsonDependsOn);
     </GeneratePublishWasmBootJsonDependsOn>
   </PropertyGroup>
 
