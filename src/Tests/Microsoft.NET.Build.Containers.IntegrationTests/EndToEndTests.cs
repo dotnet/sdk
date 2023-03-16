@@ -6,6 +6,8 @@ using System.Runtime.CompilerServices;
 using Xunit;
 using Xunit.Abstractions;
 using Microsoft.NET.Build.Containers.UnitTests;
+using Microsoft.NET.TestFramework;
+using System.Reflection;
 
 namespace Microsoft.NET.Build.Containers.IntegrationTests;
 
@@ -110,7 +112,7 @@ public class EndToEndTests
             .Should().Pass();
     }
 
-    private string BuildLocalApp([CallerMemberName] string testName = "TestName", string tfm = "net6.0", string rid = "linux-x64")
+    private string BuildLocalApp([CallerMemberName] string testName = "TestName", string tfm = ToolsetInfo.CurrentTargetFramework, string rid = "linux-x64")
     {
         string workingDirectory = Path.Combine(TestSettings.TestArtifactsDirectory, testName);
 
@@ -153,10 +155,9 @@ public class EndToEndTests
 
         newProjectDir.Create();
         privateNuGetAssets.Create();
-        var repoGlobalJson = Path.Combine("..", "..", "..", "..", "global.json");
-        File.Copy(repoGlobalJson, Path.Combine(newProjectDir.FullName, "global.json"));
 
-        var packagedir = new DirectoryInfo(CurrentFile.Relative("./package"));
+        var packageDirPath = Path.Combine(Assembly.GetExecutingAssembly().Location, "..", "..", "package");
+        var packagedir = new DirectoryInfo(packageDirPath);
 
         // do not pollute the primary/global NuGet package store with the private package(s)
         var env = new (string, string)[] { new("NUGET_PACKAGES", privateNuGetAssets.FullName) };
@@ -170,7 +171,7 @@ public class EndToEndTests
         }
 
 
-        new DotnetCommand(_testOutput, "new", "webapi", "-f", "net7.0")
+        new DotnetCommand(_testOutput, "new", "webapi", "-f", ToolsetInfo.CurrentTargetFramework)
             .WithWorkingDirectory(newProjectDir.FullName)
             // do not pollute the primary/global NuGet package store with the private package(s)
             .WithEnvironmentVariable("NUGET_PACKAGES", privateNuGetAssets.FullName)
@@ -189,7 +190,7 @@ public class EndToEndTests
             .Should().Pass();
 
         // Add package to the project
-        new DotnetCommand(_testOutput, "add", "package", "Microsoft.NET.Build.Containers", "--prerelease", "-f", "net7.0")
+        new DotnetCommand(_testOutput, "add", "package", "Microsoft.NET.Build.Containers", "--prerelease", "-f", ToolsetInfo.CurrentTargetFramework)
             .WithEnvironmentVariable("NUGET_PACKAGES", privateNuGetAssets.FullName)
             .WithWorkingDirectory(newProjectDir.FullName)
             .Execute()
