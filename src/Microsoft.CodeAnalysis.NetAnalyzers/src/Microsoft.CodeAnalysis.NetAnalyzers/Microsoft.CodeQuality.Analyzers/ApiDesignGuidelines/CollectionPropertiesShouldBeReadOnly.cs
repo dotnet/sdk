@@ -131,6 +131,11 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 return;
             }
 
+            if (property.IsImplementationOfAnyInterfaceMember())
+            {
+                return;
+            }
+
             context.ReportDiagnostic(property.CreateDiagnostic(Rule, property.Name));
         }
 
