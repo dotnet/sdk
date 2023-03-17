@@ -296,8 +296,8 @@ namespace Microsoft.DotNet.GenAPI
             if (attributes.All(attribute => attribute.AttributeClass?.ToDisplayString() != typeof(AssemblyFlagsAttribute).FullName))
             {
                 attributeSyntaxNodes.Add(_syntaxGenerator.Attribute(typeof(AssemblyFlagsAttribute).FullName!,
-                SyntaxFactory.AttributeArgument(SyntaxFactory.IdentifierName("(System.Reflection.AssemblyNameFlags)0x70")))
-                .WithTrailingTrivia(SyntaxFactory.LineFeed));
+                    SyntaxFactory.AttributeArgument(SyntaxFactory.IdentifierName("(System.Reflection.AssemblyNameFlags)0x70")))
+                    .WithTrailingTrivia(SyntaxFactory.LineFeed));
             }
 
             return _syntaxGenerator.AddAttributes(compilationUnit, attributeSyntaxNodes);
