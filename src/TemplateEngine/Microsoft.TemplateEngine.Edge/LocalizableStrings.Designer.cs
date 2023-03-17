@@ -580,78 +580,6 @@ namespace Microsoft.TemplateEngine.Edge {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The template {0} has the following validation errors:.
-        /// </summary>
-        internal static string Scanner_Validation_Error_Header {
-            get {
-                return ResourceManager.GetString("Scanner_Validation_Error_Header", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The template {0} has the following validation messages:.
-        /// </summary>
-        internal static string Scanner_Validation_Info_Header {
-            get {
-                return ResourceManager.GetString("Scanner_Validation_Info_Header", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Failed to install the template {0}: the template is not valid..
-        /// </summary>
-        internal static string Scanner_Validation_InvalidTemplate {
-            get {
-                return ResourceManager.GetString("Scanner_Validation_InvalidTemplate", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Failed to install the &apos;{0}&apos; localization the template {1}: the localization file is not valid. The localization will be skipped..
-        /// </summary>
-        internal static string Scanner_Validation_InvalidTemplateLoc {
-            get {
-                return ResourceManager.GetString("Scanner_Validation_InvalidTemplateLoc", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The template {0} has the following validation errors in &apos;{1}&apos; localization:.
-        /// </summary>
-        internal static string Scanner_Validation_LocError_Header {
-            get {
-                return ResourceManager.GetString("Scanner_Validation_LocError_Header", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The template {0} has the following validation messages in &apos;{1}&apos; localization:.
-        /// </summary>
-        internal static string Scanner_Validation_LocInfo_Header {
-            get {
-                return ResourceManager.GetString("Scanner_Validation_LocInfo_Header", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The template {0} has the following validation warnings in &apos;{1}&apos; localization:.
-        /// </summary>
-        internal static string Scanner_Validation_LocWarning_Header {
-            get {
-                return ResourceManager.GetString("Scanner_Validation_LocWarning_Header", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The template {0} has the following validation warnings:.
-        /// </summary>
-        internal static string Scanner_Validation_Warning_Header {
-            get {
-                return ResourceManager.GetString("Scanner_Validation_Warning_Header", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to &apos;{0}&apos; is not a valid semver version..
         /// </summary>
         internal static string SdkConstraint_Error_InvalidVersion {
@@ -752,6 +680,15 @@ namespace Microsoft.TemplateEngine.Edge {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The template is invalid and cannot be instantiated..
+        /// </summary>
+        internal static string TemplateCreator_TemplateCreationResult_Error_InvalidTemplate {
+            get {
+                return ResourceManager.GetString("TemplateCreator_TemplateCreationResult_Error_InvalidTemplate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Failed to create template: the template name is not specified. Template configuration does not configure a default name that can be used when name is not specified. Specify the name for the template when instantiating or configure a default name in the template configuration..
         /// </summary>
         internal static string TemplateCreator_TemplateCreationResult_Error_NoDefaultName {
@@ -817,6 +754,78 @@ namespace Microsoft.TemplateEngine.Edge {
         internal static string TemplatePackageManager_Warning_DetectedTemplatesIdentityConflict_Subentry {
             get {
                 return ResourceManager.GetString("TemplatePackageManager_Warning_DetectedTemplatesIdentityConflict_Subentry", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The template {0} has the following validation errors:.
+        /// </summary>
+        internal static string Validation_Error_Header {
+            get {
+                return ResourceManager.GetString("Validation_Error_Header", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The template {0} has the following validation messages:.
+        /// </summary>
+        internal static string Validation_Info_Header {
+            get {
+                return ResourceManager.GetString("Validation_Info_Header", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to load the template {0}: the template is not valid..
+        /// </summary>
+        internal static string Validation_InvalidTemplate {
+            get {
+                return ResourceManager.GetString("Validation_InvalidTemplate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to load the &apos;{0}&apos; localization the template {1}: the localization file is not valid. The localization will be skipped..
+        /// </summary>
+        internal static string Validation_InvalidTemplateLoc {
+            get {
+                return ResourceManager.GetString("Validation_InvalidTemplateLoc", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The template {0} has the following validation errors in &apos;{1}&apos; localization:.
+        /// </summary>
+        internal static string Validation_LocError_Header {
+            get {
+                return ResourceManager.GetString("Validation_LocError_Header", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The template {0} has the following validation messages in &apos;{1}&apos; localization:.
+        /// </summary>
+        internal static string Validation_LocInfo_Header {
+            get {
+                return ResourceManager.GetString("Validation_LocInfo_Header", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The template {0} has the following validation warnings in &apos;{1}&apos; localization:.
+        /// </summary>
+        internal static string Validation_LocWarning_Header {
+            get {
+                return ResourceManager.GetString("Validation_LocWarning_Header", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The template {0} has the following validation warnings:.
+        /// </summary>
+        internal static string Validation_Warning_Header {
+            get {
+                return ResourceManager.GetString("Validation_Warning_Header", resourceCulture);
             }
         }
         

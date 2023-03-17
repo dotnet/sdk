@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Installer;
 using Microsoft.TemplateEngine.Edge;
@@ -14,9 +15,9 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
         private const string HostIdentifier = "IDE.IntegrationTests";
         private const string HostVersion = "v1.0.0";
 
-        internal static Bootstrapper GetBootstrapper(IEnumerable<string>? additionalVirtualLocations = null, bool loadTestTemplates = false)
+        internal static Bootstrapper GetBootstrapper(IEnumerable<string>? additionalVirtualLocations = null, bool loadTestTemplates = false, IEnumerable<ILoggerProvider>? addLoggerProviders = null)
         {
-            ITemplateEngineHost host = CreateHost(loadTestTemplates);
+            ITemplateEngineHost host = CreateHost(loadTestTemplates, addLoggerProviders);
             if (additionalVirtualLocations != null)
             {
                 foreach (string virtualLocation in additionalVirtualLocations)
@@ -59,7 +60,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             }
         }
 
-        private static ITemplateEngineHost CreateHost(bool loadTestTemplates = false)
+        private static ITemplateEngineHost CreateHost(bool loadTestTemplates = false, IEnumerable<ILoggerProvider>? addLoggerProviders = null)
         {
             var preferences = new Dictionary<string, string>
             {
@@ -71,7 +72,11 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             {
                 builtIns.AddRange(BuiltInTemplatePackagesProviderFactory.GetComponents(TestTemplatesLocation));
             }
-            return new DefaultTemplateEngineHost(HostIdentifier + Guid.NewGuid().ToString(), HostVersion, preferences, builtIns, Array.Empty<string>());
+
+            TestLoggerFactory loggerFactory = new();
+            addLoggerProviders?.ToList().ForEach(loggerFactory.AddProvider);
+
+            return new DefaultTemplateEngineHost(HostIdentifier + Guid.NewGuid().ToString(), HostVersion, preferences, builtIns, Array.Empty<string>(), loggerFactory);
         }
     }
 }

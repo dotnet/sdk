@@ -95,9 +95,18 @@ namespace Microsoft.TemplateEngine.Edge.Template
             cancellationToken.ThrowIfCancellationRequested();
 
             using ITemplate? template = await LoadTemplateAsync(templateInfo, baselineName, cancellationToken).ConfigureAwait(false);
+
             if (template == null)
             {
                 return new TemplateCreationResult(CreationResultStatus.NotFound, templateInfo.Name, LocalizableStrings.TemplateCreator_TemplateCreationResult_Error_CouldNotLoadTemplate);
+            }
+
+            ValidationUtils.LogValidationResults(_environmentSettings.Host.Logger, new[] { template });
+
+            if (!template.IsValid)
+            {
+                return new TemplateCreationResult(
+                        CreationResultStatus.TemplateIssueDetected, template.Name, LocalizableStrings.TemplateCreator_TemplateCreationResult_Error_NoDefaultName);
             }
 
             string? realName = null;

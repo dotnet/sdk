@@ -485,6 +485,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             public IReadOnlyList<IValidationEntry> ValidationErrors => _templateInfo.ValidationErrors;
 
+            public ILocalizationLocator? Localization => throw new NotImplementedException();
+
             #region Obsolete members
 
             [Obsolete]

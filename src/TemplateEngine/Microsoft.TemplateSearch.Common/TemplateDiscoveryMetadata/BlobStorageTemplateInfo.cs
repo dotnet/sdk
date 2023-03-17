@@ -85,7 +85,7 @@ namespace Microsoft.TemplateSearch.Common
         public IReadOnlyList<ITemplateParameter> Parameters => ParameterDefinitions;
 
         [JsonIgnore]
-        string ITemplateInfo.MountPointUri => throw new NotImplementedException();
+        string ITemplateLocator.MountPointUri => throw new NotImplementedException();
 
         [JsonProperty]
         public string? Author { get; private set; }
@@ -103,7 +103,7 @@ namespace Microsoft.TemplateSearch.Common
         public string Identity { get; private set; }
 
         [JsonIgnore]
-        Guid ITemplateInfo.GeneratorId => throw new NotImplementedException();
+        Guid ITemplateLocator.GeneratorId => throw new NotImplementedException();
 
         [JsonProperty]
         public string? GroupIdentity { get; private set; }
@@ -133,13 +133,13 @@ namespace Microsoft.TemplateSearch.Common
         public IReadOnlyDictionary<string, ICacheParameter> CacheParameters { get; private set; } = new Dictionary<string, ICacheParameter>();
 
         [JsonIgnore]
-        string ITemplateInfo.ConfigPlace => throw new NotImplementedException();
+        string ITemplateLocator.ConfigPlace => throw new NotImplementedException();
 
         [JsonIgnore]
-        string ITemplateInfo.LocaleConfigPlace => throw new NotImplementedException();
+        string IExtendedTemplateLocator.LocaleConfigPlace => throw new NotImplementedException();
 
         [JsonIgnore]
-        string ITemplateInfo.HostConfigPlace => throw new NotImplementedException();
+        string IExtendedTemplateLocator.HostConfigPlace => throw new NotImplementedException();
 
         [JsonProperty]
         public string? ThirdPartyNotices { get; private set; }
@@ -158,7 +158,7 @@ namespace Microsoft.TemplateSearch.Common
         public IReadOnlyList<Guid> PostActions { get; private set; } = Array.Empty<Guid>();
 
         [JsonIgnore]
-        IReadOnlyList<TemplateConstraintInfo> ITemplateInfo.Constraints => throw new NotImplementedException();
+        IReadOnlyList<TemplateConstraintInfo> ITemplateMetadata.Constraints => throw new NotImplementedException();
 
         public static BlobStorageTemplateInfo FromJObject(JObject entry)
         {

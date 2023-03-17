@@ -17,7 +17,7 @@ namespace Microsoft.TemplateEngine.Abstractions.TemplateFiltering
 
         /// <summary>
         /// The filter partially matches the value of <see cref="ITemplateInfo"/>.
-        /// For example, <see cref="ITemplateInfo.Name"/> contains the value of the filter but not equal to it.
+        /// For example, <see cref="ITemplateMetadata.Name"/> contains the value of the filter but not equal to it.
         /// </summary>
         Partial,
 

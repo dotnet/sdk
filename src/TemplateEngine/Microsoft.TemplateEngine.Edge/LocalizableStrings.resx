@@ -311,35 +311,35 @@ Details: {1}.</value>
   <data name="Scanner_Error_TemplatePackageLocationIsNotSupported" xml:space="preserve">
     <value>Template package location {0} is not supported, or doesn't exist.</value>
   </data>
-  <data name="Scanner_Validation_Error_Header" xml:space="preserve">
+  <data name="Validation_Error_Header" xml:space="preserve">
     <value>The template {0} has the following validation errors:</value>
     <comment>This is a header for the list of issues found for the template, and followed by the list of issues (from new line). {0} template info in format 'template name' (template.identity)</comment>
   </data>
-  <data name="Scanner_Validation_Info_Header" xml:space="preserve">
+  <data name="Validation_Info_Header" xml:space="preserve">
     <value>The template {0} has the following validation messages:</value>
     <comment>This is a header for the list of issues found for the template, and followed by the list of issues (from new line). {0} template info in format 'template name' (template.identity)</comment>
   </data>
-  <data name="Scanner_Validation_InvalidTemplate" xml:space="preserve">
-    <value>Failed to install the template {0}: the template is not valid.</value>
+  <data name="Validation_InvalidTemplate" xml:space="preserve">
+    <value>Failed to load the template {0}: the template is not valid.</value>
     <comment>{0} template info in format 'template name' (template.identity)</comment>
   </data>
-  <data name="Scanner_Validation_InvalidTemplateLoc" xml:space="preserve">
-    <value>Failed to install the '{0}' localization the template {1}: the localization file is not valid. The localization will be skipped.</value>
+  <data name="Validation_InvalidTemplateLoc" xml:space="preserve">
+    <value>Failed to load the '{0}' localization the template {1}: the localization file is not valid. The localization will be skipped.</value>
     <comment>{1} template info in format 'template name' (template.identity), {0} is localization locale in "en-US" format</comment>
   </data>
-  <data name="Scanner_Validation_LocError_Header" xml:space="preserve">
+  <data name="Validation_LocError_Header" xml:space="preserve">
     <value>The template {0} has the following validation errors in '{1}' localization:</value>
     <comment>This is a header for the list of issues found for the template, and followed by the list of issues (from new line). {0} template info in format 'template name' (template.identity), {1} is localization locale in "en-US" format</comment>
   </data>
-  <data name="Scanner_Validation_LocInfo_Header" xml:space="preserve">
+  <data name="Validation_LocInfo_Header" xml:space="preserve">
     <value>The template {0} has the following validation messages in '{1}' localization:</value>
     <comment>This is a header for the list of issues found for the template, and followed by the list of issues (from new line). {0} template info in format 'template name' (template.identity), {1} is localization locale in "en-US" format</comment>
   </data>
-  <data name="Scanner_Validation_LocWarning_Header" xml:space="preserve">
+  <data name="Validation_LocWarning_Header" xml:space="preserve">
     <value>The template {0} has the following validation warnings in '{1}' localization:</value>
     <comment>This is a header for the list of issues found for the template, and followed by the list of issues (from new line). {0} template info in format 'template name' (template.identity), {1} is localization locale in "en-US" format</comment>
   </data>
-  <data name="Scanner_Validation_Warning_Header" xml:space="preserve">
+  <data name="Validation_Warning_Header" xml:space="preserve">
     <value>The template {0} has the following validation warnings:</value>
     <comment>This is a header for the list of issues found for the template, and followed by the list of issues (from new line). {0} template info in format 'template name' (template.identity)</comment>
   </data>
@@ -445,5 +445,7 @@ The template from 'PACKAGE_ID' will be used. To resolve this conflict, uninstall
   <data name="GlobalSettings_Error_CorruptedSettings" xml:space="preserve">
     <value>Failed to read installed template packages list at {0}. It might be due to the file is corrupted. Please review this file manually and fix the errors in JSON structure, or remove the file to clear up the list of list installed packages and reinstall them again. Details of the error: {1}.</value>
   </data>
+  <data name="TemplateCreator_TemplateCreationResult_Error_InvalidTemplate" xml:space="preserve">
+    <value>The template is invalid and cannot be instantiated.</value>
+  </data>
 </root>
-

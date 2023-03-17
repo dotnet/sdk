@@ -76,9 +76,9 @@ namespace Microsoft.TemplateEngine.Edge
 
         public IReadOnlyDictionary<string, string> TagsCollection { get; private set; }
 
-        IReadOnlyList<Guid> ITemplateInfo.PostActions => _source?.PostActions ?? Array.Empty<Guid>();
+        IReadOnlyList<Guid> ITemplateMetadata.PostActions => _source?.PostActions ?? Array.Empty<Guid>();
 
-        IReadOnlyList<TemplateConstraintInfo> ITemplateInfo.Constraints => _source?.Constraints ?? Array.Empty<TemplateConstraintInfo>();
+        IReadOnlyList<TemplateConstraintInfo> ITemplateMetadata.Constraints => _source?.Constraints ?? Array.Empty<TemplateConstraintInfo>();
 
         public static FilterableTemplateInfo FromITemplateInfo(ITemplateInfo source)
         {

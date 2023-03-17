@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 #if !NETFULL
@@ -243,7 +242,8 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
                 if (logValidationResults)
                 {
-                    LogScanningResults(source, templateList, generator);
+                    _logger.LogDebug("Scanning mount point '{0}' by generator '{1}': found {2} templates", source.MountPoint.MountPointUri, generator.Id, templateList.Count);
+                    ValidationUtils.LogValidationResults(_logger, templateList);
                 }
 
                 IEnumerable<IScanTemplateInfo> validTemplates = templateList.Where(t => t.IsValid || returnInvalidTemplates);
@@ -308,95 +308,6 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
             loadFailures = failures;
             return loaded;
-        }
-
-        private void LogScanningResults(MountPointScanSource source, IReadOnlyList<IScanTemplateInfo> foundTemplates, IGenerator generator)
-        {
-            _logger.LogDebug("Scanning mount point '{0}' by generator '{1}': found {2} templates", source.MountPoint.MountPointUri, generator.Id, foundTemplates.Count);
-            foreach (IScanTemplateInfo template in foundTemplates)
-            {
-                string templateDisplayName = GetTemplateDisplayName(template);
-                _logger.LogDebug("Found template {0}", templateDisplayName);
-
-                LogValidationEntries(
-                    _logger,
-                    string.Format(LocalizableStrings.Scanner_Validation_Error_Header, templateDisplayName),
-                    template.ValidationErrors,
-                    IValidationEntry.SeverityLevel.Error);
-                LogValidationEntries(
-                    _logger,
-                    string.Format(LocalizableStrings.Scanner_Validation_Warning_Header, templateDisplayName),
-                    template.ValidationErrors,
-                    IValidationEntry.SeverityLevel.Warning);
-                LogValidationEntries(
-                    _logger,
-                    string.Format(LocalizableStrings.Scanner_Validation_Info_Header, templateDisplayName),
-                    template.ValidationErrors,
-                    IValidationEntry.SeverityLevel.Info);
-
-                foreach (KeyValuePair<string, ILocalizationLocator> locator in template.Localizations)
-                {
-                    ILocalizationLocator localizationInfo = locator.Value;
-
-                    LogValidationEntries(
-                        _logger,
-                        string.Format(LocalizableStrings.Scanner_Validation_LocError_Header, templateDisplayName, localizationInfo.Locale),
-                        localizationInfo.ValidationErrors,
-                        IValidationEntry.SeverityLevel.Error);
-                    LogValidationEntries(
-                        _logger,
-                        string.Format(LocalizableStrings.Scanner_Validation_LocWarning_Header, templateDisplayName, localizationInfo.Locale),
-                        localizationInfo.ValidationErrors,
-                        IValidationEntry.SeverityLevel.Warning);
-                    LogValidationEntries(
-                        _logger,
-                        string.Format(LocalizableStrings.Scanner_Validation_LocInfo_Header, templateDisplayName, localizationInfo.Locale),
-                        localizationInfo.ValidationErrors,
-                        IValidationEntry.SeverityLevel.Info);
-                }
-
-                if (!template.IsValid)
-                {
-                    _logger.LogError(LocalizableStrings.Scanner_Validation_InvalidTemplate, templateDisplayName);
-                }
-                foreach (ILocalizationLocator invalidLoc in template.Localizations.Values.Where(li => !li.IsValid))
-                {
-                    _logger.LogWarning(LocalizableStrings.Scanner_Validation_InvalidTemplateLoc, invalidLoc.Locale, templateDisplayName);
-                }
-            }
-
-            static string GetTemplateDisplayName(IScanTemplateInfo template)
-            {
-                string templateName = string.IsNullOrEmpty(template.Name) ? "<no name>" : template.Name;
-                return $"'{templateName}' ({template.Identity})";
-            }
-
-            static string PrintError(IValidationEntry error) => $"   [{error.Severity}][{error.Code}] {error.ErrorMessage}";
-
-            static void LogValidationEntries(ILogger logger, string header, IReadOnlyList<IValidationEntry> errors, IValidationEntry.SeverityLevel severity)
-            {
-                Action<string> log = severity switch
-                {
-                    IValidationEntry.SeverityLevel.None => (string s) => throw new NotSupportedException($"{IValidationEntry.SeverityLevel.None} severity is not supported."),
-                    IValidationEntry.SeverityLevel.Info => (string s) => logger.LogDebug(s),
-                    IValidationEntry.SeverityLevel.Warning => (string s) => logger.LogWarning(s),
-                    IValidationEntry.SeverityLevel.Error => (string s) => logger.LogError(s),
-                    _ => throw new InvalidOperationException($"{severity} is not expected value for {nameof(IValidationEntry.SeverityLevel)}."),
-                };
-
-                if (!errors.Any(e => e.Severity == severity))
-                {
-                    return;
-                }
-
-                StringBuilder sb = new();
-                sb.AppendLine(header);
-                foreach (IValidationEntry error in errors.Where(e => e.Severity == severity))
-                {
-                    sb.AppendLine(PrintError(error));
-                }
-                log(sb.ToString());
-            }
         }
 
         private class MountPointScanSource

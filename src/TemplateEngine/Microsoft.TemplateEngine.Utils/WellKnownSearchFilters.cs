@@ -30,10 +30,10 @@ namespace Microsoft.TemplateEngine.Utils
         /// <summary>
         /// The template filter that matches <paramref name="name"/> on the following criteria: <br/>
         /// - if <paramref name="name"/> is null or empty, adds match disposition <see cref="MatchInfo.BuiltIn.Name"/> with <see cref="MatchKind.Partial"/>;<br/>
-        /// - if <paramref name="name"/> is equal to <see cref="ITemplateInfo.Name"/> (case insensitive), adds match disposition <see cref="MatchInfo.BuiltIn.Name"/> with <see cref="MatchKind.Exact"/>;<br/>
-        /// - if <paramref name="name"/> is equal to one of the short names in <see cref="ITemplateInfo.ShortNameList"/> (case insensitive), adds match disposition <see cref="MatchInfo.BuiltIn.ShortName"/> with <see cref="MatchKind.Exact"/>;<br/>
-        /// - if <see cref="ITemplateInfo.Name"/> contains <paramref name="name"/> (case insensitive), adds match disposition <see cref="MatchInfo.BuiltIn.Name"/> with <see cref="MatchKind.Partial"/>;<br/>
-        /// - if one of the short names in <see cref="ITemplateInfo.ShortNameList"/> contains <paramref name="name"/> (case insensitive), adds match disposition <see cref="MatchInfo.BuiltIn.ShortName"/> with <see cref="MatchKind.Partial"/>;<br/>
+        /// - if <paramref name="name"/> is equal to <see cref="ITemplateMetadata.Name"/> (case insensitive), adds match disposition <see cref="MatchInfo.BuiltIn.Name"/> with <see cref="MatchKind.Exact"/>;<br/>
+        /// - if <paramref name="name"/> is equal to one of the short names in <see cref="ITemplateMetadata.ShortNameList"/> (case insensitive), adds match disposition <see cref="MatchInfo.BuiltIn.ShortName"/> with <see cref="MatchKind.Exact"/>;<br/>
+        /// - if <see cref="ITemplateMetadata.Name"/> contains <paramref name="name"/> (case insensitive), adds match disposition <see cref="MatchInfo.BuiltIn.Name"/> with <see cref="MatchKind.Partial"/>;<br/>
+        /// - if one of the short names in <see cref="ITemplateMetadata.ShortNameList"/> contains <paramref name="name"/> (case insensitive), adds match disposition <see cref="MatchInfo.BuiltIn.ShortName"/> with <see cref="MatchKind.Partial"/>;<br/>
         /// - adds match disposition <see cref="MatchInfo.BuiltIn.Name"/> with <see cref="MatchKind.Mismatch"/> otherwise.<br/>
         /// </summary>
         /// <returns> the predicate to be used when filtering the templates.</returns>
@@ -112,7 +112,7 @@ namespace Microsoft.TemplateEngine.Utils
         /// <summary>
         /// The template filter that matches <paramref name="classification"/> on the following criteria: <br/>
         /// - if <paramref name="classification"/> is null or empty, does not add match disposition;<br/>
-        /// - if <paramref name="classification"/> is equal to any entry from <see cref="ITemplateInfo.Classifications"/> (case insensitive), adds match disposition <see cref="MatchInfo.BuiltIn.Classification"/> with <see cref="MatchKind.Exact"/>;<br/>
+        /// - if <paramref name="classification"/> is equal to any entry from <see cref="ITemplateMetadata.Classifications"/> (case insensitive), adds match disposition <see cref="MatchInfo.BuiltIn.Classification"/> with <see cref="MatchKind.Exact"/>;<br/>
         /// - adds match disposition <see cref="MatchInfo.BuiltIn.Classification"/> with <see cref="MatchKind.Mismatch"/> otherwise.<br/>
         /// </summary>
         /// <returns> the predicate to be used when filtering the templates..</returns>
@@ -162,7 +162,7 @@ namespace Microsoft.TemplateEngine.Utils
         /// <summary>
         /// The template filter that matches <paramref name="baselineName"/> on the following criteria: <br/>
         /// - if <paramref name="baselineName"/> is null or empty, does not add match disposition;<br/>
-        /// - if <paramref name="baselineName"/> is equal to key from <see cref="ITemplateInfo.BaselineInfo"/> (case insensitive), adds match disposition <see cref="MatchInfo.BuiltIn.Baseline"/> with <see cref="MatchKind.Exact"/>;<br/>
+        /// - if <paramref name="baselineName"/> is equal to key from <see cref="ITemplateMetadata.BaselineInfo"/> (case insensitive), adds match disposition <see cref="MatchInfo.BuiltIn.Baseline"/> with <see cref="MatchKind.Exact"/>;<br/>
         /// - adds match disposition <see cref="MatchInfo.BuiltIn.Baseline"/> with <see cref="MatchKind.Mismatch"/> otherwise.<br/>
         /// </summary>
         /// <returns> the predicate to be used when filtering the templates.</returns>
@@ -189,9 +189,9 @@ namespace Microsoft.TemplateEngine.Utils
         /// <summary>
         /// The template filter that matches <paramref name="author"/> on the following criteria: <br/>
         /// - if <paramref name="author"/> is null or empty, does not add match disposition;<br/>
-        /// - if <see cref="ITemplateInfo.Author"/> is null or empty, adds match disposition <see cref="MatchInfo.BuiltIn.Author"/> with <see cref="MatchKind.Mismatch"/>;<br/>
-        /// - if <paramref name="author"/> is equal to <see cref="ITemplateInfo.Author"/> (case insensitive), adds match disposition <see cref="MatchInfo.BuiltIn.Author"/> with <see cref="MatchKind.Exact"/>;<br/>
-        /// - if <see cref="ITemplateInfo.Author"/> contains <paramref name="author"/> (case insensitive), adds match disposition <see cref="MatchInfo.BuiltIn.Author"/> with <see cref="MatchKind.Partial"/>;<br/>
+        /// - if <see cref="ITemplateMetadata.Author"/> is null or empty, adds match disposition <see cref="MatchInfo.BuiltIn.Author"/> with <see cref="MatchKind.Mismatch"/>;<br/>
+        /// - if <paramref name="author"/> is equal to <see cref="ITemplateMetadata.Author"/> (case insensitive), adds match disposition <see cref="MatchInfo.BuiltIn.Author"/> with <see cref="MatchKind.Exact"/>;<br/>
+        /// - if <see cref="ITemplateMetadata.Author"/> contains <paramref name="author"/> (case insensitive), adds match disposition <see cref="MatchInfo.BuiltIn.Author"/> with <see cref="MatchKind.Partial"/>;<br/>
         /// - <see cref="MatchInfo.BuiltIn.Author"/> with <see cref="MatchKind.Mismatch"/> otherwise.<br/>
         /// </summary>
         /// <returns> the predicate to be used when filtering the templates.</returns>

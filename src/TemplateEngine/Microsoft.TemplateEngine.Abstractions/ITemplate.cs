@@ -40,5 +40,10 @@ namespace Microsoft.TemplateEngine.Abstractions
         /// Indicates whether he template should be created in a subdirectory under the output directory.
         /// </summary>
         bool IsNameAgreementWithFolderPreferred { get; }
+
+        /// <summary>
+        /// Gets localization information set for the template.
+        /// </summary>
+        ILocalizationLocator? Localization { get; }
     }
 }

@@ -299,46 +299,6 @@ Details: {1}.</target>
         <target state="translated">Der Speicherort des Vorlagenpakets {0} wird nicht unterstützt oder ist nicht vorhanden.</target>
         <note />
       </trans-unit>
-      <trans-unit id="Scanner_Validation_Error_Header">
-        <source>The template {0} has the following validation errors:</source>
-        <target state="new">The template {0} has the following validation errors:</target>
-        <note>This is a header for the list of issues found for the template, and followed by the list of issues (from new line). {0} template info in format 'template name' (template.identity)</note>
-      </trans-unit>
-      <trans-unit id="Scanner_Validation_Info_Header">
-        <source>The template {0} has the following validation messages:</source>
-        <target state="new">The template {0} has the following validation messages:</target>
-        <note>This is a header for the list of issues found for the template, and followed by the list of issues (from new line). {0} template info in format 'template name' (template.identity)</note>
-      </trans-unit>
-      <trans-unit id="Scanner_Validation_InvalidTemplate">
-        <source>Failed to install the template {0}: the template is not valid.</source>
-        <target state="new">Failed to install the template {0}: the template is not valid.</target>
-        <note>{0} template info in format 'template name' (template.identity)</note>
-      </trans-unit>
-      <trans-unit id="Scanner_Validation_InvalidTemplateLoc">
-        <source>Failed to install the '{0}' localization the template {1}: the localization file is not valid. The localization will be skipped.</source>
-        <target state="new">Failed to install the '{0}' localization the template {1}: the localization file is not valid. The localization will be skipped.</target>
-        <note>{1} template info in format 'template name' (template.identity), {0} is localization locale in "en-US" format</note>
-      </trans-unit>
-      <trans-unit id="Scanner_Validation_LocError_Header">
-        <source>The template {0} has the following validation errors in '{1}' localization:</source>
-        <target state="new">The template {0} has the following validation errors in '{1}' localization:</target>
-        <note>This is a header for the list of issues found for the template, and followed by the list of issues (from new line). {0} template info in format 'template name' (template.identity), {1} is localization locale in "en-US" format</note>
-      </trans-unit>
-      <trans-unit id="Scanner_Validation_LocInfo_Header">
-        <source>The template {0} has the following validation messages in '{1}' localization:</source>
-        <target state="new">The template {0} has the following validation messages in '{1}' localization:</target>
-        <note>This is a header for the list of issues found for the template, and followed by the list of issues (from new line). {0} template info in format 'template name' (template.identity), {1} is localization locale in "en-US" format</note>
-      </trans-unit>
-      <trans-unit id="Scanner_Validation_LocWarning_Header">
-        <source>The template {0} has the following validation warnings in '{1}' localization:</source>
-        <target state="new">The template {0} has the following validation warnings in '{1}' localization:</target>
-        <note>This is a header for the list of issues found for the template, and followed by the list of issues (from new line). {0} template info in format 'template name' (template.identity), {1} is localization locale in "en-US" format</note>
-      </trans-unit>
-      <trans-unit id="Scanner_Validation_Warning_Header">
-        <source>The template {0} has the following validation warnings:</source>
-        <target state="new">The template {0} has the following validation warnings:</target>
-        <note>This is a header for the list of issues found for the template, and followed by the list of issues (from new line). {0} template info in format 'template name' (template.identity)</note>
-      </trans-unit>
       <trans-unit id="SdkConstraint_Error_InvalidVersion">
         <source>'{0}' is not a valid semver version.</source>
         <target state="translated">„{0}“ ist keine gültige Serverversion.</target>
@@ -399,6 +359,11 @@ Details: {0}.</target>
         <target state="translated">Es wurden destruktive Änderungen erkannt.</target>
         <note />
       </trans-unit>
+      <trans-unit id="TemplateCreator_TemplateCreationResult_Error_InvalidTemplate">
+        <source>The template is invalid and cannot be instantiated.</source>
+        <target state="new">The template is invalid and cannot be instantiated.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="TemplateCreator_TemplateCreationResult_Error_NoDefaultName">
         <source>Failed to create template: the template name is not specified. Template configuration does not configure a default name that can be used when name is not specified. Specify the name for the template when instantiating or configure a default name in the template configuration.</source>
         <target state="translated">Fehler beim Erstellen der Vorlage: Der Vorlagenname ist nicht angegeben. Bei der Vorlagenkonfiguration wird kein Standardname konfiguriert, der verwendet werden kann, wenn kein Name angegeben wird. Geben Sie den Namen für die Vorlage an, wenn Sie einen Standardnamen in der Vorlagenkonfiguration instanziieren oder konfigurieren.</target>
@@ -449,6 +414,46 @@ The template from 'PACKAGE_ID' will be used. To resolve this conflict, uninstall
         <source>  {0} '{1}' from '{2}'</source>
         <target state="translated"> {0} "{1}" von "{2}"</target>
         <note>* 'TEMPLATE' from 'PACKAGE_ID'</note>
+      </trans-unit>
+      <trans-unit id="Validation_Error_Header">
+        <source>The template {0} has the following validation errors:</source>
+        <target state="new">The template {0} has the following validation errors:</target>
+        <note>This is a header for the list of issues found for the template, and followed by the list of issues (from new line). {0} template info in format 'template name' (template.identity)</note>
+      </trans-unit>
+      <trans-unit id="Validation_Info_Header">
+        <source>The template {0} has the following validation messages:</source>
+        <target state="new">The template {0} has the following validation messages:</target>
+        <note>This is a header for the list of issues found for the template, and followed by the list of issues (from new line). {0} template info in format 'template name' (template.identity)</note>
+      </trans-unit>
+      <trans-unit id="Validation_InvalidTemplate">
+        <source>Failed to load the template {0}: the template is not valid.</source>
+        <target state="new">Failed to load the template {0}: the template is not valid.</target>
+        <note>{0} template info in format 'template name' (template.identity)</note>
+      </trans-unit>
+      <trans-unit id="Validation_InvalidTemplateLoc">
+        <source>Failed to load the '{0}' localization the template {1}: the localization file is not valid. The localization will be skipped.</source>
+        <target state="new">Failed to load the '{0}' localization the template {1}: the localization file is not valid. The localization will be skipped.</target>
+        <note>{1} template info in format 'template name' (template.identity), {0} is localization locale in "en-US" format</note>
+      </trans-unit>
+      <trans-unit id="Validation_LocError_Header">
+        <source>The template {0} has the following validation errors in '{1}' localization:</source>
+        <target state="new">The template {0} has the following validation errors in '{1}' localization:</target>
+        <note>This is a header for the list of issues found for the template, and followed by the list of issues (from new line). {0} template info in format 'template name' (template.identity), {1} is localization locale in "en-US" format</note>
+      </trans-unit>
+      <trans-unit id="Validation_LocInfo_Header">
+        <source>The template {0} has the following validation messages in '{1}' localization:</source>
+        <target state="new">The template {0} has the following validation messages in '{1}' localization:</target>
+        <note>This is a header for the list of issues found for the template, and followed by the list of issues (from new line). {0} template info in format 'template name' (template.identity), {1} is localization locale in "en-US" format</note>
+      </trans-unit>
+      <trans-unit id="Validation_LocWarning_Header">
+        <source>The template {0} has the following validation warnings in '{1}' localization:</source>
+        <target state="new">The template {0} has the following validation warnings in '{1}' localization:</target>
+        <note>This is a header for the list of issues found for the template, and followed by the list of issues (from new line). {0} template info in format 'template name' (template.identity), {1} is localization locale in "en-US" format</note>
+      </trans-unit>
+      <trans-unit id="Validation_Warning_Header">
+        <source>The template {0} has the following validation warnings:</source>
+        <target state="new">The template {0} has the following validation warnings:</target>
+        <note>This is a header for the list of issues found for the template, and followed by the list of issues (from new line). {0} template info in format 'template name' (template.identity)</note>
       </trans-unit>
       <trans-unit id="WorkloadConstraint_Error_MismatchedProviders">
         <source>Multiple 'IWorkloadsInfoProvider' components provided by host ({0}), therefore 'WorkloadConstraint' cannot be properly initialized.</source>
