@@ -15,7 +15,7 @@ namespace Microsoft.TemplateEngine.Core.Util
 {
     public class ProcessorState : IProcessorState
     {
-        private static readonly ConcurrentDictionary<IReadOnlyList<IOperationProvider>, Dictionary<Encoding, Trie<OperationTerminal>>> TrieLookup = new();
+        private static readonly ConcurrentDictionary<IReadOnlyList<IOperationProvider>, ConcurrentDictionary<Encoding, Trie<OperationTerminal>>> TrieLookup = new();
         private static readonly ConcurrentDictionary<IReadOnlyList<IOperationProvider>, List<string>> OperationsToExplicitlySetOnByDefault = new();
         private readonly StreamProxy _target;
         private readonly TrieEvaluator<OperationTerminal> _trie;
@@ -76,7 +76,7 @@ namespace Microsoft.TemplateEngine.Core.Util
             WriteToTarget(bom, 0, _bomSize);
 
             bool explicitOnConfigurationRequired = false;
-            Dictionary<Encoding, Trie<OperationTerminal>> byEncoding = TrieLookup.GetOrAdd(operationProviders, x => new Dictionary<Encoding, Trie<OperationTerminal>>());
+            ConcurrentDictionary<Encoding, Trie<OperationTerminal>> byEncoding = TrieLookup.GetOrAdd(operationProviders, x => new());
             List<string> turnOnByDefault = OperationsToExplicitlySetOnByDefault.GetOrAdd(operationProviders, x =>
             {
                 explicitOnConfigurationRequired = true;
@@ -108,7 +108,7 @@ namespace Microsoft.TemplateEngine.Core.Util
                     }
                 }
 
-                byEncoding[encoding] = trie;
+                byEncoding.TryAdd(encoding, trie);
             }
 
             foreach (string state in turnOnByDefault)
