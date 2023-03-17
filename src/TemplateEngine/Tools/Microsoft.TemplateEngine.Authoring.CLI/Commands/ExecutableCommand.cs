@@ -4,6 +4,7 @@
 using System.CommandLine;
 using System.CommandLine.Invocation;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Console;
 
 namespace Microsoft.TemplateEngine.Authoring.CLI.Commands
 {
@@ -21,7 +22,7 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.Commands
         /// <inheritdoc/>
         public async Task<int> InvokeAsync(InvocationContext context, CancellationToken cancellationToken = default)
         {
-            using ILoggerFactory loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
+            using ILoggerFactory loggerFactory = LoggerFactory.Create(builder => builder.AddSimpleConsole(c => c.ColorBehavior = LoggerColorBehavior.Disabled));
             TModel arguments = ParseContext(context.ParseResult);
 
             //exceptions are handled by parser itself

@@ -67,7 +67,7 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.Commands
         {
             using var scope = logger.BeginScope("Results");
             logger.LogInformation(LocalizableStrings.command_validate_info_scanning_completed, scanResult.MountPoint.MountPointUri, scanResult.Templates.Count);
-            foreach (IScanTemplateInfo template in scanResult.Templates)
+            foreach (IScanTemplateInfo template in scanResult.Templates.OrderBy(t => t.Identity, StringComparer.Ordinal))
             {
                 string templateDisplayName = GetTemplateDisplayName(template);
                 StringBuilder sb = new();
@@ -76,7 +76,7 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.Commands
                     sb,
                     string.Format(LocalizableStrings.command_validate_info_template_header, templateDisplayName),
                     template.ValidationErrors);
-                foreach (KeyValuePair<string, ILocalizationLocator> locator in template.Localizations)
+                foreach (KeyValuePair<string, ILocalizationLocator> locator in template.Localizations.OrderBy(l => l.Value.Locale, StringComparer.Ordinal))
                 {
                     ILocalizationLocator localizationInfo = locator.Value;
 
@@ -95,7 +95,7 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.Commands
                     sb.AppendFormat(LocalizableStrings.command_validate_info_summary_valid, templateDisplayName);
                 }
                 sb.AppendLine();
-                foreach (ILocalizationLocator loc in template.Localizations.Values)
+                foreach (ILocalizationLocator loc in template.Localizations.Values.OrderBy(l => l.Locale, StringComparer.Ordinal))
                 {
                     if (loc.IsValid)
                     {

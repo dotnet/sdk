@@ -6,18 +6,21 @@ info: validate[0]
 fail: Microsoft.TemplateEngine.Orchestrator.RunnableProjects.RunnableProjectGenerator[0]
       Failed to load template from %TEMPLATE_LOCATION%\MissingIdentity/.template.config/template.json.
       Details: 'identity' is missing or is an empty string.
-warn: Template Engine[0]
-      Failed to read or parse localization file %TEMPLATE_LOCATION%\Localization/InvalidFormat/.template.config/localize/templatestrings.de-DE.json, it will be skipped from further processing.
-warn: Template Engine[0]
-      [%TEMPLATE_LOCATION%\Localization/ValidationFailure/.template.config/template.json]: id of the post action 'pa2' at index '3' is not unique. Only the first post action that uses this id will be localized.
+warn: Template Engine: %scrubbed%
+warn: Template Engine: %scrubbed%
 info: validate[0]
       Scanning completed
 info: validate[0]
       Location '%TEMPLATE_LOCATION%': found 6 templates.
 info: validate[0]
-      Found template 'TestAssets.Invalid.InvalidHostData' (TestAssets.Invalid.InvalidHostData):
-         [Info][MV011] One or more postActions have a malformed or missing manualInstructions value.
-      Template 'TestAssets.Invalid.InvalidHostData' (TestAssets.Invalid.InvalidHostData): the template is valid.
+      Found template 'Invalid.SameShortName.TemplateA' (Invalid.SameShortName.TemplateA):
+         <no entries>
+      Template 'Invalid.SameShortName.TemplateA' (Invalid.SameShortName.TemplateA): the template is valid.
+      
+info: validate[0]
+      Found template 'Invalid.SameShortName.TemplateB' (Invalid.SameShortName.TemplateB):
+         <no entries>
+      Template 'Invalid.SameShortName.TemplateB' (Invalid.SameShortName.TemplateB): the template is valid.
       
 info: validate[0]
       Found template '<no name>' (MissingConfigTest):
@@ -30,6 +33,11 @@ info: validate[0]
          [Info][MV009] Missing 'precedence'.
          [Info][MV010] Missing 'classifications'.
       Template '<no name>' (MissingConfigTest): the template is not valid.
+      
+info: validate[0]
+      Found template 'TestAssets.Invalid.InvalidHostData' (TestAssets.Invalid.InvalidHostData):
+         [Info][MV011] One or more postActions have a malformed or missing manualInstructions value.
+      Template 'TestAssets.Invalid.InvalidHostData' (TestAssets.Invalid.InvalidHostData): the template is valid.
       
 info: validate[0]
       Found template 'name in base configuration' (TestAssets.Invalid.Localization.InvalidFormat):
@@ -47,14 +55,4 @@ info: validate[0]
       Template 'name' (TestAssets.Invalid.Localization.ValidationFailure): the template is valid.
       'de-DE' localization for the template 'name' (TestAssets.Invalid.Localization.ValidationFailure): the localization file is not valid. The localization will be skipped.
       'tr' localization for the template 'name' (TestAssets.Invalid.Localization.ValidationFailure): the localization file is not valid. The localization will be skipped.
-      
-info: validate[0]
-      Found template 'Invalid.SameShortName.TemplateA' (Invalid.SameShortName.TemplateA):
-         <no entries>
-      Template 'Invalid.SameShortName.TemplateA' (Invalid.SameShortName.TemplateA): the template is valid.
-      
-info: validate[0]
-      Found template 'Invalid.SameShortName.TemplateB' (Invalid.SameShortName.TemplateB):
-         <no entries>
-      Template 'Invalid.SameShortName.TemplateB' (Invalid.SameShortName.TemplateB): the template is valid.
       
