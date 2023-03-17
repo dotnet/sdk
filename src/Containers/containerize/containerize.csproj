@@ -20,7 +20,7 @@
   <!-- Copy to TestExecutionDirectory for using in integration tests. -->
   <Target Name="CopyDllToTestExecutionDirectory" AfterTargets="Build">
     <ItemGroup>
-      <ContainerizeFiles Include="$(ArtifactsBinDir)containerize\$(Configuration)$(SdkTargetFramework)\**\*.*" />
+      <ContainerizeFiles Include="$(ArtifactsBinDir)containerize\$(Configuration)\$(SdkTargetFramework)\**\*.*" />
     </ItemGroup>
     <Copy SourceFiles="@(ContainerizeFiles)" DestinationFiles="@(ContainerizeFiles->'$(ArtifactsTmpDir)Container\containerize\%(RecursiveDir)%(Filename)%(Extension)')" />
   </Target>

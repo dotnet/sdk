@@ -60,6 +60,8 @@
       <DotnetCliHome Include="$(ArtifactsTmpDir).dotnet\**\*.*"/>
 
       <Testpackages Include="$(ArtifactsTmpDir)testpackages\**\*.*"/>
+      <ContainerFiles Include="$(ArtifactsTmpDir)Container\**\*.*"/>
+
 
       <!-- include Container artifacts for running test in Helix -->
 
@@ -90,6 +92,7 @@
     <Copy SourceFiles="@(TestExecutionDirectoryFiles)" DestinationFiles="@(TestExecutionDirectoryFiles->'$(HelixPayloadOnHost)\TestExecutionDirectoryFiles\%(RecursiveDir)%(DestinationFolder)%(Filename)%(Extension)')" />
     <Copy SourceFiles="@(DotnetCliHome)" DestinationFiles="@(DotnetCliHome->'$(HelixPayloadOnHost)\TestExecutionDirectoryFiles\.dotnet\%(RecursiveDir)%(Filename)%(Extension)')" />
     <Copy SourceFiles="@(Testpackages)" DestinationFiles="@(Testpackages->'$(HelixPayloadOnHost)\TestExecutionDirectoryFiles\Testpackages\%(RecursiveDir)%(Filename)%(Extension)')" />
+    <Copy SourceFiles="@(ContainerFiles)" DestinationFiles="@(ContainerFiles->'$(HelixPayloadOnHost)\TestExecutionDirectoryFiles\Container\%(RecursiveDir)%(Filename)%(Extension)')" />
   </Target>
 
 
