@@ -113,11 +113,11 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             Assert.Equal(0, result.Localizations.Count);
 #pragma warning restore CS0618 // Type or member is obsolete
 
-            List<string> errorMessages = loggedMessages.Where(lm => lm.Level == LogLevel.Error).Select(e => e.Message).ToList();
+            List<string> errorMessages = loggedMessages.Where(lm => lm.Level == LogLevel.Error).Select(e => e.Message).OrderBy(em => em).ToList();
 
             Assert.Equal(2, errorMessages.Count);
 
-            List<string> warningMessages = loggedMessages.Where(lm => lm.Level == LogLevel.Warning).Select(e => e.Message).ToList();
+            List<string> warningMessages = loggedMessages.Where(lm => lm.Level == LogLevel.Warning).Select(e => e.Message).OrderBy(em => em).ToList();
 
             Assert.Equal(3, warningMessages.Count);
 
