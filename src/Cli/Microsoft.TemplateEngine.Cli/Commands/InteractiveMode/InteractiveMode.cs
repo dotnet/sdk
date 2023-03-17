@@ -5,9 +5,11 @@
 using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.CommandLine.Parsing;
+using Microsoft.DotNet.Cli.Utils;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Edge;
 using Microsoft.TemplateEngine.Edge.Settings;
+using Command = System.CommandLine.Command;
 
 namespace Microsoft.TemplateEngine.Cli.Commands.InteractiveMode
 {
@@ -16,7 +18,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands.InteractiveMode
         public static async Task EnterInteractiveMode(InvocationContext context, Func<InvocationContext, Task> next)
         {
             // TODO: make sure we have access to Instantiate command
-            if (context.ParseResult.CommandResult.Command.Name == "new" || context.ParseResult.CommandResult.Command.Name == "create")
+            if (context.ParseResult.CommandResult.Command is NewCommand || context.ParseResult.CommandResult.Command is InstantiateCommand)
             {
                 InstantiateCommand? instantiateCommand = GetInstantiateCommand(context.ParseResult.CommandResult.Command);
                 if (instantiateCommand is null)
@@ -31,7 +33,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands.InteractiveMode
                     // TODO: short name validation. right now we are assuming that the provided template exists and is valid
                     context.Console.WriteLine("Currently under development, not all features implemented yet");
 
-                    // --- Workaround to get the environmental settings at this stage. Firgure this out later
+                    // --- Workaround to get the environmental settings at this stage. Figure this out later
                     ITemplateEngineHost host = instantiateCommand.Host(context.ParseResult);
                     IEnvironment environment = new CliEnvironment();
                     IEngineEnvironmentSettings settings = new EngineEnvironmentSettings(
@@ -42,8 +44,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands.InteractiveMode
                     TemplatePackageManager templatePackageManager = new(settings);
                     HostSpecificDataLoader? hostSpecificDataLoader = new(settings);
 
-                    IReadOnlyList<ITemplateInfo> templates =
-                        Task.Run(async () => await templatePackageManager.GetTemplatesAsync(default).ConfigureAwait(false)).GetAwaiter().GetResult();
+                    IReadOnlyList<ITemplateInfo> templates = await templatePackageManager.GetTemplatesAsync(default).ConfigureAwait(false);
 
                     IEnumerable<TemplateGroup> templateGroups = TemplateGroup.FromTemplateList(CliTemplateInfo.FromTemplateInfo(templates, hostSpecificDataLoader));
                     // --- End of env workaround
@@ -54,8 +55,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands.InteractiveMode
                         return;
                     }
 
-                    InteractiveQuerying queries = new InteractiveQuerying();
-                    TemplateCommand? templateCommand = GetTemplate(
+                    TemplateCommand? templateCommand = InstantiateCommand.GetTemplate(
                         knownArgs,
                         settings,
                         templateGroups,
@@ -67,10 +67,9 @@ namespace Microsoft.TemplateEngine.Cli.Commands.InteractiveMode
                     }
 
                     context.Console.WriteLine(InteractiveModePrompts.OpeningMessage("<Default Language>", templateCommand.Template.Name, "skip button"));
+                    instantiateCommand.SetQuestions(knownArgs, templateCommand);
 
-                    queries.SetQuestions(knownArgs, templateCommand);
-
-                    var questionsToAsk = queries.Questions();
+                    var questionsToAsk = instantiateCommand.Questions();
                     // TODO: adjust to different input types
                     Dictionary<string, string> paramsToAdd = new Dictionary<string, string>();
 
@@ -107,8 +106,13 @@ namespace Microsoft.TemplateEngine.Cli.Commands.InteractiveMode
                     }
                     // After everything is done reparse the command line input and execute the result
 
+                    context.Console.WriteLine("New command to be executed: " + commandLineCall);
                     Parser parser = ParserFactory.CreateParser(context.ParseResult.RootCommandResult.Command);
                     parser.Invoke(commandLineCall);
+                }
+                else
+                {
+                    await next(context).ConfigureAwait(false);
                 }
             }
             else
@@ -164,10 +168,8 @@ namespace Microsoft.TemplateEngine.Cli.Commands.InteractiveMode
                 interactiveOptionValue = parsedArgs.GetValue(NewCommand.InteractiveTemplateOption);
             }
 
-            var envVariable = Environment.GetEnvironmentVariable("DOTNETNEWINTERACTIVE");
-            bool envVariableValue = Convert.ToBoolean(envVariable);
-
-            if ((interactiveOptionValue || envVariableValue) && DoesSupportInteractive())
+            var envVariable = Env.GetEnvironmentVariableAsBool("DOTNETNEWINTERACTIVE");
+            if ((interactiveOptionValue || envVariable) && DoesSupportInteractive())
             {
                 return true;
             }
@@ -180,43 +182,6 @@ namespace Microsoft.TemplateEngine.Cli.Commands.InteractiveMode
             // hard coded for now
             // Check if current environment supports what we want to do (If we need any fancy stuff)
             return true;
-        }
-
-        internal static TemplateCommand? GetTemplate(
-            InstantiateCommandArgs args,
-            IEngineEnvironmentSettings environmentSettings,
-            IEnumerable<TemplateGroup> templateGroups,
-            TemplatePackageManager templatePackageManager)
-        {
-            TemplateConstraintManager constraintManager = new(environmentSettings);
-
-            foreach (TemplateGroup templateGroup in templateGroups.Where(template => template.ShortNames.Contains(args.ShortName)))
-            {
-                foreach (IGrouping<int, CliTemplateInfo> templateGrouping in GetAllowedTemplates(constraintManager, templateGroup).GroupBy(g => g.Precedence).OrderByDescending(g => g.Key))
-                {
-                    foreach (CliTemplateInfo template in templateGrouping)
-                    {
-                        // Make some additional check based on user input match (like template language)
-                        try
-                        {
-                            TemplateCommand command = new(
-                                args.Command,
-                                environmentSettings,
-                                templatePackageManager,
-                                templateGroup,
-                                template);
-
-                            // simplify this for now to just return one template
-                            return command;
-                        }
-                        catch (InvalidTemplateParametersException e)
-                        {
-                            Console.Error.WriteLine(LocalizableStrings.GenericWarning, e.Message);
-                        }
-                    }
-                }
-            }
-            return null;
         }
 
         private static IEnumerable<CliTemplateInfo> GetAllowedTemplates(TemplateConstraintManager constraintManager, TemplateGroup templateGroup)

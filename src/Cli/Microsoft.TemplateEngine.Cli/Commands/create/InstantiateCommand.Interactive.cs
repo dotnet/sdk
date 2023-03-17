@@ -2,7 +2,11 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 //
 
-namespace Microsoft.TemplateEngine.Cli.Commands.InteractiveMode
+using Microsoft.TemplateEngine.Abstractions;
+using Microsoft.TemplateEngine.Edge;
+using Microsoft.TemplateEngine.Edge.Settings;
+
+namespace Microsoft.TemplateEngine.Cli.Commands
 {
     // Class to hold messages for the questions in interactive mode while in development
     // TODO: check and transfer messages to some place for translation
@@ -14,11 +18,11 @@ namespace Microsoft.TemplateEngine.Cli.Commands.InteractiveMode
         }
     }
 
-    internal class InteractiveQuerying
+    internal partial class InstantiateCommand
     {
         // Tree or List depending on future implementation choices
         // I do not know how to use generic types T_T
-        private List<UserQuery<string>> parametersTree;
+        private List<UserQuery<string>> parametersTree = new List<UserQuery<string>> { };
         private List<string> parametersToNotAsk = new List<string>
         {
             "TargetFrameworkOverride",
@@ -26,14 +30,9 @@ namespace Microsoft.TemplateEngine.Cli.Commands.InteractiveMode
             "skipRestore"
         };
 
-        public InteractiveQuerying()
-        {
-            parametersTree = new List<UserQuery<string>>();
-        }
-
         public void SetQuestions(
-            InstantiateCommandArgs knownArgs,
-            TemplateCommand template)
+        InstantiateCommandArgs knownArgs,
+        TemplateCommand template)
         {
             // Assumption: no decisions tree for the prototype
             var missingParams = template.GetMissingArguments(knownArgs.RemainingArguments);
@@ -54,6 +53,43 @@ namespace Microsoft.TemplateEngine.Cli.Commands.InteractiveMode
             {
                 yield return query;
             }
+        }
+
+        internal static TemplateCommand? GetTemplate(
+        InstantiateCommandArgs args,
+        IEngineEnvironmentSettings environmentSettings,
+        IEnumerable<TemplateGroup> templateGroups,
+        TemplatePackageManager templatePackageManager)
+        {
+            TemplateConstraintManager constraintManager = new(environmentSettings);
+
+            foreach (TemplateGroup templateGroup in templateGroups.Where(template => template.ShortNames.Contains(args.ShortName)))
+            {
+                foreach (IGrouping<int, CliTemplateInfo> templateGrouping in GetAllowedTemplates(constraintManager, templateGroup).GroupBy(g => g.Precedence).OrderByDescending(g => g.Key))
+                {
+                    foreach (CliTemplateInfo template in templateGrouping)
+                    {
+                        // Make some additional check based on user input match (like template language)
+                        try
+                        {
+                            TemplateCommand command = new(
+                                args.Command,
+                                environmentSettings,
+                                templatePackageManager,
+                                templateGroup,
+                                template);
+
+                            // simplify this for now to just return one template
+                            return command;
+                        }
+                        catch (InvalidTemplateParametersException e)
+                        {
+                            Console.Error.WriteLine(LocalizableStrings.GenericWarning, e.Message);
+                        }
+                    }
+                }
+            }
+            return null;
         }
 
     }
