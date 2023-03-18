@@ -52,26 +52,13 @@ Copyright (c) .NET Foundation. All rights reserved.
     <BlazorCacheBootResources Condition="'$(BlazorCacheBootResources)' == ''">true</BlazorCacheBootResources>
     <WasmFingerprintDotnetJs>true</WasmFingerprintDotnetJs>
 
-    <!-- Turn off parts of the build that do not apply to WASM projects -->
-    <GenerateDependencyFile>false</GenerateDependencyFile>
-    <GenerateRuntimeConfigurationFiles>false</GenerateRuntimeConfigurationFiles>
-    <PreserveCompilationContext>false</PreserveCompilationContext>
-    <PreserveCompilationReferences>false</PreserveCompilationReferences>
-    <IsWebConfigTransformDisabled>true</IsWebConfigTransformDisabled>
-
     <!-- Don't generate a NETSDK1151 error if a non self-contained Exe references a Blazor Exe -->
     <ShouldBeValidatedAsExecutableReference>false</ShouldBeValidatedAsExecutableReference>
 
-    <!-- JS Modules -->
-    <!-- We disable the manifest generation because we are going to inline the modules in the blazor.boot.json manifest -->
-    <GenerateJSModuleManifest>false</GenerateJSModuleManifest>
-
     <DisableAutoWasmBuildApp>true</DisableAutoWasmBuildApp>
     <DisableAutoWasmPublishApp>true</DisableAutoWasmPublishApp>
-    <EnableDefaultWasmAssembliesToBundle>false</EnableDefaultWasmAssembliesToBundle>
     <WasmNestedPublishAppDependsOn>_GatherBlazorFilesToPublish;$(WasmNestedPublishAppDependsOn)</WasmNestedPublishAppDependsOn>
     <BlazorEnableCompression Condition="'$(WasmBuildingForNestedPublish)' == 'true'">false</BlazorEnableCompression>
-    <_WasmNestedPublishAppPreTarget>ComputeFilesToPublish</_WasmNestedPublishAppPreTarget>
   </PropertyGroup>
 
   <!-- Wire-up static web assets -->
