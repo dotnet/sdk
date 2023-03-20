@@ -14,13 +14,13 @@ internal class DotNetHelper
 {
     private static readonly object s_lockObj = new();
 
-    private static bool IsMonoRuntime { get; } = DetermineIsMonoRuntime();
     public static string DotNetPath { get; } = Path.Combine(Config.DotNetDirectory, "dotnet");
     public static string LogsDirectory { get; } = Path.Combine(Directory.GetCurrentDirectory(), "logs");
     public static string PackagesDirectory { get; } = Path.Combine(Directory.GetCurrentDirectory(), "packages");
     public static string ProjectsDirectory { get; } = Path.Combine(Directory.GetCurrentDirectory(), $"projects-{DateTime.Now:yyyyMMddHHmmssffff}");
 
     private ITestOutputHelper OutputHelper { get; }
+    private bool IsMonoRuntime { get; }
 
     public DotNetHelper(ITestOutputHelper outputHelper)
     {
@@ -38,6 +38,7 @@ internal class DotNetHelper
                 Directory.CreateDirectory(Config.DotNetDirectory);
                 ExecuteHelper.ExecuteProcessValidateExitCode("tar", $"xzf {Config.SdkTarballPath} -C {Config.DotNetDirectory}", outputHelper);
             }
+            IsMonoRuntime = DetermineIsMonoRuntime(Config.DotNetDirectory);
 
             if (!Directory.Exists(ProjectsDirectory))
             {
@@ -234,10 +235,8 @@ internal class DotNetHelper
         return $"/bl:{Path.Combine(LogsDirectory, $"{fileName}.binlog")}";
     }
 
-    private static bool DetermineIsMonoRuntime()
+    private static bool DetermineIsMonoRuntime(string dotnetRoot)
     {
-        string dotnetRoot = Config.DotNetDirectory;
-
         string sharedFrameworkRoot = Path.Combine(dotnetRoot, "shared", "Microsoft.NETCore.App");
         if (!Directory.Exists(sharedFrameworkRoot))
         {
