@@ -20,9 +20,9 @@ Copyright (c) .NET Foundation. All rights reserved.
   </PropertyGroup>
 
 
-  <Import Sdk="Microsoft.NET.Sdk.StaticWebAssets" Project="Sdk.targets" Condition="'$(UsingMicrosoftNETSdkStaticWebAssets)' != 'true'" />
-  <Import Sdk="Microsoft.NET.Sdk.Web.ProjectSystem" Project="Sdk.targets" Condition="'$(UsingMicrosoftNETSdkWebProjectSystem)' != 'true'" />
-  <Import Sdk="Microsoft.NET.Sdk.Publish" Project="Sdk.targets" Condition="'$(UsingMicrosoftNETSdkPublish)' != 'true'" />
+  <Import Sdk="Microsoft.NET.Sdk.StaticWebAssets" Project="Sdk.targets" Condition="'$(_WasmSdkImportsMicrosoftNETSdkStaticWebAssets)' == 'true'" />
+  <Import Sdk="Microsoft.NET.Sdk.Web.ProjectSystem" Project="Sdk.targets" Condition="'$(_WasmSdkImportsMicrosoftNETSdkWebProjectSystem)' == 'true'" />
+  <Import Sdk="Microsoft.NET.Sdk.Publish" Project="Sdk.targets" Condition="'$(_WasmSdkImportsMicrosoftNETSdkPublish)' == 'true'" />
 
   <!--
     Targets supporting Razor MSBuild integration. Contain support for generating C# code using Razor

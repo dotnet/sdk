@@ -38,14 +38,18 @@ Copyright (c) .NET Foundation. All rights reserved.
     <StaticWebAssetsGetPublishAssetsTargets>ComputeFilesToPublish;GetCurrentProjectPublishStaticWebAssetItems</StaticWebAssetsGetPublishAssetsTargets>
     <StaticWebAssetsAdditionalPublishProperties>$(StaticWebAssetsAdditionalPublishProperties);BuildProjectReferences=false;ResolveAssemblyReferencesFindRelatedSatellites=true</StaticWebAssetsAdditionalPublishProperties>
     <StaticWebAssetsAdditionalPublishPropertiesToRemove>$(StaticWebAssetsAdditionalPublishPropertiesToRemove);NoBuild;RuntimeIdentifier</StaticWebAssetsAdditionalPublishPropertiesToRemove>
+
+    <_WasmSdkImportsMicrosoftNETSdkStaticWebAssets Condition="'$(MicrosoftNETSdkStaticWebAssets)' != 'true'">true</_WasmSdkImportsMicrosoftNETSdkStaticWebAssets>
+    <_WasmSdkImportsMicrosoftNETSdkWebProjectSystem Condition="'$(MicrosoftNETSdkWebProjectSystem)' != 'true'">true</_WasmSdkImportsMicrosoftNETSdkWebProjectSystem>
+    <_WasmSdkImportsMicrosoftNETSdkPublish Condition="'$(MicrosoftNETSdkPublish)' != 'true'">true</_WasmSdkImportsMicrosoftNETSdkPublish>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectCapability Include="WebAssembly" />
   </ItemGroup>
 
-  <Import Sdk="Microsoft.NET.Sdk.StaticWebAssets" Project="Sdk.props" Condition="'$(UsingMicrosoftNETSdkStaticWebAssets)' != 'true'" />
-  <Import Sdk="Microsoft.NET.Sdk.Web.ProjectSystem" Project="Sdk.props" Condition="'$(UsingMicrosoftNETSdkWebProjectSystem)' != 'true'" />
-  <Import Sdk="Microsoft.NET.Sdk.Publish" Project="Sdk.props" Condition="'$(UsingMicrosoftNETSdkPublish)' != 'true'" />
+  <Import Sdk="Microsoft.NET.Sdk.StaticWebAssets" Project="Sdk.props" Condition="'$(_WasmSdkImportsMicrosoftNETSdkStaticWebAssets)' == 'true'" />
+  <Import Sdk="Microsoft.NET.Sdk.Web.ProjectSystem" Project="Sdk.props" Condition="'$(_WasmSdkImportsMicrosoftNETSdkWebProjectSystem)' == 'true'" />
+  <Import Sdk="Microsoft.NET.Sdk.Publish" Project="Sdk.props" Condition="'$(_WasmSdkImportsMicrosoftNETSdkPublish)' == 'true'" />
 
 </Project>
