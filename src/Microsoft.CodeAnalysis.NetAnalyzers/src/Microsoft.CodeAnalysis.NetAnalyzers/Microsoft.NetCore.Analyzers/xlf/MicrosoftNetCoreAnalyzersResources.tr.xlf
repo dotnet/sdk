@@ -537,19 +537,19 @@
         <target state="translated">Temsilcilerde belirteç doğrulamasını her zaman atlamayın</target>
         <note />
       </trans-unit>
-      <trans-unit id="DoNotCallDangerousMethodsInDeserialization">
-        <source>Do Not Call Dangerous Methods In Deserialization</source>
-        <target state="translated">Seri Durumdan Çıkarırken Tehlikeli Metotlar Çağırma</target>
-        <note />
-      </trans-unit>
       <trans-unit id="DoNotCallDangerousMethodsInDeserializationDescription">
         <source>Insecure Deserialization is a vulnerability which occurs when untrusted data is used to abuse the logic of an application, inflict a Denial-of-Service (DoS) attack, or even execute arbitrary code upon it being deserialized. It’s frequently possible for malicious users to abuse these deserialization features when the application is deserializing untrusted data which is under their control. Specifically, invoke dangerous methods in the process of deserialization. Successful insecure deserialization attacks could allow an attacker to carry out attacks such as DoS attacks, authentication bypasses, and remote code execution.</source>
         <target state="translated">Güvenli Olmayan Seri Durumdan Çıkarma, güvenilmeyen verilerin bir uygulamanın mantığını kötüye kullanmak, bir Hizmet Reddi (DoS) saldırısı gerçekleştirmek veya seri durumdan çıkarıldığında rastgele kod yürütmek için kullanılması durumunda oluşan bir güvenlik açığıdır. Kötü amaçlı kullanıcıların uygulama kendi denetimlerindeki güvenilmeyen verileri seri durumdan çıkarırken bu seri durumdan çıkarma özelliklerini kötüye kullanması mümkündür. Özellikle, seri durumdan çıkarma işleminde tehlikeli yöntemler çağrılabilir. Başarılı güvenli olmayan seri durumdan çıkarma salgırıları, saldırganların DoS saldırıları gerçekleştirmesine, kimlik doğrulamasını atlamasına ve uzaktan kod yürütmesine olanak sağlar.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCallDangerousMethodsInDeserializationMessage">
-        <source>When deserializing an instance of class {0}, method {1} can call dangerous method {2}. The potential method invocations are: {3}.</source>
-        <target state="translated">{0} sınıfının bir örneği seri durumdan çıkarılırken, {1} metodu tehlikeli {2} metodunu çağırabilir. Olası metot çağırmaları: {3}.</target>
+        <source>When deserializing an instance of class '{0}', method '{1}' can directly or indirectly call dangerous method '{2}'</source>
+        <target state="new">When deserializing an instance of class '{0}', method '{1}' can directly or indirectly call dangerous method '{2}'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotCallDangerousMethodsInDeserializationTitle">
+        <source>Do Not Call Dangerous Methods In Deserialization</source>
+        <target state="new">Do Not Call Dangerous Methods In Deserialization</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCallEnumerableCastOrOfTypeWithIncompatibleTypesDescription">

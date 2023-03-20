@@ -537,19 +537,19 @@
         <target state="translated">永遠不要在委派中略過權杖驗證</target>
         <note />
       </trans-unit>
-      <trans-unit id="DoNotCallDangerousMethodsInDeserialization">
-        <source>Do Not Call Dangerous Methods In Deserialization</source>
-        <target state="translated">不要在還原序列化期間呼叫危險的方法</target>
-        <note />
-      </trans-unit>
       <trans-unit id="DoNotCallDangerousMethodsInDeserializationDescription">
         <source>Insecure Deserialization is a vulnerability which occurs when untrusted data is used to abuse the logic of an application, inflict a Denial-of-Service (DoS) attack, or even execute arbitrary code upon it being deserialized. It’s frequently possible for malicious users to abuse these deserialization features when the application is deserializing untrusted data which is under their control. Specifically, invoke dangerous methods in the process of deserialization. Successful insecure deserialization attacks could allow an attacker to carry out attacks such as DoS attacks, authentication bypasses, and remote code execution.</source>
         <target state="translated">不安全的還原序列化是一種弱點，會在有人使用未受信任的資料來不當使用應用程式的邏輯、發動拒絕服務的攻擊 (DoS)，甚至是在任何程式碼的還原序列化期間執行該程式碼時出現。惡意使用者經常會在應用程式將他們控制的未受信任資料還原序列化時，濫用這些還原序列化功能 (基本上就是在還原序列化期間叫用危險的方法)。不安全的還原序列化攻擊一旦成功，攻擊者就有機會發動後續攻擊，例如 DoS 攻擊、驗證略過和遠端程式碼執行。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCallDangerousMethodsInDeserializationMessage">
-        <source>When deserializing an instance of class {0}, method {1} can call dangerous method {2}. The potential method invocations are: {3}.</source>
-        <target state="translated">將類別 {0} 的執行個體還原序列化時，方法 {1} 可以呼叫危險的方法 {2}。潛在的方法引動過程為: {3}。</target>
+        <source>When deserializing an instance of class '{0}', method '{1}' can directly or indirectly call dangerous method '{2}'</source>
+        <target state="new">When deserializing an instance of class '{0}', method '{1}' can directly or indirectly call dangerous method '{2}'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotCallDangerousMethodsInDeserializationTitle">
+        <source>Do Not Call Dangerous Methods In Deserialization</source>
+        <target state="new">Do Not Call Dangerous Methods In Deserialization</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCallEnumerableCastOrOfTypeWithIncompatibleTypesDescription">
