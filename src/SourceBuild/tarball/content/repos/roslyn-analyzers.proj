@@ -17,8 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- TODO:  Enable with https://github.com/dotnet/source-build/issues/2274
-    <RepositoryReference Include="runtime" /> -->
+    <RepositoryReference Include="runtime" />
     <RepositoryReference Include="roslyn" />
   </ItemGroup>
 

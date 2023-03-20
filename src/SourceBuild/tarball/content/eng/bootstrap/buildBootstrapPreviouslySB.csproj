@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="$(MSBuildProjectDirectory)/PackageVersions.props" />
+  <Import Project="$(BootstrapOverrideVersionsProps)" Condition="Exists('$(BootstrapOverrideVersionsProps)')" />
+
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <BaseOutputPath>$(MSBuildProjectDirectory)/artifacts/</BaseOutputPath>
+    <RestorePackagesPath>$(MSBuildProjectDirectory)/artifacts/restoredPkgs/</RestorePackagesPath>
+    <UnpackedTarPath>$(MSBuildProjectDirectory)/artifacts/unpacked/</UnpackedTarPath>
+    <NewTarballName>$(ArchiveDir)Private.SourceBuilt.Artifacts.Bootstrap.tar.gz</NewTarballName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- These packages will be replaced with ms-built packages downloaded from official package feeds-->
+    <PackageDownload Include="Microsoft.Aspnetcore.App.Runtime.linux-x64" Version="[$(MicrosoftAspNetCoreAppRuntimeVersion)]" />
+    <PackageDownload Include="Microsoft.AspNetCore.App.Runtime.linux-musl-x64" Version="[$(MicrosoftAspNetCoreAppRuntimeVersion)]" />
+    <PackageDownload Include="Microsoft.NETCore.App.Crossgen2.linux-x64" Version="[$(MicrosoftNETCoreAppCrossgen2Version)]" />
+    <PackageDownload Include="Microsoft.NETCore.App.Crossgen2.linux-musl-x64" Version="[$(MicrosoftNETCoreAppCrossgen2Version)]" />
+    <PackageDownload Include="Microsoft.NETCore.App.Host.linux-x64" Version="[$(MicrosoftNETCoreAppHostPackageVersion)]" />
+    <PackageDownload Include="Microsoft.NETCore.App.Host.linux-musl-x64" Version="[$(MicrosoftNETCoreAppHostPackageVersion)]" />
+    <PackageDownload Include="Microsoft.NETCore.App.Runtime.linux-x64" Version="[$(MicrosoftNETCoreAppRuntimeVersion)]" />
+    <PackageDownload Include="Microsoft.NETCore.App.Runtime.linux-musl-x64" Version="[$(MicrosoftNETCoreAppRuntimeVersion)]" />
+    <PackageDownload Include="Microsoft.NET.HostModel" Version="[$(MicrosoftNETHostModelVersion)]" />
+    <PackageDownload Include="Microsoft.NET.Sdk.IL" Version="[$(MicrosoftNETSdkILVersion)]" />
+    <PackageDownload Include="Microsoft.NETCore.ILAsm" Version="[$(MicrosoftNETCoreILAsmVersion)]" />
+    <PackageDownload Include="Microsoft.NETCore.ILDAsm" Version="[$(MicrosoftNETCoreILDAsmVersion)]" />
+    <PackageDownload Include="Microsoft.NETCore.TestHost" Version="[$(MicrosoftNETCoreTestHostVersion)]" />
+    <PackageDownload Include="runtime.linux-x64.Microsoft.NETCore.ILAsm" Version="[$(MicrosoftNETCoreILAsmVersion)]" />
+    <PackageDownload Include="runtime.linux-x64.Microsoft.NETCore.ILDAsm" Version="[$(MicrosoftNETCoreILDAsmVersion)]" />
+    <PackageDownload Include="runtime.linux-x64.Microsoft.NETCore.TestHost" Version="[$(MicrosoftNETCoreTestHostVersion)]" />
+    <PackageDownload Include="runtime.linux-x64.runtime.native.System.IO.Ports" Version="[$(SystemIOPortsVersion)]" />
+    <PackageDownload Include="runtime.linux-musl-x64.Microsoft.NETCore.ILAsm" Version="[$(MicrosoftNETCoreILAsmVersion)]" />
+    <PackageDownload Include="runtime.linux-musl-x64.Microsoft.NETCore.ILDAsm" Version="[$(MicrosoftNETCoreILDAsmVersion)]" />
+    <PackageDownload Include="runtime.linux-musl-x64.Microsoft.NETCore.TestHost" Version="[$(MicrosoftNETCoreTestHostVersion)]" />
+    <!-- There's no nuget package for runtime.linux-musl-x64.runtime.native.System.IO.Ports
+    <PackageReference Include="runtime.linux-musl-x64.runtime.native.System.IO.Ports" Version="$(RuntimeLinuxX64RuntimeNativeSystemIOPortsVersion)" />
+    -->
+    <!-- Packages needed to bootstrap arm64 -->
+    <PackageDownload Include="Microsoft.Aspnetcore.App.Runtime.linux-arm64" Version="[$(MicrosoftAspNetCoreAppRuntimeVersion)]" />
+    <PackageDownload Include="Microsoft.NETCore.App.Crossgen2.linux-arm64" Version="[$(MicrosoftNETCoreAppCrossgen2Version)]" />
+    <PackageDownload Include="Microsoft.NETCore.App.Host.linux-arm64" Version="[$(MicrosoftNETCoreAppHostPackageVersion)]" />
+    <PackageDownload Include="Microsoft.NETCore.App.Runtime.linux-arm64" Version="[$(MicrosoftNETCoreAppRuntimeVersion)]" />
+    <PackageDownload Include="runtime.linux-arm64.Microsoft.DotNet.IlCompiler" Version="[$(MicrosoftDotNetIlCompilerVersion)]" />
+    <PackageDownload Include="runtime.linux-arm64.Microsoft.NETCore.DotNetAppHost" Version="[$(MicrosoftNETCoreDotNetAppHostVersion)]" />
+    <PackageDownload Include="runtime.linux-arm64.Microsoft.NETCore.DotNetHost" Version="[$(MicrosoftNETCoreDotNetHostVersion)]" />
+    <PackageDownload Include="runtime.linux-arm64.Microsoft.NETCore.DotNetHostPolicy" Version="[$(MicrosoftNETCoreDotNetHostPolicyVersion)]" />
+    <PackageDownload Include="runtime.linux-arm64.Microsoft.NETCore.DotNetHostResolver" Version="[$(MicrosoftNETCoreDotNetHostResolverVersion)]" />
+    <PackageDownload Include="runtime.linux-arm64.Microsoft.NETCore.ILAsm" Version="[$(MicrosoftNETCoreILAsmVersion)]" />
+    <PackageDownload Include="runtime.linux-arm64.Microsoft.NETCore.ILDAsm" Version="[$(MicrosoftNETCoreILDAsmVersion)]" />
+    <PackageDownload Include="runtime.linux-arm64.Microsoft.NETCore.TestHost" Version="[$(MicrosoftNETCoreTestHostVersion)]" />
+    <PackageDownload Include="runtime.linux-arm64.runtime.native.System.IO.Ports" Version="[$(RuntimeNativeSystemIOPortsVersion)]" />
+  </ItemGroup>
+
+  <Target Name="BuildBoostrapPreviouslySourceBuilt" AfterTargets="Restore">
+    <ItemGroup>
+      <RestoredNupkgs Include="$(RestorePackagesPath)**/*.nupkg" />
+      <PrevSBArchive Include="$(ArchiveDir)Private.SourceBuilt.Artifacts.*.tar.gz" />
+    </ItemGroup>
+
+    <!-- Copy restored nupkg files to root of restored packages dir so they're all in one place-->
+    <Copy SourceFiles="@(RestoredNupkgs)" DestinationFolder="$(RestorePackagesPath)" />
+
+    <!-- Check to ensure there is only one previously source-built archive -->
+    <Error Text="Multiple Private.SourceBuilt.Artifacts.*.tar.gz tarballs exists at $(ArchiveDir).  Expecting only one."
+        Condition="'@(PrevSBArchive->Count())' != '1'" />
+
+    <!-- Unpack existing archive -->
+    <Message Text="  Unpacking existing tarball from %(PrevSBArchive.Identity)" Importance="High" />
+    <MakeDir Directories="$(UnpackedTarPath)" />
+    <Exec Command="tar -xzf %(PrevSBArchive.Identity) -C $(UnpackedTarPath)" />
+
+    <!-- Delete existing archive -->
+    <Message Text="  Deleting existing tarball: %(PrevSBArchive.Identity)" Importance="High" />
+    <Delete Files="%(PrevSBArchive.Identity)" />
+
+    <!-- Copy files specified in package references above from restored package dir to unpacked archive dir -->
+    <Message Text="  Replacing restored files in $(UnpackedTarPath)" Importance="High" />
+    <MSBuild Projects="$(MSBuildProjectFile)"
+      Targets="CopyDownloadedPackage"
+      Properties="SourcePath=$(RestorePackagesPath);DestinationPath=$(UnpackedTarPath);PackageName=%(PackageDownload.Identity);PackageVersion=%(PackageDownload.Version)" />
+
+    <!-- override PVP with bootstrap-override package versions -->
+    <Message Text="  Overriding previously-source-built package versions with $(BootstrapOverrideVersionsProps)" Importance="High" Condition="Exists('$(BootstrapOverrideVersionsProps)')" />
+    <ReadLinesFromFile File="$(UnpackedTarPath)/PackageVersions.props">
+      <Output TaskParameter="Lines" ItemName="OriginalPackageVersionLines" />
+    </ReadLinesFromFile>
+    <ReadLinesFromFile File="$(BootstrapOverrideVersionsProps)">
+      <Output TaskParameter="Lines" ItemName="BootstrapPackageVersionLines" />
+    </ReadLinesFromFile>
+
+    <ItemGroup>
+      <OriginalPackageVersionLines Remove="&lt;/Project&gt;" />
+      <BootstrapPackageVersionLines Remove="&lt;Project&gt;" />
+    </ItemGroup>
+
+    <WriteLinesToFile File="$(UnpackedTarPath)/PackageVersions.props"
+                      Lines="@(OriginalPackageVersionLines)"
+                      Overwrite="true"
+                      Condition="Exists('$(BootstrapOverrideVersionsProps)')"
+    />
+    <WriteLinesToFile File="$(UnpackedTarPath)/PackageVersions.props"
+                      Lines="@(BootstrapPackageVersionLines)"
+                      Overwrite="false"
+                      Condition="Exists('$(BootstrapOverrideVersionsProps)')"
+    />
+
+
+    <!-- Repack tarball with new bootstrap name -->
+    <Message Text="  Repacking tarball to $(NewTarballName)" Importance="High" />
+    <Exec Command="tar --numeric-owner -czf $(NewTarballName) *.nupkg *.props SourceBuildReferencePackages/" WorkingDirectory="$(UnpackedTarPath)" />
+
+  </Target>
+
+  <Target Name="CopyDownloadedPackage">
+    <!--
+      Copy downloaded package to the output path.
+      Note: The package version may be different than the version specified
+      since the source-build build number can be different than the official
+      package build number.
+    -->
+    <ItemGroup>
+      <SourceFileName Include="$(SourcePath)$(PackageName.ToLower()).*.nupkg" />
+    </ItemGroup>
+    <PropertyGroup>
+      <DestinationFileName>@(SourceFileName->'%(Filename)')</DestinationFileName>
+      <NewVersion>$(DestinationFileName.Replace('$(PackageName.ToLower()).',''))</NewVersion>
+    </PropertyGroup>
+    <Copy
+      SourceFiles="@(SourceFileName)"
+      DestinationFiles="$(DestinationPath)$(PackageName).$(NewVersion).nupkg" />
+
+    <!--
+      Update the PackageVersions.props if restored version is
+      different than the specified version.
+    -->
+    <PropertyGroup>
+      <VersionTag>$([System.String]::concat('%3C','$(PackageName)','Version','%3E').Replace('.',''))</VersionTag>
+      <PackageVersionTag>$([System.String]::concat('%3C','$(PackageName)','PackageVersion','%3E').Replace('.',''))</PackageVersionTag>
+      <FilePath>$(DestinationPath)PackageVersions.props</FilePath>
+    </PropertyGroup>
+    <WriteLinesToFile
+      File="$(FilePath)"
+      Lines="$([System.IO.File]::ReadAllText($(FilePath)).Replace('$(VersionTag)$(PackageVersion)','$(VersionTag)$(NewVersion)').Replace('$(PackageVersionTag)$(PackageVersion)','$(PackageVersionTag)$(NewVersion)'))"
+      Overwrite="true"
+      Condition=" '$(PackageVersion)' != '$(NewVersion)' " />
+  </Target>
+</Project>

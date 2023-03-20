@@ -7,13 +7,15 @@ Subject: [PATCH] Eliminate pre-built assets during source-build for
 This is taking the approach used in previous versions of source-build: update the dependency versions of Microsoft.CodeAnalysis to the version currently being built by source-build. This is a short-term solution to get unblocked in the 6.0.0 timeframe. In the future, the previous Microsoft.CodeAnalysis versions will be available in SBRP.
 
 * Remove SourceBuildPackageVersionPropsPath at the top of Versions.props. The PVP from source-build will be imported after the repo's Versions.props
-* Workaround a naming collison with DocumentBasedFixAllProvider. The latest Roslyn has a class with the same name.
+* Workaround naming collisions with DocumentBasedFixAllProvider. The latest Roslyn has a class with the same name.
 * Remove hard-coded versions to Microsoft.CodeAnalysis in ResxSourceGenerator, Roslyn.Diagnostics.Analyzers, and GenerateDocumentationAndConfigFiles, so the latest gets picked up.
 * Exclude ReleaseNotesUtil from source-build since it brings in the 3.1 app host. This tool shouldn't be needed during source-build.
 * Disable BannedApiAnalyzers when in source-build. Other previously built code analysis packages are disabled already.
 
 Contributes to https://github.com/dotnet/source-build/issues/2420
 Contributes to https://github.com/dotnet/source-build/issues/2527
+
+Backport: https://github.com/dotnet/source-build/issues/3049
 ---
  eng/Versions.props                                 | 14 --------------
  src/Directory.Build.targets                        |  5 +++--
@@ -21,6 +23,7 @@ Contributes to https://github.com/dotnet/source-build/issues/2527
  ....CodeAnalysis.ResxSourceGenerator.CSharp.csproj |  1 -
  ...Analysis.ResxSourceGenerator.VisualBasic.csproj |  1 -
  ...crosoft.CodeAnalysis.ResxSourceGenerator.csproj |  1 -
+ ...harpDisableRuntimeMarshalling.FixAllProvider.cs |  2 +-
  .../DoNotDirectlyAwaitATask.Fixer.cs               |  2 +-
  .../Roslyn.Diagnostics.CSharp.Analyzers.csproj     |  2 +-
  .../Core/Roslyn.Diagnostics.Analyzers.csproj       |  1 -
@@ -28,10 +31,10 @@ Contributes to https://github.com/dotnet/source-build/issues/2527
  .../GenerateDocumentationAndConfigFiles.csproj     |  1 -
  ...umentationAndConfigFilesForBrokenRuntime.csproj |  4 +---
  src/Tools/ReleaseNotesUtil/ReleaseNotesUtil.csproj |  1 +
- 13 files changed, 9 insertions(+), 28 deletions(-)
+ 14 files changed, 10 insertions(+), 29 deletions(-)
 
 diff --git a/eng/Versions.props b/eng/Versions.props
-index 46d30b3bd..635f8bb5c 100644
+index a467fb579..acd5db8bc 100644
 --- a/eng/Versions.props
 +++ b/eng/Versions.props
 @@ -1,18 +1,4 @@
@@ -51,7 +54,7 @@ index 46d30b3bd..635f8bb5c 100644
 -    <MicrosoftCodeAnalysisExecutableVersion Condition="'$(MicrosoftCodeAnalysisExecutableVersion)' == ''">3.8.0</MicrosoftCodeAnalysisExecutableVersion>
 -  </PropertyGroup>
    <PropertyGroup>
-     <VersionPrefix>3.3.3</VersionPrefix>
+     <VersionPrefix>3.3.4</VersionPrefix>
      <PreReleaseVersionLabel>beta1</PreReleaseVersionLabel>
 diff --git a/src/Directory.Build.targets b/src/Directory.Build.targets
 index c7c28fd9f..e5be9e028 100644
@@ -118,12 +121,25 @@ index 46a4fca6b..c9fa15584 100644
    </PropertyGroup>
  
    <ItemGroup>
+diff --git a/src/NetAnalyzers/CSharp/Microsoft.NetCore.Analyzers/InteropServices/CSharpDisableRuntimeMarshalling.FixAllProvider.cs b/src/NetAnalyzers/CSharp/Microsoft.NetCore.Analyzers/InteropServices/CSharpDisableRuntimeMarshalling.FixAllProvider.cs
+index 4bb27f03d..6d93ac3f7 100644
+--- a/src/NetAnalyzers/CSharp/Microsoft.NetCore.Analyzers/InteropServices/CSharpDisableRuntimeMarshalling.FixAllProvider.cs
++++ b/src/NetAnalyzers/CSharp/Microsoft.NetCore.Analyzers/InteropServices/CSharpDisableRuntimeMarshalling.FixAllProvider.cs
+@@ -15,7 +15,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
+ {
+     public sealed partial class CSharpDisableRuntimeMarshallingFixer
+     {
+-        private class CustomFixAllProvider : DocumentBasedFixAllProvider
++        private class CustomFixAllProvider : Analyzer.Utilities.DocumentBasedFixAllProvider
+         {
+             public static readonly CustomFixAllProvider Instance = new();
+ 
 diff --git a/src/NetAnalyzers/Core/Microsoft.CodeQuality.Analyzers/ApiDesignGuidelines/DoNotDirectlyAwaitATask.Fixer.cs b/src/NetAnalyzers/Core/Microsoft.CodeQuality.Analyzers/ApiDesignGuidelines/DoNotDirectlyAwaitATask.Fixer.cs
-index 738fdebf2..6d13947ce 100644
+index 331c0a4fe..492d0d4c1 100644
 --- a/src/NetAnalyzers/Core/Microsoft.CodeQuality.Analyzers/ApiDesignGuidelines/DoNotDirectlyAwaitATask.Fixer.cs
 +++ b/src/NetAnalyzers/Core/Microsoft.CodeQuality.Analyzers/ApiDesignGuidelines/DoNotDirectlyAwaitATask.Fixer.cs
-@@ -82,7 +82,7 @@ private class MyCodeAction : DocumentChangeAction
-             }
+@@ -74,7 +74,7 @@ public sealed override FixAllProvider GetFixAllProvider()
+             return CustomFixAllProvider.Instance;
          }
  
 -        private sealed class CustomFixAllProvider : DocumentBasedFixAllProvider
@@ -203,9 +219,9 @@ index fe90e93ca..01b64e055 100644
 +++ b/src/Tools/ReleaseNotesUtil/ReleaseNotesUtil.csproj
 @@ -3,6 +3,7 @@
      <OutputType>Exe</OutputType>
-     <TargetFramework>netcoreapp3.1</TargetFramework>
+     <TargetFramework>net7.0</TargetFramework>
      <NonShipping>true</NonShipping>
 +    <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
-   </PropertyGroup>  
+   </PropertyGroup>
    <ItemGroup>
      <PackageReference Include="Microsoft.CodeAnalysis" Version="$(MicrosoftCodeAnalysisVersion)" />

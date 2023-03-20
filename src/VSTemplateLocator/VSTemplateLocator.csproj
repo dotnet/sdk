@@ -15,6 +15,7 @@
     <PackageReference Include="runtime.win-x86.Microsoft.NETCore.DotNetHostResolver" Version="$(MicrosoftNETCoreDotNetHostResolverPackageVersion)" ExcludeAssets="all" GeneratePathProperty="true" />
     <PackageReference Include="runtime.win-x64.Microsoft.NETCore.DotNetHostResolver" Version="$(MicrosoftNETCoreDotNetHostResolverPackageVersion)" ExcludeAssets="all" GeneratePathProperty="true" />
     <PackageReference Include="runtime.win-arm64.Microsoft.NETCore.DotNetHostResolver" Version="$(MicrosoftNETCoreDotNetHostResolverPackageVersion)" ExcludeAssets="all" GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.Deployment.DotNet.Releases" Version="$(DotNetDeploymentReleasesPackageVersion)" ExcludeAssets="all" GeneratePathProperty="true" />
   </ItemGroup>
 
   <Target
@@ -32,6 +33,7 @@
       <_VSTemplateLocatorSrc Include="$(Pkgruntime_win-x64_Microsoft_NETCore_DotNetHostResolver)\runtimes\win-x64\native\hostfxr.dll" Arch="x64\" />
       <_VSTemplateLocatorSrc Include="$(Pkgruntime_win-arm64_Microsoft_NETCore_DotNetHostResolver)\runtimes\win-arm64\native\hostfxr.dll" Arch="arm64\" />
       <_VSTemplateLocatorSrc Include="$(Pkgmicrosoft_dotnet_templateLocator)\lib\net472\**\*.dll" Arch="" />
+      <_VSTemplateLocatorSrc Include="$(PkgMicrosoft_Deployment_DotNet_Releases)\lib\net452\**\*.dll" Arch="" />
       <_VSTemplateLocatorDst Include="@(_VSTemplateLocatorSrc->'$(OutputPath)VSTemplateLocator\%(Arch)%(RecursiveDir)%(Filename)%(Extension)')" />
     </ItemGroup>
 

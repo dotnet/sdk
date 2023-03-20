@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp6.0</TargetFramework>
+    <TargetFramework>net7.0</TargetFramework>
     <OutputPath>$(XPlatTasksBinDir)</OutputPath>
   </PropertyGroup>
 

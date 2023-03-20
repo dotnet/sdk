@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net6.0</TargetFrameworks>
+    <TargetFrameworks>net7.0</TargetFrameworks>
     <RestorePackagesPath>$(TargetPackagesPath)</RestorePackagesPath>
   </PropertyGroup>
 
@@ -11,14 +11,16 @@
     should be added to source-build-reference-packages.
   -->
   <ItemGroup>
-    <PackageDownload Include="Microsoft.NET.Sdk.Android.Manifest-6.0.300" Version="[$(XamarinAndroidWorkloadManifestVersion)]" />
-    <PackageDownload Include="Microsoft.NET.Sdk.iOS.Manifest-6.0.300" Version="[$(XamarinIOSWorkloadManifestVersion)]" />
-    <PackageDownload Include="Microsoft.NET.Sdk.MacCatalyst.Manifest-6.0.300" Version="[$(XamarinMacCatalystWorkloadManifestVersion)]" />
-    <PackageDownload Include="Microsoft.NET.Sdk.macOS.Manifest-6.0.300" Version="[$(XamarinMacOSWorkloadManifestVersion)]" />
-    <PackageDownload Include="Microsoft.NET.Sdk.Maui.Manifest-6.0.300" Version="[$(MauiWorkloadManifestVersion)]" />
-    <PackageDownload Include="Microsoft.NET.Sdk.tvOS.Manifest-6.0.300" Version="[$(XamarinTvOSWorkloadManifestVersion)]" />
-    <PackageDownload Include="Microsoft.NET.Workload.Emscripten.Manifest-6.0.300" Version="[$(EmscriptenWorkloadManifestVersion)]" />
-    <PackageDownload Include="Microsoft.NET.Workload.Mono.ToolChain.Manifest-6.0.300" Version="[$(MonoWorkloadManifestVersion)]" />
+    <PackageDownload Include="Microsoft.NET.Sdk.Android.Manifest-$(MauiFeatureBand)" Version="[$(XamarinAndroidWorkloadManifestVersion)]" />
+    <PackageDownload Include="Microsoft.NET.Sdk.iOS.Manifest-$(MauiFeatureBand)" Version="[$(XamarinIOSWorkloadManifestVersion)]" />
+    <PackageDownload Include="Microsoft.NET.Sdk.MacCatalyst.Manifest-$(MauiFeatureBand)" Version="[$(XamarinMacCatalystWorkloadManifestVersion)]" />
+    <PackageDownload Include="Microsoft.NET.Sdk.macOS.Manifest-$(MauiFeatureBand)" Version="[$(XamarinMacOSWorkloadManifestVersion)]" />
+    <PackageDownload Include="Microsoft.NET.Sdk.Maui.Manifest-$(MauiFeatureBand)" Version="[$(MauiWorkloadManifestVersion)]" />
+    <PackageDownload Include="Microsoft.NET.Sdk.tvOS.Manifest-$(MauiFeatureBand)" Version="[$(XamarinTvOSWorkloadManifestVersion)]" />
+    <PackageDownload Include="Microsoft.NET.Workload.Emscripten.net6.Manifest-7.0.100" Version="[$(EmscriptenWorkloadManifestVersion)]" />
+    <PackageDownload Include="Microsoft.NET.Workload.Emscripten.net7.Manifest-7.0.100" Version="[$(EmscriptenWorkloadManifestVersion)]" />
+    <PackageDownload Include="Microsoft.NET.Workload.Mono.ToolChain.net6.Manifest-7.0.100" Version="[$(MonoWorkloadManifestVersion)]" />
+    <PackageDownload Include="Microsoft.NET.Workload.Mono.ToolChain.net7.Manifest-7.0.100" Version="[$(MonoWorkloadManifestVersion)]" />
   </ItemGroup>
 
   <!--

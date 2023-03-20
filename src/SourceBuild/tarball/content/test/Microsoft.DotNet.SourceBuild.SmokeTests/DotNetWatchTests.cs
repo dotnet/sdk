@@ -24,7 +24,7 @@ public class DotNetWatchTests : SmokeTests
             workingDirectory: projectDirectory,
             additionalProcessConfigCallback: processConfigCallback,
             expectedExitCode: null, // The exit code does not reflect whether or not dotnet watch is working properly
-            millisecondTimeout: 30000);
+            millisecondTimeout: 60000);
 
         Assert.True(outputChanged);
 

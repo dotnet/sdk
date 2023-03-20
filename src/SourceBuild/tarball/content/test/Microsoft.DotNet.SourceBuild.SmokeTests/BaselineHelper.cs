@@ -37,7 +37,7 @@ namespace Microsoft.DotNet.SourceBuild.SmokeTests
 
         public static void CompareContents(string baselineFileName, string actualContents, ITestOutputHelper outputHelper, bool warnOnDiffs = false)
         {
-            string actualFilePath = Path.Combine(Environment.CurrentDirectory, $"{baselineFileName}");
+            string actualFilePath = Path.Combine(DotNetHelper.LogsDirectory, $"Updated{baselineFileName}");
             File.WriteAllText(actualFilePath, actualContents);
 
             CompareFiles(baselineFileName, actualFilePath, outputHelper, warnOnDiffs);

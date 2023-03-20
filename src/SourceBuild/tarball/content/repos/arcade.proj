@@ -24,7 +24,7 @@
     <BuiltSdkPackageOverride Include="@(ArcadeSdkOverride)" />
     <BuiltSdkPackageOverride Include="@(ArcadeCoreFxTestingOverride)" />
     <BuiltSdkPackageOverride Include="@(ArcadePackagingOverride)" />
-    <BuiltSdkPackageOverride Include="@(ArcadeTargetFrameworkSdkOverride)" />
+    <BuiltSdkPackageOverride Include="@(ArcadeTargetFrameworkOverride)" />
     <BuiltSdkPackageOverride Include="@(ArcadeSharedFrameworkSdkOverride)" />
   </ItemGroup>
 

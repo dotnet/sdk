@@ -120,7 +120,7 @@
 
   <Target Name="CheckIfCreateSmokeTestPrereqsExistToPack">
     <PropertyGroup>
-      <SmokeTestsArtifactsDir>$(SmokeTestsDir)bin/$(Configuration)/net6.0/</SmokeTestsArtifactsDir>
+      <SmokeTestsArtifactsDir>$(SmokeTestsDir)bin/$(Configuration)/net7.0/</SmokeTestsArtifactsDir>
       <SmokeTestsPackagesDir>$(SmokeTestsArtifactsDir)packages/</SmokeTestsPackagesDir>
     </PropertyGroup>
 

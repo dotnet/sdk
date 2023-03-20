@@ -49,7 +49,7 @@
   <String Id="FilesInUseCancelButton">取消(&amp;C)</String>
   <String Id="FirstTimeWelcomeMessage">已成功安装。
 
-下列项安装于: "[DOTNETHOME]"
+下列项安装:
     • .NET SDK [DOTNETSDKVERSION]
     • .NET Runtime [DOTNETRUNTIMEVERSION]
     • ASP.NET Core Runtime [ASPNETCOREVERSION]
@@ -61,7 +61,7 @@
 资源
     • .NET 文档: https://aka.ms/dotnet-docs
     • SDK 文档: https://aka.ms/dotnet-sdk-docs
-    • 发行说明: https://aka.ms/dotnet6-release-notes
+    • 发行说明: https://aka.ms/dotnet7-release-notes
     • 教程: https://aka.ms/dotnet-tutorials</String>
   <String Id="WelcomeHeaderMessage">.NET SDK</String>
   <String Id="WelcomeDescription">
@@ -76,7 +76,10 @@
   <String Id="InstallationNoteTitle">安装说明</String>
   <String Id="InstallationNote">将在要提升项目还原速度并实现脱机访问的安装进程期间运行命令。此操作最多 1 分钟即可完成。
   </String>
-  <String Id="VisualStudioWarning">如果打算结合使用 .NET 6.0 和 Visual Studio，需要 Visual Studio 2022 17.0 或更高版本。&lt;A HREF="https://aka.ms/dotnet6-release-notes"&gt;了解详细信息&lt;/A&gt;。
+  <String Id="VisualStudioWarning">如果打算结合使用 .NET 7.0 和 Visual Studio，需要 Visual Studio 2022 17.4 或更高版本。&lt;A HREF="https://aka.ms/dotnet7-release-notes"&gt;了解详细信息&lt;/A&gt;。
   </String>
   <String Id="LicenseAssent">单击“安装”即表示你同意以下条款。</String>
+  <String Id="InstallPathx64x86">The installation path for x64 SDK installations: &quot;[DOTNETHOME_X64]&quot; cannot be the same as for x86 SDK installations: &quot;[DOTNETHOME_X86]&quot;</String>
+  <String Id="InstallPathARM64x86">The installation path for ARM64 SDK installations: &quot;[DOTNETHOME_ARM64]&quot; cannot be the same as for x86 SDK installations: &quot;[DOTNETHOME_X86]&quot;</String>
+  <String Id="InstallPathARM64x64">The installation path for ARM64 SDK installations: &quot;[DOTNETHOME_ARM64]&quot; cannot be the same as for x64 SDK installations: &quot;[DOTNETHOME_X64]&quot;</String>
 </WixLocalization>

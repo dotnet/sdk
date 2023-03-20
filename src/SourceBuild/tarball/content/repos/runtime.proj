@@ -1,27 +1,107 @@
 <Project>
-  <Import Project="runtime.common.props"/>
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
+  <!-- Build arguments -->
   <PropertyGroup>
+    <LogVerbosityOptOut>true</LogVerbosityOptOut>
+
+    <CleanCommand>$(ProjectDirectory)/clean$(ShellExtension)</CleanCommand>
+
     <OverrideTargetRid>$(TargetRid)</OverrideTargetRid>
     <OverrideTargetRid Condition="'$(TargetOS)' == 'OSX'">osx-x64</OverrideTargetRid>
     <OverrideTargetRid Condition="'$(TargetOS)' == 'FreeBSD'">freebsd-x64</OverrideTargetRid>
     <OverrideTargetRid Condition="'$(TargetOS)' == 'Windows_NT'">win-x64</OverrideTargetRid>
 
+    <_platformIndex>$(NETCoreSdkRuntimeIdentifier.LastIndexOf('-'))</_platformIndex>
+    <RuntimeOS>$(NETCoreSdkRuntimeIdentifier.Substring(0, $(_platformIndex)))</RuntimeOS>
+
+    <_platformIndex>$(NETCoreSdkPortableRuntimeIdentifier.LastIndexOf('-'))</_platformIndex>
+    <BaseOS>$(NETCoreSdkPortableRuntimeIdentifier.Substring(0, $(_platformIndex)))</BaseOS>
+
     <BuildCommandArgs>$(StandardSourceBuildArgs)</BuildCommandArgs>
     <BuildCommandArgs>$(BuildCommandArgs) /p:TargetRid=$(OverrideTargetRid)</BuildCommandArgs>
+    <BuildCommandArgs>$(BuildCommandArgs) /p:RuntimeOS=$(RuntimeOS)</BuildCommandArgs>
+    <BuildCommandArgs>$(BuildCommandArgs) /p:BaseOS=$(BaseOS)</BuildCommandArgs>
     <BuildCommandArgs>$(BuildCommandArgs) /p:SourceBuildNonPortable=true</BuildCommandArgs>
     <BuildCommand>$(StandardSourceBuildCommand) $(BuildCommandArgs)</BuildCommand>
   </PropertyGroup>
+
+  <!-- Output / source-build flags -->
+  <PropertyGroup>
+    <GlobalJsonFile>$(ProjectDirectory)global.json</GlobalJsonFile>
+    <NuGetConfigFile>$(ProjectDirectory)NuGet.config</NuGetConfigFile>
+    <OutputPlacementRepoApiImplemented>false</OutputPlacementRepoApiImplemented>
+    <DependencyVersionInputRepoApiImplemented>true</DependencyVersionInputRepoApiImplemented>
+  </PropertyGroup>
+
+  <!-- SDK Overrides -->
+  <ItemGroup>
+    <UseSourceBuiltSdkOverride Include="@(ArcadeSdkOverride)" />
+    <UseSourceBuiltSdkOverride Include="@(ArcadeCoreFxTestingOverride)" />
+    <UseSourceBuiltSdkOverride Include="@(ArcadePackagingOverride)" />
+    <UseSourceBuiltSdkOverride Include="@(ArcadeTargetFrameworkOverride)" />
+    <UseSourceBuiltSdkOverride Include="@(ArcadeSharedFrameworkSdkOverride)" />
+  </ItemGroup>
+
+  <!-- Environment Variables -->
+  <ItemGroup>
+    <EnvironmentVariables Include="BuildInParallel=false" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ExtraPackageVersionPropsPackageInfo Include="MicrosoftCodeAnalysisVersion_4_X" Version="%24(MicrosoftCodeAnalysisVersion)" />
+  </ItemGroup>
 
   <!-- Repository References -->
   <ItemGroup>
       <RepositoryReference Include="arcade" />
       <RepositoryReference Include="symreader" />
       <RepositoryReference Include="linker" />
-      <RepositoryReference Include="source-build" />
+      <RepositoryReference Include="source-build-externals" />
       <RepositoryReference Include="roslyn" />
-      <RepositoryReference Include="runtime-portable" />
   </ItemGroup>
 
-  <Import Project="runtime.common.targets" />
+  <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="AddRidToRuntimeJson" />
+  <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="PublishCoreSetupBinaries" />
+
+  <Target Name="SetOutputList" AfterTargets="Package" BeforeTargets="GatherBuiltPackages">
+    <ItemGroup>
+      <PackagesOutputList Include="$(ShippingPackagesOutput)" />
+      <PackagesOutputList Include="$(NonShippingPackagesOutput)" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="UpdateRuntimeGraph"
+          BeforeTargets="Build"
+          Condition="'$(_IsBootstrapping)' == 'true'">
+    <PropertyGroup>
+      <RuntimeJsonFile>$(ProjectDirectory)pkg/Microsoft.NETCore.Platforms/runtime.json</RuntimeJsonFile>
+    </PropertyGroup>
+
+    <Message Importance="High" Text="Adding rid, $(TargetRid), to $(RuntimeJsonFile)" />
+    <AddRidToRuntimeJson RuntimeJson="$(RuntimeJsonFile)"
+                         Rid="$(TargetRid)-$(Platform)" />
+  </Target>
+
+  <Target Name="CopyBinariesToBinFolder"
+          AfterTargets="ExtractIntermediatePackages"
+          Inputs="$(MSBuildProjectFullPath)"
+          Outputs="$(RepoCompletedSemaphorePath)CopyBinariesToBinFolder.complete">
+    <ItemGroup>
+      <_builtRuntimePackages Include="$(SourceBuiltAssetsDir)*.symbols.nupkg" />
+      <_builtRuntimePackages>
+        <TransformedFileName>$([System.String]::Copy('%(FileName)').Replace('symbols', 'nupkg'))</TransformedFileName>
+      </_builtRuntimePackages>
+      <BinariesToCopy Include="$(SourceBuiltAssetsDir)*.*" Exclude="$(SourceBuiltAssetsDir)*.nupkg;$(SourceBuiltAssetsDir)*.requires_nupkg_signing" />
+      <BinariesToCopy Include="@(_builtRuntimePackages->'$(SourceBuiltPackagesPath)%(TransformedFileName)')" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(BinariesToCopy)"
+          DestinationFolder="$(OutputPath)runtime"
+          Condition="'@(BinariesToCopy)'!=''" />
+
+    <WriteLinesToFile File="$(RepoCompletedSemaphorePath)CopyBinariesToBinFolder.complete" Overwrite="true" />
+  </Target>
+
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 </Project>

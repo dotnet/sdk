@@ -7,11 +7,15 @@
 
       <NETStandardLibraryNETFrameworkPackageName>NETStandard.Library.NETFramework</NETStandardLibraryNETFrameworkPackageName>
       <NETStandardLibraryNETFrameworkNuPkgPath>$(NuGetPackageRoot)$(NETStandardLibraryNETFrameworkPackageName.ToLower())/$(CLI_NETStandardLibraryNETFrameworkVersion.ToLower())</NETStandardLibraryNETFrameworkNuPkgPath>
+
+      <DotNetDeploymentReleasesPackageName>Microsoft.Deployment.DotNet.Releases</DotNetDeploymentReleasesPackageName>
+      <DotNetDeploymentReleasesPkgPath>$(NuGetPackageRoot)$(DotNetDeploymentReleasesPackageName.ToLower())/$(DotNetDeploymentReleasesPackageVersion.ToLower())</DotNetDeploymentReleasesPkgPath>
   </PropertyGroup>
 
   <ItemGroup>
     <ExtensionPackageToRestore Include="$(MSBuildExtensionsPackageName)" Version="$(MicrosoftNETBuildExtensionsPackageVersion)"/>
     <ExtensionPackageToRestore Include="$(NETStandardLibraryNETFrameworkPackageName)" Version="$(CLI_NETStandardLibraryNETFrameworkVersion)"/>
+    <ExtensionPackageToRestore Include="$(DotNetDeploymentReleasesPackageName)" Version="$(DotNetDeploymentReleasesPackageVersion)"/>
   </ItemGroup>
 
   <!-- Restore msbuild extensions via PackageReference -->
@@ -40,6 +44,9 @@
       <VSMSBuildExtensionsContent Include="$(NETStandardLibraryNETFrameworkNuPkgPath)\build\**\*.*"
                                   Exclude="$(NETStandardLibraryNETFrameworkNuPkgPath)\build\**\*.props;$(NETStandardLibraryNETFrameworkNuPkgPath)\build\**\*.targets"
                                   DeploymentSubpath="msbuildExtensions/Microsoft/Microsoft.NET.Build.Extensions/" />
+
+      <VSMSBuildExtensionsContent Include="$(DotNetDeploymentReleasesPkgPath)\lib\net452\**\*.*"
+                                  DeploymentSubpath="MSBuildSdkResolver/" />
 
       <VSMSBuildExtensionsContent Include="$(SdkResolverLayoutPath)/**/*"
                                   DeploymentSubpath="MSBuildSdkResolver/" />
