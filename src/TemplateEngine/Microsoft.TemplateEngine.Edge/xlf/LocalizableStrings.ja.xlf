@@ -132,7 +132,7 @@
       </trans-unit>
       <trans-unit id="GlobalSettings_Error_CorruptedSettings">
         <source>Failed to read installed template packages list at {0}. It might be due to the file is corrupted. Please review this file manually and fix the errors in JSON structure, or remove the file to clear up the list of list installed packages and reinstall them again. Details of the error: {1}.</source>
-        <target state="new">Failed to read installed template packages list at {0}. It might be due to the file is corrupted. Please review this file manually and fix the errors in JSON structure, or remove the file to clear up the list of list installed packages and reinstall them again. Details of the error: {1}.</target>
+        <target state="translated">{0}でインストールされているテンプレート パッケージの一覧を読み取ることができませんでした。ファイルが破損していることが原因である可能性があります。このファイルを手動で確認し、JSON 構造のエラーを修正するか、ファイルを削除してインストール済みパッケージの一覧を消去して再インストールしてください。エラーの詳細: {1}。</target>
         <note />
       </trans-unit>
       <trans-unit id="HostConstraint_Error_MissingMandatoryProperty">
@@ -301,42 +301,42 @@ Details: {1}.</source>
       </trans-unit>
       <trans-unit id="Scanner_Validation_Error_Header">
         <source>The template {0} has the following validation errors:</source>
-        <target state="new">The template {0} has the following validation errors:</target>
+        <target state="translated">テンプレート {0} には、次の検証エラーがあります:</target>
         <note>This is a header for the list of issues found for the template, and followed by the list of issues (from new line). {0} template info in format 'template name' (template.identity)</note>
       </trans-unit>
       <trans-unit id="Scanner_Validation_Info_Header">
         <source>The template {0} has the following validation messages:</source>
-        <target state="new">The template {0} has the following validation messages:</target>
+        <target state="translated">テンプレート {0} には、次の検証メッセージがあります:</target>
         <note>This is a header for the list of issues found for the template, and followed by the list of issues (from new line). {0} template info in format 'template name' (template.identity)</note>
       </trans-unit>
       <trans-unit id="Scanner_Validation_InvalidTemplate">
         <source>Failed to install the template {0}: the template is not valid.</source>
-        <target state="new">Failed to install the template {0}: the template is not valid.</target>
+        <target state="translated">テンプレート {0} をインストールできませんでした: テンプレートが無効です。</target>
         <note>{0} template info in format 'template name' (template.identity)</note>
       </trans-unit>
       <trans-unit id="Scanner_Validation_InvalidTemplateLoc">
         <source>Failed to install the '{0}' localization the template {1}: the localization file is not valid. The localization will be skipped.</source>
-        <target state="new">Failed to install the '{0}' localization the template {1}: the localization file is not valid. The localization will be skipped.</target>
+        <target state="translated">'{0}' ローカリゼーションテンプレート {1}をインストールできませんでした: ローカライズ ファイルが無効です。ローカライズはスキップされます。</target>
         <note>{1} template info in format 'template name' (template.identity), {0} is localization locale in "en-US" format</note>
       </trans-unit>
       <trans-unit id="Scanner_Validation_LocError_Header">
         <source>The template {0} has the following validation errors in '{1}' localization:</source>
-        <target state="new">The template {0} has the following validation errors in '{1}' localization:</target>
+        <target state="translated">テンプレート {0} では、'{1}' ローカリゼーションで次の検証エラーが発生します。</target>
         <note>This is a header for the list of issues found for the template, and followed by the list of issues (from new line). {0} template info in format 'template name' (template.identity), {1} is localization locale in "en-US" format</note>
       </trans-unit>
       <trans-unit id="Scanner_Validation_LocInfo_Header">
         <source>The template {0} has the following validation messages in '{1}' localization:</source>
-        <target state="new">The template {0} has the following validation messages in '{1}' localization:</target>
+        <target state="translated">テンプレート {0} には、'{1}' ローカリゼーションで次の検証メッセージがあります:</target>
         <note>This is a header for the list of issues found for the template, and followed by the list of issues (from new line). {0} template info in format 'template name' (template.identity), {1} is localization locale in "en-US" format</note>
       </trans-unit>
       <trans-unit id="Scanner_Validation_LocWarning_Header">
         <source>The template {0} has the following validation warnings in '{1}' localization:</source>
-        <target state="new">The template {0} has the following validation warnings in '{1}' localization:</target>
+        <target state="translated">テンプレート {0} には、'{1}' ローカリゼーションで次の検証警告があります。</target>
         <note>This is a header for the list of issues found for the template, and followed by the list of issues (from new line). {0} template info in format 'template name' (template.identity), {1} is localization locale in "en-US" format</note>
       </trans-unit>
       <trans-unit id="Scanner_Validation_Warning_Header">
         <source>The template {0} has the following validation warnings:</source>
-        <target state="new">The template {0} has the following validation warnings:</target>
+        <target state="translated">テンプレート {0} には、次の検証警告があります:</target>
         <note>This is a header for the list of issues found for the template, and followed by the list of issues (from new line). {0} template info in format 'template name' (template.identity)</note>
       </trans-unit>
       <trans-unit id="SdkConstraint_Error_InvalidVersion">

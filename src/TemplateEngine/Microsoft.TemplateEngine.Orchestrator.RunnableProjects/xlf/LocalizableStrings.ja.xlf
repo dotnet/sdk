@@ -15,7 +15,7 @@
       </trans-unit>
       <trans-unit id="Authoring_InvalidMultichoiceSymbol">
         <source>Choice parameter '{0}' is invalid. It allows multiple values ('AllowMultipleValues=true'), while some of the configured choices contain separator characters ({1}). Invalid choices: {2}</source>
-        <target state="new">Choice parameter '{0}' is invalid. It allows multiple values ('AllowMultipleValues=true'), while some of the configured choices contain separator characters ({1}). Invalid choices: {2}</target>
+        <target state="translated">選択肢パラメーター '{0}' は無効です。複数の値 ('AllowMultipleValues=true') が許可されますが、構成されている選択肢の一部には区切り文字 ({1}) が含まれています。無効な選択肢: {2}</target>
         <note>{0} is the offending symbol name, {1} is a set of separator characters, {2} is a csv list of offending choice values</note>
       </trans-unit>
       <trans-unit id="Authoring_InvalidPostActionLocalizationIndex">
@@ -147,12 +147,12 @@ Details: {1}</source>
       </trans-unit>
       <trans-unit id="LocalizationModelDeserializer_Error_FailedToParse">
         <source>Failed to read or parse localization file {0}, it will be skipped from further processing.</source>
-        <target state="new">Failed to read or parse localization file {0}, it will be skipped from further processing.</target>
+        <target state="translated">{0}ローカリゼーション ファイルの読み取りまたは解析に失敗したため、それ以降の処理はスキップされます。</target>
         <note />
       </trans-unit>
       <trans-unit id="LocalizationModelDeserializer_Error_UnknownLocale">
         <source>Locale '{0}' does not match any known cultures.</source>
-        <target state="new">Locale '{0}' does not match any known cultures.</target>
+        <target state="translated">ロケール '{0}' は既知のどのカルチャとも一致しません。</target>
         <note />
       </trans-unit>
       <trans-unit id="RunnableProjectConfig_OperationSetup_UnknownForm">

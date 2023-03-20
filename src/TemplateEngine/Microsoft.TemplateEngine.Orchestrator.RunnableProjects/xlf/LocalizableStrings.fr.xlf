@@ -15,7 +15,7 @@
       </trans-unit>
       <trans-unit id="Authoring_InvalidMultichoiceSymbol">
         <source>Choice parameter '{0}' is invalid. It allows multiple values ('AllowMultipleValues=true'), while some of the configured choices contain separator characters ({1}). Invalid choices: {2}</source>
-        <target state="new">Choice parameter '{0}' is invalid. It allows multiple values ('AllowMultipleValues=true'), while some of the configured choices contain separator characters ({1}). Invalid choices: {2}</target>
+        <target state="translated">Le paramètre de choix '{0}' n'est pas valide. Il autorise plusieurs valeurs ('AllowMultipleValues=true'), tandis que certains des choix configurés contiennent des caractères de séparation ({1}). Choix invalides : {2}</target>
         <note>{0} is the offending symbol name, {1} is a set of separator characters, {2} is a csv list of offending choice values</note>
       </trans-unit>
       <trans-unit id="Authoring_InvalidPostActionLocalizationIndex">
@@ -147,12 +147,12 @@ détails : {1}</target>
       </trans-unit>
       <trans-unit id="LocalizationModelDeserializer_Error_FailedToParse">
         <source>Failed to read or parse localization file {0}, it will be skipped from further processing.</source>
-        <target state="new">Failed to read or parse localization file {0}, it will be skipped from further processing.</target>
+        <target state="translated">Impossible de lire ou d'analyser le fichier de localisation {0}, il sera ignoré du traitement ultérieur.</target>
         <note />
       </trans-unit>
       <trans-unit id="LocalizationModelDeserializer_Error_UnknownLocale">
         <source>Locale '{0}' does not match any known cultures.</source>
-        <target state="new">Locale '{0}' does not match any known cultures.</target>
+        <target state="translated">Les paramètres régionaux '{0}' ne correspondent à aucune culture connue.</target>
         <note />
       </trans-unit>
       <trans-unit id="RunnableProjectConfig_OperationSetup_UnknownForm">

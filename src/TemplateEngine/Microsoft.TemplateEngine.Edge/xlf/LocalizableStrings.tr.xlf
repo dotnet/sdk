@@ -132,7 +132,7 @@
       </trans-unit>
       <trans-unit id="GlobalSettings_Error_CorruptedSettings">
         <source>Failed to read installed template packages list at {0}. It might be due to the file is corrupted. Please review this file manually and fix the errors in JSON structure, or remove the file to clear up the list of list installed packages and reinstall them again. Details of the error: {1}.</source>
-        <target state="new">Failed to read installed template packages list at {0}. It might be due to the file is corrupted. Please review this file manually and fix the errors in JSON structure, or remove the file to clear up the list of list installed packages and reinstall them again. Details of the error: {1}.</target>
+        <target state="translated">{0} konumundaki yüklü şablon paketleri listesi okunamadı. Bunun nedeni dosyanın bozuk olması olabilir. Lütfen bu dosyayı el ile gözden geçirin ve JSON yapısındaki hataları düzeltin veya yüklü paketlerin listesini temizlemek ve yeniden yüklemek için dosyayı kaldırın. Hatanın ayrıntıları: {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="HostConstraint_Error_MissingMandatoryProperty">
@@ -301,42 +301,42 @@ Ayrıntılar: {1}.</target>
       </trans-unit>
       <trans-unit id="Scanner_Validation_Error_Header">
         <source>The template {0} has the following validation errors:</source>
-        <target state="new">The template {0} has the following validation errors:</target>
+        <target state="translated">{0} şablonu aşağıdaki doğrulama hatalarına sahip:</target>
         <note>This is a header for the list of issues found for the template, and followed by the list of issues (from new line). {0} template info in format 'template name' (template.identity)</note>
       </trans-unit>
       <trans-unit id="Scanner_Validation_Info_Header">
         <source>The template {0} has the following validation messages:</source>
-        <target state="new">The template {0} has the following validation messages:</target>
+        <target state="translated">{0} şablonu aşağıdaki doğrulama iletilerine sahip:</target>
         <note>This is a header for the list of issues found for the template, and followed by the list of issues (from new line). {0} template info in format 'template name' (template.identity)</note>
       </trans-unit>
       <trans-unit id="Scanner_Validation_InvalidTemplate">
         <source>Failed to install the template {0}: the template is not valid.</source>
-        <target state="new">Failed to install the template {0}: the template is not valid.</target>
+        <target state="translated">{0} şablonu yüklenemedi: Şablon geçerli değil.</target>
         <note>{0} template info in format 'template name' (template.identity)</note>
       </trans-unit>
       <trans-unit id="Scanner_Validation_InvalidTemplateLoc">
         <source>Failed to install the '{0}' localization the template {1}: the localization file is not valid. The localization will be skipped.</source>
-        <target state="new">Failed to install the '{0}' localization the template {1}: the localization file is not valid. The localization will be skipped.</target>
+        <target state="translated">{1} şablonu için '{0}' yerelleştirmesi yüklenemedi: yerelleştirme dosyası geçerli değil. Yerelleştirme atlanacak.</target>
         <note>{1} template info in format 'template name' (template.identity), {0} is localization locale in "en-US" format</note>
       </trans-unit>
       <trans-unit id="Scanner_Validation_LocError_Header">
         <source>The template {0} has the following validation errors in '{1}' localization:</source>
-        <target state="new">The template {0} has the following validation errors in '{1}' localization:</target>
+        <target state="translated">{0} şablonu {1} yerelleştirmesinde aşağıdaki doğrulama hatalarına sahip:</target>
         <note>This is a header for the list of issues found for the template, and followed by the list of issues (from new line). {0} template info in format 'template name' (template.identity), {1} is localization locale in "en-US" format</note>
       </trans-unit>
       <trans-unit id="Scanner_Validation_LocInfo_Header">
         <source>The template {0} has the following validation messages in '{1}' localization:</source>
-        <target state="new">The template {0} has the following validation messages in '{1}' localization:</target>
+        <target state="translated">{0} şablonu {1} yerelleştirmesinde aşağıdaki doğrulama iletilerine sahip:</target>
         <note>This is a header for the list of issues found for the template, and followed by the list of issues (from new line). {0} template info in format 'template name' (template.identity), {1} is localization locale in "en-US" format</note>
       </trans-unit>
       <trans-unit id="Scanner_Validation_LocWarning_Header">
         <source>The template {0} has the following validation warnings in '{1}' localization:</source>
-        <target state="new">The template {0} has the following validation warnings in '{1}' localization:</target>
+        <target state="translated">{0} şablonu {1} yerelleştirmesinde aşağıdaki doğrulama uyarılarına sahip:</target>
         <note>This is a header for the list of issues found for the template, and followed by the list of issues (from new line). {0} template info in format 'template name' (template.identity), {1} is localization locale in "en-US" format</note>
       </trans-unit>
       <trans-unit id="Scanner_Validation_Warning_Header">
         <source>The template {0} has the following validation warnings:</source>
-        <target state="new">The template {0} has the following validation warnings:</target>
+        <target state="translated">{0} şablonu aşağıdaki doğrulama uyarılarına sahip:</target>
         <note>This is a header for the list of issues found for the template, and followed by the list of issues (from new line). {0} template info in format 'template name' (template.identity)</note>
       </trans-unit>
       <trans-unit id="SdkConstraint_Error_InvalidVersion">

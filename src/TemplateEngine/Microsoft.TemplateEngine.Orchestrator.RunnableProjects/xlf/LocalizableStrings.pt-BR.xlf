@@ -15,7 +15,7 @@
       </trans-unit>
       <trans-unit id="Authoring_InvalidMultichoiceSymbol">
         <source>Choice parameter '{0}' is invalid. It allows multiple values ('AllowMultipleValues=true'), while some of the configured choices contain separator characters ({1}). Invalid choices: {2}</source>
-        <target state="new">Choice parameter '{0}' is invalid. It allows multiple values ('AllowMultipleValues=true'), while some of the configured choices contain separator characters ({1}). Invalid choices: {2}</target>
+        <target state="translated">O parâmetro de escolha ''{0}'' é inválido. Ele permite vários valores ('AllowMultipleValues=true'), enquanto algumas das opções configuradas contêm caracteres da barra de separação ({1}). Opções inválidas: {2}</target>
         <note>{0} is the offending symbol name, {1} is a set of separator characters, {2} is a csv list of offending choice values</note>
       </trans-unit>
       <trans-unit id="Authoring_InvalidPostActionLocalizationIndex">
@@ -147,12 +147,12 @@ Detalhes: {1}</target>
       </trans-unit>
       <trans-unit id="LocalizationModelDeserializer_Error_FailedToParse">
         <source>Failed to read or parse localization file {0}, it will be skipped from further processing.</source>
-        <target state="new">Failed to read or parse localization file {0}, it will be skipped from further processing.</target>
+        <target state="translated">Falha ao ler ou analisar o arquivo de localização {0}, ele será ignorado no processamento posterior.</target>
         <note />
       </trans-unit>
       <trans-unit id="LocalizationModelDeserializer_Error_UnknownLocale">
         <source>Locale '{0}' does not match any known cultures.</source>
-        <target state="new">Locale '{0}' does not match any known cultures.</target>
+        <target state="translated">A localidade ''{0}'' não corresponde a nenhuma cultura conhecida.</target>
         <note />
       </trans-unit>
       <trans-unit id="RunnableProjectConfig_OperationSetup_UnknownForm">
