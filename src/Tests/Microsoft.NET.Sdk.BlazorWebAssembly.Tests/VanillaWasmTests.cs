@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Assertions;
@@ -25,6 +26,19 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var testAsset = "VanillaWasm";
             var targetFramework = "net8.0";
             var testInstance = CreateAspNetSdkTestAsset(testAsset);
+
+            // FIXME this can be removed after resolving https://github.com/dotnet/aspnetcore/issues/47314
+            testInstance.WithProjectChanges(csproj =>
+            {
+                var targetResolveRazorComponentInputs = new XElement("Target");
+                targetResolveRazorComponentInputs.SetAttributeValue("Name", "ResolveRazorComponentInputs");
+
+                var targetResolveRazorGenerateInputs = new XElement("Target");
+                targetResolveRazorGenerateInputs.SetAttributeValue("Name", "ResolveRazorGenerateInputs");
+
+                csproj.Root.Add(targetResolveRazorComponentInputs);
+                csproj.Root.Add(targetResolveRazorGenerateInputs);
+            });
 
             var build = new BuildCommand(testInstance);
             build.Execute()
