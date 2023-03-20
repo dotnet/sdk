@@ -8,7 +8,6 @@ using System.Diagnostics;
 using System.Linq;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
-using Analyzer.Utilities.PooledObjects;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Operations;
@@ -37,7 +36,7 @@ namespace Microsoft.NetCore.Analyzers.Security
 
         internal static readonly DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(
             DiagnosticId,
-            CreateLocalizableResourceString(nameof(DoNotCallDangerousMethodsInDeserialization)),
+            CreateLocalizableResourceString(nameof(DoNotCallDangerousMethodsInDeserializationTitle)),
             CreateLocalizableResourceString(nameof(DoNotCallDangerousMethodsInDeserializationMessage)),
             DiagnosticCategory.Security,
             RuleLevel.IdeHidden_BulkConfigurable,
@@ -197,7 +196,6 @@ namespace Microsoft.NetCore.Analyzers.Security
                             var symbolDisplayStringCache = SymbolDisplayStringCache.GetOrCreate(
                                 compilation,
                                 SymbolDisplayFormat.MinimallyQualifiedFormat);
-                            var methodSymbolArray = new ISymbol[1];    // So we can call .Concat() without allocating new arrays.
 
                             foreach (var methodSymbol in callGraph.Keys.OfType<IMethodSymbol>())
                             {
@@ -225,17 +223,12 @@ namespace Microsoft.NetCore.Analyzers.Security
 
                                 foreach (var dangerousMethod in dangerousMethods)
                                 {
-                                    methodSymbolArray[0] = methodSymbol;
-                                    var methodSymbols = methodSymbolArray.Concat(dangerousMethod);
                                     compilationAnalysisContext.ReportDiagnostic(
                                         methodSymbol.CreateDiagnostic(
                                             Rule,
                                             methodSymbol.ContainingType.Name,
                                             methodSymbol.MetadataName,
-                                            dangerousMethod.MetadataName,
-                                            string.Join(
-                                                " -> ",
-                                                methodSymbols.Select(s => symbolDisplayStringCache.GetDisplayString(s)))));
+                                            symbolDisplayStringCache.GetDisplayString(dangerousMethod)));
                                 }
                             }
                         });

@@ -537,19 +537,19 @@
         <target state="translated">委任のトークンの検証を常にスキップしない</target>
         <note />
       </trans-unit>
-      <trans-unit id="DoNotCallDangerousMethodsInDeserialization">
-        <source>Do Not Call Dangerous Methods In Deserialization</source>
-        <target state="translated">逆シリアル化で危険なメソッドを呼び出さないでください</target>
-        <note />
-      </trans-unit>
       <trans-unit id="DoNotCallDangerousMethodsInDeserializationDescription">
         <source>Insecure Deserialization is a vulnerability which occurs when untrusted data is used to abuse the logic of an application, inflict a Denial-of-Service (DoS) attack, or even execute arbitrary code upon it being deserialized. It’s frequently possible for malicious users to abuse these deserialization features when the application is deserializing untrusted data which is under their control. Specifically, invoke dangerous methods in the process of deserialization. Successful insecure deserialization attacks could allow an attacker to carry out attacks such as DoS attacks, authentication bypasses, and remote code execution.</source>
         <target state="translated">安全でない逆シリアル化は、アプリケーションのロジックを悪用したり、サービス拒否 (DoS) 攻撃を仕掛けたり、逆シリアル化されたときに任意のコードを実行したりすることさえあるために、信頼できないデータが使用される場合に発生する脆弱性です。 悪意のあるユーザーが、自分の管理下にある信頼できないデータをアプリケーションで逆シリアル化しているときに、これらの逆シリアル化機能を悪用することがよくあります。 具体的には、逆シリアル化の過程で危険なメソッドを呼び出します。 安全でない逆シリアル化攻撃が成功すると、攻撃者は DoS 攻撃、認証回避、リモートでのコード実行などの攻撃を仕掛ける可能性があります。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCallDangerousMethodsInDeserializationMessage">
-        <source>When deserializing an instance of class {0}, method {1} can call dangerous method {2}. The potential method invocations are: {3}.</source>
-        <target state="translated">クラス {0} のインスタンスを逆シリアル化すると、メソッド {1} によって危険なメソッド {2} を呼び出されるおそれがあります。考えられるメソッド呼び出し: {3}。</target>
+        <source>When deserializing an instance of class '{0}', method '{1}' can directly or indirectly call dangerous method '{2}'</source>
+        <target state="new">When deserializing an instance of class '{0}', method '{1}' can directly or indirectly call dangerous method '{2}'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotCallDangerousMethodsInDeserializationTitle">
+        <source>Do Not Call Dangerous Methods In Deserialization</source>
+        <target state="new">Do Not Call Dangerous Methods In Deserialization</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCallEnumerableCastOrOfTypeWithIncompatibleTypesDescription">
