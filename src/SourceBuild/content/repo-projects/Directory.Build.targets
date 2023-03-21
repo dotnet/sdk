@@ -167,7 +167,13 @@
     <ItemGroup>
       <_CurrentSourceBuiltPackages Include="$(SourceBuiltPackagesPath)*.nupkg"
                                    Exclude="$(SourceBuiltPackagesPath)*.symbols.nupkg" />
-      <_PreviouslyBuiltSourceBuiltPackages Include="$(PrebuiltSourceBuiltPackagesPath)*.nupkg" />
+
+      <!-- TODO: Remove Remove System.Drawing.Common exclusion once previous source-build artifacts have been updated to no longer include it.
+           System.Drawing.Common is excluded in response to https://github.com/dotnet/runtime/pull/83356 in order to avoid rebuilts and 
+           bootstrap issues as a result.  This wouldn't be an in the future once Runtime onboards to the per repo pvp feature
+           (https://github.com/dotnet/source-build/issues/3043). -->
+      <_PreviouslyBuiltSourceBuiltPackages Include="$(PrebuiltSourceBuiltPackagesPath)*.nupkg" 
+                                           Exclude="$(PrebuiltSourceBuiltPackagesPath)System.Drawing.Common*.nupkg" />
                                       
       <_CurrentAdditionalAssetDirs Include="$(SourceBuiltToolsetDir)" Condition="Exists('$(SourceBuiltToolsetDir)')" />
     </ItemGroup>
