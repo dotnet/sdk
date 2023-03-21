@@ -42,6 +42,8 @@ namespace Microsoft.TemplateEngine.Tests
 
         internal static string TestTemplatesLocation { get; } = Path.Combine(CodeBaseRoot, "test", "Microsoft.TemplateEngine.TestTemplates", "test_templates");
 
+        internal static string SampleTemplatesLocation { get; } = Path.Combine(CodeBaseRoot, "dotnet-template-samples");
+
         internal static string TestTemplatePackagesLocation { get; } = Path.Combine(CodeBaseRoot, "test", "Microsoft.TemplateEngine.TestTemplates", "nupkg_templates");
 
         internal static string TestPackageProjectPath { get; } = Path.Combine(CodeBaseRoot, "test", "Microsoft.TemplateEngine.TestTemplates", "Microsoft.TemplateEngine.TestTemplates.csproj");

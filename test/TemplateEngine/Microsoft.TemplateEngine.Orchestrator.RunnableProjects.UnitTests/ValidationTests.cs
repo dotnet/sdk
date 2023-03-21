@@ -34,6 +34,16 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
         }
 
         [Fact]
+        public async Task ValidateAllSampleTemplates()
+        {
+            IEngineEnvironmentSettings environmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
+            using IMountPoint sourceMountPoint = environmentSettings.MountPath(SampleTemplatesLocation);
+            RunnableProjectGenerator generator = new();
+            IReadOnlyList<ScannedTemplateInfo> loadedTemplates = await generator.GetTemplatesFromMountPointInternalAsync(sourceMountPoint, default).ConfigureAwait(false);
+            Assert.True(loadedTemplates.All(t => t.IsValid));
+        }
+
+        [Fact]
         public async Task ValidateInvalidTemplate()
         {
             IEngineEnvironmentSettings environmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
