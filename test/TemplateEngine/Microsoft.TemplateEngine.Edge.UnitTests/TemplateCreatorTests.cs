@@ -3,6 +3,7 @@
 
 using Castle.Core.Internal;
 using FluentAssertions;
+using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
 using Microsoft.TemplateEngine.Abstractions.Parameters;
@@ -16,10 +17,12 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
     public class TemplateCreatorTests : IClassFixture<EnvironmentSettingsHelper>
     {
         private readonly IEngineEnvironmentSettings _engineEnvironmentSettings;
+        private readonly EnvironmentSettingsHelper _environmentSettingsHelper;
 
         public TemplateCreatorTests(EnvironmentSettingsHelper environmentSettingsHelper)
         {
             _engineEnvironmentSettings = environmentSettingsHelper.CreateEnvironment(hostIdentifier: GetType().Name, virtualize: true);
+            _environmentSettingsHelper = environmentSettingsHelper;
         }
 
         private const string TemplateConfigBooleanParam = /*lang=json,strict*/ """
@@ -723,6 +726,150 @@ Details: Parameter conditions contain cyclic dependency: [A, B, A] that is preve
                 instanceFailure,
                 name: name,
                 expectedOutputName: expectedOutputName);
+        }
+
+        [Fact]
+        public async void InstantiateAsync_InvalidTemplate()
+        {
+            List<(LogLevel Level, string Message)> loggedMessages = new();
+            InMemoryLoggerProvider loggerProvider = new InMemoryLoggerProvider(loggedMessages);
+            IEngineEnvironmentSettings environmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true, addLoggerProviders: new[] { loggerProvider });
+
+            const string templateConfig = /*lang=json*/ """
+            {
+                "identity": "test.template",
+                "name": "test"
+            }
+            """;
+
+            IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>
+            {
+                // template.json
+                { TestFileSystemUtils.DefaultConfigRelativePath, templateConfig }
+            };
+
+            string sourceBasePath = environmentSettings.GetTempVirtualizedPath();
+
+            TestFileSystemUtils.WriteTemplateSource(environmentSettings, sourceBasePath, templateSourceFiles);
+            using IMountPoint sourceMountPoint = environmentSettings.MountPath(sourceBasePath);
+            RunnableProjectGenerator rpg = new();
+
+            IFile? templateConfigFile = sourceMountPoint.FileInfo(TestFileSystemUtils.DefaultConfigRelativePath);
+            Assert.NotNull(templateConfigFile);
+
+            using var runnableConfig = new RunnableProjectConfig(environmentSettings, rpg, templateConfigFile);
+
+            TemplateCreator creator = new TemplateCreator(environmentSettings);
+
+            string targetDir = environmentSettings.GetTempVirtualizedPath();
+
+            ITemplateCreationResult instantiateResult = await creator.InstantiateAsync(
+                    templateInfo: runnableConfig,
+                    name: "test",
+                    fallbackName: "test",
+                    inputParameters: new Dictionary<string, string?>(),
+                    outputPath: targetDir);
+
+            Assert.Equal(CreationResultStatus.TemplateIssueDetected, instantiateResult.Status);
+            Assert.Equal("The template is invalid and cannot be instantiated.", instantiateResult.ErrorMessage);
+
+            string[] errors = loggedMessages.Where(m => m.Level == LogLevel.Error).Select(m => m.Message).ToArray();
+            string debugMessage = loggedMessages.Where(m => m.Level == LogLevel.Debug).Select(m => m.Message).Last();
+
+            Assert.Equal(2, errors.Length);
+
+            Assert.Equal(
+                """
+                The template 'test' (test.template) has the following validation errors:
+                   [Error][MV003] Missing 'shortName'.
+
+                """,
+                errors[0]);
+            Assert.Equal("Failed to load the template 'test' (test.template): the template is not valid.", errors[1]);
+            Assert.Equal(
+            """
+                The template 'test' (test.template) has the following validation messages:
+                   [Info][MV005] Missing 'sourceName'.
+                   [Info][MV006] Missing 'author'.
+                   [Info][MV007] Missing 'groupIdentity'.
+                   [Info][MV008] Missing 'generatorVersions'.
+                   [Info][MV009] Missing 'precedence'.
+                   [Info][MV010] Missing 'classifications'.
+
+                """,
+            debugMessage);
+        }
+
+        [Fact]
+        public async void InstantiateAsync_InvalidLocalization()
+        {
+            List<(LogLevel Level, string Message)> loggedMessages = new();
+            InMemoryLoggerProvider loggerProvider = new InMemoryLoggerProvider(loggedMessages);
+            IEngineEnvironmentSettings environmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true, addLoggerProviders: new[] { loggerProvider });
+
+            const string templateConfig = /*lang=json*/ """
+            {
+                "identity": "test.template",
+                "name": "test",
+                "shortName": "test"
+            }
+            """;
+
+            //this localization has post action, which doesn't exist in main config
+            const string templateLoc = /*lang=json*/ """
+            {
+                "name": "name_de-DE",
+                "description": "desc_de-DE",
+                "postActions/pa0/description": "pa0_desc_de-DE",
+                "postActions/pa0/manualInstructions/first_instruction/text": "pa0_manualInstructions_de-DE"
+            }
+            """;
+
+            IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>
+            {
+                // template.json
+                { TestFileSystemUtils.DefaultConfigRelativePath, templateConfig },
+                { ".template.config/localize/templatestrings.de-DE.json", templateLoc }
+            };
+
+            string sourceBasePath = environmentSettings.GetTempVirtualizedPath();
+
+            TestFileSystemUtils.WriteTemplateSource(environmentSettings, sourceBasePath, templateSourceFiles);
+            using IMountPoint sourceMountPoint = environmentSettings.MountPath(sourceBasePath);
+            RunnableProjectGenerator rpg = new();
+
+            IFile? templateConfigFile = sourceMountPoint.FileInfo(TestFileSystemUtils.DefaultConfigRelativePath);
+            Assert.NotNull(templateConfigFile);
+            IFile? templateLocFile = sourceMountPoint.FileInfo(".template.config/localize/templatestrings.de-DE.json");
+            Assert.NotNull(templateLoc);
+
+            using var runnableConfig = new RunnableProjectConfig(environmentSettings, rpg, templateConfigFile, localeConfigFile: templateLocFile);
+
+            TemplateCreator creator = new TemplateCreator(environmentSettings);
+
+            string targetDir = environmentSettings.GetTempVirtualizedPath();
+
+            ITemplateCreationResult instantiateResult = await creator.InstantiateAsync(
+                    templateInfo: runnableConfig,
+                    name: "test",
+                    fallbackName: "test",
+                    inputParameters: new Dictionary<string, string?>(),
+                    outputPath: targetDir);
+
+            Assert.Equal(CreationResultStatus.Success, instantiateResult.Status);
+            Assert.Null(instantiateResult.ErrorMessage);
+
+            string error = loggedMessages.Where(m => m.Level == LogLevel.Error).Select(m => m.Message).Single();
+            string warning = loggedMessages.Where(m => m.Level == LogLevel.Warning).Select(m => m.Message).Single();
+
+            Assert.Equal(
+                """
+                The template 'test' (test.template) has the following validation errors in 'de-DE' localization:
+                   [Error][LOC002] Post action(s) with id(s) 'pa0' specified in the localization file do not exist in the template.json file. Remove the localized strings from the localization file.
+                
+                """,
+                error);
+            Assert.Equal("Failed to load the 'de-DE' localization the template 'test' (test.template): the localization file is not valid. The localization will be skipped.", warning);
         }
 
         private async Task InstantiateAsyncHelper(

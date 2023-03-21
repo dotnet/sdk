@@ -106,7 +106,7 @@ namespace Microsoft.TemplateEngine.Edge.Template
             if (!template.IsValid)
             {
                 return new TemplateCreationResult(
-                        CreationResultStatus.TemplateIssueDetected, template.Name, LocalizableStrings.TemplateCreator_TemplateCreationResult_Error_NoDefaultName);
+                        CreationResultStatus.TemplateIssueDetected, template.Name, LocalizableStrings.TemplateCreator_TemplateCreationResult_Error_InvalidTemplate);
             }
 
             string? realName = null;
