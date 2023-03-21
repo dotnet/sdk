@@ -24,12 +24,20 @@ namespace Microsoft.TemplateEngine.TestHelper
             }
         }
 
-        public void Dispose() => _factories.ForEach(f => f.Dispose());
+        public void Dispose()
+        {
+            while (_factories.Count > 0)
+            {
+                var factory = _factories[0];
+                _factories.RemoveAt(0);
+
+                factory?.Dispose();
+            }
+        }
 
         public ILogger CreateLogger(string categoryName)
         {
-            var loggerFactory =
-                Microsoft.Extensions.Logging.LoggerFactory.Create(builder =>
+            var loggerFactory = LoggerFactory.Create(builder =>
                 {
                     builder
                         .SetMinimumLevel(LogLevel.Trace);

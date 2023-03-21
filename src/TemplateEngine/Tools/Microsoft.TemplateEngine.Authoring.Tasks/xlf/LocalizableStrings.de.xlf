@@ -20,22 +20,22 @@
       </trans-unit>
       <trans-unit id="Log_Error_MissingRequiredProperty">
         <source>The property '{0}' should be set for '{1}' target.</source>
-        <target state="new">The property '{0}' should be set for '{1}' target.</target>
+        <target state="translated">Eigenschaft „{0}“ sollte für das Ziel „{1}“ festgelegt werden.</target>
         <note>'Target' and 'property' are referring to MSBuild concepts with the same names.</note>
       </trans-unit>
       <trans-unit id="Validate_Log_FoundTemplate">
         <source>Location '{0}': found {1} templates.</source>
-        <target state="new">Location '{0}': found {1} templates.</target>
+        <target state="translated">Speicherort „{0}“: {1} Vorlagen gefunden.</target>
         <note>{0} - path configured for scanning the templates, {1} - the number of templates found.</note>
       </trans-unit>
       <trans-unit id="Validate_Log_TemplateConfiguration_Subcategory">
         <source>Template configuration</source>
-        <target state="new">Template configuration</target>
+        <target state="translated">Vorlagenkonfiguration</target>
         <note>this is subcategory of the error message displayed after build</note>
       </trans-unit>
       <trans-unit id="Validate_Log_TemplateLocalization_Subcategory">
         <source>Template localization</source>
-        <target state="new">Template localization</target>
+        <target state="translated">Vorlagenlokalisierung</target>
         <note>this is subcategory of the error message displayed after build</note>
       </trans-unit>
     </body>

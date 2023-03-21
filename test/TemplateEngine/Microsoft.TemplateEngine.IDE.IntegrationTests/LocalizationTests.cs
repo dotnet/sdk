@@ -140,8 +140,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
 
                 Assert.Empty(errors);
                 string warning = Assert.Single(warnings);
-                //TODO: the translation is not yet ready.
-                Assert.Equal($"Failed to read or parse localization file {tmpTemplateLocation}{Path.DirectorySeparatorChar}.template.config/localize/templatestrings.de-DE.json, it will be skipped from further processing.", warning);
+                Assert.Equal($"Fehler beim Lesen oder parsen der Lokalisierungsdatei {tmpTemplateLocation}{Path.DirectorySeparatorChar}.template.config/localize/templatestrings.de-DE.json. Sie wird bei der weiteren Verarbeitung übersprungen.", warning);
             }
             finally
             {
