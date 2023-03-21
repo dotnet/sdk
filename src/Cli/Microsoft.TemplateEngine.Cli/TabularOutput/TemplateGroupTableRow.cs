@@ -11,6 +11,8 @@ namespace Microsoft.TemplateEngine.Cli.TabularOutput
     {
         internal string Author { get; set; }
 
+        internal string PackageAuthors { get; set; }
+
         internal string Classifications { get; set; }
 
         internal string Languages { get; set; }

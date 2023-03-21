@@ -179,7 +179,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
         }
 
         [Fact]
-        public void CanRightAlign()
+        public void CanCenterAlign()
         {
             TabularOutputSettings outputSettings = new(
                             new MockEnvironment()
@@ -193,13 +193,13 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
                 new Tuple<string, string>("Tuesday", "Sunday")
             };
 
-            string expectedOutput = $"Column 1   Column 2{Environment.NewLine}--------  ---------{Environment.NewLine}Monday    Wednesday{Environment.NewLine}Tuesday      Sunday{Environment.NewLine}";
+            string expectedOutput = $"Column 1  Column 2 {Environment.NewLine}--------  ---------{Environment.NewLine}Monday    Wednesday{Environment.NewLine}Tuesday     Sunday {Environment.NewLine}";
 
             TabularOutput<Tuple<string, string>> formatter =
              TabularOutput.TabularOutput
                  .For(outputSettings, data)
                  .DefineColumn(t => t.Item1, "Column 1")
-                 .DefineColumn(t => t.Item2, "Column 2", rightAlign: true);
+                 .DefineColumn(t => t.Item2, "Column 2", centerAlign: true);
 
             string result = formatter.Layout();
             Assert.Equal(expectedOutput, result);

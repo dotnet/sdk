@@ -27,17 +27,17 @@ namespace Microsoft.TemplateEngine.Cli.TabularOutput
             _settings = settings;
         }
 
-        internal TabularOutput<T> DefineColumn(Func<T, string> binder, string? header = null, string? columnName = null, bool shrinkIfNeeded = false, int minWidth = 2, bool showAlways = false, bool defaultColumn = true, bool rightAlign = false)
+        internal TabularOutput<T> DefineColumn(Func<T, string> binder, string? header = null, string? columnName = null, bool shrinkIfNeeded = false, int minWidth = 2, bool showAlways = false, bool defaultColumn = true, bool centerAlign = false)
         {
-            return DefineColumn(binder, out object? c, header, columnName, shrinkIfNeeded, minWidth, showAlways, defaultColumn, rightAlign);
+            return DefineColumn(binder, out object? c, header, columnName, shrinkIfNeeded, minWidth, showAlways, defaultColumn, centerAlign);
         }
 
-        internal TabularOutput<T> DefineColumn(Func<T, string> binder, out object? column, string? header = null, string? columnName = null, bool shrinkIfNeeded = false, int minWidth = 2, bool showAlways = false, bool defaultColumn = true, bool rightAlign = false)
+        internal TabularOutput<T> DefineColumn(Func<T, string> binder, out object? column, string? header = null, string? columnName = null, bool shrinkIfNeeded = false, int minWidth = 2, bool showAlways = false, bool defaultColumn = true, bool centerAlign = false)
         {
             column = null;
             if ((_settings.ColumnsToDisplay.Count == 0 && defaultColumn) || showAlways || (!string.IsNullOrWhiteSpace(columnName) && _settings.ColumnsToDisplay.Contains(columnName)) || _settings.DisplayAllColumns)
             {
-                ColumnDefinition c = new ColumnDefinition(_settings, header, binder, shrinkIfNeeded: shrinkIfNeeded, minWidth: minWidth, rightAlign: rightAlign);
+                ColumnDefinition c = new ColumnDefinition(_settings, header, binder, shrinkIfNeeded: shrinkIfNeeded, minWidth: minWidth, centerAlign: centerAlign);
                 _columns.Add(c);
                 column = c;
             }
@@ -84,7 +84,7 @@ namespace Microsoft.TemplateEngine.Cli.TabularOutput
                 {
                     for (int i = 0; i < _columns.Count; ++i)
                     {
-                        header[i].AppendTextWithPadding(b, j, _columns[i].CalculatedWidth, _columns[i].RightAlign);
+                        header[i].AppendTextWithPadding(b, j, _columns[i].CalculatedWidth);
                         if (i != _columns.Count - 1)
                         {
                             b.Append(' ', _settings.ColumnPadding);
@@ -150,7 +150,7 @@ namespace Microsoft.TemplateEngine.Cli.TabularOutput
                     // Render all columns
                     for (int columnIndex = 0; columnIndex < _columns.Count; ++columnIndex)
                     {
-                        rowToRender[columnIndex].AppendTextWithPadding(b, lineWithinRow, _columns[columnIndex].CalculatedWidth, _columns[columnIndex].RightAlign);
+                        rowToRender[columnIndex].AppendTextWithPadding(b, lineWithinRow, _columns[columnIndex].CalculatedWidth, _columns[columnIndex].CenterAlign);
                         if (columnIndex != _columns.Count - 1)
                         {
                             b.Append(' ', _settings.ColumnPadding);
@@ -289,7 +289,14 @@ namespace Microsoft.TemplateEngine.Cli.TabularOutput
             private readonly Func<T, string> _binder;
             private readonly TabularOutputSettings _settings;
 
-            internal ColumnDefinition(TabularOutputSettings settings, string? header, Func<T, string> binder, int minWidth = 2, int maxWidth = -1, bool shrinkIfNeeded = false, bool rightAlign = false)
+            internal ColumnDefinition(
+                TabularOutputSettings settings,
+                string? header,
+                Func<T, string> binder,
+                int minWidth = 2,
+                int maxWidth = -1,
+                bool shrinkIfNeeded = false,
+                bool centerAlign = false)
             {
                 Header = header;
                 MaxWidth = maxWidth > 0 ? maxWidth : int.MaxValue;
@@ -297,7 +304,7 @@ namespace Microsoft.TemplateEngine.Cli.TabularOutput
                 ShrinkIfNeeded = shrinkIfNeeded;
                 _settings = settings;
                 MinWidth = minWidth + _settings.ShrinkReplacement.Length; //we need to add required width for shrink replacement
-                RightAlign = rightAlign;
+                CenterAlign = centerAlign;
             }
 
             internal string? Header { get; }
@@ -310,7 +317,7 @@ namespace Microsoft.TemplateEngine.Cli.TabularOutput
 
             internal bool ShrinkIfNeeded { get; }
 
-            internal bool RightAlign { get; }
+            internal bool CenterAlign { get; }
 
             internal TextWrapper GetCell(T value)
             {
@@ -368,14 +375,17 @@ namespace Microsoft.TemplateEngine.Cli.TabularOutput
 
             internal string RawText { get; }
 
-            internal void AppendTextWithPadding(StringBuilder b, int line, int maxColumnWidth, bool rightAlign = false)
+            internal void AppendTextWithPadding(StringBuilder b, int line, int maxColumnWidth, bool centerAlign = false)
             {
                 var text = _lines.Count > line ? _lines[line] : string.Empty;
                 var abbreviatedText = ShrinkTextToLength(text, maxColumnWidth);
 
-                if (rightAlign)
+                if (centerAlign)
                 {
-                    b.Append(' ', maxColumnWidth - abbreviatedText.GetUnicodeLength()).Append(abbreviatedText);
+                    var centralPoint = (maxColumnWidth + abbreviatedText.GetUnicodeLength()) / 2;
+                    var leftOffset = maxColumnWidth - centralPoint;
+                    var rightOffset = maxColumnWidth - (leftOffset + abbreviatedText.GetUnicodeLength());
+                    b.Append(' ', leftOffset).Append(abbreviatedText).Append(' ', rightOffset);
                 }
                 else
                 {

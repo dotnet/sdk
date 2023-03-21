@@ -258,6 +258,11 @@ Execute 'dotnet {1} --mostrar- aliases' sem nenhum args para mostrar todos os al
         <target state="translated">Pacote</target>
         <note />
       </trans-unit>
+      <trans-unit id="ColumnNamePackageNameAndOwners">
+        <source>Package Name / Owners</source>
+        <target state="new">Package Name / Owners</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ColumnNamePrecedence">
         <source>Precedence</source>
         <target state="translated">Precedência</target>
@@ -281,6 +286,11 @@ Execute 'dotnet {1} --mostrar- aliases' sem nenhum args para mostrar todos os al
       <trans-unit id="ColumnNameTotalDownloads">
         <source>Downloads</source>
         <target state="translated">Downloads</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ColumnNameTrusted">
+        <source>Trusted</source>
+        <target state="new">Trusted</target>
         <note />
       </trans-unit>
       <trans-unit id="ColumnNameType">

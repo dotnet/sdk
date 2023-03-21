@@ -326,11 +326,11 @@ namespace Microsoft.TemplateEngine.Cli.Commands
                         .DefineColumn(t => t.Name, LocalizableStrings.ColumnNameTemplateName, shrinkIfNeeded: true, minWidth: 15, showAlways: true)
                         .DefineColumn(t => string.Join(",", t.ShortNameList), LocalizableStrings.ColumnNameShortName, showAlways: true)
                         .DefineColumn(t => t.GetLanguage() ?? string.Empty, LocalizableStrings.ColumnNameLanguage, showAlways: true)
-                        .DefineColumn(t => t.Precedence.ToString(), out object? prcedenceColumn, LocalizableStrings.ColumnNamePrecedence, showAlways: true)
+                        .DefineColumn(t => t.Precedence.ToString(), out object? precedenceColumn, LocalizableStrings.ColumnNamePrecedence, showAlways: true)
                         .DefineColumn(t => t.Author ?? string.Empty, LocalizableStrings.ColumnNameAuthor, showAlways: true, shrinkIfNeeded: true, minWidth: 10)
                         .DefineColumn(t => Task.Run(() => GetTemplatePackage(t)).GetAwaiter().GetResult(), LocalizableStrings.ColumnNamePackage, showAlways: true)
                         .OrderBy(identityColumn, StringComparer.CurrentCultureIgnoreCase)
-                        .OrderByDescending(prcedenceColumn, new NullOrEmptyIsLastStringComparer());
+                        .OrderByDescending(precedenceColumn, new NullOrEmptyIsLastStringComparer());
             reporter.WriteLine(formatter.Layout().Bold().Red());
 
             reporter.WriteLine(LocalizableStrings.AmbiguousTemplatesMultiplePackagesHint.Bold().Red());
