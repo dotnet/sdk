@@ -13,6 +13,7 @@
     <Dependency Name="VS.Redist.Common.NetCore.SharedFramework.x64.8.0" Version="8.0.0-preview.3.23170.14">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>7b651743dc951384f6c3d8455c88518022c7c3b9</Sha>
+      <SourceBuild RepoName="runtime" ManagedOnly="false" />
     </Dependency>
     <Dependency Name="VS.Redist.Common.NetCore.TargetingPack.x64.8.0" Version="8.0.0-preview.3.23170.14">
       <Uri>https://github.com/dotnet/runtime</Uri>
@@ -45,6 +46,7 @@
     <Dependency Name="Microsoft.Build" Version="17.6.0-preview-23165-02">
       <Uri>https://github.com/dotnet/msbuild</Uri>
       <Sha>60ea2f733cfcc78da965ab43cf040fe5c58800fb</Sha>
+      <SourceBuild RepoName="msbuild" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.Build.Localization" Version="17.6.0-preview-23165-02">
       <Uri>https://github.com/dotnet/msbuild</Uri>
@@ -62,7 +64,7 @@
     <Dependency Name="dotnet-format" Version="8.0.416301">
       <Uri>https://github.com/dotnet/format</Uri>
       <Sha>0b968051beac5d7c1a62a52aee7fbbbb47dc1f47</Sha>
-      <SourceBuildTarball RepoName="format" ManagedOnly="true" />
+      <SourceBuild RepoName="format" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="4.6.0-2.23166.9">
       <Uri>https://github.com/dotnet/roslyn</Uri>
@@ -255,6 +257,11 @@
       <Sha>dcd0eca339b5c64b5816c111f583c82062ce4c74</Sha>
       <SourceBuild RepoName="source-build-externals" ManagedOnly="true" />
     </Dependency>
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-reference-packages" Version="8.0.0-alpha.1.23156.5">
+      <Uri>https://github.com/dotnet/source-build-reference-packages</Uri>
+      <Sha>e2279a0388f89a1f771ff7e4ded01f0e657bcafb</Sha>
+      <SourceBuild RepoName="source-build-reference-packages" ManagedOnly="true" />
+    </Dependency>
     <Dependency Name="Microsoft.Deployment.DotNet.Releases" Version="1.0.0-preview6.1.23159.4">
       <Uri>https://github.com/dotnet/deployment-tools</Uri>
       <Sha>b60c95e1ce736630d17e16626c59e3dd85ebae2b</Sha>
@@ -268,30 +275,35 @@
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
-    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="8.0.0-beta.23120.1">
+    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="8.0.0-beta.23166.5">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>c4a85adbff520f62bfade7a6132f471506c3d35a</Sha>
+      <Sha>a1359bf50fe84f9b1cd01d611c9186820126df9b</Sha>
       <SourceBuild RepoName="arcade" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="8.0.0-beta.23120.1">
+    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="8.0.0-beta.23166.5">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>c4a85adbff520f62bfade7a6132f471506c3d35a</Sha>
+      <Sha>a1359bf50fe84f9b1cd01d611c9186820126df9b</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.SignTool" Version="8.0.0-beta.23120.1">
+    <Dependency Name="Microsoft.DotNet.SignTool" Version="8.0.0-beta.23166.5">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>c4a85adbff520f62bfade7a6132f471506c3d35a</Sha>
+      <Sha>a1359bf50fe84f9b1cd01d611c9186820126df9b</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.XUnitExtensions" Version="8.0.0-beta.23120.1">
+    <Dependency Name="Microsoft.DotNet.XUnitExtensions" Version="8.0.0-beta.23166.5">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>c4a85adbff520f62bfade7a6132f471506c3d35a</Sha>
+      <Sha>a1359bf50fe84f9b1cd01d611c9186820126df9b</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.SourceLink.GitHub" Version="1.2.0-beta-23165-02" CoherentParentDependency="Microsoft.DotNet.Arcade.Sdk">
+      <Uri>https://github.com/dotnet/sourcelink</Uri>
+      <Sha>3f43bf1b2dead2cb51f20dc47f6dfd7981248820</Sha>
+      <SourceBuild RepoName="sourcelink" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="System.Reflection.MetadataLoadContext" Version="8.0.0-preview.3.23170.14">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>7b651743dc951384f6c3d8455c88518022c7c3b9</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.XliffTasks" Version="1.0.0-beta.23116.1" CoherentParentDependency="Microsoft.DotNet.Arcade.Sdk">
+    <Dependency Name="Microsoft.DotNet.XliffTasks" Version="1.0.0-beta.23165.1" CoherentParentDependency="Microsoft.DotNet.Arcade.Sdk">
       <Uri>https://github.com/dotnet/xliff-tasks</Uri>
-      <Sha>69157952aba0f08738249af4454b045b553614c4</Sha>
+      <Sha>b7fb98b199d0b1b6188da4f4bf4f5accddac98d4</Sha>
       <SourceBuild RepoName="xliff-tasks" ManagedOnly="true" />
     </Dependency>
   </ToolsetDependencies>
