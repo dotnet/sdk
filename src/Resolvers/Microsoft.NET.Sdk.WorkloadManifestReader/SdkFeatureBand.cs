@@ -7,7 +7,11 @@ using Microsoft.Deployment.DotNet.Releases;
 #nullable disable
 namespace Microsoft.NET.Sdk.WorkloadManifestReader
 {
+#if SDK_FEATURE_BAND_INTERNAL
+    internal struct SdkFeatureBand : IEquatable<SdkFeatureBand>, IComparable<SdkFeatureBand>
+#else
     public struct SdkFeatureBand : IEquatable<SdkFeatureBand>, IComparable<SdkFeatureBand>
+#endif
     {
         private ReleaseVersion _featureBand;
 
