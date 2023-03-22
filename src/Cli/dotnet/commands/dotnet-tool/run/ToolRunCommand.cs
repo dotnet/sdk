@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Collections.Generic;
+using System.CommandLine;
 using System.CommandLine.Parsing;
 using System.Linq;
 using Microsoft.DotNet.Cli;
@@ -22,7 +23,7 @@ namespace Microsoft.DotNet.Tools.Tool.Run
             : base(result)
         {
             _toolCommandName = result.GetValueForArgument(ToolRunCommandParser.CommandNameArgument);
-            _forwardArgument = result.UnmatchedTokens.Concat(result.UnparsedTokens);
+            _forwardArgument = result.GetValueForArgument(ToolRunCommandParser.CommandArgument);
             _localToolsCommandResolver = localToolsCommandResolver ?? new LocalToolsCommandResolver();
         }
 

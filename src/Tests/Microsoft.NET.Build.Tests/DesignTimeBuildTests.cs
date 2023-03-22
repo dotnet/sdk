@@ -25,7 +25,7 @@ namespace Microsoft.NET.Build.Tests
         [InlineData("TestLibrary", null)]
         [InlineData("TestApp", null)]
         [InlineData("TestApp", "netcoreapp2.1")]
-        [InlineData("TestApp", "netcoreapp3.0")]
+        [InlineData("TestApp", ToolsetInfo.CurrentTargetFramework)]
         public void The_design_time_build_succeeds_before_nuget_restore(string relativeProjectPath, string targetFramework)
         {
             var args = GetDesignTimeMSBuildArgs();
@@ -103,9 +103,9 @@ namespace Microsoft.NET.Build.Tests
 
         [Theory]
         [InlineData("netcoreapp3.0")]
-        [InlineData("net5.0")]
-        [InlineData("net5.0-windows")]
-        [InlineData("net5.0-windows7.0")]
+        [InlineData(ToolsetInfo.CurrentTargetFramework)]
+        [InlineData($"{ToolsetInfo.CurrentTargetFramework}-windows")]
+        [InlineData($"{ToolsetInfo.CurrentTargetFramework}-windows7.0")]
         public void DesignTimePackageDependenciesAreResolved(string targetFramework)
         {
             var testProject = new TestProject()
@@ -133,9 +133,9 @@ namespace Microsoft.NET.Build.Tests
 
         [Theory]
         [InlineData("netcoreapp3.0")]
-        [InlineData("net5.0")]
-        [InlineData("net5.0-windows")]
-        [InlineData("net5.0-windows7.0")]
+        [InlineData(ToolsetInfo.CurrentTargetFramework)]
+        [InlineData($"{ToolsetInfo.CurrentTargetFramework}-windows")]
+        [InlineData($"{ToolsetInfo.CurrentTargetFramework}-windows7.0")]
         public void PackageErrorsAreSet(string targetFramework)
         {
             var designTimeArgs = GetDesignTimeMSBuildArgs();
@@ -193,7 +193,7 @@ namespace Microsoft.NET.Build.Tests
             var testProject = new TestProject()
             {
                 Name = "App",
-                TargetFrameworks = "netcoreapp3.0",
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
                 IsExe = true
             };
 

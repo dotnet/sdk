@@ -70,7 +70,7 @@ namespace Microsoft.NET.Restore.Tests
             var testProject = new TestProject()
             {
                 Name = "ProjectWithoutTargetingPackRef",
-                TargetFrameworks = "net471;net472;netcoreapp3.0",
+                TargetFrameworks = $"net471;net472;{ToolsetInfo.CurrentTargetFramework}",
             };
 
             TestAsset testAsset = null;
@@ -149,7 +149,7 @@ namespace Microsoft.NET.Restore.Tests
                 var itemGroup = project.Root.Elements(ns + "ItemGroup").FirstOrDefault();
                 itemGroup.Add(new XElement(ns + "PackageReference",
                     new XAttribute("Include", $"Newtonsoft.Json"),
-                    new XAttribute("Version", $"11.0.2")));
+                    new XAttribute("Version", $"13.0.1")));
                 itemGroup.Add(new XElement(ns + "PackageReference",
                     new XAttribute("Include", $"sqlite"),
                     new XAttribute("Version", $"3.13.0")));

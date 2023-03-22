@@ -54,6 +54,12 @@ Copyright (C) Microsoft Corporation. All rights reserved.
 
   <Import Project="$(_PublishProfilesDir)$(PublishProfileName).pubxml" Condition="Exists('$(_PublishProfilesDir)$(PublishProfileName).pubxml') And '$(PublishProfileImported)' != 'true'" />
 
+  <!-- Mark the PublishProfile as imported if the default profile shipped with WebSDK is imported -->
+  <PropertyGroup Condition="'$(PublishProfileImported)' != 'true'">
+    <PublishProfileImported Condition="Exists('$(_PublishProfilesDir)$(PublishProfileName).pubxml')">true</PublishProfileImported>
+  </PropertyGroup>
+
+
   <!--
   ***********************************************************************************************
   Set the properties based on PublishProfile properties
@@ -85,6 +91,9 @@ Copyright (C) Microsoft Corporation. All rights reserved.
     <PublishIntermediateOutputPath Condition="'$(DockerPublish)' == 'true'">obj/Docker/publish/</PublishIntermediateOutputPath>
 
     <EFSQLScriptsFolderName Condition="$(EFSQLScriptsFolderName) == ''">EFSQLScripts</EFSQLScriptsFolderName>
+
+    <!-- If TrimMode has not already been set, default to partial trimming, as AspNet is not currently fully trim-compatible -->
+    <TrimMode Condition="'$(PublishTrimmed)' == 'true' and '$(TrimMode)' == ''">partial</TrimMode>
   </PropertyGroup>
 
   <!--

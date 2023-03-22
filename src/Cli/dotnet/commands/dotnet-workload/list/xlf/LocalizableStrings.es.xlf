@@ -7,25 +7,15 @@
         <target state="translated">Enumera las cargas de trabajo disponibles.</target>
         <note />
       </trans-unit>
-      <trans-unit id="WorkloadIdColumn">
-        <source>Installed Workload Ids</source>
-        <target state="translated">Los id. de carga de trabajo instalados</target>
-        <note />
-      </trans-unit>
       <trans-unit id="WorkloadListFooter">
         <source>Use `dotnet workload search` to find additional workloads to install.</source>
         <target state="translated">Use "dotnet workload search" para buscar cargas de trabajo adicionales para instalar.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="WorkloadSourceColumn">
-        <source>Installation Source</source>
-        <target state="translated">Origen de la instalación</target>
-        <note />
+        <note>{Locked="dotnet workload search"}</note>
       </trans-unit>
       <trans-unit id="WorkloadUpdatesAvailable">
         <source>Updates are available for the following workload(s): {0}. Run `dotnet workload update` to get the latest.</source>
-        <target state="translated">Las actualizaciones están disponibles para las siguientes cargas de trabajo: {0}. Ejecute "dotnet workload update" para obtener la versión más reciente.</target>
-        <note />
+        <target state="translated">Hay actualizaciones disponibles para las siguientes cargas de trabajo: {0}. Ejecute "dotnet workload update" para obtener la versión más reciente.</target>
+        <note>{Locked="dotnet workload update"}</note>
       </trans-unit>
     </body>
   </file>

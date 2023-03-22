@@ -48,8 +48,6 @@ Commands:
 
         const string FrameworkNet451Arg = "-f net451";
         const string ConditionFrameworkNet451 = "== 'net451'";
-        const string FrameworkNetCoreApp10Arg = "-f netcoreapp1.0";
-        const string ConditionFrameworkNetCoreApp10 = "== 'netcoreapp1.0'";
 
         public GivenDotnetListReference(ITestOutputHelper log) : base(log)
         {
@@ -235,7 +233,8 @@ Commands:
 
             try
             {
-                new DotnetCommand(Log, "new", "classlib", "-o", dir.Path, "--debug:ephemeral-hive", "--no-restore")
+                new DotnetNewCommand(Log, "classlib", "-o", dir.Path, "--no-restore")
+                    .WithVirtualHive()
                     .WithWorkingDirectory(dir.Path)
                     .Execute()
                 .Should().Pass();

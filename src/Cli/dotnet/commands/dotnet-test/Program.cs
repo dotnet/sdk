@@ -7,6 +7,7 @@ using System.CommandLine;
 using System.CommandLine.Parsing;
 using System.IO;
 using System.Linq;
+
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
 
@@ -118,9 +119,20 @@ namespace Microsoft.DotNet.Tools.Test
                 "-nologo"
             };
 
-            msbuildArgs.AddRange(result.OptionValuesToBeForwarded(TestCommandParser.GetCommand()));
+            // Extra msbuild properties won't be parsed and so end up in the UnmatchedTokens list. In addition to those
+            // properties, all the test settings properties are also considered as unmatched but we don't want to forward
+            // these as-is to msbuild. So we filter out the test settings properties from the unmatched tokens,
+            // by only taking values until the first item after `--`. (`--` is not present in the UnmatchedTokens).
+            var unMatchedNonSettingsArgs = settings.Length > 1
+                ? result.UnmatchedTokens.TakeWhile(x => x != settings[1])
+                : result.UnmatchedTokens;
 
-            msbuildArgs.AddRange(result.GetValueForArgument(TestCommandParser.SlnOrProjectArgument) ?? Array.Empty<string>());
+            var parsedArgs =
+                result.OptionValuesToBeForwarded(TestCommandParser.GetCommand()) // all msbuild-recognized tokens
+                    .Concat(unMatchedNonSettingsArgs); // all tokens that the test-parser doesn't explicitly track (minus the settings tokens)
+
+            VSTestTrace.SafeWriteTrace(() => $"MSBuild args from forwarded options: {String.Join(", ", parsedArgs)}");
+            msbuildArgs.AddRange(parsedArgs);
 
             if (settings.Any())
             {
@@ -131,7 +143,7 @@ namespace Microsoft.DotNet.Tools.Test
                 msbuildArgs.Add($"-property:VSTestCLIRunSettings=\"{runSettingsArg}\"");
             }
 
-            string verbosityArg = result.ForwardedOptionValues<IReadOnlyCollection<string>>(TestCommandParser.GetCommand(), "verbosity")?.SingleOrDefault() ?? null;
+            string verbosityArg = result.ForwardedOptionValues<IReadOnlyCollection<string>>(TestCommandParser.GetCommand(), "--verbosity")?.SingleOrDefault() ?? null;
             if (verbosityArg != null)
             {
                 string[] verbosity = verbosityArg.Split(':', 2);
@@ -221,11 +233,12 @@ namespace Microsoft.DotNet.Tools.Test
             foreach (string arg in args)
             {
                 if (!arg.StartsWith("-") &&
-                    (arg.EndsWith("dll", StringComparison.OrdinalIgnoreCase) || arg.EndsWith("exe", StringComparison.OrdinalIgnoreCase)))
+                    (arg.EndsWith(".dll", StringComparison.OrdinalIgnoreCase) || arg.EndsWith(".exe", StringComparison.OrdinalIgnoreCase)))
                 {
                     return true;
                 }
             }
+
             return false;
         }
 

@@ -47,6 +47,11 @@
         <target state="translated">Das Paket {0}, Version {1}, wird in den Offlinecache {2} heruntergeladen…</target>
         <note />
       </trans-unit>
+      <trans-unit id="ExpectedSingleManifest">
+        <source>Expected single manifest feature band and manifest folder in MSI from package {0}</source>
+        <target state="translated">Einzelnes Manifestfeatureband und Manifestordner in MSI aus Paket {0} erwartet</target>
+        <note />
+      </trans-unit>
       <trans-unit id="FailedAdManifestUpdate">
         <source>Failed to update the advertising manifest {0}: {1}.</source>
         <target state="translated">Fehler beim Aktualisieren des Ankündigungsmanifests "{0}": {1}.</target>
@@ -57,9 +62,9 @@
         <target state="translated">Fehler beim Herunterladen des Manifestpakets "{0}".</target>
         <note />
       </trans-unit>
-      <trans-unit id="FailedToGetPackageManifestUrl">
-        <source>Failed to resolve manifest package URL {0}.</source>
-        <target state="translated">Fehler beim Auflösen der Manifestpaket-URL {0}.</target>
+      <trans-unit id="FailedToExtractMsi">
+        <source>Failed to extract information from MSI: {0}</source>
+        <target state="translated">Fehler beim Extrahieren von Informationen aus MSI: {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="FailedToInstallWorkloadManifest">
@@ -152,6 +157,16 @@
         <target state="translated">Es ist kein Manifest mit der ID {0} vorhanden.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ManifestMsiNotFoundInNuGetPackage">
+        <source>Manifest MSI not found in NuGet package {0}</source>
+        <target state="translated">Manifest-MSI wurde im NuGet-Paket {0} nicht gefunden.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ManifestPackageUrlNotResolved">
+        <source>Manifest package not resolved. Manifest package or URL for {0} doesn't exist.</source>
+        <target state="translated">Das Manifestpaket wurde nicht aufgelöst. Das Manifestpaket oder die URL für {0} ist nicht vorhanden.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="MsiProgressInstall">
         <source>Installing {0} </source>
         <target state="translated">{0} wird installiert </target>
@@ -199,7 +214,7 @@
       </trans-unit>
       <trans-unit id="RollbackDefinitionContainsExtraneousManifestIds">
         <source>Invalid rollback definition. The manifest IDs in rollback definition {0} do not match installed manifest IDs {1}.</source>
-        <target state="new">Invalid rollback definition. The manifest IDs in rollback definition {0} do not match installed manifest IDs {1}.</target>
+        <target state="translated">Ungültige Rollbackdefinition. Die Manifest-IDs in der Rollbackdefinition {0} stimmen nicht mit den installierten Manifest-IDs {1} überein.</target>
         <note />
       </trans-unit>
       <trans-unit id="RollbackDefinitionFileDoesNotExist">
@@ -224,7 +239,7 @@
       </trans-unit>
       <trans-unit id="SkipSignCheckOptionDescription">
         <source>Skip signature verification of workload packages and installers.</source>
-        <target state="new">Skip signature verification of workload packages and installers.</target>
+        <target state="translated">Überspringen Sie die Signaturüberprüfung von Workloadpaketen und -installationsprogrammen.</target>
         <note />
       </trans-unit>
       <trans-unit id="SkippingManifestUpdate">
@@ -349,7 +364,7 @@
       </trans-unit>
       <trans-unit id="WorkloadUpdatesAvailable">
         <source>Workload updates are available. Run `dotnet workload list` for more information.</source>
-        <target state="translated">Workloadupdates sind verfügbar. Führen Sie „dotnet workload list“ aus, um weitere Informationen zu erhalten.</target>
+        <target state="translated">Es sind Workloadupdates verfügbar. Um weitere Informationen zu erhalten, führen Sie `dotnet workload list` aus.</target>
         <note />
       </trans-unit>
       <trans-unit id="WritingPackInstallRecordMessage">

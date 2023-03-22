@@ -51,13 +51,13 @@ namespace Microsoft.DotNet.ApiCompatibility.Tests
             return compilation.Assembly;
         }
 
-        internal static IList<ElementContainer<IAssemblySymbol>> GetElementContainersFromSyntaxes(IEnumerable<string> syntaxes, IEnumerable<string> referencesSyntax = null, bool enableNullable = false, byte[] publicKey = null, [CallerMemberName] string assemblyName = "")
+        internal static IReadOnlyList<ElementContainer<IAssemblySymbol>> GetElementContainersFromSyntaxes(IEnumerable<string> syntaxes, IEnumerable<string> referencesSyntax = null, bool enableNullable = false, byte[] publicKey = null, [CallerMemberName] string assemblyName = "")
         {
             int i = 0;
             List<ElementContainer<IAssemblySymbol>> result = new();
             foreach (string syntax in syntaxes)
             {
-                MetadataInformation info = new(string.Empty, string.Empty, $"runtime-{i++}");
+                MetadataInformation info = new(string.Empty, $"runtime-{i++}");
                 IAssemblySymbol symbol = referencesSyntax != null ?
                     GetAssemblyFromSyntaxWithReferences(syntax, referencesSyntax, enableNullable, publicKey, assemblyName) :
                     GetAssemblyFromSyntax(syntax, enableNullable, publicKey, assemblyName);
@@ -99,13 +99,13 @@ namespace Microsoft.DotNet.ApiCompatibility.Tests
             return CSharpCompilation.Create(name, options: compilationOptions, references: DefaultReferences);
         }
 
-        private static CSharpParseOptions ParseOptions { get; } = new(preprocessorSymbols:
+        private static CSharpParseOptions ParseOptions { get; } = new CSharpParseOptions(preprocessorSymbols:
 #if NETFRAMEWORK
                 new string[] { "NETFRAMEWORK" }
 #else
                 Array.Empty<string>()
 #endif
-        ); 
+        );
 
         private static IEnumerable<KeyValuePair<string, ReportDiagnostic>> DiagnosticOptions { get; } = new[]
         {

@@ -16,6 +16,7 @@ using NuGet.Versioning;
 using Xunit;
 using LocalizableStrings = Microsoft.DotNet.Tools.Tool.List.LocalizableStrings;
 using Microsoft.NET.TestFramework.Utilities;
+using System.CommandLine;
 using System.CommandLine.Parsing;
 using Parser = Microsoft.DotNet.Cli.Parser;
 
@@ -58,7 +59,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             Action a = () => command.Execute();
 
-            a.ShouldThrow<GracefulException>()
+            a.Should().Throw<GracefulException>()
              .And
              .Message
              .Should()
@@ -274,7 +275,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
         private IEnumerable<string> EnumerateExpectedTableLines(IToolPackageStoreQuery store)
         {
-            string GetCommandsString(IToolPackage package)
+            static string GetCommandsString(IToolPackage package)
             {
                 return string.Join(ToolListGlobalOrToolPathCommand.CommandDelimiter, package.Commands.Select(c => c.Name));
             }

@@ -35,7 +35,6 @@
     <Compile Include="..\dotnet-install-tool.Tests\**\*.cs" LinkBase="dotnet-install-tool" />
     <Compile Include="..\dotnet-list-package.Tests\**\*.cs" LinkBase="dotnet-list-package" />
     <Compile Include="..\dotnet-list-reference.Tests\**\*.cs" LinkBase="dotnet-list-reference" />
-    <Compile Include="..\dotnet-new.Tests\**\*.cs" LinkBase="dotnet-new" />
     <Compile Include="..\dotnet-nuget.UnitTests\**\*.cs" LinkBase="dotnet-nuget" />
     <Compile Include="..\dotnet-pack.Tests\**\*.cs" LinkBase="dotnet-pack" />
     <Compile Include="..\dotnet-publish.Tests\**\*.cs" LinkBase="dotnet-publish" />
@@ -162,16 +161,13 @@
     <PackageReference Include="Moq" Version="$(MoqPackageVersion)" />
     <PackageReference Include="System.ComponentModel.TypeConverter" Version="4.3.0" />
     <PackageReference Include="Microsoft.Build.Tasks.Core" Version="$(MicrosoftBuildUtilitiesCorePackageVersion)" />
+    <PackageReference Include="Microsoft.TemplateEngine.Mocks" Version="$(MicrosoftTemplateEngineMocksPackageVersion)" />
+    <PackageReference Include="Microsoft.TemplateEngine.TestHelper" Version="$(MicrosoftTemplateEngineTestHelperPackageVersion)" />
     <!-- This package comes from dotnet/runtime-assets -->
     <PackageReference Include="Microsoft.DotNet.Installer.Windows.Security.TestData" Version="$(MicrosoftDotNetInstallerWindowsSecurityTestDataPackageVersion)" GeneratePathProperty="true" />
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Remove="TestTemplates\**\*" />
-  </ItemGroup>
-  
-  <ItemGroup>
-    <Content Include="TestTemplates\**\*" Exclude="TestTemplates\**\bin\**;TestTemplates\**\obj\**" CopyToOutputDirectory="Always" />
     <Content Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 

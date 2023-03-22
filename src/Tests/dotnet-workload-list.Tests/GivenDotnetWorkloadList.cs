@@ -7,6 +7,7 @@ using Xunit;
 using Xunit.Abstractions;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.DotNet.Workloads.Workload.List;
+using System.CommandLine;
 using System.CommandLine.Parsing;
 using Microsoft.NET.TestFramework.Utilities;
 using System.Collections.Generic;
@@ -14,7 +15,8 @@ using Microsoft.NET.Sdk.WorkloadManifestReader;
 using ManifestReaderTests;
 using System.IO;
 using System.Linq;
-using System;
+using ListStrings = Microsoft.DotNet.Workloads.Workload.List.LocalizableStrings;
+using Microsoft.DotNet.Workloads.Workload;
 
 namespace Microsoft.DotNet.Cli.Workload.List.Tests
 {
@@ -70,7 +72,7 @@ namespace Microsoft.DotNet.Cli.Workload.List.Tests
 
             foreach (var workload in expectedWorkloads)
             {
-                _reporter.Lines.Select(line => line.Trim()).Should().Contain($"{workload}             SDK 6.0.100");
+                _reporter.Lines.Select(line => line.Trim()).Should().Contain($"{workload}            5.0.0/TestProjects      SDK 6.0.100");
             }
         }
 
@@ -105,7 +107,7 @@ namespace Microsoft.DotNet.Cli.Workload.List.Tests
             command.Execute();
 
             // Workloads 1 and 3 should have updates
-            _reporter.Lines.Should().Contain(string.Format(LocalizableStrings.WorkloadUpdatesAvailable, "mock-workload-1 mock-workload-3"));
+            _reporter.Lines.Should().Contain(string.Format(ListStrings.WorkloadUpdatesAvailable, "mock-workload-1 mock-workload-3"));
         }
     }
 }

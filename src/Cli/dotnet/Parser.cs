@@ -4,11 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.CommandLine;
-using System.CommandLine.Builder;
 using System.CommandLine.Help;
 using System.CommandLine.Invocation;
 using System.CommandLine.IO;
-using System.CommandLine.Parsing;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -64,8 +62,7 @@ namespace Microsoft.DotNet.Cli
             WorkloadCommandParser.GetCommand()
         };
 
-        // Options
-        public static readonly Option<bool> DiagOption = new Option<bool>(new[] { "-d", "--diagnostics" });
+        public static readonly Option<bool> DiagOption = CommonOptionsFactory.CreateDiagnosticsOption();
 
         public static readonly Option<bool> VersionOption = new Option<bool>("--version");
 
@@ -111,6 +108,41 @@ namespace Microsoft.DotNet.Cli
                 .FirstOrDefault(c => c.Name.Equals(commandName, StringComparison.OrdinalIgnoreCase));
         }
 
+        /// <summary>
+        /// Implements token-per-line response file handling for the CLI. We use this instead of the built-in S.CL handling
+        /// to ensure backwards-compatibility with MSBuild.
+        /// </summary>
+        public static bool TokenPerLine(string tokenToReplace, out IReadOnlyList<string> replacementTokens, out string errorMessage) {
+            var filePath = Path.GetFullPath(tokenToReplace);
+            if (File.Exists(filePath)) {
+                var lines = File.ReadAllLines(filePath);
+                var trimmedLines =
+                    lines
+                        // Remove content in the lines that contain #, starting from the point of the #
+                        .Select(line => {
+                            var hashPos = line.IndexOf('#');
+                            if (hashPos == -1) {
+                                return line;
+                            } else if (hashPos == 0) {
+                                return "";
+                            } else {
+                                return line.Substring(0, hashPos).Trim();
+                            }
+                        })
+                        // trim leading/trailing whitespace to not pass along dead spaces
+                        .Select(x => x.Trim())
+                        // Remove empty lines
+                        .Where(line => line.Length > 0);
+                replacementTokens = trimmedLines.ToArray();
+                errorMessage = null;
+                return true;
+            } else {
+                replacementTokens = null;
+                errorMessage = string.Format(CommonLocalizableStrings.ResponseFileNotFound, tokenToReplace);
+                return false;
+            }
+        }
+
         public static System.CommandLine.Parsing.Parser Instance { get; } = new CommandLineBuilder(ConfigureCommandLine(RootCommand))
             .UseExceptionHandler(ExceptionHandler)
             // TODO:CH - we want this for dotnet-new argument reporting, but 
@@ -125,7 +157,7 @@ namespace Microsoft.DotNet.Cli
             .UseParseDirective()
             .UseSuggestDirective()
             .DisablePosixBinding()
-            .EnableLegacyDoubleDashBehavior()
+            .UseTokenReplacer(TokenPerLine)
             .Build();
 
         private static CommandLineBuilder UseParseErrorReporting(this CommandLineBuilder builder, string commandName)
@@ -176,13 +208,13 @@ namespace Microsoft.DotNet.Cli
 
             if (exception is Utils.GracefulException)
             {
-                Reporter.Error.WriteLine(CommandContext.IsVerbose()
+                Reporter.Error.WriteLine(CommandLoggingContext.IsVerbose
                     ? exception.ToString().Red().Bold()
                     : exception.Message.Red().Bold());
             }
             else if (exception is CommandParsingException)
             {
-                Reporter.Error.WriteLine(CommandContext.IsVerbose()
+                Reporter.Error.WriteLine(CommandLoggingContext.IsVerbose
                     ? exception.ToString().Red().Bold()
                     : exception.Message.Red().Bold());
                 context.ParseResult.ShowHelp();
@@ -269,6 +301,15 @@ namespace Microsoft.DotNet.Cli
                 {
                     new VSTestForwardingApp(helpArgs).Execute();
                 }
+                else if (command.Name.Equals(FormatCommandParser.GetCommand().Name))
+                {
+                    var argumetns = context.ParseResult.GetValueForArgument(FormatCommandParser.Arguments);
+                    new DotnetFormatForwardingApp(argumetns.Concat(helpArgs).ToArray()).Execute();
+                }
+                else if (command.Name.Equals(FsiCommandParser.GetCommand().Name))
+                {
+                    new FsiForwardingApp(helpArgs).Execute();
+                }
                 else if (command is Microsoft.TemplateEngine.Cli.Commands.ICustomHelp helpCommand)
                 {
                     var blocks = helpCommand.CustomHelpLayout();
@@ -280,6 +321,10 @@ namespace Microsoft.DotNet.Cli
                 else if (command.Name.Equals(FormatCommandParser.GetCommand().Name))
                 {
                     new DotnetFormatForwardingApp(helpArgs).Execute();
+                }
+                else if (command.Name.Equals(FsiCommandParser.GetCommand().Name))
+                {
+                    new FsiForwardingApp(helpArgs).Execute();
                 }
                 else
                 {

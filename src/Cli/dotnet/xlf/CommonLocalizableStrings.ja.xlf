@@ -32,14 +32,24 @@
         <target state="translated">プレリリース パッケージのインストールを許可します。</target>
         <note />
       </trans-unit>
+      <trans-unit id="CorruptSolutionProjectFolderStructure">
+        <source>The solution file '{0}' is missing EndProject tags or has invalid child-parent project folder mappings around project GUID: '{1}'. Manually repair the solution or try to open and save it in Visual Studio."</source>
+        <target state="translated">ソリューション ファイル '{0}' に EndProject タグがないか、プロジェクト GUID: '{1}' に関して無効な子 - 親プロジェクト フォルダー マッピングがあります。ソリューションを手動で修正するか、Visual Studio で開いて保存してみてください。"</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CouldNotFindAnyProjectInDirectory">
         <source>Could not find any project in `{0}`.</source>
         <target state="translated">`{0}` にプロジェクトが見つかりませんでした。</target>
         <note />
       </trans-unit>
+      <trans-unit id="CustomConfigurationDisablesPublishAndPackReleaseProperties">
+        <source>A custom configuration was detected in the project '{0}', so the property '{1}' will not take effect.</source>
+        <target state="translated">プロジェクト '{0}' でカスタム構成が検出されたため、プロパティ '{1}' は有効になりません。</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DisableBuildServersOptionDescription">
         <source>Force the command to ignore any persistent build servers.</source>
-        <target state="new">Force the command to ignore any persistent build servers.</target>
+        <target state="translated">永続的なビルド サーバーがそのコマンドで無視されるようにします。</target>
         <note />
       </trans-unit>
       <trans-unit id="EnvironmentPathOSXBashManualInstructions">
@@ -170,6 +180,11 @@ export PATH="$PATH:{0}"
         <target state="translated">パッケージ</target>
         <note />
       </trans-unit>
+      <trans-unit id="ResponseFileNotFound">
+        <source>Response file '{0}' does not exist.</source>
+        <target state="translated">応答ファイル '{0}' が存在しません。</target>
+        <note />
+      </trans-unit>
       <trans-unit id="SelfContainAndNoSelfContainedConflict">
         <source>The '--self-contained' and '--no-self-contained' options cannot be used together.</source>
         <target state="translated">'--self-contained' と '--no-self-contained' オプションは同時に使用できません。</target>
@@ -185,6 +200,13 @@ The default is 'true' if a runtime identifier is specified.</source>
       <trans-unit id="Solution">
         <source>Solution</source>
         <target state="translated">ソリューション</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SolutionExecutableConfigurationMismatchError">
+        <source>Multiple executable projects in the solution contain conflicting '{0}' values. Ensure the values match. Consider using a Directory.build.props file to set all project configurations. Conflicting projects:
+{1}.</source>
+        <target state="translated">ソリューション内の複数の実行可能プロジェクトに、競合する '{0}' 値が含まれています。値が一致するようにしてください。Directory.build.props ファイルを使用して、すべてのプロジェクト構成を設定することを検討してください。競合するプロジェクト:
+{1}。</target>
         <note />
       </trans-unit>
       <trans-unit id="SolutionFile">

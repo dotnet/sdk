@@ -26,7 +26,7 @@ namespace Microsoft.NET.Publish.Tests
             var testProject = new TestProject()
             {
                 Name = "RegularPublishToSingleExe",
-                TargetFrameworks = "netcoreapp3.0",
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
                 IsExe = true,
                 RuntimeIdentifier = "win-x86"
             };
@@ -60,7 +60,7 @@ namespace Microsoft.NET.Publish.Tests
             var testProject = new TestProject()
             {
                 Name = "PublishSingleFile1",
-                TargetFrameworks = "netcoreapp3.0",
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
                 IsExe = true,
                 RuntimeIdentifier = "win-x86"
             };
@@ -99,7 +99,7 @@ namespace Microsoft.NET.Publish.Tests
             var testProject = new TestProject()
             {
                 Name = "PublishSingleExe",
-                TargetFrameworks = "netcoreapp3.0",
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
                 IsExe = true,
                 RuntimeIdentifier = "win-x86"
             };
@@ -132,7 +132,7 @@ namespace Microsoft.NET.Publish.Tests
             var testProject = new TestProject()
             {
                 Name = "RegularPublishToTrimmedSingleExe",
-                TargetFrameworks = "netcoreapp3.0",
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
                 IsExe = true,
                 RuntimeIdentifier = "win-x86"
             };
@@ -168,9 +168,12 @@ namespace Microsoft.NET.Publish.Tests
             var testDir = _testAssetsManager.CreateTestDirectory();
             var assetName = "MVCPublishProject";
             var runtimeId = "win-x86";
-            var newCommand = new DotnetCommand(Log);
-            newCommand.WorkingDirectory = testDir.Path;
-            newCommand.Execute("new", "mvc", "-n", assetName, "--debug:ephemeral-hive").Should().Pass();
+            new DotnetNewCommand(Log)
+                .WithVirtualHive()
+                .WithWorkingDirectory(testDir.Path)
+                .Execute("mvc", "-n", assetName)
+                .Should()
+                .Pass();
 
             var expectedRegularFiles = new string[] { ".dll", ".deps.json", ".runtimeconfig.json" }
                 .Select(ending => assetName + ending);
@@ -203,7 +206,7 @@ namespace Microsoft.NET.Publish.Tests
             var testProject = new TestProject()
             {
                 Name = "PublishToCustomDir",
-                TargetFrameworks = "netcoreapp3.0",
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
                 IsExe = true,
                 RuntimeIdentifier = "win-x86"
             };
@@ -238,7 +241,7 @@ namespace Microsoft.NET.Publish.Tests
             var testProject = new TestProject()
             {
                 Name = "PublishToMultipleDirs",
-                TargetFrameworks = "netcoreapp3.0",
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
                 IsExe = true,
                 RuntimeIdentifier = "win-x86"
             };

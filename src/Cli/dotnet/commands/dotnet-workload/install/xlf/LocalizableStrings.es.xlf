@@ -47,6 +47,11 @@
         <target state="translated">Descargando el paquete {0}, versión {1} a la caché sin conexión {2}...</target>
         <note />
       </trans-unit>
+      <trans-unit id="ExpectedSingleManifest">
+        <source>Expected single manifest feature band and manifest folder in MSI from package {0}</source>
+        <target state="translated">Se esperaba una banda de características de manifiesto único y una carpeta de manifiesto en MSI desde el paquete {0}</target>
+        <note />
+      </trans-unit>
       <trans-unit id="FailedAdManifestUpdate">
         <source>Failed to update the advertising manifest {0}: {1}.</source>
         <target state="translated">No se pudo actualizar el manifiesto publicitario {0}: {1}.</target>
@@ -57,9 +62,9 @@
         <target state="translated">No se pudo descargar el paquete de manifiesto {0}.</target>
         <note />
       </trans-unit>
-      <trans-unit id="FailedToGetPackageManifestUrl">
-        <source>Failed to resolve manifest package URL {0}.</source>
-        <target state="translated">No se pudo resolver la dirección URL del paquete de manifiesto {0}.</target>
+      <trans-unit id="FailedToExtractMsi">
+        <source>Failed to extract information from MSI: {0}</source>
+        <target state="translated">No se pudo extraer información de MSI: {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="FailedToInstallWorkloadManifest">
@@ -152,6 +157,16 @@
         <target state="translated">No existe ningún manifiesto con id. {0}.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ManifestMsiNotFoundInNuGetPackage">
+        <source>Manifest MSI not found in NuGet package {0}</source>
+        <target state="translated">No se encontró el MSI del manifiesto en el paquete NuGet {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ManifestPackageUrlNotResolved">
+        <source>Manifest package not resolved. Manifest package or URL for {0} doesn't exist.</source>
+        <target state="translated">Paquete de manifiesto no resuelto. El paquete de manifiesto o la dirección URL de {0} no existe.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="MsiProgressInstall">
         <source>Installing {0} </source>
         <target state="translated">Instalando {0} </target>
@@ -199,7 +214,7 @@
       </trans-unit>
       <trans-unit id="RollbackDefinitionContainsExtraneousManifestIds">
         <source>Invalid rollback definition. The manifest IDs in rollback definition {0} do not match installed manifest IDs {1}.</source>
-        <target state="new">Invalid rollback definition. The manifest IDs in rollback definition {0} do not match installed manifest IDs {1}.</target>
+        <target state="translated">Definición de reversión no válida. Los id. de manifiesto de la definición de reversión {0} no coinciden con los id. de manifiesto instalados {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="RollbackDefinitionFileDoesNotExist">
@@ -224,7 +239,7 @@
       </trans-unit>
       <trans-unit id="SkipSignCheckOptionDescription">
         <source>Skip signature verification of workload packages and installers.</source>
-        <target state="new">Skip signature verification of workload packages and installers.</target>
+        <target state="translated">Omita la comprobación de firma de los paquetes de carga de trabajo y los instaladores.</target>
         <note />
       </trans-unit>
       <trans-unit id="SkippingManifestUpdate">

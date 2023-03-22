@@ -47,6 +47,11 @@
         <target state="translated">Téléchargement de la version du pack d' {0} de la {1} sur le cache hors connexion {2}...</target>
         <note />
       </trans-unit>
+      <trans-unit id="ExpectedSingleManifest">
+        <source>Expected single manifest feature band and manifest folder in MSI from package {0}</source>
+        <target state="translated">Bande de fonctionnalités de manifeste unique et dossier manifeste attendus dans MSI à partir du package {0}</target>
+        <note />
+      </trans-unit>
       <trans-unit id="FailedAdManifestUpdate">
         <source>Failed to update the advertising manifest {0}: {1}.</source>
         <target state="translated">Échec de la mise à jour du manifeste de publicité {0} : {1}.</target>
@@ -57,9 +62,9 @@
         <target state="translated">Impossible de télécharger le package de manifeste '{0}'.</target>
         <note />
       </trans-unit>
-      <trans-unit id="FailedToGetPackageManifestUrl">
-        <source>Failed to resolve manifest package URL {0}.</source>
-        <target state="translated">Échec de la résolution de l’URL du package de manifeste {0}.</target>
+      <trans-unit id="FailedToExtractMsi">
+        <source>Failed to extract information from MSI: {0}</source>
+        <target state="translated">Échec de l’extraction des informations de MSI : {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="FailedToInstallWorkloadManifest">
@@ -152,6 +157,16 @@
         <target state="translated">Aucun manifeste ayant l’ID {0} existe.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ManifestMsiNotFoundInNuGetPackage">
+        <source>Manifest MSI not found in NuGet package {0}</source>
+        <target state="translated">MSI de manifeste introuvable dans le package NuGet {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ManifestPackageUrlNotResolved">
+        <source>Manifest package not resolved. Manifest package or URL for {0} doesn't exist.</source>
+        <target state="translated">Package de manifeste non résolu. Le package ou l’URL du manifeste pour {0} n’existe pas.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="MsiProgressInstall">
         <source>Installing {0} </source>
         <target state="translated">Installation en cours de {0} </target>
@@ -199,7 +214,7 @@
       </trans-unit>
       <trans-unit id="RollbackDefinitionContainsExtraneousManifestIds">
         <source>Invalid rollback definition. The manifest IDs in rollback definition {0} do not match installed manifest IDs {1}.</source>
-        <target state="new">Invalid rollback definition. The manifest IDs in rollback definition {0} do not match installed manifest IDs {1}.</target>
+        <target state="translated">Définition de restauration non valide. Les ID de manifeste dans la définition de restauration {0} ne correspondent pas aux ID de manifeste installés {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="RollbackDefinitionFileDoesNotExist">
@@ -224,7 +239,7 @@
       </trans-unit>
       <trans-unit id="SkipSignCheckOptionDescription">
         <source>Skip signature verification of workload packages and installers.</source>
-        <target state="new">Skip signature verification of workload packages and installers.</target>
+        <target state="translated">Ignorez la vérification de signature des packages de charge de travail et des programmes d’installation.</target>
         <note />
       </trans-unit>
       <trans-unit id="SkippingManifestUpdate">
@@ -349,7 +364,7 @@
       </trans-unit>
       <trans-unit id="WorkloadUpdatesAvailable">
         <source>Workload updates are available. Run `dotnet workload list` for more information.</source>
-        <target state="translated">Des mises à jour de la charge de travail sont disponibles. Exécutez « liste des charges de travail dotnet » pour plus d’informations.</target>
+        <target state="translated">Des mises à jour de la charge de travail sont disponibles. Exécutez `dotnet workload list` pour plus d’informations.</target>
         <note />
       </trans-unit>
       <trans-unit id="WritingPackInstallRecordMessage">

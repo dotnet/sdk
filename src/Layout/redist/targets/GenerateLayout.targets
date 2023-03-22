@@ -160,14 +160,15 @@
   <Target Name="PublishTestCli"
           BeforeTargets="Build">
     <PropertyGroup>
-      <TestCliNuGetDirectoryTargetFramework Condition="'$(DotNetBuildFromSource)' != 'true'" >netcoreapp2.1</TestCliNuGetDirectoryTargetFramework>
-      <TestCliNuGetDirectoryTargetFramework Condition="'$(DotNetBuildFromSource)' == 'true'" >net6.0</TestCliNuGetDirectoryTargetFramework>
+      <TestCliNuGetDirectoryTargetFramework Condition="'$(DotNetBuildFromSource)' != 'true'" >netcoreapp3.1</TestCliNuGetDirectoryTargetFramework>
+      <TestCliNuGetDirectoryTargetFramework Condition="'$(DotNetBuildFromSource)' == 'true'" >net7.0</TestCliNuGetDirectoryTargetFramework>
       <TestCliNuGetDirectory>$(NuGetPackageRoot)/microsoft.testplatform.cli/$(MicrosoftTestPlatformCLIPackageVersion)/contentFiles/any/$(TestCliNuGetDirectoryTargetFramework)/</TestCliNuGetDirectory>
     </PropertyGroup>
     <ItemGroup>
       <!-- https://github.com/microsoft/vstest/issues/1886 -->
       <TestCliBitsToExclude Include="$(TestCliNuGetDirectory)NewtonSoft.Json.dll" />
       <TestCliBitsToExclude Include="$(TestCliNuGetDirectory)Microsoft.Extensions.DependencyModel.dll" />
+      <TestCliBitsToExclude Include="$(TestCliNuGetDirectory)Microsoft.Extensions.FileSystemGlobbing.dll" />
       <TestCliBitsToExclude Include="$(TestCliNuGetDirectory)System.Memory.dll" />
       <TestCliBitsToExclude Include="$(TestCliNuGetDirectory)System.Runtime.CompilerServices.Unsafe.dll" />
       <TestCliBitsToExclude Include="$(TestCliNuGetDirectory)NuGet.Frameworks.dll" />
@@ -196,7 +197,7 @@
     <ItemGroup>
       <DotNetWatchFile Include="$(ArtifactsDir)bin\dotnet-watch\$(Configuration)\$(SdkTargetFramework)\**" />
       <DotNetWatchFile Include="$(ArtifactsDir)bin\Microsoft.AspNetCore.Watch.BrowserRefresh\$(Configuration)\netcoreapp3.1\*.dll" DeploymentSubpath="middleware" />
-      <DotNetWatchFile Include="$(ArtifactsDir)bin\Microsoft.Extensions.DotNetDeltaApplier\$(Configuration)\net6.0\*.dll" DeploymentSubpath="hotreload" />
+      <DotNetWatchFile Include="$(ArtifactsDir)bin\Microsoft.Extensions.DotNetDeltaApplier\$(Configuration)\netstandard2.1\*.dll" DeploymentSubpath="hotreload" />
       <DotNetWatchFile Include="$(ArtifactsDir)bin\DotNetWatchTasks\$(Configuration)\netstandard2.0\DotNetWatchTasks.dll" />
     </ItemGroup>
 
@@ -299,10 +300,6 @@
       Targets="Publish"
       Projects="$(RepoRoot)/src/RazorSdk/Tool/Microsoft.NET.Sdk.Razor.Tool.csproj"
       Properties="Configuration=$(Configuration)" />
-    <MSBuild
-      Targets="Publish"
-      Projects="$(RepoRoot)/src/RazorSdk/SourceGenerators/Microsoft.NET.Sdk.Razor.SourceGenerators.csproj"
-      Properties="Configuration=$(Configuration)" />
   </Target>
 
   <Target Name="MoveRazorSdkTools" AfterTargets="PublishRazorSdkTools">
@@ -313,9 +310,7 @@
       rzc executable. -->
       <_RazorToolOutput Remove="$(ArtifactsBinDir)Microsoft.NET.Sdk.Razor.Tool\$(Configuration)\$(SdkTargetFramework)\publish\Microsoft.CodeAnalysis.dll" />
       <_RazorToolOutput Remove="$(ArtifactsBinDir)Microsoft.NET.Sdk.Razor.Tool\$(Configuration)\$(SdkTargetFramework)\publish\Microsoft.CodeAnalysis.CSharp.dll" />
-      <_RazorSourceGeneratorsOutput Include="$(ArtifactsBinDir)Microsoft.NET.Sdk.Razor.SourceGenerators\$(Configuration)\netstandard2.0\publish\Microsoft.AspNetCore.Razor.SourceGenerator.Tooling.Internal.dll" />
-      <_RazorSourceGeneratorsOutput Include="$(ArtifactsBinDir)Microsoft.NET.Sdk.Razor.SourceGenerators\$(Configuration)\netstandard2.0\publish\Microsoft.NET.Sdk.Razor.SourceGenerators.dll" />
-      <_RazorSourceGeneratorsOutput Include="$(ArtifactsBinDir)Microsoft.NET.Sdk.Razor.SourceGenerators\$(Configuration)\netstandard2.0\publish\RazorSourceGenerator.razorencconfig	" />
+      <_RazorSourceGeneratorsOutput Include="$(PkgMicrosoft_NET_Sdk_Razor_SourceGenerators_Transport)\source-generators\*" />
     </ItemGroup>
 
     <Copy

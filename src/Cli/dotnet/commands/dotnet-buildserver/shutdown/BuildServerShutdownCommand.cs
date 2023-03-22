@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.CommandLine;
 using System.CommandLine.Parsing;
 using System.Linq;
 using System.Threading.Tasks;
@@ -146,7 +147,7 @@ namespace Microsoft.DotNet.Tools.BuildServer.Shutdown
                         exception.InnerException.Message).Red());
             }
 
-            if (Reporter.IsVerbose)
+            if (CommandLoggingContext.IsVerbose)
             {
                 Reporter.Verbose.WriteLine(exception.ToString().Red());
             }

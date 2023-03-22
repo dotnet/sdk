@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using System.Threading;
 using System.Threading.Tasks;
@@ -24,7 +25,7 @@ using static Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadResolver;
 namespace Microsoft.DotNet.Workloads.Workload.Install
 {
     [SupportedOSPlatform("windows")]
-    internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IWorkloadPackInstaller
+    internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
     {
         private INuGetPackageDownloader _nugetPackageDownloader;
 
@@ -76,20 +77,31 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             }
         }
 
-        public void DownloadToOfflineCache(PackInfo packInfo, DirectoryPath cachePath, bool includePreviews)
+        public void ReplaceWorkloadResolver(IWorkloadResolver workloadResolver)
         {
-            // Determine the MSI payload package ID based on the host architecture, pack ID and pack version.
-            string msiPackageId = GetMsiPackageId(packInfo);
+            _workloadResolver = workloadResolver;
+        }
 
-            Reporter.WriteLine(string.Format(LocalizableStrings.DownloadingPackToCacheMessage, $"{packInfo.Id} ({msiPackageId})", packInfo.Version, cachePath.Value));
+        private IEnumerable<(WorkloadPackId Id, string Version)> GetInstalledPacks(SdkFeatureBand sdkFeatureBand)
+        {
+            string dependent = $"{DependentPrefix},{sdkFeatureBand},{HostArchitecture}";
 
-            if (!Directory.Exists(cachePath.Value))
+            return GetWorkloadPackRecords()
+                .Where(packRecord => new DependencyProvider(packRecord.ProviderKeyName).Dependents.Contains(dependent))
+                .SelectMany(packRecord => packRecord.InstalledPacks)
+                .Select(p => (p.id, p.version.ToString()));
+        }
+
+        public IEnumerable<WorkloadDownload> GetDownloads(IEnumerable<WorkloadId> workloadIds, SdkFeatureBand sdkFeatureBand, bool includeInstalledItems)
+        {
+            IEnumerable<WorkloadDownload> msis = GetMsisForWorkloads(workloadIds);
+            if (!includeInstalledItems)
             {
-                Directory.CreateDirectory(cachePath.Value);
+                HashSet<(string id, string version)> installedItems = new(GetInstalledPacks(sdkFeatureBand).Select(t => (t.Id.ToString(), t.Version)));
+                msis = msis.Where(m => !installedItems.Contains((m.Id, m.NuGetPackageVersion)));
             }
 
-            _nugetPackageDownloader.DownloadPackageAsync(new PackageId(msiPackageId), new NuGetVersion(packInfo.Version), downloadFolder: cachePath,
-                packageSourceLocation: _packageSourceLocation, includePreview: includePreviews).Wait();
+            return msis.ToList(); ;
         }
 
         /// <summary>
@@ -103,16 +115,29 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                 Log?.LogMessage("Starting garbage collection.");
                 IEnumerable<SdkFeatureBand> installedFeatureBands = GetInstalledFeatureBands();
                 IEnumerable<WorkloadId> installedWorkloads = RecordRepository.GetInstalledWorkloads(_sdkFeatureBand);
-                Dictionary<(WorkloadPackId id, string version),PackInfo> expectedWorkloadPacks = installedWorkloads
-                    .SelectMany(workload => _workloadResolver.GetPacksInWorkload(workload))
-                    .Distinct()
-                    .Select(pack => _workloadResolver.TryGetPackInfo(pack))
-                    .Where(pack => pack != null)
-                    .ToDictionary(p => (new WorkloadPackId(p.ResolvedPackageId), p.Version));
 
-                foreach (PackInfo expectedPack in expectedWorkloadPacks.Values)
+                var installedPacks = installedWorkloads.SelectMany(workload => _workloadResolver.GetPacksInWorkload(workload))
+                    .Distinct();
+
+                var installedPackInfos = installedPacks.Select(pack => _workloadResolver.TryGetPackInfo(pack))
+                    .Where(pack => pack != null);
+
+                //  The same workload pack may be aliased from two different names, for example
+                //  Microsoft.NETCore.App.Runtime.Mono.android-arm is aliased from Microsoft.NETCore.App.Runtime.Mono.net6.android-arm and
+                //  from Microsoft.NETCore.App.Runtime.Mono.net6.android-arm64
+                HashSet<(WorkloadPackId id, string version)> expectedWorkloadPacks = new HashSet<(WorkloadPackId id, string version)>();
+                foreach (var expectedPack in installedPackInfos)
                 {
-                    Log?.LogMessage($"Expected workload pack, ID: {expectedPack.ResolvedPackageId}, version: {expectedPack.Version}.");
+                    if (!expectedPack.Id.ToString().Equals(expectedPack.ResolvedPackageId, StringComparison.OrdinalIgnoreCase))
+                    {
+                        Log?.LogMessage($"Expected workload pack, ID: {expectedPack.ResolvedPackageId}, version: {expectedPack.Version}, aliased from: {expectedPack.Id}");
+                    }
+                    else
+                    {
+                        Log?.LogMessage($"Expected workload pack, ID: {expectedPack.ResolvedPackageId}, version: {expectedPack.Version}.");
+                    }
+
+                    expectedWorkloadPacks.Add((new WorkloadPackId(expectedPack.ResolvedPackageId), expectedPack.Version));
                 }
 
                 foreach (SdkFeatureBand installedFeatureBand in installedFeatureBands)
@@ -165,7 +190,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                             {
                                 // If the current SDK feature band is listed as a dependent, we can validate
                                 // the workload packs against the expected pack IDs and versions to potentially remove it.
-                                if (packRecord.InstalledPacks.All(p => !expectedWorkloadPacks.ContainsKey((p.id, p.version.ToString()))))
+                                if (packRecord.InstalledPacks.All(p => !expectedWorkloadPacks.Contains((p.id, p.version.ToString()))))
                                 {
                                     //  None of the packs installed by this MSI are necessary any longer for this feature band, so we can remove the reference count
                                     Log?.LogMessage($"Removing dependent '{dependent}' because the pack record(s) do not match any expected packs.");
@@ -235,23 +260,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             }
         }
 
-        public InstallationUnit GetInstallationUnit() => InstallationUnit.Packs;
-
-        public IEnumerable<(WorkloadPackId Id, string Version)> GetInstalledPacks(SdkFeatureBand sdkFeatureBand)
-        {
-            string dependent = $"{DependentPrefix},{sdkFeatureBand},{HostArchitecture}";
-
-            return GetWorkloadPackRecords()
-                .Where(packRecord => new DependencyProvider(packRecord.ProviderKeyName).Dependents.Contains(dependent))
-                .SelectMany(packRecord => packRecord.InstalledPacks)
-                .Select(p => (p.id, p.version.ToString()));
-        }
-
-        public IWorkloadPackInstaller GetPackInstaller() => this;
-
         public IWorkloadInstallationRecordRepository GetWorkloadInstallationRecordRepository() => RecordRepository;
-
-        public IWorkloadInstaller GetWorkloadInstaller() => throw new InvalidOperationException($"{GetType()} is not a workload installer.");
 
         public void InstallWorkloadManifest(ManifestVersionUpdate manifestUpdate, ITransactionContext transactionContext, DirectoryPath? offlineCache = null, bool isRollback = false)
         {
@@ -284,7 +293,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             Log?.LogMessage($"Installing manifest: Id: {manifestUpdate.ManifestId}, version: {manifestUpdate.NewVersion}, feature band: {manifestUpdate.NewFeatureBand}, rollback: {isRollback}.");
 
             // Resolve the package ID for the manifest payload package
-            string msiPackageId = WorkloadManifestUpdater.GetManifestPackageId(new SdkFeatureBand(manifestUpdate.NewFeatureBand), manifestUpdate.ManifestId, InstallType.Msi).ToString();
+            string msiPackageId = GetManifestPackageId(manifestUpdate.ManifestId, new SdkFeatureBand(manifestUpdate.NewFeatureBand)).ToString();
             string msiPackageVersion = $"{manifestUpdate.NewVersion}";
 
             Log?.LogMessage($"Resolving {manifestUpdate.ManifestId} ({manifestUpdate.NewVersion}) to {msiPackageId} ({msiPackageVersion}).");
@@ -351,24 +360,24 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             UpdateDependent(InstallRequestType.AddDependent, msi.Manifest.ProviderKeyName, _dependent);
         }
 
-        public void RepairWorkloadPack(PackInfo packInfo, SdkFeatureBand sdkFeatureBand, ITransactionContext transactionContext, DirectoryPath? offlineCache = null)
+        public void RepairWorkloads(IEnumerable<WorkloadId> workloadIds, SdkFeatureBand sdkFeatureBand, DirectoryPath? offlineCache = null)
         {
             try
             {
                 ReportPendingReboot();
 
-                // Determine the MSI payload package ID based on the host architecture, pack ID and pack version.
-                string msiPackageId = GetMsiPackageId(packInfo);
+                foreach (var aquirableMsi in GetMsisForWorkloads(workloadIds))
+                {
+                    // Retrieve the payload from the MSI package cache.
+                    MsiPayload msi = GetCachedMsiPayload(aquirableMsi.NuGetPackageId, aquirableMsi.NuGetPackageVersion, offlineCache);
+                    VerifyPackage(msi);
+                    DetectState state = DetectPackage(msi, out Version installedVersion);
+                    InstallAction plannedAction = PlanPackage(msi, state, InstallAction.Repair, installedVersion, out _);
+                    ExecutePackage(msi, plannedAction);
 
-                // Retrieve the payload from the MSI package cache.
-                MsiPayload msi = GetCachedMsiPayload(msiPackageId, packInfo.Version, offlineCache);
-                VerifyPackage(msi);
-                DetectState state = DetectPackage(msi, out Version installedVersion);
-                InstallAction plannedAction = PlanPackage(msi, state, InstallAction.Repair, installedVersion, out _);
-                ExecutePackage(msi, plannedAction);
-
-                // Update the reference count against the MSI.
-                UpdateDependent(InstallRequestType.AddDependent, msi.Manifest.ProviderKeyName, _dependent);
+                    // Update the reference count against the MSI.
+                    UpdateDependent(InstallRequestType.AddDependent, msi.Manifest.ProviderKeyName, _dependent);
+                }
             }
             catch (Exception e)
             {
@@ -377,14 +386,16 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             }
         }
 
-        public void InstallWorkloadPacks(IEnumerable<PackInfo> packInfos, SdkFeatureBand sdkFeatureBand, ITransactionContext transactionContext, DirectoryPath? offlineCache = null)
+        public void InstallWorkloads(IEnumerable<WorkloadId> workloadIds, SdkFeatureBand sdkFeatureBand, ITransactionContext transactionContext, DirectoryPath? offlineCache = null)
         {
             ReportPendingReboot();
 
-            var msisToInstall = GetMsisToInstall(packInfos);
+            var msisToInstall = GetMsisForWorkloads(workloadIds);
 
             foreach (var msiToInstall in msisToInstall)
             {
+                bool shouldRollBackPack = false;
+
                 transactionContext.Run(action: () =>
                 {
                     try
@@ -394,6 +405,10 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                         VerifyPackage(msi);
                         DetectState state = DetectPackage(msi, out Version installedVersion);
                         InstallAction plannedAction = PlanPackage(msi, state, InstallAction.Install, installedVersion, out _);
+                        if (plannedAction == InstallAction.Install)
+                        {
+                            shouldRollBackPack = true;
+                        }
                         ExecutePackage(msi, plannedAction);
 
                         // Update the reference count against the MSI.
@@ -407,14 +422,17 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                 },
                 rollback: () =>
                 {
-                    RollBackMsiInstall(msiToInstall);
+                    if (shouldRollBackPack)
+                    {
+                        RollBackMsiInstall(msiToInstall);
+                    }
                 });
-                
+
             }
-    
+
         }
 
-        void RollBackMsiInstall(AcquirableMsi msiToRollback, DirectoryPath? offlineCache = null)
+        void RollBackMsiInstall(WorkloadDownload msiToRollback, DirectoryPath? offlineCache = null)
         {
             try
             {
@@ -474,6 +492,87 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             Log?.LogMessage($"Restart required: {Restart}");
             ((TimestampedFileLogger)Log).Dispose();
             _shutdown = true;
+        }
+
+        public PackageId GetManifestPackageId(ManifestId manifestId, SdkFeatureBand featureBand)
+        {
+            return new PackageId($"{manifestId}.Manifest-{featureBand}.Msi.{RuntimeInformation.ProcessArchitecture.ToString().ToLowerInvariant()}");
+        }
+
+        private static object _msiAdminInstallLock = new();
+
+        public async Task ExtractManifestAsync(string nupkgPath, string targetPath)
+        {
+            Log?.LogMessage($"ExtractManifestAsync: Extracting '{nupkgPath}' to '{targetPath}'");
+            string extractionPath = PathUtilities.CreateTempSubdirectory();
+
+            try
+            {
+                Log?.LogMessage($"ExtractManifestAsync: Temporary extraction path: '{extractionPath}'");
+                await _nugetPackageDownloader.ExtractPackageAsync(nupkgPath, new DirectoryPath(extractionPath));
+                if (Directory.Exists(targetPath))
+                {
+                    Directory.Delete(targetPath, true);
+                }
+
+                string extractedManifestPath = Path.Combine(extractionPath, "data", "extractedManifest");
+                if (Directory.Exists(extractedManifestPath))
+                {
+                    Log?.LogMessage($"ExtractManifestAsync: Copying manifest from '{extractionPath}' to '{targetPath}'");
+                    Directory.CreateDirectory(Path.GetDirectoryName(targetPath));
+                    FileAccessRetrier.RetryOnMoveAccessFailure(() => DirectoryPath.MoveDirectory(extractedManifestPath, targetPath));
+                }
+                else
+                {
+                    string packageDataPath = Path.Combine(extractionPath, "data");
+                    if (!Cache.TryGetMsiPathFromPackageData(packageDataPath, out string msiPath, out _))
+                    {
+                        throw new FileNotFoundException(String.Format(LocalizableStrings.ManifestMsiNotFoundInNuGetPackage, extractionPath));
+                    }
+                    string msiExtractionPath = Path.Combine(extractionPath, "msi");
+
+
+                    lock (_msiAdminInstallLock)
+                    {
+                        string adminInstallLog = GetMsiLogNameForAdminInstall(msiPath);
+
+                        Log?.LogMessage($"ExtractManifestAsync: Running admin install for '{msiExtractionPath}'.  Log file: '{adminInstallLog}'");
+
+                        ConfigureInstall(adminInstallLog);
+
+                        var result = WindowsInstaller.InstallProduct(msiPath, $"TARGETDIR={msiExtractionPath} ACTION=ADMIN");
+
+                        if (result != Error.SUCCESS)
+                        {
+                            Log?.LogMessage($"ExtractManifestAsync: Admin install failed: {result}");
+                            throw new GracefulException(String.Format(LocalizableStrings.FailedToExtractMsi, msiPath));
+                        }
+                    }
+
+                    var manifestsFolder = Path.Combine(msiExtractionPath, "dotnet", "sdk-manifests");
+
+                    string manifestFolder = null;
+                    string manifestsFeatureBandFolder = Directory.GetDirectories(manifestsFolder).SingleOrDefault();
+                    if (manifestsFeatureBandFolder != null)
+                    {
+                        manifestFolder = Directory.GetDirectories(manifestsFeatureBandFolder).SingleOrDefault();
+                    }
+
+                    if (manifestFolder == null)
+                    {
+                        throw new GracefulException(String.Format(LocalizableStrings.ExpectedSingleManifest, nupkgPath));
+                    }
+
+                    FileAccessRetrier.RetryOnMoveAccessFailure(() => DirectoryPath.MoveDirectory(manifestFolder, targetPath));
+                }
+            }
+            finally
+            {
+                if (!string.IsNullOrEmpty(extractionPath) && Directory.Exists(extractionPath))
+                {
+                    Directory.Delete(extractionPath, true);
+                }
+            }
         }
 
         private void LogPackInfo(PackInfo packInfo)
@@ -860,15 +959,15 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             string tempDirPath = null,
             RestoreActionConfig restoreActionConfig = null)
         {
-            TimestampedFileLogger logger = new(Path.Combine(Path.GetTempPath(), $"Microsoft.NET.Workload_{DateTime.Now:yyyyMMdd_HHmmss}.log"));
+            TimestampedFileLogger logger = new(Path.Combine(Path.GetTempPath(), $"Microsoft.NET.Workload_{Environment.ProcessId}_{DateTime.Now:yyyyMMdd_HHmmss}.log"));
             InstallClientElevationContext elevationContext = new(logger);
 
             if (nugetPackageDownloader == null)
             {
-                DirectoryPath tempPackagesDir = new(string.IsNullOrWhiteSpace(tempDirPath) ? Path.GetTempPath() : tempDirPath);
+                DirectoryPath tempPackagesDir = new(string.IsNullOrWhiteSpace(tempDirPath) ? PathUtilities.CreateTempSubdirectory() : tempDirPath);
 
                 nugetPackageDownloader = new NuGetPackageDownloader(tempPackagesDir,
-                    filePermissionSetter: null, new FirstPartyNuGetPackageSigningVerifier(tempPackagesDir),
+                    filePermissionSetter: null, new FirstPartyNuGetPackageSigningVerifier(),
                     new NullLogger(), restoreActionConfig: restoreActionConfig);
             }
 

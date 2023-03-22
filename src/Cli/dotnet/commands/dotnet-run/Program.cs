@@ -5,6 +5,7 @@ using System.Linq;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli;
 using Parser = Microsoft.DotNet.Cli.Parser;
+using System.CommandLine;
 using System.CommandLine.Parsing;
 using System;
 
@@ -38,7 +39,7 @@ namespace Microsoft.DotNet.Tools.Run
                 noRestore: parseResult.HasOption(RunCommandParser.NoRestoreOption) || parseResult.HasOption(RunCommandParser.NoBuildOption),
                 interactive: parseResult.HasOption(RunCommandParser.InteractiveOption),
                 restoreArgs: parseResult.OptionValuesToBeForwarded(RunCommandParser.GetCommand()),
-                args: (parseResult.UnparsedTokens ?? Array.Empty<string>()).Concat(parseResult.UnmatchedTokens ?? Array.Empty<string>())
+                args: parseResult.GetValueForArgument(RunCommandParser.ApplicationArguments)
             );
 
             return command;

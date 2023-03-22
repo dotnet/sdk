@@ -17,6 +17,7 @@ using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Update.LocalizableStrings
 using Microsoft.DotNet.ShellShim;
 using System.IO;
 using Microsoft.NET.TestFramework.Utilities;
+using System.CommandLine;
 using System.CommandLine.Parsing;
 using System.Runtime.InteropServices;
 using Parser = Microsoft.DotNet.Cli.Parser;
@@ -84,7 +85,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             Action a = () => command.Execute();
 
-            a.ShouldThrow<GracefulException>().And.Message
+            a.Should().Throw<GracefulException>().And.Message
                 .Should().Contain(
                    Tools.Tool.Install.LocalizableStrings.ToolInstallationRestoreFailed);
         }
@@ -202,7 +203,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             Action a = () => command.Execute();
 
-            a.ShouldThrow<GracefulException>().And.Message
+            a.Should().Throw<GracefulException>().And.Message
                 .Should().Contain(
                     string.Format(LocalizableStrings.UpdateToLowerVersion,
                         LowerPackageVersion,
@@ -266,7 +267,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 _reporter);
 
             Action a = () => command.Execute();
-            a.ShouldThrow<GracefulException>().And.Message.Should().Contain(
+            a.Should().Throw<GracefulException>().And.Message.Should().Contain(
                 string.Format(LocalizableStrings.UpdateToolFailed, _packageId) + Environment.NewLine +
                 string.Format(Tools.Tool.Install.LocalizableStrings.InvalidToolConfiguration, "Simulated error"));
         }

@@ -47,6 +47,11 @@
         <target state="translated">Baixando pacote {0} versão {1} para o cache offline {2}...</target>
         <note />
       </trans-unit>
+      <trans-unit id="ExpectedSingleManifest">
+        <source>Expected single manifest feature band and manifest folder in MSI from package {0}</source>
+        <target state="translated">Espera-se a faixa de recurso de manifesto único e a pasta de manifesto no MSI do pacote {0}</target>
+        <note />
+      </trans-unit>
       <trans-unit id="FailedAdManifestUpdate">
         <source>Failed to update the advertising manifest {0}: {1}.</source>
         <target state="translated">Falha ao atualizar o manifesto de publicidade {0}: {1}.</target>
@@ -57,9 +62,9 @@
         <target state="translated">Falha ao baixar o pacote de manifesto {0}.</target>
         <note />
       </trans-unit>
-      <trans-unit id="FailedToGetPackageManifestUrl">
-        <source>Failed to resolve manifest package URL {0}.</source>
-        <target state="translated">Falha ao resolver URL do pacote de manifesto {0}.</target>
+      <trans-unit id="FailedToExtractMsi">
+        <source>Failed to extract information from MSI: {0}</source>
+        <target state="translated">Falha ao extrair informações do MSI: {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="FailedToInstallWorkloadManifest">
@@ -152,6 +157,16 @@
         <target state="translated">Não existe nenhum manifesto com ID {0}.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ManifestMsiNotFoundInNuGetPackage">
+        <source>Manifest MSI not found in NuGet package {0}</source>
+        <target state="translated">MSI do manifesto não encontrado no pacote NuGet {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ManifestPackageUrlNotResolved">
+        <source>Manifest package not resolved. Manifest package or URL for {0} doesn't exist.</source>
+        <target state="translated">Pacote de manifesto não resolvido. O pacote de manifesto ou a URL para {0} não existe.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="MsiProgressInstall">
         <source>Installing {0} </source>
         <target state="translated">Instalando {0} </target>
@@ -199,7 +214,7 @@
       </trans-unit>
       <trans-unit id="RollbackDefinitionContainsExtraneousManifestIds">
         <source>Invalid rollback definition. The manifest IDs in rollback definition {0} do not match installed manifest IDs {1}.</source>
-        <target state="new">Invalid rollback definition. The manifest IDs in rollback definition {0} do not match installed manifest IDs {1}.</target>
+        <target state="translated">Definição de reversão inválida. Os IDs de manifesto na definição de reversão {0} não correspondem aos IDs de manifesto instalados {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="RollbackDefinitionFileDoesNotExist">
@@ -224,7 +239,7 @@
       </trans-unit>
       <trans-unit id="SkipSignCheckOptionDescription">
         <source>Skip signature verification of workload packages and installers.</source>
-        <target state="new">Skip signature verification of workload packages and installers.</target>
+        <target state="translated">Ignorar a verificação de assinatura de pacotes de carga de trabalho e instaladores.</target>
         <note />
       </trans-unit>
       <trans-unit id="SkippingManifestUpdate">
@@ -349,7 +364,7 @@
       </trans-unit>
       <trans-unit id="WorkloadUpdatesAvailable">
         <source>Workload updates are available. Run `dotnet workload list` for more information.</source>
-        <target state="translated">As atualizações de carga de trabalho estão disponíveis. Execute ' lista de cargas de trabalho dotnet ' para obter mais informações.</target>
+        <target state="translated">As atualizações de carga de trabalho estão disponíveis. Execute `dotnet workload list` para obter mais informações.</target>
         <note />
       </trans-unit>
       <trans-unit id="WritingPackInstallRecordMessage">

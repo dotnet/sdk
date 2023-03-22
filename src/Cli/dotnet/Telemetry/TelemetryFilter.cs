@@ -4,10 +4,10 @@
 using System.Collections.Generic;
 using System;
 using System.Linq;
+using System.CommandLine;
 using System.CommandLine.Parsing;
 using Microsoft.DotNet.Cli.Utils;
 using System.Globalization;
-using System.CommandLine;
 
 namespace Microsoft.DotNet.Cli.Telemetry
 {
@@ -119,7 +119,7 @@ namespace Microsoft.DotNet.Cli.Telemetry
                 topLevelCommandName: new HashSet<string> {"publish"},
                 optionsToLog: new HashSet<Option> { PublishCommandParser.RuntimeOption }
             ),
-            new AllowListToSendVerbSecondVerbFirstArgument(new HashSet<string> {"workload", "tool"}),
+            new AllowListToSendVerbSecondVerbFirstArgument(new HashSet<string> {"workload", "tool", "new"}),
         };
 
         private static void LogVerbosityForAllTopLevelCommand(
@@ -128,14 +128,15 @@ namespace Microsoft.DotNet.Cli.Telemetry
             string topLevelCommandName,
             Dictionary<string, double> measurements = null)
         {
-            if (parseResult.IsDotnetBuiltInCommand() && parseResult.HasOption(CommonOptions.VerbosityOption))
+            if (parseResult.IsDotnetBuiltInCommand() &&
+                parseResult.SafelyGetValueForOption(CommonOptions.VerbosityOption) is VerbosityOptions verbosity)
             {
                 result.Add(new ApplicationInsightsEntryFormat(
                     "sublevelparser/command",
                     new Dictionary<string, string>()
                     {
                         { "verb", topLevelCommandName},
-                        {"verbosity", Enum.GetName(parseResult.GetValueForOption(CommonOptions.VerbosityOption))}
+                        { "verbosity", Enum.GetName(verbosity)}
                     },
                     measurements));
             }

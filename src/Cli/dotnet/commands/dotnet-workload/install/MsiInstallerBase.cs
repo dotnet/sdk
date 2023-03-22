@@ -116,7 +116,7 @@ namespace Microsoft.DotNet.Installer.Windows
             List<WorkloadPackRecord> workloadPackRecords = new();
             using RegistryKey installedPacksKey = Registry.LocalMachine.OpenSubKey(@$"SOFTWARE\Microsoft\dotnet\InstalledPacks\{HostArchitecture}");
 
-            void SetRecordMsiProperties(WorkloadPackRecord record, RegistryKey key)
+            static void SetRecordMsiProperties(WorkloadPackRecord record, RegistryKey key)
             {
                 record.ProviderKeyName = (string)key.GetValue("DependencyProviderKey");
                 record.ProductCode = (string)key.GetValue("ProductCode");
@@ -389,6 +389,17 @@ namespace Microsoft.DotNet.Installer.Windows
         {
             return Path.Combine(Path.GetDirectoryName(Log.LogPath),
                 Path.GetFileNameWithoutExtension(Log.LogPath) + $"_{productCode}_{action}.log");
+        }
+
+        /// <summary>
+        /// Creates the log filename to use when performing an admin install on an MSI.
+        /// </summary>
+        /// <param name="msiPath">The full path to the MSI</param>
+        /// <returns>The full path of the log file</returns>
+        protected string GetMsiLogNameForAdminInstall(string msiPath)
+        {
+            return Path.Combine(Path.GetDirectoryName(Log.LogPath),
+                Path.GetFileNameWithoutExtension(Log.LogPath) + $"_{Path.GetFileNameWithoutExtension(msiPath)}_AdminInstall.log");
         }
 
         /// <summary>

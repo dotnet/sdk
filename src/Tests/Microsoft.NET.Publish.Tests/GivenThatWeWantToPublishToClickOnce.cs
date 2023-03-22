@@ -23,12 +23,12 @@ namespace Microsoft.NET.Publish.Tests
         {
         }
 
-        [FullMSBuildOnlyTheory]
+        [FullMSBuildOnlyTheory(Skip = "https://github.com/dotnet/sdk/issues/27766")]
         [InlineData(false)]
         [InlineData(true)]
         public void PublishClickOnceWithPublishProfile(bool? publishSingleFile)
         {
-            var tfm = "netcoreapp3.1";
+            var tfm = ToolsetInfo.CurrentTargetFramework;
             var rid = EnvironmentInfo.GetCompatibleRid(tfm);
 
             var testProject = new TestProject()
@@ -38,7 +38,7 @@ namespace Microsoft.NET.Publish.Tests
                 ProjectSdk = "Microsoft.NET.Sdk;Microsoft.NET.Sdk.Publish",
                 IsExe = true,
             };
-            testProject.PackageReferences.Add(new TestPackageReference("NewtonSoft.Json", "9.0.1"));
+            testProject.PackageReferences.Add(new TestPackageReference("NewtonSoft.Json", "13.0.1"));
 
             var testProjectInstance = _testAssetsManager.CreateTestProject(testProject, identifier: publishSingleFile.ToString());
 

@@ -36,6 +36,7 @@
     <PackageReference Include="Microsoft.CodeAnalysis.VisualBasic.CodeStyle" Version="$(MicrosoftNetCompilersToolsetPackageVersion)" ExcludeAssets="All" GeneratePathProperty="true"/>
     <PackageReference Include="Microsoft.NET.ILLink.Analyzers" Version="$(MicrosoftNETILLinkAnalyzerPackageVersion)" ExcludeAssets="All" GeneratePathProperty="true" />
     <PackageReference Include="Microsoft.FSharp.Compiler" Version="$(MicrosoftFSharpCompilerPackageVersion)" ExcludeAssets="All" GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.NET.Sdk.Razor.SourceGenerators.Transport" Version="$(MicrosoftNETSdkRazorSourceGeneratorsTransportPackageVersion)" GeneratePathProperty="true" />
 
     <!-- Lift up dependencies of dependencies to prevent build tasks from getting pinned to older versions -->
     <PackageReference Include="System.CodeDom" Version="$(SystemCodeDomPackageVersion)" />
@@ -54,7 +55,7 @@
                       ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" />
     <ProjectReference Include="..\..\Resolvers\Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver\Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver.csproj" />
     <ProjectReference Include="$(RepoRoot)src\BuiltInTools\dotnet-watch\dotnet-watch.csproj"
-                      ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" />
+                      ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" Private="false" />
   </ItemGroup>
 
   <ItemGroup>
@@ -62,6 +63,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="trustedroots\codesignctl.pem">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="trustedroots\timestampctl.pem">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
