@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Xml.Linq;
 using FluentAssertions;
+using Microsoft.NET.TestFramework;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Commands;
@@ -93,7 +94,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                     reference.Name = "Reference";
                     reference.Add(new XElement(
                         "HintPath",
-                        Path.Combine("..", "razorclasslibrary", "bin", "Debug", DefaultTfm, "RazorClassLibrary.dll")));
+                        Path.Combine("..", "razorclasslibrary", "bin", "Debug", ToolsetInfo.CurrentTargetFramework, "RazorClassLibrary.dll")));
                 }
             });
 
