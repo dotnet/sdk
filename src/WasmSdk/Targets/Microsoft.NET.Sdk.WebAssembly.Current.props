@@ -39,9 +39,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     <StaticWebAssetsAdditionalPublishProperties>$(StaticWebAssetsAdditionalPublishProperties);BuildProjectReferences=false;ResolveAssemblyReferencesFindRelatedSatellites=true</StaticWebAssetsAdditionalPublishProperties>
     <StaticWebAssetsAdditionalPublishPropertiesToRemove>$(StaticWebAssetsAdditionalPublishPropertiesToRemove);NoBuild;RuntimeIdentifier</StaticWebAssetsAdditionalPublishPropertiesToRemove>
 
-    <_WasmSdkImportsMicrosoftNETSdkStaticWebAssets Condition="'$(MicrosoftNETSdkStaticWebAssets)' != 'true'">true</_WasmSdkImportsMicrosoftNETSdkStaticWebAssets>
-    <_WasmSdkImportsMicrosoftNETSdkWebProjectSystem Condition="'$(MicrosoftNETSdkWebProjectSystem)' != 'true'">true</_WasmSdkImportsMicrosoftNETSdkWebProjectSystem>
-    <_WasmSdkImportsMicrosoftNETSdkPublish Condition="'$(MicrosoftNETSdkPublish)' != 'true'">true</_WasmSdkImportsMicrosoftNETSdkPublish>
+    <_WasmSdkImportsMicrosoftNETSdkPublish Condition="'$(UsingMicrosoftNETSdkPublish)' != 'true'">true</_WasmSdkImportsMicrosoftNETSdkPublish>
+    <_WasmSdkImportsMicrosoftNETSdkStaticWebAssets Condition="'$(UsingMicrosoftNETSdkStaticWebAssets)' != 'true'">true</_WasmSdkImportsMicrosoftNETSdkStaticWebAssets>
   </PropertyGroup>
 
   <ItemGroup>
@@ -49,7 +48,6 @@ Copyright (c) .NET Foundation. All rights reserved.
   </ItemGroup>
 
   <Import Sdk="Microsoft.NET.Sdk.StaticWebAssets" Project="Sdk.props" Condition="'$(_WasmSdkImportsMicrosoftNETSdkStaticWebAssets)' == 'true'" />
-  <Import Sdk="Microsoft.NET.Sdk.Web.ProjectSystem" Project="Sdk.props" Condition="'$(_WasmSdkImportsMicrosoftNETSdkWebProjectSystem)' == 'true'" />
   <Import Sdk="Microsoft.NET.Sdk.Publish" Project="Sdk.props" Condition="'$(_WasmSdkImportsMicrosoftNETSdkPublish)' == 'true'" />
 
 </Project>

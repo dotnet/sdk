@@ -21,7 +21,6 @@ Copyright (c) .NET Foundation. All rights reserved.
 
 
   <Import Sdk="Microsoft.NET.Sdk.StaticWebAssets" Project="Sdk.targets" Condition="'$(_WasmSdkImportsMicrosoftNETSdkStaticWebAssets)' == 'true'" />
-  <Import Sdk="Microsoft.NET.Sdk.Web.ProjectSystem" Project="Sdk.targets" Condition="'$(_WasmSdkImportsMicrosoftNETSdkWebProjectSystem)' == 'true'" />
   <Import Sdk="Microsoft.NET.Sdk.Publish" Project="Sdk.targets" Condition="'$(_WasmSdkImportsMicrosoftNETSdkPublish)' == 'true'" />
 
   <!--
