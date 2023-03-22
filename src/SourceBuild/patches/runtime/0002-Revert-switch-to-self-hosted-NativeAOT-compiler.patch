@@ -1,0 +1,22 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Matt Thalman <mthalman@microsoft.com>
+Date: Mon, 20 Mar 2023 15:35:53 -0500
+Subject: [PATCH] Revert switch to self-hosted NativeAOT compiler
+
+Backport: https://github.com/dotnet/runtime/issues/83695
+---
+ src/coreclr/tools/aot/ILCompiler/ILCompiler.csproj | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/src/coreclr/tools/aot/ILCompiler/ILCompiler.csproj b/src/coreclr/tools/aot/ILCompiler/ILCompiler.csproj
+index db48433db73..982bbc78427 100644
+--- a/src/coreclr/tools/aot/ILCompiler/ILCompiler.csproj
++++ b/src/coreclr/tools/aot/ILCompiler/ILCompiler.csproj
+@@ -12,6 +12,7 @@
+     <PublishDir>$(RuntimeBinDir)ilc-published/</PublishDir>
+     <NativeAotSupported Condition="'$(TargetOS)' != 'windows' and '$(TargetOS)' != 'linux' and '$(TargetOS)' != 'osx'">false</NativeAotSupported>
+     <NativeAotSupported Condition="'$(TargetArchitecture)' != 'x64'">false</NativeAotSupported>
++    <NativeAotSupported>false</NativeAotSupported>
+     <PublishAot Condition="'$(NativeAotSupported)' == 'true'">true</PublishAot>
+     <PublishReadyToRun Condition="'$(NativeAotSupported)' != 'true'">true</PublishReadyToRun>
+     <PublishSingleFile Condition="'$(NativeAotSupported)' != 'true'">true</PublishSingleFile>
