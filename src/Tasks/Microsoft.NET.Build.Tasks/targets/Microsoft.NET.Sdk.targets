@@ -29,8 +29,8 @@ Copyright (c) .NET Foundation. All rights reserved.
   <UsingTask TaskName="GetAssemblyVersion" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
   <UsingTask TaskName="GenerateSatelliteAssemblies" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
 
-  <ItemGroup Condition="'$(BuildWithFrameworkRoslyn)' == 'true' and '$(MicrosoftNetCompilersToolsetPackageVersion)' != ''">
-    <PackageReference Include="Microsoft.Net.Compilers.Toolset.Framework" PrivateAssets="all" Version="$(MicrosoftNetCompilersToolsetPackageVersion)"/>
+  <ItemGroup Condition="'$(BuildWithFrameworkRoslyn)' == 'true' and '$(MicrosoftNetFrameworkCompilersToolsetPackageVersion)' != '' and !@(PackageReference->AnyHaveMetadataValue('Identity', 'Microsoft.Net.Compilers.Toolset.Framework'))">
+    <PackageReference Include="Microsoft.Net.Compilers.Toolset.Framework" PrivateAssets="all" Version="$(MicrosoftNetFrameworkCompilersToolsetPackageVersion)"/>
   </ItemGroup>
 
   <PropertyGroup>
