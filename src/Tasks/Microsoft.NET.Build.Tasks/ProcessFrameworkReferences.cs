@@ -368,7 +368,7 @@ namespace Microsoft.NET.Build.Tasks
                     return;
                 }
             }
-            
+
             if (AotEnabled)
             {
                 if (!AddToolPack(ToolPackType.ILCompiler, _normalizedTargetFrameworkVersion, packagesToDownload, implicitPackageReferences))
@@ -610,11 +610,14 @@ namespace Microsoft.NET.Build.Tasks
                 _ => throw new ArgumentException($"Unknown package type {toolPackType}", nameof(toolPackType))
             };
 
+            var packName = toolPackType.ToString();
             var knownPack = knownPacks.Where(pack =>
             {
                 var packTargetFramework = NuGetFramework.Parse(pack.GetMetadata("TargetFramework"));
+                var packSupportedRuntimeIdentifiers = pack.GetMetadata(packName + "RuntimeIdentifiers");
                 return packTargetFramework.Framework.Equals(TargetFrameworkIdentifier, StringComparison.OrdinalIgnoreCase) &&
-                    NormalizeVersion(packTargetFramework.Version) == normalizedTargetFrameworkVersion;
+                    NormalizeVersion(packTargetFramework.Version) == normalizedTargetFrameworkVersion &&
+                    (toolPackType != ToolPackType.ILCompiler || packSupportedRuntimeIdentifiers.Split(';').Contains(RuntimeIdentifier));
             }).SingleOrDefault();
 
             if (knownPack == null)
@@ -622,14 +625,13 @@ namespace Microsoft.NET.Build.Tasks
                 return false;
             }
 
-            var packName = toolPackType.ToString();
             var packVersion = knownPack.GetMetadata(packName + "PackVersion");
             if (!string.IsNullOrEmpty(RuntimeFrameworkVersion))
             {
                 packVersion = RuntimeFrameworkVersion;
             }
 
-            
+
             // Crossgen and ILCompiler have RID-specific bits.
             if (toolPackType is ToolPackType.Crossgen2 or ToolPackType.ILCompiler)
             {
@@ -929,7 +931,7 @@ namespace Microsoft.NET.Build.Tasks
             public string RuntimePackRuntimeIdentifiers => _item.GetMetadata(MetadataKeys.RuntimePackRuntimeIdentifiers);
 
             public bool IsWindowsOnly => _item.HasMetadataValue("IsWindowsOnly", "true");
-            
+
             public bool RuntimePackAlwaysCopyLocal =>
                 _item.HasMetadataValue(MetadataKeys.RuntimePackAlwaysCopyLocal, "true");
 
