@@ -54,17 +54,6 @@ stages:
 - stage: build
   displayName: Build
   jobs:
-  - job: Publish_Build_Configuration
-    pool:
-      ${{ if eq(variables['System.TeamProject'], 'public') }}:
-        vmImage: 'windows-2019'
-      ${{ if eq(variables['System.TeamProject'], 'internal') }}:
-        name: NetCore1ESPool-Svc-Internal
-        demands: ImageOverride -equals windows.vs2019.amd64
-    steps:
-      - publish: $(Build.SourcesDirectory)\eng\BuildConfiguration
-        artifact: BuildConfiguration
-        displayName: Publish Build Config
   - template: /eng/build.yml
     parameters:
       agentOs: Windows_NT
@@ -89,11 +78,6 @@ stages:
             ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
               _SignType: real
               _Test: ''
-  - template: /eng/common/templates/job/source-build.yml
-    parameters:
-      platform:
-        name: 'Managed'
-        container: 'mcr.microsoft.com/dotnet-buildtools/prereqs:centos-7-3e800f1-20190501005343'
   - ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
     - template: /eng/build.yml
       parameters:
@@ -115,62 +99,6 @@ stages:
               _PublishArgs: ''
               _SignType: test
               _Test: -test
-
-    - template: /eng/build.yml
-      parameters:
-        agentOs: Windows_NT_TestAsTools
-        pool:
-          ${{ if eq(variables['System.TeamProject'], 'public') }}:
-            vmImage: 'windows-2019'
-          ${{ if ne(variables['System.TeamProject'], 'public') }}:
-            name: NetCore1ESPool-Svc-Internal
-            demands: ImageOverride -equals windows.vs2019.amd64
-        strategy:
-          matrix:
-            Build_Debug:
-              _BuildConfig: Debug
-              _PublishArgs: ''
-              _SignType: test
-
-    - template: /eng/build.yml
-      parameters:
-        agentOs: Ubuntu_20_04
-        pool:
-          ${{ if eq(variables['System.TeamProject'], 'public') }}:
-            vmImage: 'ubuntu-20.04'
-          ${{ if ne(variables['System.TeamProject'], 'public') }}:
-            name: NetCore1ESPool-Svc-Internal
-            demands: ImageOverride -equals 1es-ubuntu-2004
-        ${{ if eq(variables['System.TeamProject'], 'public') }}:
-          helixTargetQueue: ubuntu.2004.amd64.open
-        ${{ if ne(variables['System.TeamProject'], 'public') }}:
-          helixTargetQueue: Ubuntu.2004.Amd64
-        strategy:
-          matrix:
-            Build_Release:
-              _BuildConfig: Release
-              _PublishArgs: ''
-              _SignType: test
-              _Test: -test
-
-    - template: /eng/build.yml
-      parameters:
-        agentOs: Darwin
-        pool:
-          vmImage: 'macOS-latest'
-        ${{ if eq(variables['System.TeamProject'], 'public') }}:
-          helixTargetQueue: OSX.1200.Amd64.Open
-        ${{ if ne(variables['System.TeamProject'], 'public') }}:
-          helixTargetQueue: OSX.1200.Amd64
-        strategy:
-          matrix:
-            Build_Release:
-              _BuildConfig: Release
-              _PublishArgs: ''
-              _SignType: test
-              _Test: -test
-
-  - template: /eng/template-engine.yml
 
   - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
     - template: /eng/common/templates/job/publish-build-assets.yml

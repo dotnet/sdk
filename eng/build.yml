@@ -30,6 +30,8 @@ jobs:
       name: ${{ parameters.agentOs }}
       enableMicrobuild: true
       enablePublishBuildAssets: true
+      enablePublishTestResults: true
+      enablePublishBuildArtifacts: true
       enableTelemetry: true
       enablePublishUsingPipelines: true
       helixRepo: dotnet/sdk
