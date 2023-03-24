@@ -20,6 +20,8 @@ The standard properties are listed below.
    - `configFile` (string) (optional): Additional configuration for the associated post action. The structure & content will vary based on the post action.
    - <a name="continueOnError"></a>`continueOnError` (bool) (optional): If this action fails, the value of continueOnError indicates whether to process the next action, or stop processing the post actions. Should be set to true when subsequent actions rely on the result of the current action. The default value is false.
    - `manualInstructions` (array) (optional): An ordered list of possible instructions to display if the action cannot be performed. Each element in the list must contain a key named "text", whose value contains the instructions. Each element may also optionally provide a key named "condition" - a boolean expression. The first instruction with blank condition is considered a default. If true conditions are present, the last one of them will be considered valid, all other ignored. It is recommended not to have more than one true condition at the time.
+   - `applyFileRenamesToArgs` (array) (optional): A list of arguments names from 'args' to which the file renames configured in symbols should be applied. By default, the file renames are not applied. Available since .NET SDK 8.0.100.
+   - `applyFileRenamesToManualInstructions` (boolean) (optional): If set to true, the file renames configured in symbols should be applied to manual instructions. By default, the file renames are not applied. Available since .NET SDK 8.0.100.
 
 # Restore NuGet packages
 

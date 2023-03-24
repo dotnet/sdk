@@ -476,6 +476,18 @@
                 "description": "Defines identifier to be used when localizing the post action artifacts.",
                 "type": "string"
               },
+              "applyFileRenamesToArgs": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "A list of arguments names from 'args' to which the file renames configured in symbols should be applied."
+              },
+              "applyFileRenamesToManualInstructions": {
+                "description": "If set to true, the file renames configured in symbols should be applied to manual instructions.",
+                "type": "boolean",
+                "default": false
+              },
               "manualInstructions": {
                 "description": "An ordered list of possible instructions to display if the action cannot be performed. Each element in the list must contain a key named \"text\", whose value contains the instructions. Each element may also optionally provide a key named \"condition\" - a Boolean evaluate-able string. The first instruction whose condition is false or blank will be considered valid, all others are ignored.",
                 "type": "array",

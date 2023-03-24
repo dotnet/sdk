@@ -115,6 +115,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Validation
             public void ValidateTemplate(ITemplateValidationInfo templateValidationInfo)
             {
                 _validationChecks.ForEach(check => check.Process(templateValidationInfo));
+                templateValidationInfo.ConfigModel.ValidationErrors.ForEach(templateValidationInfo.AddValidationError);
             }
 
             private class TemplateSourcesCheck : BaseValidationCheck

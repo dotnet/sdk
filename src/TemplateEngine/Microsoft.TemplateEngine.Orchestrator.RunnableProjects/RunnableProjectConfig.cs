@@ -234,15 +234,24 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             _sources = EvaluateSources(rootVariableCollection, resolvedNameParamValue);
 
+            FileRenameGenerator renameGenerator = new(
+                EngineEnvironmentSettings,
+                ConfigurationModel.SourceName,
+                resolvedNameParamValue,
+                rootVariableCollection,
+                SymbolFilenameReplacements);
+
             _evaluatedPrimaryOutputs = PrimaryOutput.Evaluate(
                 EngineEnvironmentSettings,
                 ConfigurationModel.PrimaryOutputs,
                 rootVariableCollection,
-                ConfigurationModel.SourceName,
-                resolvedNameParamValue,
-                SymbolFilenameReplacements);
+                renameGenerator);
 
-            _evaluatedPostActions = PostAction.Evaluate(EngineEnvironmentSettings.Host.Logger, ConfigurationModel.PostActionModels, rootVariableCollection);
+            _evaluatedPostActions = PostAction.Evaluate(
+                EngineEnvironmentSettings,
+                ConfigurationModel.PostActionModels,
+                rootVariableCollection,
+                renameGenerator);
         }
 
         /// <summary>

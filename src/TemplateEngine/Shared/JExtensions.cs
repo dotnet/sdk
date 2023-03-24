@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 #endif
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
@@ -394,6 +395,15 @@ namespace Microsoft.TemplateEngine
         internal static string ToJsonString(object obj)
         {
             return JToken.FromObject(obj).ToString(Formatting.None);
+        }
+
+        internal static string ToCamelCase(this string str)
+        {
+            return str switch
+            {
+                "" => str,
+                _ => str.First().ToString().ToLower() + str.Substring(1),
+            };
         }
 
     }

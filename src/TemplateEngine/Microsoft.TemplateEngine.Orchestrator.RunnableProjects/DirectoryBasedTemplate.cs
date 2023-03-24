@@ -58,8 +58,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             ConfigurationModel = TemplateConfigModel.FromJObject(
                 MergeAdditionalConfiguration(templateFile.ReadJObjectFromIFile(), templateFile),
                 Logger,
-                baselineName,
-                filename: templateFile.GetDisplayPath());
+                baselineName);
             CheckGeneratorVersionRequiredByTemplate();
         }
 

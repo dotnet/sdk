@@ -2,6 +2,29 @@
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="it" original="../LocalizableStrings.resx">
     <body>
+      <trans-unit id="Authoring_CONFIG0201_PostActionIdIsNotUnique">
+        <source>Id of the post action '{0}' at index '{1}' is not unique. Only the first post action that uses this id will be localized.</source>
+        <target state="new">Id of the post action '{0}' at index '{1}' is not unique. Only the first post action that uses this id will be localized.</target>
+        <note>{0} is any identifier string that user provided in the file. Such as "myPostAction", "firstPostAction", "postAction1" etc.
+{1} is a number representing the zero-based index of the post action. Such as "5", or "0".</note>
+      </trans-unit>
+      <trans-unit id="Authoring_CONFIG0202_PostActionMustHaveActionId">
+        <source>Post action at index '{0}' should have an 'actionId' to declare the action to be executed.</source>
+        <target state="new">Post action at index '{0}' should have an 'actionId' to declare the action to be executed.</target>
+        <note>{0} is a whole number representing the zero-based index of the post action. Such as "5" or "0".
+Do not localize: actionId</note>
+      </trans-unit>
+      <trans-unit id="Authoring_CONFIG0203_ManualInstructionIdIsNotUnique">
+        <source>'id' of the manual instruction '{0}' at index {1} is not unique. Only the first manual instruction that uses this id will be localized.</source>
+        <target state="new">'id' of the manual instruction '{0}' at index {1} is not unique. Only the first manual instruction that uses this id will be localized.</target>
+        <note>{0} is any identifier string that user provided in the file. Such as: "myInstruction", "firstInstruction", "instruction1" etc.
+{1} is a whole number representing the zero-based index of the manual instruction. Such as "5", or "0".</note>
+      </trans-unit>
+      <trans-unit id="Authoring_CONFIG0204_UnknownArgumentForReplace">
+        <source>The argument '{0}' configured in '{1}' is not listed in '{2}' and will be skipped for processing.</source>
+        <target state="new">The argument '{0}' configured in '{1}' is not listed in '{2}' and will be skipped for processing.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Authoring_InvalidJsonElementInLocalizationFile">
         <source>Localization file should only contain elements with type 'string'. Remove elements that are not strings.</source>
         <target state="translated">Il file di localizzazione deve contenere solo elementi con tipo 'stringa'. Rimuovere gli elementi che non sono stringhe.</target>
@@ -33,12 +56,6 @@
         <target state="translated">Una o più postActions presentano un valore non valido o mancante.</target>
         <note />
       </trans-unit>
-      <trans-unit id="Authoring_ManualInstructionIdIsNotUnique">
-        <source>'id' of the manual instruction '{0}' at index {1} is not unique. Only the first manual instruction that uses this id will be localized.</source>
-        <target state="translated">L''id' dell'istruzione manuale '{0}' in corrispondenza dell'indice {1} non è univoco. Solo la prima istruzione manuale che usa questo id verrà localizzata.</target>
-        <note>{0} is any identifier string that user provided in the file. Such as: "myInstruction", "firstInstruction", "instruction1" etc.
-{1} is a whole number representing the zero-based index of the manual instruction. Such as "5", or "0".</note>
-      </trans-unit>
       <trans-unit id="Authoring_MissingValue">
         <source>Missing '{0}'.</source>
         <target state="translated">Autorizzazione '{0}' mancante.</target>
@@ -48,18 +65,6 @@
         <source>A non-bool DataType was specified for a regexMatch type symbol</source>
         <target state="translated">È stato specificato un tipo di dati non bool per un simbolo di tipo regexMatch</target>
         <note />
-      </trans-unit>
-      <trans-unit id="Authoring_PostActionIdIsNotUnique">
-        <source>[{0}]: id of the post action '{1}' at index '{2}' is not unique. Only the first post action that uses this id will be localized.</source>
-        <target state="translated">[{0}]: l’id dell'azione di pubblicazione '{1}' in corrispondenza dell'indice '{2}' non è univoco. Solo la prima azione di pubblicazione che usa questo id verrà localizzata.</target>
-        <note>{0} is any identifier string that user provided in the file. Such as "myPostAction", "firstPostAction", "postAction1" etc.
-{1} is a number representing the zero-based index of the post action. Such as "5", or "0".</note>
-      </trans-unit>
-      <trans-unit id="Authoring_PostActionMustHaveActionId">
-        <source>[{0}]: Post action at index '{1}' should have an 'actionId' to declare the action to be executed.</source>
-        <target state="translated">[{0}]: l'azione successiva all'indice '{1}' deve avere un'actionId ' per dichiarare l'azione da eseguire.</target>
-        <note>{0} is a whole number representing the zero-based index of the post action. Such as "5" or "0".
-Do not localize: actionId</note>
       </trans-unit>
       <trans-unit id="Authoring_SourceDoesNotExist">
         <source>Source '{0}' in template does not exist.</source>

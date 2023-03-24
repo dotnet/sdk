@@ -3,8 +3,9 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.Extensions.Logging;
+using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Localization;
+using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Validation;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
@@ -50,7 +51,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
         public Guid ActionId { get; internal init; }
 
         /// <summary>
-        /// Gets a value indicating wheather the template instantiation should continue
+        /// Gets a value indicating whether the template instantiation should continue
         /// in case of an error with this post action.
         /// </summary>
         public bool ContinueOnError { get; internal init; }
@@ -61,15 +62,25 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
         public IReadOnlyDictionary<string, string> Args { get; internal init; } = new Dictionary<string, string>();
 
         /// <summary>
+        /// Gets the list of arguments to which file renames should be applied.
+        /// </summary>
+        public IReadOnlyList<string> ApplyFileRenamesToArgs { get; internal init; } = Array.Empty<string>();
+
+        /// <summary>
+        /// Gets a value indicating whether the file renames should be applied to manual instructions.
+        /// </summary>
+        public bool ApplyFileRenamesToManualInstructions { get; internal init; }
+
+        /// <summary>
         /// Gets the list of instructions that should be manually performed by the user.
         /// "instruction" contains the text that explains the steps to be taken by the user.
         /// An instruction is only considered if the "condition" evaluates to true.
         /// </summary>
         public IReadOnlyList<ManualInstructionModel> ManualInstructionInfo { get; internal init; } = new List<ManualInstructionModel>();
 
-        internal static IReadOnlyList<PostActionModel> LoadListFromJArray(JArray? jArray, ILogger? logger, string? filename)
+        internal static IReadOnlyList<PostActionModel> LoadListFromJArray(JArray? jArray, List<IValidationEntry> validationEntries)
         {
-            List<PostActionModel> localizedPostActions = new List<PostActionModel>();
+            List<PostActionModel> localizedPostActions = new();
             if (jArray == null)
             {
                 return localizedPostActions;
@@ -84,17 +95,27 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
                 Guid actionId = action.ToGuid(nameof(ActionId));
                 bool continueOnError = action.ToBool(nameof(ContinueOnError));
                 string? postActionCondition = action.ToString(nameof(Condition));
+                bool applyFileRenamesToManualInstructions = action.ToBool(nameof(ApplyFileRenamesToManualInstructions));
+                IReadOnlyList<string> applyFileRenamesToArgs = action.ArrayAsStrings(nameof(ApplyFileRenamesToArgs)) ?? Array.Empty<string>();
 
                 if (postActionId != null && !postActionIds.Add(postActionId))
                 {
                     // There is already a post action with the same id. Localization won't work properly. Let user know.
-                    logger?.LogWarning(LocalizableStrings.Authoring_PostActionIdIsNotUnique, filename, postActionId, postActionIndex);
+                    validationEntries.Add(
+                        new ValidationEntry(
+                            IValidationEntry.SeverityLevel.Warning,
+                            "CONFIG0201",
+                            string.Format(LocalizableStrings.Authoring_CONFIG0201_PostActionIdIsNotUnique, postActionId, postActionIndex)));
                     postActionId = null;
                 }
 
                 if (actionId == default)
                 {
-                    logger?.LogError(LocalizableStrings.Authoring_PostActionMustHaveActionId, filename, postActionIndex);
+                    validationEntries.Add(
+                    new ValidationEntry(
+                        IValidationEntry.SeverityLevel.Error,
+                        "CONFIG0202",
+                        string.Format(LocalizableStrings.Authoring_CONFIG0202_PostActionMustHaveActionId, postActionIndex)));
                     continue;
                 }
 
@@ -104,16 +125,35 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
                     args.Add(argInfo.Name, argInfo.Value.ToString());
                 }
 
-                using var postActionLoggerScope = logger?.BeginScope("PostAction " + (postActionId ?? postActionIndex.ToString()));
-                IReadOnlyList<ManualInstructionModel> manualInstructions = LoadManualInstructionsFromJArray(action.Get<JArray>("ManualInstructions"), logger);
+                List<string> verifiedApplyFileRenamesToArgs = new();
 
-                PostActionModel model = new PostActionModel(args, manualInstructions)
+                foreach (string arg in applyFileRenamesToArgs)
+                {
+                    if (!args.ContainsKey(arg))
+                    {
+                        validationEntries.Add(
+                         new ValidationEntry(
+                             IValidationEntry.SeverityLevel.Warning,
+                             "CONFIG0204",
+                             string.Format(LocalizableStrings.Authoring_CONFIG0204_UnknownArgumentForReplace, arg, nameof(ApplyFileRenamesToArgs).ToCamelCase(), nameof(Args).ToCamelCase())));
+                    }
+                    else
+                    {
+                        verifiedApplyFileRenamesToArgs.Add(arg);
+                    }
+                }
+
+                IReadOnlyList<ManualInstructionModel> manualInstructions = LoadManualInstructionsFromJArray(action.Get<JArray>("ManualInstructions"), validationEntries);
+
+                PostActionModel model = new(args, manualInstructions)
                 {
                     Id = postActionId,
                     Description = description,
                     ActionId = actionId,
                     ContinueOnError = continueOnError,
-                    Condition = postActionCondition
+                    Condition = postActionCondition,
+                    ApplyFileRenamesToArgs = verifiedApplyFileRenamesToArgs,
+                    ApplyFileRenamesToManualInstructions = applyFileRenamesToManualInstructions,
                 };
 
                 localizedPostActions.Add(model);
@@ -139,7 +179,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
             }
         }
 
-        private static IReadOnlyList<ManualInstructionModel> LoadManualInstructionsFromJArray(JArray? jArray, ILogger? logger)
+        private static IReadOnlyList<ManualInstructionModel> LoadManualInstructionsFromJArray(JArray? jArray, List<IValidationEntry> validationEntries)
         {
             var results = new List<ManualInstructionModel>();
             if (jArray == null)
@@ -158,7 +198,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
                 if (id != null && !manualInstructionIds.Add(id))
                 {
                     // There is already an instruction with the same id. We won't be able to localize this. Let user know.
-                    logger?.LogWarning(LocalizableStrings.Authoring_ManualInstructionIdIsNotUnique, id, i);
+                    validationEntries.Add(
+                    new ValidationEntry(
+                        IValidationEntry.SeverityLevel.Warning,
+                        "CONFIG0203",
+                        string.Format(LocalizableStrings.Authoring_CONFIG0203_ManualInstructionIdIsNotUnique, id, i)));
                     id = null;
                 }
 

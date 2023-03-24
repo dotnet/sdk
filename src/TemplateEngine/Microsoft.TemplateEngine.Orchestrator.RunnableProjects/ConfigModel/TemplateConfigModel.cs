@@ -25,6 +25,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
         private const string NameSymbolName = "name";
         private readonly ILogger? _logger;
         private readonly Dictionary<string, IValueForm> _forms = SetupValueFormMapForTemplate();
+
+        // validation entries:
+        // CONFIG00xx - primary metadata
+        // CONFIG01xx - symbols
+        // CONFIG02xx - post actions
+        private readonly List<IValidationEntry> _validationEntries = new();
         private IReadOnlyDictionary<string, string> _tags = new Dictionary<string, string>();
         private Dictionary<string, BaseSymbol> _symbols = new();
         private IReadOnlyList<PostActionModel> _postActions = new List<PostActionModel>();
@@ -44,7 +50,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
             Symbols = Array.Empty<BaseSymbol>();
         }
 
-        private TemplateConfigModel(JObject source, ILogger? logger, string? baselineName = null, string? filename = null)
+        private TemplateConfigModel(JObject source, ILogger? logger, string? baselineName = null)
         {
             _logger = logger;
 
@@ -151,7 +157,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
                 }
             }
             _symbols = symbols;
-            _postActions = PostActionModel.LoadListFromJArray(source.Get<JArray>("PostActions"), _logger, filename);
+            _postActions = PostActionModel.LoadListFromJArray(source.Get<JArray>("PostActions"), _validationEntries);
             PrimaryOutputs = PrimaryOutputModel.ListFromJArray(source.Get<JArray>(nameof(PrimaryOutputs)));
 
             // Custom operations at the global level
@@ -392,6 +398,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
 
         internal BaseSymbol NameSymbol { get; private init; } = SetupDefaultNameSymbol(null);
 
+        /// <summary>
+        /// Gets the list of validation errors for template.
+        /// </summary>
+        internal IReadOnlyList<IValidationEntry> ValidationErrors => _validationEntries;
+
         private static IReadOnlyList<BindSymbol> ImplicitBindSymbols { get; } = SetupImplicitBindSymbols();
 
         /// <summary>
@@ -404,7 +415,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
         {
             using (TextReader tr = new StreamReader(content, System.Text.Encoding.UTF8, true))
             {
-                return FromTextReader(tr, logger, filename);
+                return FromTextReader(tr, logger);
             }
         }
 
@@ -423,21 +434,21 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
 
             using (TextReader tr = new StringReader(content))
             {
-                return FromTextReader(tr, logger, filename);
+                return FromTextReader(tr, logger);
             }
         }
 
-        internal static TemplateConfigModel FromTextReader(TextReader content, ILogger? logger = null, string? filename = null)
+        internal static TemplateConfigModel FromTextReader(TextReader content, ILogger? logger = null)
         {
             using (JsonReader r = new JsonTextReader(content))
             {
-                return new TemplateConfigModel(JObject.Load(r), logger, null, filename);
+                return new TemplateConfigModel(JObject.Load(r), logger, null);
             }
         }
 
-        internal static TemplateConfigModel FromJObject(JObject source, ILogger? logger = null, string? baselineName = null, string? filename = null)
+        internal static TemplateConfigModel FromJObject(JObject source, ILogger? logger = null, string? baselineName = null)
         {
-            return new TemplateConfigModel(source, logger, baselineName, filename);
+            return new TemplateConfigModel(source, logger, baselineName);
         }
 
         internal void RemoveSymbol(string name)

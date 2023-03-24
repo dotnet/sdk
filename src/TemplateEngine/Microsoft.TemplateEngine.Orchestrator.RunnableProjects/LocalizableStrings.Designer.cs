@@ -61,6 +61,42 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Id of the post action &apos;{0}&apos; at index &apos;{1}&apos; is not unique. Only the first post action that uses this id will be localized..
+        /// </summary>
+        internal static string Authoring_CONFIG0201_PostActionIdIsNotUnique {
+            get {
+                return ResourceManager.GetString("Authoring_CONFIG0201_PostActionIdIsNotUnique", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Post action at index &apos;{0}&apos; should have an &apos;actionId&apos; to declare the action to be executed..
+        /// </summary>
+        internal static string Authoring_CONFIG0202_PostActionMustHaveActionId {
+            get {
+                return ResourceManager.GetString("Authoring_CONFIG0202_PostActionMustHaveActionId", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &apos;id&apos; of the manual instruction &apos;{0}&apos; at index {1} is not unique. Only the first manual instruction that uses this id will be localized..
+        /// </summary>
+        internal static string Authoring_CONFIG0203_ManualInstructionIdIsNotUnique {
+            get {
+                return ResourceManager.GetString("Authoring_CONFIG0203_ManualInstructionIdIsNotUnique", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The argument &apos;{0}&apos; configured in &apos;{1}&apos; is not listed in &apos;{2}&apos; and will be skipped for processing..
+        /// </summary>
+        internal static string Authoring_CONFIG0204_UnknownArgumentForReplace {
+            get {
+                return ResourceManager.GetString("Authoring_CONFIG0204_UnknownArgumentForReplace", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Localization file should only contain elements with type &apos;string&apos;. Remove elements that are not strings..
         /// </summary>
         internal static string Authoring_InvalidJsonElementInLocalizationFile {
@@ -115,15 +151,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to &apos;id&apos; of the manual instruction &apos;{0}&apos; at index {1} is not unique. Only the first manual instruction that uses this id will be localized..
-        /// </summary>
-        internal static string Authoring_ManualInstructionIdIsNotUnique {
-            get {
-                return ResourceManager.GetString("Authoring_ManualInstructionIdIsNotUnique", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Missing &apos;{0}&apos;..
         /// </summary>
         internal static string Authoring_MissingValue {
@@ -138,24 +165,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects {
         internal static string Authoring_NonBoolDataTypeForRegexMatch {
             get {
                 return ResourceManager.GetString("Authoring_NonBoolDataTypeForRegexMatch", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to [{0}]: id of the post action &apos;{1}&apos; at index &apos;{2}&apos; is not unique. Only the first post action that uses this id will be localized..
-        /// </summary>
-        internal static string Authoring_PostActionIdIsNotUnique {
-            get {
-                return ResourceManager.GetString("Authoring_PostActionIdIsNotUnique", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to [{0}]: Post action at index &apos;{1}&apos; should have an &apos;actionId&apos; to declare the action to be executed..
-        /// </summary>
-        internal static string Authoring_PostActionMustHaveActionId {
-            get {
-                return ResourceManager.GetString("Authoring_PostActionMustHaveActionId", resourceCulture);
             }
         }
         

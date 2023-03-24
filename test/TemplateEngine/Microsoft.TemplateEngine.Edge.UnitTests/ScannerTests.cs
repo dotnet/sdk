@@ -137,9 +137,16 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
                 """,
                 errorMessages[1]);
 
-            Assert.Equal($"[{Path.GetFullPath(templatesLocation) + Path.DirectorySeparatorChar}.template.config/template.json]: id of the post action 'pa2' at index '3' is not unique. Only the first post action that uses this id will be localized.", warningMessages[0]);
-            Assert.Equal("Failed to load the 'de-DE' localization the template 'name' (TestAssets.Invalid.Localization.ValidationFailure): the localization file is not valid. The localization will be skipped.", warningMessages[1]);
-            Assert.Equal("Failed to load the 'tr' localization the template 'name' (TestAssets.Invalid.Localization.ValidationFailure): the localization file is not valid. The localization will be skipped.", warningMessages[2]);
+            Assert.Equal("Failed to load the 'de-DE' localization the template 'name' (TestAssets.Invalid.Localization.ValidationFailure): the localization file is not valid. The localization will be skipped.", warningMessages[0]);
+            Assert.Equal("Failed to load the 'tr' localization the template 'name' (TestAssets.Invalid.Localization.ValidationFailure): the localization file is not valid. The localization will be skipped.", warningMessages[1]);
+
+            Assert.Equal(
+        """
+                The template 'name' (TestAssets.Invalid.Localization.ValidationFailure) has the following validation warnings:
+                   [Warning][CONFIG0201] Id of the post action 'pa2' at index '3' is not unique. Only the first post action that uses this id will be localized.
+
+                """,
+        warningMessages[2]);
         }
     }
 }
