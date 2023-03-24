@@ -26,11 +26,11 @@ Copyright (C) Microsoft Corporation. All rights reserved.
     <_CopyTargetsDir Condition=" '$(_CopyTargetsDir)' == ''">$(MSBuildThisFileDirectory)CopyTargets\</_CopyTargetsDir>
     <_TransformTargetsDir Condition=" '$(_TransformTargetsDir)' == ''">$(MSBuildThisFileDirectory)TransformTargets\</_TransformTargetsDir>
     <_ComputeTargetsDir Condition=" '$(_ComputeTargetsDir)'=='' ">$(MSBuildThisFileDirectory)ComputeTargets\</_ComputeTargetsDir>
-    <_ContainersTargetsDir Condition=" '$(_ContainersTargetsDir)'=='' ">$(MSBuildThisFileDirectory)..\..\..\Containers\build\</_ContainersTargetsDir>
     <_PublishTargetsDir Condition=" '$(_PublishTargetsDir)'=='' ">$(MSBuildThisFileDirectory)PublishTargets\</_PublishTargetsDir>
     <_DotNetCLIToolTargetsDir Condition=" '$(_DotNetCLIToolTargetsDir)'=='' ">$(MSBuildThisFileDirectory)DotNetCLIToolTargets\</_DotNetCLIToolTargetsDir>
     <_PublishProfilesDir Condition=" '$(_PublishProfilesDir)'=='' ">$(MSBuildThisFileDirectory)PublishProfiles\</_PublishProfilesDir>
-
+    <_ContainersTargetsDir Condition=" '$(_ContainersTargetsDir)'=='' ">$(MSBuildThisFileDirectory)..\..\..\Containers\build\</_ContainersTargetsDir>
+    
     <PublishIISAssets Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp'
              And '$(_TargetFrameworkVersionWithoutV)' != ''
              AND $([MSBuild]::VersionGreaterThanOrEquals($(_TargetFrameworkVersionWithoutV), '5.0'))
@@ -146,6 +146,14 @@ Copyright (C) Microsoft Corporation. All rights reserved.
  -->
 
   <Import Project="$(_DotNetCLIToolTargetsDir)Microsoft.NET.Sdk.DotNetCLITool.targets" Condition="Exists('$(_DotNetCLIToolTargetsDir)Microsoft.NET.Sdk.DotNetCLITool.targets')"/>
+
+<!--
+  ***********************************************************************************************
+  Import the Containers target
+  ***********************************************************************************************
+ -->
+
+  <Import Project="$(_ContainersTargetsDir)Microsoft.NET.Build.Containers.targets" Condition="Exists('$(_ContainersTargetsDir)Microsoft.NET.Build.Containers.targets')" />
 
   <!--
   ***********************************************************************************************
