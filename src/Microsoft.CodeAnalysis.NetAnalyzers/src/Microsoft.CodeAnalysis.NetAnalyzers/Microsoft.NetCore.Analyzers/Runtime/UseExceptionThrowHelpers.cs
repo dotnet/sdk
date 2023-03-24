@@ -57,6 +57,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         // if (arg >= 42) throw new ArgumentOutOfRangeException(...); => ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(arg, 42);
         // if (arg < 42) throw new ArgumentOutOfRangeException(...); => ArgumentOutOfRangeException.ThrowIfLessThan(arg, 42);
         // if (arg <= 42) throw new ArgumentOutOfRangeException(...); => ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(arg, 42);
+        // if (arg == 42) throw new ArgumentOutOfRangeException(...); => ArgumentOutOfRangeException.ThrowIfEqual(arg, 42);
+        // if (arg != 42) throw new ArgumentOutOfRangeException(...); => ArgumentOutOfRangeException.ThrowIfNotEqual(arg, 42);
         internal static readonly DiagnosticDescriptor UseArgumentOutOfRangeExceptionThrowIfRule = DiagnosticDescriptorHelper.Create(UseArgumentOutOfRangeExceptionThrowIfRuleId,
             CreateLocalizableResourceString(nameof(UseArgumentOutOfRangeExceptionThrowHelperTitle)),
             CreateLocalizableResourceString(nameof(UseThrowHelperMessage)),
@@ -123,10 +125,13 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 ISymbol? aooreThrowIfGreaterThanOrEqual = aoore.GetMembers("aooreThrowIfGreaterThanOrEqual").FirstOrDefault();
                 ISymbol? aooreThrowIfLessThan = aoore.GetMembers("ThrowIfLessThan").FirstOrDefault();
                 ISymbol? aooreThrowIfLessThanOrEqual = aoore.GetMembers("ThrowIfLessThanOrEqual").FirstOrDefault();
+                ISymbol? aooreThrowIfEqual = aoore.GetMembers("ThrowIfEqual").FirstOrDefault();
+                ISymbol? aooreThrowIfNotEqual = aoore.GetMembers("ThrowIfNotEqual").FirstOrDefault();
                 if (aneThrowIfNull is null && aeThrowIfNullOrEmpty is null && odeThrowIf is null &&
                     aooreThrowIfZero is null && aooreThrowIfNegative is null && aooreThrowIfNegativeOrZero is null &&
                     aooreThrowIfGreaterThan is null && aooreThrowIfGreaterThanOrEqual is null &&
-                    aooreThrowIfLessThan is null && aooreThrowIfLessThanOrEqual is null)
+                    aooreThrowIfLessThan is null && aooreThrowIfLessThanOrEqual is null &&
+                    aooreThrowIfEqual is null && aooreThrowIfNotEqual is null)
                 {
                     return;
                 }
@@ -135,7 +140,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 bool hasAnyAooreThrow =
                     aooreThrowIfZero is not null || aooreThrowIfNegative is not null || aooreThrowIfNegativeOrZero is not null ||
                     aooreThrowIfGreaterThan is not null || aooreThrowIfGreaterThanOrEqual is not null ||
-                    aooreThrowIfLessThan is not null || aooreThrowIfLessThanOrEqual is not null;
+                    aooreThrowIfLessThan is not null || aooreThrowIfLessThanOrEqual is not null ||
+                    aooreThrowIfEqual is not null || aooreThrowIfNotEqual is not null;
 
                 // Look for throw operations.
                 context.RegisterOperationAction(context =>
@@ -218,6 +224,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     // Handle ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual
                     // Handle ArgumentOutOfRangeException.ThrowIfLessThan
                     // Handle ArgumentOutOfRangeException.ThrowIfLessThanOrEqual
+                    // Handle ArgumentOutOfRangeException.ThrowIfEqual
+                    // Handle ArgumentOutOfRangeException.ThrowIfNotEqual
                     if (SymbolEqualityComparer.Default.Equals(objectCreationOperation.Type, aoore))
                     {
                         if (hasAnyAooreThrow &&
@@ -229,7 +237,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                             {
                                 additionalLocations = ImmutableArray.Create(aooreParameter.Syntax.GetLocation());
                             }
-                            else if (IsGreaterLessThanComparison(condition.Condition, out aooreParameter, out methodName, out SyntaxNode? other))
+                            else if (IsGreaterLessEqualThanComparison(condition.Condition, out aooreParameter, out methodName, out SyntaxNode? other))
                             {
                                 additionalLocations = ImmutableArray.Create(aooreParameter.Syntax.GetLocation(), other.GetLocation());
                             }
@@ -503,30 +511,36 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         }
 
         /// <summary>Gets the <see cref="IParameterReferenceOperation"/> being compared to another expression.</summary>
-        private static bool IsGreaterLessThanComparison(IOperation condition, [NotNullWhen(true)] out IParameterReferenceOperation? parameterReferenceOperation, [NotNullWhen(true)] out string? methodName, [NotNullWhen(true)] out SyntaxNode? other)
+        private static bool IsGreaterLessEqualThanComparison(IOperation condition, [NotNullWhen(true)] out IParameterReferenceOperation? parameterReferenceOperation, [NotNullWhen(true)] out string? methodName, [NotNullWhen(true)] out SyntaxNode? other)
         {
             const string ThrowIfGreaterThan = nameof(ThrowIfGreaterThan);
             const string ThrowIfGreaterThanOrEqual = nameof(ThrowIfGreaterThanOrEqual);
             const string ThrowIfLessThan = nameof(ThrowIfLessThan);
             const string ThrowIfLessThanOrEqual = nameof(ThrowIfLessThanOrEqual);
+            const string ThrowIfEqual = nameof(ThrowIfEqual);
+            const string ThrowIfNotEqual = nameof(ThrowIfNotEqual);
 
             if (condition is IBinaryOperation binaryOperation)
             {
                 switch (binaryOperation.OperatorKind)
                 {
-                    case BinaryOperatorKind.GreaterThan or BinaryOperatorKind.GreaterThanOrEqual or BinaryOperatorKind.LessThan or BinaryOperatorKind.LessThanOrEqual:
+                    case BinaryOperatorKind.GreaterThan or BinaryOperatorKind.GreaterThanOrEqual or BinaryOperatorKind.LessThan or BinaryOperatorKind.LessThanOrEqual or BinaryOperatorKind.Equals or BinaryOperatorKind.NotEquals:
                         if (binaryOperation.LeftOperand is IParameterReferenceOperation leftParameter)
                         {
                             // arg > other
                             // arg >= other
                             // arg < other
                             // arg <= other
+                            // arg == other
+                            // arg != other
                             methodName = binaryOperation.OperatorKind switch
                             {
                                 BinaryOperatorKind.GreaterThan => ThrowIfGreaterThan,
                                 BinaryOperatorKind.GreaterThanOrEqual => ThrowIfGreaterThanOrEqual,
                                 BinaryOperatorKind.LessThan => ThrowIfLessThan,
-                                _ => ThrowIfLessThanOrEqual,
+                                BinaryOperatorKind.LessThanOrEqual => ThrowIfLessThanOrEqual,
+                                BinaryOperatorKind.Equals => ThrowIfEqual,
+                                _ => ThrowIfNotEqual
                             };
                             other = binaryOperation.RightOperand.Syntax;
                             parameterReferenceOperation = leftParameter;
@@ -539,12 +553,16 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                             // other >= arg
                             // other < arg
                             // other <= arg
+                            // other == arg
+                            // other != arg
                             methodName = binaryOperation.OperatorKind switch
                             {
                                 BinaryOperatorKind.GreaterThan => ThrowIfLessThan,
                                 BinaryOperatorKind.GreaterThanOrEqual => ThrowIfLessThanOrEqual,
                                 BinaryOperatorKind.LessThan => ThrowIfGreaterThan,
-                                _ => ThrowIfGreaterThanOrEqual,
+                                BinaryOperatorKind.LessThanOrEqual => ThrowIfGreaterThanOrEqual,
+                                BinaryOperatorKind.Equals => ThrowIfEqual,
+                                _ => ThrowIfNotEqual
                             };
                             other = binaryOperation.LeftOperand.Syntax;
                             parameterReferenceOperation = rightParameter;
