@@ -122,7 +122,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 ISymbol? aooreThrowIfNegative = aoore.GetMembers("ThrowIfNegative").FirstOrDefault();
                 ISymbol? aooreThrowIfNegativeOrZero = aoore.GetMembers("ThrowIfNegativeOrZero").FirstOrDefault();
                 ISymbol? aooreThrowIfGreaterThan = aoore.GetMembers("ThrowIfGreaterThan").FirstOrDefault();
-                ISymbol? aooreThrowIfGreaterThanOrEqual = aoore.GetMembers("aooreThrowIfGreaterThanOrEqual").FirstOrDefault();
+                ISymbol? aooreThrowIfGreaterThanOrEqual = aoore.GetMembers("ThrowIfGreaterThanOrEqual").FirstOrDefault();
                 ISymbol? aooreThrowIfLessThan = aoore.GetMembers("ThrowIfLessThan").FirstOrDefault();
                 ISymbol? aooreThrowIfLessThanOrEqual = aoore.GetMembers("ThrowIfLessThanOrEqual").FirstOrDefault();
                 ISymbol? aooreThrowIfEqual = aoore.GetMembers("ThrowIfEqual").FirstOrDefault();
@@ -244,11 +244,24 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
                             if (additionalLocations.Length != 0 && !AvoidComparing(aooreParameter!))
                             {
-                                context.ReportDiagnostic(condition.CreateDiagnostic(
-                                    UseArgumentOutOfRangeExceptionThrowIfRule,
-                                    additionalLocations,
-                                    properties: ImmutableDictionary<string, string?>.Empty.Add(MethodNamePropertyKey, methodName),
-                                    args: new object[] { nameof(ArgumentOutOfRangeException), methodName! }));
+                                switch (methodName)
+                                {
+                                    case "ThrowIfZero" when aooreThrowIfZero is not null:
+                                    case "ThrowIfNegative" when aooreThrowIfNegative is not null:
+                                    case "ThrowIfNegativeOrZero" when aooreThrowIfNegativeOrZero is not null:
+                                    case "ThrowIfGreaterThan" when aooreThrowIfGreaterThan is not null:
+                                    case "ThrowIfGreaterThanOrEqual" when aooreThrowIfGreaterThanOrEqual is not null:
+                                    case "ThrowIfLessThan" when aooreThrowIfLessThan is not null:
+                                    case "ThrowIfLessThanOrEqual" when aooreThrowIfLessThanOrEqual is not null:
+                                    case "ThrowIfEqual" when aooreThrowIfEqual is not null:
+                                    case "ThrowIfNotEqual" when aooreThrowIfNotEqual is not null:
+                                        context.ReportDiagnostic(condition.CreateDiagnostic(
+                                            UseArgumentOutOfRangeExceptionThrowIfRule,
+                                            additionalLocations,
+                                            properties: ImmutableDictionary<string, string?>.Empty.Add(MethodNamePropertyKey, methodName),
+                                            args: new object[] { nameof(ArgumentOutOfRangeException), methodName! }));
+                                        break;
+                                }
                             }
 
                             static bool AvoidComparing(IParameterReferenceOperation p) =>

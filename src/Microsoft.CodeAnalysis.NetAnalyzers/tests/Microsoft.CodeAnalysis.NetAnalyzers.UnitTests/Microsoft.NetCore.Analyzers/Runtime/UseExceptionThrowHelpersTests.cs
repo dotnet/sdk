@@ -913,6 +913,50 @@ class C
         }
 
         [Fact]
+        public async Task ArgumentOutOfRangeExceptionThrowIf_NoDiagnosticForMissingHelper()
+        {
+            await new VerifyCS.Test()
+            {
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9,
+                TestCode =
+@"
+using System;
+
+namespace System
+{
+    public class ArgumentOutOfRangeException : Exception
+    {
+        public ArgumentOutOfRangeException(string paramName) { }
+        public ArgumentOutOfRangeException(string paramName, string message) { }
+        public static void ThrowIfZero<T>(T arg) { }
+        public static void ThrowIfNegative<T>(T arg) { }
+        public static void ThrowIfNegativeOrZero<T>(T arg) { }
+        public static void ThrowIfGreaterThan<T>(T arg, T other) { }
+        public static void ThrowIfGreaterThanOrEqual<T>(T arg, T other) { }
+        public static void ThrowIfLessThan<T>(T arg, T other) { }
+        public static void ThrowIfLessThanOrEqual<T>(T arg, T other) { }
+    }
+}
+
+class C
+{
+    void M(int arg)
+    {
+        if (arg != 42)
+        {
+            throw new ArgumentOutOfRangeException(nameof(arg));
+        }
+        if (42 != arg)
+        {
+            throw new ArgumentOutOfRangeException(nameof(arg));
+        }
+    }
+}
+"
+            }.RunAsync();
+        }
+
+        [Fact]
         public async Task ObjectDisposedExceptionThrowIf_DoesntExist_NoDiagnostics()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
