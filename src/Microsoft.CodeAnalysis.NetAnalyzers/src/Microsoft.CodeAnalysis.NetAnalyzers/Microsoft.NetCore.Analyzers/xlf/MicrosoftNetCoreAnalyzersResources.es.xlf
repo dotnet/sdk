@@ -1000,17 +1000,17 @@ Widening and user defined conversions are not supported with generic types.</tar
       </trans-unit>
       <trans-unit id="DoNotUseReferenceEqualsWithValueTypesComparerMessage">
         <source>Do not pass an argument with value type '{0}' to the 'Equals' method on 'ReferenceEqualityComparer'. Due to value boxing, this call to 'Equals' can return an unexpected result. Consider using 'EqualityComparer' instead, or pass reference type arguments if you intend to use 'ReferenceEqualityComparer'.</source>
-        <target state="needs-review-translation">No pase un argumento con el tipo de valor "{0}" al método "Equals" en "ReferenceEqualityComparer". Debido a la conversión boxing de valores, esta llamada a "Equals" siempre devolverá "false".</target>
+        <target state="new">Do not pass an argument with value type '{0}' to the 'Equals' method on 'ReferenceEqualityComparer'. Due to value boxing, this call to 'Equals' can return an unexpected result. Consider using 'EqualityComparer' instead, or pass reference type arguments if you intend to use 'ReferenceEqualityComparer'.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseReferenceEqualsWithValueTypesDescription">
         <source>Value type typed arguments are uniquely boxed for each call to this method, therefore the result can be unexpected.</source>
-        <target state="needs-review-translation">A los argumentos con tipo de valor se les aplica la conversión boxing de forma única para cada llamada a este método, por lo que el resultado siempre es false.</target>
+        <target state="new">Value type typed arguments are uniquely boxed for each call to this method, therefore the result can be unexpected.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseReferenceEqualsWithValueTypesMethodMessage">
         <source>Do not pass an argument with value type '{0}' to 'ReferenceEquals'. Due to value boxing, this call to 'ReferenceEquals' can return an unexpected result. Consider using 'Equals' instead, or pass reference type arguments if you intend to use 'ReferenceEquals'.</source>
-        <target state="needs-review-translation">No pase un argumento con el tipo de valor "{0}" a "ReferenceEquals". Debido a la conversión boxing de valores, esta llamada a "ReferenceEquals" siempre devolverá "false".</target>
+        <target state="new">Do not pass an argument with value type '{0}' to 'ReferenceEquals'. Due to value boxing, this call to 'ReferenceEquals' can return an unexpected result. Consider using 'Equals' instead, or pass reference type arguments if you intend to use 'ReferenceEquals'.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseReferenceEqualsWithValueTypesTitle">

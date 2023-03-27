@@ -1000,17 +1000,17 @@ Widening and user defined conversions are not supported with generic types.</tar
       </trans-unit>
       <trans-unit id="DoNotUseReferenceEqualsWithValueTypesComparerMessage">
         <source>Do not pass an argument with value type '{0}' to the 'Equals' method on 'ReferenceEqualityComparer'. Due to value boxing, this call to 'Equals' can return an unexpected result. Consider using 'EqualityComparer' instead, or pass reference type arguments if you intend to use 'ReferenceEqualityComparer'.</source>
-        <target state="needs-review-translation">값 형식이 '{0}'인 인수를 'ReferenceEqualityComparer'의 'Equals' 메서드에 전달하지 마세요. 값 boxing으로 인해 이 'Equals' 호출은 항상 'false'를 반환합니다.</target>
+        <target state="new">Do not pass an argument with value type '{0}' to the 'Equals' method on 'ReferenceEqualityComparer'. Due to value boxing, this call to 'Equals' can return an unexpected result. Consider using 'EqualityComparer' instead, or pass reference type arguments if you intend to use 'ReferenceEqualityComparer'.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseReferenceEqualsWithValueTypesDescription">
         <source>Value type typed arguments are uniquely boxed for each call to this method, therefore the result can be unexpected.</source>
-        <target state="needs-review-translation">값 형식으로 형식이 지정된 인수는 이 메서드를 호출할 때마다 고유하게 boxing되므로 결과는 항상 false입니다.</target>
+        <target state="new">Value type typed arguments are uniquely boxed for each call to this method, therefore the result can be unexpected.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseReferenceEqualsWithValueTypesMethodMessage">
         <source>Do not pass an argument with value type '{0}' to 'ReferenceEquals'. Due to value boxing, this call to 'ReferenceEquals' can return an unexpected result. Consider using 'Equals' instead, or pass reference type arguments if you intend to use 'ReferenceEquals'.</source>
-        <target state="needs-review-translation">값 형식이 '{0}'인 인수를 'ReferenceEquals'에 전달하지 마세요. 값 boxing으로 인해 이 'ReferenceEquals' 호출은 항상 'false'를 반환합니다.</target>
+        <target state="new">Do not pass an argument with value type '{0}' to 'ReferenceEquals'. Due to value boxing, this call to 'ReferenceEquals' can return an unexpected result. Consider using 'Equals' instead, or pass reference type arguments if you intend to use 'ReferenceEquals'.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseReferenceEqualsWithValueTypesTitle">
