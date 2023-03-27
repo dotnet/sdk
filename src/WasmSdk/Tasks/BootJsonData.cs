@@ -56,6 +56,16 @@ namespace Microsoft.NET.Sdk.WebAssembly
         public ICUDataMode icuDataMode { get; set; }
 
         /// <summary>
+        /// Gets or sets a value that determines if the caching startup memory is enabled.
+        /// </summary>
+        public bool? startupMemoryCache { get; set; }
+
+        /// <summary>
+        /// Gets a value for mono runtime options.
+        /// </summary>
+        public string[] runtimeOptions { get; set; }
+
+        /// <summary>
         /// Gets or sets configuration extensions.
         /// </summary>
         public Dictionary<string, Dictionary<string, object>> extensions { get; set; }
