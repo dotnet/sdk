@@ -79,7 +79,7 @@
       </trans-unit>
       <trans-unit id="HostObjectNotDetected">
         <source>No host object detected.</source>
-        <target state="new">No host object detected.</target>
+        <target state="translated">Aucun objet hôte détecté.</target>
         <note />
       </trans-unit>
       <trans-unit id="ImageLoadFailed">
@@ -174,12 +174,12 @@
       </trans-unit>
       <trans-unit id="NormalizedContainerName">
         <source>'{0}' was not a valid container image name, it was normalized to '{1}'</source>
-        <target state="new">'{0}' was not a valid container image name, it was normalized to '{1}'</target>
+        <target state="translated">'{0}' n’était pas un nom d’image conteneur valide, il a été normalisé pour '{1}'</target>
         <note />
       </trans-unit>
       <trans-unit id="PublishDirectoryDoesntExist">
         <source>CONTAINER2011: {0} '{1}' does not exist</source>
-        <target state="new">CONTAINER2011: {0} '{1}' does not exist</target>
+        <target state="translated">CONTAINER2011: {0} '{1}' n’existe pas</target>
         <note>{StrBegin="CONTAINER2011: "}</note>
       </trans-unit>
       <trans-unit id="RegistryOutputPushFailed">
@@ -229,7 +229,7 @@
       </trans-unit>
       <trans-unit id="_Test">
         <source>CONTAINER0000: Value for unit test {0}</source>
-        <target state="new">CONTAINER0000: Value for unit test {0}</target>
+        <target state="translated">CONTAINER0000 : valeur du {0} de test unitaire</target>
         <note>Used only for unit tests</note>
       </trans-unit>
     </body>
