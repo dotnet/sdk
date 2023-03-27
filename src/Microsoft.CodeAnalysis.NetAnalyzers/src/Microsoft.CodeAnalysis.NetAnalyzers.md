@@ -1778,7 +1778,7 @@ ValueTasks returned from member invocations are intended to be directly awaited.
 
 ## [CA2013](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2013): Do not use ReferenceEquals with value types
 
-Value type typed arguments are uniquely boxed for each call to this method, therefore the result is always false.
+Value type typed arguments are uniquely boxed for each call to this method, therefore the result can be unexpected.
 
 |Item|Value|
 |-|-|
