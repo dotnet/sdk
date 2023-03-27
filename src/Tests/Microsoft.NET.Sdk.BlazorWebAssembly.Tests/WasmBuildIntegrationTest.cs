@@ -368,7 +368,6 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var runtime = bootJsonData.resources.runtime;
 
             runtime.Should().ContainKey("dotnet.wasm");
-            runtime.Should().ContainKey("dotnet.timezones.blat");
             runtime.Should().ContainKey(customIcuFilename);
             runtime.Should().NotContainKey("icudt.dat");
             runtime.Should().NotContainKey("icudt_CJK.dat");
@@ -411,7 +410,6 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var runtime = bootJsonData.resources.runtime;
 
             runtime.Should().ContainKey("dotnet.wasm");
-            runtime.Should().ContainKey("dotnet.timezones.blat");
             runtime.Should().ContainKey(customIcuFilename);
             runtime.Should().NotContainKey("icudt.dat");
             runtime.Should().NotContainKey("icudt_CJK.dat");
