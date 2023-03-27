@@ -136,6 +136,9 @@ Copyright (c) .NET Foundation. All rights reserved.
       <_WasmCopyOutputSymbolsToOutputDirectory Condition="'$(_WasmCopyOutputSymbolsToOutputDirectory)'==''">true</_WasmCopyOutputSymbolsToOutputDirectory>
       <_BlazorWebAssemblyLoadAllGlobalizationData>$(BlazorWebAssemblyLoadAllGlobalizationData)</_BlazorWebAssemblyLoadAllGlobalizationData>
       <_BlazorWebAssemblyLoadAllGlobalizationData Condition="'$(_BlazorWebAssemblyLoadAllGlobalizationData)' == ''">false</_BlazorWebAssemblyLoadAllGlobalizationData>
+      <_BlazorWebAssemblyStartupMemoryCache>$(BlazorWebAssemblyStartupMemoryCache)</_BlazorWebAssemblyStartupMemoryCache>
+      <_BlazorWebAssemblyJiterpreter>$(BlazorWebAssemblyJiterpreter)</_BlazorWebAssemblyJiterpreter>
+      <_BlazorWebAssemblyRuntimeOptions>$(BlazorWebAssemblyRuntimeOptions)</_BlazorWebAssemblyRuntimeOptions>
 
       <!-- Workaround for https://github.com/dotnet/sdk/issues/12114-->
       <PublishDir Condition="'$(AppendRuntimeIdentifierToOutputPath)' != 'true' AND '$(PublishDir)' == '$(OutputPath)$(RuntimeIdentifier)\$(PublishDirName)\'">$(OutputPath)$(PublishDirName)\</PublishDir>
@@ -275,6 +278,9 @@ Copyright (c) .NET Foundation. All rights reserved.
       LazyLoadedAssemblies="@(BlazorWebAssemblyLazyLoad)"
       InvariantGlobalization="$(InvariantGlobalization)"
       LoadAllICUData="$(_BlazorWebAssemblyLoadAllGlobalizationData)"
+      StartupMemoryCache="$(_BlazorWebAssemblyStartupMemoryCache)"
+      Jiterpreter="$(_BlazorWebAssemblyJiterpreter)"
+      RuntimeOptions="$(_BlazorWebAssemblyRuntimeOptions)"
       Extensions="@(WasmBootConfigExtension)" />
 
     <ItemGroup>
@@ -445,6 +451,9 @@ Copyright (c) .NET Foundation. All rights reserved.
       LazyLoadedAssemblies="@(BlazorWebAssemblyLazyLoad)"
       InvariantGlobalization="$(InvariantGlobalization)"
       LoadAllICUData="$(_BlazorWebAssemblyLoadAllGlobalizationData)"
+      StartupMemoryCache="$(_BlazorWebAssemblyStartupMemoryCache)"
+      Jiterpreter="$(_BlazorWebAssemblyJiterpreter)"
+      RuntimeOptions="$(_BlazorWebAssemblyRuntimeOptions)"
       Extensions="@(WasmBootConfigExtension)" />
 
     <ItemGroup>
