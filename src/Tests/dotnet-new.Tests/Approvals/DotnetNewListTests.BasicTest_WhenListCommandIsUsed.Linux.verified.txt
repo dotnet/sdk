@@ -38,6 +38,6 @@ Razor Component                               razorcomponent              [C#]  
 Razor Page                                    page                        [C#]        Web/ASP.NET                     
 Razor View                                    view                        [C#]        Web/ASP.NET                     
 Solution File                                 sln,solution                            Solution                        
-Web Config                                    webconfig                               Config                                          
-Worker Service                                worker                      [C#],F#     Common/Worker/Web                                  
+Web Config                                    webconfig                               Config                          
+Worker Service                                worker                      [C#],F#     Common/Worker/Web               
 xUnit Test Project                            xunit                       [C#],F#,VB  Test/xUnit                      
