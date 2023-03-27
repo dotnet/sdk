@@ -361,7 +361,7 @@ Details: {0}</source>
       </trans-unit>
       <trans-unit id="TemplateCreator_TemplateCreationResult_Error_InvalidTemplate">
         <source>The template is invalid and cannot be instantiated.</source>
-        <target state="new">The template is invalid and cannot be instantiated.</target>
+        <target state="translated">テンプレートが無効であり、インスタンス化できません。</target>
         <note />
       </trans-unit>
       <trans-unit id="TemplateCreator_TemplateCreationResult_Error_NoDefaultName">
@@ -427,12 +427,12 @@ The template from 'PACKAGE_ID' will be used. To resolve this conflict, uninstall
       </trans-unit>
       <trans-unit id="Validation_InvalidTemplate">
         <source>Failed to load the template {0}: the template is not valid.</source>
-        <target state="new">Failed to load the template {0}: the template is not valid.</target>
+        <target state="translated">テンプレート {0} を読み込めませんでした: テンプレートが無効です。</target>
         <note>{0} template info in format 'template name' (template.identity)</note>
       </trans-unit>
       <trans-unit id="Validation_InvalidTemplateLoc">
         <source>Failed to load the '{0}' localization the template {1}: the localization file is not valid. The localization will be skipped.</source>
-        <target state="new">Failed to load the '{0}' localization the template {1}: the localization file is not valid. The localization will be skipped.</target>
+        <target state="translated">'{0}' ローカリゼーションテンプレート {1} をインストールできませんでした: ローカライズ ファイルが無効です。ローカライズはスキップされます。</target>
         <note>{1} template info in format 'template name' (template.identity), {0} is localization locale in "en-US" format</note>
       </trans-unit>
       <trans-unit id="Validation_LocError_Header">
