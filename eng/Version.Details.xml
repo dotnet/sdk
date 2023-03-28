@@ -280,6 +280,11 @@
       <Sha>1177b37e60c7271ab461098aefbdd03edc15b90d</Sha>
       <SourceBuild RepoName="arcade" ManagedOnly="true" />
     </Dependency>
+    <Dependency Name="Microsoft.SourceLink.GitHub" Version="1.2.0-beta-23172-02" CoherentParentDependency="Microsoft.DotNet.Arcade.Sdk">
+      <Uri>https://github.com/dotnet/sourcelink</Uri>
+      <Sha>a86ac5afc76f4afbd3dd59029a00857cc3eeb6e3</Sha>
+      <SourceBuild RepoName="sourcelink" ManagedOnly="true" />
+    </Dependency>
     <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="8.0.0-beta.23174.1">
       <Uri>https://github.com/dotnet/arcade</Uri>
       <Sha>1177b37e60c7271ab461098aefbdd03edc15b90d</Sha>
