@@ -332,6 +332,12 @@
     <!-- Copy lists of NonShipping packages to prebuilt-report dir -->
     <Copy SourceFiles="@(NonShippingPackageLists)" DestinationFolder="$(PackageReportDir)packagelists/" />
 
+    <!-- Building SBRP: At this point the References directory contains the previously-source-built SBRPs,
+         clear it before moving the current SBRPs.  This ensures n-1 SBRPs aren't required to build the product repos. -->
+    <RemoveDir
+      Condition="'$(_NupkgDestinationPath)' == '$(ReferencePackagesDir)'"
+      Directories="$(ReferencePackagesDir)" />
+
     <Move
       Condition="'@(SourceBuiltNupkgFiles)' != ''"
       SourceFiles="@(SourceBuiltNupkgFiles)"
