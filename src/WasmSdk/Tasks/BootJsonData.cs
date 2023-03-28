@@ -140,6 +140,11 @@ namespace Microsoft.NET.Sdk.WebAssembly
         /// Do not load any icu data files.
         /// </summary>
         Invariant = 2,
+
+        /// <summary>
+        /// Load custom icu file provided by the developer.
+        /// </summary>
+        Custom = 3,
     }
 
     [DataContract]

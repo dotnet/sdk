@@ -110,7 +110,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
     public enum ICUDataMode50 : int
     {
         // Note that the numeric values are serialized and used in JS code, so don't change them without also updating the JS code
-    
+
         /// <summary>
         /// Load optimized icu data file based on the user's locale
         /// </summary>
@@ -125,6 +125,11 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
         /// Do not load any icu data files.
         /// </summary>
         Invariant = 2,
+
+        /// <summary>
+        /// Load custom icu file provided by the developer.
+        /// </summary>
+        Custom = 3,
     }
 
     [DataContract]

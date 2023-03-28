@@ -39,6 +39,8 @@ namespace Microsoft.NET.Sdk.WebAssembly
 
         public bool LoadAllICUData { get; set; }
 
+        public bool LoadCustomIcuData { get; set; }
+
         public string InvariantGlobalization { get; set; }
 
         public ITaskItem[] ConfigurationFiles { get; set; }
@@ -86,6 +88,10 @@ namespace Microsoft.NET.Sdk.WebAssembly
             {
                 icuDataMode = ICUDataMode.All;
             }
+            else if (LoadCustomIcuData)
+            {
+                icuDataMode = ICUDataMode.Custom;
+            }
 
             var result = new BootJsonData
             {
@@ -106,7 +112,7 @@ namespace Microsoft.NET.Sdk.WebAssembly
             }
 
             bool? jiterpreter = ParseOptionalBool(Jiterpreter);
-            if (jiterpreter != null) 
+            if (jiterpreter != null)
             {
                 var runtimeOptions = result.runtimeOptions?.ToHashSet() ?? new HashSet<string>(3);
                 foreach (var jiterpreterOption in jiterpreterOptions)
@@ -308,7 +314,7 @@ namespace Microsoft.NET.Sdk.WebAssembly
             }
         }
 
-        private bool? ParseOptionalBool(string value) 
+        private bool? ParseOptionalBool(string value)
         {
             if (String.IsNullOrEmpty(value) || !bool.TryParse(value, out var boolValue))
                 return null;
