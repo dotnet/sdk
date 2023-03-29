@@ -78,6 +78,8 @@ namespace Microsoft.NET.Build.Tasks
 
         public ITaskItem[] KnownILLinkPacks { get; set; } = Array.Empty<ITaskItem>();
 
+        public ITaskItem[] KnownWebAssemblySdkPacks { get; set; } = Array.Empty<ITaskItem>();
+
         [Required]
         public string NETCoreSdkRuntimeIdentifier { get; set; }
 
@@ -387,6 +389,15 @@ namespace Microsoft.NET.Build.Tasks
                 }
             }
 
+            if (RuntimeIdentifier == "browser-wasm" || RuntimeIdentifiers.Contains("browser-wasm"))
+            {
+                if (!AddToolPack(ToolPackType.WebAssemblySdk, _normalizedTargetFrameworkVersion, packagesToDownload, implicitPackageReferences))
+                {
+                    Log.LogError("FIXME: Localize 'WebAssemblySdkNoValidRuntimePackageError'");
+                    return;
+                }
+            }
+
             if (packagesToDownload.Any())
             {
                 PackagesToDownload = packagesToDownload.Distinct(new PackageToDownloadComparer<ITaskItem>()).ToArray();
@@ -594,7 +605,8 @@ namespace Microsoft.NET.Build.Tasks
         {
             Crossgen2,
             ILCompiler,
-            ILLink
+            ILLink,
+            WebAssemblySdk
         }
 
         private bool AddToolPack(
@@ -607,6 +619,7 @@ namespace Microsoft.NET.Build.Tasks
                 ToolPackType.Crossgen2 => KnownCrossgen2Packs,
                 ToolPackType.ILCompiler => KnownILCompilerPacks,
                 ToolPackType.ILLink => KnownILLinkPacks,
+                ToolPackType.WebAssemblySdk => KnownWebAssemblySdkPacks,
                 _ => throw new ArgumentException($"Unknown package type {toolPackType}", nameof(toolPackType))
             };
 
@@ -688,13 +701,13 @@ namespace Microsoft.NET.Build.Tasks
             }
 
             // ILCompiler and ILLink have RID-agnostic build packages that contain MSBuild targets.
-            if (toolPackType is ToolPackType.ILCompiler or ToolPackType.ILLink)
+            if (toolPackType is ToolPackType.ILCompiler or ToolPackType.ILLink or ToolPackType.WebAssemblySdk)
             {
                 var buildPackageName = knownPack.ItemSpec;
                 var buildPackage = new TaskItem(buildPackageName);
                 buildPackage.SetMetadata(MetadataKeys.Version, packVersion);
                 implicitPackageReferences.Add(buildPackage);
-           }
+            }
 
             return true;
         }
