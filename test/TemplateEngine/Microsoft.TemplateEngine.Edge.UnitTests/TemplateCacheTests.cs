@@ -247,6 +247,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             var expectedOutput = "The following templates use the same identity 'testIdentity':" +
                 $"{Environment.NewLine}  • 'TemplateA' from 'PackageA'" +
                 $"{Environment.NewLine}  • 'TemplateB' from 'PackageB'" +
+                $"{Environment.NewLine}  • 'TemplateC' from 'PackageC'" +
                 $"{Environment.NewLine}The template from 'TemplateC' will be used. To resolve this conflict, uninstall the conflicting template packages.";
 
             ScanResult result = new ScanResult(A.Fake<IMountPoint>(), new[] { templateA, templateB, templateC }, Array.Empty<ILocalizationLocator>(), Array.Empty<(string AssemblyPath, Type InterfaceType, IIdentifiedComponent Instance)>());
@@ -276,6 +277,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 
             var expectedOutput = "The following templates use the same identity 'testIdentity':" +
                 $"{Environment.NewLine}  • 'TemplateA' from 'PackageA'" +
+                $"{Environment.NewLine}  • 'TemplateC' from 'PackageC'" +
                 $"{Environment.NewLine}The template from 'TemplateC' will be used. To resolve this conflict, uninstall the conflicting template packages.";
 
             ScanResult result = new ScanResult(A.Fake<IMountPoint>(), new[] { templateA, templateB, templateC }, Array.Empty<ILocalizationLocator>(), Array.Empty<(string AssemblyPath, Type InterfaceType, IIdentifiedComponent Instance)>());
