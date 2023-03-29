@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 //
 
-using System.Diagnostics;
 using System.Text;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.TemplateEngine.Abstractions;
@@ -37,7 +36,6 @@ namespace Microsoft.TemplateEngine.Cli.TemplateSearch
             string? defaultLanguage,
             CancellationToken cancellationToken)
         {
-            Debugger.Launch();
             if (!ValidateCommandInput(commandArgs))
             {
                 return NewCommandStatus.MissingRequiredOption;
