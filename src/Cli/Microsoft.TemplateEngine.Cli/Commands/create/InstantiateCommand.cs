@@ -5,6 +5,7 @@
 using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.CommandLine.Parsing;
+using System.Diagnostics;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
@@ -67,6 +68,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             TemplatePackageManager templatePackageManager,
             InvocationContext context)
         {
+            Debugger.Launch();
             return ExecuteIntAsync(InstantiateCommandArgs.FromNewCommandArgs(newCommandArgs), environmentSettings, templatePackageManager, context);
         }
 
@@ -221,7 +223,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             {
                 return HandleAmbiguousTemplateGroup(environmentSettings, templatePackageManager, selectedTemplateGroups, Reporter.Error, cancellationToken);
             }
-            return await HandleTemplateInstantationAsync(
+            return await HandleTemplateInstantiationAsync(
                 instantiateArgs,
                 environmentSettings,
                 templatePackageManager,
@@ -261,7 +263,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             return NewCommandStatus.NotFound;
         }
 
-        private static async Task<NewCommandStatus> HandleTemplateInstantationAsync(
+        private static async Task<NewCommandStatus> HandleTemplateInstantiationAsync(
             InstantiateCommandArgs args,
             IEngineEnvironmentSettings environmentSettings,
             TemplatePackageManager templatePackageManager,
