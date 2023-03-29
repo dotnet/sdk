@@ -69,14 +69,14 @@ fi
 # Check if Private.SourceBuilt artifacts archive exists
 artifactsBaseFileName="Private.SourceBuilt.Artifacts"
 packagesArchiveDir="$SCRIPT_ROOT/prereqs/packages/archive/"
-if [[ "$downloadArtifacts" == "true" && -f ${packagesArchiveDir}${artifactsBaseFileName}.*.tar.gz ]]; then
+if [ "$downloadArtifacts" == "true" ] && [ -f ${packagesArchiveDir}${artifactsBaseFileName}.*.tar.gz ]; then
     echo "  Private.SourceBuilt.Artifacts.*.tar.gz exists...it will not be downloaded"
     downloadArtifacts=false
 fi
 
 # Check if Private.SourceBuilt prebuilts archive exists
 prebuiltsBaseFileName="Private.SourceBuilt.Prebuilts"
-if [[ "$downloadPrebuilts" == "true" && -f ${packagesArchiveDir}${prebuiltsBaseFileName}.*.tar.gz ]]; then
+if [ "$downloadPrebuilts" == "true" ] && [ -f ${packagesArchiveDir}${prebuiltsBaseFileName}.*.tar.gz ]; then
     echo "  Private.SourceBuilt.Prebuilts.*.tar.gz exists...it will not be downloaded"
     downloadPrebuilts=false
 fi
