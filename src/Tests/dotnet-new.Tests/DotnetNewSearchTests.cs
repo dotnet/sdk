@@ -92,15 +92,15 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And.NotHaveStdErr()
                 .And.HaveStdOutContaining("Searching for the templates...")
                 .And.HaveStdOutContaining("Matches from template source: NuGet.org")
-                .And.HaveStdOutMatching("Template Name\\s+Short Name\\s+Author\\s+Language\\s+Package Name \\/ Owners\\s+Trusted\\s+Downloads")
+                .And.HaveStdOutMatching("Template Name\\s+Short Name\\s+Author\\s+Package Name \\/ Owners\\s+Trusted\\s+Downloads")
                 .And.HaveStdOutContaining("To use the template, run the following command to install the package:")
                 .And.HaveStdOutContaining("   dotnet new install [<package>...]");
 
-            List<List<string>> tableOutput = ParseTableOutput(commandResult.StdOut, expectedColumns: new[] { "Template Name", "Short Name", "Author", "Language", "Package Name / Owners", "Trusted", "Downloads" });
+            List<List<string>> tableOutput = ParseTableOutput(commandResult.StdOut, expectedColumns: new[] { "Template Name", "Short Name", "Author", "Package Name / Owners", "Trusted", "Downloads" });
             Assert.True(AllRowsContain(tableOutput, new[] { "Template Name", "Short Name" }, "azure"), "'Template Name' or 'Short Name' columns do not contain the criteria");
 
-            IEnumerable<List<string>> microsoftPackages = tableOutput.Where(row => row[2] == "Microsoft" && row[4].StartsWith("Microsoft", StringComparison.OrdinalIgnoreCase));
-            IEnumerable<string> installationCommands = microsoftPackages.Select(package => $"new install {package[4]}");
+            IEnumerable<List<string>> microsoftPackages = tableOutput.Where(row => row[2] == "Microsoft" && row[3].StartsWith("Microsoft", StringComparison.OrdinalIgnoreCase));
+            IEnumerable<string> installationCommands = microsoftPackages.Select(package => $"new install {package[3].Split(" /")[0]}").ToList();
 
             bool ContainsOneOfInstallationCommands(string output) => installationCommands.Any(command => output.Contains(command));
             commandResult.Should().HaveStdOutContaining(ContainsOneOfInstallationCommands, "Checks if the output contains one of the expected installation commands");
