@@ -184,7 +184,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
                 new Tuple<string, string>("Tuesday", "Sunday")
             };
 
-            string expectedOutput = $"Column 1  Column 2 {Environment.NewLine}--------  ---------{Environment.NewLine}Monday    Wednesday{Environment.NewLine}Tuesday     Sunday {Environment.NewLine}";
+            string expectedOutput = $"Column 1   Column 2{Environment.NewLine}--------  ---------{Environment.NewLine}Monday    Wednesday{Environment.NewLine}Tuesday     Sunday {Environment.NewLine}";
 
             TabularOutput<Tuple<string, string>> formatter =
              TabularOutput.TabularOutput
