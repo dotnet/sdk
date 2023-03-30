@@ -18,6 +18,9 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
     // We can't just use the ItemSpec because for some assets that points to the output folder and causes issues with incrementalism.
     public class ComputeBlazorFilesToCompress : Task
     {
+        // TODO: Remove this class because the logic moved to the static web assets SDK.
+        // Then update the tests accordingly.
+
         [Required] public ITaskItem[] Assets { get; set; }
 
         [Output] public ITaskItem[] AssetsToCompress { get; set; }
