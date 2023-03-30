@@ -353,6 +353,45 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         }
 
         [Fact]
+        public void GivenFeedVersionIsLowerWithAllowDowngradeOptionRunPackageIdItShouldUpdateToLowerVersion()
+        {
+            GetDefaultTestToolInstallLocalCommand().Execute().Should().Be(0);
+
+            _mockFeed.Packages.Add(new MockFeedPackage
+            {
+                PackageId = _packageIdA.ToString(),
+                Version = "0.9.0",
+                ToolCommandName = _toolCommandNameA.ToString()
+            });
+
+            _reporter.Clear();
+
+            ParseResult result = Parser.Instance.Parse(
+                $"dotnet tool install {_packageIdA.ToString()} --version 0.9.0 --allow-downgrade");
+
+            var installLocalCommand = new ToolInstallLocalCommand(
+                result,
+                _toolPackageInstallerMock,
+                _toolManifestFinder,
+                _toolManifestEditor,
+                _localToolsResolverCache,
+                _reporter);
+
+            installLocalCommand.Execute().Should().Be(0);
+
+            AssertUpdateSuccess(packageVersion: NuGetVersion.Parse("0.9.0"));
+
+            _reporter.Lines[0]
+                .Should().Contain(
+                    string.Format(
+                        LocalizableStrings.UpdateLocalToolSucceeded,
+                        _packageIdA,
+                        _packageVersionA.ToNormalizedString(),
+                        NuGetVersion.Parse("0.9.0").ToNormalizedString(),
+                        _manifestFilePath));
+        }
+
+        [Fact]
         public void GivenFeedVersionIsHigherRunPackageIdItShouldUpdateToHigherVersion()
         {
             GetDefaultTestToolInstallLocalCommand().Execute().Should().Be(0);
