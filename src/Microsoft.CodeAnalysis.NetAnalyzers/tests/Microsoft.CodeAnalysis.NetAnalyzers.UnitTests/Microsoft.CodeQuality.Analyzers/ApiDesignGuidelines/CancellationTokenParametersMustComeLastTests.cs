@@ -440,6 +440,46 @@ public class C
 }");
         }
 
+#if NETCOREAPP3_1_OR_GREATER
+        [Fact, WorkItem(6557, "https://github.com/dotnet/roslyn-analyzers/issues/6557")]
+        public async Task CA1068_CallerArgumentExpressionAttributeWithOptionalCancellationTokenAsLastParameterAsync()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Threading.Tasks;
+
+public class C
+{
+    public Task SomeAsync(string input, [CallerArgumentExpression(nameof(input))] string argumentName = null,
+        CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
+}");
+        }
+
+        [Fact, WorkItem(6557, "https://github.com/dotnet/roslyn-analyzers/issues/6557")]
+        public async Task CA1068_CallerArgumentExpressionAttributeWithOptionalCancellationTokenAsMiddleParameterAsync()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Threading.Tasks;
+
+public class C
+{
+    public Task SomeAsync(string input, CancellationToken cancellationToken = default,
+        [CallerArgumentExpression(nameof(input))] string argumentName = null)
+    {
+        throw new NotImplementedException();
+    }
+}");
+        }
+#endif
+
         [Theory, WorkItem(2851, "https://github.com/dotnet/roslyn-analyzers/issues/2851")]
         // Empty editorconfig
         [InlineData("public", "")]
