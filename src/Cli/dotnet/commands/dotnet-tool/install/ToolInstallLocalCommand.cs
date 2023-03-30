@@ -89,7 +89,6 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                         existingPackage.Version.ToNormalizedString(),
                         manifestFile.Value));
             }
-            //else if (existingPackage.Version < toolDownloadedPackage.Version)
             else
             {
                 _toolManifestEditor.Edit(
