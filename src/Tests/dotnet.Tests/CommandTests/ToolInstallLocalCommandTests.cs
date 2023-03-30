@@ -22,6 +22,7 @@ using Microsoft.NET.TestFramework.Utilities;
 using System.CommandLine;
 using System.CommandLine.Parsing;
 using Parser = Microsoft.DotNet.Cli.Parser;
+using Microsoft.DotNet.Tools.Tool.Restore;
 
 namespace Microsoft.DotNet.Tests.Commands.Tool
 {
@@ -38,13 +39,17 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         private readonly string _manifestFilePath;
         private readonly PackageId _packageIdA = new PackageId("local.tool.console.a");
         private readonly NuGetVersion _packageVersionA;
+        private readonly NuGetVersion _packageNewVersionA;
         private readonly ToolCommandName _toolCommandNameA = new ToolCommandName("a");
         private readonly ToolManifestFinder _toolManifestFinder;
         private readonly ToolManifestEditor _toolManifestEditor;
+        private readonly MockFeed _mockFeed;
+
 
         public ToolInstallLocalCommandTests()
         {
             _packageVersionA = NuGetVersion.Parse("1.0.4");
+            _packageNewVersionA = NuGetVersion.Parse("2.0.0");
 
             _reporter = new BufferedReporter();
             _fileSystem = new FileSystemMockBuilder().UseCurrentSystemTemporaryDirectory().Build();
@@ -53,18 +58,10 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             ToolPackageStoreMock toolPackageStoreMock =
                 new ToolPackageStoreMock(new DirectoryPath(_pathToPlacePackages), _fileSystem);
             _toolPackageStore = toolPackageStoreMock;
-            _toolPackageInstallerMock = new ToolPackageInstallerMock(
-                _fileSystem,
-                _toolPackageStore,
-                new ProjectRestorerMock(
-                    _fileSystem,
-                    _reporter,
-                    new List<MockFeed>
-                    {
-                        new MockFeed
-                        {
-                            Type = MockFeedType.ImplicitAdditionalFeed,
-                            Packages = new List<MockFeedPackage>
+            _mockFeed = new MockFeed
+            {
+                Type = MockFeedType.ImplicitAdditionalFeed,
+                Packages = new List<MockFeedPackage>
                             {
                                 new MockFeedPackage
                                 {
@@ -73,7 +70,16 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                                     ToolCommandName = _toolCommandNameA.ToString()
                                 }
                             }
-                        }
+            };
+            _toolPackageInstallerMock = new ToolPackageInstallerMock(
+                _fileSystem,
+                _toolPackageStore,
+                new ProjectRestorerMock(
+                    _fileSystem,
+                    _reporter,
+                    new List<MockFeed>
+                    {
+                        _mockFeed
                     }));
 
             _localToolsResolverCache
@@ -305,6 +311,83 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _localToolsResolverCache.TryLoad(new RestoredCommandIdentifier(
                     addedPackage.PackageId,
                     new NuGetVersion("2.0.1-preview1"),
+                    NuGetFramework.Parse(BundledTargetFramework.GetTargetFrameworkMoniker()),
+                    Constants.AnyRid,
+                    addedPackage.CommandNames.Single()),
+                out RestoredCommand restoredCommand
+            ).Should().BeTrue();
+
+            _fileSystem.File.Exists(restoredCommand.Executable.Value);
+        }
+
+        [Fact]
+        public void GivenFeedVersionIsTheSameWhenRunWithPackageIdItShouldShowDifferentSuccessMessage()
+        {
+            GetDefaultTestToolInstallLocalCommand().Execute().Should().Be(0);
+            _reporter.Clear();
+            GetDefaultTestToolInstallLocalCommand().Execute().Should().Be(0);
+
+            AssertUpdateSuccess(packageVersion: _packageVersionA);
+            _reporter.Lines.Single()
+                .Should().Contain(
+                    string.Format(
+                        LocalizableStrings.UpdateLocaToolSucceededVersionNoChange,
+                        _packageIdA,
+                        _packageVersionA.ToNormalizedString(),
+                        _manifestFilePath));
+        }
+
+        [Fact]
+        public void GivenFeedVersionIsLowerRunPackageIdItShouldThrow()
+        {
+            GetDefaultTestToolInstallLocalCommand().Execute().Should().Be(0);
+            _mockFeed.Packages.Single().Version = "0.9.0";
+
+            _reporter.Clear();
+            Action a = () => GetDefaultTestToolInstallLocalCommand().Execute();
+            a.Should().Throw<GracefulException>().And.Message.Should().Contain(string.Format(
+                LocalizableStrings.UpdateToLowerVersion,
+                "0.9.0",
+                _packageVersionA.ToNormalizedString(),
+                _manifestFilePath));
+        }
+
+        [Fact]
+        public void GivenFeedVersionIsHigherRunPackageIdItShouldUpdateToHigherVersion()
+        {
+            GetDefaultTestToolInstallLocalCommand().Execute().Should().Be(0);
+            
+            _mockFeed.Packages.Add(new MockFeedPackage
+            {
+                PackageId = _packageIdA.ToString(),
+                Version = _packageNewVersionA.ToNormalizedString(),
+                ToolCommandName = _toolCommandNameA.ToString()
+            });
+
+            _reporter.Clear();
+            GetDefaultTestToolInstallLocalCommand().Execute().Should().Be(0);
+
+            AssertUpdateSuccess(packageVersion: _packageNewVersionA);
+
+            _reporter.Lines[0]
+                .Should().Contain(
+                    string.Format(
+                        LocalizableStrings.UpdateLocalToolSucceeded,
+                        _packageIdA,
+                        _packageVersionA.ToNormalizedString(),
+                        _packageNewVersionA.ToNormalizedString(),
+                        _manifestFilePath));
+        }
+        private void AssertUpdateSuccess(FilePath? manifestFile = null, NuGetVersion packageVersion = null)
+        {
+            packageVersion ??= _packageNewVersionA;
+            IReadOnlyCollection<ToolManifestPackage> manifestPackages = _toolManifestFinder.Find(manifestFile);
+            manifestPackages.Should().HaveCount(1);
+            ToolManifestPackage addedPackage = manifestPackages.Single();
+            addedPackage.Version.Should().Be(packageVersion);
+            _localToolsResolverCache.TryLoad(new RestoredCommandIdentifier(
+                    addedPackage.PackageId,
+                    addedPackage.Version,
                     NuGetFramework.Parse(BundledTargetFramework.GetTargetFrameworkMoniker()),
                     Constants.AnyRid,
                     addedPackage.CommandNames.Single()),

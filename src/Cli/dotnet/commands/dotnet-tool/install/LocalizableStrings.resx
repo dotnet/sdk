@@ -239,6 +239,6 @@ If you would like to create a manifest, use `dotnet new tool-manifest`, usually 
     <value>Tool '{0}' is up to date (version '{1}' manifest file {2}) .</value>
   </data>
   <data name="UpdateToLowerVersion" xml:space="preserve">
-    <value>The requested version {0} is lower than existing version {1}.</value>
+    <value>The requested version {0} is lower than existing version {1} (manifest file {2}).</value>
   </data>
 </root>

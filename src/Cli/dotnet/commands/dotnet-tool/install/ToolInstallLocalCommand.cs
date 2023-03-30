@@ -102,6 +102,11 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                         toolDownloadedPackage.Version.ToNormalizedString(),
                         manifestFile.Value).Green());
             }
+
+            _localToolsResolverCache.SaveToolPackage(
+                toolDownloadedPackage,
+                _toolLocalPackageInstaller.TargetFrameworkToInstall);
+
             return 0;
         }
 
