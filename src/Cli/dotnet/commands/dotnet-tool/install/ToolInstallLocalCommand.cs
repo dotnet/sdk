@@ -25,6 +25,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
 
         private readonly string _explicitManifestFile;
         private readonly PackageId _packageId;
+        private readonly bool _allowPackageDowngrade;
 
         public ToolInstallLocalCommand(
             ParseResult parseResult,
@@ -45,6 +46,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
             _toolManifestEditor = toolManifestEditor ?? new ToolManifestEditor();
             _localToolsResolverCache = localToolsResolverCache ?? new LocalToolsResolverCache();
             _toolLocalPackageInstaller = new ToolInstallLocalInstaller(parseResult, toolPackageInstaller);
+            _allowPackageDowngrade = parseResult.GetValue(ToolInstallCommandParser.AllowPackageDowngradeOption);
         }
 
         public override int Execute()
@@ -66,7 +68,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
 
         public int InstallLogic(ToolManifestPackage existingPackage, IToolPackage toolDownloadedPackage, FilePath manifestFile)
         {
-            if (existingPackage.Version > toolDownloadedPackage.Version)
+            if (existingPackage.Version > toolDownloadedPackage.Version && !_allowPackageDowngrade)
             {
                 throw new GracefulException(new[]
                     {
@@ -87,7 +89,8 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                         existingPackage.Version.ToNormalizedString(),
                         manifestFile.Value));
             }
-            else if (existingPackage.Version < toolDownloadedPackage.Version)
+            //else if (existingPackage.Version < toolDownloadedPackage.Version)
+            else
             {
                 _toolManifestEditor.Edit(
                     manifestFile,

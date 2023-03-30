@@ -241,4 +241,7 @@ If you would like to create a manifest, use `dotnet new tool-manifest`, usually 
   <data name="UpdateToLowerVersion" xml:space="preserve">
     <value>The requested version {0} is lower than existing version {1} (manifest file {2}).</value>
   </data>
+  <data name="AllowPackageDowngradeOptionDescription" xml:space="preserve">
+    <value>Allow package downgrade when installing a .NET tool package.</value>
+  </data>
 </root>
