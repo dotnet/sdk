@@ -113,6 +113,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                                 KnownCrossgen2Packs="@(KnownCrossgen2Pack)"
                                 KnownILCompilerPacks="@(KnownILCompilerPack)"
                                 KnownILLinkPacks="@(KnownILLinkPack)"
+                                KnownWebAssemblySdkPacks="@(KnownWebAssemblySdkPack)"
                                 NETCoreSdkRuntimeIdentifier="$(NETCoreSdkRuntimeIdentifier)"
                                 NetCoreRoot="$(NetCoreRoot)"
                                 NETCoreSdkVersion="$(NETCoreSdkVersion)">
