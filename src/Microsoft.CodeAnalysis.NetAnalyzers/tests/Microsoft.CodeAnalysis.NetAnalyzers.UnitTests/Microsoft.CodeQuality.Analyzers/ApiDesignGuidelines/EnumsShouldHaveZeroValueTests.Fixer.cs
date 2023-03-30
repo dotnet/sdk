@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
@@ -227,20 +228,20 @@ public enum E4
 Public Class Outer
     <System.Flags>
     Public Enum E
-        A = 0
+        {|#0:A|} = 0
         B = 1
     End Enum
 End Class
 
 <System.Flags>
 Public Enum E2
-    A2 = 0
+    {|#1:A2|} = 0
     B2 = 1
 End Enum
 
 <System.Flags>
 Public Enum E3
-    A3 = CUShort(0)
+    {|#2:A3|} = CUShort(0)
     B3 = CUShort(1)
 End Enum
 
@@ -278,15 +279,18 @@ Public Enum NoZeroValuedField
     B5 = 2
 End Enum
 ";
-            await VerifyVB.VerifyCodeFixAsync(
-                code,
-                new[]
+            await new VerifyVB.Test
+            {
+                CodeFixTestBehaviors = CodeFixTestBehaviors.SkipLocalDiagnosticCheck,
+                TestCode = code,
+                ExpectedDiagnostics =
                 {
-                    VerifyVB.Diagnostic(EnumsShouldHaveZeroValueAnalyzer.RuleRename).WithSpan(5, 9, 5, 10).WithArguments("E", "A"),
-                    VerifyVB.Diagnostic(EnumsShouldHaveZeroValueAnalyzer.RuleRename).WithSpan(12, 5, 12, 7).WithArguments("E2", "A2"),
-                    VerifyVB.Diagnostic(EnumsShouldHaveZeroValueAnalyzer.RuleRename).WithSpan(18, 5, 18, 7).WithArguments("E3", "A3"),
+                    VerifyVB.Diagnostic(EnumsShouldHaveZeroValueAnalyzer.RuleRename).WithLocation(0).WithArguments("E", "A"),
+                    VerifyVB.Diagnostic(EnumsShouldHaveZeroValueAnalyzer.RuleRename).WithLocation(1).WithArguments("E2", "A2"),
+                    VerifyVB.Diagnostic(EnumsShouldHaveZeroValueAnalyzer.RuleRename).WithLocation(2).WithArguments("E3", "A3"),
                 },
-                expectedFixedCode);
+                FixedCode = expectedFixedCode,
+            }.RunAsync();
         }
 
         [WorkItem(836193, "DevDiv")]
@@ -297,20 +301,20 @@ End Enum
 Public Class Outer
     <System.Flags> _
     Public Enum E
-        A = 0
+        {|#0:A|} = 0
         B = 1
     End Enum
 End Class
 
 <System.Flags> _
 Public Enum E2
-    A2 = 0
+    {|#1:A2|} = 0
     B2 = 1
 End Enum
 
 <System.Flags> _
 Public Enum E3
-    A3 = CUShort(0)
+    {|#2:A3|} = CUShort(0)
     B3 = CUShort(1)
 End Enum
 
@@ -348,15 +352,18 @@ Public Enum NoZeroValuedField
     B5 = 2
 End Enum
 ";
-            await VerifyVB.VerifyCodeFixAsync(
-                code,
-                new[]
+            await new VerifyVB.Test
+            {
+                CodeFixTestBehaviors = CodeFixTestBehaviors.SkipLocalDiagnosticCheck,
+                TestCode = code,
+                ExpectedDiagnostics =
                 {
-                    VerifyVB.Diagnostic(EnumsShouldHaveZeroValueAnalyzer.RuleRename).WithSpan(5, 9, 5, 10).WithArguments("E", "A"),
-                    VerifyVB.Diagnostic(EnumsShouldHaveZeroValueAnalyzer.RuleRename).WithSpan(12, 5, 12, 7).WithArguments("E2", "A2"),
-                    VerifyVB.Diagnostic(EnumsShouldHaveZeroValueAnalyzer.RuleRename).WithSpan(18, 5, 18, 7).WithArguments("E3", "A3"),
+                    VerifyVB.Diagnostic(EnumsShouldHaveZeroValueAnalyzer.RuleRename).WithLocation(0).WithArguments("E", "A"),
+                    VerifyVB.Diagnostic(EnumsShouldHaveZeroValueAnalyzer.RuleRename).WithLocation(1).WithArguments("E2", "A2"),
+                    VerifyVB.Diagnostic(EnumsShouldHaveZeroValueAnalyzer.RuleRename).WithLocation(2).WithArguments("E3", "A3"),
                 },
-                expectedFixedCode);
+                FixedCode = expectedFixedCode,
+            }.RunAsync();
         }
 
         [Fact]
