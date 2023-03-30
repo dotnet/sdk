@@ -41,7 +41,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
                          { "PackageId", "TestPackage" },
                          { "Version", "4.7.0.395" },
                          { "Owners", "test, test2" },
-                         { "Verified", "true" }
+                         { "Trusted", "true" }
                      }),
                 "TestPackage", "4.7.0.395", "TestAuthor", "https://api.nuget.org/v3/index.json", false, "true", "test, test2"
             };
@@ -59,7 +59,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
                          { "PackageId", "TestPackage" },
                          { "Version", "4.7.0.395" },
                          { "Owners", "test, test2" },
-                         { "Verified", "false" }
+                         { "Trusted", "false" }
                      }),
                 "TestPackage", "4.7.0.395", null, "https://api.nuget.org/v3/index.json", false, "false", "test, test2"
             };
@@ -155,7 +155,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             source!.MountPointUri.Should().ContainAll(new[] { installPath, "Microsoft.TemplateEngine.TestTemplates" });
             source.Author.Should().Be("Microsoft");
             source.Owners.Should().BeNull();
-            source.Verified.Should().Be("False");
+            source.Trusted.Should().Be("False");
             source.Version.Should().NotBeNullOrEmpty();
             source.DisplayName.Should().StartWith("Microsoft.TemplateEngine.TestTemplates::");
             source.Identifier.Should().Be("Microsoft.TemplateEngine.TestTemplates");
@@ -238,7 +238,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             source!.MountPointUri.Should().ContainAll(new[] { installPath, "Microsoft.TemplateEngine.TestTemplates" });
             source.Author.Should().Be("Microsoft");
             source.Owners.Should().Be("Microsoft");
-            source.Verified.Should().Be("True");
+            source.Trusted.Should().Be("True");
             source.Version.Should().Be("1.0.0");
             source.DisplayName.Should().Be("Microsoft.TemplateEngine.TestTemplates::1.0.0");
             source.Identifier.Should().Be("Microsoft.TemplateEngine.TestTemplates");
@@ -416,7 +416,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             string? author,
             string nugetFeed,
             bool local,
-            string verified,
+            string trusted,
             string owners)
         {
             MockInstallerFactory factory = new MockInstallerFactory();
@@ -429,7 +429,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             NuGetManagedTemplatePackage source = (NuGetManagedTemplatePackage)installer.Deserialize(provider, data);
             source.MountPointUri.Should().Be(data.MountPointUri);
             source.Author.Should().Be(author);
-            source.Verified.Should().Be(verified);
+            source.Trusted.Should().Be(trusted);
             source.Owners.Should().Be(owners);
             source.Version.Should().Be(version);
             source.DisplayName.Should().Be($"{identifier}::{version}");

@@ -16,7 +16,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
         private const string AuthorKey = "Author";
         private const string LocalPackageKey = "LocalPackage";
         private const string OwnersKey = "Owners";
-        private const string VerifiedKey = "Verified";
+        private const string TrustedKey = "Trusted";
         private const string NuGetSourceKey = "NuGetSource";
         private const string PackageIdKey = "PackageId";
         private const string PackageVersionKey = "Version";
@@ -83,19 +83,19 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
             _logger = settings.Host.LoggerFactory.CreateLogger<NuGetInstaller>();
         }
 
-        public string? Verified
+        public string? Trusted
         {
-            get => Details.TryGetValue(VerifiedKey, out string verified) ? verified : false.ToString();
+            get => Details.TryGetValue(TrustedKey, out string trusted) ? trusted : false.ToString();
 
             set
             {
                 if (string.IsNullOrWhiteSpace(value))
                 {
-                    Details.Remove(VerifiedKey);
+                    Details.Remove(TrustedKey);
                 }
                 else
                 {
-                    Details[VerifiedKey] = value!;
+                    Details[TrustedKey] = value!;
                 }
             }
         }
@@ -243,9 +243,9 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
             {
                 details[OwnersKey] = Owners!;
             }
-            if (!string.IsNullOrWhiteSpace(Verified))
+            if (!string.IsNullOrWhiteSpace(Trusted))
             {
-                details[VerifiedKey] = Verified!;
+                details[TrustedKey] = Trusted!;
             }
             if (!string.IsNullOrWhiteSpace(NuGetSource))
             {

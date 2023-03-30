@@ -26,7 +26,7 @@ namespace Microsoft.TemplateSearch.Common
         internal IReadOnlyList<string> Owners { get; set; } = Array.Empty<string>();
 
         [JsonProperty]
-        internal bool Verified { get; set; }
+        internal bool Trusted { get; set; }
 
         [JsonProperty]
         internal IReadOnlyList<TemplateIdentificationEntry> TemplateIdentificationEntry { get; }

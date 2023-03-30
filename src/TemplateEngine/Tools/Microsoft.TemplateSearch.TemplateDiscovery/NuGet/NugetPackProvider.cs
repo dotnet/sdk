@@ -264,7 +264,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.NuGet
                 Name = packageSearchMetadata.Identity.Id;
                 Version = packageSearchMetadata.Identity.Version.ToString();
                 TotalDownloads = packageSearchMetadata.DownloadCount ?? 0;
-                Verified = packageSearchMetadata.PrefixReserved;
+                Trusted = packageSearchMetadata.PrefixReserved;
                 Description = packageSearchMetadata.Description;
                 IconUrl = packageSearchMetadata.IconUrl?.ToString();
             }
@@ -277,7 +277,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.NuGet
 
             public IReadOnlyList<string> Owners => Array.Empty<string>();
 
-            public bool Verified { get; }
+            public bool Trusted { get; }
 
             public string? Description { get; }
 

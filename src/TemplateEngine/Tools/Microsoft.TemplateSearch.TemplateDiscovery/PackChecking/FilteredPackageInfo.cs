@@ -15,7 +15,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.PackChecking
             Version = info.Version;
             Owners = info.Owners;
             TotalDownloads = info.TotalDownloads;
-            Verified = info.Verified;
+            Trusted = info.Trusted;
             Description = info.Description;
             IconUrl = info.IconUrl;
         }
@@ -43,7 +43,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.PackChecking
         public IReadOnlyList<string> Owners { get; private set; } = Array.Empty<string>();
 
         [JsonProperty]
-        public bool Verified { get; private set; }
+        public bool Trusted { get; private set; }
 
         [JsonIgnore]
         public string? Description { get; private set; }

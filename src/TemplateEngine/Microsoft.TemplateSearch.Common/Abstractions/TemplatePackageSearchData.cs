@@ -30,7 +30,7 @@ namespace Microsoft.TemplateSearch.Common
             Version = packInfo.Version;
             TotalDownloads = packInfo.TotalDownloads;
             Owners = packInfo.Owners;
-            Verified = packInfo.Verified;
+            Trusted = packInfo.Trusted;
             Templates = templates.ToList();
             Description = packInfo.Description;
             IconUrl = packInfo.IconUrl;
@@ -50,7 +50,7 @@ namespace Microsoft.TemplateSearch.Common
         public IReadOnlyList<string> Owners { get; }
 
         /// <inheritdoc/>
-        public bool Verified { get; }
+        public bool Trusted { get; }
 
         /// <inheritdoc/>
         public string? Description { get; }

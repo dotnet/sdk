@@ -31,7 +31,7 @@ namespace Microsoft.TemplateSearch.Common
             Version = jObject.ToString(nameof(Version));
             TotalDownloads = jObject.ToInt32(nameof(TotalDownloads));
             Owners = jObject.Get<JToken>(nameof(Owners)).JTokenStringOrArrayToCollection(Array.Empty<string>());
-            Verified = jObject.ToBool(nameof(Verified));
+            Trusted = jObject.ToBool(nameof(Trusted));
 
             Description = jObject.ToString(nameof(Description));
             IconUrl = jObject.ToString(nameof(IconUrl));
@@ -107,10 +107,10 @@ namespace Microsoft.TemplateSearch.Common
                     }
                 }
 
-                if (value.Verified)
+                if (value.Trusted)
                 {
-                    writer.WritePropertyName(nameof(Verified));
-                    writer.WriteValue(value.Verified);
+                    writer.WritePropertyName(nameof(Trusted));
+                    writer.WriteValue(value.Trusted);
                 }
                 if (!string.IsNullOrWhiteSpace(value.Description))
                 {
