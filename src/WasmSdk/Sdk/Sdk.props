@@ -25,4 +25,5 @@ Copyright (c) .NET Foundation. All rights reserved.
   
   <Import Sdk="Microsoft.NET.Sdk.StaticWebAssets" Project="Sdk.props" Condition="'$(_WasmSdkImportsMicrosoftNETSdkStaticWebAssets)' == 'true'" />
   <Import Sdk="Microsoft.NET.Sdk.Publish" Project="Sdk.props" Condition="'$(_WasmSdkImportsMicrosoftNETSdkPublish)' == 'true'" />
+  <Import Project="$(_WebAssemblyPropsFile)" />
 </Project>
