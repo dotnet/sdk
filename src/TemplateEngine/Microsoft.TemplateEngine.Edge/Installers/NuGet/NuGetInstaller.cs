@@ -213,6 +213,8 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
                     nuGetPackageInfo.PackageIdentifier)
                 {
                     Author = nuGetPackageInfo.Author,
+                    Owners = nuGetPackageInfo.Owners,
+                    Verified = nuGetPackageInfo.Verified.ToString(),
                     NuGetSource = nuGetPackageInfo.NuGetSource,
                     Version = nuGetPackageInfo.PackageVersion.ToString(),
                     IsLocalPackage = isLocalPackage
@@ -391,6 +393,9 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
 
             return new NuGetPackageInfo(
                 nuspec.GetAuthors(),
+                nuspec.GetOwners(),
+                // The prefix reservation is not applicable to local packages.
+                verified: false,
                 packageLocation,
                 null,
                 nuspec.GetId(),

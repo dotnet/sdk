@@ -11,7 +11,7 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateSearch.Common
 {
-    [JsonConverter(typeof(TemplatePackageSearchData.TemplatePackageSearchDataJsonConverter))]
+    [JsonConverter(typeof(TemplatePackageSearchDataJsonConverter))]
     public partial class TemplatePackageSearchData
     {
         internal TemplatePackageSearchData(JObject jObject, ILogger logger, IReadOnlyDictionary<string, Func<object, object>>? additionalDataReaders = null)

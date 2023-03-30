@@ -15,6 +15,8 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
     {
         private const string AuthorKey = "Author";
         private const string LocalPackageKey = "LocalPackage";
+        private const string OwnersKey = "Owners";
+        private const string VerifiedKey = "Verified";
         private const string NuGetSourceKey = "NuGetSource";
         private const string PackageIdKey = "PackageId";
         private const string PackageVersionKey = "Version";
@@ -81,6 +83,23 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
             _logger = settings.Host.LoggerFactory.CreateLogger<NuGetInstaller>();
         }
 
+        public string? Verified
+        {
+            get => Details.TryGetValue(VerifiedKey, out string verified) ? verified : false.ToString();
+
+            set
+            {
+                if (string.IsNullOrWhiteSpace(value))
+                {
+                    Details.Remove(VerifiedKey);
+                }
+                else
+                {
+                    Details[VerifiedKey] = value!;
+                }
+            }
+        }
+
         public string? Author
         {
             get => Details.TryGetValue(AuthorKey, out string author) ? author : null;
@@ -94,6 +113,23 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
                 else
                 {
                     _ = Details.Remove(AuthorKey);
+                }
+            }
+        }
+
+        public string? Owners
+        {
+            get => Details.TryGetValue(OwnersKey, out string owners) ? owners : null;
+
+            set
+            {
+                if (!string.IsNullOrWhiteSpace(value))
+                {
+                    Details[OwnersKey] = value!;
+                }
+                else
+                {
+                    _ = Details.Remove(OwnersKey);
                 }
             }
         }
@@ -202,6 +238,14 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
             if (!string.IsNullOrWhiteSpace(Author))
             {
                 details[AuthorKey] = Author!;
+            }
+            if (!string.IsNullOrWhiteSpace(Owners))
+            {
+                details[OwnersKey] = Owners!;
+            }
+            if (!string.IsNullOrWhiteSpace(Verified))
+            {
+                details[VerifiedKey] = Verified!;
             }
             if (!string.IsNullOrWhiteSpace(NuGetSource))
             {

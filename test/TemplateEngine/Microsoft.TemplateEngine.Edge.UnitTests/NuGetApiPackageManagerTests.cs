@@ -31,6 +31,32 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             result.FullPath.Should().ContainAll(installPath, "Microsoft.DotNet.Common.ProjectTemplates.5.0");
             Assert.True(File.Exists(result.FullPath));
             result.PackageIdentifier.Should().Be("Microsoft.DotNet.Common.ProjectTemplates.5.0");
+            result.Owners.Should().Be(string.Empty);
+            result.Verified.Should().BeFalse();
+            result.PackageVersion.Should().NotBeNullOrEmpty();
+            result.NuGetSource.Should().NotBeNullOrEmpty();
+        }
+
+        [Fact]
+        public async Task DownloadPackage_LatestFromNugetOrgFeed()
+        {
+            string installPath = _environmentSettingsHelper.CreateTemporaryFolder();
+            IEngineEnvironmentSettings engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
+
+            NuGetApiPackageManager packageManager = new NuGetApiPackageManager(engineEnvironmentSettings);
+
+            var result = await packageManager.DownloadPackageAsync(
+                installPath,
+                "Microsoft.DotNet.Common.ProjectTemplates.5.0",
+                // add the source for getting ownership info
+                additionalSources: new[] { "https://api.nuget.org/v3/index.json" }).ConfigureAwait(false);
+
+            result.Author.Should().Be("Microsoft");
+            result.FullPath.Should().ContainAll(installPath, "Microsoft.DotNet.Common.ProjectTemplates.5.0");
+            Assert.True(File.Exists(result.FullPath));
+            result.PackageIdentifier.Should().Be("Microsoft.DotNet.Common.ProjectTemplates.5.0");
+            result.Owners.Should().Be("dotnetframework, Microsoft");
+            result.Verified.Should().BeTrue();
             result.PackageVersion.Should().NotBeNullOrEmpty();
             result.NuGetSource.Should().NotBeNullOrEmpty();
         }
@@ -42,7 +68,10 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             IEngineEnvironmentSettings engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
 
             NuGetApiPackageManager packageManager = new NuGetApiPackageManager(engineEnvironmentSettings);
-            var result = await packageManager.DownloadPackageAsync(installPath, "Microsoft.DotNet.Common.ProjectTemplates.5.0", "5.0.0").ConfigureAwait(false);
+            var result = await packageManager.DownloadPackageAsync(
+                installPath,
+                "Microsoft.DotNet.Common.ProjectTemplates.5.0",
+                "5.0.0").ConfigureAwait(false);
 
             result.Author.Should().Be("Microsoft");
             result.FullPath.Should().ContainAll(installPath, "Microsoft.DotNet.Common.ProjectTemplates.5.0", "5.0.0");
