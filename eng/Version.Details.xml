@@ -46,21 +46,21 @@
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
       <Sha>0a396acafe9a7d46bce11f4338dbb3dd0d99b1b4</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Build" Version="17.6.0-preview-23178-11">
+    <Dependency Name="Microsoft.Build" Version="17.6.0-preview-23179-01">
       <Uri>https://github.com/dotnet/msbuild</Uri>
-      <Sha>ea90db2e418d5d4f9a8da1c6f46ae9a9a30971bd</Sha>
+      <Sha>dd5d9f746fe3ec521ed44c6f2b852740d25f51be</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Build.Localization" Version="17.6.0-preview-23178-11">
+    <Dependency Name="Microsoft.Build.Localization" Version="17.6.0-preview-23179-01">
       <Uri>https://github.com/dotnet/msbuild</Uri>
-      <Sha>ea90db2e418d5d4f9a8da1c6f46ae9a9a30971bd</Sha>
+      <Sha>dd5d9f746fe3ec521ed44c6f2b852740d25f51be</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.FSharp.Compiler" Version="12.5.0-beta.23178.3">
+    <Dependency Name="Microsoft.FSharp.Compiler" Version="12.5.0-beta.23179.5">
       <Uri>https://github.com/dotnet/fsharp</Uri>
-      <Sha>58b9455165940e09bd473ea6a352904da9537629</Sha>
+      <Sha>97b1ee7f9de85aa66cb9883febbfffb6ca282ce9</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.fsharp" Version="7.0.300-beta.23178.3">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.fsharp" Version="7.0.300-beta.23179.5">
       <Uri>https://github.com/dotnet/fsharp</Uri>
-      <Sha>58b9455165940e09bd473ea6a352904da9537629</Sha>
+      <Sha>97b1ee7f9de85aa66cb9883febbfffb6ca282ce9</Sha>
       <SourceBuild RepoName="fsharp" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="dotnet-format" Version="7.0.357101">
@@ -105,9 +105,9 @@
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-aspnetcore</Uri>
       <Sha>e56abc45c4f8adc518abfc11a59849d616431e2c</Sha>
     </Dependency>
-    <Dependency Name="NuGet.Build.Tasks" Version="6.6.0-preview.3.57">
+    <Dependency Name="NuGet.Build.Tasks" Version="6.6.0-preview.3.58">
       <Uri>https://github.com/nuget/nuget.client</Uri>
-      <Sha>80c3c74ca5c6d67912a19833e8cc2b10f875dc95</Sha>
+      <Sha>545330e99bc4a1c4e1ee3ee1e3d664419cec8efe</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NET.Test.Sdk" Version="17.6.0-release-20230324-04">
       <Uri>https://github.com/microsoft/vstest</Uri>
