@@ -468,7 +468,7 @@ public class C
                    }
                 }
             }.RunAsync();
-       }
+        }
 
         [Fact, WorkItem(6557, "https://github.com/dotnet/roslyn-analyzers/issues/6557")]
         public async Task CA1068_CallerArgumentExpressionAttributeWithOptionalCancellationTokenAsMiddleParameterAsync()
@@ -498,7 +498,7 @@ public class C
                    }
                 }
             }.RunAsync();
-       }
+        }
 
         [Theory, WorkItem(2851, "https://github.com/dotnet/roslyn-analyzers/issues/2851")]
         // Empty editorconfig
