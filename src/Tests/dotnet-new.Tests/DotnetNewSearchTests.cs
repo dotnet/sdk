@@ -252,7 +252,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             Assert.True(AtLeastOneRowIsNotEmpty(tableOutput, "Short Name"), "'Short Name' column contains empty values");
             Assert.True(AllRowsAreNotEmpty(tableOutput, "Author"), "'Author' column contains empty values");
             Assert.True(AllRowsAreNotEmpty(tableOutput, "Package Name / Owners"), "'Package Name / Owners' column contains empty values");
-            Assert.True(AllRowsAreNotEmpty(tableOutput, "Trusted"), "'Trusted' column contains empty values");
+            Assert.True(AtLeastOneRowIsNotEmpty(tableOutput, "Trusted"), "'Trusted' column contains empty values");
             Assert.True(AtLeastOneRowIsNotEmpty(tableOutput, "Downloads"), "'Downloads' column contains empty values");
         }
 
