@@ -196,7 +196,7 @@ namespace Microsoft.TemplateEngine.Cli.TemplateSearch
                     t,
                     packSearchResult.PackageInfo.Name,
                     string.Join(", ", packSearchResult.PackageInfo.Owners),
-                    packSearchResult.PackageInfo.Verified,
+                    packSearchResult.PackageInfo.Trusted,
                     packSearchResult.PackageInfo.TotalDownloads)));
             }
 
