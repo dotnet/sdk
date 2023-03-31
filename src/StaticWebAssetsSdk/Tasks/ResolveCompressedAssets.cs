@@ -10,6 +10,7 @@ using System.Text;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Microsoft.Extensions.FileSystemGlobbing;
+using Microsoft.NET.Sdk.WebAssembly;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
@@ -165,9 +166,8 @@ public class ResolveCompressedAssets : Task
             Log.LogError($"Unknown compression format '{format}'. Defaulting to 'gzip'.");
         }
 
-        var outputRelativePath = Path.Combine(
-            targetDirectory,
-            CalculateTargetPath(originalItemSpec, fileExtension));
+        var fileName = FileHasher.GetFileHash(originalItemSpec) + fileExtension;
+        var outputRelativePath = Path.Combine(targetDirectory, fileName);
 
         var result = new TaskItem(outputRelativePath, originalAsset.CloneCustomMetadata());
 
@@ -181,27 +181,6 @@ public class ResolveCompressedAssets : Task
         result.SetMetadata("Format", format);
 
         return result;
-    }
-
-    private static string CalculateTargetPath(string relativePath, string extension)
-    {
-        // RelativePath can be long and if used as-is to write the output, might result in long path issues on Windows.
-        // Instead we'll calculate a fixed length path by hashing the input file name. This uses SHA1 similar to the Hash task in MSBuild
-        // since it has no crytographic significance.
-        using var hash = SHA1.Create();
-        var bytes = Encoding.UTF8.GetBytes(relativePath);
-        var hashString = Convert.ToBase64String(hash.ComputeHash(bytes));
-
-        var builder = new StringBuilder();
-
-        for (var i = 0; i < 8; i++)
-        {
-            var c = hashString[i];
-            builder.Append(s_invalidPathChars.Contains(c) ? '+' : c);
-        }
-
-        builder.Append(extension);
-        return builder.ToString();
     }
 
     private sealed class CompressionConfiguration
