@@ -19,9 +19,16 @@ Copyright (c) .NET Foundation. All rights reserved.
   <PropertyGroup>
     <ResolveCompressedFilesDependsOn>$(ResolveCompressedFilesDependsOn)</ResolveCompressedFilesDependsOn>
     <ResolveCompressedFilesForPublishDependsOn>$(ResolveCompressedFilesForPublishDependsOn)</ResolveCompressedFilesForPublishDependsOn>
+    <CompressFilesDependsOn>$(CompressFilesDependsOn)</CompressFilesDependsOn>
+    <CompressFilesForPublishDependsOn>$(CompressFilesForPublishDependsOn)</CompressFilesForPublishDependsOn>
   </PropertyGroup>
 
   <PropertyGroup>
+
+    <GenerateStaticWebAssetsPublishManifestDependsOn Condition="'$(WasmBuildingForNestedPublish)' != 'true'">
+      $(GenerateStaticWebAssetsPublishManifestDependsOn);
+      _CompressFilesForPublish;
+    </GenerateStaticWebAssetsPublishManifestDependsOn>
 
     <StaticWebAssetsPrepareForRunDependsOn>
       $(StaticWebAssetsPrepareForRunDependsOn);
@@ -106,7 +113,9 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   </Target>
 
-  <Target Name="_CompressFiles">
+  <Target
+    Name="_CompressFiles"
+    DependsOnTargets="$(CompressFilesDependsOn)">
 
     <ItemGroup>
       <_GZipCompressedStaticWebAssets Include="@(_CompressedStaticWebAssets)" Condition="'%(Format)' == 'gzip'" />
@@ -132,7 +141,9 @@ Copyright (c) .NET Foundation. All rights reserved.
     </ItemGroup>
   </Target>
 
-  <Target Name="_CompressFilesForPublish">
+  <Target
+    Name="_CompressFilesForPublish"
+    DependsOnTargets="$(CompressFilesForPublishDependsOn)">
 
     <ItemGroup>
       <_GZipCompressedStaticWebAssetsForPublish Include="@(_CompressedStaticWebAssetsForPublish)" Condition="'%(Format)' == 'gzip'" />
