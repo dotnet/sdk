@@ -8,6 +8,7 @@ using System.Linq;
 using System.Net;
 using System.Net.WebSockets;
 using System.Security.Cryptography;
+using System.Security.Policy;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
@@ -53,10 +54,97 @@ namespace Microsoft.DotNet.Watcher.Tools
 
         public string ServerKey => Convert.ToBase64String(_rsa.ExportSubjectPublicKeyInfo());
 
+        private Uri GetAsUri(string uri, string environmentVariableKey)
+        {
+            try
+            {
+                return new Uri(uri);
+            }
+            catch (Exception ex)
+            {
+                _reporter.Error($"Environment variable {environmentVariableKey}={uri} not a valid Uri.");
+                _reporter.Verbose($"New Uri exception: {ex}");
+            }
+
+            return null;
+        }
+
+        private IEnumerable<Uri> GetAsUris(string[] uris, string environmentVariableKey)
+        {
+            return uris.Select(uri => GetAsUri(uri, environmentVariableKey));
+        }
+
+        private void SuggestEnvironmentVariableFormat(string envEndpoints)
+        {
+            _reporter.Verbose($"This is not accepted: '{envEndpoints}'.");
+            _reporter.Verbose("Try something like: 'wss://localhost:43399,ws://localhost:8099'.");
+        }
+
         public async ValueTask<IEnumerable<string>> StartAsync(CancellationToken cancellationToken)
         {
-            var envHostName = Environment.GetEnvironmentVariable("DOTNET_WATCH_AUTO_RELOAD_WS_HOSTNAME");
-            var hostName = envHostName ?? "127.0.0.1";
+            const string wsEndpointsKey = "DOTNET_WATCH_AUTO_RELOAD_WS_ENDPOINT";
+            const string wsHostnameKey = "DOTNET_WATCH_AUTO_RELOAD_WS_HOSTNAME";
+            // const string wssScheme = "wss";
+            // const string wsScheme = "ws";
+            // const string httpsScheme = "https";
+            // const string httpScheme = "http";
+            // const string schemeDelimiter = "://";
+            // const string localhost = "localhost";
+            // const string loopback = "127.0.0.1";
+
+            Uri endpointSecure = null;
+            Uri endpoint = null;
+            
+            var envEndpoints = Environment.GetEnvironmentVariable(wsEndpointsKey);
+
+            if (!string.IsNullOrWhiteSpace(envEndpoints))
+            {
+                if (envEndpoints.Contains(','))
+                {
+                    var tokens = envEndpoints.Split(',');
+
+                    if (tokens.Length != 2)
+                    {
+                        _reporter.Error($"Environment variable {wsEndpointsKey} cannot contain more than two endpoints.");
+                        SuggestEnvironmentVariableFormat(envEndpoints);
+                    }
+                    else
+                    {
+                        var uris = GetAsUris(tokens, wsEndpointsKey);
+                        endpointSecure = uris.SingleOrDefault(uri => uri.Scheme == "wss" || uri.Scheme == "https");
+                        endpoint = uris.SingleOrDefault(uri => uri.Scheme == "ws" || uri.Scheme == "http");
+
+                        if (endpointSecure == null || endpoint == null)
+                        {
+                            _reporter.Error($"When prodviding two {wsEndpointsKey} endpoints, " +
+                                "one must be secure and the other insecure (wss:// or https:// + ws:// or https://");
+
+                            SuggestEnvironmentVariableFormat(envEndpoints);
+                            endpointSecure = null;
+                            endpoint = null;
+                        }
+                    }
+                }
+                else
+                {
+                    endpoint = GetAsUri(envEndpoints, wsEndpointsKey);
+
+                    if (endpoint.Scheme != "ws" && endpoint.Scheme != "http")
+                    {
+                        _reporter.Error($"When prodviding only one {wsEndpointsKey} endpoint, it must be insecure (ws:// or http://).");
+                    }
+                }
+            }
+
+            // Only attempt to use DOTNET_WATCH_AUTO_RELOAD_WS_HOSTNAME environment variable
+            // if DOTNET_WATCH_AUTO_RELOAD_WS_ENDPOINT environment variable is not specified.
+            if (endpointSecure == null && endpoint == null)
+            {
+                var envHostName = Environment.GetEnvironmentVariable(wsHostnameKey);
+                var hostName = envHostName ?? "127.0.0.1";
+                endpointSecure = GetAsUri($"https://{hostName}:0", wsHostnameKey);
+                endpoint = GetAsUri($"http://{hostName}:0", wsHostnameKey);
+            }
 
             var supportsTLS = await SupportsTLS();
 
@@ -66,11 +154,11 @@ namespace Microsoft.DotNet.Watcher.Tools
                     builder.UseKestrel();
                     if (supportsTLS)
                     {
-                        builder.UseUrls($"https://{hostName}:0", $"http://{hostName}:0");
+                        builder.UseUrls(endpointSecure.ToString(), endpoint.ToString());
                     }
                     else
                     {
-                        builder.UseUrls($"http://{hostName}:0");
+                        builder.UseUrls(endpoint.ToString());
                     }
 
                     builder.Configure(app =>
@@ -89,17 +177,18 @@ namespace Microsoft.DotNet.Watcher.Tools
                 .Get<IServerAddressesFeature>()
                 .Addresses;
 
-            if (envHostName is null)
-            {
-                return serverUrls.Select(s =>
-                    s.Replace("http://127.0.0.1", "ws://localhost", StringComparison.Ordinal)
-                    .Replace("https://127.0.0.1", "wss://localhost", StringComparison.Ordinal));
-            }
+            // if (envHostName is null)
+            // {
+            //     return serverUrls.Select(s =>
+            //         s.Replace("http://127.0.0.1", "ws://localhost", StringComparison.Ordinal)
+            //         .Replace("https://127.0.0.1", "wss://localhost", StringComparison.Ordinal));
+            // }
 
             return new[]
             {
                 serverUrls
                     .First()
+                    .Replace("127.0.0.1", "localhost", StringComparison.Ordinal)
                     .Replace("https://", "wss://", StringComparison.Ordinal)
                     .Replace("http://", "ws://", StringComparison.Ordinal)
              };
