@@ -504,12 +504,14 @@ namespace Microsoft.NET.Publish.Tests
 
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
         [InlineData(ToolsetInfo.CurrentTargetFramework)]
-        public void Only_Aot_warnings_are_produced_if_EnableAotAnalyzer_is_set(string targetFramework)
+        public void EnableAotAnalyzer_and_other_analyzers_are_set(string targetFramework)
         {
             var projectName = "WarningAppWithAotAnalyzer";
             var testProject = CreateTestProjectWithAnalysisWarnings(targetFramework, projectName, true);
             // Inactive linker/single-file analyzers should have no effect on the aot analyzer,
             // unless PublishAot is also set.
+            testProject.AdditionalProperties["EnableSingleFileAnalyzer"] = "false";
+            testProject.AdditionalProperties["EnableTrimAnalyzer"] = "false";
             testProject.AdditionalProperties["EnableAotAnalyzer"] = "true";
             testProject.AdditionalProperties["SuppressTrimAnalysisWarnings"] = "false";
             var testAsset = _testAssetsManager.CreateTestProject(testProject);
