@@ -136,7 +136,9 @@ Copyright (c) .NET Foundation. All rights reserved.
     <BrotliCompress
       FilesToCompress="@(_BrotliCompressedStaticWebAssets)"
       CompressionLevel="$(_BlazorBrotliCompressionLevel)"
-      ToolAssembly="$(_StaticWebAssetsSdkToolAssembly)">
+      ToolAssembly="$(_StaticWebAssetsSdkToolAssembly)"
+      ToolExe="$(_DotNetHostFileName)"
+      ToolPath="$(_DotNetHostDirectory)">
 
       <!-- TODO: Might not need the outputs anymore -->
       <Output TaskParameter="CompressedFiles" ItemName="_BlazorPublishBrotliCompressedFile" />
@@ -170,7 +172,9 @@ Copyright (c) .NET Foundation. All rights reserved.
     <BrotliCompress
       FilesToCompress="@(_BrotliCompressedStaticWebAssetsForPublish)"
       CompressionLevel="$(_BlazorBrotliCompressionLevel)"
-      ToolAssembly="$(_StaticWebAssetsSdkToolAssembly)">
+      ToolAssembly="$(_StaticWebAssetsSdkToolAssembly)"
+      ToolExe="$(_DotNetHostFileName)"
+      ToolPath="$(_DotNetHostDirectory)">
 
       <!-- TODO: Might not need the outputs anymore -->
       <Output TaskParameter="CompressedFiles" ItemName="_BlazorPublishBrotliCompressedFile" />

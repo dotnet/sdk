@@ -114,7 +114,7 @@ public class ResolveCompressedAssets : Task
                 var format = configuration.Format;
                 if (alreadyCompressedFormats.Contains(format))
                 {
-                    Log.LogMessage($"Skipping '{itemSpec}' because it was already compressed with format '{format}'");
+                    Log.LogMessage($"Skipping '{itemSpec}' because it was already compressed with format '{format}'.");
                     continue;
                 }
 
@@ -128,9 +128,10 @@ public class ResolveCompressedAssets : Task
 
         foreach (var asset in assetsToCompress)
         {
-            var staticWebAsset = asset.StaticWebAsset;
-            var originalItemSpec = staticWebAsset.GetMetadata("OriginalItemSpec");
-            compressedAssets.Add(CreateCompressedAsset(asset, originalItemSpec));
+            if (CreateCompressedAsset(asset) is { } result)
+            {
+                compressedAssets.Add(result);
+            }
         }
 
         AssetsToCompress = compressedAssets.ToArray();
@@ -138,32 +139,31 @@ public class ResolveCompressedAssets : Task
         return !Log.HasLoggedErrors;
     }
 
-    private TaskItem CreateCompressedAsset(AssetToCompress asset, string originalItemSpec)
+    private ITaskItem CreateCompressedAsset(AssetToCompress asset)
     {
         var originalAsset = asset.StaticWebAsset;
+        var originalItemSpec = originalAsset.GetMetadata("OriginalItemSpec");
         var relativePath = originalAsset.GetMetadata("RelativePath");
         var targetDirectory = asset.CompressionConfiguration.ComputeOutputPath(OutputBasePath);
         var format = asset.CompressionConfiguration.Format;
 
-        // TODO: Clean up this method.
         string fileExtension;
         string assetTraitValue;
 
-        if (string.Equals("gzip", format, StringComparison.OrdinalIgnoreCase))
+        if (CompressionFormat.IsGzip(format))
         {
             fileExtension = ".gz";
             assetTraitValue = "gzip";
         }
-        else if (string.Equals("brotli", format, StringComparison.OrdinalIgnoreCase))
+        else if (CompressionFormat.IsBrotli(format))
         {
             fileExtension = ".br";
             assetTraitValue = "br";
         }
         else
         {
-            fileExtension = ".gz";
-            assetTraitValue = "gzip";
-            Log.LogError($"Unknown compression format '{format}'. Defaulting to 'gzip'.");
+            Log.LogError($"Unknown compression format '{format}' for '{asset.StaticWebAsset.ItemSpec}'. Skipping compression.");
+            return null;
         }
 
         var fileName = FileHasher.GetFileHash(originalItemSpec) + fileExtension;
