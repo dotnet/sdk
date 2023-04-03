@@ -10,6 +10,10 @@
          https://github.com/microsoft/vstest/pull/4332. -->
     <UsagePattern IdentityGlob="Microsoft.TestPlatform.*/*" />
     
+    <!-- TODO: Ignore needed until razor merges main into the 17.6 branch.
+               https://github.com/dotnet/sdk/pull/31508. -->
+    <UsagePattern IdentityGlob="Microsoft*Razor.*/*" />
+    
     <!-- TODO: Figure out what to do about the netcoreapp ref packages (these are probably being pulled
          in via implicit versions and net6 targeting projects (e.g. tests)
          https://github.com/dotnet/source-build/issues/3356 -->
