@@ -77,28 +77,23 @@ namespace Microsoft.DotNet.Watcher.Tools
         private void SuggestEnvironmentVariableFormat(string envEndpoints)
         {
             _reporter.Verbose($"This is not accepted: '{envEndpoints}'.");
-            _reporter.Verbose("Try something like: 'wss://localhost:43399,ws://localhost:8099'.");
+            _reporter.Verbose("Try something like: 'https://localhost:43399,http://localhost:8099'.");
         }
 
         public async ValueTask<IEnumerable<string>> StartAsync(CancellationToken cancellationToken)
         {
             const string wsEndpointsKey = "DOTNET_WATCH_AUTO_RELOAD_WS_ENDPOINT";
             const string wsHostnameKey = "DOTNET_WATCH_AUTO_RELOAD_WS_HOSTNAME";
-            // const string wssScheme = "wss";
-            // const string wsScheme = "ws";
-            // const string httpsScheme = "https";
-            // const string httpScheme = "http";
-            // const string schemeDelimiter = "://";
-            // const string localhost = "localhost";
-            // const string loopback = "127.0.0.1";
-
             Uri endpointSecure = null;
             Uri endpoint = null;
-            
             var envEndpoints = Environment.GetEnvironmentVariable(wsEndpointsKey);
+            var messagePrefix = () => $"{wsEndpointsKey} = '{envEndpoints}'";
 
             if (!string.IsNullOrWhiteSpace(envEndpoints))
             {
+                var success = false;
+                _reporter.Verbose($"{messagePrefix}. Attepmting to set WebSockets endpoints.");
+
                 if (envEndpoints.Contains(','))
                 {
                     var tokens = envEndpoints.Split(',');
@@ -111,17 +106,19 @@ namespace Microsoft.DotNet.Watcher.Tools
                     else
                     {
                         var uris = GetAsUris(tokens, wsEndpointsKey);
-                        endpointSecure = uris.SingleOrDefault(uri => uri.Scheme == "wss" || uri.Scheme == "https");
-                        endpoint = uris.SingleOrDefault(uri => uri.Scheme == "ws" || uri.Scheme == "http");
+                        endpointSecure = uris.SingleOrDefault(uri => uri.Scheme == "https");
+                        endpoint = uris.SingleOrDefault(uri => uri.Scheme == "http");
 
                         if (endpointSecure == null || endpoint == null)
                         {
-                            _reporter.Error($"When prodviding two {wsEndpointsKey} endpoints, " +
-                                "one must be secure and the other insecure (wss:// or https:// + ws:// or https://");
-
+                            _reporter.Error($"When prodviding two {wsEndpointsKey} endpoints, one must be secure (https) and the other insecure (http).");
                             SuggestEnvironmentVariableFormat(envEndpoints);
                             endpointSecure = null;
                             endpoint = null;
+                        }
+                        else
+                        {
+                            success = true;
                         }
                     }
                 }
@@ -129,10 +126,23 @@ namespace Microsoft.DotNet.Watcher.Tools
                 {
                     endpoint = GetAsUri(envEndpoints, wsEndpointsKey);
 
-                    if (endpoint.Scheme != "ws" && endpoint.Scheme != "http")
+                    if (endpoint.Scheme != "http")
                     {
-                        _reporter.Error($"When prodviding only one {wsEndpointsKey} endpoint, it must be insecure (ws:// or http://).");
+                        _reporter.Error($"When prodviding only one {wsEndpointsKey} endpoint, it must be insecure (http).");
                     }
+                    else
+                    {
+                        success = true;
+                    }
+                }
+
+                if (success)
+                {
+                    _reporter.Verbose($"Applying {messagePrefix} succeeded.");
+                }
+                else
+                {
+                    _reporter.Error($"Setting {messagePrefix} failed.");
                 }
             }
 
