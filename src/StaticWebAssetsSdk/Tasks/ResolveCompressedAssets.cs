@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Security.Cryptography;
 using System.Text;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
@@ -16,13 +15,14 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
 public class ResolveCompressedAssets : Task
 {
-    private static readonly char[] s_invalidPathChars = Path.GetInvalidFileNameChars();
-
     public ITaskItem[] CandidateAssets { get; set; }
 
     public ITaskItem[] CompressionConfigurations { get; set; }
 
     public ITaskItem[] ExplicitAssets { get; set; }
+
+    [Required]
+    public string OutputBasePath { get; set; }
 
     [Output]
     public ITaskItem[] AssetsToCompress { get; set; }
@@ -142,7 +142,7 @@ public class ResolveCompressedAssets : Task
     {
         var originalAsset = asset.StaticWebAsset;
         var relativePath = originalAsset.GetMetadata("RelativePath");
-        var targetDirectory = asset.CompressionConfiguration.TargetDirectory;
+        var targetDirectory = asset.CompressionConfiguration.ComputeOutputPath(OutputBasePath);
         var format = asset.CompressionConfiguration.Format;
 
         // TODO: Clean up this method.
@@ -178,9 +178,32 @@ public class ResolveCompressedAssets : Task
         result.SetMetadata("AssetTraitName", "Content-Encoding");
         result.SetMetadata("AssetTraitValue", assetTraitValue);
         result.SetMetadata("TargetDirectory", targetDirectory);
-        result.SetMetadata("Format", format);
 
         return result;
+    }
+
+    private static class BuildStage
+    {
+        public const string Build = nameof(Build);
+        public const string Publish = nameof(Publish);
+
+        public static bool IsBuild(string buildStage) => string.Equals(Build, buildStage, StringComparison.OrdinalIgnoreCase);
+        public static bool IsPublish(string buildStage) => string.Equals(Publish, buildStage, StringComparison.OrdinalIgnoreCase);
+        public static bool IsValidBuildStage(string buildStage)
+            => IsBuild(buildStage)
+            || IsPublish(buildStage);
+    }
+
+    private static class CompressionFormat
+    {
+        public const string Gzip = nameof(Gzip);
+        public const string Brotli = nameof(Brotli);
+
+        public static bool IsGzip(string format) => string.Equals(Gzip, format, StringComparison.OrdinalIgnoreCase);
+        public static bool IsBrotli(string format) => string.Equals(Brotli, format, StringComparison.OrdinalIgnoreCase);
+        public static bool IsValidCompressionFormat(string format)
+            => IsGzip(format)
+            || IsBrotli(format);
     }
 
     private sealed class CompressionConfiguration
@@ -189,22 +212,32 @@ public class ResolveCompressedAssets : Task
 
         public string ItemSpec { get; set; }
 
-        public string TargetDirectory { get; }
-
         public string Format { get; }
+
+        public string Stage { get; }
 
         public static CompressionConfiguration FromTaskItem(ITaskItem taskItem)
         {
             var itemSpec = taskItem.ItemSpec;
             var includePattern = taskItem.GetMetadata("IncludePattern");
             var excludePattern = taskItem.GetMetadata("ExcludePattern");
-            var targetDirectory = taskItem.GetMetadata("TargetDirectory");
             var format = taskItem.GetMetadata("Format");
+            var stage = taskItem.GetMetadata("Stage");
 
             var includePatterns = SplitPattern(includePattern);
             var excludePatterns = SplitPattern(excludePattern);
 
-            return new(itemSpec, includePatterns, excludePatterns, targetDirectory, format);
+            if (!CompressionFormat.IsValidCompressionFormat(format))
+            {
+                throw new InvalidOperationException($"Unknown compression format '{format}' for the compression configuration '{itemSpec}'.");
+            }
+
+            if (!BuildStage.IsValidBuildStage(stage))
+            {
+                throw new InvalidOperationException($"Unknown build stage '{stage}' for the compression configuration '{itemSpec}'.");
+            }
+
+            return new(itemSpec, includePatterns, excludePatterns, format, stage);
 
             static string[] SplitPattern(string pattern)
                 => pattern
@@ -213,14 +246,49 @@ public class ResolveCompressedAssets : Task
                     .ToArray();
         }
 
-        private CompressionConfiguration(string itemSpec, string[] includePatterns, string[] excludePatterns, string targetDirectory, string format)
+        private CompressionConfiguration(string itemSpec, string[] includePatterns, string[] excludePatterns, string format, string stage)
         {
             _matcher.AddIncludePatterns(includePatterns);
             _matcher.AddExcludePatterns(excludePatterns);
 
             ItemSpec = itemSpec;
-            TargetDirectory = targetDirectory;
             Format = format;
+            Stage = stage;
+        }
+
+        public string ComputeOutputPath(string outputBasePath)
+        {
+            if (ComputeOutputSubdirectory() is { } outputSubdirectory)
+            {
+                return Path.Combine(outputBasePath, outputSubdirectory);
+            }
+
+            throw new InvalidOperationException($"Could not compute the output subdirectory for compression configuration '{ItemSpec}'.");
+
+            string ComputeOutputSubdirectory()
+            {
+                if (BuildStage.IsBuild(Stage))
+                {
+                    if (CompressionFormat.IsGzip(Format))
+                    {
+                        return "build-gz";
+                    }
+
+                    if (CompressionFormat.IsBrotli(Format))
+                    {
+                        return "build-br";
+                    }
+
+                    return null;
+                }
+
+                if (BuildStage.IsPublish(Stage))
+                {
+                    return "compress";
+                }
+
+                return null;
+            }
         }
 
         public bool Matches(string relativePath)

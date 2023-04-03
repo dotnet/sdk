@@ -65,7 +65,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ResolveCompressedAssets
       CandidateAssets="@(StaticWebAsset)"
       CompressionConfigurations="@(_CompressedFileIncludePatternForBuild)"
-      ExplicitAssets="@(AssetToCompress)">
+      ExplicitAssets="@(AssetToCompress)"
+      OutputBasePath="$(IntermediateOutputPath)">
 
       <Output
         TaskParameter="AssetsToCompress"
@@ -98,7 +99,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ResolveCompressedAssets
       CandidateAssets="@(_CandidateAssetsForPublish)"
       CompressionConfigurations="@(_CompressedFileIncludePatternForPublish)"
-      ExplicitAssets="@(AssetToCompress)">
+      ExplicitAssets="@(AssetToCompress)"
+      OutputBasePath="$(IntermediateOutputPath)">
 
       <Output
         TaskParameter="AssetsToCompress"
@@ -118,8 +120,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     DependsOnTargets="$(CompressFilesDependsOn)">
 
     <ItemGroup>
-      <_GZipCompressedStaticWebAssets Include="@(_CompressedStaticWebAssets)" Condition="'%(Format)' == 'gzip'" />
-      <_BrotliCompressedStaticWebAssets Include="@(_CompressedStaticWebAssets)" Condition="'%(Format)' == 'brotli'" />
+      <_GZipCompressedStaticWebAssets Include="@(_CompressedStaticWebAssets)" Condition="'%(AssetTraitName)' == 'Content-Encoding' and '%(AssetTraitValue)' == 'gzip'" />
+      <_BrotliCompressedStaticWebAssets Include="@(_CompressedStaticWebAssets)" Condition="'%(AssetTraitName)' == 'Content-Encoding' and '%(AssetTraitValue)' == 'br'" />
     </ItemGroup>
 
     <GZipCompress Condition="'@(_GZipCompressedStaticWebAssets)' != ''"
@@ -152,8 +154,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     DependsOnTargets="$(CompressFilesForPublishDependsOn)">
 
     <ItemGroup>
-      <_GZipCompressedStaticWebAssetsForPublish Include="@(_CompressedStaticWebAssetsForPublish)" Condition="'%(Format)' == 'gzip'" />
-      <_BrotliCompressedStaticWebAssetsForPublish Include="@(_CompressedStaticWebAssetsForPublish)" Condition="'%(Format)' == 'brotli'" />
+      <_GZipCompressedStaticWebAssetsForPublish Include="@(_CompressedStaticWebAssetsForPublish)" Condition="'%(AssetTraitName)' == 'Content-Encoding' and '%(AssetTraitValue)' == 'gzip'" />
+      <_BrotliCompressedStaticWebAssetsForPublish Include="@(_CompressedStaticWebAssetsForPublish)" Condition="'%(AssetTraitName)' == 'Content-Encoding' and '%(AssetTraitValue)' == 'br'" />
     </ItemGroup>
 
     <GZipCompress Condition="'@(_GZipCompressedStaticWebAssetsForPublish)' != ''"

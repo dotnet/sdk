@@ -86,11 +86,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     </GeneratePublishWasmBootJsonDependsOn>
   </PropertyGroup>
 
-  <PropertyGroup>
-    <_BlazorBuildGZipCompressDirectory>$(IntermediateOutputPath)build-gz\</_BlazorBuildGZipCompressDirectory>
-    <_BlazorPublishCompressDirectory>$(IntermediateOutputPath)compress\</_BlazorPublishCompressDirectory>
-  </PropertyGroup>
-
   <ItemGroup>
 
     <!--
@@ -103,7 +98,6 @@ Copyright (c) .NET Foundation. All rights reserved.
       <Format>gzip</Format>
       <IncludePattern>_framework\**</IncludePattern>
       <ExcludePattern>_framework\blazor.boot.json</ExcludePattern>
-      <TargetDirectory>$(_BlazorBuildGZipCompressDirectory)</TargetDirectory>
     </CompressionConfiguration>
 
     <CompressionConfiguration Include="BlazorPublishGzip">
@@ -114,7 +108,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     <CompressionConfiguration Include="BlazorPublishBrotli">
       <Stage>Publish</Stage>
       <Format>brotli</Format>
-      <TargetDirectory>$(_BlazorPublishCompressDirectory)</TargetDirectory>
     </CompressionConfiguration>
 
   </ItemGroup>
