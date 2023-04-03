@@ -20,7 +20,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             FilterOptionDefinition.PackageFilter
         };
 
-        internal IEnumerable<Option> LegacyOptions
+        internal IEnumerable<CliOption> LegacyOptions
         {
             get
             {
@@ -28,29 +28,29 @@ namespace Microsoft.TemplateEngine.Cli.Commands
                 yield return AddSourceOption;
                 yield return ColumnsAllOption;
                 yield return ColumnsOption;
-                foreach (Option filter in LegacyFilters.Values)
+                foreach (CliOption filter in LegacyFilters.Values)
                 {
                     yield return filter;
                 }
             }
         }
 
-        internal Option<bool> InteractiveOption { get; } = SharedOptionsFactory.CreateInteractiveOption().AsHidden();
+        internal CliOption<bool> InteractiveOption { get; } = SharedOptionsFactory.CreateInteractiveOption().AsHidden();
 
-        internal Option<string[]> AddSourceOption { get; } = SharedOptionsFactory.CreateAddSourceOption().AsHidden().DisableAllowMultipleArgumentsPerToken();
+        internal CliOption<string[]> AddSourceOption { get; } = SharedOptionsFactory.CreateAddSourceOption().AsHidden().DisableAllowMultipleArgumentsPerToken();
 
-        internal Option<bool> ColumnsAllOption { get; } = SharedOptionsFactory.CreateColumnsAllOption().AsHidden();
+        internal CliOption<bool> ColumnsAllOption { get; } = SharedOptionsFactory.CreateColumnsAllOption().AsHidden();
 
-        internal Option<string[]> ColumnsOption { get; } = SharedOptionsFactory.CreateColumnsOption().AsHidden().DisableAllowMultipleArgumentsPerToken();
+        internal CliOption<string[]> ColumnsOption { get; } = SharedOptionsFactory.CreateColumnsOption().AsHidden().DisableAllowMultipleArgumentsPerToken();
 
-        internal IReadOnlyDictionary<FilterOptionDefinition, Option> LegacyFilters { get; private set; } = new Dictionary<FilterOptionDefinition, Option>();
+        internal IReadOnlyDictionary<FilterOptionDefinition, CliOption> LegacyFilters { get; private set; } = new Dictionary<FilterOptionDefinition, CliOption>();
 
-        internal void AddNoLegacyUsageValidators(Command command, params Symbol[] except)
+        internal void AddNoLegacyUsageValidators(CliCommand command, params CliSymbol[] except)
         {
-            IEnumerable<Option> optionsToVerify = LegacyFilters.Values.Concat(new Option[] { ColumnsAllOption, ColumnsOption, InteractiveOption, AddSourceOption });
-            IEnumerable<Argument> argumentsToVerify = new Argument[] { ShortNameArgument, RemainingArguments };
+            IEnumerable<CliOption> optionsToVerify = LegacyFilters.Values.Concat(new CliOption[] { ColumnsAllOption, ColumnsOption, InteractiveOption, AddSourceOption });
+            IEnumerable<CliArgument> argumentsToVerify = new CliArgument[] { ShortNameArgument, RemainingArguments };
 
-            foreach (Option option in optionsToVerify)
+            foreach (CliOption option in optionsToVerify)
             {
                 if (!except.Contains(option))
                 {
@@ -58,7 +58,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
                 }
             }
 
-            foreach (Argument argument in argumentsToVerify)
+            foreach (CliArgument argument in argumentsToVerify)
             {
                 if (!except.Contains(argument))
                 {
@@ -77,7 +77,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             ValidateArgumentUsage(commandResult, ShortNameArgument, RemainingArguments);
         }
 
-        internal void ValidateOptionUsage(CommandResult commandResult, Option option)
+        internal void ValidateOptionUsage(CommandResult commandResult, CliOption option)
         {
             if (commandResult.Parent is not CommandResult parentResult)
             {
@@ -88,9 +88,9 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             if (optionResult != null)
             {
                 List<string> wrongTokens = new List<string>();
-                if (optionResult.Token is { } && !string.IsNullOrWhiteSpace(optionResult.Token.Value))
+                if (optionResult.IdentifierToken is { } && !string.IsNullOrWhiteSpace(optionResult.IdentifierToken.Value))
                 {
-                    wrongTokens.Add($"'{optionResult.Token.Value}'");
+                    wrongTokens.Add($"'{optionResult.IdentifierToken.Value}'");
                 }
                 foreach (var token in optionResult.Tokens)
                 {
@@ -100,11 +100,11 @@ namespace Microsoft.TemplateEngine.Cli.Commands
                     }
                 }
                 //Unrecognized command or argument(s): {0}
-                commandResult.ErrorMessage = string.Format(LocalizableStrings.Commands_Validator_WrongTokens, string.Join(",", wrongTokens));
+                commandResult.AddError(string.Format(LocalizableStrings.Commands_Validator_WrongTokens, string.Join(",", wrongTokens)));
             }
         }
 
-        private static void ValidateArgumentUsage(CommandResult commandResult, params Argument[] arguments)
+        private static void ValidateArgumentUsage(CommandResult commandResult, params CliArgument[] arguments)
         {
             if (commandResult.Parent is not CommandResult parentResult)
             {
@@ -112,7 +112,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             }
 
             List<string> wrongTokens = new List<string>();
-            foreach (Argument argument in arguments)
+            foreach (CliArgument argument in arguments)
             {
                 var newCommandArgument = parentResult.Children.OfType<ArgumentResult>().FirstOrDefault(result => result.Argument == argument);
                 if (newCommandArgument == null)
@@ -130,7 +130,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             if (wrongTokens.Any())
             {
                 //Unrecognized command or argument(s): {0}
-                commandResult.ErrorMessage = string.Format(LocalizableStrings.Commands_Validator_WrongTokens, string.Join(",", wrongTokens));
+                commandResult.AddError(string.Format(LocalizableStrings.Commands_Validator_WrongTokens, string.Join(",", wrongTokens)));
             }
         }
 
@@ -140,7 +140,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             this.Arguments.Add(RemainingArguments);
 
             //legacy options
-            Dictionary<FilterOptionDefinition, Option> options = new Dictionary<FilterOptionDefinition, Option>();
+            Dictionary<FilterOptionDefinition, CliOption> options = new();
             foreach (var filterDef in LegacyFilterDefinitions)
             {
                 options[filterDef] = filterDef.OptionFactory().AsHidden();

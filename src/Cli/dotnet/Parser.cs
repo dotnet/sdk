@@ -5,8 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.CommandLine;
 using System.CommandLine.Help;
-using System.CommandLine.Invocation;
-using System.CommandLine.IO;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -16,23 +14,21 @@ using Microsoft.DotNet.Tools;
 using Microsoft.DotNet.Tools.Format;
 using Microsoft.DotNet.Tools.Help;
 using Microsoft.DotNet.Tools.MSBuild;
-using Microsoft.DotNet.Tools.New;
 using Microsoft.DotNet.Tools.NuGet;
-using Command = System.CommandLine.Command;
 using CommandResult = System.CommandLine.Parsing.CommandResult;
 
 namespace Microsoft.DotNet.Cli
 {
     public static class Parser
     {
-        public static readonly RootCommand RootCommand = new RootCommand();
+        public static readonly CliRootCommand RootCommand = new();
 
-        internal static Dictionary<Option, Dictionary<Command, string>> HelpDescriptionCustomizations = new Dictionary<Option, Dictionary<Command, string>>();
+        internal static Dictionary<CliOption, Dictionary<CliCommand, string>> HelpDescriptionCustomizations = new();
 
-        public static readonly Command InstallSuccessCommand = InternalReportinstallsuccessCommandParser.GetCommand();
+        public static readonly CliCommand InstallSuccessCommand = InternalReportinstallsuccessCommandParser.GetCommand();
 
         // Subcommands
-        public static readonly Command[] Subcommands = new Command[]
+        public static readonly CliCommand[] Subcommands = new CliCommand[]
         {
             AddCommandParser.GetCommand(),
             BuildCommandParser.GetCommand(),
@@ -62,18 +58,18 @@ namespace Microsoft.DotNet.Cli
             WorkloadCommandParser.GetCommand()
         };
 
-        public static readonly Option<bool> DiagOption = CommonOptionsFactory.CreateDiagnosticsOption();
+        public static readonly CliOption<bool> DiagOption = CommonOptionsFactory.CreateDiagnosticsOption();
 
-        public static readonly Option<bool> VersionOption = new Option<bool>("--version");
+        public static readonly CliOption<bool> VersionOption = new CliOption<bool>("--version");
 
-        public static readonly Option<bool> InfoOption = new Option<bool>("--info");
+        public static readonly CliOption<bool> InfoOption = new CliOption<bool>("--info");
 
-        public static readonly Option<bool> ListSdksOption = new Option<bool>("--list-sdks");
+        public static readonly CliOption<bool> ListSdksOption = new CliOption<bool>("--list-sdks");
 
-        public static readonly Option<bool> ListRuntimesOption = new Option<bool>("--list-runtimes");
+        public static readonly CliOption<bool> ListRuntimesOption = new CliOption<bool>("--list-runtimes");
 
         // Argument
-        public static readonly Argument<string> DotnetSubCommand = new Argument<string>() { Arity = ArgumentArity.ExactlyOne, IsHidden = true };
+        public static readonly CliArgument<string> DotnetSubCommand = new CliArgument<string>("subcommand") { Arity = ArgumentArity.ExactlyOne, Hidden = true };
 
         private static Command ConfigureCommandLine(Command rootCommand)
         {

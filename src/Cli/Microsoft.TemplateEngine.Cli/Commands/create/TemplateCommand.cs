@@ -102,7 +102,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 
             if (HasRunScriptPostActionDefined(template))
             {
-                AllowScriptsOption = new Option<AllowRunScripts>("--allow-scripts")
+                AllowScriptsOption = new CliOption<AllowRunScripts>("--allow-scripts")
                 {
                     Description = SymbolStrings.TemplateCommand_Option_AllowScripts,
                     Arity = new ArgumentArity(1, 1)
@@ -116,13 +116,13 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 
         internal static IReadOnlyList<string> KnownHelpAliases => _helpAliases;
 
-        internal Option<AllowRunScripts>? AllowScriptsOption { get; }
+        internal CliOption<AllowRunScripts>? AllowScriptsOption { get; }
 
-        internal Option<string>? LanguageOption { get; }
+        internal CliOption<string>? LanguageOption { get; }
 
-        internal Option<string>? TypeOption { get; }
+        internal CliOption<string>? TypeOption { get; }
 
-        internal Option<string>? BaselineOption { get; }
+        internal CliOption<string>? BaselineOption { get; }
 
         internal IReadOnlyDictionary<string, TemplateOption> TemplateOptions => _templateSpecificOptions;
 

@@ -41,13 +41,13 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             this.Validators.Add(symbolResult => parentCommand.ValidateOptionUsage(symbolResult, SharedOptions.ProjectPathOption));
         }
 
-        internal static Argument<string> ShortNameArgument { get; } = new Argument<string>("template-short-name")
+        internal static CliArgument<string> ShortNameArgument { get; } = new CliArgument<string>("template-short-name")
         {
             Description = SymbolStrings.Command_Instantiate_Argument_ShortName,
             Arity = new ArgumentArity(0, 1)
         };
 
-        internal Argument<string[]> RemainingArguments { get; } = new Argument<string[]>("template-args")
+        internal CliArgument<string[]> RemainingArguments { get; } = new CliArgument<string[]>("template-args")
         {
             Description = SymbolStrings.Command_Instantiate_Argument_TemplateOptions,
             Arity = new ArgumentArity(0, 999)

@@ -20,7 +20,7 @@ namespace Microsoft.DotNet.Cli
 
         private static readonly Command Command = ConstructCommand();
 
-        public static readonly Option<bool> InfoOption = new Option<bool>("--info", CommonStrings.WorkloadInfoDescription);
+        public static readonly CliOption<bool> InfoOption = new CliOption<bool>("--info", CommonStrings.WorkloadInfoDescription);
 
         public static Command GetCommand()
         {

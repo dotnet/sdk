@@ -20,7 +20,6 @@ using System.IO;
 using Microsoft.TemplateEngine.Cli.PostActionProcessors;
 using Microsoft.DotNet.Tools.New.PostActionProcessors;
 using Microsoft.TemplateEngine.Cli.Commands;
-using Command = System.CommandLine.Command;
 using Microsoft.Extensions.Logging;
 using Microsoft.DotNet.Tools;
 using System.CommandLine.Parsing;
@@ -38,38 +37,43 @@ namespace Microsoft.DotNet.Cli
 
         private const VerbosityOptions DefaultVerbosity = VerbosityOptions.normal;
 
-        private static readonly Option<bool> s_disableSdkTemplatesOption = new Option<bool>(
-            "--debug:disable-sdk-templates",
-            () => false,
-            LocalizableStrings.DisableSdkTemplates_OptionDescription).Hide();
-
-        private static readonly Option<bool> s_disableProjectContextEvaluationOption = new Option<bool>(
-            "--debug:disable-project-context",
-            () => false,
-            LocalizableStrings.DisableProjectContextEval_OptionDescription).Hide();
-
-        private static readonly Option<VerbosityOptions> s_verbosityOption = new(
-            new string[] { "-v", "--verbosity" },
-            () => DefaultVerbosity,
-            LocalizableStrings.Verbosity_OptionDescription)
+        private static readonly CliOption<bool> s_disableSdkTemplatesOption = new CliOption<bool>("--debug:disable-sdk-templates")
         {
-            ArgumentHelpName = CommonLocalizableStrings.LevelArgumentName
+            DefaultValueFactory = static _ => false,
+            Description = LocalizableStrings.DisableSdkTemplates_OptionDescription,
+            Recursive = true
+        }.Hide();
+
+        private static readonly CliOption<bool> s_disableProjectContextEvaluationOption = new CliOption<bool>(
+            "--debug:disable-project-context")
+        {
+            DefaultValueFactory = static _ => false,
+            Description = LocalizableStrings.DisableProjectContextEval_OptionDescription,
+            Recursive = true
+        }.Hide();
+
+        private static readonly CliOption<VerbosityOptions> s_verbosityOption = new("--verbosity", "-v")
+        {
+            DefaultValueFactory = _ => DefaultVerbosity,
+            Description = LocalizableStrings.Verbosity_OptionDescription,
+            HelpName = CommonLocalizableStrings.LevelArgumentName,
+            Recursive = true
         };
 
-        private static readonly Option<bool> s_diagnosticOption =
+        private static readonly CliOption<bool> s_diagnosticOption =
             CommonOptionsFactory
                 .CreateDiagnosticsOption()
                 .WithDescription(LocalizableStrings.Diagnostics_OptionDescription);
 
-        internal static readonly Command s_command = GetCommand();
+        internal static readonly CliCommand s_command = GetCommand();
 
-        public static Command GetCommand()
+        public static CliCommand GetCommand()
         {
-            Command command = NewCommandFactory.Create(CommandName, (Func<ParseResult, CliTemplateEngineHost>)GetEngineHost);
-            command.AddGlobalOption(s_disableSdkTemplatesOption);
-            command.AddGlobalOption(s_disableProjectContextEvaluationOption);
-            command.AddGlobalOption(s_verbosityOption);
-            command.AddGlobalOption(s_diagnosticOption);
+            CliCommand command = NewCommandFactory.Create(CommandName, (Func<ParseResult, CliTemplateEngineHost>)GetEngineHost);
+            command.Options.Add(s_disableSdkTemplatesOption);
+            command.Options.Add(s_disableProjectContextEvaluationOption);
+            command.Options.Add(s_verbosityOption);
+            command.Options.Add(s_diagnosticOption);
             return command;
 
             static CliTemplateEngineHost GetEngineHost(ParseResult parseResult)
@@ -91,7 +95,7 @@ namespace Microsoft.DotNet.Cli
                     CommandLoggingContext.SetVerbose(true);
                     verbosity = VerbosityOptions.diagnostic;
                 }
-                else if (verbosityOptionResult != null && !verbosityOptionResult.IsImplicit)
+                else if (verbosityOptionResult != null && !verbosityOptionResult.Implicit)
                 {
                     VerbosityOptions userSetVerbosity = verbosityOptionResult.GetValueOrDefault<VerbosityOptions>();
                     if (userSetVerbosity.IsQuiet())

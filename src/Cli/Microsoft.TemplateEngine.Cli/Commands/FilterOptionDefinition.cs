@@ -17,7 +17,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
     /// </summary>
     internal class FilterOptionDefinition
     {
-        internal FilterOptionDefinition(Func<Option> optionFactory)
+        internal FilterOptionDefinition(Func<CliOption> optionFactory)
         {
             OptionFactory = optionFactory ?? throw new ArgumentNullException(nameof(optionFactory));
         }
@@ -65,7 +65,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
         /// <summary>
         /// A predicate that creates instance of option.
         /// </summary>
-        internal Func<Option> OptionFactory { get; }
+        internal Func<CliOption> OptionFactory { get; }
 
         private static Func<ITemplatePackageInfo, bool> PackageMatchFilter(string? packageArg)
         {
@@ -86,7 +86,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
     internal class TemplateFilterOptionDefinition : FilterOptionDefinition
     {
         internal TemplateFilterOptionDefinition(
-            Func<Option> optionFactory,
+            Func<CliOption> optionFactory,
             Func<string?, Func<ITemplateInfo, MatchInfo?>> matchFilter,
             Func<TemplateResolutionResult, bool> mismatchCriteria,
             string matchInfoName) : base(optionFactory)
@@ -122,7 +122,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
     internal class PackageFilterOptionDefinition : FilterOptionDefinition
     {
         internal PackageFilterOptionDefinition(
-            Func<Option> optionFactory,
+            Func<CliOption> optionFactory,
             Func<string?, Func<ITemplatePackageInfo, bool>> matchFilter) : base(optionFactory)
         {
             PackageMatchFilter = matchFilter ?? throw new ArgumentNullException(nameof(matchFilter));

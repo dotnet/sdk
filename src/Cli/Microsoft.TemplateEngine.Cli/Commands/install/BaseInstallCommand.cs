@@ -24,17 +24,17 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             this.Options.Add(ForceOption);
         }
 
-        internal static Argument<string[]> NameArgument { get; } = new("package")
+        internal static CliArgument<string[]> NameArgument { get; } = new("package")
         {
             Description = SymbolStrings.Command_Install_Argument_Package,
             Arity = new ArgumentArity(1, 99)
         };
 
-        internal static Option<bool> ForceOption { get; } = SharedOptionsFactory.CreateForceOption().WithDescription(SymbolStrings.Option_Install_Force);
+        internal static CliOption<bool> ForceOption { get; } = SharedOptionsFactory.CreateForceOption().WithDescription(SymbolStrings.Option_Install_Force);
 
-        internal virtual Option<bool> InteractiveOption { get; } = SharedOptionsFactory.CreateInteractiveOption();
+        internal virtual CliOption<bool> InteractiveOption { get; } = SharedOptionsFactory.CreateInteractiveOption();
 
-        internal virtual Option<string[]> AddSourceOption { get; } = SharedOptionsFactory.CreateAddSourceOption();
+        internal virtual CliOption<string[]> AddSourceOption { get; } = SharedOptionsFactory.CreateAddSourceOption();
 
         protected NewCommand ParentCommand { get; }
 

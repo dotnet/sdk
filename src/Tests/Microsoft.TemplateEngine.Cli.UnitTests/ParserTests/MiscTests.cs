@@ -152,7 +152,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
             NewCommand myCommand = (NewCommand)NewCommandFactory.Create("new", _ => host);
 
-            var customOption = new Option<string>("--newOption");
+            var customOption = new CliOption<string>("--newOption");
             myCommand.AddGlobalOption(customOption);
 
             ParseResult parseResult = myCommand.Parse("new console --newOption val");

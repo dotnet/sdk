@@ -18,9 +18,9 @@ namespace Dotnet_new3
     /// </remark>
     internal class CompleteCommand : Command
     {
-        private static readonly Argument<string> PathArgument = new Argument<string>("path");
+        private static readonly CliArgument<string> PathArgument = new CliArgument<string>("path");
 
-        private static readonly Option<int?> PositionOption = new Option<int?>("--position");
+        private static readonly CliOption<int?> PositionOption = new CliOption<int?>("--position");
 
         internal CompleteCommand() : base("complete", "tab completion")
         {

@@ -3,11 +3,7 @@
 
 using System;
 using System.Runtime.Loader;
-using System.Collections.Generic;
 using System.CommandLine;
-using System.CommandLine.Binding;
-using System.CommandLine.Invocation;
-using System.CommandLine.Parsing;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -122,43 +118,49 @@ Examples:
             }
         }
 
-        internal async Task<int> RunAsync(string[] args)
+        internal Task<int> RunAsync(string[] args)
         {
-            var rootCommand = CreateRootCommand(HandleWatch, _reporter);
-            return await rootCommand.InvokeAsync(args);
+            CliCommand rootCommand = CreateRootCommand(HandleWatch, _reporter);
+            return rootCommand.Parse(args).InvokeAsync(_cts.Token);
         }
 
-        internal static RootCommand CreateRootCommand(Func<CommandLineOptions, Task<int>> handler, IReporter reporter)
+        internal static CliRootCommand CreateRootCommand(Func<CommandLineOptions, Task<int>> handler, IReporter reporter)
         {
-            var quiet = new Option<bool>(
-                new[] { "--quiet", "-q" },
-                "Suppresses all output except warnings and errors");
+            CliOption<bool> quiet = new("--quiet", "-q")
+            {
+                Description = "Suppresses all output except warnings and errors"
+            };
 
-            var verbose = new Option<bool>(
-                new[] { "--verbose", "-v" },
-                "Show verbose output");
+            CliOption<bool> verbose = new("--verbose", "-v")
+            {
+                Description = "Show verbose output"
+            };
 
             verbose.Validators.Add(v =>
             {
                 if (v.FindResultFor(quiet) is not null && v.FindResultFor(verbose) is not null)
                 {
-                    v.ErrorMessage = Resources.Error_QuietAndVerboseSpecified;
+                    v.AddError(Resources.Error_QuietAndVerboseSpecified);
                 }
             });
 
-            var listOption = new Option<bool>("--list", "Lists all discovered files without starting the watcher.");
-            var shortProjectOption = new Option<string>("-p", "The project to watch.") { IsHidden = true };
-            var longProjectOption = new Option<string>("--project","The project to watch");
-            var launchProfileOption = new Option<string>(new[] { "-lp", "--launch-profile" }, "The launch profile to start the project with (case-sensitive). " +
-                "This option is only supported when running 'dotnet watch' or 'dotnet watch run'.");
-            var noHotReloadOption = new Option<bool>("--no-hot-reload", "Suppress hot reload for supported apps.");
-            var nonInteractiveOption = new Option<bool>(
-                "--non-interactive",
-                "Runs dotnet-watch in non-interactive mode. This option is only supported when running with Hot Reload enabled. " +
-                "Use this option to prevent console input from being captured.");
-            var forwardedArguments = new Argument<string[]>("forwardedArgs", "Arguments to pass to the child dotnet process.");
+            CliOption<bool> listOption = new("--list") { Description = "Lists all discovered files without starting the watcher." };
+            CliOption<string> shortProjectOption = new("-p") { Description = "The project to watch.", Hidden = true };
+            CliOption<string> longProjectOption = new("--project") { Description = "The project to watch" };
+            CliOption<string> launchProfileOption = new("--launch-profile", "-lp")
+            {
+                Description = "The launch profile to start the project with (case-sensitive). " +
+                "This option is only supported when running 'dotnet watch' or 'dotnet watch run'."
+            };
+            CliOption<bool> noHotReloadOption = new("--no-hot-reload") { Description = "Suppress hot reload for supported apps." };
+            CliOption<bool> nonInteractiveOption = new("--non-interactive")
+            {
+                Description = "Runs dotnet-watch in non-interactive mode. This option is only supported when running with Hot Reload enabled. " +
+                "Use this option to prevent console input from being captured."
+            };
+            CliArgument<string[]> forwardedArguments = new("forwardedArgs") { Description = "Arguments to pass to the child dotnet process." };
 
-            var root = new RootCommand(Description)
+            CliRootCommand root = new (Description)
             {
                  quiet,
                  verbose,
@@ -171,8 +173,36 @@ Examples:
                  forwardedArguments
             };
 
-            var binder = new CommandLineOptionsBinder(longProjectOption, shortProjectOption, launchProfileOption, quiet, listOption, noHotReloadOption, nonInteractiveOption, verbose, forwardedArguments, reporter);
-            root.SetHandler((CommandLineOptions options) => handler(options), binder);
+            root.SetAction((ParseResult parseResult, CancellationToken cancellationToken) =>
+            {
+                string projectValue = parseResult.GetValue(longProjectOption);
+                if (string.IsNullOrEmpty(projectValue))
+                {
+#pragma warning disable CS0618 // Type or member is obsolete
+                    var projectShortValue = parseResult.GetValue(shortProjectOption);
+#pragma warning restore CS0618 // Type or member is obsolete
+                    if (!string.IsNullOrEmpty(projectShortValue))
+                    {
+                        reporter.Warn(Resources.Warning_ProjectAbbreviationDeprecated);
+                        projectValue = projectShortValue;
+                    }
+                }
+
+                CommandLineOptions options = new()
+                {
+                    Quiet = parseResult.GetValue(quiet),
+                    List = parseResult.GetValue(listOption),
+                    NoHotReload = parseResult.GetValue(noHotReloadOption),
+                    NonInteractive = parseResult.GetValue(nonInteractiveOption),
+                    Verbose = parseResult.GetValue(verbose),
+                    Project = projectValue,
+                    LaunchProfile = parseResult.GetValue(launchProfileOption),
+                    RemainingArguments = parseResult.GetValue(forwardedArguments),
+                };
+
+                return handler(options);
+
+            });
             return root;
         }
 
@@ -433,74 +463,5 @@ Examples:
                 return null;
             };
         }
-        private sealed class CommandLineOptionsBinder : BinderBase<CommandLineOptions>
-        {
-            private readonly Option<string> _longProjectOption;
-            private readonly Option<string> _shortProjectOption;
-            private readonly Option<string> _launchProfileOption;
-            private readonly Option<bool> _quietOption;
-            private readonly Option<bool> _listOption;
-            private readonly Option<bool> _noHotReloadOption;
-            private readonly Option<bool> _nonInteractiveOption;
-            private readonly Option<bool> _verboseOption;
-
-            private readonly Argument<string[]> _argumentsToForward;
-            private readonly IReporter _reporter;
-
-            internal CommandLineOptionsBinder(
-                Option<string> longProjectOption,
-                Option<string> shortProjectOption,
-                Option<string> launchProfileOption,
-                Option<bool> quietOption,
-                Option<bool> listOption,
-                Option<bool> noHotReloadOption,
-                Option<bool> nonInteractiveOption,
-                Option<bool> verboseOption,
-                Argument<string[]> argumentsToForward,
-                IReporter reporter)
-            {
-                _longProjectOption = longProjectOption;
-                _shortProjectOption = shortProjectOption;
-                _launchProfileOption = launchProfileOption;
-                _quietOption = quietOption;
-                _listOption = listOption;
-                _noHotReloadOption = noHotReloadOption;
-                _nonInteractiveOption = nonInteractiveOption;
-                _verboseOption = verboseOption;
-                _argumentsToForward = argumentsToForward;
-                _reporter = reporter;
-            }
-
-            protected override CommandLineOptions GetBoundValue(BindingContext bindingContext)
-            {
-                var parseResults = bindingContext.ParseResult;
-                var projectValue = parseResults.GetValue(_longProjectOption);
-                if (string.IsNullOrEmpty(projectValue))
-                {
-#pragma warning disable CS0618 // Type or member is obsolete
-                    var projectShortValue = parseResults.GetValue(_shortProjectOption);
-#pragma warning restore CS0618 // Type or member is obsolete
-                    if (!string.IsNullOrEmpty(projectShortValue))
-                    {
-                        _reporter.Warn(Resources.Warning_ProjectAbbreviationDeprecated);
-                        projectValue = projectShortValue;
-                    }
-                }
-
-                var options = new CommandLineOptions
-                {
-                    Quiet = parseResults.GetValue(_quietOption),
-                    List = parseResults.GetValue(_listOption),
-                    NoHotReload = parseResults.GetValue(_noHotReloadOption),
-                    NonInteractive = parseResults.GetValue(_nonInteractiveOption),
-                    Verbose = parseResults.GetValue(_verboseOption),
-                    Project = projectValue,
-                    LaunchProfile = parseResults.GetValue(_launchProfileOption),
-                    RemainingArguments = parseResults.GetValue(_argumentsToForward),
-                };
-                return options;
-            }
-        }
     }
-
 }

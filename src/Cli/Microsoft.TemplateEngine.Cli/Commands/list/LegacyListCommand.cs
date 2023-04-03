@@ -24,9 +24,9 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             parentCommand.AddNoLegacyUsageValidators(this, except: Filters.Values.Concat(new Symbol[] { ColumnsAllOption, ColumnsOption, NewCommand.ShortNameArgument }).ToArray());
         }
 
-        public override Option<bool> ColumnsAllOption => ParentCommand.ColumnsAllOption;
+        public override CliOption<bool> ColumnsAllOption => ParentCommand.ColumnsAllOption;
 
-        public override Option<string[]> ColumnsOption => ParentCommand.ColumnsOption;
+        public override CliOption<string[]> ColumnsOption => ParentCommand.ColumnsOption;
 
         protected override Option GetFilterOption(FilterOptionDefinition def)
         {

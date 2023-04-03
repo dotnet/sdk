@@ -14,20 +14,20 @@ namespace Microsoft.DotNet.Cli
     {
         public static readonly string DocsLink = "https://aka.ms/dotnet-list";
 
-        public static readonly Argument<string> SlnOrProjectArgument = new Argument<string>(CommonLocalizableStrings.SolutionOrProjectArgumentName)
+        public static readonly CliArgument<string> SlnOrProjectArgument = new CliArgument<string>(CommonLocalizableStrings.SolutionOrProjectArgumentName)
         {
             Description = CommonLocalizableStrings.SolutionOrProjectArgumentDescription,
             Arity = ArgumentArity.ZeroOrOne
         }.DefaultToCurrentDirectory();
 
-        private static readonly Command Command = ConstructCommand();
+        private static readonly CliCommand Command = ConstructCommand();
 
-        public static Command GetCommand()
+        public static CliCommand GetCommand()
         {
             return Command;
         }
 
-        private static Command ConstructCommand()
+        private static CliCommand ConstructCommand()
         {
             var command = new DocumentedCommand("list", DocsLink, LocalizableStrings.NetListCommand);
 
@@ -35,7 +35,7 @@ namespace Microsoft.DotNet.Cli
             command.Subcommands.Add(ListPackageReferencesCommandParser.GetCommand());
             command.Subcommands.Add(ListProjectToProjectReferencesCommandParser.GetCommand());
 
-            command.SetHandler((parseResult) => parseResult.HandleMissingCommand());
+            command.SetAction((parseResult) => parseResult.HandleMissingCommand());
 
             return command;
         }

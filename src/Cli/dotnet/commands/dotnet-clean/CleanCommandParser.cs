@@ -3,8 +3,6 @@
 
 using System.Collections.Generic;
 using System.CommandLine;
-using System.CommandLine.Invocation;
-using System.CommandLine.Parsing;
 using Microsoft.DotNet.Tools;
 using Microsoft.DotNet.Tools.Clean;
 using LocalizableStrings = Microsoft.DotNet.Tools.Clean.LocalizableStrings;
@@ -15,34 +13,37 @@ namespace Microsoft.DotNet.Cli
     {
         public static readonly string DocsLink = "https://aka.ms/dotnet-clean";
 
-        public static readonly Argument<IEnumerable<string>> SlnOrProjectArgument = new Argument<IEnumerable<string>>(CommonLocalizableStrings.SolutionOrProjectArgumentName)
+        public static readonly CliArgument<IEnumerable<string>> SlnOrProjectArgument = new(CommonLocalizableStrings.SolutionOrProjectArgumentName)
         {
             Description = CommonLocalizableStrings.SolutionOrProjectArgumentDescription,
             Arity = ArgumentArity.ZeroOrMore
         };
 
-        public static readonly Option<string> OutputOption = new ForwardedOption<string>(new string[] { "-o", "--output" }, LocalizableStrings.CmdOutputDirDescription)
+        public static readonly CliOption<string> OutputOption = new ForwardedOption<string>("--output", "-o")
         {
-            ArgumentHelpName = LocalizableStrings.CmdOutputDir
+            Description = LocalizableStrings.CmdOutputDirDescription,
+            HelpName = LocalizableStrings.CmdOutputDir
         }.ForwardAsOutputPath("OutputPath");
 
-        public static readonly Option<bool> NoLogoOption = new ForwardedOption<bool>("--nologo", LocalizableStrings.CmdNoLogo)
-            .ForwardAs("-nologo");
+        public static readonly CliOption<bool> NoLogoOption = new ForwardedOption<bool>("--nologo")
+        {
+            Description = LocalizableStrings.CmdNoLogo
+        }.ForwardAs("-nologo");
 
-        public static readonly Option FrameworkOption = CommonOptions.FrameworkOption(LocalizableStrings.FrameworkOptionDescription);
+        public static readonly CliOption FrameworkOption = CommonOptions.FrameworkOption(LocalizableStrings.FrameworkOptionDescription);
 
-        public static readonly Option ConfigurationOption = CommonOptions.ConfigurationOption(LocalizableStrings.ConfigurationOptionDescription);
+        public static readonly CliOption ConfigurationOption = CommonOptions.ConfigurationOption(LocalizableStrings.ConfigurationOptionDescription);
 
-        private static readonly Command Command = ConstructCommand();
+        private static readonly CliCommand Command = ConstructCommand();
 
-        public static Command GetCommand()
+        public static CliCommand GetCommand()
         {
             return Command;
         }
 
-        private static Command ConstructCommand()
+        private static CliCommand ConstructCommand()
         {
-            var command = new DocumentedCommand("clean", DocsLink, LocalizableStrings.AppFullName);
+            DocumentedCommand command = new ("clean", DocsLink, LocalizableStrings.AppFullName);
 
             command.Arguments.Add(SlnOrProjectArgument);
             command.Options.Add(FrameworkOption);
@@ -53,7 +54,7 @@ namespace Microsoft.DotNet.Cli
             command.Options.Add(OutputOption);
             command.Options.Add(NoLogoOption);
 
-            command.SetHandler(CleanCommand.Run);
+            command.SetAction(CleanCommand.Run);
 
             return command;
         }

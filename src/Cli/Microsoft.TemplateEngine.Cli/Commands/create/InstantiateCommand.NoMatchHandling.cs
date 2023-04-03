@@ -169,16 +169,16 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 
         private static void HandleNoMatchOnTemplateBaseOptions(IEnumerable<TemplateResult> matchInfos, InstantiateCommandArgs args, TemplateGroup templateGroup)
         {
-            Option<string> languageOption = SharedOptionsFactory.CreateLanguageOption();
-            Option<string> typeOption = SharedOptionsFactory.CreateTypeOption();
-            Option<string> baselineOption = SharedOptionsFactory.CreateBaselineOption();
+            CliOption<string> languageOption = SharedOptionsFactory.CreateLanguageOption();
+            CliOption<string> typeOption = SharedOptionsFactory.CreateTypeOption();
+            CliOption<string> baselineOption = SharedOptionsFactory.CreateBaselineOption();
 
             Command reparseCommand = new("reparse-only")
             {
                 languageOption,
                 typeOption,
                 baselineOption,
-                new Argument<string[]>("rem-args")
+                new CliArgument<string[]>("rem-args")
                 {
                     Arity = new ArgumentArity(0, 999)
                 }
@@ -186,7 +186,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 
             ParseResult result = ParserFactory.CreateParser(reparseCommand).Parse(args.RemainingArguments ?? Array.Empty<string>());
             string baseInputParameters = $"'{args.ShortName}'";
-            foreach (Option<string> option in new[] { languageOption, typeOption, baselineOption })
+            foreach (CliOption<string> option in new[] { languageOption, typeOption, baselineOption })
             {
                 if (result.FindResultFor(option) is { } optionResult && optionResult.Token is { } token)
                 {

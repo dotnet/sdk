@@ -45,50 +45,50 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             this.Options.Add(SharedOptions.ProjectPathOption);
         }
 
-        internal static Option<string?> DebugCustomSettingsLocationOption { get; } = new("--debug:custom-hive")
+        internal static CliOption<string?> DebugCustomSettingsLocationOption { get; } = new("--debug:custom-hive")
         {
             Description = SymbolStrings.Option_Debug_CustomSettings,
             IsHidden = true
         };
 
-        internal static Option<bool> DebugVirtualizeSettingsOption { get; } = new(new[] { "--debug:ephemeral-hive", "--debug:virtual-hive" })
+        internal static CliOption<bool> DebugVirtualizeSettingsOption { get; } = new(new[] { "--debug:ephemeral-hive", "--debug:virtual-hive" })
         {
             Description = SymbolStrings.Option_Debug_VirtualSettings,
             IsHidden = true
         };
 
-        internal static Option<bool> DebugAttachOption { get; } = new("--debug:attach")
+        internal static CliOption<bool> DebugAttachOption { get; } = new("--debug:attach")
         {
             Description = SymbolStrings.Option_Debug_Attach,
             IsHidden = true
         };
 
-        internal static Option<bool> DebugReinitOption { get; } = new("--debug:reinit")
+        internal static CliOption<bool> DebugReinitOption { get; } = new("--debug:reinit")
         {
             Description = SymbolStrings.Option_Debug_Reinit,
             IsHidden = true
         };
 
-        internal static Option<bool> DebugRebuildCacheOption { get; } = new(new[] { "--debug:rebuild-cache", "--debug:rebuildcache" })
+        internal static CliOption<bool> DebugRebuildCacheOption { get; } = new(new[] { "--debug:rebuild-cache", "--debug:rebuildcache" })
         {
             Description = SymbolStrings.Option_Debug_RebuildCache,
             IsHidden = true
         };
 
-        internal static Option<bool> DebugShowConfigOption { get; } = new(new[] { "--debug:show-config", "--debug:showconfig" })
+        internal static CliOption<bool> DebugShowConfigOption { get; } = new(new[] { "--debug:show-config", "--debug:showconfig" })
         {
             Description = SymbolStrings.Option_Debug_ShowConfig,
             IsHidden = true
         };
 
-        internal static Argument<string> ShortNameArgument { get; } = new Argument<string>("template-short-name")
+        internal static CliArgument<string> ShortNameArgument { get; } = new CliArgument<string>("template-short-name")
         {
             Description = SymbolStrings.Command_Instantiate_Argument_ShortName,
             Arity = new ArgumentArity(0, 1),
             IsHidden = true
         };
 
-        internal static Argument<string[]> RemainingArguments { get; } = new Argument<string[]>("template-args")
+        internal static CliArgument<string[]> RemainingArguments { get; } = new CliArgument<string[]>("template-args")
         {
             Description = SymbolStrings.Command_Instantiate_Argument_TemplateOptions,
             Arity = new ArgumentArity(0, 999),

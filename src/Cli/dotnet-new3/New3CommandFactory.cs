@@ -12,12 +12,12 @@ namespace Dotnet_new3
     {
         private const string CommandName = "new3";
 
-        private static readonly Option<bool> _debugEmitTelemetryOption = new("--debug:emit-telemetry", "Enable telemetry")
+        private static readonly CliOption<bool> _debugEmitTelemetryOption = new("--debug:emit-telemetry", "Enable telemetry")
         {
             IsHidden = true
         };
 
-        private static readonly Option<bool> _debugDisableBuiltInTemplatesOption = new("--debug:disable-sdk-templates", "Disable built-in templates")
+        private static readonly CliOption<bool> _debugDisableBuiltInTemplatesOption = new("--debug:disable-sdk-templates", "Disable built-in templates")
         {
             IsHidden = true
         };

@@ -23,7 +23,7 @@ namespace Microsoft.DotNet.Cli
 
         public static readonly Option FrameworkOption = new ForwardedOption<IEnumerable<string>>("--framework", LocalizableStrings.CmdFrameworkDescription)
         {
-            ArgumentHelpName = LocalizableStrings.CmdFramework
+            HelpName = LocalizableStrings.CmdFramework
         }.ForwardAsManyArgumentsEachPrefixedByOption("--framework")
         .AllowSingleArgPerToken();
 
@@ -41,12 +41,12 @@ namespace Microsoft.DotNet.Cli
 
         public static readonly Option ConfigOption = new ForwardedOption<string>("--config", LocalizableStrings.CmdConfigDescription)
         {
-            ArgumentHelpName = LocalizableStrings.CmdConfig
+            HelpName = LocalizableStrings.CmdConfig
         }.ForwardAsMany(o => new[] { "--config", o });
 
         public static readonly Option SourceOption = new ForwardedOption<IEnumerable<string>>("--source", LocalizableStrings.CmdSourceDescription)
         {
-            ArgumentHelpName = LocalizableStrings.CmdSource
+            HelpName = LocalizableStrings.CmdSource
         }.ForwardAsManyArgumentsEachPrefixedByOption("--source")
         .AllowSingleArgPerToken();
 
@@ -57,7 +57,7 @@ namespace Microsoft.DotNet.Cli
                 new string[] { "-v", "--verbosity" },
                 description: CommonLocalizableStrings.VerbosityOptionDescription)
             {
-                ArgumentHelpName = CommonLocalizableStrings.LevelArgumentName
+                HelpName = CommonLocalizableStrings.LevelArgumentName
             }.ForwardAsSingle(o => $"--verbosity:{o}");
 
         public static readonly Option FormatOption = new ForwardedOption<ReportOutputFormat>("--format", LocalizableStrings.CmdFormatDescription)
@@ -66,16 +66,16 @@ namespace Microsoft.DotNet.Cli
         public static readonly Option OutputVersionOption = new ForwardedOption<int>("--output-version", LocalizableStrings.CmdOutputVersionDescription)
         { }.ForwardAsSingle(o => $"--output-version:{o}");
 
-        private static readonly Command Command = ConstructCommand();
+        private static readonly CliCommand Command = ConstructCommand();
 
-        public static Command GetCommand()
+        public static CliCommand GetCommand()
         {
             return Command;
         }
 
-        private static Command ConstructCommand()
+        private static CliCommand ConstructCommand()
         {
-            var command = new Command("package", LocalizableStrings.AppFullName);
+            var command = new CliCommand("package", LocalizableStrings.AppFullName);
 
             command.Options.Add(VerbosityOption);
             command.Options.Add(OutdatedOption);
@@ -92,7 +92,7 @@ namespace Microsoft.DotNet.Cli
             command.Options.Add(FormatOption);
             command.Options.Add(OutputVersionOption);
 
-            command.SetHandler((parseResult) => new ListPackageReferencesCommand(parseResult).Execute());
+            command.SetAction((parseResult) => new ListPackageReferencesCommand(parseResult).Execute());
 
             return command;
         }

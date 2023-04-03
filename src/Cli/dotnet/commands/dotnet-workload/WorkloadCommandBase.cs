@@ -82,7 +82,7 @@ namespace Microsoft.DotNet.Workloads.Workload
         /// option is used if present, otherwise the default temp directory used.</param>
         /// <param name="nugetPackageDownloader">The package downloader to use for acquiring NuGet packages.</param>
         public WorkloadCommandBase(ParseResult parseResult,
-            Option<VerbosityOptions> verbosityOptions = null,
+            CliOption<VerbosityOptions> verbosityOptions = null,
             IReporter reporter = null,
             string tempDirPath = null,
             INuGetPackageDownloader nugetPackageDownloader = null) : base(parseResult)
