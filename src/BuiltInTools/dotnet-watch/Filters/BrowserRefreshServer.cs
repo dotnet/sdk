@@ -146,8 +146,8 @@ namespace Microsoft.DotNet.Watcher.Tools
                 }
             }
 
-            // Only attempt to use DOTNET_WATCH_AUTO_RELOAD_WS_HOSTNAME environment variable
-            // if DOTNET_WATCH_AUTO_RELOAD_WS_ENDPOINT environment variable is not specified.
+            // Only attempt to use the DOTNET_WATCH_AUTO_RELOAD_WS_HOSTNAME environment variable
+            // when the DOTNET_WATCH_AUTO_RELOAD_WS_ENDPOINT environment variable is not specified.
             if (endpointSecure == null && endpoint == null)
             {
                 var envHostName = Environment.GetEnvironmentVariable(wsHostnameKey);
