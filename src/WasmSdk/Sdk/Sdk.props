@@ -11,6 +11,9 @@ Copyright (c) .NET Foundation. All rights reserved.
 -->
 <Project ToolsVersion="14.0">
   <PropertyGroup>
+    <!-- FIXME: Debugging level code -->
+    <RestoreAdditionalProjectSources>$(RestoreAdditionalProjectSources);C:\Development\dotnet\runtime\artifacts\packages\Release\Shipping</RestoreAdditionalProjectSources>
+    
     <!-- FIXME: Important to get rid of missing workload -->
     <UsingMicrosoftNETSdkBlazorWebAssembly>true</UsingMicrosoftNETSdkBlazorWebAssembly>
     <UsingMicrosoftNETSdkWebAssembly>true</UsingMicrosoftNETSdkWebAssembly>
