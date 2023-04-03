@@ -12,7 +12,6 @@ using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-
 using Microsoft.CodeAnalysis.ExternalAccess.Watch.Api;
 using Microsoft.Extensions.Tools.Internal;
 
