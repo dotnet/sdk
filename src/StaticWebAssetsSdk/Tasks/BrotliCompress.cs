@@ -17,9 +17,6 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
         [Required]
         public ITaskItem[] FilesToCompress { get; set; }
 
-        [Output]
-        public ITaskItem[] CompressedFiles { get; set; }
-
         public string CompressionLevel { get; set; }
 
         [Required]
@@ -81,15 +78,12 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                 Directory.CreateDirectory(outputDirectory);
             }
 
-            CompressedFiles = new ITaskItem[FilesToCompress.Length];
-
             for (var i = 0; i < FilesToCompress.Length; i++)
             {
                 var file = FilesToCompress[i];
                 var inputFullPath = file.GetMetadata("RelatedAsset");
                 var outputRelativePath = file.ItemSpec;
                 var outputFullPath = Path.GetFullPath(outputRelativePath);
-                CompressedFiles[i] = file;
 
                 if (!File.Exists(outputRelativePath))
                 {

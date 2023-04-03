@@ -138,16 +138,11 @@ Copyright (c) .NET Foundation. All rights reserved.
       CompressionLevel="$(_BlazorBrotliCompressionLevel)"
       ToolAssembly="$(_StaticWebAssetsSdkToolAssembly)"
       ToolExe="$(_DotNetHostFileName)"
-      ToolPath="$(_DotNetHostDirectory)">
-
-      <!-- TODO: Might not need the outputs anymore -->
-      <Output TaskParameter="CompressedFiles" ItemName="_BlazorPublishBrotliCompressedFile" />
-      <Output TaskParameter="CompressedFiles" ItemName="FileWrites" />
-
-    </BrotliCompress>
+      ToolPath="$(_DotNetHostDirectory)" />
 
     <ItemGroup>
-      <FileWrites Include="@(FilesToCompress->TargetPath)" />
+      <FileWrites Include="@(_GZipCompressedStaticWebAssets)" />
+      <FileWrites Include="@(_BrotliCompressedStaticWebAssets)" />
     </ItemGroup>
   </Target>
 
@@ -174,16 +169,11 @@ Copyright (c) .NET Foundation. All rights reserved.
       CompressionLevel="$(_BlazorBrotliCompressionLevel)"
       ToolAssembly="$(_StaticWebAssetsSdkToolAssembly)"
       ToolExe="$(_DotNetHostFileName)"
-      ToolPath="$(_DotNetHostDirectory)">
-
-      <!-- TODO: Might not need the outputs anymore -->
-      <Output TaskParameter="CompressedFiles" ItemName="_BlazorPublishBrotliCompressedFile" />
-      <Output TaskParameter="CompressedFiles" ItemName="FileWrites" />
-
-    </BrotliCompress>
+      ToolPath="$(_DotNetHostDirectory)" />
 
     <ItemGroup>
-      <FileWrites Include="@(FilesToCompress->TargetPath)" />
+      <FileWrites Include="@(_GZipCompressedStaticWebAssetsForPublish)" />
+      <FileWrites Include="@(_BrotliCompressedStaticWebAssetsForPublish)" />
     </ItemGroup>
   </Target>
 
