@@ -15,8 +15,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     <UsingMicrosoftNETSdkBlazorWebAssembly>true</UsingMicrosoftNETSdkBlazorWebAssembly>
     <UsingMicrosoftNETSdkWebAssembly>true</UsingMicrosoftNETSdkWebAssembly>
 
-    <!-- WASM projects are always browser-wasm -->
-    <RuntimeIdentifier>browser-wasm</RuntimeIdentifier>
+    <!-- WASM projects defaults to browser-wasm -->
+    <RuntimeIdentifier Condition="'$(RuntimeIdentifier)' == ''">browser-wasm</RuntimeIdentifier>
     <UseMonoRuntime>true</UseMonoRuntime>
 
     <_WasmSdkImportsMicrosoftNETSdkPublish Condition="'$(UsingMicrosoftNETSdkPublish)' != 'true'">true</_WasmSdkImportsMicrosoftNETSdkPublish>

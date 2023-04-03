@@ -80,6 +80,8 @@ namespace Microsoft.NET.Build.Tasks
 
         public ITaskItem[] KnownWebAssemblySdkPacks { get; set; } = Array.Empty<ITaskItem>();
 
+        public bool UsingMicrosoftNETSdkWebAssembly { get; set; }
+
         [Required]
         public string NETCoreSdkRuntimeIdentifier { get; set; }
 
@@ -389,13 +391,18 @@ namespace Microsoft.NET.Build.Tasks
                 }
             }
 
-            if (RuntimeIdentifier == "browser-wasm" || RuntimeIdentifiers.Contains("browser-wasm"))
+            if (UsingMicrosoftNETSdkWebAssembly)
             {
-                if (!AddToolPack(ToolPackType.WebAssemblySdk, _normalizedTargetFrameworkVersion, packagesToDownload, implicitPackageReferences))
+                if (RuntimeIdentifier == "browser-wasm" || RuntimeIdentifiers.Contains("browser-wasm"))
                 {
-                    Log.LogError("FIXME: Localize 'WebAssemblySdkNoValidRuntimePackageError'");
-                    return;
+                    if (!AddToolPack(ToolPackType.WebAssemblySdk, _normalizedTargetFrameworkVersion, packagesToDownload, implicitPackageReferences))
+                    {
+                        Log.LogError("FIXME: Localize 'WebAssemblySdkNoValidRuntimePackageError'");
+                        return;
+                    }
                 }
+
+                // TODO: Add support for wasi-wasm package
             }
 
             if (packagesToDownload.Any())
