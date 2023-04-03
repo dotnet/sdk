@@ -365,7 +365,7 @@ namespace Microsoft.NET.Publish.Tests
                     .And.HaveStdOutContaining("Hello World");
             }
         }
-        
+
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
         [InlineData(ToolsetInfo.CurrentTargetFramework)]
         public void NativeAot_hw_runs_with_cross_target_PublishAot_is_enabled(string targetFramework)
@@ -592,6 +592,30 @@ namespace Microsoft.NET.Publish.Tests
                     .Execute().Should().Pass()
                     .And.HaveStdOutContaining("Hello world");
             }
+        }
+
+        [Theory]
+        [InlineData(ToolsetInfo.CurrentTargetFramework)]
+        public void EnableAotAnalyzer_implies_trim_and_singlefile(string targetFramework)
+        {
+            var projectName = "WarningAppWithPublishAot";
+
+            // EnableAotAnalyzer should enable EnableTrimAnalyzer and EnableSingleFileAnalyzer
+            var testProject = CreateTestProjectWithAnalysisWarnings(targetFramework, projectName, true);
+            testProject.RecordProperties("NETCoreSdkPortableRuntimeIdentifier");
+            testProject.AdditionalProperties["EnableAotAnalyzer"] = "true";
+            testProject.AdditionalProperties["SuppressTrimAnalysisWarnings"] = "false";
+            testProject.AdditionalProperties["UseCurrentRuntimeIdentifier"] = "true";
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+
+            var buildCommand = new BuildCommand(testAsset);
+            buildCommand
+                .Execute()
+                .Should().Pass()
+                .And.HaveStdOutContaining("warning IL3050")
+                .And.HaveStdOutContaining("warning IL3056")
+                .And.HaveStdOutContaining("warning IL2026")
+                .And.HaveStdOutContaining("warning IL3002");
         }
 
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
