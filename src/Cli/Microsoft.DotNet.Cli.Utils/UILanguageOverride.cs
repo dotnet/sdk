@@ -3,6 +3,10 @@
 
 using System;
 using System.Globalization;
+using System.Runtime.InteropServices;
+using System.Security;
+using System.Text;
+using Microsoft.Win32;
 
 namespace Microsoft.DotNet.Cli.Utils
 {
@@ -11,6 +15,7 @@ namespace Microsoft.DotNet.Cli.Utils
         internal const string DOTNET_CLI_UI_LANGUAGE = nameof(DOTNET_CLI_UI_LANGUAGE);
         private const string VSLANG = nameof(VSLANG);
         private const string PreferredUILang = nameof(PreferredUILang);
+        private static Encoding DefaultMultilingualEncoding = Encoding.UTF8; // We choose UTF8 as the default encoding as opposed to specific language encodings because it supports emojis & other chars in .NET.
 
         public static void Setup()
         {
@@ -20,11 +25,22 @@ namespace Microsoft.DotNet.Cli.Utils
                 ApplyOverrideToCurrentProcess(language);
                 FlowOverrideToChildProcesses(language);
             }
+
+            if (
+                !CultureInfo.CurrentUICulture.TwoLetterISOLanguageName.Equals("en", StringComparison.InvariantCultureIgnoreCase) &&
+                CurrentPlatformIsWindowsAndOfficiallySupportsUTF8Encoding()
+                )
+            {
+                Console.OutputEncoding = DefaultMultilingualEncoding;
+                Console.InputEncoding = DefaultMultilingualEncoding; // Setting both encodings causes a change in the CHCP, making it so we dont need to P-Invoke ourselves.
+                // If the InputEncoding is not set, the encoding will work in CMD but not in Powershell, as the raw CHCP page won't be changed.
+            }
         }
 
         private static void ApplyOverrideToCurrentProcess(CultureInfo language)
         {
             CultureInfo.DefaultThreadCurrentUICulture = language;
+            // We don't need to change CurrentUICulture, as it will be changed by DefaultThreadCurrentUICulture on NET Core (but not Framework) apps. 
         }
 
         private static void FlowOverrideToChildProcesses(CultureInfo language)
@@ -35,6 +51,11 @@ namespace Microsoft.DotNet.Cli.Utils
             SetIfNotAlreadySet(PreferredUILang, language.Name); // for C#/VB targets that pass $(PreferredUILang) to compiler
         }
 
+        /// <summary>
+        /// Look first at UI Language Overrides. (DOTNET_CLI_UI_LANGUAGE and VSLANG). Does NOT check System Locale or OS Display Language.
+        /// </summary>
+        /// <returns>The custom language that was set by the user.
+        /// DOTNET_CLI_UI_LANGUAGE > VSLANG. Returns null if none are set.</returns>
         private static CultureInfo GetOverriddenUILanguage()
         {
             // DOTNET_CLI_UI_LANGUAGE=<culture name> is the main way for users to customize the CLI's UI language.
@@ -76,6 +97,32 @@ namespace Microsoft.DotNet.Cli.Utils
         private static void SetIfNotAlreadySet(string environmentVariableName, int value)
         {
             SetIfNotAlreadySet(environmentVariableName, value.ToString());
+        }
+
+        private static bool CurrentPlatformIsWindowsAndOfficiallySupportsUTF8Encoding()
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && Environment.OSVersion.Version.Major >= 10) // UTF-8 is only officially supported on 10+.
+            {
+                try
+                {
+                    using RegistryKey windowsVersionRegistry = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion");
+                    var buildNumber = windowsVersionRegistry.GetValue("CurrentBuildNumber").ToString();
+                    const int buildNumberThatOfficialySupportsUTF8 = 18363;
+                    return int.Parse(buildNumber) >= buildNumberThatOfficialySupportsUTF8 || ForceUniversalEncodingOptInEnabled();
+                }
+                catch (Exception ex) when (ex is SecurityException || ex is ObjectDisposedException)
+                {
+                    // We don't want to break those in VS on older versions of Windows with a non-en language.
+                    // Allow those without registry permissions to force the encoding, however.
+                    return ForceUniversalEncodingOptInEnabled();
+                }
+            }
+            return false;
+        }
+
+        private static bool ForceUniversalEncodingOptInEnabled()
+        {
+            return String.Equals(Environment.GetEnvironmentVariable("DOTNET_CLI_FORCE_UTF8_ENCODING"), "true", StringComparison.OrdinalIgnoreCase);
         }
     }
 }
