@@ -21,4 +21,9 @@
     <Content Include="nupkg_templates\**" />
     <None Include="nupkg_templates\**" CopyToOutputDirectory="Always" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Remove="test_templates\TemplateWithGeneratedJoinSymbolWithRefToDerivedSymbol\.template.config\template.json" />
+    <Content Remove="test_templates\templatewithgeneratedjoinsymbolwithreftoderivedsymbol\MyProject.Helper.csproj" />
+    <Content Remove="test_templates\TemplateWithGeneratedJoinSymbolWithRefToDerivedSymbol\Tool.cs" />
+  </ItemGroup>
 </Project>

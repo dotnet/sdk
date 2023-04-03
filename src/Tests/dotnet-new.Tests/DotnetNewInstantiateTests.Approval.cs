@@ -732,5 +732,34 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             return Verify(commandResult.FormatOutputStreams())
                 .UseParameters(setName);
         }
+
+        [Fact]
+        public Task CanEvaluateGeneratedJoinSymbolWithRefToDerivedSymbolCorrectly()
+        {
+            string workingDirectory = CreateTemporaryFolder();
+            string homeDirectory = CreateTemporaryFolder();
+            InstallTestTemplate("TemplateWithGeneratedJoinSymbolWithRefToDerivedSymbol", _log, homeDirectory, workingDirectory);
+
+            string toolName = "nuget";
+            string toolName_FirstUpperCase = toolName.First().ToString().ToUpper() + toolName.Substring(1);
+            CommandResult commandResult = new DotnetNewCommand(_log, "TestAssets.TemplateWithGeneratedJoinSymbolWithRefToDerivedSymbol", "--NugetToolName", toolName)
+                .WithCustomHive(homeDirectory)
+                .WithWorkingDirectory(workingDirectory)
+                .Execute();
+
+            commandResult
+                .Should()
+                .Pass();
+
+            // Verify file name is renamed using the value of derived symbol
+            string originalFileName = "Tool";
+            string renameFilePath = Path.Combine(workingDirectory, $"{toolName_FirstUpperCase}.cs");
+            Assert.True(File.Exists(renameFilePath));
+            Assert.True(!File.Exists(Path.Combine(workingDirectory, $"{originalFileName}.cs")));
+
+            // Verify generated join symbol with ref to derived symbol has correct value that replaces target text
+            string projectFilePath = Path.Combine(workingDirectory, "MyProject.Helper.csproj");
+            return Verify(File.ReadAllText(projectFilePath));
+        }
     }
 }

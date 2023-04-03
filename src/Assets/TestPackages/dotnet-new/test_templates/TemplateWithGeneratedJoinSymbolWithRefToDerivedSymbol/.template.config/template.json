@@ -1,0 +1,43 @@
+{
+  "author": "Test Asset",
+  "classifications": [ "Test Asset" ],
+  "name": "TemplateWithGeneratedJoinSymbolWithRefToDerivedSymbol",
+  "generatorVersions": "[1.0.0.0-*)",
+  "groupIdentity": "TestAssets.TemplateWithGeneratedJoinSymbolWithRefToDerivedSymbol",
+  "precedence": "100",
+  "identity": "TestAssets.TemplateWithGeneratedJoinSymbolWithRefToDerivedSymbol",
+  "shortName": "TestAssets.TemplateWithGeneratedJoinSymbolWithRefToDerivedSymbol",
+  "symbols": {
+    "NugetToolName": {
+      "type": "parameter",
+      "datatype": "text",
+      "isRequired": true,
+      "description": "client name"
+    },
+    "ToolNameCapitalCase": {
+      "type": "derived",
+      "datatype": "text",
+      "valueSource": "NugetToolName",
+      "valueTransform": "firstUpperCase",
+      "FileRename": "Tool"
+    },
+    "PackageName": {
+      "type": "generated",
+      "generator": "join",
+      "replaces": "PackageName_SpaceHolder",
+      "parameters": {
+        "symbols": [
+          {
+            "type": "ref",
+            "value": "ToolNameCapitalCase"
+          },
+          {
+            "type": "const",
+            "value": "Frameworks"
+          }
+        ],
+        "separator": "."
+      }
+    }
+  }
+}
