@@ -8,6 +8,13 @@
   "identity": "TestAssets.TemplateWithGeneratedJoinSymbolWithRefToDerivedSymbol",
   "shortName": "TestAssets.TemplateWithGeneratedJoinSymbolWithRefToDerivedSymbol",
   "symbols": {
+   "ToolNameCapitalCase": {
+      "type": "derived",
+      "datatype": "text",
+      "valueSource": "NugetToolName",
+      "valueTransform": "firstUpperCase",
+      "FileRename": "Tool"
+   },
    "PackageName": {
       "type": "generated",
       "generator": "join",
@@ -31,13 +38,6 @@
       "datatype": "text",
       "isRequired": true,
       "description": "client name"
-    },
-    "ToolNameCapitalCase": {
-      "type": "derived",
-      "datatype": "text",
-      "valueSource": "NugetToolName",
-      "valueTransform": "firstUpperCase",
-      "FileRename": "Tool"
     }
   }
 }
