@@ -516,8 +516,8 @@ namespace Microsoft.NET.Publish.Tests
             testProject.AdditionalProperties["SuppressTrimAnalysisWarnings"] = "false";
             var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
-            var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
-            publishCommand
+            var buildCommand = new BuildCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
+            buildCommand
                 .Execute(RuntimeIdentifier)
                 .Should().Pass()
                 .And.HaveStdOutContaining("warning IL3050")
