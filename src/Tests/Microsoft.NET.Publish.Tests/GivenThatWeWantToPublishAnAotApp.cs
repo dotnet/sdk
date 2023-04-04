@@ -508,8 +508,6 @@ namespace Microsoft.NET.Publish.Tests
         {
             var projectName = "WarningAppWithAotAnalyzer";
             var testProject = CreateTestProjectWithAnalysisWarnings(targetFramework, projectName, true);
-            // Inactive linker/single-file analyzers should have no effect on the aot analyzer,
-            // unless PublishAot is also set.
             testProject.AdditionalProperties["EnableSingleFileAnalyzer"] = "false";
             testProject.AdditionalProperties["EnableTrimAnalyzer"] = "false";
             testProject.AdditionalProperties["EnableAotAnalyzer"] = "true";
