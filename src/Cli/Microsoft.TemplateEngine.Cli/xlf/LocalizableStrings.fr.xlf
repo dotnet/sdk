@@ -261,7 +261,7 @@ Exécutez « dotnet {1} --show-aliases » sans arguments pour afficher tous le
       <trans-unit id="ColumnNamePackageNameAndOwners">
         <source>Package Name / Owners</source>
         <target state="new">Package Name / Owners</target>
-        <note>information about package: it's name and owner</note>
+        <note>information about NuGet package: it's name and owner</note>
       </trans-unit>
       <trans-unit id="ColumnNamePrecedence">
         <source>Precedence</source>
@@ -291,7 +291,7 @@ Exécutez « dotnet {1} --show-aliases » sans arguments pour afficher tous le
       <trans-unit id="ColumnNameTrusted">
         <source>Trusted</source>
         <target state="new">Trusted</target>
-        <note>information about package origin; if a package has PrefixReserved indicator </note>
+        <note>information about NuGet package origin; if a package has PrefixReserved indicator </note>
       </trans-unit>
       <trans-unit id="ColumnNameType">
         <source>Type</source>
