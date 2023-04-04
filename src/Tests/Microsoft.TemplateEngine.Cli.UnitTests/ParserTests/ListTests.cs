@@ -3,7 +3,6 @@
 //
 
 using System.CommandLine;
-using System.CommandLine.Parsing;
 using Microsoft.TemplateEngine.Cli.Commands;
 using Microsoft.TemplateEngine.TestHelper;
 
@@ -271,7 +270,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
         {
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
             NewCommand myCommand = (NewCommand)NewCommandFactory.Create("new", _ => host);
-            Command rootCommand = new("dotnet")
+            CliCommand rootCommand = new("dotnet")
             {
                 myCommand
             };

@@ -3,7 +3,6 @@
 
 using System.Collections.Generic;
 using System.CommandLine;
-using System.CommandLine.Parsing;
 using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.Telemetry
@@ -12,14 +11,14 @@ namespace Microsoft.DotNet.Cli.Telemetry
     {
         public TopLevelCommandNameAndOptionToLog(
             HashSet<string> topLevelCommandName,
-            HashSet<Option> optionsToLog)
+            HashSet<CliOption> optionsToLog)
         {
             _topLevelCommandName = topLevelCommandName;
             _optionsToLog = optionsToLog;
         }
 
         private HashSet<string> _topLevelCommandName { get; }
-        private HashSet<Option> _optionsToLog { get; }
+        private HashSet<CliOption> _optionsToLog { get; }
 
         public List<ApplicationInsightsEntryFormat> AllowList(ParseResult parseResult, Dictionary<string, double> measurements = null)
         {
@@ -28,7 +27,9 @@ namespace Microsoft.DotNet.Cli.Telemetry
             foreach (var option in _optionsToLog)
             {
                 if (_topLevelCommandName.Contains(topLevelCommandName)
-                    && parseResult.SafelyGetValueForOption(option) is string optionValue)
+                    && option is CliOption<string> stringOption
+                    && parseResult.SafelyGetValueForOption(stringOption) is string optionValue
+                    && optionValue != default)
                 {
                     result.Add(new ApplicationInsightsEntryFormat(
                         "sublevelparser/command",

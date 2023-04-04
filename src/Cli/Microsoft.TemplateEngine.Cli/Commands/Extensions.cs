@@ -13,32 +13,32 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 {
     internal static class Extensions
     {
-        internal static string? GetValueForOptionOrNull(this ParseResult parseResult, Option option)
+        internal static string? GetValueForOptionOrNull(this ParseResult parseResult, CliOption option)
         {
             OptionResult? result = parseResult.FindResultFor(option);
             if (result == null)
             {
                 return null;
             }
-            return result.GetValueOrDefault()?.ToString();
+            return result.GetValueOrDefault<object>()?.ToString();
         }
 
         /// <summary>
         /// Checks if <paramref name="parseResult"/> contains an error for <paramref name="option"/>.
         /// </summary>
-        internal static bool HasErrorFor(this ParseResult parseResult, Option option, [NotNullWhen(true)] out ParseError? error)
+        internal static bool HasErrorFor(this ParseResult parseResult, CliOption option, [NotNullWhen(true)] out ParseError? error)
         {
             error = parseResult.Errors.FirstOrDefault(e => IsOptionResult(e.SymbolResult, option)
                 || IsOptionResult(e.SymbolResult?.Parent, option));
 
             return error is not null;
 
-            static bool IsOptionResult(SymbolResult? symbolResult, Option option)
+            static bool IsOptionResult(SymbolResult? symbolResult, CliOption option)
                 => symbolResult is OptionResult optionResult && optionResult.Option == option;
         }
 
         /// <summary>
-        /// Case insensitive version for <see cref="System.CommandLine.Option{TOption}.AcceptOnlyFromAmong(string[])"/>.
+        /// Case insensitive version for <see cref="System.CommandLine.CliOption{TOption}.AcceptOnlyFromAmong(string[])"/>.
         /// </summary>
         internal static void FromAmongCaseInsensitive(this CliOption<string> option, string[]? allowedValues = null, string? allowedHiddenValue = null)
         {
@@ -72,10 +72,10 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             var invalidArguments = optionResult.Tokens.Where(token => !allowedValues.Append(allowedHiddenValue).Contains(token.Value, StringComparer.OrdinalIgnoreCase)).ToList();
             if (invalidArguments.Any())
             {
-                optionResult.ErrorMessage = string.Format(
+                optionResult.AddError(string.Format(
                     LocalizableStrings.Commands_Validator_WrongArgumentValue,
                     string.Join(", ", invalidArguments.Select(arg => $"'{arg.Value}'")),
-                    string.Join(", ", allowedValues.Select(allowedValue => $"'{allowedValue}'")));
+                    string.Join(", ", allowedValues.Select(allowedValue => $"'{allowedValue}'"))));
             }
         }
     }

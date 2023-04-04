@@ -14,17 +14,19 @@ namespace Dotnet_new3
 
         private static readonly CliOption<bool> _debugEmitTelemetryOption = new("--debug:emit-telemetry", "Enable telemetry")
         {
-            IsHidden = true
+            Hidden = true,
+            Recursive = true,
         };
 
         private static readonly CliOption<bool> _debugDisableBuiltInTemplatesOption = new("--debug:disable-sdk-templates", "Disable built-in templates")
         {
-            IsHidden = true
+            Hidden = true,
+            Recursive = true
         };
 
-        internal static Command Create()
+        internal static CliCommand Create()
         {
-            Command newCommand = NewCommandFactory.Create(
+            CliCommand newCommand = NewCommandFactory.Create(
                 CommandName,
                 (ParseResult parseResult) =>
                 {
@@ -32,8 +34,8 @@ namespace Dotnet_new3
                     return HostFactory.CreateHost(parseResult.GetValue(_debugDisableBuiltInTemplatesOption), outputPath?.FullName);
                 });
 
-            newCommand.AddGlobalOption(_debugEmitTelemetryOption);
-            newCommand.AddGlobalOption(_debugDisableBuiltInTemplatesOption);
+            newCommand.Options.Add(_debugEmitTelemetryOption);
+            newCommand.Options.Add(_debugDisableBuiltInTemplatesOption);
             newCommand.Subcommands.Add(new CompleteCommand());
             return newCommand;
         }

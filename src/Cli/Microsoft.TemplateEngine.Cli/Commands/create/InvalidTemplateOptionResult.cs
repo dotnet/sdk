@@ -98,14 +98,12 @@ namespace Microsoft.TemplateEngine.Cli.Commands
                 optionValue = string.Join(", ", optionResult.Tokens.Select(t => t.Value));
             }
 
-            string errorMessage = !string.IsNullOrWhiteSpace(optionResult.ErrorMessage) ? optionResult.ErrorMessage : error.Message;
-
             return new InvalidTemplateOptionResult(
                     option,
                     Kind.InvalidValue,
-                    optionResult.Token?.Value ?? string.Empty,
+                    optionResult.IdentifierToken?.Value ?? string.Empty,
                     optionValue,
-                    errorMessage);
+                    error.Message);
         }
 
         /// <summary>

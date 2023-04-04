@@ -3,7 +3,6 @@
 //
 
 using System.CommandLine;
-using System.CommandLine.Parsing;
 using System.Diagnostics;
 using System.Globalization;
 using System.Runtime.InteropServices;
@@ -47,7 +46,7 @@ namespace Microsoft.TemplateEngine.EndToEndTestHarness
             string testAssetsRoot = args[batteryCount + 2];
             CliTemplateEngineHost host = null;
 
-            Command newCommand = NewCommandFactory.Create(
+            CliCommand newCommand = NewCommandFactory.Create(
        CommandName,
                (ParseResult parseResult) =>
                {

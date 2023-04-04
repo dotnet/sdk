@@ -3,7 +3,6 @@
 //
 
 using System.CommandLine;
-using System.CommandLine.Invocation;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Edge.Settings;
 
@@ -16,16 +15,16 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             Func<ParseResult, ITemplateEngineHost> hostBuilder)
             : base(hostBuilder, "--uninstall")
         {
-            this.IsHidden = true;
-            this.AddAlias("-u");
+            this.Hidden = true;
+            this.Aliases.Add("-u");
 
             parentCommand.AddNoLegacyUsageValidators(this);
         }
 
-        protected override Task<NewCommandStatus> ExecuteAsync(UninstallCommandArgs args, IEngineEnvironmentSettings environmentSettings, TemplatePackageManager templatePackageManager, InvocationContext context)
+        protected override Task<NewCommandStatus> ExecuteAsync(UninstallCommandArgs args, IEngineEnvironmentSettings environmentSettings, TemplatePackageManager templatePackageManager, ParseResult parseResult, CancellationToken cancellationToken)
         {
             PrintDeprecationMessage<LegacyUninstallCommand, UninstallCommand>(args.ParseResult);
-            return base.ExecuteAsync(args, environmentSettings, templatePackageManager, context);
+            return base.ExecuteAsync(args, environmentSettings, templatePackageManager, parseResult, cancellationToken);
         }
     }
 }

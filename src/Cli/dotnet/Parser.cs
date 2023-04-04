@@ -60,18 +60,18 @@ namespace Microsoft.DotNet.Cli
 
         public static readonly CliOption<bool> DiagOption = CommonOptionsFactory.CreateDiagnosticsOption();
 
-        public static readonly CliOption<bool> VersionOption = new CliOption<bool>("--version");
+        public static readonly CliOption<bool> VersionOption = new("--version");
 
-        public static readonly CliOption<bool> InfoOption = new CliOption<bool>("--info");
+        public static readonly CliOption<bool> InfoOption = new("--info");
 
-        public static readonly CliOption<bool> ListSdksOption = new CliOption<bool>("--list-sdks");
+        public static readonly CliOption<bool> ListSdksOption = new("--list-sdks");
 
-        public static readonly CliOption<bool> ListRuntimesOption = new CliOption<bool>("--list-runtimes");
+        public static readonly CliOption<bool> ListRuntimesOption = new("--list-runtimes");
 
         // Argument
-        public static readonly CliArgument<string> DotnetSubCommand = new CliArgument<string>("subcommand") { Arity = ArgumentArity.ExactlyOne, Hidden = true };
+        public static readonly CliArgument<string> DotnetSubCommand = new("subcommand") { Arity = ArgumentArity.ExactlyOne, Hidden = true };
 
-        private static Command ConfigureCommandLine(Command rootCommand)
+        private static CliCommand ConfigureCommandLine(CliCommand rootCommand)
         {
             // Add subcommands
             foreach (var subcommand in Subcommands)
@@ -92,13 +92,13 @@ namespace Microsoft.DotNet.Cli
             return rootCommand;
         }
 
-        private static CommandLineBuilder DisablePosixBinding(this CommandLineBuilder builder)
+        private static CliConfiguration DisablePosixBinding(this CliConfiguration config)
         {
-            builder.EnablePosixBundling(false);
-            return builder;
+            config.EnablePosixBundling = false;
+            return config;
         }
 
-        public static Command GetBuiltInCommand(string commandName)
+        public static CliCommand GetBuiltInCommand(string commandName)
         {
             return Subcommands
                 .FirstOrDefault(c => c.Name.Equals(commandName, StringComparison.OrdinalIgnoreCase));
@@ -160,13 +160,13 @@ namespace Microsoft.DotNet.Cli
         {
             builder.AddMiddleware(async (context, next) =>
             {
-                CommandResult currentCommandResult = context.ParseResult.CommandResult;
+                CommandResult currentCommandResult = parseResult.CommandResult;
                 while (currentCommandResult != null && currentCommandResult.Command.Name != commandName)
                 {
                     currentCommandResult = currentCommandResult.Parent as CommandResult;
                 }
 
-                if (currentCommandResult == null || !context.ParseResult.Errors.Any())
+                if (currentCommandResult == null || !parseResult.Errors.Any())
                 {
                     //different command was launched or no errors
                     await next(context).ConfigureAwait(false);
@@ -177,7 +177,7 @@ namespace Microsoft.DotNet.Cli
                     //TODO: discuss to make coloring extensions public
                     //context.Console.ResetTerminalForegroundColor();
                     //context.Console.SetTerminalForegroundRed();
-                    foreach (var error in context.ParseResult.Errors)
+                    foreach (var error in parseResult.Errors)
                     {
                         context.Console.Error.WriteLine(error.Message);
                     }
@@ -185,9 +185,9 @@ namespace Microsoft.DotNet.Cli
                     //context.Console.ResetTerminalForegroundColor();
                     var output = context.Console.Out.CreateTextWriter();
                     var helpContext = new HelpContext(context.HelpBuilder,
-                                                      context.ParseResult.CommandResult.Command,
+                                                      parseResult.CommandResult.Command,
                                                       output,
-                                                      context.ParseResult);
+                                                      parseResult);
                     context.HelpBuilder
                            .Write(helpContext);
                 }
@@ -213,7 +213,7 @@ namespace Microsoft.DotNet.Cli
                 Reporter.Error.WriteLine(CommandLoggingContext.IsVerbose
                     ? exception.ToString().Red().Bold()
                     : exception.Message.Red().Bold());
-                context.ParseResult.ShowHelp();
+                parseResult.ShowHelp();
             }
             else
             {
@@ -238,9 +238,9 @@ namespace Microsoft.DotNet.Cli
 
         internal class DotnetHelpBuilder : HelpBuilder
         {
-            private DotnetHelpBuilder(int maxWidth = int.MaxValue) : base(LocalizationResources.Instance, maxWidth) { }
+            private DotnetHelpBuilder(int maxWidth = int.MaxValue) : base(maxWidth) { }
 
-            public static Lazy<HelpBuilder> Instance = new Lazy<HelpBuilder>(() => {
+            public static Lazy<HelpBuilder> Instance = new(() => {
                 int windowWidth;
                 try
                 {
@@ -251,7 +251,7 @@ namespace Microsoft.DotNet.Cli
                     windowWidth = int.MaxValue;
                 }
 
-                DotnetHelpBuilder dotnetHelpBuilder = new DotnetHelpBuilder(windowWidth);
+                DotnetHelpBuilder dotnetHelpBuilder = new(windowWidth);
 
                 SetHelpCustomizations(dotnetHelpBuilder);
 
@@ -326,7 +326,7 @@ namespace Microsoft.DotNet.Cli
                 {
                     if (command.Name.Equals(ListProjectToProjectReferencesCommandParser.GetCommand().Name))
                     {
-                        ListCommandParser.SlnOrProjectArgument.Name = CommonLocalizableStrings.ProjectArgumentName;
+                        ListCommandParser.SlnOrProjectArgument.HelpName = CommonLocalizableStrings.ProjectArgumentName;
                         ListCommandParser.SlnOrProjectArgument.Description = CommonLocalizableStrings.ProjectArgumentDescription;
                     }
                     else if (command.Name.Equals(AddPackageParser.GetCommand().Name) || command.Name.Equals(AddCommandParser.GetCommand().Name))

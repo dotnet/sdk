@@ -18,16 +18,14 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
         [Fact]
         public void KnownHelpAliasesAreCorrect()
         {
-            ParseResult result = new CommandLineBuilder()
-                .UseDefaults()
-                .Build()
+            ParseResult result = new CliConfiguration(new CliRootCommand())
                 .Parse(Constants.KnownHelpAliases[0]);
 
-            IReadOnlyCollection<string> aliases = result.CommandResult
+            ICollection<string> aliases = result.CommandResult
                 .Children
                 .OfType<OptionResult>()
                 .Select(r => r.Option)
-                .Where(o => o.HasAlias(Constants.KnownHelpAliases[0]))
+                .Where(o => o.Aliases.Contains(Constants.KnownHelpAliases[0]))
                 .Single()
                 .Aliases;
 
@@ -152,8 +150,11 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
             NewCommand myCommand = (NewCommand)NewCommandFactory.Create("new", _ => host);
 
-            var customOption = new CliOption<string>("--newOption");
-            myCommand.AddGlobalOption(customOption);
+            var customOption = new CliOption<string>("--newOption")
+            {
+                Recursive = true
+            };
+            myCommand.Options.Add(customOption);
 
             ParseResult parseResult = myCommand.Parse("new console --newOption val");
             InstantiateCommandArgs args = InstantiateCommandArgs.FromNewCommandArgs(new NewCommandArgs(myCommand, parseResult));
@@ -175,7 +176,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
         {
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
 
-            RootCommand rootCommand = new();
+            CliRootCommand rootCommand = new();
 
             NewCommand myCommand = (NewCommand)NewCommandFactory.Create("new", _ => host);
             rootCommand.Add(myCommand);
@@ -193,7 +194,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
         {
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
 
-            RootCommand rootCommand = new();
+            CliRootCommand rootCommand = new();
 
             NewCommand myCommand = (NewCommand)NewCommandFactory.Create("new", _ => host);
             rootCommand.Add(myCommand);

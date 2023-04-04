@@ -3,7 +3,6 @@
 //
 
 using System.CommandLine;
-using System.CommandLine.Invocation;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Edge.Settings;
 
@@ -42,10 +41,11 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             InstallCommandArgs args,
             IEngineEnvironmentSettings environmentSettings,
             TemplatePackageManager templatePackageManager,
-            InvocationContext context)
+            ParseResult parseResult,
+            CancellationToken cancellationToken)
         {
             TemplatePackageCoordinator templatePackageCoordinator = new(environmentSettings, templatePackageManager);
-            return templatePackageCoordinator.EnterInstallFlowAsync(args, context.GetCancellationToken());
+            return templatePackageCoordinator.EnterInstallFlowAsync(args, cancellationToken);
         }
 
         protected override InstallCommandArgs ParseContext(ParseResult parseResult)

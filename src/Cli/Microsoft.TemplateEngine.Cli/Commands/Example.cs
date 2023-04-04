@@ -74,7 +74,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
                 throw new ArgumentException($"Command {_currentCommand.Name} does not have option {option.Name}");
             }
 
-            _commandParts.Add(option.Aliases.First());
+            _commandParts.Add(option.Name);
             if (args.Any())
             {
                 _commandParts.AddRange(args.Select(a => a.Any(char.IsWhiteSpace) ? $"'{a}'" : a));
@@ -138,7 +138,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
                 throw new ArgumentException($"Command {_currentCommand.Name} does not have subcommand {typeof(T).Name}");
             }
             _currentCommand = _currentCommand.Subcommands.First(c => c is T);
-            _commandParts.Add(_currentCommand.Aliases.First());
+            _commandParts.Add(_currentCommand.Name);
 
             return this;
         }

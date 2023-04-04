@@ -35,7 +35,6 @@ namespace Microsoft.DotNet.Cli
             Parser.Instance.Parse(tokenList).Invoke();
         }
 
-
         public static void ShowHelpOrErrorIfAppropriate(this ParseResult parseResult)
         {
             if (parseResult.Errors.Any())
@@ -103,7 +102,7 @@ namespace Microsoft.DotNet.Cli
         public static bool CanBeInvoked(this ParseResult parseResult)
         {
             return Parser.GetBuiltInCommand(parseResult.RootSubCommandResult()) != null ||
-                parseResult.Directives.Count() > 0 ||
+                parseResult.Action is not null ||
                 (parseResult.IsTopLevelDotnetCommand() && string.IsNullOrEmpty(parseResult.GetValue(Parser.DotnetSubCommand)));
         }
 
@@ -231,7 +230,7 @@ namespace Microsoft.DotNet.Cli
         /// If you are inside a command handler or 'normal' System.CommandLine code then you don't need this - the parse error handling
         /// will have covered these cases.
         /// </summary>
-        public static object SafelyGetValueForOption(this ParseResult parseResult, Option optionToGet)
+        public static T SafelyGetValueForOption<T>(this ParseResult parseResult, CliOption<T> optionToGet)
         {
             if (parseResult.FindResultFor(optionToGet) is OptionResult optionResult &&
                 !parseResult.Errors.Any(e => e.SymbolResult == optionResult))
@@ -243,22 +242,6 @@ namespace Microsoft.DotNet.Cli
             }
         }
 
-        /// <summary>
-        /// Only returns the value for this option if the option is present and there are no parse errors for that option.
-        /// This allows cross-cutting code like the telemetry filters to safely get the value without throwing on null-ref errors.
-        /// If you are inside a command handler or 'normal' System.CommandLine code then you don't need this - the parse error handling
-        /// will have covered these cases.
-        /// </summary>
-        public static T SafelyGetValueForOption<T>(this ParseResult parseResult, Option<T> optionToGet)
-        {
-            if (parseResult.FindResultFor(optionToGet) is OptionResult optionResult &&
-                !parseResult.Errors.Any(e => e.SymbolResult == optionResult))
-            {
-                return optionResult.GetValue(optionToGet);
-            } 
-            else {
-                return default;
-            }
-        }
+        public static bool HasOption(this ParseResult parseResult, CliOption option) => parseResult.FindResultFor(option) is not null;
     }
 }

@@ -3,7 +3,6 @@
 //
 
 using System.CommandLine;
-using System.CommandLine.Invocation;
 using System.CommandLine.Parsing;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Edge.Settings;
@@ -17,26 +16,26 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             Func<ParseResult, ITemplateEngineHost> hostBuilder)
             : base(parentCommand, hostBuilder, "--list")
         {
-            this.IsHidden = true;
-            this.AddAlias("-l");
+            this.Hidden = true;
+            this.Aliases.Add("-l");
             this.Validators.Add(ValidateParentCommandArguments);
 
-            parentCommand.AddNoLegacyUsageValidators(this, except: Filters.Values.Concat(new Symbol[] { ColumnsAllOption, ColumnsOption, NewCommand.ShortNameArgument }).ToArray());
+            parentCommand.AddNoLegacyUsageValidators(this, except: Filters.Values.Concat(new CliSymbol[] { ColumnsAllOption, ColumnsOption, NewCommand.ShortNameArgument }).ToArray());
         }
 
         public override CliOption<bool> ColumnsAllOption => ParentCommand.ColumnsAllOption;
 
         public override CliOption<string[]> ColumnsOption => ParentCommand.ColumnsOption;
 
-        protected override Option GetFilterOption(FilterOptionDefinition def)
+        protected override CliOption GetFilterOption(FilterOptionDefinition def)
         {
             return ParentCommand.LegacyFilters[def];
         }
 
-        protected override Task<NewCommandStatus> ExecuteAsync(ListCommandArgs args, IEngineEnvironmentSettings environmentSettings, TemplatePackageManager templatePackageManager, InvocationContext context)
+        protected override Task<NewCommandStatus> ExecuteAsync(ListCommandArgs args, IEngineEnvironmentSettings environmentSettings, TemplatePackageManager templatePackageManager, ParseResult parseResult, CancellationToken cancellationToken)
         {
             PrintDeprecationMessage<LegacyListCommand, ListCommand>(args.ParseResult);
-            return base.ExecuteAsync(args, environmentSettings, templatePackageManager, context);
+            return base.ExecuteAsync(args, environmentSettings, templatePackageManager, parseResult, cancellationToken);
         }
 
         private void ValidateParentCommandArguments(CommandResult commandResult)

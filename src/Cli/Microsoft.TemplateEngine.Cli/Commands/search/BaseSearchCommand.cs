@@ -3,7 +3,6 @@
 //
 
 using System.CommandLine;
-using System.CommandLine.Invocation;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Cli.TemplateSearch;
 using Microsoft.TemplateEngine.Edge.Settings;
@@ -39,7 +38,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 
         public virtual CliOption<string[]> ColumnsOption { get; } = SharedOptionsFactory.CreateColumnsOption();
 
-        public IReadOnlyDictionary<FilterOptionDefinition, Option> Filters { get; protected set; }
+        public IReadOnlyDictionary<FilterOptionDefinition, CliOption> Filters { get; protected set; }
 
         internal static CliArgument<string> NameArgument { get; } = new("template-name")
         {
@@ -53,14 +52,15 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             SearchCommandArgs args,
             IEngineEnvironmentSettings environmentSettings,
             TemplatePackageManager templatePackageManager,
-            InvocationContext context)
+            ParseResult parseResult,
+            CancellationToken cancellationToken)
         {
             return CliTemplateSearchCoordinator.SearchForTemplateMatchesAsync(
                 environmentSettings,
                 templatePackageManager,
                 args,
                 environmentSettings.GetDefaultLanguage(),
-                context.GetCancellationToken());
+                cancellationToken);
         }
 
         protected override SearchCommandArgs ParseContext(ParseResult parseResult)

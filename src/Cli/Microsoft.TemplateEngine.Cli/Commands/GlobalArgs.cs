@@ -24,7 +24,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
                 .Children
                 .OfType<OptionResult>()
                 .Select(r => r.Option)
-                .Any(o => o.HasAlias(Constants.KnownHelpAliases[0]));
+                .Any(o => o.Aliases.Contains(Constants.KnownHelpAliases[0]));
         }
 
         protected GlobalArgs(GlobalArgs args) : this(args.Command, args.ParseResult) { }
@@ -35,7 +35,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 
         public ParseResult ParseResult { get; }
 
-        Command ICommandArgs.Command => Command;
+        CliCommand ICommandArgs.Command => Command;
 
         internal bool DebugAttach { get; private set; }
 

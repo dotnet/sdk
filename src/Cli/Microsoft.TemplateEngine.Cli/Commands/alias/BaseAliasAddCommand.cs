@@ -3,7 +3,6 @@
 //
 
 using System.CommandLine;
-using System.CommandLine.Invocation;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Edge.Settings;
 
@@ -20,7 +19,8 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             AliasAddCommandArgs args,
             IEngineEnvironmentSettings environmentSettings,
             TemplatePackageManager templatePackageManager,
-            InvocationContext context) => throw new NotImplementedException();
+            ParseResult parseResult,
+            CancellationToken cancellationToken) => throw new NotImplementedException();
 
         protected override AliasAddCommandArgs ParseContext(ParseResult parseResult) => new(this, parseResult);
     }

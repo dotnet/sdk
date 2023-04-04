@@ -2,10 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.CommandLine;
-using System.CommandLine.Invocation;
-using System.CommandLine.Parsing;
 using Microsoft.DotNet.Tools.Tool.Common;
-using Microsoft.DotNet.Tools.Tool.Search;
 using Microsoft.DotNet.Tools.Tool.Uninstall;
 using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Uninstall.LocalizableStrings;
 
@@ -13,26 +10,26 @@ namespace Microsoft.DotNet.Cli
 {
     internal static class ToolUninstallCommandParser
     {
-        public static readonly Argument<string> PackageIdArgument = ToolInstallCommandParser.PackageIdArgument;
+        public static readonly CliArgument<string> PackageIdArgument = ToolInstallCommandParser.PackageIdArgument;
 
-        public static readonly Option<bool> GlobalOption = ToolAppliedOption.GlobalOption;
+        public static readonly CliOption<bool> GlobalOption = ToolAppliedOption.GlobalOption;
 
-        public static readonly Option<bool> LocalOption = ToolAppliedOption.LocalOption;
+        public static readonly CliOption<bool> LocalOption = ToolAppliedOption.LocalOption;
 
-        public static readonly Option<string> ToolPathOption = ToolAppliedOption.ToolPathOption;
+        public static readonly CliOption<string> ToolPathOption = ToolAppliedOption.ToolPathOption;
 
-        public static readonly Option<string> ToolManifestOption = ToolAppliedOption.ToolManifestOption;
+        public static readonly CliOption<string> ToolManifestOption = ToolAppliedOption.ToolManifestOption;
 
-        private static readonly Command Command = ConstructCommand();
+        private static readonly CliCommand Command = ConstructCommand();
 
-        public static Command GetCommand()
+        public static CliCommand GetCommand()
         {
             return Command;
         }
 
-        private static Command ConstructCommand()
+        private static CliCommand ConstructCommand()
         {
-            var command = new Command("uninstall", LocalizableStrings.CommandDescription);
+            CliCommand command = new("uninstall", LocalizableStrings.CommandDescription);
 
             command.Arguments.Add(PackageIdArgument);
             command.Options.Add(GlobalOption.WithHelpDescription(command, LocalizableStrings.GlobalOptionDescription));
@@ -40,7 +37,7 @@ namespace Microsoft.DotNet.Cli
             command.Options.Add(ToolPathOption.WithHelpDescription(command, LocalizableStrings.ToolPathOptionDescription));
             command.Options.Add(ToolManifestOption.WithHelpDescription(command, LocalizableStrings.ManifestPathOptionDescription));
 
-            command.SetHandler((parseResult) => new ToolUninstallCommand(parseResult).Execute());
+            command.SetAction((parseResult) => new ToolUninstallCommand(parseResult).Execute());
 
             return command;
         }

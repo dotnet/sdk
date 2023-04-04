@@ -2,8 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.CommandLine;
-using System.CommandLine.Invocation;
-using System.CommandLine.Parsing;
 using Microsoft.DotNet.Tools.Tool.Common;
 using Microsoft.DotNet.Tools.Tool.Restore;
 using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Restore.LocalizableStrings;
@@ -12,24 +10,24 @@ namespace Microsoft.DotNet.Cli
 {
     internal static class ToolRestoreCommandParser
     {
-        public static readonly Option<string> ConfigOption = ToolInstallCommandParser.ConfigOption;
+        public static readonly CliOption<string> ConfigOption = ToolInstallCommandParser.ConfigOption;
 
-        public static readonly Option<string[]> AddSourceOption = ToolInstallCommandParser.AddSourceOption;
+        public static readonly CliOption<string[]> AddSourceOption = ToolInstallCommandParser.AddSourceOption;
 
-        public static readonly Option<string> ToolManifestOption = ToolAppliedOption.ToolManifestOption;
+        public static readonly CliOption<string> ToolManifestOption = ToolAppliedOption.ToolManifestOption;
 
-        public static readonly Option<VerbosityOptions> VerbosityOption = ToolInstallCommandParser.VerbosityOption;
+        public static readonly CliOption<VerbosityOptions> VerbosityOption = ToolInstallCommandParser.VerbosityOption;
 
-        private static readonly Command Command = ConstructCommand();
+        private static readonly CliCommand Command = ConstructCommand();
 
-        public static Command GetCommand()
+        public static CliCommand GetCommand()
         {
             return Command;
         }
 
-        private static Command ConstructCommand()
+        private static CliCommand ConstructCommand()
         {
-            var command = new Command("restore", LocalizableStrings.CommandDescription);
+            CliCommand command = new("restore", LocalizableStrings.CommandDescription);
 
             command.Options.Add(ConfigOption);
             command.Options.Add(AddSourceOption);
@@ -40,7 +38,7 @@ namespace Microsoft.DotNet.Cli
             command.Options.Add(ToolCommandRestorePassThroughOptions.InteractiveRestoreOption);
             command.Options.Add(VerbosityOption);
 
-            command.SetHandler((parseResult) => new ToolRestoreCommand(parseResult).Execute());
+            command.SetAction((parseResult) => new ToolRestoreCommand(parseResult).Execute());
 
             return command;
         }

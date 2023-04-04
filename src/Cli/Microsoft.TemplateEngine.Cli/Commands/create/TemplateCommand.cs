@@ -11,11 +11,10 @@ using Microsoft.TemplateEngine.Cli.PostActionProcessors;
 using Microsoft.TemplateEngine.Edge;
 using Microsoft.TemplateEngine.Edge.Settings;
 using Microsoft.TemplateEngine.Utils;
-using Command = System.CommandLine.Command;
 
 namespace Microsoft.TemplateEngine.Cli.Commands
 {
-    internal class TemplateCommand : Command
+    internal class TemplateCommand : CliCommand
     {
         private static readonly TimeSpan ConstraintEvaluationTimeout = TimeSpan.FromMilliseconds(1000);
         private static readonly string[] _helpAliases = new[] { "-h", "/h", "--help", "-?", "/?" };
@@ -48,7 +47,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             _template = template;
             foreach (var item in templateGroup.ShortNames.Skip(1))
             {
-                AddAlias(item);
+                Aliases.Add(item);
             }
 
             this.Options.Add(SharedOptions.OutputOption);
@@ -68,13 +67,13 @@ namespace Microsoft.TemplateEngine.Cli.Commands
                 if (!string.IsNullOrWhiteSpace(defaultLanguage)
                      && buildDefaultLanguageValidation)
                 {
-                    LanguageOption.SetDefaultValue(defaultLanguage);
+                    LanguageOption.DefaultValueFactory = (_) => defaultLanguage;
                     LanguageOption.Validators.Add(optionResult =>
                     {
                         var value = optionResult.GetValueOrDefault<string>();
                         if (value != template.GetLanguage())
                         {
-                            optionResult.ErrorMessage = "Languages don't match";
+                            optionResult.AddError("Languages don't match");
                         }
                     }
                     );
@@ -107,7 +106,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
                     Description = SymbolStrings.TemplateCommand_Option_AllowScripts,
                     Arity = new ArgumentArity(1, 1)
                 };
-                AllowScriptsOption.SetDefaultValue(AllowRunScripts.Prompt);
+                AllowScriptsOption.DefaultValueFactory = (_) => AllowRunScripts.Prompt;
                 this.Options.Add(AllowScriptsOption);
             }
 
@@ -254,23 +253,9 @@ namespace Microsoft.TemplateEngine.Cli.Commands
         private HashSet<string> GetReservedAliases()
         {
             HashSet<string> reservedAliases = new HashSet<string>();
-            foreach (string alias in this.Children.OfType<Option>().SelectMany(o => o.Aliases))
-            {
-                reservedAliases.Add(alias);
-            }
-            foreach (string alias in this.Children.OfType<Command>().SelectMany(o => o.Aliases))
-            {
-                reservedAliases.Add(alias);
-            }
+            AddReservedNamesAndAliases(reservedAliases, this);
             //add options of parent? - this covers debug: options
-            foreach (string alias in _instantiateCommand.Children.OfType<Option>().SelectMany(o => o.Aliases))
-            {
-                reservedAliases.Add(alias);
-            }
-            foreach (string alias in _instantiateCommand.Children.OfType<Command>().SelectMany(o => o.Aliases))
-            {
-                reservedAliases.Add(alias);
-            }
+            AddReservedNamesAndAliases(reservedAliases, _instantiateCommand);
 
             //add restricted aliases: language, type, baseline (they may be optional)
             foreach (string alias in new[] { SharedOptionsFactory.CreateLanguageOption(), SharedOptionsFactory.CreateTypeOption(), SharedOptionsFactory.CreateBaselineOption() }.SelectMany(o => o.Aliases))
@@ -283,6 +268,26 @@ namespace Microsoft.TemplateEngine.Cli.Commands
                 reservedAliases.Add(helpAlias);
             }
             return reservedAliases;
+
+            static void AddReservedNamesAndAliases(HashSet<string> reservedAliases, CliCommand command)
+            {
+                foreach (CliOption option in command.Options)
+                {
+                    reservedAliases.Add(option.Name);
+                    foreach (string alias in option.Aliases)
+                    {
+                        reservedAliases.Add(alias);
+                    }
+                }
+                foreach (CliCommand subCommand in command.Subcommands)
+                {
+                    reservedAliases.Add(subCommand.Name);
+                    foreach (string alias in subCommand.Aliases)
+                    {
+                        reservedAliases.Add(alias);
+                    }
+                }
+            }
         }
 
         private void AddTemplateOptionsToCommand(CliTemplateInfo templateInfo)

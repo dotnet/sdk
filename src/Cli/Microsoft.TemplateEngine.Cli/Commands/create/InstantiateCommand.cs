@@ -3,8 +3,6 @@
 //
 
 using System.CommandLine;
-using System.CommandLine.Invocation;
-using System.CommandLine.Parsing;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
@@ -53,7 +51,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             Arity = new ArgumentArity(0, 999)
         };
 
-        internal IReadOnlyList<Option> PassByOptions { get; } = new Option[]
+        internal IReadOnlyList<CliOption> PassByOptions { get; } = new CliOption[]
         {
             SharedOptions.ForceOption,
             SharedOptions.NameOption,
@@ -65,9 +63,10 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             NewCommandArgs newCommandArgs,
             IEngineEnvironmentSettings environmentSettings,
             TemplatePackageManager templatePackageManager,
-            InvocationContext context)
+            ParseResult parseResult,
+            CancellationToken cancellationToken)
         {
-            return ExecuteIntAsync(InstantiateCommandArgs.FromNewCommandArgs(newCommandArgs), environmentSettings, templatePackageManager, context);
+            return ExecuteIntAsync(InstantiateCommandArgs.FromNewCommandArgs(newCommandArgs), environmentSettings, templatePackageManager, parseResult, cancellationToken);
         }
 
         internal static async Task<IEnumerable<TemplateGroup>> GetTemplateGroupsAsync(
@@ -178,10 +177,11 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             InstantiateCommandArgs instantiateArgs,
             IEngineEnvironmentSettings environmentSettings,
             TemplatePackageManager templatePackageManager,
-            InvocationContext context)
+            ParseResult parseResult,
+            CancellationToken cancellationToken)
         {
-            NewCommandStatus status = await ExecuteIntAsync(instantiateArgs, environmentSettings, templatePackageManager, context).ConfigureAwait(false);
-            await CheckTemplatesWithSubCommandName(instantiateArgs, templatePackageManager, context.GetCancellationToken()).ConfigureAwait(false);
+            NewCommandStatus status = await ExecuteIntAsync(instantiateArgs, environmentSettings, templatePackageManager, parseResult, cancellationToken).ConfigureAwait(false);
+            await CheckTemplatesWithSubCommandName(instantiateArgs, templatePackageManager, cancellationToken).ConfigureAwait(false);
             return status;
         }
 
@@ -191,9 +191,9 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             InstantiateCommandArgs instantiateArgs,
             IEngineEnvironmentSettings environmentSettings,
             TemplatePackageManager templatePackageManager,
-            InvocationContext context)
+            ParseResult parseResult,
+            CancellationToken cancellationToken)
         {
-            CancellationToken cancellationToken = context.GetCancellationToken();
             HostSpecificDataLoader hostSpecificDataLoader = new(environmentSettings);
             if (string.IsNullOrWhiteSpace(instantiateArgs.ShortName))
             {
@@ -274,7 +274,9 @@ namespace Microsoft.TemplateEngine.Cli.Commands
                 TemplateCommand templateCommandToRun = candidates.Single();
                 args.Command.Subcommands.Add(templateCommandToRun);
 
-                ParseResult updatedParseResult = args.ParseResult.Parser.Parse(args.ParseResult.Tokens.Select(t => t.Value).ToList());
+                ParseResult updatedParseResult = args.ParseResult.RootCommandResult.Command.Parse(
+                    args.ParseResult.Tokens.Select(t => t.Value).ToArray(),
+                    args.ParseResult.Configuration);
                 return await candidates.Single().InvokeAsync(updatedParseResult, cancellationToken).ConfigureAwait(false);
             }
             else if (candidates.Any())
@@ -433,7 +435,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
                     template,
                     validateDefaultLanguage);
 
-                Parser parser = ParserFactory.CreateParser(command);
+                CliConfiguration parser = ParserFactory.CreateParser(command);
                 ParseResult parseResult = parser.Parse(args.RemainingArguments ?? Array.Empty<string>());
                 return (command, parseResult);
             }
@@ -482,7 +484,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 
             IEnumerable<string> possibleSubcommands =
                 instantiateArgs.Command.Subcommands
-                    .Where(sc => !sc.IsHidden)
+                    .Where(sc => !sc.Hidden)
                     .SelectMany(sc => sc.Aliases);
 
             IEnumerable<string> possibleSubcommandsMatches = TypoCorrection.GetSimilarTokens(possibleSubcommands, instantiateArgs.ShortName);

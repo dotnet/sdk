@@ -3,7 +3,6 @@
 
 using System.Collections.Generic;
 using System.CommandLine;
-using System.CommandLine.Parsing;
 using System.IO;
 using System.Linq;
 using Microsoft.DotNet.Workloads.Workload.Install;
@@ -18,11 +17,14 @@ namespace Microsoft.DotNet.Cli
     {
         public static readonly string DocsLink = "https://aka.ms/dotnet-workload";
 
-        private static readonly Command Command = ConstructCommand();
+        private static readonly CliCommand Command = ConstructCommand();
 
-        public static readonly CliOption<bool> InfoOption = new CliOption<bool>("--info", CommonStrings.WorkloadInfoDescription);
+        public static readonly CliOption<bool> InfoOption = new("--info")
+        {
+            Description = CommonStrings.WorkloadInfoDescription
+        };
 
-        public static Command GetCommand()
+        public static CliCommand GetCommand()
         {
             Command.Options.Add(InfoOption);
             return Command;
@@ -73,7 +75,7 @@ namespace Microsoft.DotNet.Cli
 
         private static int ProcessArgs(ParseResult parseResult)
         {
-            if (parseResult.HasOption(InfoOption) && parseResult.RootSubCommandResult() == "workload")
+            if (parseResult.FindResultFor(InfoOption) is not null && parseResult.RootSubCommandResult() == "workload")
             {
                 ShowWorkloadsInfo();
                 return 0;
@@ -81,9 +83,9 @@ namespace Microsoft.DotNet.Cli
             return parseResult.HandleMissingCommand();
         }
 
-        private static Command ConstructCommand()
+        private static CliCommand ConstructCommand()
         {
-            var command = new DocumentedCommand("workload", DocsLink, CommonStrings.CommandDescription);
+            DocumentedCommand command = new("workload", DocsLink, CommonStrings.CommandDescription);
 
             command.Subcommands.Add(WorkloadInstallCommandParser.GetCommand());
             command.Subcommands.Add(WorkloadUpdateCommandParser.GetCommand());
@@ -94,7 +96,7 @@ namespace Microsoft.DotNet.Cli
             command.Subcommands.Add(WorkloadRestoreCommandParser.GetCommand());
             command.Subcommands.Add(WorkloadElevateCommandParser.GetCommand());
 
-            command.SetHandler((parseResult) => ProcessArgs(parseResult));
+            command.SetAction(ProcessArgs);
 
             return command;
         }

@@ -2,8 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.CommandLine;
-using System.CommandLine.Invocation;
-using System.CommandLine.Parsing;
 using Microsoft.DotNet.Workloads.Workload;
 using Microsoft.DotNet.Workloads.Workload.Repair;
 using LocalizableStrings = Microsoft.DotNet.Workloads.Workload.Repair.LocalizableStrings;
@@ -12,22 +10,22 @@ namespace Microsoft.DotNet.Cli
 {
     internal static class WorkloadRepairCommandParser
     {
-        public static readonly Option<string> ConfigOption = InstallingWorkloadCommandParser.ConfigOption;
+        public static readonly CliOption<string> ConfigOption = InstallingWorkloadCommandParser.ConfigOption;
 
-        public static readonly Option<string[]> SourceOption = InstallingWorkloadCommandParser.SourceOption;
+        public static readonly CliOption<string[]> SourceOption = InstallingWorkloadCommandParser.SourceOption;
 
-        public static readonly Option<string> VersionOption = InstallingWorkloadCommandParser.VersionOption;
+        public static readonly CliOption<string> VersionOption = InstallingWorkloadCommandParser.VersionOption;
 
-        private static readonly Command Command = ConstructCommand();
+        private static readonly CliCommand Command = ConstructCommand();
 
-        public static Command GetCommand()
+        public static CliCommand GetCommand()
         {
             return Command;
         }
 
-        private static Command ConstructCommand()
+        private static CliCommand ConstructCommand()
         {
-            var command = new Command("repair", LocalizableStrings.CommandDescription);
+            CliCommand command = new("repair", LocalizableStrings.CommandDescription);
 
             command.Options.Add(VersionOption);
             command.Options.Add(ConfigOption);
@@ -36,7 +34,7 @@ namespace Microsoft.DotNet.Cli
             command.AddWorkloadCommandNuGetRestoreActionConfigOptions();
             command.Options.Add(WorkloadInstallCommandParser.SkipSignCheckOption);
 
-            command.SetHandler((parseResult) => new WorkloadRepairCommand(parseResult).Execute());
+            command.SetAction((parseResult) => new WorkloadRepairCommand(parseResult).Execute());
 
             return command;
         }

@@ -5,24 +5,40 @@
 #nullable enable
 
 using System.CommandLine;
-using System.CommandLine.Parsing;
+using System.CommandLine.Completions;
+using System.CommandLine.Help;
 
 namespace Microsoft.TemplateEngine.EndToEndTestHarness
 {
     internal static class ParserFactory
     {
-        internal static Parser CreateParser(Command command, bool disableHelp = false)
+        internal static CliConfiguration CreateParser(CliCommand command, bool disableHelp = false)
         {
-            var builder = new CommandLineBuilder(command)
-            .UseParseDirective()
-            .UseSuggestDirective()
-            .EnablePosixBundling(false);
+            CliConfiguration config = new(command)
+            {
+                EnablePosixBundling = false,
+                Directives = { new DiagramDirective(), new SuggestDirective() }
+            };
+
+            for (int i = 0; i < command.Options.Count; i++)
+            {
+                if (command.Options[i] is HelpOption)
+                {
+                    if (disableHelp)
+                    {
+                        command.Options.RemoveAt(i);
+                    }
+
+                    return config;
+                }
+            }
 
             if (!disableHelp)
             {
-                builder = builder.UseHelp();
+                command.Options.Add(new HelpOption());
             }
-            return builder.Build();
+
+            return config;
         }
     }
 }

@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.CommandLine;
-using System.CommandLine.Parsing;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Tools.Tool.Common;
 
@@ -33,7 +32,7 @@ namespace Microsoft.DotNet.Tools.Tool.List
                 LocalizableStrings.ListToolCommandInvalidGlobalAndLocalAndToolPath);
 
             if (_parseResult.GetValue(ToolListCommandParser.GlobalOption)
-                || _parseResult.HasOption(ToolListCommandParser.ToolPathOption))
+                || _parseResult.FindResultFor(ToolListCommandParser.ToolPathOption) is not null)
             {
                 return _toolListGlobalOrToolPathCommand.Execute();
             }

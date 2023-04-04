@@ -3,7 +3,6 @@
 //
 
 using System.CommandLine;
-using System.CommandLine.Parsing;
 using System.Text;
 
 namespace Dotnet_new3
@@ -24,7 +23,7 @@ namespace Dotnet_new3
                 }
             }
 
-            RootCommand rootCommand = new RootCommand();
+            CliRootCommand rootCommand = new();
             rootCommand.Subcommands.Add(New3CommandFactory.Create());
             return ParserFactory.CreateParser(rootCommand).Parse(args).InvokeAsync();
         }

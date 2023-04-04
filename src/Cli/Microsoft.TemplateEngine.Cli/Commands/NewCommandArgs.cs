@@ -25,7 +25,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
                         continue;
                     }
 
-                    if (o.Token is { } token) { tokensToEvaluate.Add(token); }
+                    if (o.IdentifierToken is { } token) { tokensToEvaluate.Add(token); }
                     tokensToEvaluate.AddRange(o.Tokens);
                 }
                 else
@@ -46,7 +46,8 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             {
                 return false;
             }
-            if (optionResult.Option.HasAlias(Constants.KnownHelpAliases[0]))
+            if (optionResult.Option.Name == Constants.KnownHelpAliases[0] ||
+                optionResult.Option.Aliases.Contains(Constants.KnownHelpAliases[0]))
             {
                 return true;
             }

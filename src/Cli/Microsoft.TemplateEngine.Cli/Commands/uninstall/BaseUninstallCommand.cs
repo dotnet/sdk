@@ -3,7 +3,6 @@
 //
 
 using System.CommandLine;
-using System.CommandLine.Invocation;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Edge.Settings;
 
@@ -29,13 +28,14 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             UninstallCommandArgs args,
             IEngineEnvironmentSettings environmentSettings,
             TemplatePackageManager templatePackageManager,
-            InvocationContext context)
+            ParseResult parseResult,
+            CancellationToken cancellationToken)
         {
             TemplatePackageCoordinator templatePackageCoordinator = new TemplatePackageCoordinator(
                 environmentSettings,
                 templatePackageManager);
 
-            return templatePackageCoordinator.EnterUninstallFlowAsync(args, context.GetCancellationToken());
+            return templatePackageCoordinator.EnterUninstallFlowAsync(args, cancellationToken);
         }
 
         protected override UninstallCommandArgs ParseContext(ParseResult parseResult)

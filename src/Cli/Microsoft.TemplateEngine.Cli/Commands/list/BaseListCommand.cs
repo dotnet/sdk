@@ -3,7 +3,6 @@
 //
 
 using System.CommandLine;
-using System.CommandLine.Invocation;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Edge.Settings;
 
@@ -40,7 +39,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 
         public virtual CliOption<string[]> ColumnsOption { get; } = SharedOptionsFactory.CreateColumnsOption();
 
-        public IReadOnlyDictionary<FilterOptionDefinition, Option> Filters { get; protected set; }
+        public IReadOnlyDictionary<FilterOptionDefinition, CliOption> Filters { get; protected set; }
 
         internal static CliOption<bool> IgnoreConstraintsOption { get; } = new("--ignore-constraints")
         {
@@ -60,14 +59,15 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             ListCommandArgs args,
             IEngineEnvironmentSettings environmentSettings,
             TemplatePackageManager templatePackageManager,
-            InvocationContext context)
+            ParseResult parseResult,
+            CancellationToken cancellationToken)
         {
             TemplateListCoordinator templateListCoordinator = new TemplateListCoordinator(
                 environmentSettings,
                 templatePackageManager,
                 new HostSpecificDataLoader(environmentSettings));
 
-            return templateListCoordinator.DisplayTemplateGroupListAsync(args, default);
+            return templateListCoordinator.DisplayTemplateGroupListAsync(args, cancellationToken);
         }
 
         protected override ListCommandArgs ParseContext(ParseResult parseResult) => new(this, parseResult);
