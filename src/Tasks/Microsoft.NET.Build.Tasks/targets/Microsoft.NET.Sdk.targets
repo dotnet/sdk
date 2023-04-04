@@ -131,7 +131,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   </PropertyGroup>
 
   <!--
-    BinaryFormatter killbitting
+    BinaryFormatter Disabling
     ===========================
 
     The EnableUnsafeBinaryFormatterSerialization setting controls both runtime and compile-time behavior.
