@@ -16,7 +16,8 @@ namespace Microsoft.DotNet.Cli.Utils
     internal class MSBuildForwardingAppWithoutLogging
     {
         private static readonly bool AlwaysExecuteMSBuildOutOfProc = Env.GetEnvironmentVariableAsBool("DOTNET_CLI_RUN_MSBUILD_OUTOFPROC");
-        private static readonly bool UseMSBuildServer = Env.GetEnvironmentVariableAsBool("DOTNET_CLI_USE_MSBUILD_SERVER", false);
+        private static readonly bool UseMSBuildServerEnvVarConfig = Env.GetEnvironmentVariableAsBool("DOTNET_CLI_USE_MSBUILD_SERVER", true)
+            && !Env.GetEnvironmentVariableAsBool("DOTNET_CLI_DO_NOT_USE_MSBUILD_SERVER", false);
 
         private const string MSBuildExeName = "MSBuild.dll";
 
@@ -54,13 +55,20 @@ namespace Microsoft.DotNet.Cli.Utils
             _argsToForward = argsToForward;
             MSBuildPath = msbuildPath ?? defaultMSBuildPath;
 
-            EnvironmentVariable("MSBUILDUSESERVER", UseMSBuildServer ? "1" : "0");
+            EnvironmentVariable("MSBUILDUSESERVER", ShallMSBuildServerBeUSed() ? "1" : "0");
 
             // If DOTNET_CLI_RUN_MSBUILD_OUTOFPROC is set or we're asked to execute a non-default binary, call MSBuild out-of-proc.
             if (AlwaysExecuteMSBuildOutOfProc || !string.Equals(MSBuildPath, defaultMSBuildPath, StringComparison.OrdinalIgnoreCase))
             {
                 InitializeForOutOfProcForwarding();
             }
+        }
+
+        private bool ShallMSBuildServerBeUSed()
+        {
+            // We want to use MSBuild server only in inner loop development.
+            // We use Console.IsOutputRedirected as simple heuristics detection of possible non-inner-loop usage (Azure CI/CD, GitHub Actions, ...)
+            return UseMSBuildServerEnvVarConfig && !Console.IsOutputRedirected;
         }
 
         private void InitializeForOutOfProcForwarding()
