@@ -19,7 +19,10 @@ Copyright (c) .NET Foundation. All rights reserved.
   <PropertyGroup>
     <ResolveCompressedFilesDependsOn>$(ResolveCompressedFilesDependsOn)</ResolveCompressedFilesDependsOn>
     <ResolveCompressedFilesForPublishDependsOn>$(ResolveCompressedFilesForPublishDependsOn)</ResolveCompressedFilesForPublishDependsOn>
-    <CompressFilesDependsOn>$(CompressFilesDependsOn)</CompressFilesDependsOn>
+    <CompressFilesDependsOn>
+      $(CompressFilesDependsOn);
+      CopyStaticWebAssetsToOutputDirectory;
+    </CompressFilesDependsOn>
     <CompressFilesForPublishDependsOn>$(CompressFilesForPublishDependsOn)</CompressFilesForPublishDependsOn>
   </PropertyGroup>
 
@@ -117,7 +120,8 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Target
     Name="_CompressFiles"
-    DependsOnTargets="$(CompressFilesDependsOn)">
+    DependsOnTargets="$(CompressFilesDependsOn)"
+    BeforeTargets="_SplitStaticWebAssetsByCopyOptions">
 
     <ItemGroup>
       <_GZipCompressedStaticWebAssets Include="@(_CompressedStaticWebAssets)" Condition="'%(AssetTraitName)' == 'Content-Encoding' and '%(AssetTraitValue)' == 'gzip'" />

@@ -46,7 +46,7 @@ public class ResolveCompressedAssets : Task
             return true;
         }
 
-        // Scan the provided candidate assets and determine which ones have already been compressed and in which formats.
+        // Scan the provided candidate assets and determine which ones have already been detected for compression and in which formats.
         var existingCompressionFormatsByAssetItemSpec = new Dictionary<string, HashSet<string>>();
         foreach (var asset in CandidateAssets)
         {
@@ -157,7 +157,7 @@ public class ResolveCompressedAssets : Task
             }
         }
 
-        // Process the final set of candidate assets, deduplicating assets compressed in the same format multiple times and
+        // Process the final set of candidate assets, deduplicating assets to be compressed in the same format multiple times and
         // generating new a static web asset definition for each compressed item.
         var compressedAssets = new List<ITaskItem>();
         foreach (var configuration in compressionConfigurations)
@@ -177,7 +177,7 @@ public class ResolveCompressedAssets : Task
                 if (alreadyCompressedFormats.Contains(format))
                 {
                     Log.LogMessage(
-                        "Ignoring asset '{0}' because it was already compressed with format '{1}'.",
+                        "Ignoring asset '{0}' because it was already resolved with format '{1}'.",
                         itemSpec,
                         format);
                     continue;
@@ -211,6 +211,8 @@ public class ResolveCompressedAssets : Task
 
     private bool TryCreateCompressedAsset(ITaskItem asset, string targetDirectory, string format, out TaskItem result)
     {
+        result = null;
+
         string fileExtension;
         string assetTraitValue;
 
@@ -226,8 +228,10 @@ public class ResolveCompressedAssets : Task
         }
         else
         {
-            Log.LogError($"Unknown compression format '{format}' for '{asset.ItemSpec}'.");
-            result = null;
+            Log.LogError(
+                "Unknown compression format '{0}' for '{1}'.",
+                format,
+                asset.ItemSpec);
             return false;
         }
 
@@ -242,10 +246,10 @@ public class ResolveCompressedAssets : Task
         result.SetMetadata("RelativePath", relativePath + fileExtension);
         result.SetMetadata("RelatedAsset", asset.ItemSpec);
         result.SetMetadata("OriginalItemSpec", asset.ItemSpec);
+        result.SetMetadata("OriginalAsset", originalItemSpec);
         result.SetMetadata("AssetRole", "Alternative");
         result.SetMetadata("AssetTraitName", "Content-Encoding");
         result.SetMetadata("AssetTraitValue", assetTraitValue);
-        result.SetMetadata("TargetDirectory", targetDirectory);
 
         return true;
     }

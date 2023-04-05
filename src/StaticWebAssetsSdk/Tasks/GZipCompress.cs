@@ -18,20 +18,25 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
         public override bool Execute()
         {
             var outputDirectories = FilesToCompress
-                .Select(f => f.GetMetadata("TargetDirectory"))
-                .Distinct()
-                .Where(td => !string.IsNullOrWhiteSpace(td));
+                .Select(f => Path.GetDirectoryName(f.ItemSpec))
+                .Where(td => !string.IsNullOrWhiteSpace(td))
+                .Distinct();
 
             foreach (var outputDirectory in outputDirectories)
             {
                 Directory.CreateDirectory(outputDirectory);
+                Log.LogMessage(MessageImportance.Low, "Created directory '{0}'.", outputDirectory);
             }
 
             System.Threading.Tasks.Parallel.For(0, FilesToCompress.Length, i =>
             {
                 var file = FilesToCompress[i];
-                var inputFullPath = file.GetMetadata("RelatedAsset");
                 var outputRelativePath = file.ItemSpec;
+                
+                if (!AssetToCompress.TryFindInputFilePath(file, Log, out var inputFullPath))
+                {
+                    return;
+                }
 
                 if (!File.Exists(outputRelativePath))
                 {
