@@ -7,7 +7,6 @@ using System.IO;
 using System.Linq;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
-using Microsoft.Extensions.FileSystemGlobbing;
 using Microsoft.NET.Sdk.WebAssembly;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
@@ -70,7 +69,7 @@ public class ResolveCompressedAssets : Task
 
                 var compressionFormat = asset.GetMetadata("AssetTraitValue");
 
-                if (!CompressionFormat.IsValidCompressionFormat(compressionFormat))
+                if (!CompressionConfiguration.CompressionFormat.IsValidCompressionFormat(compressionFormat))
                 {
                     Log.LogError(
                         "The asset '{0}' has an unknown compression format '{1}'.",
@@ -159,7 +158,7 @@ public class ResolveCompressedAssets : Task
 
         // Process the final set of candidate assets, deduplicating assets to be compressed in the same format multiple times and
         // generating new a static web asset definition for each compressed item.
-        var compressedAssets = new List<ITaskItem>();
+        var assetsToCompress = new List<ITaskItem>();
         foreach (var configuration in compressionConfigurations)
         {
             var candidateAssets = candidateAssetsByConfigurationName[configuration.ItemSpec];
@@ -168,13 +167,14 @@ public class ResolveCompressedAssets : Task
             foreach (var asset in candidateAssets)
             {
                 var itemSpec = asset.ItemSpec;
-                if (!existingCompressionFormatsByAssetItemSpec.TryGetValue(itemSpec, out var alreadyCompressedFormats))
+                if (!existingCompressionFormatsByAssetItemSpec.TryGetValue(itemSpec, out var existingFormats))
                 {
-                    alreadyCompressedFormats = new();
+                    existingFormats = new();
+                    existingCompressionFormatsByAssetItemSpec.Add(itemSpec, existingFormats);
                 }
 
                 var format = configuration.Format;
-                if (alreadyCompressedFormats.Contains(format))
+                if (existingFormats.Contains(format))
                 {
                     Log.LogMessage(
                         "Ignoring asset '{0}' because it was already resolved with format '{1}'.",
@@ -185,8 +185,8 @@ public class ResolveCompressedAssets : Task
 
                 if (TryCreateCompressedAsset(asset, targetDirectory, configuration.Format, out var compressedAsset))
                 {
-                    compressedAssets.Add(compressedAsset);
-                    alreadyCompressedFormats.Add(format);
+                    assetsToCompress.Add(compressedAsset);
+                    existingFormats.Add(format);
 
                     Log.LogMessage(
                         "Created compressed asset '{0}'.",
@@ -201,7 +201,7 @@ public class ResolveCompressedAssets : Task
             }
         }
 
-        AssetsToCompress = compressedAssets.ToArray();
+        AssetsToCompress = assetsToCompress.ToArray();
 
         return !Log.HasLoggedErrors;
     }
@@ -216,12 +216,12 @@ public class ResolveCompressedAssets : Task
         string fileExtension;
         string assetTraitValue;
 
-        if (CompressionFormat.IsGzip(format))
+        if (CompressionConfiguration.CompressionFormat.IsGzip(format))
         {
             fileExtension = ".gz";
             assetTraitValue = "gzip";
         }
-        else if (CompressionFormat.IsBrotli(format))
+        else if (CompressionConfiguration.CompressionFormat.IsBrotli(format))
         {
             fileExtension = ".br";
             assetTraitValue = "br";
@@ -244,132 +244,13 @@ public class ResolveCompressedAssets : Task
         result = new TaskItem(outputRelativePath, asset.CloneCustomMetadata());
 
         result.SetMetadata("RelativePath", relativePath + fileExtension);
-        result.SetMetadata("RelatedAsset", asset.ItemSpec);
         result.SetMetadata("OriginalItemSpec", asset.ItemSpec);
-        result.SetMetadata("OriginalAsset", originalItemSpec);
+        result.SetMetadata("RelatedAsset", asset.ItemSpec);
+        result.SetMetadata("RelatedAssetOriginalItemSpec", originalItemSpec);
         result.SetMetadata("AssetRole", "Alternative");
         result.SetMetadata("AssetTraitName", "Content-Encoding");
         result.SetMetadata("AssetTraitValue", assetTraitValue);
 
         return true;
-    }
-
-    private static class BuildStage
-    {
-        public const string Build = nameof(Build);
-        public const string Publish = nameof(Publish);
-
-        public static bool IsBuild(string buildStage) => string.Equals(Build, buildStage, StringComparison.OrdinalIgnoreCase);
-        public static bool IsPublish(string buildStage) => string.Equals(Publish, buildStage, StringComparison.OrdinalIgnoreCase);
-        public static bool IsValidBuildStage(string buildStage)
-            => IsBuild(buildStage)
-            || IsPublish(buildStage);
-    }
-
-    private static class CompressionFormat
-    {
-        public const string Gzip = nameof(Gzip);
-        public const string Brotli = nameof(Brotli);
-
-        public static bool IsGzip(string format) => string.Equals(Gzip, format, StringComparison.OrdinalIgnoreCase);
-        public static bool IsBrotli(string format) => string.Equals(Brotli, format, StringComparison.OrdinalIgnoreCase);
-        public static bool IsValidCompressionFormat(string format)
-            => IsGzip(format)
-            || IsBrotli(format);
-    }
-
-    private sealed class CompressionConfiguration
-    {
-        private readonly Matcher _matcher = new();
-
-        public string ItemSpec { get; set; }
-
-        public string IncludePattern { get; set; }
-
-        public string ExcludePattern { get; set; }
-
-        public string Format { get; }
-
-        public string Stage { get; }
-
-        public static CompressionConfiguration FromTaskItem(ITaskItem taskItem)
-        {
-            var itemSpec = taskItem.ItemSpec;
-            var includePattern = taskItem.GetMetadata("IncludePattern");
-            var excludePattern = taskItem.GetMetadata("ExcludePattern");
-            var format = taskItem.GetMetadata("Format");
-            var stage = taskItem.GetMetadata("Stage");
-
-            if (!CompressionFormat.IsValidCompressionFormat(format))
-            {
-                throw new InvalidOperationException($"Unknown compression format '{format}' for the compression configuration '{itemSpec}'.");
-            }
-
-            if (!BuildStage.IsValidBuildStage(stage))
-            {
-                throw new InvalidOperationException($"Unknown build stage '{stage}' for the compression configuration '{itemSpec}'.");
-            }
-
-            return new(itemSpec, includePattern, excludePattern, format, stage);
-        }
-
-        private CompressionConfiguration(string itemSpec, string includePattern, string excludePattern, string format, string stage)
-        {
-            ItemSpec = itemSpec;
-            IncludePattern = includePattern;
-            ExcludePattern = excludePattern;
-            Format = format;
-            Stage = stage;
-
-            var includePatterns = SplitPattern(includePattern);
-            var excludePatterns = SplitPattern(excludePattern);
-            _matcher.AddIncludePatterns(includePatterns);
-            _matcher.AddExcludePatterns(excludePatterns);
-
-            static string[] SplitPattern(string pattern)
-                => pattern
-                    .Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries)
-                    .Select(s => s.Trim())
-                    .ToArray();
-        }
-
-        public string ComputeOutputPath(string outputBasePath)
-        {
-            if (ComputeOutputSubdirectory() is { } outputSubdirectory)
-            {
-                return Path.Combine(outputBasePath, outputSubdirectory);
-            }
-
-            throw new InvalidOperationException($"Could not compute the output subdirectory for compression configuration '{ItemSpec}'.");
-
-            string ComputeOutputSubdirectory()
-            {
-                // TODO: Let's change the output directory to be compressed\[publish]\
-                if (BuildStage.IsBuild(Stage))
-                {
-                    if (CompressionFormat.IsGzip(Format))
-                    {
-                        return "build-gz";
-                    }
-
-                    if (CompressionFormat.IsBrotli(Format))
-                    {
-                        return "build-br";
-                    }
-
-                    return null;
-                }
-
-                if (BuildStage.IsPublish(Stage))
-                {
-                    return "compress";
-                }
-
-                return null;
-            }
-        }
-
-        public bool Matches(string relativePath)
-            => _matcher.Match(relativePath).HasMatches;
     }
 }
