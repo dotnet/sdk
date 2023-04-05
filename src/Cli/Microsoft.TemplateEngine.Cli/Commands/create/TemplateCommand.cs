@@ -236,7 +236,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 
             if (!templateArgs.IsForceFlagSpecified)
             {
-                reporter.WriteLine(LocalizableStrings.TemplateCommand_DisplayConstraintResults_Hint, SharedOptions.ForceOption.Aliases.First());
+                reporter.WriteLine(LocalizableStrings.TemplateCommand_DisplayConstraintResults_Hint, SharedOptions.ForceOption.Name);
                 reporter.WriteCommand(Example.FromExistingTokens(templateArgs.ParseResult).WithOption(SharedOptions.ForceOption));
             }
             else

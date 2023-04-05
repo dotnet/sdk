@@ -111,7 +111,7 @@ namespace Microsoft.TemplateEngine.Cli
                         string.Format(
                             LocalizableStrings.TemplateListCoordinator_Error_FailedConstraints,
                             resolutionResult.ContraintsMismatchGroupCount,
-                            ListCommand.IgnoreConstraintsOption.Aliases.First())
+                            ListCommand.IgnoreConstraintsOption.Name)
                         .Bold().Red());
                 }
 

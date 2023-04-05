@@ -112,7 +112,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
                 throw new ArgumentException($"Command {_currentCommand.Name} does not have subcommand {command.Name}");
             }
 
-            _commandParts.Add(command.Aliases.First());
+            _commandParts.Add(command.Name);
             _currentCommand = command;
             return this;
         }

@@ -402,7 +402,7 @@ namespace Microsoft.TemplateEngine.Cli
 
                 if (!args.Force)
                 {
-                    reporter.WriteLine(LocalizableStrings.TemplatePackageCoordinator_Install_Info_UseForceToOverride, SharedOptions.ForceOption.Aliases.First());
+                    reporter.WriteLine(LocalizableStrings.TemplatePackageCoordinator_Install_Info_UseForceToOverride, SharedOptions.ForceOption.Name);
                     reporter.WriteCommand(
                         Example
                             .For<InstallCommand>(args.ParseResult)
@@ -759,7 +759,7 @@ namespace Microsoft.TemplateEngine.Cli
                               string.Format(
                                   LocalizableStrings.TemplatePackageCoordinator_lnstall_Error_AlreadyInstalled,
                                   packageToInstall).Bold().Red());
-                        Reporter.Error.WriteLine(LocalizableStrings.TemplatePackageCoordinator_lnstall_Error_AlreadyInstalled_Hint, InstallCommand.ForceOption.Aliases.First());
+                        Reporter.Error.WriteLine(LocalizableStrings.TemplatePackageCoordinator_lnstall_Error_AlreadyInstalled_Hint, InstallCommand.ForceOption.Name);
                         Reporter.Error.WriteCommand(Example.For<InstallCommand>(parseResult).WithArgument(BaseInstallCommand.NameArgument, packageToInstall).WithOption(BaseInstallCommand.ForceOption));
 
                         break;

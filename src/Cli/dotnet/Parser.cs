@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.CommandLine;
+using System.CommandLine.Completions;
 using System.CommandLine.Help;
 using System.IO;
 using System.Linq;
@@ -139,102 +140,14 @@ namespace Microsoft.DotNet.Cli
             }
         }
 
-        public static System.CommandLine.Parsing.Parser Instance { get; } = new CommandLineBuilder(ConfigureCommandLine(RootCommand))
-            .UseExceptionHandler(ExceptionHandler)
-            // TODO:CH - we want this for dotnet-new argument reporting, but 
-            //           adding this makes forwarding commands (which can't know
-            //           all of the parameters of their wrapped command by design)
-            //           error. so `dotnet msbuild /t:thing` throws a parse error.
-            // .UseParseErrorReporting(127)
-            .UseParseErrorReporting("new")
-            .UseHelp()
-            .UseHelpBuilder(context => DotnetHelpBuilder.Instance.Value)
-            .UseLocalizationResources(new CommandLineValidationMessages())
-            .UseParseDirective()
-            .UseSuggestDirective()
-            .DisablePosixBinding()
-            .UseTokenReplacer(TokenPerLine)
-            .Build();
-
-        private static CommandLineBuilder UseParseErrorReporting(this CommandLineBuilder builder, string commandName)
+        public static CliConfiguration Instance { get; } = new(ConfigureCommandLine(RootCommand))
         {
-            builder.AddMiddleware(async (context, next) =>
-            {
-                CommandResult currentCommandResult = parseResult.CommandResult;
-                while (currentCommandResult != null && currentCommandResult.Command.Name != commandName)
-                {
-                    currentCommandResult = currentCommandResult.Parent as CommandResult;
-                }
-
-                if (currentCommandResult == null || !parseResult.Errors.Any())
-                {
-                    //different command was launched or no errors
-                    await next(context).ConfigureAwait(false);
-                }
-                else 
-                {
-                    context.ExitCode = 127; //parse error
-                    //TODO: discuss to make coloring extensions public
-                    //context.Console.ResetTerminalForegroundColor();
-                    //context.Console.SetTerminalForegroundRed();
-                    foreach (var error in parseResult.Errors)
-                    {
-                        context.Console.Error.WriteLine(error.Message);
-                    }
-                    context.Console.Error.WriteLine();
-                    //context.Console.ResetTerminalForegroundColor();
-                    var output = context.Console.Out.CreateTextWriter();
-                    var helpContext = new HelpContext(context.HelpBuilder,
-                                                      parseResult.CommandResult.Command,
-                                                      output,
-                                                      parseResult);
-                    context.HelpBuilder
-                           .Write(helpContext);
-                }
-            }, MiddlewareOrder.ErrorReporting);
-            return builder;
-        }
-
-        private static void ExceptionHandler(Exception exception, InvocationContext context)
-        {
-            if (exception is TargetInvocationException)
-            {
-                exception = exception.InnerException;
-            }
-
-            if (exception is Utils.GracefulException)
-            {
-                Reporter.Error.WriteLine(CommandLoggingContext.IsVerbose
-                    ? exception.ToString().Red().Bold()
-                    : exception.Message.Red().Bold());
-            }
-            else if (exception is CommandParsingException)
-            {
-                Reporter.Error.WriteLine(CommandLoggingContext.IsVerbose
-                    ? exception.ToString().Red().Bold()
-                    : exception.Message.Red().Bold());
-                parseResult.ShowHelp();
-            }
-            else
-            {
-                Reporter.Error.Write("Unhandled exception: ".Red().Bold());
-                Reporter.Error.WriteLine(exception.ToString().Red().Bold());
-            }
-            context.ExitCode = 1;
-        }
-
-        internal class CommandLineConsole : IConsole
-        {
-            public IStandardStreamWriter Out => StandardStreamWriter.Create(Console.Out);
-
-            public bool IsOutputRedirected => Console.IsOutputRedirected;
-
-            public IStandardStreamWriter Error => StandardStreamWriter.Create(Console.Error);
-
-            public bool IsErrorRedirected => Console.IsErrorRedirected;
-
-            public bool IsInputRedirected => Console.IsInputRedirected;
-        }
+            EnableDefaultExceptionHandler = false,
+            EnableParseErrorReporting = true,
+            EnablePosixBundling = false,
+            Directives = { new DiagramDirective(), new SuggestDirective() },
+            ResponseFileTokenReplacer = TokenPerLine
+        };
 
         internal class DotnetHelpBuilder : HelpBuilder
         {

@@ -227,7 +227,7 @@ namespace Microsoft.DotNet.Cli
             if (parseResult.CanBeInvoked())
             {
                 PerformanceLogEventSource.Log.BuiltInCommandStart();
-                exitCode = parseResult.Invoke();
+                exitCode = parseResult.InvokeWithCustomLogic();
                 PerformanceLogEventSource.Log.BuiltInCommandStop();
             }
             else
