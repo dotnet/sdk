@@ -479,6 +479,11 @@ Copyright (c) .NET Foundation. All rights reserved.
                                     Value="$(DynamicCodeSupport)"
                                     Trim="true" />
 
+    <RuntimeHostConfigurationOption Include="System.Text.Json.JsonSerializer.IsReflectionEnabledByDefault"
+                                    Condition="'$(JsonSerializerIsReflectionEnabledByDefault)' != ''"
+                                    Value="$(JsonSerializerIsReflectionEnabledByDefault)"
+                                    Trim="true" />
+
     <RuntimeHostConfigurationOption Include="System.Runtime.InteropServices.BuiltInComInterop.IsSupported"
                                     Condition="'$(BuiltInComInteropSupport)' != ''"
                                     Value="$(BuiltInComInteropSupport)"
