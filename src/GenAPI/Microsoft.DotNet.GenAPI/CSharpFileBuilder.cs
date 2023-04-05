@@ -222,8 +222,9 @@ namespace Microsoft.DotNet.GenAPI
 
             foreach (ISymbol member in members.Order())
             {
+                IMethodSymbol? method = member as IMethodSymbol;
                 // If the method is ExplicitInterfaceImplementation and is derived from an interface that was filtered out, we must filter out it either.
-                if (member is IMethodSymbol method &&
+                if (method != null &&
                     method.MethodKind == MethodKind.ExplicitInterfaceImplementation &&
                     method.ExplicitInterfaceImplementations.Any(m => !_symbolFilter.Include(m.ContainingSymbol) ||
                         // if explicit interface implementation method has inaccessible type argument
@@ -231,6 +232,17 @@ namespace Microsoft.DotNet.GenAPI
                 {
                     continue;
                 }
+
+                // TODO: a work around for the https://github.com/dotnet/sdk/issues/31570 issue.
+                // if the symbol is a method and if it is an explicit interface implementation getter or setter of an indexer property (get_Item or set_Item).
+                if (method != null && method.MethodKind == MethodKind.ExplicitInterfaceImplementation &&
+                    method.ExplicitInterfaceImplementations.Length == 1 &&
+                    method.ExplicitInterfaceImplementations.ElementAt(0) is IMethodSymbol explicitMethod &&
+                    (explicitMethod.MethodKind == MethodKind.PropertyGet || explicitMethod.MethodKind == MethodKind.PropertySet))
+                {
+                    continue;
+                }
+
                 // If the property is derived from an interface that was filter out, we must filtered out it either.
                 if (member is IPropertySymbol property && !property.ExplicitInterfaceImplementations.IsEmpty &&
                     property.ExplicitInterfaceImplementations.Any(m => !_symbolFilter.Include(m.ContainingSymbol)))

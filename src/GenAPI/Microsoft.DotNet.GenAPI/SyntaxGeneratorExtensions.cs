@@ -92,6 +92,16 @@ namespace Microsoft.DotNet.GenAPI
                 }
             }
 
+            // TODO: a work around for the https://github.com/dotnet/sdk/issues/31570 issue.
+            // if the symbol is a property (not an indexer) and if it is an explicit interface implementation of an indexer property.
+            if (symbol is IPropertySymbol propertySymbol &&
+                !propertySymbol.IsIndexer && propertySymbol.ExplicitInterfaceImplementations.Length == 1 &&
+                propertySymbol.ExplicitInterfaceImplementations.ElementAt(0) is IPropertySymbol explicitProperty &&
+                explicitProperty.IsIndexer)
+            {
+                return syntaxGenerator.IndexerDeclaration(propertySymbol);
+            }
+
             try
             {
                 return syntaxGenerator.Declaration(symbol);
