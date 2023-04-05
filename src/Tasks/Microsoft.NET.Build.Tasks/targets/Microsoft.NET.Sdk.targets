@@ -29,7 +29,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <UsingTask TaskName="GetAssemblyVersion" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
   <UsingTask TaskName="GenerateSatelliteAssemblies" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
 
-  <ItemGroup Condition="'$(BuildWithFrameworkRoslyn)' == 'true' and '$(MicrosoftNetFrameworkCompilersToolsetPackageVersion)' != '' and !@(PackageReference->AnyHaveMetadataValue('Identity', 'Microsoft.Net.Compilers.Toolset.Framework'))">
+  <ItemGroup Condition="'$(BuildWithFrameworkRoslyn)' == 'true' and '$(MicrosoftNetFrameworkCompilersToolsetPackageVersion)' != '' and @(PackageReference->AnyHaveMetadataValue('Identity', 'Microsoft.Net.Compilers.Toolset.Framework')) != 'true'">
     <PackageReference Include="Microsoft.Net.Compilers.Toolset.Framework" PrivateAssets="all" Version="$(MicrosoftNetFrameworkCompilersToolsetPackageVersion)"/>
   </ItemGroup>
 
