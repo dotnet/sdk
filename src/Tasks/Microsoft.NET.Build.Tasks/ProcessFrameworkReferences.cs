@@ -395,7 +395,7 @@ namespace Microsoft.NET.Build.Tasks
             {
                 if (!AddToolPack(ToolPackType.WebAssemblySdk, _normalizedTargetFrameworkVersion, packagesToDownload, implicitPackageReferences))
                 {
-                    Log.LogError("FIXME: Localize 'WebAssemblySdkNoValidRuntimePackageError'");
+                    Log.LogError(Strings.WebAssemblySdkNoValidRuntimePackageError);
                     return;
                 }
             }
