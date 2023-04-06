@@ -24,28 +24,28 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [Theory]
-        [InlineData("WebApp", false)]
-        [InlineData("WebApp", true)]
-        [InlineData("WebApp", null)]
-        public void It_resolves_requestdelegategenerator_correctly(string testAssetName, bool? isEnabled)
+        [MemberData(nameof(OffByDefaultGeneratorTestData))]
+        public void It_resolves_offbydefaultgenerator_correctly(GeneratorSpec generator, bool? isEnabled)
         {
             var asset = _testAssetsManager
-                .CopyTestAsset(testAssetName, identifier: isEnabled.ToString())
+                .CopyTestAsset("WebApp", identifier: isEnabled.ToString())
                 .WithSource()
                 .WithProjectChanges(project =>
                 {
                     if (isEnabled != null)
                     {
                         var ns = project.Root.Name.Namespace;
-                        project.Root.Add(new XElement(ns + "PropertyGroup", new XElement("EnableRequestDelegateGenerator", isEnabled)));
+                        project.Root.Add(new XElement(ns + "PropertyGroup", new XElement(generator.EnablingPropertyName, isEnabled)));
                     }
                 });
 
-            VerifyRequestDelegateGeneratorIsUsed(asset, isEnabled);
+            VerifyOffByDefaultGeneratorIsUsed(asset, generator.DllFileName, isEnabled);
         }
 
-        [Fact]
-        public void It_enables_requestdelegategenerator_for_PublishAot()
+        [Theory]
+        [InlineData("Microsoft.AspNetCore.Http.RequestDelegateGenerator.dll")]
+        [InlineData("Microsoft.Extensions.Configuration.Binder.SourceGeneration.dll")]
+        public void It_enables_offbydefaultgenerator_for_PublishAot()
         {
             var asset = _testAssetsManager
                 .CopyTestAsset("WebApp")
@@ -56,10 +56,10 @@ namespace Microsoft.NET.Build.Tests
                     project.Root.Add(new XElement(ns + "PropertyGroup", new XElement("PublishAot", "true")));
                 });
 
-            VerifyRequestDelegateGeneratorIsUsed(asset, expectEnabled: true);
+            VerifyOffByDefaultGeneratorIsUsed(asset, expectEnabled: true);
         }
 
-        private void VerifyRequestDelegateGeneratorIsUsed(TestAsset asset, bool? expectEnabled)
+        private void VerifyOffByDefaultGeneratorIsUsed(TestAsset asset, string dllFileName, bool? expectEnabled)
         {
             var command = new GetValuesCommand(
                 Log,
@@ -75,7 +75,24 @@ namespace Microsoft.NET.Build.Tests
 
             var analyzers = command.GetValues();
 
-            Assert.Equal(expectEnabled ?? false, analyzers.Any(analyzer => analyzer.Contains("Microsoft.AspNetCore.Http.RequestDelegateGenerator.dll")));
+            Assert.Equal(expectEnabled ?? false, analyzers.Any(analyzer => analyzer.Contains(dllFileName)));
+        }
+
+        private record GeneratorSpec(string EnablingPropertyName, string DllFileName)
+        {
+            public static GeneratorSpec RequestDelegate { get; } = new GeneratorSpec("EnableRequestDelegateGenerator", "Microsoft.AspNetCore.Http.RequestDelegateGenerator.dll");
+            public static GeneratorSpec ConfigurationBinding { get; } = new GeneratorSpec("EnableConfigurationBindingGenerator", "Microsoft.Extensions.Configuration.Binder.SourceGeneration.dll");
+        }
+
+        public IEnumerator<object[]> OffByDefaultGeneratorTestData()
+        {
+            // Test asset name, generator to test, whether generator is enabled.
+            yield return new object[] { GeneratorSpec.RequestDelegate, false };
+            yield return new object[] { GeneratorSpec.RequestDelegate, true };
+            yield return new object[] { GeneratorSpec.RequestDelegate, null };
+            yield return new object[] { GeneratorSpec.ConfigurationBinding, false };
+            yield return new object[] { GeneratorSpec.ConfigurationBinding, true };
+            yield return new object[] { GeneratorSpec.ConfigurationBinding, null };
         }
 
         [Theory]

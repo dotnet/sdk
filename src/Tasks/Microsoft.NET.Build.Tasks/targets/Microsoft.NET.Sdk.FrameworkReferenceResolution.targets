@@ -423,6 +423,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ItemGroup>
       <OffByDefaultAnalyzer Include="Microsoft.AspNetCore.Http.RequestDelegateGenerator"
                             IsEnabled="$(EnableRequestDelegateGenerator)"/>
+      <OffByDefaultAnalyzer Include="Microsoft.Extensions.Configuration.Binder.SourceGeneration"
+                            IsEnabled="$(EnableConfigurationBindingGenerator)"/>
     </ItemGroup>
 
     <ItemGroup>
