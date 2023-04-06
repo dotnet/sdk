@@ -129,7 +129,11 @@ namespace Microsoft.DotNet.Cli
             new ForwardedOption<bool>(
                 "--interactive",
                 CommonLocalizableStrings.CommandInteractiveOptionDescription)
-            .ForwardAs("-property:NuGetInteractive=true");
+            .SetForwardingFunction((enabled) =>
+            {
+                Environment.SetEnvironmentVariable("DOTNET_CLI_MSBUILD_INTERACTIVE", enabled.ToString());
+                return "-property:NuGetInteractive=true";
+            });
 
         public static Option<bool> InteractiveOption =
             new Option<bool>(

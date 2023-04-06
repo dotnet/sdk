@@ -68,7 +68,14 @@ namespace Microsoft.DotNet.Cli.Utils
         {
             // We want to use MSBuild server only in inner loop development.
             // We use Console.IsOutputRedirected as simple heuristics detection of possible non-inner-loop usage (Azure CI/CD, GitHub Actions, ...)
-            return UseMSBuildServerEnvVarConfig && !Console.IsOutputRedirected;
+            // when there is no explicitly defined user intent.
+
+            bool isInteractiveExplicit = !string.IsNullOrEmpty(Env.GetEnvironmentVariable("DOTNET_CLI_MSBUILD_INTERACTIVE"));
+
+            return UseMSBuildServerEnvVarConfig &&
+                   (isInteractiveExplicit ?
+                       Env.GetEnvironmentVariableAsBool("DOTNET_CLI_MSBUILD_INTERACTIVE", false) :
+                       !Console.IsOutputRedirected);
         }
 
         private void InitializeForOutOfProcForwarding()
