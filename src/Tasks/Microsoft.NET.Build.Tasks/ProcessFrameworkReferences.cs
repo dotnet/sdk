@@ -393,16 +393,11 @@ namespace Microsoft.NET.Build.Tasks
 
             if (UsingMicrosoftNETSdkWebAssembly)
             {
-                if (RuntimeIdentifier == "browser-wasm" || RuntimeIdentifiers.Contains("browser-wasm"))
+                if (!AddToolPack(ToolPackType.WebAssemblySdk, _normalizedTargetFrameworkVersion, packagesToDownload, implicitPackageReferences))
                 {
-                    if (!AddToolPack(ToolPackType.WebAssemblySdk, _normalizedTargetFrameworkVersion, packagesToDownload, implicitPackageReferences))
-                    {
-                        Log.LogError("FIXME: Localize 'WebAssemblySdkNoValidRuntimePackageError'");
-                        return;
-                    }
+                    Log.LogError("FIXME: Localize 'WebAssemblySdkNoValidRuntimePackageError'");
+                    return;
                 }
-
-                // TODO: Add support for wasi-wasm package
             }
 
             if (packagesToDownload.Any())
