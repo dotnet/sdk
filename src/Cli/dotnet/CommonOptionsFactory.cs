@@ -16,10 +16,10 @@ namespace Microsoft.DotNet.Cli
         /// <summary>
         /// Creates common diagnositcs option (-d|--diagnostics).
         /// </summary>
-        public static CliOption<bool> CreateDiagnosticsOption() => new("--diagnostics", "-d")
+        public static CliOption<bool> CreateDiagnosticsOption(bool recursive) => new("--diagnostics", "-d")
         {
             Description = Microsoft.DotNet.Tools.Help.LocalizableStrings.SDKDiagnosticsCommandDefinition,
-            Recursive = true
+            Recursive = recursive
         };
     }
 }

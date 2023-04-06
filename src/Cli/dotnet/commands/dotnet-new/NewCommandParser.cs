@@ -62,7 +62,7 @@ namespace Microsoft.DotNet.Cli
 
         private static readonly CliOption<bool> s_diagnosticOption =
             CommonOptionsFactory
-                .CreateDiagnosticsOption()
+                .CreateDiagnosticsOption(recursive: true)
                 .WithDescription(LocalizableStrings.Diagnostics_OptionDescription);
 
         internal static readonly CliCommand s_command = GetCommand();

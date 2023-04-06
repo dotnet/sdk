@@ -59,7 +59,7 @@ namespace Microsoft.DotNet.Cli
             WorkloadCommandParser.GetCommand()
         };
 
-        public static readonly CliOption<bool> DiagOption = CommonOptionsFactory.CreateDiagnosticsOption();
+        public static readonly CliOption<bool> DiagOption = CommonOptionsFactory.CreateDiagnosticsOption(recursive: false);
 
         public static readonly CliOption<bool> VersionOption = new("--version");
 
@@ -70,10 +70,19 @@ namespace Microsoft.DotNet.Cli
         public static readonly CliOption<bool> ListRuntimesOption = new("--list-runtimes");
 
         // Argument
-        public static readonly CliArgument<string> DotnetSubCommand = new("subcommand") { Arity = ArgumentArity.ExactlyOne, Hidden = true };
+        public static readonly CliArgument<string> DotnetSubCommand = new("subcommand") { Arity = ArgumentArity.ZeroOrOne, Hidden = true };
 
         private static CliCommand ConfigureCommandLine(CliCommand rootCommand)
         {
+            foreach (CliOption option in rootCommand.Options)
+            {
+                if (option is HelpOption)
+                {
+                    option.Description = CommandLineValidation.LocalizableStrings.ShowHelpInfo;
+                    break;
+                }
+            }
+
             // Add subcommands
             foreach (var subcommand in Subcommands)
             {
