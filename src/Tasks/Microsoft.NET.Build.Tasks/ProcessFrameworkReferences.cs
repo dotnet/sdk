@@ -78,7 +78,7 @@ namespace Microsoft.NET.Build.Tasks
 
         public ITaskItem[] KnownILLinkPacks { get; set; } = Array.Empty<ITaskItem>();
 
-        public ITaskItem[] KnownWebAssemblySdkBrowserPacks { get; set; } = Array.Empty<ITaskItem>();
+        public ITaskItem[] KnownWebAssemblySdkPacks { get; set; } = Array.Empty<ITaskItem>();
 
         public bool UsingMicrosoftNETSdkWebAssembly { get; set; }
 
@@ -626,7 +626,7 @@ namespace Microsoft.NET.Build.Tasks
                 ToolPackType.Crossgen2 => KnownCrossgen2Packs,
                 ToolPackType.ILCompiler => KnownILCompilerPacks,
                 ToolPackType.ILLink => KnownILLinkPacks,
-                ToolPackType.WebAssemblySdk => KnownWebAssemblySdkBrowserPacks,
+                ToolPackType.WebAssemblySdk => KnownWebAssemblySdkPacks,
                 _ => throw new ArgumentException($"Unknown package type {toolPackType}", nameof(toolPackType))
             };
 
