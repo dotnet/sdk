@@ -113,6 +113,11 @@ if [ -f "${packagesArchiveDir}archiveArtifacts.txt" ]; then
   fi
 fi
 
+if [ ! -d "$SCRIPT_ROOT/.git" ]; then
+  echo "ERROR: $SCRIPT_ROOT is not a git repository. Please run prep.sh add initialize Source Link metadata."
+  exit 1
+fi
+
 if [ -d "$CUSTOM_SDK_DIR" ]; then
   export SDK_VERSION=$("$CUSTOM_SDK_DIR/dotnet" --version)
   export CLI_ROOT="$CUSTOM_SDK_DIR"
