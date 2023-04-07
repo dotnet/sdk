@@ -38,7 +38,7 @@ namespace Microsoft.NET.Build.Tests
                         // Delete when we have a new targeting pack that contains Microsoft.Extensions.Configuration.Binder.SourceGeneration.
                         if (generator == GeneratorSpec.ConfigurationBinding)
                         {
-                            project.Root.Add(new XElement(ns + "ItemGroup", new XElement("Analyzer", new XAttribute("Include", "does_not_yet_exist\Microsoft.Extensions.Configuration.Binder.SourceGeneration.dll"))));
+                            project.Root.Add(new XElement(ns + "ItemGroup", new XElement("Analyzer", new XAttribute("Include", "does_not_yet_exist\\Microsoft.Extensions.Configuration.Binder.SourceGeneration.dll"))));
                         }
                         project.Root.Add(new XElement(ns + "PropertyGroup", new XElement(generator.EnablingPropertyName, isEnabled)));
                     }
@@ -60,7 +60,7 @@ namespace Microsoft.NET.Build.Tests
                     // Delete when we have a new targeting pack that contains Microsoft.Extensions.Configuration.Binder.SourceGeneration.
                     if (generator == GeneratorSpec.ConfigurationBinding)
                     {
-                        project.Root.Add(new XElement(ns + "ItemGroup", new XElement("Analyzer", new XAttribute("Include", "does_not_yet_exist\Microsoft.Extensions.Configuration.Binder.SourceGeneration.dll"))));
+                        project.Root.Add(new XElement(ns + "ItemGroup", new XElement("Analyzer", new XAttribute("Include", "does_not_yet_exist\\Microsoft.Extensions.Configuration.Binder.SourceGeneration.dll"))));
                     }
                     project.Root.Add(new XElement(ns + "PropertyGroup", new XElement("PublishAot", "true")));
                 });
@@ -93,13 +93,13 @@ namespace Microsoft.NET.Build.Tests
             public static GeneratorSpec ConfigurationBinding { get; } = new GeneratorSpec("EnableConfigurationBindingGenerator", "Microsoft.Extensions.Configuration.Binder.SourceGeneration.dll");
         }
 
-        public IEnumerator<object[]> OffByDefaultGenerators()
+        public static IEnumerable<object[]> OffByDefaultGenerators()
         {
             yield return new object[] { GeneratorSpec.RequestDelegate };
             yield return new object[] { GeneratorSpec.ConfigurationBinding };
         }
 
-        public IEnumerator<object[]> OffByDefaultGeneratorTestData()
+        public static IEnumerable<object[]> OffByDefaultGeneratorTestData()
         {
             foreach (object[] generator in OffByDefaultGenerators())
             {
