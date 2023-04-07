@@ -405,6 +405,10 @@ Copyright (c) .NET Foundation. All rights reserved.
     <KnownILLinkPack Include="Microsoft.NET.ILLink.Tasks"
                      TargetFramework="net8.0"
                      ILLinkPackVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)" />
+    
+    <KnownWebAssemblySdkPack Include="Microsoft.NET.Sdk.WebAssembly.Pack"
+                             TargetFramework="net8.0"
+                             WebAssemblySdkPackVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)" />
 
     <KnownRuntimePack Include="Microsoft.NETCore.App"
                       TargetFramework="net8.0"
