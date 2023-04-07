@@ -98,7 +98,7 @@ namespace Microsoft.NET.Build.Tests
             CreateGitFiles(testAsset.Path, originUrl: null, commitSha: null);
 
             var buildCommand = new BuildCommand(testAsset);
-            buildCommand.Execute().Should().HaveStdOutContaining($"warning : Repository '{testAsset.Path}' has no remote.");
+            buildCommand.Execute().Should().NotHaveStdOutContaining("warning");
 
             var intermediateDir = buildCommand.GetIntermediateDirectory();
             intermediateDir.Should().NotHaveFile("SourceLinkTestApp.sourcelink.json");
@@ -117,7 +117,7 @@ namespace Microsoft.NET.Build.Tests
             CreateGitFiles(testAsset.Path, originUrl: null);
 
             var buildCommand = new BuildCommand(testAsset);
-            buildCommand.Execute().Should().HaveStdOutContaining($"warning : Repository '{testAsset.Path}' has no remote.");
+            buildCommand.Execute().Should().NotHaveStdOutContaining("warning");
 
             var intermediateDir = buildCommand.GetIntermediateDirectory();
             intermediateDir.Should().NotHaveFile("SourceLinkTestApp.sourcelink.json");

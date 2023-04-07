@@ -10,8 +10,7 @@
  -->
 
   <Target Name="CopySdkToOutput"
-          DependsOnTargets="PrepareBundledDependencyProps;
-                            EnsureDependencyRestored;
+          DependsOnTargets="EnsureDependencyRestored;
                             GetSdkItemsToCopy"
           Condition="'$(SdkLayoutDirectory)' != ''"
 >
@@ -33,7 +32,6 @@
   </Target>
 
   <Target Name="EnsureDependencyRestored"
-          DependsOnTargets="PrepareBundledDependencyProps"
           Condition="!Exists('$(DependencyNuPkgPath)$(DependencyPackageName.ToLower()).nuspec')">
 
     <Message Text="Dependency has not been restored yet: '$(DependencyNuPkgPath)$(DependencyPackageName.ToLower()).nuspec'"/>
