@@ -35,6 +35,11 @@ namespace Microsoft.NET.Build.Tests
                     if (isEnabled != null)
                     {
                         var ns = project.Root.Name.Namespace;
+                        // Delete when we have a new targeting pack that contains Microsoft.Extensions.Configuration.Binder.SourceGeneration.
+                        if (generator == GeneratorSpec.ConfigurationBinding)
+                        {
+                            project.Root.Add(new XElement(ns + "ItemGroup", new XElement("Analyzer", new XAttribute("Include", "does_not_yet_exist\Microsoft.Extensions.Configuration.Binder.SourceGeneration.dll"))));
+                        }
                         project.Root.Add(new XElement(ns + "PropertyGroup", new XElement(generator.EnablingPropertyName, isEnabled)));
                     }
                 });
@@ -43,9 +48,8 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [Theory]
-        [InlineData("Microsoft.AspNetCore.Http.RequestDelegateGenerator.dll")]
-        [InlineData("Microsoft.Extensions.Configuration.Binder.SourceGeneration.dll")]
-        public void It_enables_offbydefaultgenerator_for_PublishAot()
+        [MemberData(nameof(OffByDefaultGenerators))]
+        public void It_enables_offbydefaultgenerator_for_PublishAot(GeneratorSpec generator)
         {
             var asset = _testAssetsManager
                 .CopyTestAsset("WebApp")
@@ -53,10 +57,15 @@ namespace Microsoft.NET.Build.Tests
                 .WithProjectChanges(project =>
                 {
                     var ns = project.Root.Name.Namespace;
+                    // Delete when we have a new targeting pack that contains Microsoft.Extensions.Configuration.Binder.SourceGeneration.
+                    if (generator == GeneratorSpec.ConfigurationBinding)
+                    {
+                        project.Root.Add(new XElement(ns + "ItemGroup", new XElement("Analyzer", new XAttribute("Include", "does_not_yet_exist\Microsoft.Extensions.Configuration.Binder.SourceGeneration.dll"))));
+                    }
                     project.Root.Add(new XElement(ns + "PropertyGroup", new XElement("PublishAot", "true")));
                 });
 
-            VerifyOffByDefaultGeneratorIsUsed(asset, expectEnabled: true);
+            VerifyOffByDefaultGeneratorIsUsed(asset, generator.DllFileName, expectEnabled: true);
         }
 
         private void VerifyOffByDefaultGeneratorIsUsed(TestAsset asset, string dllFileName, bool? expectEnabled)
@@ -78,21 +87,28 @@ namespace Microsoft.NET.Build.Tests
             Assert.Equal(expectEnabled ?? false, analyzers.Any(analyzer => analyzer.Contains(dllFileName)));
         }
 
-        private record GeneratorSpec(string EnablingPropertyName, string DllFileName)
+        public record GeneratorSpec(string EnablingPropertyName, string DllFileName)
         {
             public static GeneratorSpec RequestDelegate { get; } = new GeneratorSpec("EnableRequestDelegateGenerator", "Microsoft.AspNetCore.Http.RequestDelegateGenerator.dll");
             public static GeneratorSpec ConfigurationBinding { get; } = new GeneratorSpec("EnableConfigurationBindingGenerator", "Microsoft.Extensions.Configuration.Binder.SourceGeneration.dll");
         }
 
+        public IEnumerator<object[]> OffByDefaultGenerators()
+        {
+            yield return new object[] { GeneratorSpec.RequestDelegate };
+            yield return new object[] { GeneratorSpec.ConfigurationBinding };
+        }
+
         public IEnumerator<object[]> OffByDefaultGeneratorTestData()
         {
-            // Test asset name, generator to test, whether generator is enabled.
-            yield return new object[] { GeneratorSpec.RequestDelegate, false };
-            yield return new object[] { GeneratorSpec.RequestDelegate, true };
-            yield return new object[] { GeneratorSpec.RequestDelegate, null };
-            yield return new object[] { GeneratorSpec.ConfigurationBinding, false };
-            yield return new object[] { GeneratorSpec.ConfigurationBinding, true };
-            yield return new object[] { GeneratorSpec.ConfigurationBinding, null };
+            foreach (object[] generator in OffByDefaultGenerators())
+            {
+                // Test asset name, generator to test, whether generator is enabled.
+                var spec = (GeneratorSpec)generator[0];
+                yield return new object[] { spec, false };
+                yield return new object[] { spec, true };
+                yield return new object[] { spec, null };
+            }
         }
 
         [Theory]
