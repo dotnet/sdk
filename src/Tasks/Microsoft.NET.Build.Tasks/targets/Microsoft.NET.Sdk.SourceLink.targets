@@ -12,15 +12,15 @@ Copyright (c) .NET Foundation. All rights reserved.
 
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
-  <PropertyGroup Condition="'$(SuppressImplicitGitSourceLink)' != 'true'">
+  <PropertyGroup>
     <EmbedUntrackedSources Condition="'$(EmbedUntrackedSources)' == ''">true</EmbedUntrackedSources>
   </PropertyGroup>
-  
-  <Import Project="$(MSBuildThisFileDirectory)..\..\Microsoft.Build.Tasks.Git\$(_SourceLinkSdkSubDir)\Microsoft.Build.Tasks.Git.targets" Condition="'$(SuppressImplicitGitSourceLink)' != 'true'"/>
-  <Import Project="$(MSBuildThisFileDirectory)..\..\Microsoft.SourceLink.Common\$(_SourceLinkSdkSubDir)\Microsoft.SourceLink.Common.targets" Condition="'$(SuppressImplicitGitSourceLink)' != 'true'"/>
-  <Import Project="$(MSBuildThisFileDirectory)..\..\Microsoft.SourceLink.GitHub\$(_SourceLinkSdkSubDir)\Microsoft.SourceLink.GitHub.targets" Condition="'$(SuppressImplicitGitSourceLink)' != 'true'"/>
-  <Import Project="$(MSBuildThisFileDirectory)..\..\Microsoft.SourceLink.GitLab\$(_SourceLinkSdkSubDir)\Microsoft.SourceLink.GitLab.targets" Condition="'$(SuppressImplicitGitSourceLink)' != 'true'"/>
-  <Import Project="$(MSBuildThisFileDirectory)..\..\Microsoft.SourceLink.AzureRepos.Git\$(_SourceLinkSdkSubDir)\Microsoft.SourceLink.AzureRepos.Git.targets" Condition="'$(SuppressImplicitGitSourceLink)' != 'true'"/>
-  <Import Project="$(MSBuildThisFileDirectory)..\..\Microsoft.SourceLink.Bitbucket.Git\$(_SourceLinkSdkSubDir)\Microsoft.SourceLink.Bitbucket.Git.targets" Condition="'$(SuppressImplicitGitSourceLink)' != 'true'"/>
+
+  <Import Project="$(MSBuildThisFileDirectory)..\..\Microsoft.Build.Tasks.Git\$(_SourceLinkSdkSubDir)\Microsoft.Build.Tasks.Git.targets"/>
+  <Import Project="$(MSBuildThisFileDirectory)..\..\Microsoft.SourceLink.Common\$(_SourceLinkSdkSubDir)\Microsoft.SourceLink.Common.targets"/>
+  <Import Project="$(MSBuildThisFileDirectory)..\..\Microsoft.SourceLink.GitHub\$(_SourceLinkSdkSubDir)\Microsoft.SourceLink.GitHub.targets"/>
+  <Import Project="$(MSBuildThisFileDirectory)..\..\Microsoft.SourceLink.GitLab\$(_SourceLinkSdkSubDir)\Microsoft.SourceLink.GitLab.targets"/>
+  <Import Project="$(MSBuildThisFileDirectory)..\..\Microsoft.SourceLink.AzureRepos.Git\$(_SourceLinkSdkSubDir)\Microsoft.SourceLink.AzureRepos.Git.targets"/>
+  <Import Project="$(MSBuildThisFileDirectory)..\..\Microsoft.SourceLink.Bitbucket.Git\$(_SourceLinkSdkSubDir)\Microsoft.SourceLink.Bitbucket.Git.targets"/>
 
 </Project>
