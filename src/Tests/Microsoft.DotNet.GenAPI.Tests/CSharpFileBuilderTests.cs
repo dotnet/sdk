@@ -2130,5 +2130,92 @@ namespace Microsoft.DotNet.GenAPI.Tests
                     """,
                 includeInternalSymbols: false);
         }
+
+        [Fact]
+        public void TestExplicitInterfaceCollections()
+        {
+            RunTest(original: """
+                    #nullable disable
+                    namespace a
+                    {
+                        #pragma warning disable CS8597
+                        public partial class C<T> : System.Collections.Generic.ICollection<T>, System.Collections.Generic.IEnumerable<T>, System.Collections.Generic.IList<T>, System.Collections.Generic.IReadOnlyCollection<T>, System.Collections.Generic.IReadOnlyList<T>, System.Collections.ICollection, System.Collections.IEnumerable, System.Collections.IList
+                        {
+                            public T this[int index] { get { throw null; } }
+                            public int Length { get { throw null; } }
+                            int System.Collections.Generic.ICollection<T>.Count { get { throw null; } }
+                            bool System.Collections.Generic.ICollection<T>.IsReadOnly { get { throw null; } }
+                            T System.Collections.Generic.IList<T>.this[int index] { get { throw null; } set { } }
+                            int System.Collections.Generic.IReadOnlyCollection<T>.Count { get { throw null; } }
+                            T System.Collections.Generic.IReadOnlyList<T>.this[int index] { get { throw null; } }
+                            int System.Collections.ICollection.Count { get { throw null; } }
+                            bool System.Collections.ICollection.IsSynchronized { get { throw null; } }
+                            object System.Collections.ICollection.SyncRoot { get { throw null; } }
+                            bool System.Collections.IList.IsFixedSize { get { throw null; } }
+                            bool System.Collections.IList.IsReadOnly { get { throw null; } }
+                            object System.Collections.IList.this[int index] { get { throw null; } set { } }
+                            public bool Contains(T item) { throw null; }
+                            public void CopyTo(T[] destination, int destinationIndex) { }
+                            public int IndexOf(T item) { throw null; }
+                            void System.Collections.Generic.ICollection<T>.Add(T item) { }
+                            void System.Collections.Generic.ICollection<T>.Clear() { }
+                            bool System.Collections.Generic.ICollection<T>.Remove(T item) { throw null; }
+                            System.Collections.Generic.IEnumerator<T> System.Collections.Generic.IEnumerable<T>.GetEnumerator() { throw null; }
+                            void System.Collections.Generic.IList<T>.Insert(int index, T item) { }
+                            void System.Collections.Generic.IList<T>.RemoveAt(int index) { }
+                            void System.Collections.ICollection.CopyTo(System.Array array, int index) { }
+                            System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { throw null; }
+                            int System.Collections.IList.Add(object value) { throw null; }
+                            void System.Collections.IList.Clear() { }
+                            bool System.Collections.IList.Contains(object value) { throw null; }
+                            int System.Collections.IList.IndexOf(object value) { throw null; }
+                            void System.Collections.IList.Insert(int index, object value) { }
+                            void System.Collections.IList.Remove(object value) { }
+                            void System.Collections.IList.RemoveAt(int index) { }
+                        }
+                        #pragma warning restore CS8597
+                    }
+                    """,
+                expected: """
+                    namespace a
+                    {
+                        public partial class C<T> : System.Collections.Generic.ICollection<T>, System.Collections.Generic.IEnumerable<T>, System.Collections.Generic.IList<T>, System.Collections.Generic.IReadOnlyCollection<T>, System.Collections.Generic.IReadOnlyList<T>, System.Collections.ICollection, System.Collections.IEnumerable, System.Collections.IList
+                        {
+                            public T this[int index] { get { throw null; } }
+                            public int Length { get { throw null; } }
+                            int System.Collections.Generic.ICollection<T>.Count { get { throw null; } }
+                            bool System.Collections.Generic.ICollection<T>.IsReadOnly { get { throw null; } }
+                            T System.Collections.Generic.IList<T>.this[int index] { get { throw null; } set { } }
+                            int System.Collections.Generic.IReadOnlyCollection<T>.Count { get { throw null; } }
+                            T System.Collections.Generic.IReadOnlyList<T>.this[int index] { get { throw null; } }
+                            int System.Collections.ICollection.Count { get { throw null; } }
+                            bool System.Collections.ICollection.IsSynchronized { get { throw null; } }
+                            object System.Collections.ICollection.SyncRoot { get { throw null; } }
+                            bool System.Collections.IList.IsFixedSize { get { throw null; } }
+                            bool System.Collections.IList.IsReadOnly { get { throw null; } }
+                            object System.Collections.IList.this[int index] { get { throw null; } set { } }
+                            public bool Contains(T item) { throw null; }
+                            public void CopyTo(T[] destination, int destinationIndex) { }
+                            public int IndexOf(T item) { throw null; }
+                            void System.Collections.Generic.ICollection<T>.Add(T item) { }
+                            void System.Collections.Generic.ICollection<T>.Clear() { }
+                            bool System.Collections.Generic.ICollection<T>.Remove(T item) { throw null; }
+                            System.Collections.Generic.IEnumerator<T> System.Collections.Generic.IEnumerable<T>.GetEnumerator() { throw null; }
+                            void System.Collections.Generic.IList<T>.Insert(int index, T item) { }
+                            void System.Collections.Generic.IList<T>.RemoveAt(int index) { }
+                            void System.Collections.ICollection.CopyTo(System.Array array, int index) { }
+                            System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { throw null; }
+                            int System.Collections.IList.Add(object value) { throw null; }
+                            void System.Collections.IList.Clear() { }
+                            bool System.Collections.IList.Contains(object value) { throw null; }
+                            int System.Collections.IList.IndexOf(object value) { throw null; }
+                            void System.Collections.IList.Insert(int index, object value) { }
+                            void System.Collections.IList.Remove(object value) { }
+                            void System.Collections.IList.RemoveAt(int index) { }
+                        }
+                    }
+                    """,
+                includeInternalSymbols: false);
+        }
     }
 }
