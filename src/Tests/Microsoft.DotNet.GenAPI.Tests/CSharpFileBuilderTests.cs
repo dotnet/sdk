@@ -184,7 +184,6 @@ namespace Microsoft.DotNet.GenAPI.Tests
                 }
                 """);
         }
-
         [Fact]
         public void TestEnumGeneration()
         {
@@ -2088,6 +2087,44 @@ namespace Microsoft.DotNet.GenAPI.Tests
                             System.Collections.Generic.IEnumerator<T> System.Collections.Generic.IEnumerable<T>.GetEnumerator() { throw null; }
                             void System.Collections.ICollection.CopyTo(System.Array array, int index) { }
                             System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { throw null; }
+                        }
+                    }
+                    """,
+                includeInternalSymbols: false);
+        }
+
+        [Fact]
+        public void TestExplicitInterfaceIndexer()
+        {
+            RunTest(original: """
+                    namespace a
+                    {
+                        public interface IFooList<T>
+                        {
+                            T this[int index] { get; set; }
+                        }
+
+                        public struct Bar<T> : IFooList<T>
+                        {
+                        #pragma warning disable CS8597
+                            public T this[int index] { get { throw null; } set { } }
+                            T IFooList<T>.this[int index] { get { throw null; } set { } }
+                        #pragma warning restore CS8597
+                        }
+                    }
+                    """,
+                expected: """
+                    namespace a
+                    {
+                        public partial struct Bar<T> : IFooList<T>
+                        {
+                            T IFooList<T>.this[int index] { get { throw null; } set { } }
+                            public T this[int index] { get { throw null; } set { } }
+                        }
+
+                        public partial interface IFooList<T>
+                        {
+                            T this[int index] { get; set; }
                         }
                     }
                     """,
