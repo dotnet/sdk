@@ -12,7 +12,6 @@ using System.Xml.Linq;
 using System.Collections.Generic;
 using System;
 using Xunit.Abstractions;
-using System.Runtime.InteropServices;
 using Microsoft.NET.TestFramework.ProjectConstruction;
 
 namespace Microsoft.NET.Build.Tests
@@ -32,14 +31,9 @@ namespace Microsoft.NET.Build.Tests
                 .WithSource()
                 .WithProjectChanges(project =>
                 {
+                    var ns = project.Root.Name.Namespace;
                     if (isEnabled != null)
                     {
-                        var ns = project.Root.Name.Namespace;
-                        // Delete when we have a new targeting pack that contains Microsoft.Extensions.Configuration.Binder.SourceGeneration.
-                        if (generator == GeneratorSpec.ConfigurationBinding)
-                        {
-                            project.Root.Add(new XElement(ns + "ItemGroup", new XElement("Analyzer", new XAttribute("Include", "does_not_yet_exist\\Microsoft.Extensions.Configuration.Binder.SourceGeneration.dll"))));
-                        }
                         project.Root.Add(new XElement(ns + "PropertyGroup", new XElement(generator.EnablingPropertyName, isEnabled)));
                     }
                 });
@@ -57,11 +51,6 @@ namespace Microsoft.NET.Build.Tests
                 .WithProjectChanges(project =>
                 {
                     var ns = project.Root.Name.Namespace;
-                    // Delete when we have a new targeting pack that contains Microsoft.Extensions.Configuration.Binder.SourceGeneration.
-                    if (generator == GeneratorSpec.ConfigurationBinding)
-                    {
-                        project.Root.Add(new XElement(ns + "ItemGroup", new XElement("Analyzer", new XAttribute("Include", "does_not_yet_exist\\Microsoft.Extensions.Configuration.Binder.SourceGeneration.dll"))));
-                    }
                     project.Root.Add(new XElement(ns + "PropertyGroup", new XElement("PublishAot", "true")));
                 });
 
@@ -96,7 +85,8 @@ namespace Microsoft.NET.Build.Tests
         public static IEnumerable<object[]> OffByDefaultGenerators()
         {
             yield return new object[] { GeneratorSpec.RequestDelegate };
-            yield return new object[] { GeneratorSpec.ConfigurationBinding };
+            // TODO: remove when targeting pack containing the generator flows through.
+            // yield return new object[] { GeneratorSpec.ConfigurationBinding };
         }
 
         public static IEnumerable<object[]> OffByDefaultGeneratorTestData()
