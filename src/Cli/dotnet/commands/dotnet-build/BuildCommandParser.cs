@@ -13,7 +13,7 @@ namespace Microsoft.DotNet.Cli
     {
         public static readonly string DocsLink = "https://aka.ms/dotnet-build";
 
-        public static readonly CliArgument<IEnumerable<string>> SlnOrProjectArgument = new CliArgument<IEnumerable<string>>(CommonLocalizableStrings.SolutionOrProjectArgumentName)
+        public static readonly CliArgument<IEnumerable<string>> SlnOrProjectArgument = new(CommonLocalizableStrings.SolutionOrProjectArgumentName)
         {
             Description = CommonLocalizableStrings.SolutionOrProjectArgumentDescription,
             Arity = ArgumentArity.ZeroOrMore
@@ -71,6 +71,7 @@ namespace Microsoft.DotNet.Cli
             command.Options.Add(CommonOptions.VerbosityOption);
             command.Options.Add(CommonOptions.DebugOption);
             command.Options.Add(OutputOption);
+            command.Options.Add(CommonOptions.ArtifactsPathOption);
             command.Options.Add(NoIncrementalOption);
             command.Options.Add(NoDependenciesOption);
             command.Options.Add(NoLogoOption);

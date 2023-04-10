@@ -31,7 +31,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 
         internal static CliOption<bool> ForceOption { get; } = SharedOptionsFactory.CreateForceOption().WithDescription(SymbolStrings.Option_Install_Force);
 
-        internal virtual CliOption<bool> InteractiveOption { get; } = SharedOptionsFactory.CreateInteractiveOption();
+        internal virtual CliOption<bool> InteractiveOption { get; } = SharedOptions.InteractiveOption;
 
         internal virtual CliOption<string[]> AddSourceOption { get; } = SharedOptionsFactory.CreateAddSourceOption();
 

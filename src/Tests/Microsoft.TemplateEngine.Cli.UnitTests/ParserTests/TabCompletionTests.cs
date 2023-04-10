@@ -5,6 +5,7 @@
 using System.CommandLine;
 using System.CommandLine.Completions;
 using FakeItEasy;
+using Microsoft.NET.TestFramework;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Constraints;
 using Microsoft.TemplateEngine.Cli.Commands;
@@ -23,7 +24,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
             CliCommand myCommand = NewCommandFactory.Create("new", _ => host);
 
-            ParseResult parseResult = myCommand.Parse("new console --framework net7.0 --l");
+            ParseResult parseResult = myCommand.Parse($"new console --framework {ToolsetInfo.CurrentTargetFramework} --l");
             string[] suggestions = parseResult.GetCompletions().Select(l => l.Label).ToArray();
 
             Assert.Equal(2, suggestions.Length);

@@ -23,6 +23,7 @@ using Microsoft.TemplateEngine.Cli.Commands;
 using Microsoft.Extensions.Logging;
 using Microsoft.DotNet.Tools;
 using System.CommandLine.Parsing;
+using System.Linq;
 
 namespace Microsoft.DotNet.Cli
 {
@@ -95,7 +96,11 @@ namespace Microsoft.DotNet.Cli
                     CommandLoggingContext.SetVerbose(true);
                     verbosity = VerbosityOptions.diagnostic;
                 }
-                else if (verbosityOptionResult != null && !verbosityOptionResult.Implicit)
+                else if (verbosityOptionResult != null
+                    && !verbosityOptionResult.Implicit
+                    // if verbosityOptionResult contains an error, ArgumentConverter.GetValueOrDefault throws an exception
+                    // and callstack is pushed to process output 
+                    && !parseResult.Errors.Any(error => error.SymbolResult == verbosityOptionResult))
                 {
                     VerbosityOptions userSetVerbosity = verbosityOptionResult.GetValueOrDefault<VerbosityOptions>();
                     if (userSetVerbosity.IsQuiet())
@@ -119,11 +124,17 @@ namespace Microsoft.DotNet.Cli
                     verbosity = userSetVerbosity;
                 }
                 Reporter.Reset();
-                return CreateHost(disableSdkTemplates, disableProjectContext, projectPath, outputPath, verbosity.ToLogLevel());
+                return CreateHost(disableSdkTemplates, disableProjectContext, projectPath, outputPath, parseResult, verbosity.ToLogLevel());
             }
         }
 
-        private static CliTemplateEngineHost CreateHost(bool disableSdkTemplates, bool disableProjectContext, FileInfo? projectPath, FileInfo? outputPath, LogLevel logLevel)
+        private static CliTemplateEngineHost CreateHost(
+            bool disableSdkTemplates,
+            bool disableProjectContext,
+            FileInfo? projectPath,
+            FileInfo? outputPath,
+            ParseResult parseResult,
+            LogLevel logLevel)
         {
             var builtIns = new List<(Type InterfaceType, IIdentifiedComponent Instance)>();
             builtIns.AddRange(Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Components.AllComponents);
@@ -151,7 +162,7 @@ namespace Microsoft.DotNet.Cli
             }
 
             builtIns.Add((typeof(IWorkloadsInfoProvider), new WorkloadsInfoProvider(
-                    new Lazy<IWorkloadsRepositoryEnumerator>(() => new WorkloadInfoHelper())))
+                    new Lazy<IWorkloadsRepositoryEnumerator>(() => new WorkloadInfoHelper(parseResult.HasOption(SharedOptions.InteractiveOption)))))
             );
             builtIns.Add((typeof(ISdkInfoProvider), new SdkInfoProvider()));
 

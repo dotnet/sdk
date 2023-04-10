@@ -69,6 +69,7 @@ namespace Microsoft.DotNet.Cli
                 command.Options.Add(option);
             }
 
+            command.Options.Add(CommonOptions.ArchitectureOption);
             command.SetAction(RestoreCommand.Run);
 
             return command;
@@ -80,6 +81,24 @@ namespace Microsoft.DotNet.Cli
             {
                 command.Options.Add(option);
             }
+        }
+        private static string GetOsFromRid(string rid) => rid.Substring(0, rid.LastIndexOf("-"));
+        private static string GetArchFromRid(string rid) => rid.Substring(rid.LastIndexOf("-") + 1, rid.Length - rid.LastIndexOf("-") - 1);
+        public static string RestoreRuntimeArgFunc(IEnumerable<string> rids) 
+        {
+            List<string> convertedRids = new();
+            foreach (string rid in rids)
+            {
+                if (GetArchFromRid(rid.ToString()) == "amd64")
+                {
+                    convertedRids.Add($"{GetOsFromRid(rid.ToString())}-x64");
+                }
+                else
+                {
+                    convertedRids.Add($"{rid}");
+                }
+            }
+            return $"-property:RuntimeIdentifiers={string.Join("%3B", convertedRids)}";
         }
 
         private static IEnumerable<CliOption> ImplicitRestoreOptions(bool showHelp, bool useShortOptions, bool includeRuntimeOption, bool includeNoDependenciesOption)
@@ -153,7 +172,7 @@ namespace Microsoft.DotNet.Cli
                     Description = LocalizableStrings.CmdRuntimeOptionDescription,
                     HelpName = LocalizableStrings.CmdRuntimeOption,
                     Hidden = !showHelp,
-                }.ForwardAsSingle(o => $"-property:RuntimeIdentifiers={string.Join("%3B", o)}")
+                }.ForwardAsSingle(RestoreRuntimeArgFunc)
                  .AllowSingleArgPerToken()
                  .AddCompletions(Complete.RunTimesFromProjectFile);
 

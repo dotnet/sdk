@@ -23,7 +23,7 @@ namespace Microsoft.DotNet.Cli
         {
             Description = LocalizableStrings.CmdOutputDirDescription,
             HelpName = LocalizableStrings.CmdOutputDir
-        }.ForwardAsOutputPath("PackageOutputPath");
+        }.ForwardAsSingle(o => $"-property:PackageOutputPath={CommandDirectoryContext.GetFullPath(o)}");
 
         public static readonly CliOption<bool> NoBuildOption = new ForwardedOption<bool>("--no-build")
         {

@@ -53,7 +53,7 @@ namespace Microsoft.DotNet.Cli
             Description = LocalizableStrings.CmdHighestMinorDescription
         }.ForwardAs("--highest-minor");
 
-        public static readonly CliOption ConfigOption = new ForwardedOption<string>("--config")
+        public static readonly CliOption ConfigOption = new ForwardedOption<string>("--config", "--configfile")
         {
             Description = LocalizableStrings.CmdConfigDescription,
             HelpName = LocalizableStrings.CmdConfig

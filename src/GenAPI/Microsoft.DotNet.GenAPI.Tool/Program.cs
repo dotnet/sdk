@@ -33,6 +33,14 @@ namespace Microsoft.DotNet.GenAPI.Tool
                 Recursive = true
             };
 
+            CliOption<string[]?> excludeApiFilesOption = new("--exclude-api-file")
+            {
+                Description = "The path to one or more api exclusion files with types in DocId format.",
+                CustomParser = ParseAssemblyArgument,
+                Arity = ArgumentArity.ZeroOrMore,
+                Recursive = true
+            };
+
             CliOption<string[]?> excludeAttributesFilesOption = new("--exclude-attributes-file")
             {
                 Description = "The path to one or more attribute exclusion files with types in DocId format.",
@@ -66,17 +74,24 @@ namespace Microsoft.DotNet.GenAPI.Tool
                 Recursive = true
             };
 
+            CliOption<bool> includeAssemblyAttributesOption = new("--include-assembly-attributes")
+            {
+                Description = "Includes assembly attributes which are values that provide information about an assembly. Default is false."
+            };
+
             CliRootCommand rootCommand = new("Microsoft.DotNet.GenAPI")
             {
                 TreatUnmatchedTokensAsErrors = true
             };
             rootCommand.Options.Add(assembliesOption);
             rootCommand.Options.Add(assemblyReferencesOption);
+            rootCommand.Options.Add(excludeApiFilesOption);
             rootCommand.Options.Add(excludeAttributesFilesOption);
             rootCommand.Options.Add(outputPathOption);
             rootCommand.Options.Add(headerFileOption);
             rootCommand.Options.Add(exceptionMessageOption);
             rootCommand.Options.Add(includeVisibleOutsideOfAssemblyOption);
+            rootCommand.Options.Add(includeAssemblyAttributesOption);
 
             rootCommand.SetAction((ParseResult parseResult) =>
             {
@@ -86,7 +101,9 @@ namespace Microsoft.DotNet.GenAPI.Tool
                     parseResult.GetValue(outputPathOption),
                     parseResult.GetValue(headerFileOption),
                     parseResult.GetValue(exceptionMessageOption),
+                    parseResult.GetValue(excludeApiFilesOption),
                     parseResult.GetValue(excludeAttributesFilesOption),
+                    parseResult.GetValue(includeVisibleOutsideOfAssemblyOption),
                     parseResult.GetValue(includeVisibleOutsideOfAssemblyOption)
                 ));
             });
@@ -110,4 +127,3 @@ namespace Microsoft.DotNet.GenAPI.Tool
         }
     }
 }
-

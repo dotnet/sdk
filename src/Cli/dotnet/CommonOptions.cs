@@ -47,8 +47,24 @@ namespace Microsoft.DotNet.Cli
             }.ForwardAsSingle(o => $"-property:TargetFramework={o}")
             .AddCompletions(Complete.TargetFrameworksFromProjectFile);
 
+        public static CliOption<string> ArtifactsPathOption =
+            new ForwardedOption<string>(
+                //  --artifacts-path is pretty verbose, should we use --artifacts instead (or possibly support both)?
+                "--artifacts-path")
+            {
+                Description = CommonLocalizableStrings.ArtifactsPathOptionDescription,
+                HelpName = CommonLocalizableStrings.ArtifactsPathArgumentName
+            }.ForwardAsSingle(o => $"-property:ArtifactsPath={CommandDirectoryContext.GetFullPath(o)}");            
+
         private static string RuntimeArgName = CommonLocalizableStrings.RuntimeIdentifierArgumentName;
-        private static Func<string, IEnumerable<string>> RuntimeArgFunc = o => new string[] { $"-property:RuntimeIdentifier={o}", "-property:_CommandLineDefinedRuntimeIdentifier=true" };
+        public static IEnumerable<string> RuntimeArgFunc(string rid)
+        {
+            if (GetArchFromRid(rid) == "amd64")
+            {
+                rid = GetOsFromRid(rid) + "-x64";
+            }
+            return new string[] { $"-property:RuntimeIdentifier={rid}", "-property:_CommandLineDefinedRuntimeIdentifier=true" };
+        }
 
         public static CliOption<string> RuntimeOption =
             new ForwardedOption<string>("--runtime", "-r")
@@ -122,16 +138,16 @@ namespace Microsoft.DotNet.Cli
         public static CliOption<string> ArchitectureOption =
             new ForwardedOption<string>("--arch", "-a")
             {
-                Description = CommonLocalizableStrings.ArchitectureOptionDescription
-            }
-            .SetForwardingFunction(ResolveArchOptionToRuntimeIdentifier);
+                Description = CommonLocalizableStrings.ArchitectureOptionDescription,
+                HelpName = CommonLocalizableStrings.ArchArgumentName
+            }.SetForwardingFunction(ResolveArchOptionToRuntimeIdentifier);
 
         public static CliOption<string> LongFormArchitectureOption =
             new ForwardedOption<string>("--arch")
             {
-                Description = CommonLocalizableStrings.ArchitectureOptionDescription
-            }
-            .SetForwardingFunction(ResolveArchOptionToRuntimeIdentifier);
+                Description = CommonLocalizableStrings.ArchitectureOptionDescription,
+                HelpName = CommonLocalizableStrings.ArchArgumentName
+            }.SetForwardingFunction(ResolveArchOptionToRuntimeIdentifier);
 
         internal static string ArchOptionValue(ParseResult parseResult) =>
             string.IsNullOrEmpty(parseResult.GetValue(CommonOptions.ArchitectureOption)) ?
@@ -141,9 +157,9 @@ namespace Microsoft.DotNet.Cli
         public static CliOption<string> OperatingSystemOption =
             new ForwardedOption<string>("--os")
             {
-                Description = CommonLocalizableStrings.OperatingSystemOptionDescription
-            }
-            .SetForwardingFunction(ResolveOsOptionToRuntimeIdentifier);
+                Description = CommonLocalizableStrings.OperatingSystemOptionDescription,
+                HelpName = CommonLocalizableStrings.OSArgumentName
+            }.SetForwardingFunction(ResolveOsOptionToRuntimeIdentifier);
 
         public static CliOption<bool> DebugOption = new CliOption<bool>("--debug");
 
@@ -166,7 +182,7 @@ namespace Microsoft.DotNet.Cli
 
         public static readonly CliOption<string> TestFrameworkOption = new CliOption<string>("--Framework");
 
-        public static readonly CliOption<string> TestLoggerOption = new CliOption<string>("--logger");
+        public static readonly CliOption<string[]> TestLoggerOption = new("--logger");
 
         public static void ValidateSelfContainedOptions(bool hasSelfContainedOption, bool hasNoSelfContainedOption)
         {
@@ -222,6 +238,7 @@ namespace Microsoft.DotNet.Cli
         internal static string ResolveRidShorthandOptionsToRuntimeIdentifier(string os, string arch)
         {
             var currentRid = GetCurrentRuntimeId();
+            arch = arch == "amd64" ? "x64" : arch;
             os = string.IsNullOrEmpty(os) ? GetOsFromRid(currentRid) : os;
             arch = string.IsNullOrEmpty(arch) ? GetArchFromRid(currentRid) : arch;
             return $"{os}-{arch}";

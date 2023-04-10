@@ -68,7 +68,9 @@ namespace Microsoft.DotNet.Cli
 
             command.Arguments.Add(SlnOrProjectArgument);
             RestoreCommandParser.AddImplicitRestoreOptions(command, includeRuntimeOption: false, includeNoDependenciesOption: true);
+
             command.Options.Add(OuputOption);
+            command.Options.Add(CommonOptions.ArtifactsPathOption);
             command.Options.Add(ManifestOption);
             command.Options.Add(NoBuildOption);
             command.Options.Add(SelfContainedOption);

@@ -20,6 +20,8 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             Description = SymbolStrings.Option_ProjectPath
         }.AcceptExistingOnly();
 
+        public static CliOption<bool> InteractiveOption { get; } = SharedOptionsFactory.CreateInteractiveOption();
+
         internal static CliOption<bool> ForceOption { get; } = SharedOptionsFactory.CreateForceOption();
 
         internal static CliOption<string> NameOption { get; } = new("--name", "-n")

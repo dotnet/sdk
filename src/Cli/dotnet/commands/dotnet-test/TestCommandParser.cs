@@ -175,7 +175,7 @@ namespace Microsoft.DotNet.Cli
             command.Options.Add(AdapterOption);
             command.Options.Add(LoggerOption);
             command.Options.Add(OutputOption);
-            command.Options.Add(DiagOption);
+            command.Options.Add(CommonOptions.ArtifactsPathOption);
             command.Options.Add(NoBuildOption);
             command.Options.Add(ResultsOption);
             command.Options.Add(CollectOption);
@@ -195,6 +195,7 @@ namespace Microsoft.DotNet.Cli
             command.Options.Add(CommonOptions.VerbosityOption);
             command.Options.Add(CommonOptions.ArchitectureOption);
             command.Options.Add(CommonOptions.OperatingSystemOption);
+            command.Options.Add(CommonOptions.DisableBuildServersOption);
 
             command.SetAction(TestCommand.Run);
 
