@@ -304,7 +304,7 @@ namespace Microsoft.NET.Build.Tests
 
             testAsset = WithProperties(testAsset, ("EnableManagedpackageReferenceSupport", "true"));
 
-            CreateGitFiles(testAsset.Path, "https://github.com/a/b");
+            CreateGitFiles(testAsset.Path, "https://github.com/org/repo");
 
             var buildCommand = new BuildCommand(testAsset, "NETCoreCppCliTest")
             {
