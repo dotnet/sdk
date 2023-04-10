@@ -316,7 +316,8 @@ namespace Microsoft.NET.Build.Tests
             var outputDir = Path.Combine(testAsset.Path, "NETCoreCppCliTest", "x64", "Debug");
             var sourceLinkFilePath = Path.Combine(outputDir, "NETCoreCppCliTest.sourcelink.json");
             var actualContent = File.ReadAllText(sourceLinkFilePath, Encoding.UTF8);
-            var expectedSourceLink = """{"documents":{"https://github.com/org/repo":"https://raw.githubusercontent.com/org/repo/1200000000000000000000000000000000000000/*"}}""";
+            var expectedPattern = Path.Combine(testAsset.Path, "*").Replace("\\", "\\\\");
+            var expectedSourceLink = $$$"""{"documents":{"{{{expectedPattern}}}":"https://raw.githubusercontent.com/org/repo/1200000000000000000000000000000000000000/*"}}""";
             Assert.Equal(expectedSourceLink, actualContent);
 
             var pdbText = File.ReadAllText(Path.Combine(outputDir, "NETCoreCppCliTest.pdb"), Encoding.UTF8);
