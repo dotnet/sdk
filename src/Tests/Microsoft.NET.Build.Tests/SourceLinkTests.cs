@@ -68,6 +68,40 @@ namespace Microsoft.NET.Build.Tests
             }
         }
 
+        private static TestAsset Multitarget(TestAsset testAsset, string targetFrameworks)
+            => testAsset.WithProjectChanges(p =>
+            {
+                var tfmNode = p.Root.Descendants().Single(e => e.Name.LocalName == "TargetFramework");
+                tfmNode.Name = p.Root.Name.Namespace + "TargetFrameworks";
+                tfmNode.Value = targetFrameworks;
+            });
+
+        private static TestAsset WithProperties(TestAsset testAsset, params (string key, string value)[] properties)
+            => testAsset.WithProjectChanges(p =>
+            {
+                var ns = p.Root.Name.Namespace;
+                var propertyGroup = p.Root.Descendants(ns + "PropertyGroup").First();
+
+                foreach (var (key, value) in properties)
+                {
+                    propertyGroup.Add(new XElement(ns + key, value));
+                }
+            });
+
+        private static TestAsset WithItems(TestAsset testAsset, params (string key, XAttribute[] attributes)[] items)
+            => testAsset.WithProjectChanges(p =>
+            {
+                var ns = p.Root.Name.Namespace;
+
+                var itemGroup = new XElement(ns + "ItemGroup");
+                p.Root.Add(itemGroup);
+
+                foreach (var (key, attributes) in items)
+                {
+                    itemGroup.Add(new XElement(ns + key, (object[])attributes));
+                }
+            });
+
         [Fact]
         public void WithNoGitMetadata()
         {
@@ -151,24 +185,16 @@ namespace Microsoft.NET.Build.Tests
         [InlineData("https://test.visualstudio.com/org/_git/repo", "https://test.visualstudio.com/org/_apis/git/repositories/repo/items?api-version=1.0&versionType=commit&version=1200000000000000000000000000000000000000&path=/*")]
         public void WithRemoteOrigin_KnownDomain(string origin, string expectedLink, bool multitarget = false)
         {
-            string targetFrameworks = null;
+            string targetFrameworks = ToolsetInfo.CurrentTargetFramework + (multitarget ? ";netstandard2.0" : "");
 
             var testAsset = _testAssetsManager
                 .CopyTestAsset("SourceLinkTestApp", identifier: origin)
-                .WithSource()
-                .WithProjectChanges(p =>
-                {
-                    var ns = p.Root.Name.Namespace;
-                    var tfmNode = p.Root.Descendants().Single(e => e.Name.LocalName == "TargetFramework");
+                .WithSource();
 
-                    targetFrameworks = tfmNode.Value;
-                    if (multitarget)
-                    {
-                        tfmNode.Name = ns + "TargetFrameworks";
-                        targetFrameworks += ";netstandard2.0";
-                        tfmNode.Value = targetFrameworks;
-                    }
-                });
+            if (multitarget)
+            {
+                testAsset = Multitarget(testAsset, targetFrameworks);
+            }
 
             Assert.NotNull(targetFrameworks);
 
@@ -199,29 +225,18 @@ namespace Microsoft.NET.Build.Tests
         [InlineData(false)]
         public void SuppressImplicitGitSourceLink_SetExplicitly(bool multitarget)
         {
-            string targetFrameworks = null;
+            string targetFrameworks = ToolsetInfo.CurrentTargetFramework + (multitarget ? ";netstandard2.0" : "");
 
             var testAsset = _testAssetsManager
                 .CopyTestAsset("SourceLinkTestApp")
-                .WithSource()
-                .WithProjectChanges(p =>
-                {
-                    var ns = p.Root.Name.Namespace;
-                    var tfmNode = p.Root.Descendants().Single(e => e.Name.LocalName == "TargetFramework");
+                .WithSource();
 
-                    targetFrameworks = tfmNode.Value;
-                    if (multitarget)
-                    {
-                        tfmNode.Name = ns + "TargetFrameworks";
-                        targetFrameworks += ";netstandard2.0";
-                        tfmNode.Value = targetFrameworks;
-                    }
+            testAsset = WithProperties(testAsset, ("SuppressImplicitGitSourceLink", "true"));
 
-                    var propertyGroup = new XElement(ns + "PropertyGroup");
-                    p.Root.Add(propertyGroup);
-
-                    propertyGroup.Add(new XElement(ns + "SuppressImplicitGitSourceLink", "true"));
-                });
+            if (multitarget)
+            {
+                testAsset = Multitarget(testAsset, targetFrameworks);
+            }
 
             Assert.NotNull(targetFrameworks);
 
@@ -246,31 +261,18 @@ namespace Microsoft.NET.Build.Tests
         [InlineData(false)]
         public void SuppressImplicitGitSourceLink_ExplicitPackage(bool multitarget)
         {
-            string targetFrameworks = null;
+            string targetFrameworks = ToolsetInfo.CurrentTargetFramework + (multitarget ? ";netstandard2.0" : "");
 
             var testAsset = _testAssetsManager
                 .CopyTestAsset("SourceLinkTestApp")
-                .WithSource()
-                .WithProjectChanges(p =>
-                {
-                    var ns = p.Root.Name.Namespace;
-                    var tfmNode = p.Root.Descendants().Single(e => e.Name.LocalName == "TargetFramework");
+                .WithSource();
 
-                    targetFrameworks = tfmNode.Value;
-                    if (multitarget)
-                    {
-                        tfmNode.Name = ns + "TargetFrameworks";
-                        targetFrameworks += ";netstandard2.0";
-                        tfmNode.Value = targetFrameworks;
-                    }
+            if (multitarget)
+            {
+                testAsset = Multitarget(testAsset, targetFrameworks);
+            }
 
-                    var itemGroup = new XElement(ns + "ItemGroup");
-                    p.Root.Add(itemGroup);
-
-                    itemGroup.Add(new XElement(ns + "PackageReference",
-                                    new XAttribute("Include", "Microsoft.SourceLink.GitHub"),
-                                    new XAttribute("Version", "1.0.0")));
-                });
+            testAsset = WithItems(testAsset, ("PackageReference", new[] { new XAttribute("Include", "Microsoft.SourceLink.GitHub"), new XAttribute("Version", "1.0.0") }));
 
             Assert.NotNull(targetFrameworks);
 
@@ -291,6 +293,34 @@ namespace Microsoft.NET.Build.Tests
                 // EmbedUntrackedSources is not set by default by SourceLink v1.0.0 package:
                 ValidatePdb(Path.Combine(intermediateDir.FullName, "SourceLinkTestApp.pdb"), expectedEmbeddedSources: false);
             }
+        }
+
+        [FullMSBuildOnlyFact]
+        public void Cpp()
+        {
+            var testAsset = _testAssetsManager
+                .CopyTestAsset("NetCoreCsharpAppReferenceCppCliLib")
+                .WithSource();
+
+            testAsset = WithProperties(testAsset, ("EnableManagedpackageReferenceSupport", "true"));
+
+            CreateGitFiles(testAsset.Path, "https://github.com/a/b");
+
+            var buildCommand = new BuildCommand(testAsset, "NETCoreCppCliTest")
+            {
+                WorkingDirectory = testAsset.Path
+            };
+
+            buildCommand.Execute("-p:Platform=x64").Should().Pass();
+
+            var outputDir = Path.Combine(testAsset.Path, "NETCoreCppCliTest", "x64", "Debug");
+            var sourceLinkFilePath = Path.Combine(outputDir, "NETCoreCppCliTest.sourcelink.json");
+            var actualContent = File.ReadAllText(sourceLinkFilePath, Encoding.UTF8);
+            var expectedSourceLink = """{"documents":{"https://github.com/org/repo":"https://raw.githubusercontent.com/org/repo/1200000000000000000000000000000000000000/*"}}""";
+            Assert.Equal(expectedSourceLink, actualContent);
+
+            var pdbText = File.ReadAllText(Path.Combine(outputDir, "NETCoreCppCliTest.pdb"), Encoding.UTF8);
+            Assert.Contains(expectedSourceLink, pdbText);
         }
     }
 }

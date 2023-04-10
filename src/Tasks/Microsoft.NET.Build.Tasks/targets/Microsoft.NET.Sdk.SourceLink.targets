@@ -12,6 +12,9 @@ Copyright (c) .NET Foundation. All rights reserved.
 
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
+  <!-- C++ projects currently do not import Microsoft.NET.Sdk.props. -->
+  <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.Sdk.SourceLink.props" Condition="'$(_SourceLinkSdkSubDir)' == ''"/>
+  
   <PropertyGroup>
     <EmbedUntrackedSources Condition="'$(EmbedUntrackedSources)' == ''">true</EmbedUntrackedSources>
   </PropertyGroup>
