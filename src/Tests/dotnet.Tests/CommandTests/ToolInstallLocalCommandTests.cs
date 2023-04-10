@@ -23,10 +23,12 @@ using System.CommandLine;
 using System.CommandLine.Parsing;
 using Parser = Microsoft.DotNet.Cli.Parser;
 using Microsoft.DotNet.Tools.Tool.Restore;
+using Microsoft.NET.TestFramework;
+using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.Tests.Commands.Tool
 {
-    public class ToolInstallLocalCommandTests
+    public class ToolInstallLocalCommandTests:SdkTest
     {
         private readonly IFileSystem _fileSystem;
         private readonly IToolPackageStore _toolPackageStore;
@@ -46,7 +48,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         private readonly MockFeed _mockFeed;
 
 
-        public ToolInstallLocalCommandTests()
+        public ToolInstallLocalCommandTests(ITestOutputHelper log):base(log) 
         {
             _packageVersionA = NuGetVersion.Parse("1.0.4");
             _packageNewVersionA = NuGetVersion.Parse("2.0.0");
@@ -434,6 +436,75 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             ).Should().BeTrue();
 
             _fileSystem.File.Exists(restoredCommand.Executable.Value);
+        }
+
+        [Fact]
+        public void GivenNoManifestFileAndCreateManifestIfNeededFlagItShouldCreateManifestInGit()
+        {
+            _fileSystem.Directory.CreateDirectory(Path.Combine(_temporaryDirectory, ".git"));
+            _fileSystem.File.Delete(_manifestFilePath);
+            var currentFolder = Path.Combine(_temporaryDirectory, "subdirectory1", "subdirectory2");
+            _fileSystem.Directory.CreateDirectory(currentFolder);
+
+            ParseResult parseResult =
+                Parser.Instance.Parse(
+                    $"dotnet tool install {_packageIdA.ToString()} --create-manifest-if-needed");
+
+            var installLocalCommand = new ToolInstallLocalCommand(
+                parseResult,
+                _toolPackageInstallerMock,
+                _toolManifestFinder,
+                _toolManifestEditor,
+                _localToolsResolverCache,
+                _reporter);
+
+            installLocalCommand.Execute().Should().Be(0);
+            _fileSystem.File.Exists(Path.Combine(_temporaryDirectory, ".config", "dotnet-tools.json")).Should().BeTrue();
+        }
+
+        [Fact]
+        public void GivenNoManifestFileAndCreateManifestIfNeededFlagItShouldCreateManifestInSln()
+        {
+            _fileSystem.Directory.CreateDirectory(Path.Combine(_temporaryDirectory, "test1.sln"));
+            _fileSystem.File.Delete(_manifestFilePath);
+            var currentFolder = Path.Combine(_temporaryDirectory, "subdirectory1", "subdirectory2");
+            _fileSystem.Directory.CreateDirectory(currentFolder);
+
+            ParseResult parseResult =
+                Parser.Instance.Parse(
+                    $"dotnet tool install {_packageIdA.ToString()} --create-manifest-if-needed");
+
+            var installLocalCommand = new ToolInstallLocalCommand(
+                parseResult,
+                _toolPackageInstallerMock,
+                _toolManifestFinder,
+                _toolManifestEditor,
+                _localToolsResolverCache,
+                _reporter);
+
+            installLocalCommand.Execute().Should().Be(0);
+            _fileSystem.File.Exists(Path.Combine(_temporaryDirectory, ".config", "dotnet-tools.json")).Should().BeTrue();
+        }
+
+        [Fact]
+        public void GivenNoManifestFileAndCreateManifestIfNeededFlagItShouldCreateManifestInCurrentFolder()
+        {
+            _fileSystem.File.Delete(_manifestFilePath);
+
+            ParseResult parseResult =
+                Parser.Instance.Parse(
+                    $"dotnet tool install {_packageIdA.ToString()} --create-manifest-if-needed");
+            
+            var installLocalCommand = new ToolInstallLocalCommand(
+                parseResult,
+                _toolPackageInstallerMock,
+                _toolManifestFinder,
+                _toolManifestEditor,
+                _localToolsResolverCache,
+                _reporter);
+
+            installLocalCommand.Execute().Should().Be(0);
+            _fileSystem.File.Exists(Path.Combine(_temporaryDirectory, ".config", "dotnet-tools.json")).Should().BeTrue();
         }
 
         private IToolPackageInstaller GetToolToolPackageInstallerWithPreviewInFeed()

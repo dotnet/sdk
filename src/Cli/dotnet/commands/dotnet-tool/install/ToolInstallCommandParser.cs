@@ -39,6 +39,8 @@ namespace Microsoft.DotNet.Cli
         };
 
         public static readonly Option<bool> AllowPackageDowngradeOption = new Option<bool>("--allow-downgrade", LocalizableStrings.AllowPackageDowngradeOptionDescription);
+        
+        public static readonly Option<bool> CreateManifestIfNeededOption = new Option<bool>("--create-manifest-if-needed", LocalizableStrings.CreateManifestIfNeededOptionDescription);
 
         public static readonly Option<bool> PrereleaseOption = ToolSearchCommandParser.PrereleaseOption;
 
@@ -83,6 +85,7 @@ namespace Microsoft.DotNet.Cli
             command.AddOption(VerbosityOption);
             command.AddOption(ArchitectureOption);
             command.AddOption(AllowPackageDowngradeOption);
+            command.AddOption(CreateManifestIfNeededOption);
 
             command.SetHandler((parseResult) => new ToolInstallCommand(parseResult).Execute());
 
