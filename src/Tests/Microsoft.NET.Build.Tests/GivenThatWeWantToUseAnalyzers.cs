@@ -12,6 +12,7 @@ using System.Xml.Linq;
 using System.Collections.Generic;
 using System;
 using Xunit.Abstractions;
+using System.Runtime.InteropServices;
 using Microsoft.NET.TestFramework.ProjectConstruction;
 
 namespace Microsoft.NET.Build.Tests
@@ -23,27 +24,28 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [Theory]
-        [MemberData(nameof(OffByDefaultGeneratorTestData))]
-        public void It_resolves_offbydefaultgenerator_correctly(GeneratorSpec generator, bool? isEnabled)
+        [InlineData("WebApp", false)]
+        [InlineData("WebApp", true)]
+        [InlineData("WebApp", null)]
+        public void It_resolves_requestdelegategenerator_correctly(string testAssetName, bool? isEnabled)
         {
             var asset = _testAssetsManager
-                .CopyTestAsset("WebApp", identifier: isEnabled.ToString())
+                .CopyTestAsset(testAssetName, identifier: isEnabled.ToString())
                 .WithSource()
                 .WithProjectChanges(project =>
                 {
-                    var ns = project.Root.Name.Namespace;
                     if (isEnabled != null)
                     {
-                        project.Root.Add(new XElement(ns + "PropertyGroup", new XElement(generator.EnablingPropertyName, isEnabled)));
+                        var ns = project.Root.Name.Namespace;
+                        project.Root.Add(new XElement(ns + "PropertyGroup", new XElement("EnableRequestDelegateGenerator", isEnabled)));
                     }
                 });
 
-            VerifyOffByDefaultGeneratorIsUsed(asset, generator.DllFileName, isEnabled);
+            VerifyRequestDelegateGeneratorIsUsed(asset, isEnabled);
         }
 
-        [Theory]
-        [MemberData(nameof(OffByDefaultGenerators))]
-        public void It_enables_offbydefaultgenerator_for_PublishAot(GeneratorSpec generator)
+        [Fact]
+        public void It_enables_requestdelegategenerator_for_PublishAot()
         {
             var asset = _testAssetsManager
                 .CopyTestAsset("WebApp")
@@ -54,10 +56,10 @@ namespace Microsoft.NET.Build.Tests
                     project.Root.Add(new XElement(ns + "PropertyGroup", new XElement("PublishAot", "true")));
                 });
 
-            VerifyOffByDefaultGeneratorIsUsed(asset, generator.DllFileName, expectEnabled: true);
+            VerifyRequestDelegateGeneratorIsUsed(asset, expectEnabled: true);
         }
 
-        private void VerifyOffByDefaultGeneratorIsUsed(TestAsset asset, string dllFileName, bool? expectEnabled)
+        private void VerifyRequestDelegateGeneratorIsUsed(TestAsset asset, bool? expectEnabled)
         {
             var command = new GetValuesCommand(
                 Log,
@@ -73,32 +75,7 @@ namespace Microsoft.NET.Build.Tests
 
             var analyzers = command.GetValues();
 
-            Assert.Equal(expectEnabled ?? false, analyzers.Any(analyzer => analyzer.Contains(dllFileName)));
-        }
-
-        public record GeneratorSpec(string EnablingPropertyName, string DllFileName)
-        {
-            public static GeneratorSpec RequestDelegate { get; } = new GeneratorSpec("EnableRequestDelegateGenerator", "Microsoft.AspNetCore.Http.RequestDelegateGenerator.dll");
-            public static GeneratorSpec ConfigurationBinding { get; } = new GeneratorSpec("EnableConfigurationBindingGenerator", "Microsoft.Extensions.Configuration.Binder.SourceGeneration.dll");
-        }
-
-        public static IEnumerable<object[]> OffByDefaultGenerators()
-        {
-            yield return new object[] { GeneratorSpec.RequestDelegate };
-            // TODO: remove when targeting pack containing the generator flows through.
-            // yield return new object[] { GeneratorSpec.ConfigurationBinding };
-        }
-
-        public static IEnumerable<object[]> OffByDefaultGeneratorTestData()
-        {
-            foreach (object[] generator in OffByDefaultGenerators())
-            {
-                // Test asset name, generator to test, whether generator is enabled.
-                var spec = (GeneratorSpec)generator[0];
-                yield return new object[] { spec, false };
-                yield return new object[] { spec, true };
-                yield return new object[] { spec, null };
-            }
+            Assert.Equal(expectEnabled ?? false, analyzers.Any(analyzer => analyzer.Contains("Microsoft.AspNetCore.Http.RequestDelegateGenerator.dll")));
         }
 
         [Theory]
