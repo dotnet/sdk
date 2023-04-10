@@ -43,6 +43,11 @@ namespace Microsoft.DotNet.Cli
 
         public static readonly CliOption<bool> PrereleaseOption = ToolSearchCommandParser.PrereleaseOption;
 
+        public static readonly CliOption<bool> CreateManifestIfNeededOption = new("--create-manifest-if-needed")
+        {
+            Description = LocalizableStrings.CreateManifestIfNeededOptionDescription
+        };
+
         public static readonly CliOption<VerbosityOptions> VerbosityOption = CommonOptions.VerbosityOption;
 
         // Don't use the common options version as we don't want this to be a forwarded option
@@ -88,6 +93,7 @@ namespace Microsoft.DotNet.Cli
             command.Options.Add(ToolCommandRestorePassThroughOptions.InteractiveRestoreOption);
             command.Options.Add(VerbosityOption);
             command.Options.Add(ArchitectureOption);
+            command.Options.Add(CreateManifestIfNeededOption);
 
             command.SetAction((parseResult) => new ToolInstallCommand(parseResult).Execute());
 
