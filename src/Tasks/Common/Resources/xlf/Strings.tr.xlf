@@ -942,6 +942,11 @@ The following are names of parameters or literal values and should not be transl
         <target state="translated">NETSDK1057: Bir .NET önizleme sürümü kullanıyorsunuz. Bkz. https://aka.ms/dotnet-support-policy</target>
         <note />
       </trans-unit>
+      <trans-unit id="WebAssemblySdkNoValidRuntimePackageError">
+        <source>NETSDK1199: Unable to build a WebAssembly application: a valid WebAssembly SDK package was not found.</source>
+        <target state="new">NETSDK1199: Unable to build a WebAssembly application: a valid WebAssembly SDK package was not found.</target>
+        <note>{StrBegin="NETSDK1199: "}</note>
+      </trans-unit>
       <trans-unit id="WinMDObjNotSupportedOnTargetFramework">
         <source>NETSDK1131: Producing a managed Windows Metadata component with WinMDExp is not supported when targeting {0}.</source>
         <target state="translated">NETSDK1131: {0} hedeflenirken, WinMDExp ile yönetilen bir Windows Meta Veri bileşeninin üretilmesi desteklenmiyor.</target>
