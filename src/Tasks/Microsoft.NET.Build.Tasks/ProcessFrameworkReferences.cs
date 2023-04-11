@@ -644,7 +644,6 @@ namespace Microsoft.NET.Build.Tasks
                 packVersion = RuntimeFrameworkVersion;
             }
 
-            
             // Crossgen and ILCompiler have RID-specific bits.
             if (toolPackType is ToolPackType.Crossgen2 or ToolPackType.ILCompiler)
             {
@@ -702,8 +701,8 @@ namespace Microsoft.NET.Build.Tasks
                 }
             }
 
-            // ILCompiler and ILLink have RID-agnostic build packages that contain MSBuild targets.
-            if (toolPackType is ToolPackType.ILCompiler or ToolPackType.ILLink or ToolPackType.WebAssemblySdk)
+            // Packs with RID-agnostic build packages that contain MSBuild targets.
+            if (toolPackType is not ToolPackType.Crossgen2)
             {
                 var buildPackageName = knownPack.ItemSpec;
                 var buildPackage = new TaskItem(buildPackageName);
