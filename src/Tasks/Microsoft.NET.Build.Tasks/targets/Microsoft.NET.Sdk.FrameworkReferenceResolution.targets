@@ -430,7 +430,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ItemGroup>
       <AnalyzerToRemove Include="@(OffByDefaultAnalyzer)"
                         Path="%(Analyzer.Identity)"
-                        Condition="'%(Analyzer.Filename)' == '@(OffByDefaultAnalyzer)'" />
+                        Condition="'%(Analyzer.Filename)' == '%(OffByDefaultAnalyzer.Identity)'" />
     </ItemGroup>
 
     <ItemGroup>
