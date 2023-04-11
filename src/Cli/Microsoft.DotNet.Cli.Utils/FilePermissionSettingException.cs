@@ -6,7 +6,6 @@ using System.Runtime.Serialization;
 
 namespace Microsoft.DotNet.Cli.Utils
 {
-    [Serializable]
     internal class FilePermissionSettingException : Exception
     {
         public FilePermissionSettingException()
@@ -20,9 +19,5 @@ namespace Microsoft.DotNet.Cli.Utils
         public FilePermissionSettingException(string message, Exception innerException) : base(message, innerException)
         {
         }
-
-        protected FilePermissionSettingException(SerializationInfo info, StreamingContext context) : base(info, context)
-        {
-        }
-    }
+   }
 }

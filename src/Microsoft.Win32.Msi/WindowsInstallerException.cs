@@ -32,11 +32,6 @@ namespace Microsoft.Win32.Msi
 
         }
 
-        public WindowsInstallerException(SerializationInfo info, StreamingContext context) : base(info, context)
-        {
-
-        }
-
         public WindowsInstallerException(string? message, Exception? innerException) : base(message, innerException)
         {
 
