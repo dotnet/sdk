@@ -22,6 +22,7 @@
     <RepositoryReference Include="emsdk" />
     <RepositoryReference Include="razor" />
     <RepositoryReference Include="xliff-tasks" />
+    <RepositoryReference Include="cecil" />
     <RepositoryReference Include="runtime" />
     <RepositoryReference Include="roslyn" />
     <RepositoryReference Include="source-build-externals" />
