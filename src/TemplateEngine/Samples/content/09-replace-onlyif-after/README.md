@@ -4,7 +4,7 @@ The sample in this folder demonstrates:
 
 In this sample, we show how you can replace a 
 
-From [`site.css`](./MyProject.Con/wwwroot/css/site.css)
+From [`site.css`](./MyProject.Con/site.css)
 
 ```
 body {
