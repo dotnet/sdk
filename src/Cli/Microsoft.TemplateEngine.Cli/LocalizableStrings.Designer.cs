@@ -839,6 +839,19 @@ namespace Microsoft.TemplateEngine.Cli {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to 
+        ///      No template package found matching: {0}.
+        ///      
+        ///      Make sure the specified package exists on the https://www.nuget.org/.
+        ///    .
+        /// </summary>
+        internal static string Generic_Info_NoMatchingTemplatePackage {
+            get {
+                return ResourceManager.GetString("Generic_Info_NoMatchingTemplatePackage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to No templates found matching: {0}..
         /// </summary>
         internal static string Generic_Info_NoMatchingTemplates {

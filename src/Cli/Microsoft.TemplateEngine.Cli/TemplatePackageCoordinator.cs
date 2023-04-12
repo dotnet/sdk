@@ -11,11 +11,13 @@ using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
 using Microsoft.TemplateEngine.Cli.Commands;
 using Microsoft.TemplateEngine.Cli.NuGet;
 using Microsoft.TemplateEngine.Cli.TabularOutput;
+using Microsoft.TemplateEngine.Cli.TemplateSearch;
 using Microsoft.TemplateEngine.Edge;
 using Microsoft.TemplateEngine.Edge.Settings;
 using Microsoft.TemplateEngine.Utils;
 using NuGet.Credentials;
 using NuGet.Versioning;
+using static Microsoft.TemplateEngine.Cli.NuGet.NugetApiManager;
 
 namespace Microsoft.TemplateEngine.Cli
 {
@@ -24,6 +26,8 @@ namespace Microsoft.TemplateEngine.Cli
     /// </summary>
     internal class TemplatePackageCoordinator
     {
+        private const string SourceFeedKey = "NuGetSource";
+
         private readonly IEngineEnvironmentSettings _engineEnvironmentSettings;
         private readonly TemplatePackageManager _templatePackageManager;
         private readonly TemplateConstraintManager _constraintsManager;
@@ -356,6 +360,57 @@ namespace Microsoft.TemplateEngine.Cli
             return result;
         }
 
+        /// <summary>
+        /// Searches for template package metadata.
+        /// </summary>
+        internal async Task<NewCommandStatus> DisplayTemplatePackageMetadata(
+            string packageIdentity,
+            string? packageVersion,
+            NugetApiManager nugetApiManager,
+            CancellationToken cancellationToken = default)
+        {
+            var metadataOutput = new List<string>();
+            NugetPackageMetadata? extendedPackageMetadata;
+            IEnumerable<ITemplateInfo>? packageTemplates;
+            (var localPackage, packageTemplates) = await _templatePackageManager
+                .GetManagedTemplatePackageWithTemplatesAsync(packageIdentity, packageVersion, cancellationToken).ConfigureAwait(false);
+
+            // The package was found locally
+            if (localPackage != null && packageTemplates != null)
+            {
+                string? packageSource = string.Empty;
+                localPackage?.GetDetails().TryGetValue(SourceFeedKey, out packageSource);
+                extendedPackageMetadata = await nugetApiManager.GetPackageMetadataAsync(
+                    packageIdentity,
+                    packageVersion,
+                    packageSource,
+                    cancellationToken).ConfigureAwait(false);
+            }
+            else
+            {
+                (extendedPackageMetadata, packageTemplates) = await CliTemplateSearchCoordinator.SearchForPackageDetailsAsync(
+                    _engineEnvironmentSettings,
+                    nugetApiManager,
+                    packageIdentity,
+                    packageVersion,
+                    cancellationToken).ConfigureAwait(false);
+            }
+
+            if (extendedPackageMetadata != null && packageTemplates.Any())
+            {
+                metadataOutput.AddRange(CollectPackageMetadataOutput(packageIdentity, packageTemplates, _engineEnvironmentSettings, extendedPackageMetadata));
+                metadataOutput.ForEach(Reporter.Output.WriteLine);
+
+                return NewCommandStatus.Success;
+            }
+
+            Reporter.Output.WriteLine(
+                LocalizableStrings.Generic_Info_NoMatchingTemplatePackage.Bold().Red(),
+                $"{packageIdentity}{(string.IsNullOrWhiteSpace(packageVersion) ? string.Empty : $"::{packageVersion}")}");
+
+            return NewCommandStatus.NotFound;
+        }
+
         private static void InitializeNuGetCredentialService(bool interactive)
         {
             try
@@ -365,6 +420,47 @@ namespace Microsoft.TemplateEngine.Cli
             catch (Exception ex)
             {
                 Reporter.Verbose.WriteLine(LocalizableStrings.TemplatePackageCoordinator_Verbose_NuGetCredentialServiceError, ex.ToString());
+            }
+        }
+
+        private IList<string> CollectPackageMetadataOutput(
+            string packageIdentity,
+            IEnumerable<ITemplateInfo> templates,
+            IEngineEnvironmentSettings environmentSettings,
+            NugetPackageMetadata? templatePackage)
+        {
+            var list = new List<string> { Environment.NewLine, $"{packageIdentity}".Indent(2) };
+
+            AddIfNotNull(list, SymbolStrings.Command_Details_Description_Property, templatePackage?.Description, 2);
+            AddIfNotNull(list, SymbolStrings.Command_Details_Authors_Property, templatePackage?.Authors, 2);
+            AddIfNotNull(list, SymbolStrings.Command_Details_Owners_Property, templatePackage?.Owners, 2);
+            list.Add($"{SymbolStrings.Command_Details_LicenseMetadata_Property}:".Indent(2));
+            AddIfNotNull(list, SymbolStrings.Command_Details_License_Property, templatePackage?.License, 3);
+            AddIfNotNull(list, SymbolStrings.Command_Details_License_Expression_Property, templatePackage?.LicenseExpression, 3);
+            AddIfNotNull(list, SymbolStrings.Command_Details_License_Url_Property, templatePackage?.LicenseUrl?.ToString(), 3);
+            AddIfNotNull(list, SymbolStrings.Command_Details_Repository_Url_Property, templatePackage?.ProjectUrl?.ToString(), 2);
+
+            list.Add($"{SymbolStrings.Command_Details_Templates_Property}:".Indent(2));
+            foreach (var template in templates)
+            {
+                // constraints
+                // supported Frameworks (?) as a special vs symbol
+                list.Add($"{template.Name}".Indent(3));
+                AddIfNotNull(list, SymbolStrings.Command_Details_Short_Names_Property, string.Join(",", template.ShortNameList), 4);
+                AddIfNotNull(list, SymbolStrings.Command_Details_Author_Property, TemplateGroupDisplay.GetAuthorsToDisplay(new[] { template }, environmentSettings.Environment), 4);
+                AddIfNotNull(list, SymbolStrings.Command_Details_Tags_Property, TemplateGroupDisplay.GetClassificationsToDisplay(new[] { template }, environmentSettings.Environment), 4);
+                AddIfNotNull(list, SymbolStrings.Command_Details_Languages_Property, TemplateGroupDisplay.GetLanguagesToDisplay(new[] { template }, null, null, environmentSettings.Environment), 4);
+                AddIfNotNull(list, SymbolStrings.Command_Details_Description_Property, template.Description, 4);
+            }
+
+            return list;
+        }
+
+        private void AddIfNotNull(IList<string> list, string metadataName, string? metadataEntry, int indent = 1)
+        {
+            if (!string.IsNullOrEmpty(metadataEntry))
+            {
+                list.Add($"{metadataName}:  {metadataEntry}".Indent(indent));
             }
         }
 

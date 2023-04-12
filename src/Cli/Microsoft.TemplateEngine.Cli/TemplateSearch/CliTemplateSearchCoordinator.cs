@@ -7,10 +7,12 @@ using Microsoft.DotNet.Cli.Utils;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
 using Microsoft.TemplateEngine.Cli.Commands;
+using Microsoft.TemplateEngine.Cli.NuGet;
 using Microsoft.TemplateEngine.Cli.TabularOutput;
 using Microsoft.TemplateEngine.Edge.Settings;
 using Microsoft.TemplateSearch.Common;
 using Microsoft.TemplateSearch.Common.Abstractions;
+using static Microsoft.TemplateEngine.Cli.NuGet.NugetApiManager;
 
 namespace Microsoft.TemplateEngine.Cli.TemplateSearch
 {
@@ -104,6 +106,33 @@ namespace Microsoft.TemplateEngine.Cli.TemplateSearch
                 return NewCommandStatus.Success;
             }
             return NewCommandStatus.NotFound;
+        }
+
+        // good for getting cache info
+        internal static async Task<(NugetPackageMetadata?, IReadOnlyList<ITemplateInfo>)> SearchForPackageDetailsAsync(
+            IEngineEnvironmentSettings environmentSettings,
+            NugetApiManager nugetApiManager,
+            string packageIdentifier,
+            string? version,
+            CancellationToken cancellationToken)
+        {
+            var nugetPackage = await nugetApiManager.GetPackageMetadataAsync(packageIdentifier, version, cancellationToken: cancellationToken).ConfigureAwait(false);
+            if (nugetPackage != null)
+            {
+                var searchResults = await CliTemplateSearchCoordinatorFactory
+                    .CreateCliTemplateSearchCoordinator(environmentSettings)
+                    .SearchAsync(
+                        f => f.Name == packageIdentifier,
+                        t => t.Templates,
+                        cancellationToken).ConfigureAwait(false);
+
+                if (searchResults.Any() && searchResults[0].SearchHits.Any())
+                {
+                    return (nugetPackage, searchResults[0].SearchHits[0].MatchedTemplates);
+                }
+            }
+
+            return (null, new List<ITemplateInfo>());
         }
 
         private static string EvaluatePackageToShow(IReadOnlyList<SearchResult> searchResults)
