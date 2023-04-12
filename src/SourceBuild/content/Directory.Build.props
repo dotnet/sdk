@@ -199,7 +199,7 @@
 
   <Import Project="$(GitInfoAllRepoPropsFile)" />
 
-  <!-- Additional psuedo-versions that some repos depend on -->
+  <!-- Additional pseudo-versions that some repos depend on -->
   <ItemGroup>
     <!-- we don't produce the Windows version of this package but that's the one core-sdk keys off of for the ASP.NET version -->
     <ExtraPackageVersionPropsPackageInfo Include="MicrosoftAspNetCoreAppRuntimewinx64PackageVersion" Version="$(aspnetcoreOutputPackageVersion)" />
