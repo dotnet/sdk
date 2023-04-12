@@ -443,8 +443,6 @@ namespace Microsoft.TemplateEngine.Cli
             list.Add($"{SymbolStrings.Command_Details_Templates_Property}:".Indent(2));
             foreach (var template in templates)
             {
-                // constraints
-                // supported Frameworks (?) as a special vs symbol
                 list.Add($"{template.Name}".Indent(3));
                 AddIfNotNull(list, SymbolStrings.Command_Details_Short_Names_Property, string.Join(",", template.ShortNameList), 4);
                 AddIfNotNull(list, SymbolStrings.Command_Details_Author_Property, TemplateGroupDisplay.GetAuthorsToDisplay(new[] { template }, environmentSettings.Environment), 4);
