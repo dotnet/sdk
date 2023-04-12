@@ -1,5 +1,5 @@
 name: dotnet-sdk
-version: 7.0.100-preview.1.22110.4
+version: 7.0.203
 summary: Cross-Platform .NET Core SDK
 description: |
   .NET Core SDK. https://dot.net/core.
@@ -16,8 +16,8 @@ base: core18
 parts:
   dotnet-sdk:
       plugin: dump
-      source: https://download.visualstudio.microsoft.com/download/pr/1af9d3c3-a20e-400c-abe5-3d80dec7b63b/803f8dc5cf21fb28245aba71a7fdbc05/dotnet-sdk-7.0.100-preview.1.22110.4-linux-x64.tar.gz
-      source-checksum: sha512/54488a911172f059e3823d6bf52e1fa87305eb09e84d97f81a40e0815fc8a73a480b149023283f557a672ef0341f022b8ca16ebec92264ee16a56fac8f35e2e2
+      source: https://download.visualstudio.microsoft.com/download/pr/ebfd0bf8-79bd-480a-9e81-0b217463738d/9adc6bf0614ce02670101e278a2d8555/dotnet-sdk-7.0.203-linux-x64.tar.gz
+      source-checksum: sha512/ed1ae7cd88591ec52e1515c4a25d9a832eca29e8a0889549fea35a320e6e356e3806a17289f71fc0b04c36b006ae74446c53771d976c170fcbe5977ac7db1cb6
       stage-packages:
       - libicu60
       - libc6
@@ -36,3 +36,6 @@ parts:
   runtime-wrapper:
       plugin: dump
       source: .
+
+
+
