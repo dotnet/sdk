@@ -453,6 +453,19 @@ The header is followed by the list of parameters and their errors (might be seve
         <target state="translated">Exemples :</target>
         <note />
       </trans-unit>
+      <trans-unit id="Generic_Info_NoMatchingTemplatePackage">
+        <source>
+      No template package found matching: {0}.
+      
+      Make sure the specified package exists on the https://www.nuget.org/.
+    </source>
+        <target state="new">
+      No template package found matching: {0}.
+      
+      Make sure the specified package exists on the https://www.nuget.org/.
+    </target>
+        <note />
+      </trans-unit>
       <trans-unit id="Generic_Info_NoMatchingTemplates">
         <source>No templates found matching: {0}.</source>
         <target state="translated">Aucun modèle trouvé correspondant : {0}.</target>

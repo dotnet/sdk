@@ -182,6 +182,13 @@
   <data name="Generic_Info_NoMatchingTemplates" xml:space="preserve">
     <value>No templates found matching: {0}.</value>
   </data>
+  <data name="Generic_Info_NoMatchingTemplatePackage" xml:space="preserve">
+    <value>
+      No template package found matching: {0}.
+      
+      Make sure the specified package exists on the https://www.nuget.org/.
+    </value>
+  </data>
   <data name="OptionalWorkloadsSyncFailed" xml:space="preserve">
     <value>Error during synchronization with the Optional SDK Workloads.</value>
   </data>

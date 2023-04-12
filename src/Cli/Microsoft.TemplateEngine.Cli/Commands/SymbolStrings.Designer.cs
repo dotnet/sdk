@@ -88,6 +88,161 @@ namespace Microsoft.TemplateEngine.Cli.Commands {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Nuget package identifier.
+        /// </summary>
+        internal static string Command_Details_Argument_PackageIdentifier {
+            get {
+                return ResourceManager.GetString("Command_Details_Argument_PackageIdentifier", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Author.
+        /// </summary>
+        internal static string Command_Details_Author_Property {
+            get {
+                return ResourceManager.GetString("Command_Details_Author_Property", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Authors.
+        /// </summary>
+        internal static string Command_Details_Authors_Property {
+            get {
+                return ResourceManager.GetString("Command_Details_Authors_Property", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Constraints.
+        /// </summary>
+        internal static string Command_Details_Constraints_Property {
+            get {
+                return ResourceManager.GetString("Command_Details_Constraints_Property", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 
+        ///      Provides details for specified Nuget package.
+        ///      The command checks if the package is installed locally, if it wasn&apos;t found, then it searches on the https://www.nuget.org/..
+        /// </summary>
+        internal static string Command_Details_Description {
+            get {
+                return ResourceManager.GetString("Command_Details_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Details.
+        /// </summary>
+        internal static string Command_Details_Description_Property {
+            get {
+                return ResourceManager.GetString("Command_Details_Description_Property", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Languages.
+        /// </summary>
+        internal static string Command_Details_Languages_Property {
+            get {
+                return ResourceManager.GetString("Command_Details_Languages_Property", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to License Expression.
+        /// </summary>
+        internal static string Command_Details_License_Expression_Property {
+            get {
+                return ResourceManager.GetString("Command_Details_License_Expression_Property", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to License.
+        /// </summary>
+        internal static string Command_Details_License_Property {
+            get {
+                return ResourceManager.GetString("Command_Details_License_Property", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to License Url.
+        /// </summary>
+        internal static string Command_Details_License_Url_Property {
+            get {
+                return ResourceManager.GetString("Command_Details_License_Url_Property", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to License Metadata.
+        /// </summary>
+        internal static string Command_Details_LicenseMetadata_Property {
+            get {
+                return ResourceManager.GetString("Command_Details_LicenseMetadata_Property", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Specifies a concrete version for displaying details. If not specified the last is taken..
+        /// </summary>
+        internal static string Command_Details_Option_Version {
+            get {
+                return ResourceManager.GetString("Command_Details_Option_Version", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Owners.
+        /// </summary>
+        internal static string Command_Details_Owners_Property {
+            get {
+                return ResourceManager.GetString("Command_Details_Owners_Property", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Repository Url.
+        /// </summary>
+        internal static string Command_Details_Repository_Url_Property {
+            get {
+                return ResourceManager.GetString("Command_Details_Repository_Url_Property", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Short Names.
+        /// </summary>
+        internal static string Command_Details_Short_Names_Property {
+            get {
+                return ResourceManager.GetString("Command_Details_Short_Names_Property", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Tags.
+        /// </summary>
+        internal static string Command_Details_Tags_Property {
+            get {
+                return ResourceManager.GetString("Command_Details_Tags_Property", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Templates.
+        /// </summary>
+        internal static string Command_Details_Templates_Property {
+            get {
+                return ResourceManager.GetString("Command_Details_Templates_Property", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to NuGet package ID or path to folder or NuGet package to install. 
         ///To install the NuGet package of certain version, use &lt;package ID&gt;::&lt;version&gt;.
         ///.

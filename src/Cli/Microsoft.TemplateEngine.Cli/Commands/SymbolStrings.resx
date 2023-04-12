@@ -126,6 +126,59 @@
   <data name="Command_Alias_Description" xml:space="preserve">
     <value>Creates or displays defined aliases.</value>
   </data>
+  <data name="Command_Details_Description" xml:space="preserve">
+    <value>
+      Provides details for specified Nuget package.
+      The command checks if the package is installed locally, if it wasn't found, then it searches on the https://www.nuget.org/.</value>
+  </data>
+  <data name="Command_Details_Argument_PackageIdentifier" xml:space="preserve">
+    <value>Nuget package identifier</value>
+  </data>
+  <data name="Command_Details_Authors_Property" xml:space="preserve">
+    <value>Authors</value>
+  </data>
+  <data name="Command_Details_Author_Property" xml:space="preserve">
+    <value>Author</value>
+  </data>
+  <data name="Command_Details_Constraints_Property" xml:space="preserve">
+    <value>Constraints</value>
+  </data>
+  <data name="Command_Details_Description_Property" xml:space="preserve">
+    <value>Details</value>
+  </data>
+  <data name="Command_Details_Languages_Property" xml:space="preserve">
+    <value>Languages</value>
+  </data>
+  <data name="Command_Details_LicenseMetadata_Property" xml:space="preserve">
+    <value>License Metadata</value>
+  </data>
+  <data name="Command_Details_License_Expression_Property" xml:space="preserve">
+    <value>License Expression</value>
+  </data>
+  <data name="Command_Details_License_Property" xml:space="preserve">
+    <value>License</value>
+  </data>
+  <data name="Command_Details_License_Url_Property" xml:space="preserve">
+    <value>License Url</value>
+  </data>
+  <data name="Command_Details_Option_Version" xml:space="preserve">
+    <value>Specifies a concrete version for displaying details. If not specified the last is taken.</value>
+  </data>
+  <data name="Command_Details_Owners_Property" xml:space="preserve">
+    <value>Owners</value>
+  </data>
+  <data name="Command_Details_Repository_Url_Property" xml:space="preserve">
+    <value>Repository Url</value>
+  </data>
+  <data name="Command_Details_Short_Names_Property" xml:space="preserve">
+    <value>Short Names</value>
+  </data>
+  <data name="Command_Details_Tags_Property" xml:space="preserve">
+    <value>Tags</value>
+  </data>
+  <data name="Command_Details_Templates_Property" xml:space="preserve">
+    <value>Templates</value>
+  </data>
   <data name="Command_Install_Argument_Package" xml:space="preserve">
     <value>NuGet package ID or path to folder or NuGet package to install. 
 To install the NuGet package of certain version, use &lt;package ID&gt;::&lt;version&gt;.

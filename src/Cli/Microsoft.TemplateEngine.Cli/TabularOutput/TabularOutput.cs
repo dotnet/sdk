@@ -138,7 +138,6 @@ namespace Microsoft.TemplateEngine.Cli.TabularOutput
                         b.Append(new string(' ', _settings.ColumnPadding));
                     }
                 }
-
                 b.AppendLine();
             }
 
@@ -425,7 +424,7 @@ namespace Microsoft.TemplateEngine.Cli.TabularOutput
 
             internal string RawText { get; }
 
-            internal void AppendTextWithPadding(StringBuilder b, int line, int maxColumnWidth, TextAlign textAlign = TextAlign.Left)
+            internal void AppendTextWithPadding(StringBuilder b, int line, int maxColumnWidth, TextAlign textAlign = TextAlign.Left, int indentLevel = 1)
             {
                 var text = _lines.Count > line ? _lines[line] : string.Empty;
                 var abbreviatedText = ShrinkTextToLength(text, maxColumnWidth);
