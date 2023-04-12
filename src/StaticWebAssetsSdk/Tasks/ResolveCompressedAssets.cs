@@ -20,6 +20,9 @@ public class ResolveCompressedAssets : Task
     public ITaskItem[] ExplicitAssets { get; set; }
 
     [Required]
+    public string Stage { get; set; }
+
+    [Required]
     public string OutputBasePath { get; set; }
 
     [Output]
@@ -84,6 +87,7 @@ public class ResolveCompressedAssets : Task
         // Generate internal representations of each compression configuration.
         var compressionConfigurations = CompressionConfigurations
             .Select(CompressionConfiguration.FromTaskItem)
+            .Where(cc => cc.StageIncludes(Stage))
             .ToArray();
         var candidateAssetsByConfigurationName = compressionConfigurations
             .ToDictionary(cc => cc.ItemSpec, _ => new List<ITaskItem>());
@@ -98,16 +102,17 @@ public class ResolveCompressedAssets : Task
                 {
                     candidateAssets.Add(asset);
                     Log.LogMessage(
-                        "Explicitly-specified compressed asset '{0}' matches known compression configuration '{1}'.",
+                        "Explicitly-specified compressed asset '{0}' matches compression configuration '{1}'.",
                         asset.ItemSpec,
                         configurationName);
                 }
                 else
                 {
-                    Log.LogError(
-                        "Explicitly-specified compressed asset '{0}' has an unknown compression configuration '{1}'.",
+                    Log.LogMessage(
+                        "Skipping explicitly-specified compressed asset '{0}' with compression configuration '{1}' not included in stage '{2}'.",
                         asset.ItemSpec,
-                        configurationName);
+                        configurationName,
+                        Stage);
                 }
             }
         }
@@ -162,7 +167,7 @@ public class ResolveCompressedAssets : Task
         foreach (var configuration in compressionConfigurations)
         {
             var candidateAssets = candidateAssetsByConfigurationName[configuration.ItemSpec];
-            var targetDirectory = configuration.ComputeOutputPath(OutputBasePath);
+            var targetDirectory = ComputeOutputPath(configuration.Format);
 
             foreach (var asset in candidateAssets)
             {
@@ -252,5 +257,41 @@ public class ResolveCompressedAssets : Task
         result.SetMetadata("AssetTraitValue", assetTraitValue);
 
         return true;
+    }
+
+    public string ComputeOutputPath(string format)
+    {
+        if (ComputeOutputSubdirectory() is { } outputSubdirectory)
+        {
+            return Path.Combine(OutputBasePath, outputSubdirectory);
+        }
+
+        throw new InvalidOperationException($"Could not compute the compression output subdirectory for stage '{Stage}' and format '{format}'.");
+
+        string ComputeOutputSubdirectory()
+        {
+            // TODO: Let's change the output directory to be compressed\[publish]\
+            if (CompressionConfiguration.BuildStage.IsBuild(Stage))
+            {
+                if (CompressionConfiguration.CompressionFormat.IsGzip(format))
+                {
+                    return "build-gz";
+                }
+
+                if (CompressionConfiguration.CompressionFormat.IsBrotli(format))
+                {
+                    return "build-br";
+                }
+
+                return null;
+            }
+
+            if (CompressionConfiguration.BuildStage.IsPublish(Stage))
+            {
+                return "compress";
+            }
+
+            return null;
+        }
     }
 }

@@ -70,24 +70,41 @@ public class ResolveCompressedAssetsTest
         var brotliExplicitAsset = new TaskItem(asset.ItemSpec, asset.CloneCustomMetadata());
         brotliExplicitAsset.SetMetadata("ConfigurationName", "BuildCompressionBrotli");
 
-        var task = new ResolveCompressedAssets()
+        var buildTask = new ResolveCompressedAssets()
         {
             OutputBasePath = OutputBasePath,
             BuildEngine = buildEngine.Object,
             CandidateAssets = new[] { asset },
             CompressionConfigurations = new[] { gzipCompressionConfiguration, brotliCompressionConfiguration },
             ExplicitAssets = new[] { gzipExplicitAsset, brotliExplicitAsset },
+            Stage = "Build",
+        };
+
+        var publishTask = new ResolveCompressedAssets()
+        {
+            OutputBasePath = OutputBasePath,
+            BuildEngine = buildEngine.Object,
+            CandidateAssets = new[] { asset },
+            CompressionConfigurations = new[] { gzipCompressionConfiguration, brotliCompressionConfiguration },
+            ExplicitAssets = new[] { gzipExplicitAsset, brotliExplicitAsset },
+            Stage = "Publish",
         };
 
         // Act
-        var result = task.Execute();
+        var buildResult = buildTask.Execute();
+        var publishResult = publishTask.Execute();
 
         // Assert
-        result.Should().BeTrue();
-        task.AssetsToCompress.Should().HaveCount(2);
-        task.AssetsToCompress[0].ItemSpec.Should().StartWith(Path.Combine(OutputBasePath, "build-gz")).And.EndWith(".gz");
-        task.AssetsToCompress[1].ItemSpec.Should().StartWith(Path.Combine(OutputBasePath, "compress")).And.EndWith(".br");
+        buildResult.Should().BeTrue();
+        buildTask.AssetsToCompress.Should().HaveCount(1);
+        buildTask.AssetsToCompress[0].ItemSpec.Should().StartWith(Path.Combine(OutputBasePath, "build-gz")).And.EndWith(".gz");
+
+        publishResult.Should().BeTrue();
+        publishTask.AssetsToCompress.Should().HaveCount(1);
+        publishTask.AssetsToCompress[0].ItemSpec.Should().StartWith(Path.Combine(OutputBasePath, "compress")).And.EndWith(".br");
     }
+
+    // TODO: Update the rest of these tests.
 
     [Fact]
     public void ResolvesAssetsMatchingIncludePattern()
@@ -124,22 +141,36 @@ public class ResolveCompressedAssetsTest
             Stage = "Publish",
         }.ToTaskItem();
 
-        var task = new ResolveCompressedAssets()
+        var buildTask = new ResolveCompressedAssets()
         {
             OutputBasePath = OutputBasePath,
             BuildEngine = buildEngine.Object,
             CandidateAssets = new[] { asset },
             CompressionConfigurations = new[] { gzipCompressionConfiguration, brotliCompressionConfiguration },
+            Stage = "Build",
+        };
+
+        var publishTask = new ResolveCompressedAssets()
+        {
+            OutputBasePath = OutputBasePath,
+            BuildEngine = buildEngine.Object,
+            CandidateAssets = new[] { asset },
+            CompressionConfigurations = new[] { gzipCompressionConfiguration, brotliCompressionConfiguration },
+            Stage = "Publish",
         };
 
         // Act
-        var result = task.Execute();
+        var buildResult = buildTask.Execute();
+        var publishResult = publishTask.Execute();
 
         // Assert
-        result.Should().BeTrue();
-        task.AssetsToCompress.Should().HaveCount(2);
-        task.AssetsToCompress[0].ItemSpec.Should().StartWith(Path.Combine(OutputBasePath, "build-gz")).And.EndWith(".gz");
-        task.AssetsToCompress[1].ItemSpec.Should().StartWith(Path.Combine(OutputBasePath, "compress")).And.EndWith(".br");
+        buildResult.Should().BeTrue();
+        buildTask.AssetsToCompress.Should().HaveCount(1);
+        buildTask.AssetsToCompress[0].ItemSpec.Should().StartWith(Path.Combine(OutputBasePath, "build-gz")).And.EndWith(".gz");
+
+        publishResult.Should().BeTrue();
+        publishTask.AssetsToCompress.Should().HaveCount(1);
+        publishTask.AssetsToCompress[0].ItemSpec.Should().StartWith(Path.Combine(OutputBasePath, "compress")).And.EndWith(".br");
     }
 
     [Fact]
@@ -178,21 +209,35 @@ public class ResolveCompressedAssetsTest
             Stage = "Publish",
         }.ToTaskItem();
 
-        var task = new ResolveCompressedAssets()
+        var buildTask = new ResolveCompressedAssets()
         {
             OutputBasePath = OutputBasePath,
             BuildEngine = buildEngine.Object,
             CandidateAssets = new[] { asset },
             CompressionConfigurations = new[] { gzipCompressionConfiguration, brotliCompressionConfiguration },
+            Stage = "Build",
+        };
+
+        var publishTask = new ResolveCompressedAssets()
+        {
+            OutputBasePath = OutputBasePath,
+            BuildEngine = buildEngine.Object,
+            CandidateAssets = new[] { asset },
+            CompressionConfigurations = new[] { gzipCompressionConfiguration, brotliCompressionConfiguration },
+            Stage = "Publish",
         };
 
         // Act
-        var result = task.Execute();
+        var buildResult = buildTask.Execute();
+        var publishResult = publishTask.Execute();
 
         // Assert
-        result.Should().BeTrue();
-        task.AssetsToCompress.Should().HaveCount(1);
-        task.AssetsToCompress[0].ItemSpec.Should().StartWith(Path.Combine(OutputBasePath, "build-gz")).And.EndWith(".gz");
+        buildResult.Should().BeTrue();
+        buildTask.AssetsToCompress.Should().HaveCount(1);
+        buildTask.AssetsToCompress[0].ItemSpec.Should().StartWith(Path.Combine(OutputBasePath, "build-gz")).And.EndWith(".gz");
+
+        publishResult.Should().BeTrue();
+        publishTask.AssetsToCompress.Should().BeEmpty();
     }
 
     [Fact]
@@ -236,23 +281,38 @@ public class ResolveCompressedAssetsTest
         var brotliExplicitAsset = new TaskItem(asset.ItemSpec, asset.CloneCustomMetadata());
         brotliExplicitAsset.SetMetadata("ConfigurationName", "BuildCompressionBrotli");
 
-        var task = new ResolveCompressedAssets()
+        var buildTask = new ResolveCompressedAssets()
         {
             OutputBasePath = OutputBasePath,
             BuildEngine = buildEngine.Object,
             CandidateAssets = new[] { asset },
             CompressionConfigurations = new[] { gzipCompressionConfiguration, brotliCompressionConfiguration },
             ExplicitAssets = new[] { gzipExplicitAsset, brotliExplicitAsset },
+            Stage = "Build",
+        };
+
+        var publishTask = new ResolveCompressedAssets()
+        {
+            OutputBasePath = OutputBasePath,
+            BuildEngine = buildEngine.Object,
+            CandidateAssets = new[] { asset },
+            CompressionConfigurations = new[] { gzipCompressionConfiguration, brotliCompressionConfiguration },
+            ExplicitAssets = new[] { gzipExplicitAsset, brotliExplicitAsset },
+            Stage = "Publish",
         };
 
         // Act
-        var result = task.Execute();
+        var buildResult = buildTask.Execute();
+        var publishResult = publishTask.Execute();
 
         // Assert
-        result.Should().BeTrue();
-        task.AssetsToCompress.Should().HaveCount(2);
-        task.AssetsToCompress[0].ItemSpec.Should().StartWith(Path.Combine(OutputBasePath, "build-gz")).And.EndWith(".gz");
-        task.AssetsToCompress[1].ItemSpec.Should().StartWith(Path.Combine(OutputBasePath, "compress")).And.EndWith(".br");
+        buildResult.Should().BeTrue();
+        buildTask.AssetsToCompress.Should().HaveCount(1);
+        buildTask.AssetsToCompress[0].ItemSpec.Should().StartWith(Path.Combine(OutputBasePath, "build-gz")).And.EndWith(".gz");
+
+        publishResult.Should().BeTrue();
+        publishTask.AssetsToCompress.Should().HaveCount(1);
+        publishTask.AssetsToCompress[0].ItemSpec.Should().StartWith(Path.Combine(OutputBasePath, "compress")).And.EndWith(".br");
     }
 
     [Fact]
@@ -279,7 +339,7 @@ public class ResolveCompressedAssetsTest
             ItemSpec = "BuildCompressionGzip",
             IncludePattern = "**\\*.tmp",
             Format = "gzip",
-            Stage = "Build",
+            Stage = "All",
         }.ToTaskItem();
 
         var brotliCompressionConfiguration = new CompressionConfiguration()
@@ -296,6 +356,7 @@ public class ResolveCompressedAssetsTest
             BuildEngine = buildEngine.Object,
             CandidateAssets = new[] { asset },
             CompressionConfigurations = new[] { gzipCompressionConfiguration, brotliCompressionConfiguration },
+            Stage = "Build",
         };
 
         var result1 = task1.Execute();
@@ -314,6 +375,7 @@ public class ResolveCompressedAssetsTest
             CandidateAssets = new[] { asset, task1.AssetsToCompress[0] },
             CompressionConfigurations = new[] { gzipCompressionConfiguration, brotliCompressionConfiguration },
             ExplicitAssets = new[] { brotliExplicitAsset },
+            Stage = "Publish",
         };
 
         var result2 = task2.Execute();

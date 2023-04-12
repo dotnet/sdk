@@ -53,41 +53,9 @@ public sealed class CompressionConfiguration
         };
     }
 
-    public string ComputeOutputPath(string outputBasePath)
-    {
-        if (ComputeOutputSubdirectory() is { } outputSubdirectory)
-        {
-            return Path.Combine(outputBasePath, outputSubdirectory);
-        }
-
-        throw new InvalidOperationException($"Could not compute the output subdirectory for compression configuration '{ItemSpec}'.");
-
-        string ComputeOutputSubdirectory()
-        {
-            // TODO: Let's change the output directory to be compressed\[publish]\
-            if (BuildStage.IsBuild(Stage))
-            {
-                if (CompressionFormat.IsGzip(Format))
-                {
-                    return "build-gz";
-                }
-
-                if (CompressionFormat.IsBrotli(Format))
-                {
-                    return "build-br";
-                }
-
-                return null;
-            }
-
-            if (BuildStage.IsPublish(Stage))
-            {
-                return "compress";
-            }
-
-            return null;
-        }
-    }
+    public bool StageIncludes(string buildStage)
+        => BuildStage.IsAll(Stage)
+        || string.Equals(Stage, buildStage, StringComparison.OrdinalIgnoreCase);
 
     public ITaskItem ToTaskItem()
     {
@@ -123,12 +91,16 @@ public sealed class CompressionConfiguration
     {
         public const string Build = nameof(Build);
         public const string Publish = nameof(Publish);
+        public const string All = nameof(All);
 
         public static bool IsBuild(string buildStage) => string.Equals(Build, buildStage, StringComparison.OrdinalIgnoreCase);
         public static bool IsPublish(string buildStage) => string.Equals(Publish, buildStage, StringComparison.OrdinalIgnoreCase);
+        public static bool IsAll(string buildStage) => string.Equals(All, buildStage, StringComparison.OrdinalIgnoreCase);
+
         public static bool IsValidBuildStage(string buildStage)
             => IsBuild(buildStage)
-            || IsPublish(buildStage);
+            || IsPublish(buildStage)
+            || IsAll(buildStage);
     }
 
     public static class CompressionFormat

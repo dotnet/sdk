@@ -60,20 +60,10 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <!-- Wire-up static web assets -->
   <PropertyGroup>
-    <ResolveCompressedFilesDependsOn>
-      $(ResolveCompressedFilesDependsOn);
+    <ResolveStaticWebAssetsInputsDependsOn>
+      $(ResolveStaticWebAssetsInputsDependsOn);
       _ResolveBlazorWasmOutputs;
-    </ResolveCompressedFilesDependsOn>
-
-    <ResolveCompressedFilesForPublishDependsOn>
-      $(ResolveCompressedFilesForPublishDependsOn);
-      _CollectAssetsToCompressForPublish;
-    </ResolveCompressedFilesForPublishDependsOn>
-
-    <AddWasmStaticWebAssetsDependsOn>
-      $(AddWasmStaticWebAssetsDependsOn);
-      _ResolveBlazorWasmOutputs;
-    </AddWasmStaticWebAssetsDependsOn>
+    </ResolveStaticWebAssetsInputsDependsOn>
 
     <GenerateBuildWasmBootJsonDependsOn>
       $(GenerateBuildWasmBootJsonDependsOn);
@@ -85,32 +75,6 @@ Copyright (c) .NET Foundation. All rights reserved.
       GenerateBlazorBootExtensionJson;
     </GeneratePublishWasmBootJsonDependsOn>
   </PropertyGroup>
-
-  <ItemGroup>
-
-    <!--
-      Compress referenced binaries using GZip during build. This skips files such as the project's assemblies
-      that change from build to build. Runtime assets contribute to the bulk of the download size. Compressing it
-      has the most benefit while avoiding any ongoing costs to the dev inner loop.
-    -->
-    <CompressionConfiguration Include="BlazorBuildGzip">
-      <Stage>Build</Stage>
-      <Format>gzip</Format>
-      <IncludePattern>_framework\**</IncludePattern>
-      <ExcludePattern>_framework\blazor.boot.json</ExcludePattern>
-    </CompressionConfiguration>
-
-    <CompressionConfiguration Include="BlazorPublishGzip">
-      <Stage>Publish</Stage>
-      <Format>gzip</Format>
-      <TargetDirectory>$(_BlazorPublishCompressDirectory)</TargetDirectory>
-    </CompressionConfiguration>
-    <CompressionConfiguration Include="BlazorPublishBrotli">
-      <Stage>Publish</Stage>
-      <Format>brotli</Format>
-    </CompressionConfiguration>
-
-  </ItemGroup>
 
   <Import Project="Microsoft.NET.Sdk.BlazorWebAssembly.ServiceWorkerAssetsManifest.targets" Condition="'$(ServiceWorkerAssetsManifest)' != ''" />
 
@@ -161,24 +125,6 @@ Copyright (c) .NET Foundation. All rights reserved.
   <!-- Just print a message here, static web assets takes care of all the copying -->
   <Target Name="_BlazorCopyFilesToOutputDirectory" AfterTargets="CopyFilesToOutputDirectory">
     <Message Importance="High" Text="$(MSBuildProjectName) (Blazor output) -&gt; $(TargetDir)wwwroot" Condition="'$(CopyBuildOutputToOutputDirectory)' == 'true' and '$(SkipCopyBuildProduct)'!='true'" />
-  </Target>
-
-  <Target
-    Name="_CollectAssetsToCompressForPublish"
-    DependsOnTargets="ProcessPublishFilesForWasm;ComputeWasmExtensions;_AddPublishWasmBootJsonToStaticWebAssets">
-    <ItemGroup>
-      <AssetToCompress
-        Include="@(StaticWebAsset)"
-        Condition="'%(AssetKind)' != 'Build' and ('%(StaticWebAsset.AssetTraitName)' == 'WasmResource' or '%(StaticWebAsset.AssetTraitName)' == 'Culture')">
-        <ConfigurationName>BlazorPublishGzip</ConfigurationName>
-      </AssetToCompress>
-
-      <AssetToCompress
-        Include="@(StaticWebAsset)"
-        Condition="'%(AssetKind)' != 'Build' and ('%(StaticWebAsset.AssetTraitName)' == 'WasmResource' or '%(StaticWebAsset.AssetTraitName)' == 'Culture')">
-        <ConfigurationName>BlazorPublishBrotli</ConfigurationName>
-      </AssetToCompress>
-    </ItemGroup>
   </Target>
 
   <!-- Make sure that ResolveAssemblyReferences runs early enough to ensure satellite assemblies are populated in the ResolvedFilesToPublish -->

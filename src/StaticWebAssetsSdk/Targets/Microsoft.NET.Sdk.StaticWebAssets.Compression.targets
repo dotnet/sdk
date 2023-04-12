@@ -59,16 +59,11 @@ Copyright (c) .NET Foundation. All rights reserved.
     Name="_ResolveCompressedFiles"
     DependsOnTargets="$(ResolveCompressedFilesDependsOn)">
 
-    <ItemGroup>
-      <_CompressedFileIncludePatternForBuild
-        Include="@(CompressionConfiguration)"
-        Condition="'%(Stage)' == 'Build'" />
-    </ItemGroup>
-
     <ResolveCompressedAssets
       CandidateAssets="@(StaticWebAsset)"
-      CompressionConfigurations="@(_CompressedFileIncludePatternForBuild)"
+      CompressionConfigurations="@(CompressionConfiguration)"
       ExplicitAssets="@(AssetToCompress)"
+      Stage="Build"
       OutputBasePath="$(IntermediateOutputPath)">
 
       <Output
@@ -89,10 +84,6 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <ItemGroup>
 
-      <_CompressedFileIncludePatternForPublish
-        Include="@(CompressionConfiguration)"
-        Condition="'%(Stage)' == 'Publish'" />
-
       <_CandidateAssetsForPublish
         Include="@(StaticWebAsset)"
         Condition="'%(AssetKind)' != 'Build'" />
@@ -101,8 +92,9 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <ResolveCompressedAssets
       CandidateAssets="@(_CandidateAssetsForPublish)"
-      CompressionConfigurations="@(_CompressedFileIncludePatternForPublish)"
+      CompressionConfigurations="@(CompressionConfiguration)"
       ExplicitAssets="@(AssetToCompress)"
+      Stage="Publish"
       OutputBasePath="$(IntermediateOutputPath)">
 
       <Output
