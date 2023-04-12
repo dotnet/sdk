@@ -25,7 +25,6 @@ public class ResolveCompressedAssetsTest
 
     public ResolveCompressedAssetsTest()
     {
-        Directory.CreateDirectory(Path.Combine(TestContext.Current.TestExecutionDirectory, nameof(ResolveCompressedAssetsTest)));
         OutputBasePath = Path.Combine(TestContext.Current.TestExecutionDirectory, nameof(ResolveCompressedAssetsTest));
         ItemSpec = Path.Combine(OutputBasePath, Guid.NewGuid().ToString("N") + ".tmp");
         OriginalItemSpec = Path.Combine(OutputBasePath, Guid.NewGuid().ToString("N") + ".tmp");
@@ -39,9 +38,6 @@ public class ResolveCompressedAssetsTest
         var buildEngine = new Mock<IBuildEngine>();
         buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
             .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
-
-        File.Create(ItemSpec);
-        File.Create(OriginalItemSpec);
 
         var asset = new StaticWebAsset()
         {
@@ -104,8 +100,6 @@ public class ResolveCompressedAssetsTest
         publishTask.AssetsToCompress[0].ItemSpec.Should().StartWith(Path.Combine(OutputBasePath, "compress")).And.EndWith(".br");
     }
 
-    // TODO: Update the rest of these tests.
-
     [Fact]
     public void ResolvesAssetsMatchingIncludePattern()
     {
@@ -114,9 +108,6 @@ public class ResolveCompressedAssetsTest
         var buildEngine = new Mock<IBuildEngine>();
         buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
             .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
-
-        File.Create(ItemSpec);
-        File.Create(OriginalItemSpec);
 
         var asset = new StaticWebAsset()
         {
@@ -182,9 +173,6 @@ public class ResolveCompressedAssetsTest
         buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
             .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
 
-        File.Create(ItemSpec);
-        File.Create(OriginalItemSpec);
-
         var asset = new StaticWebAsset()
         {
             Identity = ItemSpec,
@@ -241,7 +229,7 @@ public class ResolveCompressedAssetsTest
     }
 
     [Fact]
-    public void DeduplicatesAssetsResolvedBothExplicitlyAndFromPattern()
+    public void ExcludesAssetsMatchingGlobalExcludePattern()
     {
         // Arrange
         var errorMessages = new List<string>();
@@ -249,8 +237,58 @@ public class ResolveCompressedAssetsTest
         buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
             .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
 
-        File.Create(ItemSpec);
-        File.Create(OriginalItemSpec);
+        var asset = new StaticWebAsset()
+        {
+            Identity = ItemSpec,
+            OriginalItemSpec = OriginalItemSpec,
+            RelativePath = Path.GetFileName(ItemSpec),
+        }.ToTaskItem();
+
+        var excludedAssetItemSpec = Path.Combine(OutputBasePath, Guid.NewGuid().ToString("N") + ".exclude.tmp");
+        var excludedAssetOriginalItemSpec = Path.Combine(OutputBasePath, Guid.NewGuid().ToString("N") + ".exclude.tmp");
+
+        var assetToExclude = new StaticWebAsset()
+        {
+            Identity = excludedAssetItemSpec,
+            OriginalItemSpec = excludedAssetOriginalItemSpec,
+            RelativePath = Path.GetFileName(excludedAssetItemSpec),
+        }.ToTaskItem();
+
+        var gzipCompressionConfiguration = new CompressionConfiguration()
+        {
+            ItemSpec = "BuildCompressionGzip",
+            IncludePattern = "**\\*.tmp",
+            Format = "gzip",
+            Stage = "Build",
+        }.ToTaskItem();
+
+        var buildTask = new ResolveCompressedAssets()
+        {
+            OutputBasePath = OutputBasePath,
+            BuildEngine = buildEngine.Object,
+            CandidateAssets = new[] { asset, assetToExclude },
+            CompressionConfigurations = new[] { gzipCompressionConfiguration },
+            GlobalExcludePattern = "**\\*.exclude.tmp",
+            Stage = "Build",
+        };
+
+        // Act
+        var buildResult = buildTask.Execute();
+
+        // Assert
+        buildResult.Should().BeTrue();
+        buildTask.AssetsToCompress.Should().HaveCount(1);
+        buildTask.AssetsToCompress[0].ItemSpec.Should().StartWith(Path.Combine(OutputBasePath, "build-gz")).And.EndWith(".gz");
+    }
+
+    [Fact]
+    public void DeduplicatesAssetsResolvedBothExplicitlyAndFromPattern()
+    {
+        // Arrange
+        var errorMessages = new List<string>();
+        var buildEngine = new Mock<IBuildEngine>();
+        buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
+            .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
 
         var asset = new StaticWebAsset()
         {
@@ -323,9 +361,6 @@ public class ResolveCompressedAssetsTest
         var buildEngine = new Mock<IBuildEngine>();
         buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
             .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
-
-        File.Create(ItemSpec);
-        File.Create(OriginalItemSpec);
 
         var asset = new StaticWebAsset()
         {

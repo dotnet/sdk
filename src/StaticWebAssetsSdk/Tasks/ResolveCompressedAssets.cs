@@ -19,6 +19,8 @@ public class ResolveCompressedAssets : Task
 
     public ITaskItem[] ExplicitAssets { get; set; }
 
+    public string GlobalExcludePattern { get; set; }
+
     [Required]
     public string Stage { get; set; }
 
@@ -91,6 +93,16 @@ public class ResolveCompressedAssets : Task
             .ToArray();
         var candidateAssetsByConfigurationName = compressionConfigurations
             .ToDictionary(cc => cc.ItemSpec, _ => new List<ITaskItem>());
+
+        // If specified, add the global exclude pattern to each configuration.
+        if (!string.IsNullOrEmpty(GlobalExcludePattern))
+        {
+            var delimitedGlobalExcludePattern = $";{GlobalExcludePattern}";
+            foreach (var configuration in compressionConfigurations)
+            {
+                configuration.ExcludePattern += delimitedGlobalExcludePattern;
+            }
+        }
 
         // Add each explicitly-provided asset as a candidate asset for its specified compression configuration.
         if (ExplicitAssets is not null)

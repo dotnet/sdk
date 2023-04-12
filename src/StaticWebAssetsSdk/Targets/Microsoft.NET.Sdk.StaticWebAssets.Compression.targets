@@ -17,42 +17,43 @@ Copyright (c) .NET Foundation. All rights reserved.
   <UsingTask TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.ResolveCompressedAssets" AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)" />
 
   <PropertyGroup>
+    <GlobalCompressionExcludePattern>$(GlobalCompressionExcludePattern)</GlobalCompressionExcludePattern>
+  </PropertyGroup>
+
+  <PropertyGroup>
     <ResolveCompressedFilesDependsOn>$(ResolveCompressedFilesDependsOn)</ResolveCompressedFilesDependsOn>
     <ResolveCompressedFilesForPublishDependsOn>$(ResolveCompressedFilesForPublishDependsOn)</ResolveCompressedFilesForPublishDependsOn>
-    <CompressFilesDependsOn>
-      $(CompressFilesDependsOn);
-      CopyStaticWebAssetsToOutputDirectory;
-    </CompressFilesDependsOn>
+    <CompressFilesDependsOn>$(CompressFilesDependsOn);</CompressFilesDependsOn>
     <CompressFilesForPublishDependsOn>$(CompressFilesForPublishDependsOn)</CompressFilesForPublishDependsOn>
   </PropertyGroup>
 
   <PropertyGroup>
-
-    <GenerateStaticWebAssetsPublishManifestDependsOn Condition="'$(WasmBuildingForNestedPublish)' != 'true'">
-      $(GenerateStaticWebAssetsPublishManifestDependsOn);
-      _CompressFilesForPublish;
-    </GenerateStaticWebAssetsPublishManifestDependsOn>
-
-    <StaticWebAssetsPrepareForRunDependsOn>
-      $(StaticWebAssetsPrepareForRunDependsOn);
+    <GenerateComputedBuildStaticWebAssetsDependsOn>
+      $(GenerateComputedBuildStaticWebAssetsDependsOn);
       _CompressFiles;
-    </StaticWebAssetsPrepareForRunDependsOn>
-
+    </GenerateComputedBuildStaticWebAssetsDependsOn>
+    <GenerateComputedPublishStaticWebAssetsDependsOn>
+      $(GenerateComputedPublishStaticWebAssetsDependsOn);
+      _CompressFilesForPublish;
+    </GenerateComputedPublishStaticWebAssetsDependsOn>
     <StaticWebAssetsPrepareForPublishDependsOn>
       $(StaticWebAssetsPrepareForPublishDependsOn);
       _CompressFilesForPublish;
     </StaticWebAssetsPrepareForPublishDependsOn>
-
     <ResolveStaticWebAssetsInputsDependsOn>
       $(ResolveStaticWebAssetsInputsDependsOn);
       _ResolveCompressedFiles;
     </ResolveStaticWebAssetsInputsDependsOn>
-
     <ResolvePublishStaticWebAssetsDependsOn>
       $(ResolvePublishStaticWebAssetsDependsOn);
       _ResolveCompressedFilesForPublish;
     </ResolvePublishStaticWebAssetsDependsOn>
+  </PropertyGroup>
 
+  <PropertyGroup Condition="'$(DOTNET_HOST_PATH)' == ''">
+    <_DotNetHostDirectory>$(NetCoreRoot)</_DotNetHostDirectory>
+    <_DotNetHostFileName>dotnet</_DotNetHostFileName>
+    <_DotNetHostFileName Condition="'$(OS)' == 'Windows_NT'">dotnet.exe</_DotNetHostFileName>
   </PropertyGroup>
 
   <Target
@@ -63,6 +64,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       CandidateAssets="@(StaticWebAsset)"
       CompressionConfigurations="@(CompressionConfiguration)"
       ExplicitAssets="@(AssetToCompress)"
+      GlobalExcludePattern="$(GlobalCompressionExcludePattern)"
       Stage="Build"
       OutputBasePath="$(IntermediateOutputPath)">
 
@@ -83,17 +85,16 @@ Copyright (c) .NET Foundation. All rights reserved.
     DependsOnTargets="$(ResolveCompressedFilesForPublishDependsOn)">
 
     <ItemGroup>
-
       <_CandidateAssetsForPublish
         Include="@(StaticWebAsset)"
         Condition="'%(AssetKind)' != 'Build'" />
-
     </ItemGroup>
 
     <ResolveCompressedAssets
       CandidateAssets="@(_CandidateAssetsForPublish)"
       CompressionConfigurations="@(CompressionConfiguration)"
       ExplicitAssets="@(AssetToCompress)"
+      GlobalExcludePattern="$(GlobalCompressionExcludePattern)"
       Stage="Publish"
       OutputBasePath="$(IntermediateOutputPath)">
 
@@ -104,16 +105,14 @@ Copyright (c) .NET Foundation. All rights reserved.
     </ResolveCompressedAssets>
 
     <ItemGroup>
-      <StaticWebAsset Include="@(_CompressedStaticWebAssetsForPublish->'%(FullPath)')" />
-      <FilesToCompress Remove="@(FilesToCompress)" />
+      <StaticWebAsset Include="@(_CompressedStaticWebAssetsForPublish)" />
     </ItemGroup>
 
   </Target>
 
   <Target
     Name="_CompressFiles"
-    DependsOnTargets="$(CompressFilesDependsOn)"
-    BeforeTargets="_SplitStaticWebAssetsByCopyOptions">
+    DependsOnTargets="$(CompressFilesDependsOn)">
 
     <ItemGroup>
       <_GZipCompressedStaticWebAssets Include="@(_CompressedStaticWebAssets)" Condition="'%(AssetTraitName)' == 'Content-Encoding' and '%(AssetTraitValue)' == 'gzip'" />
@@ -122,12 +121,6 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <GZipCompress Condition="'@(_GZipCompressedStaticWebAssets)' != ''"
       FilesToCompress="@(_GZipCompressedStaticWebAssets)" />
-
-    <PropertyGroup Condition="'$(DOTNET_HOST_PATH)' == ''">
-      <_DotNetHostDirectory>$(NetCoreRoot)</_DotNetHostDirectory>
-      <_DotNetHostFileName>dotnet</_DotNetHostFileName>
-      <_DotNetHostFileName Condition="'$(OS)' == 'Windows_NT'">dotnet.exe</_DotNetHostFileName>
-    </PropertyGroup>
 
     <BrotliCompress
       FilesToCompress="@(_BrotliCompressedStaticWebAssets)"
@@ -153,12 +146,6 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <GZipCompress Condition="'@(_GZipCompressedStaticWebAssetsForPublish)' != ''"
       FilesToCompress="@(_GZipCompressedStaticWebAssetsForPublish)" />
-
-    <PropertyGroup Condition="'$(DOTNET_HOST_PATH)' == ''">
-      <_DotNetHostDirectory>$(NetCoreRoot)</_DotNetHostDirectory>
-      <_DotNetHostFileName>dotnet</_DotNetHostFileName>
-      <_DotNetHostFileName Condition="'$(OS)' == 'Windows_NT'">dotnet.exe</_DotNetHostFileName>
-    </PropertyGroup>
 
     <BrotliCompress
       FilesToCompress="@(_BrotliCompressedStaticWebAssetsForPublish)"

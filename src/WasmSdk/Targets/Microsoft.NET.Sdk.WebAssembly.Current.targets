@@ -19,6 +19,26 @@ Copyright (c) .NET Foundation. All rights reserved.
     <SuppressTrimAnalysisWarnings Condition="'$(SuppressTrimAnalysisWarnings)' == '' And '$(TrimmerDefaultAction)' != 'link'">true</SuppressTrimAnalysisWarnings>
   </PropertyGroup>
 
+  <ItemGroup Condition="'$(WasmBuildingForNestedPublish)' != 'true'">
+
+    <!--
+      Compress referenced binaries using GZip during build. This skips files such as the project's assemblies
+      that change from build to build. Runtime assets contribute to the bulk of the download size. Compressing it
+      has the most benefit while avoiding any ongoing costs to the dev inner loop.
+    -->
+    <CompressionConfiguration Include="WebAssemblyGzip">
+      <Stage>All</Stage>
+      <Format>gzip</Format>
+      <IncludePattern>_framework\**</IncludePattern>
+      <ExcludePattern>_framework\blazor.boot.json</ExcludePattern>
+    </CompressionConfiguration>
+
+    <CompressionConfiguration Include="WebAssemblyBrotli">
+      <Stage>Publish</Stage>
+      <Format>brotli</Format>
+    </CompressionConfiguration>
+
+  </ItemGroup>
 
   <Import Sdk="Microsoft.NET.Sdk.StaticWebAssets" Project="Sdk.targets" Condition="'$(_WasmSdkImportsMicrosoftNETSdkStaticWebAssets)' == 'true'" />
   <Import Sdk="Microsoft.NET.Sdk.Publish" Project="Sdk.targets" Condition="'$(_WasmSdkImportsMicrosoftNETSdkPublish)' == 'true'" />
@@ -40,27 +60,6 @@ Copyright (c) .NET Foundation. All rights reserved.
   <UsingTask TaskName="Microsoft.NET.Sdk.WebAssembly.GenerateWasmBootJson" AssemblyFile="$(_WebAssemblySdkTasksAssembly)" />
   <UsingTask TaskName="Microsoft.NET.Sdk.WebAssembly.ComputeWasmBuildAssets" AssemblyFile="$(_WebAssemblySdkTasksAssembly)" />
   <UsingTask TaskName="Microsoft.NET.Sdk.WebAssembly.ComputeWasmPublishAssets" AssemblyFile="$(_WebAssemblySdkTasksAssembly)" />
-
-  <ItemGroup>
-
-    <!--
-      Compress referenced binaries using GZip during build. This skips files such as the project's assemblies
-      that change from build to build. Runtime assets contribute to the bulk of the download size. Compressing it
-      has the most benefit while avoiding any ongoing costs to the dev inner loop.
-    -->
-    <CompressionConfiguration Include="WebAssemblyGzip">
-      <Stage>All</Stage>
-      <Format>gzip</Format>
-      <IncludePattern>_framework\**</IncludePattern>
-      <ExcludePattern>_framework\blazor.boot.json</ExcludePattern>
-    </CompressionConfiguration>
-
-    <CompressionConfiguration Include="WebAssemblyBrotli">
-      <Stage>Publish</Stage>
-      <Format>brotli</Format>
-    </CompressionConfiguration>
-
-  </ItemGroup>
 
   <PropertyGroup>
     <SelfContained>true</SelfContained>

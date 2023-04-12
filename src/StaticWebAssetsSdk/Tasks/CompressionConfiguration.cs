@@ -14,12 +14,34 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 public sealed class CompressionConfiguration
 {
     private Matcher _matcher;
+    private string _includePattern;
+    private string _excludePattern;
 
     public string ItemSpec { get; set; }
 
-    public string IncludePattern { get; set; }
+    public string IncludePattern
+    {
+        get => _includePattern;
+        set
+        {
+            _includePattern = value;
 
-    public string ExcludePattern { get; set; }
+            // Reset the Matcher because the pattern has changed.
+            _matcher = null;
+        }
+    }
+
+    public string ExcludePattern
+    {
+        get => _excludePattern;
+        set
+        {
+            _excludePattern = value;
+
+            // Reset the Matcher because the pattern has changed.
+            _matcher = null;
+        }
+    }
 
     public string Format { get; set; }
 
