@@ -108,7 +108,6 @@ namespace Microsoft.TemplateEngine.Cli.TemplateSearch
             return NewCommandStatus.NotFound;
         }
 
-        // good for getting cache info
         internal static async Task<(NugetPackageMetadata?, IReadOnlyList<ITemplateInfo>)> SearchForPackageDetailsAsync(
             IEngineEnvironmentSettings environmentSettings,
             NugetApiManager nugetApiManager,

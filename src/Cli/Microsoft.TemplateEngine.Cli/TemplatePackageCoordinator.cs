@@ -429,7 +429,7 @@ namespace Microsoft.TemplateEngine.Cli
             IEngineEnvironmentSettings environmentSettings,
             NugetPackageMetadata? templatePackage)
         {
-            var list = new List<string> { Environment.NewLine, $"{packageIdentity}".Indent(2) };
+            var list = new List<string> { $"{packageIdentity}".Indent(1) };
 
             AddIfNotNull(list, SymbolStrings.Command_Details_Description_Property, templatePackage?.Description, 2);
             AddIfNotNull(list, SymbolStrings.Command_Details_Authors_Property, templatePackage?.Authors, 2);
