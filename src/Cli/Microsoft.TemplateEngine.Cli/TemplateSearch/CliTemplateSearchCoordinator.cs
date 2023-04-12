@@ -121,7 +121,7 @@ namespace Microsoft.TemplateEngine.Cli.TemplateSearch
                 var searchResults = await CliTemplateSearchCoordinatorFactory
                     .CreateCliTemplateSearchCoordinator(environmentSettings)
                     .SearchAsync(
-                        f => f.Name == packageIdentifier,
+                        f => f.Name == packageIdentifier && (string.IsNullOrEmpty(version) || f.Version == version),
                         t => t.Templates,
                         cancellationToken).ConfigureAwait(false);
 
