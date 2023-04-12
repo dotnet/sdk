@@ -349,7 +349,7 @@ namespace Microsoft.NET.Publish.Tests
                     .And.HaveStdOutContaining("Hello World");
             }
         }
-        
+
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
         [InlineData(ToolsetInfo.CurrentTargetFramework)]
         public void NativeAot_hw_runs_with_cross_target_PublishAot_is_enabled(string targetFramework)
@@ -506,6 +506,34 @@ namespace Microsoft.NET.Publish.Tests
                 .Should().Pass()
                 .And.HaveStdOutContaining("warning IL3050")
                 .And.HaveStdOutContaining("warning IL3056")
+                .And.NotHaveStdOutContaining("warning IL2026")
+                .And.NotHaveStdOutContaining("warning IL3002");
+        }
+
+        [RequiresMSBuildVersionTheory("17.0.0.32901")]
+        [InlineData(ToolsetInfo.CurrentTargetFramework)]
+        public void Check_Aot_compatible_implies_enable_analyzers(string targetFramework)
+        {
+            var projectName = "WarningAppWithAotAnalyzer";
+            var testProject = CreateTestProjectWithAnalysisWarnings(targetFramework, projectName, true);
+            testProject.AdditionalProperties["CheckAotCompatible"] = "true";
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+
+            var buildCommand = new BuildCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
+            buildCommand
+                .Execute(RuntimeIdentifier)
+                .Should().Pass()
+                .And.HaveStdOutContaining("warning IL3050")
+                .And.HaveStdOutContaining("warning IL3056")
+                .And.HaveStdOutContaining("warning IL2026")
+                .And.HaveStdOutContaining("warning IL3002");
+
+            var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
+            publishCommand
+                .Execute(RuntimeIdentifier, "--no-build")
+                .Should().Pass()
+                .And.NotHaveStdOutContaining("warning IL3050")
+                .And.NotHaveStdOutContaining("warning IL3056")
                 .And.NotHaveStdOutContaining("warning IL2026")
                 .And.NotHaveStdOutContaining("warning IL3002");
         }
