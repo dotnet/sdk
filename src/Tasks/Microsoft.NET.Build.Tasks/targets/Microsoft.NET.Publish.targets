@@ -17,6 +17,11 @@ Copyright (c) .NET Foundation. All rights reserved.
     <IsPublishable Condition="'$(IsPublishable)' == ''">true</IsPublishable>
   </PropertyGroup>
 
+  <!-- Trimming/AOT/publish* property configuration -->
+  <PropertyGroup>
+    <IsTrimmable Condition="'$(IsTrimmable)' == '' and '$(IsAotCompatible)' == 'true'">true</IsTrimmable>
+  </PropertyGroup>
+
   <ItemDefinitionGroup>
     <ResolvedFileToPublish>
       <CopyToPublishDirectory>Always</CopyToPublishDirectory>
@@ -114,7 +119,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <!-- Enable warning for trying to use PublishRelease or PackRelease with a solution if env-var is not set.-->
     <NETSdkWarning Condition="'$(PublishRelease)' != '' and '$(SolutionExt)' == '.sln' and '$(DOTNET_CLI_ENABLE_PUBLISH_RELEASE_FOR_SOLUTIONS)' == ''"
-                   ResourceName="PReleaseRequiresEnvVarOnSln" 
+                   ResourceName="PReleaseRequiresEnvVarOnSln"
                    FormatArguments="PublishRelease;DOTNET_CLI_ENABLE_PUBLISH_RELEASE_FOR_SOLUTIONS"
     />
 

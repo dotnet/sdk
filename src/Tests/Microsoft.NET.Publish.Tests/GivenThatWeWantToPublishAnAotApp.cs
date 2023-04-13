@@ -512,11 +512,11 @@ namespace Microsoft.NET.Publish.Tests
 
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
         [InlineData(ToolsetInfo.CurrentTargetFramework)]
-        public void Check_Aot_compatible_implies_enable_analyzers(string targetFramework)
+        public void IsAotCompatible_implies_enable_analyzers(string targetFramework)
         {
             var projectName = "WarningAppWithAotAnalyzer";
             var testProject = CreateTestProjectWithAnalysisWarnings(targetFramework, projectName, true);
-            testProject.AdditionalProperties["CheckAotCompatible"] = "true";
+            testProject.AdditionalProperties["IsAotCompatible"] = "true";
             var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
