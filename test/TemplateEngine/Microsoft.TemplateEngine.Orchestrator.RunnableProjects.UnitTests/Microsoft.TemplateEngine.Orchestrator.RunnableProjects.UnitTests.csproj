@@ -16,6 +16,8 @@
     <ItemGroup>
       <PackageReference Include="Newtonsoft.Json.Schema" />
       <PackageReference Include="FakeItEasy" />
+      <PackageReference Include="Verify.XUnit" />
+      <PackageReference Include="Verify.DiffPlex" />
     </ItemGroup>
 
     <ItemGroup>
@@ -31,8 +33,18 @@
         <ProjectReference Include="$(TestDir)Microsoft.TemplateEngine.TestHelper\Microsoft.TemplateEngine.TestHelper.csproj" />
     </ItemGroup>
 
+    <ItemGroup Condition="$(TargetFramework) == $(NETCoreTargetFramework)">
+      <ProjectReference Include="$(ToolsDir)Microsoft.TemplateEngine.Authoring.TemplateApiVerifier\Microsoft.TemplateEngine.Authoring.TemplateApiVerifier.csproj" />
+      <ProjectReference Include="$(ToolsDir)Microsoft.TemplateEngine.Authoring.TemplateVerifier\Microsoft.TemplateEngine.Authoring.TemplateVerifier.csproj" />
+    </ItemGroup>
+
     <ItemGroup>
       <Compile Include="..\Shared\**\*.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Compile Remove="Approvals\**\*" />
+      <None Include="Approvals\**\*" CopyToOutputDirectory="Never" />
     </ItemGroup>
 
     <ItemGroup>
