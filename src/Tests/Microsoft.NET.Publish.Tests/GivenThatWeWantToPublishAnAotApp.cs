@@ -528,9 +528,17 @@ namespace Microsoft.NET.Publish.Tests
                 .And.HaveStdOutContaining("warning IL2026")
                 .And.HaveStdOutContaining("warning IL3002");
 
+            var outputDirectory = buildCommand.GetOutputDirectory(targetFramework).FullName;
+            var assemblyPath = Path.Combine(outputDirectory, $"{projectName}.dll");
+
+            // injects the IsTrimmable attribute
+            AssemblyInfo.Get(assemblyPath)["AssemblyMetadataAttribute"].Should().Be("IsTrimmable:True");
+
+            // The below relies on the build above being cached so that no warnings are produced
+            // If this fails, it's likely because the build above was not cached
             var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
             publishCommand
-                .Execute(RuntimeIdentifier, "--no-build")
+                .Execute(RuntimeIdentifier)
                 .Should().Pass()
                 .And.NotHaveStdOutContaining("warning IL3050")
                 .And.NotHaveStdOutContaining("warning IL3056")
