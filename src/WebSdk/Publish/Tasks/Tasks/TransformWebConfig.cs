@@ -155,7 +155,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks
         {
             var projectDirectory = Path.GetDirectoryName(projectPath);
             var currentWebConfigFileName = Directory.EnumerateFiles(projectDirectory)
-                .FirstOrDefault(file => string.Equals(Path.GetFileName(file), defaultWebConfigName, StringComparison.CurrentCultureIgnoreCase)); 
+                .FirstOrDefault(file => string.Equals(Path.GetFileName(file), defaultWebConfigName, StringComparison.OrdinalIgnoreCase));
             var webConfigFileName = currentWebConfigFileName == null ? defaultWebConfigName : Path.GetFileName(currentWebConfigFileName);
             var projectWebConfigPath = Path.Combine(projectDirectory, webConfigFileName); 
 
