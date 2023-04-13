@@ -12,44 +12,95 @@
     <NewTarballName>$(ArchiveDir)Private.SourceBuilt.Artifacts.Bootstrap.tar.gz</NewTarballName>
   </PropertyGroup>
 
+  <ItemDefinitionGroup>
+    <PortablePackage>
+      <IsNative>false</IsNative>
+    </PortablePackage>
+  </ItemDefinitionGroup>
+
   <ItemGroup>
-    <!-- These packages will be replaced with ms-built packages downloaded from official package feeds-->
-    <PackageDownload Include="Microsoft.Aspnetcore.App.Runtime.linux-x64" Version="[$(MicrosoftAspNetCoreAppRuntimeVersion)]" />
-    <PackageDownload Include="Microsoft.NETCore.App.Crossgen2.linux-x64" Version="[$(MicrosoftNETCoreAppCrossgen2Version)]" />
-    <PackageDownload Include="Microsoft.NETCore.App.Host.linux-x64" Version="[$(MicrosoftNETCoreAppHostPackageVersion)]" />
-    <PackageDownload Include="Microsoft.NETCore.App.Runtime.linux-x64" Version="[$(MicrosoftNETCoreAppRuntimeVersion)]" />
-    <PackageDownload Include="Microsoft.NET.HostModel" Version="[$(MicrosoftNETHostModelVersion)]" />
-    <PackageDownload Include="Microsoft.NET.Sdk.IL" Version="[$(MicrosoftNETSdkILVersion)]" />
-    <PackageDownload Include="Microsoft.NETCore.ILAsm" Version="[$(MicrosoftNETCoreILAsmVersion)]" />
-    <PackageDownload Include="Microsoft.NETCore.ILDAsm" Version="[$(MicrosoftNETCoreILDAsmVersion)]" />
-    <PackageDownload Include="Microsoft.NETCore.TestHost" Version="[$(MicrosoftNETCoreTestHostVersion)]" />
-    <PackageDownload Include="runtime.linux-x64.Microsoft.NETCore.ILAsm" Version="[$(MicrosoftNETCoreILAsmVersion)]" />
-    <PackageDownload Include="runtime.linux-x64.Microsoft.NETCore.ILDAsm" Version="[$(MicrosoftNETCoreILDAsmVersion)]" />
-    <PackageDownload Include="runtime.linux-x64.Microsoft.NETCore.TestHost" Version="[$(MicrosoftNETCoreTestHostVersion)]" />
-    <PackageDownload Include="runtime.linux-x64.runtime.native.System.IO.Ports" Version="[$(SystemIOPortsVersion)]" />
-    <PackageDownload Include="runtime.linux-musl-x64.Microsoft.NETCore.ILAsm" Version="[$(MicrosoftNETCoreILAsmVersion)]" />
-    <PackageDownload Include="runtime.linux-musl-x64.Microsoft.NETCore.ILDAsm" Version="[$(MicrosoftNETCoreILDAsmVersion)]" />
-    <PackageDownload Include="runtime.linux-musl-x64.Microsoft.NETCore.TestHost" Version="[$(MicrosoftNETCoreTestHostVersion)]" />
-    <!-- There's no nuget package for runtime.linux-musl-x64.runtime.native.System.IO.Ports
-    <PackageReference Include="runtime.linux-musl-x64.runtime.native.System.IO.Ports" Version="$(RuntimeLinuxX64RuntimeNativeSystemIOPortsVersion)" />
-    -->
-    <!-- Packages needed to bootstrap arm64 -->
-    <PackageDownload Include="Microsoft.Aspnetcore.App.Runtime.linux-arm64" Version="[$(MicrosoftAspNetCoreAppRuntimeVersion)]" />
-    <PackageDownload Include="Microsoft.NETCore.App.Crossgen2.linux-arm64" Version="[$(MicrosoftNETCoreAppCrossgen2Version)]" />
-    <PackageDownload Include="Microsoft.NETCore.App.Host.linux-arm64" Version="[$(MicrosoftNETCoreAppHostPackageVersion)]" />
-    <PackageDownload Include="Microsoft.NETCore.App.Runtime.linux-arm64" Version="[$(MicrosoftNETCoreAppRuntimeVersion)]" />
-    <PackageDownload Include="runtime.linux-arm64.Microsoft.DotNet.IlCompiler" Version="[$(MicrosoftDotNetIlCompilerVersion)]" />
-    <PackageDownload Include="runtime.linux-arm64.Microsoft.NETCore.DotNetAppHost" Version="[$(MicrosoftNETCoreDotNetAppHostVersion)]" />
-    <PackageDownload Include="runtime.linux-arm64.Microsoft.NETCore.DotNetHost" Version="[$(MicrosoftNETCoreDotNetHostVersion)]" />
-    <PackageDownload Include="runtime.linux-arm64.Microsoft.NETCore.DotNetHostPolicy" Version="[$(MicrosoftNETCoreDotNetHostPolicyVersion)]" />
-    <PackageDownload Include="runtime.linux-arm64.Microsoft.NETCore.DotNetHostResolver" Version="[$(MicrosoftNETCoreDotNetHostResolverVersion)]" />
-    <PackageDownload Include="runtime.linux-arm64.Microsoft.NETCore.ILAsm" Version="[$(MicrosoftNETCoreILAsmVersion)]" />
-    <PackageDownload Include="runtime.linux-arm64.Microsoft.NETCore.ILDAsm" Version="[$(MicrosoftNETCoreILDAsmVersion)]" />
-    <PackageDownload Include="runtime.linux-arm64.Microsoft.NETCore.TestHost" Version="[$(MicrosoftNETCoreTestHostVersion)]" />
-    <PackageDownload Include="runtime.linux-arm64.runtime.native.System.IO.Ports" Version="[$(RuntimeNativeSystemIOPortsVersion)]" />
+    <LinuxRid Include="linux-x64" />
+    <LinuxRid Include="linux-musl-x64" />
+    <LinuxRid Include="linux-arm64" />
+    <LinuxRid Include="linux-musl-arm64" />
   </ItemGroup>
 
-  <Target Name="BuildBoostrapPreviouslySourceBuilt" AfterTargets="Restore">
+  <!-- These packages will be replaced with ms-built packages downloaded from official package feeds-->
+  <ItemGroup>
+    <RuntimePack Include="Microsoft.Aspnetcore.App.Runtime" Version="[$(MicrosoftAspNetCoreAppRuntimeVersion)]" />
+    <RuntimePack Include="Microsoft.NETCore.App.Crossgen2" Version="[$(MicrosoftNETCoreAppCrossgen2Version)]" />
+    <RuntimePack Include="Microsoft.NETCore.App.Host" Version="[$(MicrosoftNETCoreAppHostPackageVersion)]" />
+    <RuntimePack Include="Microsoft.NETCore.App.Runtime" Version="[$(MicrosoftNETCoreAppRuntimeVersion)]" />
+
+    <PortablePackage Include="Microsoft.DotNet.IlCompiler" Version="[$(MicrosoftDotNetIlCompilerVersion)]" />
+    <PortablePackage Include="Microsoft.NETCore.DotNetAppHost" Version="[$(MicrosoftNETCoreDotNetAppHostVersion)]" />
+    <PortablePackage Include="Microsoft.NETCore.DotNetHost" Version="[$(MicrosoftNETCoreDotNetHostVersion)]" />
+    <PortablePackage Include="Microsoft.NETCore.DotNetHostPolicy" Version="[$(MicrosoftNETCoreDotNetHostPolicyVersion)]" />
+    <PortablePackage Include="Microsoft.NETCore.DotNetHostResolver" Version="[$(MicrosoftNETCoreDotNetHostResolverVersion)]" />
+    <PortablePackage Include="Microsoft.NETCore.ILAsm" Version="[$(MicrosoftNETCoreILAsmVersion)]" />
+    <PortablePackage Include="Microsoft.NETCore.ILDAsm" Version="[$(MicrosoftNETCoreILDAsmVersion)]" />
+    <PortablePackage Include="Microsoft.NETCore.TestHost" Version="[$(MicrosoftNETCoreTestHostVersion)]" />
+
+    <PortablePackage Include="System.IO.Ports" Version="[$(RuntimeNativeSystemIOPortsVersion)]" IsNative="true" />
+    <!-- These packages don't actually exist -->
+    <ExcludedPackage Include="runtime.linux-musl-x64.runtime.native.System.IO.Ports" />
+    <ExcludedPackage Include="runtime.linux-musl-arm64.runtime.native.System.IO.Ports" />
+  </ItemGroup>
+
+  <Target Name="GetPackagesToDownload"
+          AfterTargets="CollectPackageDownloads"
+          Returns="@(PackageDownload)">
+    <ItemGroup>
+      <!-- Generate a cross-product between runtime packs and Linux RIDs -->
+      <RuntimePackWithLinuxRid Include="@(RuntimePack)">
+        <LinuxRid>%(LinuxRid.Identity)</LinuxRid>
+      </RuntimePackWithLinuxRid>
+
+      <!-- Generate a cross-product between portable packages and Linux RIDs -->
+      <PortablePackageWithLinuxRid Include="@(PortablePackage)">
+        <LinuxRid>%(LinuxRid.Identity)</LinuxRid>
+      </PortablePackageWithLinuxRid>
+
+    </ItemGroup>
+    <ItemGroup>
+      <!--
+            Generate package names for runtime packs by concatenating the base name with the Linux RID
+            (e.g. Microsoft.Aspnetcore.App.Runtime.linux-x64)
+        -->
+      <PackageWithName Include="@(RuntimePackWithLinuxRid)">
+        <PackageName>%(RuntimePackWithLinuxRid.Identity).%(RuntimePackWithLinuxRid.LinuxRid)</PackageName>
+      </PackageWithName>
+
+      <!--
+            Include the base name of each portable package (e.g. Microsoft.NETCore.ILAsm)
+            Exclude any that are native packages.
+        -->
+      <PackageWithName Include="@(PortablePackageWithLinuxRid)" Condition=" '%(PortablePackageWithLinuxRid.IsNative)' != 'true' ">
+        <PackageName>%(PortablePackageWithLinuxRid.Identity)</PackageName>
+      </PackageWithName>
+
+      <!--
+            Generate Linux RID package names for portable packages by concatenating the base name with the Linux RID
+            (e.g. runtime.linux-x64.Microsoft.NETCore.ILAsm)
+            Do this for two groups: native and non-native packages. They have different naming conventions.
+        -->
+      <PackageWithName Include="@(PortablePackageWithLinuxRid)" Condition=" '%(PortablePackageWithLinuxRid.IsNative)' != 'true' ">
+        <PackageName>runtime.%(PortablePackageWithLinuxRid.LinuxRid).%(PortablePackageWithLinuxRid.Identity)</PackageName>
+      </PackageWithName>
+      <PackageWithName Include="@(PortablePackageWithLinuxRid)" Condition=" '%(PortablePackageWithLinuxRid.IsNative)' == 'true' ">
+        <PackageName>runtime.%(PortablePackageWithLinuxRid.LinuxRid).runtime.native.%(PortablePackageWithLinuxRid.Identity)</PackageName>
+      </PackageWithName>
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageDownload Include="@(PackageWithName -> '%(PackageName)')" />
+      <PackageDownload Remove="@(ExcludedPackage)" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="BuildBoostrapPreviouslySourceBuilt"
+          AfterTargets="Restore"
+          DependsOnTargets="GetPackagesToDownload">
     <ItemGroup>
       <RestoredNupkgs Include="$(RestorePackagesPath)**/*.nupkg" />
       <PrevSBArchive Include="$(ArchiveDir)Private.SourceBuilt.Artifacts.*.tar.gz" />
@@ -78,7 +129,7 @@
       Properties="SourcePath=$(RestorePackagesPath);DestinationPath=$(UnpackedTarPath);PackageName=%(PackageDownload.Identity);PackageVersion=%(PackageDownload.Version)" />
 
     <!-- override PVP with bootstrap-override package versions -->
-    <Message Text="  Overriding previously-source-built package versions with $(BootstrapOverrideVersionsProps)" Importance="High" />
+    <Message Text="  Overriding previously-source-built package versions with $(BootstrapOverrideVersionsProps)" Importance="High" Condition="Exists('$(BootstrapOverrideVersionsProps)')" />
     <ReadLinesFromFile File="$(UnpackedTarPath)/PackageVersions.props">
       <Output TaskParameter="Lines" ItemName="OriginalPackageVersionLines" />
     </ReadLinesFromFile>
@@ -94,10 +145,12 @@
     <WriteLinesToFile File="$(UnpackedTarPath)/PackageVersions.props"
                       Lines="@(OriginalPackageVersionLines)"
                       Overwrite="true"
+                      Condition="Exists('$(BootstrapOverrideVersionsProps)')"
     />
     <WriteLinesToFile File="$(UnpackedTarPath)/PackageVersions.props"
                       Lines="@(BootstrapPackageVersionLines)"
                       Overwrite="false"
+                      Condition="Exists('$(BootstrapOverrideVersionsProps)')"
     />
 
     <!-- Repack tarball with new bootstrap name -->

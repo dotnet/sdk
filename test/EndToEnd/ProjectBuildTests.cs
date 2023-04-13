@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -242,6 +243,47 @@ namespace EndToEnd.Tests
             }
         }
 
+        [Theory]
+        // microsoft.dotnet.common.itemtemplates templates
+        [InlineData("class")]
+        [InlineData("struct")]
+        [InlineData("enum")]
+        [InlineData("record")]
+        [InlineData("interface")]
+        [InlineData("class", "C#")]
+        [InlineData("class", "VB")]
+        [InlineData("struct", "VB")]
+        [InlineData("enum", "VB")]
+        [InlineData("interface", "VB")]
+        public void ItCanCreateItemTemplateWithProjectRestriction(string templateName, string language = "")
+        {
+            var languageExtensionMap = new Dictionary<string, string>()
+            {
+                { "", ".cs" },
+                { "C#", ".cs" },
+                { "VB", ".vb" }
+            };
+
+            DirectoryInfo directory = InstantiateProjectTemplate("classlib", language, withNoRestore: false);
+            string projectDirectory = directory.FullName;
+            string expectedItemName = $"TestItem_{templateName}";
+            string newArgs = $"{templateName} --name {expectedItemName} --debug:ephemeral-hive";
+            if (!string.IsNullOrWhiteSpace(language))
+            {
+                newArgs += $" --language {language}";
+            }
+
+            new NewCommandShim()
+                .WithWorkingDirectory(projectDirectory)
+                .Execute(newArgs)
+                .Should().Pass();
+
+            //check if the template created files
+            Assert.True(directory.Exists);
+            Assert.True(directory.EnumerateFileSystemInfos().Any());
+            Assert.True(directory.GetFile($"{expectedItemName}.{languageExtensionMap[language]}") != null);
+        }
+
         [WindowsOnlyTheory]
         [InlineData("wpf")]
         [InlineData("winforms")]
@@ -396,19 +438,8 @@ namespace EndToEnd.Tests
 
         private static void TestTemplateCreateAndBuild(string templateName, bool build = true, bool selfContained = false, string language = "", string framework = "", bool deleteTestDirectory = false)
         {
-            DirectoryInfo directory = TestAssets.CreateTestDirectory(identifier: string.IsNullOrWhiteSpace(language) ? templateName : $"{templateName}[{language}]");
+            DirectoryInfo directory = InstantiateProjectTemplate(templateName, language);
             string projectDirectory = directory.FullName;
-
-            string newArgs = $"{templateName} --no-restore";
-            if (!string.IsNullOrWhiteSpace(language))
-            {
-                newArgs += $" --language {language}";
-            }
-
-            new NewCommandShim()
-                .WithWorkingDirectory(projectDirectory)
-                .Execute(newArgs)
-                .Should().Pass();
 
             if (!string.IsNullOrWhiteSpace(framework))
             {
@@ -453,6 +484,28 @@ namespace EndToEnd.Tests
             {
                 directory.Delete(true);
             }
+        }
+
+        private static DirectoryInfo InstantiateProjectTemplate(string templateName, string language = "", bool withNoRestore = true)
+        {
+            DirectoryInfo directory = TestAssets.CreateTestDirectory(
+                identifier: string.IsNullOrWhiteSpace(language)
+                ? templateName
+                : $"{templateName}[{language}]");
+            string projectDirectory = directory.FullName;
+
+            string newArgs = $"{templateName} --debug:ephemeral-hive {(withNoRestore ? "--no-restore" : "")}";
+            if (!string.IsNullOrWhiteSpace(language))
+            {
+                newArgs += $" --language {language}";
+            }
+
+            new NewCommandShim()
+                .WithWorkingDirectory(projectDirectory)
+                .Execute(newArgs)
+                .Should().Pass();
+
+            return directory;
         }
     }
 }

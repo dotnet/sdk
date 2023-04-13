@@ -1,0 +1,24 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Michael Simons <msimons@microsoft.com>
+Date: Tue, 11 Apr 2023 17:03:48 +0000
+Subject: [PATCH] Exclude dotnet-sourcelink from source build
+
+This addresses prebuilts.
+
+Backport: https://github.com/dotnet/sourcelink/pull/933
+---
+ src/dotnet-sourcelink/dotnet-sourcelink.csproj | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/src/dotnet-sourcelink/dotnet-sourcelink.csproj b/src/dotnet-sourcelink/dotnet-sourcelink.csproj
+index f2a6e7a..5c675ef 100644
+--- a/src/dotnet-sourcelink/dotnet-sourcelink.csproj
++++ b/src/dotnet-sourcelink/dotnet-sourcelink.csproj
+@@ -2,6 +2,7 @@
+   <PropertyGroup>
+     <OutputType>Exe</OutputType>
+     <TargetFrameworks>$(NetCurrent)</TargetFrameworks>
++    <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
+ 
+     <!-- NuGet -->
+     <IsPackable>true</IsPackable>

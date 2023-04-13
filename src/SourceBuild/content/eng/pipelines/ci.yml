@@ -19,37 +19,6 @@ stages:
 - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
   - template: templates/stages/vmr-scan.yml
 
-  # For rolling builds we want to build the MSFT SDK first so that we can
-  # compare the contents with the source-built one later.
-  # This only works because we don't run this test in PRs. If we decided
-  # to run this test in PRs, we would need to build the MSFT SDK there too.
-  - stage: Build_MSFT_SDK
-    displayName: Build MSFT SDK
-    dependsOn: []
-    jobs:
-    - template: /src/installer/eng/build.yml
-      parameters:
-        agentOs: Linux
-        jobName: Build_LinuxPortable_Release_x64
-        buildConfiguration: Release
-        buildArchitecture: x64
-        linuxPortable: true
-        runTests: false
-        isBuiltFromVmr: true
-    - template: /src/installer/eng/build.yml
-      parameters:
-        agentOs: Linux
-        jobName: Build_Arm64_Release
-        buildConfiguration: Release
-        buildArchitecture: arm64
-        runtimeIdentifier: 'linux-arm64'
-        linuxPortable: true
-        runTests: false
-        isBuiltFromVmr: true
-
 - template: /src/installer/eng/pipelines/templates/stages/vmr-build.yml
   parameters:
     isBuiltFromVmr: true
-    ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-      dependsOn: Build_MSFT_SDK
-      condition: always()

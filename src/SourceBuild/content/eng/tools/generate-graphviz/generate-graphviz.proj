@@ -5,9 +5,7 @@
     <ItemGroup>
       <AllRepoProjects
         Include="$(ProjectDir)repo-projects\*.proj"
-        Exclude="
-          $(ProjectDir)repo-projects\known-good.proj;
-          $(ProjectDir)repo-projects\known-good-tests.proj" />
+        Exclude="$(ProjectDir)repo-projects\dotnet.proj" />
     </ItemGroup>
 
     <MSBuild

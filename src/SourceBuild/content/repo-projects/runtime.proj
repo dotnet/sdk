@@ -27,17 +27,8 @@
     <BuildCommand>$(StandardSourceBuildCommand) $(BuildCommandArgs)</BuildCommand>
   </PropertyGroup>
 
-  <!-- Output / source-build flags -->
-  <PropertyGroup>
-    <GlobalJsonFile>$(ProjectDirectory)global.json</GlobalJsonFile>
-    <NuGetConfigFile>$(ProjectDirectory)NuGet.config</NuGetConfigFile>
-    <OutputPlacementRepoApiImplemented>false</OutputPlacementRepoApiImplemented>
-    <DependencyVersionInputRepoApiImplemented>true</DependencyVersionInputRepoApiImplemented>
-  </PropertyGroup>
-
   <!-- SDK Overrides -->
   <ItemGroup>
-    <UseSourceBuiltSdkOverride Include="@(ArcadeSdkOverride)" />
     <UseSourceBuiltSdkOverride Include="@(ArcadeCoreFxTestingOverride)" />
     <UseSourceBuiltSdkOverride Include="@(ArcadePackagingOverride)" />
     <UseSourceBuiltSdkOverride Include="@(ArcadeTargetFrameworkOverride)" />
@@ -58,6 +49,7 @@
   <!-- Repository References -->
   <ItemGroup>
       <RepositoryReference Include="arcade" />
+      <RepositoryReference Include="cecil" />
       <RepositoryReference Include="symreader" />
       <RepositoryReference Include="source-build-externals" />
   </ItemGroup>

@@ -139,11 +139,10 @@ ln -s $HOME/.dotnet/dotnet /usr/bin/dotnet
 
 You can also utilize [GitHub Codespaces](https://github.com/features/codespaces) where you can find preset containers in this repository.
 
-### Exporting a source archive
+### Building outside of git
 
-In case you'd like to export a more lightweight archive of sources that can be built outside of this git repository, a simple copy of the working tree won't do.
-The build is using some git metadata (information from the `.git` directory) that are needed to be kept with the sources.
-To export a `tar.gz` archive of the sources, you need to use the `eng/pack-sources.sh` script from within a clone of the VMR checked out at the revision that you're interested in.
+.NET uses git metadata so that it can link assemblies to their original source code when debugging (think "Step into.." functionality) and for that it needs information about the original place the code comes from.
+When you're building source code only, taken outside of context of a git repository (e.g. you download it from the release page), you will need to specify the source repository to the `prep.sh` script via the `--source-repository` and `--source-version` arguments. This can be your fork of the repository and should match the origin where your SDK was built from.
 
 ## List of components
 

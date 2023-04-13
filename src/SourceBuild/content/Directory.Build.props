@@ -173,12 +173,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <!-- known-good (repos/known-good.proj) conditionally includes submodules based on the platform,
-         so this will not always correspond to the same repos - see that file for details.
-         We need an "empty" project after the last real project in order for prebuilt detection
-         to work, so we always build known-good. -->
-    <RootRepo>known-good</RootRepo>
-    <RootRepoTests>known-good-tests</RootRepoTests>
+    <RootRepo>dotnet</RootRepo>
   </PropertyGroup>
 
   <!--
@@ -204,7 +199,7 @@
 
   <Import Project="$(GitInfoAllRepoPropsFile)" />
 
-  <!-- Additional psuedo-versions that some repos depend on -->
+  <!-- Additional pseudo-versions that some repos depend on -->
   <ItemGroup>
     <!-- we don't produce the Windows version of this package but that's the one core-sdk keys off of for the ASP.NET version -->
     <ExtraPackageVersionPropsPackageInfo Include="MicrosoftAspNetCoreAppRuntimewinx64PackageVersion" Version="$(aspnetcoreOutputPackageVersion)" />

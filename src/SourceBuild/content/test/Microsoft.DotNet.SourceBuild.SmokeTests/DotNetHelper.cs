@@ -20,6 +20,7 @@ internal class DotNetHelper
     public static string ProjectsDirectory { get; } = Path.Combine(Directory.GetCurrentDirectory(), $"projects-{DateTime.Now:yyyyMMddHHmmssffff}");
 
     private ITestOutputHelper OutputHelper { get; }
+    private bool IsMonoRuntime { get; }
 
     public DotNetHelper(ITestOutputHelper outputHelper)
     {
@@ -37,6 +38,7 @@ internal class DotNetHelper
                 Directory.CreateDirectory(Config.DotNetDirectory);
                 ExecuteHelper.ExecuteProcessValidateExitCode("tar", $"xzf {Config.SdkTarballPath} -C {Config.DotNetDirectory}", outputHelper);
             }
+            IsMonoRuntime = DetermineIsMonoRuntime(Config.DotNetDirectory);
 
             if (!Directory.Exists(ProjectsDirectory))
             {
@@ -198,10 +200,13 @@ internal class DotNetHelper
 
     public void ExecuteRunWeb(string projectName)
     {
+        // 'dotnet run' exit code differs between CoreCLR and Mono (https://github.com/dotnet/sdk/issues/30095).
+        int expectedExitCode = IsMonoRuntime ? 143 : 0;
         ExecuteCmd(
             $"run {GetBinLogOption(projectName, "run")}",
             GetProjectDirectory(projectName),
             additionalProcessConfigCallback: processConfigCallback,
+            expectedExitCode,
             millisecondTimeout: 30000);
 
         void processConfigCallback(Process process)
@@ -228,6 +233,26 @@ internal class DotNetHelper
         }
 
         return $"/bl:{Path.Combine(LogsDirectory, $"{fileName}.binlog")}";
+    }
+
+    private static bool DetermineIsMonoRuntime(string dotnetRoot)
+    {
+        string sharedFrameworkRoot = Path.Combine(dotnetRoot, "shared", "Microsoft.NETCore.App");
+        if (!Directory.Exists(sharedFrameworkRoot))
+        {
+            return false;
+        }
+
+        string? version = Directory.GetDirectories(sharedFrameworkRoot).FirstOrDefault();
+        if (version is null)
+        {
+            return false;
+        }
+
+        string sharedFramework = Path.Combine(sharedFrameworkRoot, version);
+
+        // Check the presence of one of the mono header files.
+        return File.Exists(Path.Combine(sharedFramework, "mono-gc.h"));
     }
 
     private static string GetProjectDirectory(string projectName) => Path.Combine(ProjectsDirectory, projectName);

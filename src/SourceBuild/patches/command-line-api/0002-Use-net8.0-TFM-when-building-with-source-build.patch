@@ -1,0 +1,68 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Matt Thalman <mthalman@microsoft.com>
+Date: Thu, 6 Apr 2023 09:16:13 -0500
+Subject: [PATCH] Use net8.0 TFM when building with source-build
+
+Backport: https://github.com/dotnet/command-line-api/pull/2150
+---
+ Directory.Build.props                                       | 6 +++---
+ .../System.CommandLine.Benchmarks.csproj                    | 4 ++--
+ src/System.CommandLine/System.CommandLine.csproj            | 4 ++--
+ 3 files changed, 7 insertions(+), 7 deletions(-)
+
+diff --git a/Directory.Build.props b/Directory.Build.props
+index 4c1f04a2..0444426a 100644
+--- a/Directory.Build.props
++++ b/Directory.Build.props
+@@ -11,11 +11,11 @@
+     <LangVersion>10.0</LangVersion>
+   </PropertyGroup>
+ 
+-  <PropertyGroup Condition="'$(DisableArcade)' == '1'">
+-    <TargetFrameworkForNETSDK>net7.0</TargetFrameworkForNETSDK>
++  <PropertyGroup Condition="'$(DotNetBuildFromSource)' == 'true'">
++    <TargetFrameworkForNETSDK>$(NetCurrent)</TargetFrameworkForNETSDK>
+   </PropertyGroup>
+ 
+-  <PropertyGroup Condition="'$(DisableArcade)' != '1'">
++  <PropertyGroup Condition="'$(DotNetBuildFromSource)' != 'true'">
+     <TargetFrameworkForNETSDK>net7.0</TargetFrameworkForNETSDK>
+   </PropertyGroup>
+ 
+diff --git a/src/System.CommandLine.Benchmarks/System.CommandLine.Benchmarks.csproj b/src/System.CommandLine.Benchmarks/System.CommandLine.Benchmarks.csproj
+index b63e109c..3ef1afa1 100644
+--- a/src/System.CommandLine.Benchmarks/System.CommandLine.Benchmarks.csproj
++++ b/src/System.CommandLine.Benchmarks/System.CommandLine.Benchmarks.csproj
+@@ -9,8 +9,8 @@
+     <UseSharedCompilation>false</UseSharedCompilation>
+ 
+     <!-- Supported target frameworks -->
+-    <TargetFrameworks Condition="'$(TargetFrameworks)' == '' AND '$(OS)' == 'Windows_NT'">net7.0</TargetFrameworks>
+-    <TargetFrameworks Condition="'$(TargetFrameworks)' == ''">net7.0</TargetFrameworks>
++    <TargetFrameworks Condition="'$(TargetFrameworks)' == '' AND '$(OS)' == 'Windows_NT'">$(TargetFrameworkForNETSDK)</TargetFrameworks>
++    <TargetFrameworks Condition="'$(TargetFrameworks)' == ''">$(TargetFrameworkForNETSDK)</TargetFrameworks>
+ 
+     <!-- This repo does not produce any libraries, therefore generating docs is disabled -->
+     <GenerateDocumentationFile>False</GenerateDocumentationFile>
+diff --git a/src/System.CommandLine/System.CommandLine.csproj b/src/System.CommandLine/System.CommandLine.csproj
+index 05d28476..37115d70 100644
+--- a/src/System.CommandLine/System.CommandLine.csproj
++++ b/src/System.CommandLine/System.CommandLine.csproj
+@@ -3,7 +3,7 @@
+   <PropertyGroup>
+     <IsPackable>true</IsPackable>
+     <PackageId>System.CommandLine</PackageId>
+-    <TargetFrameworks>net7.0;netstandard2.0</TargetFrameworks>
++    <TargetFrameworks>$(TargetFrameworkForNETSDK);netstandard2.0</TargetFrameworks>
+     <Nullable>enable</Nullable>
+     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+     <LangVersion>10</LangVersion>
+@@ -18,7 +18,7 @@
+     <EnableSingleFileAnalyzer>true</EnableSingleFileAnalyzer>
+   </PropertyGroup>
+ 
+-  <PropertyGroup Condition="'$(TargetFramework)' == 'net7.0'">
++  <PropertyGroup Condition="'$(TargetFramework)' == '$(TargetFrameworkForNETSDK)'">
+     <IsTrimmable>true</IsTrimmable>
+     <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
+   </PropertyGroup>

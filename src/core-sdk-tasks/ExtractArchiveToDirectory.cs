@@ -5,8 +5,12 @@
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using System;
+#if !NETFRAMEWORK
+using System.Formats.Tar;
+#endif
 using System.IO;
 using System.IO.Compression;
+using System.Linq;
 
 namespace Microsoft.DotNet.Build.Tasks
 {
@@ -33,7 +37,7 @@ namespace Microsoft.DotNet.Build.Tasks
         public bool CleanDestination { get; set; }
 
         /// <summary>
-        /// A list of directories, semicolon deliminated, relative to the root of the archive to include. If empty all directories will be copied.
+        /// A list of directories, relative to the root of the archive to include. If empty all directories will be copied.
         /// </summary>
         public ITaskItem[] DirectoriesToCopy { get; set; }
 
@@ -71,22 +75,26 @@ namespace Microsoft.DotNet.Build.Tasks
         public override bool Execute()
         {
             bool retVal = true;
+            bool isZipArchive = Path.GetExtension(SourceArchive).Equals(".zip", StringComparison.OrdinalIgnoreCase);
+            bool isTarballArchive = SourceArchive.EndsWith(".tar.gz", StringComparison.OrdinalIgnoreCase);
 
-            //  Inherits from ToolTask in order to shell out to tar.
+            //  Inherits from ToolTask in order to shell out to tar for complete extraction
             //  If the file is a .zip, then don't call the base Execute method, just run as a normal task
-            if (Path.GetExtension(SourceArchive).Equals(".zip", StringComparison.OrdinalIgnoreCase))
+            //  If the file is a .tar.gz, and DirectoriesToCopy isn't empty, also run a normal task.
+            if (isZipArchive || isTarballArchive)
             {
                 if (ValidateParameters())
                 {
                     if (DirectoriesToCopy != null && DirectoriesToCopy.Length != 0)
                     {
-                        var zip = new ZipArchive(File.OpenRead(SourceArchive));
-                        string loc = DestinationDirectory;
-                        foreach (var entry in zip.Entries)
+                        // Partial archive extraction
+                        if (isZipArchive)
                         {
-                            foreach (var directory in DirectoriesToCopy)
+                            var zip = new ZipArchive(File.OpenRead(SourceArchive));
+                            string loc = DestinationDirectory;
+                            foreach (var entry in zip.Entries)
                             {
-                                if (entry.FullName.StartsWith(directory.ItemSpec))
+                                if (ShouldExtractItem(entry.FullName))
                                 {
                                     if (!Directory.Exists(Path.Combine(DestinationDirectory, Path.GetDirectoryName(entry.FullName))))
                                     {
@@ -98,16 +106,57 @@ namespace Microsoft.DotNet.Build.Tasks
                                 }
                             }
                         }
+                        else
+                        {
+#if NETFRAMEWORK
+                            // Run the base tool, which uses external 'tar' command
+                            retVal = base.Execute();
+#else
+                            // Decompress GZip content
+                            using FileStream compressedFileStream = File.Open(SourceArchive, FileMode.Open);
+                            using var decompressor = new GZipStream(compressedFileStream, CompressionMode.Decompress);
+                            using var decompressedStream = new MemoryStream();
+                            decompressor.CopyTo(decompressedStream);
+                            decompressedStream.Seek(0, SeekOrigin.Begin);
+
+                            // Extract Tar content
+                            using TarReader tr = new TarReader(decompressedStream);
+                            while (tr.GetNextEntry() is TarEntry tarEntry)
+                            {
+                                if (tarEntry.EntryType != TarEntryType.Directory)
+                                {
+                                    string entryName = tarEntry.Name;
+                                    entryName = entryName.StartsWith("./") ? entryName[2..] : entryName;
+                                    if (ShouldExtractItem(entryName))
+                                    {
+                                        Log.LogMessage(entryName);
+                                        string destinationPath = Path.Combine(DestinationDirectory, entryName);
+                                        Directory.CreateDirectory(Path.GetDirectoryName(destinationPath));
+                                        tarEntry.ExtractToFile(destinationPath, overwrite: true);
+                                    }
+                                }
+                            }
+#endif
+                        }
                     }
                     else
-                    { 
+                    {
+                        // Complete archive extraction
+                        if (isZipArchive)
+                        {
 #if NETFRAMEWORK
-                        //  .NET Framework doesn't have overload to overwrite files
-                        ZipFile.ExtractToDirectory(SourceArchive, DestinationDirectory);
+                            //  .NET Framework doesn't have overload to overwrite files
+                            ZipFile.ExtractToDirectory(SourceArchive, DestinationDirectory);
 #else
 
-                        ZipFile.ExtractToDirectory(SourceArchive, DestinationDirectory, overwriteFiles: true);
+                            ZipFile.ExtractToDirectory(SourceArchive, DestinationDirectory, overwriteFiles: true);
 #endif
+                        }
+                        else
+                        {
+                            // Run the base tool, which uses external 'tar' command
+                            retVal = base.Execute();
+                        }
                     }
                 }
                 else
@@ -127,6 +176,17 @@ namespace Microsoft.DotNet.Build.Tasks
             }
 
             return retVal;
+        }
+
+        private bool ShouldExtractItem(string path)
+        {
+            if (DirectoriesToCopy != null)
+            {
+                return DirectoriesToCopy.Any(p => path.StartsWith(p.ItemSpec));
+
+            }
+
+            return false;
         }
 
         protected override string ToolName

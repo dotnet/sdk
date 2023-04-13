@@ -1,0 +1,25 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Michael Simons <msimons@microsoft.com>
+Date: Mon, 20 Mar 2023 13:42:30 +0000
+Subject: [PATCH] Revert "Trim away netframework targets in source-build
+ (#312)"
+
+This reverts commit 400fd9a71c568f3c7aa025c6224e082aa819a4c0.
+
+Backport: https://github.com/dotnet/source-build/issues/3336
+---
+ eng/SourceBuild.props | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/eng/SourceBuild.props b/eng/SourceBuild.props
+index c963035..c4009f3 100644
+--- a/eng/SourceBuild.props
++++ b/eng/SourceBuild.props
+@@ -3,7 +3,6 @@
+   <PropertyGroup>
+     <GitHubRepositoryName>emsdk</GitHubRepositoryName>
+     <SourceBuildManagedOnly>true</SourceBuildManagedOnly>
+-    <SourceBuildTrimNetFrameworkTargets>true</SourceBuildTrimNetFrameworkTargets>
+   </PropertyGroup>
+ 
+ </Project>

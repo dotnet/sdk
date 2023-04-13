@@ -16,9 +16,7 @@
 
     <BuildCommand>$(ProjectDirectory)build$(ShellExtension) $(BuildCommandArgs)</BuildCommand>
 
-    <RepoApiImplemented>false</RepoApiImplemented>
     <LogVerbosityOptOut>true</LogVerbosityOptOut>
-    <GlobalJsonFile>$(ProjectDirectory)global.json</GlobalJsonFile>
   </PropertyGroup>
 
   <ItemGroup>
@@ -30,7 +28,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <UseSourceBuiltSdkOverride Include="@(ArcadeSdkOverride)" />
     <UseSourceBuiltSdkOverride Include="@(WindowsDesktopSdkOverride)" />
   </ItemGroup>
 

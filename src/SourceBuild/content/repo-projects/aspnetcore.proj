@@ -24,22 +24,9 @@
 
     <LogVerbosityOptOut>true</LogVerbosityOptOut>
 
-    <RepoApiImplemented>false</RepoApiImplemented>
-    <DependencyVersionInputRepoApiImplemented>true</DependencyVersionInputRepoApiImplemented>
-
-    <GlobalJsonFile>$(ProjectDirectory)global.json</GlobalJsonFile>
-    <NuGetConfigFile>$(ProjectDirectory)NuGet.config</NuGetConfigFile>
-
-    <!-- CS0618 - Caused from deprecated IOperation.Children in
-                  Microsoft.CodeAnalysis 4.3.0, but aspnetcore references version 4.2.0.
-                  Requires https://github.com/dotnet/source-build/issues/2482
-         CA1825 - Avoid unnecessary zero-length array allocations.
-                  Requires aspnet to upgrade roslyn version.
-         CS8600 - Converting null literal or possible null value to non-nullable type.
-                  Requires https://github.com/dotnet/aspnetcore/issues/45882.
-         CS8604 - Possible null reference argument for parameter.
-                  Requires https://github.com/dotnet/aspnetcore/issues/45882. -->
-    <RepoNoWarns>CS0618;CA1825;CS8600;CS8604</RepoNoWarns>
+    <!-- CA1512 - Use 'ArgumentOutOfRangeException.ThrowIfEqual'
+                  Requires https://github.com/dotnet/aspnetcore/issues/47673 -->
+    <RepoNoWarns>CA1512</RepoNoWarns>
   </PropertyGroup>
 
   <ItemGroup>
@@ -61,10 +48,6 @@
     <RepositoryReference Include="msbuild" />
     <RepositoryReference Include="roslyn" />
     <RepositoryReference Include="roslyn-analyzers" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <UseSourceBuiltSdkOverride Include="@(ArcadeSdkOverride)" />
   </ItemGroup>
 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />

@@ -19,7 +19,6 @@ usage() {
 SCRIPT_ROOT="$(cd -P "$( dirname "$0" )" && pwd)"
 
 MSBUILD_ARGUMENTS=("-flp:v=detailed")
-CUSTOM_REF_PACKAGES_DIR=''
 CUSTOM_PACKAGES_DIR=''
 alternateTarget=false
 runningSmokeTests=false
@@ -34,7 +33,7 @@ while :; do
         break
     fi
 
-    lowerI="$(echo $1 | awk '{print tolower($0)}')"
+    lowerI="$(echo "$1" | awk '{print tolower($0)}')"
     case $lowerI in
         --clean-while-building)
             MSBUILD_ARGUMENTS+=( "-p:CleanWhileBuilding=true")
@@ -78,7 +77,7 @@ while :; do
             echo "Detected '--': passing remaining parameters '$@' as build.sh arguments."
             break
             ;;
-        -?|-h|--help)
+        '-?'|-h|--help)
             usage
             exit 0
             ;;
@@ -114,14 +113,19 @@ if [ -f "${packagesArchiveDir}archiveArtifacts.txt" ]; then
   fi
 fi
 
+if [ ! -d "$SCRIPT_ROOT/.git" ]; then
+  echo "ERROR: $SCRIPT_ROOT is not a git repository. Please run prep.sh add initialize Source Link metadata."
+  exit 1
+fi
+
 if [ -d "$CUSTOM_SDK_DIR" ]; then
-  export SDK_VERSION=`"$CUSTOM_SDK_DIR/dotnet" --version`
+  export SDK_VERSION=$("$CUSTOM_SDK_DIR/dotnet" --version)
   export CLI_ROOT="$CUSTOM_SDK_DIR"
   export _InitializeDotNetCli="$CLI_ROOT/dotnet"
   export CustomDotNetSdkDir="$CLI_ROOT"
   echo "Using custom bootstrap SDK from '$CLI_ROOT', version '$SDK_VERSION'"
 else
-  sdkLine=`grep -m 1 'dotnet' "$SCRIPT_ROOT/global.json"`
+  sdkLine=$(grep -m 1 'dotnet' "$SCRIPT_ROOT/global.json")
   sdkPattern="\"dotnet\" *: *\"(.*)\""
   if [[ $sdkLine =~ $sdkPattern ]]; then
     export SDK_VERSION=${BASH_REMATCH[1]}
@@ -134,7 +138,7 @@ packageVersionsPath=''
 if [[ "$CUSTOM_PACKAGES_DIR" != "" && -f "$CUSTOM_PACKAGES_DIR/PackageVersions.props" ]]; then
   packageVersionsPath="$CUSTOM_PACKAGES_DIR/PackageVersions.props"
 elif [ -d "$packagesArchiveDir" ]; then
-  sourceBuiltArchive=`find $packagesArchiveDir -maxdepth 1 -name 'Private.SourceBuilt.Artifacts*.tar.gz'`
+  sourceBuiltArchive=$(find "$packagesArchiveDir" -maxdepth 1 -name 'Private.SourceBuilt.Artifacts*.tar.gz')
   if [ -f "${packagesPreviouslySourceBuiltDir}}PackageVersions.props" ]; then
     packageVersionsPath=${packagesPreviouslySourceBuiltDir}PackageVersions.props
   elif [ -f "$sourceBuiltArchive" ]; then
@@ -150,7 +154,7 @@ if [ ! -f "$packageVersionsPath" ]; then
   exit 1
 fi
 
-arcadeSdkLine=`grep -m 1 'MicrosoftDotNetArcadeSdkVersion' "$packageVersionsPath"`
+arcadeSdkLine=$(grep -m 1 'MicrosoftDotNetArcadeSdkVersion' "$packageVersionsPath")
 versionPattern="<MicrosoftDotNetArcadeSdkVersion>(.*)</MicrosoftDotNetArcadeSdkVersion>"
 if [[ $arcadeSdkLine =~ $versionPattern ]]; then
   export ARCADE_BOOTSTRAP_VERSION=${BASH_REMATCH[1]}
@@ -163,7 +167,7 @@ if [[ $arcadeSdkLine =~ $versionPattern ]]; then
   export SOURCE_BUILT_SDK_DIR_ARCADE=$packagesRestoredDir/ArcadeBootstrapPackage/microsoft.dotnet.arcade.sdk/$ARCADE_BOOTSTRAP_VERSION
 fi
 
-sourceLinkLine=`grep -m 1 'MicrosoftSourceLinkCommonVersion' "$packageVersionsPath"`
+sourceLinkLine=$(grep -m 1 'MicrosoftSourceLinkCommonVersion' "$packageVersionsPath")
 versionPattern="<MicrosoftSourceLinkCommonVersion>(.*)</MicrosoftSourceLinkCommonVersion>"
 if [[ $sourceLinkLine =~ $versionPattern ]]; then
   export SOURCE_LINK_BOOTSTRAP_VERSION=${BASH_REMATCH[1]}
@@ -179,11 +183,11 @@ LogDateStamp=$(date +"%m%d%H%M%S")
 "$CLI_ROOT/dotnet" build-server shutdown
 
 if [ "$alternateTarget" == "true" ]; then
-  "$CLI_ROOT/dotnet" msbuild "$SCRIPT_ROOT/build.proj" -bl:$SCRIPT_ROOT/artifacts/log/Debug/BuildTests_$LogDateStamp.binlog -flp:LogFile=$SCRIPT_ROOT/artifacts/logs/BuildTests_$LogDateStamp.log -clp:v=m ${MSBUILD_ARGUMENTS[@]} "$@"
+  "$CLI_ROOT/dotnet" msbuild "$SCRIPT_ROOT/build.proj" -bl:"$SCRIPT_ROOT/artifacts/log/Debug/BuildTests_$LogDateStamp.binlog" -flp:"LogFile=$SCRIPT_ROOT/artifacts/logs/BuildTests_$LogDateStamp.log" -clp:v=m ${MSBUILD_ARGUMENTS[@]} "$@"
 else
-  "$CLI_ROOT/dotnet" msbuild "$SCRIPT_ROOT/eng/tools/init-build.proj" -bl:$SCRIPT_ROOT/artifacts/log/Debug/BuildXPlatTasks_$LogDateStamp.binlog -flp:LogFile=$SCRIPT_ROOT/artifacts/logs/BuildXPlatTasks_$LogDateStamp.log -t:PrepareOfflineLocalTools ${MSBUILD_ARGUMENTS[@]} "$@"
+  "$CLI_ROOT/dotnet" msbuild "$SCRIPT_ROOT/eng/tools/init-build.proj" -bl:"$SCRIPT_ROOT/artifacts/log/Debug/BuildXPlatTasks_$LogDateStamp.binlog" -flp:LogFile="$SCRIPT_ROOT/artifacts/logs/BuildXPlatTasks_$LogDateStamp.log" -t:PrepareOfflineLocalTools ${MSBUILD_ARGUMENTS[@]} "$@"
   # kill off the MSBuild server so that on future invocations we pick up our custom SDK Resolver
   "$CLI_ROOT/dotnet" build-server shutdown
 
-  "$CLI_ROOT/dotnet" msbuild "$SCRIPT_ROOT/build.proj" -bl:$SCRIPT_ROOT/artifacts/log/Debug/Build_$LogDateStamp.binlog -flp:LogFile=$SCRIPT_ROOT/artifacts/logs/Build_$LogDateStamp.log ${MSBUILD_ARGUMENTS[@]} "$@"
+  "$CLI_ROOT/dotnet" msbuild "$SCRIPT_ROOT/build.proj" -bl:"$SCRIPT_ROOT/artifacts/log/Debug/Build_$LogDateStamp.binlog" -flp:"LogFile=$SCRIPT_ROOT/artifacts/logs/Build_$LogDateStamp.log" ${MSBUILD_ARGUMENTS[@]} "$@"
 fi

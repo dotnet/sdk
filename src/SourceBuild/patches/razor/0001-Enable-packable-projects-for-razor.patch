@@ -1,0 +1,51 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Matt Thalman <mthalman@microsoft.com>
+Date: Mon, 27 Feb 2023 14:02:25 -0600
+Subject: [PATCH] Enable packable projects for razor
+
+Backport: https://github.com/dotnet/razor/issues/8332
+---
+ .../Microsoft.NET.Sdk.Razor.SourceGenerators.Transport.csproj   | 2 +-
+ ...soft.AspNetCore.Mvc.Razor.Extensions.Tooling.Internal.csproj | 2 +-
+ .../Microsoft.CodeAnalysis.Razor.Tooling.Internal.csproj        | 2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/src/Compiler/Microsoft.NET.Sdk.Razor.SourceGenerators.Transport/Microsoft.NET.Sdk.Razor.SourceGenerators.Transport.csproj b/src/Compiler/Microsoft.NET.Sdk.Razor.SourceGenerators.Transport/Microsoft.NET.Sdk.Razor.SourceGenerators.Transport.csproj
+index 547da8632..606af7bf4 100644
+--- a/src/Compiler/Microsoft.NET.Sdk.Razor.SourceGenerators.Transport/Microsoft.NET.Sdk.Razor.SourceGenerators.Transport.csproj
++++ b/src/Compiler/Microsoft.NET.Sdk.Razor.SourceGenerators.Transport/Microsoft.NET.Sdk.Razor.SourceGenerators.Transport.csproj
+@@ -7,7 +7,7 @@
+     <SuppressDependenciesWhenPacking>false</SuppressDependenciesWhenPacking>
+     <NoPackageAnalysis>true</NoPackageAnalysis>
+     <GenerateDependencyFile>false</GenerateDependencyFile>
+-    <IsPackable Condition="'$(OS)' == 'Windows_NT'">true</IsPackable>
++    <IsPackable>true</IsPackable>
+     <!-- Need to build this project in source build -->
+     <ExcludeFromSourceBuild>false</ExcludeFromSourceBuild>
+   </PropertyGroup>
+diff --git a/src/Compiler/tools/Microsoft.AspNetCore.Mvc.Razor.Extensions.Tooling.Internal/Microsoft.AspNetCore.Mvc.Razor.Extensions.Tooling.Internal.csproj b/src/Compiler/tools/Microsoft.AspNetCore.Mvc.Razor.Extensions.Tooling.Internal/Microsoft.AspNetCore.Mvc.Razor.Extensions.Tooling.Internal.csproj
+index 00e1cedec..cc1f32523 100644
+--- a/src/Compiler/tools/Microsoft.AspNetCore.Mvc.Razor.Extensions.Tooling.Internal/Microsoft.AspNetCore.Mvc.Razor.Extensions.Tooling.Internal.csproj
++++ b/src/Compiler/tools/Microsoft.AspNetCore.Mvc.Razor.Extensions.Tooling.Internal/Microsoft.AspNetCore.Mvc.Razor.Extensions.Tooling.Internal.csproj
+@@ -5,7 +5,7 @@
+     <TargetFramework>netstandard2.0</TargetFramework>
+     <IsShipping>false</IsShipping>
+     <IncludeBuildOutput>false</IncludeBuildOutput>
+-    <IsPackable Condition="'$(OS)' == 'Windows_NT'">true</IsPackable>
++    <IsPackable>true</IsPackable>
+     <ExcludeFromSourceBuild>false</ExcludeFromSourceBuild>
+   </PropertyGroup>
+ 
+diff --git a/src/Compiler/tools/Microsoft.CodeAnalysis.Razor.Tooling.Internal/Microsoft.CodeAnalysis.Razor.Tooling.Internal.csproj b/src/Compiler/tools/Microsoft.CodeAnalysis.Razor.Tooling.Internal/Microsoft.CodeAnalysis.Razor.Tooling.Internal.csproj
+index 7216edbe7..c1fbd3af4 100644
+--- a/src/Compiler/tools/Microsoft.CodeAnalysis.Razor.Tooling.Internal/Microsoft.CodeAnalysis.Razor.Tooling.Internal.csproj
++++ b/src/Compiler/tools/Microsoft.CodeAnalysis.Razor.Tooling.Internal/Microsoft.CodeAnalysis.Razor.Tooling.Internal.csproj
+@@ -5,7 +5,7 @@
+     <TargetFramework>netstandard2.0</TargetFramework>
+     <IsShipping>false</IsShipping>
+     <IncludeBuildOutput>false</IncludeBuildOutput>
+-    <IsPackable Condition="'$(OS)' == 'Windows_NT'">true</IsPackable>
++    <IsPackable>true</IsPackable>
+     <ExcludeFromSourceBuild>false</ExcludeFromSourceBuild>
+   </PropertyGroup>
+ 

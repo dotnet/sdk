@@ -29,8 +29,7 @@ src/aspnetcore/src/*.otf
 src/aspnetcore/src/*.ttf
 src/aspnetcore/src/*.woff
 src/aspnetcore/src/*.woff2
-src/aspnetcore/src/Components/Web.JS/dist/Release/blazor.server.js # JavaScript file with a null byte
-src/aspnetcore/src/Components/Web.JS/dist/Release/blazor.webview.js # JavaScript file with a null byte
+src/aspnetcore/src/Components/Web.JS/dist/Release/blazor.*.js # JavaScript files with a null bytes
 src/aspnetcore/src/ProjectTemplates/Web.ProjectTemplates/**/app.db
 src/aspnetcore/src/submodules/spa-templates/**/app.db
 

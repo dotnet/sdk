@@ -43,19 +43,9 @@
 
     <BuildCommand>$(StandardSourceBuildCommand) $(BuildCommandArgs)</BuildCommand>
 
-    <RepoApiImplemented>false</RepoApiImplemented>
-    <SourceOverrideRepoApiImplemented>true</SourceOverrideRepoApiImplemented>
-    <DependencyVersionInputRepoApiImplemented>true</DependencyVersionInputRepoApiImplemented>
-
-    <NuGetConfigFile>$(ProjectDirectory)NuGet.config</NuGetConfigFile>
-
     <!-- CS9057 - Caused by incoherency of analyzer assemblies during pre-release builds. -->
     <RepoNoWarns>CS9057</RepoNoWarns>
   </PropertyGroup>
-
-  <ItemGroup>
-    <UseSourceBuiltSdkOverride Include="@(ArcadeSdkOverride)" />
-  </ItemGroup>
 
   <ItemGroup>
     <RepositoryReference Include="arcade" />

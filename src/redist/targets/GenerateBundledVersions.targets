@@ -66,14 +66,6 @@
 
   </Target>
 
-  <PropertyGroup>
-      <VersionFeature21>30</VersionFeature21>
-      <VersionFeature31>32</VersionFeature31>
-      <VersionFeature50>17</VersionFeature50>
-      <VersionFeature60>13</VersionFeature60>
-      <VersionFeature70>2</VersionFeature70>
-  </PropertyGroup>
-
   <Target Name="GenerateBundledVersionsProps" DependsOnTargets="SetupBundledComponents">
     <PropertyGroup>
       <BundledVersionsPropsFileName>Microsoft.NETCoreSdk.BundledVersions.props</BundledVersionsPropsFileName>
@@ -359,6 +351,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <NetCoreRoot Condition="'%24(NetCoreRoot)' == ''">%24([MSBuild]::NormalizePath('%24(MSBuildThisFileDirectory)..\..\'))</NetCoreRoot>
     <NetCoreTargetingPackRoot Condition="'%24(NetCoreTargetingPackRoot)' == ''">%24([MSBuild]::EnsureTrailingSlash('%24(NetCoreRoot)'))packs</NetCoreTargetingPackRoot>
 
+    <MicrosoftNetFrameworkCompilersToolsetPackageVersion>$(MicrosoftNetCompilersToolsetPackageVersion)</MicrosoftNetFrameworkCompilersToolsetPackageVersion>
     <NETCoreAppMaximumVersion>$(_NETCoreAppTargetFrameworkVersion)</NETCoreAppMaximumVersion>
     <BundledNETCoreAppTargetFrameworkVersion>$(_NETCoreAppTargetFrameworkVersion)</BundledNETCoreAppTargetFrameworkVersion>
     <BundledNETCoreAppPackageVersion>$(_NETCoreAppPackageVersion)</BundledNETCoreAppPackageVersion>
@@ -412,6 +405,10 @@ Copyright (c) .NET Foundation. All rights reserved.
     <KnownILLinkPack Include="Microsoft.NET.ILLink.Tasks"
                      TargetFramework="net8.0"
                      ILLinkPackVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)" />
+    
+    <KnownWebAssemblySdkPack Include="Microsoft.NET.Sdk.WebAssembly.Pack"
+                             TargetFramework="net8.0"
+                             WebAssemblySdkPackVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)" />
 
     <KnownRuntimePack Include="Microsoft.NETCore.App"
                       TargetFramework="net8.0"
