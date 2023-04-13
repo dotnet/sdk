@@ -41,7 +41,7 @@
     <SystemTextJsonVersion>7.0.2</SystemTextJsonVersion>
     <SystemReflectionMetadataLoadContextVersion>8.0.0-preview.4.23210.1</SystemReflectionMetadataLoadContextVersion>
     <SystemManagementPackageVersion>4.6.0</SystemManagementPackageVersion>
-    <SystemCommandLineVersion>2.0.0-beta4.23213.1</SystemCommandLineVersion>
+    <SystemCommandLineVersion>2.0.0-beta4.23213.2</SystemCommandLineVersion>
     <MicrosoftDeploymentDotNetReleasesVersion>1.0.0-preview6.1.23159.4</MicrosoftDeploymentDotNetReleasesVersion>
     <MicrosoftVisualStudioSetupConfigurationInteropVersion>3.0.4496</MicrosoftVisualStudioSetupConfigurationInteropVersion>
   </PropertyGroup>
