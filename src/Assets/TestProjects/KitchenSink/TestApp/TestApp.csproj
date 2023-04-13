@@ -26,7 +26,7 @@
     <CustomResourceTypesSupport>false</CustomResourceTypesSupport>
     <UseSystemResourceKeys>true</UseSystemResourceKeys>
     <DynamicCodeSupport>true</DynamicCodeSupport>
-    <JsonSerializerIsReflectionEnabledByDefault>true</JsonSerializerIsReflectionEnabledByDefault>
+    <JsonSerializerIsReflectionEnabledByDefault>false</JsonSerializerIsReflectionEnabledByDefault>
     <BuiltInComInteropSupport>false</BuiltInComInteropSupport>
     <_EnableConsumingManagedCodeFromNativeHosting>false</_EnableConsumingManagedCodeFromNativeHosting>
     <EnableCppCLIHostActivation>false</EnableCppCLIHostActivation>
