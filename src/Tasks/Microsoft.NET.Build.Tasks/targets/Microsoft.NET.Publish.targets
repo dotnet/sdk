@@ -15,6 +15,11 @@ Copyright (c) .NET Foundation. All rights reserved.
     <DefaultCopyToPublishDirectoryMetadata Condition="'$(DefaultCopyToPublishDirectoryMetadata)' == ''">true</DefaultCopyToPublishDirectoryMetadata>
     <_GetChildProjectCopyToPublishDirectoryItems Condition="'$(_GetChildProjectCopyToPublishDirectoryItems)' == ''">true</_GetChildProjectCopyToPublishDirectoryItems>
     <IsPublishable Condition="'$(IsPublishable)' == ''">true</IsPublishable>
+    <!-- PublishAot depends on PublishTrimmed. This must be set early enough for the KnownILLinkPack to be restored. -->
+    <PublishTrimmed Condition="'$(PublishTrimmed)' == '' And '$(PublishAot)' == 'true'">true</PublishTrimmed>
+    <_IsTrimmingEnabled Condition="'$(_IsTrimmingEnabled)' == '' And ('$(PublishTrimmed)' == 'true' Or '$(IsTrimmable)' == 'true')">true</_IsTrimmingEnabled>
+    <_IsTrimmingEnabled Condition="'$(_IsTrimmingEnabled)' == ''">false</_IsTrimmingEnabled>
+    <DynamicCodeSupport Condition="'$(DynamicCodeSupport)' == '' And '$(PublishAot)' == 'true'">false</DynamicCodeSupport>
   </PropertyGroup>
 
   <!-- Trimming/AOT/publish* property configuration -->
@@ -77,7 +82,14 @@ Copyright (c) .NET Foundation. All rights reserved.
          the published assets were copied. -->
     <Message Importance="High" Text="$(MSBuildProjectName) -> $([System.IO.Path]::GetFullPath('$(PublishDir)'))" />
 
-    <AllowEmptyTelemetry EventName="PublishProperties" EventData="PublishReadyToRun=$(PublishReadyToRun);PublishTrimmed=$(PublishTrimmed);PublishSingleFile=$(PublishSingleFile);PublishAot=$(PublishAot);PublishProtocol=$(PublishProtocol)" />
+    <ItemGroup>
+      <PublishTelemetry Include="PublishReadyToRun" Value="$(PublishReadyToRun)" />
+      <PublishTelemetry Include="PublishTrimmed" Value="$(PublishTrimmed)" />
+      <PublishTelemetry Include="PublishSingleFile" Value="$(PublishSingleFile)" />
+      <PublishTelemetry Include="PublishAot" Value="$(PublishAot)" />
+      <PublishTelemetry Include="PublishProtocol" Value="$(PublishProtocol)" />
+    </ItemGroup>
+    <AllowEmptyTelemetry EventName="PublishProperties" EventData="@(PublishTelemetry)" />
   </Target>
 
   <!-- Don't let project reference resolution build project references in NoBuild case. -->
@@ -117,12 +129,20 @@ Copyright (c) .NET Foundation. All rights reserved.
                             '$(SelfContained)' != 'true'"
                  ResourceName="CompressionInSingleFileRequiresSelfContained" />
 
-    <!-- Enable warning for trying to use PublishRelease or PackRelease with a solution if env-var is not set.-->
-    <NETSdkWarning Condition="'$(PublishRelease)' != '' and '$(SolutionExt)' == '.sln' and '$(DOTNET_CLI_ENABLE_PUBLISH_RELEASE_FOR_SOLUTIONS)' == ''"
-                   ResourceName="PReleaseRequiresEnvVarOnSln"
-                   FormatArguments="PublishRelease;DOTNET_CLI_ENABLE_PUBLISH_RELEASE_FOR_SOLUTIONS"
-    />
+    <NETSdkWarning Condition="'$(PublishProfileImported)' != 'true' and '$(PublishProfile)' != ''"
+                   ResourceName="PublishProfileNotPresent" 
+                   FormatArguments="$(PublishProfile)"/>
 
+    <!-- Projects in a solution cannot have conflicting configurations. This checks if PublishRelease conflicted at runtime to avoid extra project evaluations.
+    SolutionExt is used to check if we are publishing a solution. Will be undefined if not.-->
+    <NETSdkError Condition="'$(_IsPublishing)' == 'true' and
+                            '$(DOTNET_CLI_DISABLE_PUBLISH_AND_PACK_RELEASE)' != 'true' and
+                            '$(DOTNET_CLI_LAZY_PUBLISH_AND_PACK_RELEASE_FOR_SOLUTIONS)' == 'true' and
+                            '$(SolutionExt)' == '.sln' and
+                            '$(_SolutionLevelPublishRelease)' != '$(PublishRelease)'"
+                 ResourceName="SolutionProjectConfigurationsConflict"
+                 FormatArguments="PublishRelease;$(ProjectName)"/>
+    
     <PropertyGroup>
       <!-- Ensure any PublishDir has a trailing slash, so it can be concatenated -->
       <PublishDir Condition="!HasTrailingSlash('$(PublishDir)')">$(PublishDir)\</PublishDir>
@@ -362,6 +382,17 @@ Copyright (c) .NET Foundation. All rights reserved.
                             GeneratePublishDependencyFile;
                             GenerateSingleFileBundle">
   </Target>
+
+  <!--
+    ============================================================
+                                        ILLink
+
+    Initially an empty placeholder target. When trimming, this
+    will be redefined to invoke ILLink to perform IL trimming.
+    The placeholder exists to allow other targets to depend on it for ordering purposes.
+    ============================================================
+    -->
+  <Target Name="ILLink" />
 
   <PropertyGroup>
     <CopyBuildOutputToPublishDirectory Condition="'$(CopyBuildOutputToPublishDirectory)'==''">true</CopyBuildOutputToPublishDirectory>
@@ -991,7 +1022,8 @@ Copyright (c) .NET Foundation. All rights reserved.
                       IsSelfContained="$(SelfContained)"
                       IsSingleFile="$(_IsSingleFilePublish)"
                       IncludeRuntimeFileVersions="$(IncludeFileVersionsInDependencyFile)"
-                      RuntimeGraphPath="$(BundledRuntimeIdentifierGraphFile)"/>
+                      RuntimeGraphPath="$(BundledRuntimeIdentifierGraphFile)"
+                      IncludeProjectsNotInAssetsFile="$(IncludeProjectsNotInAssetsFileInDepsFile)"/>
 
     <ItemGroup>
       <ResolvedFileToPublish Include="$(IntermediateDepsFilePath)">
@@ -1100,6 +1132,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     ============================================================
     -->
   <Target Name="_CheckForLanguageAndPublishFeatureCombinationSupport"
+        Condition="$(IsPublishable) == 'true'"
         BeforeTargets="Publish;PrepareForPublish">
 
     <NETSdkError Condition="('$(Language)' == 'C++' and '$(_EnablePackageReferencesInVCProjects)' != 'true') and '$(TargetFrameworkIdentifier)' == '.NETCoreApp'"

@@ -10,6 +10,10 @@ using System.Text;
 
 namespace Microsoft.DotNet.Cli.Utils;
 
+/// <summary>
+/// Parses property key value pairs that have already been forwarded through the PropertiesOption class.
+/// Does not parse -p and etc. formats, (this is done by PropertiesOption) but does parse property values separated by =, ;, and using quotes.
+/// </summary>
 public static class MSBuildPropertyParser {
     public static IEnumerable<(string key, string value)> ParseProperties(string input) {
         var currentPos = 0;
@@ -64,6 +68,21 @@ public static class MSBuildPropertyParser {
         void ParseUnquotedValue() {
             while(TryConsume(out char? c) && c != ';') {
                 currentValue.Append(c);
+            }
+            // we're either at the end or 
+            if (AtEnd()) return;
+            // we're just past a semicolon
+            // if semicolon, we need to check if there are any other = in the string (signifying property pairs)
+            if (input.IndexOf('=', currentPos) != -1) {
+                // there are more = in the string, so eject and let a new key/value pair be parsed
+                return;
+            } else {
+                currentValue.Append(';');
+                // there are no more = in the string, so consume the remainder of the string
+                while(TryConsume(out char? c))
+                {
+                    currentValue.Append(c);
+                }
             }
         }
 

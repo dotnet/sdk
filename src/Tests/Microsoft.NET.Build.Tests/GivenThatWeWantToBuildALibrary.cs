@@ -17,6 +17,7 @@ using System.Runtime.CompilerServices;
 using Xunit.Abstractions;
 using Microsoft.NET.TestFramework.ProjectConstruction;
 using Newtonsoft.Json.Linq;
+using NuGet.Versioning;
 
 namespace Microsoft.NET.Build.Tests
 {
@@ -188,7 +189,7 @@ namespace Microsoft.NET.Build.Tests
         [InlineData("vb", false)]
         public void It_allows_us_to_override_the_documentation_file_name(string language, bool setGenerateDocumentationFileProperty)
         {
-            var testAsset = CreateDocumentationFileLibraryAsset(setGenerateDocumentationFileProperty ? (bool?)true : null, "TestLibDoc.xml", language,  "OverrideDocFileName");
+            var testAsset = CreateDocumentationFileLibraryAsset(setGenerateDocumentationFileProperty ? (bool?)true : null, "TestLibDoc.xml", language, "OverrideDocFileName");
 
             var libraryProjectDirectory = Path.Combine(testAsset.TestRoot, "TestLibrary");
 
@@ -217,7 +218,8 @@ namespace Microsoft.NET.Build.Tests
             };
 
             // vb uses DocumentationFile relative to the IntermediateOutputPath
-            if (language != "vb") {
+            if (language != "vb")
+            {
                 expectedProjectDirectoryFiles.Add("TestLibDoc.xml");
             }
 
@@ -393,6 +395,16 @@ namespace Microsoft.NET.Build.Tests
         [InlineData(new[] { "11.11", "12.12", "13.13" }, "android", "12.12", new[] { "ANDROID", "ANDROID12_12", "ANDROID11_11_OR_GREATER", "ANDROID12_12_OR_GREATER" })]
         public void It_implicitly_defines_compilation_constants_for_the_target_platform(string[] sdkSupportedTargetPlatformVersion, string targetPlatformIdentifier, string targetPlatformVersion, string[] expectedDefines)
         {
+            if (targetPlatformIdentifier.Equals("windows", StringComparison.OrdinalIgnoreCase))
+            {
+                var sdkVersion = SemanticVersion.Parse(TestContext.Current.ToolsetUnderTest.SdkVersion);
+                if (new SemanticVersion(sdkVersion.Major, sdkVersion.Minor, sdkVersion.Patch) < new SemanticVersion(7, 0, 200))
+                {
+                    //  Fixed in 7.0.200: https://github.com/dotnet/sdk/pull/29009
+                    return;
+                }
+            }
+
             var targetFramework = "net5.0";
             var testAsset = _testAssetsManager
                 .CopyTestAsset("AppWithLibrary", "ImplicitFrameworkConstants", targetFramework, identifier: expectedDefines.GetHashCode().ToString())
@@ -426,7 +438,7 @@ namespace Microsoft.NET.Build.Tests
                 });
 
             AssertDefinedConstantsOutput(testAsset, targetFramework,
-                new[] { "NETCOREAPP", "NETCOREAPP1_0_OR_GREATER", "NETCOREAPP1_1_OR_GREATER", "NETCOREAPP2_0_OR_GREATER", "NETCOREAPP2_1_OR_GREATER", "NETCOREAPP2_2_OR_GREATER",  "NETCOREAPP3_0_OR_GREATER", "NETCOREAPP3_1_OR_GREATER", "NET", "NET5_0", "NET5_0_OR_GREATER" }
+                new[] { "NETCOREAPP", "NETCOREAPP1_0_OR_GREATER", "NETCOREAPP1_1_OR_GREATER", "NETCOREAPP2_0_OR_GREATER", "NETCOREAPP2_1_OR_GREATER", "NETCOREAPP2_2_OR_GREATER", "NETCOREAPP3_0_OR_GREATER", "NETCOREAPP3_1_OR_GREATER", "NET", "NET5_0", "NET5_0_OR_GREATER" }
                 .Concat(expectedDefines).ToArray());
         }
 
@@ -663,17 +675,17 @@ class Program
 
             if (useSolution)
             {
-                var dotnetCommand = new DotnetCommand(Log)
-                {
-                    WorkingDirectory = testAsset.TestRoot
-                };
-
-                dotnetCommand.Execute("new", "sln", "--debug:ephemeral-hive")
+                new DotnetNewCommand(Log)
+                    .WithVirtualHive()
+                    .WithWorkingDirectory(testAsset.TestRoot)
+                    .Execute("sln")
                     .Should()
                     .Pass();
 
                 var relativePathToProject = Path.Combine(testProject.Name, testProject.Name + ".csproj");
-                dotnetCommand.Execute($"sln", "add", relativePathToProject)
+                new DotnetCommand(Log)
+                    .WithWorkingDirectory(testAsset.TestRoot)
+                    .Execute($"sln", "add", relativePathToProject)
                     .Should()
                     .Pass();
 
@@ -923,7 +935,7 @@ class Program
                 testProject.AdditionalProperties["CopyLocalLockFileAssemblies"] = copyLocal.ToString().ToLower();
             }
 
-            var identifier = targetFramework + shouldSetRollForward + shouldCopyLocal +  (rollForwardValue == null? "Null" : rollForwardValue);
+            var identifier = targetFramework + shouldSetRollForward + shouldCopyLocal + (rollForwardValue == null ? "Null" : rollForwardValue);
             var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: identifier);
 
             var buildCommand = new BuildCommand(testAsset);
@@ -952,7 +964,7 @@ class Program
             string runtimeConfigFile = Path.Combine(outputDirectory.FullName, runtimeConfigName);
             string runtimeConfigContents = File.ReadAllText(runtimeConfigFile);
             JObject runtimeConfig = JObject.Parse(runtimeConfigContents);
-            JToken rollForward= runtimeConfig["runtimeOptions"]["rollForward"];
+            JToken rollForward = runtimeConfig["runtimeOptions"]["rollForward"];
             if (shouldSetRollForward)
             {
                 rollForward.Value<string>().Should().Be(string.IsNullOrEmpty(rollForwardValue) ? "LatestMinor" : rollForwardValue);
@@ -993,7 +1005,7 @@ namespace ProjectNameWithSpaces
 }");
             string projectFolder = Path.Combine(testAsset.Path, testProject.Name);
 
-            var buildCommand = new BuildCommand(testAsset, $"{ testProject.Name}");
+            var buildCommand = new BuildCommand(testAsset, $"{testProject.Name}");
             buildCommand
                 .Execute()
                 .Should()

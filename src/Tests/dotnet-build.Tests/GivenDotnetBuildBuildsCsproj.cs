@@ -40,7 +40,9 @@ namespace Microsoft.DotNet.Cli.Build.Tests
 
             var configuration = Environment.GetEnvironmentVariable("CONFIGURATION") ?? "Debug";
 
-            var outputDll = Path.Combine(testInstance.Path, "bin", configuration, ToolsetInfo.CurrentTargetFramework, $"{testAppName}.dll");
+            var outputPathCalculator = OutputPathCalculator.FromProject(testInstance.Path);
+
+            var outputDll = Path.Combine(outputPathCalculator.GetOutputDirectory(configuration: configuration), $"{testAppName}.dll");
 
             var outputRunCommand = new DotnetCommand(Log);
 
@@ -87,7 +89,7 @@ namespace Microsoft.DotNet.Cli.Build.Tests
             string projectDirectory = Path.Combine(testInstance.Path, "MultiTFMTestApp");
 
             new DotnetBuildCommand(Log, projectDirectory)
-                .Execute("--framework", "netcoreapp3.1")
+                .Execute("--framework", ToolsetInfo.CurrentTargetFramework)
                 .Should().Pass();
         }
 
@@ -129,7 +131,7 @@ namespace Microsoft.DotNet.Cli.Build.Tests
             var configuration = Environment.GetEnvironmentVariable("CONFIGURATION") ?? "Debug";
 
             var outputDll = Directory.EnumerateFiles(
-                Path.Combine(rootPath, "bin", configuration, ToolsetInfo.CurrentTargetFramework), "*.dll",
+                OutputPathCalculator.FromProject(rootPath).GetOutputDirectory(configuration: configuration), "*.dll",
                 SearchOption.TopDirectoryOnly)
                 .Single();
 
@@ -183,7 +185,7 @@ namespace Microsoft.DotNet.Cli.Build.Tests
         {
             var testInstance = _testAssetsManager.CopyTestAsset("HelloWorld")
                 .WithSource()
-                .WithTargetFrameworkOrFrameworks("net6.0", false)
+                .WithTargetFrameworkOrFrameworks(ToolsetInfo.CurrentTargetFramework, false)
                 .Restore(Log);
 
             new DotnetBuildCommand(Log)
@@ -223,7 +225,7 @@ namespace Microsoft.DotNet.Cli.Build.Tests
         {
             var testInstance = _testAssetsManager.CopyTestAsset("HelloWorld", identifier: commandName)
                 .WithSource()
-                .WithTargetFrameworkOrFrameworks("net6.0", false)
+                .WithTargetFrameworkOrFrameworks(ToolsetInfo.CurrentTargetFramework, false)
                 .Restore(Log);
 
             new DotnetCommand(Log)
@@ -254,24 +256,30 @@ namespace Microsoft.DotNet.Cli.Build.Tests
 
         [Theory]
         [InlineData("--self-contained")]
-        [InlineData("-p:PublishTrimmed=true")]
-        [InlineData("")]
-        public void It_builds_with_implicit_rid_with_rid_specific_properties(string executeOptionsAndProperties)
+        public void It_builds_with_implicit_rid_with_SelfContained(string executeOptions)
         {
-            var testInstance = _testAssetsManager.CopyTestAsset("HelloWorld")
-                .WithSource()
-                .WithTargetFrameworkOrFrameworks("net6.0", false)
-                .Restore(Log);
+            var targetFramework = ToolsetInfo.CurrentTargetFramework;
+            var testProject = new TestProject()
+            {
+                IsExe = true,
+                TargetFrameworks = targetFramework
+            };
 
-            new DotnetBuildCommand(Log)
-               .WithWorkingDirectory(testInstance.Path)
-               .Execute(executeOptionsAndProperties)
+            testProject.RecordProperties("RuntimeIdentifier");
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+
+
+            new DotnetBuildCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name))
+               .Execute(executeOptions)
                .Should()
                .Pass()
                .And
                .NotHaveStdOutContaining("NETSDK1031") // Self Contained Checks
                .And
-               .NotHaveStdErrContaining("NETSDK1190"); // Check that publish properties don't interfere with build either 
+               .NotHaveStdErrContaining("NETSDK1190"); // Check that publish properties don't interfere with build either
+
+            var properties = testProject.GetPropertyValues(testAsset.TestRoot, targetFramework: targetFramework);
+            Assert.NotEqual("", properties["RuntimeIdentifier"]);
         }
 
         [RequiresMSBuildVersionFact("17.4.0.41702")]

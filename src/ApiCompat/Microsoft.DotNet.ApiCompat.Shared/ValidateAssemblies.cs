@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using Microsoft.DotNet.ApiCompatibility.Abstractions;
+using Microsoft.DotNet.ApiCompatibility;
 using Microsoft.DotNet.ApiCompatibility.Logging;
 using Microsoft.DotNet.ApiCompatibility.Rules;
 using Microsoft.DotNet.ApiCompatibility.Runner;
@@ -13,10 +13,12 @@ namespace Microsoft.DotNet.ApiCompat
 {
     internal static class ValidateAssemblies
     {
-        public static void Run(Func<ISuppressionEngine, ICompatibilityLogger> logFactory,
+        public static void Run(Func<ISuppressionEngine, ISuppressableLog> logFactory,
             bool generateSuppressionFile,
-            string? suppressionFile,
+            string[]? suppressionFiles,
+            string? suppressionOutputFile,
             string? noWarn,
+            bool respectInternals,
             bool enableRuleAttributesMustMatch,
             string[]? excludeAttributesFiles,
             bool enableRuleCannotChangeParameterName,
@@ -29,16 +31,14 @@ namespace Microsoft.DotNet.ApiCompat
             (string CaptureGroupPattern, string ReplacementString)[]? leftAssembliesTransformationPatterns,
             (string CaptureGroupPattern, string ReplacementString)[]? rightAssembliesTransformationPatterns)
         {
-            // Configure the suppression engine. Ignore the passed in suppression file if it should be generated and doesn't yet exist.
-            string? suppressionFileForEngine = generateSuppressionFile && !File.Exists(suppressionFile) ? null : suppressionFile;
-
             // Initialize the service provider
             ApiCompatServiceProvider serviceProvider = new(logFactory,
-                () => new SuppressionEngine(suppressionFileForEngine, noWarn, generateSuppressionFile),
+                () => new SuppressionEngine(suppressionFiles, noWarn, generateSuppressionFile),
                 (log) => new RuleFactory(log,
                     enableRuleAttributesMustMatch,
-                    excludeAttributesFiles,
-                    enableRuleCannotChangeParameterName));
+                    enableRuleCannotChangeParameterName),
+                respectInternals,
+                excludeAttributesFiles);
 
             IApiCompatRunner apiCompatRunner = serviceProvider.ApiCompatRunner;
             ApiCompatRunnerOptions apiCompatOptions = new(enableStrictMode);
@@ -87,11 +87,14 @@ namespace Microsoft.DotNet.ApiCompat
             // Execute the enqueued work item(s).
             apiCompatRunner.ExecuteWorkItems();
 
+            SuppressionFileHelper.LogApiCompatSuccessOrFailure(generateSuppressionFile, serviceProvider.SuppressableLog);
+
             if (generateSuppressionFile)
             {
                 SuppressionFileHelper.GenerateSuppressionFile(serviceProvider.SuppressionEngine,
-                    serviceProvider.CompatibilityLogger,
-                    suppressionFile);
+                    serviceProvider.SuppressableLog,
+                    suppressionFiles,
+                    suppressionOutputFile);
             }
         }
 

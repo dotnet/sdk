@@ -33,11 +33,13 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             var configuration = Environment.GetEnvironmentVariable("CONFIGURATION") ?? "Debug";
 
-            new BuildCommand(testAsset)
+            var buildCommand = new BuildCommand(testAsset);
+
+            buildCommand
                 .Execute()
                 .Should().Pass();
 
-            var outputDll = Path.Combine(testRoot, "bin", configuration, ToolsetInfo.CurrentTargetFramework, $"{testAppName}.dll");
+            var outputDll = Path.Combine(buildCommand.GetOutputDirectory(configuration: configuration).FullName, $"{testAppName}.dll");
 
             // Call vstest
             var result = new DotnetTestCommand(Log)
@@ -109,6 +111,30 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             if (!TestContext.IsLocalized())
             {
                 result.StdErr.Should().StartWith("Invalid platform type: wrongArchitecture. Valid platform types are ");
+            }
+
+            result.ExitCode.Should().Be(1);
+        }
+
+        [Theory]
+        [InlineData("-e:foo=bardll")]
+        [InlineData("-e:foo=barexe")]
+        public void MissingOutputDllAndArgumentsEndWithDllOrExeShouldFailInMSBuild(string arg)
+        {
+            var testAppName = "VSTestCore";
+            var testAsset = _testAssetsManager.CopyTestAsset(testAppName)
+                .WithSource()
+                .WithVersionVariables();
+
+            new BuildCommand(testAsset)
+                .Execute()
+                .Should().Pass();
+
+            var result = new DotnetTestCommand(Log)
+                .Execute(arg);
+            if (!TestContext.IsLocalized())
+            {
+                result.StdOut.Should().Contain("MSBUILD : error MSB1003: Specify a project or solution file. The current working directory does not contain a project or solution file.");
             }
 
             result.ExitCode.Should().Be(1);

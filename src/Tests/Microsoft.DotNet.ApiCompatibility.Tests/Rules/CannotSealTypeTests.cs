@@ -4,8 +4,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
-using Microsoft.DotNet.ApiCompatibility.Abstractions;
 using Microsoft.DotNet.ApiCompatibility.Tests;
+using Microsoft.DotNet.ApiSymbolExtensions.Tests;
 using Xunit;
 
 namespace Microsoft.DotNet.ApiCompatibility.Rules.Tests
@@ -135,7 +135,7 @@ namespace CompatTests
 "};
             ElementContainer<IAssemblySymbol> left = new(SymbolFactory.GetAssemblyFromSyntax(leftSyntax),
                 new MetadataInformation("left", @"ref\a.dll"));
-            IReadOnlyList<ElementContainer<IAssemblySymbol>> right = SymbolFactory.GetElementContainersFromSyntaxes(rightSyntaxes);
+            IReadOnlyList<ElementContainer<IAssemblySymbol>> right = SymbolFactoryExtensions.GetElementContainersFromSyntaxes(rightSyntaxes);
             // Register CannotSealType and MemberMustExist rules as this test validates both.
             ApiComparer differ = new(s_ruleFactory.WithRule((settings, context) => new MembersMustExist(settings, context)));
 
@@ -190,7 +190,7 @@ namespace CompatTests
 
             ElementContainer<IAssemblySymbol> leftContainer = new(SymbolFactory.GetAssemblyFromSyntax(leftSyntax),
                 new MetadataInformation("left", @"ref\a.dll"));
-            IReadOnlyList<ElementContainer<IAssemblySymbol>> right = SymbolFactory.GetElementContainersFromSyntaxes(rightSyntaxes);
+            IReadOnlyList<ElementContainer<IAssemblySymbol>> right = SymbolFactoryExtensions.GetElementContainersFromSyntaxes(rightSyntaxes);
             ApiComparer differ = new(s_ruleFactory, new ApiComparerSettings(includeInternalSymbols: true));
 
             IEnumerable<CompatDifference> differences = differ.GetDifferences(leftContainer, right);

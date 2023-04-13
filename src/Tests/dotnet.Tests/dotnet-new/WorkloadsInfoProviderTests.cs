@@ -14,6 +14,7 @@ using Microsoft.TemplateEngine.Abstractions.Components;
 using Xunit;
 using System.Linq;
 using System.Collections.Generic;
+using System;
 
 namespace Microsoft.DotNet.Cli.New.Tests
 {
@@ -40,11 +41,13 @@ namespace Microsoft.DotNet.Cli.New.Tests
                 .Returns((IEnumerable<WorkloadId> workloadIds) => workloadIds.Select(w =>
                     new WorkloadResolver.WorkloadInfo(w, $"Description: {w.ToString()}")));
 
+            var parseResult = Parser.Instance.Parse(new string[] { "dotnet" });
             IWorkloadsRepositoryEnumerator workloadsEnumerator = new WorkloadInfoHelper(
+                isInteractive: false,
                 currentSdkVersion: "1.2.3",
                 workloadRecordRepo: repoMock.Object,
                 workloadResolver: resolverMock.Object);
-            IWorkloadsInfoProvider wp = new WorkloadsInfoProvider(workloadsEnumerator);
+            IWorkloadsInfoProvider wp = new WorkloadsInfoProvider(new Lazy<IWorkloadsRepositoryEnumerator>(workloadsEnumerator));
 
             // Act
             var workloads = wp.GetInstalledWorkloadsAsync(default).Result;

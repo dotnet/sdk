@@ -7,6 +7,7 @@ using FluentAssertions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Commands;
+using Microsoft.TemplateEngine.Utils;
 using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.Cli.New.IntegrationTests
@@ -249,6 +250,60 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                   .NotHaveStdErr()
                   .And.HaveStdOutContaining("Build succeeded.")
                   .And.HaveStdOutContaining("TemplateApplication.Tests");
+        }
+
+        [Theory]
+        [InlineData("PostActions/RestoreNuGet/Files_MatchSpecifiedFiles", "TestAssets.PostActions.RestoreNuGet.Files_MatchSpecifiedFiles", "Tool.Library/Tool.Library.csproj;Tool.Test/Tool.Test.csproj", "Tool/Tool.csproj")]
+        [InlineData("PostActions/RestoreNuGet/Files_MismatchSpecifiedFiles", "TestAssets.PostActions.RestoreNuGet.Files_MismatchSpecifiedFiles", "Tool.Library/Tool.Library.csproj;Tool/Tool.csproj", "Tool.Test/Tool.Test.csproj")]
+        [InlineData("PostActions/RestoreNuGet/Files_PatternWithFileName", "TestAssets.PostActions.RestoreNuGet.Files_PatternWithFileName", "Tool.Library/Tool.Library.csproj;Tool/Tool.csproj", "Tool.Test/Tool.Test.csproj")]
+        [InlineData("PostActions/RestoreNuGet/Files_PatternWithWildcard", "TestAssets.PostActions.RestoreNuGet.Files_PatternWithWildcard", "Tool.Library/Tool.Library.csproj;Tool.Test/Tool.Test.csproj", "Tool/Tool.csproj")]
+        [InlineData("PostActions/RestoreNuGet/Files_PatternWithGlobstar", "TestAssets.PostActions.RestoreNuGet.Files_PatternWithGlobstar", "Tool.Library/Tool.Library.csproj", "Tool/Tool.csproj;Tool.Test/Tool.Test.csproj")]
+        [InlineData("PostActions/RestoreNuGet/Files_SupportSemicolonDelimitedList", "TestAssets.PostActions.RestoreNuGet.Files_SupportSemicolonDelimitedList", "Tool.Library/Tool.Library.csproj;Tool/Tool.csproj", "Tool.Test/Tool.Test.csproj")]
+        public void Restore_FilesTest(string templateLocation, string templateName, string expectedRestoredProjects, string unexpectedRestoredProjects)
+        {
+            expectedRestoredProjects = expectedRestoredProjects.Replace('/', Path.DirectorySeparatorChar);
+            unexpectedRestoredProjects = unexpectedRestoredProjects.Replace('/', Path.DirectorySeparatorChar);
+            string sourceName = "Tool";
+            string rename = "MyTool";
+            string home = CreateTemporaryFolder(folderName: "Home");
+            string workingDirectory = CreateTemporaryFolder();
+            InstallTestTemplate(templateLocation, _log, home, workingDirectory);
+
+            var result = new DotnetNewCommand(_log, templateName, "-n", rename)
+                .WithCustomHive(home)
+                .WithWorkingDirectory(workingDirectory)
+                .Execute()
+                .Should()
+                .ExitWith(0)
+                .And.NotHaveStdErr()
+                .And.HaveStdOutContaining($"The template \"{templateName}\" was created successfully.")
+                .And.NotHaveStdOutContaining("Manual instructions: Run 'dotnet restore'");
+
+            var expectedRestoredProjectList = expectedRestoredProjects
+                .Split(';')
+                .Select(p => p.Replace(sourceName, rename));
+            var restoredProjectsPatterns = expectedRestoredProjectList
+                .Select(p => ($"Restoring(.*?){p}(.*?)Restored(.*?){p}(.*?)Restore succeeded.").Replace("\\", "\\\\"));
+            restoredProjectsPatterns.ForEach(r => result.And.HaveStdOutMatching(r, System.Text.RegularExpressions.RegexOptions.Singleline));
+
+            var unexpectedRestoredList = unexpectedRestoredProjects
+                .Split(';')
+                .Select(p => p.Replace(sourceName, rename));
+            unexpectedRestoredList.ForEach(t => result.And.NotHaveStdOutContaining(t));
+
+            expectedRestoredProjectList.ForEach(p =>
+            {
+                string projectName = Path.GetFileNameWithoutExtension(p);
+                new DotnetBuildCommand(_log, projectName, "--no-restore")
+                .WithWorkingDirectory(workingDirectory)
+                .Execute()
+                .Should()
+                .ExitWith(0)
+                .And
+                .NotHaveStdErr()
+                .And.HaveStdOutContaining("Build succeeded.")
+                .And.HaveStdOutContaining(projectName);
+            });
         }
 
         [Fact]
@@ -626,6 +681,42 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And.NotHaveStdOutContaining("Manual instructions: Add the generated files to solution manually.");
 
             Assert.Contains("MyProject.csproj", File.ReadAllText(Path.Combine(workingDirectory, "MySolution.sln")));
+        }
+
+        [Fact]
+        public void AddProjectToSolution_BasicInSolutionRoot()
+        {
+            string templateLocation = "PostActions/AddProjectToSolution/BasicInSolutionRoot";
+            string expectedTemplateName = "TestAssets.PostActions.AddProjectToSolution.BasicInSolutionRoot";
+            string home = CreateTemporaryFolder(folderName: "Home");
+            string workingDirectory = CreateTemporaryFolder();
+            string outputDirectory = CreateTemporaryFolder("output");
+            InstallTestTemplate(templateLocation, _log, home, workingDirectory);
+
+            //creating solution file to add to
+            new DotnetNewCommand(_log, "sln", "-n", "MySolution", "-o", outputDirectory)
+                .WithCustomHive(home)
+                .WithWorkingDirectory(workingDirectory)
+                .Execute()
+                .Should()
+                .ExitWith(0)
+                .And.NotHaveStdErr();
+
+            new DotnetNewCommand(_log, expectedTemplateName, "-n", "MyProject", "-o", outputDirectory)
+                .WithCustomHive(home)
+                .WithWorkingDirectory(workingDirectory)
+                .Execute()
+                .Should()
+                .ExitWith(0)
+                .And.NotHaveStdErr()
+                .And.HaveStdOutContaining($"The template \"{expectedTemplateName}\" was created successfully.")
+                .And.HaveStdOutContaining("Successfully added")
+                .And.HaveStdOutContaining("in the root of solution file")
+                .And.NotHaveStdOutContaining("Manual instructions: Add the generated files to solution manually.")
+                .And.HaveStdOutContaining(Path.Combine(outputDirectory, "MySolution.sln"))
+                .And.HaveStdOutContaining(Path.Combine(outputDirectory, "MyProject.csproj"));
+
+            Assert.Contains("MyProject.csproj", File.ReadAllText(Path.Combine(outputDirectory, "MySolution.sln")));
         }
 
         [Fact]

@@ -258,6 +258,11 @@ Ejecute "dotnet {1} --show-aliases" sin argumentos para mostrar todos los alias.
         <target state="translated">Paquete</target>
         <note />
       </trans-unit>
+      <trans-unit id="ColumnNamePackageNameAndOwners">
+        <source>Package Name / Owners</source>
+        <target state="new">Package Name / Owners</target>
+        <note>information about NuGet package: its name and owner</note>
+      </trans-unit>
       <trans-unit id="ColumnNamePrecedence">
         <source>Precedence</source>
         <target state="translated">Precedencia</target>
@@ -282,6 +287,11 @@ Ejecute "dotnet {1} --show-aliases" sin argumentos para mostrar todos los alias.
         <source>Downloads</source>
         <target state="translated">Descargas</target>
         <note />
+      </trans-unit>
+      <trans-unit id="ColumnNameTrusted">
+        <source>Trusted</source>
+        <target state="new">Trusted</target>
+        <note>information about NuGet package origin; if a package has PrefixReserved indicator </note>
       </trans-unit>
       <trans-unit id="ColumnNameType">
         <source>Type</source>
@@ -524,9 +534,9 @@ The header is followed by the list of parameters and their errors (might be seve
         <note>{0} - command syntax, example: dotnet new [PARTIAL_NAME] --list [FILTER_OPTIONS].</note>
       </trans-unit>
       <trans-unit id="MissingRequiredParameter">
-        <source>Mandatory option '{0}' is missing for the template '{1}'.</source>
-        <target state="translated">Falta la opción obligatoria '{0}' para la plantilla '{1}'.</target>
-        <note />
+        <source>Missing mandatory option(s) for the template '{1}': {0}.</source>
+        <target state="translated">Faltan opciones obligatorias para la plantilla “{1}”: {0}.</target>
+        <note>{0} - comma-separated list of missing options, each option is quoted.</note>
       </trans-unit>
       <trans-unit id="MountPointFactories">
         <source>Mount Point Factories</source>
@@ -546,6 +556,11 @@ The header is followed by the list of parameters and their errors (might be seve
       <trans-unit id="NoTemplatesFound">
         <source>No templates installed.</source>
         <target state="translated">No hay plantillas instaladas.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="OperationCancelled">
+        <source>The operation was cancelled.</source>
+        <target state="translated">Se canceló la operación.</target>
         <note />
       </trans-unit>
       <trans-unit id="OptionalWorkloadsSyncFailed">
@@ -703,7 +718,7 @@ The header is followed by the list of parameters and their errors (might be seve
       </trans-unit>
       <trans-unit id="RerunCommandAndPassForceToCreateAnyway">
         <source>To create the template anyway, run the command with '{0}' option:</source>
-        <target state="new">To create the template anyway, run the command with '{0}' option:</target>
+        <target state="translated">Para crear la plantilla de todos modos, ejecute el comando con la opción '{0}':</target>
         <note>{0} - additional option name (--force)</note>
       </trans-unit>
       <trans-unit id="RunHelpForInformationAboutAcceptedParameters">
@@ -1055,6 +1070,11 @@ The header is followed by the list of parameters and their errors (might be seve
       <trans-unit id="UnableToSetPermissions">
         <source>Unable to apply permissions {0} to "{1}".</source>
         <target state="translated">No se pueden aplicar los permisos {0} a "{1}".</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UnexpectedResult">
+        <source>Template generation ended with unexpected result: '{0}'. Details: {1}</source>
+        <target state="translated">La generación de plantillas finalizó con un resultado inesperado: “{0}”. Detalles: {1}</target>
         <note />
       </trans-unit>
       <trans-unit id="UnknownChangeKind">

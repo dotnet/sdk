@@ -20,18 +20,28 @@ namespace Microsoft.NET.TestFramework.ProjectConstruction
             }
         }
 
+        /// <summary>
+        /// A name for the test project that's used to isolate it from a test's root folder by appending it to the root test path.
+        /// By default, it is the unhashed name of the function that instantiated the TestProject object.
+        /// </summary>
         public string Name { get; set; }
 
         public bool IsSdkProject { get; set; } = true;
 
         public bool IsExe { get; set; }
 
+        /// <summary>
+        /// This value merely sets the OutputType and is not automatically tied here to whether the project is a WPF or Windows Form App Executable.
+        /// </summary>
         public bool IsWinExe { get; set; }
 
         public string ProjectSdk { get; set; }
 
-        //  Applies to SDK Projects
-        public string TargetFrameworks { get; set; }
+        /// <summary>
+        /// Applies to SDK-style projects. If the value has only one target framework (ie no semicolons), the value will be used
+        /// for the MSBuild TargetFramework (singular) property.  Otherwise, the value will be used for the TargetFrameworks property.
+        /// </summary>
+        public string TargetFrameworks { get; set; } = ToolsetInfo.CurrentTargetFramework;
 
         public string RuntimeFrameworkVersion { get; set; }
 
@@ -42,6 +52,10 @@ namespace Microsoft.NET.TestFramework.ProjectConstruction
 
         public string TargetFrameworkProfile { get; set; }
 
+        public bool UseArtifactsOutput { get; set; }
+
+        public bool UseDirectoryBuildPropsForArtifactsOutput { get; set; }
+
         public List<TestProject> ReferencedProjects { get; } = new List<TestProject>();
 
         public List<string> References { get; } = new List<string>();
@@ -51,16 +65,19 @@ namespace Microsoft.NET.TestFramework.ProjectConstruction
         public List<TestPackageReference> PackageReferences { get; } = new List<TestPackageReference>();
 
         public List<TestPackageReference> DotNetCliToolReferences { get; } = new List<TestPackageReference>();
-        
+
         public List<CopyFilesTarget> CopyFilesTargets { get; } = new List<CopyFilesTarget>();
 
         public Dictionary<string, string> SourceFiles { get; } = new Dictionary<string, string>();
 
         public Dictionary<string, string> EmbeddedResources { get; } = new Dictionary<string, string>();
 
+        /// <summary>
+        /// Use this dictionary to set a property (the key) to a value for the created project.
+        /// </summary>
         public Dictionary<string, string> AdditionalProperties { get; } = new Dictionary<string, string>();
 
-        public List<KeyValuePair<string, Dictionary<string, string>>> AdditionalItems { get; } = new ();
+        public List<KeyValuePair<string, Dictionary<string, string>>> AdditionalItems { get; } = new();
 
         public List<Action<XDocument>> ProjectChanges { get; } = new List<Action<XDocument>>();
 
@@ -177,6 +194,10 @@ namespace Microsoft.NET.TestFramework.ProjectConstruction
                 {
                     packageReferenceElement.Add(new XAttribute("Aliases", packageReference.Aliases));
                 }
+                if (packageReference.Publish != null)
+                {
+                    packageReferenceElement.Add(new XAttribute("Publish", packageReference.Publish));
+                }
                 packageReferenceItemGroup.Add(packageReferenceElement);
             }
 
@@ -228,6 +249,11 @@ namespace Microsoft.NET.TestFramework.ProjectConstruction
             foreach (var additionalProperty in AdditionalProperties)
             {
                 propertyGroup.Add(new XElement(ns + additionalProperty.Key, additionalProperty.Value));
+            }
+
+            if (UseArtifactsOutput && !UseDirectoryBuildPropsForArtifactsOutput)
+            {
+                propertyGroup.Add(new XElement(ns + "UseArtifactsOutput", "true"));
             }
 
             if (AdditionalItems.Any())
@@ -299,7 +325,7 @@ namespace Microsoft.NET.TestFramework.ProjectConstruction
                         new XAttribute("Include", frameworkReference)));
                 }
             }
-            
+
             if (this.CopyFilesTargets.Any())
             {
                 foreach (var copyFilesTarget in CopyFilesTargets)
@@ -420,7 +446,7 @@ namespace {safeThisName}
 {propertiesElements}
     </ItemGroup>
     <WriteLinesToFile
-      File=`$(IntermediateOutputPath)\PropertyValues.txt`
+      File=`$(BaseIntermediateOutputPath)\$(Configuration)\$(TargetFramework)\PropertyValues.txt`
       Lines=`@(LinesToWrite)`
       Overwrite=`true`
       Encoding=`Unicode`
@@ -443,7 +469,7 @@ namespace {safeThisName}
 
         public void AddItem(string itemName, string attributeName, string attributeValue)
         {
-            AddItem(itemName, new Dictionary<string, string>() { { attributeName, attributeValue } } );
+            AddItem(itemName, new Dictionary<string, string>() { { attributeName, attributeValue } });
         }
 
         public void AddItem(string itemName, Dictionary<string, string> attributes)
@@ -456,15 +482,15 @@ namespace {safeThisName}
             PropertiesToRecord.AddRange(propertyNames);
         }
 
-        public Dictionary<string, string> GetPropertyValues(string testRoot, string configuration = "Debug", string targetFramework = null, string runtimeIdentifier = null)
+        /// <returns>
+        /// A dictionary of property keys to property value strings, case sensitive.
+        /// Only properties added to the <see cref="PropertiesToRecord"/> member will be observed.
+        /// </returns>
+        public Dictionary<string, string> GetPropertyValues(string testRoot, string targetFramework = null, string configuration = "Debug")
         {
             var propertyValues = new Dictionary<string, string>();
 
             string intermediateOutputPath = Path.Combine(testRoot, Name, "obj", configuration, targetFramework ?? TargetFrameworks);
-            if (!string.IsNullOrEmpty(runtimeIdentifier))
-            {
-                intermediateOutputPath = Path.Combine(intermediateOutputPath, runtimeIdentifier);
-            }
 
             foreach (var line in File.ReadAllLines(Path.Combine(intermediateOutputPath, "PropertyValues.txt")))
             {
@@ -484,6 +510,17 @@ namespace {safeThisName}
         {
             var referenceAssemblies = ToolLocationHelper.GetPathToDotNetFrameworkReferenceAssemblies(targetFrameworkVersion);
             return referenceAssemblies != null;
+        }
+
+        private OutputPathCalculator GetOutputPathCalculator(string testRoot)
+        {
+            return OutputPathCalculator.FromProject(Path.Combine(testRoot, Name, Name + ".csproj"), this);
+        }
+
+        public string GetOutputDirectory(string testRoot, string targetFramework = null, string configuration = "Debug", string runtimeIdentifier = "")
+        {
+            return GetOutputPathCalculator(testRoot)
+                .GetOutputDirectory(targetFramework, configuration, runtimeIdentifier);
         }
     }
 }

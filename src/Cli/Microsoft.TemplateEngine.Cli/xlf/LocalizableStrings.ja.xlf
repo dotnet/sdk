@@ -258,6 +258,11 @@ Run 'dotnet {1} --show-aliases' with no args to show all aliases.</source>
         <target state="translated">パッケージ</target>
         <note />
       </trans-unit>
+      <trans-unit id="ColumnNamePackageNameAndOwners">
+        <source>Package Name / Owners</source>
+        <target state="new">Package Name / Owners</target>
+        <note>information about NuGet package: its name and owner</note>
+      </trans-unit>
       <trans-unit id="ColumnNamePrecedence">
         <source>Precedence</source>
         <target state="translated">優先順位</target>
@@ -282,6 +287,11 @@ Run 'dotnet {1} --show-aliases' with no args to show all aliases.</source>
         <source>Downloads</source>
         <target state="translated">ダウンロード</target>
         <note />
+      </trans-unit>
+      <trans-unit id="ColumnNameTrusted">
+        <source>Trusted</source>
+        <target state="new">Trusted</target>
+        <note>information about NuGet package origin; if a package has PrefixReserved indicator </note>
       </trans-unit>
       <trans-unit id="ColumnNameType">
         <source>Type</source>
@@ -524,9 +534,9 @@ The header is followed by the list of parameters and their errors (might be seve
         <note>{0} - command syntax, example: dotnet new [PARTIAL_NAME] --list [FILTER_OPTIONS].</note>
       </trans-unit>
       <trans-unit id="MissingRequiredParameter">
-        <source>Mandatory option '{0}' is missing for the template '{1}'.</source>
-        <target state="translated">テンプレート '{1}' の必須パラメーター '{0}' がありません。</target>
-        <note />
+        <source>Missing mandatory option(s) for the template '{1}': {0}.</source>
+        <target state="translated">テンプレート '{1}' の必須オプションがありません: {0}。</target>
+        <note>{0} - comma-separated list of missing options, each option is quoted.</note>
       </trans-unit>
       <trans-unit id="MountPointFactories">
         <source>Mount Point Factories</source>
@@ -546,6 +556,11 @@ The header is followed by the list of parameters and their errors (might be seve
       <trans-unit id="NoTemplatesFound">
         <source>No templates installed.</source>
         <target state="translated">テンプレートがインストールされていません。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="OperationCancelled">
+        <source>The operation was cancelled.</source>
+        <target state="translated">処理が取り消されました。</target>
         <note />
       </trans-unit>
       <trans-unit id="OptionalWorkloadsSyncFailed">
@@ -703,7 +718,7 @@ The header is followed by the list of parameters and their errors (might be seve
       </trans-unit>
       <trans-unit id="RerunCommandAndPassForceToCreateAnyway">
         <source>To create the template anyway, run the command with '{0}' option:</source>
-        <target state="new">To create the template anyway, run the command with '{0}' option:</target>
+        <target state="translated">テンプレートをこのまま作成するには、'{0}' オプションを指定してコマンドを実行します:</target>
         <note>{0} - additional option name (--force)</note>
       </trans-unit>
       <trans-unit id="RunHelpForInformationAboutAcceptedParameters">
@@ -1055,6 +1070,11 @@ The header is followed by the list of parameters and their errors (might be seve
       <trans-unit id="UnableToSetPermissions">
         <source>Unable to apply permissions {0} to "{1}".</source>
         <target state="translated">アクセス許可 {0} を "{1}" に適用できません。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UnexpectedResult">
+        <source>Template generation ended with unexpected result: '{0}'. Details: {1}</source>
+        <target state="translated">テンプレートの生成が予期しない結果で終了しました: '{0} '。詳細： {1}</target>
         <note />
       </trans-unit>
       <trans-unit id="UnknownChangeKind">

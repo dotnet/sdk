@@ -7,6 +7,7 @@ using System.CommandLine;
 using System.CommandLine.Parsing;
 using System.Diagnostics;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Microsoft.DotNet.Cli.Utils;
 using static Microsoft.DotNet.Cli.Parser;
 
@@ -34,20 +35,50 @@ namespace Microsoft.DotNet.Cli
             Parser.Instance.Parse(tokenList).Invoke();
         }
 
+
         public static void ShowHelpOrErrorIfAppropriate(this ParseResult parseResult)
         {
             if (parseResult.Errors.Any())
             {
                 var unrecognizedTokenErrors = parseResult.Errors.Where(error =>
-                    error.Message.Contains(Parser.Instance.Configuration.LocalizationResources.UnrecognizedCommandOrArgument(string.Empty).Replace("'", string.Empty)));
+                {
+                    // Can't really cache this access in a static or something because it implicitly depends on the environment.
+                    var rawResourcePartsForThisLocale = DistinctFormatStringParts(CommandLineValidation.LocalizableStrings.UnrecognizedCommandOrArgument);
+                    return ErrorContainsAllParts(error.Message, rawResourcePartsForThisLocale);
+                });
                 if (parseResult.CommandResult.Command.TreatUnmatchedTokensAsErrors ||
                     parseResult.Errors.Except(unrecognizedTokenErrors).Any())
                 {
                     throw new CommandParsingException(
                         message: string.Join(Environment.NewLine,
-                                             parseResult.Errors.Select(e => e.Message)), 
+                                             parseResult.Errors.Select(e => e.Message)),
                         parseResult: parseResult);
                 }
+            }
+
+            ///<summary>Splits a .NET format string by the format placeholders (the {N} parts) to get an array of the literal parts, to be used in message-checking</summary> 
+            static string[] DistinctFormatStringParts(string formatString)
+            {
+                return Regex.Split(formatString, @"{[0-9]+}"); // match the literal '{', followed by any of 0-9 one or more times, followed by the literal '}'
+            }
+
+
+            /// <summary>given a string and a series of parts, ensures that all parts are present in the string in sequential order</summary>
+            static bool ErrorContainsAllParts(ReadOnlySpan<char> error, string[] parts)
+            {
+                foreach(var part in parts) {
+                    var foundIndex = error.IndexOf(part);
+                    if (foundIndex != -1)
+                    {
+                        error = error.Slice(foundIndex + part.Length);
+                        continue;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+                return true;
             }
         }
 
@@ -60,7 +91,7 @@ namespace Microsoft.DotNet.Cli
 
         public static bool IsDotnetBuiltInCommand(this ParseResult parseResult)
         {
-            return string.IsNullOrEmpty(parseResult.RootSubCommandResult()) || 
+            return string.IsNullOrEmpty(parseResult.RootSubCommandResult()) ||
                 Parser.GetBuiltInCommand(parseResult.RootSubCommandResult()) != null;
         }
 
@@ -73,7 +104,7 @@ namespace Microsoft.DotNet.Cli
         {
             return Parser.GetBuiltInCommand(parseResult.RootSubCommandResult()) != null ||
                 parseResult.Directives.Count() > 0 ||
-                (parseResult.IsTopLevelDotnetCommand() && string.IsNullOrEmpty(parseResult.GetValueForArgument(Parser.DotnetSubCommand)));
+                (parseResult.IsTopLevelDotnetCommand() && string.IsNullOrEmpty(parseResult.GetValue(Parser.DotnetSubCommand)));
         }
 
         public static int HandleMissingCommand(this ParseResult parseResult)
@@ -129,25 +160,25 @@ namespace Microsoft.DotNet.Cli
 
         public static bool BothArchAndOsOptionsSpecified(this ParseResult parseResult) =>
             (parseResult.HasOption(CommonOptions.ArchitectureOption) ||
-            parseResult.HasOption(CommonOptions.LongFormArchitectureOption)) && 
+            parseResult.HasOption(CommonOptions.LongFormArchitectureOption)) &&
             parseResult.HasOption(CommonOptions.OperatingSystemOption);
 
         internal static string GetCommandLineRuntimeIdentifier(this ParseResult parseResult)
         {
             return parseResult.HasOption(RunCommandParser.RuntimeOption) ?
-                parseResult.GetValueForOption(RunCommandParser.RuntimeOption) :
+                parseResult.GetValue(RunCommandParser.RuntimeOption) :
                 parseResult.HasOption(CommonOptions.OperatingSystemOption) ||
                 parseResult.HasOption(CommonOptions.ArchitectureOption) ||
                 parseResult.HasOption(CommonOptions.LongFormArchitectureOption) ?
                 CommonOptions.ResolveRidShorthandOptionsToRuntimeIdentifier(
-                    parseResult.GetValueForOption(CommonOptions.OperatingSystemOption),
+                    parseResult.GetValue(CommonOptions.OperatingSystemOption),
                     CommonOptions.ArchOptionValue(parseResult)) :
                 null;
         }
 
         public static bool UsingRunCommandShorthandProjectOption(this ParseResult parseResult)
         {
-            if (parseResult.HasOption(RunCommandParser.PropertyOption) && parseResult.GetValueForOption(RunCommandParser.PropertyOption).Any())
+            if (parseResult.HasOption(RunCommandParser.PropertyOption) && parseResult.GetValue(RunCommandParser.PropertyOption).Any())
             {
                 var projVals = parseResult.GetRunCommandShorthandProjectValues();
                 if (projVals.Any())
@@ -205,7 +236,7 @@ namespace Microsoft.DotNet.Cli
             if (parseResult.FindResultFor(optionToGet) is OptionResult optionResult &&
                 !parseResult.Errors.Any(e => e.SymbolResult == optionResult))
             {
-                return optionResult.GetValueForOption(optionToGet);
+                return optionResult.GetValue(optionToGet);
             } 
             else {
                 return default;
@@ -223,7 +254,7 @@ namespace Microsoft.DotNet.Cli
             if (parseResult.FindResultFor(optionToGet) is OptionResult optionResult &&
                 !parseResult.Errors.Any(e => e.SymbolResult == optionResult))
             {
-                return optionResult.GetValueForOption(optionToGet);
+                return optionResult.GetValue(optionToGet);
             } 
             else {
                 return default;

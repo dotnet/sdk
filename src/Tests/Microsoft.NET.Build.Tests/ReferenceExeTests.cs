@@ -295,7 +295,9 @@ public class ReferencedExeProgram
 
             CreateProjects();
 
-            RunTest();
+            RunTest(callingMethod: System.Reflection.MethodBase.GetCurrentMethod().ToString()
+                .Replace("Void ","")
+                .Replace("Boolean",referenceExeInCode.ToString()));
         }
 
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
@@ -315,7 +317,8 @@ public class ReferencedExeProgram
             var testProjectDirectory = Path.Combine(testAsset.TestRoot, "TestProject");
             Directory.CreateDirectory(testProjectDirectory);
 
-            new DotnetCommand(Log, "new", testTemplateName, "--debug:ephemeral-hive")
+            new DotnetNewCommand(Log, testTemplateName)
+                .WithVirtualHive()
                 .WithWorkingDirectory(testProjectDirectory)
                 .Execute()
                 .Should()
@@ -351,7 +354,8 @@ public class ReferencedExeProgram
             var testProjectDirectory = Path.Combine(testAsset.TestRoot, "TestProject");
             Directory.CreateDirectory(testProjectDirectory);
 
-            new DotnetCommand(Log, "new", testTemplateName, "--debug:ephemeral-hive")
+            new DotnetNewCommand(Log, testTemplateName)
+                .WithVirtualHive()
                 .WithWorkingDirectory(testProjectDirectory)
                 .Execute()
                 .Should()

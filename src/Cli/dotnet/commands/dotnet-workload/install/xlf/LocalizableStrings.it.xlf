@@ -198,8 +198,8 @@
         <note />
       </trans-unit>
       <trans-unit id="PendingReboot">
-        <source>The machine has a pending reboot. Installation will continue, but you may need to restart.</source>
-        <target state="translated">Il computer ha un riavvio in sospeso. L'installazione continuerà, ma potrebbe essere necessario riavviare.</target>
+        <source>The machine has a pending reboot. The workload operation will continue, but you may need to restart.</source>
+        <target state="needs-review-translation">Il computer ha un riavvio in sospeso. L'installazione continuerà, ma potrebbe essere necessario riavviare.</target>
         <note />
       </trans-unit>
       <trans-unit id="ResolvingPackageUrls">
@@ -364,7 +364,7 @@
       </trans-unit>
       <trans-unit id="WorkloadUpdatesAvailable">
         <source>Workload updates are available. Run `dotnet workload list` for more information.</source>
-        <target state="translated">Sono disponibili aggiornamenti del carico di lavoro. Per altre informazioni, eseguire 'dotnet workload list'.</target>
+        <target state="translated">Sono disponibili aggiornamenti del carico di lavoro. Per altre informazioni, eseguire `dotnet workload list`.</target>
         <note />
       </trans-unit>
       <trans-unit id="WritingPackInstallRecordMessage">

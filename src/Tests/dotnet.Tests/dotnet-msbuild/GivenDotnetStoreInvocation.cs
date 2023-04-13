@@ -34,6 +34,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         [InlineData(new string[] { "-f", "<tfm>" }, @"-property:TargetFramework=<tfm>")]
         [InlineData(new string[] { "--framework", "<tfm>" }, @"-property:TargetFramework=<tfm>")]
         [InlineData(new string[] { "-r", "<rid>" }, @"-property:RuntimeIdentifier=<rid> -property:_CommandLineDefinedRuntimeIdentifier=true")]
+        [InlineData(new string[] { "-r", "linux-amd64" }, @"-property:RuntimeIdentifier=linux-x64 -property:_CommandLineDefinedRuntimeIdentifier=true")]
         [InlineData(new string[] { "--runtime", "<rid>" }, @"-property:RuntimeIdentifier=<rid> -property:_CommandLineDefinedRuntimeIdentifier=true")]
         [InlineData(new string[] { "--use-current-runtime" }, "-property:UseCurrentRuntimeIdentifier=True")]
         [InlineData(new string[] { "--ucr" }, "-property:UseCurrentRuntimeIdentifier=True")]
@@ -63,7 +64,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
 
             var msbuildPath = "<msbuildpath>";
             StoreCommand.FromArgs(args, msbuildPath)
-                .GetArgumentsToMSBuild().Should().Be($"{ExpectedPrefix} -property:ComposeDir={Path.GetFullPath(path)}");
+                .GetArgumentsToMSBuild().Should().Be($"{ExpectedPrefix} -property:ComposeDir={Path.GetFullPath(path)} -property:_CommandLineDefinedOutputPath=true");
         }
     }
 }

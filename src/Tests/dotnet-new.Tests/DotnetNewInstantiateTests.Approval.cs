@@ -11,7 +11,6 @@ using Microsoft.TemplateEngine.TestHelper;
 namespace Microsoft.DotNet.Cli.New.IntegrationTests
 {
     [UsesVerify]
-    [Collection("Verify Tests")]
     public partial class DotnetNewInstantiateTests
     {
         [Fact]
@@ -133,6 +132,26 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         }
 
         [Fact]
+        public Task CannotInstantiateTemplate_WhenNoDefaultNameSpecified()
+        {
+            string home = CreateTemporaryFolder(folderName: "Home");
+            string workingDirectory = CreateTemporaryFolder();
+            InstallTestTemplate("TemplateWithPreferDefaultNameButNoDefaultName", _log, home, workingDirectory);
+
+            CommandResult commandResult = new DotnetNewCommand(_log, "TestAssets.TemplateWithPreferDefaultNameButNoDefaultName")
+                .WithCustomHive(home)
+                .WithWorkingDirectory(workingDirectory)
+                .Execute();
+
+            commandResult
+                .Should()
+                .Fail()
+                .And.NotHaveStdOut();
+
+            return Verify(commandResult.StdErr);
+        }
+
+        [Fact]
         public Task CannotInstantiateTemplate_WhenParameterIsInvalid()
         {
             string workingDirectory = CreateTemporaryFolder();
@@ -173,7 +192,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         {
             string workingDirectory = CreateTemporaryFolder();
 
-            CommandResult commandResult = new DotnetNewCommand(_log, "console", "--framework", "netcoreapp")
+            var commandResult = new DotnetNewCommand(_log, "console", "--framework", "net")
                 .WithCustomHive(_fixture.HomeDirectory)
                 .WithWorkingDirectory(workingDirectory)
                 .Execute();
@@ -362,11 +381,10 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             string[] actualFiles = Directory.GetFiles(workingDirectory);
 
             return Task.WhenAll(
-                actualFiles.Select(
+                actualFiles.Where(f => Path.GetExtension(f).Equals(".txt")).Select(
                     async (file) =>
                     await VerifyFile(file)
                     .UseMethodName($"CanInstantiateTemplate_ConditionalProcessing_{Path.GetFileName(file)}")
-                    .UseExtension("txt")
                     ));
         }
 
@@ -550,7 +568,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .AddScrubber(output =>
                 {
                     output.ScrubByRegex("\\-\\-debug\\:custom\\-hive [A-Za-z0-9\\-\\.\\\\\\/\\{\\}\\:_]+", "--debug:custom-hive %SETTINGS DIRECTORY%");
-                    output.ScrubByRegex("dotnetcli \\(version: v[A-Za-z0-9.-]+\\)", "dotnetcli (version: v%VERSION%)");
+                    output.ScrubByRegex("dotnetcli \\(version: [A-Za-z0-9.-]+\\)", "dotnetcli (version: %VERSION%)");
                 });
         }
 
@@ -571,7 +589,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             return Verify(commandResult.StdOut)
                 .AddScrubber(output =>
                 {
-                    output.ScrubByRegex("dotnetcli \\(version: v[A-Za-z0-9.-]+\\)", "dotnetcli (version: v%VERSION%)");
+                    output.ScrubByRegex("dotnetcli \\(version: [A-Za-z0-9.-]+\\)", "dotnetcli (version: %VERSION%)");
                 });
         }
 
@@ -660,6 +678,79 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .Pass();
 
             return Verify(commandResult.StdOut);
+        }
+
+        [Theory]
+        [InlineData("TestAssets.TemplateWithRequiredParameters|--paramA|valA|--paramB|valB", "AB")]
+        [InlineData("TestAssets.TemplateWithRequiredParameters|--paramA|valA|--paramB|valB|--paramC|valC|--enableC|true", "ABC")]
+        public Task CanInstantiateTemplate_WithRequiredParams(string parameters, string setName)
+        {
+            string workingDirectory = CreateTemporaryFolder();
+            string homeDirectory = CreateTemporaryFolder();
+            InstallTestTemplate("TemplateWithRequiredParameters", _log, homeDirectory, workingDirectory);
+
+            CommandResult commandResult = new DotnetNewCommand(_log, parameters.Split("|"))
+                .WithCustomHive(homeDirectory)
+                .WithWorkingDirectory(workingDirectory)
+                .Execute();
+
+            commandResult
+                .Should()
+                .ExitWith(0)
+                .And.NotHaveStdErr();
+
+            return Verify(File.ReadAllText(Path.Combine(workingDirectory, "Test.cs")))
+                .UseParameters(setName);
+        }
+
+        [Theory]
+        [InlineData("TestAssets.TemplateWithConditionalParameters|--paramA|true|--A_enabled", "A_Aenabled")]
+        [InlineData("TestAssets.TemplateWithConditionalParameters|--paramA|true", "A")]
+        [InlineData("TestAssets.TemplateWithConditionalParameters|--paramA|true|--paramB|true", "AB")]
+        [InlineData("TestAssets.TemplateWithConditionalParameters|--paramA|true|--paramB|true|--A_enabled", "AB_Aenabled")]
+        [InlineData("TestAssets.TemplateWithConditionalParameters|--paramA|true|--paramB|true|--A_enabled|--B_enabled", "AB_ABenabled")]
+        public Task CanInstantiateTemplate_WithConditionallyEnabledParams(string parameters, string setName)
+        {
+            string workingDirectory = CreateTemporaryFolder();
+            string homeDirectory = CreateTemporaryFolder();
+            InstallTestTemplate("TemplateWithConditionalParameters", _log, homeDirectory, workingDirectory);
+
+            CommandResult commandResult = new DotnetNewCommand(_log, parameters.Split("|"))
+                .WithCustomHive(homeDirectory)
+                .WithWorkingDirectory(workingDirectory)
+                .Execute();
+
+            commandResult
+                .Should()
+                .ExitWith(0)
+                .And.NotHaveStdErr();
+
+            return Verify(File.ReadAllText(Path.Combine(workingDirectory, "Test.cs")))
+                .UseParameters(setName);
+        }
+
+        [Theory]
+        [InlineData("TestAssets.TemplateWithRequiredParameters", "no-params")]
+        [InlineData("TestAssets.TemplateWithRequiredParameters|--paramA|valA", "onlyA")]
+        [InlineData("TestAssets.TemplateWithRequiredParameters|--paramA|valA|--paramB|valB|--enableC|true", "onlyAB")]
+        [InlineData("TestAssets.TemplateWithRequiredParameters|--enableC|true", "no-params-C-enabled")]
+        public Task CannotInstantiateTemplate_WithoutRequiredParams(string parameters, string setName)
+        {
+            string workingDirectory = CreateTemporaryFolder();
+            string homeDirectory = CreateTemporaryFolder();
+            InstallTestTemplate("TemplateWithRequiredParameters", _log, homeDirectory, workingDirectory);
+
+            CommandResult commandResult = new DotnetNewCommand(_log, parameters.Split("|"))
+                .WithCustomHive(homeDirectory)
+                .WithWorkingDirectory(workingDirectory)
+                .Execute();
+
+            commandResult
+                .Should()
+                .Fail();
+
+            return Verify(commandResult.FormatOutputStreams())
+                .UseParameters(setName);
         }
     }
 }

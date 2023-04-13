@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.CommandLine;
-using System.CommandLine.Parsing;
 using System.IO;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
@@ -82,7 +81,8 @@ namespace Microsoft.DotNet.Workloads.Workload
         /// <param name="tempDirPath">The directory to use for volatile output. If no value is specified, the commandline
         /// option is used if present, otherwise the default temp directory used.</param>
         /// <param name="nugetPackageDownloader">The package downloader to use for acquiring NuGet packages.</param>
-        public WorkloadCommandBase(ParseResult parseResult,
+        public WorkloadCommandBase(
+            ParseResult parseResult,
             Option<VerbosityOptions> verbosityOptions = null,
             IReporter reporter = null,
             string tempDirPath = null,
@@ -93,8 +93,8 @@ namespace Microsoft.DotNet.Workloads.Workload
             RestoreActionConfiguration = _parseResult.ToRestoreActionConfig();
 
             Verbosity = verbosityOptions == null
-                ? parseResult.GetValueForOption(CommonOptions.VerbosityOption)
-                : parseResult.GetValueForOption(verbosityOptions);
+                ? parseResult.GetValue(CommonOptions.VerbosityOption)
+                : parseResult.GetValue(verbosityOptions);
 
             ILogger nugetLogger = Verbosity.IsDetailedOrDiagnostic() ? new NuGetConsoleLogger() : new NullLogger();
 
@@ -102,9 +102,9 @@ namespace Microsoft.DotNet.Workloads.Workload
 
             TempDirectoryPath = !string.IsNullOrWhiteSpace(tempDirPath)
                 ? tempDirPath
-                : !string.IsNullOrWhiteSpace(parseResult.GetValueForOption(WorkloadInstallCommandParser.TempDirOption))
-                ? parseResult.GetValueForOption(WorkloadInstallCommandParser.TempDirOption)
-                : Path.GetTempPath();
+                : !string.IsNullOrWhiteSpace(parseResult.GetValue(WorkloadInstallCommandParser.TempDirOption))
+                ? parseResult.GetValue(WorkloadInstallCommandParser.TempDirOption)
+                : PathUtilities.CreateTempSubdirectory();
 
             TempPackagesDirectory = new DirectoryPath(Path.Combine(TempDirectoryPath, "dotnet-sdk-advertising-temp"));
 
@@ -132,7 +132,7 @@ namespace Microsoft.DotNet.Workloads.Workload
                 return false;
             }
 
-            bool skipSignCheck = parseResult.GetValueForOption(WorkloadInstallCommandParser.SkipSignCheckOption);
+            bool skipSignCheck = parseResult.GetValue(WorkloadInstallCommandParser.SkipSignCheckOption);
             bool policyEnabled = SignCheck.IsWorkloadSignVerificationPolicySet();
 
             if (skipSignCheck && policyEnabled)

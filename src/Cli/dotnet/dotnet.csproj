@@ -70,10 +70,12 @@
     <EmbeddedResource Update="**\dotnet-workload\restore\*.resx" Namespace="Microsoft.DotNet.Workloads.Workload.Restore" />
     <EmbeddedResource Update="**\dotnet-workload\repair\*.resx" Namespace="Microsoft.DotNet.Workloads.Workload.Repair" />
     <EmbeddedResource Update="**\dotnet-workload\elevate\*.resx" Namespace="Microsoft.DotNet.Workloads.Workload.Elevate" />
+    <EmbeddedResource Update="**\dotnet-workload\clean\*.resx" Namespace="Microsoft.DotNet.Workloads.Workload.Clean" />
     <EmbeddedResource Update="Installer\Windows\*.resx" Namespace="Microsoft.DotNet.Installer.Windows" />
     <EmbeddedResource Update="ToolManifest\*.resx" Namespace="Microsoft.DotNet.ToolManifest" />
     <EmbeddedResource Update="NugetSearch\*.resx" Namespace="Microsoft.DotNet.NugetSearch" />
     <EmbeddedResource Update="NugetPackageDownloader\*.resx" Namespace="Microsoft.DotNet.Cli.NuGetPackageDownloader" />
+    <EmbeddedResource Include="$(RepoRoot)src\Tasks\Common\Resources\Strings.resx" LinkBase="Resources" GenerateSource="True" Namespace="Microsoft.NET.Build.Tasks" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="../Microsoft.DotNet.Configurer/Microsoft.DotNet.Configurer.csproj" />
@@ -95,8 +97,7 @@
     <PackageReference Include="System.CommandLine" Version="$(SystemCommandLineVersion)" />
     <PackageReference Include="Microsoft.Deployment.DotNet.Releases" Version="$(MicrosoftDeploymentDotNetReleasesVersion)" />
     <PackageReference Include="System.ServiceProcess.ServiceController" Version="$(SystemServiceProcessServiceControllerVersion)" />
-    <PackageReference Include="Microsoft.VisualStudio.Setup.Configuration.Interop" Version="$(MicrosoftVisualStudioSetupConfigurationInteropVersion)" PrivateAssets="All" ExcludeAssets="Runtime"
-                      Condition="'$(DotNetBuildFromSource)' != 'true'"/>
+    <PackageReference Include="Microsoft.VisualStudio.Setup.Configuration.Interop" Version="$(MicrosoftVisualStudioSetupConfigurationInteropVersion)" PrivateAssets="All" ExcludeAssets="Runtime" Condition="'$(DotNetBuildFromSource)' != 'true'" />
   </ItemGroup>
   <ItemGroup Condition=" '$(IncludeAspNetCoreRuntime)' != 'false' ">
     <PackageReference Include="Microsoft.AspNetCore.DeveloperCertificates.XPlat" Version="$(MicrosoftAspNetCoreDeveloperCertificatesXPlatPackageVersion)" />

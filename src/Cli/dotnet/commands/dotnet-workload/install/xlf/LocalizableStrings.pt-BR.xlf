@@ -198,8 +198,8 @@
         <note />
       </trans-unit>
       <trans-unit id="PendingReboot">
-        <source>The machine has a pending reboot. Installation will continue, but you may need to restart.</source>
-        <target state="translated">A máquina tem uma reinicialização pendente. A instalação vai continuar, mas talvez seja necessário reiniciar.</target>
+        <source>The machine has a pending reboot. The workload operation will continue, but you may need to restart.</source>
+        <target state="needs-review-translation">A máquina tem uma reinicialização pendente. A instalação vai continuar, mas talvez seja necessário reiniciar.</target>
         <note />
       </trans-unit>
       <trans-unit id="ResolvingPackageUrls">
@@ -364,7 +364,7 @@
       </trans-unit>
       <trans-unit id="WorkloadUpdatesAvailable">
         <source>Workload updates are available. Run `dotnet workload list` for more information.</source>
-        <target state="translated">As atualizações de carga de trabalho estão disponíveis. Execute ' lista de cargas de trabalho dotnet ' para obter mais informações.</target>
+        <target state="translated">As atualizações de carga de trabalho estão disponíveis. Execute `dotnet workload list` para obter mais informações.</target>
         <note />
       </trans-unit>
       <trans-unit id="WritingPackInstallRecordMessage">
