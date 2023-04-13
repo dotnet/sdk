@@ -26,7 +26,6 @@ index ------------
  ./packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref/netx.y/System.IO.Pipelines.dll
  ./packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref/netx.y/System.IO.Pipelines.xml
 +./packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref/netx.y/System.Runtime.CompilerServices.Unsafe.dll
-+./packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref/netx.y/System.Runtime.CompilerServices.Unsafe.xml
 +./packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref/netx.y/System.Security.AccessControl.dll
 +./packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref/netx.y/System.Security.AccessControl.xml
  ./packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref/netx.y/System.Security.Cryptography.Xml.dll
@@ -564,17 +563,3 @@ index ------------
  ./sdk/x.y.z/zh-Hant/MSBuild.resources.dll
  ./sdk/x.y.z/zh-Hant/System.CommandLine.resources.dll
  ./shared/
-@@ ------------ @@
- ./templates/
- ./templates/x.y.z/
- ./templates/x.y.z/microsoft.dotnet.common.itemtemplates.x.y.z.nupkg
--./templates/x.y.z/microsoft.dotnet.common.projecttemplates.x.y.z.0.116.nupkg
-+./templates/x.y.z/microsoft.dotnet.common.projecttemplates.x.y.z.0.115.nupkg
- ./templates/x.y.z/microsoft.dotnet.test.projecttemplates.x.y.z.0.2-betax.y.z.nupkg
--./templates/x.y.z/microsoft.dotnet.web.itemtemplates.x.y.z.0.16.nupkg
--./templates/x.y.z/microsoft.dotnet.web.projecttemplates.x.y.z.0.16.nupkg
--./templates/x.y.z/microsoft.dotnet.web.spa.projecttemplates.x.y.z.0.16.nupkg
-+./templates/x.y.z/microsoft.dotnet.web.itemtemplates.x.y.z.0.15.nupkg
-+./templates/x.y.z/microsoft.dotnet.web.projecttemplates.x.y.z.0.15.nupkg
-+./templates/x.y.z/microsoft.dotnet.web.spa.projecttemplates.x.y.z.0.15.nupkg
- ./ThirdPartyNotices.txt
