@@ -176,12 +176,12 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/sourcelink -->
-    <MicrosoftBuildTasksGitVersion>1.2.0-beta-23207-01</MicrosoftBuildTasksGitVersion>
-    <MicrosoftSourceLinkCommonVersion>1.2.0-beta-23207-01</MicrosoftSourceLinkCommonVersion>
-    <MicrosoftSourceLinkAzureReposGitVersion>1.2.0-beta-23207-01</MicrosoftSourceLinkAzureReposGitVersion>
-    <MicrosoftSourceLinkGitHubVersion>1.2.0-beta-23207-01</MicrosoftSourceLinkGitHubVersion>
-    <MicrosoftSourceLinkGitLabVersion>1.2.0-beta-23207-01</MicrosoftSourceLinkGitLabVersion>
-    <MicrosoftSourceLinkBitBucketVersion>1.2.0-beta-23207-01</MicrosoftSourceLinkBitBucketVersion>
+    <MicrosoftBuildTasksGitVersion>8.0.0-beta.23210.3</MicrosoftBuildTasksGitVersion>
+    <MicrosoftSourceLinkCommonVersion>8.0.0-beta.23210.3</MicrosoftSourceLinkCommonVersion>
+    <MicrosoftSourceLinkAzureReposGitVersion>8.0.0-beta.23210.3</MicrosoftSourceLinkAzureReposGitVersion>
+    <MicrosoftSourceLinkGitHubVersion>8.0.0-beta.23210.3</MicrosoftSourceLinkGitHubVersion>
+    <MicrosoftSourceLinkGitLabVersion>8.0.0-beta.23210.3</MicrosoftSourceLinkGitLabVersion>
+    <MicrosoftSourceLinkBitBucketVersion>8.0.0-beta.23210.3</MicrosoftSourceLinkBitBucketVersion>
   </PropertyGroup>
   <!-- Get .NET Framework reference assemblies from NuGet packages -->
   <PropertyGroup>
