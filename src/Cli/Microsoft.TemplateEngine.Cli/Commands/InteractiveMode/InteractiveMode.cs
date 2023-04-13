@@ -85,7 +85,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands.InteractiveMode
                         var currentQuestion = questionsToAsk.Current;
                         while (!rightInfoCollected && !userCancelled)
                         {
-                            context.Console.WriteLine(currentQuestion.GetQuery());
+                            context.Console.Write(currentQuestion.GetQuery());
 
                             var paramValue = Console.ReadLine();
                             if (paramValue is not null

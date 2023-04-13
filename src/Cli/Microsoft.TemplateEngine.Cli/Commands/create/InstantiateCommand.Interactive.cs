@@ -44,7 +44,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             foreach (var parameter in missingParams)
             {
                 var paramInfo = parameter.Value;
-                var prompt = $"What should the {paramInfo.Name.Green()} be?";
+                var prompt = $"What should the {paramInfo.Name.Green()} be";
                 if (paramInfo is ChoiceTemplateParameter choiceParam)
                 {
                     prompt += " " + "[".Blue();
@@ -73,6 +73,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
                 {
                     prompt += " " + $"[{defaultValue}]".Blue();
                 }
+                prompt += "? ";
                 var cliArgument = paramInfo.LongNameOverrides.Concat(paramInfo.ShortNameOverrides).Where(s => !string.IsNullOrEmpty(s)).FirstOrDefault() ?? paramInfo.Name;
                 parametersTree.Add(new UserQuery<string>(cliArgument, prompt));
             }
