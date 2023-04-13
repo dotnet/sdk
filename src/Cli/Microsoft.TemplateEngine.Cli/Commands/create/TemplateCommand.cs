@@ -220,7 +220,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
         // Check what is still missing for sucessfull creation
         // Figure out the type to return for the function,
         // or if we will have multiple functions with different types
-        internal IEnumerable<KeyValuePair<string, ITemplateParameter>> GetMissingArguments(
+        internal IEnumerable<KeyValuePair<string, CliTemplateParameter>> GetMissingArguments(
             string[] userEnteredParams)
         // List<TemplateOption> passedOptions)
         {
@@ -230,7 +230,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             //    // yield return option;
             //}
 
-            var templateParams = Template.ParameterDefinitions.AsReadonlyDictionary();
+            var templateParams = Template.CliParameters;
 
             foreach (var param in templateParams)
             {

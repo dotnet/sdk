@@ -31,7 +31,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands.InteractiveMode
                 {
                     // TODO: add the default skip key
                     // TODO: short name validation. right now we are assuming that the provided template exists and is valid
-                    context.Console.WriteLine("Currently under development, not all features implemented yet");
+                    context.Console.WriteLine("Currently under development, not all features implemented yet".Yellow());
 
                     // --- Workaround to get the environmental settings at this stage. Figure this out later
                     ITemplateEngineHost host = instantiateCommand.Host(context.ParseResult);
@@ -66,20 +66,27 @@ namespace Microsoft.TemplateEngine.Cli.Commands.InteractiveMode
                         return;
                     }
 
-                    context.Console.WriteLine(InteractiveModePrompts.OpeningMessage("<Default Language>", templateCommand.Template.Name, "skip button"));
+                    context.Console.WriteLine(InteractiveModePrompts.OpeningMessage("", templateCommand.Template.Name, "skip button"));
                     instantiateCommand.SetQuestions(knownArgs, templateCommand);
 
                     var questionsToAsk = instantiateCommand.Questions();
                     // TODO: adjust to different input types
                     Dictionary<string, string> paramsToAdd = new Dictionary<string, string>();
 
-                    while (questionsToAsk.MoveNext())
+                    bool userCancelled = false;
+                    Console.CancelKeyPress += (sender, e) =>
                     {
-                        var currentQuestion = questionsToAsk.Current;
+                        e.Cancel = true;
+                        userCancelled = true;
+                    };
+                    while (questionsToAsk.MoveNext() && !userCancelled)
+                    {
                         bool rightInfoCollected = false;
-                        while (!rightInfoCollected)
+                        var currentQuestion = questionsToAsk.Current;
+                        while (!rightInfoCollected && !userCancelled)
                         {
                             context.Console.WriteLine(currentQuestion.GetQuery());
+
                             var paramValue = Console.ReadLine();
                             if (paramValue is not null
                                 && paramValue != string.Empty
@@ -106,7 +113,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands.InteractiveMode
                     }
                     // After everything is done reparse the command line input and execute the result
 
-                    context.Console.WriteLine("New command to be executed: " + commandLineCall);
+                    context.Console.WriteLine("New command to be executed: " + commandLineCall.Green());
                     Parser parser = ParserFactory.CreateParser(context.ParseResult.RootCommandResult.Command);
                     parser.Invoke(commandLineCall);
                 }
