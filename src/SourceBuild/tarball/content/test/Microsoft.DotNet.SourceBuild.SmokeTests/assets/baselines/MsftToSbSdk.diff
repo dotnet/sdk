@@ -14,7 +14,20 @@ index ------------
  ./packs/Microsoft.AspNetCore.App.Ref/
  ./packs/Microsoft.AspNetCore.App.Ref/x.y.z/
 @@ ------------ @@
+ ./packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref/netx.y/Microsoft.JSInterop.xml
+ ./packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref/netx.y/Microsoft.Net.Http.Headers.dll
+ ./packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref/netx.y/Microsoft.Net.Http.Headers.xml
++./packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref/netx.y/System.Diagnostics.DiagnosticSource.dll
++./packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref/netx.y/System.Diagnostics.DiagnosticSource.xml
+ ./packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref/netx.y/System.Diagnostics.EventLog.dll
+ ./packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref/netx.y/System.Diagnostics.EventLog.xml
++./packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref/netx.y/System.Formats.Asn1.dll
++./packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref/netx.y/System.Formats.Asn1.xml
+ ./packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref/netx.y/System.IO.Pipelines.dll
  ./packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref/netx.y/System.IO.Pipelines.xml
++./packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref/netx.y/System.Runtime.CompilerServices.Unsafe.dll
++./packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref/netx.y/System.Security.AccessControl.dll
++./packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref/netx.y/System.Security.AccessControl.xml
  ./packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref/netx.y/System.Security.Cryptography.Xml.dll
  ./packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref/netx.y/System.Security.Cryptography.Xml.xml
 -./packs/Microsoft.NETCore.App.Host.portable-rid/
@@ -29,6 +42,10 @@ index ------------
 -./packs/Microsoft.NETCore.App.Host.portable-rid/x.y.z/runtimes/portable-rid/native/libnethost.so
 -./packs/Microsoft.NETCore.App.Host.portable-rid/x.y.z/runtimes/portable-rid/native/nethost.h
 -./packs/Microsoft.NETCore.App.Host.portable-rid/x.y.z/runtimes/portable-rid/native/singlefilehost
++./packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref/netx.y/System.Text.Encodings.Web.dll
++./packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref/netx.y/System.Text.Encodings.Web.xml
++./packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref/netx.y/System.Text.Json.dll
++./packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref/netx.y/System.Text.Json.xml
 +./packs/Microsoft.NETCore.App.Host.banana-rid/
 +./packs/Microsoft.NETCore.App.Host.banana-rid/x.y.z/
 +./packs/Microsoft.NETCore.App.Host.banana-rid/x.y.z/runtimes/
@@ -545,7 +562,4 @@ index ------------
 -./sdk/x.y.z/zh-Hant/Microsoft.VisualStudio.Coverage.IO.resources.dll
  ./sdk/x.y.z/zh-Hant/MSBuild.resources.dll
  ./sdk/x.y.z/zh-Hant/System.CommandLine.resources.dll
- ./sdk/x.y.z/zh-Hant/vstest.console.resources.dll
  ./shared/
- ./shared/Microsoft.AspNetCore.App/x.y.z/
-
