@@ -197,6 +197,11 @@
         <target state="translated">Échec du chargement de la source NuGet {0} : la source n’est pas valide. Il sera ignoré en cours de traitement.</target>
         <note />
       </trans-unit>
+      <trans-unit id="NuGetApiPackageManager_Warning_InsecureFeed">
+        <source>The NuGet sources {0} are insecure and will not be searched. If you want to include those sources for search, use --force.</source>
+        <target state="new">The NuGet sources {0} are insecure and will not be searched. If you want to include those sources for search, use --force.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="NuGetApiPackageManager_Warning_PackageNotFound">
         <source>{0} is not found in NuGet feeds {1}.</source>
         <target state="translated">{0} est introuvable dans les flux NuGet {1}.</target>

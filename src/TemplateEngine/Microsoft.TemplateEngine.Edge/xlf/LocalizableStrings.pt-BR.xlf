@@ -197,6 +197,11 @@
         <target state="translated">Falha no carregamento da fonte NuGet {0}: a fonte não é válida. Ela será ignorada num processamento posterior.</target>
         <note />
       </trans-unit>
+      <trans-unit id="NuGetApiPackageManager_Warning_InsecureFeed">
+        <source>The NuGet sources {0} are insecure and will not be searched. If you want to include those sources for search, use --force.</source>
+        <target state="new">The NuGet sources {0} are insecure and will not be searched. If you want to include those sources for search, use --force.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="NuGetApiPackageManager_Warning_PackageNotFound">
         <source>{0} is not found in NuGet feeds {1}.</source>
         <target state="translated">{0} não é encontrado no NuGet feeds {1}.</target>

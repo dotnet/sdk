@@ -406,6 +406,15 @@ namespace Microsoft.TemplateEngine.Edge {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The NuGet sources {0} are insecure and will not be searched. If you want to include those sources for search, use --force..
+        /// </summary>
+        internal static string NuGetApiPackageManager_Warning_InsecureFeed {
+            get {
+                return ResourceManager.GetString("NuGetApiPackageManager_Warning_InsecureFeed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to {0} is not found in NuGet feeds {1}..
         /// </summary>
         internal static string NuGetApiPackageManager_Warning_PackageNotFound {

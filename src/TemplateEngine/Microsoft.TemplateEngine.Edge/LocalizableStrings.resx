@@ -238,6 +238,9 @@
   <data name="NuGetApiPackageManager_Error_NoSources" xml:space="preserve">
     <value>No NuGet sources are defined or enabled.</value>
   </data>
+  <data name="NuGetApiPackageManager_Warning_InsecureFeed" xml:space="preserve">
+    <value>The NuGet sources {0} are insecure and will not be searched. If you want to include those sources for search, use --force.</value>
+  </data>
   <data name="NuGetApiPackageManager_Warning_FailedToDelete" xml:space="preserve">
     <value>Failed to remove {0} after failed download. Remove the file manually if it exists.</value>
   </data>

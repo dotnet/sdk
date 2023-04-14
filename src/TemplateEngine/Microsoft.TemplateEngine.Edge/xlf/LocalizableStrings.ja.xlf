@@ -197,6 +197,11 @@
         <target state="translated">NuGet ソース {0} の読み込みに失敗しました: このソースが有効ではありません。今後の処理ではスキップされます。</target>
         <note />
       </trans-unit>
+      <trans-unit id="NuGetApiPackageManager_Warning_InsecureFeed">
+        <source>The NuGet sources {0} are insecure and will not be searched. If you want to include those sources for search, use --force.</source>
+        <target state="new">The NuGet sources {0} are insecure and will not be searched. If you want to include those sources for search, use --force.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="NuGetApiPackageManager_Warning_PackageNotFound">
         <source>{0} is not found in NuGet feeds {1}.</source>
         <target state="translated">{0} が NuGet フィードに見つかりません{1}。</target>

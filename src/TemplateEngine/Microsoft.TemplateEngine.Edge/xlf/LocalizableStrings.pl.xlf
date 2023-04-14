@@ -197,6 +197,11 @@
         <target state="translated">Nie można załadować źródła pakietu NuGet {0}: źródło jest nieprawidłowe. Zostanie ono pominięte podczas dalszego przetwarzania.</target>
         <note />
       </trans-unit>
+      <trans-unit id="NuGetApiPackageManager_Warning_InsecureFeed">
+        <source>The NuGet sources {0} are insecure and will not be searched. If you want to include those sources for search, use --force.</source>
+        <target state="new">The NuGet sources {0} are insecure and will not be searched. If you want to include those sources for search, use --force.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="NuGetApiPackageManager_Warning_PackageNotFound">
         <source>{0} is not found in NuGet feeds {1}.</source>
         <target state="translated">Nie znaleziono pakietu {0} w kanałach informacyjnych pakietu NuGet {1}.</target>
