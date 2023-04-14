@@ -309,6 +309,17 @@
                       Overwrite="true" />
   </Target>
 
+  <Target Name="GetMinimumVSVersion"
+          BeforeTargets="GenerateSdkBundle"
+          Condition=" '$(OS)' == 'Windows_NT' "
+          Outputs="$(MinimumVSVersion)">
+
+          <PropertyGroup>
+            <FileToRead Condition="$([System.Text.RegularExpressions.Regex]::Match(%(SDKInternalFiles.Identity),'.*minimumMSBuildVersion').Success) ">%(SDKInternalFiles.Identity)</FileToRead>
+            <MinimumVSVersion>$([System.IO.File]::ReadAllText($(FileToRead)).Trim())</MinimumVSVersion>
+          </PropertyGroup>
+  </Target>
+
   <Target Name="GenerateSdkBundle"
           DependsOnTargets="GenerateLayout;AcquireWix;MsiTargetsSetupInputOutputs;GenerateSdkMsi;GenerateTemplatesMsis;GenerateWorkloadManifestsWxs"
           Condition=" '$(OS)' == 'Windows_NT' "

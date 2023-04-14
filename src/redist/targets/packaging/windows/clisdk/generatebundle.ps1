@@ -72,6 +72,7 @@ function RunCandleForBundle
         -dTemplatesMsiSourcePath="$TemplatesMSIFile" `
         -dManifestsMsiSourcePath="$ManifestsMSIFile" `
         -dWinFormsAndWpfVersion="$WindowsDesktopVersion" `
+        -dMinimumVSVersion="$MinimumVSVersion" `
         -dAdditionalSharedFXMsiSourcePath="$AdditionalSharedFxMSIFile" `
         -dAdditionalHostFXRMsiSourcePath="$AdditionalHostFxrMSIFile" `
         -dAdditionalSharedHostMsiSourcePath="$AdditionalSharedHostMSIFile" `

@@ -76,7 +76,7 @@ Kaynaklar
   <String Id="InstallationNoteTitle">Yükleme notu</String>
   <String Id="InstallationNote">Yükleme işlemi sırasında, proje geri yükleme hızını artıran ve çevrimdışı erişimi etkinleştiren bir komut çalıştırılır. Tamamlanması bir dakikanızı alır.
   </String>
-  <String Id="VisualStudioWarning">Visual Studio ile .NET [VERSIONMAJOR].[VERSIONMINOR] kullanmayı planlıyorsanız Visual Studio 2022 17.4 veya üzeri bir sürüm gerekir. &lt;A HREF="https://aka.ms/dotnet[VERSIONMAJOR]-release-notes"&gt;Daha fazla bilgi edinin&lt;/A&gt;.
+  <String Id="VisualStudioWarning">Visual Studio ile .NET [VERSIONMAJOR].[VERSIONMINOR] kullanmayı planlıyorsanız Visual Studio 2022 [MINIMUMVSVERSION] veya üzeri bir sürüm gerekir. &lt;A HREF="https://aka.ms/dotnet[VERSIONMAJOR]-release-notes"&gt;Daha fazla bilgi edinin&lt;/A&gt;.
   </String>
   <String Id="LicenseAssent">Yükle'ye tıklayarak aşağıdaki koşulları kabul etmiş olursunuz:</String>
   <String Id="InstallPathx64x86">x64 SDK yüklemelerinin yükleme yolu ("[DOTNETHOME_X64]"), x86 SDK yüklemelerinin yükleme yolu ("[DOTNETHOME_X86]") ile aynı olamaz</String>

@@ -76,7 +76,7 @@
   <String Id="InstallationNoteTitle">설치 정보</String>
   <String Id="InstallationNote">프로젝트 복원 속도를 향상하고 오프라인 액세스를 사용할 수 있도록 하는 설치 프로세스 중 명령이 실행됩니다. 완료하는 데 최대 1분이 걸립니다.
   </String>
-  <String Id="VisualStudioWarning">Visual Studio에서 .NET [VERSIONMAJOR].[VERSIONMINOR]를 사용하려는 경우 Visual Studio 2022 17.4 이상이 필요합니다. &lt;A HREF="https://aka.ms/dotnet[VERSIONMAJOR]-release-notes"&gt;Learn more&lt;/A&gt;.
+  <String Id="VisualStudioWarning">Visual Studio에서 .NET [VERSIONMAJOR].[VERSIONMINOR]를 사용하려는 경우 Visual Studio 2022 [MINIMUMVSVERSION] 이상이 필요합니다. &lt;A HREF="https://aka.ms/dotnet[VERSIONMAJOR]-release-notes"&gt;Learn more&lt;/A&gt;.
   </String>
   <String Id="LicenseAssent">설치를 클릭하면 다음 사용 약관에 동의하는 것입니다.</String>
   <String Id="InstallPathx64x86">x64 SDK 설치의 설치 경로: " [DOTNETHOME_x64]" x86 SDK 설치의 경우와 같을 수 없습니다. " [DOTNETHOME_X86]"</String>
