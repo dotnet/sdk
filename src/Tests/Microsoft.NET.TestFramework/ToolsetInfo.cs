@@ -18,10 +18,10 @@ namespace Microsoft.NET.TestFramework
 {
     public class ToolsetInfo
     {
-        public const string CurrentTargetFramework = "net7.0";
-        public const string CurrentTargetFrameworkVersion = "7.0";
-        public const string NextTargetFramework = "net8.0";
-        public const string NextTargetFrameworkVersion = "8.0";
+        public const string CurrentTargetFramework = "net8.0";
+        public const string CurrentTargetFrameworkVersion = "8.0";
+        public const string NextTargetFramework = "net9.0";
+        public const string NextTargetFrameworkVersion = "9.0";
 
         public const string LatestWinRuntimeIdentifier = "win10";
         public const string LatestLinuxRuntimeIdentifier = "ubuntu.22.04";
@@ -241,6 +241,10 @@ namespace Microsoft.NET.TestFramework
 
             return ret;
         }
+
+        private static string GetDotnetHostPath(string dotnetRoot)
+            => Path.Combine(dotnetRoot, "dotnet" + Constants.ExeSuffix);
+
         public static ToolsetInfo Create(string repoRoot, string repoArtifactsDir, string configuration, TestCommandLine commandLine)
         {
             repoRoot = commandLine.SDKRepoPath ?? repoRoot;
@@ -249,18 +253,22 @@ namespace Microsoft.NET.TestFramework
             string dotnetInstallDirFromEnvironment = Environment.GetEnvironmentVariable("DOTNET_INSTALL_DIR");
 
             string dotnetRoot;
+            string hostNotFoundReason;
 
             if (!string.IsNullOrEmpty(commandLine.DotnetHostPath))
             {
                 dotnetRoot = Path.GetDirectoryName(commandLine.DotnetHostPath);
+                hostNotFoundReason = "Command line argument -dotnetPath is incorrect.";
             }
             else if (repoRoot != null)
             {
                 dotnetRoot = Path.Combine(repoArtifactsDir, "bin", "redist", configuration, "dotnet");
+                hostNotFoundReason = "Is 'redist.csproj' built?";
             }
             else if (!string.IsNullOrEmpty(dotnetInstallDirFromEnvironment))
             {
                 dotnetRoot = dotnetInstallDirFromEnvironment;
+                hostNotFoundReason = "The value of DOTNET_INSTALL_DIR is incorrect.";
             }
             else
             {
@@ -272,6 +280,13 @@ namespace Microsoft.NET.TestFramework
                 {
                     throw new InvalidOperationException("Could not resolve path to dotnet");
                 }
+                hostNotFoundReason = "";
+            }
+
+            var dotnetHost = GetDotnetHostPath(dotnetRoot);
+            if (!File.Exists(dotnetHost))
+            {
+                throw new FileNotFoundException($"Host '{dotnetHost}' not found. {hostNotFoundReason}");
             }
 
             var ret = new ToolsetInfo(dotnetRoot);

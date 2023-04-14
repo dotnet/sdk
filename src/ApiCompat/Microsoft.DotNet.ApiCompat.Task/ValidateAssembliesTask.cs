@@ -55,6 +55,11 @@ namespace Microsoft.DotNet.ApiCompat.Task
         public string? NoWarn { get; set; }
 
         /// <summary>
+        /// If true, includes both internal and public API.
+        /// </summary>
+        public bool RespectInternals { get; set; }
+
+        /// <summary>
         /// Enables rule to check that attributes match.
         /// </summary>
         public bool EnableRuleAttributesMustMatch { get; set; }
@@ -119,12 +124,13 @@ namespace Microsoft.DotNet.ApiCompat.Task
 
         protected override void ExecuteCore()
         {
-            Func<ISuppressionEngine, MSBuildCompatibilityLogger> logFactory = (suppressionEngine) => new(Log, suppressionEngine);
+            Func<ISuppressionEngine, SuppressableMSBuildLog> logFactory = (suppressionEngine) => new(Log, suppressionEngine);
             ValidateAssemblies.Run(logFactory,
                 GenerateSuppressionFile,
                 SuppressionFiles,
                 SuppressionOutputFile,
                 NoWarn,
+                RespectInternals,
                 EnableRuleAttributesMustMatch,
                 ExcludeAttributesFiles,
                 EnableRuleCannotChangeParameterName,
@@ -183,7 +189,9 @@ namespace Microsoft.DotNet.ApiCompat.Task
 
                 if (string.IsNullOrWhiteSpace(replacementString))
                 {
-                    throw new ArgumentException(string.Format(CommonResources.InvalidRexegStringTransformationPattern, captureGroupPattern, replacementString));
+                    throw new ArgumentException(string.Format(CommonResources.InvalidRexegStringTransformationPattern,
+                        captureGroupPattern,
+                        replacementString));
                 }
 
                 patterns[i] = (captureGroupPattern, replacementString);

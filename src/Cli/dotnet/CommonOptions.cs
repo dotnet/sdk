@@ -51,8 +51,16 @@ namespace Microsoft.DotNet.Cli
             }.ForwardAsSingle(o => $"-property:TargetFramework={o}")
             .AddCompletions(Complete.TargetFrameworksFromProjectFile);
 
+        public static Option<string> ArtifactsPathOption =
+            new ForwardedOption<string>(
+                //  --artifacts-path is pretty verbose, should we use --artifacts instead (or possibly support both)?
+                new string[] { "--artifacts-path" },
+                description: CommonLocalizableStrings.ArtifactsPathOptionDescription)
+            {
+                ArgumentHelpName = CommonLocalizableStrings.ArtifactsPathArgumentName
+            }.ForwardAsSingle(o => $"-property:ArtifactsPath={CommandDirectoryContext.GetFullPath(o)}");            
+
         private static string RuntimeArgName = CommonLocalizableStrings.RuntimeIdentifierArgumentName;
-        private static CompletionDelegate RuntimeCompletions = Complete.RunTimesFromProjectFile;
         public static IEnumerable<string> RuntimeArgFunc(string rid)
         {
             if (GetArchFromRid(rid) == "amd64")
@@ -61,6 +69,8 @@ namespace Microsoft.DotNet.Cli
             }
             return new string[] { $"-property:RuntimeIdentifier={rid}", "-property:_CommandLineDefinedRuntimeIdentifier=true" };
         }
+        private static Func<CompletionContext, IEnumerable<CompletionItem>> RuntimeCompletions = Complete.RunTimesFromProjectFile;
+
         public static Option<string> RuntimeOption =
             new ForwardedOption<string>(
                 new string[] { "-r", "--runtime" })
@@ -136,24 +146,30 @@ namespace Microsoft.DotNet.Cli
             new ForwardedOption<string>(
                 new string[] { "--arch", "-a" },
                 CommonLocalizableStrings.ArchitectureOptionDescription)
-            .SetForwardingFunction(ResolveArchOptionToRuntimeIdentifier);
+            {
+                ArgumentHelpName = CommonLocalizableStrings.ArchArgumentName
+            }.SetForwardingFunction(ResolveArchOptionToRuntimeIdentifier);
 
         public static Option<string> LongFormArchitectureOption =
             new ForwardedOption<string>(
                 new string[] { "--arch" },
                 CommonLocalizableStrings.ArchitectureOptionDescription)
-            .SetForwardingFunction(ResolveArchOptionToRuntimeIdentifier);
+            {
+                ArgumentHelpName = CommonLocalizableStrings.ArchArgumentName
+            }.SetForwardingFunction(ResolveArchOptionToRuntimeIdentifier);
 
         internal static string ArchOptionValue(ParseResult parseResult) =>
-            string.IsNullOrEmpty(parseResult.GetValueForOption(CommonOptions.ArchitectureOption)) ?
-                parseResult.GetValueForOption(CommonOptions.LongFormArchitectureOption) :
-                parseResult.GetValueForOption(CommonOptions.ArchitectureOption);
+            string.IsNullOrEmpty(parseResult.GetValue(CommonOptions.ArchitectureOption)) ?
+                parseResult.GetValue(CommonOptions.LongFormArchitectureOption) :
+                parseResult.GetValue(CommonOptions.ArchitectureOption);
 
         public static Option<string> OperatingSystemOption =
             new ForwardedOption<string>(
                 "--os",
                 CommonLocalizableStrings.OperatingSystemOptionDescription)
-            .SetForwardingFunction(ResolveOsOptionToRuntimeIdentifier);
+            {
+                ArgumentHelpName = CommonLocalizableStrings.OSArgumentName
+            }.SetForwardingFunction(ResolveOsOptionToRuntimeIdentifier);
 
         public static Option<bool> DebugOption = new Option<bool>("--debug");
 
@@ -236,22 +252,13 @@ namespace Microsoft.DotNet.Cli
             return $"{os}-{arch}";
         }
 
-        public static string GetDotnetExeDirectory()
-        {
-            // Alternatively we could use Microsoft.DotNet.NativeWrapper.EnvironmentProvider.GetDotnetExeDirectory here
-            //  (while injecting env resolver so that DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR is being returned as null)
-            // However - it first looks on PATH - which can be problematic in environment (e.g. dev) where we have installed and xcopy dotnet versions
-
-            var dotnetRootPath = Path.GetDirectoryName(Environment.ProcessPath);
-            // When running under test the path does not always contain "dotnet".
-            // The sdk folder is /d/ when run on helix because of space issues
-            dotnetRootPath = Path.GetFileName(dotnetRootPath).Contains("dotnet") || Path.GetFileName(dotnetRootPath).Contains("x64") || Path.GetFileName(dotnetRootPath).Equals("d") ? dotnetRootPath : Path.Combine(dotnetRootPath, "dotnet");
-            return dotnetRootPath;
-        }
-
         public static string GetCurrentRuntimeId()
         {
-            var dotnetRootPath = GetDotnetExeDirectory();
+            // Get the dotnet directory, while ignoring custom msbuild resolvers
+            string dotnetRootPath = Microsoft.DotNet.NativeWrapper.EnvironmentProvider.GetDotnetExeDirectory(key =>
+                key.Equals("DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR", StringComparison.InvariantCultureIgnoreCase)
+                    ? null
+                    : Environment.GetEnvironmentVariable(key));
             var ridFileName = "NETCoreSdkRuntimeIdentifierChain.txt";
             // When running under test the Product.Version might be empty or point to version not installed in dotnetRootPath.
             string runtimeIdentifierChainPath = string.IsNullOrEmpty(Product.Version) || !Directory.Exists(Path.Combine(dotnetRootPath, "sdk", Product.Version)) ?

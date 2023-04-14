@@ -74,12 +74,12 @@ namespace Microsoft.DotNet.Cli
 
             static CliTemplateEngineHost GetEngineHost(ParseResult parseResult)
             {
-                bool disableSdkTemplates = parseResult.GetValueForOption(s_disableSdkTemplatesOption);
-                bool disableProjectContext = parseResult.GetValueForOption(s_disableProjectContextEvaluationOption)
+                bool disableSdkTemplates = parseResult.GetValue(s_disableSdkTemplatesOption);
+                bool disableProjectContext = parseResult.GetValue(s_disableProjectContextEvaluationOption)
                     || Env.GetEnvironmentVariableAsBool(EnableProjectContextEvaluationEnvVarName);
-                bool diagnosticMode = parseResult.GetValueForOption(s_diagnosticOption);
-                FileInfo? projectPath = parseResult.GetValueForOption(SharedOptions.ProjectPathOption);
-                FileInfo? outputPath = parseResult.GetValueForOption(SharedOptions.OutputOption);
+                bool diagnosticMode = parseResult.GetValue(s_diagnosticOption);
+                FileInfo? projectPath = parseResult.GetValue(SharedOptions.ProjectPathOption);
+                FileInfo? outputPath = parseResult.GetValue(SharedOptions.OutputOption);
 
                 OptionResult? verbosityOptionResult = parseResult.FindResultFor(s_verbosityOption);
                 VerbosityOptions verbosity = DefaultVerbosity;
@@ -119,11 +119,17 @@ namespace Microsoft.DotNet.Cli
                     verbosity = userSetVerbosity;
                 }
                 Reporter.Reset();
-                return CreateHost(disableSdkTemplates, disableProjectContext, projectPath, outputPath, verbosity.ToLogLevel());
+                return CreateHost(disableSdkTemplates, disableProjectContext, projectPath, outputPath, parseResult, verbosity.ToLogLevel());
             }
         }
 
-        private static CliTemplateEngineHost CreateHost(bool disableSdkTemplates, bool disableProjectContext, FileInfo? projectPath, FileInfo? outputPath, LogLevel logLevel)
+        private static CliTemplateEngineHost CreateHost(
+            bool disableSdkTemplates,
+            bool disableProjectContext,
+            FileInfo? projectPath,
+            FileInfo? outputPath,
+            ParseResult parseResult,
+            LogLevel logLevel)
         {
             var builtIns = new List<(Type InterfaceType, IIdentifiedComponent Instance)>();
             builtIns.AddRange(Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Components.AllComponents);
@@ -151,7 +157,7 @@ namespace Microsoft.DotNet.Cli
             }
 
             builtIns.Add((typeof(IWorkloadsInfoProvider), new WorkloadsInfoProvider(
-                    new Lazy<IWorkloadsRepositoryEnumerator>(() => new WorkloadInfoHelper())))
+                    new Lazy<IWorkloadsRepositoryEnumerator>(() => new WorkloadInfoHelper(parseResult.HasOption(SharedOptions.InteractiveOption)))))
             );
             builtIns.Add((typeof(ISdkInfoProvider), new SdkInfoProvider()));
 

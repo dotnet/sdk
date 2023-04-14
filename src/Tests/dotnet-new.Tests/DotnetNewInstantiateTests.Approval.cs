@@ -192,7 +192,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         {
             string workingDirectory = CreateTemporaryFolder();
 
-            CommandResult commandResult = new DotnetNewCommand(_log, "console", "--framework", "net")
+            var commandResult = new DotnetNewCommand(_log, "console", "--framework", "net")
                 .WithCustomHive(_fixture.HomeDirectory)
                 .WithWorkingDirectory(workingDirectory)
                 .Execute();

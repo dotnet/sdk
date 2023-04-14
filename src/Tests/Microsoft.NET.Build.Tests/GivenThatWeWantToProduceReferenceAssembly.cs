@@ -35,7 +35,7 @@ namespace Microsoft.NET.Build.Tests
             {
                 Name = "ProduceRefAssembly",
                 IsExe = true,
-                TargetFrameworks = targetFramework
+                TargetFrameworks = targetFramework,
             };
 
             var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework + extension, targetExtension: extension);

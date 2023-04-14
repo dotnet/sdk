@@ -2,9 +2,24 @@
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="ja" original="../CommonLocalizableStrings.resx">
     <body>
+      <trans-unit id="ArchArgumentName">
+        <source>ARCH</source>
+        <target state="new">ARCH</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ArchitectureOptionDescription">
         <source>The target architecture.</source>
         <target state="translated">ターゲット アーキテクチャ。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ArtifactsPathArgumentName">
+        <source>ARTIFACTS_DIR</source>
+        <target state="new">ARTIFACTS_DIR</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ArtifactsPathOptionDescription">
+        <source>The artifacts path. All output from the project, including build, publish, and pack output, will go in subfolders under the specified path.</source>
+        <target state="new">The artifacts path. All output from the project, including build, publish, and pack output, will go in subfolders under the specified path.</target>
         <note />
       </trans-unit>
       <trans-unit id="CannotResolveRuntimeIdentifier">
@@ -40,11 +55,6 @@
       <trans-unit id="CouldNotFindAnyProjectInDirectory">
         <source>Could not find any project in `{0}`.</source>
         <target state="translated">`{0}` にプロジェクトが見つかりませんでした。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CustomConfigurationDisablesPublishAndPackReleaseProperties">
-        <source>A custom configuration was detected in the project '{0}', so the property '{1}' will not take effect.</source>
-        <target state="translated">プロジェクト '{0}' でカスタム構成が検出されたため、プロパティ '{1}' は有効になりません。</target>
         <note />
       </trans-unit>
       <trans-unit id="DisableBuildServersOptionDescription">
@@ -115,9 +125,19 @@ export PATH="$PATH:{0}"
         <target state="translated">アプリケーションをフレームワーク依存アプリケーションとして公開します。アプリケーションを実行するには、対象のコンピューターで互換性のある .NET ランタイムをインストールする必要があります。</target>
         <note />
       </trans-unit>
+      <trans-unit id="MSBuildAdditionalOptionTitle">
+        <source>.NET Cli Options:</source>
+        <target state="new">.NET Cli Options:</target>
+        <note />
+      </trans-unit>
       <trans-unit id="MoreThanOneProjectInDirectory">
         <source>Found more than one project in `{0}`. Specify which one to use.</source>
         <target state="translated">`{0}` に複数のプロジェクトが見つかりました。使用するプロジェクトを指定してください。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="OSArgumentName">
+        <source>OS</source>
+        <target state="new">OS</target>
         <note />
       </trans-unit>
       <trans-unit id="OperatingSystemOptionDescription">
@@ -200,13 +220,6 @@ The default is 'true' if a runtime identifier is specified.</source>
       <trans-unit id="Solution">
         <source>Solution</source>
         <target state="translated">ソリューション</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SolutionExecutableConfigurationMismatchError">
-        <source>Multiple executable projects in the solution contain conflicting '{0}' values. Ensure the values match. Consider using a Directory.build.props file to set all project configurations. Conflicting projects:
-{1}.</source>
-        <target state="translated">ソリューション内の複数の実行可能プロジェクトに、競合する '{0}' 値が含まれています。値が一致するようにしてください。Directory.build.props ファイルを使用して、すべてのプロジェクト構成を設定することを検討してください。競合するプロジェクト:
-{1}。</target>
         <note />
       </trans-unit>
       <trans-unit id="SolutionFile">

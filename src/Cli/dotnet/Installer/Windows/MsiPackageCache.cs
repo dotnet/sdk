@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Pipes;
 using System.Linq;
-using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using System.Security;
@@ -110,10 +109,20 @@ namespace Microsoft.DotNet.Installer.Windows
                 CreateSecureDirectory(Directory.GetParent(path).FullName);
 
                 DirectorySecurity directorySecurity = new();
+
+                // Only set the owner and use its default group. If the machine is domain joined, this should create
+                // a descriptor like O:BAG:DU by selecting SDDL_DOMAIN_USERS. On non-domain joined machines and Windows Sandbox,
+                // the group SID will be different and the descriptor will end up as O:BAG:S-1-5-21-2047949552-857980807-821054962-513.
+                directorySecurity.SetOwner(s_AdministratorsSid);
                 directorySecurity.SetAccessRule(s_AdministratorRule);
-                directorySecurity.SetGroup(s_LocalSystemSid);
+                directorySecurity.SetAccessRule(s_LocalSystemRule);
+                directorySecurity.SetAccessRule(s_UsersRule);
+                directorySecurity.SetAccessRule(s_EveryoneRule);
+
+                // Don't use Directory.CreateDirectory as that can cause problems with inherited ACEs from
+                // the parent folders as access rules become cumulative. The acccess rules for the directory should all have
+                // object and container inheritance set to ensure access rights are inherited when creating files.
                 directorySecurity.CreateDirectory(path);
-                SecureDirectory(path);
             }
         }
 
@@ -156,8 +165,8 @@ namespace Microsoft.DotNet.Installer.Windows
                 string cachedMsiPath = Path.Combine(packageDirectory, Path.GetFileName(msiPath));
                 string cachedManifestPath = Path.Combine(packageDirectory, Path.GetFileName(manifestPath));
 
-                MoveFile(manifestPath, cachedManifestPath);
-                MoveFile(msiPath, cachedMsiPath);
+                MoveAndSecureFile(manifestPath, cachedManifestPath);
+                MoveAndSecureFile(msiPath, cachedMsiPath);
             }
             else if (IsClient)
             {
@@ -177,16 +186,29 @@ namespace Microsoft.DotNet.Installer.Windows
         }
 
         /// <summary>
-        /// Moves a file from one location to another if the destination file does not already exist.
+        /// Moves a file from one location to another if the destination file does not already exist and
+        /// configure its permissions.
         /// </summary>
         /// <param name="sourceFile">The source file to move.</param>
         /// <param name="destinationFile">The destination where the source file will be moved.</param>
-        protected void MoveFile(string sourceFile, string destinationFile)
+        private void MoveAndSecureFile(string sourceFile, string destinationFile)
         {
             if (!File.Exists(destinationFile))
             {
+                // See https://github.com/dotnet/sdk/issues/28450
                 FileAccessRetrier.RetryOnMoveAccessFailure(() => File.Move(sourceFile, destinationFile));
                 Log?.LogMessage($"Moved '{sourceFile}' to '{destinationFile}'");
+
+                FileInfo fi = new(destinationFile);
+                FileSecurity fs = new();
+
+                // Only set the owner, everything else should be inherited. Assuming the parent folder was not
+                // modified externally, the file's descriptor should either be
+                // O:BAG:DUD:(A;ID;0x1200a9;;;WD)(A;ID;FA;;;SY)(A;ID;FA;;;BA)(A;ID;0x1200a9;;;BU) or
+                // O:BAG:S-1-5-21-2047949552-857980807-821054962-513D:(A;ID;0x1200a9;;;WD)(A;ID;FA;;;SY)(A;ID;FA;;;BA)(A;ID;0x1200a9;;;BU)
+                // Note that all the access entries include the ID flag indicating they were inherited from the container.
+                fs.SetOwner(s_AdministratorsSid);
+                fi.SetAccessControl(fs);
             }
         }
 
@@ -301,22 +323,6 @@ namespace Microsoft.DotNet.Installer.Windows
             {
                 Log?.LogMessage($"Skipping signature verification for {msiPath}.");
             }
-        }
-
-        /// <summary>
-        /// Secures the target directory by applying multiple ACLs. Administrators and local SYSTEM
-        /// receive full control. Users and Everyone receive read and execute permissions.
-        /// </summary>
-        /// <param name="path">The directory to secure.</param>
-        private void SecureDirectory(string path)
-        {
-            DirectoryInfo directoryInfo = new DirectoryInfo(path);
-            DirectorySecurity directorySecurity = directoryInfo.GetAccessControl();
-            directorySecurity.SetAccessRule(s_AdministratorRule);
-            directorySecurity.SetAccessRule(s_EveryoneRule);
-            directorySecurity.SetAccessRule(s_LocalSystemRule);
-            directorySecurity.SetAccessRule(s_UsersRule);
-            directoryInfo.SetAccessControl(directorySecurity);
         }
     }
 }

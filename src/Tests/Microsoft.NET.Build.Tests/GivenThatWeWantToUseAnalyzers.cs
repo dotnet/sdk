@@ -24,6 +24,61 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [Theory]
+        [InlineData("WebApp", false)]
+        [InlineData("WebApp", true)]
+        [InlineData("WebApp", null)]
+        public void It_resolves_requestdelegategenerator_correctly(string testAssetName, bool? isEnabled)
+        {
+            var asset = _testAssetsManager
+                .CopyTestAsset(testAssetName, identifier: isEnabled.ToString())
+                .WithSource()
+                .WithProjectChanges(project =>
+                {
+                    if (isEnabled != null)
+                    {
+                        var ns = project.Root.Name.Namespace;
+                        project.Root.Add(new XElement(ns + "PropertyGroup", new XElement("EnableRequestDelegateGenerator", isEnabled)));
+                    }
+                });
+
+            VerifyRequestDelegateGeneratorIsUsed(asset, isEnabled);
+        }
+
+        [Fact]
+        public void It_enables_requestdelegategenerator_for_PublishAot()
+        {
+            var asset = _testAssetsManager
+                .CopyTestAsset("WebApp")
+                .WithSource()
+                .WithProjectChanges(project =>
+                {
+                    var ns = project.Root.Name.Namespace;
+                    project.Root.Add(new XElement(ns + "PropertyGroup", new XElement("PublishAot", "true")));
+                });
+
+            VerifyRequestDelegateGeneratorIsUsed(asset, expectEnabled: true);
+        }
+
+        private void VerifyRequestDelegateGeneratorIsUsed(TestAsset asset, bool? expectEnabled)
+        {
+            var command = new GetValuesCommand(
+                Log,
+                asset.Path,
+                ToolsetInfo.CurrentTargetFramework,
+                "Analyzer",
+                GetValuesCommand.ValueType.Item);
+
+            command
+                .WithWorkingDirectory(asset.Path)
+                .Execute()
+                .Should().Pass();
+
+            var analyzers = command.GetValues();
+
+            Assert.Equal(expectEnabled ?? false, analyzers.Any(analyzer => analyzer.Contains("Microsoft.AspNetCore.Http.RequestDelegateGenerator.dll")));
+        }
+
+        [Theory]
         [InlineData("C#", "AppWithLibrary")]
         [InlineData("VB", "AppWithLibraryVB")]
         [InlineData("F#", "AppWithLibraryFS")]
@@ -73,7 +128,8 @@ namespace Microsoft.NET.Build.Tests
                                 ("microsoft.dependencyvalidation.analyzers", "0.9.0", "analyzers/dotnet/Microsoft.DependencyValidation.Analyzers.dll"),
                                 ("microsoft.netcore.app.ref", (string)null, "analyzers/dotnet/cs/Microsoft.Interop.LibraryImportGenerator.dll"),
                                 ("microsoft.netcore.app.ref", (string)null, "analyzers/dotnet/cs/Microsoft.Interop.JavaScript.JSImportGenerator.dll"),
-                                ("microsoft.netcore.app.ref", (string)null, "analyzers/dotnet/cs/Microsoft.Interop.SourceGeneration.dll")
+                                ("microsoft.netcore.app.ref", (string)null, "analyzers/dotnet/cs/Microsoft.Interop.SourceGeneration.dll"),
+                                ("microsoft.netcore.app.ref", (string)null, "analyzers/dotnet/cs/Microsoft.Interop.ComInterfaceGenerator.dll")
                             }
                         );
                     break;

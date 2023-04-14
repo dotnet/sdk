@@ -1,5 +1,6 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Copyright (c) .NET Foundation and contributors. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+//
 
 using System.IO;
 using System.Runtime.CompilerServices;
@@ -21,7 +22,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         [CoreMSBuildOnlyFact]
         public void Build_Components_WithDotNetCoreMSBuild_Works() => Build_ComponentsWorks();
 
-        [RequiresMSBuildVersionFact("17.5.0.52501")]
+        [RequiresMSBuildVersionFact("17.6.0.12002")]
         public void Build_Components_WithDesktopMSBuild_Works() => Build_ComponentsWorks();
 
         [Fact]
