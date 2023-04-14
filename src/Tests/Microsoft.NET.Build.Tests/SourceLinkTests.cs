@@ -171,7 +171,7 @@ namespace Microsoft.NET.Build.Tests
                 WorkingDirectory = testAsset.Path
             };
 
-            var result = buildCommand.Execute().Should().Pass();
+            buildCommand.Execute().Should().Pass();
 
             var intermediateDir = buildCommand.GetIntermediateDirectory();
             intermediateDir.Should().NotHaveFile("SourceLinkTestApp.sourcelink.json");
@@ -196,8 +196,6 @@ namespace Microsoft.NET.Build.Tests
                 testAsset = Multitarget(testAsset, targetFrameworks);
             }
 
-            Assert.NotNull(targetFrameworks);
-
             CreateGitFiles(testAsset.Path, origin);
 
             var buildCommand = new BuildCommand(testAsset)
@@ -205,7 +203,7 @@ namespace Microsoft.NET.Build.Tests
                 WorkingDirectory = testAsset.Path
             };
 
-            var result = buildCommand.Execute().Should().Pass();
+            buildCommand.Execute().Should().Pass();
 
             foreach (var targetFramework in targetFrameworks.Split(';'))
             {
@@ -228,7 +226,7 @@ namespace Microsoft.NET.Build.Tests
             string targetFrameworks = ToolsetInfo.CurrentTargetFramework + (multitarget ? ";netstandard2.0" : "");
 
             var testAsset = _testAssetsManager
-                .CopyTestAsset("SourceLinkTestApp")
+                .CopyTestAsset("SourceLinkTestApp", identifier: multitarget.ToString())
                 .WithSource();
 
             testAsset = WithProperties(testAsset, ("SuppressImplicitGitSourceLink", "true"));
@@ -238,8 +236,6 @@ namespace Microsoft.NET.Build.Tests
                 testAsset = Multitarget(testAsset, targetFrameworks);
             }
 
-            Assert.NotNull(targetFrameworks);
-
             CreateGitFiles(testAsset.Path, "https://github.com/org/repo");
 
             var buildCommand = new BuildCommand(testAsset)
@@ -247,7 +243,7 @@ namespace Microsoft.NET.Build.Tests
                 WorkingDirectory = testAsset.Path
             };
 
-            var result = buildCommand.Execute().Should().Pass();
+            buildCommand.Execute().Should().Pass();
 
             foreach (var targetFramework in targetFrameworks.Split(';'))
             {
@@ -264,7 +260,7 @@ namespace Microsoft.NET.Build.Tests
             string targetFrameworks = ToolsetInfo.CurrentTargetFramework + (multitarget ? ";netstandard2.0" : "");
 
             var testAsset = _testAssetsManager
-                .CopyTestAsset("SourceLinkTestApp")
+                .CopyTestAsset("SourceLinkTestApp", identifier: multitarget.ToString())
                 .WithSource();
 
             if (multitarget)
@@ -274,8 +270,6 @@ namespace Microsoft.NET.Build.Tests
 
             testAsset = WithItems(testAsset, ("PackageReference", new[] { new XAttribute("Include", "Microsoft.SourceLink.GitHub"), new XAttribute("Version", "1.0.0") }));
 
-            Assert.NotNull(targetFrameworks);
-
             CreateGitFiles(testAsset.Path, "https://github.com/org/repo");
 
             var buildCommand = new BuildCommand(testAsset)
@@ -283,7 +277,7 @@ namespace Microsoft.NET.Build.Tests
                 WorkingDirectory = testAsset.Path
             };
 
-            var result = buildCommand.Execute().Should().Pass();
+            buildCommand.Execute().Should().Pass();
 
             foreach (var targetFramework in targetFrameworks.Split(';'))
             {
@@ -302,7 +296,7 @@ namespace Microsoft.NET.Build.Tests
                 .CopyTestAsset("NetCoreCsharpAppReferenceCppCliLib")
                 .WithSource();
 
-            testAsset = WithProperties(testAsset, ("EnableManagedpackageReferenceSupport", "true"));
+            testAsset = WithProperties(testAsset, ("EnableManagedPackageReferenceSupport", "true"));
 
             CreateGitFiles(testAsset.Path, "https://github.com/org/repo");
 
