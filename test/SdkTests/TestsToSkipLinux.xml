@@ -1,0 +1,7 @@
+<Tests>
+  <SkippedTests>
+    <Method Name="Microsoft.NET.Build.Tests.GivenThatWeWantToBuildASelfContainedApp.It_builds_a_runnable_output"
+            Skip="true"
+            Reason="1.1 doesn't support building on centos8"/>
+  </SkippedTests>
+</Tests>
