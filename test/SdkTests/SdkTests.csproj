@@ -226,8 +226,8 @@
       <TestArgs>$(TestArgs) -testConfigFile "$(MSBuildThisFileDirectory)TestsToSkipPortableLinux.xml"</TestArgs>
     </PropertyGroup>
 
-    <PropertyGroup Condition=" $([MSBuild]::IsOSPlatform('Linux')) ">
-      <!-- Add list of tests to skip on Linux -->
+    <PropertyGroup Condition=" '$(IsLinux)' == 'true' ">
+      <!-- Add list of tests to skip on Linux Portable -->
       <TestArgs>$(TestArgs) -testConfigFile "$(MSBuildThisFileDirectory)TestsToSkipLinux.xml"</TestArgs>
     </PropertyGroup>
 
