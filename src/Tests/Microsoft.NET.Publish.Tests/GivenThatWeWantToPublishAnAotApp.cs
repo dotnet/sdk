@@ -535,7 +535,7 @@ namespace Microsoft.NET.Publish.Tests
 
             var buildCommand = new BuildCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
             buildCommand
-                .Execute(RuntimeIdentifier)
+                .Execute()
                 .Should().Pass()
                 .And.HaveStdOutContaining("warning IL3050")
                 .And.HaveStdOutContaining("warning IL3056")
@@ -548,11 +548,9 @@ namespace Microsoft.NET.Publish.Tests
             // injects the IsTrimmable attribute
             AssemblyInfo.Get(assemblyPath)["AssemblyMetadataAttribute"].Should().Be("IsTrimmable:True");
 
-            // The below relies on the build above being cached so that no warnings are produced
-            // If this fails, it's likely because the build above was not cached
             var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
             publishCommand
-                .Execute(RuntimeIdentifier)
+                .Execute(RuntimeIdentifier, "/p:RunAnalyzers=false")
                 .Should().Pass()
                 .And.NotHaveStdOutContaining("warning IL3050")
                 .And.NotHaveStdOutContaining("warning IL3056")
