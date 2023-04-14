@@ -105,7 +105,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var buildOutputDirectory = publishCommand.GetOutputDirectory(DefaultTfm);
 
             // Act
-            var compressedFilesFolder = Path.Combine(testInstance.TestRoot, "blazorwasm", "obj", "Debug", DefaultTfm, "compress");
+            var compressedFilesFolder = Path.Combine(testInstance.TestRoot, "blazorwasm", "obj", "Debug", DefaultTfm, "compressed", "publish");
             var thumbPrint = FileThumbPrint.CreateFolderThumbprint(testInstance, compressedFilesFolder);
 
             // Assert
@@ -137,7 +137,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var buildOutputDirectory = publishCommand.GetOutputDirectory(DefaultTfm);
 
             // Act
-            var compressedFilesFolder = Path.Combine(testInstance.TestRoot, "blazorwasm", "obj", "Debug", DefaultTfm, "compress");
+            var compressedFilesFolder = Path.Combine(testInstance.TestRoot, "blazorwasm", "obj", "Debug", DefaultTfm, "compressed", "publish");
             var thumbPrint = FileThumbPrint.CreateFolderThumbprint(testInstance, compressedFilesFolder);
 
             // Assert

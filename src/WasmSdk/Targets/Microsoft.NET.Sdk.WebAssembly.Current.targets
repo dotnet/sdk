@@ -19,26 +19,9 @@ Copyright (c) .NET Foundation. All rights reserved.
     <SuppressTrimAnalysisWarnings Condition="'$(SuppressTrimAnalysisWarnings)' == '' And '$(TrimmerDefaultAction)' != 'link'">true</SuppressTrimAnalysisWarnings>
   </PropertyGroup>
 
-  <ItemGroup Condition="'$(WasmBuildingForNestedPublish)' != 'true'">
-
-    <!--
-      Compress referenced binaries using GZip during build. This skips files such as the project's assemblies
-      that change from build to build. Runtime assets contribute to the bulk of the download size. Compressing it
-      has the most benefit while avoiding any ongoing costs to the dev inner loop.
-    -->
-    <CompressionConfiguration Include="WebAssemblyGzip">
-      <Stage>All</Stage>
-      <Format>gzip</Format>
-      <IncludePattern>_framework\**</IncludePattern>
-      <ExcludePattern>_framework\blazor.boot.json</ExcludePattern>
-    </CompressionConfiguration>
-
-    <CompressionConfiguration Include="WebAssemblyBrotli">
-      <Stage>Publish</Stage>
-      <Format>brotli</Format>
-    </CompressionConfiguration>
-
-  </ItemGroup>
+  <PropertyGroup>
+    <CompressionIncludePatterns>$(CompressionIncludePatterns);_framework\**</CompressionIncludePatterns>
+  </PropertyGroup>
 
   <Import Sdk="Microsoft.NET.Sdk.StaticWebAssets" Project="Sdk.targets" Condition="'$(_WasmSdkImportsMicrosoftNETSdkStaticWebAssets)' == 'true'" />
   <Import Sdk="Microsoft.NET.Sdk.Publish" Project="Sdk.targets" Condition="'$(_WasmSdkImportsMicrosoftNETSdkPublish)' == 'true'" />
@@ -91,6 +74,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <EnableDefaultWasmAssembliesToBundle>false</EnableDefaultWasmAssembliesToBundle>
     <WasmNestedPublishAppDependsOn>_GatherWasmFilesToPublish;$(WasmNestedPublishAppDependsOn)</WasmNestedPublishAppDependsOn>
     <_WasmNestedPublishAppPreTarget>ComputeFilesToPublish</_WasmNestedPublishAppPreTarget>
+    <DisableBuildCompression Condition="'$(WasmBuildingForNestedPublish)' == 'true'">true</DisableBuildCompression>
   </PropertyGroup>
 
   <ItemGroup>
@@ -134,7 +118,6 @@ Copyright (c) .NET Foundation. All rights reserved.
       ProcessPublishFilesForWasm;
       ComputeWasmExtensions;
       _AddPublishWasmBootJsonToStaticWebAssets;
-      _CollectAssetsToCompressForPublish;
     </ResolveCompressedFilesForPublishDependsOn>
 
     <CompressFilesDependsOn>
@@ -429,6 +412,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <DefineStaticWebAssets CandidateAssets="@(_BlazorExtensionsCandidate)">
       <Output TaskParameter="Assets" ItemName="StaticWebAsset" />
       <Output TaskParameter="Assets" ItemName="_BlazorExtensionsCandidatesForPublish" />
+      <Output TaskParameter="Assets" ItemName="AssetToCompress" />
     </DefineStaticWebAssets>
   </Target>
 
@@ -464,24 +448,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     >
       <Output TaskParameter="Assets" ItemName="StaticWebAsset" />
     </DefineStaticWebAssets>
-  </Target>
-
-  <Target
-    Name="_CollectAssetsToCompressForPublish"
-    DependsOnTargets="ProcessPublishFilesForWasm;ComputeWasmExtensions;_AddPublishWasmBootJsonToStaticWebAssets">
-    <ItemGroup>
-      <AssetToCompress
-        Include="@(StaticWebAsset)"
-        Condition="'%(AssetKind)' != 'Build' and ('%(StaticWebAsset.AssetTraitName)' == 'WasmResource' or '%(StaticWebAsset.AssetTraitName)' == 'Culture')">
-        <ConfigurationName>WebAssemblyGzip</ConfigurationName>
-      </AssetToCompress>
-
-      <AssetToCompress
-        Include="@(StaticWebAsset)"
-        Condition="'%(AssetKind)' != 'Build' and ('%(StaticWebAsset.AssetTraitName)' == 'WasmResource' or '%(StaticWebAsset.AssetTraitName)' == 'Culture')">
-        <ConfigurationName>WebAssemblyBrotli</ConfigurationName>
-      </AssetToCompress>
-    </ItemGroup>
   </Target>
 
   <Target Name="GeneratePublishWasmBootJson" DependsOnTargets="$(GeneratePublishWasmBootJsonDependsOn)">
