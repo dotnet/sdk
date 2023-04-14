@@ -315,9 +315,12 @@
           Outputs="$(MinimumVSVersion)">
 
           <PropertyGroup>
-            <FileToRead Condition="$([System.Text.RegularExpressions.Regex]::Match(%(SDKInternalFiles.Identity),'.*minimumMSBuildVersion').Success) ">%(SDKInternalFiles.Identity)</FileToRead>
-            <MinimumVSVersion>$([System.IO.File]::ReadAllText($(FileToRead)).Trim())</MinimumVSVersion>
+            <MinimumMSBuildVersionFile Condition="$([System.Text.RegularExpressions.Regex]::Match(%(SDKInternalFiles.Identity),'.*minimumMSBuildVersion').Success) ">%(SDKInternalFiles.Identity)</MinimumMSBuildVersionFile>
           </PropertyGroup>
+
+          <ReadLinesFromFile File="$(MinimumMSBuildVersionFile)">
+            <Output TaskParameter="Lines" PropertyName="MinimumVSVersion"/>
+          </ReadLinesFromFile>
   </Target>
 
   <Target Name="GenerateSdkBundle"
@@ -365,6 +368,7 @@
                       -DotnetCLINugetVersion '$(Version)' ^
                       -VersionMajor '$(VersionMajor)' ^
                       -VersionMinor '$(VersionMinor)' ^
+                      -MinimumVSVersion '$(MinimumVSVersion)' ^
                       -WindowsDesktopVersion '$(MicrosoftWindowsDesktopAppRuntimePackageVersion)' ^
                       -UpgradeCode '$(CombinedFrameworkSDKHostInstallerUpgradeCode)' ^
                       -DependencyKeyName '$(SdkDependencyKeyName)' ^
