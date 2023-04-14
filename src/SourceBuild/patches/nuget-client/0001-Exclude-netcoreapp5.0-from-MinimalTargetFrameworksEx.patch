@@ -1,0 +1,23 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Michael Simons <msimons@microsoft.com>
+Date: Thu, 13 Apr 2023 18:35:28 +0000
+Subject: [PATCH] Exclude netcoreapp5.0 from MinimalTargetFrameworksExeSigning
+
+Backport: https://github.com/dotnet/source-build/issues/3349
+---
+ build/common.project.props | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/build/common.project.props b/build/common.project.props
+index 185b68bfa..7f285870d 100644
+--- a/build/common.project.props
++++ b/build/common.project.props
+@@ -24,7 +24,7 @@
+     <TargetFrameworksExeForSigning Condition="'$(DotNetBuildFromSource)' == 'true'">$(TargetFrameworksExe);net7.0</TargetFrameworksExeForSigning>
+     <MinimalTargetFrameworksExeSigning>$(NETFXTargetFramework);netcoreapp5.0</MinimalTargetFrameworksExeSigning>
+     <MinimalTargetFrameworksExeSigning Condition=" '$(IsXPlat)' == 'true' ">netcoreapp5.0</MinimalTargetFrameworksExeSigning>
+-    <MinimalTargetFrameworksExeSigning Condition="'$(DotNetBuildFromSource)' == 'true'">$(MinimalTargetFrameworksExeSigning);net7.0</MinimalTargetFrameworksExeSigning>
++    <MinimalTargetFrameworksExeSigning Condition="'$(DotNetBuildFromSource)' == 'true'">net7.0</MinimalTargetFrameworksExeSigning>
+     <TargetFrameworksLibrary>$(NETFXTargetFramework);$(NetStandardVersion)</TargetFrameworksLibrary>
+     <TargetFrameworksLibrary Condition="'$(DotNetBuildFromSource)' == 'true'">$(NETCoreTargetFramework);$(NetStandardVersion)</TargetFrameworksLibrary>
+     <TargetFrameworksLibraryForSigning>$(TargetFrameworksLibrary);netcoreapp5.0</TargetFrameworksLibraryForSigning>
