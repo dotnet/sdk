@@ -484,15 +484,18 @@
                     $(GenerateNupkgPowershellScript)"
           Outputs="$(SdkMSBuildExtensionsNupkgFile);$(SdkMSBuildExtensionsSwrFile)">
 
+    <GenerateMSBuildExtensionsSWR MSBuildExtensionsLayoutDirectory="$(MSBuildExtensionsLayoutDirectory)"
+                                  OutputFile="$(SdkMSBuildExtensionsSwrFile)"/>
+
+    <!-- Include the swr file in the nuget package for VS authoring -->
+    <Copy SourceFiles="$(SdkMSBuildExtensionsSwrFile)" DestinationFolder="$(MSBuildExtensionsLayoutDirectory)" />
+
     <Exec Command="powershell -NoProfile -NoLogo $(GenerateNupkgPowershellScript) ^
                       '$(ArtifactsDir)' ^
                       '$(MSBuildExtensionsLayoutDirectory.TrimEnd('\'))' ^
                       '$(FullNugetVersion)' ^
                       '$(SdkMSBuildExtensionsNuspecFile)' ^
                       '$(SdkMSBuildExtensionsNupkgFile)'" />
-      
-      <GenerateMSBuildExtensionsSWR MSBuildExtensionsLayoutDirectory="$(MSBuildExtensionsLayoutDirectory)"
-                                    OutputFile="$(SdkMSBuildExtensionsSwrFile)"/>
 
   </Target>
 
