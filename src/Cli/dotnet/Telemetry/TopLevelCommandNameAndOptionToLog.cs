@@ -29,7 +29,7 @@ namespace Microsoft.DotNet.Cli.Telemetry
             foreach (var option in _optionsToLog)
             {
                 if (_topLevelCommandName.Contains(topLevelCommandName)
-                    && parseResult.FindResultFor(option) is OptionResult optionResult
+                    && parseResult.GetResult(option) is OptionResult optionResult
                     && !parseResult.Errors.Any(error => error.SymbolResult == optionResult)
                     && optionResult.GetValueOrDefault<object>() is object optionValue
                     && optionValue is not null)

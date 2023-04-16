@@ -38,7 +38,7 @@ namespace Microsoft.DotNet.Tools.Add.PackageReference
 
             var tempDgFilePath = string.Empty;
 
-            if (_parseResult.FindResultFor(AddPackageParser.NoRestoreOption) is null)
+            if (_parseResult.GetResult(AddPackageParser.NoRestoreOption) is null)
             {
                 
                 try
@@ -119,7 +119,7 @@ namespace Microsoft.DotNet.Tools.Add.PackageReference
                 .OptionValuesToBeForwarded(AddPackageParser.GetCommand())
                 .SelectMany(a => a.Split(' ', 2)));
 
-            if (_parseResult.FindResultFor(AddPackageParser.NoRestoreOption) is not null)
+            if (_parseResult.GetResult(AddPackageParser.NoRestoreOption) is not null)
             {
                 args.Add("--no-restore");
             }

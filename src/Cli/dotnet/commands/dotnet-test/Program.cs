@@ -174,7 +174,7 @@ namespace Microsoft.DotNet.Tools.Test
                 msbuildArgs.Add($"-property:VSTestSessionCorrelationId={testSessionCorrelationId}");
             }
 
-            bool noRestore = (result.FindResultFor(TestCommandParser.NoRestoreOption) ?? result.FindResultFor(TestCommandParser.NoBuildOption)) is not null;
+            bool noRestore = (result.GetResult(TestCommandParser.NoRestoreOption) ?? result.GetResult(TestCommandParser.NoBuildOption)) is not null;
 
             TestCommand testCommand = new(
                 msbuildArgs,
@@ -216,7 +216,7 @@ namespace Microsoft.DotNet.Tools.Test
 
             var artifactsPostProcessArgs = new List<string> { "--artifactsProcessingMode-postprocess", $"--testSessionCorrelationId:{testSessionCorrelationId}" };
 
-            if (parseResult.FindResultFor(TestCommandParser.DiagOption) is not null)
+            if (parseResult.GetResult(TestCommandParser.DiagOption) is not null)
             {
                 artifactsPostProcessArgs.Add($"--diag:{parseResult.GetValue(TestCommandParser.DiagOption)}");
             }
@@ -260,7 +260,7 @@ namespace Microsoft.DotNet.Tools.Test
         {
             CliOption<IEnumerable<string>> option = TestCommandParser.EnvOption;
 
-            if (parseResult.FindResultFor(option) is null)
+            if (parseResult.GetResult(option) is null)
             {
                 return;
             }

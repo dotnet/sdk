@@ -136,13 +136,13 @@ namespace Microsoft.DotNet.Cli
 
         public ForwardedOption<T> SetForwardingFunction(Func<T, ParseResult, IEnumerable<string>> func)
         {
-            ForwardingFunction = (ParseResult parseResult) => parseResult.FindResultFor(this) is not null ? func(parseResult.GetValue<T>(this), parseResult) : Array.Empty<string>();
+            ForwardingFunction = (ParseResult parseResult) => parseResult.GetResult(this) is not null ? func(parseResult.GetValue<T>(this), parseResult) : Array.Empty<string>();
             return this;
         }
 
         public Func<ParseResult, IEnumerable<string>> GetForwardingFunction(Func<T, IEnumerable<string>> func)
         {
-            return (ParseResult parseResult) => parseResult.FindResultFor(this) is not null ? func(parseResult.GetValue<T>(this)) : Array.Empty<string>();
+            return (ParseResult parseResult) => parseResult.GetResult(this) is not null ? func(parseResult.GetValue<T>(this)) : Array.Empty<string>();
         }
 
         public Func<ParseResult, IEnumerable<string>> GetForwardingFunction()

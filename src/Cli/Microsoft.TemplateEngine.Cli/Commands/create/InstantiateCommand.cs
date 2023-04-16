@@ -378,7 +378,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
                 if (ReparseForTemplate(args, environmentSettings, templatePackageManager, templateGroup, template) is (TemplateCommand command, ParseResult parseResult))
                 {
                     languageOptionSpecified = command.LanguageOption != null
-                        && parseResult.FindResultFor(command.LanguageOption) != null;
+                        && parseResult.GetResult(command.LanguageOption) != null;
                     if (!parseResult.Errors.Any())
                     {
                         candidates.Add(command);

@@ -36,7 +36,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 
         internal static TemplateOptionResult? FromParseResult(TemplateOption option, ParseResult parseResult)
         {
-            OptionResult? optionResult = parseResult.FindResultFor(option.Option);
+            OptionResult? optionResult = parseResult.GetResult(option.Option);
 
             if (optionResult == null)
             {

@@ -85,7 +85,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 
         internal static InvalidTemplateOptionResult FromParseError(TemplateOption option, ParseResult parseResult, ParseError error)
         {
-            OptionResult? optionResult = parseResult.FindResultFor(option.Option);
+            OptionResult? optionResult = parseResult.GetResult(option.Option);
             if (optionResult == null)
             {
                 //option is not specified

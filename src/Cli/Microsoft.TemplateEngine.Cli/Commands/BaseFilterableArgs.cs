@@ -56,7 +56,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             Dictionary<FilterOptionDefinition, OptionResult> filterValues = new();
             foreach (var filter in filterableCommand.Filters)
             {
-                OptionResult? value = parseResult.FindResultFor(filter.Value);
+                OptionResult? value = parseResult.GetResult(filter.Value);
                 if (value != null)
                 {
                     filterValues[filter.Key] = value;

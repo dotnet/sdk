@@ -47,7 +47,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 
             if (templateCommand.LanguageOption != null && result.IsTemplateMatch)
             {
-                result.Language = parseResult.FindResultFor(templateCommand.LanguageOption);
+                result.Language = parseResult.GetResult(templateCommand.LanguageOption);
             }
 
             foreach (var option in templateCommand.TemplateOptions)

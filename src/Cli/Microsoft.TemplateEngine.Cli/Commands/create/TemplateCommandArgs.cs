@@ -43,7 +43,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 
             foreach (var opt in command.TemplateOptions)
             {
-                if (parseResult.FindResultFor(opt.Value.Option) is { } result)
+                if (parseResult.GetResult(opt.Value.Option) is { } result)
                 {
                     _templateOptions[opt.Key] = result;
                 }

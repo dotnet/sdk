@@ -86,7 +86,7 @@ namespace Microsoft.DotNet.Cli
                 FileInfo? projectPath = parseResult.GetValue(SharedOptions.ProjectPathOption);
                 FileInfo? outputPath = parseResult.GetValue(SharedOptions.OutputOption);
 
-                OptionResult? verbosityOptionResult = parseResult.FindResultFor(s_verbosityOption);
+                OptionResult? verbosityOptionResult = parseResult.GetResult(s_verbosityOption);
                 VerbosityOptions verbosity = DefaultVerbosity;
 
                 if (diagnosticMode || CommandLoggingContext.IsVerbose)

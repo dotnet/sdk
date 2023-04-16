@@ -118,7 +118,7 @@ namespace Microsoft.DotNet.GenAPI.Tool
         private static string[] ParseAssemblyArgument(ArgumentResult argumentResult)
         {
             List<string> args = new();
-            foreach (Token token in argumentResult.Tokens)
+            foreach (var token in argumentResult.Tokens)
             {
                 args.AddRange(token.Value.Split(','));
             }

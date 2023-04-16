@@ -34,12 +34,12 @@ namespace Microsoft.DotNet.Tools.Build
             parseResult.ShowHelpOrErrorIfAppropriate();
 
             CommonOptions.ValidateSelfContainedOptions(
-                parseResult.FindResultFor(BuildCommandParser.SelfContainedOption) is not null,
-                parseResult.FindResultFor(BuildCommandParser.NoSelfContainedOption) is not null);
+                parseResult.GetResult(BuildCommandParser.SelfContainedOption) is not null,
+                parseResult.GetResult(BuildCommandParser.NoSelfContainedOption) is not null);
 
             msbuildArgs.Add($"-consoleloggerparameters:Summary");
 
-            if (parseResult.FindResultFor(BuildCommandParser.NoIncrementalOption) is not null)
+            if (parseResult.GetResult(BuildCommandParser.NoIncrementalOption) is not null)
             {
                 msbuildArgs.Add("-target:Rebuild");
             }
@@ -49,7 +49,7 @@ namespace Microsoft.DotNet.Tools.Build
 
             msbuildArgs.AddRange(arguments);
 
-            bool noRestore = parseResult.FindResultFor(BuildCommandParser.NoRestoreOption) is not null;
+            bool noRestore = parseResult.GetResult(BuildCommandParser.NoRestoreOption) is not null;
 
             BuildCommand command = new BuildCommand(
                 msbuildArgs,

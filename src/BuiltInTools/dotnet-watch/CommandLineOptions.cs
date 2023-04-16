@@ -89,7 +89,7 @@ Examples:
 
         verboseOption.Validators.Add(v =>
         {
-            if (v.FindResultFor(quietOption) is not null && v.FindResultFor(verboseOption) is not null)
+            if (v.GetResult(quietOption) is not null && v.GetResult(verboseOption) is not null)
             {
                 v.AddError(Resources.Error_QuietAndVerboseSpecified);
             }

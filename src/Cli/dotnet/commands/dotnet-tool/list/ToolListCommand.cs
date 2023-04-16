@@ -32,7 +32,7 @@ namespace Microsoft.DotNet.Tools.Tool.List
                 LocalizableStrings.ListToolCommandInvalidGlobalAndLocalAndToolPath);
 
             if (_parseResult.GetValue(ToolListCommandParser.GlobalOption)
-                || _parseResult.FindResultFor(ToolListCommandParser.ToolPathOption) is not null)
+                || _parseResult.GetResult(ToolListCommandParser.ToolPathOption) is not null)
             {
                 return _toolListGlobalOrToolPathCommand.Execute();
             }

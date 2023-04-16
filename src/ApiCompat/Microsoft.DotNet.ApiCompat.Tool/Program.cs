@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.CommandLine;
-using System.CommandLine.Invocation;
 using System.CommandLine.Parsing;
 using System.IO;
 using Microsoft.DotNet.ApiCompatibility.Logging;
@@ -322,7 +321,7 @@ namespace Microsoft.DotNet.ApiCompat.Tool
         private static string[][] ParseAssemblyReferenceArgument(ArgumentResult argumentResult)
         {
             List<string[]> args = new();
-            foreach (Token token in argumentResult.Tokens)
+            foreach (var token in argumentResult.Tokens)
             {
                 args.Add(token.Value.Split(','));
             }
@@ -333,7 +332,7 @@ namespace Microsoft.DotNet.ApiCompat.Tool
         private static string[] ParseAssemblyArgument(ArgumentResult argumentResult)
         {
             List<string> args = new();
-            foreach (Token token in argumentResult.Tokens)
+            foreach (var token in argumentResult.Tokens)
             {
                 args.AddRange(token.Value.Split(','));
             }
@@ -362,7 +361,7 @@ namespace Microsoft.DotNet.ApiCompat.Tool
         private static Dictionary<string, string[]>? ParsePackageAssemblyReferenceArgument(ArgumentResult argumentResult)
         {
             Dictionary<string, string[]> args = new();
-            foreach (Token token in argumentResult.Tokens)
+            foreach (var token in argumentResult.Tokens)
             {
                 string[] parts = token.Value.Split('=');
                 if (parts.Length != 2)

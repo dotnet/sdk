@@ -15,7 +15,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
     {
         internal static string? GetValueForOptionOrNull(this ParseResult parseResult, CliOption option)
         {
-            OptionResult? result = parseResult.FindResultFor(option);
+            OptionResult? result = parseResult.GetResult(option);
             if (result == null)
             {
                 return null;

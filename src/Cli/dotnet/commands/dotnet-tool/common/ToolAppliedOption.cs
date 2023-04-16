@@ -29,12 +29,12 @@ namespace Microsoft.DotNet.Tools.Tool.Common
             string message)
         {
             List<string> options = new List<string>();
-            if (parseResult.FindResultFor(GlobalOption) is not null)
+            if (parseResult.GetResult(GlobalOption) is not null)
             {
                 options.Add(GlobalOption.Name);
             }
 
-            if (parseResult.FindResultFor(LocalOption) is not null)
+            if (parseResult.GetResult(LocalOption) is not null)
             {
                 options.Add(LocalOption.Name);
             }
@@ -67,7 +67,7 @@ namespace Microsoft.DotNet.Tools.Tool.Common
 
         private static bool GlobalOrToolPath(ParseResult parseResult)
         {
-            return parseResult.FindResultFor(GlobalOption) is not null ||
+            return parseResult.GetResult(GlobalOption) is not null ||
                    !string.IsNullOrWhiteSpace(parseResult.GetValue(ToolPathOption));
         }
     }

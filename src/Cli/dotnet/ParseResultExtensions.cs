@@ -97,7 +97,7 @@ namespace Microsoft.DotNet.Cli
         {
             // take from the start of the list until we hit an option/--/unparsed token
             // since commands can have arguments, we must take those as well in order to get accurate help
-            var tokenList = parseResult.Tokens.TakeWhile(token => token.Type == TokenType.Argument || token.Type == TokenType.Command || token.Type == TokenType.Directive).Select(t => t.Value).ToList();
+            var tokenList = parseResult.Tokens.TakeWhile(token => token.Type == CliTokenType.Argument || token.Type == CliTokenType.Command || token.Type == CliTokenType.Directive).Select(t => t.Value).ToList();
             tokenList.Add("-h");
             Parser.Instance.Parse(tokenList).Invoke();
         }
@@ -208,13 +208,13 @@ namespace Microsoft.DotNet.Cli
         {
             if (symbolResult.Token() == default)
             {
-                return parseResult.FindResultFor(Parser.DotnetSubCommand)?.GetValueOrDefault<string>();
+                return parseResult.GetResult(Parser.DotnetSubCommand)?.GetValueOrDefault<string>();
             }
-            else if (symbolResult.Token().Type.Equals(TokenType.Command))
+            else if (symbolResult.Token().Type.Equals(CliTokenType.Command))
             {
                 return ((System.CommandLine.Parsing.CommandResult)symbolResult).Command.Name;
             }
-            else if (symbolResult.Token().Type.Equals(TokenType.Argument))
+            else if (symbolResult.Token().Type.Equals(CliTokenType.Argument))
             {
                 return symbolResult.Token().Value;
             }
@@ -276,7 +276,7 @@ namespace Microsoft.DotNet.Cli
         private static IEnumerable<string> GetRunPropertyOptions(ParseResult parseResult, bool shorthand)
         {
             var optionString = shorthand ? "-p" : "--property";
-            var options = parseResult.CommandResult.Children.Where(c => c.Token().Type.Equals(TokenType.Option));
+            var options = parseResult.CommandResult.Children.Where(c => c.Token().Type.Equals(CliTokenType.Option));
             var propertyOptions = options.Where(o => o.Token().Value.Equals(optionString));
             var propertyValues = propertyOptions.SelectMany(o => o.Tokens.Select(t=> t.Value)).ToArray();
             return propertyValues;
@@ -299,7 +299,7 @@ namespace Microsoft.DotNet.Cli
         /// </summary>
         public static T SafelyGetValueForOption<T>(this ParseResult parseResult, CliOption<T> optionToGet)
         {
-            if (parseResult.FindResultFor(optionToGet) is OptionResult optionResult &&
+            if (parseResult.GetResult(optionToGet) is OptionResult optionResult &&
                 !parseResult.Errors.Any(e => e.SymbolResult == optionResult))
             {
                 return optionResult.GetValue(optionToGet);
@@ -309,6 +309,6 @@ namespace Microsoft.DotNet.Cli
             }
         }
 
-        public static bool HasOption(this ParseResult parseResult, CliOption option) => parseResult.FindResultFor(option) is not null;
+        public static bool HasOption(this ParseResult parseResult, CliOption option) => parseResult.GetResult(option) is not null;
     }
 }

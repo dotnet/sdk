@@ -194,7 +194,7 @@ namespace Microsoft.DotNet.Cli
 
         internal static IEnumerable<string> ResolveArchOptionToRuntimeIdentifier(string arg, ParseResult parseResult)
         {
-            if ((parseResult.FindResultFor(RuntimeOption) ?? parseResult.FindResultFor(LongFormRuntimeOption)) is not null)
+            if ((parseResult.GetResult(RuntimeOption) ?? parseResult.GetResult(LongFormRuntimeOption)) is not null)
             {
                 throw new GracefulException(CommonLocalizableStrings.CannotSpecifyBothRuntimeAndArchOptions);
             }
@@ -205,18 +205,18 @@ namespace Microsoft.DotNet.Cli
                 return Array.Empty<string>();
             }
 
-            var selfContainedSpecified = (parseResult.FindResultFor(SelfContainedOption) ?? parseResult.FindResultFor(NoSelfContainedOption)) is not null;
+            var selfContainedSpecified = (parseResult.GetResult(SelfContainedOption) ?? parseResult.GetResult(NoSelfContainedOption)) is not null;
             return ResolveRidShorthandOptions(null, arg, selfContainedSpecified);
         }
 
         internal static IEnumerable<string> ResolveOsOptionToRuntimeIdentifier(string arg, ParseResult parseResult)
         {
-            if ((parseResult.FindResultFor(RuntimeOption) ?? parseResult.FindResultFor(LongFormRuntimeOption)) is not null)
+            if ((parseResult.GetResult(RuntimeOption) ?? parseResult.GetResult(LongFormRuntimeOption)) is not null)
             {
                 throw new GracefulException(CommonLocalizableStrings.CannotSpecifyBothRuntimeAndOsOptions);
             }
 
-            var selfContainedSpecified = (parseResult.FindResultFor(SelfContainedOption) ?? parseResult.FindResultFor(NoSelfContainedOption)) is not null;
+            var selfContainedSpecified = (parseResult.GetResult(SelfContainedOption) ?? parseResult.GetResult(NoSelfContainedOption)) is not null;
             if (parseResult.BothArchAndOsOptionsSpecified())
             {
                 return ResolveRidShorthandOptions(arg, ArchOptionValue(parseResult), selfContainedSpecified);
@@ -277,11 +277,11 @@ namespace Microsoft.DotNet.Cli
         }
 
         private static bool UserSpecifiedRidOption(ParseResult parseResult) =>
-            (parseResult.FindResultFor(RuntimeOption) ??
-            parseResult.FindResultFor(LongFormRuntimeOption) ??
-            parseResult.FindResultFor(ArchitectureOption) ??
-            parseResult.FindResultFor(LongFormArchitectureOption) ??
-            parseResult.FindResultFor(OperatingSystemOption)) is not null;
+            (parseResult.GetResult(RuntimeOption) ??
+            parseResult.GetResult(LongFormRuntimeOption) ??
+            parseResult.GetResult(ArchitectureOption) ??
+            parseResult.GetResult(LongFormArchitectureOption) ??
+            parseResult.GetResult(OperatingSystemOption)) is not null;
 
         internal static CliOption<T> AddCompletions<T>(this CliOption<T> option, Func<CompletionContext, IEnumerable<CompletionItem>> completionSource)
         {
