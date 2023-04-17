@@ -1,0 +1,23 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Matt Thalman <mthalman@microsoft.com>
+Date: Mon, 17 Apr 2023 12:26:51 -0500
+Subject: [PATCH] Explicitly cast default for Task.Delay method
+
+Backport: Not needed since this code is removed in latest version of command-line-api
+---
+ src/System.CommandLine/Builder/CommandLineBuilderExtensions.cs | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/System.CommandLine/Builder/CommandLineBuilderExtensions.cs b/src/System.CommandLine/Builder/CommandLineBuilderExtensions.cs
+index 0fb30887..cd59971d 100644
+--- a/src/System.CommandLine/Builder/CommandLineBuilderExtensions.cs
++++ b/src/System.CommandLine/Builder/CommandLineBuilderExtensions.cs
+@@ -107,7 +107,7 @@ namespace System.CommandLine
+                     if (timeout! > TimeSpan.Zero)
+                     {
+                         Task
+-                            .Delay(timeout.Value, default)
++                            .Delay(timeout.Value, (CancellationToken)default)
+                             .ContinueWith(t =>
+                             {
+                                 // Prevent our ProcessExit from intervene and block the exit
