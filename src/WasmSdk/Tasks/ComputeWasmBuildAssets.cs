@@ -106,33 +106,43 @@ namespace Microsoft.NET.Sdk.WebAssembly
                         continue;
                     }
 
-                    if (candidate.GetMetadata("FileName") == "dotnet" && candidate.GetMetadata("Extension") == ".js" && FingerprintDotNetJs)
+                if (candidate.GetMetadata("FileName") == "dotnet" && candidate.GetMetadata("Extension") == ".js")
+                {
+                    string newDotnetJSFileName = null;
+                    string newDotNetJSFullPath = null;
+                    if (FingerprintDotNetJs)
                     {
                         var itemHash = FileHasher.GetFileHash(candidate.ItemSpec);
-                        var cacheBustedDotNetJSFileName = $"dotnet.{candidate.GetMetadata("NuGetPackageVersion")}.{itemHash}.js";
+                        newDotnetJSFileName = $"dotnet.{candidate.GetMetadata("NuGetPackageVersion")}.{itemHash}.js";
 
                         var originalFileFullPath = Path.GetFullPath(candidate.ItemSpec);
                         var originalFileDirectory = Path.GetDirectoryName(originalFileFullPath);
 
-                        var cacheBustedDotNetJSFullPath = Path.Combine(originalFileDirectory, cacheBustedDotNetJSFileName);
-
-                        var newDotNetJs = new TaskItem(cacheBustedDotNetJSFullPath, candidate.CloneCustomMetadata());
-                        newDotNetJs.SetMetadata("OriginalItemSpec", candidate.ItemSpec);
-
-                        var newRelativePath = $"_framework/{cacheBustedDotNetJSFileName}";
-                        newDotNetJs.SetMetadata("RelativePath", newRelativePath);
-
-                        newDotNetJs.SetMetadata("AssetTraitName", "WasmResource");
-                        newDotNetJs.SetMetadata("AssetTraitValue", "native");
-
-                        assetCandidates.Add(newDotNetJs);
-                        continue;
+                        newDotNetJSFullPath = Path.Combine(originalFileDirectory, newDotnetJSFileName);
                     }
                     else
                     {
-                        string relativePath = AssetsComputingHelper.GetCandidateRelativePath(candidate);
-                        candidate.SetMetadata("RelativePath", relativePath);
+                        newDotNetJSFullPath = candidate.ItemSpec;
+                        newDotnetJSFileName = Path.GetFileName(newDotNetJSFullPath);
                     }
+
+                    var newDotNetJs = new TaskItem(newDotNetJSFullPath, candidate.CloneCustomMetadata());
+                    newDotNetJs.SetMetadata("OriginalItemSpec", candidate.ItemSpec);
+
+                    var newRelativePath = $"_framework/{newDotnetJSFileName}";
+                    newDotNetJs.SetMetadata("RelativePath", newRelativePath);
+
+                    newDotNetJs.SetMetadata("AssetTraitName", "WasmResource");
+                    newDotNetJs.SetMetadata("AssetTraitValue", "native");
+
+                    assetCandidates.Add(newDotNetJs);
+                    continue;
+                }
+                else
+                {
+                    string relativePath = AssetsComputingHelper.GetCandidateRelativePath(candidate);
+                    candidate.SetMetadata("RelativePath", relativePath);
+                }
 
                     // Workaround for https://github.com/dotnet/aspnetcore/issues/37574.
                     // For items added as "Reference" in project references, the OriginalItemSpec is incorrect.
