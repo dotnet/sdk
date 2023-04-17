@@ -51,6 +51,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <DebuggerSupport Condition="'$(DebuggerSupport)' == '' and '$(Configuration)' != 'Debug'">false</DebuggerSupport>
     <BlazorCacheBootResources Condition="'$(BlazorCacheBootResources)' == ''">true</BlazorCacheBootResources>
     <WasmFingerprintDotnetJs>true</WasmFingerprintDotnetJs>
+    <WasmFingerprintDotnetJs Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' and $([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '8.0'))">false</WasmFingerprintDotnetJs>
 
     <!-- Don't generate a NETSDK1151 error if a non self-contained Exe references a Blazor Exe -->
     <ShouldBeValidatedAsExecutableReference>false</ShouldBeValidatedAsExecutableReference>
