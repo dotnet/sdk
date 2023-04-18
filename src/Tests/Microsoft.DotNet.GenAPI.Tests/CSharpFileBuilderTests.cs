@@ -1321,6 +1321,53 @@ namespace Microsoft.DotNet.GenAPI.Tests
                     """);
         }
 
+        [Fact(Skip = "https://github.com/dotnet/roslyn/issues/67867")]
+        public void TestBaseTypeWithAmbiguousNonDefaultConstructorsRegression31655()
+        {
+            RunTest(original: """
+                    namespace Foo
+                    {
+                        public class A
+                        {
+                            public A(Id id, System.Collections.Generic.IEnumerable<D> deps) { }
+                            public A(string s, V v) { }
+                        }
+
+                        public class B : A
+                        {
+                            public B() : base(new Id(), new D[0]) {}
+                        }
+
+                        public class Id { }
+
+                        public class D { }
+                    
+                        public class V { }
+                    }
+                    """,
+                expected: """
+                    namespace Foo
+                    {
+                        public partial class A
+                        {
+                            public A(Id id, System.Collections.Generic.IEnumerable<D> deps) { }
+                            public A(string s, V v) { }
+                        }
+
+                        public partial class B : A
+                        {
+                            public B() : base(default(Id), default(System.Collections.Generic.IEnumerable<D>)) {}
+                        }
+
+                        public partial class Id { }
+                    
+                        public partial class D { }
+
+                        public partial class V { }
+                    }
+                    """);
+        }
+
         [Fact]
         public void TestBaseTypeConstructorWithObsoleteAttribute()
         {
