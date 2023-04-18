@@ -43,7 +43,7 @@ namespace Microsoft.DotNet.Cli.Build
         {
             string sourceFolder = Path.Combine(MSBuildExtensionsLayoutDirectory, relativeSourcePath);
             var files = Directory.GetFiles(sourceFolder)
-                            .Where(f => !Path.GetExtension(f).Equals(".pdb", StringComparison.OrdinalIgnoreCase))
+                            .Where(f => !Path.GetExtension(f).Equals(".pdb", StringComparison.OrdinalIgnoreCase) || !Path.GetExtension(f).Equals(".swr", StringComparison.OrdinalIgnoreCase))
                             .ToList();
             if (files.Any(f => !Path.GetFileName(f).Equals("_._")))
             {
