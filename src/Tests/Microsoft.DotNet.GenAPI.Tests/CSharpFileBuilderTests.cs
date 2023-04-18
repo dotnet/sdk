@@ -1285,6 +1285,43 @@ namespace Microsoft.DotNet.GenAPI.Tests
         }
 
         [Fact]
+        public void TestBaseTypeWithAmbiguousNonDefaultConstructors()
+        {
+            RunTest(original: """
+                    namespace Foo
+                    {
+                        public class A
+                        {
+                            public A(char c) { }
+                            public A(int i) { }
+                            public A(string s) { }
+                        }
+
+                        public class B : A
+                        {
+                            public B() : base("") {}
+                        }
+                    }
+                    """,
+                expected: """
+                    namespace Foo
+                    {
+                        public partial class A
+                        {
+                            public A(char c) { }
+                            public A(int i) { }
+                            public A(string s) { }
+                        }
+
+                        public partial class B : A
+                        {
+                            public B() : base(default(char)) {}
+                        }
+                    }
+                    """);
+        }
+
+        [Fact]
         public void TestBaseTypeConstructorWithObsoleteAttribute()
         {
             RunTest(original: """
