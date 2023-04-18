@@ -1850,6 +1850,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                             public int Foo;
                             public const int Bar = 29;
                             public int Baz { get; }
+                            public int ExplicitProperty { get; }
                             #pragma warning disable 8618
                             public event EventHandler MyEvent;
                             void IExplicit.Explicit() {}
@@ -1874,6 +1875,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                         public class D : C, IExplicit, IExplicit2 {
                             public new int Foo;
                             public new const int Bar = 30;
+                            int IExplicit2.ExplicitProperty { get; }
                             public new int Baz { get; set; }
                             public new event EventHandler MyEvent;
                             void IExplicit2.Explicit2() {}
@@ -1896,6 +1898,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                         public class E : C, IExplicit, IExplicit2 {
                             public new int Bar;
                             public new const int Do = 30;
+                            int IExplicit2.ExplicitProperty { get; }
                             public new int Foo { get; set; }
                             public new event EventHandler MyNestedClass;
                             void IExplicit.Explicit() {}
@@ -1908,6 +1911,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                             void Explicit();
                         }
                         public interface IExplicit2 {
+                            int ExplicitProperty { get; }
                             void Explicit2();
                         }
                         public interface IFun {
@@ -1923,6 +1927,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                             public const int Bar = 29;
                             public int Foo;
                             public int Baz { get { throw null; } }
+                            public int ExplicitProperty { get { throw null; } }
                             public C this[int i] { get { throw null; } set {} }
                             public event System.EventHandler MyEvent { add {} remove {} }
                             void IExplicit.Explicit() {}
@@ -1942,6 +1947,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                         {
                             public new const int Bar = 30;
                             public new int Foo;
+                            int IExplicit2.ExplicitProperty { get { throw null; } }
                             public new int Baz { get { throw null; } set {} }
                             public new D this[int i] { get { throw null; } set {} }
                             public new event System.EventHandler MyEvent { add {} remove {} }
@@ -1961,6 +1967,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                         {
                             public new int Bar;
                             public new const int Do = 30;
+                            int IExplicit2.ExplicitProperty { get { throw null; } }
                             public new int Foo { get { throw null; } set {} }
                             public new event System.EventHandler MyNestedClass { add {} remove {} }
                             void IExplicit.Explicit() {}
@@ -1973,6 +1980,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                             void Explicit();
                         }
                         public partial interface IExplicit2 {
+                            int ExplicitProperty { get; }
                             void Explicit2();
                         }
                         public partial interface IFun {
