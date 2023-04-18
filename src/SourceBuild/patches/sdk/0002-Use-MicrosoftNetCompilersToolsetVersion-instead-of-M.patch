@@ -1,0 +1,40 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nikola Milosavljevic <nikolam@microsoft.com>
+Date: Mon, 17 Apr 2023 20:19:53 +0000
+Subject: [PATCH] Use MicrosoftNetCompilersToolsetVersion instead of
+ MicrosoftNetCompilersToolsetPackageVersion
+
+Temporary fix for https://github.com/dotnet/source-build/issues/3392
+---
+ src/Layout/redist/redist.csproj                  | 4 ++--
+ src/Layout/redist/targets/GenerateLayout.targets | 2 +-
+ 2 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/src/Layout/redist/redist.csproj b/src/Layout/redist/redist.csproj
+index ada9291ad2..032389051f 100644
+--- a/src/Layout/redist/redist.csproj
++++ b/src/Layout/redist/redist.csproj
+@@ -33,8 +33,8 @@
+     <PackageReference Condition=" '$(DotNetBuildFromSource)' != 'true' " Include="NuGet.Localization" Version="$(NuGetLocalizationPackageVersion)" />
+     <PackageReference Include="NuGet.ProjectModel" Version="$(NuGetProjectModelPackageVersion)" />
+     <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="$(MicrosoftCodeAnalysisNetAnalyzersVersion)" ExcludeAssets="All" GeneratePathProperty="true"/>
+-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.CodeStyle" Version="$(MicrosoftNetCompilersToolsetPackageVersion)" ExcludeAssets="All" GeneratePathProperty="true"/>
+-    <PackageReference Include="Microsoft.CodeAnalysis.VisualBasic.CodeStyle" Version="$(MicrosoftNetCompilersToolsetPackageVersion)" ExcludeAssets="All" GeneratePathProperty="true"/>
++    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.CodeStyle" Version="$(MicrosoftNetCompilersToolsetVersion)" ExcludeAssets="All" GeneratePathProperty="true"/>
++    <PackageReference Include="Microsoft.CodeAnalysis.VisualBasic.CodeStyle" Version="$(MicrosoftNetCompilersToolsetVersion)" ExcludeAssets="All" GeneratePathProperty="true"/>
+     <PackageReference Include="Microsoft.NET.ILLink.Tasks" Version="$(MicrosoftNETILLinkTasksPackageVersion)" ExcludeAssets="All" GeneratePathProperty="true" />
+     <PackageReference Include="Microsoft.FSharp.Compiler" Version="$(MicrosoftFSharpCompilerPackageVersion)" ExcludeAssets="All" GeneratePathProperty="true" />
+     <PackageReference Include="Microsoft.NET.Sdk.Razor.SourceGenerators.Transport" Version="$(MicrosoftNETSdkRazorSourceGeneratorsTransportPackageVersion)" GeneratePathProperty="true" />
+diff --git a/src/Layout/redist/targets/GenerateLayout.targets b/src/Layout/redist/targets/GenerateLayout.targets
+index 3d3d3a47d3..03e06be78d 100644
+--- a/src/Layout/redist/targets/GenerateLayout.targets
++++ b/src/Layout/redist/targets/GenerateLayout.targets
+@@ -27,7 +27,7 @@
+       <RoslynDirectory>$(OutputPath)/Roslyn</RoslynDirectory>
+     </PropertyGroup>
+     <ItemGroup>
+-      <RoslynBits Include="$(NuGetPackageRoot)/microsoft.net.compilers.toolset/$(MicrosoftNetCompilersToolsetPackageVersion)/tasks/net6.0/**/*" />
++      <RoslynBits Include="$(NuGetPackageRoot)/microsoft.net.compilers.toolset/$(MicrosoftNetCompilersToolsetVersion)/tasks/net6.0/**/*" />
+     </ItemGroup>
+     <Error Condition="'@(RoslynBits)' == ''" Text="Something moved around in Roslyn package, adjust code here accordingly. TFM change?" />
+     <Copy SourceFiles="@(RoslynBits)" DestinationFiles="@(RoslynBits->'$(RoslynDirectory)/%(RecursiveDir)%(Filename)%(Extension)')" />
