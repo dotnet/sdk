@@ -214,18 +214,6 @@ index fa2233feb..f19ae8d4d 100644
 +    <PackageReference Include="Microsoft.CodeAnalysis" Version="$(MicrosoftCodeAnalysisVersion)" />
    </ItemGroup>
  </Project>
-diff --git a/src/Tools/ReleaseNotesUtil/ReleaseNotesUtil.csproj b/src/Tools/ReleaseNotesUtil/ReleaseNotesUtil.csproj
-index fe90e93ca..01b64e055 100644
---- a/src/Tools/ReleaseNotesUtil/ReleaseNotesUtil.csproj
-+++ b/src/Tools/ReleaseNotesUtil/ReleaseNotesUtil.csproj
-@@ -3,6 +3,7 @@
-     <OutputType>Exe</OutputType>
-     <TargetFramework>net7.0</TargetFramework>
-     <NonShipping>true</NonShipping>
-+    <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
-   </PropertyGroup>
-   <ItemGroup>
-     <PackageReference Include="Microsoft.CodeAnalysis" Version="$(MicrosoftCodeAnalysisVersion)" />
 diff --git a/src/NetAnalyzers/Core/Microsoft.NetCore.Analyzers/Runtime/UseExceptionThrowHelpersFixer.cs b/src/NetAnalyzers/Core/Microsoft.NetCore.Analyzers/Runtime/UseExceptionThrowHelpersFixer.cs
 index 82a3e986c..336bd2a52 100644
 --- a/src/NetAnalyzers/Core/Microsoft.NetCore.Analyzers/Runtime/UseExceptionThrowHelpersFixer.cs

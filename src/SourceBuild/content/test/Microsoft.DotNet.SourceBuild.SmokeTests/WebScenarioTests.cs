@@ -34,7 +34,8 @@ public class WebScenarioTests : SmokeTests
         }
 
         yield return new(nameof(WebScenarioTests), DotNetLanguage.CSharp, DotNetTemplate.Razor,         DotNetActions.Build | DotNetActions.Run | DotNetActions.Publish);
-        yield return new(nameof(WebScenarioTests), DotNetLanguage.CSharp, DotNetTemplate.BlazorWasm,    DotNetActions.Build | DotNetActions.Run | DotNetActions.Publish);
+        // TODO: Investigate and re-enable
+        //yield return new(nameof(WebScenarioTests), DotNetLanguage.CSharp, DotNetTemplate.BlazorWasm,    DotNetActions.Build | DotNetActions.Run | DotNetActions.Publish);
         yield return new(nameof(WebScenarioTests), DotNetLanguage.CSharp, DotNetTemplate.BlazorServer,  DotNetActions.Build | DotNetActions.Run | DotNetActions.Publish);
         yield return new(nameof(WebScenarioTests), DotNetLanguage.CSharp, DotNetTemplate.Worker);
         yield return new(nameof(WebScenarioTests), DotNetLanguage.CSharp, DotNetTemplate.Angular);

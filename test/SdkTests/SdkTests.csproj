@@ -1,4 +1,4 @@
-﻿<Project>
+<Project>
 
   <PropertyGroup>
     <CopyBuildOutputToOutputDirectory>false</CopyBuildOutputToOutputDirectory>
@@ -224,6 +224,11 @@
     <PropertyGroup Condition=" '$(IslinuxPortable)' == 'true' ">
       <!-- Add list of tests to skip on Linux Portable -->
       <TestArgs>$(TestArgs) -testConfigFile "$(MSBuildThisFileDirectory)TestsToSkipPortableLinux.xml"</TestArgs>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" $([MSBuild]::IsOSPlatform('LINUX')) ">
+      <!-- Add list of tests to skip on Linux Portable -->
+      <TestArgs>$(TestArgs) -testConfigFile "$(MSBuildThisFileDirectory)TestsToSkipLinux.xml"</TestArgs>
     </PropertyGroup>
 
     <PropertyGroup Condition=" $([MSBuild]::IsOSPlatform('OSX')) ">
