@@ -1898,9 +1898,9 @@ namespace Microsoft.DotNet.GenAPI.Tests
                             public new const int Do = 30;
                             public new int Foo { get; set; }
                             public new event EventHandler MyNestedClass;
-                            public new void Baz() => MyNestedClass(default(object), default(EventArgs));
                             void IExplicit.Explicit() {}
                             void IExplicit2.Explicit2() {}
+                            public new void Baz() => MyNestedClass(default(object), default(EventArgs));
                             public new void MyNestedStruct(double d) {}
                             public new void Zoo() {}
                         }
@@ -1963,9 +1963,9 @@ namespace Microsoft.DotNet.GenAPI.Tests
                             public new const int Do = 30;
                             public new int Foo { get { throw null; } set {} }
                             public new event System.EventHandler MyNestedClass { add {} remove {} }
-                            public new void Baz() {}
                             void IExplicit.Explicit() {}
                             void IExplicit2.Explicit2() {}
+                            public new void Baz() {}
                             public new void MyNestedStruct(double d) {}
                             public new void Zoo() {}
                         }
