@@ -145,7 +145,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             Optional<object> constantValueOpt = expression.ConstantValue;
             if (constantValueOpt.HasValue)
             {
-                return (constantValueOpt.Value as string)?.Length == 0;
+                return constantValueOpt.Value is string { Length: 0 };
             }
 
             if (expression.Kind == OperationKind.FieldReference)
