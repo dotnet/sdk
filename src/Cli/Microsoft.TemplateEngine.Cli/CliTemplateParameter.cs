@@ -160,10 +160,20 @@ namespace Microsoft.TemplateEngine.Cli
                             booleanOption.DefaultValueFactory = (_) => bool.Parse(DefaultValue);
                             break;
                         case CliOption<long> integerOption:
-                            integerOption.DefaultValueFactory = (_) => long.Parse(DefaultValue);
+                            if (Type == ParameterType.Hex)
+                            {
+                                integerOption.DefaultValueFactory = (_) => Convert.ToInt64(DefaultValue, 16);
+                            }
+                            else
+                            {
+                                integerOption.DefaultValueFactory = (_) => long.Parse(DefaultValue);
+                            }
                             break;
                         case CliOption<float> floatOption:
                             floatOption.DefaultValueFactory = (_) => float.Parse(DefaultValue);
+                            break;
+                        case CliOption<double> doubleOption:
+                            doubleOption.DefaultValueFactory = (_) => double.Parse(DefaultValue);
                             break;
                         default:
                             Debug.Fail($"Unexpected Option type: {option.GetType()}");

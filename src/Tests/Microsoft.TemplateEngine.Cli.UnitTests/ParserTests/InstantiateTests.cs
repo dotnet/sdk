@@ -504,7 +504,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
                 //new object?[] { "foo --framework", "framework", "net5.0|net6.0", false, null, null, "Required argument missing for option: '--framework'." },
                 //requireness is no longer set on parser level
                 //new object?[] { "foo", "framework", "net5.0|net6.0", true, null, null, "Option '--framework' is required." },
-                new object?[] { "foo --framework", "framework", "net5.0|net6.0", true, null, "netcoreapp2.1", $"Cannot parse default if option without value 'netcoreapp2.1' for option '--framework' as expected type 'choice': value 'netcoreapp2.1' is not allowed, allowed values are: 'net5.0','net6.0'. Did you mean one of the following?{Environment.NewLine}net5.0{Environment.NewLine}net6.0" }
+                new object?[] { "foo --framework", "framework", "net5.0|net6.0", true, null, "netcoreapp2.1", $"Cannot parse default if option without value 'netcoreapp2.1' for option '--framework' as expected type 'choice': value 'netcoreapp2.1' is not allowed, allowed values are: 'net5.0','net6.0'." }
             };
 
         [Theory]

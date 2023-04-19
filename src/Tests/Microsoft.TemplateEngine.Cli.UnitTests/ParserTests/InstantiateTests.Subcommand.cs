@@ -98,7 +98,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
         [InlineData("new --name name create foo", "Unrecognized command or argument(s): '--name','name'.")]
         [InlineData("--name name new create foo", "Unrecognized command or argument '--name'.|Unrecognized command or argument 'name'.")]
         [InlineData("new --output name create foo", "Unrecognized command or argument(s): '--output','name'.")]
-        [InlineData("new --project name create foo", "Unrecognized command or argument(s): '--project','name'.|File does not exist: 'name'.")]
+        [InlineData("new --project name create foo", "Unrecognized command or argument(s): '--project','name'.")]
         [InlineData("new --force create foo", "Unrecognized command or argument(s): '--force'.")]
         [InlineData("new --dry-run create foo", "Unrecognized command or argument(s): '--dry-run'.")]
         [InlineData("new --no-update-check create foo", "Unrecognized command or argument(s): '--no-update-check'.")]

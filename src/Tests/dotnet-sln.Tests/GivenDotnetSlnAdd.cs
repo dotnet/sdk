@@ -30,9 +30,9 @@ Arguments:
   <PROJECT_PATH>    The paths to the projects to add to the solution.
 
 Options:
-  --in-root                                  Place project in root of the solution, rather than creating a solution folder.
-  -s, --solution-folder <solution-folder>    The destination solution folder path to add the projects to.
-  -?, -h, --help                             Show command line help";
+  --in-root              Place project in root of the solution, rather than creating a solution folder.
+  -s, --solution-folder  The destination solution folder path to add the projects to.
+  -?, -h, --help         Show command line help";
 
         public GivenDotnetSlnAdd(ITestOutputHelper log) : base(log)
         {

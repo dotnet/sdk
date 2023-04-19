@@ -10,7 +10,7 @@ namespace Microsoft.DotNet.Cli
 {
     public static class SlnAddParser
     {
-        public static readonly CliArgument<IEnumerable<string>> ProjectPathArgument = new("projectPath")
+        public static readonly CliArgument<IEnumerable<string>> ProjectPathArgument = new(LocalizableStrings.AddProjectPathArgumentName)
         {
             HelpName = LocalizableStrings.AddProjectPathArgumentName,
             Description = LocalizableStrings.AddProjectPathArgumentDescription,
