@@ -115,7 +115,7 @@
           Condition="'$(SkipSmokeTestPrereqsTarballCreation)' != 'true'"
           DependsOnTargets="
             CheckIfCreateSmokeTestPrereqsExistToPack;
-            CreateCreateSmokeTestPrereqsTarballIfPrereqsExist"/>
+            CreateSmokeTestPrereqsTarballIfPrereqsExist"/>
 
   <Target Name="CheckIfCreateSmokeTestPrereqsExistToPack">
     <PropertyGroup>
@@ -130,10 +130,11 @@
     <Message Text="Found @(SmokeTestsPrereqs->Count()) prereqs in '$(SmokeTestsPackagesDir)'." Importance="High" />
   </Target>
 
-  <Target Name="CreateCreateSmokeTestPrereqsTarballIfPrereqsExist"
+  <Target Name="CreateSmokeTestPrereqsTarballIfPrereqsExist"
+          DependsOnTargets="DetermineMicrosoftSourceBuildIntermediateInstallerVersion"
           Condition="'@(SmokeTestsPrereqs->Count())' != '0'">
     <PropertyGroup>
-      <SmokeTestPrereqsTarballName>$(OutputPath)dotnet-smoke-test-prereqs.$(installerOutputPackageVersion).$(TargetRid).tar.gz</SmokeTestPrereqsTarballName>
+      <SmokeTestPrereqsTarballName>$(OutputPath)dotnet-smoke-test-prereqs.$(MicrosoftSourceBuildIntermediateInstallerVersion).$(TargetRid).tar.gz</SmokeTestPrereqsTarballName>
       <SmokeTestsPrereqPackagesDir>$(SmokeTestsArtifactsDir)prereq-packages/</SmokeTestsPrereqPackagesDir>
     </PropertyGroup>
 
@@ -187,9 +188,10 @@
   </Target>
 
   <Target Name="CreatePrebuiltsTarballIfPrebuiltsExist"
+          DependsOnTargets="DetermineMicrosoftSourceBuildIntermediateInstallerVersion"
           Condition="'@(PrebuiltFile->Count())' != '0'">
     <PropertyGroup>
-      <TarballFilePath>$(OutputPath)$(SourceBuiltPrebuiltsTarballName).$(installerOutputPackageVersion).$(TargetRid).tar.gz</TarballFilePath>
+      <TarballFilePath>$(OutputPath)$(SourceBuiltPrebuiltsTarballName).$(MicrosoftSourceBuildIntermediateInstallerVersion).$(TargetRid).tar.gz</TarballFilePath>
       <TarballWorkingDir>$(ResultingPrebuiltPackagesDir)</TarballWorkingDir>
     </PropertyGroup>
 
