@@ -79,18 +79,18 @@ namespace Microsoft.TemplateEngine.Cli.PostActionProcessors
                 return false;
             }
 
-            var sourceNameReplaceValue = DetermineSourceNameReplaceValue(creationEffects);
+            //var sourceNameReplaceValue = DetermineSourceNameReplaceValue(creationEffects);
 
-            if (sourceNameReplaceValue != null)
-            {
-                newJsonPropertyName = newJsonPropertyName.Replace(
-                                                            sourceNameReplaceValue.Value.SourceName,
-                                                            sourceNameReplaceValue.Value.ReplaceValue);
+            //if (sourceNameReplaceValue != null)
+            //{
+            //    newJsonPropertyName = newJsonPropertyName.Replace(
+            //                                                sourceNameReplaceValue.Value.SourceName,
+            //                                                sourceNameReplaceValue.Value.ReplaceValue);
 
-                newJsonPropertyValue = newJsonPropertyValue.Replace(
-                                                                sourceNameReplaceValue.Value.SourceName,
-                                                                sourceNameReplaceValue.Value.ReplaceValue);
-            }
+            //    newJsonPropertyValue = newJsonPropertyValue.Replace(
+            //                                                    sourceNameReplaceValue.Value.SourceName,
+            //                                                    sourceNameReplaceValue.Value.ReplaceValue);
+            //}
 
             JsonNode? newJsonContent = AddElementToJson(
                 environment.Host.FileSystem,
@@ -201,30 +201,30 @@ namespace Microsoft.TemplateEngine.Cli.PostActionProcessors
             return new List<string>();
         }
 
-        private static (string SourceName, string ReplaceValue)? DetermineSourceNameReplaceValue(ICreationEffects creationEffects)
-        {
-            if (creationEffects is ICreationEffects2 creationEffects2)
-            {
-                var projectFile = creationEffects2.FileChanges.FirstOrDefault(f => IsProjectFile(f.SourceRelativePath));
+        //private static (string SourceName, string ReplaceValue)? DetermineSourceNameReplaceValue(ICreationEffects creationEffects)
+        //{
+        //    if (creationEffects is ICreationEffects2 creationEffects2)
+        //    {
+        //        var projectFile = creationEffects2.FileChanges.FirstOrDefault(f => IsProjectFile(f.SourceRelativePath));
 
-                if (projectFile != null)
-                {
-                    return (SourceName: Path.GetFileNameWithoutExtension(projectFile.SourceRelativePath),
-                            ReplaceValue: Path.GetFileNameWithoutExtension(projectFile.TargetRelativePath));
-                }
-            }
+        //        if (projectFile != null)
+        //        {
+        //            return (SourceName: Path.GetFileNameWithoutExtension(projectFile.SourceRelativePath),
+        //                    ReplaceValue: Path.GetFileNameWithoutExtension(projectFile.TargetRelativePath));
+        //        }
+        //    }
 
-            return null;
+        //    return null;
 
-            static bool IsProjectFile(string fileName)
-            {
-                string extension = Path.GetExtension(fileName);
+        //    static bool IsProjectFile(string fileName)
+        //    {
+        //        string extension = Path.GetExtension(fileName);
 
-                return extension.Equals(".csproj", StringComparison.OrdinalIgnoreCase) ||
-                       extension.Equals(".vbproj", StringComparison.OrdinalIgnoreCase) ||
-                       extension.Equals(".fsproj", StringComparison.OrdinalIgnoreCase) ||
-                       extension.Equals(".vcxproj", StringComparison.OrdinalIgnoreCase);
-            }
-        }
+        //        return extension.Equals(".csproj", StringComparison.OrdinalIgnoreCase) ||
+        //               extension.Equals(".vbproj", StringComparison.OrdinalIgnoreCase) ||
+        //               extension.Equals(".fsproj", StringComparison.OrdinalIgnoreCase) ||
+        //               extension.Equals(".vcxproj", StringComparison.OrdinalIgnoreCase);
+        //    }
+        //}
     }
 }
