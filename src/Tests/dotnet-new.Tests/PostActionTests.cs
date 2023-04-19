@@ -30,7 +30,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         [InlineData("PostActions/RestoreNuGet/CustomTargetPathFiles", "TestAssets.PostActions.RestoreNuGet.CustomTargetPathFiles", "./Custom/Path/")]
         [InlineData("PostActions/RestoreNuGet/CustomSourceTargetPath", "TestAssets.PostActions.RestoreNuGet.CustomSourceTargetPath", "./Target/Output/")]
         [InlineData("PostActions/RestoreNuGet/CustomSourceTargetPathFiles", "TestAssets.PostActions.RestoreNuGet.CustomSourceTargetPathFiles", "./Target/Output/")]
-        public Task Restore_Basic(string templateLocation, string templateName, string targetSubfolder = "")
+        public void Restore_Basic(string templateLocation, string templateName, string targetSubfolder = "")
         {
             string home = CreateTemporaryFolder(folderName: "Home");
             string workingDirectory = CreateTemporaryFolder();
