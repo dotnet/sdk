@@ -13,7 +13,8 @@
 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 
-  <Target Name="RepoBuild">
+  <Target Name="RepoBuild"
+          DependsOnTargets="DetermineMicrosoftSourceBuildIntermediateInstallerVersion">
     <!-- Copy PVP to packages dir in order to package them together -->
     <Copy SourceFiles="$(IncludedPackageVersionPropsFile)" DestinationFiles="$(SourceBuiltPackagesPath)PackageVersions.props" />
 
@@ -46,21 +47,8 @@
       Directories="$(SourceBuildReferencePackagesDestination)extractArtifacts/" />
 
     <PropertyGroup>
-      <SourceBuiltTarballName>$(OutputPath)$(SourceBuiltArtifactsTarballName).$(installerOutputPackageVersion).$(TargetRid).tar.gz</SourceBuiltTarballName>
+      <SourceBuiltTarballName>$(OutputPath)$(SourceBuiltArtifactsTarballName).$(MicrosoftSourceBuildIntermediateInstallerVersion).$(TargetRid).tar.gz</SourceBuiltTarballName>
       <SourceBuiltVersionFileName>.version</SourceBuiltVersionFileName>
-    </PropertyGroup>
-
-    <!--
-      Manually load the installer version from the PVP. This is manually done instead of using an explicit
-      <Import> because the PVP does not exist at the time this project file is loaded.
-     -->
-    <XmlPeek XmlInputPath="$(CurrentSourceBuiltPackageVersionPropsPath)"
-             Query="msb:Project/msb:PropertyGroup/msb:MicrosoftSourceBuildIntermediateInstallerVersion/text()"
-             Namespaces="&lt;Namespace Prefix='msb' Uri='http://schemas.microsoft.com/developer/msbuild/2003'/&gt;">
-        <Output TaskParameter="Result" ItemName="MicrosoftSourceBuildIntermediateInstallerVersionItem" />
-    </XmlPeek>
-    <PropertyGroup>
-      <MicrosoftSourceBuildIntermediateInstallerVersion>@(MicrosoftSourceBuildIntermediateInstallerVersionItem)</MicrosoftSourceBuildIntermediateInstallerVersion>
     </PropertyGroup>
 
     <!-- Content of the .version file to include in the tarball -->
