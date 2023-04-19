@@ -372,7 +372,7 @@ namespace Microsoft.NET.Build.Tasks
                     return;
                 }
             }
-            
+
             if (AotEnabled)
             {
                 if (!AddToolPack(ToolPackType.ILCompiler, _normalizedTargetFrameworkVersion, packagesToDownload, implicitPackageReferences))
@@ -393,11 +393,8 @@ namespace Microsoft.NET.Build.Tasks
 
             if (UsingMicrosoftNETSdkWebAssembly)
             {
-                if (!AddToolPack(ToolPackType.WebAssemblySdk, _normalizedTargetFrameworkVersion, packagesToDownload, implicitPackageReferences))
-                {
-                    Log.LogError(Strings.WebAssemblySdkNoValidRuntimePackageError);
-                    return;
-                }
+                // WebAssemblySdk is supported for .NET >= 8, it's ok if no pack is added.
+                AddToolPack(ToolPackType.WebAssemblySdk, _normalizedTargetFrameworkVersion, packagesToDownload, implicitPackageReferences);
             }
 
             if (packagesToDownload.Any())
@@ -617,7 +614,8 @@ namespace Microsoft.NET.Build.Tasks
             List<ITaskItem> packagesToDownload,
             List<ITaskItem> implicitPackageReferences)
         {
-            var knownPacks = toolPackType switch {
+            var knownPacks = toolPackType switch
+            {
                 ToolPackType.Crossgen2 => KnownCrossgen2Packs,
                 ToolPackType.ILCompiler => KnownILCompilerPacks,
                 ToolPackType.ILLink => KnownILLinkPacks,
@@ -672,32 +670,33 @@ namespace Microsoft.NET.Build.Tasks
                 runtimePackItem.SetMetadata(MetadataKeys.NuGetPackageId, runtimePackName);
                 runtimePackItem.SetMetadata(MetadataKeys.NuGetPackageVersion, packVersion);
 
-                switch (toolPackType) {
-                case ToolPackType.Crossgen2:
-                    Crossgen2Packs = new[] { runtimePackItem };
-                    break;
-                case ToolPackType.ILCompiler:
-                    HostILCompilerPacks = new[] { runtimePackItem };
+                switch (toolPackType)
+                {
+                    case ToolPackType.Crossgen2:
+                        Crossgen2Packs = new[] { runtimePackItem };
+                        break;
+                    case ToolPackType.ILCompiler:
+                        HostILCompilerPacks = new[] { runtimePackItem };
 
-                    // ILCompiler supports cross target compilation. If there is a cross-target request, we need to download that package as well
-                    // We expect RuntimeIdentifier to be defined during publish but can allow during build
-                    if (RuntimeIdentifier != null)
-                    {
-                        var targetRuntimeIdentifier = NuGetUtils.GetBestMatchingRid(runtimeGraph, RuntimeIdentifier, packSupportedRuntimeIdentifiers, out bool wasInGraph2);
-                        if (targetRuntimeIdentifier == null)
+                        // ILCompiler supports cross target compilation. If there is a cross-target request, we need to download that package as well
+                        // We expect RuntimeIdentifier to be defined during publish but can allow during build
+                        if (RuntimeIdentifier != null)
                         {
-                            return false;
+                            var targetRuntimeIdentifier = NuGetUtils.GetBestMatchingRid(runtimeGraph, RuntimeIdentifier, packSupportedRuntimeIdentifiers, out bool wasInGraph2);
+                            if (targetRuntimeIdentifier == null)
+                            {
+                                return false;
+                            }
+                            if (!hostRuntimeIdentifier.Equals(targetRuntimeIdentifier))
+                            {
+                                var targetIlcPackName = packNamePattern.Replace("**RID**", targetRuntimeIdentifier);
+                                var targetIlcPack = new TaskItem(targetIlcPackName);
+                                targetIlcPack.SetMetadata(MetadataKeys.NuGetPackageId, targetIlcPackName);
+                                targetIlcPack.SetMetadata(MetadataKeys.NuGetPackageVersion, packVersion);
+                                TargetILCompilerPacks = new[] { targetIlcPack };
+                            }
                         }
-                        if (!hostRuntimeIdentifier.Equals(targetRuntimeIdentifier))
-                        {
-                            var targetIlcPackName = packNamePattern.Replace("**RID**", targetRuntimeIdentifier);
-                            var targetIlcPack = new TaskItem(targetIlcPackName);
-                            targetIlcPack.SetMetadata(MetadataKeys.NuGetPackageId, targetIlcPackName);
-                            targetIlcPack.SetMetadata(MetadataKeys.NuGetPackageVersion, packVersion);
-                            TargetILCompilerPacks = new[] { targetIlcPack };
-                        }
-                    }
-                    break;
+                        break;
                 }
             }
 
@@ -943,7 +942,7 @@ namespace Microsoft.NET.Build.Tasks
             public string RuntimePackRuntimeIdentifiers => _item.GetMetadata(MetadataKeys.RuntimePackRuntimeIdentifiers);
 
             public bool IsWindowsOnly => _item.HasMetadataValue("IsWindowsOnly", "true");
-            
+
             public bool RuntimePackAlwaysCopyLocal =>
                 _item.HasMetadataValue(MetadataKeys.RuntimePackAlwaysCopyLocal, "true");
 

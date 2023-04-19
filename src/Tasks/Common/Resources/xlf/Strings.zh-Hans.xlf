@@ -942,11 +942,6 @@ The following are names of parameters or literal values and should not be transl
         <target state="translated">NETSDK1057: 你正在使用 .NET 的预览版。请参阅 https://aka.ms/dotnet-support-policy</target>
         <note />
       </trans-unit>
-      <trans-unit id="WebAssemblySdkNoValidRuntimePackageError">
-        <source>NETSDK1199: Unable to build a WebAssembly application: a valid WebAssembly SDK package was not found.</source>
-        <target state="new">NETSDK1199: Unable to build a WebAssembly application: a valid WebAssembly SDK package was not found.</target>
-        <note>{StrBegin="NETSDK1199: "}</note>
-      </trans-unit>
       <trans-unit id="WinMDObjNotSupportedOnTargetFramework">
         <source>NETSDK1131: Producing a managed Windows Metadata component with WinMDExp is not supported when targeting {0}.</source>
         <target state="translated">NETSDK1131: 当目标为 {0} 时，不支持使用 WinMDExp 生成托管 Windows 元数据组件。</target>

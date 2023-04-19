@@ -12,5 +12,5 @@ Copyright (c) .NET Foundation. All rights reserved.
 <Project ToolsVersion="14.0">
   <Import Sdk="Microsoft.NET.Sdk.StaticWebAssets" Project="Sdk.targets" Condition="'$(_WasmSdkImportsMicrosoftNETSdkStaticWebAssets)' == 'true'" />
   <Import Sdk="Microsoft.NET.Sdk.Publish" Project="Sdk.targets" Condition="'$(_WasmSdkImportsMicrosoftNETSdkPublish)' == 'true'" />
-  <Import Project="$(_WebAssemblyTargetsFile)" />
+  <Import Project="$(_WebAssemblyTargetsFile)" Condition="'$($(_WebAssemblyTargetsFile))' != ''" />
 </Project>

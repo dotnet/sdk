@@ -12,7 +12,6 @@ Copyright (c) .NET Foundation. All rights reserved.
 <Project ToolsVersion="14.0">
   <PropertyGroup>
     <!-- FIXME: Important to get rid of missing workload -->
-    <UsingMicrosoftNETSdkBlazorWebAssembly>true</UsingMicrosoftNETSdkBlazorWebAssembly>
     <UsingMicrosoftNETSdkWebAssembly>true</UsingMicrosoftNETSdkWebAssembly>
 
     <!-- WASM projects defaults to browser-wasm -->
@@ -25,5 +24,5 @@ Copyright (c) .NET Foundation. All rights reserved.
   
   <Import Sdk="Microsoft.NET.Sdk.StaticWebAssets" Project="Sdk.props" Condition="'$(_WasmSdkImportsMicrosoftNETSdkStaticWebAssets)' == 'true'" />
   <Import Sdk="Microsoft.NET.Sdk.Publish" Project="Sdk.props" Condition="'$(_WasmSdkImportsMicrosoftNETSdkPublish)' == 'true'" />
-  <Import Project="$(_WebAssemblyPropsFile)" />
+  <Import Project="$(_WebAssemblyPropsFile)" Condition="'$(_WebAssemblyPropsFile)' != ''" />
 </Project>
