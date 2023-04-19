@@ -18,7 +18,7 @@ namespace Microsoft.DotNet.PackageValidation
     internal static class ApiCompatRunnerExtensions
     {
         public static void QueueApiCompatFromContentItem(this IApiCompatRunner apiCompatRunner,
-            ICompatibilityLogger log,
+            ISuppressableLog log,
             IReadOnlyList<ContentItem> leftContentItems,
             IReadOnlyList<ContentItem> rightContentItems,
             ApiCompatRunnerOptions options,
@@ -51,7 +51,7 @@ namespace Microsoft.DotNet.PackageValidation
             apiCompatRunner.EnqueueWorkItem(new ApiCompatRunnerWorkItem(left, options, right));
         }
 
-        private static MetadataInformation GetMetadataInformation(ICompatibilityLogger log,
+        private static MetadataInformation GetMetadataInformation(ISuppressableLog log,
             Package package,
             ContentItem item,
             string? displayString = null)
@@ -65,15 +65,11 @@ namespace Microsoft.DotNet.PackageValidation
 
                 if (package.AssemblyReferences != null && !package.AssemblyReferences.TryGetValue(targetFramework, out assemblyReferences))
                 {
-                    log.LogWarning(
-                        new Suppression(DiagnosticIds.SearchDirectoriesNotFoundForTfm)
-                        {
-                            Target = displayString
-                        },
+                    log.LogWarning(new Suppression(DiagnosticIds.SearchDirectoriesNotFoundForTfm) { Target = displayString },
                         DiagnosticIds.SearchDirectoriesNotFoundForTfm,
-                        Resources.MissingSearchDirectory,
-                        targetFramework,
-                        displayString);
+                        string.Format(Resources.MissingSearchDirectory,
+                            targetFramework,
+                            displayString));
                 }
             }
 

@@ -119,7 +119,7 @@ namespace Microsoft.DotNet.ApiCompat.Task
 
         protected override void ExecuteCore()
         {
-            Func<ISuppressionEngine, MSBuildCompatibilityLogger> logFactory = (suppressionEngine) => new(Log, suppressionEngine);
+            Func<ISuppressionEngine, SuppressableMSBuildLog> logFactory = (suppressionEngine) => new(Log, suppressionEngine);
             ValidateAssemblies.Run(logFactory,
                 GenerateSuppressionFile,
                 SuppressionFiles,
@@ -183,7 +183,9 @@ namespace Microsoft.DotNet.ApiCompat.Task
 
                 if (string.IsNullOrWhiteSpace(replacementString))
                 {
-                    throw new ArgumentException(string.Format(CommonResources.InvalidRexegStringTransformationPattern, captureGroupPattern, replacementString));
+                    throw new ArgumentException(string.Format(CommonResources.InvalidRexegStringTransformationPattern,
+                        captureGroupPattern,
+                        replacementString));
                 }
 
                 patterns[i] = (captureGroupPattern, replacementString);
