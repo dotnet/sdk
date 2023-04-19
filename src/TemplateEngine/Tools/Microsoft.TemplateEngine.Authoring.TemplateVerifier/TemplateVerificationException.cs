@@ -18,6 +18,7 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier
             TemplateVerificationErrorCode = templateVerificationErrorCode;
         }
 
+        [Obsolete("This API supports obsolete formatter-based serialization. It should not be called or extended by application code.", DiagnosticId = "SYSLIB0051", UrlFormat = "https://aka.ms/dotnet-warnings/{0}")]
         protected TemplateVerificationException(
             SerializationInfo info,
             StreamingContext context) : base(info, context)
