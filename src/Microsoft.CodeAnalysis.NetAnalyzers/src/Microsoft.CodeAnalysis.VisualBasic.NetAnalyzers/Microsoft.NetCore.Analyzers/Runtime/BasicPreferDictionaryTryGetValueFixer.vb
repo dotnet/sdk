@@ -44,12 +44,14 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Runtime
                                       Dim valueAssignment = generator.LocalDeclarationStatement(dictionaryValueType, Value).WithLeadingTrivia(SyntaxFactory.CarriageReturn).WithoutTrailingTrivia()
                                       Dim tryGetValueInvocation = generator.InvocationExpression(tryGetValueAccess, keyArgument, generator.Argument(generator.IdentifierName(Value)))
 
+#Disable Warning IDE0270 ' Use coalesce expression - suppressed for readability
                                       Dim ifStatement As SyntaxNode = containsKeyAccess.AncestorsAndSelf().OfType(Of MultiLineIfBlockSyntax).FirstOrDefault()
-                                      If ifStatement Is Nothing
+                                      If ifStatement Is Nothing Then
                                           ifStatement = containsKeyAccess.AncestorsAndSelf().OfType(Of SingleLineIfStatementSyntax).FirstOrDefault()
                                       End If
+#Enable Warning IDE0270 ' Use coalesce expression
 
-                                      If ifStatement Is Nothing
+                                      If ifStatement Is Nothing Then
                                           ' For ternary expressions, we need to add the value assignment before the parent of the expression, since the ternary expression is not an alone-standing expression. 
                                           ifStatement = containsKeyAccess.AncestorsAndSelf().OfType(Of TernaryConditionalExpressionSyntax).FirstOrDefault()?.Parent
                                       End If

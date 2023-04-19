@@ -149,7 +149,7 @@ End Namespace";
         [InlineData("public", "private")]
         [InlineData("public", "private protected")]
         [InlineData("internal", "public")]
-        [InlineData("internal", "internal protected")]
+        [InlineData("internal", "protected internal")]
         public async Task NestedOneDeep_NotExternallyVisible_Diagnostic_CS(string outerModifiers, string innerModifiers)
         {
             string source = $@"
