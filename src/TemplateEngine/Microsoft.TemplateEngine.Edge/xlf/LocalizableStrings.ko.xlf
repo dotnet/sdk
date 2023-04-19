@@ -199,7 +199,7 @@
       </trans-unit>
       <trans-unit id="NuGetApiPackageManager_Warning_InsecureFeed">
         <source>The NuGet sources {0} are insecure and will not be searched. If you want to include those sources for search, use --force.</source>
-        <target state="new">The NuGet sources {0} are insecure and will not be searched. If you want to include those sources for search, use --force.</target>
+        <target state="translated">{0} NuGet 소스가 안전하지 않으므로 검색되지 않습니다. 해당 소스를 검색에 포함하려면 --force를 사용하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetApiPackageManager_Warning_PackageNotFound">
