@@ -10,7 +10,6 @@
     </ItemGroup>
   </Target>
 
-  <!-- Used by build.proj and repo-projects/package-source-build.proj -->
   <Target Name="DetermineMicrosoftSourceBuildIntermediateInstallerVersion">
     <!-- Manually load the installer version from the PVP.     -->
     <XmlPeek XmlInputPath="$(IntermediatePath)PackageVersions.package-source-build.Current.props"
