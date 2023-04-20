@@ -18,7 +18,7 @@ Copyright (c) .NET Foundation. All rights reserved.
         This must be configured before it's initialized in the .NET SDK targets (which are imported by the Razor SDK). -->
     <SuppressTrimAnalysisWarnings Condition="'$(SuppressTrimAnalysisWarnings)' == '' And '$(TrimmerDefaultAction)' != 'link'">true</SuppressTrimAnalysisWarnings>
 
-    <!-- Similarly these feature switches must be configured before it's initialized in imported SDKs -->
+    <!-- Similarly these feature switches must be configured before they are initialized in imported SDKs -->
     <JsonSerializerIsReflectionEnabledByDefault Condition="'$(JsonSerializerIsReflectionEnabledByDefault)' == ''">true</JsonSerializerIsReflectionEnabledByDefault>
   </PropertyGroup>
 
