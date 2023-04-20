@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis.Testing;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.OperatorOverloadsHaveNamedAlternatesAnalyzer,
@@ -189,37 +190,50 @@ public class C
         [Fact]
         public async Task FixImproperMethodVisibility_CSharpAsync()
         {
-            await VerifyCS.VerifyCodeFixAsync(@"
+            await new VerifyCS.Test
+            {
+                CodeFixTestBehaviors = CodeFixTestBehaviors.SkipLocalDiagnosticCheck,
+                TestCode = @"
 public class C
 {
     public static C operator +(C left, C right) { return new C(); }
-    protected static C Add(C left, C right) { return new C(); }
+    protected static C {|#0:Add|}(C left, C right) { return new C(); }
 }
 ",
-                VerifyCS.Diagnostic(OperatorOverloadsHaveNamedAlternatesAnalyzer.VisibilityRule).WithSpan(5, 24, 5, 27).WithArguments("Add", "op_Addition"),
-@"
+                ExpectedDiagnostics =
+                {
+                    VerifyCS.Diagnostic(OperatorOverloadsHaveNamedAlternatesAnalyzer.VisibilityRule).WithLocation(0).WithArguments("Add", "op_Addition"),
+                },
+                FixedCode = @"
 public class C
 {
     public static C operator +(C left, C right) { return new C(); }
 
     public static C Add(C left, C right) { return new C(); }
 }
-");
+",
+            }.RunAsync();
         }
 
         [Fact]
         public async Task FixImproperPropertyVisibility_CSharpAsync()
         {
-            await VerifyCS.VerifyCodeFixAsync(@"
+            await new VerifyCS.Test
+            {
+                CodeFixTestBehaviors = CodeFixTestBehaviors.SkipLocalDiagnosticCheck,
+                TestCode = @"
 public class C
 {
     public static bool operator true(C item) { return true; }
     public static bool operator false(C item) { return false; }
-    bool IsTrue => true;
+    bool {|#0:IsTrue|} => true;
 }
 ",
-                VerifyCS.Diagnostic(OperatorOverloadsHaveNamedAlternatesAnalyzer.VisibilityRule).WithSpan(6, 10, 6, 16).WithArguments("IsTrue", "op_True"),
-@"
+                ExpectedDiagnostics =
+                {
+                    VerifyCS.Diagnostic(OperatorOverloadsHaveNamedAlternatesAnalyzer.VisibilityRule).WithLocation(0).WithArguments("IsTrue", "op_True"),
+                },
+                FixedCode = @"
 public class C
 {
     public static bool operator true(C item) { return true; }
@@ -227,7 +241,8 @@ public class C
 
     public bool IsTrue => true;
 }
-");
+",
+            }.RunAsync();
         }
 
         #endregion
@@ -393,19 +408,25 @@ End Structure
         [Fact]
         public async Task FixImproperMethodVisibility_BasicAsync()
         {
-            await VerifyVB.VerifyCodeFixAsync(@"
+            await new VerifyVB.Test
+            {
+                CodeFixTestBehaviors = CodeFixTestBehaviors.SkipLocalDiagnosticCheck,
+                TestCode = @"
 Public Class C
     Public Shared Operator +(left As C, right As C) As C
         Return New C()
     End Operator
 
-    Protected Shared Function Add(left As C, right As C) As C
+    Protected Shared Function {|#0:Add|}(left As C, right As C) As C
         Return New C()
     End Function
 End Class
 ",
-                VerifyVB.Diagnostic(OperatorOverloadsHaveNamedAlternatesAnalyzer.VisibilityRule).WithSpan(7, 31, 7, 34).WithArguments("Add", "op_Addition"),
-@"
+                ExpectedDiagnostics =
+                {
+                    VerifyVB.Diagnostic(OperatorOverloadsHaveNamedAlternatesAnalyzer.VisibilityRule).WithLocation(0).WithArguments("Add", "op_Addition"),
+                },
+                FixedCode = @"
 Public Class C
     Public Shared Operator +(left As C, right As C) As C
         Return New C()
@@ -415,13 +436,17 @@ Public Class C
         Return New C()
     End Function
 End Class
-");
+",
+            }.RunAsync();
         }
 
         [Fact]
         public async Task FixImproperPropertyVisibility_BasicAsync()
         {
-            await VerifyVB.VerifyCodeFixAsync(@"
+            await new VerifyVB.Test
+            {
+                CodeFixTestBehaviors = CodeFixTestBehaviors.SkipLocalDiagnosticCheck,
+                TestCode = @"
 Public Class C
     Public Shared Operator IsTrue(item As C) As Boolean
         Return True
@@ -430,15 +455,18 @@ Public Class C
         Return False
     End Operator
 
-    Private ReadOnly Property IsTrue As Boolean
+    Private ReadOnly Property {|#0:IsTrue|} As Boolean
         Get
             Return True
         End Get
     End Property
 End Class
 ",
-                VerifyVB.Diagnostic(OperatorOverloadsHaveNamedAlternatesAnalyzer.VisibilityRule).WithSpan(10, 31, 10, 37).WithArguments("IsTrue", "op_True"),
-@"
+                ExpectedDiagnostics =
+                {
+                    VerifyVB.Diagnostic(OperatorOverloadsHaveNamedAlternatesAnalyzer.VisibilityRule).WithLocation(0).WithArguments("IsTrue", "op_True"),
+                },
+                FixedCode = @"
 Public Class C
     Public Shared Operator IsTrue(item As C) As Boolean
         Return True
@@ -453,7 +481,8 @@ Public Class C
         End Get
     End Property
 End Class
-");
+",
+            }.RunAsync();
         }
 
         #endregion

@@ -2,6 +2,7 @@
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Testing;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeAnalysis.Testing.EmptyDiagnosticAnalyzer, // Diagnostic is from the compiler
@@ -137,7 +138,10 @@ class {|CS0659:{|CS0661:C|}|}
         [Fact]
         public async Task CA2224Async()
         {
-            await VerifyVB.VerifyCodeFixAsync(@"
+            await new VerifyVB.Test
+            {
+                CodeFixTestBehaviors = CodeFixTestBehaviors.SkipLocalDiagnosticCheck,
+                TestCode = @"
 Class [|C|]
     Public Shared Operator =(c1 As C, c2 As C) As Boolean
         Return True
@@ -148,7 +152,7 @@ Class [|C|]
     End Operator
 End Class
 ",
-@"
+                FixedCode = @"
 Class C
     Public Shared Operator =(c1 As C, c2 As C) As Boolean
         Return True
@@ -170,13 +174,17 @@ Class C
         Throw New System.NotImplementedException()
     End Function
 End Class
-");
+",
+            }.RunAsync();
         }
 
         [Fact]
         public async Task CA2224_SimplifiedAsync()
         {
-            await VerifyVB.VerifyCodeFixAsync(@"
+            await new VerifyVB.Test
+            {
+                CodeFixTestBehaviors = CodeFixTestBehaviors.SkipLocalDiagnosticCheck,
+                TestCode = @"
 Imports System
 
 Class [|C|]
@@ -189,7 +197,7 @@ Class [|C|]
     End Operator
 End Class
 ",
-@"
+                FixedCode = @"
 Imports System
 
 Class C
@@ -213,7 +221,8 @@ Class C
         Throw New NotImplementedException()
     End Function
 End Class
-");
+",
+            }.RunAsync();
         }
     }
 }

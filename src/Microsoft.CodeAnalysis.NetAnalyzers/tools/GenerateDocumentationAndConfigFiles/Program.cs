@@ -1624,17 +1624,19 @@ $@"<Project>{GetCommonContents(packageName, categories)}{GetPackageSpecificConte
 ";
             }
 
-            static string GetPackageSpecificContents(string packageName)
-                => packageName switch
-                {
-                    CodeAnalysisAnalyzersPackageName => @"
-  <!-- Target to add all 'EmbeddedResource' files with '.resx' extension as analyzer additional files -->
+            const string AddAllResxFilesAsAdditionalFilesTarget = @"  <!-- Target to add all 'EmbeddedResource' files with '.resx' extension as analyzer additional files -->
   <Target Name=""AddAllResxFilesAsAdditionalFiles"" BeforeTargets=""GenerateMSBuildEditorConfigFileCore;CoreCompile"" Condition=""'@(EmbeddedResource)' != '' AND '$(SkipAddAllResxFilesAsAdditionalFiles)' != 'true'"">
     <ItemGroup>
       <EmbeddedResourceWithResxExtension Include=""@(EmbeddedResource)"" Condition=""'%(Extension)' == '.resx'"" />
       <AdditionalFiles Include=""@(EmbeddedResourceWithResxExtension)"" />
     </ItemGroup>
-  </Target>
+  </Target>";
+
+            static string GetPackageSpecificContents(string packageName)
+                => packageName switch
+                {
+                    CodeAnalysisAnalyzersPackageName => $@"
+{AddAllResxFilesAsAdditionalFilesTarget}
 
   <!-- Workaround for https://github.com/dotnet/roslyn/issues/4655 -->
   <ItemGroup Condition=""Exists('$(MSBuildProjectDirectory)\AnalyzerReleases.Shipped.md')"" >
@@ -1672,6 +1674,24 @@ $@"<Project>{GetCommonContents(packageName, categories)}{GetPackageSpecificConte
                          '$({NetAnalyzersSDKAssemblyVersionPropertyName})' != '' AND
                           $({NetAnalyzersNugetAssemblyVersionPropertyName}) &lt; $({NetAnalyzersSDKAssemblyVersionPropertyName})""/>
   </Target>",
+                    ResxSourceGeneratorPackageName => $@"
+  <ItemGroup>
+    <!-- Enable code generation for resource files. -->
+    <ResxCodeGenerationEmbeddedResource Include=""@(EmbeddedResource)"" Exclude=""**\*.??.resx;**\*.??-??.resx;**\*.??-????.resx"" />
+    <EmbeddedResource Update=""@(ResxCodeGenerationEmbeddedResource)"" Condition=""'%(EmbeddedResource.GenerateSource)' == ''"" GenerateSource=""true"" />
+
+    <ResxNonCodeGenerationEmbeddedResource Include=""@(EmbeddedResource)"" Exclude=""@(CodeGenerationEmbeddedResource)"" />
+    <EmbeddedResource Update=""@(ResxNonCodeGenerationEmbeddedResource)"" Condition=""'%(EmbeddedResource.GenerateSource)' == ''"" GenerateSource=""false"" />
+  </ItemGroup>
+
+  <!-- Special handling for embedded resources to show as nested in Solution Explorer -->
+  <ItemGroup>
+    <!-- Localized embedded resources are just dependent on the parent RESX -->
+    <EmbeddedResource Update=""**\*.??.resx;**\*.??-??.resx;**\*.??-????.resx"" DependentUpon=""$([System.IO.Path]::ChangeExtension($([System.IO.Path]::GetFileNameWithoutExtension(%(Identity))), '.resx'))"" />
+  </ItemGroup>
+
+{AddAllResxFilesAsAdditionalFilesTarget}
+",
                     _ => string.Empty,
                 };
         }
