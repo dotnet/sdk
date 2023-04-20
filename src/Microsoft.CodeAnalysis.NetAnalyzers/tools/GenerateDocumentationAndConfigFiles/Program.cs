@@ -1684,7 +1684,10 @@ $@"<Project>{GetCommonContents(packageName, categories)}{GetPackageSpecificConte
 
 {AddAllResxFilesAsAdditionalFilesTarget}
 
-  <!-- Target to add 'EmbeddedResource' files with '.resx' extension and 'GenerateSource=""true""' as analyzer additional files. This only needs to run when SkipAddAllResxFilesAsAdditionalFiles is set to true. -->
+  <!-- Target to add 'EmbeddedResource' files with '.resx' extension and explicit- or implicit-GenerateSource as analyzer additional files. This only needs to run when SkipAddAllResxFilesAsAdditionalFiles is set to true.
+         Explicit GenerateSource: The embedded resource has GenerateSource=""true""
+         Implicit GenerateSource: The embedded resource did not set GenerateSource, and also does not have WithCulture set to true
+  -->
   <Target Name=""AddGenerateSourceResxFilesAsAdditionalFiles"" BeforeTargets=""GenerateMSBuildEditorConfigFileCore;CoreCompile"" Condition=""'@(EmbeddedResource)' != '' AND '$(SkipAddAllResxFilesAsAdditionalFiles)' == 'true' AND '$(SkipAddGenerateSourceResxFilesAsAdditionalFiles)' != 'true'"">
     <ItemGroup>
       <EmbeddedResourceWithResxExtensionAndGenerateSource Include=""@(EmbeddedResource)"" Condition=""'%(Extension)' == '.resx' AND ('%(EmbeddedResource.GenerateSource)' == 'true' OR ('%(EmbeddedResource.GenerateSource)' != 'false' AND '%(EmbeddedResource.WithCulture)' != 'true'))"" />
