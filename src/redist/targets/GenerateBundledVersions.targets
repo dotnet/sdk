@@ -79,6 +79,7 @@
       <_NET70RuntimePackVersion>7.0.$(VersionFeature70)</_NET70RuntimePackVersion>
       <_NET70TargetingPackVersion>7.0.$(VersionFeature70)</_NET70TargetingPackVersion>
       <_NET70ILLinkPackVersion>7.0.100-1.23062.2</_NET70ILLinkPackVersion>
+      <_NET70WebAssemblyPackVersion>$(MicrosoftNETCoreAppRuntimePackageVersion)</_NET70WebAssemblyPackVersion>
       <_WindowsDesktop70RuntimePackVersion>7.0.$(VersionFeature70)</_WindowsDesktop70RuntimePackVersion>
       <_WindowsDesktop70TargetingPackVersion>7.0.$(VersionFeature70)</_WindowsDesktop70TargetingPackVersion>
       <_AspNet70RuntimePackVersion>7.0.$(VersionFeature70)</_AspNet70RuntimePackVersion>
@@ -546,6 +547,10 @@ Copyright (c) .NET Foundation. All rights reserved.
                      TargetFramework="net7.0"
                      ILLinkPackVersion="$(_NET70ILLinkPackVersion)" />
 
+    <KnownWebAssemblySdkPack Include="Microsoft.NET.Sdk.WebAssembly.Pack"
+                             TargetFramework="net7.0"
+                             WebAssemblySdkPackVersion="$(_NET70WebAssemblyPackVersion)" />
+
     <KnownRuntimePack Include="Microsoft.NETCore.App"
                       TargetFramework="net7.0"
                       RuntimeFrameworkName="Microsoft.NETCore.App"
@@ -674,6 +679,10 @@ Copyright (c) .NET Foundation. All rights reserved.
     <KnownILLinkPack Include="Microsoft.NET.ILLink.Tasks"
                      TargetFramework="net6.0"
                      ILLinkPackVersion="$(_NET70ILLinkPackVersion)" />
+
+    <KnownWebAssemblySdkPack Include="Microsoft.NET.Sdk.WebAssembly.Pack"
+                             TargetFramework="net6.0"
+                             WebAssemblySdkPackVersion="$(_NET70WebAssemblyPackVersion)" />
 
     <KnownRuntimePack Include="Microsoft.NETCore.App"
                       TargetFramework="net6.0"
