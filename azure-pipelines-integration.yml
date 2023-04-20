@@ -29,43 +29,53 @@ jobs:
         _repoName: "dotnet/roslyn"
         _targetSolution: "Compilers.sln"
         _branchName: "main"
-        _sha: "b670821b5150bc7ddb01f415d91c17dd55c752a2"
-      sdk:
-        _repo: "https://github.com/dotnet/sdk"
-        _repoName: "dotnet/sdk"
-        _targetSolution: "sdk.sln"
-        _branchName: "main"
-        _sha: "d32c8e7d19f3fc13190ff14cd960370a5d148995"
+        _sha: "a6a78dd64fc1eb466113ece272747a72d497aad7"
+
+      # TODO: Re-enable when formatting issue are investigated.
+
+      # sdk:
+      #   _repo: "https://github.com/dotnet/sdk"
+      #   _repoName: "dotnet/sdk"
+      #   _targetSolution: "sdk.sln"
+      #   _branchName: "main"
+      #   _sha: "c7b5cc64c4b5e52e2d6c48998ecdcaac6275d423"
       project-system:
         _repo: "https://github.com/dotnet/project-system"
         _repoName: "dotnet/project-system"
         _targetSolution: "ProjectSystem.sln"
         _branchName: "main"
-        _sha: "5896b880c19071eb34c0e9966295c41d2bb44142"
+        _sha: "51bab75c24acab0e243530fd3b48fd747d6a6cca"
       # msbuild:
       #   _repo: "https://github.com/dotnet/msbuild"
       #   _repoName: "dotnet/msbuild"
       #   _targetSolution: "MSBuild.sln"
       #   _branchName: "main"
       #   _sha: "14c24b2d38abe2662bd5e3bcc88c91a13655b073"
-      aspnetcore:
-        _repo: "https://github.com/dotnet/aspnetcore"
-        _repoName: "dotnet/aspnetcore"
-        _targetSolution: "AspNetCore.sln"
-        _branchName: "main"
-        _sha: "e832fef051ab1256d6d50fc79d1582451f908453"
-      efcore:
-        _repo: "https://github.com/dotnet/efcore"
-        _repoName: "dotnet/efcore"
-        _targetSolution: "All.sln"
-        _branchName: "main"
-        _sha: "929cab1e250e50751551d628c4d7208de1155af6"
+
+      # TODO: Re-enable when issue with submodule cloning is fixed.
+
+      # aspnetcore:
+      #   _repo: "https://github.com/dotnet/aspnetcore"
+      #   _repoName: "dotnet/aspnetcore"
+      #   _targetSolution: "AspNetCore.sln"
+      #   _branchName: "main"
+      #   _sha: "03e670f9854651b9995d57f8e87cef16022e739a"
+
+      # TODO: efcore's SDK version is ahead of the rest of the stack.
+      #       Re-enable the check when format is on the same version.
+
+      # efcore:
+      #   _repo: "https://github.com/dotnet/efcore"
+      #   _repoName: "dotnet/efcore"
+      #   _targetSolution: "All.sln"
+      #   _branchName: "main"
+      #   _sha: "0adaa621143969416ccd8f999aaea5e99489a11c"
       razor-tooling:
         _repo: "https://github.com/dotnet/razor-tooling"
         _repoName: "dotnet/razor-tooling"
         _targetSolution: "Razor.sln"
         _branchName: "main"
-        _sha: "da152bfa9c519efd4e0038fbd7804af3fd27056d"
+        _sha: "4256307904b7b6fc95326901259d19481bcc3b8e"
   timeoutInMinutes: 60
   steps:
     - script: eng\integration-test.cmd -repo '$(_repo)' -branchName '$(_branchName)' -sha '$(_sha)' -targetSolution '$(_targetSolution)' -testPath '$(Agent.TempDirectory)\temp' -stage 'prepare'
