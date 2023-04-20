@@ -5,8 +5,8 @@
   <PropertyGroup>
     <Copyright>$(CopyrightMicrosoft)</Copyright>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <LangVersion>latest</LangVersion>
-    <!-- Enable faster restore times -->
+    <LangVersion>11</LangVersion>
+    <!-- Enables faster restore times -->
     <RestoreUseStaticGraphEvaluation>true</RestoreUseStaticGraphEvaluation>
   </PropertyGroup>
 
