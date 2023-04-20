@@ -50,8 +50,6 @@ try {
         .\eng\common\Build.ps1 -restore
     }
 
-    $env:PATH = "$dotnetPath;$env:PATH"
-
     if ($stage -eq "prepare" -or $stage -eq "format-workspace") {
         Write-Output "$(Get-Date) - Finding solutions."
         $solutions = Get-ChildItem -Filter *.sln -Recurse -Depth 2 | Select-Object -ExpandProperty FullName | Where-Object { $_ -match '.sln$' }
