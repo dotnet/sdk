@@ -65,7 +65,9 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.PostActionTests
         {
             string targetBasePath = _engineEnvironmentSettings.GetTempVirtualizedPath();
 
-            string jsonFilePath = CreateJsonFile(targetBasePath, "json.json", @"{""property1"":{""property2"":{""property3"":""foo""}}}");
+            string originalJsonContent = @"{""property1"":{""property2"":{""property3"":""foo""}}}";
+
+            string jsonFilePath = CreateJsonFile(targetBasePath, "json.json", originalJsonContent);
 
             IPostAction postAction = new MockPostAction
             {
@@ -88,12 +90,9 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.PostActionTests
                 new MockCreationResult(),
                 targetBasePath);
 
-            Assert.True(result);
+            Assert.False(result);
 
-            JsonNode? modifiedJsonContent = JsonNode.Parse(_engineEnvironmentSettings.Host.FileSystem.ReadAllText(jsonFilePath));
-
-            Assert.NotNull(modifiedJsonContent);
-            Assert.NotNull(modifiedJsonContent["property1"]!["property2"]!["bar"]);
+            Assert.Equal(originalJsonContent, _engineEnvironmentSettings.Host.FileSystem.ReadAllText(jsonFilePath));
         }
 
         [Theory]
