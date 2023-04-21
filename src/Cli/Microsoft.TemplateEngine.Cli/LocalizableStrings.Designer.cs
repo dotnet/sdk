@@ -1235,7 +1235,7 @@ namespace Microsoft.TemplateEngine.Cli {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Successfully modified &apos;{0}&apos;..
+        ///   Looks up a localized string similar to Successfully modified {0}..
         /// </summary>
         internal static string PostAction_ModifyJson_Succeeded {
             get {

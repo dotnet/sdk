@@ -831,7 +831,7 @@ The header is followed by the list of parameters and their errors (might be seve
     <value>Parent property path '{0}' could not be traversed.</value>
   </data>
   <data name="PostAction_ModifyJson_Succeeded" xml:space="preserve">
-    <value>Successfully modified '{0}'.</value>
+    <value>Successfully modified {0}.</value>
   </data>
   <data name="ColumnNameTrusted" xml:space="preserve">
     <value>Trusted</value>
