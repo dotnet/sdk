@@ -11,7 +11,11 @@ Copyright (c) .NET Foundation. All rights reserved.
 -->
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
+  <PropertyGroup>
+    <EnableSdkContainerSupport Condition="'$(EnableSdkContainerSupport)' == ''">true</EnableSdkContainerSupport>
+  </PropertyGroup>
+
   <Import Project="$(MSBuildThisFileDirectory)..\..\..\Containers\build\Microsoft.NET.Build.Containers.props"
-          Condition="Exists('$(MSBuildThisFileDirectory)..\..\..\Containers\build\Microsoft.NET.Build.Containers.props')" />
+          Condition="Exists('$(MSBuildThisFileDirectory)..\..\..\Containers\build\Microsoft.NET.Build.Containers.props') AND '$(EnableSdkContainerSupport)' == 'true'" />
 
 </Project>
