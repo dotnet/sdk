@@ -28,13 +28,15 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.PostActionTests
 
             CreateJsonFile(targetBasePath, "json.json", @"{""property1"":{""property2"":{""property3"":""foo""}}}");
 
+            string parentPropertyPath = "property1:propertyX:property2";
+
             IPostAction postAction = new MockPostAction
             {
                 ActionId = AddJsonPropertyPostActionProcessor.ActionProcessorId,
                 Args = new Dictionary<string, string>
                 {
                     ["jsonFileName"] = "json.json",
-                    ["parentPropertyPath"] = "property1:propertyX:property2",
+                    ["parentPropertyPath"] = parentPropertyPath,
                     ["newJsonPropertyName"] = "bar",
                     ["newJsonPropertyValue"] = "test"
                 }
@@ -57,7 +59,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.PostActionTests
                 targetBasePath);
 
             Assert.False(result);
-            mockReporter.Verify(r => r.WriteLine(LocalizableStrings.PostAction_ModifyJson_Error_ParentPropertyPathInvalid), Times.Once);
+            mockReporter.Verify(r => r.WriteLine(string.Format(LocalizableStrings.PostAction_ModifyJson_Error_ParentPropertyPathInvalid, parentPropertyPath)), Times.Once);
         }
 
         [Fact]
