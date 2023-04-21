@@ -1,5 +1,4 @@
 <Project>
-
   <PropertyGroup>
     <MajorVersion>8</MajorVersion>
     <MinorVersion>0</MinorVersion>
@@ -15,7 +14,6 @@
     <UseVSTestRunner>true</UseVSTestRunner>
     <FlagNetStandard1xDependencies>true</FlagNetStandard1xDependencies>
   </PropertyGroup>
-
   <PropertyGroup>
     <MicrosoftBuildVersion>17.3.0-preview-22302-02</MicrosoftBuildVersion>
     <MicrosoftCodeAnalysisAnalyzersVersion>3.3.4</MicrosoftCodeAnalysisAnalyzersVersion>
@@ -49,5 +47,4 @@
     <MicrosoftBuildLocatorVersion>1.5.5</MicrosoftBuildLocatorVersion>
     <MicrosoftVisualStudioCompositionVersion>17.4.16</MicrosoftVisualStudioCompositionVersion>
   </PropertyGroup>
-
 </Project>
