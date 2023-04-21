@@ -41,15 +41,6 @@ diff --git a/eng/Versions.props b/eng/Versions.props
 index 2d325ec6..e1bc7022 100644
 --- a/eng/Versions.props
 +++ b/eng/Versions.props
-@@ -21,7 +21,7 @@
-     <MicrosoftCodeAnalysisAnalyzersVersion>3.3.4</MicrosoftCodeAnalysisAnalyzersVersion>
-     <MicrosoftExtensionsDependencyInjectionVersion>7.0.0-rc.1.22426.10</MicrosoftExtensionsDependencyInjectionVersion>
-     <!-- Dependencies from https://github.com/dotnet/roslyn -->
--    <MicrosoftNetCompilersToolsetPackageVersion>4.5.0-3.22602.7</MicrosoftNetCompilersToolsetPackageVersion>
-+    <MicrosoftNetCompilersToolsetVersion>4.5.0-3.22602.7</MicrosoftNetCompilersToolsetVersion>
-     <!-- Dependencies from https://github.com/dotnet/command-line-api -->
-     <SystemCommandLineVersion>2.0.0-beta4.22564.1</SystemCommandLineVersion>
-     <SystemCommandLineRenderingVersion>0.4.0-alpha.22564.1</SystemCommandLineRenderingVersion>
 @@ -35,7 +35,7 @@
      <!-- In order tests against the same version of NuGet as the SDK. We have to set this to match. -->
      <NuGetVersion>6.6.0-preview.3.61</NuGetVersion>
