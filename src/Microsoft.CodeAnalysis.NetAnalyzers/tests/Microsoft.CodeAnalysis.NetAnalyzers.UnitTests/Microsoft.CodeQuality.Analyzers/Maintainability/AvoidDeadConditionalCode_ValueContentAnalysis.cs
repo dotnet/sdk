@@ -3184,5 +3184,26 @@ static class Test
 }
 ");
         }
+
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
+        [Fact, WorkItem(6532, "https://github.com/dotnet/roslyn-analyzers/issues/6532")]
+        public Task TestTernaryOperator_NoDiagnosticAsync()
+        {
+            return VerifyCSharpAnalyzerAsync(@"
+using System.Collections.Generic;
+
+class Test
+{
+    void M()
+    {
+        var i = 0;
+        i += M2() ? 1 : 0;
+        _ = i != 0;
+    }
+
+    bool M2() => true;
+}");
+        }
     }
 }
