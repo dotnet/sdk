@@ -32,8 +32,7 @@
     <RepositoryReference Include="roslyn-analyzers" />
     <RepositoryReference Include="aspnetcore" />
     <RepositoryReference Include="deployment-tools" />
-    <!-- TODO: Reenable once format targets net8.0 (https://github.com/dotnet/format/issues/1802) -->
-    <!-- <RepositoryReference Include="format" /> -->
+    <RepositoryReference Include="format" />
     <RepositoryReference Include="nuget-client" />
     <RepositoryReference Include="templating" />
     <RepositoryReference Include="test-templates" />
