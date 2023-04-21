@@ -31,10 +31,9 @@ public class BasicScenarioTests : SmokeTests
         {
             yield return new(nameof(BasicScenarioTests), language, DotNetTemplate.Console,  DotNetActions.Build | DotNetActions.Run | DotNetActions.PublishComplex | DotNetActions.PublishR2R);
             yield return new(nameof(BasicScenarioTests), language, DotNetTemplate.ClassLib, DotNetActions.Build | DotNetActions.Publish);
-            // TODO: Investigate and re-enable - dotnet test fails to find application
-            // yield return new(nameof(BasicScenarioTests), language, DotNetTemplate.XUnit,    DotNetActions.Test);
-            // yield return new(nameof(BasicScenarioTests), language, DotNetTemplate.NUnit,    DotNetActions.Test);
-            // yield return new(nameof(BasicScenarioTests), language, DotNetTemplate.MSTest,   DotNetActions.Test);
+            yield return new(nameof(BasicScenarioTests), language, DotNetTemplate.XUnit,    DotNetActions.Test);
+            yield return new(nameof(BasicScenarioTests), language, DotNetTemplate.NUnit,    DotNetActions.Test);
+            yield return new(nameof(BasicScenarioTests), language, DotNetTemplate.MSTest,   DotNetActions.Test);
         }
     }
 }

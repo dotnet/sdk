@@ -1,0 +1,31 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nikola Milosavljevic <nikolam@microsoft.com>
+Date: Fri, 21 Apr 2023 15:32:28 +0000
+Subject: [PATCH] Fix TFM path for Test CLI package
+
+Backport: https://github.com/dotnet/source-build/issues/3406
+---
+ src/Layout/redist/targets/GenerateLayout.targets | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/src/Layout/redist/targets/GenerateLayout.targets b/src/Layout/redist/targets/GenerateLayout.targets
+index 1bc37d90eb..f83c0b39f1 100644
+--- a/src/Layout/redist/targets/GenerateLayout.targets
++++ b/src/Layout/redist/targets/GenerateLayout.targets
+@@ -195,7 +195,7 @@
+           BeforeTargets="Build">
+     <PropertyGroup>
+       <TestCliNuGetDirectoryTargetFramework Condition="'$(DotNetBuildFromSource)' != 'true'" >netcoreapp3.1</TestCliNuGetDirectoryTargetFramework>
+-      <TestCliNuGetDirectoryTargetFramework Condition="'$(DotNetBuildFromSource)' == 'true'" >net7.0</TestCliNuGetDirectoryTargetFramework>
++      <TestCliNuGetDirectoryTargetFramework Condition="'$(DotNetBuildFromSource)' == 'true'" >net8.0</TestCliNuGetDirectoryTargetFramework>
+       <TestCliNuGetDirectory>$(NuGetPackageRoot)/microsoft.testplatform.cli/$(MicrosoftTestPlatformCLIPackageVersion)/contentFiles/any/$(TestCliNuGetDirectoryTargetFramework)/</TestCliNuGetDirectory>
+     </PropertyGroup>
+     <ItemGroup>
+@@ -210,6 +210,7 @@
+       <TestCliBits Include="$(TestCliNuGetDirectory)**/*"
+                    Exclude="@(TestCliBitsToExclude)" />
+     </ItemGroup>
++    <Error Condition="'@(TestCliBits)' == ''" Text="Something moved around in Test CLI package, adjust code here accordingly. TFM change?" />
+     <Copy SourceFiles="@(TestCliBits)" DestinationFiles="@(TestCliBits->'$(OutputPath)/%(RecursiveDir)%(Filename)%(Extension)')" />
+   </Target>
+ 
