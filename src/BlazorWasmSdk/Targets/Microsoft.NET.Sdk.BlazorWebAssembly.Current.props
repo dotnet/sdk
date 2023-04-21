@@ -14,6 +14,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <OutputType>exe</OutputType>
 
     <RuntimeIdentifier>browser-wasm</RuntimeIdentifier>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
 
     <!-- Trimmer defaults -->
     <PublishTrimmed Condition="'$(PublishTrimmed)' == ''">true</PublishTrimmed>
