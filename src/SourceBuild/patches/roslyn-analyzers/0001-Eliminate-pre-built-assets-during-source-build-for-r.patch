@@ -94,7 +94,7 @@ index 114e30a43..e38f8549f 100644
  
      <!-- Avoid ID conflicts with the package project. -->
      <PackageId>*$(MSBuildProjectFile)*</PackageId>
--    <MicrosoftCodeAnalysisVersion>3.9.0</MicrosoftCodeAnalysisVersion>
+-    <MicrosoftCodeAnalysisVersion>4.0.1</MicrosoftCodeAnalysisVersion>
    </PropertyGroup>
  
    <ItemGroup>
@@ -106,7 +106,7 @@ index a44df8a50..cba084cd5 100644
  
      <!-- Avoid ID conflicts with the package project. -->
      <PackageId>*$(MSBuildProjectFile)*</PackageId>
--    <MicrosoftCodeAnalysisVersion>3.9.0</MicrosoftCodeAnalysisVersion>
+-    <MicrosoftCodeAnalysisVersion>4.0.1</MicrosoftCodeAnalysisVersion>
    </PropertyGroup>
  
    <ItemGroup>
@@ -118,7 +118,7 @@ index 46a4fca6b..c9fa15584 100644
  
      <!-- Avoid ID conflicts with the package project. -->
      <PackageId>*$(MSBuildProjectFile)*</PackageId>
--    <MicrosoftCodeAnalysisVersion>3.9.0</MicrosoftCodeAnalysisVersion>
+-    <MicrosoftCodeAnalysisVersion>4.0.1</MicrosoftCodeAnalysisVersion>
    </PropertyGroup>
  
    <ItemGroup>
