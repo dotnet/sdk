@@ -727,8 +727,8 @@ The header is followed by the list of parameters and their errors (might be seve
         <note />
       </trans-unit>
       <trans-unit id="PostAction_ModifyJson_Succeeded">
-        <source>Successfully modified '{0}'.</source>
-        <target state="new">Successfully modified '{0}'.</target>
+        <source>Successfully modified {0}.</source>
+        <target state="new">Successfully modified {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="PostAction_ProcessStartProcessor_Error_ConfigMissingExecutable">
