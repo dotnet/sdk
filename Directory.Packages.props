@@ -1,8 +1,6 @@
 <Project>
 
   <PropertyGroup>
-    <!-- In order tests against the same version of NuGet as the SDK. We have to set this to match. -->
-    <NuGetVersion>6.6.0-preview.3.57</NuGetVersion>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
 
