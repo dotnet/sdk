@@ -393,7 +393,7 @@ namespace Microsoft.NET.Build.Tasks
 
             if (UsingMicrosoftNETSdkWebAssembly)
             {
-                // WebAssemblySdk is supported for .NET >= 8, it's ok if no pack is added.
+                // WebAssemblySdk is used for .NET >= 6, it's ok if no pack is added.
                 AddToolPack(ToolPackType.WebAssemblySdk, _normalizedTargetFrameworkVersion, packagesToDownload, implicitPackageReferences);
             }
 
