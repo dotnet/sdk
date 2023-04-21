@@ -26,8 +26,7 @@
     <RepositoryReference Include="roslyn-analyzers" />
     <RepositoryReference Include="vstest" />
     <RepositoryReference Include="fsharp" />
-    <!-- TODO: Reenable once format targets net8.0 (https://github.com/dotnet/format/issues/1802) -->
-    <!-- <RepositoryReference Include="format" /> -->
+    <RepositoryReference Include="format" />
     <RepositoryReference Include="deployment-tools" />
     <RepositoryReference Include="razor" />
   </ItemGroup>
