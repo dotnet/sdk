@@ -331,6 +331,7 @@ $@"<Project>
                     ResxSourceGeneratorPackageName => @"
   <ItemGroup>
     <CompilerVisibleProperty Include=""RootNamespace"" />
+    <CompilerVisibleItemMetadata Include=""AdditionalFiles"" MetadataName=""WithCulture"" />
     <CompilerVisibleItemMetadata Include=""AdditionalFiles"" MetadataName=""GenerateSource"" />
     <CompilerVisibleItemMetadata Include=""AdditionalFiles"" MetadataName=""RelativeDir"" />
     <CompilerVisibleItemMetadata Include=""AdditionalFiles"" MetadataName=""OmitGetResourceString"" />
@@ -1675,15 +1676,6 @@ $@"<Project>{GetCommonContents(packageName, categories)}{GetPackageSpecificConte
                           $({NetAnalyzersNugetAssemblyVersionPropertyName}) &lt; $({NetAnalyzersSDKAssemblyVersionPropertyName})""/>
   </Target>",
                     ResxSourceGeneratorPackageName => $@"
-  <ItemGroup>
-    <!-- Enable code generation for resource files. -->
-    <ResxCodeGenerationEmbeddedResource Include=""@(EmbeddedResource)"" Exclude=""**\*.??.resx;**\*.??-??.resx;**\*.??-????.resx"" />
-    <EmbeddedResource Update=""@(ResxCodeGenerationEmbeddedResource)"" Condition=""'%(EmbeddedResource.GenerateSource)' == ''"" GenerateSource=""true"" />
-
-    <ResxNonCodeGenerationEmbeddedResource Include=""@(EmbeddedResource)"" Exclude=""@(CodeGenerationEmbeddedResource)"" />
-    <EmbeddedResource Update=""@(ResxNonCodeGenerationEmbeddedResource)"" Condition=""'%(EmbeddedResource.GenerateSource)' == ''"" GenerateSource=""false"" />
-  </ItemGroup>
-
   <!-- Special handling for embedded resources to show as nested in Solution Explorer -->
   <ItemGroup>
     <!-- Localized embedded resources are just dependent on the parent RESX -->
@@ -1691,6 +1683,17 @@ $@"<Project>{GetCommonContents(packageName, categories)}{GetPackageSpecificConte
   </ItemGroup>
 
 {AddAllResxFilesAsAdditionalFilesTarget}
+
+  <!-- Target to add 'EmbeddedResource' files with '.resx' extension and explicit- or implicit-GenerateSource as analyzer additional files. This only needs to run when SkipAddAllResxFilesAsAdditionalFiles is set to true.
+         Explicit GenerateSource: The embedded resource has GenerateSource=""true""
+         Implicit GenerateSource: The embedded resource did not set GenerateSource, and also does not have WithCulture set to true
+  -->
+  <Target Name=""AddGenerateSourceResxFilesAsAdditionalFiles"" BeforeTargets=""GenerateMSBuildEditorConfigFileCore;CoreCompile"" Condition=""'@(EmbeddedResource)' != '' AND '$(SkipAddAllResxFilesAsAdditionalFiles)' == 'true' AND '$(SkipAddGenerateSourceResxFilesAsAdditionalFiles)' != 'true'"">
+    <ItemGroup>
+      <EmbeddedResourceWithResxExtensionAndGenerateSource Include=""@(EmbeddedResource)"" Condition=""'%(Extension)' == '.resx' AND ('%(EmbeddedResource.GenerateSource)' == 'true' OR ('%(EmbeddedResource.GenerateSource)' != 'false' AND '%(EmbeddedResource.WithCulture)' != 'true'))"" />
+      <AdditionalFiles Include=""@(EmbeddedResourceWithResxExtensionAndGenerateSource)"" />
+    </ItemGroup>
+  </Target>
 ",
                     _ => string.Empty,
                 };
