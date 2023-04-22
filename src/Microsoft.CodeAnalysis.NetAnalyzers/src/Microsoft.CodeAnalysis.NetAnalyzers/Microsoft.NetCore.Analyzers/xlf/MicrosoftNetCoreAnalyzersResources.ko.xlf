@@ -544,12 +544,12 @@
       </trans-unit>
       <trans-unit id="DoNotCallDangerousMethodsInDeserializationMessage">
         <source>When deserializing an instance of class '{0}', method '{1}' can directly or indirectly call dangerous method '{2}'</source>
-        <target state="new">When deserializing an instance of class '{0}', method '{1}' can directly or indirectly call dangerous method '{2}'</target>
+        <target state="translated">클래스 '{0}'의 인스턴스를 역직렬화할 때 '{1}' 메서드가 위험한 메서드 '{2}'을(를) 직접 또는 간접적으로 호출할 수 있습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCallDangerousMethodsInDeserializationTitle">
         <source>Do Not Call Dangerous Methods In Deserialization</source>
-        <target state="new">Do Not Call Dangerous Methods In Deserialization</target>
+        <target state="translated">역직렬화에서 위험한 메서드를 호출하면 안 됨</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCallEnumerableCastOrOfTypeWithIncompatibleTypesDescription">
@@ -557,25 +557,25 @@
 The generic cast (IL 'unbox.any') used by the sequence returned by Enumerable.Cast&lt;T&gt; will throw InvalidCastException at runtime on elements of the types specified.  
 The generic type check (C# 'is' operator/IL 'isinst') used by Enumerable.OfType&lt;T&gt; will never succeed with elements of types specified, resulting in an empty sequence.  
 Widening and user defined conversions are not supported with generic types.</source>
-        <target state="new">Enumerable.Cast&lt;T&gt; and Enumerable.OfType&lt;T&gt; require compatible types to function expectedly.  
-The generic cast (IL 'unbox.any') used by the sequence returned by Enumerable.Cast&lt;T&gt; will throw InvalidCastException at runtime on elements of the types specified.  
-The generic type check (C# 'is' operator/IL 'isinst') used by Enumerable.OfType&lt;T&gt; will never succeed with elements of types specified, resulting in an empty sequence.  
-Widening and user defined conversions are not supported with generic types.</target>
+        <target state="translated">Enumerable.Cast&lt;T&gt; 및 Enumerable.OfType&lt;T&gt;가 제대로 작동하려면 호환되는 형식이 필요합니다.  
+Enumerable.Cast&lt;T&gt;에서 반환된 시퀀스에서 사용하는 일반 캐스트(IL 'unbox.any')는 지정된 형식의 요소에서 런타임에 InvalidCastException을 발생시킵니다.  
+Enumerable.OfType&lt;T&gt;에서 사용하는 제네릭 형식 검사(C# 'is' 연산자/IL 'isinst')는 지정된 형식의 요소로 성공하지 못하여 결과적으로 빈 시퀀스가 됩니다.  
+확대 및 사용자 정의 변환은 일반 형식에서 지원되지 않습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCallEnumerableCastOrOfTypeWithIncompatibleTypesMessageCast">
         <source>Type '{0}' is incompatible with type '{1}' and cast attempts will throw InvalidCastException at runtime</source>
-        <target state="new">Type '{0}' is incompatible with type '{1}' and cast attempts will throw InvalidCastException at runtime</target>
+        <target state="translated">형식 '{0}'은(는) 형식 '{1}'과(와) 호환되지 않으며 캐스트 시도에서 런타임에 InvalidCastException이 발생합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCallEnumerableCastOrOfTypeWithIncompatibleTypesMessageOfType">
         <source>This call will always result in an empty sequence because type '{0}' is incompatible with type '{1}'</source>
-        <target state="new">This call will always result in an empty sequence because type '{0}' is incompatible with type '{1}'</target>
+        <target state="translated">형식 '{0}'이(가) 형식 '{1}'과(와) 호환되지 않기 때문에 이 호출은 항상 빈 시퀀스를 생성합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCallEnumerableCastOrOfTypeWithIncompatibleTypesTitle">
         <source>Do not call Enumerable.Cast&lt;T&gt; or Enumerable.OfType&lt;T&gt; with incompatible types</source>
-        <target state="new">Do not call Enumerable.Cast&lt;T&gt; or Enumerable.OfType&lt;T&gt; with incompatible types</target>
+        <target state="translated">호환되지 않는 형식으로 Enumerable.Cast&lt;T&gt; 또는 Enumerable.OfType&lt;T&gt;를 호출하지 마세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCallToImmutableCollectionOnAnImmutableCollectionValueMessage">
@@ -1000,17 +1000,17 @@ Widening and user defined conversions are not supported with generic types.</tar
       </trans-unit>
       <trans-unit id="DoNotUseReferenceEqualsWithValueTypesComparerMessage">
         <source>Do not pass an argument with value type '{0}' to the 'Equals' method on 'ReferenceEqualityComparer'. Due to value boxing, this call to 'Equals' can return an unexpected result. Consider using 'EqualityComparer' instead, or pass reference type arguments if you intend to use 'ReferenceEqualityComparer'.</source>
-        <target state="new">Do not pass an argument with value type '{0}' to the 'Equals' method on 'ReferenceEqualityComparer'. Due to value boxing, this call to 'Equals' can return an unexpected result. Consider using 'EqualityComparer' instead, or pass reference type arguments if you intend to use 'ReferenceEqualityComparer'.</target>
+        <target state="translated">값 형식이 '{0}'인 인수를 'ReferenceEqualityComparer'의 'Equals' 메소드에 전달하지 마세요. 값 boxing으로 인해 'Equals'에 대한 이 호출은 예기치 않은 결과를 반환할 수 있습니다. 대신 'EqualityComparer'를 사용하거나 'ReferenceEqualityComparer'를 사용하려는 경우 참조 형식 인수를 전달하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseReferenceEqualsWithValueTypesDescription">
         <source>Value type typed arguments are uniquely boxed for each call to this method, therefore the result can be unexpected.</source>
-        <target state="new">Value type typed arguments are uniquely boxed for each call to this method, therefore the result can be unexpected.</target>
+        <target state="translated">값 형식 형식 인수는 이 메소드에 대한 각 호출에 대해 고유하게 boxing되므로 예상하지 못한 결과가 나올 수 있습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseReferenceEqualsWithValueTypesMethodMessage">
         <source>Do not pass an argument with value type '{0}' to 'ReferenceEquals'. Due to value boxing, this call to 'ReferenceEquals' can return an unexpected result. Consider using 'Equals' instead, or pass reference type arguments if you intend to use 'ReferenceEquals'.</source>
-        <target state="new">Do not pass an argument with value type '{0}' to 'ReferenceEquals'. Due to value boxing, this call to 'ReferenceEquals' can return an unexpected result. Consider using 'Equals' instead, or pass reference type arguments if you intend to use 'ReferenceEquals'.</target>
+        <target state="translated">값 형식이 '{0}'인 인수를 'ReferenceEquals'에 전달하지 마세요. 값 boxing으로 인해 'ReferenceEquals'에 대한 이 호출은 예기치 않은 결과를 반환할 수 있습니다. 대신 'Equals'를 사용하거나 'ReferenceEquals'를 사용하려는 경우 참조 형식 인수를 전달하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseReferenceEqualsWithValueTypesTitle">
@@ -1960,12 +1960,12 @@ Widening and user defined conversions are not supported with generic types.</tar
       </trans-unit>
       <trans-unit id="PreferCountOverAnyCodeFixTitle">
         <source>Use 'Count' check instead of 'Any()'</source>
-        <target state="new">Use 'Count' check instead of 'Any()'</target>
+        <target state="translated">'Any()' 대신 'Count' 확인 사용</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferCountOverAnyMessage">
         <source>Prefer comparing 'Count' to 0 rather than using 'Any()', both for clarity and for performance</source>
-        <target state="new">Prefer comparing 'Count' to 0 rather than using 'Any()', both for clarity and for performance</target>
+        <target state="translated">명확성과 성능을 위해 'Any()'를 사용하는 것보다 'Count'를 0과 비교하는 것이 좋습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferDictionaryContainsKeyCodeFixTitle">
@@ -2025,32 +2025,32 @@ Widening and user defined conversions are not supported with generic types.</tar
       </trans-unit>
       <trans-unit id="PreferIsEmptyOverAnyCodeFixTitle">
         <source>Use 'IsEmpty' check instead of 'Any()'</source>
-        <target state="new">Use 'IsEmpty' check instead of 'Any()'</target>
+        <target state="translated">'Any()' 대신 'IsEmpty' 확인 사용</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferIsEmptyOverAnyMessage">
         <source>Prefer an 'IsEmpty' check rather than using 'Any()', both for clarity and for performance</source>
-        <target state="new">Prefer an 'IsEmpty' check rather than using 'Any()', both for clarity and for performance</target>
+        <target state="translated">명확성과 성능을 위해 'Any()'를 사용하는 것보다 'IsEmpty' 확인 선호</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferLengthCountIsEmptyOverAnyDescription">
         <source>Prefer using 'IsEmpty', 'Count' or 'Length' properties whichever available, rather than calling 'Enumerable.Any()'. The intent is clearer and it is more performant than using 'Enumerable.Any()' extension method.</source>
-        <target state="new">Prefer using 'IsEmpty', 'Count' or 'Length' properties whichever available, rather than calling 'Enumerable.Any()'. The intent is clearer and it is more performant than using 'Enumerable.Any()' extension method.</target>
+        <target state="translated">'Enumerable.Any()'를 호출하는 것보다 사용 가능한 'IsEmpty', 'Count' 또는 'Length' 속성을 사용하는 것이 좋습니다. 의도가 더 명확하고 'Enumerable.Any()' 확장 방법을 사용하는 것보다 더 성능이 좋습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferLengthCountIsEmptyOverAnyTitle">
         <source>Avoid using 'Enumerable.Any()' extension method</source>
-        <target state="new">Avoid using 'Enumerable.Any()' extension method</target>
+        <target state="translated">'Enumerable.Any()' 확장 메서드 사용 금지</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferLengthOverAnyCodeFixTitle">
         <source>Use 'Length' check instead of 'Any()'</source>
-        <target state="new">Use 'Length' check instead of 'Any()'</target>
+        <target state="translated">'Any()' 대신 'Length' 확인 사용</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferLengthOverAnyMessage">
         <source>Prefer comparing 'Length' to 0 rather than using 'Any()', both for clarity and for performance</source>
-        <target state="new">Prefer comparing 'Length' to 0 rather than using 'Any()', both for clarity and for performance</target>
+        <target state="translated">명확성과 성능을 위해 'Any()'를 사용하는 것보다 'Length'를 0과 비교하는 것이 좋습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferStreamAsyncMemoryOverloadsDescription">
@@ -2755,7 +2755,7 @@ Widening and user defined conversions are not supported with generic types.</tar
       </trans-unit>
       <trans-unit id="UseConcreteTypeForPropertyMessage">
         <source>Change type of property '{0}' from '{1}' to '{2}' for improved performance</source>
-        <target state="new">Change type of property '{0}' from '{1}' to '{2}' for improved performance</target>
+        <target state="translated">성능 향상을 위해 속성 형식 '{0}'을(를) '{1}'에서 '{2}'(으)로 변경</target>
         <note />
       </trans-unit>
       <trans-unit id="UseConcreteTypeTitle">

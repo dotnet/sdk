@@ -544,12 +544,12 @@
       </trans-unit>
       <trans-unit id="DoNotCallDangerousMethodsInDeserializationMessage">
         <source>When deserializing an instance of class '{0}', method '{1}' can directly or indirectly call dangerous method '{2}'</source>
-        <target state="new">When deserializing an instance of class '{0}', method '{1}' can directly or indirectly call dangerous method '{2}'</target>
+        <target state="translated">反序列化类'{0}'的实例时，方法'{1}'可以直接或间接调用危险方法'{2}'</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCallDangerousMethodsInDeserializationTitle">
         <source>Do Not Call Dangerous Methods In Deserialization</source>
-        <target state="new">Do Not Call Dangerous Methods In Deserialization</target>
+        <target state="translated">在反序列化中不要调用危险方法</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCallEnumerableCastOrOfTypeWithIncompatibleTypesDescription">
@@ -557,25 +557,25 @@
 The generic cast (IL 'unbox.any') used by the sequence returned by Enumerable.Cast&lt;T&gt; will throw InvalidCastException at runtime on elements of the types specified.  
 The generic type check (C# 'is' operator/IL 'isinst') used by Enumerable.OfType&lt;T&gt; will never succeed with elements of types specified, resulting in an empty sequence.  
 Widening and user defined conversions are not supported with generic types.</source>
-        <target state="new">Enumerable.Cast&lt;T&gt; and Enumerable.OfType&lt;T&gt; require compatible types to function expectedly.  
-The generic cast (IL 'unbox.any') used by the sequence returned by Enumerable.Cast&lt;T&gt; will throw InvalidCastException at runtime on elements of the types specified.  
-The generic type check (C# 'is' operator/IL 'isinst') used by Enumerable.OfType&lt;T&gt; will never succeed with elements of types specified, resulting in an empty sequence.  
-Widening and user defined conversions are not supported with generic types.</target>
+        <target state="translated">Enumerable.Cast&lt;T&gt;和 Enumerable.OfType&lt;T&gt; 需要兼容类型才能正常工作。 
+Enumerable.Cast&lt;T&gt; 返回的序列使用的泛型强制转换 (IL 'unbox.any') 将在运行时对指定类型的元素引发 InvalidCastException。 
+Enumerable.OfType&lt;T&gt; 使用的泛型类型检查 (C# 'is' operator/IL 'isinst') 将从不会成功与指定类型的元素一起使用，从而导致一个空序列。
+泛型类型不支持扩大转换和用户定义的转换。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCallEnumerableCastOrOfTypeWithIncompatibleTypesMessageCast">
         <source>Type '{0}' is incompatible with type '{1}' and cast attempts will throw InvalidCastException at runtime</source>
-        <target state="new">Type '{0}' is incompatible with type '{1}' and cast attempts will throw InvalidCastException at runtime</target>
+        <target state="translated">类型'{0}'与类型'{1}'不兼容，强制转换尝试将在运行时引发 InvalidCastException</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCallEnumerableCastOrOfTypeWithIncompatibleTypesMessageOfType">
         <source>This call will always result in an empty sequence because type '{0}' is incompatible with type '{1}'</source>
-        <target state="new">This call will always result in an empty sequence because type '{0}' is incompatible with type '{1}'</target>
+        <target state="translated">此调用将始终导致空序列，因为类型'{0}'与类型'{1}'不兼容</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCallEnumerableCastOrOfTypeWithIncompatibleTypesTitle">
         <source>Do not call Enumerable.Cast&lt;T&gt; or Enumerable.OfType&lt;T&gt; with incompatible types</source>
-        <target state="new">Do not call Enumerable.Cast&lt;T&gt; or Enumerable.OfType&lt;T&gt; with incompatible types</target>
+        <target state="translated">请勿使用不兼容的类型调用 Enumerable.Cast&lt;T&gt; 或 Enumerable.OfType&lt;T&gt;</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCallToImmutableCollectionOnAnImmutableCollectionValueMessage">
@@ -1000,17 +1000,17 @@ Widening and user defined conversions are not supported with generic types.</tar
       </trans-unit>
       <trans-unit id="DoNotUseReferenceEqualsWithValueTypesComparerMessage">
         <source>Do not pass an argument with value type '{0}' to the 'Equals' method on 'ReferenceEqualityComparer'. Due to value boxing, this call to 'Equals' can return an unexpected result. Consider using 'EqualityComparer' instead, or pass reference type arguments if you intend to use 'ReferenceEqualityComparer'.</source>
-        <target state="new">Do not pass an argument with value type '{0}' to the 'Equals' method on 'ReferenceEqualityComparer'. Due to value boxing, this call to 'Equals' can return an unexpected result. Consider using 'EqualityComparer' instead, or pass reference type arguments if you intend to use 'ReferenceEqualityComparer'.</target>
+        <target state="translated">不要将值类型为 '{0}' 的参数传递到 'ReferenceEqualityComparer' 上的 'Equals' 方法。由于数据封装，此对 'Equals' 的调用可能会返回意外的结果。如果打算使用 'ReferenceEqualityComparer'，请考虑改用 'EqualityComparer' 或传递引用类型参数。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseReferenceEqualsWithValueTypesDescription">
         <source>Value type typed arguments are uniquely boxed for each call to this method, therefore the result can be unexpected.</source>
-        <target state="new">Value type typed arguments are uniquely boxed for each call to this method, therefore the result can be unexpected.</target>
+        <target state="translated">每次调用此方法时，值类型的类型化参数都唯一装箱，因此结果可能是意外的。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseReferenceEqualsWithValueTypesMethodMessage">
         <source>Do not pass an argument with value type '{0}' to 'ReferenceEquals'. Due to value boxing, this call to 'ReferenceEquals' can return an unexpected result. Consider using 'Equals' instead, or pass reference type arguments if you intend to use 'ReferenceEquals'.</source>
-        <target state="new">Do not pass an argument with value type '{0}' to 'ReferenceEquals'. Due to value boxing, this call to 'ReferenceEquals' can return an unexpected result. Consider using 'Equals' instead, or pass reference type arguments if you intend to use 'ReferenceEquals'.</target>
+        <target state="translated">请勿将值类型为 '{0}' 的参数传递到 'ReferenceEquals'。由于数据封装，此对 'ReferenceEquals' 的调用可能会返回意外的结果。如果打算使用 'ReferenceEquals'，请考虑改用 'Equals' 或传递引用类型参数。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseReferenceEqualsWithValueTypesTitle">
@@ -1960,12 +1960,12 @@ Widening and user defined conversions are not supported with generic types.</tar
       </trans-unit>
       <trans-unit id="PreferCountOverAnyCodeFixTitle">
         <source>Use 'Count' check instead of 'Any()'</source>
-        <target state="new">Use 'Count' check instead of 'Any()'</target>
+        <target state="translated">使用 'Count' 检查而不是 'Any()'</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferCountOverAnyMessage">
         <source>Prefer comparing 'Count' to 0 rather than using 'Any()', both for clarity and for performance</source>
-        <target state="new">Prefer comparing 'Count' to 0 rather than using 'Any()', both for clarity and for performance</target>
+        <target state="translated">更喜欢将 'Count' 与 0 进行比较，而不是使用 'Any()'，这既是为了清楚明了，也是为了提高性能</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferDictionaryContainsKeyCodeFixTitle">
@@ -2025,32 +2025,32 @@ Widening and user defined conversions are not supported with generic types.</tar
       </trans-unit>
       <trans-unit id="PreferIsEmptyOverAnyCodeFixTitle">
         <source>Use 'IsEmpty' check instead of 'Any()'</source>
-        <target state="new">Use 'IsEmpty' check instead of 'Any()'</target>
+        <target state="translated">使用 'IsEmpty' 检查而不是'Any()'</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferIsEmptyOverAnyMessage">
         <source>Prefer an 'IsEmpty' check rather than using 'Any()', both for clarity and for performance</source>
-        <target state="new">Prefer an 'IsEmpty' check rather than using 'Any()', both for clarity and for performance</target>
+        <target state="translated">首选 'IsEmpty'检查，而不是使用 'Any()'，这既是为了清楚明了，也是为了提高性能</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferLengthCountIsEmptyOverAnyDescription">
         <source>Prefer using 'IsEmpty', 'Count' or 'Length' properties whichever available, rather than calling 'Enumerable.Any()'. The intent is clearer and it is more performant than using 'Enumerable.Any()' extension method.</source>
-        <target state="new">Prefer using 'IsEmpty', 'Count' or 'Length' properties whichever available, rather than calling 'Enumerable.Any()'. The intent is clearer and it is more performant than using 'Enumerable.Any()' extension method.</target>
+        <target state="translated">首选使用可用的 'IsEmpty'、'Count' 或 'Length' 属性，而不是调用 'Enumerable.Any()'。意向更清晰，其性能高于使用 'Enumerable.Any() 扩展方法。</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferLengthCountIsEmptyOverAnyTitle">
         <source>Avoid using 'Enumerable.Any()' extension method</source>
-        <target state="new">Avoid using 'Enumerable.Any()' extension method</target>
+        <target state="translated">避免使用 'Enumerable.Any()' 扩展方法</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferLengthOverAnyCodeFixTitle">
         <source>Use 'Length' check instead of 'Any()'</source>
-        <target state="new">Use 'Length' check instead of 'Any()'</target>
+        <target state="translated">使用 'Length' 检查而非 'Any()'</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferLengthOverAnyMessage">
         <source>Prefer comparing 'Length' to 0 rather than using 'Any()', both for clarity and for performance</source>
-        <target state="new">Prefer comparing 'Length' to 0 rather than using 'Any()', both for clarity and for performance</target>
+        <target state="translated">为了清楚起见和提高性能，首选将 'Length'与 0 进行比较，而不是使用 'Any()'。</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferStreamAsyncMemoryOverloadsDescription">
@@ -2755,7 +2755,7 @@ Widening and user defined conversions are not supported with generic types.</tar
       </trans-unit>
       <trans-unit id="UseConcreteTypeForPropertyMessage">
         <source>Change type of property '{0}' from '{1}' to '{2}' for improved performance</source>
-        <target state="new">Change type of property '{0}' from '{1}' to '{2}' for improved performance</target>
+        <target state="translated">将属性 '{0}' 的类型从 '{1}'更改为 '{2}'，以提高性能</target>
         <note />
       </trans-unit>
       <trans-unit id="UseConcreteTypeTitle">
