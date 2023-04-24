@@ -20,8 +20,6 @@
 **/TestCert*.pfx
 **/tests/*
 
-src/arcade/src/Microsoft.DotNet.SignTool.Tests/*
-
 src/aspnetcore/**/samples/*
 src/aspnetcore/**/TestCertificates/*
 src/aspnetcore/src/*.eot

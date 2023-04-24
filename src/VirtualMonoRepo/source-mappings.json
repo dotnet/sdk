@@ -52,7 +52,12 @@
     "mappings": [
         {
             "name": "arcade",
-            "defaultRemote": "https://github.com/dotnet/arcade"
+            "defaultRemote": "https://github.com/dotnet/arcade",
+            "exclude": [
+                "src/Microsoft.DotNet.SignTool.Tests/*.mpack",
+                "src/Microsoft.DotNet.SignTool.Tests/*.msi",
+                "src/Microsoft.DotNet.SignTool.Tests/*.vsix"
+            ]
         },
         {
             "name": "aspnetcore",
