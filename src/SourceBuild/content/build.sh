@@ -1,22 +1,30 @@
 #!/usr/bin/env bash
+
+### Usage: $0 [options]
+###
+### Options:
+###   --clean-while-building       Cleans each repo after building (reduces disk space usage)
+###   --online                     Build using online sources
+###   --poison                     Build with poisoning checks
+###   --run-smoke-test             Don't build; run smoke tests
+###   --source-repository <URL>    Source Link repository URL, required when building from tarball
+###   --source-version <SHA>       Source Link revision, required when building from tarball
+###   --release-manifest <FILE>    A JSON file, an alternative source of Source Link metadata
+###   --use-mono-runtime           Output uses the mono runtime
+###   --with-packages <DIR>        Use the specified directory of previously-built packages
+###   --with-sdk <DIR>             Use the SDK in the specified directory for bootstrapping
+###
+### Use -- to send the remaining arguments to MSBuild
+
 set -euo pipefail
 IFS=$'\n\t'
 
-usage() {
-    echo "usage: $0 [options]"
-    echo "options:"
-    echo "  --clean-while-building             cleans each repo after building (reduces disk space usage)"
-    echo "  --online                           build using online sources"
-    echo "  --poison                           build with poisoning checks"
-    echo "  --run-smoke-test                   don't build; run smoke tests"
-    echo "  --use-mono-runtime                 output uses the mono runtime"
-    echo "  --with-packages <dir>              use the specified directory of previously-built packages"
-    echo "  --with-sdk <dir>                   use the SDK in the specified directory for bootstrapping"
-    echo "use -- to send the remaining arguments to MSBuild"
-    echo ""
-}
-
+source="${BASH_SOURCE[0]}"
 SCRIPT_ROOT="$(cd -P "$( dirname "$0" )" && pwd)"
+
+function print_help () {
+    sed -n '/^### /,/^$/p' "$source" | cut -b 5-
+}
 
 MSBUILD_ARGUMENTS=("-flp:v=detailed")
 CUSTOM_PACKAGES_DIR=''
@@ -28,67 +36,125 @@ packagesRestoredDir="${packagesDir}restored/"
 packagesPreviouslySourceBuiltDir="${packagesDir}previously-source-built/"
 CUSTOM_SDK_DIR=''
 
+sourceRepository=''
+sourceVersion=''
+releaseManifest=''
+
 while :; do
-    if [ $# -le 0 ]; then
-        break
+  if [ $# -le 0 ]; then
+    break
+  fi
+
+  lowerI="$(echo "$1" | awk '{print tolower($0)}')"
+  case $lowerI in
+    --clean-while-building)
+      MSBUILD_ARGUMENTS+=( "-p:CleanWhileBuilding=true")
+      ;;
+    --online)
+      MSBUILD_ARGUMENTS+=( "-p:BuildWithOnlineSources=true")
+      ;;
+    --poison)
+      MSBUILD_ARGUMENTS+=( "-p:EnablePoison=true")
+      ;;
+    --run-smoke-test)
+      alternateTarget=true
+      runningSmokeTests=true
+      MSBUILD_ARGUMENTS+=( "-t:RunSmokeTest" )
+      ;;
+    --source-repository)
+      sourceRepository="$2"
+      shift
+      ;;
+    --source-version)
+      sourceVersion="$2"
+      shift
+      ;;
+    --release-manifest)
+      releaseManifest="$2"
+      shift
+      ;;
+    --use-mono-runtime)
+      MSBUILD_ARGUMENTS+=( "/p:SourceBuildUseMonoRuntime=true" )
+      ;;
+    --with-packages)
+      CUSTOM_PACKAGES_DIR="$(cd -P "$2" && pwd)"
+      if [ ! -d "$CUSTOM_PACKAGES_DIR" ]; then
+          echo "Custom prviously built packages directory '$CUSTOM_PACKAGES_DIR' does not exist"
+          exit 1
+      fi
+      shift
+      ;;
+    --with-sdk)
+      CUSTOM_SDK_DIR="$(cd -P "$2" && pwd)"
+      if [ ! -d "$CUSTOM_SDK_DIR" ]; then
+          echo "Custom SDK directory '$CUSTOM_SDK_DIR' does not exist"
+          exit 1
+      fi
+      if [ ! -x "$CUSTOM_SDK_DIR/dotnet" ]; then
+          echo "Custom SDK '$CUSTOM_SDK_DIR/dotnet' does not exist or is not executable"
+          exit 1
+      fi
+      shift
+      ;;
+    --)
+      shift
+      echo "Detected '--': passing remaining parameters '$@' as build.sh arguments."
+      break
+      ;;
+    '-?'|-h|--help)
+      print_help
+      exit 0
+      ;;
+    *)
+      echo "Unrecognized argument '$1'"
+      print_help
+      exit 1
+      ;;
+  esac
+  shift
+done
+
+GIT_DIR="$SCRIPT_ROOT/.git"
+if [ -f "$GIT_DIR/index" ]; then # We check for index because if outside of git, we create config and HEAD manually
+  if [ -n "$sourceRepository" ] || [ -n "$sourceVersion" ] || [ -n "$releaseManifest" ]; then
+    echo "ERROR: Source Link arguments cannot be used in a git repository"
+    exit 1
+  fi
+else
+  if [ -z "$releaseManifest" ]; then
+    if [ -z "$sourceRepository" ] || [ -z "$sourceVersion" ]; then
+      echo "ERROR: $SCRIPT_ROOT is not a git repository, either --release-manifest or --source-repository and --source-version must be specified"
+      exit 1
+    fi
+  else
+    if [ -n "$sourceRepository" ] || [ -n "$sourceVersion" ]; then
+      echo "ERROR: --release-manifest cannot be specified together with --source-repository and --source-version"
+      exit 1
     fi
 
-    lowerI="$(echo "$1" | awk '{print tolower($0)}')"
-    case $lowerI in
-        --clean-while-building)
-            MSBUILD_ARGUMENTS+=( "-p:CleanWhileBuilding=true")
-            ;;
-        --online)
-            MSBUILD_ARGUMENTS+=( "-p:BuildWithOnlineSources=true")
-            ;;
-        --poison)
-            MSBUILD_ARGUMENTS+=( "-p:EnablePoison=true")
-            ;;
-        --run-smoke-test)
-            alternateTarget=true
-            runningSmokeTests=true
-            MSBUILD_ARGUMENTS+=( "-t:RunSmokeTest" )
-            ;;
-        --use-mono-runtime)
-            MSBUILD_ARGUMENTS+=( "/p:SourceBuildUseMonoRuntime=true" )
-            ;;
-        --with-packages)
-            CUSTOM_PACKAGES_DIR="$(cd -P "$2" && pwd)"
-            if [ ! -d "$CUSTOM_PACKAGES_DIR" ]; then
-                echo "Custom prviously built packages directory '$CUSTOM_PACKAGES_DIR' does not exist"
-                exit 1
-            fi
-            shift
-            ;;
-        --with-sdk)
-            CUSTOM_SDK_DIR="$(cd -P "$2" && pwd)"
-            if [ ! -d "$CUSTOM_SDK_DIR" ]; then
-                echo "Custom SDK directory '$CUSTOM_SDK_DIR' does not exist"
-                exit 1
-            fi
-            if [ ! -x "$CUSTOM_SDK_DIR/dotnet" ]; then
-                echo "Custom SDK '$CUSTOM_SDK_DIR/dotnet' does not exist or is not executable"
-                exit 1
-            fi
-            shift
-            ;;
-        --)
-            shift
-            echo "Detected '--': passing remaining parameters '$@' as build.sh arguments."
-            break
-            ;;
-        '-?'|-h|--help)
-            usage
-            exit 0
-            ;;
-        *)
-            echo "Unrecognized argument '$1'"
-            usage
-            exit 1
-            ;;
-    esac
-    shift
-done
+    get_property() {
+      local json_file_path="$1"
+      local property_name="$2"
+      grep -oP '(?<="'$property_name'": ")[^"]*' "$json_file_path"
+    }
+
+    sourceRepository=$(get_property "$releaseManifest" sourceRepository) \
+      || (echo "ERROR: Failed to find sourceRepository in $releaseManifest" && exit 1)
+    sourceVersion=$(get_property "$releaseManifest" sourceVersion) \
+      || (echo "ERROR: Failed to find sourceVersion in $releaseManifest" && exit 1)
+
+    if [ -z "$sourceRepository" ] || [ -z "$sourceVersion" ]; then
+      echo "ERROR: sourceRepository and sourceVersion must be specified in $releaseManifest"
+      exit 1
+    fi
+  fi
+
+  # We need to add "fake" .git/ files when not building from a git repository
+  mkdir -p "$GIT_DIR"
+  echo '[remote "origin"]' > "$GIT_DIR/config"
+  echo "url=\"$sourceRepository\"" >> "$GIT_DIR/config"
+  echo "$sourceVersion" > "$GIT_DIR/HEAD"
+fi
 
 if [ "$CUSTOM_PACKAGES_DIR" != "" ]; then
   if [ "$runningSmokeTests" == "true" ]; then
