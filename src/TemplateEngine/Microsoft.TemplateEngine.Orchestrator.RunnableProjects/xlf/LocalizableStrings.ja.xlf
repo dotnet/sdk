@@ -4,25 +4,25 @@
     <body>
       <trans-unit id="Authoring_CONFIG0201_PostActionIdIsNotUnique">
         <source>Id of the post action '{0}' at index '{1}' is not unique. Only the first post action that uses this id will be localized.</source>
-        <target state="new">Id of the post action '{0}' at index '{1}' is not unique. Only the first post action that uses this id will be localized.</target>
+        <target state="translated">インデックス '{1}' の投稿アクション '{0}' の ID が一意ではありません。この ID を使用する最初の投稿アクションのみがローカライズされます。</target>
         <note>{0} is any identifier string that user provided in the file. Such as "myPostAction", "firstPostAction", "postAction1" etc.
 {1} is a number representing the zero-based index of the post action. Such as "5", or "0".</note>
       </trans-unit>
       <trans-unit id="Authoring_CONFIG0202_PostActionMustHaveActionId">
         <source>Post action at index '{0}' should have an 'actionId' to declare the action to be executed.</source>
-        <target state="new">Post action at index '{0}' should have an 'actionId' to declare the action to be executed.</target>
+        <target state="translated">インデックス '{0}' の投稿アクションには、実行するアクションを宣言する 'actionId' が必要です。</target>
         <note>{0} is a whole number representing the zero-based index of the post action. Such as "5" or "0".
 Do not localize: actionId</note>
       </trans-unit>
       <trans-unit id="Authoring_CONFIG0203_ManualInstructionIdIsNotUnique">
         <source>'id' of the manual instruction '{0}' at index {1} is not unique. Only the first manual instruction that uses this id will be localized.</source>
-        <target state="new">'id' of the manual instruction '{0}' at index {1} is not unique. Only the first manual instruction that uses this id will be localized.</target>
+        <target state="translated">インデックス {1} の手動手順 {0} の 'ID' が一意ではありません。この ID を使用する最初の手動手順のみがローカライズされます。</target>
         <note>{0} is any identifier string that user provided in the file. Such as: "myInstruction", "firstInstruction", "instruction1" etc.
 {1} is a whole number representing the zero-based index of the manual instruction. Such as "5", or "0".</note>
       </trans-unit>
       <trans-unit id="Authoring_CONFIG0204_UnknownArgumentForReplace">
         <source>The argument '{0}' configured in '{1}' is not listed in '{2}' and will be skipped for processing.</source>
-        <target state="new">The argument '{0}' configured in '{1}' is not listed in '{2}' and will be skipped for processing.</target>
+        <target state="translated">'{1}' で構成された引数 '{0}' は、'{2}' に一覧表示されていないので、処理のためにスキップされます。</target>
         <note />
       </trans-unit>
       <trans-unit id="Authoring_InvalidJsonElementInLocalizationFile">
