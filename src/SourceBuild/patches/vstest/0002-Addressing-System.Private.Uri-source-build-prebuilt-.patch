@@ -1,0 +1,24 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Michael Simons <msimons@microsoft.com>
+Date: Mon, 24 Apr 2023 13:46:10 +0000
+Subject: [PATCH] Addressing System.Private.Uri source-build prebuilt in
+ testhost
+
+Backport: https://github.com/microsoft/vstest/pull/4414
+---
+ src/testhost.arm64/testhost.arm64.csproj | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/testhost.arm64/testhost.arm64.csproj b/src/testhost.arm64/testhost.arm64.csproj
+index 606f41c88..f062eae78 100644
+--- a/src/testhost.arm64/testhost.arm64.csproj
++++ b/src/testhost.arm64/testhost.arm64.csproj
+@@ -37,7 +37,7 @@
+     </ProjectReference>
+ 
+     <!-- CVE-2019-0657, CVE-2019-0980 and CVE-2019-0981 mitigation -->
+-    <PackageReference Include="System.Private.Uri" Version="$(SystemUriVersion)" />
++    <PackageReference Include="System.Private.Uri" Version="$(SystemUriVersion)" Condition="'$(DotNetBuildFromSource)' != 'true'" />
+     <PackageReference Include="Microsoft.NETCore.Targets" Version="1.1.4" Condition=" $(TargetFramework.StartsWith('net4')) " />
+     <!-- CVE-2019-0657, CVE-2019-0980 and CVE-2019-0981 mitigation -->
+   </ItemGroup>
