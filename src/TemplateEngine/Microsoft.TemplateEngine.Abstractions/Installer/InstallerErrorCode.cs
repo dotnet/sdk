@@ -51,6 +51,11 @@ namespace Microsoft.TemplateEngine.Abstractions.Installer
         /// <summary>
         /// The requested package is invalid and cannot be processed.
         /// </summary>
-        InvalidPackage = 8
+        InvalidPackage = 8,
+
+        /// <summary>
+        /// The requested package has vulnerabilities and can only be processed with --force.
+        /// </summary>
+        VulnerablePackage = 9
     }
 }

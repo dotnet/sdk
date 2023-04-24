@@ -157,6 +157,11 @@
         <target state="translated">ホスト定義パラメーター</target>
         <note />
       </trans-unit>
+      <trans-unit id="NuGetApiPackageManager_DownloadError_VulnerablePackage">
+        <source>Found package is vulnerable source: {0}</source>
+        <target state="new">Found package is vulnerable source: {0}</target>
+        <note />
+      </trans-unit>
       <trans-unit id="NuGetApiPackageManager_Error_FailedToLoadSource">
         <source>Failed to load the NuGet source {0}.</source>
         <target state="translated">NuGet ソース {0} の読み込みに失敗しました。</target>
@@ -180,6 +185,11 @@
       <trans-unit id="NuGetApiPackageManager_Error_NoSources">
         <source>No NuGet sources are defined or enabled.</source>
         <target state="translated">NuGet ソースが定義されていないか、有効になっていません。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NuGetApiPackageManager_UpdateCheckError_VulnerablePackage">
+        <source>The checked package {0} is vulnerable.</source>
+        <target state="new">The checked package {0} is vulnerable.</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetApiPackageManager_Warning_FailedToDelete">
@@ -281,6 +291,16 @@ Details: {1}.</source>
 Details: {1}.</source>
         <target state="translated">パッケージ {0} の更新プログラムを確認できませんでした。
 詳細: {1}。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NuGetInstaller_InstallResult_Error_VulnerablePackage">
+        <source>The requested package {0} has vulnerabilities.</source>
+        <target state="new">The requested package {0} has vulnerabilities.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NuGetInstaller_UpdateCheck_Error_VulnerablePackage">
+        <source>The checked package {0} has vulnerabilities.</source>
+        <target state="new">The checked package {0} has vulnerabilities.</target>
         <note />
       </trans-unit>
       <trans-unit id="OSConstraint_Error_InvalidOSName">

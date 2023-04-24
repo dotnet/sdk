@@ -223,6 +223,12 @@
   <data name="HostParametersBindSource_Name" xml:space="preserve">
     <value>Host defined parameters</value>
   </data>
+  <data name="NuGetApiPackageManager_UpdateCheckError_VulnerablePackage" xml:space="preserve">
+    <value>The checked package {0} is vulnerable.</value>
+  </data>
+  <data name="NuGetApiPackageManager_DownloadError_VulnerablePackage" xml:space="preserve">
+    <value>Found package is vulnerable source: {0}</value>
+  </data>
   <data name="NuGetApiPackageManager_Error_FailedToLoadSource" xml:space="preserve">
     <value>Failed to load the NuGet source {0}.</value>
   </data>
@@ -275,6 +281,9 @@ Details: {1}.</value>
   <data name="NuGetInstaller_InstallResut_Error_InvalidPackage" xml:space="preserve">
     <value>The NuGet package {0} is invalid.</value>
   </data>
+  <data name="NuGetInstaller_InstallResult_Error_VulnerablePackage" xml:space="preserve">
+    <value>The requested package {0} has vulnerabilities.</value>
+  </data>
   <data name="NuGetInstaller_InstallResut_Error_InvalidSources" xml:space="preserve">
     <value>The configured NuGet sources are invalid: {0}.</value>
   </data>
@@ -293,6 +302,9 @@ Details: {1}.</value>
   <data name="NuGetInstaller_InstallResut_Error_UninstallGeneric" xml:space="preserve">
     <value>Failed to uninstall the package {0}.
 Details: {1}.</value>
+  </data>
+  <data name="NuGetInstaller_UpdateCheck_Error_VulnerablePackage" xml:space="preserve">
+    <value>The checked package {0} has vulnerabilities.</value>
   </data>
   <data name="NuGetInstaller_InstallResut_Error_UpdateCheckGeneric" xml:space="preserve">
     <value>Failed to check the update for the package {0}.

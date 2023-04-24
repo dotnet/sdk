@@ -58,14 +58,19 @@ namespace Microsoft.TemplateEngine.Edge.Installers.Folder
             {
                 //on installation we update last modification date to trigger package rebuild.
                 //on folder package update the date may not change.
-                return Task.FromResult(InstallResult.CreateSuccess(installRequest, new FolderManagedTemplatePackage(_settings, this, provider, installRequest.PackageIdentifier, DateTime.UtcNow)));
+                return Task.FromResult(InstallResult.CreateSuccess(
+                    installRequest,
+                    new FolderManagedTemplatePackage(_settings, this, provider, installRequest.PackageIdentifier, DateTime.UtcNow),
+                    Array.Empty<VulnerabilityInfo>()));
             }
             else
             {
-                return Task.FromResult(InstallResult.CreateFailure(
+                return Task.FromResult(
+                    InstallResult.CreateFailure(
                     installRequest,
                     InstallerErrorCode.PackageNotFound,
-                    string.Format(LocalizableStrings.FolderInstaller_InstallResult_Error_FolderDoesNotExist, installRequest.PackageIdentifier)));
+                    string.Format(LocalizableStrings.FolderInstaller_InstallResult_Error_FolderDoesNotExist, installRequest.PackageIdentifier),
+                    Array.Empty<VulnerabilityInfo>()));
             }
         }
 
@@ -95,7 +100,10 @@ namespace Microsoft.TemplateEngine.Edge.Installers.Folder
             _ = updateRequest ?? throw new ArgumentNullException(nameof(updateRequest));
 
             // update installation date
-            return Task.FromResult(UpdateResult.CreateSuccess(updateRequest, new FolderManagedTemplatePackage(_settings, this, provider, updateRequest.TemplatePackage.Identifier, DateTime.UtcNow)));
+            return Task.FromResult(UpdateResult.CreateSuccess(
+                updateRequest,
+                new FolderManagedTemplatePackage(_settings, this, provider, updateRequest.TemplatePackage.Identifier, DateTime.UtcNow),
+                Array.Empty<VulnerabilityInfo>()));
         }
     }
 }

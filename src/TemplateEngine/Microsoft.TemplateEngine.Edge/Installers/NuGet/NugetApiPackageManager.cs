@@ -9,6 +9,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.TemplateEngine.Abstractions;
+using Microsoft.TemplateEngine.Abstractions.Installer;
 using NuGet.Configuration;
 using NuGet.Packaging.Core;
 using NuGet.Protocol;
@@ -49,6 +50,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
         /// <exception cref="InvalidNuGetSourceException">when sources passed to install request are not valid NuGet sources or failed to read default NuGet configuration.</exception>
         /// <exception cref="DownloadException">when the download of the package failed.</exception>
         /// <exception cref="PackageNotFoundException">when the package cannot be find in default or passed to install request NuGet feeds.</exception>
+        /// <exception cref="VulnerablePackageException">when the package has any vulnerabilities.</exception>
         public async Task<NuGetPackageInfo> DownloadPackageAsync(string downloadPath, string identifier, string? version = null, IEnumerable<string>? additionalSources = null, bool force = false, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(identifier))
@@ -84,6 +86,16 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
             {
                 NuGetVersion packageVersion = new NuGetVersion(version);
                 (source, packageMetadata) = await GetPackageMetadataAsync(identifier, packageVersion, packagesSources, cancellationToken).ConfigureAwait(false);
+            }
+
+            if (packageMetadata.Vulnerabilities.Any() && !force)
+            {
+                var foundPackageVersion = packageMetadata.Identity.Version.OriginalVersion;
+                throw new VulnerablePackageException(
+                    string.Format(LocalizableStrings.NuGetApiPackageManager_DownloadError_VulnerablePackage, source),
+                    packageMetadata.Identity.Id,
+                    foundPackageVersion,
+                    ConvertVulnerabilityMetadata(packageMetadata.Vulnerabilities));
             }
 
             FindPackageByIdResource resource;
@@ -123,7 +135,8 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
                         filePath,
                         source.Source,
                         packageMetadata.Identity.Id,
-                        packageMetadata.Identity.Version.ToNormalizedString());
+                        packageMetadata.Identity.Version.ToNormalizedString(),
+                        ConvertVulnerabilityMetadata(packageMetadata.Vulnerabilities));
                 }
                 else
                 {
@@ -182,7 +195,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
         /// <returns>the latest version for the <paramref name="identifier"/> and indication if installed version is latest.</returns>
         /// <exception cref="InvalidNuGetSourceException">when sources passed to install request are not valid NuGet feeds or failed to read default NuGet configuration.</exception>
         /// <exception cref="PackageNotFoundException">when the package cannot be find in default or source NuGet feeds.</exception>
-        public async Task<(string LatestVersion, bool IsLatestVersion)> GetLatestVersionAsync(string identifier, string? version = null, string? additionalSource = null, CancellationToken cancellationToken = default)
+        public async Task<(string LatestVersion, bool IsLatestVersion, IReadOnlyList<VulnerabilityInfo> Vulnerabilities)> GetLatestVersionAsync(string identifier, string? version = null, string? additionalSource = null, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(identifier))
             {
@@ -202,7 +215,8 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
             IEnumerable<PackageSource> packageSources = LoadNuGetSources(additionalSources);
             var (_, package) = await GetLatestVersionInternalAsync(identifier, packageSources, floatRange, cancellationToken).ConfigureAwait(false);
             bool isLatestVersion = currentVersion != null && currentVersion >= package.Identity.Version;
-            return (package.Identity.Version.ToNormalizedString(), isLatestVersion);
+
+            return (package.Identity.Version.ToNormalizedString(), isLatestVersion, ConvertVulnerabilityMetadata(package.Vulnerabilities));
         }
 
         internal IEnumerable<PackageSource> RemoveInsecurePackages(IEnumerable<PackageSource> packagesSources)
@@ -484,6 +498,21 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
             return retrievedSources;
         }
 
+        private IReadOnlyList<VulnerabilityInfo> ConvertVulnerabilityMetadata(IEnumerable<PackageVulnerabilityMetadata>? vulnerabilities)
+        {
+            if (vulnerabilities is null)
+            {
+                return Array.Empty<VulnerabilityInfo>();
+            }
+
+            return vulnerabilities.GroupBy(x => x.Severity)
+                .Select(g => new VulnerabilityInfo(
+                    g.Key,
+                    g.Select(x => x.AdvisoryUrl.AbsoluteUri).ToArray()))
+                .OrderBy(x => x.Severity)
+                .ToList();
+        }
+
         private class NugetPackageMetadata
         {
             public NugetPackageMetadata(IPackageSearchMetadata metadata, string owners, bool trusted)
@@ -492,6 +521,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
                 Identity = metadata.Identity;
                 PrefixReserved = trusted;
                 Owners = owners;
+                Vulnerabilities = Vulnerabilities = metadata.Vulnerabilities?.ToList() ?? new List<PackageVulnerabilityMetadata>();
             }
 
             public string Authors { get; }
@@ -501,6 +531,8 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
             public string Owners { get; }
 
             public bool PrefixReserved { get; }
+
+            public IReadOnlyList<PackageVulnerabilityMetadata> Vulnerabilities { get; }
         }
     }
 }

@@ -20,6 +20,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
         private const string NuGetSourceKey = "NuGetSource";
         private const string PackageIdKey = "PackageId";
         private const string PackageVersionKey = "Version";
+
         private readonly IEngineEnvironmentSettings _settings;
         private readonly ILogger _logger;
 
@@ -251,6 +252,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
             {
                 details[NuGetSourceKey] = NuGetSource!;
             }
+
             return details;
         }
     }

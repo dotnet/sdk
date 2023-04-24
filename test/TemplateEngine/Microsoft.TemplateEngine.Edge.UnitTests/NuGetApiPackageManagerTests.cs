@@ -13,6 +13,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
     public class NuGetApiPackageManagerTests : IClassFixture<EnvironmentSettingsHelper>
     {
         private readonly EnvironmentSettingsHelper _environmentSettingsHelper;
+        private readonly IList<string> _additionalSources = new[] { "https://api.nuget.org/v3/index.json" };
 
         public NuGetApiPackageManagerTests(EnvironmentSettingsHelper environmentSettingsHelper)
         {
@@ -26,7 +27,11 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             IEngineEnvironmentSettings engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
 
             NuGetApiPackageManager packageManager = new NuGetApiPackageManager(engineEnvironmentSettings);
-            var result = await packageManager.DownloadPackageAsync(installPath, "Microsoft.DotNet.Common.ProjectTemplates.5.0").ConfigureAwait(false);
+            var result = await packageManager.DownloadPackageAsync(
+                installPath,
+                "Microsoft.DotNet.Common.ProjectTemplates.5.0",
+                // use a different source for checking specific nuget metadata
+                additionalSources: new[] { "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public/nuget/v3/index.json" }).ConfigureAwait(false);
 
             result.Author.Should().Be("Microsoft");
             result.FullPath.Should().ContainAll(installPath, "Microsoft.DotNet.Common.ProjectTemplates.5.0");
@@ -50,7 +55,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
                 installPath,
                 "Microsoft.DotNet.Common.ProjectTemplates.5.0",
                 // add the source for getting ownership info
-                additionalSources: new[] { "https://api.nuget.org/v3/index.json" }).ConfigureAwait(false);
+                additionalSources: _additionalSources).ConfigureAwait(false);
 
             result.Author.Should().Be("Microsoft");
             result.FullPath.Should().ContainAll(installPath, "Microsoft.DotNet.Common.ProjectTemplates.5.0");
@@ -72,7 +77,8 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             var result = await packageManager.DownloadPackageAsync(
                 installPath,
                 "Microsoft.DotNet.Common.ProjectTemplates.5.0",
-                "5.0.0").ConfigureAwait(false);
+                "5.0.0",
+                additionalSources: _additionalSources).ConfigureAwait(false);
 
             result.Author.Should().Be("Microsoft");
             result.FullPath.Should().ContainAll(installPath, "Microsoft.DotNet.Common.ProjectTemplates.5.0", "5.0.0");
@@ -89,7 +95,8 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             IEngineEnvironmentSettings engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
 
             NuGetApiPackageManager packageManager = new NuGetApiPackageManager(engineEnvironmentSettings);
-            var exception = await Assert.ThrowsAsync<PackageNotFoundException>(() => packageManager.DownloadPackageAsync(installPath, "Microsoft.DotNet.NotCommon.ProjectTemplates.5.0", "5.0.0")).ConfigureAwait(false);
+            var exception = await Assert.ThrowsAsync<PackageNotFoundException>(() => packageManager.DownloadPackageAsync(
+                installPath, "Microsoft.DotNet.NotCommon.ProjectTemplates.5.0", "5.0.0", additionalSources: _additionalSources)).ConfigureAwait(false);
 
             exception.PackageIdentifier.Should().Be("Microsoft.DotNet.NotCommon.ProjectTemplates.5.0");
             exception.PackageVersion.Should().NotBeNull();
@@ -104,7 +111,8 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             IEngineEnvironmentSettings engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
 
             NuGetApiPackageManager packageManager = new NuGetApiPackageManager(engineEnvironmentSettings);
-            var exception = await Assert.ThrowsAsync<DownloadException>(() => packageManager.DownloadPackageAsync(installPath, "Microsoft.DotNet.Common.ProjectTemplates.5.0", "5.0.0")).ConfigureAwait(false);
+            var exception = await Assert.ThrowsAsync<DownloadException>(() => packageManager.DownloadPackageAsync(
+                installPath, "Microsoft.DotNet.Common.ProjectTemplates.5.0", "5.0.0", additionalSources: _additionalSources)).ConfigureAwait(false);
 
             exception.PackageIdentifier.Should().Be("Microsoft.DotNet.Common.ProjectTemplates.5.0");
             exception.PackageVersion.ToString().Should().Be("5.0.0");
@@ -118,12 +126,59 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             IEngineEnvironmentSettings engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
 
             NuGetApiPackageManager packageManager = new NuGetApiPackageManager(engineEnvironmentSettings);
-            await packageManager.DownloadPackageAsync(installPath, "Microsoft.DotNet.Common.ProjectTemplates.5.0", "5.0.0").ConfigureAwait(false);
-            var exception = await Assert.ThrowsAsync<DownloadException>(() => packageManager.DownloadPackageAsync(installPath, "Microsoft.DotNet.Common.ProjectTemplates.5.0", "5.0.0")).ConfigureAwait(false);
+            await packageManager.DownloadPackageAsync(installPath, "Microsoft.DotNet.Common.ProjectTemplates.5.0", "5.0.0", additionalSources: _additionalSources).ConfigureAwait(false);
+            var exception = await Assert.ThrowsAsync<DownloadException>(() => packageManager.DownloadPackageAsync(
+                installPath, "Microsoft.DotNet.Common.ProjectTemplates.5.0", "5.0.0", additionalSources: _additionalSources)).ConfigureAwait(false);
 
             exception.PackageIdentifier.Should().Be("Microsoft.DotNet.Common.ProjectTemplates.5.0");
             exception.PackageVersion.ToString().Should().Be("5.0.0");
             exception.Message.Should().NotBeNullOrEmpty();
+        }
+
+        [Fact]
+        internal async Task DownloadPackage_HasVulnerabilities()
+        {
+            string installPath = _environmentSettingsHelper.CreateTemporaryFolder();
+            IEngineEnvironmentSettings engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
+
+            // Getting this version of the package as it has known vulnerabilities
+            NuGetApiPackageManager packageManager = new NuGetApiPackageManager(engineEnvironmentSettings);
+
+            var exception = await Assert.ThrowsAsync<VulnerablePackageException>(() => packageManager.DownloadPackageAsync(
+                installPath,
+                "log4net",
+                "2.0.3",
+                // add the source for getting vulnerability info
+                additionalSources: _additionalSources)).ConfigureAwait(false);
+
+            exception.PackageIdentifier.Should().Be("log4net");
+            exception.PackageVersion.Should().Be("2.0.3");
+            exception.Vulnerabilities.Should().NotBeNullOrEmpty();
+        }
+
+        [Fact]
+        internal async Task DownloadPackage_HasVulnerabilitiesForce()
+        {
+            string installPath = _environmentSettingsHelper.CreateTemporaryFolder();
+            IEngineEnvironmentSettings engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
+
+            // Getting this version of the package as it has known vulnerabilities
+            NuGetApiPackageManager packageManager = new NuGetApiPackageManager(engineEnvironmentSettings);
+
+            var result = await packageManager.DownloadPackageAsync(
+                installPath,
+                "log4net",
+                "2.0.3",
+                // add the source for getting vulnerability info
+                additionalSources: _additionalSources,
+                force: true).ConfigureAwait(false);
+
+            result.PackageIdentifier.Should().Be("log4net");
+            result.Author.Should().Be("Apache Software Foundation");
+            result.PackageVersion.Should().Be("2.0.3");
+            Assert.True(File.Exists(result.FullPath));
+            result.PackageVulnerabilities.Should().NotBeNullOrEmpty();
+            result.NuGetSource.Should().Be(_additionalSources[0]);
         }
 
         [Fact]
@@ -132,7 +187,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             IEngineEnvironmentSettings engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
 
             NuGetApiPackageManager packageManager = new NuGetApiPackageManager(engineEnvironmentSettings);
-            (string latestVersion, bool isLatestVersion) = await packageManager.GetLatestVersionAsync("Microsoft.DotNet.Common.ProjectTemplates.5.0").ConfigureAwait(false);
+            (string latestVersion, bool isLatestVersion, _) = await packageManager.GetLatestVersionAsync("Microsoft.DotNet.Common.ProjectTemplates.5.0", additionalSource: _additionalSources.FirstOrDefault()).ConfigureAwait(false);
 
             latestVersion.Should().NotBeNullOrEmpty();
             isLatestVersion.Should().BeFalse();
@@ -144,7 +199,8 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             IEngineEnvironmentSettings engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
 
             NuGetApiPackageManager packageManager = new NuGetApiPackageManager(engineEnvironmentSettings);
-            (string latestVersion, bool isLatestVersion) = await packageManager.GetLatestVersionAsync("Microsoft.DotNet.Common.ProjectTemplates.5.0", "5.0.0").ConfigureAwait(false);
+            (string latestVersion, bool isLatestVersion, _) = await packageManager.GetLatestVersionAsync(
+                "Microsoft.DotNet.Common.ProjectTemplates.5.0", "5.0.0", additionalSource: _additionalSources.First()).ConfigureAwait(false);
 
             latestVersion.Should().NotBe("5.0.0");
             isLatestVersion.Should().BeFalse();
@@ -156,7 +212,8 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             IEngineEnvironmentSettings engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
 
             NuGetApiPackageManager packageManager = new NuGetApiPackageManager(engineEnvironmentSettings);
-            var exception = await Assert.ThrowsAsync<PackageNotFoundException>(() => packageManager.GetLatestVersionAsync("Microsoft.DotNet.NotCommon.ProjectTemplates.5.0", "5.0.0")).ConfigureAwait(false);
+            var exception = await Assert.ThrowsAsync<PackageNotFoundException>(() => packageManager.GetLatestVersionAsync(
+                "Microsoft.DotNet.NotCommon.ProjectTemplates.5.0", "5.0.0", additionalSource: _additionalSources.FirstOrDefault())).ConfigureAwait(false);
 
             exception.PackageIdentifier.Should().Be("Microsoft.DotNet.NotCommon.ProjectTemplates.5.0");
             exception.Message.Should().NotBeNullOrEmpty();

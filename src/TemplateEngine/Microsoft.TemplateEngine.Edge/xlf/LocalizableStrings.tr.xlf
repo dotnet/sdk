@@ -157,6 +157,11 @@
         <target state="translated">Ana bilgisayar tanımlı parametreler</target>
         <note />
       </trans-unit>
+      <trans-unit id="NuGetApiPackageManager_DownloadError_VulnerablePackage">
+        <source>Found package is vulnerable source: {0}</source>
+        <target state="new">Found package is vulnerable source: {0}</target>
+        <note />
+      </trans-unit>
       <trans-unit id="NuGetApiPackageManager_Error_FailedToLoadSource">
         <source>Failed to load the NuGet source {0}.</source>
         <target state="translated">{0} NuGet kaynağı yüklenemedi.</target>
@@ -180,6 +185,11 @@
       <trans-unit id="NuGetApiPackageManager_Error_NoSources">
         <source>No NuGet sources are defined or enabled.</source>
         <target state="translated">Tanımlanmış veya etkinleştirilmiş NuGet kaynağı yok.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NuGetApiPackageManager_UpdateCheckError_VulnerablePackage">
+        <source>The checked package {0} is vulnerable.</source>
+        <target state="new">The checked package {0} is vulnerable.</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetApiPackageManager_Warning_FailedToDelete">
@@ -281,6 +291,16 @@ Ayrıntılar: {1}.</target>
 Details: {1}.</source>
         <target state="translated">{0} paketi için güncelleştirme denetimi başarısız oldu.
 Ayrıntılar: {1}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NuGetInstaller_InstallResult_Error_VulnerablePackage">
+        <source>The requested package {0} has vulnerabilities.</source>
+        <target state="new">The requested package {0} has vulnerabilities.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NuGetInstaller_UpdateCheck_Error_VulnerablePackage">
+        <source>The checked package {0} has vulnerabilities.</source>
+        <target state="new">The checked package {0} has vulnerabilities.</target>
         <note />
       </trans-unit>
       <trans-unit id="OSConstraint_Error_InvalidOSName">

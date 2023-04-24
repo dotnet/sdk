@@ -1,4 +1,15 @@
 ﻿Microsoft.TemplateEngine.Abstractions.IExtendedTemplateLocator
+Microsoft.TemplateEngine.Abstractions.Installer.CheckUpdateResult.Vulnerabilities.get -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.Installer.VulnerabilityInfo>!
+Microsoft.TemplateEngine.Abstractions.Installer.InstallerErrorCode.VulnerablePackage = 9 -> Microsoft.TemplateEngine.Abstractions.Installer.InstallerErrorCode
+Microsoft.TemplateEngine.Abstractions.Installer.InstallResult.Vulnerabilities.get -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.Installer.VulnerabilityInfo>!
+Microsoft.TemplateEngine.Abstractions.Installer.UpdateResult.Vulnerabilities.get -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.Installer.VulnerabilityInfo>!
+Microsoft.TemplateEngine.Abstractions.Installer.VulnerabilityInfo
+Microsoft.TemplateEngine.Abstractions.Installer.VulnerabilityInfo.AdvisoryUris.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Microsoft.TemplateEngine.Abstractions.Installer.VulnerabilityInfo.AdvisoryUris.init -> void
+Microsoft.TemplateEngine.Abstractions.Installer.VulnerabilityInfo.Severity.get -> int
+Microsoft.TemplateEngine.Abstractions.Installer.VulnerabilityInfo.Severity.init -> void
+Microsoft.TemplateEngine.Abstractions.Installer.VulnerabilityInfo.VulnerabilityInfo() -> void
+Microsoft.TemplateEngine.Abstractions.Installer.VulnerabilityInfo.VulnerabilityInfo(int Severity, System.Collections.Generic.IReadOnlyList<string!>! AdvisoryUris) -> void
 Microsoft.TemplateEngine.Abstractions.ITemplate.Localization.get -> Microsoft.TemplateEngine.Abstractions.ILocalizationLocator?
 Microsoft.TemplateEngine.Abstractions.ITemplate.TemplateSourceRoot.get -> Microsoft.TemplateEngine.Abstractions.Mount.IDirectory!
 Microsoft.TemplateEngine.Abstractions.ITemplateMetadata.PreferDefaultName.get -> bool
@@ -7,6 +18,11 @@ Microsoft.TemplateEngine.Abstractions.IVariableCollection
 Microsoft.TemplateEngine.Abstractions.IVariableCollection.Parent.get -> Microsoft.TemplateEngine.Abstractions.IVariableCollection?
 Microsoft.TemplateEngine.Abstractions.IVariableCollection.Parent.set -> void
 Microsoft.TemplateEngine.Abstractions.Parameters.ParameterSetDataExtensions
+static Microsoft.TemplateEngine.Abstractions.Installer.CheckUpdateResult.CreateFailure(Microsoft.TemplateEngine.Abstractions.TemplatePackage.IManagedTemplatePackage! templatePackage, Microsoft.TemplateEngine.Abstractions.Installer.InstallerErrorCode error, string! localizedFailureMessage, System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.Installer.VulnerabilityInfo>! vulnerabilities) -> Microsoft.TemplateEngine.Abstractions.Installer.CheckUpdateResult!
+static Microsoft.TemplateEngine.Abstractions.Installer.InstallResult.CreateFailure(Microsoft.TemplateEngine.Abstractions.Installer.InstallRequest! request, Microsoft.TemplateEngine.Abstractions.Installer.InstallerErrorCode error, string! localizedFailureMessage, System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.Installer.VulnerabilityInfo>! vulnerabilities) -> Microsoft.TemplateEngine.Abstractions.Installer.InstallResult!
+static Microsoft.TemplateEngine.Abstractions.Installer.InstallResult.CreateSuccess(Microsoft.TemplateEngine.Abstractions.Installer.InstallRequest! request, Microsoft.TemplateEngine.Abstractions.TemplatePackage.IManagedTemplatePackage! templatePackage, System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.Installer.VulnerabilityInfo>! vulnerabilities) -> Microsoft.TemplateEngine.Abstractions.Installer.InstallResult!
+static Microsoft.TemplateEngine.Abstractions.Installer.UpdateResult.CreateFailure(Microsoft.TemplateEngine.Abstractions.Installer.UpdateRequest! request, Microsoft.TemplateEngine.Abstractions.Installer.InstallerErrorCode error, string! localizedFailureMessage, System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.Installer.VulnerabilityInfo>! vulnerabilities) -> Microsoft.TemplateEngine.Abstractions.Installer.UpdateResult!
+static Microsoft.TemplateEngine.Abstractions.Installer.UpdateResult.CreateSuccess(Microsoft.TemplateEngine.Abstractions.Installer.UpdateRequest! request, Microsoft.TemplateEngine.Abstractions.TemplatePackage.IManagedTemplatePackage! templatePackage, System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.Installer.VulnerabilityInfo>! vulnerabilities) -> Microsoft.TemplateEngine.Abstractions.Installer.UpdateResult!
 static Microsoft.TemplateEngine.Abstractions.Parameters.ParameterSetData.Empty.get -> Microsoft.TemplateEngine.Abstractions.Parameters.IParameterSetData!
 static Microsoft.TemplateEngine.Abstractions.Parameters.ParameterSetDataExtensions.GetValue(this Microsoft.TemplateEngine.Abstractions.Parameters.IParameterSetData! data, string! parameterName) -> Microsoft.TemplateEngine.Abstractions.Parameters.ParameterData!
 static Microsoft.TemplateEngine.Abstractions.Parameters.ParameterSetDataExtensions.TryGetValue(this Microsoft.TemplateEngine.Abstractions.Parameters.IParameterSetData! data, string! parameterName, out Microsoft.TemplateEngine.Abstractions.Parameters.ParameterData? parameterData) -> bool
