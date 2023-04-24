@@ -33,6 +33,8 @@ src/aspnetcore/src/Components/Web.JS/dist/Release/blazor.*.js # JavaScript files
 src/aspnetcore/src/ProjectTemplates/Web.ProjectTemplates/**/app.db
 src/aspnetcore/src/submodules/spa-templates/**/app.db
 
+src/emsdk/eng/common/loc/*.lss # UTF16-LE text files
+
 src/fsharp/**/signedtests/*
 src/fsharp/src/fsi/fsi.res # Icon
 
