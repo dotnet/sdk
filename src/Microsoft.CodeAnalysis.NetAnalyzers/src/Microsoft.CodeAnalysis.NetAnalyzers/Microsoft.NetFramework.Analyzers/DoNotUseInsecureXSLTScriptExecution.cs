@@ -195,6 +195,12 @@ namespace Microsoft.NetFramework.Analyzers
                     return;
                 }
 
+                // handle target-typed new
+                if (rhs is IConversionOperation { IsImplicit: true })
+                {
+                    rhs = rhs.WalkDownConversion();
+                }
+
                 IMethodSymbol? rhsMethodSymbol = rhs.Kind switch
                 {
                     OperationKind.Invocation => ((IInvocationOperation)rhs).TargetMethod,
