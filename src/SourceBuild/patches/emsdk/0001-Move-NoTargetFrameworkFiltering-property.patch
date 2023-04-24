@@ -3,6 +3,7 @@ From: Nikola Milosavljevic <nikolam@microsoft.com>
 Date: Mon, 24 Apr 2023 14:00:42 +0000
 Subject: [PATCH] Move NoTargetFrameworkFiltering property
 
+Backport: https://github.com/dotnet/source-build/issues/3417
 ---
  Directory.Build.props | 5 +++++
  eng/SourceBuild.props | 1 -
