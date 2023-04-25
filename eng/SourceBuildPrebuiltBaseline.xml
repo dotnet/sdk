@@ -1,5 +1,34 @@
 <UsageData>
   <IgnorePatterns>
-    <UsagePattern IdentityGlob="*/*" />
+    <UsagePattern IdentityGlob="Microsoft.SourceBuild.Intermediate.*/*" />
+
+    <!-- TODO: Address these prebuilts as part of https://github.com/dotnet/format/issues/1809 -->
+    <UsagePattern IdentityGlob="Microsoft.CodeAnalysis/*4.6.0-2.23177.13*" />
+    <UsagePattern IdentityGlob="Microsoft.CodeAnalysis.Analyzers/*3.3.4*" />
+    <UsagePattern IdentityGlob="Microsoft.CodeAnalysis.AnalyzerUtilities/*3.3.0*" />
+    <UsagePattern IdentityGlob="Microsoft.CodeAnalysis.Common/*4.6.0-2.23177.13*" />
+    <UsagePattern IdentityGlob="Microsoft.CodeAnalysis.CSharp/*4.6.0-2.23177.13*" />
+    <UsagePattern IdentityGlob="Microsoft.CodeAnalysis.CSharp.Features/*4.6.0-2.23177.13*" />
+    <UsagePattern IdentityGlob="Microsoft.CodeAnalysis.CSharp.Workspaces/*4.6.0-2.23177.13*" />
+    <UsagePattern IdentityGlob="Microsoft.CodeAnalysis.Elfie/*1.0.0*" />
+    <UsagePattern IdentityGlob="Microsoft.CodeAnalysis.Features/*4.6.0-2.23177.13*" />
+    <UsagePattern IdentityGlob="Microsoft.CodeAnalysis.Scripting.Common/*4.6.0-2.23177.13*" />
+    <UsagePattern IdentityGlob="Microsoft.CodeAnalysis.VisualBasic/*4.6.0-2.23177.13*" />
+    <UsagePattern IdentityGlob="Microsoft.CodeAnalysis.VisualBasic.Features/*4.6.0-2.23177.13*" />
+    <UsagePattern IdentityGlob="Microsoft.CodeAnalysis.VisualBasic.Workspaces/*4.6.0-2.23177.13*" />
+    <UsagePattern IdentityGlob="Microsoft.CodeAnalysis.Workspaces.Common/*4.6.0-2.23177.13*" />
+    <UsagePattern IdentityGlob="Microsoft.CodeAnalysis.Workspaces.MSBuild/*4.6.0-2.23177.13*" />
+    <UsagePattern IdentityGlob="Microsoft.Extensions.DependencyInjection/*7.0.0*" />
+    <UsagePattern IdentityGlob="Microsoft.Extensions.DependencyInjection.Abstractions/*7.0.0*" />
+    <UsagePattern IdentityGlob="Microsoft.Extensions.FileSystemGlobbing/*7.0.0*" />
+    <UsagePattern IdentityGlob="Microsoft.Extensions.Logging/*7.0.0*" />
+    <UsagePattern IdentityGlob="Microsoft.Extensions.Options/*7.0.0*" />
+    <UsagePattern IdentityGlob="Microsoft.Extensions.Primitives/*7.0.0*" />
+    <UsagePattern IdentityGlob="System.Configuration.ConfigurationManager/*4.5.0*" />
+    <UsagePattern IdentityGlob="System.Data.DataSetExtensions/*4.5.0*" />
+    <UsagePattern IdentityGlob="System.Security.AccessControl/*4.5.0*" />
+    <UsagePattern IdentityGlob="System.Security.Cryptography.ProtectedData/*4.5.0*" />
+    <UsagePattern IdentityGlob="System.Security.Permissions/*4.5.0*" />
+    <UsagePattern IdentityGlob="System.Security.Principal.Windows/*4.5.0*" />
   </IgnorePatterns>
 </UsageData>
