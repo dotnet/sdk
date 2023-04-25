@@ -1,0 +1,28 @@
+<Project>
+
+  <Target Name="RemoveUninteresingToolingPackageReferences"
+          BeforeTargets="CollectPackageReferences">
+    <!-- The source-build infra doesn't need sourcelink. Avoid this prebuilt. -->
+    <ItemGroup>
+      <PackageReference Remove="Microsoft.SourceLink.GitHub" />
+      <PackageReference Remove="Microsoft.SourceLink.Vsts.Git" />
+      <PackageReference Remove="Microsoft.SourceLink.AzureRepos.Git" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="DetermineMicrosoftSourceBuildIntermediateInstallerVersion">
+    <!-- Manually load the installer version from the PVP.     -->
+    <XmlPeek XmlInputPath="$(IntermediatePath)PackageVersions.package-source-build.Current.props"
+             Query="msb:Project/msb:PropertyGroup/msb:MicrosoftSourceBuildIntermediateInstallerVersion/text()"
+             Namespaces="&lt;Namespace Prefix='msb' Uri='http://schemas.microsoft.com/developer/msbuild/2003'/&gt;">
+        <Output TaskParameter="Result" ItemName="MicrosoftSourceBuildIntermediateInstallerVersionItem" />
+    </XmlPeek>
+    <PropertyGroup>
+      <MicrosoftSourceBuildIntermediateInstallerVersion>@(MicrosoftSourceBuildIntermediateInstallerVersionItem)</MicrosoftSourceBuildIntermediateInstallerVersion>
+      <MicrosoftSourceBuildIntermediateInstallerVersion Condition="'$(MicrosoftSourceBuildIntermediateInstallerVersion)' == ''">$(installerOutputPackageVersion)</MicrosoftSourceBuildIntermediateInstallerVersion>
+    </PropertyGroup>
+  </Target>
+
+  <Import Condition="'$(SkipArcadeSdkImport)' != 'true'" Project="Sdk.targets" Sdk="Microsoft.DotNet.Arcade.Sdk" />
+
+</Project>

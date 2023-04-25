@@ -1,0 +1,42 @@
+# This list is processed using FileSystemName.MatchesSimpleExpression
+#
+# Format
+# {msft|sb},<path> [# comment]
+# msft = Microsoft built SDK
+# sb   = source-built SDK
+#
+# Examples
+# 'folder/*' matches 'folder/' and 'folder/abc'
+# 'folder/?*' matches 'folder/abc' but not 'folder/'
+#
+# We do not want to filter-out folder entries, therefore, we should use: '?*' and not just '*'
+
+msft,./sdk/x.y.z/TestHostNetFramework/?*   # Intentional - MSFT build includes test-host that targets netcoreapp3.1
+msft,./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/net472/?*   # Intentional - source-build includes SDK Publishing package that target latest .NET TFM
+msft,./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WindowsDesktop/?*   # Intentional - explicitly excluded from source-build
+sb,./sdk/x.y.z/TestHost/?*   # Intentional - source-build includes test-host that targets latest .NET TFM
+
+# vstest localization is disabled in Linux builds - https://github.com/microsoft/vstest/issues/4305
+msft,./sdk/x.y.z/*?/Microsoft.CodeCoverage.IO.resources.dll
+msft,./sdk/x.y.z/*?/Microsoft.TestPlatform.*?.resources.dll
+msft,./sdk/x.y.z/*?/Microsoft.VisualStudio.TestPlatform.*?.resources.dll
+msft,./sdk/x.y.z/*?/Test.Utility.resources.dll
+msft,./sdk/x.y.z/*?/vstest.console.resources.dll
+msft,./sdk/x.y.z/Extensions/*?/Microsoft.TestPlatform.*?.resources.dll
+msft,./sdk/x.y.z/Extensions/*?/Microsoft.VisualStudio.TestPlatform.*?.resources.dll
+
+# nuget localization is not available for Linux builds - https://github.com/NuGet/Home/issues/12440
+msft,./sdk/x.y.z/*?/NuGet.*?.resources.dll
+msft,./sdk/x.y.z/*?/Microsoft.Build.NuGetSdkResolver.resources.dll
+
+# ILMerge is not supported in Linux builds - excluding the whole NuGet.Build.Tasks.Pack directory, to avoid a noisy diff
+msft,./sdk/x.y.z/Sdks/NuGet.Build.Tasks.Pack/*?
+sb,./sdk/x.y.z/Sdks/NuGet.Build.Tasks.Pack/*?
+
+# missing workload manifests - https://github.com/dotnet/source-build/issues/3242
+msft,./sdk-manifests/x.y.z/microsoft.net.sdk.android/*
+msft,./sdk-manifests/x.y.z/microsoft.net.sdk.ios/*
+msft,./sdk-manifests/x.y.z/microsoft.net.sdk.maccatalyst/*
+msft,./sdk-manifests/x.y.z/microsoft.net.sdk.macos/*
+msft,./sdk-manifests/x.y.z/microsoft.net.sdk.maui/*
+msft,./sdk-manifests/x.y.z/microsoft.net.sdk.tvos/*

@@ -1,0 +1,19 @@
+<Project>
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+
+  <PropertyGroup>
+    <BuildCommandArgs>$(StandardSourceBuildArgs)</BuildCommandArgs>
+    <BuildCommandArgs>$(BuildCommandArgs) /p:SemanticVersioningV1=true</BuildCommandArgs>
+    <BuildCommand>$(ProjectDirectory)\eng\common\build$(ShellExtension) $(BuildCommandArgs)</BuildCommand>
+
+    <DeterministicBuildOptOut>true</DeterministicBuildOptOut>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <RepositoryReference Include="diagnostics" />
+    <RepositoryReference Include="runtime" />
+    <RepositoryReference Include="source-build-externals" />
+  </ItemGroup>
+
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+</Project>

@@ -1,28 +1,28 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <WixLocalization Culture="en-us" Language="1033" xmlns="http://schemas.microsoft.com/wix/2006/localization">
   <String Id="Caption">[WixBundleName] Yükleyicisi</String>
   <String Id="Title">[BUNDLEMONIKER]</String>
   <String Id="ConfirmCancelMessage">İptal etmek istediğinizden emin misiniz?</String>
   <String Id="ExecuteUpgradeRelatedBundleMessage">Önceki sürüm</String>
   <String Id="HelpHeader">Kurulum Yardımı</String>
-  <String Id="HelpText">/install | /repair | /uninstall | /layout [\[]"dizin"[\]] - dizinde bir paketi yükler, onarır, kaldırır ya da
-   paketin tam bir yerel kopyasını oluşturur. Varsayılan '/install' değeridir.
+  <String Id="HelpText">/install | /repair | /uninstall | /layout [\[]"dizin"[\]] - yükler, onarır, kaldırır 
+   ya da dizindeki paketin tam bir yerel kopyasını oluşturur. Varsayılan  '/install' değeridir.
 
-/passive | /quiet - istem olmadan en az düzeyde UI gösterir ya da hiç UI ve
-   istem göstermez. Varsayılan olarak UI ve tüm istemler görüntülenir.
+/passive | /quiet - en az düzeyde istemsiz UI gösterir ya da hiç UI göstermez ve
+   istem yoktur. Varsayılan olarak, UI ve tüm istemler görüntülenir.
 
-/norestart - yeniden başlama denemelerini engeller. Varsayılan olarak UI yeniden başlatılmadan önce sorar.
-/log [\[]"günlük.txt"[\]] - belirli bir günlük dosyası tutar. Varsayılan olarak %TEMP% içinde bir günlük dosyası oluşturulur.</String>
+/norestart   - yeniden başlama denemelerini durdurur. Varsayılan olarak UI yeniden başlatılmadan önce sorar.
+/log [\[]"log.txt"[\]] - belirli bir günlük dosyası tutar. Varsayılan olarak, %TEMP% içinde bir günlük dosyası oluşturulur.</String>
   <String Id="HelpCloseButton">&amp;Kapat</String>
-  <String Id="InstallAcceptCheckbox">&amp;Lisans hüküm ve koşullarını kabul ediyorum</String>
+  <String Id="InstallAcceptCheckbox">Lisans hüküm ve koşullarını &amp;kabul ediyorum</String>
   <String Id="InstallOptionsButton">&amp;Seçenekler</String>
   <String Id="InstallInstallButton">Yü&amp;kle</String>
   <String Id="InstallCloseButton">&amp;Kapat</String>
   <String Id="ProgressHeader">Kurulum İlerleme Durumu</String>
   <String Id="ProgressLabel">İşleniyor:</String>
   <String Id="OverallProgressPackageText">Başlatılıyor...</String>
-  <String Id="ProgressCancelButton">&amp;İptal</String>
-  <String Id="ModifyHeader">Kurulumu Değiştir</String>
+  <String Id="ProgressCancelButton">İ&amp;ptal</String>
+  <String Id="ModifyHeader">Kurulumu değiştir</String>
   <String Id="ModifyRepairButton">&amp;Onar</String>
   <String Id="ModifyUninstallButton">&amp;Kaldır</String>
   <String Id="ModifyCloseButton">&amp;Kapat</String>
@@ -35,9 +35,9 @@
   <String Id="SuccessCloseButton">&amp;Kapat</String>
   <String Id="FailureHeader">Kurulum Başarısız</String>
   <String Id="FailureInstallHeader">Kurulum Başarısız</String>
-  <String Id="FailureUninstallHeader">Yükleme Başarısız</String>
+  <String Id="FailureUninstallHeader">Kaldırma Başarısız</String>
   <String Id="FailureRepairHeader">Onarım Başarısız</String>
-  <String Id="FailureHyperlinkLogText">En az bir sorun nedeniyle kurulum başarısız oldu. Lütfen bu sorunları düzeltin ve kurulumu yeniden deneyin. Daha fazla bilgi için &lt;a href="#"&gt;günlük dosyasına&lt;/a&gt; bakın.</String>
+  <String Id="FailureHyperlinkLogText">Bir ya da daha fazla sorun nedeniyle kurulum başarısız oldu. Lütfen bu sorunları düzeltin ve kurulumu yeniden deneyin. Daha fazla bilgi için &lt;a href="#"&gt;günlük dosyasına&lt;/a&gt; bakın.</String>
   <String Id="FailureRestartText">Yazılımın geri alınmasını tamamlamak için bilgisayarınızı yeniden başlatmanız gerekiyor.</String>
   <String Id="FailureRestartButton">&amp;Yeniden Başlat</String>
   <String Id="FailureCloseButton">&amp;Kapat</String>
@@ -46,10 +46,10 @@
   <String Id="FilesInUseCloseRadioButton">&amp;Uygulamaları kapatın ve yeniden başlatmayı deneyin.</String>
   <String Id="FilesInUseDontCloseRadioButton">&amp;Uygulamaları kapatmayın. Sistemi yeniden başlatmanız gerekir.</String>
   <String Id="FilesInUseOkButton">&amp;Tamam</String>
-  <String Id="FilesInUseCancelButton">&amp;İptal</String>
+  <String Id="FilesInUseCancelButton">İ&amp;ptal</String>
   <String Id="FirstTimeWelcomeMessage">Yükleme başarılı oldu.
 
-Aşağıdakiler şu yüklü:
+Aşağıdakiler ürünler yüklendi:
     • .NET SDK [DOTNETSDKVERSION]
     • .NET Çalışma Zamanı [DOTNETRUNTIMEVERSION]
     • ASP.NET Core Çalışma Zamanı [ASPNETCOREVERSION]
@@ -61,9 +61,9 @@ Bu ürün, kullanım verilerini toplar
 Kaynaklar
     • .NET Belgeleri https://aka.ms/dotnet-docs
     • SDK Belgeleri https://aka.ms/dotnet-sdk-docs
-    • Sürüm Notları https://aka.ms/dotnet7-release-notes
+    • Sürüm Notları https://aka.ms/dotnet[VERSIONMAJOR]-release-notes
     • Öğreticiler https://aka.ms/dotnet-tutorials</String>
-  <String Id="WelcomeHeaderMessage">.NET SDK'sı</String>
+  <String Id="WelcomeHeaderMessage">.NET SDK</String>
   <String Id="WelcomeDescription">
     .NET SDK, .NET uygulamalarını derlemek, çalıştırmak ve test etmek için kullanılır. Birden çok dil, düzenleyici ve geliştirici aracı arasından seçim yapabilirsiniz ve web, mobil, masaüstü, oyun ve IoT uygulamaları oluşturmak için büyük bir kitaplık ekosisteminden yararlanabilirsiniz. Beğeneceğinizi umuyoruz!</String>
   <String Id="LearnMoreTitle">.NET hakkında daha fazla bilgi edinin</String>
@@ -76,10 +76,10 @@ Kaynaklar
   <String Id="InstallationNoteTitle">Yükleme notu</String>
   <String Id="InstallationNote">Yükleme işlemi sırasında, proje geri yükleme hızını artıran ve çevrimdışı erişimi etkinleştiren bir komut çalıştırılır. Tamamlanması bir dakikanızı alır.
   </String>
-  <String Id="VisualStudioWarning">Visual Studio ile .NET 7.0 kullanmayı planlıyorsanız Visual Studio 2022 17.4 veya üzeri bir sürüm gerekir. &lt;A HREF="https://aka.ms/dotnet7-release-notes"&gt;Daha Fazla Bilgi&lt;/A&gt;.
+  <String Id="VisualStudioWarning">Visual Studio ile .NET [VERSIONMAJOR].[VERSIONMINOR] kullanmayı planlıyorsanız Visual Studio 2022 17.4 veya üzeri bir sürüm gerekir. &lt;A HREF="https://aka.ms/dotnet[VERSIONMAJOR]-release-notes"&gt;Daha fazla bilgi edinin&lt;/A&gt;.
   </String>
-  <String Id="LicenseAssent">Yükle'ye tıklayarak aşağıdaki koşulları kabul etmiş olursunuz.</String>
-  <String Id="InstallPathx64x86">The installation path for x64 SDK installations: &quot;[DOTNETHOME_X64]&quot; cannot be the same as for x86 SDK installations: &quot;[DOTNETHOME_X86]&quot;</String>
-  <String Id="InstallPathARM64x86">The installation path for ARM64 SDK installations: &quot;[DOTNETHOME_ARM64]&quot; cannot be the same as for x86 SDK installations: &quot;[DOTNETHOME_X86]&quot;</String>
-  <String Id="InstallPathARM64x64">The installation path for ARM64 SDK installations: &quot;[DOTNETHOME_ARM64]&quot; cannot be the same as for x64 SDK installations: &quot;[DOTNETHOME_X64]&quot;</String>
+  <String Id="LicenseAssent">Yükle'ye tıklayarak aşağıdaki koşulları kabul etmiş olursunuz:</String>
+  <String Id="InstallPathx64x86">x64 SDK yüklemelerinin yükleme yolu ("[DOTNETHOME_X64]"), x86 SDK yüklemelerinin yükleme yolu ("[DOTNETHOME_X86]") ile aynı olamaz</String>
+  <String Id="InstallPathARM64x86">ARM64 SDK yüklemeleri için yükleme yolu ("[DOTNETHOME_ARM64]"), x86 SDK yüklemelerinin yükleme yolu ("[DOTNETHOME_X86]") ile aynı olamaz</String>
+  <String Id="InstallPathARM64x64">ARM64 SDK yüklemelerinin yükleme yolu ("[DOTNETHOME_ARM64]"), x64 SDK yüklemelerinin yükleme yolu ("[DOTNETHOME_X64]") ile aynı olamaz</String>
 </WixLocalization>

@@ -1,0 +1,35 @@
+<Project>
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+
+  <PropertyGroup>
+    <BuildCommandArgs>$(StandardSourceBuildArgs)</BuildCommandArgs>
+    <BuildCommandArgs>$(BuildCommandArgs) $(FlagParameterPrefix)nodereuse $(ArcadeFalseBoolBuildArg)</BuildCommandArgs>
+    <BuildCommandArgs>$(BuildCommandArgs) /p:PackageProjectUrl=https://github.com/dotnet/sdk</BuildCommandArgs>
+    <BuildCommandArgs>$(BuildCommandArgs) /p:PublishCompressedFilesPathPrefix=$(SourceBuiltToolsetDir)</BuildCommandArgs>
+
+    <!-- Just like mono, arm does not support NativeAot -->
+    <BuildCommandArgs Condition="'$(BuildArchitecture)' == 'arm'">$(BuildCommandArgs) /p:NativeAotSupported=false</BuildCommandArgs>
+
+    <LogVerbosityOptOut>true</LogVerbosityOptOut>
+    <BuildCommandArgs>$(BuildCommandArgs) -v $(LogVerbosity)</BuildCommandArgs>
+
+    <BuildCommand>$(StandardSourceBuildCommand) $(BuildCommandArgs)</BuildCommand>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <RepositoryReference Include="arcade" />
+    <RepositoryReference Include="xliff-tasks" />
+    <RepositoryReference Include="runtime" />
+    <RepositoryReference Include="msbuild" />
+    <RepositoryReference Include="source-build-externals" />
+    <RepositoryReference Include="nuget-client" />
+    <RepositoryReference Include="roslyn-analyzers" />
+    <RepositoryReference Include="vstest" />
+    <RepositoryReference Include="fsharp" />
+    <RepositoryReference Include="format" />
+    <RepositoryReference Include="deployment-tools" />
+    <RepositoryReference Include="razor" />
+  </ItemGroup>
+
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+</Project>

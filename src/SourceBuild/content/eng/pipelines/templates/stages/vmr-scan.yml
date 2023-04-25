@@ -1,0 +1,52 @@
+stages:
+- stage: Tag_n_Scan
+  displayName: Tag & Scan
+  dependsOn: []
+  variables:
+  - template: /eng/common/templates/variables/pool-providers.yml
+  jobs:
+  - job: Tag_n_Scan
+    displayName: Tag & Scan
+    pool:
+      ${{ if eq(variables['System.TeamProject'], 'public') }}:
+        name: $(DncEngPublicBuildPool)
+        demands: ImageOverride -equals Build.Ubuntu.2004.Amd64.Open
+      ${{ if eq(variables['System.TeamProject'], 'internal') }}:
+        name: $(DncEngInternalBuildPool)
+        demands: ImageOverride -equals Build.Ubuntu.2004.Amd64
+
+    steps:
+    - checkout: self
+
+    - script: |
+        source ./eng/common/tools.sh
+        InitializeDotNetCli true
+        ./.dotnet/dotnet tool restore
+      displayName: Initialize tooling
+      workingDirectory: $(Build.SourcesDirectory)/src/installer
+
+    - script: |
+        set -e
+        sha=`./.dotnet/dotnet darc vmr get-version --vmr "$(Build.SourcesDirectory)" installer`
+        echo "##vso[build.addbuildtag]installer-$sha"
+      displayName: Tag the build
+      workingDirectory: $(Build.SourcesDirectory)/src/installer
+
+    - script: >
+        ./.dotnet/dotnet darc vmr scan-binary-files
+        --vmr "$(Build.SourcesDirectory)"
+        --tmp "$(Agent.TempDirectory)"
+        --baseline-file "src/VirtualMonoRepo/allowed-binaries.txt"
+        || (echo '##[error]Found binaries in the VMR' && exit 1)
+      displayName: Scan for binaries
+      workingDirectory: $(Build.SourcesDirectory)/src/installer
+      continueOnError: true
+
+    - script: >
+        ./.dotnet/dotnet darc vmr scan-cloaked-files
+        --vmr "$(Build.SourcesDirectory)"
+        --tmp "$(Agent.TempDirectory)"
+        || (echo '##[error]Found cloaked files in the VMR' && exit 1)
+      displayName: Scan for cloaked files
+      workingDirectory: $(Build.SourcesDirectory)/src/installer
+      continueOnError: true

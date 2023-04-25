@@ -1,0 +1,17 @@
+<Project>
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+
+  <PropertyGroup>
+    <BuildCommand>$(StandardSourceBuildCommand) $(StandardSourceBuildArgs)</BuildCommand>
+
+    <!-- NU1507 - https://github.com/dotnet/razor-compiler/issues/242
+                  Occurs when using NuGet central package management without defining any Package Source Mappings. -->
+    <RepoNoWarns>NU1507</RepoNoWarns>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <RepositoryReference Include="arcade" />
+  </ItemGroup>
+
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+</Project>

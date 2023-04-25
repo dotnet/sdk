@@ -1,0 +1,23 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Michael Simons <msimons@microsoft.com>
+Date: Wed, 18 Jan 2023 22:23:40 +0000
+Subject: [PATCH] Build System.CommandLine.NamingConventionBinder during
+ source-build
+
+Backport: https://github.com/dotnet/command-line-api/pull/2026
+---
+ sourcebuild.slnf | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/sourcebuild.slnf b/sourcebuild.slnf
+index dd18805b..dc155a4d 100644
+--- a/sourcebuild.slnf
++++ b/sourcebuild.slnf
+@@ -4,6 +4,7 @@
+     "projects": [
+       "src\\System.CommandLine\\System.CommandLine.csproj",
+       "src\\System.CommandLine.DragonFruit\\System.CommandLine.DragonFruit.csproj",
++      "src\\System.CommandLine.NamingConventionBinder\\System.CommandLine.NamingConventionBinder.csproj",
+       "src\\System.CommandLine.Rendering\\System.CommandLine.Rendering.csproj"
+     ]
+   }

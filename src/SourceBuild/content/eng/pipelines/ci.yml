@@ -1,0 +1,24 @@
+# This is the main build definition (PR+CI) for dotnet/dotnet
+
+trigger:
+  batch: true
+  branches:
+    include:
+    - main
+    - release/*
+    - internal/release/*
+
+pr:
+  branches:
+    include:
+    - main
+    - release/*
+    - internal/release/*
+
+stages:
+- ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+  - template: templates/stages/vmr-scan.yml
+
+- template: /src/installer/eng/pipelines/templates/stages/vmr-build.yml
+  parameters:
+    isBuiltFromVmr: true

@@ -1,44 +1,44 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <WixLocalization Culture="en-us" Language="1033" xmlns="http://schemas.microsoft.com/wix/2006/localization">
   <String Id="Caption">Instalator pakietu [WixBundleName]</String>
   <String Id="Title">[BUNDLEMONIKER]</String>
   <String Id="ConfirmCancelMessage">Czy na pewno chcesz anulować?</String>
   <String Id="ExecuteUpgradeRelatedBundleMessage">Poprzednia wersja</String>
-  <String Id="HelpHeader">Pomoc dotycząca instalacji</String>
-  <String Id="HelpText">/install | /repair | /uninstall | /layout [\[]"katalog"[\]] — Instaluje, naprawia, odinstalowuje
-   lub tworzy pełną lokalną kopię pakietu w katalogu. Domyślnie jest używany przełącznik install.
+  <String Id="HelpHeader">Instalator — Pomoc</String>
+  <String Id="HelpText">/install | /repair | /uninstall | /layout [\[]"directory"[\]] — instaluje, naprawia, odinstalowuje
+   lub tworzy pełną lokalną kopię pakietu w katalogu. Domyślnie jest używany element „/install”.
 
-/passive | /quiet — Wyświetla ograniczony interfejs użytkownika bez monitów albo nie wyświetla ani interfejsu użytkownika,
-   ani monitów. Domyślnie jest wyświetlany interfejs użytkownika oraz wszystkie monity.
+/passive | /quiet — wyświetla ograniczony interfejs użytkownika bez monitów albo nie wyświetla interfejsu użytkownika i
+   żadnych monitów. Domyślnie jest wyświetlany interfejs użytkownika oraz wszystkie monity.
 
-/norestart — Pomija próby ponownego uruchomienia. Domyślnie interfejs użytkownika wyświetla monit przed ponownym uruchomieniem.
-/log [\[]"log.txt"[\]] — Tworzy dziennik w określonym pliku. Domyślnie plik dziennika jest tworzony w katalogu %TEMP%.</String>
+/norestart — pomija próby ponownego uruchomienia. Domyślnie interfejs użytkownika wyświetla monit przed ponownym uruchomieniem.
+/log [\[]"log.txt"[\]] — tworzy dzienniki w określonym pliku. Domyślnie plik dziennika jest tworzony w katalogu %TEMP%.</String>
   <String Id="HelpCloseButton">&amp;Zamknij</String>
-  <String Id="InstallAcceptCheckbox">&amp;Zgadzam się z postanowieniami licencyjnymi</String>
+  <String Id="InstallAcceptCheckbox">Zg&amp;adzam się na warunki licencji</String>
   <String Id="InstallOptionsButton">&amp;Opcje</String>
-  <String Id="InstallInstallButton">&amp;Zainstaluj</String>
+  <String Id="InstallInstallButton">Za&amp;instaluj</String>
   <String Id="InstallCloseButton">&amp;Zamknij</String>
   <String Id="ProgressHeader">Postęp instalacji</String>
   <String Id="ProgressLabel">Przetwarzanie:</String>
   <String Id="OverallProgressPackageText">Trwa inicjowanie...</String>
   <String Id="ProgressCancelButton">&amp;Anuluj</String>
-  <String Id="ModifyHeader">Modyfikuj instalację</String>
-  <String Id="ModifyRepairButton">&amp;Napraw</String>
-  <String Id="ModifyUninstallButton">&amp;Odinstaluj</String>
+  <String Id="ModifyHeader">Zmodyfikuj instalatora</String>
+  <String Id="ModifyRepairButton">Nap&amp;raw</String>
+  <String Id="ModifyUninstallButton">O&amp;dinstaluj</String>
   <String Id="ModifyCloseButton">&amp;Zamknij</String>
   <String Id="SuccessRepairHeader">Pomyślnie ukończono naprawę</String>
-  <String Id="SuccessUninstallHeader">Pomyślnie ukończono dezinstalację</String>
-  <String Id="SuccessHeader">Instalacja powiodła się.</String>
+  <String Id="SuccessUninstallHeader">Pomyślnie ukończono operację odinstalowania</String>
+  <String Id="SuccessHeader">Instalacja przebiegła pomyślnie</String>
   <String Id="SuccessLaunchButton">&amp;Uruchom</String>
   <String Id="SuccessRestartText">Aby zakończyć instalację oprogramowania, należy ponownie uruchomić komputer.</String>
   <String Id="SuccessRestartButton">&amp;Uruchom ponownie</String>
   <String Id="SuccessCloseButton">&amp;Zamknij</String>
   <String Id="FailureHeader">Instalacja nie powiodła się</String>
-  <String Id="FailureInstallHeader">Instalacja nie powiodła się</String>
-  <String Id="FailureUninstallHeader">Dezinstalacja nie powiodła się</String>
+  <String Id="FailureInstallHeader">Konfiguracja nie powiodła się</String>
+  <String Id="FailureUninstallHeader">Operacja odinstalowania nie powiodła się</String>
   <String Id="FailureRepairHeader">Naprawa nie powiodła się</String>
-  <String Id="FailureHyperlinkLogText">Co najmniej jeden problem spowodował niepowodzenie instalacji. Rozwiąż problemy, a następnie ponów próbę instalacji. Aby uzyskać więcej informacji, zobacz &lt;a href="#"&gt;plik dziennika&lt;/a&gt;.</String>
-  <String Id="FailureRestartText">Aby zakończyć wycofywanie oprogramowania, musisz uruchomić ponownie komputer.</String>
+  <String Id="FailureHyperlinkLogText">Jeden lub więcej problemów spowodowało niepowodzenie instalacji. Napraw błędy, a następnie ponownie uruchom instalację. Aby uzyskać więcej informacji zobacz &lt;a href="#"&gt;plik dziennika&lt;/a&gt;.</String>
+  <String Id="FailureRestartText">Należy ponownie uruchomić komputer, aby dokończyć wycofywanie oprogramowania.</String>
   <String Id="FailureRestartButton">&amp;Uruchom ponownie</String>
   <String Id="FailureCloseButton">&amp;Zamknij</String>
   <String Id="FilesInUseHeader">Pliki w użyciu</String>
@@ -49,23 +49,23 @@
   <String Id="FilesInUseCancelButton">&amp;Anuluj</String>
   <String Id="FirstTimeWelcomeMessage">Instalacja zakończyła się pomyślnie.
 
-Następujące elementy zostały zainstalowane:
-    • Zestaw .NET SDK [DOTNETSDKVERSION]
+Następujące produkty zostały zainstalowane:
+    • Zestaw SDK .NET [DOTNETSDKVERSION]
     • Środowisko uruchomieniowe platformy .NET [DOTNETRUNTIMEVERSION]
     • Środowisko uruchomieniowe platformy ASP.NET Core [ASPNETCOREVERSION]
     • Środowisko uruchomieniowe platformy .NET dla komputerów z systemem Windows [WINFORMSANDWPFVERSION]
 
-Ten produkt gromadzi dane dotyczące użycia
+Ten produkt zbiera dane użycia
     • Więcej informacji i rezygnacja: https://aka.ms/dotnet-cli-telemetry
 
 Zasoby
-    • Dokumentacja platformy .NET: https://aka.ms/dotnet-docs
-    • Dokumentacja zestawu SDK: https://aka.ms/dotnet-sdk-docs
-    • Informacje o wersji: https://aka.ms/dotnet7-release-notes
-    • Samouczki: https://aka.ms/dotnet-tutorials</String>
+    • Dokumentacja dotycząca platformy .NET https://aka.ms/dotnet-docs
+    • Dokumentacja dotycząca zestawu SDK https://aka.ms/dotnet-sdk-docs
+    • Informacje o wersji https://aka.ms/dotnet[VERSIONMAJOR]-release-notes
+    • Samouczki https://aka.ms/dotnet-tutorials</String>
   <String Id="WelcomeHeaderMessage">.NET SDK</String>
   <String Id="WelcomeDescription">
-    Zestaw SDK platformy .NET służy do tworzenia, uruchamiania i testowania aplikacji platformy .NET. Możesz wybierać spośród wielu języków, edytorów i narzędzi deweloperskich oraz korzystać z dużego ekosystemu bibliotek do tworzenia aplikacji dla sieci Web, urządzeń przenośnych, komputerów, środowisk gier i technologii IoT. Mamy nadzieję, że Ci się podoba!</String>
+    Zestaw SDK platformy .NET służy do tworzenia, uruchamiania i testowania aplikacji platformy .NET. Możesz wybierać spośród wielu języków, edytorów i narzędzi deweloperskich oraz korzystać z dużego ekosystemu bibliotek do tworzenia aplikacji internetowych, mobilnych, na komputer, gry i Internet rzeczy. Mamy nadzieję, że Ci się to spodoba!</String>
   <String Id="LearnMoreTitle">Dowiedz się więcej o platformie .NET</String>
   <String Id="ResourcesHeader">Zasoby</String>
   <String Id="CoreDocumentationLink">&lt;A HREF="https://aka.ms/dotnet-docs"&gt;Dokumentacja platformy .NET&lt;/A&gt;</String>
@@ -76,10 +76,10 @@ Zasoby
   <String Id="InstallationNoteTitle">Uwaga dotycząca instalacji</String>
   <String Id="InstallationNote">W trakcie procesu instalacji zostanie uruchomione polecenie, które zwiększy szybkość przywracania projektu i umożliwi dostęp do trybu offline. Zajmie to maksymalnie minutę.
   </String>
-  <String Id="VisualStudioWarning">Jeśli planujesz używać platformy .NET 7.0 z programem Visual Studio, wymagany jest program Visual Studio 2022 17.4 lub nowszy. &lt;A HREF="https://aka.ms/dotnet7-release-notes"&gt;Dowiedz się więcej&lt;/A&gt;.
+  <String Id="VisualStudioWarning">Jeśli planujesz używać platformy .NET [VERSIONMAJOR].[VERSIONMINOR] z programem Visual Studio, wymagany jest program Visual Studio 2022 17.4 lub nowszy. &lt;A HREF="https://aka.ms/dotnet[VERSIONMAJOR]-release-notes"&gt;Dowiedz się więcej&lt;/A&gt;.
   </String>
-  <String Id="LicenseAssent">Klikając pozycję Zainstaluj, wyrażasz zgodę na następujące warunki.</String>
-  <String Id="InstallPathx64x86">The installation path for x64 SDK installations: &quot;[DOTNETHOME_X64]&quot; cannot be the same as for x86 SDK installations: &quot;[DOTNETHOME_X86]&quot;</String>
-  <String Id="InstallPathARM64x86">The installation path for ARM64 SDK installations: &quot;[DOTNETHOME_ARM64]&quot; cannot be the same as for x86 SDK installations: &quot;[DOTNETHOME_X86]&quot;</String>
-  <String Id="InstallPathARM64x64">The installation path for ARM64 SDK installations: &quot;[DOTNETHOME_ARM64]&quot; cannot be the same as for x64 SDK installations: &quot;[DOTNETHOME_X64]&quot;</String>
+  <String Id="LicenseAssent">Klikając pozycję Zainstaluj, wyrażasz zgodę na następujące warunki:</String>
+  <String Id="InstallPathx64x86">Ścieżka instalacji w przypadku instalacji zestawu SDK x64: „[DOTNETHOME_X64]” nie może być taka sama jak w przypadku instalacji zestawu SDK x86: „[DOTNETHOME_X86]”</String>
+  <String Id="InstallPathARM64x86">Ścieżka instalacji w przypadku instalacji zestawu SDK ARM64: „[DOTNETHOME_ARM64]” nie może być taka sama jak w przypadku instalacji zestawu SDK X86: „[DOTNETHOME_X86]”</String>
+  <String Id="InstallPathARM64x64">Ścieżka instalacji w przypadku instalacji zestawu SDK ARM64: „[DOTNETHOME_ARM64]” nie może być taka sama jak w przypadku instalacji zestawu SDK x64: „[DOTNETHOME_X64]”</String>
 </WixLocalization>

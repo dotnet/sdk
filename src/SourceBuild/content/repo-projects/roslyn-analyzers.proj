@@ -1,0 +1,23 @@
+<Project>
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+
+  <PropertyGroup>
+    <BuildCommandArgs>$(StandardSourceBuildArgs)</BuildCommandArgs>
+    <BuildCommandArgs>$(BuildCommandArgs) $(FlagParameterPrefix)warnAsError $(ArcadeFalseBoolBuildArg)</BuildCommandArgs>
+    <BuildCommand>$(StandardSourceBuildCommand) $(BuildCommandArgs)</BuildCommand>
+
+    <LogVerbosityOptOut>true</LogVerbosityOptOut>
+    <PackageVersionPropsFlowType>DependenciesOnly</PackageVersionPropsFlowType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <EnvironmentVariables Include="DotNetPackageVersionPropsPath=" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <RepositoryReference Include="runtime" />
+    <RepositoryReference Include="roslyn" />
+  </ItemGroup>
+
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+</Project>

@@ -1,0 +1,28 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nikola Milosavljevic <nikolam@microsoft.com>
+Date: Thu, 20 Apr 2023 18:41:35 +0000
+Subject: [PATCH] Use correct ref-pack versions
+
+Backport: https://github.com/dotnet/roslyn/issues/67894
+---
+ eng/targets/Imports.BeforeArcade.targets | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/eng/targets/Imports.BeforeArcade.targets b/eng/targets/Imports.BeforeArcade.targets
+index 968ecd42a6e..ba3300c847a 100644
+--- a/eng/targets/Imports.BeforeArcade.targets
++++ b/eng/targets/Imports.BeforeArcade.targets
+@@ -17,11 +17,11 @@
+   <ItemGroup Condition="'$(DotNetBuildFromSource)' == 'true'">
+     <KnownFrameworkReference Update="Microsoft.NETCore.App">
+       <TargetingPackVersion Condition="'%(TargetFramework)' == 'net6.0'">6.0.0</TargetingPackVersion>
+-      <TargetingPackVersion Condition="'%(TargetFramework)' == 'net8.0'">8.0.0-preview.3.23165.3</TargetingPackVersion>
++      <TargetingPackVersion Condition="'%(TargetFramework)' == 'net8.0'">$(MicrosoftNETCoreAppRefPackageVersion)</TargetingPackVersion>
+     </KnownFrameworkReference>
+     <KnownFrameworkReference Update="Microsoft.AspNetCore.App">
+       <TargetingPackVersion Condition="'%(TargetFramework)' == 'net6.0'">6.0.0</TargetingPackVersion>
+-      <TargetingPackVersion Condition="'%(TargetFramework)' == 'net8.0'">8.0.0-preview.3.23164.14</TargetingPackVersion>
++      <TargetingPackVersion Condition="'%(TargetFramework)' == 'net8.0'">$(MicrosoftAspNetCoreAppRefPackageVersion)</TargetingPackVersion>
+     </KnownFrameworkReference>
+   </ItemGroup>
+ 

@@ -9,6 +9,8 @@ param(
     [Parameter(Mandatory=$true)][string]$DotnetMSIVersion,
     [Parameter(Mandatory=$true)][string]$SDKBundleVersion,
     [Parameter(Mandatory=$true)][string]$DotnetCLINugetVersion,
+    [Parameter(Mandatory=$true)][string]$VersionMajor,
+    [Parameter(Mandatory=$true)][string]$VersionMinor,
     [Parameter(Mandatory=$true)][string]$UpgradeCode,
     [Parameter(Mandatory=$true)][string]$DependencyKeyName,
     [Parameter(Mandatory=$true)][string]$Architecture
@@ -59,6 +61,8 @@ function RunCandle
         -dBuildVersion="$DotnetMSIVersion" `
         -dSDKBundleVersion="$SDKBundleVersion" `
         -dNugetVersion="$DotnetCLINugetVersion" `
+        -dVersionMajor="$VersionMajor" `
+        -dVersionMinor="$VersionMinor" `
         -dUpgradeCode="$UpgradeCode" `
         -dDependencyKeyName="$DependencyKeyName" `
         -arch "$Architecture" `

@@ -1,0 +1,27 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <OutputPath>$(LeakDetectionTasksBinDir)</OutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Build">
+      <Version>15.7.179</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Build.Utilities.Core">
+      <Version>15.7.179</Version>
+    </PackageReference>
+    <ProjectReference Include="../Microsoft.DotNet.SourceBuild.Tasks.XPlat/Microsoft.DotNet.SourceBuild.Tasks.XPlat.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="@(SdkAssemblyReference)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="*.cs" />
+  </ItemGroup>
+
+</Project>

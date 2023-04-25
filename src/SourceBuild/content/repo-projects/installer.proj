@@ -1,0 +1,110 @@
+<Project>
+  <PropertyGroup>
+    <SourceDirectory>installer</SourceDirectory>
+  </PropertyGroup>
+
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+
+  <PropertyGroup>
+    <OverrideTargetRid>$(TargetRid)</OverrideTargetRid>
+    <OverrideTargetRid Condition="'$(TargetOS)' == 'OSX'">osx-$(Platform)</OverrideTargetRid>
+    <OverrideTargetRid Condition="'$(TargetOS)' == 'FreeBSD'">freebsd-$(Platform)</OverrideTargetRid>
+    <OverrideTargetRid Condition="'$(TargetOS)' == 'Windows_NT'">win-$(Platform)</OverrideTargetRid>
+    <OSNameOverride>$(OverrideTargetRid.Substring(0, $(OverrideTargetRid.IndexOf("-"))))</OSNameOverride>
+
+    <!-- Determine target portable rid based on bootstrap SDK's portable rid -->
+    <_platformIndex>$(NETCoreSdkPortableRuntimeIdentifier.LastIndexOf('-'))</_platformIndex>
+    <PortableOS>$(NETCoreSdkPortableRuntimeIdentifier.Substring(0, $(_platformIndex)))</PortableOS>
+
+    <RuntimeArg>--runtime-id $(OverrideTargetRid)</RuntimeArg>
+
+    <BuildCommandArgs>$(StandardSourceBuildArgs)</BuildCommandArgs>
+    <BuildCommandArgs>$(BuildCommandArgs) $(RuntimeArg)</BuildCommandArgs>
+
+    <!--
+      Setting NETCoreAppMaximumVersion to a high version so that the sdk doesn't complain if we're restoring/publishing for a higher version than the sdk.
+      See https://github.com/dotnet/sdk/issues/1512#issuecomment-377082883
+    -->
+    <BuildCommandArgs>$(BuildCommandArgs) /p:NETCoreAppMaximumVersion=99.9</BuildCommandArgs>
+    <BuildCommandArgs>$(BuildCommandArgs) /p:OSName=$(OSNameOverride)</BuildCommandArgs>
+    <BuildCommandArgs>$(BuildCommandArgs) /p:PortableOSName=$(PortableOS)</BuildCommandArgs>
+    <BuildCommandArgs>$(BuildCommandArgs) /p:Rid=$(OverrideTargetRid)</BuildCommandArgs>
+    <BuildCommandArgs>$(BuildCommandArgs) /p:DOTNET_INSTALL_DIR=$(DotNetCliToolDir)</BuildCommandArgs>
+
+    <BuildCommandArgs Condition="'$(TargetOS)' != 'Windows_NT'">$(BuildCommandArgs) /p:AspNetCoreInstallerRid=$(OverrideTargetRid)</BuildCommandArgs>
+    <!-- core-sdk always wants to build portable on OSX and FreeBSD -->
+    <BuildCommandArgs Condition="'$(TargetOS)' == 'FreeBSD'">$(BuildCommandArgs) /p:PortableBuild=true</BuildCommandArgs>
+    <BuildCommandArgs Condition="'$(TargetOS)' != 'Windows_NT'">$(BuildCommandArgs) /p:CoreSetupRid=$(OverrideTargetRid)</BuildCommandArgs>
+
+    <!-- Consume the source-built Core-Setup and toolset. This line must be removed to source-build CLI without source-building Core-Setup first. -->
+    <BuildCommandArgs>$(BuildCommandArgs) /p:PublicBaseURL=file:%2F%2F$(SourceBuiltAssetsDir)</BuildCommandArgs>
+
+    <BuildCommandArgs>$(BuildCommandArgs) /p:UsePortableLinuxSharedFramework=false</BuildCommandArgs>
+
+    <BuildCommand>$(StandardSourceBuildCommand) $(BuildCommandArgs)</BuildCommand>
+
+    <!-- CS9057 - Caused by incoherency of analyzer assemblies during pre-release builds. -->
+    <RepoNoWarns>CS9057</RepoNoWarns>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <RepositoryReference Include="arcade" />
+    <RepositoryReference Include="aspnetcore" />
+    <RepositoryReference Include="emsdk" />
+    <RepositoryReference Include="fsharp" />
+    <RepositoryReference Include="msbuild" />
+    <RepositoryReference Include="source-build-externals" />
+    <RepositoryReference Include="nuget-client" />
+    <RepositoryReference Include="roslyn" />
+    <RepositoryReference Include="runtime" />
+    <RepositoryReference Include="sdk" />
+    <RepositoryReference Include="test-templates" />
+    <RepositoryReference Include="vstest" />
+    <RepositoryReference Include="xliff-tasks" />
+  </ItemGroup>
+
+  <!--
+    If we have authentication, keep the templating internal feed (if one exists) to acquire the
+    text-only prebuilt. The source-build repo as a whole should depend on the same internal feed as
+    this repo does, so authentication should already be set up in the global endpoints json.
+  -->
+  <ItemGroup Condition="'$(VSS_NUGET_EXTERNAL_FEED_ENDPOINTS)' != ''">
+    <KeepFeedPrefixes Include="darc-int-dotnet-aspnetcore-" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EnvironmentVariables Include="CLIBUILD_SKIP_TESTS=true" />
+
+    <!-- Disable bundled tools until we can figure out:
+      Unable to find package dotnet-dev-certs.
+      Unable to find package dotnet-ef.
+      Unable to find package dotnet-sql-cache.
+      Unable to find package dotnet-user-secrets.
+      Unable to find package dotnet-user-jwts.
+      Unable to find package dotnet-watch.  -->
+    <EnvironmentVariables Include="CLIBUILD_SKIP_BUNDLEDDOTNETTOOLS=true" />
+  </ItemGroup>
+
+  <Target Name="CopyTarBall"
+          AfterTargets="ExtractIntermediatePackages"
+          Inputs="$(MSBuildProjectFullPath)"
+          Outputs="$(RepoCompletedSemaphorePath)CopyTarBall.complete">
+
+    <PropertyGroup>
+      <TarBallPath>$(SourceBuiltAssetsDir)dotnet-sdk-*$(TarBallExtension)</TarBallPath>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <TarBall Include="$(TarBallPath)" />
+    </ItemGroup>
+
+    <Error Condition="'@(TarBall)' == ''" Text="'$(TarBallPath)' does not exist." />
+
+    <Copy SourceFiles="@(TarBall)"
+          DestinationFolder="$(SourceBuiltTarBallPath)" />
+
+    <WriteLinesToFile File="$(RepoCompletedSemaphorePath)CopyTarBall.complete" Overwrite="true" />
+  </Target>
+
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+</Project>

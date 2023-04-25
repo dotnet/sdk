@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!-- Repo Version Information -->
+  <PropertyGroup>
+    <VersionPrefix>0.1.0</VersionPrefix>
+    <PreReleaseVersionLabel>alpha.1</PreReleaseVersionLabel>
+  </PropertyGroup>
+  <!-- Humanizer expects us to tell the version it's building -->
+  <PropertyGroup>
+    <HumanizerCorePackageVersion>2.2.0</HumanizerCorePackageVersion>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!--
+      Building .NET from source depends on several archives, depending on the branch's current
+      source-buildability status.
+
+      These URLs can't be composed from their base URL and version as we read them from the
+      prep.sh and pipeline scripts, outside of MSBuild.
+    -->
+    <PrivateSourceBuiltArtifactsUrl>https://dotnetcli.azureedge.net/source-built-artifacts/assets/Private.SourceBuilt.Artifacts.8.0.100-preview.3.23178.7.centos.8-x64.tar.gz</PrivateSourceBuiltArtifactsUrl>
+    <PrivateSourceBuiltPrebuiltsUrl>https://dotnetcli.azureedge.net/source-built-artifacts/assets/Private.SourceBuilt.Prebuilts.0.1.0-8.0.100-24.centos.8-x64.tar.gz</PrivateSourceBuiltPrebuiltsUrl>
+    <PrivateSourceBuiltSdkUrl_CentOS8Stream>https://dotnetcli.azureedge.net/source-built-artifacts/sdks/dotnet-sdk-8.0.100-preview.3.23210.1-centos.8-x64.tar.gz</PrivateSourceBuiltSdkUrl_CentOS8Stream>
+  </PropertyGroup>
+</Project>

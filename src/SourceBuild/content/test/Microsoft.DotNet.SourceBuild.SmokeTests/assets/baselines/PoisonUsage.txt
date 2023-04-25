@@ -1,0 +1,14 @@
+<PrebuiltLeakReport>
+  <File Path="Microsoft.DotNet.ILCompiler.x.y.z/tools/netstandard/System.Collections.Immutable.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.ILCompiler.x.y.z/tools/netstandard/System.Reflection.Metadata.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="runtime.banana-rid.Microsoft.DotNet.ILCompiler.x.y.z/tools/netstandard/System.Collections.Immutable.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="runtime.banana-rid.Microsoft.DotNet.ILCompiler.x.y.z/tools/netstandard/System.Reflection.Metadata.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+</PrebuiltLeakReport>

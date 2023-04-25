@@ -1,0 +1,54 @@
+<Project>
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+
+  <PropertyGroup>
+    <OverrideTargetRid>$(TargetRid)</OverrideTargetRid>
+    <OverrideTargetRid Condition="'$(TargetOS)' == 'OSX'">osx-$(Platform)</OverrideTargetRid>
+    <OverrideTargetRid Condition="'$(TargetOS)' == 'FreeBSD'">freebsd-$(Platform)</OverrideTargetRid>
+    <OverrideTargetRid Condition="'$(TargetOS)' == 'Windows_NT'">win-$(Platform)</OverrideTargetRid>
+    <_portableRidOverridden Condition="'$(TargetRid)' != '$(OverrideTargetRid)'">true</_portableRidOverridden>
+    <_portableRidOverridden Condition="'$(TargetRid)' == '$(OverrideTargetRid)'">false</_portableRidOverridden>
+
+    <!-- StandardSourceBuildArgs include -publish which is not supported by the aspnetcore build script. -->
+    <BuildCommandArgs>$(StandardSourceBuildArgs.Replace('--publish', ''))</BuildCommandArgs>
+    <!-- The arch flag (defaults to x64) overrides any value of TargetArchitecture that we might set -->
+    <BuildCommandArgs>$(BuildCommandArgs) --arch $(Platform)</BuildCommandArgs>
+    <BuildCommandArgs>$(BuildCommandArgs) --no-build-repo-tasks</BuildCommandArgs>
+    <BuildCommandArgs>$(BuildCommandArgs) --no-build-nodejs</BuildCommandArgs>
+    <BuildCommandArgs>$(BuildCommandArgs) /p:PublishCompressedFilesPathPrefix=$(SourceBuiltAspNetCoreRuntime)</BuildCommandArgs>
+    <BuildCommandArgs>$(BuildCommandArgs) /p:PortableBuild=$(_portableRidOverridden) /p:TargetRuntimeIdentifier=$(OverrideTargetRid)</BuildCommandArgs>
+    <!-- Update to 1.0.0 version of reference assemblies which are built in SBRP instead of the preview.2 version
+         included by Arcade -->
+    <BuildCommandArgs>$(BuildCommandArgs) /p:MicrosoftNetFrameworkReferenceAssembliesVersion=1.0.0</BuildCommandArgs>
+    <BuildCommand>$(ProjectDirectory)\eng\build$(ShellExtension) $(BuildCommandArgs)</BuildCommand>
+
+    <LogVerbosityOptOut>true</LogVerbosityOptOut>
+
+    <!-- CA1512 - Use 'ArgumentOutOfRangeException.ThrowIfEqual'
+                  Requires https://github.com/dotnet/aspnetcore/issues/47673 -->
+    <RepoNoWarns>CA1512</RepoNoWarns>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!--
+      From aspnetcore Versions.props:
+          Versions of Microsoft.CodeAnalysis packages referenced by analyzers shipped in the SDK.
+          This need to be pinned since they're used in 3.1 apps and need to be loadable in VS 2019.
+      In source-build these don't need to be pinned and can use the source-built versions since it doesn't
+      need to support VS 2019.
+    -->
+    <ExtraPackageVersionPropsPackageInfo Include="Analyzer_MicrosoftCodeAnalysisCSharpVersion" Version="%24(MicrosoftCodeAnalysisCSharpVersion)" />
+    <ExtraPackageVersionPropsPackageInfo Include="Analyzer_MicrosoftCodeAnalysisCSharpWorkspacesVersion" Version="%24(MicrosoftCodeAnalysisCSharpWorkspacesVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <RepositoryReference Include="arcade" />
+    <RepositoryReference Include="source-build-externals" />
+    <RepositoryReference Include="runtime" />
+    <RepositoryReference Include="msbuild" />
+    <RepositoryReference Include="roslyn" />
+    <RepositoryReference Include="roslyn-analyzers" />
+  </ItemGroup>
+
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+</Project>

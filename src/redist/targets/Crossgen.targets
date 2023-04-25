@@ -11,7 +11,7 @@
       <!-- When ingesting stable pgo instrumented binaries, the shared framework will be a non-stable version,
            as will the archive file names themselves. -->
       <SharedFrameworkNameVersionPath Condition=" '$(PgoInstrument)' != 'true' ">$(RedistLayoutPath)shared/$(SharedFrameworkName)/$(MicrosoftNETCoreAppRuntimePackageVersion)</SharedFrameworkNameVersionPath>
-      <SharedFrameworkNameVersionPath Condition=" '$(PgoInstrument)' == 'true' ">$(RedistLayoutPath)shared/$(SharedFrameworkName)/$(VSRedistCommonNetCoreTargetingPackx6470PackageVersion)</SharedFrameworkNameVersionPath>
+      <SharedFrameworkNameVersionPath Condition=" '$(PgoInstrument)' == 'true' ">$(RedistLayoutPath)shared/$(SharedFrameworkName)/$(VSRedistCommonNetCoreTargetingPackx6480PackageVersion)</SharedFrameworkNameVersionPath>
     </PropertyGroup>
 
     <!-- Download the runtime package with the crossgen executable in it -->
@@ -36,14 +36,13 @@
          no that we do not silently miss cross-genning some bits. When a TFM for a tool is updated,
          update its path explicitly. If all TFMs match, update DefaultToolTfm -->
     <PropertyGroup>
-      <DefaultToolTfm>net7.0</DefaultToolTfm>
+      <DefaultToolTfm>net8.0</DefaultToolTfm>
 
       <NetSdkTools>$(SdkOutputDirectory)Sdks\Microsoft.NET.Sdk\tools\$(DefaultToolTfm)\</NetSdkTools>
       <BlazorWasmTools>$(SdkOutputDirectory)Sdks\Microsoft.NET.Sdk.BlazorWebAssembly\tools\$(DefaultToolTfm)\</BlazorWasmTools>
       <NuGetPackTools>$(SdkOutputDirectory)Sdks\NuGet.Build.Tasks.Pack\CoreCLR\</NuGetPackTools>
       <RazorTasks>$(SdkOutputDirectory)Sdks\Microsoft.NET.Sdk.Razor\tasks\$(DefaultToolTfm)\</RazorTasks>
       <WindowsDesktopTools>$(SdkOutputDirectory)Sdks\Microsoft.NET.Sdk.WindowsDesktop\tools\$(DefaultToolTfm)\</WindowsDesktopTools>
-      <ILLinkTools>$(SdkOutputDirectory)Sdks\Microsoft.NET.ILLink.Tasks\tools\$(DefaultToolTfm)\</ILLinkTools>
       <PublishTools>$(SdkOutputDirectory)Sdks\Microsoft.NET.Sdk.Publish\tools\$(DefaultToolTfm)\</PublishTools>
       <WebTools>$(SdkOutputDirectory)Sdks\Microsoft.NET.Sdk.Web\tools\$(DefaultToolTfm)\</WebTools>
       <ProjectSystemTools>$(SdkOutputDirectory)Sdks\Microsoft.NET.Sdk.Web.ProjectSystem\tools\$(DefaultToolTfm)\</ProjectSystemTools>
@@ -74,7 +73,6 @@
       <RemainingFiles Include="$(NuGetPackTools)**\*" />
       <RemainingFiles Include="$(RazorTasks)**\*" />
       <RemainingFiles Include="$(WindowsDesktopTools)**\*" />
-      <RemainingFiles Include="$(ILLinkTools)**\*" />
       <RemainingFiles Include="$(PublishTools)**\*" />
       <RemainingFiles Include="$(WebTools)**\*" />
       <RemainingFiles Include="$(ProjectSystemTools)**\*" />
@@ -146,7 +144,6 @@
     <Error Text="Potentially missed crossgen for '$(NuGetPackTools)', directory does not exist" Condition= "!EXISTS('$(NuGetPackTools)') "/>
     <Error Text="Potentially missed crossgen for '$(RazorTasks)', directory does not exist" Condition= "!EXISTS('$(RazorTasks)') "/>
     <Error Text="Potentially missed crossgen for '$(WindowsDesktopTools)', directory does not exist" Condition= "!EXISTS('$(WindowsDesktopTools)') AND '$(DotNetBuildFromSource)' != 'true'"/>
-    <Error Text="Potentially missed crossgen for '$(ILLinkTools)', directory does not exist" Condition= "!EXISTS('$(ILLinkTools)') "/>
     <Error Text="Potentially missed crossgen for '$(PublishTools)', directory does not exist" Condition= "!EXISTS('$(PublishTools)') "/>
     <Error Text="Potentially missed crossgen for '$(WebTools)', directory does not exist" Condition= "!EXISTS('$(WebTools)') "/>
     <Error Text="Potentially missed crossgen for '$(ProjectSystemTools)', directory does not exist" Condition= "!EXISTS('$(ProjectSystemTools)') "/>

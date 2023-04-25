@@ -1,0 +1,26 @@
+<Project>
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+
+  <PropertyGroup>
+    <NuGetKeyFilePath>$(KeysDir)NuGet.Client.snk</NuGetKeyFilePath>
+    <DeterministicBuildOptOut>true</DeterministicBuildOptOut>
+    <RepoNoWarns>CS9057</RepoNoWarns>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <EnvironmentVariables Include="MS_PFX_PATH=$(NuGetKeyFilePath)" />
+    <EnvironmentVariables Include="NUGET_PFX_PATH=$(NuGetKeyFilePath)" />
+
+    <RepositoryReference Include="source-build-externals" />
+    <RepositoryReference Include="msbuild" />
+    <RepositoryReference Include="xdt" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <BuildCommandArgs>$(StandardSourceBuildArgs)</BuildCommandArgs>
+
+    <BuildCommand>$(ProjectDirectory)eng/source-build/build$(ShellExtension) $(BuildCommandArgs)</BuildCommand>
+  </PropertyGroup>
+
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+</Project>

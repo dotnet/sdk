@@ -1,13 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">  
-  <PropertyGroup>
-    <MicrosoftDotNetBuildTasksInstallersTaskTargetFramework Condition="'$(MSBuildRuntimeType)' == 'Core'">net7.0</MicrosoftDotNetBuildTasksInstallersTaskTargetFramework>
-    <MicrosoftDotNetBuildTasksInstallersTaskTargetFramework Condition="'$(MSBuildRuntimeType)' != 'Core'">net472</MicrosoftDotNetBuildTasksInstallersTaskTargetFramework>
-    <MicrosoftDotNetBuildTasksInstallersTaskAssembly>$(NuGetPackageRoot)microsoft.dotnet.build.tasks.installers\$(MicrosoftDotNetBuildTasksInstallersPackageVersion)\tools\$(MicrosoftDotNetBuildTasksInstallersTaskTargetFramework)\Microsoft.DotNet.Build.Tasks.Installers.dll</MicrosoftDotNetBuildTasksInstallersTaskAssembly>
-  </PropertyGroup>
-
-  <UsingTask TaskName="CreateLightCommandPackageDrop" AssemblyFile="$(MicrosoftDotNetBuildTasksInstallersTaskAssembly)" />
-  
   <Target Name="SetupWixProperties" DependsOnTargets="GetCurrentRuntimeInformation">
     <!-- AcquireWix Properties -->
     <PropertyGroup>
@@ -70,14 +62,14 @@
       <MSBuildExtensionsOutputDirectory>$(LayoutDirectory)MSBuildExtensions</MSBuildExtensionsOutputDirectory>-->
     </PropertyGroup>
 
+    <Error Condition=" '$(OfficialBuild)' == 'true' AND '$(_PatchNumber)' == '' "
+           Text="_PatchNumber should not be empty in an official build. Check if there were changes in Arcade." />
+
     <Exec Command="git rev-list --count HEAD"
           ConsoleToMSBuild="true"
-          Condition=" '$(GitCommitCount)' == '' ">
+          Condition=" '$(GitCommitCount)' == '' AND '$(_PatchNumber)' == '' ">
       <Output TaskParameter="ConsoleOutput" PropertyName="GitCommitCount" />
     </Exec>
-
-    <Error Condition=" '$(OfficialBuild)' == 'true' And '$(_PatchNumber)' == '' "
-           Text="_PatchNumber should not be empty in an official build. Check if there were changes in Arcade." />
 
     <PropertyGroup>
       <GitCommitCount>$(GitCommitCount.PadLeft(6,'0'))</GitCommitCount>
@@ -166,6 +158,8 @@
                       '$(MsiVersion)' ^
                       '$(SDKBundleVersion)' ^
                       '$(Version)' ^
+                      '$(VersionMajor)' ^
+                      '$(VersionMinor)' ^
                       '$(SdkInstallerUpgradeCode)' ^
                       '$(SdkDependencyKeyName)' ^
                       '$(Architecture)' ^
@@ -204,6 +198,8 @@
                       '$(MsiVersion)' ^
                       '$(SDKBundleVersion)' ^
                       '$(Version)' ^
+                      '$(VersionMajor)' ^
+                      '$(VersionMinor)' ^
                       '$(SdkPlaceholderInstallerUpgradeCode)' ^
                       '$(SdkPlaceholderDependencyKeyName)' ^
                       '$(Architecture)' ^
@@ -239,6 +235,8 @@
                       '%(TemplatesMsiComponent.MsiVersion)' ^
                       '%(TemplatesMsiComponent.MsiVersion)' ^
                       '$(FullNugetVersion)' ^
+                      '$(VersionMajor)' ^
+                      '$(VersionMinor)' ^
                       '%(TemplatesMsiComponent.UpgradeCode)' ^
                       '%(TemplatesMsiComponent.DependencyKeyName)' ^
                       '$(Architecture)' ^
@@ -280,6 +278,11 @@
 
   <Target Name="GenerateWorkloadManifestsWxs"
           DependsOnTargets="ValidateBundledManifestSigning">
+    <ItemGroup>
+      <_Manifests Include="@(BundledManifests)">
+        <RestoredMsiPathInNupkg>$([MSBuild]::NormalizePath($([System.IO.Directory]::GetFiles('%(RestoredMsiNupkgContentPath)/data/', '*$(MsiArchitectureForWorkloadManifests).msi'))))</RestoredMsiPathInNupkg>
+      </_Manifests>
+    </ItemGroup>
     <PropertyGroup>
       <WorkloadManifestsWxsPath>$(IntermediateOutputPath)WorkloadManifests.wxs</WorkloadManifestsWxsPath>
       <WorkloadManifestsWxsContent>
@@ -289,7 +292,7 @@
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
     <Fragment>
         <PackageGroup Id="PG_WorkloadManifests">
-            @(BundledManifests->'<MsiPackage SourceFile="%(RestoredMsiPathInNupkg)">
+            @(_Manifests->'<MsiPackage SourceFile="%(RestoredMsiPathInNupkg)">
                 <MsiProperty Name="DOTNETHOME" Value="[DOTNETHOME]" />
             </MsiPackage>', '
             ')
@@ -349,6 +352,8 @@
                       -DotnetMSIVersion '$(MsiVersion)' ^
                       -SDKBundleVersion '$(SDKBundleVersion)' ^
                       -DotnetCLINugetVersion '$(Version)' ^
+                      -VersionMajor '$(VersionMajor)' ^
+                      -VersionMinor '$(VersionMinor)' ^
                       -WindowsDesktopVersion '$(MicrosoftWindowsDesktopAppRuntimePackageVersion)' ^
                       -UpgradeCode '$(CombinedFrameworkSDKHostInstallerUpgradeCode)' ^
                       -DependencyKeyName '$(SdkDependencyKeyName)' ^

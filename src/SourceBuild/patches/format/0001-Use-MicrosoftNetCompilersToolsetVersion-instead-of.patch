@@ -1,0 +1,52 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Michael Simons <msimons@microsoft.com>
+Date: Fri, 21 Apr 2023 03:07:28 +0000
+Subject: [PATCH] Use MicrosoftNetCompilersToolsetVersion instead of 
+ MicrosoftNetCompilersToolsetPackageVersion
+
+Temporary fix for https://github.com/dotnet/source-build/issues/3392
+---
+ Directory.Packages.props | 16 ++++++++--------
+ eng/Versions.props       |  4 ++--
+ 2 files changed, 10 insertions(+), 10 deletions(-)
+
+diff --git a/Directory.Packages.props b/Directory.Packages.props
+index c9041493..83f3d877 100644
+--- a/Directory.Packages.props
++++ b/Directory.Packages.props
+@@ -13,14 +13,14 @@
+     <PackageVersion Include="Microsoft.Build.Locator" Version="$(MicrosoftBuildLocatorVersion)" />
+     <PackageVersion Include="Microsoft.Build" Version="$(MicrosoftBuildVersion)"/>
+     <PackageVersion Include="Microsoft.CodeAnalysis.Analyzer.Testing" Version="$(MicrosoftCodeAnalysisAnalzerTestingVersion)" />
+-    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Features" Version="$(MicrosoftNetCompilersToolsetPackageVersion)" />
+-    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="$(MicrosoftNetCompilersToolsetPackageVersion)" />
+-    <PackageVersion Include="Microsoft.CodeAnalysis.Features" Version="$(MicrosoftNetCompilersToolsetPackageVersion)" />
+-    <PackageVersion Include="Microsoft.CodeAnalysis.VisualBasic.Features" Version="$(MicrosoftNetCompilersToolsetPackageVersion)" />
+-    <PackageVersion Include="Microsoft.CodeAnalysis.VisualBasic.Workspaces" Version="$(MicrosoftNetCompilersToolsetPackageVersion)" />
+-    <PackageVersion Include="Microsoft.CodeAnalysis.VisualBasic" Version="$(MicrosoftNetCompilersToolsetPackageVersion)" />
+-    <PackageVersion Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="$(MicrosoftNetCompilersToolsetPackageVersion)" />
+-    <PackageVersion Include="Microsoft.CodeAnalysis" Version="$(MicrosoftNetCompilersToolsetPackageVersion)" />
++    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Features" Version="$(MicrosoftNetCompilersToolsetVersion)" />
++    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="$(MicrosoftNetCompilersToolsetVersion)" />
++    <PackageVersion Include="Microsoft.CodeAnalysis.Features" Version="$(MicrosoftNetCompilersToolsetVersion)" />
++    <PackageVersion Include="Microsoft.CodeAnalysis.VisualBasic.Features" Version="$(MicrosoftNetCompilersToolsetVersion)" />
++    <PackageVersion Include="Microsoft.CodeAnalysis.VisualBasic.Workspaces" Version="$(MicrosoftNetCompilersToolsetVersion)" />
++    <PackageVersion Include="Microsoft.CodeAnalysis.VisualBasic" Version="$(MicrosoftNetCompilersToolsetVersion)" />
++    <PackageVersion Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="$(MicrosoftNetCompilersToolsetVersion)" />
++    <PackageVersion Include="Microsoft.CodeAnalysis" Version="$(MicrosoftNetCompilersToolsetVersion)" />
+     <PackageVersion Include="Microsoft.DiaSymReader" Version="$(MicrosoftDiaSymReaderVersion)" />
+     <PackageVersion Include="Microsoft.Extensions.FileSystemGlobbing" Version="$(MicrosoftExtensionsFileSystemGlobbingVersion)" />
+     <PackageVersion Include="Microsoft.Extensions.Logging" Version="$(MicrosoftExtensionsLoggingVersion)" />
+diff --git a/eng/Versions.props b/eng/Versions.props
+index 2d325ec6..e1bc7022 100644
+--- a/eng/Versions.props
++++ b/eng/Versions.props
+@@ -35,7 +35,7 @@
+     <!-- In order tests against the same version of NuGet as the SDK. We have to set this to match. -->
+     <NuGetVersion>6.6.0-preview.3.61</NuGetVersion>
+     <!-- roslyn -->
+-    <MicrosoftNetCompilersToolsetPackageVersion>4.5.0-3.22602.7</MicrosoftNetCompilersToolsetPackageVersion>
++    <MicrosoftNetCompilersToolsetVersion>4.5.0-3.22602.7</MicrosoftNetCompilersToolsetVersion>
+     <!-- roslyn-sdk -->
+     <MicrosoftCodeAnalysisAnalzerTestingVersion>1.1.2-beta1.22216.1</MicrosoftCodeAnalysisAnalzerTestingVersion>
+     <!-- runtime -->

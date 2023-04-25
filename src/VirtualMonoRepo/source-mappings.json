@@ -1,0 +1,183 @@
+// This file configures where the VMR synchronizes the sources from.
+// Each development repository has a mapping record which says where the remote repo is,
+// what files are in/excluded from the sync, etc.
+//
+// This file does not contain information about what version of sources is synchronized.
+// Please check the source-manifest.json file for that purpose.
+//
+// More details on this file's mechanics:
+// https://github.com/dotnet/arcade/blob/main/Documentation/UnifiedBuild/VMR-Design-And-Operation.md#repository-source-mappings
+{
+    // Location within the VMR where the source-build patches are stored
+    // These patches are applied on top of the code synchronized into the VMR
+    "patchesPath": "src/installer/src/SourceBuild/patches",
+
+    "sourceMappingsPath": "src/installer/src/VirtualMonoRepo/source-mappings.json",
+
+    // Some files are copied outside of the src/ directory into other locations
+    // When files in the source paths are changed, they are automatically synchronized too
+    "additionalMappings": [
+        {
+            "source": "src/installer/src/SourceBuild/content",
+            "destination": ""
+        },
+        {
+            "source": "src/installer/eng/common",
+            "destination": "eng/common"
+        },
+        {
+            "source": "src/installer/src/VirtualMonoRepo/source-mappings.json",
+            "destination": "src"
+        }
+    ],
+
+    // These defaults are added to all mappings unless `ignoreDefaults: true` is specified
+    // When no "include" filter is specified, "**/*" is used
+    // The default filters do not apply to submodules
+    // Only filters which start with submodule's path are applied when syncing submodules
+    "defaults": {
+        "defaultRef": "main",
+        "exclude": [
+            "**/*.dll",
+            "**/*.Dll",
+            "**/*.exe",
+            "**/*.pdb",
+            "**/*.mdb",
+            "**/*.zip",
+            "**/*.nupkg"
+        ]
+    },
+
+    // Each of these mappings has a corresponding folder in the src/ directory
+    "mappings": [
+        {
+            "name": "arcade",
+            "defaultRemote": "https://github.com/dotnet/arcade",
+            "exclude": [
+                "src/Microsoft.DotNet.SignTool.Tests/*.mpack",
+                "src/Microsoft.DotNet.SignTool.Tests/*.msi",
+                "src/Microsoft.DotNet.SignTool.Tests/*.vsix"
+            ]
+        },
+        {
+            "name": "aspnetcore",
+            "defaultRemote": "https://github.com/dotnet/aspnetcore",
+            "exclude": [
+                "src/submodules/MessagePack-CSharp/**/*.dll",
+                "**/samples/**/jquery-validation-unobtrusive/.bower.json",
+                "**/samples/**/jquery-validation-unobtrusive/*.js",
+                "src/SignalR/clients/java/signalr/gradle/wrapper/gradle-wrapper.jar"
+            ]
+        },
+        {
+            "name": "cecil",
+            "defaultRemote": "https://github.com/dotnet/cecil"
+        },
+        {
+            "name": "command-line-api",
+            "defaultRemote": "https://github.com/dotnet/command-line-api"
+        },
+        {
+            "name": "deployment-tools",
+            "defaultRemote": "https://github.com/dotnet/deployment-tools"
+        },
+        {
+            "name": "diagnostics",
+            "defaultRemote": "https://github.com/dotnet/diagnostics"
+        },
+        {
+            "name": "emsdk",
+            "defaultRemote": "https://github.com/dotnet/emsdk"
+        },
+        {
+            "name": "format",
+            "defaultRemote": "https://github.com/dotnet/format"
+        },
+        {
+            "name": "fsharp",
+            "defaultRemote": "https://github.com/dotnet/fsharp"
+        },
+        {
+            "name": "installer",
+            "defaultRemote": "https://github.com/dotnet/installer",
+            "exclude": [
+                // We don't need the tarball content in the VMR again, it's already copied in the root
+                "src/SourceBuild/content/**/*"
+            ]
+        },
+        {
+            "name": "msbuild",
+            "defaultRemote": "https://github.com/dotnet/msbuild"
+        },
+        {
+            "name": "nuget-client",
+            "defaultRemote": "https://github.com/NuGet/NuGet.Client",
+            "defaultRef": "dev",
+            "exclude":[
+                "src/NuGet.Clients/NuGet.VisualStudio.Client"
+            ]
+        },
+        {
+            "name": "razor",
+            "defaultRemote": "https://github.com/dotnet/razor"
+        },
+        {
+            "name": "roslyn",
+            "defaultRemote": "https://github.com/dotnet/roslyn"
+        },
+        {
+            "name": "roslyn-analyzers",
+            "defaultRemote": "https://github.com/dotnet/roslyn-analyzers"
+        },
+        {
+            "name": "runtime",
+            "defaultRemote": "https://github.com/dotnet/runtime"
+        },
+        {
+            "name": "sdk",
+            "defaultRemote": "https://github.com/dotnet/sdk"
+        },
+        {
+            "name": "source-build-externals",
+            "defaultRemote": "https://github.com/dotnet/source-build-externals",
+            "exclude": [
+                "src/humanizer/samples/**/*.js",
+                "src/application-insights/**/*.exe",
+                "src/application-insights/**/*.dll",
+                "src/application-insights/**/*.zip"
+            ]
+        },
+        {
+            "name": "source-build-reference-packages",
+            "defaultRemote": "https://github.com/dotnet/source-build-reference-packages"
+        },
+        {
+            "name": "sourcelink",
+            "defaultRemote": "https://github.com/dotnet/sourcelink"
+        },
+        {
+            "name": "symreader",
+            "defaultRemote": "https://github.com/dotnet/symreader"
+        },
+        {
+            "name": "templating",
+            "defaultRemote": "https://github.com/dotnet/templating"
+        },
+        {
+            "name": "test-templates",
+            "defaultRemote": "https://github.com/dotnet/test-templates"
+        },
+        {
+            "name": "vstest",
+            "defaultRemote": "https://github.com/microsoft/vstest"
+        },
+        {
+            "name": "xdt",
+            "defaultRemote": "https://github.com/dotnet/xdt"
+        },
+        {
+            "name": "xliff-tasks",
+            "defaultRemote": "https://github.com/dotnet/xliff-tasks"
+        }
+    ]
+}

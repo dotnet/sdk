@@ -1,0 +1,68 @@
+<Project>
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+
+  <PropertyGroup>
+
+    <OutputVersionArgs>$(OutputVersionArgs) /p:DisableNerdbankVersioning=true</OutputVersionArgs>
+
+    <LogVerbosityOptOut>true</LogVerbosityOptOut>
+    <BuildCommandArgs>$(StandardSourceBuildArgs)</BuildCommandArgs>
+    <BuildCommandArgs>$(BuildCommandArgs) $(FlagParameterPrefix)v $(LogVerbosity)</BuildCommandArgs>
+    <BuildCommandArgs>$(BuildCommandArgs) $(FlagParameterPrefix)nodereuse $(ArcadeFalseBoolBuildArg)</BuildCommandArgs>
+    <BuildCommandArgs>$(BuildCommandArgs) $(FlagParameterPrefix)warnAsError $(ArcadeFalseBoolBuildArg)</BuildCommandArgs>
+    <BuildCommandArgs>$(BuildCommandArgs) $(OutputVersionArgs)</BuildCommandArgs>
+    <BuildCommandArgs>$(BuildCommandArgs) /p:DotNetCoreSdkDir=$(DotNetCliToolDir)</BuildCommandArgs>
+    <BuildCommand>$(StandardSourceBuildCommand) $(BuildCommandArgs)</BuildCommand>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <UseSourceBuiltSdkOverride Include="@(ArcadeSdkOverride)" />
+    <UseSourceBuiltSdkOverride Include="@(CentralVersionsSdkOverride)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <RepositoryReference Include="arcade" />
+    <RepositoryReference Include="runtime" />
+    <RepositoryReference Include="roslyn" />
+  </ItemGroup>
+
+  <!--
+    Begin workaround: https://github.com/dotnet/source-build/issues/933
+
+    The CentralPackageVersions SDK isn't actually source-built. We get it as a text-only prebuilt,
+    but the NuGet resolver seems flaky so we're using our resolver instead. We only have access to
+    the nupkg ahead of time when building, so only enable this workaround then.
+  -->
+  <ItemGroup>
+    <CentralPackageVersionsSdkOverride Include="Microsoft.Build.CentralPackageVersions" Group="CENTRAL_PACKAGE_VERSIONS" />
+  </ItemGroup>
+
+  <Target Name="ExtractCentralPackageVersionsSdkPackage"
+          BeforeTargets="SetSourceBuiltSdkOverrides"
+          Inputs="$(MSBuildProjectFullPath)"
+          Outputs="$(RepoCompletedSemaphorePath)ExtractCentralPackageVersionsSdkPackage.complete">
+    <ItemGroup>
+      <_CentralVersionsToolPackage
+        Include="$(ReferencePackagesDir)%(CentralPackageVersionsSdkOverride.Identity)*.nupkg"
+        Id="%(CentralPackageVersionsSdkOverride.Identity)" />
+    </ItemGroup>
+
+    <PropertyGroup>
+      <CentralVersionsSdkDir>$(SourceBuiltSdksDir)%(_CentralVersionsToolPackage.Id)/</CentralVersionsSdkDir>
+    </PropertyGroup>
+
+    <Message Importance="High" Text="Setting up SDK package for UseSourceBuiltSdkOverride: %(_CentralVersionsToolPackage.Filename)" />
+
+    <ZipFileExtractToDirectory
+      SourceArchive="@(_CentralVersionsToolPackage)"
+      DestinationDirectory="$(CentralVersionsSdkDir)"
+      OverwriteDestination="true" />
+ 
+    <WriteLinesToFile File="$(RepoCompletedSemaphorePath)ExtractCentralPackageVersionsSdkPackage.complete" Overwrite="true" />
+  </Target>
+  <!--
+    End workaround: https://github.com/dotnet/source-build/issues/933
+  -->
+
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+</Project>

@@ -150,6 +150,8 @@
     <Variable Name="ASPNETCOREVERSION" Type="string" Value="$(var.AspNetCoreVersion)" bal:Overridable="no" />
     <Variable Name="WINFORMSANDWPFVERSION" Type="string" Value="$(var.WinFormsAndWpfVersion)" bal:Overridable="no" />
     <Variable Name="DOTNETHOMESIMILARITYCHECKOVERRIDE" Type="string" Value="" bal:Overridable="yes" />
+    <Variable Name="VERSIONMAJOR" Type="string" Value="$(var.VersionMajor)" bal:Overridable="no" />
+    <Variable Name="VERSIONMINOR" Type="string" Value="$(var.VersionMinor)" bal:Overridable="no" />
       
     <Chain DisableSystemRestore="yes" ParallelCache="yes">
       

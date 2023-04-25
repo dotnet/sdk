@@ -1,0 +1,58 @@
+*.bmp
+*.docx
+*.gif
+*.ico
+*.jpg
+*.JPG
+*.pdf
+*.png
+*.PNG
+*.rtf
+*.snk
+*.vsd
+*.vsdx
+*.xlsx
+
+**/test/*
+**/Test/*
+**/Test/*
+**/testCert*.pfx
+**/TestCert*.pfx
+**/tests/*
+
+src/aspnetcore/**/samples/*
+src/aspnetcore/**/TestCertificates/*
+src/aspnetcore/src/*.eot
+src/aspnetcore/src/*.otf
+src/aspnetcore/src/*.ttf
+src/aspnetcore/src/*.woff
+src/aspnetcore/src/*.woff2
+src/aspnetcore/src/Components/Web.JS/dist/Release/blazor.*.js # JavaScript files with a null bytes
+src/aspnetcore/src/ProjectTemplates/Web.ProjectTemplates/**/app.db
+src/aspnetcore/src/submodules/spa-templates/**/app.db
+
+src/emsdk/eng/common/loc/*.lss # UTF16-LE text files
+
+src/fsharp/**/signedtests/*
+src/fsharp/src/fsi/fsi.res # Icon
+
+src/msbuild/src/Tasks.UnitTests/*
+
+src/razor/**/SampleApp/**/fonts/*
+
+src/roslyn/**/CodeAnalysisTest/*
+src/roslyn/src/ExpressionEvaluator/Core/Source/ExpressionCompiler/Resources/WindowsProxy.winmd # https://github.com/dotnet/roslyn/issues/66718
+
+src/runtime/src/libraries/System.Diagnostics.EventLog/src/Messages/EventLogMessages.res # Icon
+src/runtime/src/libraries/System.Speech/src/*.upsmap # https://github.com/dotnet/runtime/issues/81692
+src/runtime/src/libraries/System.Text.Encoding.CodePages/src/Data/codepages.nlp # https://github.com/dotnet/runtime/issues/81693
+src/runtime/src/mono/wasm/testassets/*
+src/runtime/src/mono/wasm/runtime/do-jit-call.wasm # https://github.com/dotnet/runtime/issues/81691
+src/runtime/src/native/external/brotli/common/dictionary.bin.br
+
+src/sdk/src/Assets/TestProjects/*
+
+src/source-build-externals/src/azure-activedirectory-identitymodel-extensions-for-dotnet/build/strongNameBypass.reg # UTF16-LE text file
+src/source-build-externals/src/azure-activedirectory-identitymodel-extensions-for-dotnet/build/strongNameBypass2.reg # UTF16-LE text file
+src/source-build-externals/src/humanizer/src/Humanizer.Tests*
+src/source-build-externals/src/newtonsoft-json/Src/Newtonsoft.Json.Tests/SpaceShipV2.bson

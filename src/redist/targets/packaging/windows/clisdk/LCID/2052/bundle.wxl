@@ -1,17 +1,17 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <WixLocalization Culture="en-us" Language="1033" xmlns="http://schemas.microsoft.com/wix/2006/localization">
   <String Id="Caption">[WixBundleName] 安装程序</String>
   <String Id="Title">[BUNDLEMONIKER]</String>
   <String Id="ConfirmCancelMessage">是否确实要取消?</String>
   <String Id="ExecuteUpgradeRelatedBundleMessage">上一版本</String>
   <String Id="HelpHeader">安装程序帮助</String>
-  <String Id="HelpText">/install | /repair | /uninstall | /layout [\[]"directory"[\]] - 安装、修复、卸载
-   目录中的安装包或创建其完整本地副本。Install 为默认选择。
+  <String Id="HelpText">/install | /repair | /uninstall | /layout [\[]"directory"[\]]  - 在目录中安装、修复、卸载
+   或创建安装包的完整本地副本。'/Install' 为默认选择。
 
 /passive | /quiet - 显示最少的 UI 且无提示，或不显示 UI 且
    无提示。默认显示 UI 及全部提示。
 
-/norestart - 禁止任何重新启动。默认在重启前显示提示 UI。
+/norestart - 禁止任何重新启动。默认在重新启动前显示提示 UI。
 /log [\[]"log.txt"[\]] - 向特定文件写入日志。默认在 %TEMP% 中创建日志文件。</String>
   <String Id="HelpCloseButton">关闭(&amp;C)</String>
   <String Id="InstallAcceptCheckbox">我同意许可条款和条件(&amp;A)</String>
@@ -20,7 +20,7 @@
   <String Id="InstallCloseButton">关闭(&amp;C)</String>
   <String Id="ProgressHeader">安装进度</String>
   <String Id="ProgressLabel">正在处理:</String>
-  <String Id="OverallProgressPackageText">正在初始化…</String>
+  <String Id="OverallProgressPackageText">正在初始化...</String>
   <String Id="ProgressCancelButton">取消(&amp;C)</String>
   <String Id="ModifyHeader">修改安装程序</String>
   <String Id="ModifyRepairButton">修复(&amp;R)</String>
@@ -49,7 +49,7 @@
   <String Id="FilesInUseCancelButton">取消(&amp;C)</String>
   <String Id="FirstTimeWelcomeMessage">已成功安装。
 
-下列项安装:
+下列产品已安装: 
     • .NET SDK [DOTNETSDKVERSION]
     • .NET Runtime [DOTNETRUNTIMEVERSION]
     • ASP.NET Core Runtime [ASPNETCOREVERSION]
@@ -61,7 +61,7 @@
 资源
     • .NET 文档: https://aka.ms/dotnet-docs
     • SDK 文档: https://aka.ms/dotnet-sdk-docs
-    • 发行说明: https://aka.ms/dotnet7-release-notes
+    • 发行说明: https://aka.ms/dotnet[VERSIONMAJOR]-release-notes
     • 教程: https://aka.ms/dotnet-tutorials</String>
   <String Id="WelcomeHeaderMessage">.NET SDK</String>
   <String Id="WelcomeDescription">
@@ -76,10 +76,10 @@
   <String Id="InstallationNoteTitle">安装说明</String>
   <String Id="InstallationNote">将在要提升项目还原速度并实现脱机访问的安装进程期间运行命令。此操作最多 1 分钟即可完成。
   </String>
-  <String Id="VisualStudioWarning">如果打算结合使用 .NET 7.0 和 Visual Studio，需要 Visual Studio 2022 17.4 或更高版本。&lt;A HREF="https://aka.ms/dotnet7-release-notes"&gt;了解详细信息&lt;/A&gt;。
-  </String>
-  <String Id="LicenseAssent">单击“安装”即表示你同意以下条款。</String>
-  <String Id="InstallPathx64x86">The installation path for x64 SDK installations: &quot;[DOTNETHOME_X64]&quot; cannot be the same as for x86 SDK installations: &quot;[DOTNETHOME_X86]&quot;</String>
-  <String Id="InstallPathARM64x86">The installation path for ARM64 SDK installations: &quot;[DOTNETHOME_ARM64]&quot; cannot be the same as for x86 SDK installations: &quot;[DOTNETHOME_X86]&quot;</String>
-  <String Id="InstallPathARM64x64">The installation path for ARM64 SDK installations: &quot;[DOTNETHOME_ARM64]&quot; cannot be the same as for x64 SDK installations: &quot;[DOTNETHOME_X64]&quot;</String>
+  <String Id="VisualStudioWarning">如果你计划使用 .NET [VERSIONMAJOR].[VERSIONMINOR] 与 Visual Studio、Visual Studio 2022 17.4 或更高版本是必需的。&lt;A HREF="https://aka.ms/dotnet[VERSIONMAJOR]-release-notes"&gt;了解详细信息&lt;/A&gt;。
+</String>
+  <String Id="LicenseAssent">单击“安装”即表示你同意以下条款:</String>
+  <String Id="InstallPathx64x86">x64 SDK 安装的安装路径: "[DOTNETHOME_X64]" 不能与 x86 SDK 安装的路径相同: "[DOTNETHOME_X86]"</String>
+  <String Id="InstallPathARM64x86">ARM64 SDK 安装的安装路径: "[DOTNETHOME_ARM64]" 不能与 x86 SDK 安装的路径相同: "[DOTNETHOME_X86]"</String>
+  <String Id="InstallPathARM64x64">ARM64 SDK 安装的安装路径: "[DOTNETHOME_ARM64]" 不能与 x64 SDK 安装的路径相同: "[DOTNETHOME_X64]"</String>
 </WixLocalization>
