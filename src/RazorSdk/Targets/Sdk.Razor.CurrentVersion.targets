@@ -198,6 +198,16 @@ Copyright (c) .NET Foundation. All rights reserved.
       ResolveRazorComponentInputs;
       AssignRazorComponentTargetPaths
     </_RazorGenerateComponentDesignTimeDependsOn>
+
+    <AssignRazorComponentTargetPathsDependsOn Condition="'$(ScopedCssEnabled)' == 'true'">
+      $(AssignRazorComponentTargetPathsDependsOn);
+      ResolveCssScopes;
+    </AssignRazorComponentTargetPathsDependsOn>
+
+    <AssignRazorGenerateTargetPathsDependsOn Condition="'$(ScopedCssEnabled)' == 'true'">
+      $(AssignRazorGenerateTargetPathsDependsOn);
+      ResolveCssScopes;
+    </AssignRazorGenerateTargetPathsDependsOn>
   </PropertyGroup>
 
   <!--
@@ -554,7 +564,9 @@ Copyright (c) .NET Foundation. All rights reserved.
     </Content>
   </ItemGroup>
 
-  <Target Name="AssignRazorComponentTargetPaths" Condition="'@(RazorComponent)' != ''">
+  <Target Name="AssignRazorComponentTargetPaths"
+    Condition="'@(RazorComponent)' != ''"
+    DependsOnTargets="$(AssignRazorComponentTargetPathsDependsOn)">
     <AssignTargetPath Files="@(RazorComponent)" RootFolder="$(MSBuildProjectDirectory)">
       <Output TaskParameter="AssignedFiles" ItemName="RazorComponentWithTargetPath" />
     </AssignTargetPath>
@@ -574,7 +586,9 @@ Copyright (c) .NET Foundation. All rights reserved.
     </ItemGroup>
   </Target>
 
-  <Target Name="AssignRazorGenerateTargetPaths" Condition="'@(RazorGenerate)' != ''">
+  <Target Name="AssignRazorGenerateTargetPaths"
+    Condition="'@(RazorGenerate)' != ''"
+    DependsOnTargets="$(AssignRazorGenerateTargetPathsDependsOn)">
     <AssignTargetPath Files="@(RazorGenerate)" RootFolder="$(MSBuildProjectDirectory)">
       <Output TaskParameter="AssignedFiles" ItemName="RazorGenerateWithTargetPath" />
     </AssignTargetPath>
