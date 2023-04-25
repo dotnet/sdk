@@ -1,0 +1,44 @@
+From: Larry Ewing <lewing@microsoft.com>
+
+Backport: https://github.com/dotnet/aspnetcore/pull/47879.
+
+diff --git a/src/Logging.AzureAppServices/src/BlobLoggerProvider.cs b/src/Logging.AzureAppServices/src/BlobLoggerProvider.cs
+index b85d798418..5fda9ca1b3 100644
+--- a/src/Logging.AzureAppServices/src/BlobLoggerProvider.cs
++++ b/src/Logging.AzureAppServices/src/BlobLoggerProvider.cs
+@@ -76,7 +76,9 @@ public class BlobLoggerProvider : BatchingLoggerProvider
+                     writer.Write(logEvent.Message);
+                 }
+ 
++#pragma warning disable CA2016
+                 await writer.FlushAsync().ConfigureAwait(false);
++#pragma warning restore CA2016
+                 var tryGetBuffer = stream.TryGetBuffer(out var buffer);
+                 System.Diagnostics.Debug.Assert(tryGetBuffer);
+                 await blob.AppendAsync(buffer, cancellationToken).ConfigureAwait(false);
+diff --git a/src/Middleware/HttpLogging/src/FileLoggerProcessor.cs b/src/Middleware/HttpLogging/src/FileLoggerProcessor.cs
+index 3f9a317fd5..d99d175f83 100644
+--- a/src/Middleware/HttpLogging/src/FileLoggerProcessor.cs
++++ b/src/Middleware/HttpLogging/src/FileLoggerProcessor.cs
+@@ -264,7 +264,7 @@ internal partial class FileLoggerProcessor : IAsyncDisposable
+             return;
+         }
+         await streamWriter.WriteLineAsync(message.AsMemory(), cancellationToken);
+-        await streamWriter.FlushAsync();
++        await streamWriter.FlushAsync(cancellationToken);
+     }
+ 
+     // Virtual for testing
+diff --git a/src/Mvc/Mvc.Razor/src/RazorPageBase.cs b/src/Mvc/Mvc.Razor/src/RazorPageBase.cs
+index 07a187d48f..229896cc39 100644
+--- a/src/Mvc/Mvc.Razor/src/RazorPageBase.cs
++++ b/src/Mvc/Mvc.Razor/src/RazorPageBase.cs
+@@ -634,7 +634,7 @@ public abstract class RazorPageBase : IRazorPage
+     }
+ 
+     /// <summary>
+-    /// Invokes <see cref="TextWriter.FlushAsync"/> on <see cref="Output"/> and <see cref="m:Stream.FlushAsync"/>
++    /// Invokes <see cref="TextWriter.FlushAsync()"/> on <see cref="Output"/> and <see cref="m:Stream.FlushAsync"/>
+     /// on the response stream, writing out any buffered content to the <see cref="HttpResponse.Body"/>.
+     /// </summary>
+     /// <returns>A <see cref="Task{HtmlString}"/> that represents the asynchronous flush operation and on
