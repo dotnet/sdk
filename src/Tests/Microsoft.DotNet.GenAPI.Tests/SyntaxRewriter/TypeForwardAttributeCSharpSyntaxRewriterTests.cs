@@ -17,10 +17,12 @@ namespace Microsoft.DotNet.GenAPI.Tests.SyntaxRewriter
                 original: """
                 [assembly:System.Runtime.CompilerServices.TypeForwardedToAttribute(typeof(global::System.Collections.Generic.IAsyncEnumerable<T>))]
                 [assembly:System.Runtime.CompilerServices.TypeForwardedToAttribute(typeof(global::System.Collections.Generic.IAsyncEnumerable<A, B, C>))]
+                [assembly:System.Runtime.CompilerServices.TypeForwardedToAttribute(typeof((TA, TB, TC))]
                 """,
                 expected: """
                 [assembly:System.Runtime.CompilerServices.TypeForwardedToAttribute(typeof(global::System.Collections.Generic.IAsyncEnumerable<>))]
                 [assembly:System.Runtime.CompilerServices.TypeForwardedToAttribute(typeof(global::System.Collections.Generic.IAsyncEnumerable<,,>))]
+                [assembly:System.Runtime.CompilerServices.TypeForwardedToAttribute(typeof(System.ValueTuple<,,>)]
                 """);
         }
     }
