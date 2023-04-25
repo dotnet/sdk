@@ -709,6 +709,15 @@ namespace Microsoft.NET.Build.Tasks
                 implicitPackageReferences.Add(buildPackage);
             }
 
+            // Before net8.0, ILLink analyzers shipped in a separate package.
+            // Add the analyzer package with version taken from KnownILLinkPack.
+            if (normalizedTargetFrameworkVersion < new Version(8, 0) && toolPackType is ToolPackType.ILLink)
+            {
+                var analyzerPackage = new TaskItem("Microsoft.NET.ILLink.Analyzers");
+                analyzerPackage.SetMetadata(MetadataKeys.Version, packVersion);
+                implicitPackageReferences.Add(analyzerPackage);
+            }
+
             return true;
         }
 
