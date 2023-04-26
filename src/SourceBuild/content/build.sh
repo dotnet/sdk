@@ -114,46 +114,49 @@ while :; do
   shift
 done
 
-GIT_DIR="$SCRIPT_ROOT/.git"
-if [ -f "$GIT_DIR/index" ]; then # We check for index because if outside of git, we create config and HEAD manually
-  if [ -n "$sourceRepository" ] || [ -n "$sourceVersion" ] || [ -n "$releaseManifest" ]; then
-    echo "ERROR: Source Link arguments cannot be used in a git repository"
-    exit 1
-  fi
-else
-  if [ -z "$releaseManifest" ]; then
-    if [ -z "$sourceRepository" ] || [ -z "$sourceVersion" ]; then
-      echo "ERROR: $SCRIPT_ROOT is not a git repository, either --release-manifest or --source-repository and --source-version must be specified"
+# For build purposes, we need to make sure we have all the SourceLink information
+if [ "$alternateTarget" != "true" ]; then
+  GIT_DIR="$SCRIPT_ROOT/.git"
+  if [ -f "$GIT_DIR/index" ]; then # We check for index because if outside of git, we create config and HEAD manually
+    if [ -n "$sourceRepository" ] || [ -n "$sourceVersion" ] || [ -n "$releaseManifest" ]; then
+      echo "ERROR: Source Link arguments cannot be used in a git repository"
       exit 1
     fi
   else
-    if [ -n "$sourceRepository" ] || [ -n "$sourceVersion" ]; then
-      echo "ERROR: --release-manifest cannot be specified together with --source-repository and --source-version"
-      exit 1
+    if [ -z "$releaseManifest" ]; then
+      if [ -z "$sourceRepository" ] || [ -z "$sourceVersion" ]; then
+        echo "ERROR: $SCRIPT_ROOT is not a git repository, either --release-manifest or --source-repository and --source-version must be specified"
+        exit 1
+      fi
+    else
+      if [ -n "$sourceRepository" ] || [ -n "$sourceVersion" ]; then
+        echo "ERROR: --release-manifest cannot be specified together with --source-repository and --source-version"
+        exit 1
+      fi
+
+      get_property() {
+        local json_file_path="$1"
+        local property_name="$2"
+        grep -oP '(?<="'$property_name'": ")[^"]*' "$json_file_path"
+      }
+
+      sourceRepository=$(get_property "$releaseManifest" sourceRepository) \
+        || (echo "ERROR: Failed to find sourceRepository in $releaseManifest" && exit 1)
+      sourceVersion=$(get_property "$releaseManifest" sourceVersion) \
+        || (echo "ERROR: Failed to find sourceVersion in $releaseManifest" && exit 1)
+
+      if [ -z "$sourceRepository" ] || [ -z "$sourceVersion" ]; then
+        echo "ERROR: sourceRepository and sourceVersion must be specified in $releaseManifest"
+        exit 1
+      fi
     fi
 
-    get_property() {
-      local json_file_path="$1"
-      local property_name="$2"
-      grep -oP '(?<="'$property_name'": ")[^"]*' "$json_file_path"
-    }
-
-    sourceRepository=$(get_property "$releaseManifest" sourceRepository) \
-      || (echo "ERROR: Failed to find sourceRepository in $releaseManifest" && exit 1)
-    sourceVersion=$(get_property "$releaseManifest" sourceVersion) \
-      || (echo "ERROR: Failed to find sourceVersion in $releaseManifest" && exit 1)
-
-    if [ -z "$sourceRepository" ] || [ -z "$sourceVersion" ]; then
-      echo "ERROR: sourceRepository and sourceVersion must be specified in $releaseManifest"
-      exit 1
-    fi
+    # We need to add "fake" .git/ files when not building from a git repository
+    mkdir -p "$GIT_DIR"
+    echo '[remote "origin"]' > "$GIT_DIR/config"
+    echo "url=\"$sourceRepository\"" >> "$GIT_DIR/config"
+    echo "$sourceVersion" > "$GIT_DIR/HEAD"
   fi
-
-  # We need to add "fake" .git/ files when not building from a git repository
-  mkdir -p "$GIT_DIR"
-  echo '[remote "origin"]' > "$GIT_DIR/config"
-  echo "url=\"$sourceRepository\"" >> "$GIT_DIR/config"
-  echo "$sourceVersion" > "$GIT_DIR/HEAD"
 fi
 
 if [ "$CUSTOM_PACKAGES_DIR" != "" ]; then
