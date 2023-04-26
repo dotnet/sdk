@@ -16,6 +16,6 @@ Copyright (c) .NET Foundation. All rights reserved.
   </PropertyGroup>
 
   <Import Project="$(MSBuildThisFileDirectory)..\..\..\Containers\build\Microsoft.NET.Build.Containers.props"
-          Condition="Exists('$(MSBuildThisFileDirectory)..\..\..\Containers\build\Microsoft.NET.Build.Containers.props') AND '$(EnableSdkContainerSupport)' == 'true'" />
+          Condition="'$(EnableSdkContainerSupport)' == 'true' AND Exists('$(MSBuildThisFileDirectory)..\..\..\Containers\build\Microsoft.NET.Build.Containers.props')" />
 
 </Project>
