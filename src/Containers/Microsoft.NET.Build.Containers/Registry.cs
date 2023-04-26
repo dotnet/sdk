@@ -30,6 +30,16 @@ internal sealed class Registry
         StringComparison.OrdinalIgnoreCase);
 
     /// <summary>
+    /// When chunking is enabled, allows explicit control over the size of the chunks uploaded
+    /// </summary>
+    /// <remarks>
+    /// Our default of 64KB is very conservative, so raising this to 1MB or more can speed up layer uploads reasonably well.
+    /// </remarks>
+    private static readonly int? s_chunkedUploadSizeBytes =
+        Environment.GetEnvironmentVariable(ContainerHelpers.ChunkedUploadSizeBytes) is string chunkedUploadSizeBytesString
+        && int.TryParse(chunkedUploadSizeBytesString, out int chunkedUploadSizeBytes) ? chunkedUploadSizeBytes : null;
+
+    /// <summary>
     /// Whether we should upload blobs in parallel (enabled by default, but disabled for certain registries in conjunction with the explicit support check below).
     /// </summary>
     /// <remarks>
@@ -39,9 +49,6 @@ internal sealed class Registry
         Environment.GetEnvironmentVariable(ContainerHelpers.ParallelUploadEnabled) ?? "true", // we want to default this to 'on'
         StringComparison.OrdinalIgnoreCase);
 
-    private static readonly int? s_chunkedUploadSizeBytes =
-        Environment.GetEnvironmentVariable(ContainerHelpers.ChunkedUploadSizeBytes) is string chunkedUploadSizeBytesString
-        && int.TryParse(chunkedUploadSizeBytesString, out int chunkedUploadSizeBytes) ? chunkedUploadSizeBytes : null;
 
     private static readonly int s_defaultChunkSizeBytes = 1024 * 64;
 
