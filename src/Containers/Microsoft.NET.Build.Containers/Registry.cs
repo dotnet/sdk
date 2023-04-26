@@ -50,7 +50,7 @@ internal sealed class Registry
     /// This is used in user-facing error messages, and it should match what the user would manually enter as
     /// part of Docker commands like `docker login`.
     /// </summary>
-    private string RegistryName { get; init; }
+    public string RegistryName { get; init; }
 
     public Registry(Uri baseUri)
     {
