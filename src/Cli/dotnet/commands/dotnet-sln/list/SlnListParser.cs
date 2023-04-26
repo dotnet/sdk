@@ -12,7 +12,7 @@ namespace Microsoft.DotNet.Cli
 {
     public static class SlnListParser
     {
-        public static readonly Option<bool> SolutionFolderOption = new Option<bool>(new string[] { "--solution-folders" }, LocalizableStrings.ListSolutionFoldersArgumentDescription);
+        public static readonly CliOption<bool> SolutionFolderOption = new Option<bool>(new string[] { "--solution-folders" }, LocalizableStrings.ListSolutionFoldersArgumentDescription);
 
         private static readonly CliCommand Command = ConstructCommand();
 
@@ -25,7 +25,7 @@ namespace Microsoft.DotNet.Cli
         {
             CliCommand command = new("list", LocalizableStrings.ListAppFullName);
 
-            command.AddOption(SolutionFolderOption);
+            command.Options.Add(SolutionFolderOption);
             command.SetAction((parseResult) => new ListProjectsInSolutionCommand(parseResult).Execute());
 
             return command;
