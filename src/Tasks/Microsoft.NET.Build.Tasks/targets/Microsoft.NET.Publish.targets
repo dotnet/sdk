@@ -19,6 +19,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <PublishTrimmed Condition="'$(PublishTrimmed)' == '' And '$(PublishAot)' == 'true'">true</PublishTrimmed>
     <_IsTrimmingEnabled Condition="'$(_IsTrimmingEnabled)' == '' And (
         '$(PublishTrimmed)' == 'true' Or
+        '$(PublishSingleFile)' == 'true' Or
         '$(IsTrimmable)' == 'true' Or
         '$(EnableAotAnalyzer)' == 'true' Or
         '$(EnableTrimAnalyzer)' == 'true' Or
