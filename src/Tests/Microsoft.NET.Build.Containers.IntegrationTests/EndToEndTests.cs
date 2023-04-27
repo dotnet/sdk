@@ -230,7 +230,7 @@ public class EndToEndTests
 
         if (addPackageReference)
         {
-            commandResult.Should().HaveStdOutContaining("warning : Microsoft.NET.Build.Containers package is explicitly referenced. Consider removing the package reference to Microsoft.NET.Build.Containers as it is now part of .NET SDK.");
+            commandResult.Should().HaveStdOutContaining("warning : Microsoft.NET.Build.Containers NuGet package is explicitly referenced. Consider removing the package reference to Microsoft.NET.Build.Containers as it is now part of .NET SDK.");
         }
         else
         {
