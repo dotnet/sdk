@@ -1,8 +1,9 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.CommandLine;
-using System.CommandLine.Invocation;
+using System.CommandLine.IO;
 using System.CommandLine.Parsing;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using static Microsoft.CodeAnalysis.Tools.FormatCommandCommon;
@@ -28,52 +29,53 @@ namespace Microsoft.CodeAnalysis.Tools.Commands
 
         private static readonly FormatWhitespaceHandler s_formattingHandler = new();
 
-        internal static Command GetCommand()
+        internal static CliCommand GetCommand()
         {
-            var command = new Command("whitespace", Resources.Run_whitespace_formatting)
+            var command = new CliCommand("whitespace", Resources.Run_whitespace_formatting)
             {
                 FolderOption
             };
             command.AddCommonOptions();
-            command.AddValidator(EnsureFolderNotSpecifiedWithNoRestore);
-            command.AddValidator(EnsureFolderNotSpecifiedWhenLoggingBinlog);
-            command.Handler = s_formattingHandler;
+            command.Validators.Add(EnsureFolderNotSpecifiedWithNoRestore);
+            command.Validators.Add(EnsureFolderNotSpecifiedWhenLoggingBinlog);
+            command.Action = s_formattingHandler;
             return command;
         }
 
         internal static void EnsureFolderNotSpecifiedWithNoRestore(CommandResult symbolResult)
         {
-            var folder = symbolResult.GetValueForOption<bool>("--folder");
-            var noRestore = symbolResult.GetOptionResult("--no-restore");
-            symbolResult.ErrorMessage = folder && noRestore != null
-                ? Resources.Cannot_specify_the_folder_option_with_no_restore
-                : null;
+            var folder = symbolResult.GetValue(FolderOption);
+            var noRestore = symbolResult.GetResult(NoRestoreOption);
+            if (folder && noRestore != null)
+            {
+                symbolResult.AddError(Resources.Cannot_specify_the_folder_option_with_no_restore);
+            }
         }
 
         internal static void EnsureFolderNotSpecifiedWhenLoggingBinlog(CommandResult symbolResult)
         {
-            var folder = symbolResult.GetValueForOption<bool>("--folder");
-            var binarylog = symbolResult.GetOptionResult("--binarylog");
-            symbolResult.ErrorMessage = folder && binarylog is not null && !binarylog.IsImplicit
-                ? Resources.Cannot_specify_the_folder_option_when_writing_a_binary_log
-                : null;
+            var folder = symbolResult.GetValue(FolderOption);
+            var binarylog = symbolResult.GetResult(BinarylogOption);
+            if (folder && binarylog is not null && !binarylog.Implicit)
+            {
+                symbolResult.AddError(Resources.Cannot_specify_the_folder_option_when_writing_a_binary_log);
+            }
         }
 
-        private class FormatWhitespaceHandler : ICommandHandler
+        private class FormatWhitespaceHandler : CliAction
         {
-            public int Invoke(InvocationContext context) => InvokeAsync(context).GetAwaiter().GetResult();
+            public override int Invoke(ParseResult parseResult) => InvokeAsync(parseResult, CancellationToken.None).GetAwaiter().GetResult();
 
-            public async Task<int> InvokeAsync(InvocationContext context)
+            public override async Task<int> InvokeAsync(ParseResult parseResult, CancellationToken cancellationToken)
             {
-                var parseResult = context.ParseResult;
                 var formatOptions = parseResult.ParseVerbosityOption(FormatOptions.Instance);
-                var logger = context.Console.SetupLogging(minimalLogLevel: formatOptions.LogLevel, minimalErrorLevel: LogLevel.Warning);
+                var logger = new SystemConsole().SetupLogging(minimalLogLevel: formatOptions.LogLevel, minimalErrorLevel: LogLevel.Warning);
                 formatOptions = parseResult.ParseCommonOptions(formatOptions, logger);
                 formatOptions = parseResult.ParseWorkspaceOptions(formatOptions);
 
                 formatOptions = formatOptions with { FixCategory = FixCategory.Whitespace };
 
-                return await FormatAsync(formatOptions, logger, context.GetCancellationToken()).ConfigureAwait(false);
+                return await FormatAsync(formatOptions, logger, cancellationToken).ConfigureAwait(false);
             }
         }
     }
