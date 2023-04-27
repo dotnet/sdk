@@ -875,7 +875,7 @@ Default Value: `false`
 
 Example: `dotnet_code_quality.CA1851.assume_method_enumerates_parameters = true`
 
-### Proceed with analysis event if InternalsVisibleTo is present
+### Proceed with analysis even if InternalsVisibleTo is present
 
 Option Name: `ignore_internalsvisibleto`
 
