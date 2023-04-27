@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.DotNet.Cli.Utils;
 using Microsoft.NET.Build.Containers.Resources;
 using NuGet.RuntimeModel;
 using System.Diagnostics;
@@ -25,9 +26,7 @@ internal sealed class Registry
     /// <remarks>
     /// Relates to https://github.com/dotnet/sdk-container-builds/pull/383#issuecomment-1466408853
     /// </remarks>
-    private static readonly bool s_chunkedUploadEnabled = bool.TrueString.Equals(
-        Environment.GetEnvironmentVariable(ContainerHelpers.ChunkedUploadEnabled) ?? "true", // we want to default this to 'on'
-        StringComparison.OrdinalIgnoreCase);
+    private static readonly bool s_chunkedUploadEnabled = Env.GetEnvironmentVariableAsBool(ContainerHelpers.ChunkedUploadEnabled, defaultValue: false);
 
     /// <summary>
     /// When chunking is enabled, allows explicit control over the size of the chunks uploaded
@@ -35,9 +34,7 @@ internal sealed class Registry
     /// <remarks>
     /// Our default of 64KB is very conservative, so raising this to 1MB or more can speed up layer uploads reasonably well.
     /// </remarks>
-    private static readonly int? s_chunkedUploadSizeBytes =
-        Environment.GetEnvironmentVariable(ContainerHelpers.ChunkedUploadSizeBytes) is string chunkedUploadSizeBytesString
-        && int.TryParse(chunkedUploadSizeBytesString, out int chunkedUploadSizeBytes) ? chunkedUploadSizeBytes : null;
+    private static readonly int? s_chunkedUploadSizeBytes = Env.GetEnvironmentVariableAsNullableInt(ContainerHelpers.ChunkedUploadSizeBytes);
 
     /// <summary>
     /// Whether we should upload blobs in parallel (enabled by default, but disabled for certain registries in conjunction with the explicit support check below).
@@ -45,10 +42,7 @@ internal sealed class Registry
     /// <remarks>
     /// Enabling this can swamp some registries, so this is an escape hatch.
     /// </remarks>
-    private static readonly bool s_parallelUploadEnabled = bool.TrueString.Equals(
-        Environment.GetEnvironmentVariable(ContainerHelpers.ParallelUploadEnabled) ?? "true", // we want to default this to 'on'
-        StringComparison.OrdinalIgnoreCase);
-
+    private static readonly bool s_parallelUploadEnabled =  Env.GetEnvironmentVariableAsBool(ContainerHelpers.ParallelUploadEnabled, defaultValue: true);
 
     private static readonly int s_defaultChunkSizeBytes = 1024 * 64;
 
