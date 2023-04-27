@@ -867,8 +867,7 @@ Copyright (c) .NET Foundation. All rights reserved.
          generate a different one. -->
     <PropertyGroup>
       <_TrimRuntimeAssets Condition="'$(PublishSingleFile)' == 'true' and '$(SelfContained)' == 'true'">true</_TrimRuntimeAssets>
-      <_UseBuildDependencyFile Condition="'@(_ExcludeFromPublishPackageReference)' == '' and
-                                          '@(RuntimeStorePackages)' == '' and
+      <_UseBuildDependencyFile Condition="'@(RuntimeStorePackages)' == '' and
                                           '$(PreserveStoreLayout)' != 'true' and
                                           '$(PublishTrimmed)' != 'true' and
                                           '$(_TrimRuntimeAssets)' != 'true'">true</_UseBuildDependencyFile>
