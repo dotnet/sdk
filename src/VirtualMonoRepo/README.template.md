@@ -5,7 +5,6 @@ This repository is a **Virtual Monolithic Repository (VMR)** which includes all 
 What this means:
 - **Monolithic** - a join of multiple repositories that make up the whole product, such as [dotnet/runtime](https://github.com/dotnet/runtime) or [dotnet/sdk](https://github.com/dotnet/sdk).
 - **Virtual** - a mirror (not replacement) of product repos where sources from those repositories are synchronized into.
-- **Experimental** - not to be depended on as we reserve the right to delete the current instance and create a new, different one in its stead. See [Limitations](#limitations).
 
 In the VMR, you can find:
 - source files of [each product repository](#list-of-components) which are mirrored inside of their respective directories under [`src/`](https://github.com/dotnet/dotnet/tree/main/src),
@@ -32,12 +31,8 @@ See also [dotnet/source-build](https://github.com/dotnet/source-build) for more 
 
 ## Limitations
 
-**This is a work-in-progress and an experiment.**
-There are considerable limitations to what is possible at the moment. For an extensive list of current limitations, please see [Temporary Mechanics](src/arcade/Documentation/UnifiedBuild/VMR-Design-And-Operation.md#temporary-mechanics).
-
-The VMR is expected to become non-experimental by .NET 8 Preview 1 (Februrary, 2023).
-This means it won't be short-lived anymore and we won't be reserving the right to delete and re-create it anymore.
-Other limitations might apply until the .NET 9 timeframe.
+**This is a work-in-progress.**
+There are considerable limitations to what is possible at the moment. For an extensive list of current limitations, please see [Temporary Mechanics](src/arcade/Documentation/UnifiedBuild/VMR-Design-And-Operation.md#temporary-mechanics).  
 See the [Unified Build roadmap](src/arcade/Documentation/UnifiedBuild/Roadmap.md) for more details.
 
 ### Supported platforms
