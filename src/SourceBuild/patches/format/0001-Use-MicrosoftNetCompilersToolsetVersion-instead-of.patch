@@ -46,7 +46,7 @@ index 2d325ec6..e1bc7022 100644
      <NuGetVersion>6.6.0-preview.3.61</NuGetVersion>
      <!-- roslyn -->
 -    <MicrosoftNetCompilersToolsetPackageVersion>4.7.0-1.23226.15</MicrosoftNetCompilersToolsetPackageVersion>
-+    <MicrosoftNetCompilersToolsetVersion>4.5.0-3.22602.7</MicrosoftNetCompilersToolsetVersion>
++    <MicrosoftNetCompilersToolsetVersion>4.7.0-1.23226.15</MicrosoftNetCompilersToolsetVersion>
      <!-- roslyn-sdk -->
      <MicrosoftCodeAnalysisAnalzerTestingVersion>1.1.2-beta1.22216.1</MicrosoftCodeAnalysisAnalzerTestingVersion>
      <!-- runtime -->
