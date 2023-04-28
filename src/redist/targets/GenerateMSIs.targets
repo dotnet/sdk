@@ -309,6 +309,20 @@
                       Overwrite="true" />
   </Target>
 
+  <Target Name="GetMinimumVSVersion"
+          BeforeTargets="GenerateSdkBundle"
+          Condition=" '$(OS)' == 'Windows_NT' "
+          Outputs="$(MinimumVSVersion)">
+
+          <PropertyGroup>
+            <MinimumMSBuildVersionFile Condition="$([System.Text.RegularExpressions.Regex]::Match(%(SDKInternalFiles.Identity),'.*minimumMSBuildVersion').Success) ">%(SDKInternalFiles.Identity)</MinimumMSBuildVersionFile>
+          </PropertyGroup>
+
+          <ReadLinesFromFile File="$(MinimumMSBuildVersionFile)">
+            <Output TaskParameter="Lines" PropertyName="MinimumVSVersion"/>
+          </ReadLinesFromFile>
+  </Target>
+
   <Target Name="GenerateSdkBundle"
           DependsOnTargets="GenerateLayout;AcquireWix;MsiTargetsSetupInputOutputs;GenerateSdkMsi;GenerateTemplatesMsis;GenerateWorkloadManifestsWxs"
           Condition=" '$(OS)' == 'Windows_NT' "
@@ -354,6 +368,7 @@
                       -DotnetCLINugetVersion '$(Version)' ^
                       -VersionMajor '$(VersionMajor)' ^
                       -VersionMinor '$(VersionMinor)' ^
+                      -MinimumVSVersion '$(MinimumVSVersion)' ^
                       -WindowsDesktopVersion '$(MicrosoftWindowsDesktopAppRuntimePackageVersion)' ^
                       -UpgradeCode '$(CombinedFrameworkSDKHostInstallerUpgradeCode)' ^
                       -DependencyKeyName '$(SdkDependencyKeyName)' ^
