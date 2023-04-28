@@ -50,15 +50,13 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             Assert.True(File.Exists(Path.Combine(workingDirectory, targetSubfolder, $"MyProject.csproj")));
             Assert.True(File.Exists(Path.Combine(workingDirectory, targetSubfolder, $"Program.cs")));
 
-            CommandResult commandResult = new DotnetBuildCommand(_log, "--no-restore")
+            new DotnetBuildCommand(_log, "--no-restore")
                 .WithWorkingDirectory(Path.Combine(workingDirectory, targetSubfolder))
-                .Execute();
-
-            commandResult
+                .Execute()
                 .Should()
                 .ExitWith(0)
-                .And.NotHaveStdErr()
-
+                .And
+                .NotHaveStdErr()
                 .And.HaveStdOutContaining("Build succeeded.")
                 .And.HaveStdOutContaining("MyProject");
         }
