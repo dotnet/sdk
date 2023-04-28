@@ -180,7 +180,9 @@ namespace Microsoft.TemplateEngine.Cli.PostActionProcessors
         private class JsonContentParameters
         {
             public string? ParentProperty { get; }
+
             public string NewJsonPropertyName { get; }
+
             public string NewJsonPropertyValue { get; }
 
             private JsonContentParameters(string? parentProperty, string newJsonPropertyName, string newJsonPropertyValue)
