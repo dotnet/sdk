@@ -61,31 +61,20 @@ namespace Microsoft.TemplateEngine.Cli.PostActionProcessors
                 return false;
             }
 
-            // If no ParentPropertyPath is specified, the new JSON property must be added to the root of the
-            // document.
-            action.Args.TryGetValue(ParentPropertyPathArgument, out string? parentProperty);
-            action.Args.TryGetValue(NewJsonPropertyNameArgument, out string? newJsonPropertyName);
-            action.Args.TryGetValue(NewJsonPropertyValueArgument, out string? newJsonPropertyValue);
+            var newJsonElementProperties = JsonContentParameters.CreateFromPostAction(action);
 
-            if (newJsonPropertyName == null)
+            if (newJsonElementProperties == null)
             {
-                Reporter.Error.WriteLine(string.Format(LocalizableStrings.PostAction_ModifyJson_Error_ArgumentNotConfigured, NewJsonPropertyNameArgument));
-                return false;
-            }
-
-            if (newJsonPropertyValue == null)
-            {
-                Reporter.Error.WriteLine(string.Format(LocalizableStrings.PostAction_ModifyJson_Error_ArgumentNotConfigured, NewJsonPropertyValueArgument));
                 return false;
             }
 
             JsonNode? newJsonContent = AddElementToJson(
                 environment.Host.FileSystem,
                 jsonFiles[0],
-                parentProperty,
+                newJsonElementProperties!.ParentProperty,
                 ":",
-                newJsonPropertyName,
-                newJsonPropertyValue);
+                newJsonElementProperties.NewJsonPropertyName,
+                newJsonElementProperties.NewJsonPropertyValue);
 
             if (newJsonContent == null)
             {
@@ -186,6 +175,48 @@ namespace Microsoft.TemplateEngine.Cli.PostActionProcessors
             while (directory != null && numberOfUpLevels <= maxAllowedAboveDirectories);
 
             return new List<string>();
+        }
+
+        private class JsonContentParameters
+        {
+            public string? ParentProperty { get; }
+            public string NewJsonPropertyName { get; }
+            public string NewJsonPropertyValue { get; }
+
+            private JsonContentParameters(string? parentProperty, string newJsonPropertyName, string newJsonPropertyValue)
+            {
+                ParentProperty = parentProperty;
+                NewJsonPropertyName = newJsonPropertyName;
+                NewJsonPropertyValue = newJsonPropertyValue;
+            }
+
+            /// <summary>
+            /// Creates an instance of <see cref="JsonContentParameters"/> based on the configured arguments in the Post Action.
+            /// </summary>
+            /// <param name="action"></param>
+            /// <returns>A <see cref="JsonContentParameters"/> instance, or null if no instance could be created.</returns>
+            public static JsonContentParameters? CreateFromPostAction(IPostAction action)
+            {
+                // If no ParentPropertyPath is specified, the new JSON property must be added to the root of the
+                // document.
+                action.Args.TryGetValue(ParentPropertyPathArgument, out string? parentProperty);
+                action.Args.TryGetValue(NewJsonPropertyNameArgument, out string? newJsonPropertyName);
+                action.Args.TryGetValue(NewJsonPropertyValueArgument, out string? newJsonPropertyValue);
+
+                if (newJsonPropertyName == null)
+                {
+                    Reporter.Error.WriteLine(string.Format(LocalizableStrings.PostAction_ModifyJson_Error_ArgumentNotConfigured, NewJsonPropertyNameArgument));
+                    return null;
+                }
+
+                if (newJsonPropertyValue == null)
+                {
+                    Reporter.Error.WriteLine(string.Format(LocalizableStrings.PostAction_ModifyJson_Error_ArgumentNotConfigured, NewJsonPropertyValueArgument));
+                    return null;
+                }
+
+                return new JsonContentParameters(parentProperty, newJsonPropertyName, newJsonPropertyName);
+            }
         }
     }
 }
