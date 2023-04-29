@@ -112,6 +112,7 @@ public class CreateNewImageToolTaskTests
     [InlineData("")]
     [InlineData("   ")]
     [InlineData("Valid", true)]
+    // TODO: adjust to new output registries handling
     public void GenerateCommandLineCommands_OutputRegistry(string value, bool optionExpected = false)
     {
         CreateNewImage task = new();

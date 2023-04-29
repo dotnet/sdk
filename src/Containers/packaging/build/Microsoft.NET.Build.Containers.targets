@@ -73,9 +73,12 @@
       <!-- An empty ContainerRegistry implies pushing to the local daemon, putting this here for documentation purposes -->
       <!-- <ContainerRegistries></ContainerRegistry> -->
 
-      <!-- Backwards compat with single RegistryUrl -->
+      <!-- Backwards compat with single RegistryUrl from VS Defaults -->
       <ContainerRegistries Condition="'$(RegistryUrl)' != '' AND '$(ContainerRegistries)' == '' ">$(RegistryUrl)</ContainerRegistries>
       <ContainerRegistries Condition="'$(RegistryUrl)' != '' AND '$(ContainerRegistries)' != '' ">$(RegistryUrl);$(ContainerRegistries)</ContainerRegistries>
+      <!-- Backwards compat with single ContainerRegistry -->
+      <ContainerRegistries Condition="'$(ContainerRegistry)' != '' AND '$(ContainerRegistries)' == '' ">$(ContainerRegistry)</ContainerRegistries>
+      <ContainerRegistries Condition="'$(ContainerRegistry)' != '' AND '$(ContainerRegistries)' != '' ">$(ContainerRegistry);$(ContainerRegistries)</ContainerRegistries>
 
       <!-- Set which local container daemon to use. We only explicitly support Docker (or things that mimic Docker APIs and binary names) at the moment. -->
       <LocalContainerDaemon Condition="'$(LocalContainerDaemon)' == ''">Docker</LocalContainerDaemon>
