@@ -21,8 +21,6 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
     /// </summary>
     public string ToolPath { get; set; }
 
-    private bool IsDaemonPush => string.IsNullOrEmpty(OutputRegistry);
-
     private bool IsDaemonPull => string.IsNullOrEmpty(BaseRegistry);
 
     public void Cancel() => _cancellationTokenSource.Cancel();
@@ -37,11 +35,17 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
         cancellationToken.ThrowIfCancellationRequested();
         if (!Directory.Exists(PublishDirectory))
         {
-            Log.LogErrorWithCodeFromResources(nameof(Strings.PublishDirectoryDoesntExist), nameof(PublishDirectory), PublishDirectory);
+            Log.LogErrorWithCodeFromResources(nameof(Strings.PublishDirectoryDoesntExist), nameof(PublishDirectory),
+                PublishDirectory);
             return !Log.HasLoggedErrors;
         }
+
         ImageReference sourceImageReference = new(SourceRegistry.Value, BaseImageName, BaseImageTag);
-        var destinationImageReferences = ImageTags.Select(t => new ImageReference(DestinationRegistry.Value, ImageName, t));
+
+        IEnumerable<Registry?> destinationRegistries = Registry.BuildDestinationRegistries(OutputRegistries);
+        DestinationImageReference[] destinationImageReferences = destinationRegistries
+                .Select(r =>new DestinationImageReference(r, ImageName, ImageTags))
+                .ToArray();
 
         ImageBuilder? imageBuilder;
         if (SourceRegistry.Value is { } registry)
@@ -60,16 +64,19 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
 
         if (imageBuilder is null)
         {
-            Log.LogErrorWithCodeFromResources(nameof(Strings.BaseImageNotFound), sourceImageReference.RepositoryAndTag, ContainerRuntimeIdentifier);
+            Log.LogErrorWithCodeFromResources(nameof(Strings.BaseImageNotFound), sourceImageReference.RepositoryAndTag,
+                ContainerRuntimeIdentifier);
             return !Log.HasLoggedErrors;
         }
 
-        SafeLog("Building image '{0}' with tags {1} on top of base image {2}", ImageName, String.Join(",", ImageTags), sourceImageReference);
+        SafeLog("Building image '{0}' with tags {1} on top of base image {2}", ImageName, String.Join(",", ImageTags),
+            sourceImageReference);
 
         Layer newLayer = Layer.FromDirectory(PublishDirectory, WorkingDirectory, imageBuilder.IsWindows);
         imageBuilder.AddLayer(newLayer);
         imageBuilder.SetWorkingDirectory(WorkingDirectory);
-        imageBuilder.SetEntryPoint(Entrypoint.Select(i => i.ItemSpec).ToArray(), EntrypointArgs.Select(i => i.ItemSpec).ToArray());
+        imageBuilder.SetEntryPoint(Entrypoint.Select(i => i.ItemSpec).ToArray(),
+            EntrypointArgs.Select(i => i.ItemSpec).ToArray());
 
         foreach (ITaskItem label in Labels)
         {
@@ -98,60 +105,150 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
         GeneratedContainerManifest = JsonSerializer.Serialize(builtImage.Manifest);
         GeneratedContainerConfiguration = builtImage.Config;
 
-        foreach (ImageReference destinationImageReference in destinationImageReferences)
+        foreach (DestinationImageReference destinationImageReference in destinationImageReferences)
         {
-            if (IsDaemonPush)
+            switch (destinationImageReference.Registry)
             {
-                LocalDocker localDaemon = GetLocalDaemon(msg => Log.LogMessage(msg));
-                if (!(await localDaemon.IsAvailableAsync(cancellationToken).ConfigureAwait(false)))
-                {
-                    Log.LogErrorWithCodeFromResources(nameof(Strings.LocalDaemondNotAvailable));
-                    return false;
-                }
-                try
-                {
-                    await localDaemon.LoadAsync(builtImage, sourceImageReference, destinationImageReference, cancellationToken).ConfigureAwait(false);
-                    SafeLog("Pushed container '{0}' to local daemon", destinationImageReference.RepositoryAndTag);
-                }
-                catch (AggregateException ex) when (ex.InnerException is DockerLoadException dle)
-                {
-                    Log.LogErrorFromException(dle, showStackTrace: false);
-                }
-            }
-            else
-            {
-                try
-                {
-                    if (destinationImageReference.Registry is not null)
+                case { IsTarGzFile: true }:
+                    if (!await WriteTarGzAync(builtImage, sourceImageReference, destinationImageReference,
+                            cancellationToken).ConfigureAwait(false))
                     {
-                        await (destinationImageReference.Registry.PushAsync(
-                            builtImage,
-                            sourceImageReference,
-                            destinationImageReference,
-                            message => SafeLog(message),
-                            cancellationToken)).ConfigureAwait(false);
-                        SafeLog("Pushed container '{0}' to registry '{1}'", destinationImageReference.RepositoryAndTag, OutputRegistry);
+                        return false;
                     }
-                }
-                catch (ContainerHttpException e)
-                {
-                    if (BuildEngine != null)
+
+                    break;
+
+                case not null:
+                    if (!await PushImagesToRemoteRegistryAsync(builtImage, sourceImageReference, destinationImageReference,
+                            cancellationToken).ConfigureAwait(false))
                     {
-                        Log.LogErrorFromException(e, true);
+                        return false;
                     }
-                }
-                catch (Exception e)
-                {
-                    if (BuildEngine != null)
+
+                    break;
+                case null:
+                    if (!await PushImagesToLocalDaemonAsync(builtImage, sourceImageReference, destinationImageReference,
+                            cancellationToken).ConfigureAwait(false))
                     {
-                        Log.LogErrorWithCodeFromResources(nameof(Strings.RegistryOutputPushFailed), e.Message);
-                        Log.LogMessage(MessageImportance.Low, "Details: {0}", e);
+                        return false;
                     }
-                }
+
+                    break;
+
             }
         }
 
         return !Log.HasLoggedErrors;
+    }
+
+    private async Task<bool> WriteTarGzAync(BuiltImage builtImage, ImageReference sourceImageReference,
+        DestinationImageReference destinationImageReference, CancellationToken cancellationToken)
+    {
+        string outputFile = destinationImageReference.Registry!.BaseUri.LocalPath;
+        try
+        {
+            string? parentDirectory = Path.GetDirectoryName(Path.GetFullPath(outputFile));
+            if (string.IsNullOrEmpty(parentDirectory) || !Directory.Exists(parentDirectory))
+            {
+                Log.LogErrorWithCodeFromResources(nameof(Strings.OutputFileDirectoryDoesntExist), outputFile);
+                return false;
+            }
+        }
+        catch (Exception e)
+        {
+            if (BuildEngine != null)
+            {
+                Log.LogErrorFromException(e, true);
+            }
+
+            return false;
+        }
+
+        try
+        {
+            await using FileStream fileStream = File.Create(outputFile);
+            await LocalDocker.WriteImageToStreamAsync(builtImage, sourceImageReference, destinationImageReference,
+                fileStream, cancellationToken).ConfigureAwait(false);
+            SafeLog("Written image '{0}' to path '{1}'", ImageName, outputFile);
+        }
+        catch (Exception e)
+        {
+            if (BuildEngine != null)
+            {
+                Log.LogErrorFromException(e, true);
+            }
+
+            return false;
+        }
+
+        return true;
+    }
+
+    private async Task<bool> PushImagesToRemoteRegistryAsync(BuiltImage builtImage, ImageReference sourceImageReference,
+        DestinationImageReference destinationImageReference, CancellationToken cancellationToken)
+    {
+        try
+        {
+            if (destinationImageReference.Registry is {} registry)
+            {
+                await (registry.PushAsync(
+                    builtImage,
+                    sourceImageReference,
+                    destinationImageReference,
+                    message => SafeLog(message),
+                    cancellationToken)).ConfigureAwait(false);
+                SafeLog("Pushed container images '{0}' to registry '{2}'",
+                    destinationImageReference,
+                    registry.RegistryName);
+            }
+        }
+        catch (ContainerHttpException e)
+        {
+            if (BuildEngine != null)
+            {
+                Log.LogErrorFromException(e, true);
+            }
+
+            return false;
+        }
+        catch (Exception e)
+        {
+            if (BuildEngine != null)
+            {
+                Log.LogErrorWithCodeFromResources(nameof(Strings.RegistryOutputPushFailed), e.Message);
+                Log.LogMessage(MessageImportance.Low, "Details: {0}", e);
+            }
+
+            return false;
+        }
+
+        return true;
+    }
+
+    private async Task<bool> PushImagesToLocalDaemonAsync(BuiltImage builtImage, ImageReference sourceImageReference,
+        DestinationImageReference destinationImageReference, CancellationToken cancellationToken)
+    {
+        LocalDocker localDaemon = GetLocalDaemon(msg => Log.LogMessage(msg));
+        if (!await localDaemon.IsAvailableAsync(cancellationToken).ConfigureAwait(false))
+        {
+            Log.LogErrorWithCodeFromResources(nameof(Strings.LocalDaemondNotAvailable));
+            return false;
+        }
+
+        try
+        {
+            await localDaemon
+                .LoadAsync(builtImage, sourceImageReference, destinationImageReference, cancellationToken)
+                .ConfigureAwait(false);
+            SafeLog("Pushed container '{0}' to local daemon", destinationImageReference);
+        }
+        catch (AggregateException ex) when (ex.InnerException is DockerLoadException dle)
+        {
+            Log.LogErrorFromException(dle, showStackTrace: false);
+            return false;
+        }
+
+        return true;
     }
 
     private void SetPorts(ImageBuilder image, ITaskItem[] exposedPorts)
@@ -160,21 +257,23 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
         {
             var portNo = port.ItemSpec;
             var portType = port.GetMetadata("Type");
-            if (ContainerHelpers.TryParsePort(portNo, portType, out Port? parsedPort, out ContainerHelpers.ParsePortError? errors))
+            if (ContainerHelpers.TryParsePort(portNo, portType, out Port? parsedPort,
+                    out ContainerHelpers.ParsePortError? errors))
             {
                 image.ExposePort(parsedPort.Value.Number, parsedPort.Value.Type);
             }
             else
             {
                 ContainerHelpers.ParsePortError parsedErrors = (ContainerHelpers.ParsePortError)errors!;
-                
+
                 if (parsedErrors.HasFlag(ContainerHelpers.ParsePortError.MissingPortNumber))
                 {
                     Log.LogErrorWithCodeFromResources(nameof(Strings.MissingPortNumber), port.ItemSpec);
                 }
                 else
                 {
-                    if (parsedErrors.HasFlag(ContainerHelpers.ParsePortError.InvalidPortNumber) && parsedErrors.HasFlag(ContainerHelpers.ParsePortError.InvalidPortType))
+                    if (parsedErrors.HasFlag(ContainerHelpers.ParsePortError.InvalidPortNumber) &&
+                        parsedErrors.HasFlag(ContainerHelpers.ParsePortError.InvalidPortType))
                     {
                         Log.LogErrorWithCodeFromResources(nameof(Strings.InvalidPort_NumberAndType), portNo, portType);
                     }
@@ -191,8 +290,10 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
         }
     }
 
-    private LocalDocker GetLocalDaemon(Action<string> logger) {
-        var daemon = LocalContainerDaemon switch {
+    private LocalDocker GetLocalDaemon(Action<string> logger)
+    {
+        return LocalContainerDaemon switch
+        {
             KnownDaemonTypes.Docker => new LocalDocker(logger),
             _ => throw new NotSupportedException(
                 Resource.FormatString(
@@ -200,26 +301,19 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
                     LocalContainerDaemon,
                     string.Join(",", KnownDaemonTypes.SupportedLocalDaemonTypes)))
         };
-        return daemon;
     }
 
     private Lazy<Registry?> SourceRegistry
     {
-        get {
-            if(IsDaemonPull) {
+        get
+        {
+            if (IsDaemonPull)
+            {
                 return new Lazy<Registry?>(() => null);
-            } else {
-                return new Lazy<Registry?>(() => new Registry(ContainerHelpers.TryExpandRegistryToUri(BaseRegistry)));
             }
-        }
-    }
-
-    private Lazy<Registry?> DestinationRegistry {
-        get {
-            if(IsDaemonPush) {
-                return new Lazy<Registry?>(() => null);
-            } else {
-                return new Lazy<Registry?>(() => new Registry(ContainerHelpers.TryExpandRegistryToUri(OutputRegistry)));
+            else
+            {
+                return new Lazy<Registry?>(() => new Registry(BaseRegistry));
             }
         }
     }
@@ -232,8 +326,9 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
         }
     }
 
-    private void SafeLog(string message, params object[] formatParams) {
-        if(BuildEngine != null) Log.LogMessage(MessageImportance.High, message, formatParams);
+    private void SafeLog(string message, params object[] formatParams)
+    {
+        if (BuildEngine != null) Log.LogMessage(MessageImportance.High, message, formatParams);
     }
 
     public void Dispose()

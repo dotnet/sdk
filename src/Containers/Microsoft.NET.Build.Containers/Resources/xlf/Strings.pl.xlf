@@ -122,6 +122,11 @@
         <target state="translated">CONTAINER2018: nieprawidłowa wersja wstępna zestawu SDK „{0}” — obsługiwane są tylko wersje „rc” i „preview”.</target>
         <note>{StrBegin="CONTAINER2018: "}</note>
       </trans-unit>
+      <trans-unit id="OutputFileDirectoryDoesntExist">
+        <source>CONTAINER2020: Parent Directory of '{1}' does not exist.</source>
+        <target state="new">CONTAINER2020: Parent Directory of '{1}' does not exist.</target>
+        <note>{StrBegin="CONTAINER2020: "}</note>
+      </trans-unit>
       <trans-unit id="InvalidSdkVersion">
         <source>CONTAINER2019: Invalid SDK semantic version '{0}'.</source>
         <target state="translated">CONTAINER2019: nieprawidłowa wersja semantyczna zestawu SDK „{0}”.</target>

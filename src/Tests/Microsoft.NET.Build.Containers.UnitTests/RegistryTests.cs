@@ -18,7 +18,7 @@ namespace Microsoft.NET.Build.Containers.UnitTests
         [Theory]
         public void CheckIfAmazonECR(string registryName, bool isECR)
         {
-            Registry registry = new Registry(ContainerHelpers.TryExpandRegistryToUri(registryName));
+            Registry registry = new Registry(registryName);
             Assert.Equal(isECR, registry.IsAmazonECRRegistry);
         }
 
@@ -27,7 +27,7 @@ namespace Microsoft.NET.Build.Containers.UnitTests
         [Theory]
         public void CheckIfGoogleArtifactRegistry(string registryName, bool isECR)
         {
-            Registry registry = new Registry(ContainerHelpers.TryExpandRegistryToUri(registryName));
+            Registry registry = new Registry(registryName);
             Assert.Equal(isECR, registry.IsGoogleArtifactRegistry);
         }
     }

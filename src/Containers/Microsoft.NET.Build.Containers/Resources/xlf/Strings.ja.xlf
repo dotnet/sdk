@@ -122,6 +122,11 @@
         <target state="translated">CONTAINER2018: SDK プレリリース バージョン '{0}' が無効です。'rc' と 'preview' のみがサポートされています。</target>
         <note>{StrBegin="CONTAINER2018: "}</note>
       </trans-unit>
+      <trans-unit id="OutputFileDirectoryDoesntExist">
+        <source>CONTAINER2020: Parent Directory of '{1}' does not exist.</source>
+        <target state="new">CONTAINER2020: Parent Directory of '{1}' does not exist.</target>
+        <note>{StrBegin="CONTAINER2020: "}</note>
+      </trans-unit>
       <trans-unit id="InvalidSdkVersion">
         <source>CONTAINER2019: Invalid SDK semantic version '{0}'.</source>
         <target state="translated">CONTAINER2019: SDK セマンティック バージョン '{0}' が無効です。</target>

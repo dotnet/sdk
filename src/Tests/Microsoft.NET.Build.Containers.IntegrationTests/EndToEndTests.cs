@@ -42,7 +42,7 @@ public class EndToEndTests
 
         // Build the image
 
-        Registry registry = new Registry(ContainerHelpers.TryExpandRegistryToUri(DockerRegistryManager.LocalRegistry));
+        Registry registry = new Registry(ContainerHelpers.DockerRegistryManager.LocalRegistry);
 
         ImageBuilder imageBuilder = await registry.GetImageManifestAsync(
             DockerRegistryManager.BaseImage,
@@ -85,7 +85,7 @@ public class EndToEndTests
 
         // Build the image
 
-        Registry registry = new Registry(ContainerHelpers.TryExpandRegistryToUri(DockerRegistryManager.LocalRegistry));
+        Registry registry = new Registry(DockerRegistryManager.LocalRegistry);
 
         ImageBuilder imageBuilder = await registry.GetImageManifestAsync(
             DockerRegistryManager.BaseImage,
@@ -388,7 +388,7 @@ public class EndToEndTests
         string publishDirectory = BuildLocalApp(tfm: ToolsetInfo.CurrentTargetFramework, rid: rid);
 
         // Build the image
-        Registry registry = new(ContainerHelpers.TryExpandRegistryToUri(DockerRegistryManager.BaseImageSource));
+        Registry registry = new(DockerRegistryManager.BaseImageSource);
 
         ImageBuilder? imageBuilder = await registry.GetImageManifestAsync(
             DockerRegistryManager.BaseImage,

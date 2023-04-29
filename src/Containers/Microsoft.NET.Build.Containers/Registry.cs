@@ -34,7 +34,11 @@ internal sealed class Registry
     /// This is used in user-facing error messages, and it should match what the user would manually enter as
     /// part of Docker commands like `docker login`.
     /// </summary>
-    private string RegistryName { get; init; }
+    internal string RegistryName { get; init; }
+
+    internal Registry(string alreadyValidatedDomain) : this(TryExpandRegistryToUri(alreadyValidatedDomain))
+    {
+    }
 
     public Registry(Uri baseUri)
     {
@@ -45,7 +49,12 @@ internal sealed class Registry
 
     private static string DeriveRegistryName(Uri baseUri)
     {
-        var port = baseUri.Port == -1 ? string.Empty : $":{baseUri.Port}";
+        if (baseUri.IsFile)
+        {
+            return baseUri.GetComponents(UriComponents.Path, UriFormat.Unescaped);
+        }
+
+        string port = baseUri.Port == -1 ? string.Empty : $":{baseUri.Port}";
         if (baseUri.OriginalString.EndsWith(port, ignoreCase: true, culture: null))
         {
             // the port was part of the original assignment, so it's ok to consider it part of the 'name
@@ -123,6 +132,11 @@ internal sealed class Registry
     /// parallel uploads be more conservative and upload one layer at a time.
     /// </summary>
     private bool SupportsParallelUploads => !IsAmazonECRRegistry;
+
+    /// <summary>
+    /// Gets a value indicating whether this Registry represents a local file registry pointing to a tar.gz to write
+    /// </summary>
+    public bool IsTarGzFile => BaseUri.IsFile;
 
     public async Task<ImageBuilder> GetImageManifestAsync(string repositoryName, string reference, string runtimeIdentifier, string runtimeIdentifierGraphPath, CancellationToken cancellationToken)
     {
@@ -531,7 +545,8 @@ internal sealed class Registry
         request.Headers.Accept.Add(new(DockerContainerV1));
     }
 
-    public async Task PushAsync(BuiltImage builtImage, ImageReference source, ImageReference destination, Action<string> logProgressMessage, CancellationToken cancellationToken)
+    public async Task PushAsync(BuiltImage builtImage, ImageReference source,
+        DestinationImageReference destination, Action<string> logProgressMessage, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
         HttpClient client = GetClient();
@@ -606,14 +621,54 @@ internal sealed class Registry
         logProgressMessage($"Uploaded manifest to {RegistryName}");
 
         cancellationToken.ThrowIfCancellationRequested();
-        logProgressMessage($"Uploading tag {destination.Tag} to {RegistryName}");
-        var putResponse2 = await client.PutAsync(new Uri(BaseUri, $"/v2/{destination.Repository}/manifests/{destination.Tag}"), manifestUploadContent, cancellationToken).ConfigureAwait(false);
-
-        if (!putResponse2.IsSuccessStatusCode)
+        foreach (string tag in destination.Tags)
         {
-            throw new ContainerHttpException(Resource.GetString(nameof(Strings.RegistryPushFailed)), putResponse2.RequestMessage?.RequestUri?.ToString(), jsonString);
+            logProgressMessage($"Uploading tag {tag} to {RegistryName}");
+            var putResponse2 = await client.PutAsync(new Uri(BaseUri, $"/v2/{destination.Repository}/manifests/{tag}"), manifestUploadContent, cancellationToken).ConfigureAwait(false);
+
+            if (!putResponse2.IsSuccessStatusCode)
+            {
+                throw new ContainerHttpException(Resource.GetString(nameof(Strings.RegistryPushFailed)), putResponse2.RequestMessage?.RequestUri?.ToString(), jsonString);
+            }
+
+            logProgressMessage($"Uploaded tag {tag} to {RegistryName}");
+        }
+    }
+
+    /// <summary>
+    /// Given an already-validated registry domain, this is our hueristic to determine what HTTP protocol should be used to interact with it.
+    /// This is primarily for testing - in the real world almost all usage should be through HTTPS!
+    /// </summary>
+    private static Uri TryExpandRegistryToUri(string alreadyValidatedDomain)
+    {
+        // full local file urls
+        if (alreadyValidatedDomain.StartsWith("file:///"))
+        {
+            return new Uri(alreadyValidatedDomain);
         }
 
-        logProgressMessage($"Uploaded tag {destination.Tag} to {RegistryName}");
+        // absolute or relative file paths
+        // while it is not 100% guaranteed it is very unlikely to have a registry starting with a dot considering
+        // typical domain and hostnames
+        if (Path.IsPathFullyQualified(alreadyValidatedDomain) || alreadyValidatedDomain.StartsWith($".") )
+        {
+            return new Uri($"file://{Path.GetFullPath(alreadyValidatedDomain)}");
+        }
+
+        // classical registry names
+        string prefix = alreadyValidatedDomain.StartsWith("localhost", StringComparison.Ordinal) ? "http" : "https";
+        return new Uri($"{prefix}://{alreadyValidatedDomain}");
+    }
+
+    /// <summary>
+    /// Creates a Registry configurations based on the provided output mode and registry configuration.
+    /// </summary>
+    /// <param name="outputRegistries">The output registries to push to</param>
+    /// <returns>A the destination registries to push the image to.</returns>
+    /// <exception cref="ArgumentOutOfRangeException">An invalid output mode was provided.</exception>
+    internal static IEnumerable<Registry?> BuildDestinationRegistries(IEnumerable<string?> outputRegistries)
+    {
+        return outputRegistries
+            .Select(r => string.IsNullOrEmpty(r) ? null : new Registry(r));
     }
 }

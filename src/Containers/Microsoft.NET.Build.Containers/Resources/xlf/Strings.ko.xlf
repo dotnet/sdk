@@ -122,6 +122,11 @@
         <target state="translated">CONTAINER2018: 잘못된 SDK 시험판 버전 '{0}' - 'rc' 및 'preview'만 지원됩니다.</target>
         <note>{StrBegin="CONTAINER2018: "}</note>
       </trans-unit>
+      <trans-unit id="OutputFileDirectoryDoesntExist">
+        <source>CONTAINER2020: Parent Directory of '{1}' does not exist.</source>
+        <target state="new">CONTAINER2020: Parent Directory of '{1}' does not exist.</target>
+        <note>{StrBegin="CONTAINER2020: "}</note>
+      </trans-unit>
       <trans-unit id="InvalidSdkVersion">
         <source>CONTAINER2019: Invalid SDK semantic version '{0}'.</source>
         <target state="translated">CONTAINER2019: 잘못된 SDK 의미 체계 버전 '{0}'입니다.</target>

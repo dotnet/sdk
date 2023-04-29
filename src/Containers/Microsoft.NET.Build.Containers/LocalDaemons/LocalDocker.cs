@@ -21,7 +21,7 @@ internal sealed class LocalDocker : ILocalDaemon
         this.logger = logger;
     }
 
-    public async Task LoadAsync(BuiltImage image, ImageReference sourceReference, ImageReference destinationReference, CancellationToken cancellationToken)
+    public async Task LoadAsync(BuiltImage image, ImageReference sourceReference, DestinationImageReference destinationReference, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
@@ -132,11 +132,11 @@ internal sealed class LocalDocker : ILocalDaemon
 
     private static void Proc_OutputDataReceived(object sender, DataReceivedEventArgs e) => throw new NotImplementedException();
 
-    private static async Task WriteImageToStreamAsync(BuiltImage image, ImageReference sourceReference, ImageReference destinationReference, Stream imageStream, CancellationToken cancellationToken)
+    internal static async Task WriteImageToStreamAsync(BuiltImage image, ImageReference sourceReference,
+        DestinationImageReference destinationReference, Stream imageStream, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        using TarWriter writer = new(imageStream, TarEntryFormat.Pax, leaveOpen: true);
-
+        await using TarWriter writer = new(imageStream, TarEntryFormat.Pax, leaveOpen: true);
 
         // Feed each layer tarball into the stream
         JsonArray layerTarballPaths = new JsonArray();
@@ -146,7 +146,9 @@ internal sealed class LocalDocker : ILocalDaemon
             if (sourceReference.Registry is { } registry)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                string localPath = await registry.DownloadBlobAsync(sourceReference.Repository, d, cancellationToken).ConfigureAwait(false); ;
+                string localPath = await registry.DownloadBlobAsync(sourceReference.Repository, d, cancellationToken)
+                    .ConfigureAwait(false);
+                ;
 
                 // Stuff that (uncompressed) tarball into the image tar stream
                 // TODO uncompress!!
@@ -168,34 +170,27 @@ internal sealed class LocalDocker : ILocalDaemon
         cancellationToken.ThrowIfCancellationRequested();
         using (MemoryStream configStream = new MemoryStream(Encoding.UTF8.GetBytes(image.Config)))
         {
-            PaxTarEntry configEntry = new(TarEntryType.RegularFile, configTarballPath)
-            {
-                DataStream = configStream
-            };
+            PaxTarEntry configEntry = new(TarEntryType.RegularFile, configTarballPath) { DataStream = configStream };
 
             await writer.WriteEntryAsync(configEntry, cancellationToken).ConfigureAwait(false);
         }
 
         // Add manifest
-        JsonArray tagsNode = new()
+        JsonArray tagsNode = new();
+        foreach (string tag in destinationReference.Tags)
         {
-            destinationReference.RepositoryAndTag
-        };
+            tagsNode.Add($"{destinationReference.Repository}:{tag}");
+        }
 
         JsonNode manifestNode = new JsonArray(new JsonObject
         {
-            { "Config", configTarballPath },
-            { "RepoTags", tagsNode },
-            { "Layers", layerTarballPaths }
+            { "Config", configTarballPath }, { "RepoTags", tagsNode }, { "Layers", layerTarballPaths }
         });
 
         cancellationToken.ThrowIfCancellationRequested();
         using (MemoryStream manifestStream = new MemoryStream(Encoding.UTF8.GetBytes(manifestNode.ToJsonString())))
         {
-            PaxTarEntry manifestEntry = new(TarEntryType.RegularFile, "manifest.json")
-            {
-                DataStream = manifestStream
-            };
+            PaxTarEntry manifestEntry = new(TarEntryType.RegularFile, "manifest.json") { DataStream = manifestStream };
 
             await writer.WriteEntryAsync(manifestEntry, cancellationToken).ConfigureAwait(false);
         }

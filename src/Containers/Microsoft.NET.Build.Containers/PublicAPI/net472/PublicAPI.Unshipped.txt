@@ -55,8 +55,8 @@ Microsoft.NET.Build.Containers.Tasks.CreateNewImage.Labels.get -> Microsoft.Buil
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.Labels.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.LocalContainerDaemon.get -> string!
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.LocalContainerDaemon.set -> void
-Microsoft.NET.Build.Containers.Tasks.CreateNewImage.OutputRegistry.get -> string!
-Microsoft.NET.Build.Containers.Tasks.CreateNewImage.OutputRegistry.set -> void
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.OutputRegistries.get -> string![]!
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.OutputRegistries.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.PublishDirectory.get -> string!
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.PublishDirectory.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.RuntimeIdentifierGraphPath.get -> string!

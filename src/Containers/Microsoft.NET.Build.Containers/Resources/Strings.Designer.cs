@@ -385,6 +385,15 @@ namespace Microsoft.NET.Build.Containers.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to CONTAINER2020: Parent Directory of &apos;{1}&apos; does not exist..
+        /// </summary>
+        internal static string OutputFileDirectoryDoesntExist {
+            get {
+                return ResourceManager.GetString("OutputFileDirectoryDoesntExist", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to CONTAINER2011: {0} &apos;{1}&apos; does not exist.
         /// </summary>
         internal static string PublishDirectoryDoesntExist {

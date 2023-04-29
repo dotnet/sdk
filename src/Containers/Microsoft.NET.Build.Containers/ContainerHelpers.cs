@@ -156,16 +156,6 @@ public static class ContainerHelpers
     }
 
     /// <summary>
-    /// Given an already-validated registry domain, this is our hueristic to determine what HTTP protocol should be used to interact with it.
-    /// This is primarily for testing - in the real world almost all usage should be through HTTPS!
-    /// </summary>
-    internal static Uri TryExpandRegistryToUri(string alreadyValidatedDomain)
-    {
-        var prefix = alreadyValidatedDomain.StartsWith("localhost", StringComparison.Ordinal) ? "http" : "https";
-        return new Uri($"{prefix}://{alreadyValidatedDomain}");
-    }
-
-    /// <summary>
     /// Ensures a given environment variable is valid.
     /// </summary>
     /// <param name="envVar"></param>

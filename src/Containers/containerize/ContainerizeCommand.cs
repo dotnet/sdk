@@ -36,11 +36,11 @@ internal class ContainerizeCommand : RootCommand
             description: "The base image tag. Ex: 6.0",
             defaultValueFactory: () => "latest");
 
-    internal Option<string> OutputRegistryOption { get; } = new Option<string>(
+    internal Option<string[]> OutputRegistryOption { get; } = new Option<string[]>(
             name: "--outputregistry",
-            description: "The registry to push to.")
+            description: "The registries to push to.")
             {
-                IsRequired = false
+                AllowMultipleArgumentsPerToken = true
             };
 
     internal Option<string> ImageNameOption { get; } = new Option<string>(
@@ -168,7 +168,7 @@ internal class ContainerizeCommand : RootCommand
 
 
     internal ContainerizeCommand() : base("Containerize an application without Docker.")
-    { 
+    {
         this.AddArgument(PublishDirectoryArgument);
         this.AddOption(BaseRegistryOption);
         this.AddOption(BaseImageNameOption);
@@ -193,7 +193,7 @@ internal class ContainerizeCommand : RootCommand
             string _baseReg = context.ParseResult.GetValue(BaseRegistryOption)!;
             string _baseName = context.ParseResult.GetValue(BaseImageNameOption)!;
             string _baseTag = context.ParseResult.GetValue(BaseImageTagOption)!;
-            string? _outputReg = context.ParseResult.GetValue(OutputRegistryOption);
+            string[] _outputReg = context.ParseResult.GetValue(OutputRegistryOption) ?? new []{ string.Empty };
             string _name = context.ParseResult.GetValue(ImageNameOption)!;
             string[] _tags = context.ParseResult.GetValue(ImageTagsOption)!;
             string _workingDir = context.ParseResult.GetValue(WorkingDirectoryOption)!;

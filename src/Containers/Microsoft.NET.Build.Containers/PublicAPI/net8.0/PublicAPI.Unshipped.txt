@@ -2,7 +2,7 @@
 Microsoft.NET.Build.Containers.BaseImageNotFoundException
 Microsoft.NET.Build.Containers.Constants
 Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageTag.ComputeDotnetBaseImageTag() -> void
-static Microsoft.NET.Build.Containers.ContainerBuilder.ContainerizeAsync(System.IO.DirectoryInfo! publishDirectory, string! workingDir, string! baseRegistry, string! baseImageName, string! baseImageTag, string![]! entrypoint, string![]? entrypointArgs, string! imageName, string![]! imageTags, string? outputRegistry, System.Collections.Generic.Dictionary<string!, string!>! labels, Microsoft.NET.Build.Containers.Port[]? exposedPorts, System.Collections.Generic.Dictionary<string!, string!>! envVars, string! containerRuntimeIdentifier, string! ridGraphPath, string! localContainerDaemon, string? containerUser, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<int>!
+static Microsoft.NET.Build.Containers.ContainerBuilder.ContainerizeAsync(System.IO.DirectoryInfo! publishDirectory, string! workingDir, string! baseRegistry, string! baseImageName, string! baseImageTag, string![]! entrypoint, string![]? entrypointArgs, string! imageName, string![]! imageTags, string?[]! outputRegistries, System.Collections.Generic.Dictionary<string!, string!>! labels, Microsoft.NET.Build.Containers.Port[]? exposedPorts, System.Collections.Generic.Dictionary<string!, string!>! envVars, string! containerRuntimeIdentifier, string! ridGraphPath, string! localContainerDaemon, string? containerUser, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<int>!
 static readonly Microsoft.NET.Build.Containers.Constants.Version -> string!
 Microsoft.NET.Build.Containers.ContainerBuilder
 Microsoft.NET.Build.Containers.ContainerHelpers
@@ -145,8 +145,8 @@ Microsoft.NET.Build.Containers.Tasks.CreateNewImage.Labels.get -> Microsoft.Buil
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.Labels.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.LocalContainerDaemon.get -> string!
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.LocalContainerDaemon.set -> void
-Microsoft.NET.Build.Containers.Tasks.CreateNewImage.OutputRegistry.get -> string!
-Microsoft.NET.Build.Containers.Tasks.CreateNewImage.OutputRegistry.set -> void
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.OutputRegistries.get -> string![]!
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.OutputRegistries.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.PublishDirectory.get -> string!
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.PublishDirectory.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.RuntimeIdentifierGraphPath.get -> string!

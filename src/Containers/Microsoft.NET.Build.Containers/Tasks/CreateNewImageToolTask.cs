@@ -120,10 +120,10 @@ public partial class CreateNewImage : ToolTask, ICancelableTask
         {
             builder.AppendSwitchIfNotNull("--baseimagetag ", BaseImageTag);
         }
-        if (!string.IsNullOrWhiteSpace(OutputRegistry))
-        {
-            builder.AppendSwitchIfNotNull("--outputregistry ", OutputRegistry);
-        }
+
+        string[] sanitizedRegistries = OutputRegistries.Select(r => r ?? "").ToArray();
+        builder.AppendSwitchIfNotNull("--outputregistry ", sanitizedRegistries, delimiter: " ");
+
         if (!string.IsNullOrWhiteSpace(LocalContainerDaemon))
         {
             builder.AppendSwitchIfNotNull("--localcontainerdaemon ", LocalContainerDaemon);

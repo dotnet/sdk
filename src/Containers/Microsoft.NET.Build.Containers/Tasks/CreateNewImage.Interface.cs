@@ -41,9 +41,9 @@ partial class CreateNewImage
     public string BaseImageTag { get; set; }
 
     /// <summary>
-    /// The registry to push to.
+    /// A list of registries to push to.
     /// </summary>
-    public string OutputRegistry { get; set; }
+    public string[] OutputRegistries { get; set; }
 
     /// <summary>
     /// The kind of local daemon to use, if any.
@@ -139,7 +139,7 @@ partial class CreateNewImage
         BaseRegistry = "";
         BaseImageName = "";
         BaseImageTag = "";
-        OutputRegistry = "";
+        OutputRegistries = Array.Empty<string>();
         ImageName = "";
         ImageTags = Array.Empty<string>();
         PublishDirectory = "";

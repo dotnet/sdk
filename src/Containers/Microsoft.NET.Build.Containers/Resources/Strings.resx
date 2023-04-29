@@ -196,6 +196,10 @@
     <value>CONTAINER2005: The first character of the image name must be a lowercase letter or a digit.</value>
     <comment>{StrBegin="CONTAINER2005: "}</comment>
   </data>
+  <data name="OutputFileDirectoryDoesntExist" xml:space="preserve">
+    <value>CONTAINER2020: Parent Directory of '{1}' does not exist.</value>
+    <comment>{StrBegin="CONTAINER2020: "}</comment>
+  </data>
   <data name="InvalidSdkVersion" xml:space="preserve">
     <value>CONTAINER2019: Invalid SDK semantic version '{0}'.</value>
     <comment>{StrBegin="CONTAINER2019: "}</comment>

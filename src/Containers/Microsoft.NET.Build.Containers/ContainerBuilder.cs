@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.NET.Build.Containers.Resources;
+using Microsoft.NET.Build.Containers.Tasks;
 
 namespace Microsoft.NET.Build.Containers;
 
@@ -17,7 +18,7 @@ public static class ContainerBuilder
         string[]? entrypointArgs,
         string imageName,
         string[] imageTags,
-        string? outputRegistry,
+        string?[] outputRegistries,
         Dictionary<string, string> labels,
         Port[]? exposedPorts,
         Dictionary<string, string> envVars,
@@ -33,12 +34,13 @@ public static class ContainerBuilder
             throw new ArgumentException(string.Format(Resource.GetString(nameof(Strings.PublishDirectoryDoesntExist)), nameof(publishDirectory), publishDirectory.FullName));
         }
         bool isDaemonPull = string.IsNullOrEmpty(baseRegistry);
-        Registry? sourceRegistry = isDaemonPull ? null : new Registry(ContainerHelpers.TryExpandRegistryToUri(baseRegistry));
+        Registry? sourceRegistry = isDaemonPull ? null : new Registry(baseRegistry);
         ImageReference sourceImageReference = new(sourceRegistry, baseImageName, baseImageTag);
 
-        bool isDaemonPush = string.IsNullOrEmpty(outputRegistry);
-        Registry? destinationRegistry = isDaemonPush ? null : new Registry(ContainerHelpers.TryExpandRegistryToUri(outputRegistry!));
-        IEnumerable<ImageReference> destinationImageReferences = imageTags.Select(t => new ImageReference(destinationRegistry, imageName, t));
+        IEnumerable<Registry?> destinationRegistries = Registry.BuildDestinationRegistries(outputRegistries);
+        DestinationImageReference[] destinationImageReferences = destinationRegistries
+            .Select(r => new DestinationImageReference(r, imageName, imageTags))
+            .ToArray();
 
         ImageBuilder? imageBuilder;
         if (sourceRegistry is { } registry)
@@ -87,50 +89,123 @@ public static class ContainerBuilder
         BuiltImage builtImage = imageBuilder.Build();
         cancellationToken.ThrowIfCancellationRequested();
 
-        foreach (ImageReference destinationImageReference in destinationImageReferences)
+        foreach (DestinationImageReference destinationImageReference in destinationImageReferences)
         {
-            if (isDaemonPush)
+            int result = 0;
+            switch (destinationImageReference.Registry)
             {
-                LocalDocker localDaemon = GetLocalDaemon(localContainerDaemon,Console.WriteLine);
-                if (!(await localDaemon.IsAvailableAsync(cancellationToken).ConfigureAwait(false)))
-                {
-                    Console.WriteLine(DiagnosticMessage.ErrorFromResourceWithCode(nameof(Strings.LocalDaemondNotAvailable)));
-                    return 7;
-                }
-
-                try
-                {
-                    await localDaemon.LoadAsync(builtImage, sourceImageReference, destinationImageReference, cancellationToken).ConfigureAwait(false);
-                    Console.WriteLine("Containerize: Pushed container '{0}' to Docker daemon", destinationImageReference.RepositoryAndTag);
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine(DiagnosticMessage.ErrorFromResourceWithCode(nameof(Strings.RegistryOutputPushFailed), ex.Message));
-                    return 1;
-                }
+                case { IsTarGzFile: true }:
+                    result = await WriteTarGzAync(imageName,
+                        builtImage, sourceImageReference, destinationImageReference,
+                        cancellationToken).ConfigureAwait(false);
+                    break;
+                case not null:
+                    result = await PushImagesToRemoteRegistryAsync(builtImage, sourceImageReference,
+                        destinationImageReference,
+                        cancellationToken).ConfigureAwait(false);
+                    break;
+                case null:
+                    result = await PushImagesToLocalDaemonAsync(localContainerDaemon,
+                        builtImage, sourceImageReference,
+                        destinationImageReference,
+                        cancellationToken).ConfigureAwait(false);
+                    break;
             }
-            else
+
+            if (result != 0)
             {
-                try
-                {
-                    if (destinationImageReference.Registry is not null)
-                    {
-                        await (destinationImageReference.Registry.PushAsync(
-                            builtImage,
-                            sourceImageReference,
-                            destinationImageReference,
-                            message => Console.WriteLine($"Containerize: {message}"),
-                            cancellationToken)).ConfigureAwait(false);
-                        Console.WriteLine($"Containerize: Pushed container '{destinationImageReference.RepositoryAndTag}' to registry '{outputRegistry}'");
-                    }
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(DiagnosticMessage.ErrorFromResourceWithCode(nameof(Strings.RegistryOutputPushFailed), e.Message));
-                    return 1;
-                }
+                return result;
             }
         }
+
+        return 0;
+    }
+
+    private static async Task<int> PushImagesToLocalDaemonAsync(string localContainerDaemon, BuiltImage builtImage,
+        ImageReference sourceImageReference, DestinationImageReference destinationImageReference,
+        CancellationToken cancellationToken)
+    {
+        LocalDocker localDaemon = GetLocalDaemon(localContainerDaemon,Console.WriteLine);
+        if (!(await localDaemon.IsAvailableAsync(cancellationToken).ConfigureAwait(false)))
+        {
+            Console.WriteLine(DiagnosticMessage.ErrorFromResourceWithCode(nameof(Strings.LocalDaemondNotAvailable)));
+            return 7;
+        }
+
+        try
+        {
+            await localDaemon.LoadAsync(builtImage, sourceImageReference, destinationImageReference, cancellationToken).ConfigureAwait(false);
+            Console.WriteLine("Containerize: Pushed container '{0}' to Docker daemon", destinationImageReference);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(DiagnosticMessage.ErrorFromResourceWithCode(nameof(Strings.RegistryOutputPushFailed), ex.Message));
+            return 1;
+        }
+
+        return 0;
+    }
+
+    private static async Task<int> PushImagesToRemoteRegistryAsync(BuiltImage builtImage,
+        ImageReference sourceImageReference, DestinationImageReference destinationImageReference,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            if (destinationImageReference.Registry is {} registry)
+            {
+                await (destinationImageReference.Registry.PushAsync(
+                    builtImage,
+                    sourceImageReference,
+                    destinationImageReference,
+                    message => Console.WriteLine($"Containerize: {message}"),
+                    cancellationToken)).ConfigureAwait(false);
+                Console.WriteLine($"Containerize: Pushed container '{destinationImageReference}' to registry '{registry.RegistryName}'");
+            }
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(DiagnosticMessage.ErrorFromResourceWithCode(nameof(Strings.RegistryOutputPushFailed), e.Message));
+            return 1;
+        }
+
+        return 0;
+    }
+
+    private static async Task<int> WriteTarGzAync(
+        string imageName,
+        BuiltImage builtImage, ImageReference sourceImageReference,
+        DestinationImageReference destinationImageReference, CancellationToken cancellationToken)
+    {
+        string outputFile = destinationImageReference.Registry!.BaseUri.LocalPath;
+        try
+        {
+            string? parentDirectory = Path.GetDirectoryName(Path.GetFullPath(outputFile));
+            if (string.IsNullOrEmpty(parentDirectory) || !Directory.Exists(parentDirectory))
+            {
+                Console.WriteLine(DiagnosticMessage.ErrorFromResourceWithCode(nameof(Strings.OutputFileDirectoryDoesntExist), outputFile));
+                return 7;
+            }
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"Containerize: {e.Message}");
+            return 1;
+        }
+
+        try
+        {
+            await using FileStream fileStream = File.Create(outputFile);
+            await LocalDocker.WriteImageToStreamAsync(builtImage, sourceImageReference, destinationImageReference,
+                fileStream, cancellationToken).ConfigureAwait(false);
+            Console.Write($"Containerize:Written image '{imageName}' to path '{outputFile}'");
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(DiagnosticMessage.ErrorFromResourceWithCode(nameof(Strings.RegistryOutputPushFailed), e.Message));
+            return 1;
+        }
+
         return 0;
     }
 

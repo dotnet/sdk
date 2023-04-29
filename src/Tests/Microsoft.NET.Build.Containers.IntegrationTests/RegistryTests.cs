@@ -12,7 +12,7 @@ public class RegistryTests
     [DockerDaemonAvailableFact]
     public async Task GetFromRegistry()
     {
-        Registry registry = new Registry(ContainerHelpers.TryExpandRegistryToUri(DockerRegistryManager.LocalRegistry));
+        Registry registry = new Registry(DockerRegistryManager.LocalRegistry);
         var ridgraphfile = ToolsetUtils.GetRuntimeGraphFilePath();
 
         // Don't need rid graph for local registry image pulls - since we're only pushing single image manifests (not manifest lists)
