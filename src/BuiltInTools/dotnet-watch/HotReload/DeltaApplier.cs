@@ -1,13 +1,13 @@
 ﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+#nullable enable
+
 using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
-using Microsoft.CodeAnalysis.ExternalAccess.Watch.Api;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Linq;
+using Microsoft.CodeAnalysis.ExternalAccess.Watch.Api;
 
 namespace Microsoft.DotNet.Watcher.Tools
 {
