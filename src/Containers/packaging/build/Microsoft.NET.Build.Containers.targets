@@ -61,7 +61,7 @@
   <Target Name="ComputeContainerConfig" DependsOnTargets="ComputeContainerBaseImage">
     <PropertyGroup Label="VS defaults">
       <!-- RegistryUrl is used by existing VS targets for Docker builds - this lets us fill that void -->
-      <ContainerRegistry Condition="'$(RegistryUrl)' != ''">$(RegistryUrl)</ContainerRegistry>
+      <ContainerRegistries Condition="'$(RegistryUrls)' != ''">$(RegistryUrls)</ContainerRegistries>
       <!-- PublishImageTag is used by existing VS targets for Docker builds - this lets us fill that void -->
       <ContainerImageTag Condition="'$(PublishImageTag)' != ''">$(PublishImageTag)</ContainerImageTag>
       <!-- This line is a compatibility shim for VS support - the VS container targets define a container tag using this property and format. This lets us be a drop-in replacement for them. -->
@@ -71,7 +71,11 @@
     <!-- Container Defaults -->
     <PropertyGroup>
       <!-- An empty ContainerRegistry implies pushing to the local daemon, putting this here for documentation purposes -->
-      <!-- <ContainerRegistry></ContainerRegistry> -->
+      <!-- <ContainerRegistries></ContainerRegistry> -->
+
+      <!-- Backwards compat with single RegistryUrl -->
+      <ContainerRegistries Condition="'$(RegistryUrl)' != '' AND '$(ContainerRegistries)' == '' ">$(RegistryUrl)</ContainerRegistries>
+      <ContainerRegistries Condition="'$(RegistryUrl)' != '' AND '$(ContainerRegistries)' != '' ">$(RegistryUrl);$(ContainerRegistries)</ContainerRegistries>
 
       <!-- Set which local container daemon to use. We only explicitly support Docker (or things that mimic Docker APIs and binary names) at the moment. -->
       <LocalContainerDaemon Condition="'$(LocalContainerDaemon)' == ''">Docker</LocalContainerDaemon>
@@ -122,7 +126,6 @@
       <Output TaskParameter="ParsedContainerTag" PropertyName="ContainerBaseTag" />
       <Output TaskParameter="NewContainerRegistry" PropertyName="ContainerRegistry" />
       <Output TaskParameter="NewContainerImageName" PropertyName="ContainerImageName" />
-      <Output TaskParameter="NewContainerTags" ItemName="ContainerImageTags" />
       <Output TaskParameter="NewContainerEnvironmentVariables" ItemName="ContainerEnvironmentVariables" />
     </ParseContainerProperties>
 
@@ -199,7 +202,7 @@
                     BaseImageName="$(ContainerBaseName)"
                     BaseImageTag="$(ContainerBaseTag)"
                     LocalContainerDaemon="$(LocalContainerDaemon)"
-                    OutputRegistry="$(ContainerRegistry)"
+                    OutputRegistries="@(ContainerRegistries)"
                     ImageName="$(ContainerImageName)"
                     ImageTags="@(ContainerImageTags)"
                     PublishDirectory="$(PublishDir)"

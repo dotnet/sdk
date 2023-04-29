@@ -37,7 +37,7 @@ internal class ContainerizeCommand : RootCommand
             defaultValueFactory: () => "latest");
 
     internal Option<string[]> OutputRegistryOption { get; } = new Option<string[]>(
-            name: "--outputregistry",
+            name: "--outputregistries",
             description: "The registries to push to.")
             {
                 AllowMultipleArgumentsPerToken = true

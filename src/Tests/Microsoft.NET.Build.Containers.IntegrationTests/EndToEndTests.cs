@@ -42,7 +42,7 @@ public class EndToEndTests
 
         // Build the image
 
-        Registry registry = new Registry(ContainerHelpers.DockerRegistryManager.LocalRegistry);
+        Registry registry = new Registry(DockerRegistryManager.LocalRegistry);
 
         ImageBuilder imageBuilder = await registry.GetImageManifestAsync(
             DockerRegistryManager.BaseImage,
@@ -63,7 +63,7 @@ public class EndToEndTests
 
         // Push the image back to the local registry
         var sourceReference = new ImageReference(registry, DockerRegistryManager.BaseImage, DockerRegistryManager.Net6ImageTag);
-        var destinationReference = new ImageReference(registry, NewImageName(), "latest");
+        var destinationReference = new DestinationImageReference(registry, NewImageName(), new[] { "latest" });
 
         await registry.PushAsync(builtImage, sourceReference, destinationReference, Console.WriteLine, cancellationToken: default).ConfigureAwait(false);
 
@@ -105,7 +105,7 @@ public class EndToEndTests
 
         // Load the image into the local Docker daemon
         var sourceReference = new ImageReference(registry, DockerRegistryManager.BaseImage, DockerRegistryManager.Net6ImageTag);
-        var destinationReference = new ImageReference(registry, NewImageName(), "latest");
+        var destinationReference = new DestinationImageReference(registry, NewImageName(), new[] { "latest" });
 
         await new LocalDocker(Console.WriteLine).LoadAsync(builtImage, sourceReference, destinationReference, default).ConfigureAwait(false);
 
@@ -410,7 +410,7 @@ public class EndToEndTests
 
         // Load the image into the local Docker daemon
         var sourceReference = new ImageReference(registry, DockerRegistryManager.BaseImage, DockerRegistryManager.Net7ImageTag);
-        var destinationReference = new ImageReference(registry, NewImageName(), rid);
+        var destinationReference = new DestinationImageReference(registry, NewImageName(), new[] { rid });
         await new LocalDocker(Console.WriteLine).LoadAsync(builtImage, sourceReference, destinationReference, default).ConfigureAwait(false);
 
         // Run the image

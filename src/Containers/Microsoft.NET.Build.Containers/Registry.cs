@@ -666,9 +666,10 @@ internal sealed class Registry
     /// <param name="outputRegistries">The output registries to push to</param>
     /// <returns>A the destination registries to push the image to.</returns>
     /// <exception cref="ArgumentOutOfRangeException">An invalid output mode was provided.</exception>
-    internal static IEnumerable<Registry?> BuildDestinationRegistries(IEnumerable<string?> outputRegistries)
+    internal static IEnumerable<Registry?> BuildDestinationRegistries(IList<string?> outputRegistries)
     {
-        return outputRegistries
-            .Select(r => string.IsNullOrEmpty(r) ? null : new Registry(r));
+        return outputRegistries.Count > 0
+            ? outputRegistries.Select(r => string.IsNullOrEmpty(r) ? null : new Registry(r))
+            : new Registry?[] { null };
     }
 }

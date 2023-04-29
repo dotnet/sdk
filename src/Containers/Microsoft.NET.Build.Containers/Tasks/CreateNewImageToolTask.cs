@@ -122,7 +122,10 @@ public partial class CreateNewImage : ToolTask, ICancelableTask
         }
 
         string[] sanitizedRegistries = OutputRegistries.Select(r => r ?? "").ToArray();
-        builder.AppendSwitchIfNotNull("--outputregistry ", sanitizedRegistries, delimiter: " ");
+        if (sanitizedRegistries.Length > 1 || !string.IsNullOrEmpty(sanitizedRegistries[0]))
+        {
+            builder.AppendSwitchIfNotNull("--outputregistries ", sanitizedRegistries, delimiter: " ");
+        }
 
         if (!string.IsNullOrWhiteSpace(LocalContainerDaemon))
         {

@@ -58,7 +58,7 @@ public class CreateNewImageToolTaskTests
         e = Assert.Throws<InvalidOperationException>(() => task.GenerateCommandLineCommandsInt());
         Assert.Equal("CONTAINER4002: Required 'Entrypoint' items were not set.", e.Message);
 
-        task.Entrypoint = new[] { new TaskItem("") }; 
+        task.Entrypoint = new[] { new TaskItem("") };
 
         e = Assert.Throws<InvalidOperationException>(() => task.GenerateCommandLineCommandsInt());
         Assert.Equal("CONTAINER4003: Required 'Entrypoint' items contain empty items.", e.Message);
@@ -103,7 +103,7 @@ public class CreateNewImageToolTaskTests
         else
         {
             Assert.DoesNotContain("--baseimagetag", args);
-        }      
+        }
     }
 
 
@@ -123,17 +123,17 @@ public class CreateNewImageToolTaskTests
         task.WorkingDirectory = "MyWorkingDirectory";
         task.Entrypoint = new[] { new TaskItem("MyEntryPoint") };
 
-        task.OutputRegistry = value;
+        task.OutputRegistries = new[] { value };
 
         string args = task.GenerateCommandLineCommandsInt();
 
         if (optionExpected)
         {
-            Assert.Contains($"--outputregistry {value}", args);
+            Assert.Contains($"--outputregistries {value}", args);
         }
         else
         {
-            Assert.DoesNotContain("--outputregistry", args);
+            Assert.DoesNotContain("--outputregistries", args);
         }
     }
 

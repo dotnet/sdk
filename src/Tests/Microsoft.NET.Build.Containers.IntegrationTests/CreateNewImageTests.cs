@@ -50,7 +50,7 @@ public class CreateNewImageTests
         task.BaseImageName = "dotnet/runtime";
         task.BaseImageTag = "7.0";
 
-        task.OutputRegistry = "localhost:5010";
+        task.OutputRegistries = new[] { "localhost:5010" };
         task.PublishDirectory = Path.Combine(newProjectDir.FullName, "bin", "Release", ToolsetInfo.CurrentTargetFramework, "linux-arm64", "publish");
         task.ImageName = "dotnet/testimage";
         task.ImageTags = new[] { "latest" };
@@ -104,7 +104,7 @@ public class CreateNewImageTests
         cni.BaseImageName = pcp.ParsedContainerImage;
         cni.BaseImageTag = pcp.ParsedContainerTag;
         cni.ImageName = pcp.NewContainerImageName;
-        cni.OutputRegistry = "localhost:5010";
+        cni.OutputRegistries = new[] { "localhost:5010" };
         cni.PublishDirectory = Path.Combine(newProjectDir.FullName, "bin", "release", ToolsetInfo.CurrentTargetFramework);
         cni.WorkingDirectory = "app/";
         cni.Entrypoint = new TaskItem[] { new("ParseContainerProperties_EndToEnd") };
@@ -169,7 +169,7 @@ public class CreateNewImageTests
         cni.BaseImageName = pcp.ParsedContainerImage;
         cni.BaseImageTag = pcp.ParsedContainerTag;
         cni.ImageName = pcp.NewContainerImageName;
-        cni.OutputRegistry = pcp.NewContainerRegistry;
+        cni.OutputRegistries = new[] { pcp.NewContainerRegistry };
         cni.PublishDirectory = Path.Combine(newProjectDir.FullName, "bin", "release", ToolsetInfo.CurrentTargetFramework, "linux-x64");
         cni.WorkingDirectory = "/app";
         cni.Entrypoint = new TaskItem[] { new("/app/Tasks_EndToEnd_With_EnvironmentVariable_Validation") };
