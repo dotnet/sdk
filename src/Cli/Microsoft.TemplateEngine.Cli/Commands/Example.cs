@@ -10,6 +10,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
     internal class Example
     {
         private List<string> _commandParts = new List<string>();
+        private string _helpOptionName = new System.CommandLine.Help.HelpOption().Name;
         private CliCommand _currentCommand;
 
         private Example(CliCommand currentCommand, params string[] commandParts)
@@ -119,7 +120,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 
         internal Example WithSubcommand(string token)
         {
-            CliCommand? commandToUse = _currentCommand.Subcommands.FirstOrDefault(c => c.Aliases.Contains(token));
+            CliCommand? commandToUse = _currentCommand.Subcommands.FirstOrDefault(c => c.HasNameOrAlias(token));
 
             if (commandToUse is null)
             {
@@ -145,7 +146,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 
         internal Example WithHelpOption()
         {
-            _commandParts.Add(Constants.KnownHelpAliases.First());
+            _commandParts.Add(_helpOptionName);
             return this;
         }
 

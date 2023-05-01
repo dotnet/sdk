@@ -3,6 +3,7 @@
 //
 
 using System.CommandLine;
+using System.CommandLine.Help;
 using System.CommandLine.Parsing;
 
 namespace Microsoft.TemplateEngine.Cli.Commands
@@ -16,7 +17,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             {
                 if (childrenResult is OptionResult o)
                 {
-                    if (IsHelpOption(o))
+                    if (o.Option is HelpOption)
                     {
                         continue;
                     }
@@ -39,19 +40,5 @@ namespace Microsoft.TemplateEngine.Cli.Commands
         }
 
         internal string[] Tokens { get; }
-
-        private bool IsHelpOption(SymbolResult result)
-        {
-            if (result is not OptionResult optionResult)
-            {
-                return false;
-            }
-            if (optionResult.Option.Name == Constants.KnownHelpAliases[0] ||
-                optionResult.Option.Aliases.Contains(Constants.KnownHelpAliases[0]))
-            {
-                return true;
-            }
-            return false;
-        }
     }
 }

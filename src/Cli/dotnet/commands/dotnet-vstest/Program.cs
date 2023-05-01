@@ -50,7 +50,7 @@ namespace Microsoft.DotNet.Tools.VSTest
                 // System command line might have mutated the options, reformat test logger option so vstest recognizes it
                 var loggerValues = parseResult.GetValue(CommonOptions.TestLoggerOption);
                 var loggerArgs = loggerValues.Select(loggerValue => $"{CommonOptions.TestLoggerOption.Name}:{loggerValue}");
-                args = args.Where(a => !loggerValues.Contains(a) && !CommonOptions.TestLoggerOption.Aliases.Contains(a));
+                args = args.Where(a => !loggerValues.Contains(a) && !CommonOptions.TestLoggerOption.HasNameOrAlias(a));
                 args = loggerArgs.Concat(args);
             }
 

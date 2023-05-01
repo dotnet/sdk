@@ -122,7 +122,7 @@ namespace Microsoft.DotNet.Cli
                 }
             }
 
-            ///<summary>Splits a .NET format string by the format placeholders (the {N} parts) to get an array of the literal parts, to be used in message-checking</summary> 
+            ///<summary>Splits a .NET format string by the format placeholders (the {N} parts) to get an array of the literal parts, to be used in message-checking</summary>
             static string[] DistinctFormatStringParts(string formatString)
             {
                 return Regex.Split(formatString, @"{[0-9]+}"); // match the literal '{', followed by any of 0-9 one or more times, followed by the literal '}'
@@ -195,7 +195,7 @@ namespace Microsoft.DotNet.Cli
             var runArgs = subargs.Contains("--") ? subargs.GetRange(subargs.IndexOf("--"), subargs.Count() - subargs.IndexOf("--")) : new List<string>();
             subargs = subargs.Contains("--") ? subargs.GetRange(0, subargs.IndexOf("--")) : subargs;
 
-            subargs.RemoveAll(arg => DiagOption.Aliases.Contains(arg));
+            subargs.RemoveAll(DiagOption.HasNameOrAlias);
             if (subargs[0].Equals("dotnet"))
             {
                 subargs.RemoveAt(0);
@@ -303,7 +303,7 @@ namespace Microsoft.DotNet.Cli
                 !parseResult.Errors.Any(e => e.SymbolResult == optionResult))
             {
                 return optionResult.GetValue(optionToGet);
-            } 
+            }
             else {
                 return default;
             }

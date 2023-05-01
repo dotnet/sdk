@@ -47,7 +47,7 @@ namespace Microsoft.DotNet.Cli
             .SetForwardingFunction((optionVals) =>
                 optionVals
                     .SelectMany(Microsoft.DotNet.Cli.Utils.MSBuildPropertyParser.ParseProperties)
-                    .Select(keyValue => $"{option.Aliases.FirstOrDefault()}:{keyValue.key}={keyValue.value}")
+                    .Select(keyValue => $"{option.Name}:{keyValue.key}={keyValue.value}")
                 );
 
         public static CliOption<T> ForwardAsMany<T>(this ForwardedOption<T> option, Func<T, IEnumerable<string>> format) => option.SetForwardingFunction(format);
@@ -62,7 +62,7 @@ namespace Microsoft.DotNet.Cli
 
         public static IEnumerable<string> ForwardedOptionValues<T>(this ParseResult parseResult, CliCommand command, string alias) =>
             command.Options?
-                .Where(o => o.Aliases.Contains(alias))?
+                .Where(o => o.HasNameOrAlias(alias))?
                 .OfType<IForwardedOption>()?
                 .FirstOrDefault()?
                 .GetForwardingFunction()(parseResult)
@@ -102,6 +102,16 @@ namespace Microsoft.DotNet.Cli
                 yield return arg;
             }
         }
+
+        /// <summary>
+        /// Check if the given option name is either the name or a valid alias of the option
+        /// </summary>
+        public static bool HasNameOrAlias(this CliOption option, string nameOrAlias) => option.Name.Equals(nameOrAlias) || option.Aliases.Contains(nameOrAlias);
+
+        /// <summary>
+        /// Check if the given option name is either the name or a valid alias of the option
+        /// </summary>
+        public static bool HasNameOrAlias(this CliCommand command, string nameOrAlias) => command.Name.Equals(nameOrAlias) || command.Aliases.Contains(nameOrAlias);
     }
 
     public interface IForwardedOption

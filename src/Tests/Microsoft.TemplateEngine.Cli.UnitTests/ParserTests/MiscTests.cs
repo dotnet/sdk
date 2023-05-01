@@ -4,6 +4,7 @@
 
 using System.CommandLine;
 using System.CommandLine.Completions;
+using System.CommandLine.Help;
 using System.CommandLine.Parsing;
 using Microsoft.TemplateEngine.Cli.Commands;
 using Microsoft.TemplateEngine.TestHelper;
@@ -23,9 +24,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
 
             CliOption helpOption = result.CommandResult
                 .Children
-                .OfType<OptionResult>()
-                .Select(r => r.Option)
-                .Where(o => o.Aliases.Contains(Constants.KnownHelpAliases[0]))
+                .OfType<HelpOption>()
                 .Single();
 
             var aliases = new[] { helpOption.Name }.Concat(helpOption.Aliases);

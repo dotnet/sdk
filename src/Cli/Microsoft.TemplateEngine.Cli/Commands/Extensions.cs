@@ -13,6 +13,16 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 {
     internal static class Extensions
     {
+        /// <summary>
+        /// Check if the given option name is either the name or a valid alias of the option.
+        /// </summary>
+        public static bool HasNameOrAlias(this CliOption option, string nameOrAlias) => option.Name.Equals(nameOrAlias) || option.Aliases.Contains(nameOrAlias);
+
+        /// <summary>
+        /// Check if the given option name is either the name or a valid alias of the option.
+        /// </summary>
+        public static bool HasNameOrAlias(this CliCommand command, string nameOrAlias) => command.Name.Equals(nameOrAlias) || command.Aliases.Contains(nameOrAlias);
+
         internal static string? GetValueForOptionOrNull(this ParseResult parseResult, CliOption option)
         {
             OptionResult? result = parseResult.GetResult(option);

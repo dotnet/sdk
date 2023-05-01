@@ -3,6 +3,7 @@
 //
 
 using System.CommandLine;
+using System.CommandLine.Help;
 using System.CommandLine.Parsing;
 
 namespace Microsoft.TemplateEngine.Cli.Commands
@@ -23,8 +24,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             HasHelpOption = parseResult.CommandResult
                 .Children
                 .OfType<OptionResult>()
-                .Select(r => r.Option)
-                .Any(o => o.Aliases.Contains(Constants.KnownHelpAliases[0]));
+                .SingleOrDefault(o => o.Option is HelpOption) != null;
         }
 
         protected GlobalArgs(GlobalArgs args) : this(args.Command, args.ParseResult) { }
