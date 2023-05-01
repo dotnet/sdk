@@ -1,9 +1,23 @@
 <PrebuiltLeakReport>
+  <File Path="dotnet-sdk-x.y.z-banana-rid.tar/sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/source-generators/Microsoft.Extensions.ObjectPool.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="dotnet-sdk-x.y.z-banana-rid.tar/sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/source-generators/System.Collections.Immutable.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
   <File Path="Microsoft.DotNet.ILCompiler.x.y.z/tools/netstandard/System.Collections.Immutable.dll">
     <Type>AssemblyAttribute</Type>
   </File>
   <File Path="Microsoft.DotNet.ILCompiler.x.y.z/tools/netstandard/System.Reflection.Metadata.dll">
     <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.TestPlatform.CLI.x.y.z/contentFiles/any/netx.y/Microsoft.CodeCoverage.IO.dll">
+    <Type>Hash, AssemblyAttribute</Type>
+    <Match Package="/vmr/prereqs/packages/prebuilt/Microsoft.CodeCoverage.IO.x.y.z" PackageId="Microsoft.CodeCoverage.IO" PackageVersion="x.y.z" File="lib/netstandard2.0/Microsoft.CodeCoverage.IO.dll" />
+  </File>
+  <File Path="Microsoft.TestPlatform.CLI.x.y.z/contentFiles/any/netx.y/System.ComponentModel.Composition.dll">
+    <Type>Hash, AssemblyAttribute</Type>
+    <Match Package="/vmr/prereqs/packages/prebuilt/microsoft.internal.testplatform.remote.x.y.z.297.nupkg" PackageId="Microsoft.Internal.TestPlatform.Remote" PackageVersion="x.y.z.297" File="tools/netstandard/Extensions/System.ComponentModel.Composition.dll" />
   </File>
   <File Path="runtime.banana-rid.Microsoft.DotNet.ILCompiler.x.y.z/tools/netstandard/System.Collections.Immutable.dll">
     <Type>AssemblyAttribute</Type>
