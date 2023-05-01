@@ -24,6 +24,7 @@ param(
     [Parameter(Mandatory=$true)][string]$ProductMoniker,
     [Parameter(Mandatory=$true)][string]$DotnetMSIVersion,
     [Parameter(Mandatory=$true)][string]$SDKBundleVersion,
+    [Parameter(Mandatory=$true)][string]$MinimumVSVersion,
     [Parameter(Mandatory=$true)][string]$DotnetCLINugetVersion,
     [Parameter(Mandatory=$true)][string]$VersionMajor,
     [Parameter(Mandatory=$true)][string]$VersionMinor,
@@ -49,6 +50,7 @@ function RunCandleForBundle
         -dProductMoniker="$ProductMoniker" `
         -dBuildVersion="$DotnetMSIVersion" `
         -dSDKBundleVersion="$SDKBundleVersion" `
+        -dMinimumVSVersion="$MinimumVSVersion" `
         -dSDKProductBandVersion="$SDKProductBandVersion" `
         -dNugetVersion="$DotnetCLINugetVersion" `
         -dVersionMajor="$VersionMajor" `

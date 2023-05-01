@@ -76,7 +76,7 @@ Prostředky
   <String Id="InstallationNoteTitle">Poznámka k instalaci</String>
   <String Id="InstallationNote">Během procesu instalace se spustí příkaz, který zlepší rychlost obnovení projektu a povolí offline přístup. Akce se dokončí přibližně za minutu.
   </String>
-  <String Id="VisualStudioWarning">Pokud plánujete používat .NET [VERSIONMAJOR].[VERSIONMINOR] s Visual Studio, vyžaduje se Visual Studio 2022 17.4 nebo novější. &lt;A HREF="https://aka.ms/dotnet[VERSIONMAJOR]-release-notes"&gt;Další informace&lt;/A&gt;.
+  <String Id="VisualStudioWarning">Pokud plánujete používat .NET [VERSIONMAJOR].[VERSIONMINOR] s Visual Studio, vyžaduje se Visual Studio 2022 [MINIMUMVSVERSION] nebo novější. &lt;A HREF="https://aka.ms/dotnet[VERSIONMAJOR]-release-notes"&gt;Další informace&lt;/A&gt;.
   </String>
   <String Id="LicenseAssent">Kliknutím na Nainstalovat vyjadřujete souhlas s následujícími podmínkami:</String>
   <String Id="InstallPathx64x86">Instalační cesta pro instalace sady x64 SDK[ DOTNETHOME_X64] nemůže být stejná jako u instalací sady x86 SDK: [DOTNETHOME_X86].</String>

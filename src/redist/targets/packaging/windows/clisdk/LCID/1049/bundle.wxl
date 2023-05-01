@@ -76,7 +76,7 @@
   <String Id="InstallationNoteTitle">Примечание по установке</String>
   <String Id="InstallationNote">В процессе установки будет выполнена команда, которая увеличит скорость восстановления проекта и обеспечит автономный доступ. Выполнение займет до минуты.
   </String>
-  <String Id="VisualStudioWarning">Если вы планируете использовать .NET [VERSIONMAJOR].[VERSIONMINOR] с Visual Studio, требуется Visual Studio 2022 версии 17.4 или более поздней. &lt;A HREF="https://aka.ms/dotnet[VERSIONMAJOR]-release-notes"&gt;Дополнительные сведения&lt;/A&gt;.
+  <String Id="VisualStudioWarning">Если вы планируете использовать .NET [VERSIONMAJOR].[VERSIONMINOR] с Visual Studio, требуется Visual Studio 2022 версии [MINIMUMVSVERSION] или более поздней. &lt;A HREF="https://aka.ms/dotnet[VERSIONMAJOR]-release-notes"&gt;Дополнительные сведения&lt;/A&gt;.
   </String>
   <String Id="LicenseAssent">Нажимая кнопку "Установить", вы принимаете следующие условия.</String>
   <String Id="InstallPathx64x86">Совпадение пути установки недопустимо для установок пакетов SDK x64: "[DOTNETHOME_X64]" и SDK x86: "[DOTNETHOME_X86]".</String>

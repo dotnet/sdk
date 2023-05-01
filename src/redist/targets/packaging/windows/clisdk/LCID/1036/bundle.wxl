@@ -76,7 +76,7 @@ Ressources
   <String Id="InstallationNoteTitle">Note d’installation</String>
   <String Id="InstallationNote">Une commande va être exécutée pendant le processus d'installation, ce qui va améliorer la vitesse de restauration du projet et permettre l'accès hors connexion. L'opération va prendre environ une minute.
   </String>
-  <String Id="VisualStudioWarning">Si vous envisagez d’utiliser .NET [VERSIONMAJOR].[VERSIONMINOR] avec Visual Studio, Visual Studio 2022 17.4 ou une version ultérieure est nécessaire. &lt;A HREF="https://aka.ms/dotnet[VERSIONMAJOR]-release-notes"&gt;En savoir plus&lt;/A&gt;.
+  <String Id="VisualStudioWarning">Si vous envisagez d’utiliser .NET [VERSIONMAJOR].[VERSIONMINOR] avec Visual Studio, Visual Studio 2022 [MINIMUMVSVERSION] ou une version ultérieure est nécessaire. &lt;A HREF="https://aka.ms/dotnet[VERSIONMAJOR]-release-notes"&gt;En savoir plus&lt;/A&gt;.
   </String>
   <String Id="LicenseAssent">En cliquant sur Installer, vous acceptez les conditions suivantes :</String>
   <String Id="InstallPathx64x86">Le chemin d’installation des installations du Kit de développement logiciel (SDK) x64 : « [DOTNETHOME_X64] » ne peut pas être identique à celui des installations du Kit de développement logiciel (SDK) x86 : « [DOTNETHOME_X86] »</String>
