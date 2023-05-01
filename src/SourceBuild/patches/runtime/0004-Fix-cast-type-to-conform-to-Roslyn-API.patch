@@ -1,0 +1,23 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Matt Thalman <mthalman@microsoft.com>
+Date: Thu, 27 Apr 2023 09:51:08 -0500
+Subject: [PATCH] Fix cast type to conform to Roslyn API
+
+Backport: https://github.com/dotnet/runtime/pull/85466
+---
+ .../gen/ComInterfaceGenerator/InlinedTypes.cs                   | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/libraries/System.Runtime.InteropServices/gen/ComInterfaceGenerator/InlinedTypes.cs b/src/libraries/System.Runtime.InteropServices/gen/ComInterfaceGenerator/InlinedTypes.cs
+index cb55e36b32c..ef2fe4f6d65 100644
+--- a/src/libraries/System.Runtime.InteropServices/gen/ComInterfaceGenerator/InlinedTypes.cs
++++ b/src/libraries/System.Runtime.InteropServices/gen/ComInterfaceGenerator/InlinedTypes.cs
+@@ -53,7 +53,7 @@ static BlockSyntax Body()
+                                         GenericName(
+                                             Identifier("GetInstance"),
+                                             TypeArgumentList(
+-                                                SeparatedList<SyntaxNode>(
++                                                SeparatedList<TypeSyntax>(
+                                                     new[] { PredefinedType(Token(SyntaxKind.ObjectKeyword)) })))))
+                                 .AddArgumentListArguments(
+                                     Argument(
