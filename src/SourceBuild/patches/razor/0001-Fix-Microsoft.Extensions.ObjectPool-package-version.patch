@@ -45,9 +45,9 @@ index 7a90709c3..278d12786 100644
      <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="$(MicrosoftCodeAnalysisWorkspacesCommonPackageVersion)" />
 -    <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="$(MicrosoftExtensionsPackageVersion)" />
 +    <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="$(MicrosoftExtensionsObjectPoolPackageVersion)" />
+     <PackageReference Include="Microsoft.Extensions.Logging" Version="$(MicrosoftExtensionsPackageVersion)" />
    </ItemGroup>
  
-   <ItemGroup>
 diff --git a/src/Shared/Microsoft.AspNetCore.Razor.Utilities.Shared/Microsoft.AspNetCore.Razor.Utilities.Shared.csproj b/src/Shared/Microsoft.AspNetCore.Razor.Utilities.Shared/Microsoft.AspNetCore.Razor.Utilities.Shared.csproj
 index 7b7fbdd73..e591d60de 100644
 --- a/src/Shared/Microsoft.AspNetCore.Razor.Utilities.Shared/Microsoft.AspNetCore.Razor.Utilities.Shared.csproj
