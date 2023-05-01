@@ -9,13 +9,13 @@
       <NETStandardLibraryNETFrameworkNuPkgPath>$(NuGetPackageRoot)$(NETStandardLibraryNETFrameworkPackageName.ToLower())/$(CLI_NETStandardLibraryNETFrameworkVersion.ToLower())</NETStandardLibraryNETFrameworkNuPkgPath>
 
       <DotNetDeploymentReleasesPackageName>Microsoft.Deployment.DotNet.Releases</DotNetDeploymentReleasesPackageName>
-      <DotNetDeploymentReleasesPkgPath>$(NuGetPackageRoot)$(DotNetDeploymentReleasesPackageName.ToLower())/$(DotNetDeploymentReleasesPackageVersion.ToLower())</DotNetDeploymentReleasesPkgPath>
+      <DotNetDeploymentReleasesPkgPath>$(NuGetPackageRoot)$(DotNetDeploymentReleasesPackageName.ToLower())/$(MicrosoftDeploymentDotNetReleasesVersion.ToLower())</DotNetDeploymentReleasesPkgPath>
   </PropertyGroup>
 
   <ItemGroup>
     <ExtensionPackageToRestore Include="$(MSBuildExtensionsPackageName)" Version="$(MicrosoftNETBuildExtensionsPackageVersion)"/>
     <ExtensionPackageToRestore Include="$(NETStandardLibraryNETFrameworkPackageName)" Version="$(CLI_NETStandardLibraryNETFrameworkVersion)"/>
-    <ExtensionPackageToRestore Include="$(DotNetDeploymentReleasesPackageName)" Version="$(DotNetDeploymentReleasesPackageVersion)"/>
+    <ExtensionPackageToRestore Include="$(DotNetDeploymentReleasesPackageName)" Version="$(MicrosoftDeploymentDotNetReleasesVersion)"/>
   </ItemGroup>
 
   <!-- Restore msbuild extensions via PackageReference -->
