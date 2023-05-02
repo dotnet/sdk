@@ -13,7 +13,8 @@ public class SourceBuiltArtifactsTests : SmokeTests
 {
     public SourceBuiltArtifactsTests(ITestOutputHelper outputHelper) : base(outputHelper) { }
 
-    [Fact]
+    // Disabling due to https://github.com/dotnet/source-build/issues/3426
+    //[Fact]
     public void VerifyVersionFile()
     {
         string outputDir = Path.Combine(Directory.GetCurrentDirectory(), "sourcebuilt-artifacts");
