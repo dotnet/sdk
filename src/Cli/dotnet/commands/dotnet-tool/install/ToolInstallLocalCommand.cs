@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.CommandLine;
-using System.CommandLine.Parsing;
 using System.IO;
 using System.Linq;
 using Microsoft.DotNet.Cli;
@@ -11,8 +10,7 @@ using Microsoft.DotNet.ToolManifest;
 using Microsoft.DotNet.ToolPackage;
 using Microsoft.DotNet.Tools.Tool.Common;
 using Microsoft.Extensions.EnvironmentAbstractions;
-using System.Collections.Generic;
-using NuGet.Packaging;
+using Microsoft.DotNet.Tools.Tool.Update;
 
 namespace Microsoft.DotNet.Tools.Tool.Install
 {
@@ -56,29 +54,44 @@ namespace Microsoft.DotNet.Tools.Tool.Install
 
         public override int Execute()
         {
+            //from update
+            (FilePath? manifestFileOptional, string warningMessage) =
+                _toolManifestFinder.ExplicitManifestOrFindManifestContainPackageId(_explicitManifestFile, _packageId);
+
+            if (warningMessage != null)
+            {
+                _reporter.WriteLine(warningMessage.Yellow());
+            }
+
             FilePath manifestFile = GetManifestFilePath();
             var existingPackageWithPackageId = _toolManifestFinder.Find(manifestFile).Where(p => p.PackageId.Equals(_packageId));
 
             if (!existingPackageWithPackageId.Any())
             {
-                return Install(manifestFile);
+                return InstallNewTool(manifestFile);
             }
 
             var existingPackage = existingPackageWithPackageId.Single();
             var toolDownloadedPackage = _toolLocalPackageInstaller.Install(manifestFile);
 
-            InstallLogic(existingPackage, toolDownloadedPackage, manifestFile);
+            InstallToolUpdate(existingPackage, toolDownloadedPackage, manifestFile);
+
+            //from tool update
+            _localToolsResolverCache.SaveToolPackage(
+               toolDownloadedPackage,
+               _toolLocalPackageInstaller.TargetFrameworkToInstall);
+
             return 0;
         }
 
-        public int InstallLogic(ToolManifestPackage existingPackage, IToolPackage toolDownloadedPackage, FilePath manifestFile)
+        public int InstallToolUpdate(ToolManifestPackage existingPackage, IToolPackage toolDownloadedPackage, FilePath manifestFile)
         {
             if (existingPackage.Version > toolDownloadedPackage.Version && !_allowPackageDowngrade)
             {
                 throw new GracefulException(new[]
                     {
                         string.Format(
-                            LocalizableStrings.UpdateToLowerVersion,
+                            Update.LocalizableStrings.UpdateToLowerVersion,
                             toolDownloadedPackage.Version.ToNormalizedString(),
                             existingPackage.Version.ToNormalizedString(),
                             manifestFile.Value)
@@ -89,7 +102,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
             {
                 _reporter.WriteLine(
                     string.Format(
-                        LocalizableStrings.UpdateLocaToolSucceededVersionNoChange,
+                        Update.LocalizableStrings.UpdateLocaToolSucceededVersionNoChange,
                         toolDownloadedPackage.Id,
                         existingPackage.Version.ToNormalizedString(),
                         manifestFile.Value));
@@ -103,7 +116,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                     toolDownloadedPackage.Commands.Select(c => c.Name).ToArray());
                 _reporter.WriteLine(
                     string.Format(
-                        LocalizableStrings.UpdateLocalToolSucceeded,
+                        Update.LocalizableStrings.UpdateLocalToolSucceeded,
                         toolDownloadedPackage.Id,
                         existingPackage.Version.ToNormalizedString(),
                         toolDownloadedPackage.Version.ToNormalizedString(),
@@ -117,7 +130,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
             return 0;
         }
 
-        public int Install(FilePath manifestFile)
+        public int InstallNewTool(FilePath manifestFile)
         {
             IToolPackage toolDownloadedPackage =
                 _toolLocalPackageInstaller.Install(manifestFile);

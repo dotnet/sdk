@@ -3,7 +3,6 @@
 
 using System;
 using System.CommandLine;
-using System.CommandLine.Parsing;
 using System.IO;
 using System.Linq;
 using Microsoft.DotNet.Cli;
@@ -87,19 +86,18 @@ namespace Microsoft.DotNet.Tools.Tool.Update
 
             if (!existingPackageWithPackageId.Any())
             {
-                return _toolInstallLocalCommand.Value.Install(manifestFile);
+                return _toolInstallLocalCommand.Value.InstallNewTool(manifestFile);
             }
 
             var existingPackage = existingPackageWithPackageId.Single();
             var toolDownloadedPackage = _toolLocalPackageInstaller.Install(manifestFile);
 
-            _toolInstallLocalCommand.Value.InstallLogic(existingPackage, toolDownloadedPackage, manifestFile);
+            _toolInstallLocalCommand.Value.InstallToolUpdate(existingPackage, toolDownloadedPackage, manifestFile);
 
             _localToolsResolverCache.SaveToolPackage(
                 toolDownloadedPackage,
                 _toolLocalPackageInstaller.TargetFrameworkToInstall);
 
-            
             return 0;
         }
     }

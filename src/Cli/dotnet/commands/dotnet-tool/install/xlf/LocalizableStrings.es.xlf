@@ -88,21 +88,6 @@ Si desea crear un manifiesto, utilice "dotnet new tool-manifest", normalmente en
         <target state="translated">No se admiten las opciones --prerelease y --version en el mismo comando.</target>
         <note />
       </trans-unit>
-      <trans-unit id="UpdateLocaToolSucceededVersionNoChange">
-        <source>Tool '{0}' is up to date (version '{1}' manifest file {2}) .</source>
-        <target state="new">Tool '{0}' is up to date (version '{1}' manifest file {2}) .</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UpdateLocalToolSucceeded">
-        <source>Tool '{0}' was successfully updated from version '{1}' to version '{2}' (manifest file {3}).</source>
-        <target state="new">Tool '{0}' was successfully updated from version '{1}' to version '{2}' (manifest file {3}).</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UpdateToLowerVersion">
-        <source>The requested version {0} is lower than existing version {1} (manifest file {2}).</source>
-        <target state="new">The requested version {0} is lower than existing version {1} (manifest file {2}).</target>
-        <note />
-      </trans-unit>
       <trans-unit id="VersionOptionDescription">
         <source>The version of the tool package to install.</source>
         <target state="translated">La versión del paquete de herramientas para instalar.</target>

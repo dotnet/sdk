@@ -232,15 +232,6 @@ If you would like to create a manifest, use `dotnet new tool-manifest`, usually 
   <data name="PrereleaseAndVersionAreNotSupportedAtTheSameTime" xml:space="preserve">
     <value>The --prerelease and --version options are not supported in the same command</value>
   </data>
-  <data name="UpdateLocalToolSucceeded" xml:space="preserve">
-    <value>Tool '{0}' was successfully updated from version '{1}' to version '{2}' (manifest file {3}).</value>
-  </data>
-  <data name="UpdateLocaToolSucceededVersionNoChange" xml:space="preserve">
-    <value>Tool '{0}' is up to date (version '{1}' manifest file {2}) .</value>
-  </data>
-  <data name="UpdateToLowerVersion" xml:space="preserve">
-    <value>The requested version {0} is lower than existing version {1} (manifest file {2}).</value>
-  </data>
   <data name="AllowPackageDowngradeOptionDescription" xml:space="preserve">
     <value>Allow package downgrade when installing a .NET tool package.</value>
   </data>

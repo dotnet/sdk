@@ -25,6 +25,7 @@ using Parser = Microsoft.DotNet.Cli.Parser;
 using Microsoft.DotNet.Tools.Tool.Restore;
 using Microsoft.NET.TestFramework;
 using Xunit.Abstractions;
+using Microsoft.DotNet.Tools.Tool.Update;
 
 namespace Microsoft.DotNet.Tests.Commands.Tool
 {
@@ -333,7 +334,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _reporter.Lines.Single()
                 .Should().Contain(
                     string.Format(
-                        LocalizableStrings.UpdateLocaToolSucceededVersionNoChange,
+                        Tools.Tool.Update.LocalizableStrings.UpdateLocaToolSucceededVersionNoChange,
                         _packageIdA,
                         _packageVersionA.ToNormalizedString(),
                         _manifestFilePath));
@@ -348,7 +349,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _reporter.Clear();
             Action a = () => GetDefaultTestToolInstallLocalCommand().Execute();
             a.Should().Throw<GracefulException>().And.Message.Should().Contain(string.Format(
-                LocalizableStrings.UpdateToLowerVersion,
+                Tools.Tool.Update.LocalizableStrings.UpdateLocaToolSucceededVersionNoChange,
                 "0.9.0",
                 _packageVersionA.ToNormalizedString(),
                 _manifestFilePath));
@@ -386,7 +387,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _reporter.Lines[0]
                 .Should().Contain(
                     string.Format(
-                        LocalizableStrings.UpdateLocalToolSucceeded,
+                        Tools.Tool.Update.LocalizableStrings.UpdateLocalToolSucceeded,
                         _packageIdA,
                         _packageVersionA.ToNormalizedString(),
                         NuGetVersion.Parse("0.9.0").ToNormalizedString(),
@@ -413,7 +414,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _reporter.Lines[0]
                 .Should().Contain(
                     string.Format(
-                        LocalizableStrings.UpdateLocalToolSucceeded,
+                        Tools.Tool.Update.LocalizableStrings.UpdateLocalToolSucceeded,
                         _packageIdA,
                         _packageVersionA.ToNormalizedString(),
                         _packageNewVersionA.ToNormalizedString(),
