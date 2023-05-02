@@ -217,7 +217,7 @@ namespace Microsoft.TemplateEngine.Cli.PostActionProcessors
                     return null;
                 }
 
-                return new JsonContentParameters(parentProperty, newJsonPropertyName, newJsonPropertyName);
+                return new JsonContentParameters(parentProperty, newJsonPropertyName, newJsonPropertyValue);
             }
         }
     }
