@@ -159,7 +159,7 @@
       </trans-unit>
       <trans-unit id="NuGetApiPackageManager_DownloadError_VulnerablePackage">
         <source>Found package is vulnerable source: {0}</source>
-        <target state="new">Found package is vulnerable source: {0}</target>
+        <target state="translated">Le package trouvé est une source vulnérable : {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetApiPackageManager_Error_FailedToLoadSource">
@@ -189,7 +189,7 @@
       </trans-unit>
       <trans-unit id="NuGetApiPackageManager_UpdateCheckError_VulnerablePackage">
         <source>The checked package {0} is vulnerable.</source>
-        <target state="new">The checked package {0} is vulnerable.</target>
+        <target state="translated">Le package {0} vérifié est vulnérable.</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetApiPackageManager_Warning_FailedToDelete">
@@ -295,12 +295,12 @@ Détails : {1}.</target>
       </trans-unit>
       <trans-unit id="NuGetInstaller_InstallResult_Error_VulnerablePackage">
         <source>The requested package {0} has vulnerabilities.</source>
-        <target state="new">The requested package {0} has vulnerabilities.</target>
+        <target state="translated">Le package {0} demandé présente des vulnérabilités.</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetInstaller_UpdateCheck_Error_VulnerablePackage">
         <source>The checked package {0} has vulnerabilities.</source>
-        <target state="new">The checked package {0} has vulnerabilities.</target>
+        <target state="translated">Le package {0} vérifié présente des vulnérabilités.</target>
         <note />
       </trans-unit>
       <trans-unit id="OSConstraint_Error_InvalidOSName">
