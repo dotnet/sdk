@@ -161,7 +161,7 @@ csharp_space_between_square_brackets = false
 dotnet_code_quality.api_surface = all
 
 # License header
-file_header_template = Copyright (c) .NET Foundation and contributors. All rights reserved.\nLicensed under the MIT license. See LICENSE file in the project root for full license information.
+file_header_template = Licensed to the .NET Foundation under one or more agreements.\nThe .NET Foundation licenses this file to you under the MIT license.
 
 # Code files
 [*.{cs,vb}]
