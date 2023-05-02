@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.CommandLine;
 using System.CommandLine.IO;
 using System.CommandLine.Parsing;
 using System.IO;
@@ -86,7 +87,7 @@ namespace Microsoft.DotNet.Cli.Build.Tests
             string projectDirectory = Path.Combine(testInstance.Path, "MultiTFMTestApp");
 
             new DotnetBuildCommand(Log, projectDirectory)
-                .Execute("--framework", "netcoreapp3.1")
+                .Execute("--framework", ToolsetInfo.CurrentTargetFramework)
                 .Should().Pass();
         }
 
@@ -182,7 +183,7 @@ namespace Microsoft.DotNet.Cli.Build.Tests
         {
             var testInstance = _testAssetsManager.CopyTestAsset("HelloWorld")
                 .WithSource()
-                .WithTargetFrameworkOrFrameworks("net6.0", false)
+                .WithTargetFrameworkOrFrameworks(ToolsetInfo.CurrentTargetFramework, false)
                 .Restore(Log);
 
             new DotnetBuildCommand(Log)
@@ -222,7 +223,7 @@ namespace Microsoft.DotNet.Cli.Build.Tests
         {
             var testInstance = _testAssetsManager.CopyTestAsset("HelloWorld", identifier: commandName)
                 .WithSource()
-                .WithTargetFrameworkOrFrameworks("net6.0", false)
+                .WithTargetFrameworkOrFrameworks(ToolsetInfo.CurrentTargetFramework, false)
                 .Restore(Log);
 
             new DotnetCommand(Log)

@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.CommandLine;
 using System.CommandLine.Parsing;
 using System.IO;
 using System.Linq;
@@ -109,7 +110,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Restore
             foreach (string file in slnFiles)
             {
                 var solutionFile = SolutionFile.Parse(file);
-                var projects = solutionFile.ProjectsInOrder;
+                var projects = solutionFile.ProjectsInOrder.Where(p => p.ProjectType != SolutionProjectType.SolutionFolder);
                 foreach (var p in projects)
                 {
                     projectFiles.Add(p.AbsolutePath);
