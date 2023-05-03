@@ -1,0 +1,45 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Jakub Chocholowicz <59966772+jakubch1@users.noreply.github.com>
+Date: Fri, 28 Apr 2023 16:38:18 +0200
+Subject: [PATCH] Remove IO from source build (#4426)
+
+Backport: https://github.com/microsoft/vstest/pull/4426
+---
+ .../Microsoft.TestPlatform.CLI.csproj                         | 4 ++--
+ .../Microsoft.TestPlatform.CLI.sourcebuild.nuspec             | 1 -
+ 2 files changed, 2 insertions(+), 3 deletions(-)
+
+diff --git a/src/package/Microsoft.TestPlatform.CLI/Microsoft.TestPlatform.CLI.csproj b/src/package/Microsoft.TestPlatform.CLI/Microsoft.TestPlatform.CLI.csproj
+index 6b5ea83b..330f3233 100644
+--- a/src/package/Microsoft.TestPlatform.CLI/Microsoft.TestPlatform.CLI.csproj
++++ b/src/package/Microsoft.TestPlatform.CLI/Microsoft.TestPlatform.CLI.csproj
+@@ -67,7 +67,7 @@
+   </ItemGroup>
+ 
+   <ItemGroup>
+-    <PackageReference Include="Microsoft.CodeCoverage.IO" Version="$(MicrosoftInternalCodeCoverageVersion)" GeneratePathProperty="true" />
++    <PackageReference Include="Microsoft.CodeCoverage.IO" Version="$(MicrosoftInternalCodeCoverageVersion)" GeneratePathProperty="true" Condition=" '$(DotNetBuildFromSource)' != 'true' " />
+     <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="$(MicrosoftExtensionsDependencyModelPackageVersion)" GeneratePathProperty="true" />
+     <PackageReference Include="Microsoft.Extensions.FileSystemGlobbing" Version="$(MicrosoftExtensionsFileSystemGlobbingVersion)" GeneratePathProperty="true" />
+     <PackageReference Include="Newtonsoft.Json" Version="$(NewtonsoftJsonVersion)" GeneratePathProperty="true" />
+@@ -92,7 +92,7 @@
+       <MicrosoftInternalDia Include="$(PkgMicrosoft_Internal_Dia)\tools\net451\**\*"></MicrosoftInternalDia>
+     </ItemGroup>
+ 
+-    <Copy SourceFiles="@(MicrosoftCodeCoverageIO)" DestinationFiles="$(OutDir)\Microsoft.CodeCoverage.IO\%(RecursiveDir)%(Filename)%(Extension)" />
++    <Copy SourceFiles="@(MicrosoftCodeCoverageIO)" DestinationFiles="$(OutDir)\Microsoft.CodeCoverage.IO\%(RecursiveDir)%(Filename)%(Extension)" Condition=" '$(DotNetBuildFromSource)' != 'true' " />
+     <Copy SourceFiles="@(MicrosoftExtensionsDependencyModel)" DestinationFiles="$(OutDir)\Microsoft.Extensions.DependencyModel\%(RecursiveDir)%(Filename)%(Extension)" />
+     <Copy SourceFiles="@(MicrosoftExtensionsFileSystemGlobbing)" DestinationFiles="$(OutDir)\Microsoft.Extensions.FileSystemGlobbing\%(RecursiveDir)%(Filename)%(Extension)" />
+     <Copy SourceFiles="@(NewtonsoftJson)" DestinationFiles="$(OutDir)\Newtonsoft.Json\%(RecursiveDir)%(Filename)%(Extension)" />
+diff --git a/src/package/Microsoft.TestPlatform.CLI/Microsoft.TestPlatform.CLI.sourcebuild.nuspec b/src/package/Microsoft.TestPlatform.CLI/Microsoft.TestPlatform.CLI.sourcebuild.nuspec
+index dd1349a7..4fb6e868 100644
+--- a/src/package/Microsoft.TestPlatform.CLI/Microsoft.TestPlatform.CLI.sourcebuild.nuspec
++++ b/src/package/Microsoft.TestPlatform.CLI/Microsoft.TestPlatform.CLI.sourcebuild.nuspec
+@@ -18,7 +18,6 @@
+     <file src="$SourceBuildTfm$\datacollector.deps.json" target="contentFiles\any\$SourceBuildTfm$" />
+     <file src="$SourceBuildTfm$\datacollector.runtimeconfig.json" target="contentFiles\any\$SourceBuildTfm$" />
+ 
+-    <file src="$SourceBuildTfm$\Microsoft.CodeCoverage.IO\Microsoft.CodeCoverage.IO.dll" target="contentFiles\any\$SourceBuildTfm$" />
+     <file src="$SourceBuildTfm$\Microsoft.Extensions.DependencyModel\Microsoft.Extensions.DependencyModel.dll" target="contentFiles\any\$SourceBuildTfm$" />
+     <file src="$SourceBuildTfm$\Microsoft.Extensions.FileSystemGlobbing\Microsoft.Extensions.FileSystemGlobbing.dll" target="contentFiles\any\$SourceBuildTfm$" />
+ 
