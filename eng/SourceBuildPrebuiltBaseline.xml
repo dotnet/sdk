@@ -4,7 +4,7 @@
 
     <!-- This is a transitive dependency from Microsoft.CodeAnalysis.
          This version does not have source build intermediate.
-         When a newer version is picked up, an intermediate should be utilized. -->
+         When a newer version is picked up, the intermediate should be utilized. -->
     <UsagePattern IdentityGlob="Microsoft.CodeAnalysis.AnalyzerUtilities/*3.3.0*" />
   </IgnorePatterns>
 </UsageData>
