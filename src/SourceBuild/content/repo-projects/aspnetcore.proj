@@ -26,9 +26,11 @@
 
     <!-- CA1512 - Use 'ArgumentOutOfRangeException.ThrowIfEqual'
                   Requires https://github.com/dotnet/aspnetcore/issues/47673 -->
+    <!-- CA1854 - Prefer the 'IDictionary.TryGetValue(TKey, out TValue)' method
+                  https://github.com/dotnet/aspnetcore/issues/48052 -->
     <!-- IDE0005 - Using directive is unnecessary: https://github.com/dotnet/aspnetcore/issues/47932 -->
     <!-- IDE0059 - Unnecessary assignment of a value: https://github.com/dotnet/aspnetcore/pull/47931 -->
-    <RepoNoWarns>CA1512;IDE0005;IDE0059</RepoNoWarns>
+    <RepoNoWarns>CA1512;CA1854;IDE0005;IDE0059</RepoNoWarns>
   </PropertyGroup>
 
   <ItemGroup>
