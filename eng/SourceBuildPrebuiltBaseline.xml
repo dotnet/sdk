@@ -2,13 +2,9 @@
   <IgnorePatterns>
     <UsagePattern IdentityGlob="Microsoft.SourceBuild.Intermediate.*/*" />
 
-    <!-- TODO: Address these prebuilts as part of https://github.com/dotnet/format/issues/1809 -->
+    <!-- This is a transitive dependency from Microsoft.CodeAnalysis.
+         This version does not have source build intermediate.
+         When a newer version is picked up, an intermediate should be utilized. -->
     <UsagePattern IdentityGlob="Microsoft.CodeAnalysis.AnalyzerUtilities/*3.3.0*" />
-    <UsagePattern IdentityGlob="Microsoft.Extensions.DependencyInjection/*7.0.0*" />
-    <UsagePattern IdentityGlob="Microsoft.Extensions.DependencyInjection.Abstractions/*7.0.0*" />
-    <UsagePattern IdentityGlob="Microsoft.Extensions.FileSystemGlobbing/*7.0.0*" />
-    <UsagePattern IdentityGlob="Microsoft.Extensions.Logging/*7.0.0*" />
-    <UsagePattern IdentityGlob="Microsoft.Extensions.Options/*7.0.0*" />
-    <UsagePattern IdentityGlob="Microsoft.Extensions.Primitives/*7.0.0*" />
   </IgnorePatterns>
 </UsageData>

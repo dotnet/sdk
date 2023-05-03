@@ -1,7 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="4.7.0-1.23226.15">
+    <Dependency Name="Microsoft.CodeAnalysis.CSharp.Features" Version="4.7.0-1.23226.153">
+      <Uri>https://github.com/dotnet/roslyn</Uri>
+      <Sha>56393223b78d294bccec3101e79dc03e1b3cb683</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.CodeAnalysis.CSharp" Version="4.7.0-1.23226.15">
+      <Uri>https://github.com/dotnet/roslyn</Uri>
+      <Sha>56393223b78d294bccec3101e79dc03e1b3cb683</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.CodeAnalysis.VisualBasic.Features" Version="4.7.0-1.23226.15">
+      <Uri>https://github.com/dotnet/roslyn</Uri>
+      <Sha>56393223b78d294bccec3101e79dc03e1b3cb683</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.CodeAnalysis.VisualBasic.Workspaces" Version="4.7.0-1.23226.15">
+      <Uri>https://github.com/dotnet/roslyn</Uri>
+      <Sha>56393223b78d294bccec3101e79dc03e1b3cb683</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.CodeAnalysis.VisualBasic" Version="4.7.0-1.23226.15">
+      <Uri>https://github.com/dotnet/roslyn</Uri>
+      <Sha>56393223b78d294bccec3101e79dc03e1b3cb683</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="4.7.0-1.23226.15">
+      <Uri>https://github.com/dotnet/roslyn</Uri>
+      <Sha>56393223b78d294bccec3101e79dc03e1b3cb683</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.CodeAnalysis" Version="4.7.0-1.23226.15">
       <Uri>https://github.com/dotnet/roslyn</Uri>
       <Sha>56393223b78d294bccec3101e79dc03e1b3cb683</Sha>
       <SourceBuild RepoName="roslyn" ManagedOnly="true" />
@@ -11,9 +35,9 @@
       <Sha>834923aef31d157aec19a2b99d5494cea29dcc9e</Sha>
       <SourceBuild RepoName="source-build-externals" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-reference-packages" Version="8.0.0-alpha.1.23224.2">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-reference-packages" Version="8.0.0-alpha.1.23253.2">
       <Uri>https://github.com/dotnet/source-build-reference-packages</Uri>
-      <Sha>13c96423adba681296bda86bdbe24631a9b5e9bc</Sha>
+      <Sha>c65b02aef21850de618d37a5304d3bbd829c2733</Sha>
       <SourceBuild RepoName="source-build-reference-packages" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.DiaSymReader" Version="2.0.0-beta-22503-02">
