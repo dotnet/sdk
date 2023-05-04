@@ -258,7 +258,12 @@
       <TestArgs>$(TestArgs) -testConfigFile "$(MSBuildThisFileDirectory)TestsToSkipPortableLinux.xml"</TestArgs>
     </PropertyGroup>
 
-    <Exec Command="$(ToolRunPrefix)dotnet tool run $(ToolCommandName) -- $(TestArgs)"
+    <PropertyGroup Condition=" $([MSBuild]::IsOSPlatform('Linux')) ">
+      <!-- Add list of tests to skip on Linux -->
+      <TestArgs>$(TestArgs) -testConfigFile "$(MSBuildThisFileDirectory)TestsToSkipLinux.xml"</TestArgs>
+    </PropertyGroup>
+
+    <Exec Command="$(ToolRunPrefix)$(RedistLayoutPath)dotnet tool run $(ToolCommandName) -- $(TestArgs)"
           WorkingDirectory="$(TestLocalToolFolder)"
           EnvironmentVariables="DOTNET_CLI_HOME=$(DOTNET_CLI_HOME)"/>
   </Target>
