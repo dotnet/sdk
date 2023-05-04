@@ -1,0 +1,10 @@
+<Tests>
+  <SkippedTests>
+    <Method Name="Microsoft.NET.Publish.Tests.GivenThatWeWantToPublishAHelloWorldProject.It_publishes_self_contained_apps_to_the_publish_folder_and_the_app_should_run"
+            Skip="true"
+            Reason=".NET Core 1.1 fails to publish on distributions with unsupported RIDs."/>
+    <Method Name="Microsoft.NET.Build.Tests.GivenThatWeWantToBuildASelfContainedApp.It_builds_a_runnable_output"
+            Skip="true"
+            Reason=".NET Core 1.1 fails to publish on distributions with unsupported RIDs."/>
+  </SkippedTests>
+</Tests>
