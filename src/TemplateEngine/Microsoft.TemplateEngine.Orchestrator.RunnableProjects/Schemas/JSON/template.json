@@ -1063,14 +1063,18 @@
                 "description": "Defines the portion of file names which will be replaced by symbol value."
               },
               "onlyIf": {
-                "properties": {
-                  "after": {
-                    "description": "The replacement string occurs after this value.",
-                    "type": "string"
-                  },
-                  "before": {
-                    "description": "The replacement string occurs before this value.",
-                    "type": "string"
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "after": {
+                      "description": "The replacement string occurs after this value.",
+                      "type": "string"
+                    },
+                    "before": {
+                      "description": "The replacement string occurs before this value.",
+                      "type": "string"
+                    }
                   }
                 }
               }
@@ -1104,14 +1108,18 @@
                 "description": "Defines the portion of file names which will be replaced by symbol value."
               },
               "onlyIf": {
-                "properties": {
-                  "after": {
-                    "description": "The replacement string occurs after this value.",
-                    "type": "string"
-                  },
-                  "before": {
-                    "description": "The replacement string occurs before this value.",
-                    "type": "string"
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "after": {
+                      "description": "The replacement string occurs after this value.",
+                      "type": "string"
+                    },
+                    "before": {
+                      "description": "The replacement string occurs before this value.",
+                      "type": "string"
+                    }
                   }
                 }
               }
@@ -1133,14 +1141,18 @@
                 "description": "Defines the portion of file names which will be replaced by symbol value."
               },
               "onlyIf": {
-                "properties": {
-                  "after": {
-                    "description": "The replacement string occurs after this value.",
-                    "type": "string"
-                  },
-                  "before": {
-                    "description": "The replacement string occurs before this value.",
-                    "type": "string"
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "after": {
+                      "description": "The replacement string occurs after this value.",
+                      "type": "string"
+                    },
+                    "before": {
+                      "description": "The replacement string occurs before this value.",
+                      "type": "string"
+                    }
                   }
                 }
               }
@@ -1249,14 +1261,18 @@
                 "description": "The element defines the portion of file names which will be replaced by symbol value."
               },
               "onlyIf": {
-                "properties": {
-                  "after": {
-                    "description": "The replacement string occurs after this value.",
-                    "type": "string"
-                  },
-                  "before": {
-                    "description": "The replacement string occurs before this value.",
-                    "type": "string"
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "after": {
+                      "description": "The replacement string occurs after this value.",
+                      "type": "string"
+                    },
+                    "before": {
+                      "description": "The replacement string occurs before this value.",
+                      "type": "string"
+                    }
                   }
                 }
               },

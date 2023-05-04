@@ -32,10 +32,14 @@
       "replaces": "Test1",
       "fileRename": "Test1",
       "isRequired": true,
-      "onlyIf": {
-        "after": "T",
-        "before": "A"
-      }
+      "onlyIf": [
+        {
+          "after": "T"
+        },
+        {
+          "before": "A"
+        }
+      ]
     },
     "TestDerived": {
       "type": "derived",
