@@ -307,11 +307,6 @@
       <Sha>9e870996b8bf0b91a791edd1039bfd23bdd01af8</Sha>
       <SourceBuild RepoName="deployment-tools" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.DiaSymReader" Version="2.0.0" CoherentParentDependency="Microsoft.Net.Compilers.Toolset">
-      <Uri>https://github.com/dotnet/symreader</Uri>
-      <Sha>27e584661980ee6d82c419a2a471ae505b7d122e</Sha>
-      <SourceBuild RepoName="symreader" ManagedOnly="false" />
-    </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
     <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="8.0.0-beta.23226.4">
@@ -339,6 +334,11 @@
       <Uri>https://github.com/dotnet/xliff-tasks</Uri>
       <Sha>f35dcbb16190810eb88b103fb1f2cd48a3a76cf0</Sha>
       <SourceBuild RepoName="xliff-tasks" ManagedOnly="true" />
+    </Dependency>
+    <Dependency Name="Microsoft.DiaSymReader" Version="2.0.0" CoherentParentDependency="Microsoft.Net.Compilers.Toolset">
+      <Uri>https://github.com/dotnet/symreader</Uri>
+      <Sha>27e584661980ee6d82c419a2a471ae505b7d122e</Sha>
+      <SourceBuild RepoName="symreader" ManagedOnly="false" />
     </Dependency>
   </ToolsetDependencies>
 </Dependencies>
