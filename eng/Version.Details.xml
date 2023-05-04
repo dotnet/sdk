@@ -338,7 +338,7 @@
     <Dependency Name="Microsoft.DiaSymReader" Version="2.0.0" CoherentParentDependency="Microsoft.Net.Compilers.Toolset">
       <Uri>https://github.com/dotnet/symreader</Uri>
       <Sha>27e584661980ee6d82c419a2a471ae505b7d122e</Sha>
-      <SourceBuild RepoName="symreader" ManagedOnly="false" />
+      <SourceBuild RepoName="symreader" ManagedOnly="true" />
     </Dependency>
   </ToolsetDependencies>
 </Dependencies>
