@@ -8,7 +8,7 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
     /// </summary>
     public sealed class AssemblySymbolLoaderFactory : IAssemblySymbolLoaderFactory
     {
-        private bool _includeInternals;
+        private readonly bool _includeInternals;
 
         /// <summary>
         /// Creates a new AssemblyLoaderFactory
