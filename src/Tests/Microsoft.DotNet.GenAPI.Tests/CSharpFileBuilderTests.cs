@@ -22,11 +22,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
             public bool Include(ISymbol symbol) => true;
         }
 
-        private static IEnumerable<MetadataReference> MetadataReferences
-        {
-            get => new List<MetadataReference> {
-                MetadataReference.CreateFromFile(typeof(Object).Assembly!.Location!) };
-        }
+        private static MetadataReference[] MetadataReferences { get; } = new[] { MetadataReference.CreateFromFile(typeof(object).Assembly!.Location!) };
 
         private static SyntaxTree GetSyntaxTree(string syntax) =>
             CSharpSyntaxTree.ParseText(syntax);
@@ -41,7 +37,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
         {
             StringWriter stringWriter = new();
 
-            var compositeFilter = new CompositeSymbolFilter()
+            CompositeSymbolFilter compositeFilter = new CompositeSymbolFilter()
                 .Add(new ImplicitSymbolFilter())
                 .Add(new AccessibilitySymbolFilter(includeInternalSymbols,
                     includeEffectivelyPrivateSymbols, includeExplicitInterfaceImplementationSymbols));
@@ -56,7 +52,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
             csharpFileBuilder.WriteAssembly(assemblySymbol);
 
             StringBuilder stringBuilder = stringWriter.GetStringBuilder();
-            var resultedString = stringBuilder.ToString();
+            string resultedString = stringBuilder.ToString();
 
             stringBuilder.Remove(0, stringBuilder.Length);
 

@@ -63,6 +63,12 @@ namespace Microsoft.DotNet.GenAPI
             return true;
         }
 
+        /// <summary>
+        /// Examines the a method to determine if it could be an implicit default constructor that can be removed from source and impliicitly provided by the compiler.
+        /// </summary>
+        /// <param name="method">Method to examine.</param>
+        /// <param name="symbolFilter">Symbol filter to apply in order to determine if other constructors are included from the containing type or its base type.</param>
+        /// <returns>True if the method could be an implicit default constructor.</returns>
         public static bool IsImplicitDefaultConstructor(this IMethodSymbol method, ISymbolFilter symbolFilter)
         {
             // ensure this is a parameterless constructor
@@ -74,23 +80,23 @@ namespace Microsoft.DotNet.GenAPI
             // see https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/language-specification/classes#15115-default-constructors
             // these are the only two accessibilities given to the implicit default constructor, regardless of containing type accessibility.
             if (method.ContainingType.IsAbstract ?
-                    method.DeclaredAccessibility != Accessibility.Protected :
-                    method.DeclaredAccessibility != Accessibility.Public)
+                method.DeclaredAccessibility != Accessibility.Protected :
+                method.DeclaredAccessibility != Accessibility.Public)
             {
                 return false;
             }
 
             // if the type defines any other instance constructors the default constructor cannot be implicit 
-            if (method.ContainingType.InstanceConstructors.Where(c => symbolFilter.Include(c) && !c.Parameters.IsEmpty).Any())
+            if (method.ContainingType.InstanceConstructors.Any(c => symbolFilter.Include(c) && !c.Parameters.IsEmpty))
             {
                 return false;
             }
 
             // if the base type does not have a parameterless constructor the default constructor cannot be implicit
-            var baseType = method.ContainingType.BaseType;
+            INamedTypeSymbol? baseType = method.ContainingType.BaseType;
             if (baseType != null)
             {
-                return baseType.InstanceConstructors.Where(c => symbolFilter.Include(c) && c.Parameters.IsEmpty).Any();
+                return baseType.InstanceConstructors.Any(c => symbolFilter.Include(c) && c.Parameters.IsEmpty);
             }
 
             return true;
