@@ -89,6 +89,54 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
                         }
                       ]
                     },
+                    {
+                      "Condition": "(ActionThreeCondition)",
+                      "Description": "Action3",
+                      "ActionId": "A7D9715C-7582-413E-A3FC-4C25D07D2A33",
+                      "ContinueOnError": "false",
+                      "Args": {
+                        "Foo": "Bang",
+                        "Baz": "Blah"
+                      },
+                      "ManualInstructions": [
+                        {
+                          "Text": "First instruction (action 3)"
+                        },
+                        {
+                          "Text": "Second instruction (action 3)"
+                        },
+                        {
+                          "Text": "Third instruction (action 3)",
+                        }
+                      ]
+                    },
+                    {
+                      "Condition": "(ActionFourCondition)",
+                      "Description": "Action4",
+                      "ActionId": "9B4C660F-2834-4C98-9DCE-40123C38BD7B",
+                      "ContinueOnError": "false",
+                      "Args": {
+                        "Foo": "Bang",
+                        "Baz": "Blah"
+                      },
+                      "ManualInstructions": [
+                        {
+                          "Text": "Windows instructions (action 4)",
+                          "condition": "(OperatingSystemKind == \"Windows\")"
+                        },
+                        {
+                          "Text": "Windows-NET instructions (action 4)",
+                          "condition": "(OperatingSystemKind == \"Windows\" && Framework == \"NET\")"
+                        },
+                        {
+                          "Text": "Windows-NET-C# instructions (action 4)",
+                          "condition": "(OperatingSystemKind == \"Windows\" && Framework == \"NET\" && Language == \"C#\")"
+                        },
+                        {
+                          "Text": "Default instructions (action 4)"
+                        }
+                      ]
+                    }
                   ]
                 }
                 """;
@@ -184,6 +232,63 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             {
                 Assert.Equal(secondInstruction, postActions[1].ManualInstructions);
             }
+        }
+
+        [Fact]
+        public void TestPostActionInstructionsConditioning_BlankCondition()
+        {
+            TemplateConfigModel configModel = TemplateConfigModel.FromJObject(TestTemplateJson);
+            IVariableCollection vc = new VariableCollection
+            {
+                ["ActionThreeCondition"] = true
+            };
+
+            FileRenameGenerator renameGenerator = new(
+                    _environmentSettings,
+                    "sourceName",
+                    "MyProject",
+                    vc,
+                    Array.Empty<IReplacementTokens>());
+
+            List<IPostAction> postActions = PostAction.Evaluate(
+                _environmentSettings,
+                configModel.PostActionModels,
+                vc,
+                renameGenerator);
+
+            Assert.Single(postActions);
+
+            Assert.Equal("First instruction (action 3)", postActions[0].ManualInstructions);
+        }
+
+        [Fact]
+        public void TestPostActionInstructionsConditioning_LastTrueConditionWin()
+        {
+            TemplateConfigModel configModel = TemplateConfigModel.FromJObject(TestTemplateJson);
+            IVariableCollection vc = new VariableCollection
+            {
+                ["ActionFourCondition"] = true,
+                ["OperatingSystemKind"] = "Windows",
+                ["Framework"] = "NET",
+                ["Language"] = "C#"
+            };
+
+            FileRenameGenerator renameGenerator = new(
+                    _environmentSettings,
+                    "sourceName",
+                    "MyProject",
+                    vc,
+                    Array.Empty<IReplacementTokens>());
+
+            List<IPostAction> postActions = PostAction.Evaluate(
+                _environmentSettings,
+                configModel.PostActionModels,
+                vc,
+                renameGenerator);
+
+            Assert.Single(postActions);
+
+            Assert.Equal("Windows-NET-C# instructions (action 4)", postActions[0].ManualInstructions);
         }
 
         [Fact]
