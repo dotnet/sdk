@@ -105,6 +105,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.OperationConfig
                         new OperationConfigDefault("**/*.jsx", "{/*", EvaluatorType.CPP, ConditionalType.JsxBlockComment),
                         new OperationConfigDefault("**/*.tsx", "{/*", EvaluatorType.CPP, ConditionalType.JsxBlockComment),
                         new OperationConfigDefault("**/*.xml", "<!--", EvaluatorType.CPP, ConditionalType.Xml),
+                        new OperationConfigDefault("**/*.appxmanifest", "<!--", EvaluatorType.CPP, ConditionalType.Xml),
                         new OperationConfigDefault("**/*.resx", "<!--", EvaluatorType.CPP, ConditionalType.Xml),
                         new OperationConfigDefault("**/*.bas", "'", EvaluatorType.VB, ConditionalType.VB),
                         new OperationConfigDefault("**/*.vb", "'", EvaluatorType.VB, ConditionalType.VB),

@@ -498,6 +498,40 @@ baz
 "
                 },
                 {
+"Package.appxmanifest",
+@"<?xml version=""1.0"" encoding=""utf-8""?>
+
+<Package
+  xmlns=""http://schemas.microsoft.com/appx/manifest/foundation/windows10""
+  xmlns:mp=""http://schemas.microsoft.com/appx/2014/phone/manifest""
+  xmlns:uap=""http://schemas.microsoft.com/appx/manifest/uap/windows10"">
+
+  <Identity Name=""Microsoft.UWPAppExample"" Publisher=""CN=Microsoft Corporation"" Version=""1.0.0.0"" ProcessorArchitecture=""x86"" />
+
+  <Properties>
+    <DisplayName>UWP App Example</DisplayName>
+    <PublisherDisplayName>Microsoft Corporation</PublisherDisplayName>
+    <Logo>Assets\StoreLogo-sdk.png</Logo>
+  </Properties>
+
+  <Resources>
+    <Resource Language=""en-us""/>
+    <!-- comment A is false -->
+    <Resource Language=""zh-cn""/>
+  </Resources>
+
+  <Dependencies>
+    <!-- comment B is true -->
+    <TargetDeviceFamily Name=""Windows.Universal"" MinVersion=""10.0.10240.0"" MaxVersionTested=""10.0.22000.0"" />
+  </Dependencies>
+
+  <Applications>
+    <Application Id=""App"" Executable=""UWPAppExample.exe"" EntryPoint=""UWPAppExample.App"">
+  </Applications>
+
+</Package>"
+                },
+                {
 "test.axaml",
 @"<!-- comment A is false -->
 <Application xmlns=""https://github.com/something""
