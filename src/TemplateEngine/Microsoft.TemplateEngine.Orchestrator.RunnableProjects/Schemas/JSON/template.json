@@ -524,7 +524,8 @@
                         "cb9a6cf3-4f5c-4860-b9d2-03a574959774",
                         "210D431B-A78B-4D2F-B762-4ED3E3EA9025",
                         "D396686C-DE0E-4DE6-906D-291CD29FC5DE",
-                        "84C0DA21-51C8-4541-9940-6CA19AF04EE6"
+                        "84C0DA21-51C8-4541-9940-6CA19AF04EE6",
+                        "695A3659-EB40-4FF5-A6A6-C9C4E629FCB0"
                       ]
                     }
                   }
@@ -737,6 +738,37 @@
                         "description": "A semicolon delimited list of indexes of the primary outputs that should be opened in the editor."
                       }
                     }
+                  }
+                }
+              },
+              {
+                "description": "Add Property in JSON file Request.",
+                "properties": {
+                  "actionId": {
+                    "enum": ["695A3659-EB40-4FF5-A6A6-C9C4E629FCB0"]
+                  },
+                  "args": {
+                    "type": "object",
+                    "description": "Arguments for the action",
+                    "properties": {
+                      "jsonFileName": {
+                        "type": "string",
+                        "description": "The name of the JSON file to modify."
+                      },
+                      "parentPropertyPath": {
+                        "type": "string",
+                        "description": "The path of the parent property to add the new property under."
+                      },
+                      "newJsonPropertyName": {
+                        "type": "string",
+                        "description": "The name of the new property to add."
+                      },
+                      "newJsonPropertyValue": {
+                        "type": "string",
+                        "description": "The value of the new property to add."
+                      }
+                    },
+                    "required": [ "jsonFileName", "newJsonPropertyName", "newJsonPropertyValue" ]
                   }
                 }
               }

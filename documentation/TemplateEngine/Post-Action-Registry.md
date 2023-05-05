@@ -9,6 +9,7 @@
 | [Add projects to a solution file](#add-projects-to-a-solution-file) | `D396686C-DE0E-4DE6-906D-291CD29FC5DE` |
 | [Change file permissions (Unix/OS X)](#change-file-permissions) | `CB9A6CF3-4F5C-4860-B9D2-03A574959774` |
 | [Display manual instructions](#display-manual-instructions) | `AC1156F7-BB77-4DB8-B28F-24EEBCCA1E5C` |
+| [Add a property to an existing JSON file](#add-a-property-to-an-existing-json-file) | `695A3659-EB40-4FF5-A6A6-C9C4E629FCB0` |
 
 # Base configuration
 Each post action has set of standard properties as well as custom properties defined by certain post action.
@@ -410,4 +411,35 @@ Command is printed only if defined in post action arguments.
   },
   "continueOnError": true
 }]
+```
+
+# Add a property to an existing JSON file
+
+Adds a new JSON property in an existing JSON file.
+
+- **Action ID** : 695A3659-EB40-4FF5-A6A6-C9C4E629FCB0
+- **Specific Configuration** :
+   - `args`:
+      - `jsonFileName (string)`: The path to the JSON file that must be modified.
+      - `parentPropertyPath (string)` (optional): Specifies an existing property in the JSON file for which the new property must be a child property. The complete path must be specified, using a colon (:) as a separator character, for instance, `Person:Address`. If parentPropertyPath is not defined, the new property will be added to the root of the JSON document.
+   - `newJsonPropertyName (string)`: The name that must be given to the new property.
+   - `newJsonPropertyValue (string)`: The value that must be assigned to the new property. This must be a valid JSON.
+- **Supported in** :
+   - dotnet new3
+   - dotnet new (2.0.0 or higher)
+
+## Example
+```
+"postActions": [{  `
+  `"description": "Adds a new JSON property in an existing JSON file.",`
+  `"manualInstructions": [ { "text": "Add a new property 'LogLevel' with value 'Information' to '.\deployment.json' under existing property 'moduleConfiguration:edgeAgent:properties.desired'" }  ],`
+  `"actionId": "695A3659-EB40-4FF5-A6A6-C9C4E629FCB0",`
+  `"args": {`
+    `"jsonFileName": ".\deployment.json",`
+    `"parentPropertyPath": "moduleConfiguration:edgeAgent:properties.desired",`
+    `"newJsonPropertyName": "LogLevel",`
+    `"newJsonPropertyValue": "Information"`
+  `},`
+  `"continueOnError": true`
+`}]
 ```
