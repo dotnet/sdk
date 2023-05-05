@@ -957,6 +957,14 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   </Target>
 
+  <Target Name="_ComputeIntermediateDepsFilePath">
+    <PropertyGroup>
+      <!-- IntermediateDepsFilePath is the location where the deps.json file is originally created -->
+      <IntermediateDepsFilePath Condition=" '$(PublishDepsFilePath)' != ''">$(PublishDepsFilePath)</IntermediateDepsFilePath >
+      <IntermediateDepsFilePath Condition=" '$(PublishDepsFilePath)' == ''">$(IntermediateOutputPath)$(ProjectDepsFileName)</IntermediateDepsFilePath >
+    </PropertyGroup>
+  </Target>
+
   <!--
     ============================================================
     _GeneratePublishDependencyFile
@@ -965,6 +973,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     -->
   <Target Name="GeneratePublishDependencyFile"
           DependsOnTargets="_ComputeUseBuildDependencyFile;
+                            _ComputeIntermediateDepsFilePath;
                             _DefaultMicrosoftNETPlatformLibrary;
                             _HandlePackageFileConflicts;
                             _HandlePackageFileConflictsForPublish;
@@ -972,18 +981,18 @@ Copyright (c) .NET Foundation. All rights reserved.
                             _ComputeUserRuntimeAssemblies;
                             ResolveRuntimePackAssets;
                             _ComputePackageReferencePublish"
-          Condition="'$(GenerateDependencyFile)' == 'true' and '$(_UseBuildDependencyFile)' != 'true' and '$(PublishAot)' != 'true'">
+          Condition="'$(GenerateDependencyFile)' == 'true' and '$(_UseBuildDependencyFile)' != 'true' and '$(PublishAot)' != 'true'"
+          Inputs="$(ProjectAssetsFile);$(ProjectAssetsCacheFile);$(MSBuildAllProjects)"
+          Outputs="$(IntermediateDepsFilePath)">
 
     <PropertyGroup>
-      <!-- IntermediateDepsFilePath is the location where the deps.json file is originally created
-           PublishDepsFilePath is the location where the deps.json resides when published
+      <!-- PublishDepsFilePath is the location where the deps.json resides when published
            PublishDepsFilePath is empty (by default) for PublishSingleFile, since the deps.json file is embedde within the single-file bundle -->
-      <IntermediateDepsFilePath Condition=" '$(PublishDepsFilePath)' != ''">$(PublishDepsFilePath)</IntermediateDepsFilePath >
-      <IntermediateDepsFilePath Condition=" '$(PublishDepsFilePath)' == ''">$(IntermediateOutputPath)$(ProjectDepsFileName)</IntermediateDepsFilePath >
       <PublishDepsFilePath Condition=" '$(PublishDepsFilePath)' == '' And '$(PublishSingleFile)' != 'true'">$(PublishDir)$(ProjectDepsFileName)</PublishDepsFilePath>
       <_IsSingleFilePublish Condition="'$(PublishSingleFile)' == ''">false</_IsSingleFilePublish>
       <_IsSingleFilePublish Condition="'$(PublishSingleFile)' != ''">$(PublishSingleFile)</_IsSingleFilePublish>
     </PropertyGroup>
+
     <ItemGroup>
       <ResolvedCompileFileDefinitions Remove="@(_PublishConflictPackageFiles)" Condition="'%(_PublishConflictPackageFiles.ConflictItemType)' == 'Reference'" />
       <RuntimeTargetsCopyLocalItems Remove="@(_PublishConflictPackageFiles)" Condition="'%(_PublishConflictPackageFiles.ConflictItemType)' != 'Reference'" />
