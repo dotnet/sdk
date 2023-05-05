@@ -1,17 +1,13 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
-//
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System.CommandLine;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.TemplateEngine.Abstractions;
-using Microsoft.TemplateEngine.Abstractions.Constraints;
 using Microsoft.TemplateEngine.Abstractions.Installer;
 using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
 using Microsoft.TemplateEngine.Cli.Commands;
 using Microsoft.TemplateEngine.Cli.NuGet;
 using Microsoft.TemplateEngine.Cli.TabularOutput;
-using Microsoft.TemplateEngine.Cli.TemplateSearch;
 using Microsoft.TemplateEngine.Edge;
 using Microsoft.TemplateEngine.Edge.Settings;
 using Microsoft.TemplateEngine.Utils;
@@ -32,6 +28,7 @@ namespace Microsoft.TemplateEngine.Cli
         private readonly TemplatePackageManager _templatePackageManager;
         private readonly TemplateConstraintManager _constraintsManager;
         private readonly HostSpecificDataLoader _hostSpecificDataLoader;
+        private readonly TemplatePackageDisplay _templatePackageDisplay;
 
         internal TemplatePackageCoordinator(
             IEngineEnvironmentSettings environmentSettings,
@@ -41,6 +38,7 @@ namespace Microsoft.TemplateEngine.Cli
             _templatePackageManager = templatePackageManager ?? throw new ArgumentNullException(nameof(templatePackageManager));
             _constraintsManager = new TemplateConstraintManager(_engineEnvironmentSettings);
             _hostSpecificDataLoader = new HostSpecificDataLoader(_engineEnvironmentSettings);
+            _templatePackageDisplay = new TemplatePackageDisplay(Reporter.Output, Reporter.Error);
         }
 
         /// <summary>
@@ -247,7 +245,15 @@ namespace Microsoft.TemplateEngine.Cli
             IReadOnlyList<InstallResult> installResults = await managedSourceProvider.InstallAsync(installRequests, cancellationToken).ConfigureAwait(false);
             foreach (InstallResult result in installResults)
             {
-                await DisplayInstallResultAsync(result.InstallRequest.DisplayName, result, args.ParseResult, cancellationToken).ConfigureAwait(false);
+                await _templatePackageDisplay.DisplayInstallResultAsync(
+                    result.InstallRequest.DisplayName,
+                    result,
+                    args.ParseResult,
+                    args.Force,
+                    _templatePackageManager,
+                    _engineEnvironmentSettings,
+                    _constraintsManager,
+                    cancellationToken).ConfigureAwait(false);
                 if (!result.Success)
                 {
                     resultStatus = result.Error == InstallerErrorCode.PackageNotFound ? NewCommandStatus.NotFound : NewCommandStatus.InstallFailed;
@@ -274,7 +280,7 @@ namespace Microsoft.TemplateEngine.Cli
             {
                 var provider = packagesGrouping.Key;
                 IReadOnlyList<CheckUpdateResult> checkUpdateResults = await provider.GetLatestVersionsAsync(packagesGrouping, cancellationToken).ConfigureAwait(false);
-                DisplayUpdateCheckResults(checkUpdateResults, commandArgs, showUpdates: !applyUpdates);
+                _templatePackageDisplay.DisplayUpdateCheckResults(_engineEnvironmentSettings, checkUpdateResults, commandArgs, showUpdates: !applyUpdates);
                 if (checkUpdateResults.Any(result => !result.Success))
                 {
                     success = NewCommandStatus.InstallFailed;
@@ -307,7 +313,17 @@ namespace Microsoft.TemplateEngine.Cli
                         {
                             success = NewCommandStatus.InstallFailed;
                         }
-                        await DisplayInstallResultAsync(updateResult.UpdateRequest.TemplatePackage.DisplayName, updateResult, commandArgs.ParseResult, cancellationToken).ConfigureAwait(false);
+
+                        await _templatePackageDisplay.DisplayInstallResultAsync(
+                           updateResult.UpdateRequest.TemplatePackage.DisplayName,
+                           updateResult,
+                           commandArgs.ParseResult,
+                           // force is not supported by update flow
+                           force: false,
+                           _templatePackageManager,
+                           _engineEnvironmentSettings,
+                           _constraintsManager,
+                           cancellationToken).ConfigureAwait(false);
                     }
                 }
             }
@@ -332,7 +348,7 @@ namespace Microsoft.TemplateEngine.Cli
             if (args.TemplatePackages == null || args.TemplatePackages.Count <= 0)
             {
                 //display all installed template packages
-                await DisplayInstalledTemplatePackagesAsync(args, cancellationToken).ConfigureAwait(false);
+                await _templatePackageDisplay.DisplayInstalledTemplatePackagesAsync(_templatePackageManager, args, cancellationToken).ConfigureAwait(false);
                 return result;
             }
 

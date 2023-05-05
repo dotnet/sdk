@@ -1,5 +1,5 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
 using System.IO;
@@ -47,8 +47,8 @@ namespace Microsoft.NET.Sdk.Web.Tests
             JsonNode runtimeConfig = JsonNode.Parse(runtimeConfigContents);
             JsonNode configProperties = runtimeConfig["runtimeOptions"]["configProperties"];
 
-            configProperties["Microsoft.AspNetCore.EnsureJsonTrimmability"].GetValue<bool>()
-                    .Should().BeTrue();
+            configProperties["System.Text.Json.JsonSerializer.IsReflectionEnabledByDefault"].GetValue<bool>()
+                    .Should().BeFalse();
         }
 
         [Theory]
@@ -80,7 +80,7 @@ namespace Microsoft.NET.Sdk.Web.Tests
             string responseFile = Path.Combine(outputDirectory, "native", $"{projectName}.ilc.rsp");
             var responseFileContents = File.ReadLines(responseFile);
 
-            responseFileContents.Should().Contain("--feature:Microsoft.AspNetCore.EnsureJsonTrimmability=true");
+            responseFileContents.Should().Contain("--feature:System.Text.Json.JsonSerializer.IsReflectionEnabledByDefault=false");
             File.Exists(Path.Combine(outputDirectory, "web.config")).Should().BeFalse();
         }
 

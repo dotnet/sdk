@@ -96,7 +96,6 @@ namespace Microsoft.DotNet.GenAPI
 
             document.GetSyntaxRootAsync().Result!
                 .Rewrite(new SingleLineStatementCSharpSyntaxRewriter())
-                .Rewrite(new TypeForwardAttributeCSharpSyntaxRewriter())
                 .WriteTo(_textWriter);
         }
 
@@ -185,6 +184,11 @@ namespace Microsoft.DotNet.GenAPI
 
             if (member is IMethodSymbol method)
             {
+                if (method.MethodKind == MethodKind.ExplicitInterfaceImplementation)
+                {
+                    return false;
+                }
+
                 // If they're methods, compare their names and signatures.
                 return baseType.GetMembers(member.Name)
                     .Any(baseMember => _symbolFilter.Include(baseMember) &&
@@ -309,7 +313,9 @@ namespace Microsoft.DotNet.GenAPI
             {
                 if (symbol.TypeKind != TypeKind.Error)
                 {
-                    TypeSyntax typeSyntaxNode = (TypeSyntax)_syntaxGenerator.TypeExpression(symbol);
+                    // see https://github.com/dotnet/roslyn/issues/67341
+                    // GetForwardedTypes returns bound generics, but `typeof` requires unbound
+                    TypeSyntax typeSyntaxNode = (TypeSyntax)_syntaxGenerator.TypeExpression(symbol.MakeUnboundIfGeneric());
                     compilationUnit = _syntaxGenerator.AddAttributes(compilationUnit,
                         _syntaxGenerator.Attribute(typeof(TypeForwardedToAttribute).FullName!,
                             SyntaxFactory.TypeOfExpression(typeSyntaxNode)).WithTrailingTrivia(SyntaxFactory.LineFeed));

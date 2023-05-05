@@ -1,8 +1,8 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
-//
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Xml.Linq;
+using FluentAssertions;
 using Microsoft.NET.TestFramework;
 using Xunit;
 
@@ -32,7 +32,7 @@ namespace Microsoft.NET.Build.Containers.IntegrationTests
 
             Assert.NotNull(actualVersionElement);
             Assert.NotEmpty(actualVersionElement.Value);
-            Assert.Equal(TestContext.Current.ToolsetUnderTest.SdkVersion, actualVersionElement.Value);
+            actualVersionElement.Value.Should().BeOneOf(TestContext.Current.ToolsetUnderTest.SdkVersion, TestContext.Current.ToolsetUnderTest.SdkVersion.Split('-')[0]);
         }
     }
 }
