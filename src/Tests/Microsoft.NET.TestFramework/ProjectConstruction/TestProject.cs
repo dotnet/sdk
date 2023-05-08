@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -53,8 +56,6 @@ namespace Microsoft.NET.TestFramework.ProjectConstruction
         public string TargetFrameworkProfile { get; set; }
 
         public bool UseArtifactsOutput { get; set; }
-
-        public bool UseDirectoryBuildPropsForArtifactsOutput { get; set; }
 
         public List<TestProject> ReferencedProjects { get; } = new List<TestProject>();
 
@@ -249,11 +250,6 @@ namespace Microsoft.NET.TestFramework.ProjectConstruction
             foreach (var additionalProperty in AdditionalProperties)
             {
                 propertyGroup.Add(new XElement(ns + additionalProperty.Key, additionalProperty.Value));
-            }
-
-            if (UseArtifactsOutput && !UseDirectoryBuildPropsForArtifactsOutput)
-            {
-                propertyGroup.Add(new XElement(ns + "UseArtifactsOutput", "true"));
             }
 
             if (AdditionalItems.Any())

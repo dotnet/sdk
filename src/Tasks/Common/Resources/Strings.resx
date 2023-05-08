@@ -825,7 +825,7 @@ You may need to build the project on another operating system or architecture, o
   </data>
   <data name="SelfContainedOptionShouldBeUsedWithRuntime" xml:space="preserve">
     <value>NETSDK1179: One of '--self-contained' or '--no-self-contained' options are required when '--runtime' is used.</value>
-    <comment>{StrBegin="NETSDK1179: "}</comment>
+    <comment>{StrBegin="NETSDK1179: "}{Locked="--self-contained"}{Locked="--no-self-contained"}{Locked="--runtime"}</comment>
   </data>
   <data name="CouldNotGetPackVersionFromWorkloadManifests" xml:space="preserve">
     <value>NETSDK1181: Error getting pack version: Pack '{0}' was not present in workload manifests.</value>
@@ -877,7 +877,7 @@ You may need to build the project on another operating system or architecture, o
   </data>
   <data name="CannotHaveSolutionLevelOutputPath" xml:space="preserve">
     <value>NETSDK1194: The "--output" option isn't supported when building a solution. Specifying a solution-level output path results in all projects copying outputs to the same directory, which can lead to inconsistent builds.</value>
-    <comment>{StrBegin="NETSDK1194: "}</comment>
+    <comment>{StrBegin="NETSDK1194: "}{Locked="--output"}</comment>
   </data>
   <data name="ILLinkNoValidRuntimePackageError" xml:space="preserve">
     <value>NETSDK1195: Unable to optimize assemblies for size: a valid runtime package was not found. Either set the PublishTrimmed property to false, or use a supported target framework when publishing.</value>
@@ -896,4 +896,13 @@ You may need to build the project on another operating system or architecture, o
     <value>NETSDK1198: A publish profile with the name '{0}' was not found in the project. Set the PublishProfile property to a valid file name.</value>
     <comment>{StrBegin="NETSDK1198: "}</comment>
   </data>
+  <data name="ArtifactsPathCannotBeSetInProject" xml:space="preserve">
+    <value>NETSDK1199: The ArtifactsPath and UseArtifactsOutput properties cannot be set in a project file, due to MSBuild ordering constraints. They must be set in a Directory.Build.props file or from the command line. See https://aka.ms/netsdk1199 for more information.</value>
+    <comment>{StrBegin="NETSDK1199: "}</comment>
+  </data>
+  <data name="UseArtifactsOutputRequiresDirectoryBuildProps" xml:space="preserve">
+    <value>NETSDK1200: If UseArtifactsPath is set to true and ArtifactsPath is not set, there must be a Directory.Build.props file in order to determine where the artifacts folder should be located.</value>
+    <comment>{StrBegin="NETSDK1200: "}</comment>
+  </data>
+  
 </root>
