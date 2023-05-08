@@ -47,6 +47,26 @@
         <target state="translated">특성 문자열 리터럴이 올바르게 구문 분석되어야 합니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="AvoidConstArraysCodeFixTitle">
+        <source>Extract to static readonly field</source>
+        <target state="new">Extract to static readonly field</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidConstArraysDescription">
+        <source>Constant arrays passed as arguments are not reused which implies a performance overhead. Consider extracting them to 'static readonly' fields to improve performance.</source>
+        <target state="new">Constant arrays passed as arguments are not reused which implies a performance overhead. Consider extracting them to 'static readonly' fields to improve performance.</target>
+        <note>{Locked="static readonly"}</note>
+      </trans-unit>
+      <trans-unit id="AvoidConstArraysMessage">
+        <source>Prefer 'static readonly' fields over local constant array arguments</source>
+        <target state="new">Prefer 'static readonly' fields over local constant array arguments</target>
+        <note>{Locked="static readonly"}</note>
+      </trans-unit>
+      <trans-unit id="AvoidConstArraysTitle">
+        <source>Avoid constant arrays as arguments</source>
+        <target state="new">Avoid constant arrays as arguments</target>
+        <note />
+      </trans-unit>
       <trans-unit id="AvoidStringBuilderPInvokeParametersDescription">
         <source>Marshalling of 'StringBuilder' always creates a native buffer copy, resulting in multiple allocations for one marshalling operation.</source>
         <target state="translated">'StringBuilder'를 마샬링하는 경우 항상 네이티브 버퍼 복사본이 만들어지므로 하나의 마샬링 작업에 대해 할당이 여러 번 이루어집니다.</target>

@@ -13,6 +13,7 @@ CA1857 | Performance | Warning | ConstantExpectedAnalyzer, [Documentation](https
 CA1858 | Performance | Info | UseStartsWithInsteadOfIndexOfComparisonWithZero, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1858)
 CA1859 | Performance | Info | UseConcreteTypeAnalyzer, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1859)
 CA1860 | Performance | Info | PreferLengthCountIsEmptyOverAnyAnalyzer, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1860)
+CA1861 | Performance | Info | AvoidConstArrays, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1861)
 CA2021 | Reliability | Warning | DoNotCallEnumerableCastOrOfTypeWithIncompatibleTypesAnalyzer, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2021)
 
 ### Removed Rules
