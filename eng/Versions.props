@@ -29,13 +29,6 @@
     <!-- In order tests against the same version of NuGet as the SDK. We have to set this to match. -->
     <NuGetVersion>6.6.0-preview.3.61</NuGetVersion>
     <!-- roslyn -->
-    <MicrosoftCodeAnalysisCSharpFeaturesVersion>4.7.0-1.23226.15</MicrosoftCodeAnalysisCSharpFeaturesVersion>
-    <MicrosoftCodeAnalysisCSharpVersion>4.7.0-1.23226.15</MicrosoftCodeAnalysisCSharpVersion>
-    <MicrosoftCodeAnalysisFeaturesVersion>4.7.0-1.23226.15</MicrosoftCodeAnalysisFeaturesVersion>
-    <MicrosoftCodeAnalysisVisualBasicFeaturesVersion>4.7.0-1.23226.15</MicrosoftCodeAnalysisVisualBasicFeaturesVersion>
-    <MicrosoftCodeAnalysisVisualBasicWorkspacesVersion>4.7.0-1.23226.15</MicrosoftCodeAnalysisVisualBasicWorkspacesVersion>
-    <MicrosoftCodeAnalysisVisualBasicVersion>4.7.0-1.23226.15</MicrosoftCodeAnalysisVisualBasicVersion>
-    <MicrosoftCodeAnalysisWorkspacesMSBuildVersion>4.7.0-1.23226.15</MicrosoftCodeAnalysisWorkspacesMSBuildVersion>
     <MicrosoftCodeAnalysisVersion>4.7.0-1.23226.15</MicrosoftCodeAnalysisVersion>
     <!-- roslyn-sdk -->
     <MicrosoftCodeAnalysisAnalzerTestingVersion>1.1.2-beta1.22216.1</MicrosoftCodeAnalysisAnalzerTestingVersion>

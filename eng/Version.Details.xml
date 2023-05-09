@@ -1,30 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.CodeAnalysis.CSharp.Features" Version="4.7.0-1.23226.15">
-      <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>56393223b78d294bccec3101e79dc03e1b3cb683</Sha>
-    </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.CSharp" Version="4.7.0-1.23226.15">
-      <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>56393223b78d294bccec3101e79dc03e1b3cb683</Sha>
-    </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.VisualBasic.Features" Version="4.7.0-1.23226.15">
-      <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>56393223b78d294bccec3101e79dc03e1b3cb683</Sha>
-    </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.VisualBasic.Workspaces" Version="4.7.0-1.23226.15">
-      <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>56393223b78d294bccec3101e79dc03e1b3cb683</Sha>
-    </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.VisualBasic" Version="4.7.0-1.23226.15">
-      <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>56393223b78d294bccec3101e79dc03e1b3cb683</Sha>
-    </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="4.7.0-1.23226.15">
-      <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>56393223b78d294bccec3101e79dc03e1b3cb683</Sha>
-    </Dependency>
     <Dependency Name="Microsoft.CodeAnalysis" Version="4.7.0-1.23226.15">
       <Uri>https://github.com/dotnet/roslyn</Uri>
       <Sha>56393223b78d294bccec3101e79dc03e1b3cb683</Sha>
