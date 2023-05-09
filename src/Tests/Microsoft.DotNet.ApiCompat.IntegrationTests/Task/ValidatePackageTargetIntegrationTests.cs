@@ -1,12 +1,11 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Microsoft.DotNet.ApiCompat.IntegrationTests;
 using Microsoft.DotNet.ApiCompatibility;
-using Microsoft.DotNet.ApiCompatibility.Abstractions;
 using Microsoft.DotNet.ApiCompatibility.Logging;
 using Microsoft.DotNet.ApiCompatibility.Rules;
 using Microsoft.DotNet.ApiCompatibility.Runner;
@@ -339,9 +338,9 @@ namespace PackageValidationTests { public class MyForwardedType : ISomeInterface
             validator.Validate(new PackageValidatorOption(package));
 
             if (!useReferences)
-                Assert.Empty(log.errors.Where(e => e.Contains("CP1003")));
+                Assert.Empty(log.warnings.Where(e => e.Contains("CP1003")));
             else
-                Assert.NotEmpty(log.errors.Where(e => e.Contains("CP1003")));
+                Assert.NotEmpty(log.warnings.Where(e => e.Contains("CP1003")));
         }
 
         [RequiresMSBuildVersionFact("17.0.0.32901", Skip = "https://github.com/dotnet/sdk/issues/23533")]

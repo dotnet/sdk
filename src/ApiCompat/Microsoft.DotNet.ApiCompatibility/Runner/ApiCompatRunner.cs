@@ -6,7 +6,6 @@ using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
 using Microsoft.CodeAnalysis;
-using Microsoft.DotNet.ApiCompatibility.Abstractions;
 using Microsoft.DotNet.ApiCompatibility.Logging;
 using Microsoft.DotNet.ApiSymbolExtensions;
 using Microsoft.DotNet.ApiSymbolExtensions.Logging;
@@ -41,7 +40,9 @@ namespace Microsoft.DotNet.ApiCompatibility.Runner
         /// <inheritdoc />
         public void ExecuteWorkItems()
         {
-            _log.LogMessage(MessageImportance.Low, Resources.ApiCompatRunnerExecutingWorkItems, _workItems.Count.ToString());
+            _log.LogMessage(MessageImportance.Low,
+                string.Format(Resources.ApiCompatRunnerExecutingWorkItems,
+                    _workItems.Count));
 
             foreach (ApiCompatRunnerWorkItem workItem in _workItems)
             {
@@ -62,9 +63,10 @@ namespace Microsoft.DotNet.ApiCompatibility.Runner
                     continue;
 
                 // Create and configure the work item specific api comparer
-                IApiComparer apiComparer = _apiComparerFactory.Create(new ApiComparerSettings(
-                    strictMode: workItem.Options.EnableStrictMode,
-                    withReferences: runWithReferences));
+                IApiComparer apiComparer = _apiComparerFactory.Create();
+                apiComparer.Settings.StrictMode = workItem.Options.EnableStrictMode;
+                apiComparer.Settings.WithReferences = runWithReferences;
+                        
 
                 // Invoke the api comparer for the work item and operate on the difference result
                 IEnumerable<CompatDifference> differences = apiComparer.GetDifferences(leftContainerList, rightContainersList);
@@ -92,12 +94,11 @@ namespace Microsoft.DotNet.ApiCompatibility.Runner
                         if (logHeader)
                         {
                             logHeader = false;
-                            _log.LogMessage(MessageImportance.High,
-                                Resources.ApiCompatibilityHeader,
+                            _log.LogError(string.Format(Resources.ApiCompatibilityHeader,
                                 difference.Left.AssemblyId,
                                 difference.Right.AssemblyId,
                                 workItem.Options.IsBaselineComparison ? difference.Left.FullPath : "left",
-                                workItem.Options.IsBaselineComparison ? difference.Right.FullPath : "right");
+                                workItem.Options.IsBaselineComparison ? difference.Right.FullPath : "right"));
                         }
 
                         _log.LogError(suppression,
@@ -146,7 +147,9 @@ namespace Microsoft.DotNet.ApiCompatibility.Runner
                 IAssemblySymbol? assemblySymbol = assemblySymbols[i];
                 if (assemblySymbol == null)
                 {
-                    _log.LogMessage(MessageImportance.High, string.Format(Resources.AssemblyLoadError, metadataInformation[i].AssemblyId));
+                    _log.LogMessage(MessageImportance.High,
+                        string.Format(Resources.AssemblyLoadError,
+                            metadataInformation[i].AssemblyId));
                     continue;
                 }
 

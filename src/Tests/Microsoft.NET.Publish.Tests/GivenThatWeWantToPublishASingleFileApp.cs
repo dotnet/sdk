@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using FluentAssertions;
 using Microsoft.DotNet.Cli.Utils;
@@ -92,7 +92,7 @@ namespace Microsoft.NET.Publish.Tests
                                                      runtimeIdentifier: RuntimeInformation.RuntimeIdentifier);
         }
 
-        [Fact(Skip = "https://github.com/dotnet/sdk/issues/29602")]
+        [Fact]
         public void Incremental_add_single_file()
         {
             var testProject = new TestProject()
@@ -678,10 +678,9 @@ class C
         [InlineData(ToolsetInfo.CurrentTargetFramework, false, IncludeDefault)]
         [InlineData(ToolsetInfo.CurrentTargetFramework, false, IncludeNative)]
         [InlineData(ToolsetInfo.CurrentTargetFramework, false, IncludeAllContent)]
-        // https://github.com/dotnet/sdk/issues/29602
-        //[InlineData(ToolsetInfo.CurrentTargetFramework, true, IncludeDefault)]
-        //[InlineData(ToolsetInfo.CurrentTargetFramework, true, IncludeNative)]
-        //[InlineData(ToolsetInfo.CurrentTargetFramework, true, IncludeAllContent)]
+        [InlineData(ToolsetInfo.CurrentTargetFramework, true, IncludeDefault)]
+        [InlineData(ToolsetInfo.CurrentTargetFramework, true, IncludeNative)]
+        [InlineData(ToolsetInfo.CurrentTargetFramework, true, IncludeAllContent)]
         public void It_runs_single_file_apps(string targetFramework, bool selfContained, string bundleOption)
         {
             var testProject = new TestProject()
@@ -795,7 +794,7 @@ class C
             var singleFilePath = Path.Combine(GetPublishDirectory(publishCommand, ToolsetInfo.CurrentTargetFramework).FullName, $"SingleFileTest{Constants.ExeSuffix}");
 
             publishCommand
-                .Execute(PublishSingleFile, RuntimeIdentifier, IncludeNative, "/p:EnableCompressionInSingleFile=false")
+                .Execute(PublishSingleFile, RuntimeIdentifier, IncludeNative, "/p:SelfContained=true", "/p:EnableCompressionInSingleFile=false")
                 .Should()
                 .Pass();
             var uncompressedSize = new FileInfo(singleFilePath).Length;
@@ -803,7 +802,7 @@ class C
             WaitForUtcNowToAdvance();
 
             publishCommand
-                .Execute(PublishSingleFile, RuntimeIdentifier, IncludeNative, "/p:EnableCompressionInSingleFile=true")
+                .Execute(PublishSingleFile, RuntimeIdentifier, IncludeNative, "/p:SelfContained=true", "/p:EnableCompressionInSingleFile=true")
                 .Should()
                 .Pass();
             var compressedSize = new FileInfo(singleFilePath).Length;
@@ -842,7 +841,7 @@ class C
             uncompressedSize.Should().Be(compressedSize);
         }
 
-        [Fact(Skip = "https://github.com/dotnet/sdk/issues/29602")]
+        [RequiresMSBuildVersionFact("17.0.0.32901")]
         public void User_can_get_bundle_info_before_bundling()
         {
             var testProject = new TestProject()

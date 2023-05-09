@@ -1,5 +1,5 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using Microsoft.DotNet.ApiCompatibility.Logging;
@@ -30,28 +30,28 @@ namespace Microsoft.DotNet.ApiCompat
 
             if (suppressionEngine.WriteSuppressionsToFile(suppressionOutputFile))
             {
-                log.LogMessage(MessageImportance.High, CommonResources.WroteSuppressions, suppressionOutputFile);
+                log.LogMessage(MessageImportance.High,
+                    string.Format(CommonResources.WroteSuppressions,
+                        suppressionOutputFile));
             }
         }
 
         /// <summary>
         /// Log whether or not we found breaking changes. If we are writing to a suppression file, no need to log anything.
         /// </summary>
-        public static void LogApiCompatSuccessOrFailure(bool generateSuppressionFile, ISuppressableLog compatibilityLogger)
+        public static void LogApiCompatSuccessOrFailure(bool generateSuppressionFile, ISuppressableLog log)
         {
-            if (compatibilityLogger.SuppressionWasLogged)
+            if (log.HasLoggedSuppressions)
             {
                 if (!generateSuppressionFile)
                 {
-                    compatibilityLogger.LogMessage(
-                    MessageImportance.High,
-                    CommonResources.BreakingChangesFound);
+                    log.LogMessage(MessageImportance.High,
+                        Resources.BreakingChangesFoundRegenerateSuppressionFileCommandHelp);
                 }
             }
             else
             {
-                compatibilityLogger.LogMessage(
-                    MessageImportance.Normal,
+                log.LogMessage(MessageImportance.Normal,
                     CommonResources.NoBreakingChangesFound);
             }
         }

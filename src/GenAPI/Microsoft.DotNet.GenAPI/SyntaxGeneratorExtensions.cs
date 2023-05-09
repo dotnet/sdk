@@ -1,12 +1,14 @@
-// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Linq;
-using System.Collections.Generic;
-using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Editing;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using System.Collections.Generic;
+using Microsoft.DotNet.ApiSymbolExtensions.Filtering;
 
 namespace Microsoft.DotNet.GenAPI
 {
@@ -14,56 +16,79 @@ namespace Microsoft.DotNet.GenAPI
     {
         /// <summary>
         /// Creates a declaration matching an existing symbol.
-        ///     The reson of having this similar to `SyntaxGenerator.Declaration` extention method is that
-        ///     SyntaxGenerator does not generates attributes neither for types, neiter for members.
+        ///     The reason of having this similar to `SyntaxGenerator.Declaration` extension method is that
+        ///     SyntaxGenerator does not generates attributes neither for types, neither for members.
         /// </summary>
-        public static SyntaxNode DeclarationExt(this SyntaxGenerator syntaxGenerator, ISymbol symbol)
+        public static SyntaxNode DeclarationExt(this SyntaxGenerator syntaxGenerator, ISymbol symbol, ISymbolFilter symbolFilter)
         {
             if (symbol.Kind == SymbolKind.NamedType)
             {
-                SyntaxNode? declaration = null;
-                var type = (INamedTypeSymbol)symbol;
+                INamedTypeSymbol type = (INamedTypeSymbol)symbol;
                 switch (type.TypeKind)
                 {
                     case TypeKind.Class:
-                        declaration = syntaxGenerator.ClassDeclaration(
-                            type.Name,
-                            accessibility: type.DeclaredAccessibility,
-                            modifiers: DeclarationModifiers.From(type),
-                            baseType: type.BaseType is null ? null : syntaxGenerator.TypeExpression(type.BaseType),
-                            interfaceTypes: type.Interfaces.Select(i => syntaxGenerator.TypeExpression(i)));
-                        break;
                     case TypeKind.Struct:
-                        declaration = syntaxGenerator.StructDeclaration(
-                            type.Name,
-                            accessibility: type.DeclaredAccessibility,
-                            modifiers: DeclarationModifiers.From(type),
-                            interfaceTypes: type.Interfaces.Select(i => syntaxGenerator.TypeExpression(i)));
-                        break;
                     case TypeKind.Interface:
-                        declaration = syntaxGenerator.InterfaceDeclaration(
-                            type.Name,
-                            accessibility: type.DeclaredAccessibility,
-                            interfaceTypes: type.Interfaces.Select(i => syntaxGenerator.TypeExpression(i)));
-                        break;
-                    case TypeKind.Enum:
-                        declaration = syntaxGenerator.EnumDeclaration(
-                            type.Name,
-                            accessibility: type.DeclaredAccessibility);
-                        break;
-                }
+                        TypeDeclarationSyntax typeDeclaration = (TypeDeclarationSyntax)syntaxGenerator.Declaration(symbol);
+                        return typeDeclaration
+                            .WithBaseList(syntaxGenerator.GetBaseTypeList(type, symbolFilter))
+                            .WithMembers(new SyntaxList<MemberDeclarationSyntax>());
 
-                if (declaration != null)
-                {
-                    return syntaxGenerator.WithTypeParametersAndConstraintsCopyExt(declaration, type.TypeParameters);
+                    case TypeKind.Enum:
+                        EnumDeclarationSyntax enumDeclaration = (EnumDeclarationSyntax)syntaxGenerator.Declaration(symbol);
+                        return enumDeclaration.WithMembers(new SeparatedSyntaxList<EnumMemberDeclarationSyntax>());
                 }
             }
-            else if (symbol.Kind == SymbolKind.Method)
+
+            if (symbol.Kind == SymbolKind.Method)
             {
-                var method = (IMethodSymbol)symbol;
-                if (method.MethodKind == MethodKind.ExplicitInterfaceImplementation)
+                IMethodSymbol method = (IMethodSymbol)symbol;
+                if (method.MethodKind == MethodKind.Constructor)
                 {
-                    return syntaxGenerator.ExplicitInterfaceImplementationMethodDeclaration(method, method.Name);
+                    INamedTypeSymbol? baseType = method.ContainingType.BaseType;
+                    if (baseType != null)
+                    {
+                        IEnumerable<IMethodSymbol> baseConstructors = baseType.Constructors.Where(symbolFilter.Include);
+                        // If the base type does not have default constructor.
+                        if (baseConstructors.Any() && baseConstructors.All(c => !c.Parameters.IsEmpty))
+                        {
+                            IOrderedEnumerable<IMethodSymbol> baseTypeConstructors = baseConstructors
+                                .Where(c => c.GetAttributes().All(a => !a.IsObsoleteWithUsageTreatedAsCompilationError()))
+                                .OrderBy(c => c.Parameters.Length);
+
+                            if (baseTypeConstructors.Any())
+                            {
+                                IMethodSymbol constructor = baseTypeConstructors.First();
+
+                                ConstructorDeclarationSyntax declaration = (ConstructorDeclarationSyntax)syntaxGenerator.Declaration(method);
+                                if (!declaration.Modifiers.Any(m => m.RawKind == (int)SyntaxKind.UnsafeKeyword) &&
+                                    // if at least one parameter of a base constructor is raw pointer type
+                                    constructor.Parameters.Any(p => p.Type.TypeKind == TypeKind.Pointer))
+                                {
+                                    declaration = declaration.AddModifiers(SyntaxFactory.Token(SyntaxKind.UnsafeKeyword));
+                                }
+                                return declaration.WithInitializer(constructor.GenerateBaseConstructorInitializer());
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (symbol is IEventSymbol eventSymbol)
+            {
+                if (eventSymbol.IsAbstract)
+                {
+                    // TODO: remove a work around solution after the Roslyn issue https://github.com/dotnet/roslyn/issues/66966 is fixed
+                    EventFieldDeclarationSyntax eventDeclaration = (EventFieldDeclarationSyntax)syntaxGenerator.Declaration(symbol);
+                    return eventDeclaration.AddModifiers(SyntaxFactory.Token(SyntaxKind.AbstractKeyword));
+                }
+                else
+                {
+                    // adds generation of add & remove accessors for the non abstract events.
+                    return syntaxGenerator.CustomEventDeclaration(eventSymbol.Name,
+                        syntaxGenerator.TypeExpression(eventSymbol.Type),
+                        eventSymbol.DeclaredAccessibility,
+                        DeclarationModifiers.From(eventSymbol));
                 }
             }
 
@@ -73,52 +98,30 @@ namespace Microsoft.DotNet.GenAPI
             }
             catch (ArgumentException ex)
             {
-                // re-throw the ArgumentException with the specified symbol that caused it.
+                // re-throw the ArgumentException with the symbol that caused it.
                 throw new ArgumentException(ex.Message, symbol.ToDisplayString());
             }
         }
 
-        // TODO: Temporary solution till corresponding Roslyn API is added: https://github.com/dotnet/arcade/issues/11895.
-        private static SyntaxNode ExplicitInterfaceImplementationMethodDeclaration(this SyntaxGenerator syntaxGenerator, IMethodSymbol method, string name, IEnumerable<SyntaxNode>? statements = null)
+        // Gets the list of base class and interfaces for a given symbol INamedTypeSymbol.
+        private static BaseListSyntax? GetBaseTypeList(this SyntaxGenerator syntaxGenerator,
+            INamedTypeSymbol type,
+            ISymbolFilter symbolFilter)
         {
-            var decl = syntaxGenerator.MethodDeclaration(
-                name,
-                parameters: method.Parameters.Select(p => syntaxGenerator.ParameterDeclaration(p)),
-                returnType: method.ReturnType?.SpecialType == SpecialType.System_Void ? null : syntaxGenerator.TypeExpression(method.ReturnType!),
-                modifiers: DeclarationModifiers.From(method),
-                statements: statements);
+            List<BaseTypeSyntax> baseTypes = new();
 
-            if (!method.TypeParameters.IsEmpty)
+            if (type.TypeKind == TypeKind.Class && type.BaseType != null && symbolFilter.Include(type.BaseType))
             {
-                decl = syntaxGenerator.WithTypeParametersAndConstraintsCopyExt(decl, method.TypeParameters);
+                baseTypes.Add(SyntaxFactory.SimpleBaseType((TypeSyntax)syntaxGenerator.TypeExpression(type.BaseType)));
             }
 
-            return decl;
-        }
-
-        // this is copy/paste from private method `SyntaxGenerator.WithTypeParametersAndConstraints`
-        private static SyntaxNode WithTypeParametersAndConstraintsCopyExt(this SyntaxGenerator syntaxGenerator, SyntaxNode declaration, ImmutableArray<ITypeParameterSymbol> typeParameters)
-        {
-            if (typeParameters.IsEmpty)
-            {
-                return declaration;
-            }
-
-            declaration = syntaxGenerator.WithTypeParameters(declaration, typeParameters.Select(tp => tp.Name));
-
-            foreach (var tp in typeParameters)
-            {
-                if (tp.HasConstructorConstraint || tp.HasReferenceTypeConstraint || tp.HasValueTypeConstraint || tp.ConstraintTypes.Length > 0)
-                {
-                    declaration = syntaxGenerator.WithTypeConstraint(declaration, tp.Name,
-                        kinds: (tp.HasConstructorConstraint ? SpecialTypeConstraintKind.Constructor : SpecialTypeConstraintKind.None)
-                                | (tp.HasReferenceTypeConstraint ? SpecialTypeConstraintKind.ReferenceType : SpecialTypeConstraintKind.None)
-                                | (tp.HasValueTypeConstraint ? SpecialTypeConstraintKind.ValueType : SpecialTypeConstraintKind.None),
-                        types: tp.ConstraintTypes.Select(t => syntaxGenerator.TypeExpression(t)));
-                }
-            }
-
-            return declaration;
+            // includes only interfaces that were not filtered out by the given ISymbolFilter or none of TypeParameters were filtered out.
+            baseTypes.AddRange(type.Interfaces
+                .Where(i => symbolFilter.Include(i) && !i.HasInaccessibleTypeArgument(symbolFilter))
+                .Select(i => SyntaxFactory.SimpleBaseType((TypeSyntax)syntaxGenerator.TypeExpression(i))));
+            return baseTypes.Count > 0 ?
+                SyntaxFactory.BaseList(SyntaxFactory.SeparatedList(baseTypes)) :
+                null;
         }
     }
 }

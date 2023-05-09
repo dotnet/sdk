@@ -1,5 +1,5 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.IO;
@@ -53,6 +53,11 @@ namespace Microsoft.DotNet.ApiCompat.Task
         /// A NoWarn string contains the error codes that should be ignored.
         /// </summary>
         public string? NoWarn { get; set; }
+
+        /// <summary>
+        /// If true, includes both internal and public API.
+        /// </summary>
+        public bool RespectInternals { get; set; }
 
         /// <summary>
         /// Enables rule to check that attributes match.
@@ -125,6 +130,7 @@ namespace Microsoft.DotNet.ApiCompat.Task
                 SuppressionFiles,
                 SuppressionOutputFile,
                 NoWarn,
+                RespectInternals,
                 EnableRuleAttributesMustMatch,
                 ExcludeAttributesFiles,
                 EnableRuleCannotChangeParameterName,
@@ -183,7 +189,9 @@ namespace Microsoft.DotNet.ApiCompat.Task
 
                 if (string.IsNullOrWhiteSpace(replacementString))
                 {
-                    throw new ArgumentException(string.Format(CommonResources.InvalidRexegStringTransformationPattern, captureGroupPattern, replacementString));
+                    throw new ArgumentException(string.Format(CommonResources.InvalidRexegStringTransformationPattern,
+                        captureGroupPattern,
+                        replacementString));
                 }
 
                 patterns[i] = (captureGroupPattern, replacementString);

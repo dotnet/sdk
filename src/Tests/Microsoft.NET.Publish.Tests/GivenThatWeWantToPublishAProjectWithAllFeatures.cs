@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -83,6 +83,7 @@ namespace Microsoft.NET.Publish.Tests
             ""System.Reflection.NullabilityInfoContext.IsSupported"": false,
             ""System.Resources.ResourceManager.AllowCustomResourceTypes"": false,
             ""System.Resources.UseSystemResourceKeys"": true,
+            ""System.Runtime.CompilerServices.RuntimeFeature.IsDynamicCodeSupported"": true,
             ""System.Runtime.InteropServices.BuiltInComInterop.IsSupported"": false,
             ""System.Runtime.InteropServices.EnableConsumingManagedCodeFromNativeHosting"": false,
             ""System.Runtime.InteropServices.EnableCppCLIHostActivation"": false,
@@ -93,6 +94,7 @@ namespace Microsoft.NET.Publish.Tests
             ""System.Runtime.TieredPGO"": true,
             ""System.StartupHookProvider.IsSupported"": false,
             ""System.Text.Encoding.EnableUnsafeUTF7Encoding"": false,
+            ""System.Text.Json.JsonSerializer.IsReflectionEnabledByDefault"": false,
             ""System.Threading.Thread.EnableAutoreleasePool"": false,
             ""System.Threading.ThreadPool.MinThreads"": 2,
             ""System.Threading.ThreadPool.MaxThreads"": 9,

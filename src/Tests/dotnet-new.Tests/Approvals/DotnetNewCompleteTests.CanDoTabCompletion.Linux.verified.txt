@@ -1,4 +1,6 @@
 ﻿angular
+api
+apicontroller
 blazorserver
 blazorserver-empty
 blazorwasm
@@ -14,6 +16,7 @@ grpc
 mstest
 mstest-playwright
 mvc
+mvccontroller
 nugetconfig
 nunit
 nunit-playwright
@@ -25,6 +28,7 @@ razorcomponent
 react
 sln
 tool-manifest
+view
 viewimports
 viewstart
 web

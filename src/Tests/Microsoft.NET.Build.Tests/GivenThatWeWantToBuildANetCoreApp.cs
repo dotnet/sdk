@@ -1,5 +1,5 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using FluentAssertions;
 using Microsoft.DotNet.Cli.Utils;
@@ -612,40 +612,53 @@ public static class Program
             outputDirectory.Should().HaveFile(Path.Combine("fr", "Humanizer.resources.dll"));
         }
 
-        [Fact]
-        public void It_uses_lowercase_form_of_the_target_framework_for_the_output_path()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void It_uses_lowercase_form_of_the_target_framework_for_the_output_path(bool useStandardOutputPaths)
         {
             var testProject = new TestProject()
             {
                 Name = "OutputPathCasing",
-                TargetFrameworks = "ignored",
+                //  Force the actual TargetFramework to be included in the artifact pivots
+                TargetFrameworks = "ignored;ignored2",
                 IsExe = true
             };
 
             string[] extraArgs = new[] { $"/p:TargetFramework={ToolsetInfo.CurrentTargetFramework.ToUpper()}" };
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, testProject.Name);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, testProject.Name, identifier: useStandardOutputPaths.ToString());
 
             var buildCommand = new BuildCommand(testAsset);
 
             buildCommand
+                .WithEnvironmentVariable("UseStandardOutputPaths", useStandardOutputPaths.ToString())
                 .Execute(extraArgs)
                 .Should()
                 .Pass();
 
-            string outputFolderWithConfiguration = Path.Combine(buildCommand.ProjectRootPath, "bin", "Debug");
+            if (useStandardOutputPaths)
+            {
+                buildCommand.GetOutputDirectory().Should().Exist();
 
-            Directory.GetDirectories(outputFolderWithConfiguration)
-                .Select(Path.GetFileName)
-                .Should()
-                .BeEquivalentTo(ToolsetInfo.CurrentTargetFramework);
+                buildCommand.GetIntermediateDirectory().Should().Exist();
+            }
+            else
+            {
+                string outputFolderWithConfiguration = Path.Combine(buildCommand.ProjectRootPath, "bin", "Debug");
 
-            string intermediateFolderWithConfiguration = Path.Combine(buildCommand.GetBaseIntermediateDirectory().FullName, "Debug");
+                Directory.GetDirectories(outputFolderWithConfiguration)
+                    .Select(Path.GetFileName)
+                    .Should()
+                    .BeEquivalentTo(ToolsetInfo.CurrentTargetFramework);
 
-            Directory.GetDirectories(intermediateFolderWithConfiguration)
-                .Select(Path.GetFileName)
-                .Should()
-                .BeEquivalentTo(ToolsetInfo.CurrentTargetFramework);
+                string intermediateFolderWithConfiguration = Path.Combine(buildCommand.GetBaseIntermediateDirectory().FullName, "Debug");
+
+                Directory.GetDirectories(intermediateFolderWithConfiguration)
+                    .Select(Path.GetFileName)
+                    .Should()
+                    .BeEquivalentTo(ToolsetInfo.CurrentTargetFramework);
+            }
         }
 
         [Fact]
@@ -819,7 +832,8 @@ class Program
                 Name = "GenerateFilesTest",
                 TargetFrameworks = TFM,
                 RuntimeIdentifier = runtimeIdentifier,
-                IsExe = true
+                IsExe = true,
+                SelfContained = "true"
             };
 
             var testAsset = _testAssetsManager

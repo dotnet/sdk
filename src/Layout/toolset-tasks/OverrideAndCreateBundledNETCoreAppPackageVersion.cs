@@ -1,6 +1,5 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
-// See the LICENSE file in the project root for more information.
 
 using System;
 using System.IO;
@@ -21,7 +20,7 @@ namespace Microsoft.DotNet.Build.Tasks
     /// and then update the stage 0 back.
     ///
     /// Override NETCoreSdkVersion to stage 0 sdk version like 6.0.100-dev
-    /// 
+    ///
     /// Use a task to override since it was generated as a string literal replace anyway.
     /// And using C# can have better error when anything goes wrong.
     /// </summary>
@@ -36,10 +35,6 @@ namespace Microsoft.DotNet.Build.Tasks
 
         [Required] public string MicrosoftNETCoreAppRefPackageVersion { get; set; }
 
-        // TODO: remove this once linker packages are produced from dotnet/runtime
-        // and replace it with MicrosoftNETCoreAppRefPackageVersion.
-        [Required] public string MicrosoftNETILLinkTasksPackageVersion { get; set; }
-
         [Required] public string NewSDKVersion { get; set; }
 
         [Required] public string OutputPath { get; set; }
@@ -50,7 +45,6 @@ namespace Microsoft.DotNet.Build.Tasks
                 ExecuteInternal(
                     File.ReadAllText(Stage0MicrosoftNETCoreAppRefPackageVersionPath),
                     MicrosoftNETCoreAppRefPackageVersion,
-                    MicrosoftNETILLinkTasksPackageVersion,
                     NewSDKVersion));
             return true;
         }
@@ -58,7 +52,6 @@ namespace Microsoft.DotNet.Build.Tasks
         public static string ExecuteInternal(
             string stage0MicrosoftNETCoreAppRefPackageVersionContent,
             string microsoftNETCoreAppRefPackageVersion,
-            string microsoftNETILLinkTasksPackageVersion,
             string newSDKVersion)
         {
             var projectXml = XDocument.Parse(stage0MicrosoftNETCoreAppRefPackageVersionContent);
@@ -117,39 +110,17 @@ namespace Microsoft.DotNet.Build.Tasks
 
             CheckAndReplaceAttribute(itemGroup
                 .Elements(ns + "KnownFrameworkReference").First().Attribute("LatestRuntimeFrameworkVersion"));
-
             CheckAndReplaceAttribute(itemGroup
                 .Elements(ns + "KnownAppHostPack").First().Attribute("AppHostPackVersion"));
             CheckAndReplaceAttribute(itemGroup
                 .Elements(ns + "KnownCrossgen2Pack").First().Attribute("Crossgen2PackVersion"));
-
-            // TODO: remove this once we're using an SDK that contains https://github.com/dotnet/installer/pull/10250
-            var crossgen2Rids = itemGroup.Elements(ns + "KnownCrossgen2Pack").First().Attribute("Crossgen2RuntimeIdentifiers");
-            if (!crossgen2Rids.Value.Contains("osx-x64"))
-            {
-                crossgen2Rids.Value += ";osx-x64";
-            }
+            CheckAndReplaceAttribute(itemGroup
+                .Elements(ns + "KnownILCompilerPack").First().Attribute("ILCompilerPackVersion"));
+            CheckAndReplaceAttribute(itemGroup
+                .Elements(ns + "KnownILLinkPack").First().Attribute("ILLinkPackVersion"));
 
             CheckAndReplaceAttribute(itemGroup
                 .Elements(ns + "KnownRuntimePack").First().Attribute("LatestRuntimeFrameworkVersion"));
-
-            // TODO: remove this once we're using an SDK that contains KnownILLinkPack: https://github.com/dotnet/installer/pull/15106
-            {
-                itemGroup.Add(new XElement(ns + "KnownILLinkPack",
-                    new XAttribute("Include", "Microsoft.NET.ILLink.Tasks"),
-                    new XAttribute("TargetFramework", "net8.0"),
-                    new XAttribute("ILLinkPackVersion", microsoftNETILLinkTasksPackageVersion)));
-
-                // Use 7.0 linker when targeting supported RIDS <= net7.0.
-                var net70Version = "7.0.100-1.22579.2";
-
-                foreach (var tfm in new[] { "net7.0", "net6.0", "net5.0", "netcoreapp3.1", "netcoreapp3.0" }) {
-                    itemGroup.Add(new XElement(ns + "KnownILLinkPack",
-                        new XAttribute("Include", "Microsoft.NET.ILLink.Tasks"),
-                        new XAttribute("TargetFramework", tfm),
-                        new XAttribute("ILLinkPackVersion", net70Version)));
-                }
-            }
 
             return projectXml.ToString();
         }
