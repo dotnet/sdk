@@ -48,7 +48,7 @@
   <String Id="FilesInUseDontCloseRadioButton">&amp;No cerrar las aplicaciones. Será necesario un reinicio.</String>
   <String Id="FilesInUseOkButton">&amp;Aceptar</String>
   <String Id="FilesInUseCancelButton">&amp;Cancelar</String>
-  <String Id="FirstTimeWelcomeMessage">La instalación se ha realizado correctamente.
+  <String  _locComment="{Locked='.NET SDK'}{Locked='.NET Runtime'}{Locked='ASP.NET Core Runtime'}{Locked='.NET Windows Desktop Runtime'}" Id="FirstTimeWelcomeMessage">La instalación se ha realizado correctamente.
 
 Se han instalado los siguientes productos:
     • .NET SDK [DOTNETSDKVERSION]
@@ -64,8 +64,8 @@ Recursos
     • Documentación del SDK https://aka.ms/dotnet-sdk-docs
     • Notas de la versión https://aka.ms/dotnet[VERSIONMAJOR]-release-notes
     • Tutoriales https://aka.ms/dotnet-tutorials</String>
-  <String Id="WelcomeHeaderMessage">SDK de .NET</String>
-  <String Id="WelcomeDescription">
+  <String _locComment="{Locked='.NET SDK'}" Id="WelcomeHeaderMessage">SDK de .NET</String>
+  <String _locComment="{Locked='.NET SDK'}" Id="WelcomeDescription">
     El SDK de .NET se utiliza para crear, ejecutar y probar aplicaciones .NET. Puede elegir entre varios lenguajes, editores y herramientas de desarrollo, y aprovechar un amplio ecosistema de bibliotecas para crear aplicaciones para web, móvil, escritorio, juegos e IoT. Esperamos que lo disfrutes.</String>
   <String Id="LearnMoreTitle">Más información sobre .NET</String>
   <String Id="ResourcesHeader">Recursos</String>
@@ -77,7 +77,7 @@ Recursos
   <String Id="InstallationNoteTitle">Nota de instalación</String>
   <String Id="InstallationNote">Se ejecutará un comando durante el proceso de instalación que mejorará la velocidad de restauración del proyecto y permitirá el acceso sin conexión. La operación tardará hasta un minuto en completarse.
   </String>
-  <String Id="VisualStudioWarning">Si tiene previsto utilizar .NET [VERSIONMAJOR].[VERSIONMINOR] con Visual Studio, necesitará Visual Studio 2022 [MINIMUMVSVERSION] o una versión más reciente. &lt;A HREF="https://aka.ms/dotnet[VERSIONMAJOR]-release-notes"&gt;Learn more&lt;/A&gt;.
+  <String _locComment="{Locked='Visual Studio'}" Id="VisualStudioWarning">Si tiene previsto utilizar .NET [VERSIONMAJOR].[VERSIONMINOR] con Visual Studio, necesitará Visual Studio 2022 [MINIMUMVSVERSION] o una versión más reciente. &lt;A HREF="https://aka.ms/dotnet[VERSIONMAJOR]-release-notes"&gt;Learn more&lt;/A&gt;.
   </String>
   <String Id="LicenseAssent">Al hacer clic en Instalar, acepta los siguientes términos:</String>
   <String Id="InstallPathx64x86">La ruta de instalación para las instalaciones del SDK x64: "[DOTNETHOME_X64]" no puede ser la misma que para las instalaciones del SDK x86: "[DOTNETHOME_X86]"</String>
