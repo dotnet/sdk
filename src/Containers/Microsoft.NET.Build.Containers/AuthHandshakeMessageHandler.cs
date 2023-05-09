@@ -31,7 +31,7 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
     /// <param name="msg"></param>
     /// <param name="authInfo"></param>
     /// <returns></returns>
-    private static bool TryParseAuthenticationInfo(HttpResponseMessage msg, [NotNullWhen(true)] out string? scheme, [NotNullWhen(true)] out AuthInfo? authInfo)
+    private static bool TryParseAuthenticationInfo(HttpResponseMessage msg, RegistryName registry, [NotNullWhen(true)] out string? scheme, [NotNullWhen(true)] out AuthInfo? authInfo)
     {
         authInfo = null;
         scheme = null;
@@ -51,7 +51,7 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
             var result = scheme switch
             {
                 "Bearer" => TryParseBearerAuthInfo(keyValues, out authInfo),
-                "Basic" => TryParseBasicAuthInfo(keyValues, msg.RequestMessage!.RequestUri!, out authInfo),
+                "Basic" => TryParseBasicAuthInfo(keyValues, msg.RequestMessage!.RequestUri!, registry, out authInfo),
                 _ => false
             };
             return result;
@@ -72,12 +72,12 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
             }
         }
 
-        static bool TryParseBasicAuthInfo(Dictionary<string, string> authValues, Uri requestUri, [NotNullWhen(true)] out AuthInfo? authInfo) {
+        static bool TryParseBasicAuthInfo(Dictionary<string, string> authValues, Uri requestUri, RegistryName registry, [NotNullWhen(true)] out AuthInfo? authInfo) {
             if (authValues.TryGetValue("realm", out string? realm))
             {
                 if (string.IsNullOrWhiteSpace(realm) || !Uri.IsWellFormedUriString(realm, UriKind.Absolute))
                 {
-                    realm = $"{requestUri.Scheme}://{requestUri.Host}";
+                    realm = $"{requestUri.Scheme}://{registry}";
                 }
                 string? scope = null;
                 authInfo = new AuthInfo(new Uri(realm), string.Empty, scope);
@@ -100,7 +100,12 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
         }
     }
 
-    public AuthHandshakeMessageHandler(HttpMessageHandler innerHandler) : base(innerHandler) { }
+    private RegistryName RegistryName { get; }
+
+    public AuthHandshakeMessageHandler(RegistryName registry, HttpMessageHandler innerHandler) : base(innerHandler)
+    {
+        RegistryName = registry;
+    }
 
     /// <summary>
     /// Response to a request to get a token using some auth.
@@ -123,7 +128,7 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
     /// <param name="scope"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    private async Task<AuthenticationHeaderValue?> GetAuthenticationAsync(string registry, string scheme, Uri realm, string? service, string? scope, CancellationToken cancellationToken)
+    private async Task<AuthenticationHeaderValue?> GetAuthenticationAsync(RegistryName registry, string scheme, Uri realm, string? service, string? scope, CancellationToken cancellationToken)
     {
         // Allow overrides for auth via environment variables
         string? credU = Environment.GetEnvironmentVariable(ContainerHelpers.HostObjectUser);
@@ -140,11 +145,11 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
         {
             try
             {
-                privateRepoCreds = await CredsProvider.GetCredentialsAsync(registry).ConfigureAwait(false);
+                privateRepoCreds = await CredsProvider.GetCredentialsAsync(registry.ToString()).ConfigureAwait(false);
             }
             catch (Exception e)
             {
-                throw new CredentialRetrievalException(registry, e);
+                throw new CredentialRetrievalException(registry.ToString(), e);
             }
         }
 
@@ -216,9 +221,9 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
                 {
                     return response;
                 }
-                else if (response is { StatusCode: HttpStatusCode.Unauthorized } && TryParseAuthenticationInfo(response, out string? scheme, out AuthInfo? authInfo))
+                else if (response is { StatusCode: HttpStatusCode.Unauthorized } && TryParseAuthenticationInfo(response, RegistryName, out string? scheme, out AuthInfo? authInfo))
                 {
-                    if (await GetAuthenticationAsync(request.RequestUri.Host, scheme, authInfo.Realm, authInfo.Service, authInfo.Scope, cancellationToken).ConfigureAwait(false) is AuthenticationHeaderValue authentication)
+                    if (await GetAuthenticationAsync(RegistryName, scheme, authInfo.Realm, authInfo.Service, authInfo.Scope, cancellationToken).ConfigureAwait(false) is AuthenticationHeaderValue authentication)
                     {
                         request.Headers.Authorization = AuthHeaderCache.AddOrUpdate(request.RequestUri, authentication);
                         return await base.SendAsync(request, cancellationToken).ConfigureAwait(false);

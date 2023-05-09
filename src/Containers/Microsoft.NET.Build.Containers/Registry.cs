@@ -14,6 +14,10 @@ using System.Text.Json.Nodes;
 
 namespace Microsoft.NET.Build.Containers;
 
+internal record RegistryName(string Domain, int? Port){
+    public override string ToString() => Port.HasValue ? $"{Domain}:{Port}" : Domain;
+}
+
 internal sealed class Registry
 {
     private const string DockerManifestV2 = "application/vnd.docker.distribution.manifest.v2+json";
@@ -51,7 +55,7 @@ internal sealed class Registry
     /// This is used in user-facing error messages, and it should match what the user would manually enter as
     /// part of Docker commands like `docker login`.
     /// </summary>
-    public string RegistryName { get; init; }
+    public RegistryName RegistryName { get; init; }
 
     public Registry(Uri baseUri)
     {
@@ -60,18 +64,18 @@ internal sealed class Registry
         _client = CreateClient();
     }
 
-    private static string DeriveRegistryName(Uri baseUri)
+    private static RegistryName DeriveRegistryName(Uri baseUri)
     {
         var port = baseUri.Port == -1 ? string.Empty : $":{baseUri.Port}";
         if (baseUri.OriginalString.EndsWith(port, ignoreCase: true, culture: null))
         {
             // the port was part of the original assignment, so it's ok to consider it part of the 'name
-            return baseUri.GetComponents(UriComponents.HostAndPort, UriFormat.Unescaped);
+            return new(baseUri.Host, baseUri.Port);
         }
         else
         {
             // the port was not part of the original assignment, so it's not part of the 'name'
-            return baseUri.GetComponents(UriComponents.Host, UriFormat.Unescaped);
+            return new(baseUri.Host, null);
         }
     }
 
@@ -93,15 +97,15 @@ internal sealed class Registry
         get
         {
             // If this the registry is to public ECR the name will contain "public.ecr.aws".
-            if (RegistryName.Contains("public.ecr.aws"))
+            if (RegistryName.Domain.Contains("public.ecr.aws"))
             {
                 return true;
             }
 
-            // If the registry is to a private ECR the registry will start with an account id which is a 12 digit number and will container either
+            // If the registry is to a private ECR the registry will start with an account id which is a 12 digit number and will containe either
             // ".ecr." or ".ecr-" if pushed to a FIPS endpoint.
-            var accountId = RegistryName.Split('.')[0];
-            if ((RegistryName.Contains(".ecr.") || RegistryName.Contains(".ecr-")) && accountId.Length == 12 && long.TryParse(accountId, out _))
+            var accountId = RegistryName.Domain.Split('.', 2)[0];
+            if ((RegistryName.Domain.Contains(".ecr.") || RegistryName.Domain.Contains(".ecr-")) && accountId.Length == 12 && long.TryParse(accountId, out _))
             {
                 return true;
             }
@@ -113,12 +117,12 @@ internal sealed class Registry
     /// <summary>
     /// Check to see if the registry is GitHub Packages, which always uses ghcr.io.
     /// </summary>
-    public bool IsGithubPackageRegistry => RegistryName.StartsWith("ghcr.io", StringComparison.Ordinal);
+    public bool IsGithubPackageRegistry => RegistryName.Domain.StartsWith("ghcr.io", StringComparison.Ordinal);
 
     /// <summary>
     /// Check to see if the registry is Docker Hub, which uses two well-known domains.
     /// </summary>
-    public bool IsDockerHub => RegistryName.Equals("registry-1.docker.io", StringComparison.Ordinal) || RegistryName.Equals("registry.hub.docker.com", StringComparison.Ordinal);
+    public bool IsDockerHub => RegistryName.Domain.Equals("registry-1.docker.io", StringComparison.Ordinal) || RegistryName.Domain.Equals("registry.hub.docker.com", StringComparison.Ordinal);
 
     /// <summary>
     /// Check to see if the registry is for Google Artifact Registry.
@@ -127,7 +131,7 @@ internal sealed class Registry
     /// Google Artifact Registry locations (one for each availability zone) are of the form "ZONE-docker.pkg.dev".
     /// </remarks>
     public bool IsGoogleArtifactRegistry {
-        get => RegistryName.EndsWith("-docker.pkg.dev", StringComparison.Ordinal);
+        get => RegistryName.Domain.EndsWith("-docker.pkg.dev", StringComparison.Ordinal);
     }
 
     /// <summary>
@@ -525,7 +529,7 @@ internal sealed class Registry
 
     private HttpClient CreateClient()
     {
-        HttpMessageHandler clientHandler = new AuthHandshakeMessageHandler(new SocketsHttpHandler() { PooledConnectionLifetime = TimeSpan.FromMilliseconds(10 /* total guess */) });
+        HttpMessageHandler clientHandler = new AuthHandshakeMessageHandler(RegistryName, new SocketsHttpHandler() { PooledConnectionLifetime = TimeSpan.FromMilliseconds(10 /* total guess */) });
 
         if(IsAmazonECRRegistry)
         {
