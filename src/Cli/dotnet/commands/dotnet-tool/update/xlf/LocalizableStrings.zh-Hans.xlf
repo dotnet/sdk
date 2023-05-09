@@ -42,14 +42,14 @@
         <target state="translated">工具“{0}”是最新的(版本“{1}”清单文件 {2})。</target>
         <note />
       </trans-unit>
-      <trans-unit id="UpdateLocaToolToLowerVersion">
-        <source>The requested version {0} is lower than existing version {1} (manifest file {2}).</source>
-        <target state="translated">请求的版本 {0} 低于现有版本 {1} (清单文件{2})。</target>
-        <note />
-      </trans-unit>
       <trans-unit id="UpdateLocalToolSucceeded">
         <source>Tool '{0}' was successfully updated from version '{1}' to version '{2}' (manifest file {3}).</source>
         <target state="translated">工具“{0}”已成功从版本“{1}”更新到版本“{2}”(清单文件 {3})。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UpdateLocalToolToLowerVersion">
+        <source>The requested version {0} is lower than existing version {1} (manifest file {2}).</source>
+        <target state="new">The requested version {0} is lower than existing version {1} (manifest file {2}).</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateSucceededPreVersionNoChange">

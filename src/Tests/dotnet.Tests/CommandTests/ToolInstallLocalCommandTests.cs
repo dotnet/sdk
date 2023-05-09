@@ -344,12 +344,36 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         public void GivenFeedVersionIsLowerRunPackageIdItShouldThrow()
         {
             GetDefaultTestToolInstallLocalCommand().Execute().Should().Be(0);
-            _mockFeed.Packages.Single().Version = "0.9.0";
+
+            _mockFeed.Packages.Add(new MockFeedPackage
+            {
+                PackageId = _packageIdA.ToString(),
+                Version = "0.9.0",
+                ToolCommandName = _toolCommandNameA.ToString()
+            });
+
+            _mockFeed.Packages.Add(new MockFeedPackage
+            {
+                PackageId = _packageIdA.ToString(),
+                Version = "1.0.4",
+                ToolCommandName = _toolCommandNameA.ToString()
+            });
+
+            ParseResult result = Parser.Instance.Parse(
+               $"dotnet tool install {_packageIdA.ToString()} --version 0.9.0");
+
+            var installLocalCommand = new ToolInstallLocalCommand(
+                result,
+                _toolPackageInstallerMock,
+                _toolManifestFinder,
+                _toolManifestEditor,
+                _localToolsResolverCache,
+                _reporter);
 
             _reporter.Clear();
-            Action a = () => GetDefaultTestToolInstallLocalCommand().Execute();
+            Action a = () => installLocalCommand.Execute();
             a.Should().Throw<GracefulException>().And.Message.Should().Contain(string.Format(
-                Tools.Tool.Update.LocalizableStrings.UpdateLocaToolSucceededVersionNoChange,
+                Tools.Tool.Update.LocalizableStrings.UpdateLocalToolToLowerVersion,
                 "0.9.0",
                 _packageVersionA.ToNormalizedString(),
                 _manifestFilePath));
@@ -364,6 +388,13 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             {
                 PackageId = _packageIdA.ToString(),
                 Version = "0.9.0",
+                ToolCommandName = _toolCommandNameA.ToString()
+            });
+
+            _mockFeed.Packages.Add(new MockFeedPackage
+            {
+                PackageId = _packageIdA.ToString(),
+                Version = "1.0.4",
                 ToolCommandName = _toolCommandNameA.ToString()
             });
 

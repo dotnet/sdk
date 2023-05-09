@@ -80,7 +80,7 @@ namespace Microsoft.DotNet.Tools.Tool.Update
             {
                 _reporter.WriteLine(warningMessage.Yellow());
             }
-
+            
             var manifestFile = manifestFileOptional ?? _toolManifestFinder.FindFirst();
             var existingPackageWithPackageId = _toolManifestFinder.Find(manifestFile).Where(p => p.PackageId.Equals(_packageId));
 
@@ -93,12 +93,13 @@ namespace Microsoft.DotNet.Tools.Tool.Update
             var toolDownloadedPackage = _toolLocalPackageInstaller.Install(manifestFile);
 
             _toolInstallLocalCommand.Value.InstallToolUpdate(existingPackage, toolDownloadedPackage, manifestFile);
-
+            
             _localToolsResolverCache.SaveToolPackage(
                 toolDownloadedPackage,
                 _toolLocalPackageInstaller.TargetFrameworkToInstall);
 
             return 0;
         }
+        
     }
 }

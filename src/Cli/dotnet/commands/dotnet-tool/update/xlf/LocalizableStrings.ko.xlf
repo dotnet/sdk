@@ -42,14 +42,14 @@
         <target state="translated">'{0}' 도구는 최신 버전(버전 '{1}' 매니페스트 파일 {2})입니다.</target>
         <note />
       </trans-unit>
-      <trans-unit id="UpdateLocaToolToLowerVersion">
-        <source>The requested version {0} is lower than existing version {1} (manifest file {2}).</source>
-        <target state="translated">요청된 버전 {0}이(가) 기존 버전 {1}(매니페스트 파일 {2})보다 낮습니다.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="UpdateLocalToolSucceeded">
         <source>Tool '{0}' was successfully updated from version '{1}' to version '{2}' (manifest file {3}).</source>
         <target state="translated">'{0}' 도구가 '{1}' 버전에서 '{2}' 버전(매니페스트 파일 {3})으로 업데이트되었습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UpdateLocalToolToLowerVersion">
+        <source>The requested version {0} is lower than existing version {1} (manifest file {2}).</source>
+        <target state="new">The requested version {0} is lower than existing version {1} (manifest file {2}).</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateSucceededPreVersionNoChange">

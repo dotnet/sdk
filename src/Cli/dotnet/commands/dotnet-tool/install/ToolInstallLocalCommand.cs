@@ -54,15 +54,6 @@ namespace Microsoft.DotNet.Tools.Tool.Install
 
         public override int Execute()
         {
-            //from update
-            (FilePath? manifestFileOptional, string warningMessage) =
-                _toolManifestFinder.ExplicitManifestOrFindManifestContainPackageId(_explicitManifestFile, _packageId);
-
-            if (warningMessage != null)
-            {
-                _reporter.WriteLine(warningMessage.Yellow());
-            }
-
             FilePath manifestFile = GetManifestFilePath();
             var existingPackageWithPackageId = _toolManifestFinder.Find(manifestFile).Where(p => p.PackageId.Equals(_packageId));
 
@@ -76,11 +67,6 @@ namespace Microsoft.DotNet.Tools.Tool.Install
 
             InstallToolUpdate(existingPackage, toolDownloadedPackage, manifestFile);
 
-            //from tool update
-            _localToolsResolverCache.SaveToolPackage(
-               toolDownloadedPackage,
-               _toolLocalPackageInstaller.TargetFrameworkToInstall);
-
             return 0;
         }
 
@@ -91,7 +77,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                 throw new GracefulException(new[]
                     {
                         string.Format(
-                            Update.LocalizableStrings.UpdateToLowerVersion,
+                            Update.LocalizableStrings.UpdateLocalToolToLowerVersion,
                             toolDownloadedPackage.Version.ToNormalizedString(),
                             existingPackage.Version.ToNormalizedString(),
                             manifestFile.Value)
