@@ -23,7 +23,7 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
 {
     private const int MaxRequestRetries = 5; // Arbitrary but seems to work ok for chunked uploads to ghcr.io
 
-    private sealed record AuthInfo(Uri Realm, string Service, string? Scope);
+    private sealed record AuthInfo(Uri Realm, string? Service, string? Scope);
 
     /// <summary>
     /// the www-authenticate header must have realm, service, and scope information, so this method parses it into that shape if present
@@ -46,22 +46,58 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
         if (header is { Scheme: "Bearer" or "Basic", Parameter: string bearerArgs })
         {
             scheme = header.Scheme;
-            Dictionary<string, string> keyValues = new();
-            foreach (Match match in BearerParameterSplitter().Matches(bearerArgs))
-            {
-                keyValues.Add(match.Groups["key"].Value, match.Groups["value"].Value);
-            }
+            var keyValues = ParseBearerArgs(bearerArgs);
 
-            if (keyValues.TryGetValue("realm", out string? realm) && keyValues.TryGetValue("service", out string? service))
+            var result = scheme switch
+            {
+                "Bearer" => TryParseBearerAuthInfo(keyValues, out authInfo),
+                "Basic" => TryParseBasicAuthInfo(keyValues, msg.RequestMessage!.RequestUri!, out authInfo),
+                _ => false
+            };
+            return result;
+        }
+        return false;
+
+        static bool TryParseBearerAuthInfo(Dictionary<string, string> authValues, [NotNullWhen(true)] out AuthInfo? authInfo) {
+            if (authValues.TryGetValue("realm", out string? realm) && authValues.TryGetValue("service", out string? service))
             {
                 string? scope = null;
-                keyValues.TryGetValue("scope", out scope);
+                authValues.TryGetValue("scope", out scope);
                 authInfo = new AuthInfo(new Uri(realm), service, scope);
                 return true;
             }
+            else {
+                authInfo = null;
+                return false;
+            }
         }
 
-        return false;
+        static bool TryParseBasicAuthInfo(Dictionary<string, string> authValues, Uri requestUri, [NotNullWhen(true)] out AuthInfo? authInfo) {
+            if (authValues.TryGetValue("realm", out string? realm))
+            {
+                if (string.IsNullOrWhiteSpace(realm) || !Uri.IsWellFormedUriString(realm, UriKind.Absolute))
+                {
+                    realm = $"{requestUri.Scheme}://{requestUri.Host}";
+                }
+                string? scope = null;
+                authInfo = new AuthInfo(new Uri(realm), string.Empty, scope);
+                return true;
+            }
+            else {
+                authInfo = null;
+                return false;
+            }
+        }
+
+        static Dictionary<string, string> ParseBearerArgs(string bearerHeaderArgs)
+        {
+            Dictionary<string, string> keyValues = new();
+            foreach (Match match in BearerParameterSplitter().Matches(bearerHeaderArgs))
+            {
+                keyValues.Add(match.Groups["key"].Value, match.Groups["value"].Value);
+            }
+            return keyValues;
+        }
     }
 
     public AuthHandshakeMessageHandler(HttpMessageHandler innerHandler) : base(innerHandler) { }
@@ -87,7 +123,7 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
     /// <param name="scope"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    private async Task<AuthenticationHeaderValue?> GetAuthenticationAsync(string registry, string scheme, Uri realm, string service, string? scope, CancellationToken cancellationToken)
+    private async Task<AuthenticationHeaderValue?> GetAuthenticationAsync(string registry, string scheme, Uri realm, string? service, string? scope, CancellationToken cancellationToken)
     {
         // Allow overrides for auth via environment variables
         string? credU = Environment.GetEnvironmentVariable(ContainerHelpers.HostObjectUser);
@@ -111,7 +147,7 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
                 throw new CredentialRetrievalException(registry, e);
             }
         }
-        
+
         if (scheme is "Basic")
         {
             var basicAuth = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(Encoding.ASCII.GetBytes($"{privateRepoCreds.Username}:{privateRepoCreds.Password}")));
@@ -125,7 +161,10 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
                             : new AuthenticationHeaderValue("Basic", Convert.ToBase64String(Encoding.ASCII.GetBytes($"{privateRepoCreds.Username}:{privateRepoCreds.Password}")));
             var builder = new UriBuilder(realm);
             var queryDict = System.Web.HttpUtility.ParseQueryString("");
-            queryDict["service"] = service;
+            if (service is string svc)
+            {
+                queryDict["service"] = svc;
+            }
             if (scope is string s)
             {
                 queryDict["scope"] = s;
