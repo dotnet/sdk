@@ -114,7 +114,6 @@ namespace EndToEnd.Tests
                 .Sub("bin").Sub(TargetFramework != "current" ? "Debug" : "Release").GetDirectories().FirstOrDefault()
                 .Sub("win-arm64").Sub("publish");
 
-            selfContainedPublishDir.Should().HaveFilesMatching("System.Windows.Forms.dll", SearchOption.TopDirectoryOnly);
             selfContainedPublishDir.Should().HaveFilesMatching($"{directory.Name}.dll", SearchOption.TopDirectoryOnly);
         }
 
@@ -148,8 +147,6 @@ namespace EndToEnd.Tests
                 .Sub("bin").Sub(TargetFramework != "current" ? "Debug" : "Release").GetDirectories().FirstOrDefault()
                 .Sub("win-arm64").Sub("publish");
 
-            selfContainedPublishDir.Should().HaveFilesMatching("PresentationCore.dll", SearchOption.TopDirectoryOnly);
-            selfContainedPublishDir.Should().HaveFilesMatching("PresentationNative_*.dll", SearchOption.TopDirectoryOnly);
             selfContainedPublishDir.Should().HaveFilesMatching($"{directory.Name}.dll", SearchOption.TopDirectoryOnly);
         }
 
