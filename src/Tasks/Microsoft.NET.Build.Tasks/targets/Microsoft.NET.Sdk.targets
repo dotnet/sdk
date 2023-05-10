@@ -27,23 +27,20 @@ Copyright (c) .NET Foundation. All rights reserved.
   <UsingTask TaskName="GenerateDepsFile" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
   <UsingTask TaskName="GenerateRuntimeConfigurationFiles" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
   <UsingTask TaskName="GetAssemblyVersion" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
-  <UsingTask TaskName="GenerateSatelliteAssemblies" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
+  <UsingTask TaskName="GenerateSatelliteAssemblies" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />  
 
-  <!--
-    This looks awkward. It has to be an ItemGroup to work around the fact that PropertyGroups are evaluated before ItemGroups, so
-    a condition relying on an item like PackageReference must not be on a PropertyGroup.
-  -->
-  <ItemGroup Condition="'@(PackageReference->AnyHaveMetadataValue('Identity', 'Microsoft.Net.Compilers.Toolset.Framework'))' == 'true'">
-    <_UserDirectlyReferencedMicrosoftNetCompilersToolsetFrameworkPackage Include="error" />
-  </ItemGroup>
+  <Target Name="_AddMicrosoftNetCompilerToolsetFrameworkPackage" BeforeTargets="CollectPackageReferences">
 
-  <ItemGroup Condition="'$(BuildWithNetFrameworkHostedCompiler)' == 'true' and '$(OS)' == 'Windows_NT'">
-    <PackageReference Include="Microsoft.Net.Compilers.Toolset.Framework" PrivateAssets="all" Version="$(_NetFrameworkHostedCompilersVersion)"/>
-  </ItemGroup>
+    <!-- Users should not be setting Microsoft.Net.Compilers.Toolset.Framework directly.
+         If they do, and they also set BuildWithNetFrameworkHostedCompiler, we will have
+         a duplicate PackageReference. This makes it more explicit that that is not supported. -->
+    <NETSdkWarning ResourceName="CannotDirectlyReferenceMicrosoftNetCompilersToolsetFramework"
+        Condition="'@(PackageReference->AnyHaveMetadataValue('Identity', 'Microsoft.Net.Compilers.Toolset.Framework'))' == 'true'" /> 
 
-  <!-- Users should not be setting Microsoft.Net.Compilers.Toolset.Framework directly. If they do, and they also set BuildWithNetFrameworkHostedCompiler, we will have a duplicate PackageReference. This makes it more explicit that that is not supported. -->
-  <Target Name="WarnForDuplicateFrameworkHostedCompiler" BeforeTargets="Restore" Condition="@(_UserDirectlyReferencedMicrosoftNetCompilersToolsetFrameworkPackage->Count()) != 0">
-    <NETSdkWarning ResourceName="CannotDirectlyReferenceMicrosoftNetCompilersToolsetFramework" /> 
+    <ItemGroup Condition="'$(BuildWithNetFrameworkHostedCompiler)' == 'true' and '$(OS)' == 'Windows_NT'">
+      <PackageReference Include="Microsoft.Net.Compilers.Toolset.Framework" PrivateAssets="all" Version="$(_NetFrameworkHostedCompilersVersion)" IsImplicitlyDefined="true" />
+    </ItemGroup>
+
   </Target>
 
   <PropertyGroup>
