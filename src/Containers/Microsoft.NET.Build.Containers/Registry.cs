@@ -61,6 +61,9 @@ internal sealed class Registry
     {
         BaseUri = baseUri;
         RegistryName = DeriveRegistryName(baseUri);
+        SupportsChunkedUpload = (!IsGoogleArtifactRegistry || IsAmazonECRRegistry || IsGithubPackageRegistry || IsDockerHub) && s_chunkedUploadEnabled;
+        SupportsParallelUploads = !IsAmazonECRRegistry && s_parallelUploadEnabled;
+        MaxChunkSizeBytes = s_chunkedUploadSizeBytes.HasValue ? s_chunkedUploadSizeBytes.Value : (IsAmazonECRRegistry ? 5248080 : s_defaultChunkSizeBytes);
         _client = CreateClient();
     }
 
@@ -87,7 +90,7 @@ internal sealed class Registry
     /// <remarks>
     /// This varies by registry target, for example Amazon Elastic Container Registry requires 5MB chunks for all but the last chunk.
     /// </remarks>
-    public int MaxChunkSizeBytes => s_chunkedUploadSizeBytes.HasValue ? s_chunkedUploadSizeBytes.Value : (IsAmazonECRRegistry ? 5248080 : s_defaultChunkSizeBytes);
+    internal int MaxChunkSizeBytes { get; set; }
 
     /// <summary>
     /// Check to see if the registry is for Amazon Elastic Container Registry (ECR).
@@ -137,13 +140,13 @@ internal sealed class Registry
     /// <summary>
     /// Google Artifact Registry doesn't support chunked upload, but Amazon ECR, GitHub Packages, and DockerHub do. We want the capability check to be agnostic to the target.
     /// </summary>
-    private bool SupportsChunkedUpload => (!IsGoogleArtifactRegistry || IsAmazonECRRegistry || IsGithubPackageRegistry || IsDockerHub) && s_chunkedUploadEnabled;
+    internal bool SupportsChunkedUpload { get; set; }
 
     /// <summary>
     /// Pushing to ECR uses a much larger chunk size. To avoid getting too many socket disconnects trying to do too many
     /// parallel uploads be more conservative and upload one layer at a time.
     /// </summary>
-    private bool SupportsParallelUploads => !IsAmazonECRRegistry && s_parallelUploadEnabled;
+    internal bool SupportsParallelUploads { get; set; }
 
     public async Task<ImageBuilder> GetImageManifestAsync(string repositoryName, string reference, string runtimeIdentifier, string runtimeIdentifierGraphPath, CancellationToken cancellationToken)
     {
