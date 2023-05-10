@@ -386,6 +386,82 @@ public class EndToEndTests
         privateNuGetAssets.Delete(true);
     }
 
+    [DockerDaemonAvailableFact]
+    public void EndToEnd_NoAPI_Console_UsingPublishSDK()
+    {
+        DirectoryInfo newProjectDir = new DirectoryInfo(Path.Combine(TestSettings.TestArtifactsDirectory, nameof(EndToEnd_NoAPI_Console_UsingPublishSDK)));
+        DirectoryInfo privateNuGetAssets = new DirectoryInfo(Path.Combine(TestSettings.TestArtifactsDirectory, "ContainerNuGet", nameof(EndToEnd_NoAPI_Console_UsingPublishSDK)));
+
+        if (newProjectDir.Exists)
+        {
+            newProjectDir.Delete(recursive: true);
+        }
+
+        if (privateNuGetAssets.Exists)
+        {
+            privateNuGetAssets.Delete(recursive: true);
+        }
+
+        newProjectDir.Create();
+        privateNuGetAssets.Create();
+
+        new DotnetCommand(_testOutput, "new", "console", "-f", ToolsetInfo.CurrentTargetFramework)
+            .WithWorkingDirectory(newProjectDir.FullName)
+            // do not pollute the primary/global NuGet package store with the private package(s)
+            .WithEnvironmentVariable("NUGET_PACKAGES", privateNuGetAssets.FullName)
+            .Execute()
+            .Should().Pass();
+
+        //add Publish SDK
+        string projectPath = Path.Combine(newProjectDir.FullName, newProjectDir.Name + ".csproj");
+
+        XDocument project = XDocument.Load(projectPath);
+        XNamespace? ns = project.Root?.Name.Namespace;
+
+        Assert.NotNull(project.Root?.Attribute("Sdk"));
+
+        project.Root.Attribute("Sdk")!.Value = project.Root.Attribute("Sdk")!.Value + ";Microsoft.NET.Sdk.Publish";
+        project.Save(projectPath);
+
+        string imageName = NewImageName();
+        string imageTag = "1.0";
+
+        // Build & publish the project
+        new DotnetCommand(
+            _testOutput,
+            "publish",
+            "/p:publishprofile=DefaultContainer",
+            "/p:runtimeidentifier=linux-x64",
+            "/bl",
+            $"/p:ContainerBaseImage={DockerRegistryManager.FullyQualifiedBaseImageDefault}",
+            $"/p:ContainerRegistry={DockerRegistryManager.LocalRegistry}",
+            $"/p:ContainerImageName={imageName}",
+            $"/p:Version={imageTag}")
+            .WithEnvironmentVariable("NUGET_PACKAGES", privateNuGetAssets.FullName)
+            .WithWorkingDirectory(newProjectDir.FullName)
+            .Execute()
+            .Should().Pass();
+
+        new RunExeCommand(_testOutput, "docker", "pull", $"{DockerRegistryManager.LocalRegistry}/{imageName}:{imageTag}")
+            .Execute()
+            .Should().Pass();
+
+        var containerName = "test-container-2";
+        CommandResult processResult = new RunExeCommand(
+            _testOutput,
+            "docker",
+            "run",
+            "--rm",
+            "--name",
+            containerName,
+            $"{DockerRegistryManager.LocalRegistry}/{imageName}:{imageTag}")
+        .Execute();
+        processResult.Should().Pass().And.HaveStdOut("Hello, World!");
+
+        newProjectDir.Delete(true);
+        privateNuGetAssets.Delete(true);
+    }
+
     [DockerSupportsArchInlineData("linux/arm/v7", "linux-arm", "/app")]
     [DockerSupportsArchInlineData("linux/arm64/v8", "linux-arm64", "/app")]
     [DockerSupportsArchInlineData("linux/386", "linux-x86", "/app", Skip="There's no apphost for linux-x86 so we can't execute self-contained, and there's no .NET runtime base image for linux-x86 so we can't execute framework-dependent.")]
