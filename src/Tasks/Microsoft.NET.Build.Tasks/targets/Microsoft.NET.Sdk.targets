@@ -43,7 +43,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <!-- Users should not be setting Microsoft.Net.Compilers.Toolset.Framework directly. If they do, and they also set BuildWithNetFrameworkHostedCompiler, we will have a duplicate PackageReference. This makes it more explicit that that is not supported. -->
   <Target Name="WarnForDuplicateFrameworkHostedCompiler" BeforeTargets="Restore" Condition="@(_UserDirectlyReferencedMicrosoftNetCompilersToolsetFrameworkPackage->Count()) != 0">
-    <NETSdkWarning ResouceName="CannotDirectlyReferenceMicrosoftNetCompilersToolsetFramework" /> 
+    <NETSdkWarning ResourceName="CannotDirectlyReferenceMicrosoftNetCompilersToolsetFramework" /> 
   </Target>
 
   <PropertyGroup>
