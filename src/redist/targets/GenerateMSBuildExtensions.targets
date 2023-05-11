@@ -45,7 +45,7 @@
                                   Exclude="$(NETStandardLibraryNETFrameworkNuPkgPath)\build\**\*.props;$(NETStandardLibraryNETFrameworkNuPkgPath)\build\**\*.targets"
                                   DeploymentSubpath="msbuildExtensions/Microsoft/Microsoft.NET.Build.Extensions/" />
 
-      <VSMSBuildExtensionsContent Include="$(DotNetDeploymentReleasesPkgPath)\lib\net452\**\*.*"
+      <VSMSBuildExtensionsContent Include="$(DotNetDeploymentReleasesPkgPath)\lib\netstandard2.0\**\*.*"
                                   DeploymentSubpath="MSBuildSdkResolver/" />
 
       <VSMSBuildExtensionsContent Include="$(SdkResolverLayoutPath)/**/*"
