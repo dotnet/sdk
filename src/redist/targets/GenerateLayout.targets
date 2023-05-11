@@ -559,7 +559,7 @@
     <ItemGroup>
       <AssembliesToResolve Include="$(RedistLayoutPath)\**\*.dll" Exclude="$(RedistLayoutPath)\**\native\**\*.dll" />
     </ItemGroup>
-    <ResolveAssemblyReference AssemblyFiles="@(AssembliesToResolve)" Silent="$(ResolveAssemblyReferencesSilent)" AssemblyInformationCacheOutputPath="$(RedistLayoutPath)sdk\$(Version)\SDKPrecomputedAssemblyReferences.cache" SearchPaths="{RawFileName}" />
+    <ResolveAssemblyReference AssemblyFiles="@(AssembliesToResolve)" Silent="$(ResolveAssemblyReferencesSilent)" AssemblyInformationCacheOutputPath="$(RedistLayoutPath)sdk\$(Version)\SDKPrecomputedAssemblyReferences.cache" SearchPaths="{RawFileName}" WarnOrErrorOnTargetArchitectureMismatch="$(ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch)" />
   </Target>
 
   <Target Name="GenerateLayout"
