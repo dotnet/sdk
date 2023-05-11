@@ -43,6 +43,7 @@ public class RegistryTests
     public async Task WriteToPrivateBasicRegistry()
     {
         var registryDir = new DirectoryInfo(Path.Combine(Environment.CurrentDirectory, "AuthenticatedRegistry"));
+        var registryAuthDir = new DirectoryInfo(Path.Combine(registryDir.FullName, "auth"));
         var registryCertsDir = new DirectoryInfo(Path.Combine(registryDir.FullName, "certs"));
         var registryName = "localhost:5555";
         try {
@@ -58,7 +59,19 @@ public class RegistryTests
             // exporting with --no-password also generates a matching key file
             new DotnetCommand(_testOutput, $"dev-certs", "https", "--export-path", registryCertFile, "--format", "PEM", "--no-password").Execute().Should().Pass();
             // start up an authenticated registry using that dev cert
-            new RunExeCommand(_testOutput, "docker", "compose", "up", "-d").WithWorkingDirectory(registryDir.FullName).Execute().Should().Pass();
+            new RunExeCommand(_testOutput,
+                "docker", "run", "--it", "-d",
+                "--name", "auth-registry",
+                "-p", "5555:5000",
+                "-e", "REGISTRY_AUTH=htpasswd",
+                "-e", "REGISTRY_AUTH_HTPASSWD_REALM=Registry Realm",
+                "-e", "REGISTRY_AUTH_HTPASSWD_PATH=/auth/htpasswd",
+                "-e", "REGISTRY_HTTP_TLS_CERTIFICATE=/certs/domain.crt",
+                "-e", "REGISTRY_HTTP_TLS_KEY=/certs/domain.key",
+                "-v", $"{registryCertsDir.FullName}:/certs",
+                "-v", $"{registryAuthDir.FullName}:/auth",
+                "registry:2")
+            .WithWorkingDirectory(registryDir.FullName).Execute().Should().Pass();
             // login to that registry
             new RunExeCommand(_testOutput, "docker", "login", registryName, "--username", "testuser", "--password", "testpassword").Execute().Should().Pass();
             // push an image to that registry using username/password
@@ -82,7 +95,7 @@ public class RegistryTests
         finally
         {
             //stop the registry
-            new RunExeCommand(_testOutput, "docker", "compose", "down").WithWorkingDirectory(registryDir.FullName).Execute().Should().Pass();
+            new RunExeCommand(_testOutput, "docker", "stop", "auth-registry").WithWorkingDirectory(registryDir.FullName).Execute().Should().Pass();
         }
     }
 }
