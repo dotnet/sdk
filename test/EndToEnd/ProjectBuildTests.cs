@@ -86,9 +86,11 @@ namespace EndToEnd.Tests
         }
 
         [WindowsOnlyTheory]
-        [InlineData("net5.0")]
-        [InlineData("current")]
-        public void ItCanPublishArm64Winforms(string TargetFramework)
+        [InlineData("net6.0", true)]
+        [InlineData("net6.0", false)]
+        [InlineData("current", true)]
+        [InlineData("current", false)]
+        public void ItCanPublishArm64Winforms(string TargetFramework, bool selfContained)
         {
             DirectoryInfo directory = TestAssets.CreateTestDirectory();
             string projectDirectory = directory.FullName;
@@ -104,7 +106,8 @@ namespace EndToEnd.Tests
                 .Execute(newArgs)
                 .Should().Pass();
 
-            string publishArgs = "-r win-arm64";
+            string selfContainedArgs = selfContained ? " --self-contained" : "";
+            string publishArgs = "-r win-arm64" + selfContainedArgs;
             new PublishCommand()
                 .WithWorkingDirectory(projectDirectory)
                 .Execute(publishArgs)
@@ -114,13 +117,19 @@ namespace EndToEnd.Tests
                 .Sub("bin").Sub(TargetFramework != "current" ? "Debug" : "Release").GetDirectories().FirstOrDefault()
                 .Sub("win-arm64").Sub("publish");
 
+            if (selfContained)
+            {
+                selfContainedPublishDir.Should().HaveFilesMatching("System.Windows.Forms.dll", SearchOption.TopDirectoryOnly);
+            }
             selfContainedPublishDir.Should().HaveFilesMatching($"{directory.Name}.dll", SearchOption.TopDirectoryOnly);
         }
 
         [WindowsOnlyTheory]
-        [InlineData("net5.0")]
-        [InlineData("current")]
-        public void ItCanPublishArm64Wpf(string TargetFramework)
+        [InlineData("net6.0", true)]
+        [InlineData("net6.0", false)]
+        [InlineData("current", true)]
+        [InlineData("current", false)]
+        public void ItCanPublishArm64Wpf(string TargetFramework, bool selfContained)
         {
             DirectoryInfo directory = TestAssets.CreateTestDirectory();
             string projectDirectory = directory.FullName;
@@ -137,7 +146,8 @@ namespace EndToEnd.Tests
                 .Execute(newArgs)
                 .Should().Pass();
 
-            string publishArgs = "-r win-arm64";
+            string selfContainedArgs = selfContained ? " --self-contained" : "";
+            string publishArgs = "-r win-arm64" + selfContainedArgs;
             new PublishCommand()
                 .WithWorkingDirectory(projectDirectory)
                 .Execute(publishArgs)
@@ -147,6 +157,11 @@ namespace EndToEnd.Tests
                 .Sub("bin").Sub(TargetFramework != "current" ? "Debug" : "Release").GetDirectories().FirstOrDefault()
                 .Sub("win-arm64").Sub("publish");
 
+            if (selfContained)
+            {
+                selfContainedPublishDir.Should().HaveFilesMatching("PresentationCore.dll", SearchOption.TopDirectoryOnly);
+                selfContainedPublishDir.Should().HaveFilesMatching("PresentationNative_*.dll", SearchOption.TopDirectoryOnly);
+            }
             selfContainedPublishDir.Should().HaveFilesMatching($"{directory.Name}.dll", SearchOption.TopDirectoryOnly);
         }
 
@@ -293,7 +308,7 @@ namespace EndToEnd.Tests
         [InlineData("wpf")]
         public void ItCanBuildDesktopTemplatesSelfContained(string templateName)
         {
-            TestTemplateCreateAndBuild(templateName);
+            TestTemplateCreateAndBuild(templateName, selfContained: true);
         }
 
         [Theory]
@@ -348,7 +363,7 @@ namespace EndToEnd.Tests
         public void ItCanCreateAndBuildTemplatesWithDefaultFramework(string templateName, string language = "")
         {
             string framework = DetectExpectedDefaultFramework(templateName);
-            TestTemplateCreateAndBuild(templateName, selfContained: true, language: language, framework: framework);
+            TestTemplateCreateAndBuild(templateName, selfContained: false, language: language, framework: framework);
         }
 
         /// <summary>
@@ -395,7 +410,7 @@ namespace EndToEnd.Tests
         public void ItCanCreateAndBuildTemplatesWithDefaultFramework_Windows(string templateName, string language = "")
         {
             string framework = DetectExpectedDefaultFramework(templateName);
-            TestTemplateCreateAndBuild(templateName, selfContained: true, language: language, framework: $"{framework}-windows");
+            TestTemplateCreateAndBuild(templateName, selfContained: false, language: language, framework: $"{framework}-windows");
         }
 
         /// <summary>
@@ -456,7 +471,7 @@ namespace EndToEnd.Tests
 
             if (build)
             {
-                string buildArgs = selfContained ? "" : $"-r {RuntimeInformation.RuntimeIdentifier}";
+                string buildArgs = selfContained ? $"-r {RuntimeInformation.RuntimeIdentifier} --self-contained" : "";
                 if (!string.IsNullOrWhiteSpace(framework))
                 {
                     buildArgs += $" --framework {framework}";
