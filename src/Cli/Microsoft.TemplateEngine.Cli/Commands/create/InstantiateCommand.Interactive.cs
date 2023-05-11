@@ -1,29 +1,18 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.CommandLine.Invocation;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Edge;
 using Microsoft.TemplateEngine.Edge.Settings;
+using Microsoft.TemplateEngine.Utils;
 
 namespace Microsoft.TemplateEngine.Cli.Commands
 {
-    // Class to hold messages for the questions in interactive mode while in development
-    // TODO: check and transfer messages to some place for translation
-    internal static class InteractiveModePrompts
+    internal partial class InstantiateCommand : IInteractiveMode
     {
-        public static string OpeningMessage(string programmingLanguage, string templateName, string acceptDefaultsKey)
-        {
-            return $"Creating a new {programmingLanguage.Green()} {templateName.Blue().Bold()} project. Press '{acceptDefaultsKey.Green()}' to skip defaults";
-        }
-    }
-
-    internal partial class InstantiateCommand
-    {
-        // Tree or List depending on future implementation choices
-        // I do not know how to use generic types T_T
-        private List<UserQuery<string>> parametersTree = new List<UserQuery<string>> { };
-        private List<string> parametersToNotAsk = new List<string>
+        private static List<string> parametersToNotAsk = new()
         {
             "TargetFrameworkOverride",
             "langVersion",
@@ -31,14 +20,43 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             "type"
         };
 
-        public void SetQuestions(
-        InstantiateCommandArgs knownArgs,
-        TemplateCommand template)
+        public Task<Questionnaire> GetQuestionsAsync(InvocationContext context, CancellationToken cancellationToken)
+        {
+            InstantiateCommandArgs instantiateCommandArgs = new(this, context.ParseResult);
+            using IEngineEnvironmentSettings environmentSettings = CreateEnvironmentSettings(instantiateCommandArgs, context.ParseResult);
+            return GetQuestionsInternalAsync(context, instantiateCommandArgs, environmentSettings);
+        }
+
+        internal static async Task<Questionnaire> GetQuestionsInternalAsync(InvocationContext context, InstantiateCommandArgs instantiateCommandArgs, IEngineEnvironmentSettings environmentSettings)
+        {
+            TemplatePackageManager templatePackageManager = new(environmentSettings);
+            HostSpecificDataLoader? hostSpecificDataLoader = new(environmentSettings);
+
+            IReadOnlyList<ITemplateInfo> templates = await templatePackageManager.GetTemplatesAsync(default).ConfigureAwait(false);
+
+            IEnumerable<TemplateGroup> templateGroups = TemplateGroup.FromTemplateList(CliTemplateInfo.FromTemplateInfo(templates, hostSpecificDataLoader));
+
+            TemplateCommand? templateCommand = GetTemplate(
+            instantiateCommandArgs,
+                environmentSettings,
+                templateGroups,
+                templatePackageManager);
+
+            if (templateCommand is null)
+            {
+                return Questionnaire.Empty;
+            }
+            return GetQuestions(instantiateCommandArgs, templateCommand);
+        }
+
+        private static Questionnaire GetQuestions(InstantiateCommandArgs knownArgs, TemplateCommand template)
         {
             // Assumption: no decisions tree for the prototype
-            var missingParams =
+            IEnumerable<KeyValuePair<string, CliTemplateParameter>> missingParams =
                 template.GetMissingArguments(knownArgs.RemainingArguments)
                     .Where(p => !parametersToNotAsk.Contains(p.Key));
+
+            List<UserQuery> parametersTree = new();
 
             foreach (var parameter in missingParams)
             {
@@ -74,23 +92,20 @@ namespace Microsoft.TemplateEngine.Cli.Commands
                 }
                 prompt += "? ";
                 var cliArgument = paramInfo.LongNameOverrides.Concat(paramInfo.ShortNameOverrides).Where(s => !string.IsNullOrEmpty(s)).FirstOrDefault() ?? paramInfo.Name;
-                parametersTree.Add(new UserQuery<string>(cliArgument, prompt));
+                parametersTree.Add(new UserQuery(cliArgument, prompt));
             }
-        }
-
-        public IEnumerator<UserQuery<string>> Questions()
-        {
-            foreach (var query in parametersTree)
+            return new Questionnaire()
             {
-                yield return query;
-            }
+                OpeningMessage = $"Creating a new {template.Template.GetLanguage().Green()} {template.Template.Name.Blue().Bold()} project. Press 'skip button' to skip defaults",
+                Questions = parametersTree
+            };
         }
 
-        internal static TemplateCommand? GetTemplate(
-        InstantiateCommandArgs args,
-        IEngineEnvironmentSettings environmentSettings,
-        IEnumerable<TemplateGroup> templateGroups,
-        TemplatePackageManager templatePackageManager)
+        private static TemplateCommand? GetTemplate(
+            InstantiateCommandArgs args,
+            IEngineEnvironmentSettings environmentSettings,
+            IEnumerable<TemplateGroup> templateGroups,
+            TemplatePackageManager templatePackageManager)
         {
             TemplateConstraintManager constraintManager = new(environmentSettings);
 
@@ -123,32 +138,5 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             return null;
         }
 
-    }
-
-    internal class UserQuery<T>
-    {
-        private string parameterName;
-        private string parameterMessage;
-
-        public UserQuery(string name, string message)
-        {
-            parameterName = name;
-            parameterMessage = message;
-        }
-
-        public string GetQuery()
-        {
-            return parameterMessage;
-        }
-
-        public Type GetValueType()
-        {
-            return typeof(T);
-        }
-
-        public string GetParameterName()
-        {
-            return parameterName;
-        }
     }
 }

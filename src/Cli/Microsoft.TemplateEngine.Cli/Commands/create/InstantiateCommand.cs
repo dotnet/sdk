@@ -32,6 +32,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             this.AddOption(SharedOptions.ForceOption);
             this.AddOption(SharedOptions.NoUpdateCheckOption);
             this.AddOption(SharedOptions.ProjectPathOption);
+            this.AddOption(InteractiveMode.InteractiveMode.InteractiveOption);
 
             parentCommand.AddNoLegacyUsageValidators(this);
             this.AddValidator(symbolResult => parentCommand.ValidateOptionUsage(symbolResult, SharedOptions.OutputOption));

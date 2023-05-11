@@ -9,7 +9,7 @@ using Microsoft.TemplateEngine.Edge.Settings;
 
 namespace Microsoft.TemplateEngine.Cli.Commands
 {
-    internal partial class NewCommand : BaseCommand<NewCommandArgs>, ICustomHelp
+    internal partial class NewCommand : BaseCommand<NewCommandArgs>, ICustomHelp, IInteractiveMode
     {
         internal NewCommand(
             string commandName,
@@ -35,7 +35,6 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             this.AddGlobalOption(DebugReinitOption);
             this.AddGlobalOption(DebugRebuildCacheOption);
             this.AddGlobalOption(DebugShowConfigOption);
-            this.AddGlobalOption(InteractiveTemplateOption);
 
             this.AddOption(SharedOptions.OutputOption);
             this.AddOption(SharedOptions.NameOption);
@@ -43,6 +42,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             this.AddOption(SharedOptions.ForceOption);
             this.AddOption(SharedOptions.NoUpdateCheckOption);
             this.AddOption(SharedOptions.ProjectPathOption);
+            this.AddOption(InteractiveMode.InteractiveMode.InteractiveOption);
         }
 
         internal static Option<string?> DebugCustomSettingsLocationOption { get; } = new("--debug:custom-hive")
@@ -81,13 +81,6 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             IsHidden = true
         };
 
-        internal static Option<bool> InteractiveTemplateOption { get; } = new("--interactiveTemplate")
-        {
-            // TODO: link the right description here
-            Description = SymbolStrings.Option_Interactive,
-            IsHidden = true
-        };
-
         internal static Argument<string> ShortNameArgument { get; } = new Argument<string>("template-short-name")
         {
             Description = SymbolStrings.Command_Instantiate_Argument_ShortName,
@@ -109,6 +102,13 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             SharedOptions.DryRunOption,
             SharedOptions.NoUpdateCheckOption
         };
+
+        public Task<Questionnaire> GetQuestionsAsync(InvocationContext context, CancellationToken cancellationToken)
+        {
+            InstantiateCommandArgs instantiateCommandArgs = InstantiateCommandArgs.FromNewCommandArgs(ParseContext(context.ParseResult));
+            using IEngineEnvironmentSettings environmentSettings = CreateEnvironmentSettings(instantiateCommandArgs, context.ParseResult);
+            return InstantiateCommand.GetQuestionsInternalAsync(context, instantiateCommandArgs, environmentSettings);
+        }
 
         protected internal override IEnumerable<CompletionItem> GetCompletions(CompletionContext context, IEngineEnvironmentSettings environmentSettings, TemplatePackageManager templatePackageManager)
         {
