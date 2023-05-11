@@ -42,7 +42,7 @@ public class RegistryTests
     [DockerDaemonAvailableFact]
     public async Task WriteToPrivateBasicRegistry()
     {
-        var registryDir = new DirectoryInfo(CurrentFile.Relative("AuthenticatedRegistry"));
+        var registryDir = new DirectoryInfo(Path.Combine(Environment.CurrentDirectory, "AuthenticatedRegistry"));
         var registryCertsDir = new DirectoryInfo(Path.Combine(registryDir.FullName, "certs"));
         var registryName = "localhost:5555";
         try {
