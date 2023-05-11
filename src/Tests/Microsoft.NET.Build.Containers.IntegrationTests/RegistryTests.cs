@@ -60,7 +60,7 @@ public class RegistryTests
             new DotnetCommand(_testOutput, $"dev-certs", "https", "--export-path", registryCertFile, "--format", "PEM", "--no-password").Execute().Should().Pass();
             // start up an authenticated registry using that dev cert
             new RunExeCommand(_testOutput,
-                "docker", "run", "--it", "-d",
+                "docker", "run", "-it", "-d",
                 "--name", "auth-registry",
                 "-p", "5555:5000",
                 "-e", "REGISTRY_AUTH=htpasswd",
