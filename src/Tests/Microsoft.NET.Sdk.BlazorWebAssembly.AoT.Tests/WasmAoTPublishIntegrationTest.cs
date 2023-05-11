@@ -211,7 +211,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.AoT.Tests
                 dotnetJs.Should().NotBeNull();
                 dotnetJs.Should().NotContain("..");
 
-                buildDirectory.Should().HaveFile(Path.Combine("wwwroot", "_framework", dotnetJs));
+                buildDirectory.Should().HaveFile(Path.Combine(buildDirectory.ToString(), "wwwroot", "_framework", dotnetJs));
             }
         }
 
