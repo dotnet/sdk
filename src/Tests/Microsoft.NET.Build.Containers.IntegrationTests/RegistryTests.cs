@@ -72,6 +72,8 @@ public class RegistryTests
                 "-v", $"{registryAuthDir.FullName}:/auth",
                 "registry:2")
             .WithWorkingDirectory(registryDir.FullName).Execute().Should().Pass();
+            // verify that the registry container started successfully
+            new RunExeCommand(_testOutput, "docker", "inspect", "auth-registry").Execute().Should().Pass();
             // login to that registry
             new RunExeCommand(_testOutput, "docker", "login", registryName, "--username", "testuser", "--password", "testpassword").Execute().Should().Pass();
             // push an image to that registry using username/password
