@@ -47,7 +47,7 @@
   <String Id="FilesInUseDontCloseRadioButton">응용 프로그램을 닫지 않습니다(&amp;D). 다시 부팅해야 합니다.</String>
   <String Id="FilesInUseOkButton">확인(&amp;O)</String>
   <String Id="FilesInUseCancelButton">취소(&amp;C)</String>
-  <String  _locComment="{Locked='.NET SDK'}{Locked='.NET Runtime'}{Locked='ASP.NET Core Runtime'}{Locked='.NET Windows Desktop Runtime'}" Id="FirstTimeWelcomeMessage">설치가 완료되었습니다.
+  <String  Id="FirstTimeWelcomeMessage"><!--_locComment="{Locked='.NET SDK'}{Locked='.NET Runtime'}{Locked='ASP.NET Core Runtime'}{Locked='.NET Windows Desktop Runtime'}" -->설치가 완료되었습니다.
 
 다음 제품이 설치되었습니다.
     • .NET SDK [DOTNETSDKVERSION]
@@ -63,8 +63,8 @@
     • SDK 설명서 https://aka.ms/dotnet-sdk-docs
     • 릴리스 정보 https://aka.ms/dotnet[VERSIONMAJOR]-release-notes
     • 자습서 https://aka.ms/dotnet-tutorials</String>
-  <String _locComment="{Locked='.NET SDK'}" Id="WelcomeHeaderMessage">.NET SDK</String>
-  <String _locComment="{Locked='.NET SDK'}" Id="WelcomeDescription">
+  <String Id="WelcomeHeaderMessage"><!--_locComment="{Locked='.NET SDK'}"-->.NET SDK</String>
+  <String Id="WelcomeDescription"><!--_locComment="{Locked='.NET SDK'}"-->
     .NET SDK는 .NET 애플리케이션을 빌드, 실행 및 테스트하는 데 사용됩니다. 여러 언어, 편집기 및 개발자 도구 중에서 선택하고 대규모 라이브러리 에코시스템을 활용하여 웹, 모바일, 데스크톱, 게임 및 IoT용 앱을 빌드할 수 있습니다. .NET SDK를 유용하게 사용하시길 바랍니다.</String>
   <String Id="LearnMoreTitle">.NET에 대한 자세한 정보</String>
   <String Id="ResourcesHeader">리소스</String>
@@ -76,7 +76,7 @@
   <String Id="InstallationNoteTitle">설치 정보</String>
   <String Id="InstallationNote">프로젝트 복원 속도를 향상하고 오프라인 액세스를 사용할 수 있도록 하는 설치 프로세스 중 명령이 실행됩니다. 완료하는 데 최대 1분이 걸립니다.
   </String>
-  <String _locComment="{Locked='Visual Studio'}" Id="VisualStudioWarning">Visual Studio에서 .NET [VERSIONMAJOR].[VERSIONMINOR]를 사용하려는 경우 Visual Studio 2022 [MINIMUMVSVERSION] 이상이 필요합니다. &lt;A HREF="https://aka.ms/dotnet[VERSIONMAJOR]-release-notes"&gt;Learn more&lt;/A&gt;.
+  <String  Id="VisualStudioWarning"><!--_locComment="{Locked='Visual Studio'}"-->Visual Studio에서 .NET [VERSIONMAJOR].[VERSIONMINOR]를 사용하려는 경우 Visual Studio 2022 [MINIMUMVSVERSION] 이상이 필요합니다. &lt;A HREF="https://aka.ms/dotnet[VERSIONMAJOR]-release-notes"&gt;Learn more&lt;/A&gt;.
   </String>
   <String Id="LicenseAssent">설치를 클릭하면 다음 사용 약관에 동의하는 것입니다.</String>
   <String Id="InstallPathx64x86">x64 SDK 설치의 설치 경로: " [DOTNETHOME_x64]" x86 SDK 설치의 경우와 같을 수 없습니다. " [DOTNETHOME_X86]"</String>

@@ -47,7 +47,7 @@
   <String Id="FilesInUseDontCloseRadioButton">&amp;Do not close applications. A reboot will be required.</String>
   <String Id="FilesInUseOkButton">&amp;OK</String>
   <String Id="FilesInUseCancelButton">&amp;Cancel</String>
-  <String _locComment="{Locked='.NET SDK'}{Locked='.NET Runtime'}{Locked='ASP.NET Core Runtime'}{Locked='.NET Windows Desktop Runtime'}" Id="FirstTimeWelcomeMessage">The installation was successful.
+  <String Id="FirstTimeWelcomeMessage"><!--_locComment="{Locked='.NET SDK'}{Locked='.NET Runtime'}{Locked='ASP.NET Core Runtime'}{Locked='.NET Windows Desktop Runtime'}" -->The installation was successful.
 
 The following products were installed:
     • .NET SDK [DOTNETSDKVERSION]
@@ -63,8 +63,8 @@ Resources
     • SDK Documentation https://aka.ms/dotnet-sdk-docs
     • Release Notes https://aka.ms/dotnet[VERSIONMAJOR]-release-notes
     • Tutorials https://aka.ms/dotnet-tutorials</String>
-  <String _locComment="{Locked='.NET SDK'}" Id="WelcomeHeaderMessage">.NET SDK</String>
-  <String _locComment="{Locked='.NET SDK'}" Id="WelcomeDescription">
+  <String Id="WelcomeHeaderMessage"><!--_locComment="{Locked='.NET SDK'}"-->.NET SDK</String>
+  <String Id="WelcomeDescription"><!--_locComment="{Locked='.NET SDK'}"-->
     The .NET SDK is used to build, run, and test .NET applications. You can choose from multiple languages, editors, and developer tools, and take advantage of a large ecosystem of libraries to build apps for web, mobile, desktop, gaming, and IoT. We hope you enjoy it!</String>
   <String Id="LearnMoreTitle">Learn more about .NET</String>
   <String Id="ResourcesHeader">Resources</String>
@@ -76,7 +76,7 @@ Resources
   <String Id="InstallationNoteTitle">Installation note</String>
   <String Id="InstallationNote">A command will be run during the install process that will improve project restore speed and enable offline access. It will take up to a minute to complete.
   </String>
-  <String _locComment="{Locked='Visual Studio'}" Id="VisualStudioWarning">If you plan to use .NET [VERSIONMAJOR].[VERSIONMINOR] with Visual Studio, Visual Studio 2022 [MINIMUMVSVERSION] or newer is required. &lt;A HREF=&quot;https://aka.ms/dotnet[VERSIONMAJOR]-release-notes&quot;&gt;Learn more&lt;/A&gt;.
+  <String  Id="VisualStudioWarning"><!--_locComment="{Locked='Visual Studio'}"-->If you plan to use .NET [VERSIONMAJOR].[VERSIONMINOR] with Visual Studio, Visual Studio 2022 [MINIMUMVSVERSION] or newer is required. &lt;A HREF=&quot;https://aka.ms/dotnet[VERSIONMAJOR]-release-notes&quot;&gt;Learn more&lt;/A&gt;.
   </String>
   <String Id="LicenseAssent">By clicking Install, you agree to the following terms:</String>
   <String Id="InstallPathx64x86">The installation path for x64 SDK installations: &quot;[DOTNETHOME_X64]&quot; cannot be the same as for x86 SDK installations: &quot;[DOTNETHOME_X86]&quot;</String>
