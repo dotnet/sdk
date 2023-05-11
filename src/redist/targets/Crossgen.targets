@@ -47,6 +47,7 @@
       <WebTools>$(SdkOutputDirectory)Sdks\Microsoft.NET.Sdk.Web\tools\$(DefaultToolTfm)\</WebTools>
       <ProjectSystemTools>$(SdkOutputDirectory)Sdks\Microsoft.NET.Sdk.Web.ProjectSystem\tools\$(DefaultToolTfm)\</ProjectSystemTools>
       <WorkerTools>$(SdkOutputDirectory)Sdks\Microsoft.NET.Sdk.Worker\tools\$(DefaultToolTfm)\</WorkerTools>
+      <ContainerTasks>$(SdkOutputDirectory)Containers\tasks\$(DefaultToolTfm)\</ContainerTasks>
     </PropertyGroup>
 
     <ItemGroup>
@@ -67,6 +68,10 @@
       <RemainingFiles Remove="$(SdkOutputDirectory)Sdks\**\*" />
       <RemainingFiles Remove="$(SdkOutputDirectory)**\Microsoft.TestPlatform.Extensions.EventLogCollector.dll" />
 
+      <!-- Removing Containers as containerize .DLLs and net472 components shouldn't be crossgenned. -->
+      <RemainingFiles Remove="$(SdkOutputDirectory)Containers\**\*" />
+
+
       <!-- Add back the .NET Core assemblies in the Sdks folder -->
       <RemainingFiles Include="$(NetSdkTools)**\*" />
       <RemainingFiles Include="$(BlazorWasmTools)**\*" />
@@ -77,6 +82,7 @@
       <RemainingFiles Include="$(WebTools)**\*" />
       <RemainingFiles Include="$(ProjectSystemTools)**\*" />
       <RemainingFiles Include="$(WorkerTools)**\*" />
+      <RemainingFiles Include="$(ContainerTasks)**\*" />
 
       <!-- Don't try to CrossGen .NET Framework support assemblies for .NET Standard -->
       <RemainingFiles Remove="$(SdkOutputDirectory)Microsoft\Microsoft.NET.Build.Extensions\net*\**\*" />
