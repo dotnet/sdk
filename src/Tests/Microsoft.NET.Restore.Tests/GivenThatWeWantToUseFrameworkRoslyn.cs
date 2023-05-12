@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.IO;
+using System.Runtime.InteropServices;
 using FluentAssertions;
 using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Assertions;
@@ -27,6 +28,8 @@ namespace Microsoft.NET.Restore.Tests
                 TargetFrameworks = "net6.0",
             };
 
+            // Add an explicit version for the test. This will normally come from the installer.
+            project.AdditionalProperties.Add("_NetFrameworkHostedCompilersVersion", "4.7.0-2.23260.7");
             project.AdditionalProperties.Add("BuildWithNetFrameworkHostedCompiler", "true");
 
             var testAsset = _testAssetsManager
@@ -41,7 +44,15 @@ namespace Microsoft.NET.Restore.Tests
             var restoreCommand =
                 testAsset.GetRestoreCommand(Log, relativePath: testProjectName);
             restoreCommand.Execute().Should().Pass();
-            Assert.Contains("Microsoft.Net.Compilers.Toolset.Framework", File.ReadAllText(projectAssetsJsonPath));
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                Assert.Contains("Microsoft.Net.Compilers.Toolset.Framework", File.ReadAllText(projectAssetsJsonPath));
+            }
+            else
+            {
+                Assert.DoesNotContain("Microsoft.Net.Compilers.Toolset.Framework", File.ReadAllText(projectAssetsJsonPath));
+            }
         }
 
         [Fact]
