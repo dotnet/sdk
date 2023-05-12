@@ -13,7 +13,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <!--
       Indicate to other targets that Microsoft.NET.Sdk.Web is being used.
     -->
-  <PropertyGroup>
+  <PropertyGroup Condition="'$([MSBuild]::GetTargetPlatformIdentifier($TargetFramework))' != 'browser'">
     <UsingMicrosoftNETSdkWeb>true</UsingMicrosoftNETSdkWeb>
     <EnableRazorSdkContent>true</EnableRazorSdkContent>
   </PropertyGroup>
@@ -23,19 +23,21 @@ Copyright (c) .NET Foundation. All rights reserved.
     <DebugSymbols Condition="'$(DebugSymbols)' == ''">true</DebugSymbols>
   </PropertyGroup>
 
-  <Import Sdk="Microsoft.NET.Sdk" Project="Sdk.props" />
+  <Import Sdk="Microsoft.NET.Sdk" Project="Sdk.props" Condition="'$([MSBuild]::GetTargetPlatformIdentifier($TargetFramework))' != 'browser'" />
 
-  <Import Sdk="Microsoft.NET.Sdk.Razor" Project="Sdk.props" />
+  <Import Sdk="Microsoft.NET.Sdk.Razor" Project="Sdk.props" Condition="'$([MSBuild]::GetTargetPlatformIdentifier($TargetFramework))' != 'browser'" />
+
+  <Import Sdk="Microsoft.NET.Sdk.Blazor" Project="Sdk.props" Condition="'$([MSBuild]::GetTargetPlatformIdentifier($TargetFramework))' == 'browser'" />
 
   <Import Sdk="Microsoft.NET.Sdk.Web.ProjectSystem" Project="Sdk.props" />
 
   <Import Sdk="Microsoft.NET.Sdk.Publish" Project="Sdk.props" />
 
-  <ItemGroup Condition="'$(DisableImplicitFrameworkReferences)' != 'true' And '$(TargetFrameworkIdentifier)' == '.NETCoreApp' And '$(_TargetFrameworkVersionWithoutV)' >= '3.0'">
+  <ItemGroup Condition="'$([MSBuild]::GetTargetPlatformIdentifier($TargetFramework))' != 'browser' And '$(DisableImplicitFrameworkReferences)' != 'true' And '$(TargetFrameworkIdentifier)' == '.NETCoreApp' And '$(_TargetFrameworkVersionWithoutV)' >= '3.0'">
     <FrameworkReference Include="Microsoft.AspNetCore.App" IsImplicitlyDefined="true" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(DisableImplicitAspNetCoreAnalyzers)' != 'true' And '$(TargetFrameworkIdentifier)' == '.NETCoreApp' And '$(_TargetFrameworkVersionWithoutV)' >= '3.0'">
+  <ItemGroup Condition="'$([MSBuild]::GetTargetPlatformIdentifier($TargetFramework))' != 'browser' And '$(DisableImplicitAspNetCoreAnalyzers)' != 'true' And '$(TargetFrameworkIdentifier)' == '.NETCoreApp' And '$(_TargetFrameworkVersionWithoutV)' >= '3.0'">
     <Analyzer
       Include="$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..))\analyzers\cs\Microsoft.AspNetCore.Analyzers.dll"
       Condition="'$(Language)'=='C#'"
@@ -51,7 +53,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       IsImplicitlyDefined="true" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(DisableImplicitComponentsAnalyzers)' != 'true' And '$(DisableImplicitAspNetCoreAnalyzers)' != 'true'
+  <ItemGroup Condition="'$([MSBuild]::GetTargetPlatformIdentifier($TargetFramework))' != 'browser' And '$(DisableImplicitComponentsAnalyzers)' != 'true' And '$(DisableImplicitAspNetCoreAnalyzers)' != 'true'
       And '$(TargetFrameworkIdentifier)' == '.NETCoreApp'
       And $([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '3.0'))
       And $([MSBuild]::VersionLessThanOrEquals('$(TargetFrameworkVersion)', '6.0'))">
@@ -61,7 +63,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       IsImplicitlyDefined="true" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(Language)' == 'C#' AND ('$(ImplicitUsings)' == 'true' or '$(ImplicitUsings)' == 'enable')">
+  <ItemGroup Condition="'$([MSBuild]::GetTargetPlatformIdentifier($TargetFramework))' != 'browser' And '$(Language)' == 'C#' AND ('$(ImplicitUsings)' == 'true' or '$(ImplicitUsings)' == 'enable')">
     <Using Include="System.Net.Http.Json" />
     <Using Include="Microsoft.AspNetCore.Builder" />
     <Using Include="Microsoft.AspNetCore.Hosting" />
