@@ -174,6 +174,7 @@ public class TargetsTests
         {
             ["TargetFrameworkIdentifier"] = ".NETCoreApp",
             ["TargetFrameworkVersion"] = tfm,
+            ["TargetFramework"] = "net" + tfm.TrimStart('v'),
             ["ContainerRuntimeIdentifier"] = rid
         }, projectName: $"{nameof(CanComputeTagsForSupportedSDKVersions)}_{tfm}_{rid}_{expectedUser}");
         using var _ = d;
