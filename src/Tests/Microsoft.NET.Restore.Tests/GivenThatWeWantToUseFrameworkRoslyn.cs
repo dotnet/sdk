@@ -65,7 +65,7 @@ namespace Microsoft.NET.Restore.Tests
                 TargetFrameworks = "net6.0",
             };
 
-            project.PackageReferences.Add(new TestPackageReference("Microsoft.Net.Compilers.Toolset.Framework", "4.7.0"));
+            project.PackageReferences.Add(new TestPackageReference("Microsoft.Net.Compilers.Toolset.Framework", "4.7.0-2.23260.7"));
 
             var testAsset = _testAssetsManager
                 .CreateTestProject(project);
