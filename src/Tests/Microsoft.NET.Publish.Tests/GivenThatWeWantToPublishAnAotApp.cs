@@ -54,18 +54,13 @@ namespace Microsoft.NET.Publish.Tests
                 var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
                 var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
-                var result = publishCommand
-                    .Execute($"/p:UseCurrentRuntimeIdentifier=true")
+                publishCommand
+                    .Execute($"/p:UseCurrentRuntimeIdentifier=true", "/p:SelfContained=true")
                     .Should().Pass()
                     .And.NotHaveStdOutContaining("IL2026")
-                    .And.NotHaveStdErrContaining("NETSDK1179");
-                // Remove the net7.0 condition and add this check back for
-                // all TFMs once the warning fix exists in 7.0:
-                // https://github.com/dotnet/runtime/pull/79870
-                if (targetFramework != "net7.0") {
-                    result.And.NotHaveStdErrContaining("warning")
-                          .And.NotHaveStdOutContaining("warning");
-                }
+                    .And.NotHaveStdErrContaining("NETSDK1179")
+                    .And.NotHaveStdErrContaining("warning")
+                    .And.NotHaveStdOutContaining("warning");
 
                 var buildProperties = testProject.GetPropertyValues(testAsset.TestRoot, targetFramework);
                 var rid = buildProperties["NETCoreSdkPortableRuntimeIdentifier"];
