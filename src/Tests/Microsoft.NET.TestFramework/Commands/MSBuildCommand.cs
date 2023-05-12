@@ -84,6 +84,10 @@ namespace Microsoft.NET.TestFramework.Commands
 
         public virtual DirectoryInfo GetIntermediateDirectory(string targetFramework, string configuration = "Debug", string runtimeIdentifier = "")
         {
+            if (targetFramework.Contains(";"))
+            {
+                targetFramework = targetFramework.Split(';')[0];
+            }
             targetFramework = targetFramework ?? string.Empty;
             configuration = configuration ?? string.Empty;
             runtimeIdentifier = runtimeIdentifier ?? string.Empty;
