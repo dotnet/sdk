@@ -200,18 +200,18 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.AoT.Tests
             command.Execute("/p:WasmBuildNative=true").Should().Pass();
 
             var buildDirectory = command.GetOutputDirectory(DefaultTfm, "Debug");
-            var bootConfigPath = Path.Combine(buildDirectory.ToString(), "wwwroot", "_framework", "blazor.boot.json");
+            var bootConfigRelativePath = "wwwroot/_framework/blazor.boot.json";
 
-            buildDirectory.Should().HaveFile(bootConfigPath);
+            buildDirectory.Should().HaveFile(bootConfigRelativePath);
 
-            using (var bootConfigContent = File.OpenRead(bootConfigPath))
+            using (var bootConfigContent = File.OpenRead(Path.Combine(buildDirectory.ToString(), bootConfigRelativePath)))
             {
                 var bootConfig = ParseBootData(bootConfigContent);
                 var dotnetJs = bootConfig.resources.runtime.Keys.FirstOrDefault(k => k.StartsWith("dotnet.") && k.EndsWith(".js"));
                 dotnetJs.Should().NotBeNull();
                 dotnetJs.Should().NotContain("..");
 
-                buildDirectory.Should().HaveFile(Path.Combine(buildDirectory.ToString(), "wwwroot", "_framework", dotnetJs));
+                buildDirectory.Should().HaveFile($"wwwroot/_framework/{dotnetJs}");
             }
         }
 
