@@ -484,7 +484,7 @@
                       Overwrite="true" />
   </Target>
 
-  <Target Name="CopyIncludedWorkloadManifestFile" >
+  <Target Name="CopyKnownWorkloadManifestFile" >
 
     <ItemGroup>
       <WorkloadManifestFilesContent Include="$([MSBuild]::ValueOrDefault('%(BundledManifests.Identity)', '').ToLower())" />
@@ -492,7 +492,11 @@
 
     <Error Text="No workload manifest content found." Condition="'@(WorkloadManifestFilesContent->Count())' == '0'" />
 
-    <WriteLinesToFile File="$(SdkOutputDirectory)IncludedWorkloadManifests.txt"
+    <ItemGroup>
+      <WorkloadManifestFilesContent Include="samsung.net.sdk.tizen" />
+    </ItemGroup>
+
+    <WriteLinesToFile File="$(SdkOutputDirectory)KnownWorkloadManifests.txt"
                       Lines="@(WorkloadManifestFilesContent)"
                       Overwrite="true" />
   </Target>
@@ -568,7 +572,7 @@
                             LayoutBundledComponents;
                             GenerateFullNuGetVersion;
                             GenerateVersionFile;
-                            CopyIncludedWorkloadManifestFile;
+                            CopyKnownWorkloadManifestFile;
                             GenerateBundledVersions;
                             LayoutRuntimeGraph;
                             LayoutTemplates;
