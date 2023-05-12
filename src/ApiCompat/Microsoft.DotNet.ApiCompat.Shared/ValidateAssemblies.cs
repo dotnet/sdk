@@ -1,11 +1,10 @@
-// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
-using Microsoft.DotNet.ApiCompatibility.Abstractions;
+using Microsoft.DotNet.ApiCompatibility;
 using Microsoft.DotNet.ApiCompatibility.Logging;
 using Microsoft.DotNet.ApiCompatibility.Rules;
 using Microsoft.DotNet.ApiCompatibility.Runner;
@@ -19,6 +18,7 @@ namespace Microsoft.DotNet.ApiCompat
             string[]? suppressionFiles,
             string? suppressionOutputFile,
             string? noWarn,
+            bool respectInternals,
             bool enableRuleAttributesMustMatch,
             string[]? excludeAttributesFiles,
             bool enableRuleCannotChangeParameterName,
@@ -36,8 +36,9 @@ namespace Microsoft.DotNet.ApiCompat
                 () => new SuppressionEngine(suppressionFiles, noWarn, generateSuppressionFile),
                 (log) => new RuleFactory(log,
                     enableRuleAttributesMustMatch,
-                    excludeAttributesFiles,
-                    enableRuleCannotChangeParameterName));
+                    enableRuleCannotChangeParameterName),
+                respectInternals,
+                excludeAttributesFiles);
 
             IApiCompatRunner apiCompatRunner = serviceProvider.ApiCompatRunner;
             ApiCompatRunnerOptions apiCompatOptions = new(enableStrictMode);

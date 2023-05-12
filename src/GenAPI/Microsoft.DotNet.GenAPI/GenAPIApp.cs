@@ -4,16 +4,17 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.ApiSymbolExtensions;
+using Microsoft.DotNet.ApiSymbolExtensions.Filtering;
 using Microsoft.DotNet.ApiSymbolExtensions.Logging;
+using Microsoft.DotNet.GenAPI.Filtering;
 
 namespace Microsoft.DotNet.GenAPI
 {
     /// <summary>
-    /// Class to standertize initilization and running of GenAPI tool.
-    ///     Shared between CLI and MSBuild tasks frontends.
+    /// Class to standardize initialization and running of GenAPI tool.
+    /// Shared between CLI and MSBuild tasks frontends.
     /// </summary>
     public static class GenAPIApp
     {
@@ -25,16 +26,20 @@ namespace Microsoft.DotNet.GenAPI
                 string? outputPath,
                 string? headerFile,
                 string? exceptionMessage,
+                string[]? excludeApiFiles,
                 string[]? excludeAttributesFiles,
-                bool includeVisibleOutsideOfAssembly)
+                bool includeVisibleOutsideOfAssembly,
+                bool includeAssemblyAttributes)
             {
                 Assemblies = assemblies;
                 AssemblyReferences = assemblyReferences;
                 OutputPath = outputPath;
                 HeaderFile = headerFile;
                 ExceptionMessage = exceptionMessage;
+                ExcludeApiFiles = excludeApiFiles;
                 ExcludeAttributesFiles = excludeAttributesFiles;
                 IncludeVisibleOutsideOfAssembly = includeVisibleOutsideOfAssembly;
+                IncludeAssemblyAttributes = includeAssemblyAttributes;
             }
 
             /// <summary>
@@ -64,6 +69,11 @@ namespace Microsoft.DotNet.GenAPI
             public string? ExceptionMessage { get; }
 
             /// <summary>
+            /// The path to one or more api exclusion files with types in DocId format.
+            /// </summary>
+            public string[]? ExcludeApiFiles { get; }
+
+            /// <summary>
             /// The path to one or more attribute exclusion files with types in DocId format.
             /// </summary>
             public string[]? ExcludeAttributesFiles { get; }
@@ -72,6 +82,11 @@ namespace Microsoft.DotNet.GenAPI
             /// Include internal API's. Default is false.
             /// </summary>
             public bool IncludeVisibleOutsideOfAssembly { get; }
+
+            /// <summary>
+            /// Includes assembly attributes which are values that provide information about an assembly.
+            /// </summary>
+            public bool IncludeAssemblyAttributes { get; }
         }
 
         /// <summary>
@@ -81,37 +96,44 @@ namespace Microsoft.DotNet.GenAPI
         {
             bool resolveAssemblyReferences = context.AssemblyReferences?.Length > 0;
 
-            IAssemblySymbolLoader loader = new AssemblySymbolLoader(resolveAssemblyReferences);
+            IAssemblySymbolLoader loader = new AssemblySymbolLoader(resolveAssemblyReferences, context.IncludeVisibleOutsideOfAssembly);
 
             if (context.AssemblyReferences is not null)
             {
                 loader.AddReferenceSearchPaths(context.AssemblyReferences);
             }
 
-            var compositeFilter = new CompositeFilter()
-                .Add<ImplicitSymbolsFilter>()
-                .Add(new SymbolAccessibilityBasedFilter(
+            CompositeSymbolFilter compositeSymbolFilter = new CompositeSymbolFilter()
+                .Add(new ImplicitSymbolFilter())
+                .Add(new AccessibilitySymbolFilter(
                     context.IncludeVisibleOutsideOfAssembly,
                     includeEffectivelyPrivateSymbols: true,
                     includeExplicitInterfaceImplementationSymbols: true));
 
-            if (context.ExcludeAttributesFiles != null)
+            if (context.ExcludeAttributesFiles is not null)
             {
-                compositeFilter.Add(new AttributeSymbolFilter(context.ExcludeAttributesFiles));
+                compositeSymbolFilter.Add(new DocIdSymbolFilter(context.ExcludeAttributesFiles));
+            }
+
+            if (context.ExcludeApiFiles is not null)
+            {
+                compositeSymbolFilter.Add(new DocIdSymbolFilter(context.ExcludeApiFiles));
             }
 
             IReadOnlyList<IAssemblySymbol?> assemblySymbols = loader.LoadAssemblies(context.Assemblies);
             foreach (IAssemblySymbol? assemblySymbol in assemblySymbols)
             {
-                if (assemblySymbol == null) continue;
+                if (assemblySymbol == null)
+                    continue;
 
                 using TextWriter textWriter = GetTextWriter(context.OutputPath, assemblySymbol.Name);
                 textWriter.Write(ReadHeaderFile(context.HeaderFile));
 
-                using CSharpFileBuilder fileBuilder = new(
-                    compositeFilter,
+                using CSharpFileBuilder fileBuilder = new(logger,
+                    compositeSymbolFilter,
                     textWriter,
-                    new CSharpSyntaxWriter(context.ExceptionMessage),
+                    context.ExceptionMessage,
+                    context.IncludeAssemblyAttributes,
                     loader.MetadataReferences);
 
                 fileBuilder.WriteAssembly(assemblySymbol);
@@ -121,7 +143,7 @@ namespace Microsoft.DotNet.GenAPI
             {
                 foreach (Diagnostic warning in roslynDiagnostics)
                 {
-                    logger.LogWarning(warning.Id, $"RoslynDiagnostic: '{warning.ToString()}'");
+                    logger.LogWarning(warning.Id, warning.ToString());
                 }
             }
 
@@ -129,7 +151,7 @@ namespace Microsoft.DotNet.GenAPI
             {
                 foreach (AssemblyLoadWarning warning in loadWarnings)
                 {
-                    logger.LogWarning(warning.DiagnosticId, $"AssemblyLoadWarning: '{warning.Message}'");
+                    logger.LogWarning(warning.DiagnosticId, warning.Message);
                 }
             }
         }
@@ -143,7 +165,7 @@ namespace Microsoft.DotNet.GenAPI
         /// <returns></returns>
         private static TextWriter GetTextWriter(string? outputDirPath, string assemblyName)
         {
-            if (outputDirPath == null)
+            if (outputDirPath is null)
             {
                 return Console.Out;
             }
@@ -176,11 +198,9 @@ namespace Microsoft.DotNet.GenAPI
 
             """;
 
-            if (!string.IsNullOrEmpty(headerFile))
-            {
-                return File.ReadAllText(headerFile);
-            }
-            return defaultFileHeader;
+            return !string.IsNullOrEmpty(headerFile) ?
+                File.ReadAllText(headerFile) :
+                defaultFileHeader;
         }
     }
 }

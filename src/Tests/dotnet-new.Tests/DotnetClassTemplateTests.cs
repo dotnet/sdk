@@ -1,6 +1,5 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
-//
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text;
 using Microsoft.Extensions.Logging;
@@ -100,31 +99,38 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                }));
 
             VerificationEngine engine = new VerificationEngine(_logger);
-            await engine.Execute(options)
-                .ConfigureAwait(false);
+            await engine.Execute(options).ConfigureAwait(false);
+
+            ValidateInstantiatedProject(workingDir);
         }
 
         [Theory]
         [InlineData("class")]
-        [InlineData("class", "11.0", "net7.0")]
-        [InlineData("class", "10.0", "net6.0")]
-        [InlineData("class", "9.0", "netstandard2.0")]
+        [InlineData("class", "latest", "net7.0")]
+        [InlineData("class", "16", "net6.0")]
+        [InlineData("class", "15.3", "netstandard2.0")]
         [InlineData("enum")]
-        [InlineData("enum", "10", "net6.0")]
-        [InlineData("enum", "", "net7.0")]
-        [InlineData("enum", "9.0", "netstandard2.0")]
-        [InlineData("struct")]
-        [InlineData("struct", "10")]
-        [InlineData("struct", "10", "net6.0")]
-        [InlineData("struct", "9.0", "netstandard2.0")]
+        [InlineData("enum", "16", "net6.0")]
+        [InlineData("enum", "latest", "net7.0")]
+        [InlineData("enum", "15.3", "netstandard2.0")]
+        [InlineData("structure")]
+        [InlineData("structure", "latest")]
+        [InlineData("struct", "16", "net6.0")]
+        [InlineData("structure", "15.3", "netstandard2.0", "CustomFileName")]
         [InlineData("interface")]
-        [InlineData("interface", "11.0", "net7.0")]
-        [InlineData("interface", "10.0", "net6.0")]
-        [InlineData("interface", "9", "netstandard2.0")]
+        [InlineData("interface", "16", "net7.0")]
+        [InlineData("interface", "latest", "net6.0")]
+        [InlineData("interface", "15.3", "netstandard2.0")]
+        [InlineData("module")]
+        [InlineData("module", "16", "net7.0")]
+        [InlineData("module", "latest", "net6.0")]
+        [InlineData("module", "15.3", "netstandard2.0")]
+        [InlineData("module", "15.5", "netstandard2.0", "CustomFileName")]
         public async void DotnetVisualBasicClassTemplatesTest(
             string templateShortName,
             string langVersion = "",
-            string targetFramework = "")
+            string targetFramework = "",
+            string fileName = "")
         {
             // prevents logging a welcome message from sdk installation
             Dictionary<string, string> environmentUnderTest = new() { ["DOTNET_NOLOGO"] = false.ToString() };
@@ -138,7 +144,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             {
                 SnapshotsDirectory = "Approvals",
                 VerifyCommandOutput = true,
-                TemplateSpecificArgs = new[] { "--name", "TestItem1", "--language", "VB" },
+                TemplateSpecificArgs = new[] { "--name", string.IsNullOrWhiteSpace(fileName) ? "TestItem1" : fileName, "--language", "VB" },
                 VerificationExcludePatterns = new[]
                 {
                     "*/stderr.txt",
@@ -173,8 +179,9 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                }));
 
             VerificationEngine engine = new VerificationEngine(_logger);
-            await engine.Execute(options)
-                .ConfigureAwait(false);
+            await engine.Execute(options).ConfigureAwait(false);
+
+            ValidateInstantiatedProject(workingDir);
         }
 
         private string CreateTestProject(
@@ -224,6 +231,18 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
             return Path.GetFileNameWithoutExtension(Directory
                 .GetFiles(workingDir, $"*{languageToProjectExtMap[language]}")?.FirstOrDefault() ?? string.Empty);
+        }
+
+        private void ValidateInstantiatedProject(string workingDir)
+        {
+            new DotnetBuildCommand(_log)
+                .WithWorkingDirectory(workingDir)
+                .Execute()
+                .Should()
+                .Pass()
+                .And.NotHaveStdErr();
+
+            Directory.Delete(workingDir, true);
         }
 
         private string GetFolderName(string templateShortName, string langVersion, string targetFramework)
