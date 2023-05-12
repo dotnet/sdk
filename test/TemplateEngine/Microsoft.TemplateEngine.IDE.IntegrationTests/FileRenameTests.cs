@@ -28,11 +28,11 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
                     .WithPrimaryOutputs("TestProject1.cs", "testproject2.cs", "TESTPROJECT3.cs", "baz.cs", "BAZ.cs")
                     .WithFileChange(new MockFileChange("bar/bar.cs", "baz/baz.cs", ChangeKind.Create))
                     .WithFileChange(new MockFileChange("bar.cs", "baz.cs", ChangeKind.Create))
-                    .WithFileChange(new MockFileChange("bar_uc.cs", "BAZ.cs", ChangeKind.Create))
+                    .WithFileChange(new MockFileChange("uc/bar_uc.cs", "uc/BAZ.cs", ChangeKind.Create))
                     .WithFileChange(new MockFileChange("MyProject1.cs", "TestProject1.cs", ChangeKind.Create))
                     .WithFileChange(new MockFileChange("myproject2.cs", "testproject2.cs", ChangeKind.Create))
                     .WithFileChange(new MockFileChange("MYPROJECT3.cs", "TESTPROJECT3.cs", ChangeKind.Create))
-                    .Without("bar.cs", "bar/bar.cs", "bar_uc.cs", "MyProject1.cs", "myproject2.cs", "MYPROJECT3.cs")
+                    .Without("bar.cs", "bar/bar.cs", "uc/bar_uc.cs", "MyProject1.cs", "myproject2.cs", "MYPROJECT3.cs")
                        };
 
             yield return new object[]
