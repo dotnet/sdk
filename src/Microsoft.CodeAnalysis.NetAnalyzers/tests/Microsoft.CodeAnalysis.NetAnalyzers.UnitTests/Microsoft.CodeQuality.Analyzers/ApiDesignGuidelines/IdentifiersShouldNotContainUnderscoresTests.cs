@@ -844,7 +844,7 @@ public class SomeClass
             }.RunAsync();
         }
 
-    [Fact, WorkItem(3121, "https://github.com/dotnet/roslyn-analyzers/issues/3121")]
+        [Fact, WorkItem(3121, "https://github.com/dotnet/roslyn-analyzers/issues/3121")]
         public async Task CA1707_CSharp_GlobalAsaxSpecialMethodsAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
