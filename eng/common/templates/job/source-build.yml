@@ -49,7 +49,7 @@ jobs:
         name: NetCore-Public
         demands: ImageOverride -equals Build.Ubuntu.1804.Amd64.Open
       ${{ if eq(variables['System.TeamProject'], 'internal') }}:
-        name: NetCore1ESPool-Internal
+        name: NetCore1ESPool-Svc-Internal
         demands: ImageOverride -equals Build.Ubuntu.1804.Amd64
   ${{ if ne(parameters.platform.pool, '') }}:
     pool: ${{ parameters.platform.pool }}
