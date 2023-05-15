@@ -32,7 +32,7 @@ internal static class Config
     public static string? PrereqsPath { get; } = Environment.GetEnvironmentVariable(PrereqsPathEnv);
     public static string? CustomPackagesPath { get; } = Environment.GetEnvironmentVariable(CustomPackagesPathEnv);
     public static string? SdkTarballPath { get; } = Environment.GetEnvironmentVariable(SdkTarballPathEnv);
-    public static string? SourceBuiltArtifactsPath { get; } = Environment.GetEnvironmentVariable(SourceBuiltArtifactsPathEnv) ??
+    public static string SourceBuiltArtifactsPath { get; } = Environment.GetEnvironmentVariable(SourceBuiltArtifactsPathEnv) ??
         throw new InvalidOperationException($"'{Config.SourceBuiltArtifactsPathEnv}' must be specified");
     public static string TargetRid { get; } = Environment.GetEnvironmentVariable(TargetRidEnv) ??
         throw new InvalidOperationException($"'{Config.TargetRidEnv}' must be specified");

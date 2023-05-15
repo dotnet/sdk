@@ -48,7 +48,7 @@ public class SourceBuiltArtifactsTests : SmokeTests
             string sdkVersion = versionLines[1];
 
             // Find the expected SDK version by getting it from the SDK tarball
-            ExtractFileFromTarball(Config.SdkTarballPath, "./sdk/*/.version", outputDir);
+            ExtractFileFromTarball(Config.SdkTarballPath ?? string.Empty, "./sdk/*/.version", outputDir);
             DirectoryInfo sdkDir = new DirectoryInfo(Path.Combine(outputDir, "sdk"));
             string sdkVersionPath = sdkDir.GetFiles(".version", SearchOption.AllDirectories).Single().FullName;
             string[] sdkVersionLines = File.ReadAllLines(Path.Combine(outputDir, sdkVersionPath));

@@ -23,9 +23,9 @@ public class BasicScenarioTests : SmokeTests
     [MemberData(nameof(GetScenarioObjects))]
     public void VerifyScenario(TestScenario scenario) => scenario.Execute(DotNetHelper);
 
-    private static IEnumerable<object[]> GetScenarioObjects() => GetScenarios().Select(scenario => new object[] { scenario });
+    public static IEnumerable<object[]> GetScenarioObjects() => GetScenarios().Select(scenario => new object[] { scenario });
 
-    private static IEnumerable<TestScenario> GetScenarios()
+    public static IEnumerable<TestScenario> GetScenarios()
     {
         foreach (DotNetLanguage language in Enum.GetValues<DotNetLanguage>())
         {
