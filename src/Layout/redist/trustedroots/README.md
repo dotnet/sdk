@@ -11,15 +11,15 @@ The CTLs are stored in [PEM format](https://en.wikipedia.org/wiki/Privacy-Enhanc
 
 [NuGet uses these CTLs as a fallback](https://github.com/dotnet/sdk/issues/25686) when an OS-provided CTL is not available.
 
-- Linux: The fallback CTL is typically used, however, an OS-provided CTL will be used if available (see `ca-certificates` section).
-- macOS: The fallback CTL is always used since an OS-provided CTL is never available, when signed package verification is enabled (which is not the default).
+- Linux: The fallback CTL is typically used; however, an OS-provided CTL will be used if available (see `ca-certificates` section).
+- macOS: Package verification is not enabled by default, but when it is enabled, the fallback code signing CTL is always used since an OS-provided CTL is not available.
 - Windows: The fallback CTL is never used since an OS-provided CTL is always available (via an OS API).
 
 ## Linux
 
 On Linux, NuGet will first probe for a code signing system bundle (multi-PEM file) using a [list of well-known paths](https://github.com/dotnet/designs/blob/main/accepted/2021/signed-package-verification/re-enable-signed-package-verification-technical.md#linux). The first successful match will be used. If no match is found or if there are problems processing the system bundle, NuGet will use the fallback bundle.
 
-The timestamping CTL in the fallback bundle is always used. There doesn't seem to be any precedent for a timestamping-specific certificate bundle under `/etc/pki/ca-trust/extracted/pem`.
+The timestamping CTL in the .NET SDK is always used. There doesn't seem to be any precedent for a timestamping-specific certificate bundle under `/etc/pki/ca-trust/extracted/pem`.
 
 The `ca-certificates` package contains trusted roots on most Linux distributions. Some distributions hold the view that this package should be the sole source of roots. That approach results in a single package affecting the overall trust model (as it relates to X.509 certificates) of the machine/container. We are able to accommodate that approach for code signing root certificates.    
 
