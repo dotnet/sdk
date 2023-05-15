@@ -64,7 +64,7 @@ namespace Microsoft.CodeAnalysis.Tools.Logging
             return (int)logLevel >= (int)_minimalLogLevel;
         }
 
-        public IDisposable BeginScope<TState>(TState state)
+        public IDisposable? BeginScope<TState>(TState state) where TState : notnull
         {
             return NullScope.Instance;
         }
