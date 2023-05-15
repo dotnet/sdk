@@ -102,7 +102,7 @@ namespace Microsoft.NET.Publish.Tests
 
                 var publishCommand = new PublishCommand(testAsset);
                 publishCommand
-                    .Execute($"/p:RuntimeIdentifier={rid}")
+                    .Execute($"/p:RuntimeIdentifier={rid}", "/p:SelfContained=true")
                     .Should().Pass()
                     .And.NotHaveStdOutContaining("IL2026")
                     .And.NotHaveStdErrContaining("NETSDK1179")
