@@ -49,22 +49,22 @@
       </trans-unit>
       <trans-unit id="AvoidConstArraysCodeFixTitle">
         <source>Extract to static readonly field</source>
-        <target state="new">Extract to static readonly field</target>
+        <target state="translated">Extraire dans un champ readonly statique</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidConstArraysDescription">
         <source>Constant arrays passed as arguments are not reused which implies a performance overhead. Consider extracting them to 'static readonly' fields to improve performance.</source>
-        <target state="new">Constant arrays passed as arguments are not reused which implies a performance overhead. Consider extracting them to 'static readonly' fields to improve performance.</target>
+        <target state="translated">Les tableaux de constantes passés en tant qu’arguments ne sont pas réutilisés, ce qui implique une surcharge du niveau de performance. Envisagez de les extraire dans ’static readonly’ champs pour améliorer le niveau de performance.</target>
         <note>{Locked="static readonly"}</note>
       </trans-unit>
       <trans-unit id="AvoidConstArraysMessage">
         <source>Prefer 'static readonly' fields over local constant array arguments</source>
-        <target state="new">Prefer 'static readonly' fields over local constant array arguments</target>
+        <target state="translated">Préférer les champs ’static readonly’ aux arguments de tableau de constantes locaux</target>
         <note>{Locked="static readonly"}</note>
       </trans-unit>
       <trans-unit id="AvoidConstArraysTitle">
         <source>Avoid constant arrays as arguments</source>
-        <target state="new">Avoid constant arrays as arguments</target>
+        <target state="translated">Éviter les tableaux constants en tant qu’arguments</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidStringBuilderPInvokeParametersDescription">

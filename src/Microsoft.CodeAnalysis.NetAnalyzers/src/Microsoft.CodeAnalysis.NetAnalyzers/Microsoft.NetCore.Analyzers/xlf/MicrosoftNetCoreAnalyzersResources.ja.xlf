@@ -49,22 +49,22 @@
       </trans-unit>
       <trans-unit id="AvoidConstArraysCodeFixTitle">
         <source>Extract to static readonly field</source>
-        <target state="new">Extract to static readonly field</target>
+        <target state="translated">静的な読み取り専用フィールドに抽出する</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidConstArraysDescription">
         <source>Constant arrays passed as arguments are not reused which implies a performance overhead. Consider extracting them to 'static readonly' fields to improve performance.</source>
-        <target state="new">Constant arrays passed as arguments are not reused which implies a performance overhead. Consider extracting them to 'static readonly' fields to improve performance.</target>
+        <target state="translated">引数として渡された定数配列は再利用されません。これはパフォーマンスのオーバーヘッドを意味します。パフォーマンスを向上させるために、それらを 'static readonly' フィールドに抽出することを検討してください。</target>
         <note>{Locked="static readonly"}</note>
       </trans-unit>
       <trans-unit id="AvoidConstArraysMessage">
         <source>Prefer 'static readonly' fields over local constant array arguments</source>
-        <target state="new">Prefer 'static readonly' fields over local constant array arguments</target>
+        <target state="translated">ローカルの定数配列引数よりも 'static readonly' フィールドを優先する</target>
         <note>{Locked="static readonly"}</note>
       </trans-unit>
       <trans-unit id="AvoidConstArraysTitle">
         <source>Avoid constant arrays as arguments</source>
-        <target state="new">Avoid constant arrays as arguments</target>
+        <target state="translated">引数として定数配列を使用しない</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidStringBuilderPInvokeParametersDescription">

@@ -49,22 +49,22 @@
       </trans-unit>
       <trans-unit id="AvoidConstArraysCodeFixTitle">
         <source>Extract to static readonly field</source>
-        <target state="new">Extract to static readonly field</target>
+        <target state="translated">Wyodrębnij do statycznego pola tylko do odczytu</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidConstArraysDescription">
         <source>Constant arrays passed as arguments are not reused which implies a performance overhead. Consider extracting them to 'static readonly' fields to improve performance.</source>
-        <target state="new">Constant arrays passed as arguments are not reused which implies a performance overhead. Consider extracting them to 'static readonly' fields to improve performance.</target>
+        <target state="translated">Tablice stałe przekazywane jako argumenty nie są ponownie używane, co oznacza narzut na wydajność. Rozważ wyodrębnienie ich do pól „static readonly”, aby zwiększyć wydajność.</target>
         <note>{Locked="static readonly"}</note>
       </trans-unit>
       <trans-unit id="AvoidConstArraysMessage">
         <source>Prefer 'static readonly' fields over local constant array arguments</source>
-        <target state="new">Prefer 'static readonly' fields over local constant array arguments</target>
+        <target state="translated">Preferuj pola „static readonly” niż argumenty lokalnej tablicy stałej</target>
         <note>{Locked="static readonly"}</note>
       </trans-unit>
       <trans-unit id="AvoidConstArraysTitle">
         <source>Avoid constant arrays as arguments</source>
-        <target state="new">Avoid constant arrays as arguments</target>
+        <target state="translated">Unikaj tablic stałych jako argumentów</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidStringBuilderPInvokeParametersDescription">
