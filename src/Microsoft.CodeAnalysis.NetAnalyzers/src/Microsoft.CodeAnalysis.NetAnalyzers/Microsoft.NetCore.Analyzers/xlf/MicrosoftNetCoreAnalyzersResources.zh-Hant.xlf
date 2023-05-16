@@ -49,22 +49,22 @@
       </trans-unit>
       <trans-unit id="AvoidConstArraysCodeFixTitle">
         <source>Extract to static readonly field</source>
-        <target state="new">Extract to static readonly field</target>
+        <target state="translated">解壓縮至靜態唯讀欄位</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidConstArraysDescription">
         <source>Constant arrays passed as arguments are not reused which implies a performance overhead. Consider extracting them to 'static readonly' fields to improve performance.</source>
-        <target state="new">Constant arrays passed as arguments are not reused which implies a performance overhead. Consider extracting them to 'static readonly' fields to improve performance.</target>
+        <target state="translated">不重複使用以引數傳遞的常數陣列，這表示效能額外負荷。請考慮將它們解壓縮至 'static readonly' (「靜態唯讀」) 欄位，以提升效能。</target>
         <note>{Locked="static readonly"}</note>
       </trans-unit>
       <trans-unit id="AvoidConstArraysMessage">
         <source>Prefer 'static readonly' fields over local constant array arguments</source>
-        <target state="new">Prefer 'static readonly' fields over local constant array arguments</target>
+        <target state="translated">優先使用 'static readonly' (「靜態唯讀」) 欄位而不是本機常數陣列引數</target>
         <note>{Locked="static readonly"}</note>
       </trans-unit>
       <trans-unit id="AvoidConstArraysTitle">
         <source>Avoid constant arrays as arguments</source>
-        <target state="new">Avoid constant arrays as arguments</target>
+        <target state="translated">避免常數陣列作為引數</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidStringBuilderPInvokeParametersDescription">

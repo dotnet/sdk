@@ -49,22 +49,22 @@
       </trans-unit>
       <trans-unit id="AvoidConstArraysCodeFixTitle">
         <source>Extract to static readonly field</source>
-        <target state="new">Extract to static readonly field</target>
+        <target state="translated">Estrarre nel campo statico di sola lettura</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidConstArraysDescription">
         <source>Constant arrays passed as arguments are not reused which implies a performance overhead. Consider extracting them to 'static readonly' fields to improve performance.</source>
-        <target state="new">Constant arrays passed as arguments are not reused which implies a performance overhead. Consider extracting them to 'static readonly' fields to improve performance.</target>
+        <target state="translated">Le matrici costanti passate come argomenti non vengono riutilizzate e ciò implica un sovraccarico delle prestazioni. È consigliabile estrarli in campi ‘static readonly' per migliorare le prestazioni.</target>
         <note>{Locked="static readonly"}</note>
       </trans-unit>
       <trans-unit id="AvoidConstArraysMessage">
         <source>Prefer 'static readonly' fields over local constant array arguments</source>
-        <target state="new">Prefer 'static readonly' fields over local constant array arguments</target>
+        <target state="translated">Preferire i campi ‘static readonly' rispetto agli argomenti della matrice di costanti locali</target>
         <note>{Locked="static readonly"}</note>
       </trans-unit>
       <trans-unit id="AvoidConstArraysTitle">
         <source>Avoid constant arrays as arguments</source>
-        <target state="new">Avoid constant arrays as arguments</target>
+        <target state="translated">Evitare matrici costanti come argomenti</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidStringBuilderPInvokeParametersDescription">
