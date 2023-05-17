@@ -1,13 +1,16 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.CommandLine;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.TemplateEngine.Abstractions;
+using Microsoft.TemplateEngine.Abstractions.Constraints;
 using Microsoft.TemplateEngine.Abstractions.Installer;
 using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
 using Microsoft.TemplateEngine.Cli.Commands;
 using Microsoft.TemplateEngine.Cli.NuGet;
 using Microsoft.TemplateEngine.Cli.TabularOutput;
+using Microsoft.TemplateEngine.Cli.TemplateSearch;
 using Microsoft.TemplateEngine.Edge;
 using Microsoft.TemplateEngine.Edge.Settings;
 using Microsoft.TemplateEngine.Utils;
@@ -388,8 +391,9 @@ namespace Microsoft.TemplateEngine.Cli
             var metadataOutput = new List<string>();
             NugetPackageMetadata? extendedPackageMetadata;
             IEnumerable<ITemplateInfo>? packageTemplates;
-            (var localPackage, packageTemplates) = await _templatePackageManager
-                .GetManagedTemplatePackageWithTemplatesAsync(packageIdentity, packageVersion, cancellationToken).ConfigureAwait(false);
+            IManagedTemplatePackage? localPackage;
+            (localPackage, packageTemplates) = await _templatePackageManager
+                .GetManagedTemplatePackageAsync(packageIdentity, packageVersion, cancellationToken).ConfigureAwait(false);
 
             // The package was found locally
             if (localPackage != null && packageTemplates != null)
@@ -414,8 +418,25 @@ namespace Microsoft.TemplateEngine.Cli
 
             if (extendedPackageMetadata != null && packageTemplates.Any())
             {
-                metadataOutput.AddRange(CollectPackageMetadataOutput(packageIdentity, packageTemplates, _engineEnvironmentSettings, extendedPackageMetadata));
+                metadataOutput.AddRange(CollectPackageMetadataOutput(packageIdentity, _engineEnvironmentSettings, extendedPackageMetadata));
                 metadataOutput.ForEach(Reporter.Output.WriteLine);
+
+                Reporter.Output.WriteLine();
+                Reporter.Output.WriteLine($"{SymbolStrings.Command_Details_Templates_Property}:");
+
+                var templatesToDisplay = TemplateGroupDisplay.GetTemplateGroupsForListDisplay(packageTemplates, null, null, _engineEnvironmentSettings.Environment);
+                TabularOutput<TemplateGroupTableRow> formatter =
+                    TabularOutput.TabularOutput
+                        .For(
+                            new TabularOutputSettings(_engineEnvironmentSettings.Environment),
+                            templatesToDisplay)
+                        .DefineColumn(t => t.Name, LocalizableStrings.ColumnNameTemplateName, minWidth: 15, showAlways: true)
+                        .DefineColumn(t => t.ShortNames, LocalizableStrings.ColumnNameShortName, minWidth: 15, showAlways: true)
+                        .DefineColumn(t => t.Type, LocalizableStrings.ColumnNameType, minWidth: 15, showAlways: true)
+                        .DefineColumn(t => t.Classifications, LocalizableStrings.ColumnNameTags, minWidth: 15, showAlways: true)
+                        .DefineColumn(t => t.Languages, LocalizableStrings.ColumnNameLanguage, minWidth: 15, showAlways: true);
+
+                Reporter.Output.WriteLine(formatter.Layout());
 
                 return NewCommandStatus.Success;
             }
@@ -441,7 +462,6 @@ namespace Microsoft.TemplateEngine.Cli
 
         private IList<string> CollectPackageMetadataOutput(
             string packageIdentity,
-            IEnumerable<ITemplateInfo> templates,
             IEngineEnvironmentSettings environmentSettings,
             NugetPackageMetadata? templatePackage)
         {
@@ -455,18 +475,6 @@ namespace Microsoft.TemplateEngine.Cli
             AddIfNotNull(list, SymbolStrings.Command_Details_License_Expression_Property, templatePackage?.LicenseExpression, 3);
             AddIfNotNull(list, SymbolStrings.Command_Details_License_Url_Property, templatePackage?.LicenseUrl?.ToString(), 3);
             AddIfNotNull(list, SymbolStrings.Command_Details_Repository_Url_Property, templatePackage?.ProjectUrl?.ToString(), 2);
-
-            list.Add($"{SymbolStrings.Command_Details_Templates_Property}:".Indent(2));
-            foreach (var template in templates)
-            {
-                list.Add($"{template.Name}".Indent(3));
-                AddIfNotNull(list, SymbolStrings.Command_Details_Short_Names_Property, string.Join(",", template.ShortNameList), 4);
-                AddIfNotNull(list, SymbolStrings.Command_Details_Author_Property, TemplateGroupDisplay.GetAuthorsToDisplay(new[] { template }, environmentSettings.Environment), 4);
-                AddIfNotNull(list, SymbolStrings.Command_Details_Tags_Property, TemplateGroupDisplay.GetClassificationsToDisplay(new[] { template }, environmentSettings.Environment), 4);
-                AddIfNotNull(list, SymbolStrings.Command_Details_Languages_Property, TemplateGroupDisplay.GetLanguagesToDisplay(new[] { template }, null, null, environmentSettings.Environment), 4);
-                AddIfNotNull(list, SymbolStrings.Command_Details_Description_Property, template.Description, 4);
-            }
-
             return list;
         }
 
