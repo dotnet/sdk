@@ -39,10 +39,10 @@
       </trans-unit>
       <trans-unit id="Command_Details_Description">
         <source>
-      Provides details for specified Nuget package.
+      Provides details for specified Nuget template package.
       The command checks if the package is installed locally, if it wasn't found, then it searches on the https://www.nuget.org/.</source>
         <target state="new">
-      Provides details for specified Nuget package.
+      Provides details for specified Nuget template package.
       The command checks if the package is installed locally, if it wasn't found, then it searches on the https://www.nuget.org/.</target>
         <note />
       </trans-unit>
