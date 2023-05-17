@@ -21,7 +21,6 @@ namespace Microsoft.NET.TestFramework
         public const string CurrentTargetFrameworkVersion = "8.0";
         public const string NextTargetFramework = "net9.0";
         public const string NextTargetFrameworkVersion = "9.0";
-        public const string MultiTargetFramework = "net472;netstandard2.0;net6.0";
 
         public const string LatestWinRuntimeIdentifier = "win10";
         public const string LatestLinuxRuntimeIdentifier = "ubuntu.22.04";
