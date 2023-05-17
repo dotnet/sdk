@@ -80,7 +80,7 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/Microsoft/vstest -->
-    <MicrosoftNETTestSdkPackageVersion>17.7.0-preview.23265.5</MicrosoftNETTestSdkPackageVersion>
+    <MicrosoftNETTestSdkPackageVersion>17.7.0-preview.23266.4</MicrosoftNETTestSdkPackageVersion>
     <MicrosoftTestPlatformCLIPackageVersion>$(MicrosoftNETTestSdkPackageVersion)</MicrosoftTestPlatformCLIPackageVersion>
     <MicrosoftTestPlatformBuildPackageVersion>$(MicrosoftNETTestSdkPackageVersion)</MicrosoftTestPlatformBuildPackageVersion>
   </PropertyGroup>
@@ -138,17 +138,17 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/Microsoft/visualfsharp -->
-    <MicrosoftFSharpCompilerPackageVersion>12.7.0-beta.23264.1</MicrosoftFSharpCompilerPackageVersion>
+    <MicrosoftFSharpCompilerPackageVersion>12.7.0-beta.23266.5</MicrosoftFSharpCompilerPackageVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/roslyn -->
-    <MicrosoftNetCompilersToolsetPackageVersion>4.7.0-2.23265.12</MicrosoftNetCompilersToolsetPackageVersion>
-    <MicrosoftCodeAnalysisPackageVersion>4.7.0-2.23265.12</MicrosoftCodeAnalysisPackageVersion>
-    <MicrosoftCodeAnalysisCSharpPackageVersion>4.7.0-2.23265.12</MicrosoftCodeAnalysisCSharpPackageVersion>
-    <MicrosoftCodeAnalysisCSharpCodeStylePackageVersion>4.7.0-2.23265.12</MicrosoftCodeAnalysisCSharpCodeStylePackageVersion>
-    <MicrosoftCodeAnalysisCSharpFeaturesPackageVersion>4.7.0-2.23265.12</MicrosoftCodeAnalysisCSharpFeaturesPackageVersion>
-    <MicrosoftCodeAnalysisWorkspacesMSBuildPackageVersion>4.7.0-2.23265.12</MicrosoftCodeAnalysisWorkspacesMSBuildPackageVersion>
-    <MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>4.7.0-2.23265.12</MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>
+    <MicrosoftNetCompilersToolsetPackageVersion>4.7.0-2.23266.3</MicrosoftNetCompilersToolsetPackageVersion>
+    <MicrosoftCodeAnalysisPackageVersion>4.7.0-2.23266.3</MicrosoftCodeAnalysisPackageVersion>
+    <MicrosoftCodeAnalysisCSharpPackageVersion>4.7.0-2.23266.3</MicrosoftCodeAnalysisCSharpPackageVersion>
+    <MicrosoftCodeAnalysisCSharpCodeStylePackageVersion>4.7.0-2.23266.3</MicrosoftCodeAnalysisCSharpCodeStylePackageVersion>
+    <MicrosoftCodeAnalysisCSharpFeaturesPackageVersion>4.7.0-2.23266.3</MicrosoftCodeAnalysisCSharpFeaturesPackageVersion>
+    <MicrosoftCodeAnalysisWorkspacesMSBuildPackageVersion>4.7.0-2.23266.3</MicrosoftCodeAnalysisWorkspacesMSBuildPackageVersion>
+    <MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>4.7.0-2.23266.3</MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>
     <MicrosoftNetCompilersToolsetVersion>$(MicrosoftNetCompilersToolsetPackageVersion)</MicrosoftNetCompilersToolsetVersion>
   </PropertyGroup>
   <PropertyGroup>
@@ -162,10 +162,10 @@
   </PropertyGroup>
   <!-- Dependencies from https://github.com/dotnet/razor -->
   <PropertyGroup>
-    <MicrosoftAspNetCoreMvcRazorExtensionsToolingInternalPackageVersion>7.0.0-preview.23264.3</MicrosoftAspNetCoreMvcRazorExtensionsToolingInternalPackageVersion>
-    <MicrosoftCodeAnalysisRazorToolingInternalVersion>7.0.0-preview.23264.3</MicrosoftCodeAnalysisRazorToolingInternalVersion>
+    <MicrosoftAspNetCoreMvcRazorExtensionsToolingInternalPackageVersion>7.0.0-preview.23266.4</MicrosoftAspNetCoreMvcRazorExtensionsToolingInternalPackageVersion>
+    <MicrosoftCodeAnalysisRazorToolingInternalVersion>7.0.0-preview.23266.4</MicrosoftCodeAnalysisRazorToolingInternalVersion>
     <MicrosoftAspNetCoreRazorSourceGeneratorToolingInternalPackageVersion>7.0.0-preview.23167.3</MicrosoftAspNetCoreRazorSourceGeneratorToolingInternalPackageVersion>
-    <MicrosoftNETSdkRazorSourceGeneratorsTransportPackageVersion>7.0.0-preview.23264.3</MicrosoftNETSdkRazorSourceGeneratorsTransportPackageVersion>
+    <MicrosoftNETSdkRazorSourceGeneratorsTransportPackageVersion>7.0.0-preview.23266.4</MicrosoftNETSdkRazorSourceGeneratorsTransportPackageVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/wpf -->
