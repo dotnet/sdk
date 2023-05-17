@@ -226,7 +226,7 @@ global using global::System.Threading.Tasks;
         [RequiresMSBuildVersionFact("17.0.0.32901")]
         public void It_not_generate_global_usings_for_system_net_http_when_multitarget()
         {
-            var tfm = ToolsetInfo.MultiTargetFramework;
+            var tfm = "net472;netstandard2.0;net6.0";
             var testProject = CreateTestProject(tfm);
             testProject.AdditionalProperties["ImplicitUsings"] = "enable";
             testProject.AdditionalProperties["LangVersion"] = "10.0";
@@ -239,7 +239,7 @@ global using global::System.Threading.Tasks;
                 .Should()
                 .Pass();
 
-            var outputDirectory = buildCommand.GetIntermediateDirectory(tfm);
+            var outputDirectory = buildCommand.GetIntermediateDirectory("net472");
 
             outputDirectory.Should().HaveFile(globalUsingsFileName);
 
