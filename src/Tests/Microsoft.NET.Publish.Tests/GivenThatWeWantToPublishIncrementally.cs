@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using FluentAssertions;
 using System.IO;
@@ -11,6 +11,7 @@ using Microsoft.NET.TestFramework.ProjectConstruction;
 using Xunit;
 using Xunit.Abstractions;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 
 namespace Microsoft.NET.Publish.Tests
 {
@@ -32,22 +33,27 @@ namespace Microsoft.NET.Publish.Tests
             };
             var testAsset = _testAssetsManager.CreateTestProject(testProject, testProject.Name);
 
-            var publishDir = Path.Combine(testAsset.TestRoot, testProject.Name, "bin", "Debug", testProject.TargetFrameworks, testProject.RuntimeIdentifier, "publish");
+           
+
+            // Publish normally
+            var publishCommand = new PublishCommand(testAsset);
+
+            publishCommand
+                .Execute()
+                .Should()
+                .Pass();
+
+            var publishDir = publishCommand.GetOutputDirectory(runtimeIdentifier: "win-x86").FullName;
             var expectedNonSingleExeFiles = new string[] { ".dll", ".deps.json", ".runtimeconfig.json" }
                 .Select(ending => testProject.Name + ending);
             var expectedSingleExeFiles = new string[] { ".exe", ".pdb" }.Select(ending => testProject.Name + ending);
 
-            // Publish normally
-            new PublishCommand(testAsset)
-                .Execute()
-                .Should()
-                .Pass();
             CheckPublishOutput(publishDir, expectedSingleExeFiles.Concat(expectedNonSingleExeFiles), null);
 
             File.WriteAllText(Path.Combine(publishDir, "UserData.txt"), string.Empty);
 
             // Publish as a single file
-            new PublishCommand(testAsset)
+            publishCommand
                 .Execute(@"/p:PublishSingleFile=true")
                 .Should()
                 .Pass();
@@ -66,14 +72,17 @@ namespace Microsoft.NET.Publish.Tests
             };
             var testAsset = _testAssetsManager.CreateTestProject(testProject, testProject.Name);
 
-            var publishDir = Path.Combine(testAsset.TestRoot, testProject.Name, "bin", "Debug", testProject.TargetFrameworks, testProject.RuntimeIdentifier, "publish");
-            var expectedSingleExeFileExtensions = new string[] { ".exe", ".pdb" };
 
             // Publish as a single file
-            new PublishCommand(testAsset)
+            var publishCommand = new PublishCommand(testAsset);
+            publishCommand
                 .Execute(@"/p:PublishSingleFile=true")
                 .Should()
                 .Pass();
+
+            var publishDir = publishCommand.GetOutputDirectory(runtimeIdentifier: "win-x86").FullName;
+            var expectedSingleExeFileExtensions = new string[] { ".exe", ".pdb" };
+
             CheckPublishOutput(publishDir, expectedSingleExeFileExtensions.Select(ending => testProject.Name + ending), null);
 
             File.WriteAllText(Path.Combine(publishDir, "UserData.txt"), string.Empty);
@@ -105,21 +114,23 @@ namespace Microsoft.NET.Publish.Tests
             };
             var testAsset = _testAssetsManager.CreateTestProject(testProject, testProject.Name);
 
-            var publishDir = Path.Combine(testAsset.TestRoot, testProject.Name, "bin", "Debug", testProject.TargetFrameworks, testProject.RuntimeIdentifier, "publish");
-            var expectedSingleExeFiles = new string[] { ".exe", ".pdb" }.Select(ending => testProject.Name + ending);
-
             // Publish as a single file
-            new PublishCommand(testAsset)
+            var publishCommand = new PublishCommand(testAsset);
+            publishCommand
                 .Execute(@"/p:PublishSingleFile=true")
                 .Should()
                 .Pass();
+
+            var publishDir = publishCommand.GetOutputDirectory(runtimeIdentifier: "win-x86").FullName;
+            var expectedSingleExeFiles = new string[] { ".exe", ".pdb" }.Select(ending => testProject.Name + ending);
+
             CheckPublishOutput(publishDir, expectedSingleExeFiles, null);
 
             // Write a file that would have been in a full publish, should still be there after another single file publish
             File.WriteAllText(Path.Combine(publishDir, testProject.Name + ".dll"), string.Empty);
 
             // Publish as a single file
-            new PublishCommand(testAsset)
+            publishCommand
                 .Execute(@"/p:PublishSingleFile=true")
                 .Should()
                 .Pass();
@@ -134,27 +145,32 @@ namespace Microsoft.NET.Publish.Tests
                 Name = "RegularPublishToTrimmedSingleExe",
                 TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
                 IsExe = true,
-                RuntimeIdentifier = "win-x86"
+                RuntimeIdentifier = "win-x86",
+                SelfContained = "true"
             };
+
             testProject.AdditionalProperties["PublishTrimmed"] = "true";
             var testAsset = _testAssetsManager.CreateTestProject(testProject, testProject.Name);
 
-            var publishDir = Path.Combine(testAsset.TestRoot, testProject.Name, "bin", "Debug", testProject.TargetFrameworks, testProject.RuntimeIdentifier, "publish");
+            // Publish trimmed
+            var publishCommand = new PublishCommand(testAsset);
+
+            publishCommand
+                .Execute()
+                .Should()
+                .Pass();
+
+            var publishDir = publishCommand.GetOutputDirectory(runtimeIdentifier: "win-x86").FullName;
             var expectedNonSingleExeFiles = new string[] { ".dll", ".deps.json", ".runtimeconfig.json" }
                 .Select(ending => testProject.Name + ending);
             var expectedSingleExeFiles = new string[] { ".exe", ".pdb" }.Select(ending => testProject.Name + ending);
 
-            // Publish trimmed
-            new PublishCommand(testAsset)
-                .Execute()
-                .Should()
-                .Pass();
             CheckPublishOutput(publishDir, expectedSingleExeFiles.Concat(expectedNonSingleExeFiles), null);
 
             File.WriteAllText(Path.Combine(publishDir, "UserData.txt"), string.Empty);
 
             // Publish as a single file
-            new PublishCommand(testAsset)
+            publishCommand
                 .Execute(@"/p:PublishSingleFile=true")
                 .Should()
                 .Pass();
@@ -290,14 +306,14 @@ namespace Microsoft.NET.Publish.Tests
             {
                 foreach (var expectedFile in expectedFiles)
                 {
-                    File.Exists(Path.Combine(publishDir, expectedFile)).Should().BeTrue();
+                    new FileInfo(Path.Combine(publishDir, expectedFile)).Should().Exist();
                 }
             }
             if (unexpectedFiles != null)
             {
                 foreach (var unexpectedFile in unexpectedFiles)
                 {
-                    File.Exists(Path.Combine(publishDir, unexpectedFile)).Should().BeFalse();
+                    new FileInfo(Path.Combine(publishDir, unexpectedFile)).Should().NotExist();
                 }
             }
         }
