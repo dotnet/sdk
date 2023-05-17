@@ -82,12 +82,13 @@ namespace Microsoft.NET.TestFramework.Commands
             return new DirectoryInfo(output);
         }
 
-        public virtual DirectoryInfo GetIntermediateDirectory(string targetFramework, string configuration = "Debug", string runtimeIdentifier = "")
+        public virtual DirectoryInfo GetIntermediateDirectory(string targetFramework = null, string configuration = "Debug", string runtimeIdentifier = null)
         {
-            if (targetFramework.Contains(";"))
+            if (TestAsset != null)
             {
-                targetFramework = targetFramework.Split(';')[0];
+                return new DirectoryInfo(OutputPathCalculator.FromProject(ProjectFile, TestAsset).GetOutputDirectory(targetFramework, configuration, runtimeIdentifier));
             }
+
             targetFramework = targetFramework ?? string.Empty;
             configuration = configuration ?? string.Empty;
             runtimeIdentifier = runtimeIdentifier ?? string.Empty;
