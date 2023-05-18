@@ -41,24 +41,24 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
             // Don't report in generated code since that's not actionable.
             context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 
-            context.RegisterCompilationStartAction(compilationContext =>
+            context.RegisterCompilationStartAction(context =>
             {
-                var wellKnownTypeProvider = WellKnownTypeProvider.GetOrCreate(compilationContext.Compilation);
+                var wellKnownTypeProvider = WellKnownTypeProvider.GetOrCreate(context.Compilation);
 
                 // Get the list of all method' attributes for which the rule shall not be triggered.
                 ImmutableArray<INamedTypeSymbol> skippedAttributes = GetSkippedAttributes(wellKnownTypeProvider);
 
-                var isWebProject = compilationContext.Compilation.IsWebProject(compilationContext.Options);
+                var isWebProject = context.Compilation.IsWebProject(context.Options);
 
-                compilationContext.RegisterSymbolStartAction(
-                    symbolStartContext => OnSymbolStart(symbolStartContext, wellKnownTypeProvider, skippedAttributes, isWebProject),
+                context.RegisterSymbolStartAction(
+                    context => OnSymbolStart(context, wellKnownTypeProvider, skippedAttributes, isWebProject),
                     SymbolKind.NamedType);
             });
 
             return;
 
             static void OnSymbolStart(
-                SymbolStartAnalysisContext symbolStartContext,
+                SymbolStartAnalysisContext context,
                 WellKnownTypeProvider wellKnownTypeProvider,
                 ImmutableArray<INamedTypeSymbol> skippedAttributes,
                 bool isWebProject)
@@ -75,75 +75,75 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                 // Do not flag methods that are used as delegates: https://github.com/dotnet/roslyn-analyzers/issues/1511
                 var methodsUsedAsDelegates = TemporarySet<IMethodSymbol>.Empty;
 
-                symbolStartContext.RegisterOperationAction(OnMethodReference, OperationKind.MethodReference);
-                symbolStartContext.RegisterOperationBlockStartAction(OnOperationBlockStart);
-                symbolStartContext.RegisterSymbolEndAction(OnSymbolEnd);
+                context.RegisterOperationAction(OnMethodReference, OperationKind.MethodReference);
+                context.RegisterOperationBlockStartAction(OnOperationBlockStart);
+                context.RegisterSymbolEndAction(OnSymbolEnd);
 
                 return;
 
-                void OnMethodReference(OperationAnalysisContext operationContext)
+                void OnMethodReference(OperationAnalysisContext context)
                 {
-                    var methodReference = (IMethodReferenceOperation)operationContext.Operation;
-                    methodsUsedAsDelegates.Add(methodReference.Method, operationContext.CancellationToken);
+                    var methodReference = (IMethodReferenceOperation)context.Operation;
+                    methodsUsedAsDelegates.Add(methodReference.Method, context.CancellationToken);
                 }
 
-                void OnOperationBlockStart(OperationBlockStartAnalysisContext blockStartContext)
+                void OnOperationBlockStart(OperationBlockStartAnalysisContext context)
                 {
-                    if (blockStartContext.OwningSymbol is not IMethodSymbol methodSymbol)
+                    if (context.OwningSymbol is not IMethodSymbol methodSymbol)
                     {
                         return;
                     }
 
                     // Don't run any other check for this method if it isn't a valid analysis context
-                    if (!ShouldAnalyze(methodSymbol, wellKnownTypeProvider, skippedAttributes, isWebProject, blockStartContext))
+                    if (!ShouldAnalyze(methodSymbol, wellKnownTypeProvider, skippedAttributes, isWebProject, context))
                     {
                         return;
                     }
 
                     bool isInstanceReferenced = false;
 
-                    blockStartContext.RegisterOperationAction(operationContext =>
+                    context.RegisterOperationAction(context =>
                     {
-                        if (((IInstanceReferenceOperation)operationContext.Operation).ReferenceKind == InstanceReferenceKind.ContainingTypeInstance)
+                        if (((IInstanceReferenceOperation)context.Operation).ReferenceKind == InstanceReferenceKind.ContainingTypeInstance)
                         {
                             isInstanceReferenced = true;
                         }
                     }, OperationKind.InstanceReference);
 
                     // Workaround for https://github.com/dotnet/roslyn/issues/27564
-                    blockStartContext.RegisterOperationAction(operationContext =>
+                    context.RegisterOperationAction(context =>
                     {
-                        if (!operationContext.Operation.IsOperationNoneRoot())
+                        if (!context.Operation.IsOperationNoneRoot())
                         {
                             isInstanceReferenced = true;
                         }
                     }, OperationKind.None);
 
-                    blockStartContext.RegisterOperationBlockEndAction(blockEndContext =>
+                    context.RegisterOperationBlockEndAction(context =>
                     {
                         if (!isInstanceReferenced)
                         {
                             if (methodSymbol.IsAccessorMethod())
                             {
-                                accessorCandidates.Add(methodSymbol, blockEndContext.CancellationToken);
-                                propertyOrEventCandidates.Add(methodSymbol.AssociatedSymbol, blockEndContext.CancellationToken);
+                                accessorCandidates.Add(methodSymbol, context.CancellationToken);
+                                propertyOrEventCandidates.Add(methodSymbol.AssociatedSymbol, context.CancellationToken);
                             }
                             else if (methodSymbol.IsExternallyVisible())
                             {
                                 if (!IsOnObsoleteMemberChain(methodSymbol, wellKnownTypeProvider))
                                 {
-                                    blockEndContext.ReportDiagnostic(methodSymbol.CreateDiagnostic(Rule, methodSymbol.Name));
+                                    context.ReportDiagnostic(methodSymbol.CreateDiagnostic(Rule, methodSymbol.Name));
                                 }
                             }
                             else
                             {
-                                methodCandidates.Add(methodSymbol, blockEndContext.CancellationToken);
+                                methodCandidates.Add(methodSymbol, context.CancellationToken);
                             }
                         }
                     });
                 }
 
-                void OnSymbolEnd(SymbolAnalysisContext symbolEndContext)
+                void OnSymbolEnd(SymbolAnalysisContext context)
                 {
                     foreach (var candidate in methodCandidates.NonConcurrentEnumerable)
                     {
@@ -154,7 +154,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
 
                         if (!IsOnObsoleteMemberChain(candidate, wellKnownTypeProvider))
                         {
-                            symbolEndContext.ReportDiagnostic(candidate.CreateDiagnostic(Rule, candidate.Name));
+                            context.ReportDiagnostic(candidate.CreateDiagnostic(Rule, candidate.Name));
                         }
                     }
 
@@ -173,14 +173,14 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
 
                         if (allAccessorsAreCandidates)
                         {
-                            symbolEndContext.ReportDiagnostic(candidatePropertyOrEvent.CreateDiagnostic(Rule, candidatePropertyOrEvent.Name));
+                            context.ReportDiagnostic(candidatePropertyOrEvent.CreateDiagnostic(Rule, candidatePropertyOrEvent.Name));
                         }
                     }
 
-                    propertyOrEventCandidates.Free(symbolEndContext.CancellationToken);
-                    accessorCandidates.Free(symbolEndContext.CancellationToken);
-                    methodCandidates.Free(symbolEndContext.CancellationToken);
-                    methodsUsedAsDelegates.Free(symbolEndContext.CancellationToken);
+                    propertyOrEventCandidates.Free(context.CancellationToken);
+                    accessorCandidates.Free(context.CancellationToken);
+                    methodCandidates.Free(context.CancellationToken);
+                    methodsUsedAsDelegates.Free(context.CancellationToken);
                 }
             }
         }
@@ -191,7 +191,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
             ImmutableArray<INamedTypeSymbol> skippedAttributes,
             bool isWebProject,
 #pragma warning disable RS1012 // Start action has no registered actions
-            OperationBlockStartAnalysisContext blockStartContext)
+            OperationBlockStartAnalysisContext context)
 #pragma warning restore RS1012 // Start action has no registered actions
         {
             // Modifiers that we don't care about
@@ -213,7 +213,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
 
             // Don't report methods which have a single throw statement
             // with NotImplementedException or NotSupportedException
-            if (blockStartContext.IsMethodNotImplementedOrSupported())
+            if (context.IsMethodNotImplementedOrSupported())
             {
                 return false;
             }
@@ -285,7 +285,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                 return false;
             }
 
-            var hasCorrectVisibility = blockStartContext.Options.MatchesConfiguredVisibility(Rule, methodSymbol, wellKnownTypeProvider.Compilation,
+            var hasCorrectVisibility = context.Options.MatchesConfiguredVisibility(Rule, methodSymbol, wellKnownTypeProvider.Compilation,
                 defaultRequiredVisibility: SymbolVisibilityGroup.All);
             if (!hasCorrectVisibility)
             {
