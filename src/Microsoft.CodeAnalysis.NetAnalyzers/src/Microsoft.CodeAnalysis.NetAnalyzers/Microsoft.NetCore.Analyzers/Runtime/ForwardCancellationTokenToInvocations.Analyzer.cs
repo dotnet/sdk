@@ -265,8 +265,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             INamedTypeSymbol cancellationTokenType)
         {
             return
-                !method.Parameters.IsEmpty &&
-                method.Parameters[^1] is IParameterSymbol lastParameter &&
+                method.Parameters is [.., IParameterSymbol lastParameter] &&
                 (InvocationIgnoresOptionalCancellationToken(lastParameter, arguments, cancellationTokenType) ||
                 InvocationIsUsingParamsCancellationToken(lastParameter, arguments, cancellationTokenType));
         }
