@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Immutable;
@@ -53,13 +53,15 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 context.RegisterOperationAction(
                     operationAnalysisContext => AnalyzeInvocationExpression(
                         (IInvocationOperation)operationAnalysisContext.Operation, linqExpressionType,
-                        operationAnalysisContext.ReportDiagnostic),
+                        static (context, diagnostic) => context.ReportDiagnostic(diagnostic),
+                        operationAnalysisContext),
                     OperationKind.Invocation);
 
                 context.RegisterOperationAction(
                     operationAnalysisContext => AnalyzeBinaryExpression(
                         (IBinaryOperation)operationAnalysisContext.Operation, linqExpressionType,
-                        operationAnalysisContext.ReportDiagnostic),
+                        static (context, diagnostic) => context.ReportDiagnostic(diagnostic),
+                        operationAnalysisContext),
                     OperationKind.BinaryOperator);
             });
         }
@@ -67,8 +69,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         /// <summary>
         /// Check to see if we have an invocation to string.Equals that has an empty string as an argument.
         /// </summary>
-        private static void AnalyzeInvocationExpression(IInvocationOperation invocationOperation,
-            INamedTypeSymbol? linqExpressionTreeType, Action<Diagnostic> reportDiagnostic)
+        private static void AnalyzeInvocationExpression<TContext>(IInvocationOperation invocationOperation,
+            INamedTypeSymbol? linqExpressionTreeType, Action<TContext, Diagnostic> reportDiagnostic, TContext context)
         {
             if (!invocationOperation.Arguments.IsEmpty)
             {
@@ -84,7 +86,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 // that the underlying call doesn't have the helper so we want to bail-out.
                 if (!invocationOperation.IsWithinExpressionTree(linqExpressionTreeType))
                 {
-                    reportDiagnostic(invocationOperation.Syntax.CreateDiagnostic(s_rule));
+                    reportDiagnostic(context, invocationOperation.Syntax.CreateDiagnostic(s_rule));
                 }
             }
         }
@@ -93,8 +95,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         /// Check to see if we have a equals or not equals expression where an empty string is being
         /// compared.
         /// </summary>
-        private static void AnalyzeBinaryExpression(IBinaryOperation binaryOperation,
-            INamedTypeSymbol? linqExpressionTreeType, Action<Diagnostic> reportDiagnostic)
+        private static void AnalyzeBinaryExpression<TContext>(IBinaryOperation binaryOperation,
+            INamedTypeSymbol? linqExpressionTreeType, Action<TContext, Diagnostic> reportDiagnostic, TContext context)
         {
             if (binaryOperation.OperatorKind is not BinaryOperatorKind.Equals and
                 not BinaryOperatorKind.NotEquals)
@@ -118,7 +120,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             // that the underlying call doesn't have the helper so we want to bail-out.
             if (!binaryOperation.IsWithinExpressionTree(linqExpressionTreeType))
             {
-                reportDiagnostic(binaryOperation.Syntax.CreateDiagnostic(s_rule));
+                reportDiagnostic(context, binaryOperation.Syntax.CreateDiagnostic(s_rule));
             }
         }
 
