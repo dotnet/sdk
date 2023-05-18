@@ -741,7 +741,9 @@ public class Span
             await VerifyCS.VerifyAnalyzerAsync(@"
 public static class MyHelper
 {
-    public static int GetSomething(this string _) => 42;
+    public static int GetSomethingM1(this string _) => 42;
+    public static int GetSomethingM2(this string _1) => 42;
+    public static int GetSomethingM3(this string __) => 42;
 
     public static void SomeMethod()
     {
@@ -764,6 +766,8 @@ public class SomeClass
     public SomeClass()
     {
         var (_, d) = GetSomething();
+        var (_1, d1) = GetSomething();
+        var (__, d2) = GetSomething();
     }
 
     private static (string, double) GetSomething() => ("""", 0);
@@ -783,6 +787,16 @@ public class SomeClass
             case object _:
                 break;
         }
+        switch (o)
+        {
+            case object _1:
+                break;
+        }
+        switch (o)
+        {
+            case object __:
+                break;
+        }
     }
 }");
         }
@@ -800,6 +814,34 @@ public class SomeClass
 
     public int GetSomething() => 42;
 }");
+        }
+
+        [Fact]
+        public async Task CA1707_CSharp_LambdaDiscardParameterSymbol_NoDiagnosticAsync()
+        {
+            await new VerifyCS.Test
+            {
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9,
+                TestCode = @"
+using System;
+
+public class SomeClass
+{
+    public SomeClass(object o)
+    {
+        _ = GetSomething((_, _) => _ = GetSomethingElse());
+        _ = GetSomething((_1, _2) => _ = GetSomethingElse());
+        _ = GetSomething((_, __) => _ = GetSomethingElse());
+    }
+
+    public int GetSomething(Action<object, object> objects)
+    {
+        return 0;
+    }
+
+    public int GetSomethingElse() => 42;
+}"
+            }.RunAsync();
         }
 
         [Fact, WorkItem(3121, "https://github.com/dotnet/roslyn-analyzers/issues/3121")]
@@ -1524,13 +1566,13 @@ End Class");
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Public Structure S
-	Public Shared Operator =(left As S, right As S) As Boolean
-		Return left.Equals(right)
-	End Operator
+    Public Shared Operator =(left As S, right As S) As Boolean
+        Return left.Equals(right)
+    End Operator
 
-	Public Shared Operator <>(left As S, right As S) As Boolean
-		Return Not (left = right)
-	End Operator
+    Public Shared Operator <>(left As S, right As S) As Boolean
+        Return Not (left = right)
+    End Operator
 End Structure
 ");
         }

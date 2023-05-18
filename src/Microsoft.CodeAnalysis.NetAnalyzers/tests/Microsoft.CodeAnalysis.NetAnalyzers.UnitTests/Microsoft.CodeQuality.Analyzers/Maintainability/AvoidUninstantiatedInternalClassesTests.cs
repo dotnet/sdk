@@ -1625,6 +1625,37 @@ End Class");
             }.RunAsync();
         }
 
+        [Theory]
+        [CombinatorialData]
+        public async Task InternalsVisibleTo_Diagnostic_WhenOptionsDemandIt(bool ignoreInternalsVisibleTo)
+        {
+            string source = @"[assembly: System.Runtime.CompilerServices.InternalsVisibleTo(""TestProject"")]
+                              internal class {|#0:C|} { }";
+
+            var test = new VerifyCS.Test
+            {
+                TestCode = source,
+                TestState =
+                {
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+dotnet_code_quality.CA1812.ignore_internalsvisibleto = {ignoreInternalsVisibleTo}
+") }
+                }
+            };
+
+            if (ignoreInternalsVisibleTo)
+            {
+                test.ExpectedDiagnostics.Add(
+                    VerifyCS.Diagnostic(AvoidUninstantiatedInternalClassesAnalyzer.Rule)
+                        .WithLocation(0)
+                        .WithArguments("C"));
+            }
+
+            await test.RunAsync();
+        }
+
         private static DiagnosticResult GetCSharpResultAt(int line, int column, string className)
 #pragma warning disable RS0030 // Do not use banned APIs
             => VerifyCS.Diagnostic()

@@ -273,6 +273,38 @@ End Class";
                 FixedCode = fixedSource,
             }.RunAsync();
         }
+
+        [Theory]
+        [CombinatorialData]
+        public async Task InternalsVisibleTo_Diagnostic_WhenOptionsDemandIt(bool ignoreInternalsVisibleTo)
+        {
+            string source = @"[assembly: System.Runtime.CompilerServices.InternalsVisibleTo(""TestProject"")]
+                              internal class {|#0:C|} { }";
+
+            var test = new VerifyCS.Test
+            {
+                TestCode = source,
+                TestState =
+                {
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+dotnet_code_quality.CA1852.ignore_internalsvisibleto = {ignoreInternalsVisibleTo}
+") }
+                }
+            };
+
+            if (ignoreInternalsVisibleTo)
+            {
+                test.ExpectedDiagnostics.Add(
+                    VerifyCS.Diagnostic(Rule)
+                        .WithLocation(0)
+                        .WithArguments("C"));
+            }
+
+            await test.RunAsync();
+        }
+
         #endregion
 
         #region No Diagnostic

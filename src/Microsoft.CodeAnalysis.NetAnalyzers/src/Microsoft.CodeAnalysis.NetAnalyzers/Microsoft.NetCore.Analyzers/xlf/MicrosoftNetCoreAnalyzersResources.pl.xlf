@@ -47,6 +47,26 @@
         <target state="translated">Analiza literałów ciągu atrybutu powinna kończyć się powodzeniem</target>
         <note />
       </trans-unit>
+      <trans-unit id="AvoidConstArraysCodeFixTitle">
+        <source>Extract to static readonly field</source>
+        <target state="translated">Wyodrębnij do statycznego pola tylko do odczytu</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidConstArraysDescription">
+        <source>Constant arrays passed as arguments are not reused which implies a performance overhead. Consider extracting them to 'static readonly' fields to improve performance.</source>
+        <target state="translated">Tablice stałe przekazywane jako argumenty nie są ponownie używane, co oznacza narzut na wydajność. Rozważ wyodrębnienie ich do pól „static readonly”, aby zwiększyć wydajność.</target>
+        <note>{Locked="static readonly"}</note>
+      </trans-unit>
+      <trans-unit id="AvoidConstArraysMessage">
+        <source>Prefer 'static readonly' fields over local constant array arguments</source>
+        <target state="translated">Preferuj pola „static readonly” niż argumenty lokalnej tablicy stałej</target>
+        <note>{Locked="static readonly"}</note>
+      </trans-unit>
+      <trans-unit id="AvoidConstArraysTitle">
+        <source>Avoid constant arrays as arguments</source>
+        <target state="translated">Unikaj tablic stałych jako argumentów</target>
+        <note />
+      </trans-unit>
       <trans-unit id="AvoidStringBuilderPInvokeParametersDescription">
         <source>Marshalling of 'StringBuilder' always creates a native buffer copy, resulting in multiple allocations for one marshalling operation.</source>
         <target state="translated">Marshalling elementu „StringBuilder” zawsze tworzy natywną kopię buforu, co powoduje powstanie wielu alokacji dla jednej operacji marshallingu.</target>
@@ -544,12 +564,12 @@
       </trans-unit>
       <trans-unit id="DoNotCallDangerousMethodsInDeserializationMessage">
         <source>When deserializing an instance of class '{0}', method '{1}' can directly or indirectly call dangerous method '{2}'</source>
-        <target state="new">When deserializing an instance of class '{0}', method '{1}' can directly or indirectly call dangerous method '{2}'</target>
+        <target state="translated">Podczas deserializacji wystąpienia klasy „{0}” metoda „{1}” może bezpośrednio lub pośrednio wywoływać niebezpieczną metodę „{2}”</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCallDangerousMethodsInDeserializationTitle">
         <source>Do Not Call Dangerous Methods In Deserialization</source>
-        <target state="new">Do Not Call Dangerous Methods In Deserialization</target>
+        <target state="translated">Nie wywołuj niebezpiecznych metod w deserializacji</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCallEnumerableCastOrOfTypeWithIncompatibleTypesDescription">
@@ -557,25 +577,25 @@
 The generic cast (IL 'unbox.any') used by the sequence returned by Enumerable.Cast&lt;T&gt; will throw InvalidCastException at runtime on elements of the types specified.  
 The generic type check (C# 'is' operator/IL 'isinst') used by Enumerable.OfType&lt;T&gt; will never succeed with elements of types specified, resulting in an empty sequence.  
 Widening and user defined conversions are not supported with generic types.</source>
-        <target state="new">Enumerable.Cast&lt;T&gt; and Enumerable.OfType&lt;T&gt; require compatible types to function expectedly.  
-The generic cast (IL 'unbox.any') used by the sequence returned by Enumerable.Cast&lt;T&gt; will throw InvalidCastException at runtime on elements of the types specified.  
-The generic type check (C# 'is' operator/IL 'isinst') used by Enumerable.OfType&lt;T&gt; will never succeed with elements of types specified, resulting in an empty sequence.  
-Widening and user defined conversions are not supported with generic types.</target>
+        <target state="translated">Elementy Enumerable.Cast&lt;T&gt; i Enumerable.OfType&lt;T&gt; wymagają oczekiwanych zgodnych typów.  
+Rzutowanie ogólne (IL „unbox.any”) używane przez sekwencję zwracaną przez metodę Enumerable.Cast&lt;T&gt; zgłosi wyjątek InvalidCastException w środowisku uruchomieniowym dla elementów określonych typów.  
+Sprawdzanie typu ogólnego (operator „is” języka C# /IL „isinst”) używane przez metodę Enumerable.OfType&lt;T&gt; nigdy nie powiedzie się z określonymi elementami typów, co spowoduje powstanie pustej sekwencji.  
+Konwersje poszerzane i zdefiniowane przez użytkownika nie są obsługiwane w przypadku typów ogólnych.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCallEnumerableCastOrOfTypeWithIncompatibleTypesMessageCast">
         <source>Type '{0}' is incompatible with type '{1}' and cast attempts will throw InvalidCastException at runtime</source>
-        <target state="new">Type '{0}' is incompatible with type '{1}' and cast attempts will throw InvalidCastException at runtime</target>
+        <target state="translated">Typ „{0}” jest niezgodny z typem „{1}”, a próby rzutowania zgłoszą wyjątek InvalidCastException w środowisku uruchomieniowym</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCallEnumerableCastOrOfTypeWithIncompatibleTypesMessageOfType">
         <source>This call will always result in an empty sequence because type '{0}' is incompatible with type '{1}'</source>
-        <target state="new">This call will always result in an empty sequence because type '{0}' is incompatible with type '{1}'</target>
+        <target state="translated">To wywołanie zawsze spowoduje powstanie pustej sekwencji, ponieważ typ „{0}” jest niezgodny z typem „{1}”</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCallEnumerableCastOrOfTypeWithIncompatibleTypesTitle">
         <source>Do not call Enumerable.Cast&lt;T&gt; or Enumerable.OfType&lt;T&gt; with incompatible types</source>
-        <target state="new">Do not call Enumerable.Cast&lt;T&gt; or Enumerable.OfType&lt;T&gt; with incompatible types</target>
+        <target state="translated">Nie wywołuj metody Enumerable.Cast&lt;T&gt; ani Enumerable.OfType&lt;T&gt; z niezgodnymi typami</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCallToImmutableCollectionOnAnImmutableCollectionValueMessage">
@@ -1000,17 +1020,17 @@ Widening and user defined conversions are not supported with generic types.</tar
       </trans-unit>
       <trans-unit id="DoNotUseReferenceEqualsWithValueTypesComparerMessage">
         <source>Do not pass an argument with value type '{0}' to the 'Equals' method on 'ReferenceEqualityComparer'. Due to value boxing, this call to 'Equals' can return an unexpected result. Consider using 'EqualityComparer' instead, or pass reference type arguments if you intend to use 'ReferenceEqualityComparer'.</source>
-        <target state="new">Do not pass an argument with value type '{0}' to the 'Equals' method on 'ReferenceEqualityComparer'. Due to value boxing, this call to 'Equals' can return an unexpected result. Consider using 'EqualityComparer' instead, or pass reference type arguments if you intend to use 'ReferenceEqualityComparer'.</target>
+        <target state="translated">Nie przekazuj argumentu o typie wartości „{0}” do metody „Equals” w elemencie „ReferenceEqualityComparer”. Ze względu na boxing wartości to wywołanie „Equals” może zwrócić nieoczekiwany wynik. Zamiast tego rozważ użycie elementu „EqualityComparer” lub przekaż argumenty typu odwołania, jeśli zamierzasz użyć elementu „ReferenceEqualityComparer”.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseReferenceEqualsWithValueTypesDescription">
         <source>Value type typed arguments are uniquely boxed for each call to this method, therefore the result can be unexpected.</source>
-        <target state="new">Value type typed arguments are uniquely boxed for each call to this method, therefore the result can be unexpected.</target>
+        <target state="translated">Argumenty wpisane w typie wartości są unikatowo blokowane dla każdego wywołania tej metody, dlatego wynik może być nieoczekiwany.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseReferenceEqualsWithValueTypesMethodMessage">
         <source>Do not pass an argument with value type '{0}' to 'ReferenceEquals'. Due to value boxing, this call to 'ReferenceEquals' can return an unexpected result. Consider using 'Equals' instead, or pass reference type arguments if you intend to use 'ReferenceEquals'.</source>
-        <target state="new">Do not pass an argument with value type '{0}' to 'ReferenceEquals'. Due to value boxing, this call to 'ReferenceEquals' can return an unexpected result. Consider using 'Equals' instead, or pass reference type arguments if you intend to use 'ReferenceEquals'.</target>
+        <target state="translated">Nie przekazuj argumentu o typie wartości „{0}” do elementu „ReferenceEquals”. Ze względu na boxing wartości to wywołanie elementu „ReferenceEquals” może zwrócić nieoczekiwany wynik. Zamiast tego rozważ użycie elementu „Equals” lub przekaż argumenty typu odwołania, jeśli zamierzasz użyć elementu „ReferenceEquals”.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseReferenceEqualsWithValueTypesTitle">
@@ -1960,12 +1980,12 @@ Widening and user defined conversions are not supported with generic types.</tar
       </trans-unit>
       <trans-unit id="PreferCountOverAnyCodeFixTitle">
         <source>Use 'Count' check instead of 'Any()'</source>
-        <target state="new">Use 'Count' check instead of 'Any()'</target>
+        <target state="translated">Użyj sprawdzania „Count” zamiast „Any()”</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferCountOverAnyMessage">
         <source>Prefer comparing 'Count' to 0 rather than using 'Any()', both for clarity and for performance</source>
-        <target state="new">Prefer comparing 'Count' to 0 rather than using 'Any()', both for clarity and for performance</target>
+        <target state="translated">Preferuj porównywanie wartości „Count” z wartością 0 zamiast użycia elementu „Any()”, zarówno w celu zapewnienia jednoznaczności, jak i wydajności</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferDictionaryContainsKeyCodeFixTitle">
@@ -2025,32 +2045,32 @@ Widening and user defined conversions are not supported with generic types.</tar
       </trans-unit>
       <trans-unit id="PreferIsEmptyOverAnyCodeFixTitle">
         <source>Use 'IsEmpty' check instead of 'Any()'</source>
-        <target state="new">Use 'IsEmpty' check instead of 'Any()'</target>
+        <target state="translated">Użyj sprawdzania „IsEmpty” zamiast „Any()”</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferIsEmptyOverAnyMessage">
         <source>Prefer an 'IsEmpty' check rather than using 'Any()', both for clarity and for performance</source>
-        <target state="new">Prefer an 'IsEmpty' check rather than using 'Any()', both for clarity and for performance</target>
+        <target state="translated">Preferuj kontrolę „IsEmpty”, a nie „Any()”, zarówno w celu zapewnienia przejrzystości, jak i wydajności</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferLengthCountIsEmptyOverAnyDescription">
         <source>Prefer using 'IsEmpty', 'Count' or 'Length' properties whichever available, rather than calling 'Enumerable.Any()'. The intent is clearer and it is more performant than using 'Enumerable.Any()' extension method.</source>
-        <target state="new">Prefer using 'IsEmpty', 'Count' or 'Length' properties whichever available, rather than calling 'Enumerable.Any()'. The intent is clearer and it is more performant than using 'Enumerable.Any()' extension method.</target>
+        <target state="translated">Preferuj używanie właściwości „IsEmpty”, „Count” lub „Length” w zależności od dostępności, zamiast wywoływać metodę „Enumerable.Any()”. Intencja jest bardziej przejrzysta i wydajniejsza niż użycie metody rozszerzenia „Enumerable.Any()”.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferLengthCountIsEmptyOverAnyTitle">
         <source>Avoid using 'Enumerable.Any()' extension method</source>
-        <target state="new">Avoid using 'Enumerable.Any()' extension method</target>
+        <target state="translated">Unikaj używania metody rozszerzenia „Enumerable.Any()”</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferLengthOverAnyCodeFixTitle">
         <source>Use 'Length' check instead of 'Any()'</source>
-        <target state="new">Use 'Length' check instead of 'Any()'</target>
+        <target state="translated">Użyj sprawdzania „Length” zamiast „Any()”</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferLengthOverAnyMessage">
         <source>Prefer comparing 'Length' to 0 rather than using 'Any()', both for clarity and for performance</source>
-        <target state="new">Prefer comparing 'Length' to 0 rather than using 'Any()', both for clarity and for performance</target>
+        <target state="translated">Preferuj porównywanie wartości „Length” z wartością 0 zamiast używania elementu „Any()”, zarówno w celu zapewnienia przejrzystości, jak i wydajności</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferStreamAsyncMemoryOverloadsDescription">
@@ -2755,7 +2775,7 @@ Widening and user defined conversions are not supported with generic types.</tar
       </trans-unit>
       <trans-unit id="UseConcreteTypeForPropertyMessage">
         <source>Change type of property '{0}' from '{1}' to '{2}' for improved performance</source>
-        <target state="new">Change type of property '{0}' from '{1}' to '{2}' for improved performance</target>
+        <target state="translated">Zmień typ właściwości „{0}” z „{1}” na „{2}”, aby zwiększyć wydajność</target>
         <note />
       </trans-unit>
       <trans-unit id="UseConcreteTypeTitle">

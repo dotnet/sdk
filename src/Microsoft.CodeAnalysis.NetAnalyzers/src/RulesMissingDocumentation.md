@@ -9,5 +9,5 @@ CA1513 | <https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-
 CA1856 | <https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1856> | Incorrect usage of ConstantExpected attribute |
 CA1857 | <https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1857> | A constant is expected for the parameter |
 CA1859 | <https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1859> | Use concrete types when possible for improved performance |
-CA1860 | <https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1860> | Avoid using 'Enumerable.Any()' extension method |
+CA1861 | <https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1861> | Avoid constant arrays as arguments |
 CA2021 | <https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2021> | Do not call Enumerable.Cast\<T> or Enumerable.OfType\<T> with incompatible types |

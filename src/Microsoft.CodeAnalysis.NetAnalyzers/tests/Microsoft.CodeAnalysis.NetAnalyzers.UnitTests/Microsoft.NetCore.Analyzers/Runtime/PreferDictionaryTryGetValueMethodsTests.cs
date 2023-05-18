@@ -1,7 +1,10 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
+using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
 using Xunit;
@@ -29,10 +32,18 @@ namespace Test
 {{
     public class TestClass
     {{
-        public int TestMethod()
+        public int TestMethod(Dictionary<string, int> parameter)
         {{
             {0}
         }}
+
+        public Dictionary<string, int> memberField = new Dictionary<string, int>();
+        public Dictionary<string, int>[] memberFieldArray = new [] {{new Dictionary<string, int>(), new Dictionary<string, int>()}};
+        public Dictionary<string, int> MemberProperty {{get; set;}} = new Dictionary<string, int>();
+
+        public static Dictionary<string, int> staticField = new Dictionary<string, int>();
+        public static Dictionary<string, int> StaticProperty {{get; set;}} = new Dictionary<string, int>();
+        private const string constKey = ""key"";
 
         private class MyDictionary<TKey, TValue> {{
             public bool ContainsKey(TKey key) {{
@@ -44,27 +55,29 @@ namespace Test
     }}
 }}";
 
-        private const string DictionaryContainsKeyPrintValue = @"
+        private const string GuardedPrintValue = @"
             string key = ""key"";
             Dictionary<string, int> data = new Dictionary<string, int>();
             if ({|#0:data.ContainsKey(key)|})
             {
                 Console.WriteLine({|#1:data[key]|});
+                Console.WriteLine({|#2:data[key]|});
             }
 
             return 0;";
 
-        private const string DictionaryContainsKeyPrintValueFixed = @"
+        private const string GuardedPrintValueFixed = @"
             string key = ""key"";
             Dictionary<string, int> data = new Dictionary<string, int>();
             if (data.TryGetValue(key, out int value))
             {
                 Console.WriteLine(value);
+                Console.WriteLine(value);
             }
 
             return 0;";
 
-        private const string DictionaryContainsKeyReturnValue = @"
+        private const string GuardedReturn = @"
             string key = ""key"";
             ConcurrentDictionary<string, int> data = new ConcurrentDictionary<string, int>();
             if ({|#0:data.ContainsKey(key)|})
@@ -74,7 +87,7 @@ namespace Test
 
             return 0;";
 
-        private const string DictionaryContainsKeyReturnValueFixed = @"
+        private const string GuardedReturnFixed = @"
             string key = ""key"";
             ConcurrentDictionary<string, int> data = new ConcurrentDictionary<string, int>();
             if (data.TryGetValue(key, out int value))
@@ -84,7 +97,7 @@ namespace Test
 
             return 0;";
 
-        private const string DictionaryContainsKeyMultipleStatementsInIf = @"
+        private const string GuardedWithUnrelatedStatements = @"
             string key = ""key"";
             IDictionary<string, int> data = new Dictionary<string, int>();
             if ({|#0:data.ContainsKey(key)|})
@@ -98,7 +111,7 @@ namespace Test
 
             return 0;";
 
-        private const string DictionaryContainsKeyMultipleStatementsInIfFixed = @"
+        private const string GuardedWithUnrelatedStatementsFixed = @"
             string key = ""key"";
             IDictionary<string, int> data = new Dictionary<string, int>();
             if (data.TryGetValue(key, out int value))
@@ -112,35 +125,67 @@ namespace Test
 
             return 0;";
 
-        private const string DictionaryContainsKeyMultipleConditions = @"
+        private const string GuardedAndCondition = @"
             string key = ""key"";
-            IDictionary<string, int> data = new Dictionary<string, int>();
-            if (key == ""key"" && {|#0:data.ContainsKey(key)|})
+            Dictionary<string, int> data = new Dictionary<string, int>();
+            if ({|#0:data.ContainsKey(key)|} && {|#1:data[key]|} == 2)
             {
-                Console.WriteLine(2);
-                var x = 2;
-                Console.WriteLine({|#1:data[key]|});
-                
-                return x;
+                Console.WriteLine({|#2:data[key]|});
+                return 2;
             }
 
             return 0;";
 
-        private const string DictionaryContainsKeyMultipleConditionsFixed = @"
+        private const string GuardedAndConditionFixed = @"
             string key = ""key"";
-            IDictionary<string, int> data = new Dictionary<string, int>();
-            if (key == ""key"" && data.TryGetValue(key, out int value))
+            Dictionary<string, int> data = new Dictionary<string, int>();
+            if (data.TryGetValue(key, out int value) && value == 2)
             {
-                Console.WriteLine(2);
-                var x = 2;
                 Console.WriteLine(value);
-                
-                return x;
+                return 2;
             }
 
             return 0;";
 
-        private const string DictionaryContainsKeyNestedDictionaryAccess = @"
+        private const string GuardedOrCondition = @"
+            string key = ""key"";
+            Dictionary<string, int> data = new Dictionary<string, int>();
+            if (!{|#0:data.ContainsKey(key)|} || {|#1:data[key]|} != 2)
+            {
+                Console.WriteLine(2);
+                return -1;
+            }
+
+            return {|#2:data[key]|};";
+
+        private const string GuardedOrConditionFixed = @"
+            string key = ""key"";
+            Dictionary<string, int> data = new Dictionary<string, int>();
+            if (!data.TryGetValue(key, out int value) || value != 2)
+            {
+                Console.WriteLine(2);
+                return -1;
+            }
+
+            return value;";
+
+        private const string GuardedWithThrow = @"
+            string key = ""key"";
+            Dictionary<string, int> data = new Dictionary<string, int>();
+            if (!{|#0:data.ContainsKey(key)|})
+                throw new Exception();
+
+            return {|#1:data[key]|};";
+
+        private const string GuardedWithThrowFixed = @"
+            string key = ""key"";
+            Dictionary<string, int> data = new Dictionary<string, int>();
+            if (!data.TryGetValue(key, out int value))
+                throw new Exception();
+
+            return value;";
+
+        private const string GuardedNestedDictionaryAccess = @"
             string key = ""key"";
             IDictionary<string, int> data = new Dictionary<string, int>();
             if (key == ""key"" && {|#0:data.ContainsKey(key)|})
@@ -158,7 +203,7 @@ namespace Test
 
             return 0;";
 
-        private const string DictionaryContainsKeyNestedDictionaryAccessFixed = @"
+        private const string GuardedNestedDictionaryAccessFixed = @"
             string key = ""key"";
             IDictionary<string, int> data = new Dictionary<string, int>();
             if (key == ""key"" && data.TryGetValue(key, out int value))
@@ -176,21 +221,251 @@ namespace Test
 
             return 0;";
 
-        private const string DictionaryContainsKeyTernary = @"
+        private const string GuardedTernary = @"
             string key = ""key"";
             IDictionary<string, int> data = new Dictionary<string, int>();
 
             return {|#0:data.ContainsKey(key)|} ? {|#1:data[key]|} : 2;";
 
-        private const string DictionaryContainsKeyTernaryFixed = @"
+        private const string GuardedTernaryTernaryFixed = @"
             string key = ""key"";
             IDictionary<string, int> data = new Dictionary<string, int>();
 
             return data.TryGetValue(key, out int value) ? value : 2;";
 
+        private const string GuardedTernaryTernarySquared = @"
+            string key = ""key"";
+            IDictionary<string, int> data = new Dictionary<string, int>();
+
+            return {|#0:data.ContainsKey(key)|} ? {|#1:data[key]|} * {|#2:data[key]|} : 2;";
+
+        private const string GuardedTernarySquaredFixed = @"
+            string key = ""key"";
+            IDictionary<string, int> data = new Dictionary<string, int>();
+
+            return data.TryGetValue(key, out int value) ? value * value : 2;";
+
+        private const string GuardedWithKeyLiteral = @"
+            Dictionary<string, int> data = new Dictionary<string, int>();
+            if ({|#0:data.ContainsKey(""key"")|})
+            {
+                Console.WriteLine({|#1:data[""key""]|});
+                Console.WriteLine(data[""key2""]);
+                Console.WriteLine({|#2:data[constKey]|});
+            }
+
+            return 0;";
+
+        private const string GuardedWithKeyLiteralFixed = @"
+            Dictionary<string, int> data = new Dictionary<string, int>();
+            if (data.TryGetValue(""key"", out int value))
+            {
+                Console.WriteLine(value);
+                Console.WriteLine(data[""key2""]);
+                Console.WriteLine(value);
+            }
+
+            return 0;";
+
+        private const string GuardedOutReference = @"
+            string key = ""key"";
+            bool GetDict(out IDictionary<string, int> dict)
+            {
+                dict = new Dictionary<string, int>();
+                return true;
+            }
+            if (GetDict(out var data) && {|#0:data.ContainsKey(key)|})
+            {
+                Console.WriteLine(2);
+                var x = 2;
+                Console.WriteLine({|#1:data[key]|});
+                
+                return x;
+            }
+
+            return 0;";
+
+        private const string GuardedOutReferenceFixed = @"
+            string key = ""key"";
+            bool GetDict(out IDictionary<string, int> dict)
+            {
+                dict = new Dictionary<string, int>();
+                return true;
+            }
+            if (GetDict(out var data) && data.TryGetValue(key, out int value))
+            {
+                Console.WriteLine(2);
+                var x = 2;
+                Console.WriteLine(value);
+                
+                return x;
+            }
+
+            return 0;";
+
+        private const string GuardedAddBeforeUsage = @"
+            string key = ""key"";
+            IDictionary<string, int> data = new Dictionary<string, int>();
+            if (!{|#0:data.ContainsKey(key)|})
+            {
+                {|#3:data.Add(key, 2);|}
+            }
+
+            Console.WriteLine(2);
+            var x = 2;
+            Console.WriteLine({|#1:data[key]|});
+
+            return {|#2:data[key]|};";
+
+        private const string GuardedAddBeforeUsageFixed = @"
+            string key = ""key"";
+            IDictionary<string, int> data = new Dictionary<string, int>();
+            if (!data.TryGetValue(key, out int value))
+            {
+                value = 2;
+                data.Add(key, value);
+            }
+
+            Console.WriteLine(2);
+            var x = 2;
+            Console.WriteLine(value);
+
+            return value;";
+
+        private const string GuardedIndexerSetBeforeUsage = @"
+            string key = ""key"";
+            Dictionary<string, int> data = new Dictionary<string, int>();
+            if (!{|#0:data.ContainsKey(key)|})
+            {
+                {|#3:data[key] = 2;|}
+            }
+
+            Console.WriteLine(2);
+            var x = 2;
+            Console.WriteLine({|#1:data[key]|});
+
+            return {|#2:data[key]|};";
+
+        private const string GuardedIndexerSetBeforeUsageFixed = @"
+            string key = ""key"";
+            Dictionary<string, int> data = new Dictionary<string, int>();
+            if (!data.TryGetValue(key, out int value))
+            {
+                value = 2;
+                data[key] = value;
+            }
+
+            Console.WriteLine(2);
+            var x = 2;
+            Console.WriteLine(value);
+
+            return value;";
+
+        private const string GuardedIndexerPostIncrement = @"
+            string key = ""key"";
+            Dictionary<string, int> data = new Dictionary<string, int>();
+            if ({|#0:data.ContainsKey(key)|})
+                {|#1:data[key]|}++;
+            else
+                data[key] = 1;
+
+            return 0;";
+
+        private const string GuardedIndexerPostIncrementFixed = @"
+            string key = ""key"";
+            Dictionary<string, int> data = new Dictionary<string, int>();
+            if (data.TryGetValue(key, out int value))
+                data[key] = ++value;
+            else
+                data[key] = 1;
+
+            return 0;";
+
+        private const string GuardedIndexerPreIncrement = @"
+            string key = ""key"";
+            Dictionary<string, int> data = new Dictionary<string, int>();
+            if ({|#0:data.ContainsKey(key)|})
+                ++{|#1:data[key]|};
+            else
+                data[key] = 1;
+
+            return 0;";
+
+        private const string GuardedIndexerPreIncrementFixed = @"
+            string key = ""key"";
+            Dictionary<string, int> data = new Dictionary<string, int>();
+            if (data.TryGetValue(key, out int value))
+                data[key] = ++value;
+            else
+                data[key] = 1;
+
+            return 0;";
+
+        private const string GuardedIndexerInSimpleAssignment = @"
+            string key = ""key"";
+            var data = new Dictionary<string, int>();
+            if ({|#0:data.ContainsKey(key)|})
+            {
+                data[key] = {|#1:data[key]|} + 1;
+                return data[key];
+            }
+            return 0;";
+
+        private const string GuardedIndexerInSimpleAssignmentFixed = @"
+            string key = ""key"";
+            var data = new Dictionary<string, int>();
+            if (data.TryGetValue(key, out int value))
+            {
+                data[key] = value + 1;
+                return data[key];
+            }
+            return 0;";
+
+        private const string GuardedIndexerInCompoundAssignment = @"
+            string key = ""key"";
+            Dictionary<string, int> data = new Dictionary<string, int>();
+            if ({|#0:data.ContainsKey(key)|})
+                data[key] += {|#1:data[key]|} + 2;
+            else
+                data[key] = 1;
+
+            return 0;";
+
+        private const string GuardedIndexerInCompoundAssignmentFixed = @"
+            string key = ""key"";
+            Dictionary<string, int> data = new Dictionary<string, int>();
+            if (data.TryGetValue(key, out int value))
+                data[key] += value + 2;
+            else
+                data[key] = 1;
+
+            return 0;";
+
+        private const string GuardedKeyInSimpleAssignment = @"
+            string key = ""key"";
+            var data = new Dictionary<string, string>();
+            if ({|#0:data.ContainsKey(key)|})
+            {
+                key = {|#1:data[key]|};
+                key = data[key];
+            }
+
+            return 0;";
+
+        private const string GuardedKeyInSimpleAssignmentFixed = @"
+            string key = ""key"";
+            var data = new Dictionary<string, string>();
+            if (data.TryGetValue(key, out string value))
+            {
+                key = value;
+                key = data[key];
+            }
+
+            return 0;";
+
         #region NoDiagnostic
 
-        private const string DictionaryContainsKeyModifyDictionary = @"
+        private const string InvalidModifiedBeforeUse = @"
             string key = ""key"";
             IDictionary<string, int> data = new Dictionary<string, int>();
             if (data.ContainsKey(key))
@@ -204,7 +479,7 @@ namespace Test
 
             return 0;";
 
-        private const string DictionaryContainsKeyNonIDictionary = @"
+        private const string InvalidNonIDictionary = @"
             string key = ""key"";
             MyDictionary<string, int> data = new MyDictionary<string, int>();
             if (data.ContainsKey(key))
@@ -217,7 +492,7 @@ namespace Test
 
             return 0;";
 
-        private const string DictionaryContainsKeyNotGuardedByContainsKey = @"
+        private const string InvalidNotGuardedByContainsKey = @"
             string key = ""key"";
             int value = 3;
             Dictionary<string, int> data = new Dictionary<string, int>();
@@ -225,6 +500,181 @@ namespace Test
             {
                 Console.WriteLine(data[key]);
             }
+
+            return 0;";
+
+        private const string InvalidAddBeforeUse = @"
+            string key = ""key"";
+            IDictionary<string, int> data = new Dictionary<string, int>();
+            if (data.ContainsKey(key))
+            {
+                Console.WriteLine(2);
+                data.Add(key, 2);
+                Console.WriteLine(data[key]);
+                
+                return 2;
+            }
+
+            return 0;";
+
+        private const string InvalidRemoveBeforeUse = @"
+            string key = ""key"";
+            IDictionary<string, int> data = new Dictionary<string, int>();
+            if (data.ContainsKey(key))
+            {
+                Console.WriteLine(2);
+                data.Remove(key);
+                Console.WriteLine(data[key]);
+                
+                return 2;
+            }
+
+            return 0;";
+
+        private const string InvalidModifyReference = @"
+            string key = ""key"";
+            IDictionary<string, int> data = new Dictionary<string, int>();
+            if (data.ContainsKey(key))
+            {
+                Console.WriteLine(2);
+                data = new Dictionary<string, int>();
+                Console.WriteLine(data[key]);
+                
+                return 2;
+            }
+
+            return 0;";
+
+        private const string InvalidDifferentKey = @"
+            string key = ""key"";
+            string key2 = ""key2"";
+            IDictionary<string, int> data = new Dictionary<string, int>();
+            if (data.ContainsKey(key))
+            {
+                return data[key2];
+            }
+
+            return 0;";
+
+        private const string InvalidKeyChangedSimple = @"
+            string key = ""key"";
+            IDictionary<string, int> data = new Dictionary<string, int>();
+            if (data.ContainsKey(key))
+            {
+                key = ""key2"";
+                return data[key];
+            }
+
+            return 0;";
+
+        private const string InvalidKeyChangedCompound = @"
+            string key = ""key"";
+            IDictionary<string, int> data = new Dictionary<string, int>();
+            if (data.ContainsKey(key))
+            {
+                key += ""key2"";
+                return data[key];
+            }
+
+            return 0;";
+
+        private const string InvalidKeyChangedIncrement = @"
+            var key = 1;
+            var data = new Dictionary<int, int>();
+            if (data.ContainsKey(key))
+            {
+                key++;
+                return data[key];
+            }
+
+            return 0;";
+
+        private const string InvalidOtherLiteral = @"
+            Dictionary<string, int> data = new Dictionary<string, int>();
+            if (data.ContainsKey(""key""))
+            {
+                Console.WriteLine(data[""key2""]);
+            }
+
+            return 0;";
+
+        private const string InvalidEntryModified = @"
+            string key = ""key"";
+            IDictionary<string, int> data = new Dictionary<string, int>();
+            if (data.ContainsKey(key))
+            {
+                data[key] = 1;
+                return data[key];
+            }
+            return 0;";
+
+        private const string InvalidEntryModifiedCoalesceAssignment = @"
+            string key = ""key"";
+            var data = new Dictionary<string, object>();
+            if (data.ContainsKey(key))
+            {
+                data[key] ??= (object)1;
+                return (int)data[key];
+            }
+            return 0;";
+
+        private const string InvalidNotGuarded = @"
+            string key = ""key"";
+            Dictionary<string, int> data = new Dictionary<string, int>();
+            if (data.ContainsKey(key))
+            {
+                data[key] = 2;
+            }
+
+            Console.WriteLine(2);
+            var x = 2;
+            Console.WriteLine(data[key]);
+
+            return data[key];";
+
+        private const string InvalidArrayIndexerChanged = @"
+            string key = ""key"";
+           var data = new Dictionary<string, int>[][]
+            {
+                new Dictionary<string, int>[] {new Dictionary<string, int>(),new Dictionary<string, int>()},
+                new Dictionary<string, int>[] {new Dictionary<string, int>(),new Dictionary<string, int>()}
+            };
+            var i1 = 0;
+            var i2 = 0;
+            if (data[i1][i2].ContainsKey(key))
+            {
+                i1 = 1;
+                return data[i1][i2][key];
+            }
+
+            return 0;";
+
+        private const string InvalidKeyChangedInCondition = @"
+            var key = 1;
+            var data = new Dictionary<int, int>();
+            if (data.ContainsKey(key) && data[key++] == 2)
+            {
+                return data[key];
+            }
+
+            return 0;";
+
+        private const string InvalidKeyChangedAfterAdd = @"
+            var key = 1;
+            var data = new Dictionary<int, int>();
+            if (!data.ContainsKey(key))
+            {
+                data.Add(key, 2);
+                key = 2;
+            }
+
+            return data[key];";
+
+        private const string InvalidComplexPostIncrement = @"
+            string key = ""key"";
+            Dictionary<string, int> data = new Dictionary<string, int>();
+            if (data.ContainsKey(key))
+                return data[key]++;
 
             return 0;";
 
@@ -243,9 +693,17 @@ Imports System.Linq
 
 Namespace Test
     Public Class TestClass
-        Public Function TestMethod() As Integer
+        Public Function TestMethod(ByRef parameter As Dictionary(Of String, Integer)) As Integer
             {0}
         End Function
+
+        Public memberField As Dictionary(Of String, Integer) = New Dictionary(Of String, Integer)
+        Public memberFieldArray As Dictionary(Of String, Integer)() = New Dictionary(Of String, Integer)() {{New Dictionary(Of String, Integer)(), New Dictionary(Of String, Integer)()}}
+        Public Property MemberProperty As Dictionary(Of String, Integer) = New Dictionary(Of String, Integer)
+
+        Public Shared staticField As Dictionary(Of String, Integer) = New Dictionary(Of String, Integer)
+        Public Shared Property StaticProperty As Dictionary(Of String, Integer) = New Dictionary(Of String, Integer)
+        Public Const constKey As String = ""key""
 
         Private Class MyDictionary(Of TKey, TValue)
             Public Function ContainsKey(ByVal key As TKey) As Boolean
@@ -263,28 +721,30 @@ Namespace Test
     End Class
 End Namespace";
 
-        private const string VbDictionaryContainsKeyPrintValue = @"
+        private const string VbGuardedPrintValue = @"
             Dim key As String = ""key""
-            Dim data As Dictionary(Of String, Guid) = New Dictionary(Of String, Guid)()
+            Dim data As IDictionary(Of String, Integer) = New Dictionary(Of String, Integer)()
 
             If {|#0:data.ContainsKey(key)|} Then
                 Console.WriteLine({|#1:data(key)|})
+                Console.WriteLine({|#2:data(key)|})
             End If
 
             Return 0";
 
-        private const string VbDictionaryContainsKeyPrintValueFixed = @"
+        private const string VbGuardedPrintValueFixed = @"
             Dim key As String = ""key""
-            Dim data As Dictionary(Of String, Guid) = New Dictionary(Of String, Guid)()
+            Dim data As IDictionary(Of String, Integer) = New Dictionary(Of String, Integer)()
 
-            Dim value As Guid
+            Dim value As Integer = Nothing
             If data.TryGetValue(key, value) Then
+                Console.WriteLine(value)
                 Console.WriteLine(value)
             End If
 
             Return 0";
 
-        private const string VbDictionaryContainsKeyReturnValue = @"
+        private const string VbGuardedReturn = @"
             Dim key As String = ""key""
             Dim data As ConcurrentDictionary(Of String, Integer) = New ConcurrentDictionary(Of String, Integer)()
 
@@ -294,18 +754,18 @@ End Namespace";
 
             Return 0";
 
-        private const string VbDictionaryContainsKeyReturnValueFixed = @"
+        private const string VbGuardedReturnFixed = @"
             Dim key As String = ""key""
             Dim data As ConcurrentDictionary(Of String, Integer) = New ConcurrentDictionary(Of String, Integer)()
 
-            Dim value As Integer
+            Dim value As Integer = Nothing
             If data.TryGetValue(key, value) Then
                 Return value
             End If
 
             Return 0";
 
-        private const string VbDictionaryContainsKeyMultipleStatementsInIf = @"
+        private const string VbGuardedWithUnrelatedStatements = @"
             Dim key As String = ""key""
             Dim data As IDictionary(Of String, Integer) = New Dictionary(Of String, Integer)()
 
@@ -319,11 +779,11 @@ End Namespace";
 
             Return 0";
 
-        private const string VbDictionaryContainsKeyMultipleStatementsInIfFixed = @"
+        private const string VbGuardedWithUnrelatedStatementsFixed = @"
             Dim key As String = ""key""
             Dim data As IDictionary(Of String, Integer) = New Dictionary(Of String, Integer)()
 
-            Dim value As Integer
+            Dim value As Integer = Nothing
             If data.TryGetValue(key, value) Then
                 Console.WriteLine(2)
                 Dim x = 2
@@ -334,36 +794,53 @@ End Namespace";
 
             Return 0";
 
-        private const string VbDictionaryContainsKeyMultipleConditions = @"
+        private const string VbGuardedAndCondition = @"
             Dim key As String = ""key""
             Dim data As IDictionary(Of String, Integer) = New Dictionary(Of String, Integer)()
-
-            If key = ""key"" AndAlso {|#0:data.ContainsKey(key)|} Then
-                Console.WriteLine(2)
-                Dim x = 2
-                Console.WriteLine({|#1:data(key)|})
-                
-                Return x
+            If {|#0:data.ContainsKey(key)|} AndAlso {|#1:data(key)|} = 2 Then
+                Console.WriteLine({|#2:data(key)|})
+                Return 2
             End If
 
             Return 0";
 
-        private const string VbDictionaryContainsKeyMultipleConditionsFixed = @"
+        private const string VbGuardedAndConditionFixed = @"
             Dim key As String = ""key""
             Dim data As IDictionary(Of String, Integer) = New Dictionary(Of String, Integer)()
 
-            Dim value As Integer
-            If key = ""key"" AndAlso data.TryGetValue(key, value) Then
-                Console.WriteLine(2)
-                Dim x = 2
+            Dim value As Integer = Nothing
+
+            If data.TryGetValue(key, value) AndAlso value = 2 Then
                 Console.WriteLine(value)
-                
-                Return x
+                Return 2
             End If
 
             Return 0";
 
-        private const string VbDictionaryContainsKeyNestedDictionaryAccess = @"
+        private const string VbGuardedOrCondition = @"
+            Dim key As String = ""key""
+            Dim data As IDictionary(Of String, Integer) = New Dictionary(Of String, Integer)()
+            If Not {|#0:data.ContainsKey(key)|} OrElse {|#1:data(key)|} <> 2 Then
+                Console.WriteLine(2)
+                Return -1
+            End If
+
+            Return {|#2:data(key)|}";
+
+        private const string VbGuardedOrConditionFixed = @"
+            Dim key As String = ""key""
+            Dim data As IDictionary(Of String, Integer) = New Dictionary(Of String, Integer)()
+
+            Dim value As Integer = Nothing
+
+            If Not data.TryGetValue(key, value) OrElse value <> 2 Then
+                Console.WriteLine(2)
+                Return -1
+            End If
+
+            Return value";
+
+        private const string VbGuardedNestedDictionaryAccess = @"
             Dim key As String = ""key""
             Dim data As IDictionary(Of String, Integer) = New Dictionary(Of String, Integer)()
 
@@ -380,11 +857,11 @@ End Namespace";
 
             Return 0";
 
-        private const string VbDictionaryContainsKeyNestedDictionaryAccessFixed = @"
+        private const string VbGuardedNestedDictionaryAccessFixed = @"
             Dim key As String = ""key""
             Dim data As IDictionary(Of String, Integer) = New Dictionary(Of String, Integer)()
 
-            Dim value As Integer
+            Dim value As Integer = Nothing
             If key = ""key"" AndAlso data.TryGetValue(key, value) Then
                 Console.WriteLine(2)
                 Dim x = 2
@@ -398,22 +875,198 @@ End Namespace";
 
             Return 0";
 
-        private const string VbDictionaryContainsKeyTernary = @"
+        private const string VbGuardedTernary = @"
             Dim key As String = ""key""
             Dim data As IDictionary(Of String, Integer) = New Dictionary(Of String, Integer)()
 
             Return If({|#0:data.ContainsKey(key)|}, {|#1:data(key)|}, 2)";
 
-        private const string VbDictionaryContainsKeyTernaryFixed = @"
+        private const string VbGuardedTernaryFixed = @"
             Dim key As String = ""key""
             Dim data As IDictionary(Of String, Integer) = New Dictionary(Of String, Integer)()
 
-            Dim value As Integer
+            Dim value As Integer = Nothing
             Return If(data.TryGetValue(key, value), value, 2)";
+
+        private const string VbGuardedTernarySquared = @"
+            Dim key As String = ""key""
+            Dim data As IDictionary(Of String, Integer) = New Dictionary(Of String, Integer)()
+
+            Return If({|#0:data.ContainsKey(key)|}, {|#1:data(key)|} * {|#2:data(key)|}, 2)";
+
+        private const string VbGuardedTernarySquaredFixed = @"
+            Dim key As String = ""key""
+            Dim data As IDictionary(Of String, Integer) = New Dictionary(Of String, Integer)()
+
+            Dim value As Integer = Nothing
+            Return If(data.TryGetValue(key, value), value * value, 2)";
+
+        private const string VbGuardedWithKeyLiteral = @"
+            Dim data As ConcurrentDictionary(Of String, Integer) = New ConcurrentDictionary(Of String, Integer)()
+            If {|#0:data.ContainsKey(""key"")|}
+                Console.WriteLine({|#1:data(""key"")|})
+                Console.WriteLine(data(""key2""))
+                Console.WriteLine({|#2:data(constKey)|})
+            End If
+
+            Return 0";
+
+        private const string VbGuardedWithKeyLiteralFixed = @"
+            Dim data As ConcurrentDictionary(Of String, Integer) = New ConcurrentDictionary(Of String, Integer)()
+
+            Dim value As Integer = Nothing
+
+            If data.TryGetValue(""key"", value)
+                Console.WriteLine(value)
+                Console.WriteLine(data(""key2""))
+                Console.WriteLine(value)
+            End If
+
+            Return 0";
+
+        private const string VbGuardedWithKeyLiteralAndAccessWithExclamation = @"
+            Dim data As ConcurrentDictionary(Of String, Integer) = New ConcurrentDictionary(Of String, Integer)()
+            If {|#0:data.ContainsKey(""key"")|}
+                Console.WriteLine({|#1:data!key|})
+            End If
+
+            Return 0";
+
+        private const string VbGuardedWithKeyLiteralAndAccessWithExclamationFixed = @"
+            Dim data As ConcurrentDictionary(Of String, Integer) = New ConcurrentDictionary(Of String, Integer)()
+
+            Dim value As Integer = Nothing
+
+            If data.TryGetValue(""key"", value)
+                Console.WriteLine(value)
+            End If
+
+            Return 0";
+
+        private const string VbGuardedAddBeforeUsage = @"
+            Dim key As String = ""key""
+            Dim data As IDictionary(Of String, Integer) = New Dictionary(Of String, Integer)()
+
+            If Not {|#0:data.ContainsKey(key)|} Then
+                {|#3:data.Add(key, 2)|}
+            End If
+
+            Console.WriteLine(2)
+            Console.WriteLine({|#1:data(key)|})
+
+            Return {|#2:data(key)|}";
+
+        private const string VbGuardedAddBeforeUsageFixed = @"
+            Dim key As String = ""key""
+            Dim data As IDictionary(Of String, Integer) = New Dictionary(Of String, Integer)()
+
+            Dim value As Integer = Nothing
+            If Not data.TryGetValue(key, value) Then
+                value = 2
+                data.Add(key, value)
+            End If
+
+            Console.WriteLine(2)
+            Console.WriteLine(value)
+
+            Return value";
+
+        private const string VbGuardedIndexerSetBeforeUsage = @"
+            Dim key As String = ""key""
+            Dim data As IDictionary(Of String, Integer) = New Dictionary(Of String, Integer)()
+
+            If Not {|#0:data.ContainsKey(key)|} Then
+                {|#3:data(key) = 2|}
+            End If
+
+            Console.WriteLine(2)
+            Console.WriteLine({|#1:data(key)|})
+
+            Return {|#2:data(key)|}";
+
+        private const string VbGuardedIndexerSetBeforeUsageFixed = @"
+            Dim key As String = ""key""
+            Dim data As IDictionary(Of String, Integer) = New Dictionary(Of String, Integer)()
+
+            Dim value As Integer = Nothing
+            If Not data.TryGetValue(key, value) Then
+                value = 2
+                data(key) = value
+            End If
+
+            Console.WriteLine(2)
+            Console.WriteLine(value)
+
+            Return value";
+
+        private const string VbGuardedIndexerInSimpleAssignment = @"
+            Dim key = ""key""
+            Dim data As IDictionary(Of String, Integer) = New Dictionary(Of String, Integer)()
+            If {|#0:data.ContainsKey(key)|} Then
+                data(key) = {|#1:data(key)|} + 1
+                Return data(key)
+            End If
+            Return 0";
+
+        private const string VbGuardedIndexerInSimpleAssignmentFixed = @"
+            Dim key = ""key""
+            Dim data As IDictionary(Of String, Integer) = New Dictionary(Of String, Integer)()
+
+            Dim value As Integer = Nothing
+
+            If data.TryGetValue(key, value) Then
+                data(key) = value + 1
+                Return data(key)
+            End If
+            Return 0";
+
+        private const string VbGuardedIndexerInCompoundAssignment = @"
+            Dim key = ""key""
+            Dim data As IDictionary(Of String, Integer) = New Dictionary(Of String, Integer)()
+            If {|#0:data.ContainsKey(key)|} Then
+                data(key) += {|#1:data(key)|} + 2
+            Else
+                data(key) = 1
+            End If
+            Return 0";
+
+        private const string VbGuardedIndexerInCompoundAssignmentFixed = @"
+            Dim key = ""key""
+            Dim data As IDictionary(Of String, Integer) = New Dictionary(Of String, Integer)()
+
+            Dim value As Integer = Nothing
+
+            If data.TryGetValue(key, value) Then
+                data(key) += value + 2
+            Else
+                data(key) = 1
+            End If
+            Return 0";
+
+        private const string VbGuardedKeyInSimpleAssignment = @"
+            Dim key = ""key""
+            Dim data = New Dictionary(Of String, String)()
+            If {|#0:data.ContainsKey(key)|} Then
+                key = {|#1:data(key)|}
+                key = data(key)
+            End If
+            Return 0";
+
+        private const string VbGuardedKeyInSimpleAssignmentFixed = @"
+            Dim key = ""key""
+            Dim data = New Dictionary(Of String, String)()
+
+            Dim value As String = Nothing
+
+            If data.TryGetValue(key, value) Then
+                key = value
+                key = data(key)
+            End If
+            Return 0";
 
         #region NoDiagnostic
 
-        private const string VbDictionaryContainsKeyModifyDictionary = @"
+        private const string VbInvalidModifiedBeforeUse = @"
             Dim key As String = ""key""
             Dim data As IDictionary(Of String, Integer) = New Dictionary(Of String, Integer)()
 
@@ -427,7 +1080,21 @@ End Namespace";
 
             Return 0";
 
-        private const string VbDictionaryContainsKeyNonIDictionary = @"
+        private const string VbInvalidRemoveBeforeUse = @"
+            Dim key As String = ""key""
+            Dim data As IDictionary(Of String, Integer) = New Dictionary(Of String, Integer)()
+
+            If data.ContainsKey(key) Then
+                Console.WriteLine(2)
+                data.Remove(key)
+                Console.WriteLine(data(key))
+
+                Return 2
+            End If
+
+            Return 0";
+
+        private const string VbInvalidNonIDictionary = @"
             Dim key As String = ""key""
             Dim data As MyDictionary(Of String, Integer) = New MyDictionary(Of String, Integer)()
 
@@ -440,7 +1107,7 @@ End Namespace";
 
             Return 0";
 
-        private const string VbDictionaryContainsKeyNotGuardedByContainsKey = @"
+        private const string VbInvalidNotGuardedByContainsKey = @"
             Dim key As String = ""key""
             Dim value As Integer = 3
             Dim data As Dictionary(Of String, Integer) = New Dictionary(Of String, Integer)()
@@ -451,22 +1118,122 @@ End Namespace";
 
             Return 0";
 
+        private const string VbInvalidModifyReference = @" Dim key As String = ""key""
+            Dim data As Dictionary(Of String, Integer) = New Dictionary(Of String, Integer)()
+
+            If data.ContainsKey(key) Then
+                data = New Dictionary(Of String, Integer)()
+                Console.WriteLine(data(key))
+            End If
+
+            Return 0";
+
+        private const string VbInvalidDifferentKey = @"
+            Dim key As String = ""key""
+            Dim key2 As String = ""key2""
+            Dim data As IDictionary(Of String, Integer) = New Dictionary(Of String, Integer)()
+
+            If data.ContainsKey(key) Then
+                Console.WriteLine(data(key2))
+            End If
+
+            Return 0";
+
+        private const string VbInvalidKeyChangedSimple = @"
+            Dim key As String = ""key""
+            Dim data As IDictionary(Of String, Integer) = New Dictionary(Of String, Integer)()
+
+            If data.ContainsKey(key) Then
+                key = ""key2""
+                Return data(key)
+            End If
+
+            Return 0";
+
+        private const string VbInvalidKeyChangedCompound = @"
+            Dim key As String = ""key""
+            Dim data As IDictionary(Of String, Integer) = New Dictionary(Of String, Integer)()
+
+            If data.ContainsKey(key) Then
+                key += ""key2""
+                Return data(key)
+            End If
+
+            Return 0";
+
+        private const string VbInvalidOtherLiteral = @"
+            Dim data As IDictionary(Of String, Integer) = New Dictionary(Of String, Integer)()
+
+            If data.ContainsKey(""key"") Then
+                Console.WriteLine(data(""key2""))
+            End If
+
+            Return 0";
+
+        private const string VbInvalidNotGuarded = @"
+            Dim key As String = ""key""
+            Dim data As IDictionary(Of String, Integer) = New Dictionary(Of String, Integer)()
+            If data.ContainsKey(key) Then
+                data(key) = 2
+            End If
+
+            Console.WriteLine(data(key))
+
+            Return data(key)";
+
+        private const string VbInvalidArrayIndexerChanged = @"
+            Dim key = ""key""
+            Dim data = New Dictionary(Of String, Integer)() {New Dictionary(Of String, Integer)(), New Dictionary(Of String, Integer)()}
+            Dim i = 0
+            If data(i).ContainsKey(key) Then
+                i = 1
+                Return data(i)(key)
+            End If
+
+            Return 0";
+
+        private const string VbInvalidKeyChangedAfterAdd = @"
+            Dim key = ""key""
+            Dim data = New Dictionary(Of String, Integer)()
+            If Not data.ContainsKey(key) Then
+                data.Add(key, 2)
+                key = ""key2""
+            End If
+
+            Return data(key)";
+
         #endregion
 
         #endregion
 
         [Theory]
-        [InlineData(DictionaryContainsKeyPrintValue, DictionaryContainsKeyPrintValueFixed)]
-        [InlineData(DictionaryContainsKeyReturnValue, DictionaryContainsKeyReturnValueFixed)]
-        [InlineData(DictionaryContainsKeyMultipleStatementsInIf, DictionaryContainsKeyMultipleStatementsInIfFixed)]
-        [InlineData(DictionaryContainsKeyMultipleConditions, DictionaryContainsKeyMultipleConditionsFixed)]
-        [InlineData(DictionaryContainsKeyNestedDictionaryAccess, DictionaryContainsKeyNestedDictionaryAccessFixed)]
-        [InlineData(DictionaryContainsKeyTernary, DictionaryContainsKeyTernaryFixed)]
-        public Task ShouldReportDiagnostic(string codeSnippet, string fixedCodeSnippet)
+        [InlineData(GuardedPrintValue, GuardedPrintValueFixed, 2)]
+        [InlineData(GuardedReturn, GuardedReturnFixed)]
+        [InlineData(GuardedWithUnrelatedStatements, GuardedWithUnrelatedStatementsFixed)]
+        [InlineData(GuardedOutReference, GuardedOutReferenceFixed)]
+        [InlineData(GuardedAndCondition, GuardedAndConditionFixed, 2)]
+        [InlineData(GuardedOrCondition, GuardedOrConditionFixed, 2)]
+        [InlineData(GuardedWithThrow, GuardedWithThrowFixed)]
+        [InlineData(GuardedNestedDictionaryAccess, GuardedNestedDictionaryAccessFixed)]
+        [InlineData(GuardedTernary, GuardedTernaryTernaryFixed)]
+        [InlineData(GuardedTernaryTernarySquared, GuardedTernarySquaredFixed, 2)]
+        [InlineData(GuardedWithKeyLiteral, GuardedWithKeyLiteralFixed, 2)]
+        [InlineData(GuardedAddBeforeUsage, GuardedAddBeforeUsageFixed, 3)]
+        [InlineData(GuardedIndexerSetBeforeUsage, GuardedIndexerSetBeforeUsageFixed, 3)]
+        [InlineData(GuardedIndexerPostIncrement, GuardedIndexerPostIncrementFixed)]
+        [InlineData(GuardedIndexerPreIncrement, GuardedIndexerPreIncrementFixed)]
+        [InlineData(GuardedIndexerInSimpleAssignment, GuardedIndexerInSimpleAssignmentFixed)]
+        [InlineData(GuardedIndexerInCompoundAssignment, GuardedIndexerInCompoundAssignmentFixed)]
+        [InlineData(GuardedKeyInSimpleAssignment, GuardedKeyInSimpleAssignmentFixed)]
+        public Task ShouldReportDiagnostic(string codeSnippet, string fixedCodeSnippet, int additionalLocations = 1)
         {
             string testCode = CreateCSharpCode(codeSnippet);
             string fixedCode = CreateCSharpCode(fixedCodeSnippet);
-            var diagnostic = VerifyCS.Diagnostic(PreferDictionaryTryGetValueAnalyzer.ContainsKeyRule).WithLocation(0).WithLocation(1);
+            var diagnostic = VerifyCS.Diagnostic(PreferDictionaryTryGetValueAnalyzer.ContainsKeyRule);
+            for (int i = 0; i < additionalLocations + 1; i++)
+            {
+                diagnostic = diagnostic.WithLocation(i);
+            }
 
             return new VerifyCS.Test
             {
@@ -478,32 +1245,64 @@ End Namespace";
         }
 
         [Theory]
-        [InlineData(DictionaryContainsKeyModifyDictionary)]
-        [InlineData(DictionaryContainsKeyNonIDictionary)]
-        [InlineData(DictionaryContainsKeyNotGuardedByContainsKey)]
-        public Task ShouldNotReportDiagnostic(string codeSnippet)
+        [InlineData(InvalidModifiedBeforeUse)]
+        [InlineData(InvalidAddBeforeUse)]
+        [InlineData(InvalidRemoveBeforeUse)]
+        [InlineData(InvalidNonIDictionary)]
+        [InlineData(InvalidNotGuardedByContainsKey)]
+        [InlineData(InvalidModifyReference)]
+        [InlineData(InvalidDifferentKey)]
+        [InlineData(InvalidKeyChangedSimple)]
+        [InlineData(InvalidKeyChangedCompound)]
+        [InlineData(InvalidKeyChangedIncrement)]
+        [InlineData(InvalidOtherLiteral)]
+        [InlineData(InvalidEntryModified)]
+        [InlineData(InvalidEntryModifiedCoalesceAssignment, LanguageVersion.CSharp8)]
+        [InlineData(InvalidNotGuarded)]
+        [InlineData(InvalidArrayIndexerChanged)]
+        [InlineData(InvalidKeyChangedInCondition)]
+        [InlineData(InvalidKeyChangedAfterAdd)]
+        [InlineData(InvalidComplexPostIncrement)]
+        public Task ShouldNotReportDiagnostic(string codeSnippet, LanguageVersion version = LanguageVersion.Default)
         {
             string testCode = CreateCSharpCode(codeSnippet);
 
-            return new VerifyCS.Test
+            var test = new VerifyCS.Test
             {
                 TestCode = testCode,
-                ReferenceAssemblies = ReferenceAssemblies.Net.Net60
-            }.RunAsync();
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net60,
+            };
+            if (version != default)
+                test.LanguageVersion = version;
+
+            return test.RunAsync();
         }
 
         [Theory]
-        [InlineData(VbDictionaryContainsKeyPrintValue, VbDictionaryContainsKeyPrintValueFixed)]
-        [InlineData(VbDictionaryContainsKeyReturnValue, VbDictionaryContainsKeyReturnValueFixed)]
-        [InlineData(VbDictionaryContainsKeyMultipleStatementsInIf, VbDictionaryContainsKeyMultipleStatementsInIfFixed)]
-        [InlineData(VbDictionaryContainsKeyMultipleConditions, VbDictionaryContainsKeyMultipleConditionsFixed)]
-        [InlineData(VbDictionaryContainsKeyNestedDictionaryAccess, VbDictionaryContainsKeyNestedDictionaryAccessFixed)]
-        [InlineData(VbDictionaryContainsKeyTernary, VbDictionaryContainsKeyTernaryFixed)]
-        public Task VbShouldReportDiagnostic(string codeSnippet, string fixedCodeSnippet)
+        [InlineData(VbGuardedPrintValue, VbGuardedPrintValueFixed, 2)]
+        [InlineData(VbGuardedReturn, VbGuardedReturnFixed)]
+        [InlineData(VbGuardedWithUnrelatedStatements, VbGuardedWithUnrelatedStatementsFixed)]
+        [InlineData(VbGuardedAndCondition, VbGuardedAndConditionFixed, 2)]
+        [InlineData(VbGuardedOrCondition, VbGuardedOrConditionFixed, 2)]
+        [InlineData(VbGuardedNestedDictionaryAccess, VbGuardedNestedDictionaryAccessFixed)]
+        [InlineData(VbGuardedTernary, VbGuardedTernaryFixed)]
+        [InlineData(VbGuardedTernarySquared, VbGuardedTernarySquaredFixed, 2)]
+        [InlineData(VbGuardedWithKeyLiteral, VbGuardedWithKeyLiteralFixed, 2)]
+        [InlineData(VbGuardedWithKeyLiteralAndAccessWithExclamation, VbGuardedWithKeyLiteralAndAccessWithExclamationFixed)]
+        [InlineData(VbGuardedAddBeforeUsage, VbGuardedAddBeforeUsageFixed, 3)]
+        [InlineData(VbGuardedIndexerSetBeforeUsage, VbGuardedIndexerSetBeforeUsageFixed, 3)]
+        [InlineData(VbGuardedIndexerInSimpleAssignment, VbGuardedIndexerInSimpleAssignmentFixed)]
+        [InlineData(VbGuardedIndexerInCompoundAssignment, VbGuardedIndexerInCompoundAssignmentFixed)]
+        [InlineData(VbGuardedKeyInSimpleAssignment, VbGuardedKeyInSimpleAssignmentFixed)]
+        public Task VbShouldReportDiagnostic(string codeSnippet, string fixedCodeSnippet, int additionalLocations = 1)
         {
             string testCode = CreateVbCode(codeSnippet);
             string fixedCode = CreateVbCode(fixedCodeSnippet);
-            var diagnostic = VerifyVB.Diagnostic(PreferDictionaryTryGetValueAnalyzer.ContainsKeyRule).WithLocation(0).WithLocation(1);
+            var diagnostic = VerifyVB.Diagnostic(PreferDictionaryTryGetValueAnalyzer.ContainsKeyRule);
+            for (int i = 0; i < additionalLocations + 1; i++)
+            {
+                diagnostic = diagnostic.WithLocation(i);
+            }
 
             return new VerifyVB.Test
             {
@@ -515,9 +1314,18 @@ End Namespace";
         }
 
         [Theory]
-        [InlineData(VbDictionaryContainsKeyModifyDictionary)]
-        [InlineData(VbDictionaryContainsKeyNonIDictionary)]
-        [InlineData(VbDictionaryContainsKeyNotGuardedByContainsKey)]
+        [InlineData(VbInvalidModifiedBeforeUse)]
+        [InlineData(VbInvalidRemoveBeforeUse)]
+        [InlineData(VbInvalidNonIDictionary)]
+        [InlineData(VbInvalidNotGuardedByContainsKey)]
+        [InlineData(VbInvalidModifyReference)]
+        [InlineData(VbInvalidDifferentKey)]
+        [InlineData(VbInvalidKeyChangedSimple)]
+        [InlineData(VbInvalidKeyChangedCompound)]
+        [InlineData(VbInvalidOtherLiteral)]
+        [InlineData(VbInvalidNotGuarded)]
+        [InlineData(VbInvalidArrayIndexerChanged)]
+        [InlineData(VbInvalidKeyChangedAfterAdd)]
         public Task VbShouldNotReportDiagnostic(string codeSnippet)
         {
             string testCode = CreateVbCode(codeSnippet);
@@ -526,6 +1334,116 @@ End Namespace";
             {
                 TestCode = testCode,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60
+            }.RunAsync();
+        }
+
+        private static readonly string[] s_DictionaryRefs = {
+            "local",
+            "parameter",
+            "memberField",
+            "MemberProperty",
+            "staticField",
+            "StaticProperty",
+            "localArray[0]",
+            "localArray[1]",
+            "memberFieldArray[1]"
+        };
+
+        public static IEnumerable<object[]> GetDictionaryCombinations()
+        {
+            return from first in s_DictionaryRefs from second in s_DictionaryRefs select new object[] { first, second };
+        }
+
+        [Theory]
+        [MemberData(nameof(GetDictionaryCombinations))]
+        public Task TestDictionaryReferences(string containsKeyRef, string indexerRef)
+        {
+            string testCode = CreateCSharpCode($$"""
+            string key = "key";
+            var local = new Dictionary<string, int>();
+            var localArray = new [] {new Dictionary<string, int>(), new Dictionary<string, int>()};
+
+            if ({|#0:{{containsKeyRef}}.ContainsKey(key)|})
+                return {|#1:{{indexerRef}}[key]|};
+
+            return 0;
+""");
+            if (containsKeyRef != indexerRef)
+            {
+                return new VerifyCS.Test
+                {
+                    TestCode = testCode,
+                    ReferenceAssemblies = ReferenceAssemblies.Net.Net60
+                }.RunAsync();
+            }
+
+            string fixedCode = CreateCSharpCode($$"""
+            string key = "key";
+            var local = new Dictionary<string, int>();
+            var localArray = new [] {new Dictionary<string, int>(), new Dictionary<string, int>()};
+
+            if ({{containsKeyRef}}.TryGetValue(key, out int value))
+                return value;
+
+            return 0;
+""");
+
+            var diagnostic = VerifyCS.Diagnostic(PreferDictionaryTryGetValueAnalyzer.ContainsKeyRule).WithLocation(0).WithLocation(1);
+            return new VerifyCS.Test
+            {
+                TestCode = testCode,
+                FixedCode = fixedCode,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net60,
+                ExpectedDiagnostics = { diagnostic }
+            }.RunAsync();
+        }
+
+        [Theory]
+        [MemberData(nameof(GetDictionaryCombinations))]
+        public Task VbTestDictionaryReferences(string containsKeyRef, string indexerRef)
+        {
+            containsKeyRef = containsKeyRef.Replace('[', '(').Replace(']', ')');
+            indexerRef = indexerRef.Replace('[', '(').Replace(']', ')');
+            string testCode = CreateVbCode($$"""
+            Dim key = "key"
+            Dim local = New Dictionary(Of String, Integer)
+            Dim localArray = New Dictionary(Of String, Integer)() {New Dictionary(Of String, Integer)(), New Dictionary(Of String, Integer)()}
+            If {|#0:{{containsKeyRef}}.ContainsKey(key)|} Then
+                Return {|#1:{{indexerRef}}(key)|}
+            End If
+
+            Return 0
+""");
+            if (containsKeyRef != indexerRef)
+            {
+                return new VerifyVB.Test
+                {
+                    TestCode = testCode,
+                    ReferenceAssemblies = ReferenceAssemblies.Net.Net60
+                }.RunAsync();
+            }
+
+            string fixedCode = CreateVbCode($$"""
+            Dim key = "key"
+            Dim local = New Dictionary(Of String, Integer)
+            Dim localArray = New Dictionary(Of String, Integer)() {New Dictionary(Of String, Integer)(), New Dictionary(Of String, Integer)()}
+
+            Dim value As Integer = Nothing
+
+            If {{containsKeyRef}}.TryGetValue(key, value) Then
+                Return value
+            End If
+
+            Return 0
+""");
+
+            var diagnostic = VerifyVB.Diagnostic(PreferDictionaryTryGetValueAnalyzer.ContainsKeyRule).WithLocation(0).WithLocation(1);
+            return new VerifyVB.Test
+            {
+                TestCode = testCode,
+                FixedCode = fixedCode,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net60,
+                ExpectedDiagnostics = { diagnostic }
             }.RunAsync();
         }
 
@@ -578,6 +1496,68 @@ class C
     }}
 }}
 ",
+            }.RunAsync();
+        }
+
+        [Theory]
+        [InlineData("disable")]
+        [InlineData("enable")]
+        [InlineData("enable warnings")]
+        [InlineData("enable annotations")]
+        public async Task TestReferenceNullableHandling(string nullableMode)
+        {
+            var useNullable = nullableMode is "enable" or "enable annotations";
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        $@"
+#nullable {nullableMode}
+using System;
+using System.Collections.Generic;
+
+class C
+{{
+    void Reference(string key)
+    {{
+        var objects = new Dictionary<string, object>();
+        if ([|objects.ContainsKey(key)|])
+            Console.WriteLine(objects[key]{(nullableMode == "enable" ? "!" : "")});
+    }}
+
+    void Value(string key)
+    {{
+        var ints = new Dictionary<string, int>();
+        if ([|ints.ContainsKey(key)|])
+            Console.WriteLine(ints[key]);
+    }}
+}}"
+                    }
+                },
+                FixedCode = $@"
+#nullable {nullableMode}
+using System;
+using System.Collections.Generic;
+
+class C
+{{
+    void Reference(string key)
+    {{
+        var objects = new Dictionary<string, object>();
+        if (objects.TryGetValue(key, out object{(useNullable ? "?" : "")} value))
+            Console.WriteLine(value{(nullableMode == "enable" ? "!" : "")});
+    }}
+
+    void Value(string key)
+    {{
+        var ints = new Dictionary<string, int>();
+        if (ints.TryGetValue(key, out int value))
+            Console.WriteLine(value);
+    }}
+}}",
+                LanguageVersion = LanguageVersion.CSharp8,
             }.RunAsync();
         }
 

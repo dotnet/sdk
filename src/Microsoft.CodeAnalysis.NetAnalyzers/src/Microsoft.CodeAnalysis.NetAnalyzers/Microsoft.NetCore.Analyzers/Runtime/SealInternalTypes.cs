@@ -39,17 +39,12 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
         private static void OnCompilationStart(CompilationStartAnalysisContext context)
         {
-            // To avoid false positives, as with CA1812 (avoid uninstantiated internal classes), skip any assemblies with InternalsVisibleTo.
-            var internalsVisibleToAttributeSymbol = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeCompilerServicesInternalsVisibleToAttribute);
-            if (context.Compilation.Assembly.HasAttribute(internalsVisibleToAttributeSymbol))
-            {
-                return;
-            }
-
             INamedTypeSymbol? comImportAttributeType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeInteropServicesComImportAttribute);
 
             var candidateTypes = PooledConcurrentSet<INamedTypeSymbol>.GetInstance(SymbolEqualityComparer.Default);
             var baseTypes = PooledConcurrentSet<INamedTypeSymbol>.GetInstance(SymbolEqualityComparer.Default);
+            var hasInternalsVisibleTo = context.Compilation.Assembly.HasAttribute(
+                context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeCompilerServicesInternalsVisibleToAttribute));
 
             context.RegisterSymbolAction(context =>
             {
@@ -78,7 +73,10 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 {
                     if (!baseTypes.Contains(type.OriginalDefinition))
                     {
-                        context.ReportDiagnostic(type.CreateDiagnostic(Rule, type.Name));
+                        if (!hasInternalsVisibleTo || context.Options.GetBoolOptionValue(EditorConfigOptionNames.IgnoreInternalsVisibleTo, Rule, type, context.Compilation, defaultValue: false))
+                        {
+                            context.ReportDiagnostic(type.CreateDiagnostic(Rule, type.Name));
+                        }
                     }
                 }
 

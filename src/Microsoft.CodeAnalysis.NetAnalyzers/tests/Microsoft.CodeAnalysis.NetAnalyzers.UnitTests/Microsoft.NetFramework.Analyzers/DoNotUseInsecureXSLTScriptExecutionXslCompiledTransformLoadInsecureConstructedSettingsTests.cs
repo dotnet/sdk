@@ -731,6 +731,34 @@ End Namespace");
         }
 
         [Fact]
+        public async Task UseXslCompiledTransformLoadDefaultTargetTypedNewAndNonSecureResolverShouldNotGenerateDiagnosticAsync()
+        {
+            await VerifyCS.RunTestAsync(
+                new VerifyCS.Test
+                {
+                    LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9,
+                    TestCode = @"
+using System.Xml;
+using System.Xml.Xsl;
+
+namespace TestNamespace
+{
+    class TestClass
+    {
+        private static void TestMethod()
+        {
+            XslCompiledTransform xslCompiledTransform = new XslCompiledTransform();
+            XsltSettings settings = new();
+            var resolver = new XmlUrlResolver();
+            xslCompiledTransform.Load(""testStylesheet"", settings, resolver);
+        }
+    }
+}"
+                }
+            );
+        }
+
+        [Fact]
         public async Task UseXslCompiledTransformLoadDefaultAndSecureResolverShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -848,6 +876,35 @@ End Namespace",
         }
 
         [Fact]
+        public async Task UseXslCompiledTransformLoadEnableScriptTargetTypedNewAndNonSecureResolverShouldGenerateDiagnosticAsync()
+        {
+            await VerifyCS.RunTestAsync(
+                new VerifyCS.Test
+                {
+                    LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9,
+                    TestCode = @"
+using System.Xml;
+using System.Xml.Xsl;
+
+namespace TestNamespace
+{
+    class TestClass
+    {
+        private static void TestMethod()
+        {
+            XslCompiledTransform xslCompiledTransform = new XslCompiledTransform();
+            XsltSettings settings = new() { EnableScript = true };
+            var resolver = new XmlUrlResolver();
+            xslCompiledTransform.Load(""testStylesheet"", settings, resolver);
+        }
+    }
+}",
+                },
+                GetCA3076LoadCSharpResultAt(14, 13, "TestMethod")
+            );
+        }
+
+        [Fact]
         public async Task UseXslCompiledTransformLoadSetEnableScriptToTrueAndNonSecureResolverShouldGenerateDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -930,6 +987,35 @@ Namespace TestNamespace
     End Class
 End Namespace",
                 GetCA3076LoadBasicResultAt(13, 13, "TestMethod")
+            );
+        }
+
+        [Fact]
+        public async Task UseXslCompiledTransformLoadEnableDocumentFunctionTargetTypedNewAndNonSecureResolverShouldGenerateDiagnosticAsync()
+        {
+            await VerifyCS.RunTestAsync(
+                new VerifyCS.Test
+                {
+                    LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9,
+                    TestCode = @"
+using System.Xml;
+using System.Xml.Xsl;
+
+namespace TestNamespace
+{
+    class TestClass
+    {
+        private static void TestMethod()
+        {
+            XslCompiledTransform xslCompiledTransform = new XslCompiledTransform();
+            XsltSettings settings = new() { EnableDocumentFunction = true };
+            var resolver = new XmlUrlResolver();
+            xslCompiledTransform.Load(""testStylesheet"", settings, resolver);
+        }
+    }
+}",
+                },
+                GetCA3076LoadCSharpResultAt(14, 13, "TestMethod")
             );
         }
 
@@ -1096,6 +1182,35 @@ End Namespace",
         }
 
         [Fact]
+        public async Task UseXslCompiledTransformLoadConstructSettingsWithTrueParamTargetTypedNewAndNonSecureResolverShouldGenerateDiagnostic1Async()
+        {
+            await VerifyCS.RunTestAsync(
+                new VerifyCS.Test
+                {
+                    LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9,
+                    TestCode = @"
+using System.Xml;
+using System.Xml.Xsl;
+
+namespace TestNamespace
+{
+    class TestClass
+    {
+        private static void TestMethod()
+        {
+            XslCompiledTransform xslCompiledTransform = new XslCompiledTransform();
+            XsltSettings settings = new(true, false);
+            var resolver = new XmlUrlResolver();
+            xslCompiledTransform.Load(""testStylesheet"", settings, resolver);
+        }
+    }
+}",
+                },
+                GetCA3076LoadCSharpResultAt(14, 13, "TestMethod")
+            );
+        }
+
+        [Fact]
         public async Task UseXslCompiledTransformLoadConstructSettingsWithTrueParamAndNonSecureResolverShouldGenerateDiagnostic2Async()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1137,6 +1252,35 @@ End Namespace",
         }
 
         [Fact]
+        public async Task UseXslCompiledTransformLoadConstructSettingsWithTrueParamTargetTypedNewAndNonSecureResolverShouldGenerateDiagnostic2Async()
+        {
+            await VerifyCS.RunTestAsync(
+                new VerifyCS.Test
+                {
+                    LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9,
+                    TestCode = @"
+using System.Xml;
+using System.Xml.Xsl;
+
+namespace TestNamespace
+{
+    class TestClass
+    {
+        private static void TestMethod()
+        {
+            XslCompiledTransform xslCompiledTransform = new XslCompiledTransform();
+            XsltSettings settings = new(false, true);
+            var resolver = new XmlUrlResolver();
+            xslCompiledTransform.Load(""testStylesheet"", settings, resolver);
+        }
+    }
+}",
+                },
+                GetCA3076LoadCSharpResultAt(14, 13, "TestMethod")
+            );
+        }
+
+        [Fact]
         public async Task UseXslCompiledTransformLoadConstructSettingsWithFalseParamsAndNonSecureResolverShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1172,6 +1316,34 @@ Namespace TestNamespace
         End Sub
     End Class
 End Namespace");
+        }
+
+        [Fact]
+        public async Task UseXslCompiledTransformLoadConstructSettingsWithFalseParamsTargetTypedNewAndNonSecureResolverShouldNotGenerateDiagnosticAsync()
+        {
+            await VerifyCS.RunTestAsync(
+                new VerifyCS.Test
+                {
+                    LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9,
+                    TestCode = @"
+using System.Xml;
+using System.Xml.Xsl;
+
+namespace TestNamespace
+{
+    class TestClass
+    {
+        private static void TestMethod()
+        {
+            XslCompiledTransform xslCompiledTransform = new XslCompiledTransform();
+            XsltSettings settings = new(false, false);
+            var resolver = new XmlUrlResolver();
+            xslCompiledTransform.Load(""testStylesheet"", settings, resolver);
+        }
+    }
+}"
+                }
+            );
         }
 
         [Fact]
