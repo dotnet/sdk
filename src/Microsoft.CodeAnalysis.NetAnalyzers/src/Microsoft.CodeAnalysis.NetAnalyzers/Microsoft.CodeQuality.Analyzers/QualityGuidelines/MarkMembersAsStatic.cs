@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -67,13 +67,13 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                 // has to be marked static, we want to report the diagnostic on the property/event.
                 // So we make a note of the property/event symbols which have at least one accessor with no instance access.
                 // At symbol end, we report candidate property/event symbols whose all accessors are candidates to be marked static.
-                var propertyOrEventCandidates = PooledConcurrentSet<ISymbol>.GetInstance();
-                var accessorCandidates = PooledConcurrentSet<IMethodSymbol>.GetInstance();
+                var propertyOrEventCandidates = TemporarySet<ISymbol>.Empty;
+                var accessorCandidates = TemporarySet<IMethodSymbol>.Empty;
 
-                var methodCandidates = PooledConcurrentSet<IMethodSymbol>.GetInstance();
+                var methodCandidates = TemporarySet<IMethodSymbol>.Empty;
 
                 // Do not flag methods that are used as delegates: https://github.com/dotnet/roslyn-analyzers/issues/1511
-                var methodsUsedAsDelegates = PooledConcurrentSet<IMethodSymbol>.GetInstance();
+                var methodsUsedAsDelegates = TemporarySet<IMethodSymbol>.Empty;
 
                 symbolStartContext.RegisterOperationAction(OnMethodReference, OperationKind.MethodReference);
                 symbolStartContext.RegisterOperationBlockStartAction(OnOperationBlockStart);
@@ -84,7 +84,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                 void OnMethodReference(OperationAnalysisContext operationContext)
                 {
                     var methodReference = (IMethodReferenceOperation)operationContext.Operation;
-                    methodsUsedAsDelegates.Add(methodReference.Method);
+                    methodsUsedAsDelegates.Add(methodReference.Method, operationContext.CancellationToken);
                 }
 
                 void OnOperationBlockStart(OperationBlockStartAnalysisContext blockStartContext)
@@ -125,8 +125,8 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                         {
                             if (methodSymbol.IsAccessorMethod())
                             {
-                                accessorCandidates.Add(methodSymbol);
-                                propertyOrEventCandidates.Add(methodSymbol.AssociatedSymbol);
+                                accessorCandidates.Add(methodSymbol, blockEndContext.CancellationToken);
+                                propertyOrEventCandidates.Add(methodSymbol.AssociatedSymbol, blockEndContext.CancellationToken);
                             }
                             else if (methodSymbol.IsExternallyVisible())
                             {
@@ -137,7 +137,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                             }
                             else
                             {
-                                methodCandidates.Add(methodSymbol);
+                                methodCandidates.Add(methodSymbol, blockEndContext.CancellationToken);
                             }
                         }
                     });
@@ -145,9 +145,9 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
 
                 void OnSymbolEnd(SymbolAnalysisContext symbolEndContext)
                 {
-                    foreach (var candidate in methodCandidates)
+                    foreach (var candidate in methodCandidates.NonConcurrentEnumerable)
                     {
-                        if (methodsUsedAsDelegates.Contains(candidate))
+                        if (methodsUsedAsDelegates.Contains_NonConcurrent(candidate))
                         {
                             continue;
                         }
@@ -158,12 +158,12 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                         }
                     }
 
-                    foreach (var candidatePropertyOrEvent in propertyOrEventCandidates)
+                    foreach (var candidatePropertyOrEvent in propertyOrEventCandidates.NonConcurrentEnumerable)
                     {
                         var allAccessorsAreCandidates = true;
                         foreach (var accessor in candidatePropertyOrEvent.GetAccessors())
                         {
-                            if (!accessorCandidates.Contains(accessor) ||
+                            if (!accessorCandidates.Contains_NonConcurrent(accessor) ||
                                 IsOnObsoleteMemberChain(accessor, wellKnownTypeProvider))
                             {
                                 allAccessorsAreCandidates = false;
