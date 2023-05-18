@@ -47,7 +47,7 @@
   <String Id="FilesInUseDontCloseRadioButton">不關閉應用程式，需要重新啟動(&amp;D)</String>
   <String Id="FilesInUseOkButton">確定(&amp;O)</String>
   <String Id="FilesInUseCancelButton">取消(&amp;C)</String>
-  <String Id="FirstTimeWelcomeMessage">安裝成功。
+  <String  Id="FirstTimeWelcomeMessage"><!--_locComment="{Locked='.NET SDK'}{Locked='.NET Runtime'}{Locked='ASP.NET Core Runtime'}{Locked='.NET Windows Desktop Runtime'}" -->安裝成功。
 
 已安裝下列產品:
     * .NET SDK [DOTNETSDKVERSION]
@@ -63,8 +63,8 @@
     * 如需 SDK 文件，請前往 https://aka.ms/dotnet-sdk-docs
     * 如需版本資訊，請前往 https://aka.ms/dotnet[VERSIONMAJOR]-release-notes
     * 如需教學課程，請前往 https://aka.ms/dotnet-tutorials</String>
-  <String Id="WelcomeHeaderMessage">.NET SDK</String>
-  <String Id="WelcomeDescription">
+  <String Id="WelcomeHeaderMessage"><!--_locComment="{Locked='.NET SDK'}"-->.NET SDK</String>
+  <String Id="WelcomeDescription"><!--_locComment="{Locked='.NET SDK'}"-->
     .NET SDK 可用於建置、執行及測試 .NET 應用程式。您可以選擇多種語言、編輯器以及開發人員工具，並可利用程式庫的大型生態系統，來建置 Web、行動裝置、桌面、遊戲及 IoT 的應用程式。希望您會喜歡!</String>
   <String Id="LearnMoreTitle">深入了解 .NET</String>
   <String Id="ResourcesHeader">資源</String>
@@ -76,7 +76,7 @@
   <String Id="InstallationNoteTitle">安裝附註</String>
   <String Id="InstallationNote">安裝程序期間將會執行命令，加快專案還原速度並啟用離線存取。最多需要一分鐘的時間完成。
   </String>
-  <String Id="VisualStudioWarning">若預計要搭配 Visual Studio 使用 .NET [VERSIONMAJOR].[VERSIONMINOR]，需要 Visual Studio 2022 [MINIMUMVSVERSION] 或更新版本。&lt;A HREF="https://aka.ms/dotnet[VERSIONMAJOR]-release-notes"&gt;深入了解&lt;/A&gt;.
+  <String  Id="VisualStudioWarning"><!--_locComment="{Locked='Visual Studio'}"-->若預計要搭配 Visual Studio 使用 .NET [VERSIONMAJOR].[VERSIONMINOR]，需要 Visual Studio 2022 [MINIMUMVSVERSION] 或更新版本。&lt;A HREF="https://aka.ms/dotnet[VERSIONMAJOR]-release-notes"&gt;深入了解&lt;/A&gt;.
   </String>
   <String Id="LicenseAssent">按一下 “安裝” 即表示您同意下列條款:</String>
   <String Id="InstallPathx64x86">x64 SDK 安裝的安裝路徑: "[DOTNETHOME_X64]" 不能與 x86 SDK 安裝的路徑相同: "[DOTNETHOME_X86]"</String>
