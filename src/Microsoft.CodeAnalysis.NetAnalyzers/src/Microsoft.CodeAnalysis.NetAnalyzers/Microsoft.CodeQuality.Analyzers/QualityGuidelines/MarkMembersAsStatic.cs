@@ -266,7 +266,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
             }
 
             // FxCop doesn't check for the fully qualified name for these attributes - so we'll do the same.
-            if (attributes.Any(attribute => skippedAttributes.Any(attr => attribute.AttributeClass.Inherits(attr))))
+            if (attributes.Any(static (attribute, skippedAttributes) => skippedAttributes.Any(static (attr, attribute) => attribute.AttributeClass.Inherits(attr), attribute), skippedAttributes))
             {
                 return false;
             }
