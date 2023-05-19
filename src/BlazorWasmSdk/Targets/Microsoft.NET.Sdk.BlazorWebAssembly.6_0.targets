@@ -53,7 +53,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <WasmFingerprintDotnetJs>true</WasmFingerprintDotnetJs>
     
     <_TargetingNET80OrLater>$([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '8.0'))</_TargetingNET80OrLater>
-    <WasmEnableWebcil Condition="'$(TargetFrameworkIdentifier)' != '.NETCoreApp' or '$(_TargetingNET80OrLater)' != 'true'">false</WasmEnableWebcil>
+    <WasmEnableWebcil Condition="'$(WasmEnableWebcil)' == '' and ('$(TargetFrameworkIdentifier)' != '.NETCoreApp' or '$(_TargetingNET80OrLater)' != 'true')">false</WasmEnableWebcil>
 
     <!-- Don't generate a NETSDK1151 error if a non self-contained Exe references a Blazor Exe -->
     <ShouldBeValidatedAsExecutableReference>false</ShouldBeValidatedAsExecutableReference>
