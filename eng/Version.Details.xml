@@ -16,9 +16,9 @@
       <Sha>c65b02aef21850de618d37a5304d3bbd829c2733</Sha>
       <SourceBuild RepoName="source-build-reference-packages" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.DiaSymReader" Version="2.0.0-beta-22503-02">
+    <Dependency Name="Microsoft.DiaSymReader" Version="2.0.0">
       <Uri>https://github.com/dotnet/symreader</Uri>
-      <Sha>0c29b7109c054bdc578e917515ae7e8635b9cb9d</Sha>
+      <Sha>27e584661980ee6d82c419a2a471ae505b7d122e</Sha>
       <SourceBuild RepoName="symreader" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.SourceBuild.Intermediate.command-line-api" Version="0.1.356401">
