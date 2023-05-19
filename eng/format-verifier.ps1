@@ -15,6 +15,7 @@ if ($stage -eq "prepare") {
 
 $currentLocation = Get-Location
 $dotnetPath = Join-Path $currentLocation ".dotnet"
+$parentDotNetPath = Join-Path $dotnetPath "dotnet.exe"
 
 if (!(Test-Path $testPath)) {
     New-Item -ItemType Directory -Force -Path $testPath | Out-Null
@@ -50,8 +51,6 @@ try {
         .\eng\common\Build.ps1 -restore
     }
 
-    $env:PATH = "$dotnetPath;$env:PATH"
-
     if ($stage -eq "prepare" -or $stage -eq "format-workspace") {
         Write-Output "$(Get-Date) - Finding solutions."
         $solutions = Get-ChildItem -Filter *.sln -Recurse -Depth 2 | Select-Object -ExpandProperty FullName | Where-Object { $_ -match '.sln$' }
@@ -73,7 +72,7 @@ try {
 
             if ($stage -eq "format-workspace") {
                 Write-Output "$(Get-Date) - $solutionFile - Formatting Workspace"
-                $output = dotnet.exe "$currentLocation/artifacts/bin/dotnet-format/Release/net7.0/dotnet-format.dll" $solution --no-restore -v diag --verify-no-changes | Out-String
+                $output = & $parentDotNetPath "$currentLocation/artifacts/bin/dotnet-format/Release/net8.0/dotnet-format.dll" $solution --no-restore -v diag --verify-no-changes | Out-String
                 Write-Output $output.TrimEnd()
 
                 # Ignore CheckFailedExitCode since we don't expect these repos to be properly formatted.
@@ -95,7 +94,7 @@ try {
 
     if ($stage -eq "format-folder") {
         Write-Output "$(Get-Date) - $folderName - Formatting Folder"
-        $output = dotnet.exe "$currentLocation/artifacts/bin/dotnet-format/Release/net7.0/dotnet-format.dll" whitespace $repoPath --folder -v diag --verify-no-changes | Out-String
+        $output = & $parentDotNetPath "$currentLocation/artifacts/bin/dotnet-format/Release/net8.0/dotnet-format.dll" whitespace $repoPath --folder -v diag --verify-no-changes | Out-String
         Write-Output $output.TrimEnd()
 
         # Ignore CheckFailedExitCode since we don't expect these repos to be properly formatted.

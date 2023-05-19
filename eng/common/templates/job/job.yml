@@ -24,7 +24,9 @@ parameters:
   enablePublishBuildAssets: false
   enablePublishTestResults: false
   enablePublishUsingPipelines: false
+  enableBuildRetry: false
   disableComponentGovernance: ''
+  componentGovernanceIgnoreDirectories: ''
   mergeTestResults: false
   testRunTitle: ''
   testResultsFormat: ''
@@ -86,10 +88,20 @@ jobs:
     - ${{ if ne(variable.group, '') }}:
       - group: ${{ variable.group }}
 
+    # handle template variable syntax
+    # example:
+    # - template: path/to/template.yml
+    #   parameters:
+    #     [key]: [value]
+    - ${{ if ne(variable.template, '') }}:
+      - template: ${{ variable.template }}
+        ${{ if ne(variable.parameters, '') }}:
+          parameters: ${{ variable.parameters }}
+
     # handle key-value variable syntax.
     # example:
     # - [key]: [value]
-    - ${{ if and(eq(variable.name, ''), eq(variable.group, '')) }}:
+    - ${{ if and(eq(variable.name, ''), eq(variable.group, ''), eq(variable.template, '')) }}:
       - ${{ each pair in variable }}:
         - name: ${{ pair.key }}
           value: ${{ pair.value }}
@@ -122,7 +134,7 @@ jobs:
   - ${{ if and(eq(parameters.runAsPublic, 'false'), eq(variables['System.TeamProject'], 'internal')) }}:
     - task: NuGetAuthenticate@0
 
-  - ${{ if or(eq(parameters.artifacts.download, 'true'), ne(parameters.artifacts.download, '')) }}:
+  - ${{ if and(ne(parameters.artifacts.download, 'false'), ne(parameters.artifacts.download, '')) }}:
     - task: DownloadPipelineArtifact@2
       inputs:
         buildType: current
@@ -151,6 +163,7 @@ jobs:
           disableComponentGovernance: true
       ${{ else }}:
         disableComponentGovernance: ${{ parameters.disableComponentGovernance }}
+      componentGovernanceIgnoreDirectories: ${{ parameters.componentGovernanceIgnoreDirectories }}
 
   - ${{ if eq(parameters.enableMicrobuild, 'true') }}:
     - ${{ if and(eq(parameters.runAsPublic, 'false'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
@@ -162,7 +175,7 @@ jobs:
           TeamName: $(_TeamName)
 
   - ${{ if ne(parameters.artifacts.publish, '') }}:
-    - ${{ if or(eq(parameters.artifacts.publish.artifacts, 'true'), ne(parameters.artifacts.publish.artifacts, '')) }}:
+    - ${{ if and(ne(parameters.artifacts.publish.artifacts, 'false'), ne(parameters.artifacts.publish.artifacts, '')) }}:
       - task: CopyFiles@2
         displayName: Gather binaries for publish to artifacts
         inputs:
@@ -183,7 +196,7 @@ jobs:
           ArtifactName: ${{ coalesce(parameters.artifacts.publish.artifacts.name , 'Artifacts_$(Agent.Os)_$(_BuildConfig)') }}
         continueOnError: true
         condition: always()
-    - ${{ if or(eq(parameters.artifacts.publish.logs, 'true'), ne(parameters.artifacts.publish.logs, '')) }}:
+    - ${{ if and(ne(parameters.artifacts.publish.logs, 'false'), ne(parameters.artifacts.publish.logs, '')) }}:
       - publish: artifacts/log
         artifact: ${{ coalesce(parameters.artifacts.publish.logs.name, 'Logs_Build_$(Agent.Os)_$(_BuildConfig)') }}
         displayName: Publish logs
@@ -264,4 +277,10 @@ jobs:
       parameters:
         PackageVersion: ${{ parameters.packageVersion}}
         BuildDropPath: ${{ parameters.buildDropPath }}
+        IgnoreDirectories: ${{ parameters.componentGovernanceIgnoreDirectories }}
 
+  - ${{ if eq(parameters.enableBuildRetry, 'true') }}:
+    - publish: $(Build.SourcesDirectory)\eng\common\BuildConfiguration
+      artifact: BuildConfiguration
+      displayName: Publish build retry configuration
+      continueOnError: true

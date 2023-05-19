@@ -26,7 +26,7 @@ stages:
     displayName: Official Build
 
     steps:
-    - task: ms-vseng.MicroBuildTasks.30666190-6959-11e5-9f96-f56098202fef.MicroBuildSigningPlugin@1
+    - task: ms-vseng.MicroBuildTasks.30666190-6959-11e5-9f96-f56098202fef.MicroBuildSigningPlugin@3
       displayName: Install Signing Plugin
       inputs:
         signType: $(SignType)
@@ -133,12 +133,16 @@ stages:
         displayName: Windows Build
       - task: CodeQL3000Finalize@0
         displayName: CodeQL Finalize
+
+  - template: /eng/common/templates/jobs/source-build.yml
+
   # Publish to Build Asset Registry
   - template: /eng/common/templates/job/publish-build-assets.yml
     parameters:
       publishUsingPipelines: true
       dependsOn:
         - OfficialBuild
+        - Source_Build_Managed
       pool:
         vmImage: windows-2019
 

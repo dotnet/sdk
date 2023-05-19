@@ -1,23 +1,55 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="4.7.0-2.23268.17">
+    <Dependency Name="Microsoft.CodeAnalysis" Version="4.7.0-2.23268.17">
       <Uri>https://github.com/dotnet/roslyn</Uri>
       <Sha>32b915695fcc2ab975cd91fdfd294c5451785c26</Sha>
+      <SourceBuild RepoName="roslyn" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="System.CommandLine" Version="2.0.0-beta4.22504.1">
-      <Uri>https://github.com/dotnet/command-line-api</Uri>
-      <Sha>c776cd4e906b669b9cce1017fee7d0ba9845d163</Sha>
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-externals" Version="8.0.0-alpha.1.23221.1">
+      <Uri>https://github.com/dotnet/source-build-externals</Uri>
+      <Sha>834923aef31d157aec19a2b99d5494cea29dcc9e</Sha>
+      <SourceBuild RepoName="source-build-externals" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="System.CommandLine.Rendering" Version="0.4.0-alpha.22504.1">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-reference-packages" Version="8.0.0-alpha.1.23253.2">
+      <Uri>https://github.com/dotnet/source-build-reference-packages</Uri>
+      <Sha>c65b02aef21850de618d37a5304d3bbd829c2733</Sha>
+      <SourceBuild RepoName="source-build-reference-packages" ManagedOnly="true" />
+    </Dependency>
+    <Dependency Name="Microsoft.DiaSymReader" Version="2.0.0-beta-22503-02">
+      <Uri>https://github.com/dotnet/symreader</Uri>
+      <Sha>0c29b7109c054bdc578e917515ae7e8635b9cb9d</Sha>
+      <SourceBuild RepoName="symreader" ManagedOnly="true" />
+    </Dependency>
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.command-line-api" Version="0.1.356401">
       <Uri>https://github.com/dotnet/command-line-api</Uri>
-      <Sha>c776cd4e906b669b9cce1017fee7d0ba9845d163</Sha>
+      <Sha>8374d5fca634a93458c84414b1604c12f765d1ab</Sha>
+      <SourceBuild RepoName="command-line-api" ManagedOnly="true" />
+    </Dependency>
+    <Dependency Name="System.CommandLine" Version="2.0.0-beta4.22564.1">
+      <Uri>https://github.com/dotnet/command-line-api</Uri>
+      <Sha>8374d5fca634a93458c84414b1604c12f765d1ab</Sha>
+    </Dependency>
+    <Dependency Name="System.CommandLine.Rendering" Version="0.4.0-alpha.22564.1">
+      <Uri>https://github.com/dotnet/command-line-api</Uri>
+      <Sha>8374d5fca634a93458c84414b1604c12f765d1ab</Sha>
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
-    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="7.0.0-beta.23254.2">
+    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="8.0.0-beta.23269.1">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>23a23b5025d64557329b638329c136ebbc20989b</Sha>
+      <Sha>fb6291b40fa4334dbd167e2071953e83cc8b9fdc</Sha>
+      <SourceBuild RepoName="arcade" ManagedOnly="true" />
+    </Dependency>
+    <Dependency Name="Microsoft.SourceLink.GitHub" Version="8.0.0-beta.23252.2" CoherentParentDependency="Microsoft.DotNet.Arcade.Sdk">
+      <Uri>https://github.com/dotnet/sourcelink</Uri>
+      <Sha>54eb3b811c57f5e94617d31a102fc9cb664ccdd5</Sha>
+      <SourceBuild RepoName="sourcelink" ManagedOnly="true" />
+    </Dependency>
+    <Dependency Name="Microsoft.DotNet.XliffTasks" Version="1.0.0-beta.23266.1" CoherentParentDependency="Microsoft.DotNet.Arcade.Sdk">
+      <Uri>https://github.com/dotnet/xliff-tasks</Uri>
+      <Sha>9e7fbcab4e5275f63c0cd37553ba426de9194309</Sha>
+      <SourceBuild RepoName="xliff-tasks" ManagedOnly="true" />
     </Dependency>
   </ToolsetDependencies>
 </Dependencies>
