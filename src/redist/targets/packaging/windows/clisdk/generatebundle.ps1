@@ -13,7 +13,6 @@ param(
     [Parameter(Mandatory=$true)][string]$NetStandardTargetingPackMSIFile,
     [Parameter(Mandatory=$true)][string]$NetCoreAppHostPackMSIFile,
     [Parameter(Mandatory=$true)][string]$AlternateNetCoreAppHostPackMSIFile,
-    [Parameter(Mandatory=$true)][string]$ArmNetCoreAppHostPackMSIFile,
     [Parameter(Mandatory=$true)][string]$Arm64NetCoreAppHostPackMSIFile,
     [Parameter(Mandatory=$true)][string]$AspNetTargetingPackMSIFile,
     [Parameter(Mandatory=$true)][string]$WindowsDesktopTargetingPackMSIFile,
@@ -65,7 +64,6 @@ function RunCandleForBundle
         -dNetCoreAppTargetingPackMsiSourcePath="$NetCoreAppTargetingPackMSIFile" `
         -dNetCoreAppHostPackMsiSourcePath="$NetCoreAppHostPackMSIFile" `
         -dAlternateNetCoreAppHostPackMsiSourcePath="$AlternateNetCoreAppHostPackMSIFile" `
-        -dArmNetCoreAppHostPackMsiSourcePath="$ArmNetCoreAppHostPackMSIFile" `
         -dArm64NetCoreAppHostPackMsiSourcePath="$Arm64NetCoreAppHostPackMSIFile" `
         -dNetStandardTargetingPackMsiSourcePath="$NetStandardTargetingPackMSIFile" `
         -dAspNetTargetingPackMsiSourcePath="$AspNetTargetingPackMSIFile" `
