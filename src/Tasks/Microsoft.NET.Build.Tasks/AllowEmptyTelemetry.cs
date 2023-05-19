@@ -40,7 +40,7 @@ namespace Microsoft.Build.Tasks
                     var availableNames = item.MetadataNames.Cast<string>();
                     var hasValue = availableNames.Contains("Value");
                     var value = hasValue ? item.GetMetadata("Value") : null;
-                    if (ShouldHash(item) && value != null)
+                    if (ShouldHash(item, availableNames) && value != null)
                     {
                         value = HashWithNormalizedCasing(value);
                     }
@@ -57,7 +57,7 @@ namespace Microsoft.Build.Tasks
             }
 
             // default to hashing all data unless otherwise told not to
-            bool ShouldHash(ITaskItem item, string[] itemNames) {
+            static bool ShouldHash(ITaskItem item, IEnumerable<string> itemNames) {
                 if (!itemNames.Contains("Hash"))
                 {
                     return true;
