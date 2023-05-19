@@ -95,6 +95,7 @@ stages:
     displayName: Validate Build Assets
     variables:
       - template: common-variables.yml
+      - template: /eng/common/templates/variables/pool-providers.yml
     jobs:
     - job:
       displayName: NuGet Validation
@@ -105,8 +106,8 @@ stages:
           name: VSEngSS-MicroBuild2022-1ES
           demands: Cmd
         # If it's not devdiv, it's dnceng
-        ${{ if ne(variables['System.TeamProject'], 'DevDiv') }}:
-          name: NetCore1ESPool-Svc-Internal
+        ${{ else }}:
+          name: $(DncEngInternalBuildPool)
           demands: ImageOverride -equals windows.vs2019.amd64
 
       steps:
@@ -142,8 +143,8 @@ stages:
           name: VSEngSS-MicroBuild2022-1ES
           demands: Cmd
         # If it's not devdiv, it's dnceng
-        ${{ if ne(variables['System.TeamProject'], 'DevDiv') }}:
-          name: NetCore1ESPool-Svc-Internal
+        ${{ else }}:
+          name: $(DncEngInternalBuildPool)
           demands: ImageOverride -equals windows.vs2019.amd64
       steps:
         - template: setup-maestro-vars.yml
@@ -202,8 +203,8 @@ stages:
           name: VSEngSS-MicroBuild2022-1ES
           demands: Cmd
         # If it's not devdiv, it's dnceng
-        ${{ if ne(variables['System.TeamProject'], 'DevDiv') }}:
-          name: NetCore1ESPool-Svc-Internal
+        ${{ else }}:
+          name: $(DncEngInternalBuildPool)
           demands: ImageOverride -equals windows.vs2019.amd64
       steps:
         - template: setup-maestro-vars.yml
@@ -251,6 +252,7 @@ stages:
     displayName: Publish using Darc
     variables:
       - template: common-variables.yml
+      - template: /eng/common/templates/variables/pool-providers.yml
     jobs:
     - job:
       displayName: Publish Using Darc
@@ -261,14 +263,14 @@ stages:
           name: VSEngSS-MicroBuild2022-1ES
           demands: Cmd
         # If it's not devdiv, it's dnceng
-        ${{ if ne(variables['System.TeamProject'], 'DevDiv') }}:
-          name: NetCore1ESPool-Svc-Internal
+        ${{ else }}:
+          name: $(DncEngInternalBuildPool)
           demands: ImageOverride -equals windows.vs2019.amd64
-    steps:
-      - template: setup-maestro-vars.yml
-        parameters:
-          BARBuildId: ${{ parameters.BARBuildId }}
-          PromoteToChannelIds: ${{ parameters.PromoteToChannelIds }}
+      steps:
+        - template: setup-maestro-vars.yml
+          parameters:
+            BARBuildId: ${{ parameters.BARBuildId }}
+            PromoteToChannelIds: ${{ parameters.PromoteToChannelIds }}
 
         - task: NuGetAuthenticate@0
 
