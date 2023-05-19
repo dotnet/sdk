@@ -27,7 +27,7 @@
       <RoslynDirectory>$(OutputPath)/Roslyn</RoslynDirectory>
     </PropertyGroup>
     <ItemGroup>
-      <RoslynBits Include="$(NuGetPackageRoot)/microsoft.net.compilers.toolset/$(MicrosoftNetCompilersToolsetPackageVersion)/tasks/net6.0/**/*" />
+      <RoslynBits Include="$(NuGetPackageRoot)/microsoft.net.compilers.toolset/$(MicrosoftNetCompilersToolsetPackageVersion)/tasks/netcore/**/*" />
     </ItemGroup>
     <Error Condition="'@(RoslynBits)' == ''" Text="Something moved around in Roslyn package, adjust code here accordingly. TFM change?" />
     <Copy SourceFiles="@(RoslynBits)" DestinationFiles="@(RoslynBits->'$(RoslynDirectory)/%(RecursiveDir)%(Filename)%(Extension)')" />
@@ -101,9 +101,9 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <DotnetFormatDllFiles Include="$(Pkgdotnet-format)/tools/net7.0/any/**/*.dll" />
-      <DotnetFormatConfigFiles Include="$(Pkgdotnet-format)/tools/net7.0/any/**/*.json" />
-      <DotnetFormatConfigFiles Include="$(Pkgdotnet-format)/tools/net7.0/any/**/*.config" />
+      <DotnetFormatDllFiles Include="$(Pkgdotnet-format)/tools/net8.0/any/**/*.dll" />
+      <DotnetFormatConfigFiles Include="$(Pkgdotnet-format)/tools/net8.0/any/**/*.json" />
+      <DotnetFormatConfigFiles Include="$(Pkgdotnet-format)/tools/net8.0/any/**/*.config" />
     </ItemGroup>
 
     <Error Condition="'@(DotnetFormatDllFiles)' == ''" Text="Something moved around in dotnet-format package, adjust code here accordingly. TFM change?" />
@@ -161,41 +161,13 @@
     </ItemGroup>
     <Copy SourceFiles="@(NETSdksContent)"
       DestinationFiles="@(NETSdksContent->'$(OutputPath)\%(DeploymentSubpath)\%(RecursiveDir)%(Filename)%(Extension)')" />
-
-    <!-- adding Microsoft.NET.Build.Containers nuget package to library packs for Microsoft.NET.Sdk.Web to be able to implicitly reference package as required by VS-->
-    <!-- for now adding as part of Microsoft.NET.Sdk.Web as it is only used there -->
-
-    <!-- when the build is stabilized, version differs depending on whether the package is shipping --> 
-    <!-- if the DotNetFinalVersionKind is release and project is shipping, only $(VersionPrefix) is used, if the project is not shipping $(Version)-$(VersionSuffix) is used. -->
-    <!-- see https://github.com/dotnet/arcade/blob/main/src/Microsoft.DotNet.Arcade.Sdk/tools/Version.BeforeCommonTargets.targets#L125-L166 for more details-->
-    <!-- since Microsoft.NET.Build.Containers is shipping, use only $(VersionPrefix) after the build is stabilized. -->  
-    <PropertyGroup>
-      <_MicrosoftNETBuildContainersVersion>$(Version)</_MicrosoftNETBuildContainersVersion>
-      <_MicrosoftNETBuildContainersVersion Condition="'$(DotNetFinalVersionKind)' == 'release'">$(VersionPrefix)</_MicrosoftNETBuildContainersVersion>
-    </PropertyGroup>
-
-    <Copy SourceFiles="$(ArtifactsDir)packages\$(Configuration)\Shipping\Microsoft.NET.Build.Containers.$(_MicrosoftNETBuildContainersVersion).nupkg"
-            DestinationFiles="$(OutputPath)\Sdks\Microsoft.NET.Sdk.Web\library-packs\Microsoft.NET.Build.Containers.$(_MicrosoftNETBuildContainersVersion).nupkg" />
-
-    <!-- update containers package version in Sdk.props-->
-    <PropertyGroup>
-      <MSBuildNamespaces>
-          <Namespace Prefix="dn" Uri="http://schemas.microsoft.com/developer/msbuild/2003" />
-      </MSBuildNamespaces>
-    </PropertyGroup>
-    
-    <XmlPoke
-      XmlInputPath="$(OutputPath)Sdks\Microsoft.NET.Sdk.Web\Sdk\Sdk.props"
-      Value="$(_MicrosoftNETBuildContainersVersion)"
-      Query="/dn:Project/dn:PropertyGroup/dn:_BuiltInMicrosoftNETBuildContainersVersion"
-      Namespaces="$(MSBuildNamespaces)" />
   </Target>
 
   <Target Name="PublishTestCli"
           BeforeTargets="Build">
     <PropertyGroup>
       <TestCliNuGetDirectoryTargetFramework Condition="'$(DotNetBuildFromSource)' != 'true'" >netcoreapp3.1</TestCliNuGetDirectoryTargetFramework>
-      <TestCliNuGetDirectoryTargetFramework Condition="'$(DotNetBuildFromSource)' == 'true'" >net7.0</TestCliNuGetDirectoryTargetFramework>
+      <TestCliNuGetDirectoryTargetFramework Condition="'$(DotNetBuildFromSource)' == 'true'" >net8.0</TestCliNuGetDirectoryTargetFramework>
       <TestCliNuGetDirectory>$(NuGetPackageRoot)/microsoft.testplatform.cli/$(MicrosoftTestPlatformCLIPackageVersion)/contentFiles/any/$(TestCliNuGetDirectoryTargetFramework)/</TestCliNuGetDirectory>
     </PropertyGroup>
     <ItemGroup>
@@ -210,6 +182,7 @@
       <TestCliBits Include="$(TestCliNuGetDirectory)**/*"
                    Exclude="@(TestCliBitsToExclude)" />
     </ItemGroup>
+    <Error Condition="'@(TestCliBits)' == ''" Text="Something moved around in Test CLI package, adjust code here accordingly. TFM change?" />
     <Copy SourceFiles="@(TestCliBits)" DestinationFiles="@(TestCliBits->'$(OutputPath)/%(RecursiveDir)%(Filename)%(Extension)')" />
   </Target>
 
@@ -219,6 +192,29 @@
       Targets="Publish"
       Projects="$(RepoRoot)/src/Layout/tool_fsharp/tool_fsc.csproj"
       Properties="Configuration=$(Configuration);PublishDir=$(OutputPath)/FSharp" />
+  </Target>
+
+  <Target Name="PublishContainersSdk"
+            BeforeTargets="Build">
+    <ItemGroup>
+      <BuildFiles Include="$(RepoRoot)/src/Containers/packaging/build/Microsoft.NET.Build.Containers.props" />
+      <BuildFiles Include="$(RepoRoot)/src/Containers/packaging/build/Microsoft.NET.Build.Containers.targets" />
+    </ItemGroup>
+    <Copy SourceFiles="@(BuildFiles)" DestinationFolder="$(OutputPath)/Containers/build" />
+
+    <MSBuild
+      Targets="Publish"
+      Projects="$(RepoRoot)/src/Containers/Microsoft.NET.Build.Containers/Microsoft.NET.Build.Containers.csproj"
+      Properties="Configuration=$(Configuration);PublishDir=$(OutputPath)/Containers/tasks/net472;TargetFramework=net472"
+      Condition="'$(DotNetBuildFromSource)' != 'true'" />
+    <MSBuild
+      Targets="Publish"
+      Projects="$(RepoRoot)/src/Containers/Microsoft.NET.Build.Containers/Microsoft.NET.Build.Containers.csproj"
+      Properties="Configuration=$(Configuration);PublishDir=$(OutputPath)/Containers/tasks/$(SdkTargetFramework);TargetFramework=$(SdkTargetFramework)" />
+    <MSBuild
+      Targets="Publish"
+      Projects="$(RepoRoot)/src/Containers/containerize/containerize.csproj"
+      Properties="Configuration=$(Configuration);PublishDir=$(OutputPath)/Containers/containerize" />
   </Target>
 
   <Target Name="GenerateCliRuntimeConfigurationFiles"

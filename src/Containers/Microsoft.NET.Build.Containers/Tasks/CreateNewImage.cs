@@ -55,7 +55,7 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
         }
         else
         {
-            throw new NotSupportedException(Resource.GetString(nameof(Strings.DontKnowHowToPullImages)));
+            throw new NotSupportedException(Resource.GetString(nameof(Strings.ImagePullNotSupported)));
         }
 
         if (imageBuilder is null)
@@ -105,7 +105,7 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
                 LocalDocker localDaemon = GetLocalDaemon(msg => Log.LogMessage(msg));
                 if (!(await localDaemon.IsAvailableAsync(cancellationToken).ConfigureAwait(false)))
                 {
-                    Log.LogErrorWithCodeFromResources(nameof(Strings.LocalDaemondNotAvailable));
+                    Log.LogErrorWithCodeFromResources(nameof(Strings.LocalDaemonNotAvailable));
                     return false;
                 }
                 try
@@ -124,12 +124,12 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
                 {
                     if (destinationImageReference.Registry is not null)
                     {
-                        await (destinationImageReference.Registry.PushAsync(
+                        await destinationImageReference.Registry.PushAsync(
                             builtImage,
                             sourceImageReference,
                             destinationImageReference,
                             message => SafeLog(message),
-                            cancellationToken)).ConfigureAwait(false);
+                            cancellationToken).ConfigureAwait(false);
                         SafeLog("Pushed container '{0}' to registry '{1}'", destinationImageReference.RepositoryAndTag, OutputRegistry);
                     }
                 }
@@ -144,7 +144,8 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
                 {
                     if (BuildEngine != null)
                     {
-                        Log.LogErrorWithCodeFromResources(nameof(Strings.RegistryOutputPushFailed), e);
+                        Log.LogErrorWithCodeFromResources(nameof(Strings.RegistryOutputPushFailed), e.Message);
+                        Log.LogMessage(MessageImportance.Low, "Details: {0}", e);
                     }
                 }
             }
