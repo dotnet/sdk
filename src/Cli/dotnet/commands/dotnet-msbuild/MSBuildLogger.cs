@@ -22,14 +22,6 @@ namespace Microsoft.DotNet.Tools.MSBuild
         internal const string PublishPropertiesTelemetryEventName = "PublishProperties";
         internal const string ReadyToRunTelemetryEventName = "ReadyToRun";
 
-        internal const string TargetFrameworkVersionTelemetryPropertyKey = "TargetFrameworkVersion";
-        internal const string RuntimeIdentifierTelemetryPropertyKey = "RuntimeIdentifier";
-        internal const string SelfContainedTelemetryPropertyKey = "SelfContained";
-        internal const string UseApphostTelemetryPropertyKey = "UseApphost";
-        internal const string OutputTypeTelemetryPropertyKey = "OutputType";
-        internal const string UseArtifactsOutputPropertyKey = "UseArtifactsOutput";
-        internal const string ArtifactsPathLocationTypePropertyKey = "ArtifactsPathLocationType";
-
         public MSBuildLogger()
         {
             try
@@ -90,25 +82,7 @@ namespace Microsoft.DotNet.Tools.MSBuild
             if (args.EventName == TargetFrameworkTelemetryEventName)
             {
                 var newEventName = $"msbuild/{TargetFrameworkTelemetryEventName}";
-                Dictionary<string, string> maskedProperties = new Dictionary<string, string>();
-
-                foreach (var key in new[] {
-                    TargetFrameworkVersionTelemetryPropertyKey,
-                    RuntimeIdentifierTelemetryPropertyKey,
-                    SelfContainedTelemetryPropertyKey,
-                    UseApphostTelemetryPropertyKey,
-                    OutputTypeTelemetryPropertyKey,
-                    UseArtifactsOutputPropertyKey,
-                    ArtifactsPathLocationTypePropertyKey
-                })
-                {
-                    if (args.Properties.TryGetValue(key, out string value))
-                    {
-                        maskedProperties.Add(key, Sha256Hasher.HashWithNormalizedCasing(value));
-                    }
-                }
-
-                telemetry.TrackEvent(newEventName, maskedProperties, measurements: null);
+                telemetry.TrackEvent(newEventName, args.Properties, measurements: null);
             }
             else if (args.EventName == BuildTelemetryEventName)
             {
@@ -143,7 +117,7 @@ namespace Microsoft.DotNet.Tools.MSBuild
             else
             {
                 var passthroughEvents = new string[] {
-                    SdkTaskBaseCatchExceptionTelemetryEventName, 
+                    SdkTaskBaseCatchExceptionTelemetryEventName,
                     PublishPropertiesTelemetryEventName,
                     ReadyToRunTelemetryEventName };
 
