@@ -36,7 +36,7 @@
     <MicrosoftExtensionsFileSystemGlobbingVersion>7.0.0</MicrosoftExtensionsFileSystemGlobbingVersion>
     <MicrosoftExtensionsLoggingVersion>7.0.0</MicrosoftExtensionsLoggingVersion>
     <!-- symreader -->
-    <MicrosoftDiaSymReaderVersion>2.0.0-beta-22503-02</MicrosoftDiaSymReaderVersion>
+    <MicrosoftDiaSymReaderVersion>2.0.0</MicrosoftDiaSymReaderVersion>
     <!-- external -->
     <BenchmarkDotNetVersion>0.13.5</BenchmarkDotNetVersion>
     <BenchmarkDotNetAnnotationsVersion>0.13.5</BenchmarkDotNetAnnotationsVersion>
