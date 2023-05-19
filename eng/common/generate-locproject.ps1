@@ -155,7 +155,6 @@ $locJson = @{
                             CopyOption = "LangIDOnPath"
                             OutputPath = $outputPath
                         }
-
                         if (Test-Path $lciFile -PathType Leaf) {
                             $result["LciFile"] = $lciFile
                         }
