@@ -47,7 +47,7 @@
   <String Id="FilesInUseDontCloseRadioButton">&amp;Uygulamaları kapatmayın. Sistemi yeniden başlatmanız gerekir.</String>
   <String Id="FilesInUseOkButton">&amp;Tamam</String>
   <String Id="FilesInUseCancelButton">İ&amp;ptal</String>
-  <String Id="FirstTimeWelcomeMessage">Yükleme başarılı oldu.
+  <String  Id="FirstTimeWelcomeMessage"><!--_locComment="{Locked='.NET SDK'}{Locked='.NET Runtime'}{Locked='ASP.NET Core Runtime'}{Locked='.NET Windows Desktop Runtime'}" -->Yükleme başarılı oldu.
 
 Aşağıdakiler ürünler yüklendi:
     • .NET SDK [DOTNETSDKVERSION]
@@ -63,8 +63,8 @@ Kaynaklar
     • SDK Belgeleri https://aka.ms/dotnet-sdk-docs
     • Sürüm Notları https://aka.ms/dotnet[VERSIONMAJOR]-release-notes
     • Öğreticiler https://aka.ms/dotnet-tutorials</String>
-  <String Id="WelcomeHeaderMessage">.NET SDK</String>
-  <String Id="WelcomeDescription">
+  <String Id="WelcomeHeaderMessage"><!--_locComment="{Locked='.NET SDK'}"-->.NET SDK</String>
+  <String Id="WelcomeDescription"><!--_locComment="{Locked='.NET SDK'}"-->
     .NET SDK, .NET uygulamalarını derlemek, çalıştırmak ve test etmek için kullanılır. Birden çok dil, düzenleyici ve geliştirici aracı arasından seçim yapabilirsiniz ve web, mobil, masaüstü, oyun ve IoT uygulamaları oluşturmak için büyük bir kitaplık ekosisteminden yararlanabilirsiniz. Beğeneceğinizi umuyoruz!</String>
   <String Id="LearnMoreTitle">.NET hakkında daha fazla bilgi edinin</String>
   <String Id="ResourcesHeader">Kaynaklar</String>
@@ -76,7 +76,7 @@ Kaynaklar
   <String Id="InstallationNoteTitle">Yükleme notu</String>
   <String Id="InstallationNote">Yükleme işlemi sırasında, proje geri yükleme hızını artıran ve çevrimdışı erişimi etkinleştiren bir komut çalıştırılır. Tamamlanması bir dakikanızı alır.
   </String>
-  <String Id="VisualStudioWarning">Visual Studio ile .NET [VERSIONMAJOR].[VERSIONMINOR] kullanmayı planlıyorsanız Visual Studio 2022 [MINIMUMVSVERSION] veya üzeri bir sürüm gerekir. &lt;A HREF="https://aka.ms/dotnet[VERSIONMAJOR]-release-notes"&gt;Daha fazla bilgi edinin&lt;/A&gt;.
+  <String  Id="VisualStudioWarning"><!--_locComment="{Locked='Visual Studio'}"-->Visual Studio ile .NET [VERSIONMAJOR].[VERSIONMINOR] kullanmayı planlıyorsanız Visual Studio 2022 [MINIMUMVSVERSION] veya üzeri bir sürüm gerekir. &lt;A HREF="https://aka.ms/dotnet[VERSIONMAJOR]-release-notes"&gt;Daha fazla bilgi edinin&lt;/A&gt;.
   </String>
   <String Id="LicenseAssent">Yükle'ye tıklayarak aşağıdaki koşulları kabul etmiş olursunuz:</String>
   <String Id="InstallPathx64x86">x64 SDK yüklemelerinin yükleme yolu ("[DOTNETHOME_X64]"), x86 SDK yüklemelerinin yükleme yolu ("[DOTNETHOME_X86]") ile aynı olamaz</String>
