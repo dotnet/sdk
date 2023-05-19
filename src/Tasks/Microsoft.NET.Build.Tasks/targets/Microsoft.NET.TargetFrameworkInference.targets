@@ -127,13 +127,13 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Target Name="_CollectTargetFrameworkForTelemetry" AfterTargets="_CheckForUnsupportedTargetFramework">
     <ItemGroup>
-      <TFTelemetry Include="TargetFrameworkVersion" Value="$([MSBuild]::Escape('$(TargetFrameworkMoniker)'))" Hash="true" />
-      <TFTelemetry Include="RuntimeIdentifier" Value="$(RuntimeIdentifier)" Hash="true" />
-      <TFTelemetry Include="SelfContained" Value="$(SelfContained)" />
-      <TFTelemetry Include="UseAppHost" Value="$(UseAppHost)" />
-      <TFTelemetry Include="OutputType" Value="$(OutputType)" />
-      <TFTelemetry Include="UseArtifactsOutput" Value="$(UseArtifactsOutput)"  />
-      <TFTelemetry Include="ArtifactsPathLocationType" Value="$(_ArtifactsPathLocationType)" Hash="true"/>
+      <TFTelemetry Include="TargetFrameworkVersion" Value="$([MSBuild]::Escape('$(TargetFrameworkMoniker)'))" />
+      <TFTelemetry Include="RuntimeIdentifier" Value="$(RuntimeIdentifier)" />
+      <TFTelemetry Include="SelfContained" Value="$(SelfContained)" Hash="false" />
+      <TFTelemetry Include="UseAppHost" Value="$(UseAppHost)" Hash="false" />
+      <TFTelemetry Include="OutputType" Value="$(OutputType)" Hash="false" />
+      <TFTelemetry Include="UseArtifactsOutput" Value="$(UseArtifactsOutput)" Hash="false" />
+      <TFTelemetry Include="ArtifactsPathLocationType" Value="$(_ArtifactsPathLocationType)" />
     </ItemGroup>
     <AllowEmptyTelemetry EventName="targetframeworkeval" EventData="@(TFTelemetry)" />
   </Target>

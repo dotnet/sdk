@@ -40,9 +40,7 @@ namespace Microsoft.Build.Tasks
                     var availableNames = item.MetadataNames.Cast<string>();
                     var hasValue = availableNames.Contains("Value");
                     var value = hasValue ? item.GetMetadata("Value") : null;
-                    var hasHash = availableNames.Contains("Hash");
-                    var hash = hasHash ? bool.Parse(item.GetMetadata("Hash")) : false;
-                    if (hash && value != null)
+                    if (ShouldHash(item) && value != null)
                     {
                         value = HashWithNormalizedCasing(value);
                     }
@@ -56,6 +54,24 @@ namespace Microsoft.Build.Tasks
                     }
                 }
                 (BuildEngine as IBuildEngine5)?.LogTelemetry(EventName, properties);
+            }
+
+            // default to hashing all data unless otherwise told not to
+            bool ShouldHash(ITaskItem item, string[] itemNames) {
+                if (!itemNames.Contains("Hash"))
+                {
+                    return true;
+                }
+
+                if (bool.TryParse(item.GetMetadata("Hash"), out var hash))
+                {
+                    return hash;
+                }
+                else
+                {
+                    return true;
+                }
+
             }
         }
 
