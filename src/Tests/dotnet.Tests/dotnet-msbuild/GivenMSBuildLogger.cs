@@ -92,7 +92,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             fakeTelemetry.LogEntry.Properties["otherProperty"].Should().Be("otherProperty value");
         }
 
-        // Reproduce https://github.com/dotnet/sdk/issues/3868
+        // This just ensures that the telemetry system is receiving events
         [Fact]
         public void ItCanSendProperties()
         {
@@ -102,14 +102,13 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                 EventName = "targetframeworkeval",
                 Properties = new Dictionary<string, string>
                 {
-                    { "TargetFrameworkVersion", ".NETFramework,Version=v4.6"},
-                    { "RuntimeIdentifier", "null"},
-                    { "SelfContained", "null"},
-                    { "UseAppHost", "null"},
-                    { "OutputType", "Library"},
+                    { "TargetFrameworkVersion", "9a871d7066260764d4cb5047e4b10570271d04bd1da275681a4b12bce0b27496"},
+                    { "RuntimeIdentifier", "fb329000228cc5a24c264c57139de8bf854fc86fc18bf1c04ab61a2b5cb4b921"},
+                    { "SelfContained", "fb329000228cc5a24c264c57139de8bf854fc86fc18bf1c04ab61a2b5cb4b921"},
+                    { "UseAppHost", "fb329000228cc5a24c264c57139de8bf854fc86fc18bf1c04ab61a2b5cb4b921"},
+                    { "OutputType", "d77982267d9699c2a57bcab5bb975a1935f6427002f52fd4569762fd72db3a94"},
                 }
             };
-
             MSBuildLogger.FormatAndSend(fakeTelemetry, telemetryEventArgs);
 
             fakeTelemetry.LogEntry.Properties.Should().BeEquivalentTo(new Dictionary<string, string>
