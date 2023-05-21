@@ -418,11 +418,12 @@ namespace Microsoft.TemplateEngine.Cli
 
             if (extendedPackageMetadata != null && packageTemplates.Any())
             {
-                metadataOutput.AddRange(CollectPackageMetadataOutput(packageIdentity, _engineEnvironmentSettings, extendedPackageMetadata));
-                metadataOutput.ForEach(Reporter.Output.WriteLine);
+                Reporter.Output.WriteLine($"{packageIdentity}");
+
+                DisplayPackageMetadata(extendedPackageMetadata);
 
                 Reporter.Output.WriteLine();
-                Reporter.Output.WriteLine($"{SymbolStrings.Command_Details_Templates_Property}:");
+                Reporter.Output.WriteLine($"{SymbolStrings.Command_Details_Templates_Property}:".Indent(1));
 
                 var templatesToDisplay = TemplateGroupDisplay.GetTemplateGroupsForListDisplay(packageTemplates, null, null, _engineEnvironmentSettings.Environment);
                 TabularOutput<TemplateGroupTableRow> formatter =
@@ -436,7 +437,7 @@ namespace Microsoft.TemplateEngine.Cli
                         .DefineColumn(t => t.Classifications, LocalizableStrings.ColumnNameTags, minWidth: 15, showAlways: true)
                         .DefineColumn(t => t.Languages, LocalizableStrings.ColumnNameLanguage, minWidth: 15, showAlways: true);
 
-                Reporter.Output.WriteLine(formatter.Layout());
+                Reporter.Output.WriteLine(formatter.Layout(2));
 
                 return NewCommandStatus.Success;
             }
@@ -460,29 +461,66 @@ namespace Microsoft.TemplateEngine.Cli
             }
         }
 
-        private IList<string> CollectPackageMetadataOutput(
-            string packageIdentity,
-            IEngineEnvironmentSettings environmentSettings,
-            NugetPackageMetadata? templatePackage)
-        {
-            var list = new List<string> { $"{packageIdentity}".Indent(1) };
-
-            AddIfNotNull(list, SymbolStrings.Command_Details_Description_Property, templatePackage?.Description, 2);
-            AddIfNotNull(list, SymbolStrings.Command_Details_Authors_Property, templatePackage?.Authors, 2);
-            AddIfNotNull(list, SymbolStrings.Command_Details_Owners_Property, templatePackage?.Owners, 2);
-            list.Add($"{SymbolStrings.Command_Details_LicenseMetadata_Property}:".Indent(2));
-            AddIfNotNull(list, SymbolStrings.Command_Details_License_Property, templatePackage?.License, 3);
-            AddIfNotNull(list, SymbolStrings.Command_Details_License_Expression_Property, templatePackage?.LicenseExpression, 3);
-            AddIfNotNull(list, SymbolStrings.Command_Details_License_Url_Property, templatePackage?.LicenseUrl?.ToString(), 3);
-            AddIfNotNull(list, SymbolStrings.Command_Details_Repository_Url_Property, templatePackage?.ProjectUrl?.ToString(), 2);
-            return list;
-        }
-
-        private void AddIfNotNull(IList<string> list, string metadataName, string? metadataEntry, int indent = 1)
+        private void WriteIfNotNull(string metadataName, string? metadataEntry, int indent = 0)
         {
             if (!string.IsNullOrEmpty(metadataEntry))
             {
-                list.Add($"{metadataName}:  {metadataEntry}".Indent(indent));
+                Reporter.Output.WriteLine($"{metadataName}:  {metadataEntry}".Indent(indent));
+            }
+        }
+
+        private void DisplayPackageMetadata(NugetPackageMetadata packageMetadata)
+        {
+            WriteIfNotNull(SymbolStrings.Command_Details_Description_Property, packageMetadata.Description, 1);
+            if (!string.IsNullOrEmpty(packageMetadata.Authors))
+            {
+                Reporter.Output.WriteLine($"{SymbolStrings.Command_Details_Authors_Property}:".Indent(1));
+
+                var packageAuthors = packageMetadata.Authors.Split(",");
+                foreach (var author in packageAuthors)
+                {
+                    Reporter.Output.WriteLine(author.Indent(2));
+                }
+            }
+
+            if (!string.IsNullOrEmpty(packageMetadata.Owners))
+            {
+                Reporter.Output.WriteLine($"{SymbolStrings.Command_Details_Owners_Property}:".Indent(1));
+
+                var packageOwners = packageMetadata.Owners.Split(",");
+                foreach (var owner in packageOwners)
+                {
+                    Reporter.Output.WriteLine(AnsiExtensions.Url($"https://nuget.org/profiles/{owner.Trim()}", owner).Indent(2));
+                }
+            }
+
+            Reporter.Output.WriteLine($"{SymbolStrings.Command_Details_LicenseMetadata_Property}:".Indent(1));
+            WriteIfNotNull(SymbolStrings.Command_Details_License_Property, packageMetadata.License, 2);
+            WriteIfNotNull(SymbolStrings.Command_Details_License_Expression_Property, packageMetadata.LicenseExpression, 2);
+
+            if (!string.IsNullOrEmpty(packageMetadata.LicenseExpression))
+            {
+                var licenseExpressionUrl = "https://licenses.nuget.org/" + packageMetadata.LicenseExpression;
+                Reporter.Output.WriteLine(
+                    $"{SymbolStrings.Command_Details_License_Expression_Property}: ".Indent(1) +
+                    $"{AnsiExtensions.Url(licenseExpressionUrl, packageMetadata.LicenseExpression)}");
+            }
+
+            var licenseUrl = packageMetadata.LicenseUrl?.ToString();
+            if (!string.IsNullOrEmpty(licenseUrl))
+            {
+                Reporter.Output.WriteLine(
+                    $"{SymbolStrings.Command_Details_License_Url_Property}: ".Indent(2) +
+                    $"{AnsiExtensions.Url(licenseUrl, licenseUrl)}");
+            }
+
+            var projectUrl = packageMetadata.ProjectUrl?.ToString();
+            if (!string.IsNullOrEmpty(projectUrl))
+            {
+                var repoUrlInfo = packageMetadata.ProjectUrl?.ToString().Split("/");
+                Reporter.Output.WriteLine(
+                    $"{SymbolStrings.Command_Details_Repository_Url_Property}: ".Indent(2) +
+                    $"{AnsiExtensions.Url(projectUrl, repoUrlInfo![3] + repoUrlInfo![4])}");
             }
         }
 

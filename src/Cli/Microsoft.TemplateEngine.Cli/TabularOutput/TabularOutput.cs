@@ -75,7 +75,7 @@ namespace Microsoft.TemplateEngine.Cli.TabularOutput
             return this;
         }
 
-        internal string Layout()
+        internal string Layout(int indent = 0)
         {
             Dictionary<int, int> columnWidthLookup = new Dictionary<int, int>();
             List<TextWrapper[]> grid = new List<TextWrapper[]>();
@@ -121,7 +121,7 @@ namespace Microsoft.TemplateEngine.Cli.TabularOutput
                             b.Append(' ', _settings.ColumnPadding);
                         }
                     }
-                    b.AppendLine();
+                    b.AppendLine().Indent(indent);
                 }
             }
 
@@ -137,7 +137,7 @@ namespace Microsoft.TemplateEngine.Cli.TabularOutput
                         b.Append(new string(' ', _settings.ColumnPadding));
                     }
                 }
-                b.AppendLine();
+                b.AppendLine().Indent(indent);
             }
 
             IEnumerable<TextWrapper[]> rows = grid;
@@ -186,7 +186,7 @@ namespace Microsoft.TemplateEngine.Cli.TabularOutput
                             b.Append(' ', _settings.ColumnPadding);
                         }
                     }
-                    b.AppendLine();
+                    b.AppendLine().Indent(indent);
                 }
 
                 if (_settings.BlankLineBetweenRows)
@@ -197,7 +197,7 @@ namespace Microsoft.TemplateEngine.Cli.TabularOutput
                 ++currentRowIndex;
             }
 
-            return b.ToString();
+            return b.ToString().Indent(indent);
         }
 
         internal TabularOutput<T> OrderBy(object? columnToken, IComparer<string>? comparer = null)
@@ -423,7 +423,7 @@ namespace Microsoft.TemplateEngine.Cli.TabularOutput
 
             internal string RawText { get; }
 
-            internal void AppendTextWithPadding(StringBuilder b, int line, int maxColumnWidth, TextAlign textAlign = TextAlign.Left, int indentLevel = 1)
+            internal void AppendTextWithPadding(StringBuilder b, int line, int maxColumnWidth, TextAlign textAlign = TextAlign.Left)
             {
                 var text = _lines.Count > line ? _lines[line] : string.Empty;
                 var abbreviatedText = ShrinkTextToLength(text, maxColumnWidth);
