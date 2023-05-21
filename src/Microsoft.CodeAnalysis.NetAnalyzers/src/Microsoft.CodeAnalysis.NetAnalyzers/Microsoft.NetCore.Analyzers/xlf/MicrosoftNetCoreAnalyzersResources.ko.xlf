@@ -53,13 +53,13 @@
         <note />
       </trans-unit>
       <trans-unit id="AvoidConstArraysDescription">
-        <source>Constant arrays passed as arguments are not reused which implies a performance overhead. Consider extracting them to 'static readonly' fields to improve performance.</source>
-        <target state="translated">인수로 전달된 상수 배열은 재사용되지 않으므로 성능 오버헤드가 발생합니다. 성능을 향상시키려면 'static readonly' 필드로 추출하는 것이 좋습니다.</target>
+        <source>Constant arrays passed as arguments are not reused when called repeatedly, which implies a new array is created each time. Consider extracting them to 'static readonly' fields to improve performance if the passed array is not mutated within the called method.</source>
+        <target state="needs-review-translation">인수로 전달된 상수 배열은 재사용되지 않으므로 성능 오버헤드가 발생합니다. 성능을 향상시키려면 'static readonly' 필드로 추출하는 것이 좋습니다.</target>
         <note>{Locked="static readonly"}</note>
       </trans-unit>
       <trans-unit id="AvoidConstArraysMessage">
-        <source>Prefer 'static readonly' fields over local constant array arguments</source>
-        <target state="translated">로컬 상수 배열 인수보다 'static readonly' 필드 선호</target>
+        <source>Prefer 'static readonly' fields over constant array arguments if the called method is called repeatedly and is not mutating the passed array</source>
+        <target state="needs-review-translation">로컬 상수 배열 인수보다 'static readonly' 필드 선호</target>
         <note>{Locked="static readonly"}</note>
       </trans-unit>
       <trans-unit id="AvoidConstArraysTitle">

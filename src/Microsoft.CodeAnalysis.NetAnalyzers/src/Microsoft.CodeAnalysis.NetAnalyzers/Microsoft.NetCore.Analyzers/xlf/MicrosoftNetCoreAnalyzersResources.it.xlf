@@ -53,13 +53,13 @@
         <note />
       </trans-unit>
       <trans-unit id="AvoidConstArraysDescription">
-        <source>Constant arrays passed as arguments are not reused which implies a performance overhead. Consider extracting them to 'static readonly' fields to improve performance.</source>
-        <target state="translated">Le matrici costanti passate come argomenti non vengono riutilizzate e ciò implica un sovraccarico delle prestazioni. È consigliabile estrarli in campi ‘static readonly' per migliorare le prestazioni.</target>
+        <source>Constant arrays passed as arguments are not reused when called repeatedly, which implies a new array is created each time. Consider extracting them to 'static readonly' fields to improve performance if the passed array is not mutated within the called method.</source>
+        <target state="needs-review-translation">Le matrici costanti passate come argomenti non vengono riutilizzate e ciò implica un sovraccarico delle prestazioni. È consigliabile estrarli in campi ‘static readonly' per migliorare le prestazioni.</target>
         <note>{Locked="static readonly"}</note>
       </trans-unit>
       <trans-unit id="AvoidConstArraysMessage">
-        <source>Prefer 'static readonly' fields over local constant array arguments</source>
-        <target state="translated">Preferire i campi ‘static readonly' rispetto agli argomenti della matrice di costanti locali</target>
+        <source>Prefer 'static readonly' fields over constant array arguments if the called method is called repeatedly and is not mutating the passed array</source>
+        <target state="needs-review-translation">Preferire i campi ‘static readonly' rispetto agli argomenti della matrice di costanti locali</target>
         <note>{Locked="static readonly"}</note>
       </trans-unit>
       <trans-unit id="AvoidConstArraysTitle">

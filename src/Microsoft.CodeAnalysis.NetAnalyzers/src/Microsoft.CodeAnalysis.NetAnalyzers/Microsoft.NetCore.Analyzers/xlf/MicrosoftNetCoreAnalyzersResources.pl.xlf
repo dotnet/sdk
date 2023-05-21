@@ -53,13 +53,13 @@
         <note />
       </trans-unit>
       <trans-unit id="AvoidConstArraysDescription">
-        <source>Constant arrays passed as arguments are not reused which implies a performance overhead. Consider extracting them to 'static readonly' fields to improve performance.</source>
-        <target state="translated">Tablice stałe przekazywane jako argumenty nie są ponownie używane, co oznacza narzut na wydajność. Rozważ wyodrębnienie ich do pól „static readonly”, aby zwiększyć wydajność.</target>
+        <source>Constant arrays passed as arguments are not reused when called repeatedly, which implies a new array is created each time. Consider extracting them to 'static readonly' fields to improve performance if the passed array is not mutated within the called method.</source>
+        <target state="needs-review-translation">Tablice stałe przekazywane jako argumenty nie są ponownie używane, co oznacza narzut na wydajność. Rozważ wyodrębnienie ich do pól „static readonly”, aby zwiększyć wydajność.</target>
         <note>{Locked="static readonly"}</note>
       </trans-unit>
       <trans-unit id="AvoidConstArraysMessage">
-        <source>Prefer 'static readonly' fields over local constant array arguments</source>
-        <target state="translated">Preferuj pola „static readonly” niż argumenty lokalnej tablicy stałej</target>
+        <source>Prefer 'static readonly' fields over constant array arguments if the called method is called repeatedly and is not mutating the passed array</source>
+        <target state="needs-review-translation">Preferuj pola „static readonly” niż argumenty lokalnej tablicy stałej</target>
         <note>{Locked="static readonly"}</note>
       </trans-unit>
       <trans-unit id="AvoidConstArraysTitle">

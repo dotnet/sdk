@@ -1694,7 +1694,7 @@ Prefer using 'IsEmpty', 'Count' or 'Length' properties whichever available, rath
 
 ## [CA1861](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1861): Avoid constant arrays as arguments
 
-Constant arrays passed as arguments are not reused which implies a performance overhead. Consider extracting them to 'static readonly' fields to improve performance.
+Constant arrays passed as arguments are not reused when called repeatedly, which implies a new array is created each time. Consider extracting them to 'static readonly' fields to improve performance if the passed array is not mutated within the called method.
 
 |Item|Value|
 |-|-|

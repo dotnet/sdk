@@ -53,13 +53,13 @@
         <note />
       </trans-unit>
       <trans-unit id="AvoidConstArraysDescription">
-        <source>Constant arrays passed as arguments are not reused which implies a performance overhead. Consider extracting them to 'static readonly' fields to improve performance.</source>
-        <target state="translated">Les tableaux de constantes passés en tant qu’arguments ne sont pas réutilisés, ce qui implique une surcharge du niveau de performance. Envisagez de les extraire dans ’static readonly’ champs pour améliorer le niveau de performance.</target>
+        <source>Constant arrays passed as arguments are not reused when called repeatedly, which implies a new array is created each time. Consider extracting them to 'static readonly' fields to improve performance if the passed array is not mutated within the called method.</source>
+        <target state="needs-review-translation">Les tableaux de constantes passés en tant qu’arguments ne sont pas réutilisés, ce qui implique une surcharge du niveau de performance. Envisagez de les extraire dans ’static readonly’ champs pour améliorer le niveau de performance.</target>
         <note>{Locked="static readonly"}</note>
       </trans-unit>
       <trans-unit id="AvoidConstArraysMessage">
-        <source>Prefer 'static readonly' fields over local constant array arguments</source>
-        <target state="translated">Préférer les champs ’static readonly’ aux arguments de tableau de constantes locaux</target>
+        <source>Prefer 'static readonly' fields over constant array arguments if the called method is called repeatedly and is not mutating the passed array</source>
+        <target state="needs-review-translation">Préférer les champs ’static readonly’ aux arguments de tableau de constantes locaux</target>
         <note>{Locked="static readonly"}</note>
       </trans-unit>
       <trans-unit id="AvoidConstArraysTitle">

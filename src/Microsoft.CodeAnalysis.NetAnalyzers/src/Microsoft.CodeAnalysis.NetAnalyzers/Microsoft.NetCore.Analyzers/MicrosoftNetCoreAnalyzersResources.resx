@@ -220,11 +220,11 @@
     <value>Extract to static readonly field</value>
   </data>
   <data name="AvoidConstArraysDescription" xml:space="preserve">
-    <value>Constant arrays passed as arguments are not reused which implies a performance overhead. Consider extracting them to 'static readonly' fields to improve performance.</value>
+    <value>Constant arrays passed as arguments are not reused when called repeatedly, which implies a new array is created each time. Consider extracting them to 'static readonly' fields to improve performance if the passed array is not mutated within the called method.</value>
     <comment>{Locked="static readonly"}</comment>
   </data>
   <data name="AvoidConstArraysMessage" xml:space="preserve">
-    <value>Prefer 'static readonly' fields over local constant array arguments</value>
+    <value>Prefer 'static readonly' fields over constant array arguments if the called method is called repeatedly and is not mutating the passed array</value>
     <comment>{Locked="static readonly"}</comment>
   </data>
   <data name="TestForEmptyStringsUsingStringLengthTitle" xml:space="preserve">
