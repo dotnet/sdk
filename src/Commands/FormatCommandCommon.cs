@@ -44,7 +44,7 @@ namespace Microsoft.CodeAnalysis.Tools
         {
             AllowMultipleArgumentsPerToken = true
         };
-        internal static readonly Option<string> SeverityOption = new Option<string>("--severity", Resources.The_severity_of_diagnostics_to_fix_Allowed_values_are_info_warn_and_error).FromAmong(SeverityLevels);
+        internal static readonly Option<string> SeverityOption = new Option<string>("--severity", Resources.The_severity_of_diagnostics_to_fix_Allowed_values_are_info_warn_and_error).AcceptOnlyFromAmong(SeverityLevels);
         internal static readonly Option<string[]> IncludeOption = new(new[] { "--include" }, () => Array.Empty<string>(), Resources.A_list_of_relative_file_or_folder_paths_to_include_in_formatting_All_files_are_formatted_if_empty)
         {
             AllowMultipleArgumentsPerToken = true
@@ -54,17 +54,17 @@ namespace Microsoft.CodeAnalysis.Tools
             AllowMultipleArgumentsPerToken = true
         };
         internal static readonly Option<bool> IncludeGeneratedOption = new(new[] { "--include-generated" }, Resources.Format_files_generated_by_the_SDK);
-        internal static readonly Option<string> VerbosityOption = new Option<string>(new[] { "--verbosity", "-v" }, Resources.Set_the_verbosity_level_Allowed_values_are_quiet_minimal_normal_detailed_and_diagnostic).FromAmong(VerbosityLevels);
+        internal static readonly Option<string> VerbosityOption = new Option<string>(new[] { "--verbosity", "-v" }, Resources.Set_the_verbosity_level_Allowed_values_are_quiet_minimal_normal_detailed_and_diagnostic).AcceptOnlyFromAmong(VerbosityLevels);
         internal static readonly Option BinarylogOption = new Option<string>(new[] { "--binarylog" }, Resources.Log_all_project_or_solution_load_information_to_a_binary_log_file)
         {
             ArgumentHelpName = "binary-log-path",
             Arity = ArgumentArity.ZeroOrOne
-        }.LegalFilePathsOnly();
+        }.AcceptLegalFilePathsOnly();
         internal static readonly Option ReportOption = new Option<string>(new[] { "--report" }, Resources.Accepts_a_file_path_which_if_provided_will_produce_a_json_report_in_the_given_directory)
         {
             ArgumentHelpName = "report-path",
             Arity = ArgumentArity.ZeroOrOne
-        }.LegalFilePathsOnly();
+        }.AcceptLegalFilePathsOnly();
 
         internal static async Task<int> FormatAsync(FormatOptions formatOptions, ILogger<Program> logger, CancellationToken cancellationToken)
         {
@@ -111,7 +111,7 @@ namespace Microsoft.CodeAnalysis.Tools
             command.AddOption(ReportOption);
         }
 
-        public static Argument<T> DefaultToCurrentDirectory<T>(this Argument<T> arg)
+        public static Argument<string> DefaultToCurrentDirectory(this Argument<string> arg)
         {
             arg.SetDefaultValue(EnsureTrailingSlash(Directory.GetCurrentDirectory()));
             return arg;
@@ -138,7 +138,7 @@ namespace Microsoft.CodeAnalysis.Tools
         public static FormatOptions ParseVerbosityOption(this ParseResult parseResult, FormatOptions formatOptions)
         {
             if (parseResult.HasOption(VerbosityOption) &&
-                parseResult.GetValueForOption(VerbosityOption) is string { Length: > 0 } verbosity)
+                parseResult.GetValue(VerbosityOption) is string { Length: > 0 } verbosity)
             {
                 formatOptions = formatOptions with { LogLevel = GetLogLevel(verbosity) };
             }
@@ -170,8 +170,8 @@ namespace Microsoft.CodeAnalysis.Tools
 
             if (parseResult.HasOption(IncludeOption) || parseResult.HasOption(ExcludeOption))
             {
-                var fileToInclude = parseResult.GetValueForOption(IncludeOption) ?? Array.Empty<string>();
-                var fileToExclude = parseResult.GetValueForOption(ExcludeOption) ?? Array.Empty<string>();
+                var fileToInclude = parseResult.GetValue(IncludeOption) ?? Array.Empty<string>();
+                var fileToExclude = parseResult.GetValue(ExcludeOption) ?? Array.Empty<string>();
                 HandleStandardInput(logger, ref fileToInclude, ref fileToExclude);
                 formatOptions = formatOptions with { FileMatcher = SourceFileMatcher.CreateMatcher(fileToInclude, fileToExclude) };
             }
@@ -180,7 +180,7 @@ namespace Microsoft.CodeAnalysis.Tools
             {
                 formatOptions = formatOptions with { ReportPath = string.Empty };
 
-                if (parseResult.GetValueForOption(ReportOption) is string { Length: > 0 } reportPath)
+                if (parseResult.GetValue(ReportOption) is string { Length: > 0 } reportPath)
                 {
                     formatOptions = formatOptions with { ReportPath = reportPath };
                 }
@@ -190,7 +190,7 @@ namespace Microsoft.CodeAnalysis.Tools
             {
                 formatOptions = formatOptions with { BinaryLogPath = "format.binlog" };
 
-                if (parseResult.GetValueForOption(BinarylogOption) is string { Length: > 0 } binaryLogPath)
+                if (parseResult.GetValue(BinarylogOption) is string { Length: > 0 } binaryLogPath)
                 {
                     formatOptions = Path.GetExtension(binaryLogPath)?.Equals(".binlog") == false
                         ? (formatOptions with { BinaryLogPath = Path.ChangeExtension(binaryLogPath, ".binlog") })
@@ -286,7 +286,7 @@ namespace Microsoft.CodeAnalysis.Tools
         {
             var currentDirectory = Environment.CurrentDirectory;
 
-            if (parseResult.GetValueForArgument<string>(SlnOrProjectArgument) is string { Length: > 0 } slnOrProject)
+            if (parseResult.GetValue<string>(SlnOrProjectArgument) is string { Length: > 0 } slnOrProject)
             {
                 if (parseResult.HasOption(FolderOption))
                 {
@@ -356,8 +356,11 @@ namespace Microsoft.CodeAnalysis.Tools
                     return false;
                 }
 
-                Build.Locator.MSBuildLocator.RegisterInstance(msBuildInstance);
-                msBuildPath = msBuildInstance.MSBuildPath;
+                msBuildPath = Path.EndsInDirectorySeparator(msBuildInstance.MSBuildPath)
+                    ? msBuildInstance.MSBuildPath
+                    : msBuildInstance.MSBuildPath + Path.DirectorySeparatorChar;
+
+                Build.Locator.MSBuildLocator.RegisterMSBuildPath(msBuildPath);
                 return true;
             }
             catch

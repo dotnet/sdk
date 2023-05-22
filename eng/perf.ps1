@@ -28,8 +28,8 @@ try {
     }
     
     Write-Output "builing release"
-    Invoke-Expression 'eng\common\build.ps1 -restore'
-    Invoke-Expression 'eng\common\build.ps1 -build -configuration release'
+    Invoke-Expression 'eng\common\build.ps1 -restore -msbuildEngine dotnet'
+    Invoke-Expression 'eng\common\build.ps1 -build  -msbuildEngine dotnet -configuration release'
 
     Write-Output "running tests"
     
@@ -45,17 +45,17 @@ try {
     
     if ($micro) {
         # Default case, run very small tests
-        Invoke-Expression 'dotnet run -c Release -f netcoreapp2.1 --runtimes netcoreapp3.1 --project dotnet-format.Performance.csproj -- --memory --join --filter Microsoft.CodeAnalysis.Tools.Perf.Micro*'
+        Invoke-Expression 'dotnet run -c Release -f net8.0 --runtimes net8.0 --project dotnet-format.Performance.csproj -- --memory --join --filter Microsoft.CodeAnalysis.Tools.Perf.Micro*'
         exit 0
     }
     
     if ($real) {
-        Invoke-Expression 'dotnet run -c Release -f netcoreapp2.1 --runtimes netcoreapp3.1 --project dotnet-format.Performance.csproj -- --memory --join --filter Microsoft.CodeAnalysis.Tools.Perf.Real*'
+        Invoke-Expression 'dotnet run -c Release -f net8.0 --runtimes net8.0 --project dotnet-format.Performance.csproj -- --memory --join --filter Microsoft.CodeAnalysis.Tools.Perf.Real*'
         exit 0
     }
     
     if ($all) {
-        Invoke-Expression 'dotnet run -c Release -f netcoreapp2.1 --runtimes netcoreapp3.1 --project dotnet-format.Performance.csproj -- --memory --join --filter *'
+        Invoke-Expression 'dotnet run -c Release -f net8.0 --runtimes net8.0 --project dotnet-format.Performance.csproj -- --memory --join --filter *'
         exit 0
     }
 }
