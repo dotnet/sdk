@@ -100,7 +100,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                     info.TagsCollection = tags;
                 }
 
-                info.HostData = entry.Get<JObject>(nameof(info.HostData))?.ToString(Formatting.None);
+                info.HostData = entry.ToString(nameof(info.HostData));
                 JArray? postActionsArray = entry.Get<JArray>(nameof(info.PostActions));
                 if (postActionsArray != null)
                 {

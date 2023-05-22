@@ -208,9 +208,9 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
             foreach (string fallbackHostName in settings.Host.FallbackHostTemplateConfigNames)
             {
-                if (newTemplate.HostConfigFiles.TryGetValue(fallbackHostName, out string? fallbackHostFilePAth))
+                if (newTemplate.HostConfigFiles.TryGetValue(fallbackHostName, out string? fallbackHostFilePath))
                 {
-                    return (preferredHostFilePath, ReadHostFile(newTemplate, fallbackHostFilePAth, settings, mountPoint));
+                    return (fallbackHostFilePath, ReadHostFile(newTemplate, fallbackHostFilePath, settings, mountPoint));
                 }
             }
             return null;
