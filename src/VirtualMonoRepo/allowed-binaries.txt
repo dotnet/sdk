@@ -47,8 +47,6 @@ src/runtime/src/libraries/System.Diagnostics.EventLog/src/Messages/EventLogMessa
 src/runtime/src/libraries/System.Speech/src/*.upsmap # https://github.com/dotnet/runtime/issues/81692
 src/runtime/src/libraries/System.Text.Encoding.CodePages/src/Data/codepages.nlp # https://github.com/dotnet/runtime/issues/81693
 src/runtime/src/mono/wasm/testassets/*
-src/runtime/src/mono/wasm/runtime/do-jit-call.wasm # https://github.com/dotnet/runtime/issues/81691
-src/runtime/src/mono/wasm/runtime/wasm-simd-feature-detect.wasm # https://github.com/dotnet/runtime/issues/78428
 src/runtime/src/native/external/brotli/common/dictionary.bin.br
 
 src/sdk/src/Assets/TestProjects/*
