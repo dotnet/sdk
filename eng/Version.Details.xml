@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.CodeAnalysis" Version="4.7.0-1.23259.11">
+    <Dependency Name="Microsoft.CodeAnalysis" Version="4.7.0-2.23271.1">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>1d3e90428043f6b18f517e89b8e21328dca99e56</Sha>
+      <Sha>687921ffae8ad91a5464473cb1759fd463c345f2</Sha>
       <SourceBuild RepoName="roslyn" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-externals" Version="8.0.0-alpha.1.23221.1">
@@ -16,10 +16,14 @@
       <Sha>c65b02aef21850de618d37a5304d3bbd829c2733</Sha>
       <SourceBuild RepoName="source-build-reference-packages" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.DiaSymReader" Version="2.0.0-beta-22503-02">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.symreader" Version="2.0.0-beta-23228-04">
       <Uri>https://github.com/dotnet/symreader</Uri>
-      <Sha>0c29b7109c054bdc578e917515ae7e8635b9cb9d</Sha>
+      <Sha>27e584661980ee6d82c419a2a471ae505b7d122e</Sha>
       <SourceBuild RepoName="symreader" ManagedOnly="true" />
+    </Dependency>
+    <Dependency Name="Microsoft.DiaSymReader" Version="2.0.0">
+      <Uri>https://github.com/dotnet/symreader</Uri>
+      <Sha>27e584661980ee6d82c419a2a471ae505b7d122e</Sha>
     </Dependency>
     <Dependency Name="Microsoft.SourceBuild.Intermediate.command-line-api" Version="0.1.356401">
       <Uri>https://github.com/dotnet/command-line-api</Uri>
