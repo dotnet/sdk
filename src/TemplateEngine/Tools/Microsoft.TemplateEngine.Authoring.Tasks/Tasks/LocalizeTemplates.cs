@@ -9,7 +9,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Build.Framework;
 using Microsoft.Extensions.Logging;
-using Microsoft.TemplateEngine.Authoring.Tasks.Tasks;
 using Microsoft.TemplateEngine.Authoring.Tasks.Utilities;
 using Microsoft.TemplateEngine.TemplateLocalizer.Core;
 

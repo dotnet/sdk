@@ -1,11 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#if !NET6_0_OR_GREATER
-using System;
-using System.Collections.Generic;
-using System.Linq;
-#endif
 using System.Globalization;
 using FakeItEasy;
 using Microsoft.Extensions.Logging;

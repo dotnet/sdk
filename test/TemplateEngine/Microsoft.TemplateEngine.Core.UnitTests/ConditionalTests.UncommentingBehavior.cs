@@ -666,7 +666,7 @@ Past endif
         /// <summary>
         /// Tests that the #else block is uncommented in each of the scenarios because:
         ///     its the special #else
-        ///     and the if & elseif conditions are false.
+        ///     and the if and elseif conditions are false.
         /// </summary>
         [Fact(DisplayName = nameof(VerifyElseUncomments))]
         public void VerifyElseUncomments()

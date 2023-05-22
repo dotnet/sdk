@@ -2,12 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable enable
-#if !NET6_0_OR_GREATER
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-#endif
 using System.Runtime.InteropServices;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.TestHelper;

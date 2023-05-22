@@ -142,6 +142,7 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.Commands
         /// ".template.config/template.json" files under the given directory is returned.</item>
         /// </list>
         /// </summary>
+        /// <param name="path"></param>
         /// <param name="searchSubdirectories">Indicates weather the subdirectories should be searched
         /// in the case that <paramref name="path"/> points to a directory. This parameter has no effect
         /// if <paramref name="path"/> points to a file.</param>

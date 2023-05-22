@@ -7,6 +7,9 @@ namespace Microsoft.TemplateEngine.Core.Util
 {
     public static class EncodingUtil
     {
+        /// <summary>
+        /// Detects encoding of the stream.
+        /// </summary>
         /// <remarks>http://www.unicode.org/faq/utf_bom.html.</remarks>
         public static Encoding Detect(byte[] buffer, int currentBufferLength, out byte[] bom)
         {

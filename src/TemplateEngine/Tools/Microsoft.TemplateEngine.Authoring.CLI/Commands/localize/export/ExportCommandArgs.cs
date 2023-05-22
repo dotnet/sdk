@@ -28,7 +28,7 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.Commands
         public IEnumerable<string>? Languages { get; init; }
 
         /// <summary>
-        /// Gets if subdirectories should be searched by <see cref="TemplateJsonProviders"/>.
+        /// Gets if subdirectories should be searched by the providers.
         /// </summary>
         public bool SearchSubdirectories { get; init; }
 
