@@ -1,0 +1,22 @@
+﻿[
+  {
+    ParameterName: name,
+    ParameterMessage: What should the [32mname[39m be [34m[Company.ConsoleApplication1][39m? 
+  },
+  {
+    ParameterName: language,
+    ParameterMessage: What should the [32mlanguage[39m be [34m[[39m[32mC#[39m[34m][39m? 
+  },
+  {
+    ParameterName: framework,
+    ParameterMessage: What should the [32mFramework[39m be [34m[[39m[34m.NET 8.0[39m[34m][39m? 
+  },
+  {
+    ParameterName: use-program-main,
+    ParameterMessage: What should the [32mUseProgramMain[39m be [34m[[39m[34mtrue[39m,[32mfalse[39m[34m][39m? 
+  },
+  {
+    ParameterName: aot,
+    ParameterMessage: What should the [32mNativeAot[39m be [34m[[39m[34mtrue[39m,[32mfalse[39m[34m][39m? 
+  }
+]

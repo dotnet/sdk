@@ -21,23 +21,14 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 
     internal class UserQuery
     {
-        private string parameterName;
-        private string parameterMessage;
-
         public UserQuery(string name, string message)
         {
-            parameterName = name;
-            parameterMessage = message;
+            ParameterName = name;
+            ParameterMessage = message;
         }
 
-        public string GetQuery()
-        {
-            return parameterMessage;
-        }
+        public string ParameterName { get; }
 
-        public string GetParameterName()
-        {
-            return parameterName;
-        }
+        public string ParameterMessage { get; }
     }
 }

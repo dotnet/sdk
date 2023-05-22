@@ -53,15 +53,15 @@ namespace Microsoft.TemplateEngine.Cli.Commands.InteractiveMode
                 while (!rightInfoCollected)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    Reporter.Output.Write(currentQuestion.GetQuery());
+                    Reporter.Output.Write(currentQuestion.ParameterMessage);
 
                     string? paramValue = Console.ReadLine();
                     if (paramValue is not null
                         && paramValue != string.Empty)
- //                       && paramValue.GetType() == currentQuestion.GetValueType())
+                    // && paramValue.GetType() == currentQuestion.GetValueType())
                     {
                         // only supporting string for now
-                        paramsToAdd.Add(currentQuestion.GetParameterName(), paramValue);
+                        paramsToAdd.Add(currentQuestion.ParameterName, paramValue);
                         rightInfoCollected = true;
                         //TODO: Necessary checks to see if value by customer is good
                     }
