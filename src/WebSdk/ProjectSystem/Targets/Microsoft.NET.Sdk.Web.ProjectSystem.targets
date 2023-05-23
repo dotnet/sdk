@@ -56,9 +56,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     <!-- Enable the built-in source generators. -->
     <EnableRequestDelegateGenerator Condition="'$(EnableRequestDelegateGenerator)' == ''">true</EnableRequestDelegateGenerator>
     <EnableConfigurationBindingGenerator Condition="'$(EnableConfigurationBindingGenerator)' == ''">true</EnableConfigurationBindingGenerator>
-
-    <!-- Enable EventSource support because it is disabled by default in aot'd apps. -->
-    <EventSourceSupport Condition="'$(EventSourceSupport)' == ''">true</EventSourceSupport>
   </PropertyGroup>
 
   <!--
