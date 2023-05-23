@@ -19,7 +19,7 @@
       prep.sh and pipeline scripts, outside of MSBuild.
     -->
     <PrivateSourceBuiltArtifactsUrl>https://dotnetcli.azureedge.net/source-built-artifacts/assets/Private.SourceBuilt.Artifacts.8.0.100-preview.4.23260.1.centos.8-x64.tar.gz</PrivateSourceBuiltArtifactsUrl>
-    <PrivateSourceBuiltPrebuiltsUrl>https://dotnetcli.azureedge.net/source-built-artifacts/assets/Private.SourceBuilt.Prebuilts.0.1.0-8.0.100-31.centos.8-x64.tar.gz</PrivateSourceBuiltPrebuiltsUrl>
+    <PrivateSourceBuiltPrebuiltsUrl>https://dotnetcli.azureedge.net/source-built-artifacts/assets/Private.SourceBuilt.Prebuilts.0.1.0-8.0.100-32.centos.8-x64.tar.gz</PrivateSourceBuiltPrebuiltsUrl>
     <PrivateSourceBuiltSdkUrl_CentOS8Stream>https://dotnetcli.azureedge.net/source-built-artifacts/sdks/dotnet-sdk-8.0.100-preview.4.23260.1-centos.8-x64.tar.gz</PrivateSourceBuiltSdkUrl_CentOS8Stream>
   </PropertyGroup>
 </Project>
