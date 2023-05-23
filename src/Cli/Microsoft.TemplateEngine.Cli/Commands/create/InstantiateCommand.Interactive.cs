@@ -113,9 +113,12 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             {
                 foreach (IGrouping<int, CliTemplateInfo> templateGrouping in GetAllowedTemplates(constraintManager, templateGroup).GroupBy(g => g.Precedence).OrderByDescending(g => g.Key))
                 {
-                    foreach (CliTemplateInfo template in templateGrouping)
+                    //TODO: this ordering is not needed after the proper resolution algorithm is in place.
+                    //For now it is added to make results consistent.
+                    foreach (CliTemplateInfo template in templateGrouping.OrderBy(t => t.Identity))
                     {
                         // Make some additional check based on user input match (like template language)
+                        // TODO: this requires better resolution: match on language, type, parameters.
                         try
                         {
                             TemplateCommand command = new(
