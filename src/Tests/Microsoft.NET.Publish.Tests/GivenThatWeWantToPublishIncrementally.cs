@@ -303,7 +303,7 @@ namespace Microsoft.NET.Publish.Tests
 
         [Theory]
         [InlineData(ToolsetInfo.CurrentTargetFramework)]
-        public void GeneratePublishDepependencyFile_runs_incrementally(string targetFramework)
+        public void GeneratePublishDependencyFile_runs_incrementally(string targetFramework)
         {
             var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
             var testProject = new TestProject()
