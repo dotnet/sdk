@@ -799,9 +799,7 @@ class C
                 .Pass();
             var uncompressedSize = new FileInfo(singleFilePath).Length;
 
-            testAsset = _testAssetsManager.CreateTestProject(testProject);
-            publishCommand = new PublishCommand(testAsset);
-            singleFilePath = Path.Combine(GetPublishDirectory(publishCommand, ToolsetInfo.CurrentTargetFramework).FullName, $"SingleFileTest{Constants.ExeSuffix}");
+            WaitForUtcNowToAdvance();
 
             publishCommand
                 .Execute(PublishSingleFile, RuntimeIdentifier, IncludeNative, "/p:EnableCompressionInSingleFile=true")
