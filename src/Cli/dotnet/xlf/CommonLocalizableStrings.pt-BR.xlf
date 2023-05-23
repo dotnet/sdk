@@ -212,13 +212,13 @@ export PATH="$PATH:{0}"
       </trans-unit>
       <trans-unit id="SelfContainAndNoSelfContainedConflict">
         <source>The '--self-contained' and '--no-self-contained' options cannot be used together.</source>
-        <target state="translated">As opções '--auto--contidas ' e '--não-independentes ' não podem ser usadas juntas.</target>
-        <note />
+        <target state="translated">As opções '--self-contained' e '--no-self-contained' não podem ser usadas juntas.</target>
+        <note>{Locked="--self-contained"}{Locked="--no-self-contained"}</note>
       </trans-unit>
       <trans-unit id="SelfContainedOptionDescription">
         <source>Publish the .NET runtime with your application so the runtime doesn't need to be installed on the target machine.
-The default is 'true' if a runtime identifier is specified.</source>
-        <target state="translated">Publique o runtime do .NET com seu aplicativo para que ele não precise estar instalado no computador de destino.
+The default is 'false.' However, when targeting .NET 7 or lower, the default is 'true' if a runtime identifier is specified.</source>
+        <target state="needs-review-translation">Publique o runtime do .NET com seu aplicativo para que ele não precise estar instalado no computador de destino.
 O padrão é 'true' se um identificador de runtime for especificado.</target>
         <note />
       </trans-unit>
@@ -275,6 +275,11 @@ O padrão é 'true' se um identificador de runtime for especificado.</target>
       <trans-unit id="Delete">
         <source>Delete</source>
         <target state="translated">Excluir</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SolutionFolderAlreadyContainsProject">
+        <source>Solution {0} already contains project {1} in solution folder {2}.</source>
+        <target state="new">Solution {0} already contains project {1} in solution folder {2}.</target>
         <note />
       </trans-unit>
       <trans-unit id="Update">

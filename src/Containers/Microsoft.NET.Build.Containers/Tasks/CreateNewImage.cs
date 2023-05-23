@@ -55,7 +55,7 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
         }
         else
         {
-            throw new NotSupportedException(Resource.GetString(nameof(Strings.DontKnowHowToPullImages)));
+            throw new NotSupportedException(Resource.GetString(nameof(Strings.ImagePullNotSupported)));
         }
 
         if (imageBuilder is null)
@@ -80,7 +80,7 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
 
         SetPorts(imageBuilder, ExposedPorts);
 
-        if (ContainerUser is { } user)
+        if (ContainerUser is { Length: > 0 } user)
         {
             imageBuilder.SetUser(user);
         }
@@ -105,7 +105,7 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
                 LocalDocker localDaemon = GetLocalDaemon(msg => Log.LogMessage(msg));
                 if (!(await localDaemon.IsAvailableAsync(cancellationToken).ConfigureAwait(false)))
                 {
-                    Log.LogErrorWithCodeFromResources(nameof(Strings.LocalDaemondNotAvailable));
+                    Log.LogErrorWithCodeFromResources(nameof(Strings.LocalDaemonNotAvailable));
                     return false;
                 }
                 try
@@ -124,12 +124,12 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
                 {
                     if (destinationImageReference.Registry is not null)
                     {
-                        await (destinationImageReference.Registry.PushAsync(
+                        await destinationImageReference.Registry.PushAsync(
                             builtImage,
                             sourceImageReference,
                             destinationImageReference,
                             message => SafeLog(message),
-                            cancellationToken)).ConfigureAwait(false);
+                            cancellationToken).ConfigureAwait(false);
                         SafeLog("Pushed container '{0}' to registry '{1}'", destinationImageReference.RepositoryAndTag, OutputRegistry);
                     }
                 }

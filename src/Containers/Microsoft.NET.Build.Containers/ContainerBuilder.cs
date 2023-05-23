@@ -52,7 +52,7 @@ public static class ContainerBuilder
         }
         else
         {
-            throw new NotSupportedException(Resource.GetString(nameof(Strings.DontKnowHowToPullImages)));
+            throw new NotSupportedException(Resource.GetString(nameof(Strings.ImagePullNotSupported)));
         }
         if (imageBuilder is null)
         {
@@ -80,7 +80,7 @@ public static class ContainerBuilder
             // ports are validated by System.CommandLine API
             imageBuilder.ExposePort(number, type);
         }
-        if (containerUser is { } user)
+        if (containerUser is { Length: > 0 } user)
         {
             imageBuilder.SetUser(user);
         }
@@ -94,7 +94,7 @@ public static class ContainerBuilder
                 LocalDocker localDaemon = GetLocalDaemon(localContainerDaemon,Console.WriteLine);
                 if (!(await localDaemon.IsAvailableAsync(cancellationToken).ConfigureAwait(false)))
                 {
-                    Console.WriteLine(DiagnosticMessage.ErrorFromResourceWithCode(nameof(Strings.LocalDaemondNotAvailable)));
+                    Console.WriteLine(DiagnosticMessage.ErrorFromResourceWithCode(nameof(Strings.LocalDaemonNotAvailable)));
                     return 7;
                 }
 
