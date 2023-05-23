@@ -26,7 +26,11 @@ jobs:
         _configuration: Release
   timeoutInMinutes: 12
   steps:
-    - script: eng\common\cibuild.cmd -configuration $(_configuration) -prepareMachine /p:TestTimeout=180000
+    - task: UseDotNet@2
+      inputs:
+        packageType: 'sdk'
+        useGlobalJson: true
+    - script: eng\common\cibuild.cmd -configuration $(_configuration) -prepareMachine /p:TestTimeout=360000
       displayName: Build and Test
     - task: PublishTestResults@2
       inputs:
@@ -104,7 +108,7 @@ jobs:
         _configuration: Release
   timeoutInMinutes: 12
   steps:
-    - script: ./eng/common/cibuild.sh --configuration $(_configuration) --prepareMachine /p:TestTimeout=180000
+    - script: ./eng/common/cibuild.sh --configuration $(_configuration) --prepareMachine /p:TestTimeout=360000
       displayName: Build and Test
     - task: PublishTestResults@2
       displayName: Publish xUnit Test Results

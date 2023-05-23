@@ -24,7 +24,7 @@ parameters:
   enablePublishBuildAssets: false
   enablePublishTestResults: false
   enablePublishUsingPipelines: false
-  disableComponentGovernance: false
+  disableComponentGovernance: ''
   mergeTestResults: false
   testRunTitle: ''
   testResultsFormat: ''
@@ -141,9 +141,15 @@ jobs:
         richNavLogOutputDirectory: $(Build.SourcesDirectory)/artifacts/bin
       continueOnError: true
 
-  - ${{ if and(eq(parameters.runAsPublic, 'false'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest'), ne(parameters.disableComponentGovernance, 'true')) }}:
-      - task: ComponentGovernanceComponentDetection@0
-        continueOnError: true
+  - template: /eng/common/templates/steps/component-governance.yml
+    parameters:
+      ${{ if eq(parameters.disableComponentGovernance, '') }}:
+        ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest'), eq(parameters.runAsPublic, 'false'), or(startsWith(variables['Build.SourceBranch'], 'refs/heads/release/'), startsWith(variables['Build.SourceBranch'], 'refs/heads/dotnet/'), startsWith(variables['Build.SourceBranch'], 'refs/heads/microsoft/'), eq(variables['Build.SourceBranch'], 'refs/heads/main'))) }}:
+          disableComponentGovernance: false
+        ${{ else }}:
+          disableComponentGovernance: true
+      ${{ else }}:
+        disableComponentGovernance: ${{ parameters.disableComponentGovernance }}
 
   - ${{ if eq(parameters.enableMicrobuild, 'true') }}:
     - ${{ if and(eq(parameters.runAsPublic, 'false'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
