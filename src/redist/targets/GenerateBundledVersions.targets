@@ -303,6 +303,8 @@
       <AspNetCore70RuntimePackRids Include="@(AspNetCore60RuntimePackRids);linux-ppc64le" />
       <AspNetCore80RuntimePackRids Include="@(AspNetCore70RuntimePackRids)" />
 
+      <AspNetCore80RuntimePackRids Remove="win-arm" />
+
       <WindowsDesktop30RuntimePackRids Include="win-x64;win-x86" />
       <WindowsDesktop31RuntimePackRids Include="@(WindowsDesktop30RuntimePackRids)" />
       <WindowsDesktop50RuntimePackRids Include="@(WindowsDesktop31RuntimePackRids);win-arm64" />
