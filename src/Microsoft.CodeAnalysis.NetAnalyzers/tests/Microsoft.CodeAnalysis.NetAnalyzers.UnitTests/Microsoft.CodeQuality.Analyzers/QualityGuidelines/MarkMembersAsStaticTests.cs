@@ -1461,5 +1461,44 @@ Public Class C
         End Sub
 End Class");
         }
+
+        [Fact, WorkItem(6540, "https://github.com/dotnet/roslyn-analyzers/issues/6540")]
+        public Task RecursiveMethod_DiagnosticAsync()
+        {
+            return new VerifyCS.Test
+            {
+                TestCode = @"
+using System;
+
+public class Test
+{
+    public void [|Recursive|](string argument)
+	{
+		if (argument.Length > 1)
+		{
+            Recursive(argument[1..]);
+		}
+
+		Console.WriteLine($""argument[-1]: {argument}"");
+    }
+}",
+                FixedCode = @"
+using System;
+
+public class Test
+{
+    public static void Recursive(string argument)
+	{
+		if (argument.Length > 1)
+		{
+            Recursive(argument[1..]);
+		}
+
+		Console.WriteLine($""argument[-1]: {argument}"");
+    }
+}",
+                LanguageVersion = LanguageVersion.CSharp8
+            }.RunAsync();
+        }
     }
 }
