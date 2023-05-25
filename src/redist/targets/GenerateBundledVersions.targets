@@ -216,7 +216,7 @@
         Include="$(ProductMonikerRid)" />
 
       <Net60MonoRuntimePackRids Include="
-          @(Net70RuntimePackRids);
+          @(Net60RuntimePackRids);
           browser-wasm;
           ios-arm64;
           ios-arm;
