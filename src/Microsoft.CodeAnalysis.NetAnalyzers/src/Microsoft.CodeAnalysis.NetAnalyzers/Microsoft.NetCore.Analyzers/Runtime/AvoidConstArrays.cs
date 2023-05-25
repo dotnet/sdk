@@ -39,8 +39,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
             context.RegisterCompilationStartAction(context =>
             {
-                INamedTypeSymbol? readonlySpanType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemReadOnlySpan1);
-                INamedTypeSymbol? functionType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemFunc2);
+                var knownTypeProvider = WellKnownTypeProvider.GetOrCreate(context.Compilation);
+                INamedTypeSymbol? readonlySpanType = knownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemReadOnlySpan1);
+                INamedTypeSymbol? functionType = knownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemFunc2);
 
                 // Analyzes an argument operation
                 context.RegisterOperationAction(context =>
@@ -110,12 +111,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     string? paramName = null;
                     if (argumentOperation is not null)
                     {
-                        IFieldInitializerOperation? fieldInitializer = argumentOperation.GetAncestor<IFieldInitializerOperation>(
-                            OperationKind.FieldInitializer, f => f.InitializedFields.Any(x => x.IsReadOnly));
-                        IPropertyInitializerOperation? propertyInitializer = argumentOperation.GetAncestor<IPropertyInitializerOperation>(
-                            OperationKind.PropertyInitializer, p => p.InitializedProperties.Any(x => x.IsReadOnly));
-
-                        if (fieldInitializer is not null || propertyInitializer is not null)
+                        if (IsInitializingStaticOrReadOnlyFieldOrProperty(argumentOperation))
                         {
                             return;
                         }
@@ -148,6 +144,41 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 OperationKind.ArrayCreation,
                 OperationKind.Invocation);
             });
+        }
+
+        private static bool IsInitializingStaticOrReadOnlyFieldOrProperty(IOperation operation)
+        {
+            var ancestor = operation;
+            do
+            {
+                ancestor = ancestor!.Parent;
+            } while (ancestor != null && !(ancestor.Kind == OperationKind.FieldInitializer || ancestor.Kind == OperationKind.PropertyInitializer ||
+                        ancestor.Kind == OperationKind.CoalesceAssignment || ancestor.Kind == OperationKind.SimpleAssignment));
+
+            if (ancestor != null)
+            {
+                switch (ancestor)
+                {
+                    case IFieldInitializerOperation fieldInitializer:
+                        return fieldInitializer.InitializedFields.Any(x => x.IsStatic || x.IsReadOnly);
+                    case IPropertyInitializerOperation propertyInitializer:
+                        return propertyInitializer.InitializedProperties.Any(x => x.IsStatic || x.IsReadOnly);
+                    case IAssignmentOperation assignmentOperation:
+                        if (assignmentOperation.Target is IFieldReferenceOperation fieldReference && fieldReference.Field.IsStatic)
+                        {
+                            return true;
+                        }
+
+                        if (assignmentOperation.Target is IPropertyReferenceOperation propertyReference && propertyReference.Property.IsStatic)
+                        {
+                            return true;
+                        }
+
+                        break;
+                }
+            }
+
+            return false;
         }
     }
 }
