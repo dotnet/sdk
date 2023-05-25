@@ -392,8 +392,19 @@ namespace Microsoft.TemplateEngine.Cli
             NugetPackageMetadata? extendedPackageMetadata;
             IEnumerable<ITemplateInfo>? packageTemplates;
             IManagedTemplatePackage? localPackage;
-            (localPackage, packageTemplates) = await _templatePackageManager
-                .GetManagedTemplatePackageAsync(packageIdentity, packageVersion, cancellationToken).ConfigureAwait(false);
+            try
+            {
+                (localPackage, packageTemplates) = await _templatePackageManager
+                    .GetManagedTemplatePackageAsync(packageIdentity, packageVersion, cancellationToken).ConfigureAwait(false);
+            }
+            catch
+            {
+                Reporter.Output.WriteLine(
+                LocalizableStrings.Generic_Info_NoMatchingTemplatePackage.Bold().Red(),
+                $"{packageIdentity}{(string.IsNullOrWhiteSpace(packageVersion) ? string.Empty : $"::{packageVersion}")}");
+
+                return NewCommandStatus.NotFound;
+            }
 
             // The package was found locally
             if (localPackage != null && packageTemplates != null)
