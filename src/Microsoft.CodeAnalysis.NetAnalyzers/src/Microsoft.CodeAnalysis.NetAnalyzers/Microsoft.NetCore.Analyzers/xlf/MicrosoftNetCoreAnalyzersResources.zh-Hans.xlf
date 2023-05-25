@@ -54,12 +54,12 @@
       </trans-unit>
       <trans-unit id="AvoidConstArraysDescription">
         <source>Constant arrays passed as arguments are not reused when called repeatedly, which implies a new array is created each time. Consider extracting them to 'static readonly' fields to improve performance if the passed array is not mutated within the called method.</source>
-        <target state="new">Constant arrays passed as arguments are not reused when called repeatedly, which implies a new array is created each time. Consider extracting them to 'static readonly' fields to improve performance if the passed array is not mutated within the called method.</target>
+        <target state="translated">重复调用时不会重复使用作为参数传递的常量数组，这意味着每次都会创建一个新数组。如果所传递的数组未在调用的方法中发生改变，请考虑将其提取到 "static readonly" 字段以提高性能。</target>
         <note>{Locked="static readonly"}</note>
       </trans-unit>
       <trans-unit id="AvoidConstArraysMessage">
         <source>Prefer 'static readonly' fields over constant array arguments if the called method is called repeatedly and is not mutating the passed array</source>
-        <target state="new">Prefer 'static readonly' fields over constant array arguments if the called method is called repeatedly and is not mutating the passed array</target>
+        <target state="translated">如果调用的方法重复调用且未改变传递的数组，则首选 "static readonly" 字段而不是常量数组参数</target>
         <note>{Locked="static readonly"}</note>
       </trans-unit>
       <trans-unit id="AvoidConstArraysTitle">

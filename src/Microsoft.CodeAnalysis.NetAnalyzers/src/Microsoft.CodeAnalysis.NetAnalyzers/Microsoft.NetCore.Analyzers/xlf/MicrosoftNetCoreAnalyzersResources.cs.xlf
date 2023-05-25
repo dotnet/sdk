@@ -54,12 +54,12 @@
       </trans-unit>
       <trans-unit id="AvoidConstArraysDescription">
         <source>Constant arrays passed as arguments are not reused when called repeatedly, which implies a new array is created each time. Consider extracting them to 'static readonly' fields to improve performance if the passed array is not mutated within the called method.</source>
-        <target state="new">Constant arrays passed as arguments are not reused when called repeatedly, which implies a new array is created each time. Consider extracting them to 'static readonly' fields to improve performance if the passed array is not mutated within the called method.</target>
+        <target state="translated">Konstantní pole předaná jako argumenty se při opakovaném volání znovu nepoužívají, což znamená, že se pokaždé vytvoří nové pole. Zvažte možnost extrahovat je do polí static readonly, aby se zlepšil výkon, pokud předané pole není mutované v rámci volané metody.</target>
         <note>{Locked="static readonly"}</note>
       </trans-unit>
       <trans-unit id="AvoidConstArraysMessage">
         <source>Prefer 'static readonly' fields over constant array arguments if the called method is called repeatedly and is not mutating the passed array</source>
-        <target state="new">Prefer 'static readonly' fields over constant array arguments if the called method is called repeatedly and is not mutating the passed array</target>
+        <target state="translated">Upřednostňovat pole „static readonly“ před argumenty konstantního pole, pokud se volaná metoda volá opakovaně a nemutuje předané pole</target>
         <note>{Locked="static readonly"}</note>
       </trans-unit>
       <trans-unit id="AvoidConstArraysTitle">

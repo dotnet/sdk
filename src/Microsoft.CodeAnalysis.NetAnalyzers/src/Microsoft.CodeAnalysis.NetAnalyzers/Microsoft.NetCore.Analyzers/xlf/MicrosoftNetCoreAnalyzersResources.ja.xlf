@@ -54,12 +54,12 @@
       </trans-unit>
       <trans-unit id="AvoidConstArraysDescription">
         <source>Constant arrays passed as arguments are not reused when called repeatedly, which implies a new array is created each time. Consider extracting them to 'static readonly' fields to improve performance if the passed array is not mutated within the called method.</source>
-        <target state="new">Constant arrays passed as arguments are not reused when called repeatedly, which implies a new array is created each time. Consider extracting them to 'static readonly' fields to improve performance if the passed array is not mutated within the called method.</target>
+        <target state="translated">引数として渡された定数配列は、繰り返し呼び出されても再利用されません。これは、毎回新しい配列が作成されることを意味します。渡された配列が呼び出されたメソッド内で変更されていない場合、パフォーマンスを向上させるために、それらを 'static readonly' フィールドに抽出することを検討してください。</target>
         <note>{Locked="static readonly"}</note>
       </trans-unit>
       <trans-unit id="AvoidConstArraysMessage">
         <source>Prefer 'static readonly' fields over constant array arguments if the called method is called repeatedly and is not mutating the passed array</source>
-        <target state="new">Prefer 'static readonly' fields over constant array arguments if the called method is called repeatedly and is not mutating the passed array</target>
+        <target state="translated">呼び出されるメソッドが繰り返し呼び出され、渡された配列を変更しない場合は、定数配列引数よりも 'static readonly' フィールドを優先します。</target>
         <note>{Locked="static readonly"}</note>
       </trans-unit>
       <trans-unit id="AvoidConstArraysTitle">
