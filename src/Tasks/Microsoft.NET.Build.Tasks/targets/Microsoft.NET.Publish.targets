@@ -930,6 +930,8 @@ Copyright (c) .NET Foundation. All rights reserved.
       <_GenerateSingleFileBundlePropertyInputsCacheToHash Include="$(PublishedSingleFileName)" />
       <_GenerateSingleFileBundlePropertyInputsCacheToHash Include="$(RuntimeIdentifier)" />
       <_GenerateSingleFileBundlePropertyInputsCacheToHash Include="$(PublishDir)" />
+      <_GenerateSingleFileBundlePropertyInputsCacheToHash Include="$(_TargetFrameworkVersionWithoutV)" />
+      <_GenerateSingleFileBundlePropertyInputsCacheToHash Include="@(FilesToBundle)" />
     </ItemGroup>
 
     <Hash ItemsToHash="@(_GenerateSingleFileBundlePropertyInputsCacheToHash)">
@@ -941,10 +943,6 @@ Copyright (c) .NET Foundation. All rights reserved.
       File="$(_GenerateSingleFileBundlePropertyInputsCache)"
       Overwrite="true"
       WriteOnlyWhenDifferent="true" />
-
-    <ItemGroup>
-      <FileWrites Include="$(_GenerateSingleFileBundlePropertyInputsCache)" />
-    </ItemGroup>
   </Target>
 
   <UsingTask TaskName="GenerateBundle" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
@@ -993,10 +991,12 @@ Copyright (c) .NET Foundation. All rights reserved.
     </PropertyGroup>
   </Target>
 
-  <Target Name="_GeneratePublishDependencyFileInputCache">
+  <Target Name="_GeneratePublishDependencyFileInputCache"
+          DependsOnTargets="_ComputeIntermediateDepsFilePath">
     <ItemGroup>
       <_GeneratePublishDependencyFilePropertyInputsCacheToHash Include="$(PublishDepsFilePath)" />
       <_GeneratePublishDependencyFilePropertyInputsCacheToHash Include="$(PublishSingleFile)" />
+      <_GeneratePublishDependencyFilePropertyInputsCacheToHash Include="$(MSBuildProjectFullPath)" />
       <_GeneratePublishDependencyFilePropertyInputsCacheToHash Include="$(ProjectAssetsFile)" />
       <_GeneratePublishDependencyFilePropertyInputsCacheToHash Include="$(IntermediateDepsFilePath)" />
       <_GeneratePublishDependencyFilePropertyInputsCacheToHash Include="$(TargetFramework)" />
