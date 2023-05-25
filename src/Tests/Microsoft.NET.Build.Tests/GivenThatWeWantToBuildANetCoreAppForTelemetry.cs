@@ -28,11 +28,11 @@ namespace Microsoft.NET.Build.Tests
             var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testAsset);
-            var tfmHashValue = Sha256Hasher.HashWithNormalizedCasing($".NETCoreApp,Version=v{ToolsetInfo.CurrentTargetFrameworkVersion}");
+
             buildCommand
                 .Execute(TelemetryTestLogger)
                 .StdOut.Should()
-                .Contain($"{{\"EventName\":\"targetframeworkeval\",\"Properties\":{{\"TargetFrameworkVersion\":\"{tfmHashValue}\",\"RuntimeIdentifier\":\"fb329000228cc5a24c264c57139de8bf854fc86fc18bf1c04ab61a2b5cb4b921\",\"SelfContained\":\"fb329000228cc5a24c264c57139de8bf854fc86fc18bf1c04ab61a2b5cb4b921\",\"UseAppHost\":\"fb329000228cc5a24c264c57139de8bf854fc86fc18bf1c04ab61a2b5cb4b921\",\"OutputType\":\"Library\",\"UseArtifactsOutput\":\"fb329000228cc5a24c264c57139de8bf854fc86fc18bf1c04ab61a2b5cb4b921\",\"ArtifactsPathLocationType\":\"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\"}}");
+                .Contain($"{{\"EventName\":\"targetframeworkeval\",\"Properties\":{{\"TargetFrameworkVersion\":\".NETCoreApp,Version=v{ToolsetInfo.CurrentTargetFrameworkVersion}\",\"RuntimeIdentifier\":\"null\",\"SelfContained\":\"null\",\"UseAppHost\":\"null\",\"OutputType\":\"Library\",\"UseArtifactsOutput\":\"null\",\"ArtifactsPathLocationType\":\"null\"}}");
         }
 
         [CoreMSBuildOnlyFact]
@@ -57,15 +57,13 @@ namespace Microsoft.NET.Build.Tests
             var result = buildCommand
                 .Execute(TelemetryTestLogger);
 
-            var netTfmHashValue = Sha256Hasher.HashWithNormalizedCasing($".NETCoreApp,Version=v{ToolsetInfo.CurrentTargetFrameworkVersion}");
-            var net46TfmHashValue = Sha256Hasher.HashWithNormalizedCasing(".NETFramework,Version=v4.6");
             result
                 .StdOut.Should()
                 .Contain(
-                    $"{{\"EventName\":\"targetframeworkeval\",\"Properties\":{{\"TargetFrameworkVersion\":\"{net46TfmHashValue}\",\"RuntimeIdentifier\":\"fb329000228cc5a24c264c57139de8bf854fc86fc18bf1c04ab61a2b5cb4b921\",\"SelfContained\":\"fb329000228cc5a24c264c57139de8bf854fc86fc18bf1c04ab61a2b5cb4b921\",\"UseAppHost\":\"fb329000228cc5a24c264c57139de8bf854fc86fc18bf1c04ab61a2b5cb4b921\",\"OutputType\":\"Library\",\"UseArtifactsOutput\":\"fb329000228cc5a24c264c57139de8bf854fc86fc18bf1c04ab61a2b5cb4b921\",\"ArtifactsPathLocationType\":\"null\"}}")
+                    "{\"EventName\":\"targetframeworkeval\",\"Properties\":{\"TargetFrameworkVersion\":\".NETFramework,Version=v4.6\",\"RuntimeIdentifier\":\"null\",\"SelfContained\":\"null\",\"UseAppHost\":\"null\",\"OutputType\":\"Library\",\"UseArtifactsOutput\":\"null\",\"ArtifactsPathLocationType\":\"null\"}")
                 .And
                 .Contain(
-                    $"{{\"EventName\":\"targetframeworkeval\",\"Properties\":{{\"TargetFrameworkVersion\":\"{netTfmHashValue}\",\"RuntimeIdentifier\":\"fb329000228cc5a24c264c57139de8bf854fc86fc18bf1c04ab61a2b5cb4b921\",\"SelfContained\":\"fb329000228cc5a24c264c57139de8bf854fc86fc18bf1c04ab61a2b5cb4b921\",\"UseAppHost\":\"fb329000228cc5a24c264c57139de8bf854fc86fc18bf1c04ab61a2b5cb4b921\",\"OutputType\":\"Library\",\"UseArtifactsOutput\":\"fb329000228cc5a24c264c57139de8bf854fc86fc18bf1c04ab61a2b5cb4b921\",\"ArtifactsPathLocationType\":\"null\"}}");
+                    $"{{\"EventName\":\"targetframeworkeval\",\"Properties\":{{\"TargetFrameworkVersion\":\".NETCoreApp,Version=v{ToolsetInfo.CurrentTargetFrameworkVersion}\",\"RuntimeIdentifier\":\"null\",\"SelfContained\":\"null\",\"UseAppHost\":\"null\",\"OutputType\":\"Library\",\"UseArtifactsOutput\":\"null\",\"ArtifactsPathLocationType\":\"null\"}}");
         }
     }
 }
