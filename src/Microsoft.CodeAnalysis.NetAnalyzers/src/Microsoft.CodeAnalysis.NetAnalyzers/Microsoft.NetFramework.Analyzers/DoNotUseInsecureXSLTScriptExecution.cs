@@ -76,15 +76,21 @@ namespace Microsoft.NetFramework.Analyzers
                         context.RegisterOperationAction(context =>
                         {
                             var invocation = (IInvocationOperation)context.Operation;
-                            analyzer.AnalyzeNodeForXslCompiledTransformLoad(invocation.TargetMethod, invocation.Arguments,
-                                context.ReportDiagnostic);
+                            analyzer.AnalyzeNodeForXslCompiledTransformLoad(
+                                invocation.TargetMethod,
+                                invocation.Arguments,
+                                static (context, diagnostic) => context.ReportDiagnostic(diagnostic),
+                                context);
                         }, OperationKind.Invocation);
 
                         context.RegisterOperationAction(context =>
                         {
                             var objectCreation = (IObjectCreationOperation)context.Operation;
                             analyzer.AnalyzeNodeForXslCompiledTransformLoad(
-                                objectCreation.Constructor, objectCreation.Arguments, context.ReportDiagnostic);
+                                objectCreation.Constructor,
+                                objectCreation.Arguments,
+                                static (context, diagnostic) => context.ReportDiagnostic(diagnostic),
+                                context);
                         }, OperationKind.ObjectCreation);
                     });
                 });
@@ -103,8 +109,8 @@ namespace Microsoft.NetFramework.Analyzers
                 _enclosingSymbol = enclosingSymbol;
             }
 
-            public void AnalyzeNodeForXslCompiledTransformLoad(IMethodSymbol methodSymbol,
-                ImmutableArray<IArgumentOperation> arguments, Action<Diagnostic> reportDiagnostic)
+            public void AnalyzeNodeForXslCompiledTransformLoad<TContext>(IMethodSymbol methodSymbol,
+                ImmutableArray<IArgumentOperation> arguments, Action<TContext, Diagnostic> reportDiagnostic, TContext context)
             {
                 if (!methodSymbol.IsXslCompiledTransformLoad(_xmlTypes))
                 {
@@ -179,6 +185,7 @@ namespace Microsoft.NetFramework.Analyzers
                     RoslynDebug.Assert(invocationOrObjCreation.Kind is OperationKind.Invocation
                         or OperationKind.ObjectCreation);
                     reportDiagnostic(
+                        context,
                         invocationOrObjCreation.CreateDiagnostic(RuleDoNotUseInsecureXSLTScriptExecution, message));
                 }
             }

@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Immutable;
@@ -134,8 +134,10 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             IMethodSymbol method = invocation.TargetMethod;
 
             // Verify that the current invocation is not passing an explicit token already
-            if (AnyArgument(invocation.Arguments,
-                            a => cancellationTokenType.Equals(a.Parameter?.Type) && !a.IsImplicit))
+            if (AnyArgument(
+                invocation.Arguments,
+                static (a, cancellationTokenType) => cancellationTokenType.Equals(a.Parameter?.Type) && !a.IsImplicit,
+                cancellationTokenType))
             {
                 return false;
             }
@@ -263,19 +265,18 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             INamedTypeSymbol cancellationTokenType)
         {
             return
-                !method.Parameters.IsEmpty &&
-                method.Parameters[^1] is IParameterSymbol lastParameter &&
+                method.Parameters is [.., IParameterSymbol lastParameter] &&
                 (InvocationIgnoresOptionalCancellationToken(lastParameter, arguments, cancellationTokenType) ||
                 InvocationIsUsingParamsCancellationToken(lastParameter, arguments, cancellationTokenType));
         }
 
         // Checks if the arguments enumerable has any elements that satisfy the provided condition,
         // starting the lookup with the last element since tokens tend to be added as the last argument.
-        private static bool AnyArgument(ImmutableArray<IArgumentOperation> arguments, Func<IArgumentOperation, bool> predicate)
+        private static bool AnyArgument<TArg>(ImmutableArray<IArgumentOperation> arguments, Func<IArgumentOperation, TArg, bool> predicate, TArg arg)
         {
             for (int i = arguments.Length - 1; i >= 0; i--)
             {
-                if (predicate(arguments[i]))
+                if (predicate(arguments[i], arg))
                 {
                     return true;
                 }
@@ -298,7 +299,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 // Need to check among all arguments in case the user is passing them named and unordered (despite the ct being defined as the last parameter)
                 return AnyArgument(
                     arguments,
-                    a => a.Parameter.Type.Equals(cancellationTokenType) && a.ArgumentKind == ArgumentKind.DefaultValue);
+                    static (a, cancellationTokenType) => a.Parameter.Type.Equals(cancellationTokenType) && a.ArgumentKind == ArgumentKind.DefaultValue,
+                    cancellationTokenType);
             }
 
             return false;
