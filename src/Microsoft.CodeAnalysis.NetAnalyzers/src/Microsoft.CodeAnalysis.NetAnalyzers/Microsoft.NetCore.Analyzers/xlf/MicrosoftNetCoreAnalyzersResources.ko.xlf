@@ -54,12 +54,12 @@
       </trans-unit>
       <trans-unit id="AvoidConstArraysDescription">
         <source>Constant arrays passed as arguments are not reused when called repeatedly, which implies a new array is created each time. Consider extracting them to 'static readonly' fields to improve performance if the passed array is not mutated within the called method.</source>
-        <target state="new">Constant arrays passed as arguments are not reused when called repeatedly, which implies a new array is created each time. Consider extracting them to 'static readonly' fields to improve performance if the passed array is not mutated within the called method.</target>
+        <target state="translated">인수로 전달된 상수 배열은 반복적으로 호출될 때 다시 사용되지 않으며, 이는 매번 새 배열이 생성됨을 의미합니다. 전달된 배열이 호출된 메서드 내에서 변경되지 않은 경우 'static readonly' 필드에 추출하여 성능을 향상하는 것이 좋습니다.</target>
         <note>{Locked="static readonly"}</note>
       </trans-unit>
       <trans-unit id="AvoidConstArraysMessage">
         <source>Prefer 'static readonly' fields over constant array arguments if the called method is called repeatedly and is not mutating the passed array</source>
-        <target state="new">Prefer 'static readonly' fields over constant array arguments if the called method is called repeatedly and is not mutating the passed array</target>
+        <target state="translated">호출된 메서드가 반복적으로 호출되고 전달된 배열을 변경하지 않는 경우 상수 배열 인수보다 'static readonly' 필드를 사용하세요.</target>
         <note>{Locked="static readonly"}</note>
       </trans-unit>
       <trans-unit id="AvoidConstArraysTitle">

@@ -54,12 +54,12 @@
       </trans-unit>
       <trans-unit id="AvoidConstArraysDescription">
         <source>Constant arrays passed as arguments are not reused when called repeatedly, which implies a new array is created each time. Consider extracting them to 'static readonly' fields to improve performance if the passed array is not mutated within the called method.</source>
-        <target state="new">Constant arrays passed as arguments are not reused when called repeatedly, which implies a new array is created each time. Consider extracting them to 'static readonly' fields to improve performance if the passed array is not mutated within the called method.</target>
+        <target state="translated">Stałe macierze przekazywane jako argumenty nie są ponownie wykorzystywane podczas wielokrotnego wywoływania, co oznacza, że za każdym razem tworzona jest nowa macierz. Rozważ wyodrębnienie ich do pól 'static readonly', aby poprawić wydajność, jeśli przekazana macierz nie zostanie zmutowana w wywołanej metodzie.</target>
         <note>{Locked="static readonly"}</note>
       </trans-unit>
       <trans-unit id="AvoidConstArraysMessage">
         <source>Prefer 'static readonly' fields over constant array arguments if the called method is called repeatedly and is not mutating the passed array</source>
-        <target state="new">Prefer 'static readonly' fields over constant array arguments if the called method is called repeatedly and is not mutating the passed array</target>
+        <target state="translated">Preferowanie pól 'static readonly' zamiast stałych argumentów macierzy, jeśli wywoływana metoda jest wywoływana wielokrotnie i nie mutuje przekazanej macierzy .</target>
         <note>{Locked="static readonly"}</note>
       </trans-unit>
       <trans-unit id="AvoidConstArraysTitle">
