@@ -104,6 +104,12 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     return;
                 }
 
+                if (method.IsImplementationOfAnyInterfaceMember())
+                {
+                    // should not warn for implementations of interfaces that may be out of our control
+                    return;
+                }
+
                 if (context.Options.IsConfiguredToSkipAnalysis(Rule, method, context.Compilation))
                 {
                     // property is excluded from analysis
