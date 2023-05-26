@@ -29,7 +29,7 @@
     <!-- In order tests against the same version of NuGet as the SDK. We have to set this to match. -->
     <NuGetVersion>6.6.0-preview.3.61</NuGetVersion>
     <!-- roslyn -->
-    <MicrosoftCodeAnalysisVersion>4.7.0-2.23275.8</MicrosoftCodeAnalysisVersion>
+    <MicrosoftCodeAnalysisVersion>4.7.0-2.23276.1</MicrosoftCodeAnalysisVersion>
     <!-- roslyn-sdk -->
     <MicrosoftCodeAnalysisAnalzerTestingVersion>1.1.2-beta1.22216.1</MicrosoftCodeAnalysisAnalzerTestingVersion>
     <!-- runtime -->
