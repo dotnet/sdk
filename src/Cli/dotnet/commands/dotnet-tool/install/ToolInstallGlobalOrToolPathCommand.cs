@@ -10,6 +10,7 @@ using System.Runtime.InteropServices;
 using System.Transactions;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
+using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.ShellShim;
 using Microsoft.DotNet.ToolPackage;
@@ -96,6 +97,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                         Path.GetFullPath(_configFilePath)));
             }
 
+            Console.WriteLine("1");
             VersionRange versionRange = _parseResult.GetVersionRange();
 
             DirectoryPath? toolPath = null;
@@ -104,6 +106,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                 toolPath = new DirectoryPath(_toolPath);
             }
 
+            //same class for IToolpackagestore, storequery and installer
             (IToolPackageStore toolPackageStore, IToolPackageStoreQuery toolPackageStoreQuery, IToolPackageInstaller toolPackageInstaller) =
                 _createToolPackageStoresAndInstaller(toolPath, _forwardRestoreArguments);
 
@@ -122,7 +125,18 @@ namespace Microsoft.DotNet.Tools.Tool.Install
 
             try
             {
+                ToolPackageStoreAndQuery downloaderStore = ToolPackageFactory.CreateConcreteToolPackageStore(toolPath);
+                var toolPackageDownloader = new ToolPackageDownloader();
+                var res = toolPackageDownloader.InstallPackageAsync(
+                    new PackageLocation(nugetConfig: configFile, additionalFeeds: _source),
+                        packageId: _packageId,
+                        versionRange: versionRange,
+                        targetFramework: _framework, verbosity: _verbosity
+                    ).GetAwaiter().GetResult();
+
+                // Original Code Below
                 IToolPackage package = null;
+                // transaction scope: if something fails in the middle undo the process
                 using (var scope = new TransactionScope(
                     TransactionScopeOption.Required,
                     TimeSpan.Zero))
@@ -150,6 +164,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                     string appHostSourceDirectory = _shellShimTemplateFinder.ResolveAppHostSourceDirectoryAsync(_architectureOption, framework, RuntimeInformation.ProcessArchitecture).Result;
                     IShellShimRepository shellShimRepository = _createShellShimRepository(appHostSourceDirectory, toolPath);
 
+                    // actual executable that runs
                     foreach (var command in package.Commands)
                     {
                         shellShimRepository.CreateShim(command.Executable, command.Name, package.PackagedShims);
