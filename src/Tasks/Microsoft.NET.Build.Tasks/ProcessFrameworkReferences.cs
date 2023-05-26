@@ -44,7 +44,7 @@ namespace Microsoft.NET.Build.Tasks
 
         public bool ReadyToRunUseCrossgen2 { get; set; }
 
-        public bool TrimmingEnabled { get; set; }
+        public bool RequiresILLinkPack { get; set; }
 
         public bool AotEnabled { get; set; }
 
@@ -384,7 +384,7 @@ namespace Microsoft.NET.Build.Tasks
                 }
             }
 
-            if (TrimmingEnabled)
+            if (RequiresILLinkPack)
             {
                 if (!AddToolPack(ToolPackType.ILLink, _normalizedTargetFrameworkVersion, packagesToDownload, implicitPackageReferences))
                 {
