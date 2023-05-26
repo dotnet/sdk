@@ -1,5 +1,5 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -78,21 +78,31 @@ public class ResolveCompressedAssets : Task
                 }
 
                 var assetTraitValue = asset.GetMetadata("AssetTraitValue");
+                string assetFormat;
 
-                if (!IsValidCompressionAssetTraitValue(assetTraitValue))
+                if (string.Equals(assetTraitValue, GzipAssetTraitValue, StringComparison.OrdinalIgnoreCase))
+                {
+                    assetFormat = GzipFormatName;
+                }
+                else if (string.Equals(assetTraitValue, BrotliAssetTraitValue, StringComparison.OrdinalIgnoreCase))
+                {
+                    assetFormat = BrotliFormatName;
+                }
+                else
                 {
                     Log.LogError(
                         "The asset '{0}' has an unknown compression format '{1}'.",
                         asset.ItemSpec,
                         assetTraitValue);
+                    continue;
                 }
 
                 Log.LogMessage(
                     "The asset '{0}' with related asset '{1}' was detected as already compressed with format '{2}'.",
                     asset.ItemSpec,
                     relatedAssetItemSpec,
-                    assetTraitValue);
-                existingFormats.Add(assetTraitValue);
+                    assetFormat);
+                existingFormats.Add(assetFormat);
             }
         }
 
@@ -198,10 +208,6 @@ public class ResolveCompressedAssets : Task
 
     private static bool IsCompressedAsset(ITaskItem asset)
         => string.Equals("Content-Encoding", asset.GetMetadata("AssetTraitName"));
-
-    private static bool IsValidCompressionAssetTraitValue(string assetTraitValue)
-        => string.Equals(GzipAssetTraitValue, assetTraitValue, StringComparison.OrdinalIgnoreCase)
-        || string.Equals(BrotliAssetTraitValue, assetTraitValue, StringComparison.OrdinalIgnoreCase);
 
     private static string[] SplitPattern(string pattern)
         => string.IsNullOrEmpty(pattern) ? Array.Empty<string>() : pattern
