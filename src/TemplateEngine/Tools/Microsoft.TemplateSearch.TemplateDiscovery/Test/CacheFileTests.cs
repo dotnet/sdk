@@ -83,15 +83,14 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Test
             Console.WriteLine($"Running tests on .NET {sdkVersion} for: {metadataPath}.");
             CanSearch(workingDirectory, metadataPath);
 
-            // TODO enable then stable version is available
             //7.0.300
-            //sdkVersion = "7.0.300";
-            //workingDirectory = TestUtils.CreateTemporaryFolder(sdkVersion);
-            //UseSdkVersion(workingDirectory, requestedSdkVersion: sdkVersion, resolvedVersionPattern: "7.0.3", rollForward: "latestPatch");
-            //Console.WriteLine($"Running tests on .NET {sdkVersion} for: {legacyMetadataPath}.");
-            //CanSearch(workingDirectory, legacyMetadataPath);
-            //Console.WriteLine($"Running tests on .NET {sdkVersion} for: {metadataPath}.");
-            //CanSearch(workingDirectory, metadataPath);
+            sdkVersion = "7.0.300";
+            workingDirectory = TestUtils.CreateTemporaryFolder(sdkVersion);
+            UseSdkVersion(workingDirectory, requestedSdkVersion: sdkVersion, resolvedVersionPattern: "7.0.3", rollForward: "latestPatch");
+            Console.WriteLine($"Running tests on .NET {sdkVersion} for: {legacyMetadataPath}.");
+            CanSearch(workingDirectory, legacyMetadataPath);
+            Console.WriteLine($"Running tests on .NET {sdkVersion} for: {metadataPath}.");
+            CanSearch(workingDirectory, metadataPath);
 
             //latest
             workingDirectory = TestUtils.CreateTemporaryFolder("latest");
