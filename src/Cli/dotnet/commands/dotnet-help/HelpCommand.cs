@@ -53,7 +53,7 @@ namespace Microsoft.DotNet.Tools.Help
             {
                 psInfo = new ProcessStartInfo
                 {
-                    FileName = "cmd",
+                    FileName = @"C:\WINDOWS\system32\cmd.exe",
                     Arguments = $"/c start {docUrl}"
                 };
             }
@@ -61,7 +61,7 @@ namespace Microsoft.DotNet.Tools.Help
             {
                 psInfo = new ProcessStartInfo
                 {
-                    FileName = "open",
+                    FileName = @"/usr/bin/open",
                     Arguments = docUrl
                 };
             }
@@ -69,7 +69,7 @@ namespace Microsoft.DotNet.Tools.Help
             {
                 psInfo = new ProcessStartInfo
                 {
-                    FileName = "xdg-open",
+                    FileName = @"/usr/bin/xdg-open",
                     Arguments = docUrl
                 };
             }
