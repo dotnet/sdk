@@ -487,7 +487,8 @@ namespace Microsoft.NET.Publish.Tests
             var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
             var publishCommand = new PublishCommand(testAsset);
-            var result = publishCommand.Execute($"/p:RuntimeIdentifier={rid}");
+            // Minimal verbosity prevents desktop MSBuild.exe from duplicating the warnings in the warning summary
+            var result = publishCommand.Execute($"/p:RuntimeIdentifier={rid}", "/v:m");
             result.Should().Pass();
             // trim analysis warnings are enabled
             var expectedWarnings = new List<string> {
@@ -566,7 +567,8 @@ namespace Microsoft.NET.Publish.Tests
             var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
             var publishCommand = new PublishCommand(testAsset);
-            var result = publishCommand.Execute($"/p:RuntimeIdentifier={rid}");
+            // Minimal verbosity prevents desktop MSBuild.exe from duplicating the warnings in the warning summary
+            var result = publishCommand.Execute($"/p:RuntimeIdentifier={rid}", "/v:m");
             result.Should().Pass();
             var expectedWarnings = new List<string> {
                 // analyzer warnings
@@ -727,7 +729,9 @@ namespace Microsoft.NET.Publish.Tests
             var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
             var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
-            var result = publishCommand.Execute($"/p:RuntimeIdentifier={rid}", "/p:PublishTrimmed=true", "/p:TrimMode=copyused", "/p:TrimmerSingleWarn=false", "/p:EnableTrimAnalyzer=false");
+            var result = publishCommand.Execute($"/p:RuntimeIdentifier={rid}", "/p:PublishTrimmed=true", "/p:TrimMode=copyused", "/p:TrimmerSingleWarn=false", "/p:EnableTrimAnalyzer=false",
+                // Minimal verbosity prevents desktop MSBuild.exe from duplicating the warnings in the warning summary
+                "/v:m");
             result.Should().Pass();
             ValidateWarningsOnHelloWorldApp(publishCommand, result, expectedWarnings, targetFramework, rid);
         }
@@ -787,7 +791,9 @@ namespace Microsoft.NET.Publish.Tests
 
             var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
             var result = publishCommand.Execute($"/p:RuntimeIdentifier={rid}", "/p:PublishTrimmed=true",
-                "/p:TrimMode=copy", "/p:_TrimmerDefaultAction=copy", "/p:TrimmerSingleWarn=false", "/p:EnableTrimAnalyzer=false");
+                "/p:TrimMode=copy", "/p:_TrimmerDefaultAction=copy", "/p:TrimmerSingleWarn=false", "/p:EnableTrimAnalyzer=false",
+                // Minimal verbosity prevents desktop MSBuild.exe from duplicating the warnings in the warning summary
+                "/v:m");
             result.Should().Pass();
             ValidateWarningsOnHelloWorldApp(publishCommand, result, expectedWarnings, targetFramework, rid);
         }
