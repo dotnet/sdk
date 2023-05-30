@@ -925,5 +925,95 @@ class Program
                     .BeTrue();
             }
         }
+
+        [Theory]
+        // Non-portable RID should warn
+        [InlineData(ToolsetInfo.CurrentTargetFramework, new[] { "ubuntu.22.04-x64" }, true, true, null, true)]
+        [InlineData(ToolsetInfo.CurrentTargetFramework, new[] { "ubuntu.22.04-x64" }, true, false, null, true)]
+        [InlineData(ToolsetInfo.CurrentTargetFramework, new[] { "ubuntu.22.04-x64" }, false, true, null, true)]
+        // Non-portable and portable RIDs should warn
+        [InlineData(ToolsetInfo.CurrentTargetFramework, new[] { "ubuntu.22.04-x64", "win7-x86", "unix" }, true, true, null, true)]
+        // Portable RIDs only should not warn
+        [InlineData(ToolsetInfo.CurrentTargetFramework, new[] { "win-x86", "linux", "linux-musl-x64", "osx-arm64", "unix" }, true, true, null, false)]
+        // No RID assets should not warn
+        [InlineData(ToolsetInfo.CurrentTargetFramework, new string[] { }, false, false, null, false)]
+        // Below .NET 8 should not warn
+        [InlineData("net7.0", new string[] { "ubuntu.22.04-x64", "win7-x86" }, true, true, null, false)]
+        // Explicitly set to use RID graph should not warn
+        [InlineData(ToolsetInfo.CurrentTargetFramework, new[] { "alpine-x64" }, true, true, true, false)]
+        // Explicitly set to not use RID graph should warn
+        [InlineData(ToolsetInfo.CurrentTargetFramework, new[] { "alpine-x64" }, true, true, false, true)]
+        public void It_warns_on_nonportable_rids(string targetFramework, string[] rids, bool addLibAssets, bool addNativeAssets, bool? useRidGraph, bool shouldWarn)
+        {
+            var packageProject = new TestProject()
+            {
+                Name = "WithRidAssets",
+                TargetFrameworks = targetFramework,
+            };
+
+            // Add assets for each RID. The test just needs the asset to exist, so it can just copy same output assembly.
+            foreach (string rid in rids)
+            {
+                if (addLibAssets)
+                {
+                    packageProject.AddItem("None",
+                        new Dictionary<string, string>()
+                        {
+                        { "Include", $"$(TargetPath)" },
+                        { "Pack", "true" },
+                        { "PackagePath", $@"runtimes\{rid}\lib\$(TargetFramework)" }
+                        });
+                }
+
+                if (addNativeAssets)
+                {
+                    packageProject.AddItem("None",
+                        new Dictionary<string, string>()
+                        {
+                            { "Include", $"$(TargetPath)" },
+                            { "Pack", "true" },
+                            { "PackagePath", $@"runtimes\{rid}\native" }
+                        });
+                }
+            }
+
+            var packCommand = new PackCommand(_testAssetsManager.CreateTestProject(packageProject));
+            packCommand.Execute().Should().Pass();
+            var package = new TestPackageReference(packageProject.Name, "1.0.0", packCommand.GetNuGetPackage());
+
+            var testProject = new TestProject()
+            {
+                Name = "NonPortableRid",
+                TargetFrameworks = targetFramework,
+                IsExe = true
+            };
+
+            testProject.PackageReferences.Add(package);
+            testProject.AdditionalProperties.Add("RestoreAdditionalProjectSources", Path.GetDirectoryName(package.NupkgPath));
+            if (useRidGraph.HasValue)
+            {
+                testProject.AddItem("RuntimeHostConfigurationOption",
+                    new Dictionary<string, string>()
+                    {
+                        { "Include", "System.Runtime.Loader.UseRidGraph" },
+                        { "Value", useRidGraph.Value.ToString() },
+                    });
+            }
+
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var result = new BuildCommand(testAsset)
+                .WithEnvironmentVariable("NUGET_PACKAGES", Path.Combine(testAsset.TestRoot, "packages"))
+                .Execute();
+
+            result.Should().Pass();
+            if (shouldWarn)
+            {
+                result.Should().HaveStdOutMatching($"NETSDK1205.*{package.ID}");
+            }
+            else
+            {
+                result.Should().NotHaveStdOutContaining("NETSDK1205");
+            }
+        }
     }
 }
