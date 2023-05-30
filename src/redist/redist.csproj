@@ -6,6 +6,7 @@
     <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
     <ResolveAssemblyReferencesSilent>true</ResolveAssemblyReferencesSilent>
     <ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>none</ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>
+    <BundleRuntimePacks Condition="'$(BundleRuntimePacks)' == '' And '$(DotNetBuildFromSource)' == 'true'">true</BundleRuntimePacks>
   </PropertyGroup>
 
   <ItemGroup>
