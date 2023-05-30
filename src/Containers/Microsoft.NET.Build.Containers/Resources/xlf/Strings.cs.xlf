@@ -17,6 +17,11 @@
         <target state="translated">CONTAINER2009: Nelze analyzovat {0}: {1}</target>
         <note>{StrBegin="CONTAINER2009: "}</note>
       </trans-unit>
+      <trans-unit id="BaseImageNameRegistryFallback">
+        <source>CONTAINER2020: {0} does not specify a registry and will be pulled from Docker Hub. Please prefix the name with the image registry, for example: '{1}/&lt;image&gt;'.</source>
+        <target state="new">CONTAINER2020: {0} does not specify a registry and will be pulled from Docker Hub. Please prefix the name with the image registry, for example: '{1}/&lt;image&gt;'.</target>
+        <note>{StrBegin="CONTAINER2020: "}</note>
+      </trans-unit>
       <trans-unit id="BaseImageNameWithSpaces">
         <source>CONTAINER2013: {0} had spaces in it, replacing with dashes.</source>
         <target state="translated">CONTAINER2013: {0} obsahoval mezery, které se nahradily pomlčkami.</target>
@@ -57,11 +62,6 @@
         <target state="translated">CONTAINER3001: Nepovedlo se vytvořit proces Dockeru.</target>
         <note>{StrBegin="CONTAINER3001: "}</note>
       </trans-unit>
-      <trans-unit id="DontKnowHowToPullImages">
-        <source>CONTAINER1010: Don't know how to pull images from local daemons at the moment.</source>
-        <target state="translated">CONTAINER1010: V tuto chvíli nevím, jak načíst image z místních procesů démon.</target>
-        <note>{StrBegin="CONTAINER1010: "}</note>
-      </trans-unit>
       <trans-unit id="EmptyOrWhitespacePropertyIgnored">
         <source>CONTAINER4006: Property '{0}' is empty or contains whitespace and will be ignored.</source>
         <target state="translated">CONTAINER4006: Vlastnost '{0}' je prázdná nebo obsahuje prázdné znaky a bude ignorována.</target>
@@ -83,9 +83,14 @@
         <note />
       </trans-unit>
       <trans-unit id="ImageLoadFailed">
-        <source>CONTAINER1009: Failed to load image to local Docker daemon. stdout: {0}</source>
-        <target state="translated">CONTAINER1009: Nepovedlo se načíst image do místního procesu démon Dockeru. stdout: {0}</target>
+        <source>CONTAINER1009: Failed to load image from local registry. stdout: {0}</source>
+        <target state="needs-review-translation">CONTAINER1009: Nepovedlo se načíst image do místního procesu démon Dockeru. stdout: {0}</target>
         <note>{StrBegin="CONTAINER1009: "}</note>
+      </trans-unit>
+      <trans-unit id="ImagePullNotSupported">
+        <source>CONTAINER1010: Pulling images from local registry is not supported.</source>
+        <target state="new">CONTAINER1010: Pulling images from local registry is not supported.</target>
+        <note>{StrBegin="CONTAINER1010: "}</note>
       </trans-unit>
       <trans-unit id="InvalidContainerImageName">
         <source>CONTAINER2014: Invalid {0}: {1}.</source>
@@ -147,15 +152,10 @@
         <target state="translated">CONTAINER4005: Položka '{0}' obsahuje položky bez metadat 'Value' a budou ignorovány.</target>
         <note>{StrBegin="CONTAINER4005: "}</note>
       </trans-unit>
-      <trans-unit id="LocalDaemondNotAvailable">
-        <source>CONTAINER1012: The local daemon is not available, but pushing to a local daemon was requested. Please start the daemon and try again.</source>
-        <target state="translated">CONTAINER1012: Místní proces démon není k dispozici, ale bylo požadováno nasazování do místního procesu démon. Spusťte proces démon a zkuste to znovu.</target>
+      <trans-unit id="LocalRegistryNotAvailable">
+        <source>CONTAINER1012: The local registry is not available, but pushing to a local registry was requested.</source>
+        <target state="new">CONTAINER1012: The local registry is not available, but pushing to a local registry was requested.</target>
         <note>{StrBegin="CONTAINER1012: "}</note>
-      </trans-unit>
-      <trans-unit id="MissingLayerNode">
-        <source>CONTAINER2006: Tried to get layer information but there is no layer node?</source>
-        <target state="translated">CONTAINER2006: Pokusili jste se získat informace o vrstvě, ale neexistuje žádný uzel vrstvy?</target>
-        <note>{StrBegin="CONTAINER2006: "}</note>
       </trans-unit>
       <trans-unit id="MissingLinkToRegistry">
         <source>CONTAINER2004: Unable to download layer with descriptor '{0}' from registry '{1}' because it does not exist.</source>
@@ -212,9 +212,9 @@
         <target state="translated">CONTAINER1006: Příliš mnoho opakovaných pokusů, zastavuje se.</target>
         <note>{StrBegin="CONTAINER1006: "}</note>
       </trans-unit>
-      <trans-unit id="UnknownDaemonType">
-        <source>CONTAINER2002: Unknown local container daemon type '{0}'. Valid local container daemon types are {1}.</source>
-        <target state="translated">CONTAINER2002: Neznámý typ procesu démon místního kontejneru '{0}'. Platné typy procesu démon místního kontejneru jsou {1}.</target>
+      <trans-unit id="UnknownLocalRegistryType">
+        <source>CONTAINER2002: Unknown local registry type '{0}'. Valid local container registry types are {1}.</source>
+        <target state="new">CONTAINER2002: Unknown local registry type '{0}'. Valid local container registry types are {1}.</target>
         <note>{StrBegin="CONTAINER2002: "}</note>
       </trans-unit>
       <trans-unit id="UnknownMediaType">

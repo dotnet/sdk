@@ -23,7 +23,7 @@ public class CreateNewImageTests
         _testOutput = testOutput;
     }
 
-    [DockerDaemonAvailableFact]
+    [DockerAvailableFact]
     public void CreateNewImage_Baseline()
     {
         DirectoryInfo newProjectDir = new DirectoryInfo(Path.Combine(TestSettings.TestArtifactsDirectory, nameof(CreateNewImage_Baseline)));
@@ -35,7 +35,8 @@ public class CreateNewImageTests
 
         newProjectDir.Create();
 
-        new DotnetCommand(_testOutput, "new", "console", "-f", ToolsetInfo.CurrentTargetFramework)
+        new DotnetNewCommand(_testOutput, "console", "-f", ToolsetInfo.CurrentTargetFramework)
+            .WithVirtualHive()
             .WithWorkingDirectory(newProjectDir.FullName)
             .Execute()
             .Should().Pass();
@@ -63,7 +64,7 @@ public class CreateNewImageTests
         newProjectDir.Delete(true);
     }
 
-    [DockerDaemonAvailableFact]
+    [DockerAvailableFact]
     public void ParseContainerProperties_EndToEnd()
     {
         DirectoryInfo newProjectDir = new DirectoryInfo(Path.Combine(TestSettings.TestArtifactsDirectory, nameof(ParseContainerProperties_EndToEnd)));
@@ -75,7 +76,8 @@ public class CreateNewImageTests
 
         newProjectDir.Create();
 
-        new DotnetCommand(_testOutput, "new", "console", "-f", ToolsetInfo.CurrentTargetFramework)
+        new DotnetNewCommand(_testOutput, "console", "-f", ToolsetInfo.CurrentTargetFramework)
+            .WithVirtualHive()
             .WithWorkingDirectory(newProjectDir.FullName)
             .Execute()
             .Should().Pass();
@@ -119,7 +121,7 @@ public class CreateNewImageTests
     /// <summary>
     /// Creates a console app that outputs the environment variable added to the image.
     /// </summary>
-    [DockerDaemonAvailableFact]
+    [DockerAvailableFact]
     public void Tasks_EndToEnd_With_EnvironmentVariable_Validation()
     {
         DirectoryInfo newProjectDir = new DirectoryInfo(Path.Combine(TestSettings.TestArtifactsDirectory, nameof(Tasks_EndToEnd_With_EnvironmentVariable_Validation)));
@@ -131,20 +133,21 @@ public class CreateNewImageTests
 
         newProjectDir.Create();
 
-        new DotnetCommand(_testOutput, "new", "console", "-f", ToolsetInfo.CurrentTargetFramework)
+        new DotnetNewCommand(_testOutput, "console", "-f", ToolsetInfo.CurrentTargetFramework)
+            .WithVirtualHive()
             .WithWorkingDirectory(newProjectDir.FullName)
             .Execute()
             .Should().Pass();
 
         File.WriteAllText(Path.Combine(newProjectDir.FullName, "Program.cs"), $"Console.Write(Environment.GetEnvironmentVariable(\"GoodEnvVar\"));");
 
-        new DotnetCommand(_testOutput, "build", "--configuration", "release", "/p:runtimeidentifier=linux-x64")
+        new DotnetCommand(_testOutput, "build", "--configuration", "release", "/p:runtimeidentifier=linux-x64", $"/p:RuntimeFrameworkVersion=8.0.0-preview.3.23174.8")
             .WithWorkingDirectory(newProjectDir.FullName)
             .Execute()
             .Should().Pass();
 
         ParseContainerProperties pcp = new ParseContainerProperties();
-        pcp.FullyQualifiedBaseImageName = "mcr.microsoft.com/dotnet/runtime:6.0";
+        pcp.FullyQualifiedBaseImageName = $"mcr.microsoft.com/{DockerRegistryManager.RuntimeBaseImage}:{DockerRegistryManager.Net8PreviewImageTag}";
         pcp.ContainerRegistry = "";
         pcp.ContainerImageName = "dotnet/envvarvalidation";
         pcp.ContainerImageTag = "latest";
@@ -157,7 +160,7 @@ public class CreateNewImageTests
         Assert.True(pcp.Execute());
         Assert.Equal("mcr.microsoft.com", pcp.ParsedContainerRegistry);
         Assert.Equal("dotnet/runtime", pcp.ParsedContainerImage);
-        Assert.Equal("6.0", pcp.ParsedContainerTag);
+        Assert.Equal(DockerRegistryManager.Net8PreviewImageTag, pcp.ParsedContainerTag);
         Assert.Single(pcp.NewContainerEnvironmentVariables);
         Assert.Equal("Foo", pcp.NewContainerEnvironmentVariables[0].GetMetadata("Value"));
 
@@ -177,13 +180,90 @@ public class CreateNewImageTests
         cni.ContainerEnvironmentVariables = pcp.NewContainerEnvironmentVariables;
         cni.ContainerRuntimeIdentifier = "linux-x64";
         cni.RuntimeIdentifierGraphPath = ToolsetUtils.GetRuntimeGraphFilePath();
-        cni.LocalContainerDaemon = global::Microsoft.NET.Build.Containers.KnownDaemonTypes.Docker;
+        cni.LocalRegistry = global::Microsoft.NET.Build.Containers.KnownLocalRegistryTypes.Docker;
 
         Assert.True(cni.Execute());
 
-        new RunExeCommand(_testOutput, "docker", "run", "--rm", $"{pcp.NewContainerImageName}:latest")
+        ContainerCli.RunCommand(_testOutput, "--rm", $"{pcp.NewContainerImageName}:latest")
             .Execute()
             .Should().Pass()
             .And.HaveStdOut("Foo");
+    }
+
+    [DockerAvailableFact]
+    public async System.Threading.Tasks.Task CreateNewImage_RootlessBaseImage()
+    {
+        const string RootlessBase ="dotnet/rootlessbase";
+        const string AppImage = "dotnet/testimagerootless";
+        const string RootlessUser = "101";
+
+        // Build a rootless base runtime image.
+        Registry registry = new Registry(ContainerHelpers.TryExpandRegistryToUri(DockerRegistryManager.LocalRegistry));
+
+        ImageBuilder imageBuilder = await registry.GetImageManifestAsync(
+            DockerRegistryManager.RuntimeBaseImage,
+            DockerRegistryManager.Net8PreviewImageTag,
+            "linux-x64",
+            ToolsetUtils.GetRuntimeGraphFilePath(),
+            cancellationToken: default).ConfigureAwait(false);
+
+        Assert.NotNull(imageBuilder);
+
+        imageBuilder.SetUser(RootlessUser);
+
+        BuiltImage builtImage = imageBuilder.Build();
+
+        var sourceReference = new ImageReference(registry, DockerRegistryManager.RuntimeBaseImage, DockerRegistryManager.Net8PreviewImageTag);
+        var destinationReference = new ImageReference(registry, RootlessBase, "latest");
+
+        await registry.PushAsync(builtImage, sourceReference, destinationReference, Console.WriteLine, cancellationToken: default).ConfigureAwait(false);
+
+        // Build an application image on top of the rootless base runtime image.
+        DirectoryInfo newProjectDir = new DirectoryInfo(Path.Combine(TestSettings.TestArtifactsDirectory, nameof(CreateNewImage_RootlessBaseImage)));
+
+        if (newProjectDir.Exists)
+        {
+            newProjectDir.Delete(recursive: true);
+        }
+
+        newProjectDir.Create();
+
+        new DotnetNewCommand(_testOutput, "console", "-f", ToolsetInfo.CurrentTargetFramework)
+            .WithVirtualHive()
+            .WithWorkingDirectory(newProjectDir.FullName)
+            .Execute()
+            .Should().Pass();
+
+        new DotnetCommand(_testOutput, "publish", "-c", "Release", "-r", "linux-x64", "--no-self-contained")
+            .WithWorkingDirectory(newProjectDir.FullName)
+            .Execute()
+            .Should().Pass();
+
+        CreateNewImage task = new CreateNewImage();
+        task.BaseRegistry = "localhost:5010";
+        task.BaseImageName = RootlessBase;
+        task.BaseImageTag = "latest";
+
+        task.OutputRegistry = "localhost:5010";
+        task.PublishDirectory = Path.Combine(newProjectDir.FullName, "bin", "Release", ToolsetInfo.CurrentTargetFramework, "linux-x64", "publish");
+        task.ImageName = AppImage;
+        task.ImageTags = new[] { "latest" };
+        task.WorkingDirectory = "app/";
+        task.ContainerRuntimeIdentifier = "linux-x64";
+        task.Entrypoint = new TaskItem[] { new("dotnet"), new("build") };
+        task.RuntimeIdentifierGraphPath = ToolsetUtils.GetRuntimeGraphFilePath();
+
+        Assert.True(task.Execute());
+        newProjectDir.Delete(true);
+
+        // Verify the application image uses the non-root user from the base image.
+        imageBuilder = await registry.GetImageManifestAsync(
+            AppImage,
+            "latest",
+            "linux-x64",
+            ToolsetUtils.GetRuntimeGraphFilePath(),
+            cancellationToken: default).ConfigureAwait(false);
+
+        Assert.Equal(RootlessUser, imageBuilder.BaseImageConfig.User);
     }
 }

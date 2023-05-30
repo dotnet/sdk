@@ -17,6 +17,11 @@
         <target state="translated">CONTAINER2009: 無法剖析 {0}: {1}</target>
         <note>{StrBegin="CONTAINER2009: "}</note>
       </trans-unit>
+      <trans-unit id="BaseImageNameRegistryFallback">
+        <source>CONTAINER2020: {0} does not specify a registry and will be pulled from Docker Hub. Please prefix the name with the image registry, for example: '{1}/&lt;image&gt;'.</source>
+        <target state="new">CONTAINER2020: {0} does not specify a registry and will be pulled from Docker Hub. Please prefix the name with the image registry, for example: '{1}/&lt;image&gt;'.</target>
+        <note>{StrBegin="CONTAINER2020: "}</note>
+      </trans-unit>
       <trans-unit id="BaseImageNameWithSpaces">
         <source>CONTAINER2013: {0} had spaces in it, replacing with dashes.</source>
         <target state="translated">CONTAINER2013: {0} 有空格，正在以虛線取代。</target>
@@ -57,11 +62,6 @@
         <target state="translated">CONTAINER3001: 無法建立 Docker 程序。</target>
         <note>{StrBegin="CONTAINER3001: "}</note>
       </trans-unit>
-      <trans-unit id="DontKnowHowToPullImages">
-        <source>CONTAINER1010: Don't know how to pull images from local daemons at the moment.</source>
-        <target state="translated">CONTAINER1010: 目前不知道如何從本機精靈提取映像。</target>
-        <note>{StrBegin="CONTAINER1010: "}</note>
-      </trans-unit>
       <trans-unit id="EmptyOrWhitespacePropertyIgnored">
         <source>CONTAINER4006: Property '{0}' is empty or contains whitespace and will be ignored.</source>
         <target state="translated">CONTAINER4006: 屬性 '{0}' 空的或包含空白字元，將被忽略。</target>
@@ -83,9 +83,14 @@
         <note />
       </trans-unit>
       <trans-unit id="ImageLoadFailed">
-        <source>CONTAINER1009: Failed to load image to local Docker daemon. stdout: {0}</source>
-        <target state="translated">CONTAINER1009: 無法將映像載入至本機 Docker 精靈。stdout: {0}</target>
+        <source>CONTAINER1009: Failed to load image from local registry. stdout: {0}</source>
+        <target state="needs-review-translation">CONTAINER1009: 無法將映像載入至本機 Docker 精靈。stdout: {0}</target>
         <note>{StrBegin="CONTAINER1009: "}</note>
+      </trans-unit>
+      <trans-unit id="ImagePullNotSupported">
+        <source>CONTAINER1010: Pulling images from local registry is not supported.</source>
+        <target state="needs-review-translation">CONTAINER1010: 不支援從本機 Docker 精靈提取映像。</target>
+        <note>{StrBegin="CONTAINER1010: "}</note>
       </trans-unit>
       <trans-unit id="InvalidContainerImageName">
         <source>CONTAINER2014: Invalid {0}: {1}.</source>
@@ -147,15 +152,10 @@
         <target state="translated">CONTAINER4005: 項目 '{0}' 包含沒有中繼資料 'Value' 的項目，將忽略這些項目。</target>
         <note>{StrBegin="CONTAINER4005: "}</note>
       </trans-unit>
-      <trans-unit id="LocalDaemondNotAvailable">
-        <source>CONTAINER1012: The local daemon is not available, but pushing to a local daemon was requested. Please start the daemon and try again.</source>
-        <target state="translated">CONTAINER1012: 無法使用本機精靈，但已要求推送至本機精靈。請啟動精靈，然後再試一次。</target>
+      <trans-unit id="LocalRegistryNotAvailable">
+        <source>CONTAINER1012: The local registry is not available, but pushing to a local registry was requested.</source>
+        <target state="new">CONTAINER1012: The local registry is not available, but pushing to a local registry was requested.</target>
         <note>{StrBegin="CONTAINER1012: "}</note>
-      </trans-unit>
-      <trans-unit id="MissingLayerNode">
-        <source>CONTAINER2006: Tried to get layer information but there is no layer node?</source>
-        <target state="translated">CONTAINER2006: 嘗試取得圖層資訊，但沒有圖層節點?</target>
-        <note>{StrBegin="CONTAINER2006: "}</note>
       </trans-unit>
       <trans-unit id="MissingLinkToRegistry">
         <source>CONTAINER2004: Unable to download layer with descriptor '{0}' from registry '{1}' because it does not exist.</source>
@@ -212,9 +212,9 @@
         <target state="translated">CONTAINER1006: 重試太多次，正在停止。</target>
         <note>{StrBegin="CONTAINER1006: "}</note>
       </trans-unit>
-      <trans-unit id="UnknownDaemonType">
-        <source>CONTAINER2002: Unknown local container daemon type '{0}'. Valid local container daemon types are {1}.</source>
-        <target state="translated">CONTAINER2002: 未知的本機容器精靈類型 '{0}'。有效的本機容器精靈類型為 {1}。</target>
+      <trans-unit id="UnknownLocalRegistryType">
+        <source>CONTAINER2002: Unknown local registry type '{0}'. Valid local container registry types are {1}.</source>
+        <target state="new">CONTAINER2002: Unknown local registry type '{0}'. Valid local container registry types are {1}.</target>
         <note>{StrBegin="CONTAINER2002: "}</note>
       </trans-unit>
       <trans-unit id="UnknownMediaType">

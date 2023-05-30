@@ -27,7 +27,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <UsingTask TaskName="GenerateDepsFile" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
   <UsingTask TaskName="GenerateRuntimeConfigurationFiles" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
   <UsingTask TaskName="GetAssemblyVersion" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
-  <UsingTask TaskName="GenerateSatelliteAssemblies" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
+  <UsingTask TaskName="GenerateSatelliteAssemblies" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />  
 
   <PropertyGroup>
     <DisableStandardFrameworkResolution Condition="'$(DisableStandardFrameworkResolution)' == ''">$(_IsNETCoreOrNETStandard)</DisableStandardFrameworkResolution>
@@ -42,6 +42,10 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ComputeNETCoreBuildOutputFiles Condition=" '$(ComputeNETCoreBuildOutputFiles)' == '' and '$(TargetFrameworkIdentifier)' == '.NETCoreApp'">true</ComputeNETCoreBuildOutputFiles>
     <_GenerateRuntimeConfigurationPropertyInputsCache Condition="'$(_GenerateRuntimeConfigurationPropertyInputsCache)' == ''">$(IntermediateOutputPath)$(MSBuildProjectName).genruntimeconfig.cache</_GenerateRuntimeConfigurationPropertyInputsCache>
     <_GenerateRuntimeConfigurationPropertyInputsCache>$([MSBuild]::NormalizePath($(MSBuildProjectDirectory), $(_GenerateRuntimeConfigurationPropertyInputsCache)))</_GenerateRuntimeConfigurationPropertyInputsCache>
+    <_GeneratePublishDependencyFilePropertyInputsCache Condition="'$(_GeneratePublishDependencyFilePropertyInputsCache)' == ''">$(IntermediateOutputPath)$(MSBuildProjectName).genpublishdeps.cache</_GeneratePublishDependencyFilePropertyInputsCache>
+    <_GeneratePublishDependencyFilePropertyInputsCache>$([MSBuild]::NormalizePath($(MSBuildProjectDirectory), $(_GeneratePublishDependencyFilePropertyInputsCache)))</_GeneratePublishDependencyFilePropertyInputsCache>
+    <_GenerateSingleFileBundlePropertyInputsCache Condition="'$(_GenerateSingleFileBundlePropertyInputsCache)' == ''">$(IntermediateOutputPath)$(MSBuildProjectName).genbundle.cache</_GenerateSingleFileBundlePropertyInputsCache>
+    <_GenerateSingleFileBundlePropertyInputsCache>$([MSBuild]::NormalizePath($(MSBuildProjectDirectory), $(_GenerateSingleFileBundlePropertyInputsCache)))</_GenerateSingleFileBundlePropertyInputsCache>
   </PropertyGroup>
 
   <ItemGroup>
@@ -190,6 +194,20 @@ Copyright (c) .NET Foundation. All rights reserved.
       $(RebuildDependsOn)
     </RebuildDependsOn>
   </PropertyGroup>
+
+  <Target Name="_AddMicrosoftNetCompilerToolsetFrameworkPackage" BeforeTargets="CollectPackageReferences">
+
+    <!-- Users should not be setting Microsoft.Net.Compilers.Toolset.Framework directly.
+         If they do, and they also set BuildWithNetFrameworkHostedCompiler, we will have
+         a duplicate PackageReference. This makes it more explicit that that is not supported. -->
+    <NETSdkWarning ResourceName="CannotDirectlyReferenceMicrosoftNetCompilersToolsetFramework"
+        Condition="'@(PackageReference->AnyHaveMetadataValue('Identity', 'Microsoft.Net.Compilers.Toolset.Framework'))' == 'true'" /> 
+
+    <ItemGroup Condition="'$(BuildWithNetFrameworkHostedCompiler)' == 'true' and '$(OS)' == 'Windows_NT'">
+      <PackageReference Include="Microsoft.Net.Compilers.Toolset.Framework" PrivateAssets="all" Version="$(_NetFrameworkHostedCompilersVersion)" IsImplicitlyDefined="true" />
+    </ItemGroup>
+
+  </Target>
 
   <!-- TODO: this target should not check GeneratePackageOnBuild.
              remove when https://github.com/NuGet/Home/issues/7801 is fixed.
@@ -558,14 +576,19 @@ Copyright (c) .NET Foundation. All rights reserved.
                                     Value="$(StartupHookSupport)"
                                     Trim="true" />
 
-    <RuntimeHostConfigurationOption Include="System.Threading.Thread.EnableAutoreleasePool"
-                                    Condition="'$(AutoreleasePoolSupport)' != ''"
-                                    Value="$(AutoreleasePoolSupport)"
-                                    Trim="true" />
-
     <RuntimeHostConfigurationOption Include="System.Text.Encoding.EnableUnsafeUTF7Encoding"
                                     Condition="'$(EnableUnsafeUTF7Encoding)' != ''"
                                     Value="$(EnableUnsafeUTF7Encoding)"
+                                    Trim="true" />
+
+    <RuntimeHostConfigurationOption Include="System.Text.Json.JsonSerializer.IsReflectionEnabledByDefault"
+                                    Condition="'$(JsonSerializerIsReflectionEnabledByDefault)' != ''"
+                                    Value="$(JsonSerializerIsReflectionEnabledByDefault)"
+                                    Trim="true" />
+
+    <RuntimeHostConfigurationOption Include="System.Threading.Thread.EnableAutoreleasePool"
+                                    Condition="'$(AutoreleasePoolSupport)' != ''"
+                                    Value="$(AutoreleasePoolSupport)"
                                     Trim="true" />
 
     <RuntimeHostConfigurationOption Include="System.Threading.ThreadPool.MinThreads"
@@ -1135,7 +1158,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <AdditionalTargetFrameworkInfoProperty Include="ShouldBeValidatedAsExecutableReference"/>
     <AdditionalTargetFrameworkInfoProperty Include="_SelfContainedWasSpecified"/>
   </ItemGroup>
-  
+
   <PropertyGroup Condition="'$(RuntimeIdentifier)' == 'browser-wasm'">
     <!-- Don't generate a NETSDK1151 error if a non self-contained Exe references a Blazor wasm Exe -->
     <ShouldBeValidatedAsExecutableReference>false</ShouldBeValidatedAsExecutableReference>
@@ -1159,7 +1182,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <PropertyGroup>
     <_UseAttributeForTargetFrameworkInfoPropertyNames Condition="$([MSBuild]::VersionGreaterThanOrEquals($(MSBuildVersion), '17.0'))">true</_UseAttributeForTargetFrameworkInfoPropertyNames>
   </PropertyGroup>
-
+  
   <Target Name="ValidateExecutableReferences"
           AfterTargets="_GetProjectReferenceTargetFrameworkProperties"
           Condition="'$(ValidateExecutableReferencesMatchSelfContained)' != 'false'">
@@ -1168,9 +1191,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       SelfContained="$(SelfContained)"
       IsExecutable="$(_IsExecutable)"
       ReferencedProjects="@(_MSBuildProjectReferenceExistent)"
-      UseAttributeForTargetFrameworkInfoPropertyNames="$(_UseAttributeForTargetFrameworkInfoPropertyNames)"
-      />
-
+      UseAttributeForTargetFrameworkInfoPropertyNames="$(_UseAttributeForTargetFrameworkInfoPropertyNames)"/>
   </Target>
 
   <!--
@@ -1181,15 +1202,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Target Name="ValidateCommandLineProperties"
           AfterTargets="_CheckForInvalidConfigurationAndPlatform" >
-
-    <NETSdkWarning Condition="'$(_SelfContainedWasSpecified)' != 'true' and
-                   '$(_CommandLineDefinedRuntimeIdentifier)' == 'true' and
-                   '$(RuntimeIdentifier)' != '' and
-                   '$(PublishAot)' != 'true' and
-                   '$(TargetFrameworkIdentifier)' == '.NETCoreApp' and
-                   $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '6.0'))"
-               ResourceName="SelfContainedOptionShouldBeUsedWithRuntime" />
-
+    <!-- Currently a no-op, but we could put things here in the future, so keeping it. -->
   </Target>
 
   <!--
@@ -1207,6 +1220,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ProjectCapability Remove="ReferenceManagerAssemblies" />
   </ItemGroup>
 
+  <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.Sdk.SourceLink.targets" Condition="'$(SuppressImplicitGitSourceLink)' != 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.DisableStandardFrameworkResolution.targets" Condition="'$(DisableStandardFrameworkResolution)' == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.DesignerSupport.targets" />
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.GenerateAssemblyInfo.targets" Condition="'$(UsingNETSdkDefaults)' == 'true'"/>

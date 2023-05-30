@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -35,7 +35,7 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
-        [InlineData(ToolsetInfo.CurrentTargetFramework)]
+        [MemberData(nameof(Net7Plus), MemberType = typeof(PublishTestUtils))]
         public void NativeAot_hw_runs_with_no_warnings_when_PublishAot_is_enabled(string targetFramework)
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
@@ -53,13 +53,14 @@ namespace Microsoft.NET.Publish.Tests
                 }
                 var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
-                var publishCommand = new PublishCommand(testAsset);
+                var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
                 publishCommand
-                    .Execute($"/p:UseCurrentRuntimeIdentifier=true")
+                    .Execute($"/p:UseCurrentRuntimeIdentifier=true", "/p:SelfContained=true")
                     .Should().Pass()
                     .And.NotHaveStdOutContaining("IL2026")
                     .And.NotHaveStdErrContaining("NETSDK1179")
-                    .And.NotHaveStdErrContaining("warning");
+                    .And.NotHaveStdErrContaining("warning")
+                    .And.NotHaveStdOutContaining("warning");
 
                 var buildProperties = testProject.GetPropertyValues(testAsset.TestRoot, targetFramework);
                 var rid = buildProperties["NETCoreSdkPortableRuntimeIdentifier"];
@@ -77,6 +78,9 @@ namespace Microsoft.NET.Publish.Tests
                 File.Exists(publishedDebugFile).Should().BeTrue();
                 IsNativeImage(publishedExe).Should().BeTrue();
 
+                GetKnownILCompilerPackVersion(testAsset, targetFramework, out string expectedVersion);
+                CheckIlcVersions(testAsset, targetFramework, rid, expectedVersion);
+
                 var command = new RunExeCommand(Log, publishedExe)
                     .Execute().Should().Pass()
                     .And.HaveStdOutContaining("Hello World");
@@ -84,7 +88,7 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
-        [InlineData(ToolsetInfo.CurrentTargetFramework)]
+        [MemberData(nameof(Net7Plus), MemberType = typeof(PublishTestUtils))]
         public void NativeAot_hw_runs_with_no_warnings_when_PublishAot_is_false(string targetFramework)
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -98,11 +102,12 @@ namespace Microsoft.NET.Publish.Tests
 
                 var publishCommand = new PublishCommand(testAsset);
                 publishCommand
-                    .Execute($"/p:RuntimeIdentifier={rid}")
+                    .Execute($"/p:RuntimeIdentifier={rid}", "/p:SelfContained=true")
                     .Should().Pass()
                     .And.NotHaveStdOutContaining("IL2026")
                     .And.NotHaveStdErrContaining("NETSDK1179")
-                    .And.NotHaveStdErrContaining("warning");
+                    .And.NotHaveStdErrContaining("warning")
+                    .And.NotHaveStdOutContaining("warning");
 
                 var publishDirectory = publishCommand.GetOutputDirectory(targetFramework: targetFramework, runtimeIdentifier: rid).FullName;
                 var publishedDll = Path.Combine(publishDirectory, $"{projectName}.dll");
@@ -322,7 +327,7 @@ namespace Microsoft.NET.Publish.Tests
                     .Execute().Should().Pass()
                     .And.HaveStdOutContaining("Hello World");
 
-                CheckIlcVersions(Path.Combine(testAsset.TestRoot, testProject.Name), targetFramework, rid, ExplicitPackageVersion);
+                CheckIlcVersions(testAsset, targetFramework, rid, ExplicitPackageVersion);
             }
         }
 
@@ -365,9 +370,9 @@ namespace Microsoft.NET.Publish.Tests
                     .And.HaveStdOutContaining("Hello World");
             }
         }
-        
+
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
-        [InlineData(ToolsetInfo.CurrentTargetFramework)]
+        [MemberData(nameof(Net7Plus), MemberType = typeof(PublishTestUtils))]
         public void NativeAot_hw_runs_with_cross_target_PublishAot_is_enabled(string targetFramework)
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && (RuntimeInformation.OSArchitecture == System.Runtime.InteropServices.Architecture.X64))
@@ -389,12 +394,15 @@ namespace Microsoft.NET.Publish.Tests
                 var publishedExe = Path.Combine(publishDirectory, $"{testProject.Name}{Constants.ExeSuffix}");
                 File.Exists(publishedDll).Should().BeFalse();
                 File.Exists(publishedExe).Should().BeTrue();
+
+                GetKnownILCompilerPackVersion(testAsset, targetFramework, out string expectedVersion);
+                CheckIlcVersions(testAsset, targetFramework, rid, expectedVersion);
             }
         }
 
 
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
-        [InlineData(ToolsetInfo.CurrentTargetFramework)]
+        [MemberData(nameof(Net7Plus), MemberType = typeof(PublishTestUtils))]
         public void NativeAot_hw_runs_with_cross_PackageReference_PublishAot_is_enabled(string targetFramework)
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && (RuntimeInformation.OSArchitecture == System.Runtime.InteropServices.Architecture.X64))
@@ -425,7 +433,7 @@ namespace Microsoft.NET.Publish.Tests
                 File.Exists(publishedDll).Should().BeFalse();
                 File.Exists(publishedExe).Should().BeTrue();
 
-                CheckIlcVersions(Path.Combine(testAsset.TestRoot, testProject.Name), targetFramework, rid, ExplicitPackageVersion);
+                CheckIlcVersions(testAsset, targetFramework, rid, ExplicitPackageVersion);
             }
         }
 
@@ -526,6 +534,40 @@ namespace Microsoft.NET.Publish.Tests
 
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
         [InlineData(ToolsetInfo.CurrentTargetFramework)]
+        public void IsAotCompatible_implies_enable_analyzers(string targetFramework)
+        {
+            var projectName = "WarningAppWithAotAnalyzer";
+            var testProject = CreateTestProjectWithAnalysisWarnings(targetFramework, projectName, true);
+            testProject.AdditionalProperties["IsAotCompatible"] = "true";
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+
+            var buildCommand = new BuildCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
+            buildCommand
+                .Execute()
+                .Should().Pass()
+                .And.HaveStdOutContaining("warning IL3050")
+                .And.HaveStdOutContaining("warning IL3056")
+                .And.HaveStdOutContaining("warning IL2026")
+                .And.HaveStdOutContaining("warning IL3002");
+
+            var outputDirectory = buildCommand.GetOutputDirectory(targetFramework).FullName;
+            var assemblyPath = Path.Combine(outputDirectory, $"{projectName}.dll");
+
+            // injects the IsTrimmable attribute
+            AssemblyInfo.Get(assemblyPath)["AssemblyMetadataAttribute"].Should().Be("IsTrimmable:True");
+
+            var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
+            publishCommand
+                .Execute(RuntimeIdentifier, "/p:RunAnalyzers=false")
+                .Should().Pass()
+                .And.NotHaveStdOutContaining("warning IL3050")
+                .And.NotHaveStdOutContaining("warning IL3056")
+                .And.NotHaveStdOutContaining("warning IL2026")
+                .And.NotHaveStdOutContaining("warning IL3002");
+        }
+
+        [RequiresMSBuildVersionTheory("17.0.0.32901")]
+        [InlineData(ToolsetInfo.CurrentTargetFramework)]
         public void Requires_analyzers_produce_warnings_without_PublishAot_being_set(string targetFramework)
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
@@ -554,7 +596,7 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
-        [InlineData(ToolsetInfo.CurrentTargetFramework)]
+        [MemberData(nameof(Net7Plus), MemberType = typeof(PublishTestUtils))]
         public void NativeAot_compiler_runs_when_PublishAot_is_enabled(string targetFramework)
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
@@ -650,7 +692,7 @@ namespace Microsoft.NET.Publish.Tests
                 testProject.AdditionalProperties["PublishAot"] = "true";
                 testProject.AdditionalProperties["UseCurrentRuntimeIdentifier"] = "true";
                 testProject.AdditionalProperties["NativeLib"] = "Static";
-                testProject.AdditionalProperties["SelfContained"] = "true";
+                testProject.SelfContained = "true";
                 var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
                 var publishCommand = new PublishCommand(testAsset);
@@ -747,20 +789,33 @@ namespace Microsoft.NET.Publish.Tests
                 .Should().BeFalse();
         }
 
-        private void CheckIlcVersions(string projectPath, string targetFramework, string rid, string expectedVersion)
+        private void GetKnownILCompilerPackVersion(TestAsset testAsset, string targetFramework, out string version)
+        {
+            var getKnownPacks = new GetValuesCommand(testAsset, "KnownILCompilerPack", GetValuesCommand.ValueType.Item, targetFramework) {
+                MetadataNames = new List<string> { "TargetFramework", "ILCompilerPackVersion" }
+            };
+            getKnownPacks.Execute().Should().Pass();
+            var knownPacks = getKnownPacks.GetValuesWithMetadata();
+            version = knownPacks
+                .Where(i => i.metadata["TargetFramework"] == targetFramework)
+                .Select(i => i.metadata["ILCompilerPackVersion"])
+                .Single();
+        }
+
+        private void CheckIlcVersions(TestAsset testAsset, string targetFramework, string rid, string expectedVersion)
         {
             // Compiler version matches expected version
-            var ilcToolsPathCommand = new GetValuesCommand(Log, projectPath, targetFramework, "IlcToolsPath")
+            var ilcToolsPathCommand = new GetValuesCommand(testAsset, "IlcToolsPath", targetFramework: targetFramework)
             {
                 DependsOnTargets = "WriteIlcRspFileForCompilation"
             };
             ilcToolsPathCommand.Execute($"/p:RuntimeIdentifier={rid}").Should().Pass();
             var ilcToolsPath = ilcToolsPathCommand.GetValues()[0];
             var ilcVersion = Path.GetFileName(Path.GetDirectoryName(Path.GetDirectoryName(ilcToolsPath)));
-            ilcVersion.Should().Be(ExplicitPackageVersion);
+            ilcVersion.Should().Be(expectedVersion);
 
             // Compilation references (corelib) match expected version
-            var ilcReferenceCommand = new GetValuesCommand(Log, projectPath, targetFramework, "IlcReference", GetValuesCommand.ValueType.Item)
+            var ilcReferenceCommand = new GetValuesCommand(testAsset, "IlcReference", GetValuesCommand.ValueType.Item, targetFramework)
             {
                 DependsOnTargets = "WriteIlcRspFileForCompilation"
             };
@@ -768,7 +823,7 @@ namespace Microsoft.NET.Publish.Tests
             var ilcReference = ilcReferenceCommand.GetValues();
             var corelibReference = ilcReference.Where(r => Path.GetFileName(r).Equals("System.Private.CoreLib.dll")).Single();
             var ilcReferenceVersion = Path.GetFileName(Path.GetDirectoryName(Path.GetDirectoryName(corelibReference)));
-            ilcReferenceVersion.Should().Be(ExplicitPackageVersion);
+            ilcReferenceVersion.Should().Be(expectedVersion);
         }
 
         private TestProject CreateHelloWorldTestProject(string targetFramework, string projectName, bool isExecutable)

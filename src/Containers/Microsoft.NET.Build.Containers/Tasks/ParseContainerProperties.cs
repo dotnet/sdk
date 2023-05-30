@@ -18,7 +18,7 @@ public sealed class ParseContainerProperties : Microsoft.Build.Utilities.Task
     public string FullyQualifiedBaseImageName { get; set; }
 
     /// <summary>
-    /// The registry to push the new container to. This will be null if the container is to be pushed to a local daemon.
+    /// The registry to push the new container to. This will be null if the container is to be pushed to a local registry.
     /// </summary>
     public string ContainerRegistry { get; set; }
 
@@ -135,10 +135,16 @@ public sealed class ParseContainerProperties : Microsoft.Build.Utilities.Task
                                                                   out string? outputReg,
                                                                   out string? outputImage,
                                                                   out string? outputTag,
-                                                                  out string? _outputDigest))
+                                                                  out string? _outputDigest,
+                                                                  out bool isRegistrySpecified))
         {
             Log.LogErrorWithCodeFromResources(nameof(Strings.BaseImageNameParsingFailed), nameof(FullyQualifiedBaseImageName), FullyQualifiedBaseImageName);
             return !Log.HasLoggedErrors;
+        }
+
+        if (!isRegistrySpecified)
+        {
+            Log.LogWarningWithCodeFromResources(nameof(Strings.BaseImageNameRegistryFallback), nameof(FullyQualifiedBaseImageName), ContainerHelpers.DockerRegistryAlias);
         }
 
         try

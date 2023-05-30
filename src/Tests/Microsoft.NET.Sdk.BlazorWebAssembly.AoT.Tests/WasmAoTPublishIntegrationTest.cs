@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -22,12 +22,12 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.AoT.Tests
     {
         public WasmAoTPublishIntegrationTest(ITestOutputHelper log) : base(log) { }
 
-        [Fact(Skip = "https://github.com/dotnet/sdk/issues/31491")]
+        [Fact]
         public void AoT_Publish_InRelease_Works()
         {
             // Arrange
             var testAppName = "BlazorWasmWithLibrary";
-            var testInstance = CreateAspNetSdkTestAssetWithAot(testAppName, new [] { "blazorwasm" });
+            var testInstance = CreateAspNetSdkTestAssetWithAot(testAppName, new[] { "blazorwasm" });
             File.WriteAllText(Path.Combine(testInstance.TestRoot, "blazorwasm", "App.razor.css"), "h1 { font-size: 16px; }");
 
             var publishCommand = new PublishCommand(testInstance, "blazorwasm");
@@ -41,9 +41,9 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.AoT.Tests
             {
                 "wwwroot/_framework/blazor.boot.json",
                 "wwwroot/_framework/blazor.webassembly.js",
-                "wwwroot/_framework/dotnet.wasm",
-                "wwwroot/_framework/blazorwasm.dll",
-                "wwwroot/_framework/System.Text.Json.dll",
+                "wwwroot/_framework/dotnet.native.wasm",
+                "wwwroot/_framework/blazorwasm.wasm",
+                "wwwroot/_framework/System.Text.Json.wasm",
                 "wwwroot/_content/RazorClassLibrary/wwwroot/exampleJsInterop.js",
                 "wwwroot/_content/RazorClassLibrary/styles.css",
                 "wwwroot/index.html",
@@ -58,12 +58,12 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.AoT.Tests
             new FileInfo(Path.Combine(blazorPublishDirectory, "css", "app.css")).Should().Contain(".publish");
         }
 
-        [Fact(Skip = "https://github.com/dotnet/sdk/issues/31491")]
+        [Fact]
         public void AoT_Publish_WithExistingWebConfig_Works()
         {
             // Arrange
             var testAppName = "BlazorWasmWithLibrary";
-            var testInstance = CreateAspNetSdkTestAssetWithAot(testAppName, new [] { "blazorwasm" });
+            var testInstance = CreateAspNetSdkTestAssetWithAot(testAppName, new[] { "blazorwasm" });
 
             var webConfigContents = "test webconfig contents";
             File.WriteAllText(Path.Combine(testInstance.TestRoot, "blazorwasm", "web.config"), webConfigContents);
@@ -80,12 +80,12 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.AoT.Tests
             webConfig.Should().Contain(webConfigContents);
         }
 
-        [Fact(Skip = "https://github.com/dotnet/sdk/issues/31491")]
+        [Fact]
         public void AoT_Publish_HostedAppWithScopedCss_VisualStudio()
         {
             // Simulates publishing the same way VS does by setting BuildProjectReferences=false.
             var testAppName = "BlazorHosted";
-            var testInstance = CreateAspNetSdkTestAssetWithAot(testAppName, new [] { "blazorwasm", "blazorhosted" });
+            var testInstance = CreateAspNetSdkTestAssetWithAot(testAppName, new[] { "blazorwasm", "blazorhosted" });
             File.WriteAllText(Path.Combine(testInstance.TestRoot, "blazorwasm", "App.razor.css"), "h1 { font-size: 16px; }");
 
             // VS builds projects individually and then a publish with BuildDependencies=false, but building the main project is a close enough approximation for this test.
@@ -114,16 +114,16 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.AoT.Tests
             {
                 "wwwroot/_framework/blazor.boot.json",
                 "wwwroot/_framework/blazor.webassembly.js",
-                "wwwroot/_framework/dotnet.wasm",
-                "wwwroot/_framework/blazorwasm.dll",
-                "wwwroot/_framework/System.Text.Json.dll"
+                "wwwroot/_framework/dotnet.native.wasm",
+                "wwwroot/_framework/blazorwasm.wasm",
+                "wwwroot/_framework/System.Text.Json.wasm"
             });
 
             // Verify project references appear as static web assets
             // Also verify project references to the server project appear in the publish output
             publishDirectory.Should().HaveFiles(new[]
             {
-                "wwwroot/_framework/RazorClassLibrary.dll",
+                "wwwroot/_framework/RazorClassLibrary.wasm",
                 "RazorClassLibrary.dll"
             });
 
@@ -157,10 +157,10 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.AoT.Tests
             // Verify compression works
             publishDirectory.Should().HaveFiles(new[]
             {
-                "wwwroot/_framework/dotnet.wasm.br",
-                "wwwroot/_framework/blazorwasm.dll.br",
-                "wwwroot/_framework/RazorClassLibrary.dll.br",
-                "wwwroot/_framework/System.Text.Json.dll.br"
+                "wwwroot/_framework/dotnet.native.wasm.br",
+                "wwwroot/_framework/blazorwasm.wasm.br",
+                "wwwroot/_framework/RazorClassLibrary.wasm.br",
+                "wwwroot/_framework/System.Text.Json.wasm.br"
             });
 
             VerifyBootManifestHashes(testInstance, blazorPublishDirectory);
