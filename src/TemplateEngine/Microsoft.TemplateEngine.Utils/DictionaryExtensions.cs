@@ -73,5 +73,26 @@ namespace Microsoft.TemplateEngine.Utils
                 }
             }
         }
+
+        /// <summary>
+        /// Adds a <paramref name="value"/> to given dictionary <paramref name="dict"/> if <paramref name="value"/> satisfies <paramref name="condition"/>.
+        /// </summary>
+        /// <typeparam name="TKey"> Type of keys of <paramref name="dict"/>. </typeparam>
+        /// <typeparam name="TValue"> Type of values of <paramref name="dict"/>.</typeparam>
+        /// <param name="dict">A dictionary to add <paramref name="key"/> and <paramref name="value"/> to.</param>
+        /// <param name="key">A key for new <paramref name="value"/>.</param>
+        /// <param name="value">A value with <paramref name="key"/>.</param>
+        /// <param name="condition">If condition is <see langword="true"/>, then <paramref name="value"/> will be added to <paramref name="dict"/>.</param>
+        /// <exception cref="Exception">Thrown if key is already present in current dictionary and <see cref="ConflictingKeysResolution.Throw"/> strategy was requested.</exception>
+        public static bool TryAdd<TKey, TValue>(this IDictionary<TKey, TValue> dict, TKey key, TValue value, Predicate<TValue> condition)
+        {
+            if (condition(value))
+            {
+                dict[key] = value!;
+                return true;
+            }
+
+            return false;
+        }
     }
 }

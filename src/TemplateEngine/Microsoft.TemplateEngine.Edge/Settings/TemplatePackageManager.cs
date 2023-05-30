@@ -216,6 +216,38 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             return allTemplates.Where(t => t.MountPointUri == templatePackage.MountPointUri);
         }
 
+        /// <summary>
+        /// Returns managed template package <see cref="IManagedTemplatePackage"/> matching <paramref name="packageIdentifier"/> and containing templates <see cref="ITemplateInfo"/>.
+        /// </summary>
+        /// <param name="packageIdentifier">The template package identifier.</param>
+        /// <param name="packageVersion">The template package version, if null package version is not checked.</param>
+        /// <param name="cancellationToken">A cancellation token to cancel the asynchronous operation.</param>
+        /// <returns>The managed template package and the containing templates.</returns>
+        /// <exception cref="InvalidOperationException"> Throws an exception when package <paramref name="packageIdentifier"/>.</exception>
+        public async Task<(IManagedTemplatePackage? Package, IEnumerable<ITemplateInfo>? Templates)> GetManagedTemplatePackageAsync(string packageIdentifier, string? packageVersion = null, CancellationToken cancellationToken = default)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var templatePackages = await GetManagedTemplatePackagesAsync(false, cancellationToken).ConfigureAwait(false);
+            var foundPackage = templatePackages
+                .FirstOrDefault(tp =>
+                {
+                    if (tp?.Identifier == packageIdentifier)
+                    {
+                        return string.IsNullOrWhiteSpace(packageVersion) || tp.Version == packageVersion;
+                    }
+                    return false;
+                });
+
+            if (foundPackage != null)
+            {
+                var templates = await GetTemplatesAsync(foundPackage, cancellationToken).ConfigureAwait(false);
+
+                return (foundPackage, templates);
+            }
+
+            throw new InvalidOperationException(string.Format(LocalizableStrings.TemplatePackageManager_Error_FailedToFindPackage, packageIdentifier));
+        }
+
         private void EnsureProvidersLoaded()
         {
             if (_cachedSources != null)

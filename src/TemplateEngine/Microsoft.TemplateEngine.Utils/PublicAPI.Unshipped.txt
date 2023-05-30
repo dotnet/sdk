@@ -1,5 +1,6 @@
 ﻿Microsoft.TemplateEngine.Utils.AsyncLazy<T>
 Microsoft.TemplateEngine.Utils.IScanTemplateInfoExtensions
+static Microsoft.TemplateEngine.Utils.DictionaryExtensions.TryAdd<TKey, TValue>(this System.Collections.Generic.IDictionary<TKey, TValue>! dict, TKey key, TValue value, System.Predicate<TValue>! condition) -> bool
 static Microsoft.TemplateEngine.Utils.IScanTemplateInfoExtensions.ToITemplateInfo(this Microsoft.TemplateEngine.Abstractions.IScanTemplateInfo! templateInfo, string? locFilePath = null, string? hostFilePath = null) -> Microsoft.TemplateEngine.Abstractions.ITemplateInfo!
 Microsoft.TemplateEngine.Utils.TemplateAuthoringException.ConfigItem.get -> string?
 Microsoft.TemplateEngine.Utils.TemplateAuthoringException.TemplateAuthoringException(string! message) -> void

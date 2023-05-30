@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Installer;
 using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
+using Microsoft.TemplateEngine.Utils;
 
 namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
 {
@@ -84,62 +85,17 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
             _logger = settings.Host.LoggerFactory.CreateLogger<NuGetInstaller>();
         }
 
-        public string? Trusted
-        {
-            get => Details.TryGetValue(TrustedKey, out string trusted) ? trusted : false.ToString();
+        public ITemplatePackageProvider Provider => ManagedProvider;
 
-            set
-            {
-                if (string.IsNullOrWhiteSpace(value))
-                {
-                    Details.Remove(TrustedKey);
-                }
-                else
-                {
-                    Details[TrustedKey] = value!;
-                }
-            }
-        }
-
-        public string? Author
-        {
-            get => Details.TryGetValue(AuthorKey, out string author) ? author : null;
-
-            set
-            {
-                if (!string.IsNullOrWhiteSpace(value))
-                {
-                    Details[AuthorKey] = value!;
-                }
-                else
-                {
-                    _ = Details.Remove(AuthorKey);
-                }
-            }
-        }
-
-        public string? Owners
-        {
-            get => Details.TryGetValue(OwnersKey, out string owners) ? owners : null;
-
-            set
-            {
-                if (!string.IsNullOrWhiteSpace(value))
-                {
-                    Details[OwnersKey] = value!;
-                }
-                else
-                {
-                    _ = Details.Remove(OwnersKey);
-                }
-            }
-        }
+        public IManagedTemplatePackageProvider ManagedProvider { get; }
 
         public string DisplayName => string.IsNullOrWhiteSpace(Version) ? Identifier : $"{Identifier}::{Version}";
 
         public string Identifier => Details[PackageIdKey];
 
         public IInstaller Installer { get; }
+
+        public string MountPointUri { get; }
 
         public DateTime LastChangeTime
         {
@@ -157,6 +113,24 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
             }
         }
 
+        public string? Trusted
+        {
+            get => Details.TryGetValue(TrustedKey, out string trusted) ? trusted : false.ToString();
+            set => UpdateOrRemoveValue(Details, TrustedKey, value, (string entry) => !string.IsNullOrEmpty(entry));
+        }
+
+        public string? Author
+        {
+            get => Details.TryGetValue(AuthorKey, out string author) ? author : null;
+            set => UpdateOrRemoveValue(Details, AuthorKey, value, (string entry) => !string.IsNullOrEmpty(entry));
+        }
+
+        public string? Owners
+        {
+            get => Details.TryGetValue(OwnersKey, out string owners) ? owners : null;
+            set => UpdateOrRemoveValue(Details, OwnersKey, value, (string entry) => !string.IsNullOrEmpty(entry));
+        }
+
         public bool IsLocalPackage
         {
             get
@@ -167,58 +141,19 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
                 }
                 return false;
             }
-
-            set
-            {
-                if (value)
-                {
-                    Details[LocalPackageKey] = true.ToString();
-                }
-                else
-                {
-                    _ = Details.Remove(LocalPackageKey);
-                }
-            }
+            set => UpdateOrRemoveValue(Details, LocalPackageKey, value.ToString(), (string value) => value == true.ToString());
         }
-
-        public string MountPointUri { get; }
 
         public string? NuGetSource
         {
             get => Details.TryGetValue(NuGetSourceKey, out string nugetSource) ? nugetSource : null;
-
-            set
-            {
-                if (!string.IsNullOrWhiteSpace(value))
-                {
-                    Details[NuGetSourceKey] = value!;
-                }
-                else
-                {
-                    _ = Details.Remove(NuGetSourceKey);
-                }
-            }
+            set => UpdateOrRemoveValue(Details, NuGetSourceKey, value, (string entry) => !string.IsNullOrEmpty(entry));
         }
-
-        public ITemplatePackageProvider Provider => ManagedProvider;
-
-        public IManagedTemplatePackageProvider ManagedProvider { get; }
 
         public string? Version
         {
             get => Details.TryGetValue(PackageVersionKey, out string version) ? version : null;
-
-            set
-            {
-                if (!string.IsNullOrWhiteSpace(value))
-                {
-                    Details[PackageVersionKey] = value!;
-                }
-                else
-                {
-                    Details.Remove(PackageVersionKey);
-                }
-            }
+            set => UpdateOrRemoveValue(Details, PackageVersionKey, value, (string entry) => !string.IsNullOrEmpty(entry));
         }
 
         internal Dictionary<string, string> Details { get; }
@@ -235,25 +170,22 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
 
         public IReadOnlyDictionary<string, string> GetDetails()
         {
-            Dictionary<string, string> details = new Dictionary<string, string>();
-            if (!string.IsNullOrWhiteSpace(Author))
-            {
-                details[AuthorKey] = Author!;
-            }
-            if (!string.IsNullOrWhiteSpace(Owners))
-            {
-                details[OwnersKey] = Owners!;
-            }
-            if (!string.IsNullOrWhiteSpace(Trusted))
-            {
-                details[TrustedKey] = Trusted!;
-            }
-            if (!string.IsNullOrWhiteSpace(NuGetSource))
-            {
-                details[NuGetSourceKey] = NuGetSource!;
-            }
+            var details = new Dictionary<string, string>();
+
+            details.TryAdd(AuthorKey, Author ?? string.Empty, (string entry) => !string.IsNullOrEmpty(entry));
+            details.TryAdd(OwnersKey, Owners ?? string.Empty, (string entry) => !string.IsNullOrEmpty(entry));
+            details.TryAdd(TrustedKey, Trusted ?? string.Empty, (string entry) => !string.IsNullOrEmpty(entry));
+            details.TryAdd(NuGetSourceKey, NuGetSource ?? string.Empty, (string entry) => !string.IsNullOrEmpty(entry));
 
             return details;
+        }
+
+        private void UpdateOrRemoveValue<TKey, TValue>(IDictionary<TKey, TValue> dict, TKey key, TValue? value, Predicate<TValue> condition)
+        {
+            if (value is null || !dict.TryAdd(key, value, condition))
+            {
+                dict.Remove(key);
+            }
         }
     }
 }

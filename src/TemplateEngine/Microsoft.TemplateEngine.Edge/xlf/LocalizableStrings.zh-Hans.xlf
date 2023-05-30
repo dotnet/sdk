@@ -399,6 +399,11 @@ Details: {0}</source>
         <target state="translated">无法在 {1} 的 {0} 中加载主机数据。</target>
         <note>{0} - path to template location, {1} relative path inside template location.</note>
       </trans-unit>
+      <trans-unit id="TemplatePackageManager_Error_FailedToFindPackage">
+        <source>Failed to retrieve package with identifier '{0}'.</source>
+        <target state="new">Failed to retrieve package with identifier '{0}'.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="TemplatePackageManager_Error_FailedToGetTemplatePackages">
         <source>Failed to retrieve template packages from provider '{0}'.
 Details: {1}</source>

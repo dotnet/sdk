@@ -1,9 +1,14 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using FakeItEasy;
 using Microsoft.TemplateEngine.Abstractions;
+using Microsoft.TemplateEngine.Abstractions.Installer;
+using Microsoft.TemplateEngine.Abstractions.Mount;
 using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
 using Microsoft.TemplateEngine.Edge.Settings;
+using Microsoft.TemplateEngine.Edge.UnitTests.Fakes;
+using Microsoft.TemplateEngine.Mocks;
 using Microsoft.TemplateEngine.TestHelper;
 using Microsoft.TemplateEngine.Tests;
 using Microsoft.TemplateEngine.Utils;
@@ -92,6 +97,47 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             var allNupkgs = Directory.GetFiles(nupkgFolder);
             // All mount points should have been scanned
             AssertMountPointsWereOpened(allNupkgs, engineEnvironmentSettings);
+        }
+
+        [Theory]
+        [InlineData("ManagedPackage", null)]
+        [InlineData("ManagedPackage", "1.0.0")]
+        public async Task GetsManagedPackageWithTemplates(string packageIdentifier, string? version)
+        {
+            var engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(
+               additionalComponents: new List<(Type, IIdentifiedComponent)>
+               {
+                   (typeof(IGenerator), GetGeneratorMock()),
+                   (typeof(IInstallerFactory), GetInstallerFactoryMock()),
+                   (typeof(IMountPointFactory), new MountPointFactoryMock()),
+                   (typeof(ITemplatePackageProviderFactory), new FakeManagedPackageProviderFactory())
+               });
+
+            var result = await new TemplatePackageManager(engineEnvironmentSettings)
+                .GetManagedTemplatePackageAsync(packageIdentifier, version, default).ConfigureAwait(false);
+            var (package, templates) = result;
+
+            Assert.NotNull(templates);
+            Assert.Single(templates);
+            Assert.NotNull(package);
+            Assert.Equal("ManagedMount", package.MountPointUri);
+        }
+
+        [Theory]
+        [InlineData("ManagedPackage", "1.0.1")]
+        public async Task CantGetManagedPackageWithTemplatesDueToVersionMismatchAsync(string packageIdentifier, string? version)
+        {
+            var engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(
+               additionalComponents: new List<(Type, IIdentifiedComponent)>
+               {
+                   (typeof(IGenerator), GetGeneratorMock()),
+                   (typeof(IInstallerFactory), GetInstallerFactoryMock()),
+                   (typeof(IMountPointFactory), new MountPointFactoryMock()),
+                   (typeof(ITemplatePackageProviderFactory), new FakeManagedPackageProviderFactory())
+               });
+
+            var packageManager = new TemplatePackageManager(engineEnvironmentSettings);
+            await Assert.ThrowsAsync<InvalidOperationException>(async () => await packageManager.GetManagedTemplatePackageAsync(packageIdentifier, version, default).ConfigureAwait(false));
         }
 
         [Fact]
@@ -254,20 +300,6 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             Assert.NotEmpty(templates);
         }
 
-        private void AssertMountPointsWereScanned(IEnumerable<string> mountPoints, IEngineEnvironmentSettings environmentSettings)
-        {
-            string[] expectedScannedDirectories = mountPoints
-                .Select(x => x)
-                .OrderBy(x => x)
-                .ToArray();
-            string[] actualScannedDirectories = ((MonitoredFileSystem)environmentSettings.Host.FileSystem).DirectoriesScanned
-                .Select(dir => Path.Combine(dir.DirectoryName, dir.Pattern))
-                .OrderBy(x => x)
-                .ToArray();
-
-            Assert.Equal(expectedScannedDirectories, actualScannedDirectories);
-        }
-
         private void AssertMountPointsWereOpened(IEnumerable<string> mountPoints, IEngineEnvironmentSettings environmentSettings)
         {
             string[] expectedScannedDirectories = mountPoints
@@ -283,11 +315,54 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             Assert.Equal(expectedScannedDirectories, actualScannedDirectories);
         }
 
-        private void AssertMountPointsWereNotScanned(IEnumerable<string> mountPoints, IEngineEnvironmentSettings environmentSettings)
+        internal IGenerator GetGeneratorMock()
         {
-            IEnumerable<string> expectedScannedDirectories = mountPoints;
-            IEnumerable<string> actualScannedDirectories = ((MonitoredFileSystem)environmentSettings.Host.FileSystem).DirectoriesScanned.Select(dir => Path.Combine(dir.DirectoryName, dir.Pattern));
-            Assert.Empty(actualScannedDirectories.Intersect(expectedScannedDirectories));
+            var generatorMock = A.Fake<IGenerator>();
+            A.CallTo(() => generatorMock.GetTemplatesFromMountPointAsync(A<IMountPoint>._, A<CancellationToken>._))
+                .ReturnsLazily(call =>
+                {
+                    var template = A.Fake<IScanTemplateInfo>();
+                    A.CallTo(() => template.MountPointUri).Returns("ManagedMount");
+                    A.CallTo(() => template.IsValid).Returns(true);
+                    IReadOnlyList<IScanTemplateInfo> templates = new List<IScanTemplateInfo>() { template };
+
+                    return Task.FromResult(templates);
+                });
+
+            return generatorMock;
+        }
+
+        public IInstallerFactory GetInstallerFactoryMock()
+        {
+            var installerFactoryMock = A.Fake<IInstallerFactory>();
+            A.CallTo(() => installerFactoryMock.Name).Returns("InstallerMock");
+            A.CallTo(() => installerFactoryMock.CreateInstaller(A<IEngineEnvironmentSettings>._, A<string>._))
+                .ReturnsLazily((IEngineEnvironmentSettings settings, string path) => GetInstallerMock(installerFactoryMock));
+
+            return installerFactoryMock;
+        }
+
+        internal class MountPointFactoryMock : IMountPointFactory
+        {
+            public Guid Id => Guid.Empty;
+
+            public bool TryMount(IEngineEnvironmentSettings environmentSettings, IMountPoint? parent, string mountPointUri, out IMountPoint? mountPoint)
+            {
+                mountPoint = new MockMountPoint(environmentSettings);
+                return true;
+            }
+        }
+
+        public interface IManagedInstallerMock : IInstaller, ISerializableInstaller { }
+
+        internal IManagedInstallerMock GetInstallerMock(IInstallerFactory factory)
+        {
+            var installerMock = A.Fake<IManagedInstallerMock>();
+            A.CallTo(() => installerMock.Factory).Returns(factory);
+            A.CallTo(() => installerMock.Serialize(A<IManagedTemplatePackage>._))
+               .Returns(new TemplatePackageData(Guid.Empty, "ManagedMount", DateTime.Now, new Dictionary<string, string>()));
+
+            return installerMock;
         }
 
         private class FakeFactory : ITemplatePackageProviderFactory

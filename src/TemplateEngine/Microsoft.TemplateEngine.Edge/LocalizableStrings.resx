@@ -413,6 +413,9 @@ Details: {0}</value>
 Details: {1}</value>
     <comment>{0} - provider name (not localized). Last line should not end with a period - period is already included in {1}.</comment>
   </data>
+    <data name="TemplatePackageManager_Error_FailedToFindPackage" xml:space="preserve">
+    <value>Failed to retrieve package with identifier '{0}'.</value>
+  </data>
   <data name="TemplatePackageManager_Error_FailedToScan" xml:space="preserve">
     <value>Failed to scan {0}.
 Details: {1}</value>
