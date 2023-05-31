@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json.schemastore.org/template.json",
+  "author": "Test Asset",
+  "classifications": [ "Test Asset" ],
+  "name": "TemplateWithMultipleChoicesAndCoalesce",
+  "tags": { "type": "project" },
+  "generatorVersions": "[1.0.0.0-*)",
+  "groupIdentity": "TestAssets.TemplateWithMultipleChoicesAndCoalesce",
+  "precedence": "100",
+  "identity": "TestAssets.TemplateWithMultipleChoicesAndCoalesce",
+  "shortName": "TestAssets.TemplateWithMultipleChoicesAndCoalesce",
+  "symbols": {
+    "preset": {
+      "displayName": "Preset",
+      "type": "parameter",
+      "datatype": "choice",
+      "defaultValue": "recommended",
+      "description": "Selects setup type",
+      "choices": [
+        {
+          "choice": "recommended",
+          "description": "Recommended set of options to create a production-ready app targeting multiple platforms",
+          "displayName": "Default"
+        },
+        {
+          "choice": "blank",
+          "description": "Smallest set of options, with no extra dependencies, to create an app targeting multiple platforms",
+          "displayName": "Blank"
+        }
+      ]
+    },
+    "tests": {
+      "displayName": "Tests",
+      "type": "parameter",
+      "datatype": "choice",
+      "replaces": "user_selectedtests",
+      "allowMultipleValues": true,
+      "enableQuotelessLiterals": true,
+      "choices": [
+        {
+          "choice": "unit",
+          "displayName": "Unit Tests"
+        },
+        {
+          "choice": "ui",
+          "displayName": "UI Tests"
+        }
+      ]
+    },
+    "presetTestsDefault": {
+      "type": "generated",
+      "generator": "switch",
+      "replaces": "preset_tests",
+      "parameters": {
+        "evaluator": "C++",
+        "datatype": "string",
+        "cases": [
+          {
+            "condition": "(preset == 'recommended')",
+            "value": "unit|ui"
+          },
+          {
+            "condition": "(preset == 'blank')",
+            "value": ""
+          }
+        ]
+      }
+    },
+    "testsEvaluator": {
+      "type": "generated",
+      "generator": "coalesce",
+      "replaces": "final_tests",
+      "parameters": {
+        "sourceVariableName": "tests",
+        "fallbackVariableName": "presetTestsDefault"
+      }
+    }
+  }
+}

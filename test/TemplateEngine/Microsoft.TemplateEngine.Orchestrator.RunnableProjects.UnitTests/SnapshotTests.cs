@@ -71,6 +71,56 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             VerificationEngine engine = new VerificationEngine(_log);
             return engine.Execute(options);
         }
+
+        [Fact]
+        public Task TestCoalesce_EmptyStringForMultiChoices()
+        {
+            string templateLocation = GetTestTemplateLocation("TemplateWithMultipleChoicesAndCoalesce");
+            var templateParams = new Dictionary<string, string?>()
+            {
+                { "tests", string.Empty }
+            };
+            string workingDir = TestUtils.CreateTemporaryFolder();
+
+            TemplateVerifierOptions options =
+                new TemplateVerifierOptions(templateName: "TestAssets.TemplateWithMultipleChoicesAndCoalesce")
+                {
+                    TemplatePath = templateLocation,
+                    OutputDirectory = workingDir,
+                    DoNotAppendTemplateArgsToScenarioName = true,
+                    DoNotPrependTemplateNameToScenarioName = true,
+                    SnapshotsDirectory = "Approvals"
+                }
+                .WithInstantiationThroughTemplateCreatorApi(templateParams);
+
+            VerificationEngine engine = new VerificationEngine(_log);
+            return engine.Execute(options);
+        }
+
+        [Fact]
+        public Task TestSingleSelectionForMultiChoices()
+        {
+            string templateLocation = GetTestTemplateLocation("TemplateWithMultipleChoicesAndCoalesce");
+            var templateParams = new Dictionary<string, string?>()
+            {
+                { "tests", "unit" }
+            };
+            string workingDir = TestUtils.CreateTemporaryFolder();
+
+            TemplateVerifierOptions options =
+                new TemplateVerifierOptions(templateName: "TestAssets.TemplateWithMultipleChoicesAndCoalesce")
+                {
+                    TemplatePath = templateLocation,
+                    OutputDirectory = workingDir,
+                    DoNotAppendTemplateArgsToScenarioName = true,
+                    DoNotPrependTemplateNameToScenarioName = true,
+                    SnapshotsDirectory = "Approvals"
+                }
+                .WithInstantiationThroughTemplateCreatorApi(templateParams);
+
+            VerificationEngine engine = new VerificationEngine(_log);
+            return engine.Execute(options);
+        }
     }
 }
 

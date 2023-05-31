@@ -36,11 +36,7 @@ namespace Microsoft.TemplateEngine.Utils
                             .Where(r => !string.IsNullOrEmpty(r))
                             .Select(r => r!)
                             .ToList();
-                    if (val.Count <= 1)
-                    {
-                        convertedValue = val.Count == 0 ? string.Empty : val[0];
-                        return true;
-                    }
+
                     convertedValue = new MultiValueParameter(val);
                     return true;
                 }
