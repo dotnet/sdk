@@ -6,6 +6,8 @@
 
     <!-- CS9057 - Caused by incoherency of analyzer assemblies during pre-release builds. -->
     <RepoNoWarns>CS9057</RepoNoWarns>
+
+    <PackageVersionPropsFlowType>DependenciesOnly</PackageVersionPropsFlowType>
   </PropertyGroup>
 
   <ItemGroup>
