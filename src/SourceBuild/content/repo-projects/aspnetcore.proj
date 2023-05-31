@@ -23,6 +23,7 @@
     <BuildCommand>$(ProjectDirectory)\eng\build$(ShellExtension) $(BuildCommandArgs)</BuildCommand>
 
     <LogVerbosityOptOut>true</LogVerbosityOptOut>
+    <PackageVersionPropsFlowType>DependenciesOnly</PackageVersionPropsFlowType>
 
     <!-- CA1512 - Use 'ArgumentOutOfRangeException.ThrowIfEqual'
                   Requires https://github.com/dotnet/aspnetcore/issues/47673 -->
