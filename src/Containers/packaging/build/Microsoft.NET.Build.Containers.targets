@@ -11,7 +11,8 @@
                                  OR $(NETCoreSdkVersion.Contains('-')) == false
                                 )
                           )">true</_IsSDKContainerAllowedVersion>
-    <_ContainerIsTargetingNet8TFM>$([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '8.0'))</_ContainerIsTargetingNet8TFM>
+    <_ContainerIsTargetingNet8TFM>false</_ContainerIsTargetingNet8TFM>
+    <_ContainerIsTargetingNet8TFM Condition="$([MSBuild]::IsTargetFrameworkCompatible($(TargetFramework), 'net8.0'))">true</_ContainerIsTargetingNet8TFM>
   </PropertyGroup>
 
   <ItemGroup>
@@ -70,11 +71,11 @@
 
     <!-- Container Defaults -->
     <PropertyGroup>
-      <!-- An empty ContainerRegistry implies pushing to the local daemon, putting this here for documentation purposes -->
+      <!-- An empty ContainerRegistry implies pushing to the local registry, putting this here for documentation purposes -->
       <!-- <ContainerRegistry></ContainerRegistry> -->
 
-      <!-- Set which local container daemon to use. We only explicitly support Docker (or things that mimic Docker APIs and binary names) at the moment. -->
-      <LocalContainerDaemon Condition="'$(LocalContainerDaemon)' == ''">Docker</LocalContainerDaemon>
+      <!-- Set which local container registry to use. We only explicitly support Docker (or things that mimic Docker APIs and binary names) at the moment. -->
+      <LocalRegistry Condition="'$(LocalRegistry)' == ''">Docker</LocalRegistry>
 
       <!-- Note: spaces will be replaced with '-' in ContainerImageName and ContainerImageTag -->
       <ContainerImageName Condition="'$(ContainerImageName)' == ''">$(AssemblyName)</ContainerImageName>
@@ -84,9 +85,9 @@
       <ContainerImageTag Condition="'$(AutoGenerateImageTag)' == 'true' and '$(ContainerImageTags)' == ''">$([System.DateTime]::UtcNow.ToString('yyyyMMddhhmmss'))</ContainerImageTag>
 
       <!-- The Container RID should default to the RID used for the entire build (to ensure things run on the platform they are built for), but the user knows best and so should be able to set it explicitly.
-                 For builds that have a RID, we default to that RID. Otherwise, we default to the RID of the currently-executing SDK. -->
+           For builds that have a RID, we default to that RID. Otherwise, we default to the Linux RID matching the architecture of the currently-executing SDK. -->
       <ContainerRuntimeIdentifier Condition="'$(ContainerRuntimeIdentifier)' == '' and '$(IsRidAgnostic)' != 'true'">$(RuntimeIdentifier)</ContainerRuntimeIdentifier>
-      <ContainerRuntimeIdentifier Condition="'$(ContainerRuntimeIdentifier)' == '' ">$(NETCoreSdkPortableRuntimeIdentifier)</ContainerRuntimeIdentifier>
+      <ContainerRuntimeIdentifier Condition="'$(ContainerRuntimeIdentifier)' == ''">linux-$(NETCoreSdkPortableRuntimeIdentifier.Split('-')[1])</ContainerRuntimeIdentifier>
       <_ContainerIsTargetingWindows>false</_ContainerIsTargetingWindows>
       <_ContainerIsTargetingWindows Condition="$(ContainerRuntimeIdentifier.StartsWith('win'))">true</_ContainerIsTargetingWindows>
 
@@ -198,7 +199,7 @@
                     BaseRegistry="$(ContainerBaseRegistry)"
                     BaseImageName="$(ContainerBaseName)"
                     BaseImageTag="$(ContainerBaseTag)"
-                    LocalContainerDaemon="$(LocalContainerDaemon)"
+                    LocalRegistry="$(LocalRegistry)"
                     OutputRegistry="$(ContainerRegistry)"
                     ImageName="$(ContainerImageName)"
                     ImageTags="@(ContainerImageTags)"

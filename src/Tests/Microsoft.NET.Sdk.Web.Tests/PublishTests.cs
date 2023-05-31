@@ -30,6 +30,7 @@ namespace Microsoft.NET.Sdk.Web.Tests
             var testProject = CreateTestProjectForILLinkTesting(targetFramework, projectName);
             testProject.AdditionalProperties["PublishTrimmed"] = "true";
             testProject.AdditionalProperties["RuntimeIdentifier"] = rid;
+            testProject.SelfContained = "true";
             testProject.PropertiesToRecord.Add("TrimMode");
 
             var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: projectName + targetFramework);
@@ -81,6 +82,7 @@ namespace Microsoft.NET.Sdk.Web.Tests
             var responseFileContents = File.ReadLines(responseFile);
 
             responseFileContents.Should().Contain("--feature:System.Text.Json.JsonSerializer.IsReflectionEnabledByDefault=false");
+            responseFileContents.Should().Contain("--feature:System.Diagnostics.Tracing.EventSource.IsSupported=true");
             File.Exists(Path.Combine(outputDirectory, "web.config")).Should().BeFalse();
         }
 
