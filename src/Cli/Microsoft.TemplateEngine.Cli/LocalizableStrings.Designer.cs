@@ -840,9 +840,12 @@ namespace Microsoft.TemplateEngine.Cli {
         
         /// <summary>
         ///   Looks up a localized string similar to 
-        ///      No template package found matching: {0}.
+        ///      No template packages found matching: {0}.
         ///      
-        ///      Make sure the specified package exists on the https://www.nuget.org/.
+        ///      To list installed template packages, run:
+        ///        dotnet new uninstall
+        ///      To search for the template packages on NuGet.org, run:
+        ///        dotnet new search --package {0}
         ///    .
         /// </summary>
         internal static string Generic_Info_NoMatchingTemplatePackage {
@@ -1653,6 +1656,15 @@ namespace Microsoft.TemplateEngine.Cli {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to In order to install this package, run:.
+        /// </summary>
+        internal static string TemplatePackageCoordinator_Install_Error_VulnerablePackageTip {
+            get {
+                return ResourceManager.GetString("TemplatePackageCoordinator_Install_Error_VulnerablePackageTip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Installing the template package(s) will override the available template package(s)..
         /// </summary>
         internal static string TemplatePackageCoordinator_Install_Info_OverrideNotice {
@@ -1903,18 +1915,7 @@ namespace Microsoft.TemplateEngine.Cli {
                 return ResourceManager.GetString("TemplatePackageCoordinator_Update_Error_VulnerablePackageTip", resourceCulture);
             }
         }
-
-        /// <summary>
-        ///   Looks up a localized string similar to In order to install this package, run:.
-        /// </summary>
-        internal static string TemplatePackageCoordinator_Install_Error_VulnerablePackageTip
-        {
-            get
-            {
-                return ResourceManager.GetString("TemplatePackageCoordinator_Install_Error_VulnerablePackageTip", resourceCulture);
-            }
-        }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to All template packages are up-to-date..
         /// </summary>

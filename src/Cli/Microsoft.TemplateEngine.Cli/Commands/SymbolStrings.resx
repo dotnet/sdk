@@ -128,11 +128,11 @@
   </data>
   <data name="Command_Details_Description" xml:space="preserve">
     <value>
-      Provides details for specified Nuget template package.
+      Provides the details for specified template package.
       The command checks if the package is installed locally, if it wasn't found, then it searches on the https://www.nuget.org/.</value>
   </data>
   <data name="Command_Details_Argument_PackageIdentifier" xml:space="preserve">
-    <value>Nuget package identifier</value>
+    <value>NuGet package identifier</value>
   </data>
   <data name="Command_Details_Authors_Property" xml:space="preserve">
     <value>Authors</value>

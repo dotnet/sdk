@@ -7,16 +7,16 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 {
     internal class DetailsCommandArgs : GlobalArgs
     {
-        internal DetailsCommandArgs(BaseDetailsCommand detailsCommand, ParseResult parseResult) : base(detailsCommand, parseResult)
+        internal DetailsCommandArgs(DetailsCommand detailsCommand, ParseResult parseResult) : base(detailsCommand, parseResult)
         {
-            string? nameCriteria = parseResult.GetValue(BaseDetailsCommand.NameArgument)
-                ?? throw new ArgumentException($"{nameof(parseResult)} should contain one argument for {nameof(BaseDetailsCommand.NameArgument)}", nameof(parseResult));
+            string nameCriteria = parseResult.GetValue(DetailsCommand.NameArgument)
+                ?? throw new ArgumentException($"{nameof(parseResult)} should contain one argument for {nameof(DetailsCommand.NameArgument)}", nameof(parseResult));
 
             NameCriteria = nameCriteria;
-            VersionCriteria = parseResult.GetValueForOptionOrNull(BaseDetailsCommand.VersionOption);
+            VersionCriteria = parseResult.GetValueForOptionOrNull(DetailsCommand.VersionOption);
         }
 
-        internal string? NameCriteria { get; }
+        internal string NameCriteria { get; }
 
         internal string? VersionCriteria { get; }
     }

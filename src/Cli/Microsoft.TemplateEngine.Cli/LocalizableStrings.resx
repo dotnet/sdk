@@ -184,9 +184,12 @@
   </data>
   <data name="Generic_Info_NoMatchingTemplatePackage" xml:space="preserve">
     <value>
-      No template package found matching: {0}.
+      No template packages found matching: {0}.
       
-      Make sure the specified package exists on the https://www.nuget.org/.
+      To list installed template packages, run:
+        dotnet new uninstall
+      To search for the template packages on NuGet.org, run:
+        dotnet new search --package {0}
     </value>
   </data>
   <data name="OptionalWorkloadsSyncFailed" xml:space="preserve">
