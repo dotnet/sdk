@@ -1,0 +1,96 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nikola Milosavljevic <nikolam@microsoft.com>
+Date: Wed, 31 May 2023 16:04:51 +0000
+Subject: [PATCH] Target net8.0 for source-build
+
+Backport: https://github.com/NuGet/NuGet.Client/pull/5193
+---
+ build/common.project.props                                | 8 ++++----
+ build/common.targets                                      | 2 +-
+ eng/source-build/global.json                              | 2 +-
+ .../NuGet.Configuration/NuGet.Configuration.csproj        | 2 +-
+ .../NuGet.PackageManagement.csproj                        | 2 +-
+ 5 files changed, 8 insertions(+), 8 deletions(-)
+
+diff --git a/build/common.project.props b/build/common.project.props
+index 0e32eb737..de8b07140 100644
+--- a/build/common.project.props
++++ b/build/common.project.props
+@@ -12,7 +12,7 @@
+     <NETFXTargetFrameworkVersion>v4.7.2</NETFXTargetFrameworkVersion>
+     <NETFXTargetFramework>net472</NETFXTargetFramework>
+     <NETCoreTargetFramework>netcoreapp3.1</NETCoreTargetFramework>
+-    <NETCoreTargetFramework Condition="'$(DotNetBuildFromSource)' == 'true'">net7.0</NETCoreTargetFramework>
++    <NETCoreTargetFramework Condition="'$(DotNetBuildFromSource)' == 'true'">net8.0</NETCoreTargetFramework>
+     <NETCoreTestTargetFrameworks>net7.0</NETCoreTestTargetFrameworks>
+     <NETCoreTestTargetFrameworks Condition=" ('$(CI)' == 'true' AND '$(BUILD_NET8)' != 'false') OR '$(BUILD_NET8)' == 'true' ">net7.0;net8.0</NETCoreTestTargetFrameworks>
+     <NetStandardVersion>netstandard2.0</NetStandardVersion>
+@@ -20,14 +20,14 @@
+     <TargetFrameworksExe Condition="'$(IsXPlat)' == 'true'">$(NETCoreTargetFramework)</TargetFrameworksExe>
+     <TargetFrameworksExeForSigning>$(TargetFrameworksExe);netcoreapp5.0</TargetFrameworksExeForSigning>
+     <TargetFrameworksExeForSigning Condition=" '$(IsXPlat)' == 'true' ">$(NETCoreTargetFramework);netcoreapp5.0</TargetFrameworksExeForSigning>
+-    <TargetFrameworksExeForSigning Condition="'$(DotNetBuildFromSource)' == 'true'">$(TargetFrameworksExe);net7.0</TargetFrameworksExeForSigning>
++    <TargetFrameworksExeForSigning Condition="'$(DotNetBuildFromSource)' == 'true'">$(TargetFrameworksExe)</TargetFrameworksExeForSigning>
+     <MinimalTargetFrameworksExeSigning>$(NETFXTargetFramework);netcoreapp5.0</MinimalTargetFrameworksExeSigning>
+     <MinimalTargetFrameworksExeSigning Condition=" '$(IsXPlat)' == 'true' ">netcoreapp5.0</MinimalTargetFrameworksExeSigning>
+-    <MinimalTargetFrameworksExeSigning Condition="'$(DotNetBuildFromSource)' == 'true'">net7.0</MinimalTargetFrameworksExeSigning>
++    <MinimalTargetFrameworksExeSigning Condition="'$(DotNetBuildFromSource)' == 'true'">$(NETCoreTargetFramework)</MinimalTargetFrameworksExeSigning>
+     <TargetFrameworksLibrary>$(NETFXTargetFramework);$(NetStandardVersion)</TargetFrameworksLibrary>
+     <TargetFrameworksLibrary Condition="'$(DotNetBuildFromSource)' == 'true'">$(NETCoreTargetFramework);$(NetStandardVersion)</TargetFrameworksLibrary>
+     <TargetFrameworksLibraryForSigning>$(TargetFrameworksLibrary);netcoreapp5.0</TargetFrameworksLibraryForSigning>
+-    <TargetFrameworksLibraryForSigning Condition="'$(DotNetBuildFromSource)' == 'true'">$(TargetFrameworksLibrary);net7.0</TargetFrameworksLibraryForSigning>
++    <TargetFrameworksLibraryForSigning Condition="'$(DotNetBuildFromSource)' == 'true'">$(TargetFrameworksLibrary)</TargetFrameworksLibraryForSigning>
+     <TargetFrameworksLibraryForCrossVerificationTests>$(NETFXTargetFramework);$(NETCoreTestTargetFrameworks)</TargetFrameworksLibraryForCrossVerificationTests>
+     <RepositoryRootDirectory>$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\</RepositoryRootDirectory>
+     <BuildCommonDirectory>$(RepositoryRootDirectory)build\</BuildCommonDirectory>
+diff --git a/build/common.targets b/build/common.targets
+index 51b38ba04..dc53d7557 100644
+--- a/build/common.targets
++++ b/build/common.targets
+@@ -6,7 +6,7 @@
+     <IsDesktop>true</IsDesktop>
+   </PropertyGroup>
+ 
+-  <PropertyGroup Condition=" $(TargetFramework.StartsWith('netcoreapp')) OR $(TargetFramework.StartsWith('netstandard')) OR $(TargetFramework.StartsWith('net6')) OR $(TargetFramework.StartsWith('net7')) ">
++  <PropertyGroup Condition=" $(TargetFramework.StartsWith('netcoreapp')) OR $(TargetFramework.StartsWith('netstandard')) OR $(TargetFramework.StartsWith('net6')) OR $(TargetFramework.StartsWith('net7'))  OR $(TargetFramework.StartsWith('net8')) ">
+     <DefineConstants>$(DefineConstants);IS_CORECLR</DefineConstants>
+     <IsCore>true</IsCore>
+   </PropertyGroup>
+diff --git a/eng/source-build/global.json b/eng/source-build/global.json
+index ba3ce2cfc..43d452859 100644
+--- a/eng/source-build/global.json
++++ b/eng/source-build/global.json
+@@ -1,6 +1,6 @@
+ {
+   "tools": {
+-    "dotnet": "7.0.100"
++    "dotnet": "8.0.100-preview.3.23178.7"
+   },
+   "msbuild-sdks": {
+     "Microsoft.DotNet.Arcade.Sdk": "6.0.0-beta.21309.7"
+diff --git a/src/NuGet.Core/NuGet.Configuration/NuGet.Configuration.csproj b/src/NuGet.Core/NuGet.Configuration/NuGet.Configuration.csproj
+index a246feeb9..eea152eb6 100644
+--- a/src/NuGet.Core/NuGet.Configuration/NuGet.Configuration.csproj
++++ b/src/NuGet.Core/NuGet.Configuration/NuGet.Configuration.csproj
+@@ -26,7 +26,7 @@
+     <Reference Include="System.Xml.Linq" />
+   </ItemGroup>
+ 
+-  <ItemGroup Condition=" '$(TargetFramework)' == '$(NetStandardVersion)' or '$(TargetFramework)' == 'net7.0' ">
++  <ItemGroup Condition=" '$(TargetFramework)' == '$(NetStandardVersion)' or '$(TargetFramework)' == 'net7.0' or '$(TargetFramework)' == 'net8.0' ">
+     <PackageReference Include="System.Security.Cryptography.ProtectedData" />
+   </ItemGroup>
+ 
+diff --git a/src/NuGet.Core/NuGet.PackageManagement/NuGet.PackageManagement.csproj b/src/NuGet.Core/NuGet.PackageManagement/NuGet.PackageManagement.csproj
+index be1727a5b..38658b221 100644
+--- a/src/NuGet.Core/NuGet.PackageManagement/NuGet.PackageManagement.csproj
++++ b/src/NuGet.Core/NuGet.PackageManagement/NuGet.PackageManagement.csproj
+@@ -32,7 +32,7 @@
+     <Reference Include="System.Net.Http" />
+   </ItemGroup>
+ 
+-  <ItemGroup Condition=" '$(TargetFramework)' == '$(NetStandardVersion)' or '$(TargetFramework)' == 'net7.0' ">
++  <ItemGroup Condition=" '$(TargetFramework)' == '$(NetStandardVersion)' or '$(TargetFramework)' == 'net7.0' or '$(TargetFramework)' == 'net8.0' ">
+     <PackageReference Include="System.ComponentModel.Composition" />
+   </ItemGroup>
+ 
