@@ -354,8 +354,6 @@ internal sealed class Registry
     {
         cancellationToken.ThrowIfCancellationRequested();
         Uri patchUri = uploadUri.Uri;
-        var localUploadUri = new UriBuilder(uploadUri.Uri);
-        localUploadUri.Query += $"&digest={Uri.EscapeDataString(digest)}";
 
         // TODO: this chunking is super tiny and probably not necessary; what does the docker client do
         //       and can we be smarter?
@@ -364,6 +362,7 @@ internal sealed class Registry
 
         int chunkCount = 0;
         int chunkStart = 0;
+        int retryCount = 0;
 
         while (contents.Position < contents.Length)
         {
@@ -380,21 +379,76 @@ internal sealed class Registry
 
             HttpResponseMessage patchResponse = await client.PatchAsync(patchUri, content, cancellationToken).ConfigureAwait(false);
 
-            // Fail the upload if the response code is not Accepted (202) or if uploading to Amazon ECR which returns back Created (201).
-            if (!(patchResponse.StatusCode == HttpStatusCode.Accepted || (IsAmazonECRRegistry && patchResponse.StatusCode == HttpStatusCode.Created)))
+            (patchResponse.StatusCode switch {
+                HttpStatusCode.Accepted => ProcessSuccesfulChunk(patchResponse),
+                HttpStatusCode.Created when IsAmazonECRRegistry => ProcessSuccesfulChunk(patchResponse),
+                _ when retryCount < 10 => await CheckReadAmountAndRetry(patchUri, cancellationToken).ConfigureAwait(false),
+                _ => await LogError(patchResponse, patchUri, cancellationToken).ConfigureAwait(false)
+            })();
+
+            // for a successful chunk, we decrement retries (if any) and read the amount written by the server + next location
+            Action ProcessSuccesfulChunk(HttpResponseMessage response) => () => {
+                if (retryCount > 0) {
+                    retryCount -= 1;
+                }
+                chunkCount += 1;
+                UpdateStateFromResponse(response);
+            };
+
+            // responses can tell us a) where to upload the next chunk, and b) how much of the last chunk was written.
+            // we use this data to update our internal state before each new iteration.
+            void UpdateStateFromResponse(HttpResponseMessage response)
             {
-                var headers = patchResponse.Headers.ToString();
-                var detail = await patchResponse.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-                string errorMessage = Resource.FormatString(nameof(Strings.BlobUploadFailed), $"Chunked PATCH {patchUri}", patchResponse.StatusCode, headers + Environment.NewLine + detail);
-                throw new ApplicationException(errorMessage);
+                var amountSent = ParseAmountRead(response);
+                patchUri = GetNextLocation(response).Uri;
+                if (amountSent is not null)
+                {
+                    chunkStart = amountSent.Value + 1;
+                    // may not align with the bytesRead, so seek to that
+                    contents.Seek(chunkStart, SeekOrigin.Begin);
+                }
+                else
+                {
+                    chunkStart += bytesRead;
+                }
             }
 
-           localUploadUri = GetNextLocation(patchResponse);
+            static async Task<Action> LogError(HttpResponseMessage response, Uri patchUri, CancellationToken cancellationToken) {
+                var headers = response.Headers.ToString();
+                var detail = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+                string errorMessage = Resource.FormatString(nameof(Strings.BlobUploadFailed), $"Chunked PATCH {patchUri}", response.StatusCode, headers + Environment.NewLine + detail);
+                return () => throw new ApplicationException(errorMessage);
+            }
 
-            patchUri = localUploadUri.Uri;
+            // when an error occurs, we can check on the state of the upload from the registry. notably this gives us the same
+            // location and range information as the success, so we can use this for our iteration processing.
+            async Task<Action> CheckReadAmountAndRetry(Uri patchUri, CancellationToken cancellationToken) {
+                retryCount += 1;
+                var getResponse = await client.GetAsync(patchUri, cancellationToken).ConfigureAwait(false);
+                if (!getResponse.IsSuccessStatusCode) {
+                    // reset back to previous chunk so we can retry
+                    contents.Seek(chunkStart, SeekOrigin.Begin);
+                }
+                else {
+                    UpdateStateFromResponse(getResponse);
+                }
+                return () => { };
+            }
 
-            chunkCount += 1;
-            chunkStart += bytesRead;
+            // servers tell us the total Range they've processed via the range headers. we use this to determine where
+            // the next chunk should start.
+            int? ParseAmountRead(HttpResponseMessage response) {
+                if (response.Headers.TryGetValues("Range", out var rangeValues))
+                {
+                    var range = rangeValues.First();
+                    var parts = range.Split('-', 2);
+                    if (parts.Length == 2 && int.TryParse(parts[1], out var amountRead))
+                    {
+                        return amountRead;
+                    }
+                }
+                return null;
+            }
         }
         return new UriBuilder(patchUri);
     }
@@ -472,7 +526,10 @@ internal sealed class Registry
 
         var putUri = uploadUri.Uri;
 
-        HttpResponseMessage finalizeResponse = await client.PutAsync(putUri, content: null, cancellationToken).ConfigureAwait(false);
+        var request = new HttpRequestMessage(HttpMethod.Put, putUri);
+        request.Content = new ByteArrayContent(new byte[0] { });
+        request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
+        HttpResponseMessage finalizeResponse = await client.SendAsync(request, cancellationToken).ConfigureAwait(false);
 
         cancellationToken.ThrowIfCancellationRequested();
 
