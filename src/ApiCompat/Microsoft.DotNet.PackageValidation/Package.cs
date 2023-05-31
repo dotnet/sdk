@@ -208,7 +208,7 @@ namespace Microsoft.DotNet.PackageValidation
         }
 
         /// <summary>
-        /// Finds the best compile time assset for a specific framework.
+        /// Finds the best compile time asset for a specific framework.
         /// </summary>
         /// <param name="framework">The framework where the package needs to be installed.</param>
         /// <returns>A ContentItem representing the best compile time asset.</returns>
@@ -223,6 +223,24 @@ namespace Microsoft.DotNet.PackageValidation
             return items != null ?
                 new ReadOnlyCollection<ContentItem>(items) :
                 null;
+        }
+
+        /// <summary>
+        /// Finds the best assembly references for a specific framework.
+        /// </summary>
+        /// <param name="framework">The framework where the package needs to be installed.</param>
+        /// <returns>The assembly references for the specified framework.</returns>
+        public string[]? FindBestAssemblyReferencesForFramework(NuGetFramework framework)
+        {
+            if (AssemblyReferences is null)
+                return null;
+
+            string? nearestTfm = NuGetFrameworkUtility.GetNearest(AssemblyReferences.Keys, framework, (key) => NuGetFramework.ParseFolder(key));
+
+            if (nearestTfm is null || !AssemblyReferences.TryGetValue(nearestTfm, out string[]? assemblyReferences))
+                return null;
+
+            return assemblyReferences;
         }
     }
 }

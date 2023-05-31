@@ -61,14 +61,16 @@ namespace Microsoft.DotNet.PackageValidation
 
             if (item.Properties.TryGetValue("tfm", out object? tfmObj))
             {
-                string targetFramework = ((NuGetFramework)tfmObj).GetShortFolderName();
+                // Find the nearest set of assembly references for the package item (assembly).
+                NuGetFramework targetFramework = ((NuGetFramework)tfmObj);
+                assemblyReferences = package.FindBestAssemblyReferencesForFramework(targetFramework);
 
-                if (package.AssemblyReferences != null && !package.AssemblyReferences.TryGetValue(targetFramework, out assemblyReferences))
+                if (package.AssemblyReferences != null && assemblyReferences is null)
                 {
                     log.LogWarning(new Suppression(DiagnosticIds.SearchDirectoriesNotFoundForTfm) { Target = displayString },
                         DiagnosticIds.SearchDirectoriesNotFoundForTfm,
                         string.Format(Resources.MissingSearchDirectory,
-                            targetFramework,
+                            targetFramework.GetShortFolderName(),
                             displayString));
                 }
             }

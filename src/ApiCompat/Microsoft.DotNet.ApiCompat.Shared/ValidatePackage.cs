@@ -69,7 +69,8 @@ namespace Microsoft.DotNet.ApiCompat
                     enableStrictMode: enableStrictModeForBaselineValidation,
                     enqueueApiCompatWorkItems: runApiCompat,
                     executeApiCompatWorkItems: false,
-                    baselinePackage: Package.Create(baselinePackagePath, baselinePackageAssemblyReferences)));
+                    // Use the current package assembly references if baseline package assembly references aren't provided.
+                    baselinePackage: Package.Create(baselinePackagePath, baselinePackageAssemblyReferences ?? packageAssemblyReferences)));
             }
 
             if (runApiCompat)
