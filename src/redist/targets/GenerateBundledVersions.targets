@@ -203,16 +203,22 @@
 
       <!--
         In source-build, we build the current RID from source, which may be
-        non-portable and/or not an official RID. However, we can only use the
-        apphost pack, not the runtime pack, because:
-        - Apphost packs are distributed in the SDK.
-        - Runtime packs are not shipped with the SDK, only on NuGet.
-
-        Adding the ability to distribute and use source-built runtime packs is
-        tracked by: https://github.com/dotnet/source-build/issues/1215
+        non-portable and/or not an official RID.
+        These packs for the non-portable RID are distributed with the SDK:
+        - NETCore.App.Host
+        - NETCore.App.Runtime    (when BundleRuntimePacks)
+        - AspNetCore.App.Runtime (when BundleRuntimePacks)
       -->
       <NetCoreAppHostRids
         Condition="'$(DotNetBuildFromSource)' == 'true'"
+        Include="$(ProductMonikerRid)" />
+
+      <NetCoreRuntimePackRids
+        Condition="'$(BundleRuntimePacks)' == 'true'"
+        Include="$(ProductMonikerRid)" />
+
+      <AspNetCoreRuntimePackRids
+        Condition="'$(BundleRuntimePacks)' == 'true'"
         Include="$(ProductMonikerRid)" />
 
       <Net60MonoRuntimePackRids Include="
@@ -301,7 +307,7 @@
       <AspNetCore50RuntimePackRids Include="@(AspNetCore31RuntimePackRids);linux-musl-arm;win-arm64" />
       <AspNetCore60RuntimePackRids Include="@(AspNetCore50RuntimePackRids);osx-arm64;linux-s390x" />
       <AspNetCore70RuntimePackRids Include="@(AspNetCore60RuntimePackRids);linux-ppc64le" />
-      <AspNetCore80RuntimePackRids Include="@(AspNetCore70RuntimePackRids)" />
+      <AspNetCoreRuntimePackRids Include="@(AspNetCore70RuntimePackRids)" />
 
       <AspNetCore80RuntimePackRids Remove="win-arm" />
 
@@ -511,7 +517,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                               TargetingPackName="Microsoft.AspNetCore.App.Ref"
                               TargetingPackVersion="$(MicrosoftAspNetCoreAppRefPackageVersion)"
                               RuntimePackNamePatterns="Microsoft.AspNetCore.App.Runtime.**RID**"
-                              RuntimePackRuntimeIdentifiers="@(AspNetCore80RuntimePackRids, '%3B')"
+                              RuntimePackRuntimeIdentifiers="@(AspNetCoreRuntimePackRids, '%3B')"
                               RuntimePackExcludedRuntimeIdentifiers="android"
                               />
 

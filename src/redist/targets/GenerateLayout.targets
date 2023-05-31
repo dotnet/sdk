@@ -183,6 +183,20 @@
         <RelativeLayoutPath>packs/%(PackageName)/%(PackageVersion)</RelativeLayoutPath>
       </BundledLayoutPackage>
 
+      <BundledLayoutPackage Include="MicrosoftNetCoreAppRuntimePackNupkg" Condition="'$(BundleRuntimePacks)' == 'true'">
+        <PackageName>Microsoft.NETCore.App.Runtime.$(SharedFrameworkRid)</PackageName>
+        <PackageVersion>$(MicrosoftNETCoreAppRuntimePackageVersion)</PackageVersion>
+        <TargetFramework>$(TargetFramework)</TargetFramework>
+        <RelativeLayoutPath>packs/%(PackageName)/%(PackageVersion)</RelativeLayoutPath>
+      </BundledLayoutPackage>
+
+      <BundledLayoutPackage Include="MicrosoftAspNetCoreAppRuntimePackNupkg" Condition="'$(BundleRuntimePacks)' == 'true'">
+        <PackageName>Microsoft.AspNetCore.App.Runtime.$(SharedFrameworkRid)</PackageName>
+        <PackageVersion>$(MicrosoftAspNetCoreAppRuntimePackageVersion)</PackageVersion>
+        <TargetFramework>$(TargetFramework)</TargetFramework>
+        <RelativeLayoutPath>packs/%(PackageName)/%(PackageVersion)</RelativeLayoutPath>
+      </BundledLayoutPackage>
+
       <BundledInstallerComponent Include="DownloadedRuntimeDepsInstallerFile"
                                  Condition="('$(IsDebianBaseDistro)' == 'true' OR '$(IsRPMBasedDistro)' == 'true') And '$(SkipBuildingInstallers)' != 'true' And '$(InstallerExtension)' != '' And !$(Architecture.StartsWith('arm'))">
         <BaseUrl>$(CoreSetupRootUrl)$(CoreSetupBlobVersion)</BaseUrl>
@@ -550,6 +564,19 @@
     <ResolveAssemblyReference AssemblyFiles="@(AssembliesToResolve)" Silent="$(ResolveAssemblyReferencesSilent)" AssemblyInformationCacheOutputPath="$(RedistLayoutPath)sdk\$(Version)\SDKPrecomputedAssemblyReferences.cache" SearchPaths="{RawFileName}" WarnOrErrorOnTargetArchitectureMismatch="$(ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch)" />
   </Target>
 
+  <!-- Replace duplicate files with hard links so that when the same files from a runtime pack
+       and the corresponding shared frameworks are included in a distro package their data is shared instead of duplicated. -->
+  <Target Name="ReplaceDuplicateFilesWithHardLinks" DependsOnTargets="LayoutBundledComponents"
+                                                    Condition="'$(BundleRuntimePacks)' == 'true'">
+    <Exec Command="rdfind --help" StandardOutputImportance="low" StandardErrorImportance="low" IgnoreExitCode="True">
+      <Output TaskParameter="ExitCode" PropertyName="RdFindInfoExitCode" />
+    </Exec>
+
+    <Message Text="rdfind is not available to make hard links." Condition="'$(RdFindInfoExitCode)' != '0'" Importance="high" />
+
+    <Exec Command="rdfind -makehardlinks true -makeresultsfile false '$(RedistLayoutPath)'" Condition="'$(RdFindInfoExitCode)' == '0'" />
+  </Target>
+
   <Target Name="GenerateLayout"
           DependsOnTargets="DownloadBundledComponents;
                             CleanLayoutPath;
@@ -566,7 +593,8 @@
                             RetargetTools;
                             CrossgenLayout;
                             LayoutAppHostTemplate;
-                            GeneratePrecomputedRarCache"
+                            GeneratePrecomputedRarCache;
+                            ReplaceDuplicateFilesWithHardLinks"
           BeforeTargets="AfterBuild">
 
   </Target>

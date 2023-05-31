@@ -3,6 +3,7 @@
 
   <!-- Build arguments -->
   <PropertyGroup>
+    <PackageVersionPropsFlowType>DependenciesOnly</PackageVersionPropsFlowType>
     <LogVerbosityOptOut>true</LogVerbosityOptOut>
 
     <CleanCommand>$(ProjectDirectory)/clean$(ShellExtension)</CleanCommand>
