@@ -1,6 +1,5 @@
-// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
-//
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.IO;
 using System.Linq;
@@ -74,7 +73,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
             var build = new BuildCommand(projectDirectory, "blazorwasm");
             build.WithWorkingDirectory(projectDirectory.TestRoot);
-            build.Execute("/bl")
+            build.Execute()
                 .Should()
                 .Pass();
 
@@ -115,7 +114,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 .Should()
                 .Pass();
 
-            var satelliteAssemblyFile = Path.Combine(build.GetOutputDirectory(DefaultTfm).ToString(), "wwwroot", "_framework", "ja", "blazorwasm.resources.dll");
+            var satelliteAssemblyFile = Path.Combine(build.GetOutputDirectory(DefaultTfm).ToString(), "wwwroot", "_framework", "ja", "blazorwasm.resources.wasm");
             var bootJson = Path.Combine(build.GetOutputDirectory(DefaultTfm).ToString(), "wwwroot", "_framework", "blazor.boot.json");
 
             // Assert
@@ -153,7 +152,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 var kvp = satelliteResources.SingleOrDefault(p => p.Key == "ja");
                 kvp.Should().NotBeNull();
 
-                kvp.Value.Should().ContainKey("ja/blazorwasm.resources.dll");
+                kvp.Value.Should().ContainKey("ja/blazorwasm.resources.wasm");
             }
         }
 
@@ -170,7 +169,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 .Should()
                 .Pass();
 
-            var satelliteAssemblyFile = Path.Combine(build.GetOutputDirectory(DefaultTfm).ToString(), "wwwroot", "_framework", "ja", "blazorwasm.resources.dll");
+            var satelliteAssemblyFile = Path.Combine(build.GetOutputDirectory(DefaultTfm).ToString(), "wwwroot", "_framework", "ja", "blazorwasm.resources.wasm");
             var bootJson = Path.Combine(build.GetOutputDirectory(DefaultTfm).ToString(), "wwwroot", "_framework", "blazor.boot.json");
 
             build = new BuildCommand(projectDirectory, "blazorwasm");
@@ -200,7 +199,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var kvp = satelliteResources.SingleOrDefault(p => p.Key == "ja");
             kvp.Should().NotBeNull();
 
-            kvp.Value.Should().ContainKey("ja/blazorwasm.resources.dll");
+            kvp.Value.Should().ContainKey("ja/blazorwasm.resources.wasm");
         }
 
         [Fact]
@@ -216,7 +215,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 .Should()
                 .Pass();
 
-            var satelliteAssemblyFile = Path.Combine(build.GetOutputDirectory(DefaultTfm).ToString(), "wwwroot", "_framework", "ja", "blazorwasm.resources.dll");
+            var satelliteAssemblyFile = Path.Combine(build.GetOutputDirectory(DefaultTfm).ToString(), "wwwroot", "_framework", "ja", "blazorwasm.resources.wasm");
             var bootJson = Path.Combine(build.GetOutputDirectory(DefaultTfm).ToString(), "wwwroot", "_framework", "blazor.boot.json");
 
             build = new BuildCommand(projectDirectory, "blazorwasm");
@@ -233,7 +232,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var kvp = satelliteResources.SingleOrDefault(p => p.Key == "ja");
             kvp.Should().NotBeNull();
 
-            kvp.Value.Should().ContainKey("ja/blazorwasm.resources.dll");
+            kvp.Value.Should().ContainKey("ja/blazorwasm.resources.wasm");
 
 
             File.Delete(Path.Combine(projectDirectory.TestRoot, "blazorwasm", "Resource.ja.resx"));

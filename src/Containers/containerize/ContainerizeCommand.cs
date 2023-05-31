@@ -70,9 +70,9 @@ internal class ContainerizeCommand : CliRootCommand
         AllowMultipleArgumentsPerToken = true
     };
 
-    internal CliOption<string> LocalContainerDaemonOption { get; } = new CliOption<string>("--localcontainerdaemon")
+    internal CliOption<string> LocalRegistryOption { get; } = new CliOption<string>("--localregistry")
     {
-        Description = "The local daemon type to push to"
+        Description = "The local registry to push to"
     };
 
     internal CliOption<Dictionary<string, string>> LabelsOption { get; } = new("--labels")
@@ -173,8 +173,8 @@ internal class ContainerizeCommand : CliRootCommand
         this.Options.Add(EnvVarsOption);
         this.Options.Add(RidOption);
         this.Options.Add(RidGraphPathOption);
-        LocalContainerDaemonOption.AcceptOnlyFromAmong(KnownDaemonTypes.SupportedLocalDaemonTypes);
-        this.Options.Add(LocalContainerDaemonOption);
+        LocalRegistryOption.AcceptOnlyFromAmong(KnownLocalRegistryTypes.SupportedLocalRegistryTypes);
+        this.Options.Add(LocalRegistryOption);
         this.Options.Add(ContainerUserOption);
 
         this.SetAction(async (parseResult, cancellationToken) =>
@@ -194,7 +194,7 @@ internal class ContainerizeCommand : CliRootCommand
             Dictionary<string, string> _envVars = parseResult.GetValue(EnvVarsOption) ?? new Dictionary<string, string>();
             string _rid = parseResult.GetValue(RidOption)!;
             string _ridGraphPath = parseResult.GetValue(RidGraphPathOption)!;
-            string _localContainerDaemon = parseResult.GetValue(LocalContainerDaemonOption)!;
+            string _localContainerDaemon = parseResult.GetValue(LocalRegistryOption)!;
             string? _containerUser = parseResult.GetValue(ContainerUserOption);
             await ContainerBuilder.ContainerizeAsync(
                 _publishDir,

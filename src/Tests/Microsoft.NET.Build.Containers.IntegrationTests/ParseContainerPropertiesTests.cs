@@ -13,7 +13,7 @@ namespace Microsoft.NET.Build.Containers.Tasks.IntegrationTests;
 [Collection("Docker tests")]
 public class ParseContainerPropertiesTests
 {
-    [DockerDaemonAvailableFact]
+    [DockerAvailableFact]
     public void Baseline()
     {
         var (project, _, d) = ProjectInitializer.InitProject(new () {
@@ -35,23 +35,23 @@ public class ParseContainerPropertiesTests
         instance.GetItems("ProjectCapability").Select(i => i.EvaluatedInclude).ToArray().Should().BeEquivalentTo(new[] { "NetSdkOCIImageBuild" });
     }
 
-    [DockerDaemonAvailableFact]
+    [DockerAvailableFact]
     public void SpacesGetReplacedWithDashes()
     {
          var (project, _, d) = ProjectInitializer.InitProject(new () {
-            [ContainerBaseImage] = "mcr microsoft com/dotnet runtime:7.0",
+            [ContainerBaseImage] = "mcr.microsoft.com/dotnet runtime:7.0",
             [ContainerRegistry] = "localhost:5010"
         });
         using var _ = d;
         var instance = project.CreateProjectInstance(global::Microsoft.Build.Execution.ProjectInstanceSettings.None);
         Assert.True(instance.Build(new[]{ComputeContainerConfig}, null, null, out var outputs));
 
-        Assert.Equal("mcr-microsoft-com",instance.GetPropertyValue(ContainerBaseRegistry));
+        Assert.Equal("mcr.microsoft.com",instance.GetPropertyValue(ContainerBaseRegistry));
         Assert.Equal("dotnet-runtime", instance.GetPropertyValue(ContainerBaseName));
         Assert.Equal("7.0", instance.GetPropertyValue(ContainerBaseTag));
     }
 
-    [DockerDaemonAvailableFact]
+    [DockerAvailableFact]
     public void RegexCatchesInvalidContainerNames()
     {
          var (project, logs, d) = ProjectInitializer.InitProject(new () {
@@ -66,7 +66,7 @@ public class ParseContainerPropertiesTests
         Assert.Contains(logs.Messages, m => m.Message?.Contains("'ContainerImageName' was not a valid container image name, it was normalized to 'dotnet-testimage'") == true);
     }
 
-    [DockerDaemonAvailableFact]
+    [DockerAvailableFact]
     public void RegexCatchesInvalidContainerTags()
     {
         var (project, logs, d) = ProjectInitializer.InitProject(new () {
@@ -83,7 +83,7 @@ public class ParseContainerPropertiesTests
         Assert.Equal(logs.Errors[0].Code, ErrorCodes.CONTAINER2007);
     }
 
-    [DockerDaemonAvailableFact]
+    [DockerAvailableFact]
     public void CanOnlySupplyOneOfTagAndTags()
     {
         var (project, logs, d) = ProjectInitializer.InitProject(new () {

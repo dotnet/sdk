@@ -149,6 +149,7 @@ public class TargetsTests
     {
         var (project, logger, d) = ProjectInitializer.InitProject(new()
         {
+            ["TargetFrameworkIdentifier"] = ".NETCoreApp",
             ["NETCoreSdkVersion"] = sdkVersion,
             ["TargetFrameworkVersion"] = tfm,
             ["PublishProfile"] = "DefaultContainer"
@@ -171,7 +172,9 @@ public class TargetsTests
     {
         var (project, logger, d) = ProjectInitializer.InitProject(new()
         {
+            ["TargetFrameworkIdentifier"] = ".NETCoreApp",
             ["TargetFrameworkVersion"] = tfm,
+            ["TargetFramework"] = "net" + tfm.TrimStart('v'),
             ["ContainerRuntimeIdentifier"] = rid
         }, projectName: $"{nameof(CanComputeTagsForSupportedSDKVersions)}_{tfm}_{rid}_{expectedUser}");
         using var _ = d;
@@ -179,5 +182,24 @@ public class TargetsTests
         instance.Build(new[]{ComputeContainerConfig}, null, null, out var outputs).Should().BeTrue(String.Join(Environment.NewLine, logger.Errors));
         var computedTag = instance.GetProperty("ContainerUser")?.EvaluatedValue;
         computedTag.Should().Be(expectedUser);
+    }
+
+    [InlineData("linux-x64", "linux-x64")]
+    [InlineData("linux-arm64", "linux-arm64")]
+    [InlineData("windows-x64", "linux-x64")]
+    [InlineData("windows-arm64", "linux-arm64")]
+    [Theory]
+    public void WindowsUsersGetLinuxContainers(string sdkPortableRid, string expectedRid)
+    {
+        var (project, logger, d) = ProjectInitializer.InitProject(new()
+        {
+            ["TargetFrameworkVersion"] = "v6.0",
+            ["NETCoreSdkPortableRuntimeIdentifier"] = sdkPortableRid
+        }, projectName: $"{nameof(WindowsUsersGetLinuxContainers)}_{sdkPortableRid}_{expectedRid}");
+        using var _ = d;
+        var instance = project.CreateProjectInstance(global::Microsoft.Build.Execution.ProjectInstanceSettings.None);
+        instance.Build(new[]{ComputeContainerConfig}, null, null, out var outputs).Should().BeTrue(String.Join(Environment.NewLine, logger.Errors));
+        var computedRid = instance.GetProperty(KnownStrings.Properties.ContainerRuntimeIdentifier)?.EvaluatedValue;
+        computedRid.Should().Be(expectedRid);
     }
 }

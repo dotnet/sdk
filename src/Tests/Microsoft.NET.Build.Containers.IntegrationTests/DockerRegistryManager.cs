@@ -10,36 +10,40 @@ namespace Microsoft.NET.Build.Containers.IntegrationTests;
 
 public class DockerRegistryManager
 {
-    public const string BaseImage = "dotnet/runtime";
+    public const string RuntimeBaseImage = "dotnet/runtime";
+    public const string AspNetBaseImage = "dotnet/aspnet";
     public const string BaseImageSource = "mcr.microsoft.com/";
     public const string Net6ImageTag = "6.0";
     public const string Net7ImageTag = "7.0";
+    public const string Net8PreviewImageTag = "8.0-preview";
+    public const string Net8PreviewWindowsSpecificImageTag = $"{Net8PreviewImageTag}-nanoserver-ltsc2022";
     public const string LocalRegistry = "localhost:5010";
-    public const string FullyQualifiedBaseImageDefault = $"{BaseImageSource}{BaseImage}:{Net6ImageTag}";
+    public const string FullyQualifiedBaseImageDefault = $"{BaseImageSource}{RuntimeBaseImage}:{Net8PreviewImageTag}";
+    public const string FullyQualifiedBaseImageAspNet = $"{BaseImageSource}{AspNetBaseImage}:{Net8PreviewImageTag}";
     private static string? s_registryContainerId;
 
     public static void StartAndPopulateDockerRegistry(ITestOutputHelper testOutput)
     {
         testOutput.WriteLine("Spawning local registry");
-        if (!new LocalDocker(testOutput.WriteLine).IsAvailable()) {
-            throw new InvalidOperationException("Docker daemon is not started, tests cannot run");
+        if (!new DockerCli(testOutput.WriteLine).IsAvailable()) {
+            throw new InvalidOperationException("Docker is not available, tests cannot run");
         }
-        CommandResult processResult = new RunExeCommand(testOutput, "docker", "run", "--rm", "--publish", "5010:5000", "--detach", "registry:2").Execute();
+        CommandResult processResult = ContainerCli.RunCommand(testOutput, "--rm", "--publish", "5010:5000", "--detach", "docker.io/library/registry:2").Execute();
         processResult.Should().Pass().And.HaveStdOut();
         using var reader = new StringReader(processResult.StdOut!);
         s_registryContainerId = reader.ReadLine();
 
-        foreach (var tag in new[] { Net6ImageTag, Net7ImageTag })
+        foreach (var tag in new[] { Net6ImageTag, Net7ImageTag, Net8PreviewImageTag })
         {
-            new RunExeCommand(testOutput, "docker", "pull", $"{BaseImageSource}{BaseImage}:{tag}")
+            ContainerCli.PullCommand(testOutput, $"{BaseImageSource}{RuntimeBaseImage}:{tag}")
                 .Execute()
                 .Should().Pass();
 
-            new RunExeCommand(testOutput, "docker", "tag", $"{BaseImageSource}{BaseImage}:{tag}", $"{LocalRegistry}/{BaseImage}:{tag}")
+            ContainerCli.TagCommand(testOutput, $"{BaseImageSource}{RuntimeBaseImage}:{tag}", $"{LocalRegistry}/{RuntimeBaseImage}:{tag}")
                 .Execute()
                 .Should().Pass();
 
-            new RunExeCommand(testOutput, "docker", "push", $"{LocalRegistry}/{BaseImage}:{tag}")
+            ContainerCli.PushCommand(testOutput, $"{LocalRegistry}/{RuntimeBaseImage}:{tag}")
                 .Execute()
                 .Should().Pass();
         }
@@ -49,7 +53,7 @@ public class DockerRegistryManager
     {
         if (s_registryContainerId != null)
         {
-            new RunExeCommand(testOutput, "docker", "stop", s_registryContainerId)
+            ContainerCli.StopCommand(testOutput, s_registryContainerId)
                 .Execute()
                 .Should().Pass();
         }

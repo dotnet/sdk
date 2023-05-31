@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
 using System.CommandLine;
@@ -68,9 +68,9 @@ namespace Microsoft.DotNet.GenAPI.Tool
                 Recursive = true
             };
 
-            CliOption<bool> includeVisibleOutsideOfAssemblyOption = new("--include-visible-outside")
+            CliOption<bool> respectInternalsOption = new("--respect-internals")
             {
-                Description = "Include internal API's. Default is false.",
+                Description = "If true, includes both internal and public API.",
                 Recursive = true
             };
 
@@ -83,6 +83,7 @@ namespace Microsoft.DotNet.GenAPI.Tool
             {
                 TreatUnmatchedTokensAsErrors = true
             };
+
             rootCommand.Options.Add(assembliesOption);
             rootCommand.Options.Add(assemblyReferencesOption);
             rootCommand.Options.Add(excludeApiFilesOption);
@@ -90,7 +91,7 @@ namespace Microsoft.DotNet.GenAPI.Tool
             rootCommand.Options.Add(outputPathOption);
             rootCommand.Options.Add(headerFileOption);
             rootCommand.Options.Add(exceptionMessageOption);
-            rootCommand.Options.Add(includeVisibleOutsideOfAssemblyOption);
+            rootCommand.Options.Add(respectInternalsOption);
             rootCommand.Options.Add(includeAssemblyAttributesOption);
 
             rootCommand.SetAction((ParseResult parseResult) =>
@@ -103,18 +104,14 @@ namespace Microsoft.DotNet.GenAPI.Tool
                     parseResult.GetValue(exceptionMessageOption),
                     parseResult.GetValue(excludeApiFilesOption),
                     parseResult.GetValue(excludeAttributesFilesOption),
-                    parseResult.GetValue(includeVisibleOutsideOfAssemblyOption),
-                    parseResult.GetValue(includeVisibleOutsideOfAssemblyOption)
+                    parseResult.GetValue(respectInternalsOption),
+                    parseResult.GetValue(includeAssemblyAttributesOption)
                 ));
             });
 
             return rootCommand.Parse(args).Invoke();
         }
 
-        /// Splits delimiter separated list of pathes represented as a string to a List of paths.
-        /// </summary>
-        /// <param name="pathSet">Delimiter separated list of paths.</param>
-        /// <returns></returns>
         private static string[] ParseAssemblyArgument(ArgumentResult argumentResult)
         {
             List<string> args = new();
