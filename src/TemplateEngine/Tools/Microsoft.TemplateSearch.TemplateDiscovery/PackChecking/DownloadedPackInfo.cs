@@ -30,7 +30,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.PackChecking
 
         public IReadOnlyList<string> Owners => _info.Owners;
 
-        public bool Trusted => _info.Trusted;
+        public bool Reserved => _info.Reserved;
 
         public string? Description => _info.Description;
 

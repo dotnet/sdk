@@ -32,12 +32,12 @@ namespace Microsoft.TemplateSearch.Common.Abstractions
         public IReadOnlyList<string> Owners { get; }
 
         /// <summary>
-        /// Gets the indication if the package is trusted.
+        /// Gets the indication if the package is verified.
         /// </summary>
         /// <remarks>
         /// For NuGet.org 'verified' means that package ID is under reserved namespaces, see  <see href="https://docs.microsoft.com/en-us/nuget/nuget-org/id-prefix-reservation"/>.
         /// </remarks>
-        public bool Trusted { get; }
+        public bool Reserved { get; }
 
         /// <summary>
         /// Gets the NuGet package description.

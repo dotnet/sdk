@@ -17,7 +17,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
         private const string AuthorKey = "Author";
         private const string LocalPackageKey = "LocalPackage";
         private const string OwnersKey = "Owners";
-        private const string TrustedKey = "Trusted";
+        private const string ReservedKey = "Reserved";
         private const string NuGetSourceKey = "NuGetSource";
         private const string PackageIdKey = "PackageId";
         private const string PackageVersionKey = "Version";
@@ -113,10 +113,10 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
             }
         }
 
-        public string? Trusted
+        public string? Reserved
         {
-            get => Details.TryGetValue(TrustedKey, out string trusted) ? trusted : false.ToString();
-            set => UpdateOrRemoveValue(Details, TrustedKey, value, (string entry) => !string.IsNullOrEmpty(entry));
+            get => Details.TryGetValue(ReservedKey, out string reserved) ? reserved : false.ToString();
+            set => UpdateOrRemoveValue(Details, ReservedKey, value, (string entry) => !string.IsNullOrEmpty(entry));
         }
 
         public string? Author
@@ -174,7 +174,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
 
             details.TryAdd(AuthorKey, Author ?? string.Empty, (string entry) => !string.IsNullOrEmpty(entry));
             details.TryAdd(OwnersKey, Owners ?? string.Empty, (string entry) => !string.IsNullOrEmpty(entry));
-            details.TryAdd(TrustedKey, Trusted ?? string.Empty, (string entry) => !string.IsNullOrEmpty(entry));
+            details.TryAdd(ReservedKey, Reserved ?? string.Empty, (string entry) => !string.IsNullOrEmpty(entry));
             details.TryAdd(NuGetSourceKey, NuGetSource ?? string.Empty, (string entry) => !string.IsNullOrEmpty(entry));
 
             return details;

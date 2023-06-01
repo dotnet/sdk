@@ -33,7 +33,7 @@ namespace Microsoft.TemplateEngine.Mocks
 
         public IReadOnlyList<string> Owners { get; }
 
-        public bool Trusted => false;
+        public bool Reserved => false;
 
         public string? Description => null;
 

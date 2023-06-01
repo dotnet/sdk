@@ -131,7 +131,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
                     return new NuGetPackageInfo(
                         packageMetadata.Authors,
                         packageMetadata.Owners,
-                        trusted: packageMetadata.PrefixReserved,
+                        reserved: packageMetadata.PrefixReserved,
                         filePath,
                         source.Source,
                         packageMetadata.Identity.Id,
@@ -515,11 +515,11 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
 
         private class NugetPackageMetadata
         {
-            public NugetPackageMetadata(IPackageSearchMetadata metadata, string owners, bool trusted)
+            public NugetPackageMetadata(IPackageSearchMetadata metadata, string owners, bool reserved)
             {
                 Authors = metadata.Authors;
                 Identity = metadata.Identity;
-                PrefixReserved = trusted;
+                PrefixReserved = reserved;
                 Owners = owners;
                 Vulnerabilities = Vulnerabilities = metadata.Vulnerabilities?.ToList() ?? new List<PackageVulnerabilityMetadata>();
             }

@@ -15,11 +15,11 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
 
     internal class NuGetPackageInfo
     {
-        public NuGetPackageInfo(string author, string owners, bool trusted, string fullPath, string? nuGetSource, string packageIdentifier, string packageVersion, IReadOnlyList<VulnerabilityInfo> vulnerabilities)
+        public NuGetPackageInfo(string author, string owners, bool reserved, string fullPath, string? nuGetSource, string packageIdentifier, string packageVersion, IReadOnlyList<VulnerabilityInfo> vulnerabilities)
         {
             Author = author;
             Owners = owners;
-            Trusted = trusted;
+            Reserved = reserved;
             FullPath = fullPath;
             NuGetSource = nuGetSource;
             PackageIdentifier = packageIdentifier;
@@ -31,7 +31,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
 
         public string Owners { get; }
 
-        public bool Trusted { get; }
+        public bool Reserved { get; }
 
         public string FullPath { get; }
 
@@ -48,7 +48,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
             return new NuGetPackageInfo(
                 Author,
                 Owners,
-                Trusted,
+                Reserved,
                 newFullPath,
                 NuGetSource,
                 PackageIdentifier,

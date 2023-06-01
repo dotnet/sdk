@@ -18,13 +18,13 @@ namespace Microsoft.TemplateSearch.Common
             Version = version;
         }
 
-        internal PackInfo(string name, string version, long totalDownloads, IEnumerable<string> owners, bool trusted = false)
+        internal PackInfo(string name, string version, long totalDownloads, IEnumerable<string> owners, bool reserved = false)
         {
             Name = name;
             Version = version;
             TotalDownloads = totalDownloads;
             Owners = owners.ToList();
-            Trusted = trusted;
+            Reserved = reserved;
         }
 
         [JsonProperty]
@@ -40,7 +40,7 @@ namespace Microsoft.TemplateSearch.Common
         public IReadOnlyList<string> Owners { get; } = Array.Empty<string>();
 
         [JsonProperty]
-        public bool Trusted { get; }
+        public bool Reserved { get; }
 
         //not supported for v1
         public string? Description => null;

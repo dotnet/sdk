@@ -33,7 +33,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.NuGet
 
         public IReadOnlyList<string> Owners { get; private set; } = Array.Empty<string>();
 
-        public bool Trusted { get; private set; }
+        public bool Reserved { get; private set; }
 
         public string? Description { get; private set; }
 
@@ -48,7 +48,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.NuGet
             {
                 TotalDownloads = entry.ToInt32("totalDownloads"),
                 Owners = entry.Get<JToken>("owners").JTokenStringOrArrayToCollection(Array.Empty<string>()),
-                Trusted = entry.ToBool("verified"),
+                Reserved = entry.ToBool("verified"),
                 Description = entry.ToString("description"),
                 IconUrl = entry.ToString("iconUrl")
             };

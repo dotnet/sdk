@@ -88,7 +88,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Test
 
             public IReadOnlyList<string> Owners => new[] { "TestAuthor" };
 
-            public bool Trusted => false;
+            public bool Reserved => false;
 
             public string? Description => "description";
 

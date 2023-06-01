@@ -1,1 +1,2 @@
-﻿
+﻿Microsoft.TemplateSearch.Common.Abstractions.ITemplatePackageInfo.Reserved.get -> bool
+Microsoft.TemplateSearch.Common.TemplatePackageSearchData.Reserved.get -> bool
