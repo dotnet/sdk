@@ -977,42 +977,60 @@ class Program
                 }
             }
 
-            var packCommand = new PackCommand(_testAssetsManager.CreateTestProject(packageProject));
-            packCommand.Execute().Should().Pass();
-            var package = new TestPackageReference(packageProject.Name, "1.0.0", packCommand.GetNuGetPackage());
-
-            var testProject = new TestProject()
+            TestAsset packageAsset = null;
+            TestAsset testAsset = null;
+            try
             {
-                Name = "NonPortableRid",
-                TargetFrameworks = targetFramework,
-                IsExe = true
-            };
+                packageAsset = _testAssetsManager.CreateTestProject(packageProject);
+                var packCommand = new PackCommand(packageAsset);
+                packCommand.Execute().Should().Pass();
+                var package = new TestPackageReference(packageProject.Name, "1.0.0", packCommand.GetNuGetPackage());
 
-            testProject.PackageReferences.Add(package);
-            testProject.AdditionalProperties.Add("RestoreAdditionalProjectSources", Path.GetDirectoryName(package.NupkgPath));
-            if (useRidGraph.HasValue)
-            {
-                testProject.AddItem("RuntimeHostConfigurationOption",
-                    new Dictionary<string, string>()
-                    {
+                var testProject = new TestProject()
+                {
+                    Name = "NonPortableRid",
+                    TargetFrameworks = targetFramework,
+                    IsExe = true
+                };
+
+                testProject.PackageReferences.Add(package);
+                testProject.AdditionalProperties.Add("RestoreAdditionalProjectSources", Path.GetDirectoryName(package.NupkgPath));
+                if (useRidGraph.HasValue)
+                {
+                    testProject.AddItem("RuntimeHostConfigurationOption",
+                        new Dictionary<string, string>()
+                        {
                         { "Include", "System.Runtime.Loader.UseRidGraph" },
                         { "Value", useRidGraph.Value.ToString() },
-                    });
-            }
+                        });
+                }
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
-            var result = new BuildCommand(testAsset)
-                .WithEnvironmentVariable("NUGET_PACKAGES", Path.Combine(testAsset.TestRoot, "packages"))
-                .Execute();
+                testAsset = _testAssetsManager.CreateTestProject(testProject);
+                var result = new BuildCommand(testAsset)
+                    .WithEnvironmentVariable("NUGET_PACKAGES", Path.Combine(testAsset.TestRoot, "packages"))
+                    .Execute();
 
-            result.Should().Pass();
-            if (shouldWarn)
-            {
-                result.Should().HaveStdOutMatching($"NETSDK1205.*{package.ID}");
+                result.Should().Pass();
+                if (shouldWarn)
+                {
+                    result.Should().HaveStdOutMatching($"NETSDK1205.*{package.ID}");
+                }
+                else
+                {
+                    result.Should().NotHaveStdOutContaining("NETSDK1205");
+                }
             }
-            else
+            finally
             {
-                result.Should().NotHaveStdOutContaining("NETSDK1205");
+                if (packageAsset != null && Directory.Exists(packageAsset.Path))
+                {
+                    Directory.Delete(packageAsset.Path, true);
+                }
+
+                if (testAsset != null && Directory.Exists(testAsset.Path))
+                {
+                    Directory.Delete(testAsset.Path, true);
+                }
             }
         }
     }
