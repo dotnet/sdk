@@ -169,7 +169,7 @@ namespace Microsoft.DotNet.Cli
         public static bool CanBeInvoked(this ParseResult parseResult)
         {
             return Parser.GetBuiltInCommand(parseResult.RootSubCommandResult()) != null ||
-                parseResult.Action is not null ||
+                parseResult.RootCommandResult.Tokens.Any(token => token.Type == CliTokenType.Directive) ||
                 (parseResult.IsTopLevelDotnetCommand() && string.IsNullOrEmpty(parseResult.GetValue(Parser.DotnetSubCommand)));
         }
 

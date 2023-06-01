@@ -176,6 +176,7 @@ namespace Microsoft.DotNet.Cli
             command.Options.Add(LoggerOption);
             command.Options.Add(OutputOption);
             command.Options.Add(CommonOptions.ArtifactsPathOption);
+            command.Options.Add(DiagOption);
             command.Options.Add(NoBuildOption);
             command.Options.Add(ResultsOption);
             command.Options.Add(CollectOption);
