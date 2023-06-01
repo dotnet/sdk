@@ -78,7 +78,6 @@
 
       <_NET70RuntimePackVersion>7.0.$(VersionFeature70)</_NET70RuntimePackVersion>
       <_NET70TargetingPackVersion>7.0.$(VersionFeature70)</_NET70TargetingPackVersion>
-      <_NET70ILLinkPackVersion>7.0.100-1.23062.2</_NET70ILLinkPackVersion>
       <_NET70WebAssemblyPackVersion>$(MicrosoftNETCoreAppRuntimePackageVersion)</_NET70WebAssemblyPackVersion>
       <_WindowsDesktop70RuntimePackVersion>7.0.$(VersionFeature70)</_WindowsDesktop70RuntimePackVersion>
       <_WindowsDesktop70TargetingPackVersion>7.0.$(VersionFeature70)</_WindowsDesktop70TargetingPackVersion>
