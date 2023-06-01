@@ -22,6 +22,12 @@ namespace Microsoft.DotNet.ApiCompat.Tool
             // Global options
             Option<bool> generateSuppressionFileOption = new("--generate-suppression-file",
                 "If true, generates a compatibility suppression file.");
+            Option<bool> removeObsoleteSuppressionsOption = new("--remove-obsolete-suppressions",
+                "If true, removes obsolete baseline suppressions when re-generating the suppression file.");
+            removeObsoleteSuppressionsOption.SetDefaultValue(true);
+            Option<bool> validateSuppressionsOption = new("--validate-suppressions",
+                "If true, validates that baseline suppressions aren't obsolete.");
+            validateSuppressionsOption.SetDefaultValue(true);
             Option<string[]> suppressionFilesOption = new("--suppression-file",
                 "The path to one or more suppression files to read from.")
             {
@@ -42,7 +48,7 @@ namespace Microsoft.DotNet.ApiCompat.Tool
             };
             Option<MessageImportance> verbosityOption = new(new string[] { "--verbosity", "-v" },
                 "Controls the log level verbosity. Allowed values are high, normal, and low.");
-            verbosityOption.SetDefaultValue(MessageImportance.High);
+            verbosityOption.SetDefaultValue(MessageImportance.Normal);
             Option<bool> enableRuleAttributesMustMatchOption = new("--enable-rule-attributes-must-match",
                 "If true, enables rule to check that attributes match.");
             Option<string[]> excludeAttributesFilesOption = new("--exclude-attributes-file",
@@ -107,6 +113,8 @@ namespace Microsoft.DotNet.ApiCompat.Tool
                 TreatUnmatchedTokensAsErrors = true
             };
             rootCommand.AddGlobalOption(generateSuppressionFileOption);
+            rootCommand.AddGlobalOption(removeObsoleteSuppressionsOption);
+            rootCommand.AddGlobalOption(validateSuppressionsOption);
             rootCommand.AddGlobalOption(suppressionFilesOption);
             rootCommand.AddGlobalOption(suppressionOutputFileOption);
             rootCommand.AddGlobalOption(noWarnOption);
@@ -135,6 +143,8 @@ namespace Microsoft.DotNet.ApiCompat.Tool
 
                 MessageImportance verbosity = context.ParseResult.GetValue(verbosityOption);
                 bool generateSuppressionFile = context.ParseResult.GetValue(generateSuppressionFileOption);
+                bool removeObsoleteSuppressions = context.ParseResult.GetValue(removeObsoleteSuppressionsOption);
+                bool validateSuppressions = context.ParseResult.GetValue(validateSuppressionsOption);
                 string[]? suppressionFiles = context.ParseResult.GetValue(suppressionFilesOption);
                 string? suppressionOutputFile = context.ParseResult.GetValue(suppressionOutputFileOption);
                 string? noWarn = context.ParseResult.GetValue(noWarnOption);
@@ -155,6 +165,8 @@ namespace Microsoft.DotNet.ApiCompat.Tool
                 Func<ISuppressionEngine, SuppressableConsoleLog> logFactory = (suppressionEngine) => new(suppressionEngine, verbosity);
                 ValidateAssemblies.Run(logFactory,
                     generateSuppressionFile,
+                    removeObsoleteSuppressions,
+                    validateSuppressions,
                     suppressionFiles,
                     suppressionOutputFile,
                     noWarn,
@@ -190,6 +202,7 @@ namespace Microsoft.DotNet.ApiCompat.Tool
             runApiCompatOption.SetDefaultValue(true);
             Option<bool> enableStrictModeForCompatibleTfmsOption = new("--enable-strict-mode-for-compatible-tfms",
                 "Validates api compatibility in strict mode for contract and implementation assemblies for all compatible target frameworks.");
+            enableStrictModeForCompatibleTfmsOption.SetDefaultValue(true);
             Option<bool> enableStrictModeForCompatibleFrameworksInPackageOption = new("--enable-strict-mode-for-compatible-frameworks-in-package",
                 "Validates api compatibility in strict mode for assemblies that are compatible based on their target framework.");
             Option<bool> enableStrictModeForBaselineValidationOption = new("--enable-strict-mode-for-baseline-validation",
@@ -235,6 +248,8 @@ namespace Microsoft.DotNet.ApiCompat.Tool
 
                 MessageImportance verbosity = context.ParseResult.GetValue(verbosityOption);
                 bool generateSuppressionFile = context.ParseResult.GetValue(generateSuppressionFileOption);
+                bool removeObsoleteSuppressions = context.ParseResult.GetValue(removeObsoleteSuppressionsOption);
+                bool validateSuppressions = context.ParseResult.GetValue(validateSuppressionsOption);
                 string[]? suppressionFiles = context.ParseResult.GetValue(suppressionFilesOption);
                 string? suppressionOutputFile = context.ParseResult.GetValue(suppressionOutputFileOption);
                 string? noWarn = context.ParseResult.GetValue(noWarnOption);
@@ -256,6 +271,8 @@ namespace Microsoft.DotNet.ApiCompat.Tool
                 Func<ISuppressionEngine, SuppressableConsoleLog> logFactory = (suppressionEngine) => new(suppressionEngine, verbosity);
                 ValidatePackage.Run(logFactory,
                     generateSuppressionFile,
+                    removeObsoleteSuppressions,
+                    validateSuppressions,
                     suppressionFiles,
                     suppressionOutputFile,
                     noWarn,

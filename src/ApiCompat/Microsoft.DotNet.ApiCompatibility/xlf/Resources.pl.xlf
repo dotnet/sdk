@@ -162,6 +162,26 @@
         <target state="translated">Wartość powinna być większa od 0.</target>
         <note />
       </trans-unit>
+      <trans-unit id="SuppressionBaseline">
+        <source>[Baseline]</source>
+        <target state="new">[Baseline]</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SuppressionLeft">
+        <source>Left</source>
+        <target state="new">Left</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SuppressionRight">
+        <source>Right</source>
+        <target state="new">Right</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SuppressionTarget">
+        <source>Target</source>
+        <target state="new">Target</target>
+        <note />
+      </trans-unit>
       <trans-unit id="TypeIsActuallySealed">
         <source>Type '{0}' has the sealed modifier on {1} but not on {2}</source>
         <target state="translated">Typ „{0}” ma zapieczętowany modyfikator w {1}, ale nie w {2}</target>

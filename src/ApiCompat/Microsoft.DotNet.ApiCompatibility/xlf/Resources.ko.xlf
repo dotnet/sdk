@@ -162,6 +162,26 @@
         <target state="translated">값은 0보다 커야 합니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="SuppressionBaseline">
+        <source>[Baseline]</source>
+        <target state="new">[Baseline]</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SuppressionLeft">
+        <source>Left</source>
+        <target state="new">Left</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SuppressionRight">
+        <source>Right</source>
+        <target state="new">Right</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SuppressionTarget">
+        <source>Target</source>
+        <target state="new">Target</target>
+        <note />
+      </trans-unit>
       <trans-unit id="TypeIsActuallySealed">
         <source>Type '{0}' has the sealed modifier on {1} but not on {2}</source>
         <target state="translated">'{0}' 유형은 {1}에 봉인된 한정자가 있지만 {2}에는 없습니다</target>

@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
+using System.Collections.Generic;
 using Microsoft.DotNet.ApiCompatibility.Logging;
 using Microsoft.DotNet.ApiSymbolExtensions.Logging;
 
@@ -14,6 +14,7 @@ namespace Microsoft.DotNet.ApiCompat
         /// </summary>
         public static void GenerateSuppressionFile(ISuppressionEngine suppressionEngine,
             ISuppressableLog log,
+            bool removeObsoleteSuppressions,
             string[]? suppressionFiles,
             string? suppressionOutputFile)
         {
@@ -25,14 +26,14 @@ namespace Microsoft.DotNet.ApiCompat
 
             if (suppressionOutputFile == null)
             {
-                throw new ArgumentException(CommonResources.SuppressionsFileNotSpecified, nameof(suppressionOutputFile));
+                log.LogError(CommonResources.SuppressionsFileNotSpecified);
+                return;
             }
 
-            if (suppressionEngine.WriteSuppressionsToFile(suppressionOutputFile))
+            if (suppressionEngine.WriteSuppressionsToFile(suppressionOutputFile, removeObsoleteSuppressions))
             {
                 log.LogMessage(MessageImportance.High,
-                    string.Format(CommonResources.WroteSuppressions,
-                        suppressionOutputFile));
+                    string.Format(CommonResources.WroteSuppressions, suppressionOutputFile));
             }
         }
 
@@ -50,8 +51,25 @@ namespace Microsoft.DotNet.ApiCompat
             }
             else
             {
-                log.LogMessage(MessageImportance.Normal,
-                    CommonResources.NoBreakingChangesFound);
+                log.LogMessage(MessageImportance.Normal, CommonResources.NoBreakingChangesFound);
+            }
+        }
+
+        /// <summary>
+        /// Validate whether obsolete baseline suppressions exist and log those.
+        /// </summary>
+        public static void ValidateSuppressions(ISuppressionEngine suppressionEngine, ISuppressableLog log)
+        {
+            IReadOnlyCollection<Suppression> obsoleteBaselineSuppressions = suppressionEngine.GetObsoleteSuppressions();
+            if (obsoleteBaselineSuppressions.Count == 0)
+            {
+                return;
+            }
+
+            log.LogError(Resources.ObsoleteSuppressionsFoundRegenerateSuppressionFileCommandHelp);
+            foreach (Suppression obsoleteBaselineSuppression in obsoleteBaselineSuppressions)
+            {
+                log.LogMessage(MessageImportance.Low, "- " + obsoleteBaselineSuppression.ToString());
             }
         }
     }

@@ -6,25 +6,30 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading;
 using System.Xml;
 using System.Xml.Serialization;
 
 namespace Microsoft.DotNet.ApiCompatibility.Logging
 {
     /// <summary>
-    /// Collection of Suppressions which is able to add suppressions, check if a specific error is suppressed, and write all suppressions
-    /// down to a file. The engine is thread-safe.
+    /// Suppression engine that contains a collection of <see cref="Suppression"/> items. It provides API to add a suppression, check if a passed-in suppression is already suppressed
+    /// and serialize all suppressions down into a file.
     /// </summary>
     public class SuppressionEngine : ISuppressionEngine
     {
-        public const string DiagnosticIdDocumentationComment = " https://learn.microsoft.com/en-us/dotnet/fundamentals/package-validation/diagnostic-ids ";
-        protected HashSet<Suppression> _validationSuppressions;
-        private readonly ReaderWriterLockSlim _readerWriterLock = new();
-        private readonly XmlSerializer _serializer = new(typeof(Suppression[]), new XmlRootAttribute("Suppressions"));
+        protected const string DiagnosticIdDocumentationComment = " https://learn.microsoft.com/en-us/dotnet/fundamentals/package-validation/diagnostic-ids ";
+        private readonly HashSet<Suppression> _baselineSuppressions;
+        private readonly HashSet<Suppression> _suppressions = new();
         private readonly HashSet<string> _noWarn;
 
+        /// <inheritdoc/>
         public bool BaselineAllErrors { get; }
+
+        /// <inheritdoc/>
+        public IReadOnlyCollection<Suppression> BaselineSuppressions => _baselineSuppressions;
+
+        /// <inheritdoc/>
+        public IReadOnlyCollection<Suppression> Suppressions => _suppressions;
 
         /// <inheritdoc/>
         public SuppressionEngine(string[]? suppressionFiles = null,
@@ -33,19 +38,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging
         {
             BaselineAllErrors = baselineAllErrors;
             _noWarn = string.IsNullOrEmpty(noWarn) ? new HashSet<string>() : new HashSet<string>(noWarn!.Split(';'));
-            _validationSuppressions = ParseSuppressionFiles(suppressionFiles);
-        }
-
-        /// <inheritdoc/>
-        public bool IsErrorSuppressed(string diagnosticId, string? target, string? left = null, string? right = null, bool isBaselineSuppression = false)
-        {
-            return IsErrorSuppressed(new Suppression(diagnosticId)
-            {
-                Target = target,
-                Left = left,
-                Right = right,
-                IsBaselineSuppression = isBaselineSuppression
-            });
+            _baselineSuppressions = ParseSuppressionFiles(suppressionFiles);
         }
 
         /// <inheritdoc/>
@@ -56,24 +49,38 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging
                 return true;
             }
 
-            _readerWriterLock.EnterReadLock();
-            try
+            if (_suppressions.Contains(error))
             {
-                if (_validationSuppressions.Contains(error))
-                {
-                    return true;
-                }
-                else if (error.DiagnosticId.StartsWith("cp", StringComparison.InvariantCultureIgnoreCase) &&
-                         (_validationSuppressions.Contains(new Suppression(error.DiagnosticId) { Target = error.Target, IsBaselineSuppression = error.IsBaselineSuppression }) ||
-                          _validationSuppressions.Contains(new Suppression(error.DiagnosticId) { Left = error.Left, Right = error.Right, IsBaselineSuppression = error.IsBaselineSuppression })))
-                {
-                    // See if the error is globally suppressed by checking if the same diagnosticid and target or with the same left and right
-                    return true;
-                }
+                return true;
             }
-            finally
+
+            if (_baselineSuppressions.Contains(error))
             {
-                _readerWriterLock.ExitReadLock();
+                _suppressions.Add(error);
+                return true;
+            }
+
+            // Only CP errors can have "global suppressions". Global suppressions are ones that could apply to more than just one compatibility difference.
+            if (error.DiagnosticId.StartsWith("cp", StringComparison.InvariantCultureIgnoreCase))
+            {
+                // - DiagnosticId, Target, IsBaselineSuppression
+                Suppression globalTargetSuppression = new(error.DiagnosticId, error.Target, isBaselineSuppression: error.IsBaselineSuppression);
+
+                // - DiagnosticId, Left, Right, IsBaselineSuppression
+                Suppression globalLeftRightSuppression = new(error.DiagnosticId, left: error.Left, right: error.Right, isBaselineSuppression: error.IsBaselineSuppression);
+
+                if (_suppressions.Contains(globalTargetSuppression) ||
+                    _suppressions.Contains(globalLeftRightSuppression))
+                {
+                    return true;
+                }
+
+                if (_baselineSuppressions.TryGetValue(globalTargetSuppression, out Suppression? globalSuppression) ||
+                    _baselineSuppressions.TryGetValue(globalLeftRightSuppression, out globalSuppression))
+                {
+                    _suppressions.Add(globalSuppression);
+                    return true;
+                }
             }
 
             if (BaselineAllErrors)
@@ -86,84 +93,53 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging
         }
 
         /// <inheritdoc/>
-        public void AddSuppression(string diagnosticId, string? target, string? left = null, string? right = null, bool isBaselineSuppression = false)
-        {
-            AddSuppression(new Suppression(diagnosticId)
-            {
-                Target = target,
-                Left = left,
-                Right = right,
-                IsBaselineSuppression = isBaselineSuppression
-            });
-        }
+        public void AddSuppression(Suppression suppression) => _suppressions.Add(suppression);
 
         /// <inheritdoc/>
-        public void AddSuppression(Suppression suppression)
+        public bool WriteSuppressionsToFile(string suppressionOutputFile, bool removeObsoleteSuppressions)
         {
-            _readerWriterLock.EnterUpgradeableReadLock();
-            try
+            // If obsolete suppressions shouldn't be removed from the suppression file, add the
+            // baseline suppression list to set of actual suppressions. Duplicates are ignored.
+            HashSet<Suppression> suppressionsToSerialize = _suppressions;
+            if (!removeObsoleteSuppressions)
             {
-                if (!_validationSuppressions.Contains(suppression))
-                {
-                    _readerWriterLock.EnterWriteLock();
-                    try
-                    {
-                        _validationSuppressions.Add(suppression);
-                    }
-                    finally
-                    {
-                        _readerWriterLock.ExitWriteLock();
-                    }
-                }
+                _suppressions.UnionWith(_baselineSuppressions);
             }
-            finally
-            {
-                _readerWriterLock.ExitUpgradeableReadLock();
-            }
-        }
 
-        /// <inheritdoc/>
-        public bool WriteSuppressionsToFile(string suppressionOutputFile)
-        {
-            if (_validationSuppressions.Count == 0)
+            if (suppressionsToSerialize.Count == 0)
                 return false;
 
-            Suppression[] orderedSuppressions = _validationSuppressions
-                .OrderBy(sup => sup.DiagnosticId)
-                .ThenBy(sup => sup.Left)
-                .ThenBy(sup => sup.Right)
-                .ThenBy(sup => sup.Target)
+            Suppression[] orderedSuppressions = suppressionsToSerialize
+                .OrderBy(suppression => suppression.DiagnosticId)
+                .ThenBy(suppression => suppression.Left)
+                .ThenBy(suppression => suppression.Right)
+                .ThenBy(suppression => suppression.Target)
                 .ToArray();
 
-            using (Stream writer = GetWritableStream(suppressionOutputFile))
+            using Stream stream = GetWritableStream(suppressionOutputFile);
+            XmlWriter xmlWriter = XmlWriter.Create(stream, new XmlWriterSettings()
             {
-                _readerWriterLock.EnterReadLock();
-                try
-                {
-                    XmlWriter xmlWriter = XmlWriter.Create(writer, new XmlWriterSettings()
-                    {
-                        Encoding = Encoding.UTF8,
-                        ConformanceLevel = ConformanceLevel.Document,
-                        Indent = true
-                    });
+                Encoding = Encoding.UTF8,
+                ConformanceLevel = ConformanceLevel.Document,
+                Indent = true
+            });
 
-                    xmlWriter.WriteComment(DiagnosticIdDocumentationComment);
-                    _serializer.Serialize(xmlWriter, orderedSuppressions);
-                    AfterWrittingSuppressionsCallback(writer);
-                }
-                finally
-                {
-                    _readerWriterLock.ExitReadLock();
-                }
-            }
+            xmlWriter.WriteComment(DiagnosticIdDocumentationComment);
+            GetXmlSerializer().Serialize(xmlWriter, orderedSuppressions);
+            AfterWritingSuppressionsCallback(stream);
 
             return true;
         }
 
-        protected virtual void AfterWrittingSuppressionsCallback(Stream stream)
-        {
-            // Do nothing. Used for tests.
-        }
+        /// <inheritdoc/>
+        public IReadOnlyCollection<Suppression> GetObsoleteSuppressions() => _baselineSuppressions.Except(_suppressions).ToArray();
+
+        protected virtual void AfterWritingSuppressionsCallback(Stream stream) { /* Do nothing. Used for tests. */ }
+
+        // FileAccess.Read and FileShare.Read are specified to allow multiple processes to concurrently read from the suppression file.
+        protected virtual Stream GetReadableStream(string suppressionFile) => new FileStream(suppressionFile, FileMode.Open, FileAccess.Read, FileShare.Read);
+
+        protected virtual Stream GetWritableStream(string suppressionFile) => new FileStream(suppressionFile, FileMode.Create);
 
         private HashSet<Suppression> ParseSuppressionFiles(string[]? suppressionFiles)
         {
@@ -171,6 +147,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging
 
             if (suppressionFiles != null)
             {
+                XmlSerializer _serializer = GetXmlSerializer();
                 foreach (string suppressionFile in suppressionFiles)
                 {
                     try
@@ -191,9 +168,6 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging
             return suppressions;
         }
 
-        // FileAccess.Read and FileShare.Read are specified to allow multiple processes to concurrently read from the suppression file.
-        protected virtual Stream GetReadableStream(string suppressionFile) => new FileStream(suppressionFile, FileMode.Open, FileAccess.Read, FileShare.Read);
-
-        protected virtual Stream GetWritableStream(string suppressionFile) => new FileStream(suppressionFile, FileMode.Create);
+        private static XmlSerializer GetXmlSerializer() => new(typeof(Suppression[]), new XmlRootAttribute("Suppressions"));
     }
 }

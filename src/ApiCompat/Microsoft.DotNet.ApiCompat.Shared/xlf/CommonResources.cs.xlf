@@ -17,6 +17,11 @@
         <target state="new">APICompat ran successfully without finding any breaking changes.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ObsoleteBaselineSuppressionsFound">
+        <source>Obsolete suppressions found that should be removed from suppression files:</source>
+        <target state="new">Obsolete suppressions found that should be removed from suppression files:</target>
+        <note />
+      </trans-unit>
       <trans-unit id="SuppressionsFileNotSpecified">
         <source>A file path must be passed in to successfully generate a compatibility suppression file.</source>
         <target state="translated">Aby bylo možné úspěšně vygenerovat soubor potlačení kompatibility, musí být předána cesta k souboru.</target>

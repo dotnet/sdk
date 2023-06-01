@@ -35,11 +35,6 @@ namespace Microsoft.DotNet.ApiCompat.Task
         public string? RuntimeGraph { get; set; }
 
         /// <summary>
-        /// A NoWarn string contains the error codes that should be ignored.
-        /// </summary>
-        public string? NoWarn { get; set; }
-
-        /// <summary>
         /// If true, includes both internal and public API.
         /// </summary>
         public bool RespectInternals { get; set; }
@@ -67,7 +62,7 @@ namespace Microsoft.DotNet.ApiCompat.Task
         /// <summary>
         /// Enables strict mode api comparison checks enqueued by the compatible tfm validator.
         /// </summary>
-        public bool EnableStrictModeForCompatibleTfms { get; set; }
+        public bool EnableStrictModeForCompatibleTfms { get; set; } = true;
 
         /// <summary>
         /// Enables strict mode api comparison checks enqueued by the compatible framework in package validator.
@@ -90,6 +85,16 @@ namespace Microsoft.DotNet.ApiCompat.Task
         public bool GenerateSuppressionFile { get; set; }
 
         /// <summary>
+        /// If true, removes obsolete baseline suppressions when re-generating the suppression file.
+        /// </summary>
+        public bool RemoveObsoleteSuppressions { get; set; } = true;
+
+        /// <summary>
+        /// If true, validates that baseline suppressions aren't obsolete.
+        /// </summary>
+        public bool ValidateSuppressions { get; set; } = true;
+
+        /// <summary>
         /// The path to suppression files. If provided, the suppressions are read and stored.
         /// </summary>
         public string[]? SuppressionFiles { get; set; }
@@ -98,6 +103,11 @@ namespace Microsoft.DotNet.ApiCompat.Task
         /// The path to the suppression output file that is written to, when <see cref="GenerateSuppressionFile"/> is true.
         /// </summary>
         public string? SuppressionOutputFile { get; set; }
+
+        /// <summary>
+        /// A NoWarn string contains the error codes that should be ignored.
+        /// </summary>
+        public string? NoWarn { get; set; }
 
         /// <summary>
         /// Assembly references grouped by target framework, for the assets inside the package.
@@ -143,6 +153,8 @@ namespace Microsoft.DotNet.ApiCompat.Task
             Func<ISuppressionEngine, SuppressableMSBuildLog> logFactory = (suppressionEngine) => new(Log, suppressionEngine);
             ValidatePackage.Run(logFactory,
                 GenerateSuppressionFile,
+                RemoveObsoleteSuppressions,
+                ValidateSuppressions,
                 SuppressionFiles,
                 SuppressionOutputFile,
                 NoWarn,
