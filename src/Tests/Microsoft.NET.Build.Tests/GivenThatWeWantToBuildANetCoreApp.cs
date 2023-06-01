@@ -977,60 +977,45 @@ class Program
                 }
             }
 
-            TestAsset packageAsset = null;
-            TestAsset testAsset = null;
-            try
+            // Identifer based on test inputs to create test assets that are unique for each test case
+            string assetIdentifier = $"{targetFramework}{string.Join(null, rids)}{addLibAssets}{addNativeAssets}{useRidGraph}{shouldWarn}";
+
+            var packCommand = new PackCommand(_testAssetsManager.CreateTestProject(packageProject, assetIdentifier));
+            packCommand.Execute().Should().Pass();
+            var package = new TestPackageReference(packageProject.Name, "1.0.0", packCommand.GetNuGetPackage());
+
+            var testProject = new TestProject()
             {
-                packageAsset = _testAssetsManager.CreateTestProject(packageProject);
-                var packCommand = new PackCommand(packageAsset);
-                packCommand.Execute().Should().Pass();
-                var package = new TestPackageReference(packageProject.Name, "1.0.0", packCommand.GetNuGetPackage());
+                Name = "NonPortableRid",
+                TargetFrameworks = targetFramework,
+                IsExe = true
+            };
 
-                var testProject = new TestProject()
-                {
-                    Name = "NonPortableRid",
-                    TargetFrameworks = targetFramework,
-                    IsExe = true
-                };
-
-                testProject.PackageReferences.Add(package);
-                testProject.AdditionalProperties.Add("RestoreAdditionalProjectSources", Path.GetDirectoryName(package.NupkgPath));
-                if (useRidGraph.HasValue)
-                {
-                    testProject.AddItem("RuntimeHostConfigurationOption",
-                        new Dictionary<string, string>()
-                        {
-                        { "Include", "System.Runtime.Loader.UseRidGraph" },
-                        { "Value", useRidGraph.Value.ToString() },
-                        });
-                }
-
-                testAsset = _testAssetsManager.CreateTestProject(testProject);
-                var result = new BuildCommand(testAsset)
-                    .WithEnvironmentVariable("NUGET_PACKAGES", Path.Combine(testAsset.TestRoot, "packages"))
-                    .Execute();
-
-                result.Should().Pass();
-                if (shouldWarn)
-                {
-                    result.Should().HaveStdOutMatching($"NETSDK1205.*{package.ID}");
-                }
-                else
-                {
-                    result.Should().NotHaveStdOutContaining("NETSDK1205");
-                }
+            testProject.PackageReferences.Add(package);
+            testProject.AdditionalProperties.Add("RestoreAdditionalProjectSources", Path.GetDirectoryName(package.NupkgPath));
+            if (useRidGraph.HasValue)
+            {
+                testProject.AddItem("RuntimeHostConfigurationOption",
+                    new Dictionary<string, string>()
+                    {
+                    { "Include", "System.Runtime.Loader.UseRidGraph" },
+                    { "Value", useRidGraph.Value.ToString() },
+                    });
             }
-            finally
-            {
-                if (packageAsset != null && Directory.Exists(packageAsset.Path))
-                {
-                    Directory.Delete(packageAsset.Path, true);
-                }
 
-                if (testAsset != null && Directory.Exists(testAsset.Path))
-                {
-                    Directory.Delete(testAsset.Path, true);
-                }
+            TestAsset testAsset = _testAssetsManager.CreateTestProject(testProject, assetIdentifier);
+            var result = new BuildCommand(testAsset)
+                .WithEnvironmentVariable("NUGET_PACKAGES", Path.Combine(testAsset.TestRoot, "packages"))
+                .Execute();
+
+            result.Should().Pass();
+            if (shouldWarn)
+            {
+                result.Should().HaveStdOutMatching($"NETSDK1205.*{package.ID}");
+            }
+            else
+            {
+                result.Should().NotHaveStdOutContaining("NETSDK1205");
             }
         }
     }
