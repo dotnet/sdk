@@ -1,0 +1,39 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Michael Simons <msimons@microsoft.com>
+Date: Tue, 30 May 2023 21:33:38 +0000
+Subject: [PATCH] During source build, target net8.0 only
+
+Backport: https://github.com/dotnet/razor/pull/8779
+---
+ eng/SourceBuildPrebuiltBaseline.xml | 6 ------
+ eng/Versions.props                  | 1 +
+ 2 files changed, 1 insertions(+), 6 deletions(-)
+
+diff --git a/eng/SourceBuildPrebuiltBaseline.xml b/eng/SourceBuildPrebuiltBaseline.xml
+index 90c84d161..347c42641 100644
+--- a/eng/SourceBuildPrebuiltBaseline.xml
++++ b/eng/SourceBuildPrebuiltBaseline.xml
+@@ -1,11 +1,5 @@
+ ﻿<UsageData>
+   <IgnorePatterns>
+     <UsagePattern IdentityGlob="Microsoft.SourceBuild.Intermediate.*/*" />
+-
+-    <!-- Ignoring the following prebuilts. net7.0 targeting is still needed
+-         due to https://github.com/dotnet/razor/issues/8293#issuecomment-1454042002
+-         net7.0 targeting removal is tracked in https://github.com/dotnet/razor/issues/8531 -->
+-    <UsagePattern IdentityGlob="Microsoft.AspNetCore.App.Ref/7.0.2" />
+-    <UsagePattern IdentityGlob="Microsoft.NETCore.App.Ref/7.0.2" />
+   </IgnorePatterns>
+ </UsageData>
+diff --git a/eng/Versions.props b/eng/Versions.props
+index 9d8d748ec..96d62879c 100644
+--- a/eng/Versions.props
++++ b/eng/Versions.props
+@@ -27,6 +27,7 @@
+     <DefaultNetFxTargetFramework>net472</DefaultNetFxTargetFramework>
+     <DefaultNetCoreTargetFramework>net8.0</DefaultNetCoreTargetFramework>
+     <DefaultNetCoreTargetFrameworks>$(DefaultNetCoreTargetFramework);net7.0</DefaultNetCoreTargetFrameworks>
++    <DefaultNetCoreTargetFrameworks Condition="'$(DotNetBuildFromSource)' == 'true'">$(DefaultNetCoreTargetFramework)</DefaultNetCoreTargetFrameworks>
+     <DefaultNetCoreWindowsTargetFrameworks>net8.0-windows;net7.0-windows</DefaultNetCoreWindowsTargetFrameworks>
+   </PropertyGroup>
+   <!--

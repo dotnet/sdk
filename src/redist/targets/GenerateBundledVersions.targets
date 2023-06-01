@@ -193,9 +193,13 @@
           @(Net70AppHostRids);
           " />
 
+      <NetCoreAppHostRids Remove="win-arm" />
+
       <NetCoreRuntimePackRids Include="
           @(Net70RuntimePackRids);
           " />
+
+      <NetCoreRuntimePackRids Remove="win-arm" />
 
       <!--
         In source-build, we build the current RID from source, which may be
@@ -217,8 +221,8 @@
         Condition="'$(BundleRuntimePacks)' == 'true'"
         Include="$(ProductMonikerRid)" />
 
-      <MonoRuntimePackRids Include="
-          @(NetCoreRuntimePackRids);
+      <Net60MonoRuntimePackRids Include="
+          @(Net60RuntimePackRids);
           browser-wasm;
           ios-arm64;
           ios-arm;
@@ -235,7 +239,17 @@
           " />
 
       <!-- Mono doesn't support these RIDs -->
-      <MonoRuntimePackRids Remove="tizen.4.0.0-armel;tizen.5.0.0-armel" />
+      <Net60MonoRuntimePackRids Remove="tizen.4.0.0-armel;tizen.5.0.0-armel" />
+
+      <Net70MonoRuntimePackRids Include="
+      @(Net60MonoRuntimePackRids);
+      " />
+
+      <MonoRuntimePackRids Include="
+      @(Net70MonoRuntimePackRids);
+      " />
+
+      <MonoRuntimePackRids Remove="win-arm" />
 
       <AspNetCore30RuntimePackRids Include="
         win-x64;
@@ -264,10 +278,28 @@
           win-x86;
           " />
 
-      <Crossgen2SupportedRids Include="@(Net60Crossgen2SupportedRids)" />
+      <Net70Crossgen2SupportedRids Include="@(Net60Crossgen2SupportedRids)" />
 
-      <!-- Match the Crossgen2 RIDs although some are currently not supported in NativeAOT. Its better for the SDK not to block on the RIDs and let NativeAOT manage the experience -->
-      <ILCompilerSupportedRids Include="@(Net60Crossgen2SupportedRids)" />
+      <Crossgen2SupportedRids Include="@(Net70Crossgen2SupportedRids)" />
+
+      <Crossgen2SupportedRids Remove="win-arm" />
+
+      <Net70ILCompilerSupportedRids Include="
+        linux-arm64;
+        linux-musl-arm64;
+        linux-musl-x64;
+        linux-x64;
+        win-arm64;
+        win-x64;
+        " />
+
+      <!-- The subset of ILCompiler target RIDs that are officially supported. Should be a subset of
+           https://github.com/dotnet/runtime/blob/main/src/installer/pkg/projects/Microsoft.DotNet.ILCompiler/ILCompilerRIDs.props -->
+      <ILCompilerSupportedRids Include="
+        @(Net70ILCompilerSupportedRids);
+        osx-x64;
+        osx-arm64;
+        " />
 
       <NativeAOTRuntimePackRids Include="
           ios-arm64;
@@ -286,6 +318,8 @@
       <AspNetCore60RuntimePackRids Include="@(AspNetCore50RuntimePackRids);osx-arm64;linux-s390x" />
       <AspNetCore70RuntimePackRids Include="@(AspNetCore60RuntimePackRids);linux-ppc64le" />
       <AspNetCoreRuntimePackRids Include="@(AspNetCore70RuntimePackRids)" />
+
+      <AspNetCore80RuntimePackRids Remove="win-arm" />
 
       <WindowsDesktop30RuntimePackRids Include="win-x64;win-x86" />
       <WindowsDesktop31RuntimePackRids Include="@(WindowsDesktop30RuntimePackRids)" />
@@ -494,7 +528,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                               TargetingPackVersion="$(MicrosoftAspNetCoreAppRefPackageVersion)"
                               RuntimePackNamePatterns="Microsoft.AspNetCore.App.Runtime.**RID**"
                               RuntimePackRuntimeIdentifiers="@(AspNetCoreRuntimePackRids, '%3B')"
-                              RuntimePackExcludedRuntimeIdentifiers="android"
+                              RuntimePackExcludedRuntimeIdentifiers="android;linux-bionic"
                               />
 
     <KnownFrameworkReference Include="Microsoft.Windows.SDK.NET.Ref"
@@ -545,14 +579,14 @@ Copyright (c) .NET Foundation. All rights reserved.
                               TargetingPackName="Microsoft.NETCore.App.Ref"
                               TargetingPackVersion="$(_NET70TargetingPackVersion)"
                               RuntimePackNamePatterns="Microsoft.NETCore.App.Runtime.**RID**"
-                              RuntimePackRuntimeIdentifiers="@(NetCoreRuntimePackRids, '%3B')"
+                              RuntimePackRuntimeIdentifiers="@(Net70RuntimePackRids, '%3B')"
                               />
 
     <KnownAppHostPack Include="Microsoft.NETCore.App"
                       TargetFramework="net7.0"
                       AppHostPackNamePattern="Microsoft.NETCore.App.Host.**RID**"
                       AppHostPackVersion="$(_NET70RuntimePackVersion)"
-                      AppHostRuntimeIdentifiers="@(NetCoreAppHostRids, '%3B')"
+                      AppHostRuntimeIdentifiers="@(Net70AppHostRids, '%3B')"
                       ExcludedRuntimeIdentifiers="android"
                       />
 
@@ -560,14 +594,14 @@ Copyright (c) .NET Foundation. All rights reserved.
                         TargetFramework="net7.0"
                         Crossgen2PackNamePattern="Microsoft.NETCore.App.Crossgen2.**RID**"
                         Crossgen2PackVersion="$(_NET70RuntimePackVersion)"
-                        Crossgen2RuntimeIdentifiers="@(Crossgen2SupportedRids, '%3B')"
+                        Crossgen2RuntimeIdentifiers="@(Net70Crossgen2SupportedRids, '%3B')"
                         />
 
     <KnownILCompilerPack Include="Microsoft.DotNet.ILCompiler"
                          TargetFramework="net7.0"
                          ILCompilerPackNamePattern="runtime.**RID**.Microsoft.DotNet.ILCompiler"
                          ILCompilerPackVersion="$(_NET70RuntimePackVersion)"
-                         ILCompilerRuntimeIdentifiers="@(ILCompilerSupportedRids, '%3B')"
+                         ILCompilerRuntimeIdentifiers="@(Net70ILCompilerSupportedRids, '%3B')"
                          />
 
     <KnownILLinkPack Include="Microsoft.NET.ILLink.Tasks"
@@ -583,7 +617,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                       RuntimeFrameworkName="Microsoft.NETCore.App"
                       LatestRuntimeFrameworkVersion="$(_NET70RuntimePackVersion)"
                       RuntimePackNamePatterns="Microsoft.NETCore.App.Runtime.Mono.**RID**"
-                      RuntimePackRuntimeIdentifiers="@(MonoRuntimePackRids, '%3B')"
+                      RuntimePackRuntimeIdentifiers="@(Net70MonoRuntimePackRids, '%3B')"
                       RuntimePackLabels="Mono"
                       />
 
@@ -685,7 +719,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                               TargetingPackName="Microsoft.NETCore.App.Ref"
                               TargetingPackVersion="$(_NET60TargetingPackVersion)"
                               RuntimePackNamePatterns="Microsoft.NETCore.App.Runtime.**RID**"
-                              RuntimePackRuntimeIdentifiers="@(NetCoreRuntimePackRids, '%3B')"
+                              RuntimePackRuntimeIdentifiers="@(Net60RuntimePackRids, '%3B')"
                               />
 
     <KnownAppHostPack Include="Microsoft.NETCore.App"
@@ -700,7 +734,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                         TargetFramework="net6.0"
                         Crossgen2PackNamePattern="Microsoft.NETCore.App.Crossgen2.**RID**"
                         Crossgen2PackVersion="$(_NET60RuntimePackVersion)"
-                        Crossgen2RuntimeIdentifiers="@(Crossgen2SupportedRids, '%3B')"
+                        Crossgen2RuntimeIdentifiers="@(Net60Crossgen2SupportedRids, '%3B')"
                         />
 
     <KnownILLinkPack Include="Microsoft.NET.ILLink.Tasks"
@@ -716,7 +750,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                       RuntimeFrameworkName="Microsoft.NETCore.App"
                       LatestRuntimeFrameworkVersion="$(_NET60RuntimePackVersion)"
                       RuntimePackNamePatterns="Microsoft.NETCore.App.Runtime.Mono.**RID**"
-                      RuntimePackRuntimeIdentifiers="@(MonoRuntimePackRids, '%3B')"
+                      RuntimePackRuntimeIdentifiers="@(Net60MonoRuntimePackRids, '%3B')"
                       RuntimePackLabels="Mono"
                       />
 
