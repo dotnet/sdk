@@ -46,13 +46,13 @@ namespace Microsoft.DotNet.ApiCompatibility.Runner
 
             foreach (ApiCompatRunnerWorkItem workItem in _workItems)
             {
-                IReadOnlyList<ElementContainer<IAssemblySymbol>> leftContainerList = CreateAssemblySymbols(workItem.Left, out bool resolvedExternallyProvidedAssemblyReferences);
+                IReadOnlyList<ElementContainer<IAssemblySymbol>> leftContainerList = CreateAssemblySymbols(workItem.Left, workItem.Options, out bool resolvedExternallyProvidedAssemblyReferences);
                 bool runWithReferences = resolvedExternallyProvidedAssemblyReferences;
 
                 List<IEnumerable<ElementContainer<IAssemblySymbol>>> rightContainersList = new(workItem.Right.Count);
                 foreach (IReadOnlyList<MetadataInformation> right in workItem.Right)
                 {
-                    IReadOnlyList<ElementContainer<IAssemblySymbol>> rightContainers = CreateAssemblySymbols(right.ToImmutableArray(), out resolvedExternallyProvidedAssemblyReferences);
+                    IReadOnlyList<ElementContainer<IAssemblySymbol>> rightContainers = CreateAssemblySymbols(right.ToImmutableArray(), workItem.Options, out resolvedExternallyProvidedAssemblyReferences);
                     rightContainersList.Add(rightContainers);
                     runWithReferences &= resolvedExternallyProvidedAssemblyReferences;
                 }
@@ -112,6 +112,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Runner
         }
 
         private IReadOnlyList<ElementContainer<IAssemblySymbol>> CreateAssemblySymbols(IReadOnlyList<MetadataInformation> metadataInformation,
+            ApiCompatRunnerOptions options,
             out bool resolvedExternallyProvidedAssemblyReferences)
         {
             string[] aggregatedReferences = metadataInformation.Where(m => m.References != null).SelectMany(m => m.References!).Distinct().ToArray();
