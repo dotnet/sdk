@@ -401,7 +401,7 @@ Podrobnosti: {0}.</target>
       </trans-unit>
       <trans-unit id="TemplatePackageManager_Error_FailedToFindPackage">
         <source>Failed to retrieve package with identifier '{0}'.</source>
-        <target state="new">Failed to retrieve package with identifier '{0}'.</target>
+        <target state="translated">Načtení balíčku s identifikátorem {0} se nezdařilo.</target>
         <note />
       </trans-unit>
       <trans-unit id="TemplatePackageManager_Error_FailedToGetTemplatePackages">
