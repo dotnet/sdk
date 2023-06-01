@@ -284,12 +284,22 @@
 
       <Crossgen2SupportedRids Remove="win-arm" />
 
-      <!-- Match the Crossgen2 RIDs although some are currently not supported in NativeAOT. Its better for the SDK not to block on the RIDs and let NativeAOT manage the experience -->
-      <Net70ILCompilerSupportedRids Include="@(Net60Crossgen2SupportedRids)" />
+      <Net70ILCompilerSupportedRids Include="
+        linux-arm64;
+        linux-musl-arm64;
+        linux-musl-x64;
+        linux-x64;
+        win-arm64;
+        win-x64;
+        " />
 
-      <ILCompilerSupportedRids Include="@(Net70ILCompilerSupportedRids)" />
-
-      <ILCompilerSupportedRids Remove="win-arm" />
+      <!-- The subset of ILCompiler target RIDs that are officially supported. Should be a subset of
+           https://github.com/dotnet/runtime/blob/main/src/installer/pkg/projects/Microsoft.DotNet.ILCompiler/ILCompilerRIDs.props -->
+      <ILCompilerSupportedRids Include="
+        @(Net70ILCompilerSupportedRids);
+        osx-x64;
+        osx-arm64;
+        " />
 
       <NativeAOTRuntimePackRids Include="
           ios-arm64;
