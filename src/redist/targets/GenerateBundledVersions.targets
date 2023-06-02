@@ -324,6 +324,10 @@
       <WindowsDesktop31RuntimePackRids Include="@(WindowsDesktop30RuntimePackRids)" />
       <WindowsDesktop50RuntimePackRids Include="@(WindowsDesktop31RuntimePackRids);win-arm64" />
       <WindowsDesktopRuntimePackRids Include="@(WindowsDesktop50RuntimePackRids)" />
+
+      <_KnownRuntimeIdentiferPlatforms Include="$(ProductMonikerRid.Substring(0, $(Rid.LastIndexOf('-'))))" Condition="'$(DotNetBuildFromSource)' == 'true'" />
+      <_KnownRuntimeIdentiferPlatforms Include="any;freebsd;illumos;linux;linux-bionic;linux-musl;osx;solaris;unix;win" />
+      <_KnownRuntimeIdentiferPlatforms Include="android;aot;browser;ios;iossimulator;maccatalyst;tvos;tvossimulator" />
     </ItemGroup>
 
     <!--
@@ -1130,6 +1134,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <WindowsSdkSupportedTargetPlatformVersion Include="8.0" />
     <WindowsSdkSupportedTargetPlatformVersion Include="7.0" />
 
+    <_KnownRuntimeIdentiferPlatforms Include="@(_KnownRuntimeIdentiferPlatforms, '%3B')" />
   </ItemGroup>
 </Project>
 ]]>
