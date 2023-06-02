@@ -2,6 +2,8 @@
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
   <PropertyGroup>
+    <PackageVersionPropsFlowType>DependenciesOnly</PackageVersionPropsFlowType>
+
     <BuildCommandArgs>$(StandardSourceBuildArgs)</BuildCommandArgs>
     <BuildCommandArgs>$(BuildCommandArgs) /p:TreatWarningsAsErrors=false</BuildCommandArgs>
     <BuildCommandArgs>$(BuildCommandArgs) /p:ApplyPartialNgenOptimization=false</BuildCommandArgs>
