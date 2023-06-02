@@ -47,6 +47,8 @@ internal sealed class Registry
 
     private static readonly int s_defaultChunkSizeBytes = 1024 * 64;
 
+    private static readonly int s_fiveMegs = 5_242_880;
+
     /// <summary>
     /// The name of the registry, which is the host name, optionally followed by a colon and the port number.
     /// This is used in user-facing error messages, and it should match what the user would manually enter as
@@ -521,9 +523,9 @@ internal sealed class Registry
         return new(GetNextLocation(patchResponse), null, digest);
     }
 
-    private record UploadInformation(int? chunkSize, UriBuilder uploadUri)
+    private record UploadInformation(int? chunkSize, UriBuilder uploadUri, bool isAWS)
     {
-        public int EffectiveChunkSize => EffectiveChunkSize(chunkSize);
+        public int EffectiveChunkSize => EffectiveChunkSize(chunkSize, isAWS);
     }
 
     private async Task<UploadInformation> StartUploadSessionAsync(string repository, string digest, HttpClient client, CancellationToken cancellationToken)
@@ -542,11 +544,12 @@ internal sealed class Registry
         }
         cancellationToken.ThrowIfCancellationRequested();
         var chunkSize = ParseRangeAmount(pushResponse) ?? ParseOCIChunkMinSizeAmount(pushResponse);
-        return new(chunkSize, GetNextLocation(pushResponse));
+        return new(chunkSize, GetNextLocation(pushResponse), IsAmazonECRRegistry);
     }
 
-    private static int EffectiveChunkSize(int? registryChunkSize)
+    private static int EffectiveChunkSize(int? registryChunkSize, bool isAWS)
     {
+
         var result =
             (registryChunkSize, s_chunkedUploadSizeBytes) switch {
                 (0, int u) => u,
@@ -556,7 +559,13 @@ internal sealed class Registry
                 (null, int u) => u,
                 (null, null) => s_defaultChunkSizeBytes
             };
-        return result;
+
+        if (isAWS) {
+            // AWS ECR requires a min chunk size of 5MB for all chunks except the last.
+            return Math.Max(result, s_fiveMegs);
+        } else {
+            return result;
+        }
     }
 
     private async Task<UploadFinalizeInformation> UploadBlobContentsAsync(string repository, string digest, Stream contents, HttpClient client, UploadInformation uploadInfo, Action<string> logProgressMessage, CancellationToken cancellationToken)
