@@ -21,6 +21,8 @@ namespace Microsoft.DotNet.Cli
         {
             DocumentedCommand command = new("vstest", DocsLink);
 
+            command.TreatUnmatchedTokensAsErrors = false;
+
             command.Options.Add(CommonOptions.TestPlatformOption);
             command.Options.Add(CommonOptions.TestFrameworkOption);
             command.Options.Add(CommonOptions.TestLoggerOption);

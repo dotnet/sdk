@@ -67,6 +67,7 @@ namespace Microsoft.DotNet.Cli
 
             command.Arguments.Add(SlnOrProjectArgument);
             command.Options.Add(OutputOption);
+            command.Options.Add(CommonOptions.ArtifactsPathOption);
             command.Options.Add(NoBuildOption);
             command.Options.Add(IncludeSymbolsOption);
             command.Options.Add(IncludeSourceOption);
@@ -77,6 +78,7 @@ namespace Microsoft.DotNet.Cli
             command.Options.Add(CommonOptions.VerbosityOption);
             command.Options.Add(CommonOptions.VersionSuffixOption);
             command.Options.Add(ConfigurationOption);
+            command.Options.Add(CommonOptions.DisableBuildServersOption);
             RestoreCommandParser.AddImplicitRestoreOptions(command, includeRuntimeOption: true, includeNoDependenciesOption: true);
 
             command.SetAction(PackCommand.Run);

@@ -76,8 +76,13 @@ namespace Microsoft.DotNet.Cli
         {
             foreach (CliOption option in rootCommand.Options)
             {
-                if (option is HelpOption)
+                if (option is HelpOption helpOption)
                 {
+                    helpOption.Action = new HelpAction()
+                    {
+                        Builder = DotnetHelpBuilder.Instance.Value
+                    };
+
                     option.Description = CommandLineValidation.LocalizableStrings.ShowHelpInfo;
                     break;
                 }

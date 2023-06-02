@@ -125,6 +125,13 @@ namespace Microsoft.DotNet.Cli
                 yield return sourceOption;
             }
 
+            yield return new ForwardedOption<string>("--packages")
+            {
+                Description = showHelp ? LocalizableStrings.CmdPackagesOptionDescription : string.Empty,
+                HelpName = LocalizableStrings.CmdPackagesOption,
+                Hidden = !showHelp
+            }.ForwardAsSingle(o => $"-property:RestorePackagesPath={CommandDirectoryContext.GetFullPath(o)}");
+
             yield return CommonOptions.CurrentRuntimeOption(LocalizableStrings.CmdCurrentRuntimeOptionDescription);
 
             yield return new ForwardedOption<bool>("--disable-parallel")
