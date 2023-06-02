@@ -36,7 +36,7 @@ internal class DotNetHelper
                 }
 
                 Directory.CreateDirectory(Config.DotNetDirectory);
-                ExecuteHelper.ExecuteProcessValidateExitCode("tar", $"xzf {Config.SdkTarballPath} -C {Config.DotNetDirectory}", outputHelper);
+                Utilities.ExtractTarball(Config.SdkTarballPath, Config.DotNetDirectory);
             }
             IsMonoRuntime = DetermineIsMonoRuntime(Config.DotNetDirectory);
 
