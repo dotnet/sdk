@@ -69,7 +69,7 @@ namespace Microsoft.DotNet.ApiCompat
             log.LogError(Resources.UnnecessarySuppressionsFoundRegenerateSuppressionFileCommandHelp);
             foreach (Suppression unnecessarySuppression in unnecessarySuppressions)
             {
-                log.LogMessage(MessageImportance.Normal, "- " + unnecessarySuppression.ToString());
+                log.LogError(unnecessarySuppression.ToString());
             }
         }
     }
