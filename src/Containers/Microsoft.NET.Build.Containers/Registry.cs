@@ -468,7 +468,7 @@ internal sealed class Registry
             if (parts.Length == 2 && int.TryParse(parts[1], out var amountRead))
             {
                 // github returns a 0 range, this leads to bad behavior
-                if (amountRead == 0) {
+                if (amountRead <= 0) {
                     return null;
                 }
                 return amountRead;
@@ -523,9 +523,9 @@ internal sealed class Registry
         return new(GetNextLocation(patchResponse), null, digest);
     }
 
-    private record UploadInformation(int? chunkSize, UriBuilder uploadUri, bool isAWS)
+    private record UploadInformation(int? registryDeclaredChunkSize, UriBuilder uploadUri, bool isAWS)
     {
-        public int EffectiveChunkSize => EffectiveChunkSize(chunkSize, isAWS);
+        public int EffectiveChunkSize => EffectiveChunkSize(registryDeclaredChunkSize, isAWS);
     }
 
     private async Task<UploadInformation> StartUploadSessionAsync(string repository, string digest, HttpClient client, CancellationToken cancellationToken)
@@ -572,7 +572,7 @@ internal sealed class Registry
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        if (uploadInfo.EffectiveChunkSize > contents.Length)
+        if (uploadInfo.registryDeclaredChunkSize >= contents.Length)
         {
             logProgressMessage($"Chunk size was greater than content length of {contents.Length}, uploading whole blob.");
             try
