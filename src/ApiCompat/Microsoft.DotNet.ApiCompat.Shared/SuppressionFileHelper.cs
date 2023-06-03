@@ -56,7 +56,7 @@ namespace Microsoft.DotNet.ApiCompat
         }
 
         /// <summary>
-        /// Validate whether obsolete baseline suppressions exist and log those.
+        /// Validate whether unnecessary suppressions exist and log those.
         /// </summary>
         public static void ValidateUnnecessarySuppressions(ISuppressionEngine suppressionEngine, ISuppressableLog log)
         {
