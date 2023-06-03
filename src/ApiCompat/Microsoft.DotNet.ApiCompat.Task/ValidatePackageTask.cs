@@ -62,7 +62,7 @@ namespace Microsoft.DotNet.ApiCompat.Task
         /// <summary>
         /// Enables strict mode api comparison checks enqueued by the compatible tfm validator.
         /// </summary>
-        public bool EnableStrictModeForCompatibleTfms { get; set; } = true;
+        public bool EnableStrictModeForCompatibleTfms { get; set; }
 
         /// <summary>
         /// Enables strict mode api comparison checks enqueued by the compatible framework in package validator.
@@ -85,14 +85,14 @@ namespace Microsoft.DotNet.ApiCompat.Task
         public bool GenerateSuppressionFile { get; set; }
 
         /// <summary>
-        /// If true, removes obsolete baseline suppressions when re-generating the suppression file.
+        /// If true, preserves unnecessary suppressions when re-generating the suppression file.
         /// </summary>
-        public bool RemoveObsoleteSuppressions { get; set; } = true;
+        public bool PreserveUnnecessarySuppressions { get; set; }
 
         /// <summary>
-        /// If true, validates that baseline suppressions aren't obsolete.
+        /// If true, permits unnecessary suppressions in the suppression file.
         /// </summary>
-        public bool ValidateSuppressions { get; set; } = true;
+        public bool PermitUnnecessarySuppressions { get; set; }
 
         /// <summary>
         /// The path to suppression files. If provided, the suppressions are read and stored.
@@ -153,8 +153,8 @@ namespace Microsoft.DotNet.ApiCompat.Task
             Func<ISuppressionEngine, SuppressableMSBuildLog> logFactory = (suppressionEngine) => new(Log, suppressionEngine);
             ValidatePackage.Run(logFactory,
                 GenerateSuppressionFile,
-                RemoveObsoleteSuppressions,
-                ValidateSuppressions,
+                PreserveUnnecessarySuppressions,
+                PermitUnnecessarySuppressions,
                 SuppressionFiles,
                 SuppressionOutputFile,
                 NoWarn,

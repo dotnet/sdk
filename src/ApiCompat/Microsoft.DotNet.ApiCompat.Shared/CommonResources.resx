@@ -126,9 +126,6 @@
   <data name="NoBreakingChangesFound" xml:space="preserve">
     <value>APICompat ran successfully without finding any breaking changes.</value>
   </data>
-  <data name="ObsoleteBaselineSuppressionsFound" xml:space="preserve">
-    <value>Obsolete suppressions found that should be removed from suppression files:</value>
-  </data>
   <data name="SuppressionsFileNotSpecified" xml:space="preserve">
     <value>A file path must be passed in to successfully generate a compatibility suppression file.</value>
   </data>

@@ -14,8 +14,8 @@ namespace Microsoft.DotNet.ApiCompat
     {
         public static void Run(Func<ISuppressionEngine, ISuppressableLog> logFactory,
             bool generateSuppressionFile,
-            bool removeObsoleteSuppressions,
-            bool validateSuppressions,
+            bool preserveUnnecessarySuppressions,
+            bool permitUnnecessarySuppressions,
             string[]? suppressionFiles,
             string? suppressionOutputFile,
             string? noWarn,
@@ -86,13 +86,13 @@ namespace Microsoft.DotNet.ApiCompat
             {
                 SuppressionFileHelper.GenerateSuppressionFile(serviceProvider.SuppressionEngine,
                     serviceProvider.SuppressableLog,
-                    removeObsoleteSuppressions,
+                    preserveUnnecessarySuppressions,
                     suppressionFiles,
                     suppressionOutputFile);
             }
-            else if (validateSuppressions)
+            else if (!permitUnnecessarySuppressions)
             {
-                SuppressionFileHelper.ValidateSuppressions(serviceProvider.SuppressionEngine, serviceProvider.SuppressableLog);
+                SuppressionFileHelper.ValidateUnnecessarySuppressions(serviceProvider.SuppressionEngine, serviceProvider.SuppressableLog);
             }
         }
     }

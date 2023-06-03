@@ -17,11 +17,6 @@
         <target state="new">APICompat ran successfully without finding any breaking changes.</target>
         <note />
       </trans-unit>
-      <trans-unit id="ObsoleteBaselineSuppressionsFound">
-        <source>Obsolete suppressions found that should be removed from suppression files:</source>
-        <target state="new">Obsolete suppressions found that should be removed from suppression files:</target>
-        <note />
-      </trans-unit>
       <trans-unit id="SuppressionsFileNotSpecified">
         <source>A file path must be passed in to successfully generate a compatibility suppression file.</source>
         <target state="translated">호환성 억제 파일을 성공적으로 생성하려면 파일 경로를 전달해야 합니다.</target>

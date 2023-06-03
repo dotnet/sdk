@@ -96,12 +96,12 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging
         public void AddSuppression(Suppression suppression) => _suppressions.Add(suppression);
 
         /// <inheritdoc/>
-        public bool WriteSuppressionsToFile(string suppressionOutputFile, bool removeObsoleteSuppressions)
+        public bool WriteSuppressionsToFile(string suppressionOutputFile, bool preserveUnnecessarySuppressions)
         {
-            // If obsolete suppressions shouldn't be removed from the suppression file, add the
-            // baseline suppression list to set of actual suppressions. Duplicates are ignored.
+            // If unnecessary suppressions should be preserved in the suppression file, union the
+            // baseline suppressions with the set of actual suppressions. Duplicates are ignored.
             HashSet<Suppression> suppressionsToSerialize = _suppressions;
-            if (!removeObsoleteSuppressions)
+            if (preserveUnnecessarySuppressions)
             {
                 _suppressions.UnionWith(_baselineSuppressions);
             }
@@ -125,14 +125,14 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging
             });
 
             xmlWriter.WriteComment(DiagnosticIdDocumentationComment);
-            GetXmlSerializer().Serialize(xmlWriter, orderedSuppressions);
+            CreateXmlSerializer().Serialize(xmlWriter, orderedSuppressions);
             AfterWritingSuppressionsCallback(stream);
 
             return true;
         }
 
         /// <inheritdoc/>
-        public IReadOnlyCollection<Suppression> GetObsoleteSuppressions() => _baselineSuppressions.Except(_suppressions).ToArray();
+        public IReadOnlyCollection<Suppression> GetUnnecessarySuppressions() => _baselineSuppressions.Except(_suppressions).ToArray();
 
         protected virtual void AfterWritingSuppressionsCallback(Stream stream) { /* Do nothing. Used for tests. */ }
 
@@ -147,13 +147,13 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging
 
             if (suppressionFiles != null)
             {
-                XmlSerializer _serializer = GetXmlSerializer();
+                XmlSerializer serializer = CreateXmlSerializer();
                 foreach (string suppressionFile in suppressionFiles)
                 {
                     try
                     {
                         using Stream reader = GetReadableStream(suppressionFile);
-                        if (_serializer.Deserialize(reader) is Suppression[] deserializedSuppressions)
+                        if (serializer.Deserialize(reader) is Suppression[] deserializedSuppressions)
                         {
                             suppressions.UnionWith(deserializedSuppressions);
                         }
@@ -168,6 +168,6 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging
             return suppressions;
         }
 
-        private static XmlSerializer GetXmlSerializer() => new(typeof(Suppression[]), new XmlRootAttribute("Suppressions"));
+        private static XmlSerializer CreateXmlSerializer() => new(typeof(Suppression[]), new XmlRootAttribute("Suppressions"));
     }
 }

@@ -14,7 +14,7 @@ namespace Microsoft.DotNet.ApiCompat
         /// </summary>
         public static void GenerateSuppressionFile(ISuppressionEngine suppressionEngine,
             ISuppressableLog log,
-            bool removeObsoleteSuppressions,
+            bool preserveUnnecessarySuppressions,
             string[]? suppressionFiles,
             string? suppressionOutputFile)
         {
@@ -30,7 +30,7 @@ namespace Microsoft.DotNet.ApiCompat
                 return;
             }
 
-            if (suppressionEngine.WriteSuppressionsToFile(suppressionOutputFile, removeObsoleteSuppressions))
+            if (suppressionEngine.WriteSuppressionsToFile(suppressionOutputFile, preserveUnnecessarySuppressions))
             {
                 log.LogMessage(MessageImportance.High,
                     string.Format(CommonResources.WroteSuppressions, suppressionOutputFile));
@@ -58,18 +58,18 @@ namespace Microsoft.DotNet.ApiCompat
         /// <summary>
         /// Validate whether obsolete baseline suppressions exist and log those.
         /// </summary>
-        public static void ValidateSuppressions(ISuppressionEngine suppressionEngine, ISuppressableLog log)
+        public static void ValidateUnnecessarySuppressions(ISuppressionEngine suppressionEngine, ISuppressableLog log)
         {
-            IReadOnlyCollection<Suppression> obsoleteBaselineSuppressions = suppressionEngine.GetObsoleteSuppressions();
-            if (obsoleteBaselineSuppressions.Count == 0)
+            IReadOnlyCollection<Suppression> unnecessarySuppressions = suppressionEngine.GetUnnecessarySuppressions();
+            if (unnecessarySuppressions.Count == 0)
             {
                 return;
             }
 
-            log.LogError(Resources.ObsoleteSuppressionsFoundRegenerateSuppressionFileCommandHelp);
-            foreach (Suppression obsoleteBaselineSuppression in obsoleteBaselineSuppressions)
+            log.LogError(Resources.UnnecessarySuppressionsFoundRegenerateSuppressionFileCommandHelp);
+            foreach (Suppression unnecessarySuppression in unnecessarySuppressions)
             {
-                log.LogMessage(MessageImportance.Low, "- " + obsoleteBaselineSuppression.ToString());
+                log.LogMessage(MessageImportance.Normal, "- " + unnecessarySuppression.ToString());
             }
         }
     }

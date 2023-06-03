@@ -98,8 +98,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging
             StringBuilder stringBuilder = new();
             if (IsBaselineSuppression)
             {
-                stringBuilder.Append(Resources.SuppressionBaseline);
-                stringBuilder.Append(' ');
+                stringBuilder.Append("[Baseline] ");
             }
 
             stringBuilder.Append(DiagnosticId);
@@ -109,7 +108,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging
 
             if (Target is not null)
             {
-                stringBuilder.AppendFormat("{0}: '{1}'", Resources.SuppressionTarget, Target);
+                stringBuilder.AppendFormat("Target: '{0}'", Target);
                 requiresDelimiter = true;
             }
 
@@ -120,7 +119,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging
                     stringBuilder.Append(", ");
                 }
 
-                stringBuilder.AppendFormat("{0}: '{1}'", Resources.SuppressionLeft, Left);
+                stringBuilder.AppendFormat("Left: '{0}'", Left);
                 requiresDelimiter = true;
             }
 
@@ -131,7 +130,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging
                     stringBuilder.Append(", ");
                 }
 
-                stringBuilder.AppendFormat("{0}: '{1}'", Resources.SuppressionRight, Right);
+                stringBuilder.AppendFormat("Right: '{0}'", Right);
             }
 
             stringBuilder.Append(')');

@@ -40,17 +40,17 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging
         void AddSuppression(Suppression suppression);
 
         /// <summary>
-        /// Retrieves obsolete baseline suppressions.
+        /// Retrieves unnecessary suppressions stored in the suppression file.
         /// </summary>
-        /// <returns>Returns obsolete suppressions that should be removed from the baseline.</returns>
-        IReadOnlyCollection<Suppression> GetObsoleteSuppressions();
+        /// <returns>Returns unnecessary suppressions.</returns>
+        IReadOnlyCollection<Suppression> GetUnnecessarySuppressions();
 
         /// <summary>
-        /// Writes all suppressions in collection down to a file, if empty it doesn't write anything.
+        /// Writes the suppressions into the provided suppression file path and if empty, skips the operation.
         /// </summary>
         /// <param name="suppressionOutputFile">The path to the file to be written.</param>
-        /// <param name="removeObsoleteSuppressions">If <see langword="true"/>, removes obsolete suppressions.</param>
+        /// <param name="preserveUnnecessarySuppressions">If <see langword="true"/>, preserves unnecessary suppressions.</param>
         /// <returns><see langword="true" /> if the suppression file is written.</returns>
-        bool WriteSuppressionsToFile(string suppressionOutputFile, bool removeObsoleteSuppressions);
+        bool WriteSuppressionsToFile(string suppressionOutputFile, bool preserveUnnecessarySuppressions);
     }
 }

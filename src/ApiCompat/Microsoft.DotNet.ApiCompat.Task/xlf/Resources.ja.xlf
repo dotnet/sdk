@@ -7,9 +7,9 @@
         <target state="new">API breaking changes found. If those are intentional, the APICompat suppression file can be updated by rebuilding with '/p:ApiCompatGenerateSuppressionFile=true'</target>
         <note />
       </trans-unit>
-      <trans-unit id="ObsoleteSuppressionsFoundRegenerateSuppressionFileCommandHelp">
-        <source>Obsolete suppressions found. The APICompat suppression file can be updated by rebuilding with '/p:ApiCompatGenerateSuppressionFile=true'</source>
-        <target state="new">Obsolete suppressions found. The APICompat suppression file can be updated by rebuilding with '/p:ApiCompatGenerateSuppressionFile=true'</target>
+      <trans-unit id="UnnecessarySuppressionsFoundRegenerateSuppressionFileCommandHelp">
+        <source>Unnecessary suppressions found. The APICompat suppression file can be updated by rebuilding with '/p:ApiCompatGenerateSuppressionFile=true'</source>
+        <target state="new">Unnecessary suppressions found. The APICompat suppression file can be updated by rebuilding with '/p:ApiCompatGenerateSuppressionFile=true'</target>
         <note />
       </trans-unit>
     </body>
