@@ -25,6 +25,7 @@ using Xunit.Abstractions;
 using Microsoft.NET.Build.Tasks;
 using NuGet.Versioning;
 using System.Runtime.CompilerServices;
+using System.Security.Cryptography;
 
 namespace Microsoft.NET.Build.Tests
 {
@@ -978,7 +979,7 @@ class Program
             }
 
             // Identifer based on test inputs to create test assets that are unique for each test case
-            string assetIdentifier = $"{targetFramework}{string.Join(null, rids)}{addLibAssets}{addNativeAssets}{useRidGraph}{shouldWarn}";
+            string assetIdentifier = $"{nameof(It_warns_on_nonportable_rids)}{targetFramework}{string.Join(null, rids)}{addLibAssets}{addNativeAssets}{useRidGraph}{shouldWarn}";
 
             var packCommand = new PackCommand(_testAssetsManager.CreateTestProject(packageProject, assetIdentifier));
             packCommand.Execute().Should().Pass();
@@ -991,8 +992,20 @@ class Program
                 IsExe = true
             };
 
+            // Reference the package, add it to restore sources, and use a test-specific packages folder 
             testProject.PackageReferences.Add(package);
-            testProject.AdditionalProperties.Add("RestoreAdditionalProjectSources", Path.GetDirectoryName(package.NupkgPath));
+            testProject.AdditionalProperties["RestoreAdditionalProjectSources"] = Path.GetDirectoryName(package.NupkgPath);
+            testProject.AdditionalProperties["RestorePackagesPath"] = @"$(MSBuildProjectDirectory)\packages";
+
+            // The actual list comes from BundledVersions.props. For testing, we conditionally add a
+            // subset of the list if it isn't already defined (so running on an older version)
+            testProject.AddItem("_KnownRuntimeIdentiferPlatforms",
+                new Dictionary<string, string>()
+                {
+                    { "Include", "linux;linux-musl;osx;unix;win" },
+                    { "Condition", "'@(_KnownRuntimeIdentiferPlatforms)'==''" }
+                });
+
             if (useRidGraph.HasValue)
             {
                 testProject.AddItem("RuntimeHostConfigurationOption",
@@ -1004,10 +1017,7 @@ class Program
             }
 
             TestAsset testAsset = _testAssetsManager.CreateTestProject(testProject, assetIdentifier);
-            var result = new BuildCommand(testAsset)
-                .WithEnvironmentVariable("NUGET_PACKAGES", Path.Combine(testAsset.TestRoot, "packages"))
-                .Execute();
-
+            var result = new BuildCommand(testAsset).Execute();
             result.Should().Pass();
             if (shouldWarn)
             {

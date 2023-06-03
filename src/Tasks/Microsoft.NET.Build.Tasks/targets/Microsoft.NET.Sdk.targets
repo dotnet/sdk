@@ -251,10 +251,9 @@ Copyright (c) .NET Foundation. All rights reserved.
     </ItemGroup>
 
     <!-- Set valid RID platforms for runtime assets if targeting .NET 8+ and using the RID graph is not enabled. -->
-    <ItemGroup Condition="'$(_TargetFrameworkVersionWithoutV)' &gt;= '8.0'
+    <ItemGroup Condition="$([MSBuild]::VersionGreaterThanOrEquals($(_TargetFrameworkVersionWithoutV), '8.0'))
         and @(RuntimeHostConfigurationOption->WithMetadataValue('Identity', 'System.Runtime.Loader.UseRidGraph')->WithMetadataValue('Value', 'true')->Count()) == 0">
-        <_ValidRuntimeIdentifierPlatformsForAssets Include="any;freebsd;illumos;linux;linux-bionic;linux-musl;osx;solaris;unix;win" />
-        <_ValidRuntimeIdentifierPlatformsForAssets Include="android;aot;browser;ios;iossimulator;maccatalyst;tvos;tvossimulator" />
+      <_ValidRuntimeIdentifierPlatformsForAssets Include="@(_KnownRuntimeIdentiferPlatforms)" />
     </ItemGroup>
 
     <GenerateDepsFile ProjectPath="$(MSBuildProjectFullPath)"
