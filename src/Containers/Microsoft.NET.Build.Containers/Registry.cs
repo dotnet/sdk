@@ -771,7 +771,7 @@ internal sealed class Registry
         await PushLayers().ConfigureAwait(false);
         await PushConfig().ConfigureAwait(false);
         await PushManifest().ConfigureAwait(false);
-        await PushTag().ConfigureAwait(false);
+
 
         async Task PushLayers()
         {
@@ -840,28 +840,25 @@ internal sealed class Registry
         {
             var manifestDigest = builtImage.Manifest.GetDigest();
             logProgressMessage($"Uploading manifest to registry {RegistryName} as blob {manifestDigest}");
-            string jsonString = JsonSerializer.SerializeToNode(builtImage.Manifest)?.ToJsonString() ?? "";
-            HttpContent manifestUploadContent = new StringContent(jsonString);
-            manifestUploadContent.Headers.ContentType = new MediaTypeHeaderValue(DockerManifestV2);
-            var putResponse = await client.PutAsync(new Uri(BaseUri, $"/v2/{destination.Repository}/manifests/{manifestDigest}"), manifestUploadContent, cancellationToken).ConfigureAwait(false);
+            string manifestJson = JsonSerializer.SerializeToNode(builtImage.Manifest)?.ToJsonString() ?? "";
+            StringContent manifestContent = new(manifestJson);
+            manifestContent.Headers.ContentType = new MediaTypeHeaderValue(DockerManifestV2);
+            var putResponse = await client.PutAsync(new Uri(BaseUri, $"/v2/{destination.Repository}/manifests/{manifestDigest}"), manifestContent, cancellationToken).ConfigureAwait(false);
 
             if (!putResponse.IsSuccessStatusCode)
             {
-                throw new ContainerHttpException(Resource.GetString(nameof(Strings.RegistryPushFailed)), putResponse.RequestMessage?.RequestUri?.ToString(), jsonString);
+                throw new ContainerHttpException(Resource.GetString(nameof(Strings.RegistryPushFailed)), putResponse.RequestMessage?.RequestUri?.ToString(), manifestJson);
             }
             logProgressMessage($"Uploaded manifest to {RegistryName}");
 
             cancellationToken.ThrowIfCancellationRequested();
-        }
 
-        async Task PushTag()
-        {
             logProgressMessage($"Uploading tag {destination.Tag} to {RegistryName}");
-            var putResponse2 = await client.PutAsync(new Uri(BaseUri, $"/v2/{destination.Repository}/manifests/{destination.Tag}"), manifestUploadContent, cancellationToken).ConfigureAwait(false);
+            var putTagResponse = await client.PutAsync(new Uri(BaseUri, $"/v2/{destination.Repository}/manifests/{destination.Tag}"), manifestContent, cancellationToken).ConfigureAwait(false);
 
-            if (!putResponse2.IsSuccessStatusCode)
+            if (!putTagResponse.IsSuccessStatusCode)
             {
-                throw new ContainerHttpException(Resource.GetString(nameof(Strings.RegistryPushFailed)), putResponse2.RequestMessage?.RequestUri?.ToString(), jsonString);
+                throw new ContainerHttpException(Resource.GetString(nameof(Strings.RegistryPushFailed)), putTagResponse.RequestMessage?.RequestUri?.ToString(), manifestJson);
             }
 
             logProgressMessage($"Uploaded tag {destination.Tag} to {RegistryName}");
