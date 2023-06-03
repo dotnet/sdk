@@ -103,7 +103,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging
             HashSet<Suppression> suppressionsToSerialize = _suppressions;
             if (preserveUnnecessarySuppressions)
             {
-                _suppressions.UnionWith(_baselineSuppressions);
+                suppressionsToSerialize.UnionWith(_baselineSuppressions);
             }
 
             if (suppressionsToSerialize.Count == 0)
