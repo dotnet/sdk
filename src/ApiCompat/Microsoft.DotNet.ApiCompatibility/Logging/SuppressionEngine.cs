@@ -44,19 +44,14 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging
         /// <inheritdoc/>
         public bool IsErrorSuppressed(Suppression error)
         {
-            if (_noWarn.Contains(error.DiagnosticId))
-            {
-                return true;
-            }
-
-            if (_suppressions.Contains(error))
+            if (_noWarn.Contains(error.DiagnosticId) || _suppressions.Contains(error))
             {
                 return true;
             }
 
             if (_baselineSuppressions.Contains(error))
             {
-                _suppressions.Add(error);
+                AddSuppression(error);
                 return true;
             }
 
@@ -78,7 +73,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging
                 if (_baselineSuppressions.TryGetValue(globalTargetSuppression, out Suppression? globalSuppression) ||
                     _baselineSuppressions.TryGetValue(globalLeftRightSuppression, out globalSuppression))
                 {
-                    _suppressions.Add(globalSuppression);
+                    AddSuppression(globalSuppression);
                     return true;
                 }
             }
@@ -107,7 +102,9 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging
             }
 
             if (suppressionsToSerialize.Count == 0)
+            {
                 return false;
+            }
 
             Suppression[] orderedSuppressions = suppressionsToSerialize
                 .OrderBy(suppression => suppression.DiagnosticId)
