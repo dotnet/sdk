@@ -137,7 +137,8 @@ namespace Microsoft.TemplateEngine.Cli.Commands
                 TabularOutputSettings.ColumnNames.Author,
                 TabularOutputSettings.ColumnNames.Language,
                 TabularOutputSettings.ColumnNames.Type,
-                TabularOutputSettings.ColumnNames.Tags);
+                TabularOutputSettings.ColumnNames.Tags,
+                TabularOutputSettings.ColumnNames.Downloads);
             return option;
         }
 

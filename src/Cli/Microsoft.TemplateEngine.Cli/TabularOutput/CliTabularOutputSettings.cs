@@ -56,6 +56,7 @@ namespace Microsoft.TemplateEngine.Cli.TabularOutput
             internal const string Language = "language";
             internal const string Tags = "tags";
             internal const string Type = "type";
+            internal const string Downloads = "downloads";
         }
     }
 }

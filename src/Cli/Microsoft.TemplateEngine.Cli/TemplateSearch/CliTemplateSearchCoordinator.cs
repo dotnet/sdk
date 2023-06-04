@@ -153,7 +153,7 @@ namespace Microsoft.TemplateEngine.Cli.TemplateSearch
                     .DefineColumn(r => r.TemplateGroupInfo.Classifications, LocalizableStrings.ColumnNameTags, TabularOutputSettings.ColumnNames.Tags, defaultColumn: false, shrinkIfNeeded: true, minWidth: 10)
                     .DefineColumn(r => GetPackageInfo(r.PackageName, r.PackageOwners), out object? packageColumn, LocalizableStrings.ColumnNamePackageNameAndOwners, showAlways: true)
                     .DefineColumn(r => GetReservedMark(r.Reserved), LocalizableStrings.ColumnNameTrusted, showAlways: true, textAlign: TextAlign.Center)
-                    .DefineColumn(r => r.PrintableTotalDownloads, out object? downloadsColumn, LocalizableStrings.ColumnNameTotalDownloads, showAlways: true, textAlign: TextAlign.Center);
+                    .DefineColumn(r => r.PrintableTotalDownloads, LocalizableStrings.ColumnNameTotalDownloads, TabularOutputSettings.ColumnNames.Downloads, defaultColumn: false, textAlign: TextAlign.Center);
 
             Reporter.Output.WriteLine(formatter.Layout());
         }
