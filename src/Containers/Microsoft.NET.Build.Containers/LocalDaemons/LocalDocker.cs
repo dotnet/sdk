@@ -14,9 +14,9 @@ namespace Microsoft.NET.Build.Containers;
 
 internal sealed class LocalDocker : ILocalDaemon
 {
-    private readonly Action<string> logger;
+    private readonly Action<LogMessage> logger;
 
-    public LocalDocker(Action<string> logger)
+    public LocalDocker(Action<LogMessage> logger)
     {
         this.logger = logger;
     }
@@ -80,13 +80,13 @@ internal sealed class LocalDocker : ILocalDaemon
             {
                 // we have errors, turn them into a string and log them
                 string messages = string.Join(Environment.NewLine, errorProperty.EnumerateArray());
-                logger($"The daemon server reported errors: {messages}");
+                logger(LogMessage.Info("The daemon server reported errors: {0}", messages));
                 return false;
             }
         }
         catch (Exception ex)
         {
-            logger($"Error while reading daemon config: {ex}");
+            logger(LogMessage.Info("Error while reading daemon config: {0}", ex));
             return false;
         }
     }

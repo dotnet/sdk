@@ -7,7 +7,7 @@ namespace Microsoft.NET.Build.Containers.UnitTests;
 
 public class DockerDaemonAvailableTheoryAttribute : TheoryAttribute
 {
-    private static bool IsDaemonAvailable = new LocalDocker(Console.WriteLine).IsAvailable();
+    private static bool IsDaemonAvailable = new LocalDocker(message => Console.WriteLine($"{message.level}: {String.Format(message.messageFormat, message.formatArgs)}")).IsAvailable();
     public DockerDaemonAvailableTheoryAttribute()
     {
         if (!IsDaemonAvailable)
@@ -21,7 +21,7 @@ public class DockerDaemonAvailableFactAttribute : FactAttribute
 {
     // tiny optimization - since there are many instances of this attribute we should only get
     // the daemon status once
-    private static bool IsDaemonAvailable = new LocalDocker(Console.WriteLine).IsAvailable();
+    private static bool IsDaemonAvailable = new LocalDocker(message => Console.WriteLine($"{message.level}: {String.Format(message.messageFormat, message.formatArgs)}")).IsAvailable();
     public DockerDaemonAvailableFactAttribute()
     {
         if (!IsDaemonAvailable)

@@ -24,6 +24,8 @@ public class EndToEndTests
         _testOutput = testOutput;
     }
 
+    private void WriteMessage(LogMessage message) => _testOutput.WriteLine($"{message.level}: {String.Format(message.messageFormat, message.formatArgs)}");
+
     public static string NewImageName([CallerMemberName] string callerMemberName = "")
     {
         bool normalized = ContainerHelpers.NormalizeRepository(callerMemberName, out string? normalizedName);
@@ -65,7 +67,7 @@ public class EndToEndTests
         var sourceReference = new ImageReference(registry, DockerRegistryManager.BaseImage, DockerRegistryManager.Net6ImageTag);
         var destinationReference = new ImageReference(registry, NewImageName(), "latest");
 
-        await registry.PushAsync(builtImage, sourceReference, destinationReference, Console.WriteLine, cancellationToken: default).ConfigureAwait(false);
+        await registry.PushAsync(builtImage, sourceReference, destinationReference, WriteMessage, cancellationToken: default).ConfigureAwait(false);
 
         // pull it back locally
         new RunExeCommand(_testOutput, "docker", "pull", $"{DockerRegistryManager.LocalRegistry}/{NewImageName()}:latest")
@@ -107,7 +109,7 @@ public class EndToEndTests
         var sourceReference = new ImageReference(registry, DockerRegistryManager.BaseImage, DockerRegistryManager.Net6ImageTag);
         var destinationReference = new ImageReference(registry, NewImageName(), "latest");
 
-        await new LocalDocker(Console.WriteLine).LoadAsync(builtImage, sourceReference, destinationReference, default).ConfigureAwait(false);
+        await new LocalDocker(WriteMessage).LoadAsync(builtImage, sourceReference, destinationReference, default).ConfigureAwait(false);
 
         // Run the image
         new RunExeCommand(_testOutput, "docker", "run", "--rm", "--tty", $"{NewImageName()}:latest")
@@ -127,7 +129,7 @@ public class EndToEndTests
         Directory.CreateDirectory(workingDirectory);
 
         new DotnetNewCommand(_testOutput, "console", "-f", tfm, "-o", "MinimalTestApp")
-            .WithVirtualHive()        
+            .WithVirtualHive()
             .WithWorkingDirectory(workingDirectory)
             .Execute()
             .Should().Pass();
@@ -175,7 +177,7 @@ public class EndToEndTests
         }
 
         new DotnetNewCommand(_testOutput, "webapi", "-f", ToolsetInfo.CurrentTargetFramework)
-            .WithVirtualHive()  
+            .WithVirtualHive()
             .WithWorkingDirectory(newProjectDir.FullName)
             // do not pollute the primary/global NuGet package store with the private package(s)
             .WithEnvironmentVariable("NUGET_PACKAGES", privateNuGetAssets.FullName)
@@ -423,7 +425,7 @@ public class EndToEndTests
         // Load the image into the local Docker daemon
         var sourceReference = new ImageReference(registry, DockerRegistryManager.BaseImage, DockerRegistryManager.Net7ImageTag);
         var destinationReference = new ImageReference(registry, NewImageName(), rid);
-        await new LocalDocker(Console.WriteLine).LoadAsync(builtImage, sourceReference, destinationReference, default).ConfigureAwait(false);
+        await new LocalDocker(WriteMessage).LoadAsync(builtImage, sourceReference, destinationReference, default).ConfigureAwait(false);
 
         // Run the image
         new RunExeCommand(

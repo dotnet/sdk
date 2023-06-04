@@ -102,7 +102,7 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
         {
             if (IsDaemonPush)
             {
-                LocalDocker localDaemon = GetLocalDaemon(msg => Log.LogMessage(msg));
+                LocalDocker localDaemon = GetLocalDaemon(SafeLog);
                 if (!(await localDaemon.IsAvailableAsync(cancellationToken).ConfigureAwait(false)))
                 {
                     Log.LogErrorWithCodeFromResources(nameof(Strings.LocalDaemonNotAvailable));
@@ -191,7 +191,7 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
         }
     }
 
-    private LocalDocker GetLocalDaemon(Action<string> logger) {
+    private LocalDocker GetLocalDaemon(Action<LogMessage> logger) {
         var daemon = LocalContainerDaemon switch {
             KnownDaemonTypes.Docker => new LocalDocker(logger),
             _ => throw new NotSupportedException(
@@ -234,6 +234,20 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
 
     private void SafeLog(string message, params object[] formatParams) {
         if(BuildEngine != null) Log.LogMessage(MessageImportance.High, message, formatParams);
+    }
+    private void SafeLog(LogMessage message) {
+        if (BuildEngine is not null) {
+            switch(message.level) {
+                case ProgressMessageLevel.Info:
+                    Log.LogMessage(MessageImportance.High, message.messageFormat, message.formatArgs);
+                    break;
+                case ProgressMessageLevel.Trace:
+                    Log.LogMessage(MessageImportance.Low, message.messageFormat, message.formatArgs);
+                    break;
+                default:
+                    break;
+            };
+        }
     }
 
     public void Dispose()

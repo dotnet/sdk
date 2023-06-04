@@ -2,11 +2,22 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.NET.Build.Containers.Resources;
+using System.Text;
 
 namespace Microsoft.NET.Build.Containers;
 
 public static class ContainerBuilder
 {
+
+    private static void WriteLogMessage(LogMessage message) {
+        if (message.level is ProgressMessageLevel.Info) {
+            var builder = new StringBuilder("Containerize: ");
+            builder.AppendFormat(message.messageFormat, message.formatArgs);
+            Console.WriteLine(builder.ToString());
+        }
+        // TODO: dropping Trace level messages - this should be ok for the net472 VS experience. CI systems will get them in binlogs.
+    }
+
     public static async Task<int> ContainerizeAsync(
         DirectoryInfo publishDirectory,
         string workingDir,
@@ -56,10 +67,10 @@ public static class ContainerBuilder
         }
         if (imageBuilder is null)
         {
-            Console.WriteLine(Resource.GetString(nameof(Strings.BaseImageNotFound)), sourceImageReference.RepositoryAndTag, containerRuntimeIdentifier);
+            Console.WriteLine(DiagnosticMessage.ErrorFromResourceWithCode(nameof(Strings.BaseImageNotFound), sourceImageReference.RepositoryAndTag, containerRuntimeIdentifier));
             return 1;
         }
-        Console.WriteLine("Containerize: building image '{0}' with tags {1} on top of base image {2}", imageName, string.Join(",", imageName), sourceImageReference);
+        WriteLogMessage(LogMessage.Info("Building image '{0}' with tags {1} on top of base image {2}", imageName, string.Join(",", imageName), sourceImageReference));
         cancellationToken.ThrowIfCancellationRequested();
 
         Layer newLayer = Layer.FromDirectory(publishDirectory.FullName, workingDir, imageBuilder.IsWindows);
@@ -91,7 +102,7 @@ public static class ContainerBuilder
         {
             if (isDaemonPush)
             {
-                LocalDocker localDaemon = GetLocalDaemon(localContainerDaemon,Console.WriteLine);
+                LocalDocker localDaemon = GetLocalDaemon(localContainerDaemon, WriteLogMessage);
                 if (!(await localDaemon.IsAvailableAsync(cancellationToken).ConfigureAwait(false)))
                 {
                     Console.WriteLine(DiagnosticMessage.ErrorFromResourceWithCode(nameof(Strings.LocalDaemonNotAvailable)));
@@ -101,7 +112,7 @@ public static class ContainerBuilder
                 try
                 {
                     await localDaemon.LoadAsync(builtImage, sourceImageReference, destinationImageReference, cancellationToken).ConfigureAwait(false);
-                    Console.WriteLine("Containerize: Pushed container '{0}' to Docker daemon", destinationImageReference.RepositoryAndTag);
+                    WriteLogMessage(LogMessage.Info("Pushed container '{0}' to Docker daemon", destinationImageReference.RepositoryAndTag));
                 }
                 catch (Exception ex)
                 {
@@ -119,9 +130,9 @@ public static class ContainerBuilder
                             builtImage,
                             sourceImageReference,
                             destinationImageReference,
-                            message => Console.WriteLine($"Containerize: {message}"),
+                            WriteLogMessage,
                             cancellationToken)).ConfigureAwait(false);
-                        Console.WriteLine($"Containerize: Pushed container '{destinationImageReference.RepositoryAndTag}' to registry '{outputRegistry}'");
+                        WriteLogMessage(LogMessage.Info("Pushed container '{0}' to registry '{1}'", destinationImageReference.RepositoryAndTag, destinationImageReference.Registry.RegistryName));
                     }
                 }
                 catch (Exception e)
@@ -134,7 +145,7 @@ public static class ContainerBuilder
         return 0;
     }
 
-    private static LocalDocker GetLocalDaemon(string localDaemonType, Action<string> logger)
+    private static LocalDocker GetLocalDaemon(string localDaemonType, Action<LogMessage> logger)
     {
         LocalDocker daemon = localDaemonType switch
         {

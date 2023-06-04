@@ -18,10 +18,12 @@ public class DockerRegistryManager
     public const string FullyQualifiedBaseImageDefault = $"{BaseImageSource}{BaseImage}:{Net6ImageTag}";
     private static string? s_registryContainerId;
 
+
+
     public static void StartAndPopulateDockerRegistry(ITestOutputHelper testOutput)
     {
         testOutput.WriteLine("Spawning local registry");
-        if (!new LocalDocker(testOutput.WriteLine).IsAvailable()) {
+        if (!new LocalDocker(message => testOutput.WriteLine($"{message.level}: {String.Format(message.messageFormat, message.formatArgs)}")).IsAvailable()) {
             throw new InvalidOperationException("Docker daemon is not started, tests cannot run");
         }
         CommandResult processResult = new RunExeCommand(testOutput, "docker", "run", "--rm", "--publish", "5010:5000", "--detach", "registry:2").Execute();

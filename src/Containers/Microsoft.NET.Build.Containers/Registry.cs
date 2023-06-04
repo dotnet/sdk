@@ -15,6 +15,16 @@ using System.Text.Json.Nodes;
 
 namespace Microsoft.NET.Build.Containers;
 
+public enum ProgressMessageLevel {
+    Info,
+    Trace
+}
+
+public record struct LogMessage (ProgressMessageLevel level, string messageFormat, object[] formatArgs) {
+    public static LogMessage Info(string messageFormat, params object[] formatArgs) => new LogMessage(ProgressMessageLevel.Info, messageFormat,  formatArgs);
+    public static LogMessage Trace(string messageFormat, params object[] formatArgs) => new LogMessage(ProgressMessageLevel.Trace, messageFormat,  formatArgs);
+};
+
 internal sealed class Registry
 {
     private const string DockerManifestV2 = "application/vnd.docker.distribution.manifest.v2+json";
@@ -346,7 +356,7 @@ internal sealed class Registry
         return localPath;
     }
 
-    public async Task PushAsync(Layer layer, string repository, Action<string> logProgressMessage, CancellationToken cancellationToken)
+    public async Task PushAsync(Layer layer, string repository, Action<LogMessage> logProgressMessage, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
         string digest = layer.Descriptor.Digest;
@@ -365,7 +375,7 @@ internal sealed class Registry
     /// <summary>
     /// Upload a blob to the registry using chunks. The chunks are uploaded sequentially, and the size of the chunks is determined by the UploadInformation derived from the 'Start' call
     /// </summary>
-    private async Task<UploadFinalizeInformation> UploadBlobChunkedAsync(string repository, Stream contents, HttpClient client, UploadInformation uploadInfo, Action<string> logProgressMessage, CancellationToken cancellationToken)
+    private async Task<UploadFinalizeInformation> UploadBlobChunkedAsync(string repository, Stream contents, HttpClient client, UploadInformation uploadInfo, Action<LogMessage> logProgressMessage, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
         Uri patchUri = uploadInfo.uploadUri.Uri;
@@ -405,7 +415,7 @@ internal sealed class Registry
             // we track the incremental hash here as well as we read each chunk.
             async Task<(ByteArrayContent, int)> ReadChunk()
             {
-                logProgressMessage($"Processing chunk because ({contents.Position} < {contents.Length})");
+                logProgressMessage(LogMessage.Trace("Processing chunk because ({0} < {1})", contents.Position, contents.Length));
 
                 int bytesRead = await contents.ReadAsync(chunkBackingStore, cancellationToken).ConfigureAwait(false);
                 hash.AppendData(chunkBackingStore, 0, bytesRead);
@@ -633,27 +643,27 @@ internal sealed class Registry
     /// If the atomic PUT fails, we fall back to chunked uploads.
     /// If the registry provides a chunk max and that max is less than the content length, then we use chunked uploads.
     /// </remarks>
-    private async Task<UploadFinalizeInformation> UploadBlobContentsAsync(string repository, string digest, Stream contents, HttpClient client, UploadInformation uploadInfo, Action<string> logProgressMessage, CancellationToken cancellationToken)
+    private async Task<UploadFinalizeInformation> UploadBlobContentsAsync(string repository, string digest, Stream contents, HttpClient client, UploadInformation uploadInfo, Action<LogMessage> logProgressMessage, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
         if (uploadInfo.registryDeclaredChunkSize is null || uploadInfo.registryDeclaredChunkSize >= contents.Length)
         {
-            logProgressMessage($"Chunk size undetected or was greater than content length of {contents.Length}, attempting to upload whole blob.");
+            logProgressMessage(LogMessage.Trace("Chunk size undetected or was greater than content length of {0}, attempting to upload whole blob.", contents.Length));
             try
             {
                 return await UploadBlobWholeAsync(repository, digest, contents, client, uploadInfo.uploadUri, cancellationToken).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
-                logProgressMessage($"Errored while uploading whole blob: {ex.Message}.\nRetrying with chunked upload.");
+                logProgressMessage(LogMessage.Trace("Errored while uploading whole blob: {0}.\nRetrying with chunked upload.", ex));
                 contents.Seek(0, SeekOrigin.Begin);
                 return await UploadBlobChunkedAsync(repository, contents, client, uploadInfo, logProgressMessage, cancellationToken).ConfigureAwait(false);
             }
         }
         else
         {
-            logProgressMessage($"Chunk size was smaller than content length of {contents.Length}, uploading chunks.");
+            logProgressMessage(LogMessage.Trace("Chunk size was smaller than content length of {0}, uploading chunks.", contents.Length));
             return await UploadBlobChunkedAsync(repository, contents, client, uploadInfo, logProgressMessage, cancellationToken).ConfigureAwait(false);
         }
     }
@@ -684,7 +694,7 @@ internal sealed class Registry
     /// <summary>
     /// Orchestrates an upload of a blob. Starts the upload, sends the content, and finishes the upload.
     /// </summary>
-    private async Task UploadBlobAsync(string repository, string digest, Stream contents, Action<string> logProgressMessage, CancellationToken cancellationToken)
+    private async Task UploadBlobAsync(string repository, string digest, Stream contents, Action<LogMessage> logProgressMessage, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
         HttpClient client = GetClient();
@@ -700,16 +710,17 @@ internal sealed class Registry
         // * start an upload session
         cancellationToken.ThrowIfCancellationRequested();
         var uploadInfo = await StartUploadSessionAsync(repository, digest, client, cancellationToken).ConfigureAwait(false);
-        logProgressMessage($"Started upload session for {digest} to {uploadInfo.uploadUri} with chunk size '{uploadInfo.EffectiveChunkSize}'");
+
+        logProgressMessage(LogMessage.Trace("Started upload session for {0} to {1} with chunk size {2}", digest, uploadInfo.uploadUri, uploadInfo.EffectiveChunkSize));
         // * upload the blob
         cancellationToken.ThrowIfCancellationRequested();
         var finalizeInformation = await UploadBlobContentsAsync(repository, digest, contents, client, uploadInfo, logProgressMessage, cancellationToken).ConfigureAwait(false);
-        logProgressMessage($"Uploaded content for {digest}");
+        logProgressMessage(LogMessage.Trace("Uploaded content for {0}", digest));
         // * finish the upload session
         cancellationToken.ThrowIfCancellationRequested();
-        logProgressMessage($"Computed digest for '{digest}' was '{finalizeInformation.digest}'");
+        logProgressMessage(LogMessage.Trace("Computed digest for '{0}' was '{1}'", digest, finalizeInformation.digest));
         await FinishUploadSessionAsync(client, finalizeInformation, cancellationToken).ConfigureAwait(false);
-        logProgressMessage($"Finalized upload session for {digest}");
+        logProgressMessage(LogMessage.Trace("Finalized upload session for {0}", digest));
     }
 
     private async Task<bool> BlobAlreadyUploadedAsync(string repository, string digest, HttpClient client, CancellationToken cancellationToken)
@@ -762,7 +773,7 @@ internal sealed class Registry
     /// Pushes a built image to a destination, attempting to mount the layer from the source if possible.
     /// Otherwise we push the image layers, manifest, and config locally using atomic or chunked uploads.
     /// </summary>
-    public async Task PushAsync(BuiltImage builtImage, ImageReference source, ImageReference destination, Action<string> logProgressMessage, CancellationToken cancellationToken)
+    public async Task PushAsync(BuiltImage builtImage, ImageReference source, ImageReference destination, Action<LogMessage> logProgressMessage, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
         HttpClient client = GetClient();
@@ -780,10 +791,10 @@ internal sealed class Registry
             cancellationToken.ThrowIfCancellationRequested();
             string digest = descriptor.Digest;
 
-            logProgressMessage($"Uploading layer {digest} to {destinationRegistry.RegistryName}");
+            logProgressMessage(LogMessage.Info("Uploading layer {0} to {1}", digest, destinationRegistry.RegistryName));
             if (await destinationRegistry.BlobAlreadyUploadedAsync(destination.Repository, digest, client, cancellationToken).ConfigureAwait(false))
             {
-                logProgressMessage($"Layer {digest} already existed");
+                logProgressMessage(LogMessage.Info("Layer {0} already existed", digest));
                 return;
             }
 
@@ -800,7 +811,7 @@ internal sealed class Registry
                     await sourceRegistry.DownloadBlobAsync(source.Repository, descriptor, cancellationToken).ConfigureAwait(false);
                     // Then push it to the destination registry
                     await destinationRegistry.PushAsync(Layer.FromDescriptor(descriptor), destination.Repository, logProgressMessage, cancellationToken).ConfigureAwait(false);
-                    logProgressMessage($"Finished uploading layer {digest} to {destinationRegistry.RegistryName}");
+                    logProgressMessage(LogMessage.Info("Finished uploading layer {0} to {1}", digest, destinationRegistry.RegistryName));
                 }
                 else
                 {
@@ -829,9 +840,9 @@ internal sealed class Registry
             using (MemoryStream stringStream = new MemoryStream(Encoding.UTF8.GetBytes(builtImage.Config)))
             {
                 var configDigest = builtImage.ImageDigest;
-                logProgressMessage($"Uploading config to registry at blob {configDigest}");
+                logProgressMessage(LogMessage.Info("Uploading config to registry at blob {0}", configDigest));
                 await UploadBlobAsync(destination.Repository, configDigest, stringStream, logProgressMessage, cancellationToken).ConfigureAwait(false);
-                logProgressMessage($"Uploaded config to registry");
+                logProgressMessage(LogMessage.Info("Uploaded config to registry"));
             }
             cancellationToken.ThrowIfCancellationRequested();
         }
@@ -839,7 +850,7 @@ internal sealed class Registry
         async Task PushManifest()
         {
             var manifestDigest = builtImage.Manifest.GetDigest();
-            logProgressMessage($"Uploading manifest to registry {RegistryName} as blob {manifestDigest}");
+            logProgressMessage(LogMessage.Info("Uploading manifest to registry {0} as blob {1}", RegistryName, manifestDigest));
             string manifestJson = JsonSerializer.SerializeToNode(builtImage.Manifest)?.ToJsonString() ?? "";
             StringContent manifestContent = new(manifestJson);
             manifestContent.Headers.ContentType = new MediaTypeHeaderValue(DockerManifestV2);
@@ -849,11 +860,11 @@ internal sealed class Registry
             {
                 throw new ContainerHttpException(Resource.GetString(nameof(Strings.RegistryPushFailed)), putResponse.RequestMessage?.RequestUri?.ToString(), manifestJson);
             }
-            logProgressMessage($"Uploaded manifest to {RegistryName}");
+            logProgressMessage(LogMessage.Info("Uploaded manifest to {0}", RegistryName));
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            logProgressMessage($"Uploading tag {destination.Tag} to {RegistryName}");
+            logProgressMessage(LogMessage.Info("Uploading tag {0} to {1}", destination.Tag, RegistryName));
             var putTagResponse = await client.PutAsync(new Uri(BaseUri, $"/v2/{destination.Repository}/manifests/{destination.Tag}"), manifestContent, cancellationToken).ConfigureAwait(false);
 
             if (!putTagResponse.IsSuccessStatusCode)
@@ -861,7 +872,7 @@ internal sealed class Registry
                 throw new ContainerHttpException(Resource.GetString(nameof(Strings.RegistryPushFailed)), putTagResponse.RequestMessage?.RequestUri?.ToString(), manifestJson);
             }
 
-            logProgressMessage($"Uploaded tag {destination.Tag} to {RegistryName}");
+            logProgressMessage(LogMessage.Info("Uploaded tag {0} to {1}", destination.Tag, RegistryName));
         }
     }
 }
