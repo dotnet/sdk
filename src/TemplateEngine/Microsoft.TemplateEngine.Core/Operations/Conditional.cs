@@ -35,10 +35,10 @@ namespace Microsoft.TemplateEngine.Core.Operations
         private readonly bool _wholeLine;
         private readonly bool _trimWhitespace;
         private readonly ConditionalTokens _tokens;
-        private readonly string _id;
+        private readonly string? _id;
         private readonly bool _initialState;
 
-        public Conditional(ConditionalTokens tokenVariants, bool wholeLine, bool trimWhitespace, ConditionEvaluator evaluator, string id, bool initialState)
+        public Conditional(ConditionalTokens tokenVariants, bool wholeLine, bool trimWhitespace, ConditionEvaluator evaluator, string? id, bool initialState)
         {
             _trimWhitespace = trimWhitespace;
             _wholeLine = wholeLine;
@@ -48,7 +48,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
             _initialState = initialState;
         }
 
-        public string Id => _id;
+        public string? Id => _id;
 
         public bool WholeLine => _wholeLine;
 
@@ -83,7 +83,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
             List<IToken> tokens = new List<IToken>(TokenTypeModulus * LongestTokenVariantListSize);
             for (int i = 0; i < tokens.Capacity; i++)
             {
-                tokens.Add(null);
+                tokens.Add(null!);
             }
 
             AddTokensOfTypeToTokenListAndTrie(trie, tokens, Tokens.IfTokens, IfTokenBaseIndex, encoding);
@@ -135,10 +135,10 @@ namespace Microsoft.TemplateEngine.Core.Operations
             private readonly Conditional _definition;
             private readonly Stack<EvaluationState> _pendingCompletion = new Stack<EvaluationState>();
             private readonly ITokenTrie _trie;
-            private readonly string _id;
-            private EvaluationState _current;
+            private readonly string? _id;
+            private EvaluationState? _current;
 
-            public Impl(Conditional definition, IReadOnlyList<IToken> tokens, ITokenTrie trie, string id, bool initialState)
+            public Impl(Conditional definition, IReadOnlyList<IToken> tokens, ITokenTrie trie, string? id, bool initialState)
             {
                 _trie = trie;
                 _definition = definition;
@@ -147,7 +147,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
                 IsInitialStateOn = string.IsNullOrEmpty(id) || initialState;
             }
 
-            public string Id => _id;
+            public string? Id => _id;
 
             public IReadOnlyList<IToken> Tokens { get; }
 

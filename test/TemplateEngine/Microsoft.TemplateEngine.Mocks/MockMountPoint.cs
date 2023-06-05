@@ -14,6 +14,7 @@ namespace Microsoft.TemplateEngine.Mocks
         {
             EnvironmentSettings = environmentSettings;
             MockRoot = new MockDirectory("/", "/", this, null);
+            MountPointUri = null!;
         }
 
         public IDirectory Root => MockRoot;

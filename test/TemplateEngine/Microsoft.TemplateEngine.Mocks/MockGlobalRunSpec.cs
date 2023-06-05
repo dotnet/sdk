@@ -19,6 +19,7 @@ namespace Microsoft.TemplateEngine.Mocks
             LocalizationOperations = new Dictionary<string, IReadOnlyList<IOperationProvider>>();
             Rename = new Dictionary<string, string>();
             IgnoreFileNames = new[] { "-.-", "_._" };
+            RootVariableCollection = null!;
         }
 
         public IReadOnlyList<IPathMatcher> Exclude { get; set; }

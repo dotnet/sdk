@@ -13,7 +13,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
         {
         }
 
-        public Phase(ITokenConfig match, string replacement, IReadOnlyList<ITokenConfig> resetsWith)
+        public Phase(ITokenConfig match, string? replacement, IReadOnlyList<ITokenConfig> resetsWith)
         {
             Match = match;
             Replacement = replacement;
@@ -25,7 +25,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
 
         public List<Phase> Next { get; }
 
-        public string Replacement { get; }
+        public string? Replacement { get; }
 
         public IReadOnlyList<ITokenConfig> ResetsWith { get; }
     }

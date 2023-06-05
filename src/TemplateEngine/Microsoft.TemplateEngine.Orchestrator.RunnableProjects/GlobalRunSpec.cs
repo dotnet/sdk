@@ -151,7 +151,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 string? condition = opModel.Condition;
 
                 if (string.IsNullOrEmpty(condition)
-                    || Cpp2StyleEvaluatorDefinition.EvaluateFromString(host.Logger, condition, variables))
+                    || Cpp2StyleEvaluatorDefinition.EvaluateFromString(host.Logger, condition!, variables))
                 {
                     if (opType == null)
                     {

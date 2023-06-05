@@ -7,8 +7,8 @@ namespace Microsoft.TemplateEngine.Core.Expressions
     {
         ITypeConverter Register<T>(TypeConverterDelegate<T> converter);
 
-        bool TryConvert<T>(object source, out T result);
+        bool TryConvert<T>(object? source, out T? result);
 
-        bool TryCoreConvert<T>(object source, out T result);
+        bool TryCoreConvert<T>(object? source, out T? result);
     }
 }

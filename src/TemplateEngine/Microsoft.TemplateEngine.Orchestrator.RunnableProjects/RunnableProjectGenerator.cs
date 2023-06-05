@@ -110,7 +110,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         bool IGenerator.TryEvaluateFromString(ILogger logger, string text, IDictionary<string, object> variables, out bool result, out string evaluationError, HashSet<string>? referencedVariablesKeys)
         {
             VariableCollection variableCollection = new(null, variables);
-            result = Cpp2StyleEvaluatorDefinition.EvaluateFromString(logger, text, variableCollection, out evaluationError, referencedVariablesKeys);
+            result = Cpp2StyleEvaluatorDefinition.EvaluateFromString(logger, text, variableCollection, out evaluationError!, referencedVariablesKeys);
             return string.IsNullOrEmpty(evaluationError);
         }
 

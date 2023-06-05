@@ -7,8 +7,8 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Shared
     {
         public static void ConfigureConverters(ITypeConverter obj)
         {
-            obj.Register((object o, out long r) => CoreConverters.TryHexConvert("0x", obj, o, out r) || obj.TryCoreConvert(o, out r))
-               .Register((object o, out int r) => CoreConverters.TryHexConvert("0x", obj, o, out r) || obj.TryCoreConvert(o, out r));
+            obj.Register((object? o, out long r) => CoreConverters.TryHexConvert("0x", obj, o, out r) || obj.TryCoreConvert(o, out r))
+               .Register((object? o, out int r) => CoreConverters.TryHexConvert("0x", obj, o, out r) || obj.TryCoreConvert(o, out r));
         }
 
         public static string Decode(string arg)

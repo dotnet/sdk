@@ -9,7 +9,16 @@ namespace Microsoft.TemplateEngine.Mocks
 {
     public class MockPostAction : IPostAction
     {
-        public string Description { get; set; }
+        public MockPostAction(string? description, string? manualInstructions, Guid actionId, bool continueOnError, IReadOnlyDictionary<string, string> args)
+        {
+            Description = description;
+            ManualInstructions = manualInstructions;
+            ActionId = actionId;
+            ContinueOnError = continueOnError;
+            Args = args;
+        }
+
+        public string? Description { get; set; }
 
         public Guid ActionId { get; set; }
 
@@ -17,6 +26,6 @@ namespace Microsoft.TemplateEngine.Mocks
 
         public IReadOnlyDictionary<string, string> Args { get; set; }
 
-        public string ManualInstructions { get; set; }
+        public string? ManualInstructions { get; set; }
     }
 }

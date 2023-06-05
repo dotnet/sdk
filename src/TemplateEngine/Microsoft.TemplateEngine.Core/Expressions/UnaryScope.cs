@@ -7,9 +7,9 @@ namespace Microsoft.TemplateEngine.Core.Expressions
 {
     public class UnaryScope<TOperator> : IEvaluable
     {
-        private readonly Func<object, object> _evaluate;
+        private readonly Func<object?, object?> _evaluate;
 
-        public UnaryScope(IEvaluable parent, TOperator @operator, Func<object, object> evaluate)
+        public UnaryScope(IEvaluable? parent, TOperator @operator, Func<object?, object?> evaluate)
         {
             Parent = parent;
             Operator = @operator;
@@ -20,15 +20,15 @@ namespace Microsoft.TemplateEngine.Core.Expressions
 
         public bool IsIndivisible => true;
 
-        public IEvaluable Operand { get; set; }
+        public IEvaluable? Operand { get; set; }
 
         public TOperator Operator { get; }
 
-        public IEvaluable Parent { get; set; }
+        public IEvaluable? Parent { get; set; }
 
-        public object Evaluate()
+        public object? Evaluate()
         {
-            object operand = Operand.Evaluate();
+            object? operand = Operand?.Evaluate();
             return _evaluate(operand);
         }
 
@@ -37,7 +37,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions
             return $@"{Operator}({Operand})";
         }
 
-        public bool TryAccept(IEvaluable child)
+        public bool TryAccept(IEvaluable? child)
         {
             if (Operand == null)
             {

@@ -15,11 +15,11 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
             None
         }
 
-        public object Left { get; set; }
+        public object? Left { get; set; }
 
         public Operator Operator { get; set; }
 
-        public object Right { get; set; }
+        public object? Right { get; set; }
 
         public object Value
         {
@@ -58,33 +58,33 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
             switch (Operator)
             {
                 case Operator.Not:
-                    return !EvaluateSide(Right, x => Convert.ToBoolean(x ?? "False"));
+                    return !EvaluateSide(Right!, x => Convert.ToBoolean(x ?? "False"));
                 case Operator.And:
-                    return EvaluateSides(Left, Right, x => (bool)x, (x, y) => x && y);
+                    return EvaluateSides(Left!, Right!, x => (bool)x, (x, y) => x && y);
                 case Operator.Or:
-                    return EvaluateSides(Left, Right, x => (bool)x, (x, y) => x || y);
+                    return EvaluateSides(Left!, Right!, x => (bool)x, (x, y) => x || y);
                 case Operator.Xor:
-                    return EvaluateSides(Left, Right, x => (bool)x, (x, y) => x ^ y);
+                    return EvaluateSides(Left!, Right!, x => (bool)x, (x, y) => x ^ y);
                 case Operator.EqualTo:
-                    return EvaluateSides(Left, Right, x => x, LenientEquals);
+                    return EvaluateSides(Left!, Right!, x => x, LenientEquals);
                 case Operator.NotEqualTo:
-                    return EvaluateSides(Left, Right, x => x, (x, y) => !LenientEquals(x, y));
+                    return EvaluateSides(Left!, Right!, x => x, (x, y) => !LenientEquals(x, y));
                 case Operator.GreaterThan:
-                    return EvaluateSides(Left, Right, ParserExtensions.ConvertToDoubleCurrentOrInvariant, (x, y) => x > y);
+                    return EvaluateSides(Left!, Right!, ParserExtensions.ConvertToDoubleCurrentOrInvariant, (x, y) => x > y);
                 case Operator.GreaterThanOrEqualTo:
-                    return EvaluateSides(Left, Right, ParserExtensions.ConvertToDoubleCurrentOrInvariant, (x, y) => x >= y);
+                    return EvaluateSides(Left!, Right!, ParserExtensions.ConvertToDoubleCurrentOrInvariant, (x, y) => x >= y);
                 case Operator.LessThan:
-                    return EvaluateSides(Left, Right, ParserExtensions.ConvertToDoubleCurrentOrInvariant, (x, y) => x < y);
+                    return EvaluateSides(Left!, Right!, ParserExtensions.ConvertToDoubleCurrentOrInvariant, (x, y) => x < y);
                 case Operator.LessThanOrEqualTo:
-                    return EvaluateSides(Left, Right, ParserExtensions.ConvertToDoubleCurrentOrInvariant, (x, y) => x <= y);
+                    return EvaluateSides(Left!, Right!, ParserExtensions.ConvertToDoubleCurrentOrInvariant, (x, y) => x <= y);
                 case Operator.LeftShift:
-                    return EvaluateSides(Left, Right, Convert.ToInt64, Convert.ToInt32, (x, y) => x << y);
+                    return EvaluateSides(Left!, Right!, Convert.ToInt64, Convert.ToInt32, (x, y) => x << y);
                 case Operator.RightShift:
-                    return EvaluateSides(Left, Right, Convert.ToInt64, Convert.ToInt32, (x, y) => x >> y);
+                    return EvaluateSides(Left!, Right!, Convert.ToInt64, Convert.ToInt32, (x, y) => x >> y);
                 case Operator.BitwiseAnd:
-                    return EvaluateSides(Left, Right, Convert.ToInt64, (x, y) => x & y);
+                    return EvaluateSides(Left!, Right!, Convert.ToInt64, (x, y) => x & y);
                 case Operator.BitwiseOr:
-                    return EvaluateSides(Left, Right, Convert.ToInt64, (x, y) => x | y);
+                    return EvaluateSides(Left!, Right!, Convert.ToInt64, (x, y) => x | y);
                 default:
                     if (Left != null)
                     {

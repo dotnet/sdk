@@ -25,7 +25,7 @@ namespace Microsoft.TemplateEngine.Core.Matching
             }
 
             int remainingLength = path.Length - 1;
-            Dictionary<byte, TrieNode<T>> current = NextNodes;
+            Dictionary<byte, TrieNode<T>>? current = NextNodes;
             for (int i = 0; i < path.Length; ++i, --remainingLength)
             {
                 if (!current.TryGetValue(path[i], out TrieNode<T> next))

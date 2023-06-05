@@ -7,6 +7,6 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
     {
         public TokenFamily Family { get; set; }
 
-        public string Literal { get; set; }
+        public string? Literal { get; set; }
     }
 }

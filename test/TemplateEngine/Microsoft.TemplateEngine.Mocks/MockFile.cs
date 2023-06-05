@@ -9,7 +9,7 @@ namespace Microsoft.TemplateEngine.Mocks
 {
     public class MockFile : IFile
     {
-        private readonly byte[] _contents;
+        private readonly byte[]? _contents;
 
         public MockFile(string fullpath, IMountPoint mountPoint)
         {
@@ -35,7 +35,7 @@ namespace Microsoft.TemplateEngine.Mocks
 
         public FileSystemInfoKind Kind => FileSystemInfoKind.File;
 
-        public IDirectory Parent { get; }
+        public IDirectory? Parent { get; }
 
         public string Name { get; }
 

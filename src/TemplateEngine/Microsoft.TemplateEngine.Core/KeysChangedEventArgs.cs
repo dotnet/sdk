@@ -8,7 +8,7 @@ namespace Microsoft.TemplateEngine.Core
 {
     public class KeysChangedEventArgs : EventArgs, IKeysChangedEventArgs
     {
-        private static KeysChangedEventArgs s_default;
+        private static KeysChangedEventArgs? s_default;
 
         public static KeysChangedEventArgs Default => s_default ??= new KeysChangedEventArgs();
     }

@@ -29,7 +29,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions
 
         IReadOnlyDictionary<TToken, TOperator> TokensToOperatorsMap { get; }
 
-        bool TryConvert<T>(object source, out T result);
+        bool TryConvert<T>(object? source, out T? result);
 
         string Decode(string value);
 

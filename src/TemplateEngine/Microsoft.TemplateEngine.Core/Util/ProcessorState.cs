@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable enable
-
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -201,9 +199,9 @@ namespace Microsoft.TemplateEngine.Core.Util
                 {
                     int posedPosition = CurrentSequenceNumber;
                     bool skipAdvanceBuffer = false;
-                    if (_trie.Accept(CurrentBuffer[CurrentBufferPosition], ref posedPosition, out TerminalLocation<OperationTerminal> terminal))
+                    if (_trie.Accept(CurrentBuffer[CurrentBufferPosition], ref posedPosition, out TerminalLocation<OperationTerminal>? terminal))
                     {
-                        IOperation operation = terminal.Terminal.Operation;
+                        IOperation operation = terminal!.Terminal.Operation;
                         int matchLength = terminal.Terminal.End - terminal.Terminal.Start + 1;
                         int handoffBufferPosition = CurrentBufferPosition + matchLength - (CurrentSequenceNumber - terminal.Location);
 
@@ -296,7 +294,7 @@ namespace Microsoft.TemplateEngine.Core.Util
                 if (!AdvanceBuffer(bufferPositionToAdvanceTo))
                 {
                     int posedPosition = CurrentSequenceNumber;
-                    _trie.FinalizeMatchesInProgress(ref posedPosition, out TerminalLocation<OperationTerminal> terminal);
+                    _trie.FinalizeMatchesInProgress(ref posedPosition, out TerminalLocation<OperationTerminal>? terminal);
 
                     while (terminal != null)
                     {

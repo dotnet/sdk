@@ -49,12 +49,12 @@ namespace Microsoft.TemplateEngine.Core.Expressions
 
         public IReadOnlyDictionary<TToken, Operators> TokensToOperatorsMap => _tokensToOperatorsMap;
 
-        public OperatorSetBuilder<TToken> Add(TToken token, Func<Operators, bool> precedesOperator = null, Func<object, object, object> evaluate = null)
+        public OperatorSetBuilder<TToken> Add(TToken token, Func<Operators, bool>? precedesOperator = null, Func<object?, object?, object>? evaluate = null)
         {
             return SetupBinary(Operators.Add, token, evaluate ?? Add, precedesOperator);
         }
 
-        public OperatorSetBuilder<TToken> And(TToken token, Func<Operators, bool> precedesOperator = null, Func<object, object, object> evaluate = null)
+        public OperatorSetBuilder<TToken> And(TToken token, Func<Operators, bool>? precedesOperator = null, Func<object?, object?, object>? evaluate = null)
         {
             return SetupBinary(Operators.And, token, evaluate ?? And, precedesOperator);
         }
@@ -65,12 +65,12 @@ namespace Microsoft.TemplateEngine.Core.Expressions
             return this;
         }
 
-        public OperatorSetBuilder<TToken> BitwiseAnd(TToken token, Func<Operators, bool> precedesOperator = null, Func<object, object, object> evaluate = null)
+        public OperatorSetBuilder<TToken> BitwiseAnd(TToken token, Func<Operators, bool>? precedesOperator = null, Func<object?, object?, object>? evaluate = null)
         {
             return SetupBinary(Operators.BitwiseAnd, token, evaluate ?? BitwiseAnd, precedesOperator);
         }
 
-        public OperatorSetBuilder<TToken> BitwiseOr(TToken token, Func<Operators, bool> precedesOperator = null, Func<object, object, object> evaluate = null)
+        public OperatorSetBuilder<TToken> BitwiseOr(TToken token, Func<Operators, bool>? precedesOperator = null, Func<object?, object?, object>? evaluate = null)
         {
             return SetupBinary(Operators.BitwiseOr, token, evaluate ?? BitwiseOr, precedesOperator);
         }
@@ -86,7 +86,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions
             return _decoder(value);
         }
 
-        public OperatorSetBuilder<TToken> Divide(TToken token, Func<Operators, bool> precedesOperator = null, Func<object, object, object> evaluate = null)
+        public OperatorSetBuilder<TToken> Divide(TToken token, Func<Operators, bool>? precedesOperator = null, Func<object?, object?, object>? evaluate = null)
         {
             return SetupBinary(Operators.Divide, token, evaluate ?? Divide, precedesOperator);
         }
@@ -96,22 +96,22 @@ namespace Microsoft.TemplateEngine.Core.Expressions
             return _encoder(value);
         }
 
-        public OperatorSetBuilder<TToken> EqualTo(TToken token, Func<Operators, bool> precedesOperator = null, Func<object, object, object> evaluate = null)
+        public OperatorSetBuilder<TToken> EqualTo(TToken token, Func<Operators, bool>? precedesOperator = null, Func<object?, object?, object>? evaluate = null)
         {
             return SetupBinary(Operators.EqualTo, token, evaluate ?? EqualTo, precedesOperator);
         }
 
-        public OperatorSetBuilder<TToken> Exponentiate(TToken token, Func<Operators, bool> precedesOperator = null, Func<object, object, object> evaluate = null)
+        public OperatorSetBuilder<TToken> Exponentiate(TToken token, Func<Operators, bool>? precedesOperator = null, Func<object?, object?, object>? evaluate = null)
         {
             return SetupBinary(Operators.Exponentiate, token, evaluate ?? Exponentiate, precedesOperator);
         }
 
-        public OperatorSetBuilder<TToken> GreaterThan(TToken token, Func<Operators, bool> precedesOperator = null, Func<object, object, object> evaluate = null)
+        public OperatorSetBuilder<TToken> GreaterThan(TToken token, Func<Operators, bool>? precedesOperator = null, Func<object?, object?, object>? evaluate = null)
         {
             return SetupBinary(Operators.GreaterThan, token, evaluate ?? GreaterThan, precedesOperator);
         }
 
-        public OperatorSetBuilder<TToken> GreaterThanOrEqualTo(TToken token, Func<Operators, bool> precedesOperator = null, Func<object, object, object> evaluate = null)
+        public OperatorSetBuilder<TToken> GreaterThanOrEqualTo(TToken token, Func<Operators, bool>? precedesOperator = null, Func<object?, object?, object>? evaluate = null)
         {
             return SetupBinary(Operators.GreaterThanOrEqualTo, token, evaluate ?? GreaterThanOrEqualTo, precedesOperator);
         }
@@ -122,17 +122,17 @@ namespace Microsoft.TemplateEngine.Core.Expressions
             return this;
         }
 
-        public OperatorSetBuilder<TToken> LeftShift(TToken token, Func<Operators, bool> precedesOperator = null, Func<object, object, object> evaluate = null)
+        public OperatorSetBuilder<TToken> LeftShift(TToken token, Func<Operators, bool>? precedesOperator = null, Func<object?, object?, object>? evaluate = null)
         {
             return SetupBinary(Operators.LeftShift, token, evaluate ?? LeftShift, precedesOperator);
         }
 
-        public OperatorSetBuilder<TToken> LessThan(TToken token, Func<Operators, bool> precedesOperator = null, Func<object, object, object> evaluate = null)
+        public OperatorSetBuilder<TToken> LessThan(TToken token, Func<Operators, bool>? precedesOperator = null, Func<object?, object?, object>? evaluate = null)
         {
             return SetupBinary(Operators.LessThan, token, evaluate ?? LessThan, precedesOperator);
         }
 
-        public OperatorSetBuilder<TToken> LessThanOrEqualTo(TToken token, Func<Operators, bool> precedesOperator = null, Func<object, object, object> evaluate = null)
+        public OperatorSetBuilder<TToken> LessThanOrEqualTo(TToken token, Func<Operators, bool>? precedesOperator = null, Func<object?, object?, object>? evaluate = null)
         {
             return SetupBinary(Operators.LessThanOrEqualTo, token, evaluate ?? LessThanOrEqualTo, precedesOperator);
         }
@@ -149,12 +149,12 @@ namespace Microsoft.TemplateEngine.Core.Expressions
             return this;
         }
 
-        public OperatorSetBuilder<TToken> Multiply(TToken token, Func<Operators, bool> precedesOperator = null, Func<object, object, object> evaluate = null)
+        public OperatorSetBuilder<TToken> Multiply(TToken token, Func<Operators, bool>? precedesOperator = null, Func<object?, object?, object>? evaluate = null)
         {
             return SetupBinary(Operators.Multiply, token, evaluate ?? Multiply, precedesOperator);
         }
 
-        public OperatorSetBuilder<TToken> Not(TToken token, Func<Operators, bool> precedesOperator = null, Func<object, object> evaluate = null)
+        public OperatorSetBuilder<TToken> Not(TToken token, Func<Operators, bool>? precedesOperator = null, Func<object?, object>? evaluate = null)
         {
             _operatorScopeLookupFactory[Operators.Not] =
                 x => CreateUnaryChild(x, Operators.Not, evaluate ?? Not);
@@ -162,7 +162,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions
             return this;
         }
 
-        public OperatorSetBuilder<TToken> NotEqualTo(TToken token, Func<Operators, bool> precedesOperator = null, Func<object, object, object> evaluate = null)
+        public OperatorSetBuilder<TToken> NotEqualTo(TToken token, Func<Operators, bool>? precedesOperator = null, Func<object?, object?, object>? evaluate = null)
         {
             return SetupBinary(Operators.NotEqualTo, token, evaluate ?? NotEqualTo, precedesOperator);
         }
@@ -173,7 +173,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions
             return this;
         }
 
-        public OperatorSetBuilder<TToken> Or(TToken token, Func<Operators, bool> precedesOperator = null, Func<object, object, object> evaluate = null)
+        public OperatorSetBuilder<TToken> Or(TToken token, Func<Operators, bool>? precedesOperator = null, Func<object?, object?, object>? evaluate = null)
         {
             return SetupBinary(Operators.Or, token, evaluate ?? Or, precedesOperator);
         }
@@ -185,12 +185,12 @@ namespace Microsoft.TemplateEngine.Core.Expressions
             return this;
         }
 
-        public OperatorSetBuilder<TToken> RightShift(TToken token, Func<Operators, bool> precedesOperator = null, Func<object, object, object> evaluate = null)
+        public OperatorSetBuilder<TToken> RightShift(TToken token, Func<Operators, bool>? precedesOperator = null, Func<object?, object?, object>? evaluate = null)
         {
             return SetupBinary(Operators.RightShift, token, evaluate ?? RightShift, precedesOperator);
         }
 
-        public OperatorSetBuilder<TToken> Subtract(TToken token, Func<Operators, bool> precedesOperator = null, Func<object, object, object> evaluate = null)
+        public OperatorSetBuilder<TToken> Subtract(TToken token, Func<Operators, bool>? precedesOperator = null, Func<object?, object?, object>? evaluate = null)
         {
             return SetupBinary(Operators.Subtract, token, evaluate ?? Subtract, precedesOperator);
         }
@@ -201,7 +201,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions
             return this;
         }
 
-        public bool TryConvert<T>(object sender, out T result)
+        public bool TryConvert<T>(object? sender, out T? result)
         {
             return _converter.TryConvert(sender, out result);
         }
@@ -213,12 +213,12 @@ namespace Microsoft.TemplateEngine.Core.Expressions
             return this;
         }
 
-        public OperatorSetBuilder<TToken> Xor(TToken token, Func<Operators, bool> precedesOperator = null, Func<object, object, object> evaluate = null)
+        public OperatorSetBuilder<TToken> Xor(TToken token, Func<Operators, bool>? precedesOperator = null, Func<object?, object?, object>? evaluate = null)
         {
             return SetupBinary(Operators.Xor, token, evaluate ?? Xor, precedesOperator);
         }
 
-        private static IEvaluable CreateBinaryChild(IEvaluable active, Operators op, Func<Operators, bool> precedesOperator, Func<object, object, object> evaluate)
+        private static IEvaluable CreateBinaryChild(IEvaluable active, Operators op, Func<Operators, bool> precedesOperator, Func<object?, object?, object> evaluate)
         {
             BinaryScope<Operators> self;
 
@@ -231,7 +231,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions
                     {
                         Left = left.Right
                     };
-                    left.Right.Parent = self;
+                    left.Right!.Parent = self;
                     left.Right = self;
                     return self;
                 }
@@ -266,17 +266,17 @@ namespace Microsoft.TemplateEngine.Core.Expressions
             return self;
         }
 
-        private static IEvaluable CreateUnaryChild(IEvaluable active, Operators op, Func<object, object> evaluate)
+        private static IEvaluable CreateUnaryChild(IEvaluable active, Operators op, Func<object?, object> evaluate)
         {
             UnaryScope<Operators> self = new UnaryScope<Operators>(active, op, evaluate);
             active.TryAccept(self);
             return self;
         }
 
-        private static object EqualTo(object left, object right)
+        private static object EqualTo(object? left, object? right)
         {
-            string l = left as string;
-            string r = right as string;
+            string? l = left as string;
+            string? r = right as string;
 
             if (l != null && r != null)
             {
@@ -286,24 +286,24 @@ namespace Microsoft.TemplateEngine.Core.Expressions
             return Equals(l, r);
         }
 
-        private static object GreaterThan(object left, object right)
+        private static object GreaterThan(object? left, object? right)
         {
-            return ((IComparable)left).CompareTo(right) > 0;
+            return ((IComparable)left!).CompareTo(right) > 0;
         }
 
-        private static object GreaterThanOrEqualTo(object left, object right)
+        private static object GreaterThanOrEqualTo(object? left, object? right)
         {
-            return ((IComparable)left).CompareTo(right) >= 0;
+            return ((IComparable)left!).CompareTo(right) >= 0;
         }
 
-        private static object LessThan(object left, object right)
+        private static object LessThan(object? left, object? right)
         {
-            return ((IComparable)left).CompareTo(right) < 0;
+            return ((IComparable)left!).CompareTo(right) < 0;
         }
 
-        private static object LessThanOrEqualTo(object left, object right)
+        private static object LessThanOrEqualTo(object? left, object? right)
         {
-            return ((IComparable)left).CompareTo(right) <= 0;
+            return ((IComparable)left!).CompareTo(right) <= 0;
         }
 
         private static string Passthrough(string arg)
@@ -316,7 +316,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions
             return check < arg;
         }
 
-        private object Add(object left, object right)
+        private object Add(object? left, object? right)
         {
             if (_converter.TryConvert(left, out long longLeft))
             {
@@ -349,7 +349,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions
             return string.Concat(left, right);
         }
 
-        private object And(object left, object right)
+        private object And(object? left, object? right)
         {
             if (_converter.TryConvert(left, out bool boolLeft) && _converter.TryConvert(right, out bool boolRight))
             {
@@ -359,7 +359,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions
             throw new Exception($"Unable to logical and {left?.GetType()} and {right?.GetType()}");
         }
 
-        private object BitwiseAnd(object left, object right)
+        private object BitwiseAnd(object? left, object? right)
         {
             if (_converter.TryConvert(left, out long longLeft) && _converter.TryConvert(right, out long longRight))
             {
@@ -369,7 +369,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions
             throw new Exception($"Unable to bitwise and {left?.GetType()} and {right?.GetType()}");
         }
 
-        private object BitwiseOr(object left, object right)
+        private object BitwiseOr(object? left, object? right)
         {
             if (_converter.TryConvert(left, out long longLeft) && _converter.TryConvert(right, out long longRight))
             {
@@ -379,7 +379,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions
             throw new Exception($"Unable to bitwise or {left?.GetType()} and {right?.GetType()}");
         }
 
-        private object Divide(object left, object right)
+        private object Divide(object? left, object? right)
         {
             long longRight;
             int doubleRight;
@@ -412,7 +412,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions
             throw new Exception($"Cannot divide {left?.GetType()} and {right?.GetType()}");
         }
 
-        private object Exponentiate(object left, object right)
+        private object Exponentiate(object? left, object? right)
         {
             long longRight;
             int intRight;
@@ -445,7 +445,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions
             throw new Exception($"Cannot exponentiate {left?.GetType()} and {right?.GetType()}");
         }
 
-        private object LeftShift(object left, object right)
+        private object LeftShift(object? left, object? right)
         {
             if (_converter.TryConvert(left, out long longLeft) && _converter.TryConvert(right, out int intRight))
             {
@@ -455,7 +455,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions
             throw new Exception($"Unable to left shift {left?.GetType()} and {right?.GetType()}");
         }
 
-        private object Multiply(object left, object right)
+        private object Multiply(object? left, object? right)
         {
             long longRight;
             int doubleRight;
@@ -488,7 +488,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions
             throw new Exception($"Cannot multiply {left?.GetType()} and {right?.GetType()}");
         }
 
-        private object Not(object operand)
+        private object Not(object? operand)
         {
             if (_converter.TryConvert(operand, out bool l))
             {
@@ -498,7 +498,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions
             throw new Exception($"Unable to logical not {operand?.GetType()}");
         }
 
-        private object NotEqualTo(object left, object right)
+        private object NotEqualTo(object? left, object? right)
         {
             if (left is string l && right is string r)
             {
@@ -508,7 +508,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions
             return Not(EqualTo(left, right));
         }
 
-        private object Or(object left, object right)
+        private object Or(object? left, object? right)
         {
             if (_converter.TryConvert(left, out bool l) && _converter.TryConvert(right, out bool r))
             {
@@ -518,7 +518,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions
             throw new Exception($"Unable to logical or {left?.GetType()} and {right?.GetType()}");
         }
 
-        private object RightShift(object left, object right)
+        private object RightShift(object? left, object? right)
         {
             if (_converter.TryConvert(left, out long longLeft) && _converter.TryConvert(right, out int intRight))
             {
@@ -528,7 +528,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions
             throw new Exception($"Unable to right shift {left?.GetType()} and {right?.GetType()}");
         }
 
-        private OperatorSetBuilder<TToken> SetupBinary(Operators op, TToken token, Func<object, object, object> evaluate, Func<Operators, bool> precedesOperator = null)
+        private OperatorSetBuilder<TToken> SetupBinary(Operators op, TToken token, Func<object?, object?, object> evaluate, Func<Operators, bool>? precedesOperator = null)
         {
             _operatorScopeLookupFactory[op] =
                 x => CreateBinaryChild(x, op, precedesOperator ?? (a => Precedes(op, a)), evaluate ?? Add);
@@ -536,7 +536,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions
             return this;
         }
 
-        private object Subtract(object left, object right)
+        private object Subtract(object? left, object? right)
         {
             long longRight;
             int doubleRight;
@@ -569,7 +569,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions
             throw new Exception($"Cannot subtract {left?.GetType()} and {right?.GetType()}");
         }
 
-        private object Xor(object left, object right)
+        private object Xor(object? left, object? right)
         {
             if (_converter.TryConvert(left, out bool l) && _converter.TryConvert(right, out bool r))
             {
@@ -617,23 +617,23 @@ namespace Microsoft.TemplateEngine.Core.Expressions
                 return this;
             }
 
-            public bool TryConvert<T>(object source, out T result)
+            public bool TryConvert<T>(object? source, out T? result)
             {
-                TypeConverterDelegate<T> converter = TypeConverterLookup<T>.TryConvert;
+                TypeConverterDelegate<T>? converter = TypeConverterLookup<T>.TryConvert;
 
                 return converter != null
                     ? converter(source, out result)
                     : TryCoreConvert(source, out result);
             }
 
-            public bool TryCoreConvert<T>(object source, out T result)
+            public bool TryCoreConvert<T>(object? source, out T? result)
             {
                 return Converter.TryConvert(source, out result);
             }
 
             private static class TypeConverterLookup<T>
             {
-                public static TypeConverterDelegate<T> TryConvert { get; set; }
+                public static TypeConverterDelegate<T>? TryConvert { get; set; }
             }
         }
     }

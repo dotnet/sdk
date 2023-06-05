@@ -53,7 +53,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             {
                 VariableCollection vc = new()
                 {
-                    ["NULL"] = null
+                    ["NULL"] = null!
                 };
             });
         }

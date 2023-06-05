@@ -9,10 +9,10 @@ namespace Microsoft.TemplateEngine.Core.Expressions
 
         bool IsIndivisible { get; }
 
-        IEvaluable Parent { get; set; }
+        IEvaluable? Parent { get; set; }
 
-        object Evaluate();
+        object? Evaluate();
 
-        bool TryAccept(IEvaluable child);
+        bool TryAccept(IEvaluable? child);
     }
 }

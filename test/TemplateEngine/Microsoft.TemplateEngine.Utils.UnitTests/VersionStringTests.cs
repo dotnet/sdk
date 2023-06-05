@@ -66,7 +66,8 @@ namespace Microsoft.TemplateEngine.Utils.UnitTests
         [InlineData("(1.1.0.0-1.2.0.0)", "1.1.0.1", true)]
         public void VersionParseCompare(string allowed, string proposed, bool expected)
         {
-            Assert.True(VersionStringHelpers.TryParseVersionSpecification(allowed, out IVersionSpecification checker));
+            Assert.True(VersionStringHelpers.TryParseVersionSpecification(allowed, out IVersionSpecification? checker));
+            Assert.NotNull(checker);
             Assert.Equal(expected, checker.CheckIfVersionIsValid(proposed));
         }
     }

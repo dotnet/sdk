@@ -12,12 +12,12 @@ namespace Microsoft.TemplateEngine.Mocks
     {
         private readonly MatchHandler _onMatch;
 
-        public MockOperation(string id, MatchHandler onMatch, bool initialState, params byte[][] tokens)
+        public MockOperation(string? id, MatchHandler onMatch, bool initialState, params byte[][] tokens)
             : this(id, onMatch, initialState, tokens.Select(token => TokenConfig.LiteralToken(token)).ToArray())
         {
         }
 
-        public MockOperation(string id, MatchHandler onMatch, bool initialState, params IToken[] tokens)
+        public MockOperation(string? id, MatchHandler onMatch, bool initialState, params IToken[] tokens)
         {
             Tokens = tokens;
             Id = id;
@@ -29,7 +29,7 @@ namespace Microsoft.TemplateEngine.Mocks
 
         public IReadOnlyList<IToken> Tokens { get; }
 
-        public string Id { get; }
+        public string? Id { get; }
 
         public IOperationProvider Provider => new MockOperationProvider(this);
 

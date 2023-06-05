@@ -21,11 +21,11 @@ namespace Microsoft.TemplateEngine.Utils.UnitTests
         {
             var thisDir = Path.GetDirectoryName(typeof(DefaultTemplatePackageProviderTests).Assembly.Location);
             //Pass in 5 folders
-            var folders = Directory.GetDirectories(Path.Combine(thisDir, "..", "..", "..", "..", "..", "test", "Microsoft.TemplateEngine.TestTemplates", "test_templates")).Take(5);
+            var folders = Directory.GetDirectories(Path.Combine(thisDir!, "..", "..", "..", "..", "..", "test", "Microsoft.TemplateEngine.TestTemplates", "test_templates")).Take(5);
             //And one *.nupkg, but that folder contains 2 .nupkg files
-            var nupkgs = new[] { Path.Combine(thisDir, "..", "..", "..", "..", "..", "test", "Microsoft.TemplateEngine.TestTemplates", "nupkg_templates", "*.nupkg") };
+            var nupkgs = new[] { Path.Combine(thisDir!, "..", "..", "..", "..", "..", "test", "Microsoft.TemplateEngine.TestTemplates", "nupkg_templates", "*.nupkg") };
 
-            var provider = new DefaultTemplatePackageProvider(null, _engineEnvironmentSettings, nupkgs, folders);
+            var provider = new DefaultTemplatePackageProvider(null!, _engineEnvironmentSettings, nupkgs, folders);
             var sources = await provider.GetAllTemplatePackagesAsync(default).ConfigureAwait(false);
 
             //Total should be 7

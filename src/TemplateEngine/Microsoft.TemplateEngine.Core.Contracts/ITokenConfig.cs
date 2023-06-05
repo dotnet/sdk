@@ -8,11 +8,11 @@ namespace Microsoft.TemplateEngine.Core.Contracts
 {
     public interface ITokenConfig : IEquatable<ITokenConfig>
     {
-        string After { get; }
+        string? After { get; }
 
-        string Before { get; }
+        string? Before { get; }
 
-        string Value { get; }
+        string? Value { get; }
 
         IToken ToToken(Encoding encoding);
     }

@@ -13,7 +13,7 @@ namespace Microsoft.TemplateEngine.Mocks
     public class MockManagedTemplatePackageProvider
         : IManagedTemplatePackageProvider
     {
-        public event Action TemplatePackagesChanged
+        public event Action? TemplatePackagesChanged
         {
             add => throw new NotSupportedException();
             remove { }

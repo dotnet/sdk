@@ -9,20 +9,20 @@ namespace Microsoft.TemplateEngine.Core
 {
     public class TokenConfig : ITokenConfig
     {
-        private TokenConfig(string after, string value, string before)
+        private TokenConfig(string? after, string? value, string? before)
         {
             After = after;
             Value = value;
             Before = before;
         }
 
-        public string After { get; }
+        public string? After { get; }
 
-        public string Before { get; }
+        public string? Before { get; }
 
-        public string Value { get; }
+        public string? Value { get; }
 
-        public static TokenConfig FromValue(string value)
+        public static TokenConfig FromValue(string? value)
         {
             return new TokenConfig(null, value, null);
         }
@@ -33,12 +33,12 @@ namespace Microsoft.TemplateEngine.Core
             return new Token(data, start, realEnd);
         }
 
-        public TokenConfig OnlyIfAfter(string prefix)
+        public TokenConfig OnlyIfAfter(string? prefix)
         {
             return new TokenConfig(prefix, Value, Before);
         }
 
-        public TokenConfig OnlyIfBefore(string suffix)
+        public TokenConfig OnlyIfBefore(string? suffix)
         {
             return new TokenConfig(After, Value, suffix);
         }
@@ -71,7 +71,7 @@ namespace Microsoft.TemplateEngine.Core
 
         public override bool Equals(object obj)
         {
-            return Equals(obj as ITokenConfig);
+            return Equals((obj as ITokenConfig)!);
         }
 
         public override int GetHashCode()

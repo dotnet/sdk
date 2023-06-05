@@ -48,7 +48,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
         public bool EvaluateCondition(ILogger logger, IVariableCollection variables)
         {
             bool conditionResult = string.IsNullOrEmpty(Condition) ||
-                Cpp2StyleEvaluatorDefinition.EvaluateFromString(logger, Condition, variables);
+                Cpp2StyleEvaluatorDefinition.EvaluateFromString(logger, Condition!, variables);
             _conditionResult = conditionResult;
             return conditionResult;
         }

@@ -5,7 +5,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions
 {
     public class Token<TToken>
     {
-        public Token(TToken family, object value)
+        public Token(TToken family, object? value)
         {
             Family = family;
             Value = value;
@@ -13,6 +13,6 @@ namespace Microsoft.TemplateEngine.Core.Expressions
 
         public TToken Family { get; }
 
-        public object Value { get; }
+        public object? Value { get; }
     }
 }

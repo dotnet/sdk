@@ -22,7 +22,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
         [Fact]
         public void VerifyCpp2EvaluatorTrueLiteral()
         {
-            bool result = Cpp2StyleEvaluatorDefinition.EvaluateFromString(_logger, "true", new VariableCollection(), out string faultedMessage);
+            bool result = Cpp2StyleEvaluatorDefinition.EvaluateFromString(_logger, "true", new VariableCollection(), out string? faultedMessage);
             Assert.Null(faultedMessage);
             Assert.True(result);
         }
@@ -30,7 +30,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
         [Fact]
         public void VerifyCpp2EvaluatorFalseLiteral()
         {
-            bool result = Cpp2StyleEvaluatorDefinition.EvaluateFromString(_logger, "false", new VariableCollection(), out string faultedMessage);
+            bool result = Cpp2StyleEvaluatorDefinition.EvaluateFromString(_logger, "false", new VariableCollection(), out string? faultedMessage);
             Assert.Null(faultedMessage);
             Assert.False(result);
         }
@@ -38,7 +38,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
         [Fact]
         public void VerifyCpp2EvaluatorStringLiteral()
         {
-            bool result = Cpp2StyleEvaluatorDefinition.EvaluateFromString(_logger, "blah blah", new VariableCollection(), out string faultedMessage);
+            bool result = Cpp2StyleEvaluatorDefinition.EvaluateFromString(_logger, "blah blah", new VariableCollection(), out string? faultedMessage);
             Assert.NotNull(faultedMessage);
             Assert.False(result);
             Assert.Contains("was not recognized as a valid Boolean", faultedMessage);
@@ -47,7 +47,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
         [Fact]
         public void VerifyCpp2EvaluatorUnknownVariable()
         {
-            bool result = Cpp2StyleEvaluatorDefinition.EvaluateFromString(_logger, "FIRST_IF == true", new VariableCollection(), out string faultedMessage);
+            bool result = Cpp2StyleEvaluatorDefinition.EvaluateFromString(_logger, "FIRST_IF == true", new VariableCollection(), out string? faultedMessage);
             Assert.Null(faultedMessage);
             Assert.False(result);
         }
@@ -55,7 +55,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
         [Fact]
         public void VerifyCpp2EvaluatorUnknownVariableEroneousExpression()
         {
-            bool result = Cpp2StyleEvaluatorDefinition.EvaluateFromString(_logger, "FIRST_IF == true blah blah", new VariableCollection(), out string faultedMessage);
+            bool result = Cpp2StyleEvaluatorDefinition.EvaluateFromString(_logger, "FIRST_IF == true blah blah", new VariableCollection(), out string? faultedMessage);
             Assert.NotNull(faultedMessage);
             Assert.False(result);
         }
@@ -67,7 +67,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             {
                 ["FIRST_IF"] = "true"
             };
-            bool result = Cpp2StyleEvaluatorDefinition.EvaluateFromString(_logger, "FIRST_IF", vc, out string faultedMessage);
+            bool result = Cpp2StyleEvaluatorDefinition.EvaluateFromString(_logger, "FIRST_IF", vc, out string? faultedMessage);
             Assert.Null(faultedMessage);
             Assert.True(result);
         }
@@ -79,7 +79,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             {
                 ["FIRST_IF"] = true
             };
-            bool result = Cpp2StyleEvaluatorDefinition.EvaluateFromString(_logger, "FIRST_IF", vc, out string faultedMessage);
+            bool result = Cpp2StyleEvaluatorDefinition.EvaluateFromString(_logger, "FIRST_IF", vc, out string? faultedMessage);
             Assert.Null(faultedMessage);
             Assert.True(result);
         }
@@ -91,7 +91,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             {
                 ["FIRST_IF"] = true
             };
-            bool result = Cpp2StyleEvaluatorDefinition.EvaluateFromString(_logger, "FIRST_IF = false", vc, out string faultedMessage);
+            bool result = Cpp2StyleEvaluatorDefinition.EvaluateFromString(_logger, "FIRST_IF = false", vc, out string? faultedMessage);
             Assert.NotNull(faultedMessage);
             Assert.True(result);
         }
@@ -103,7 +103,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             {
                 ["FIRST_IF"] = false
             };
-            bool result = Cpp2StyleEvaluatorDefinition.EvaluateFromString(_logger, "FIRST_IF", vc, out string faultedMessage);
+            bool result = Cpp2StyleEvaluatorDefinition.EvaluateFromString(_logger, "FIRST_IF", vc, out string? faultedMessage);
             Assert.Null(faultedMessage);
             Assert.False(result);
         }
@@ -116,7 +116,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                 ["FIRST_IF"] = false,
                 ["SECOND_IF"] = false
             };
-            bool result = Cpp2StyleEvaluatorDefinition.EvaluateFromString(_logger, "FIRST_IF == SECOND_IF && !FIRST_IF ", vc, out string faultedMessage);
+            bool result = Cpp2StyleEvaluatorDefinition.EvaluateFromString(_logger, "FIRST_IF == SECOND_IF && !FIRST_IF ", vc, out string? faultedMessage);
             Assert.Null(faultedMessage);
             Assert.True(result);
         }
@@ -139,7 +139,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
 
             };
             HashSet<string> keys = new HashSet<string>();
-            bool result = Cpp2StyleEvaluatorDefinition.EvaluateFromString(_logger, "FIRST_IF == SECOND_IF && !FIRST_IF", vc, out string faultedMessage, keys);
+            bool result = Cpp2StyleEvaluatorDefinition.EvaluateFromString(_logger, "FIRST_IF == SECOND_IF && !FIRST_IF", vc, out string? faultedMessage, keys);
             Assert.Null(faultedMessage);
             Assert.True(result);
             Assert.Equal(2, keys.Count);
@@ -154,7 +154,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                 ["FIRST"] = 8,
                 ["SECOND"] = 5
             };
-            bool result = Cpp2StyleEvaluatorDefinition.EvaluateFromString(_logger, "FIRST >> 1 + 2 == 1 + SECOND", vc, out string faultedMessage);
+            bool result = Cpp2StyleEvaluatorDefinition.EvaluateFromString(_logger, "FIRST >> 1 + 2 == 1 + SECOND", vc, out string? faultedMessage);
             Assert.Null(faultedMessage);
             Assert.True(result);
         }
@@ -167,7 +167,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                 ["FIRST_IF"] = false,
                 ["SECOND_IF"] = false
             };
-            bool result = Cpp2StyleEvaluatorDefinition.EvaluateFromString(_logger, "!!!FIRST_IF && !SECOND_IF == !FIRST_IF", vc, out string faultedMessage);
+            bool result = Cpp2StyleEvaluatorDefinition.EvaluateFromString(_logger, "!!!FIRST_IF && !SECOND_IF == !FIRST_IF", vc, out string? faultedMessage);
             Assert.Null(faultedMessage);
             Assert.True(result);
         }
@@ -179,7 +179,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             {
                 ["FIRST_IF"] = "1.2.3"
             };
-            bool result = Cpp2StyleEvaluatorDefinition.EvaluateFromString(_logger, "FIRST_IF == '1.2.3'", vc, out string faultedMessage);
+            bool result = Cpp2StyleEvaluatorDefinition.EvaluateFromString(_logger, "FIRST_IF == '1.2.3'", vc, out string? faultedMessage);
             Assert.Null(faultedMessage);
             Assert.True(result);
         }
@@ -188,7 +188,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
         public void VerifyCpp2EvaluatorNumerics()
         {
             VariableCollection vc = new VariableCollection();
-            bool result = Cpp2StyleEvaluatorDefinition.EvaluateFromString(_logger, "0x20 == '32'", vc, out string faultedMessage);
+            bool result = Cpp2StyleEvaluatorDefinition.EvaluateFromString(_logger, "0x20 == '32'", vc, out string? faultedMessage);
             Assert.Null(faultedMessage);
             Assert.True(result);
         }
@@ -201,7 +201,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                 ["FIRST"] = "4",
                 ["SECOND"] = "64"
             };
-            bool result = Cpp2StyleEvaluatorDefinition.EvaluateFromString(_logger, "FIRST << 2 == SECOND >> 2", vc, out string faultedMessage);
+            bool result = Cpp2StyleEvaluatorDefinition.EvaluateFromString(_logger, "FIRST << 2 == SECOND >> 2", vc, out string? faultedMessage);
             Assert.Null(faultedMessage);
             Assert.True(result);
         }
@@ -210,7 +210,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
         public void VerifyCpp2EvaluatorMath()
         {
             VariableCollection vc = new VariableCollection();
-            bool result = Cpp2StyleEvaluatorDefinition.EvaluateFromString(_logger, "4 + 9 / (2 + 1) == (0x38 >> 2) / (1 << 0x01)", vc, out string faultedMessage);
+            bool result = Cpp2StyleEvaluatorDefinition.EvaluateFromString(_logger, "4 + 9 / (2 + 1) == (0x38 >> 2) / (1 << 0x01)", vc, out string? faultedMessage);
             Assert.Null(faultedMessage);
             Assert.True(result);
         }

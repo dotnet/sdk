@@ -17,10 +17,10 @@ namespace Microsoft.TemplateEngine.Core.Operations
         private readonly bool _toggle;
         private readonly bool _wholeLine;
         private readonly bool _trimWhitespace;
-        private readonly string _id;
+        private readonly string? _id;
         private readonly bool _initialState;
 
-        public Region(ITokenConfig start, ITokenConfig end, bool include, bool wholeLine, bool trimWhitespace, string id, bool initialState)
+        public Region(ITokenConfig start, ITokenConfig end, bool include, bool wholeLine, bool trimWhitespace, string? id, bool initialState)
         {
             _wholeLine = wholeLine;
             _trimWhitespace = trimWhitespace;
@@ -32,7 +32,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
             _initialState = initialState;
         }
 
-        public string Id => _id;
+        public string? Id => _id;
 
         public IOperation GetOperation(Encoding encoding, IProcessorState processorState)
         {
@@ -47,10 +47,10 @@ namespace Microsoft.TemplateEngine.Core.Operations
             private readonly bool _includeRegion;
             private readonly bool _startAndEndAreSame;
             private readonly Region _definition;
-            private readonly string _id;
+            private readonly string? _id;
             private bool _waitingForEnd;
 
-            public Impl(Region owner, IToken startToken, IToken endToken, bool include, bool toggle, string id, bool initialState)
+            public Impl(Region owner, IToken startToken, IToken endToken, bool include, bool toggle, string? id, bool initialState)
             {
                 _definition = owner;
                 _endToken = endToken;
@@ -64,7 +64,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
 
             public IReadOnlyList<IToken> Tokens { get; }
 
-            public string Id => _id;
+            public string? Id => _id;
 
             public bool IsInitialStateOn { get; }
 

@@ -14,11 +14,11 @@ namespace Microsoft.TemplateEngine.Core.Operations
     {
         public static readonly string OperationName = "include";
 
-        private readonly string _id;
+        private readonly string? _id;
 
         private readonly bool _initialState;
 
-        public Include(ITokenConfig startToken, ITokenConfig endToken, Func<string, Stream> sourceStreamOpener, string id, bool initialState)
+        public Include(ITokenConfig startToken, ITokenConfig endToken, Func<string, Stream?> sourceStreamOpener, string? id, bool initialState)
         {
             SourceStreamOpener = sourceStreamOpener;
             StartToken = startToken;
@@ -31,9 +31,9 @@ namespace Microsoft.TemplateEngine.Core.Operations
 
         public ITokenConfig StartToken { get; }
 
-        public Func<string, Stream> SourceStreamOpener { get; }
+        public Func<string, Stream?> SourceStreamOpener { get; }
 
-        public string Id => _id;
+        public string? Id => _id;
 
         public IOperation GetOperation(Encoding encoding, IProcessorState processorState)
         {
@@ -48,9 +48,9 @@ namespace Microsoft.TemplateEngine.Core.Operations
         {
             private readonly Include _source;
             private readonly ITokenTrie _endTokenMatcher;
-            private readonly string _id;
+            private readonly string? _id;
 
-            public Impl(IToken token, ITokenTrie endTokenMatcher, Include source, string id, bool initialState)
+            public Impl(IToken token, ITokenTrie endTokenMatcher, Include source, string? id, bool initialState)
             {
                 Tokens = new[] { token };
                 _source = source;
@@ -61,7 +61,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
 
             public IReadOnlyList<IToken> Tokens { get; }
 
-            public string Id => _id;
+            public string? Id => _id;
 
             public bool IsInitialStateOn { get; }
 
@@ -97,11 +97,11 @@ namespace Microsoft.TemplateEngine.Core.Operations
                 //Start off with a 64K buffer, we'll keep adding chunks to this
                 byte[] composite = new byte[pageSize];
                 int totalBytesRead = 0;
-                using (Stream data = _source.SourceStreamOpener(sourceLocation))
+                using (Stream? data = _source.SourceStreamOpener(sourceLocation))
                 {
                     while (totalBytesRead < composite.Length)
                     {
-                        int bytesRead = data.Read(composite, totalBytesRead, composite.Length - totalBytesRead);
+                        int bytesRead = data!.Read(composite, totalBytesRead, composite.Length - totalBytesRead);
                         if (bytesRead == 0)
                         {
                             break;
@@ -120,7 +120,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
                         bytesFromPage = 0;
                         while (totalBytesRead < composite.Length)
                         {
-                            int bytesRead = data.Read(composite, totalBytesRead, composite.Length - totalBytesRead);
+                            int bytesRead = data!.Read(composite, totalBytesRead, composite.Length - totalBytesRead);
                             if (bytesRead == 0)
                             {
                                 break;

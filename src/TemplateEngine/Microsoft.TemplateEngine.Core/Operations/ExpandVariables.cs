@@ -11,16 +11,16 @@ namespace Microsoft.TemplateEngine.Core.Operations
     {
         public static readonly string OperationName = "expandvariables";
 
-        private readonly string _id;
+        private readonly string? _id;
         private readonly bool _initialState;
 
-        public ExpandVariables(string id, bool initialState)
+        public ExpandVariables(string? id, bool initialState)
         {
             _id = id;
             _initialState = initialState;
         }
 
-        public string Id => _id;
+        public string? Id => _id;
 
         public IOperation GetOperation(Encoding encoding, IProcessorState processor)
         {
@@ -29,9 +29,9 @@ namespace Microsoft.TemplateEngine.Core.Operations
 
         private class Impl : IOperation
         {
-            private readonly string _id;
+            private readonly string? _id;
 
-            public Impl(IProcessorState processor, string id, bool initialState)
+            public Impl(IProcessorState processor, string? id, bool initialState)
             {
                 Tokens = processor.EncodingConfig.VariableKeys;
                 _id = id;
@@ -40,7 +40,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
 
             public IReadOnlyList<IToken> Tokens { get; }
 
-            public string Id => _id;
+            public string? Id => _id;
 
             public bool IsInitialStateOn { get; }
 

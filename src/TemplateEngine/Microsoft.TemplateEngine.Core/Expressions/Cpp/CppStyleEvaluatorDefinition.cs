@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable enable
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -300,7 +298,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
 
                 Scope tmp2 = new Scope
                 {
-                    Value = leftScope.Right
+                    Value = leftScope.Right!
                 };
 
                 leftScope.Right = tmp2;
@@ -317,7 +315,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
             }
             else
             {
-                tmp.Value = current.Right;
+                tmp.Value = current.Right!;
                 current.Right = tmp;
                 parents.Push(current);
             }
@@ -350,7 +348,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
                     else if (tokens[i].Family == TokenFamily.Literal)
                     {
                         //Combine literals
-                        string literalValue = tokens[i].Literal;
+                        string literalValue = tokens[i].Literal!;
                         string followingWhitespace = string.Empty;
                         int reach = i;
 
@@ -411,7 +409,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
                             break;
                         }
                     case TokenFamily.Literal:
-                        current.Value = InferTypeAndConvertLiteral(outputTokens[i].Literal);
+                        current.Value = InferTypeAndConvertLiteral(outputTokens[i].Literal!)!;
 
                         while (parents.Count > 0 && current.TargetPlacement == Scope.NextPlacement.None)
                         {

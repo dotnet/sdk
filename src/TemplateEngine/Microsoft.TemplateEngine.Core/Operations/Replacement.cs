@@ -13,11 +13,11 @@ namespace Microsoft.TemplateEngine.Core.Operations
         public static readonly string OperationName = "replacement";
 
         private readonly ITokenConfig _match;
-        private readonly string _replaceWith;
-        private readonly string _id;
+        private readonly string? _replaceWith;
+        private readonly string? _id;
         private readonly bool _initialState;
 
-        public Replacement(ITokenConfig match, string replaceWith, string id, bool initialState)
+        public Replacement(ITokenConfig match, string? replaceWith, string? id, bool initialState)
         {
             _match = match;
             _replaceWith = replaceWith;
@@ -25,7 +25,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
             _initialState = initialState;
         }
 
-        public string Id => _id;
+        public string? Id => _id;
 
         public IOperation GetOperation(Encoding encoding, IProcessorState processorState)
         {
@@ -34,7 +34,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
 
             if (token.Value.Skip(token.Start).Take(token.Length).SequenceEqual(replaceWith))
             {
-                return null;
+                return null!;
             }
 
             return new Impl(token, replaceWith, _id, _initialState);
@@ -44,9 +44,9 @@ namespace Microsoft.TemplateEngine.Core.Operations
         {
             private readonly byte[] _replacement;
             private readonly IToken _token;
-            private readonly string _id;
+            private readonly string? _id;
 
-            public Impl(IToken token, byte[] replaceWith, string id, bool initialState)
+            public Impl(IToken token, byte[] replaceWith, string? id, bool initialState)
             {
                 _replacement = replaceWith;
                 _token = token;
@@ -57,7 +57,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
 
             public IReadOnlyList<IToken> Tokens { get; }
 
-            public string Id => _id;
+            public string? Id => _id;
 
             public bool IsInitialStateOn { get; }
 

@@ -17,11 +17,11 @@ namespace Microsoft.TemplateEngine.Core.Expressions
 
         public bool IsQuoted { get; set; }
 
-        public IEvaluable Parent { get; set; }
+        public IEvaluable? Parent { get; set; }
 
         public Token<TToken> Token { get; }
 
-        public object Evaluate()
+        public object? Evaluate()
         {
             return Token.Value;
         }
@@ -31,6 +31,6 @@ namespace Microsoft.TemplateEngine.Core.Expressions
             return $@"""{Token.Value}""";
         }
 
-        public bool TryAccept(IEvaluable child) => false;
+        public bool TryAccept(IEvaluable? child) => false;
     }
 }

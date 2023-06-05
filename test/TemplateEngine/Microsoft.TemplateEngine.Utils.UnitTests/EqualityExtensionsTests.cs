@@ -49,12 +49,12 @@ namespace Microsoft.TemplateEngine.Utils.UnitTests
             };
             static string Selector(KeyValuePair<int, string> x) => x.Value;
 
-            static bool LengthComparer(string x, string y) => x.Length == y.Length;
+            static bool LengthComparer(string? x, string? y) => x!.Length == y!.Length;
 
             // they're all the same length
             Assert.True(items.AllAreTheSame(Selector, LengthComparer));
 
-            static bool UpperComparer(string x, string y) => x.ToUpper() == y.ToUpper();
+            static bool UpperComparer(string? x, string? y) => x!.ToUpper() == y!.ToUpper();
             Assert.False(items.AllAreTheSame(Selector, UpperComparer));
         }
     }

@@ -12,7 +12,7 @@ namespace Microsoft.TemplateEngine.Mocks
     {
         private readonly Dictionary<string, string> _environmentVariables = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
-        public MockEnvironment(Dictionary<string, string> environmentVariablesToOverride = null)
+        public MockEnvironment(Dictionary<string, string>? environmentVariablesToOverride = null)
         {
             var env = Environment.GetEnvironmentVariables();
             foreach (string key in env.Keys.OfType<string>())

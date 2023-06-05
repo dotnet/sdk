@@ -10,7 +10,7 @@ namespace Microsoft.TemplateEngine.Mocks
 {
     public class MockDirectory : IDirectory
     {
-        private readonly List<IFileSystemInfo> _children;
+        private readonly List<IFileSystemInfo>? _children;
 
         public MockDirectory(string fullPath, IMountPoint mountPoint)
         {
@@ -25,7 +25,7 @@ namespace Microsoft.TemplateEngine.Mocks
             Exists = false;
         }
 
-        public MockDirectory(string fullPath, string name, IMountPoint mountPoint, IDirectory parent)
+        public MockDirectory(string fullPath, string name, IMountPoint mountPoint, IDirectory? parent)
         {
             if (fullPath[fullPath.Length - 1] != '/')
             {
@@ -46,7 +46,7 @@ namespace Microsoft.TemplateEngine.Mocks
 
         public FileSystemInfoKind Kind => FileSystemInfoKind.Directory;
 
-        public IDirectory Parent { get; }
+        public IDirectory? Parent { get; }
 
         public string Name { get; }
 
@@ -54,7 +54,7 @@ namespace Microsoft.TemplateEngine.Mocks
 
         public IEnumerable<IFileSystemInfo> EnumerateFileSystemInfos(string patten, SearchOption searchOption)
         {
-            foreach (IFileSystemInfo child in _children)
+            foreach (IFileSystemInfo child in _children!)
             {
                 yield return child;
 
@@ -73,7 +73,7 @@ namespace Microsoft.TemplateEngine.Mocks
 
         public IEnumerable<IFile> EnumerateFiles(string pattern, SearchOption searchOption)
         {
-            foreach (IFileSystemInfo child in _children)
+            foreach (IFileSystemInfo child in _children!)
             {
                 if (child is IFile childFile)
                 {
@@ -85,7 +85,7 @@ namespace Microsoft.TemplateEngine.Mocks
                     {
                         foreach (IFileSystemInfo nestedChild in childDir.EnumerateFileSystemInfos(pattern, searchOption))
                         {
-                            childFile = nestedChild as IFile;
+                            childFile = (nestedChild as IFile)!;
 
                             if (childFile != null)
                             {
@@ -99,7 +99,7 @@ namespace Microsoft.TemplateEngine.Mocks
 
         public IEnumerable<IDirectory> EnumerateDirectories(string pattern, SearchOption searchOption)
         {
-            foreach (IFileSystemInfo child in _children)
+            foreach (IFileSystemInfo child in _children!)
             {
                 if (child is IDirectory childDir)
                 {
@@ -109,7 +109,7 @@ namespace Microsoft.TemplateEngine.Mocks
                     {
                         foreach (IFileSystemInfo nestedChild in childDir.EnumerateFileSystemInfos(pattern, searchOption))
                         {
-                            childDir = nestedChild as IDirectory;
+                            childDir = (nestedChild as IDirectory)!;
                             if (childDir != null)
                             {
                                 yield return childDir;
@@ -123,14 +123,14 @@ namespace Microsoft.TemplateEngine.Mocks
         public MockDirectory AddDirectory(string name)
         {
             MockDirectory dir = new MockDirectory(FullPath + name, name, MountPoint, this);
-            _children.Add(dir);
+            _children!.Add(dir);
             return dir;
         }
 
         public MockDirectory AddFile(string name, byte[] contents)
         {
             MockFile file = new MockFile(this, name, MountPoint, contents);
-            _children.Add(file);
+            _children!.Add(file);
             return this;
         }
     }

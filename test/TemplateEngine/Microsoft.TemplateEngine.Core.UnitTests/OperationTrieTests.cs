@@ -23,7 +23,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
 
             byte[] buffer = { 1, 2, 3, 4, 5 };
             int currentBufferPosition = 0;
-            IOperation match = trie.GetOperation(buffer, buffer.Length, ref currentBufferPosition, out int token);
+            IOperation? match = trie.GetOperation(buffer, buffer.Length, ref currentBufferPosition, out int token);
 
             Assert.NotNull(match);
             Assert.Equal("Test1", match.Id);
@@ -42,7 +42,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
 
             byte[] buffer = { 1, 2, 3, 4, 5 };
             int currentBufferPosition = 0;
-            IOperation match = trie.GetOperation(buffer, buffer.Length, ref currentBufferPosition, out _);
+            IOperation? match = trie.GetOperation(buffer, buffer.Length, ref currentBufferPosition, out _);
 
             Assert.Null(match);
             Assert.Equal(0, currentBufferPosition);
@@ -66,7 +66,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
 
             byte[] buffer = { 1, 2, 3, 4, 5 };
             int currentBufferPosition = 3;
-            IOperation match = trie.GetOperation(buffer, buffer.Length, ref currentBufferPosition, out int token);
+            IOperation? match = trie.GetOperation(buffer, buffer.Length, ref currentBufferPosition, out int token);
 
             Assert.NotNull(match);
             Assert.Equal("Test2", match.Id);
@@ -89,7 +89,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
 
             byte[] buffer = { 9, 8, 9, 8, 7, 2, 3, 4, 5 };
             int currentBufferPosition = 0;
-            IOperation match = trie.GetOperation(buffer, buffer.Length, ref currentBufferPosition, out int token);
+            IOperation? match = trie.GetOperation(buffer, buffer.Length, ref currentBufferPosition, out int token);
 
             Assert.NotNull(match);
             Assert.Equal("TestOp4", match.Id);
@@ -99,9 +99,9 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
 
         private class MockOperation : IOperation
         {
-            private readonly MatchHandler _onMatch;
+            private readonly MatchHandler? _onMatch;
 
-            public MockOperation(string id, MatchHandler onMatch, bool initialState, params IToken[] tokens)
+            public MockOperation(string id, MatchHandler? onMatch, bool initialState, params IToken[] tokens)
             {
                 Tokens = tokens;
                 Id = id;
@@ -130,16 +130,16 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                 foreach (IOperation operation in operations)
                 {
                     int tokenNumber = 0;
-                    foreach (IToken token in operation.Tokens)
+                    foreach (IToken? token in operation.Tokens)
                     {
-                        trie.AddPath(token.Value, new OperationTerminal(operation, tokenNumber++, token.Length, token.Start, token.End));
+                        trie.AddPath(token!.Value, new OperationTerminal(operation, tokenNumber++, token.Length, token.Start, token.End));
                     }
                 }
 
                 return trie;
             }
 
-            public IOperation GetOperation(byte[] buffer, int bufferLength, ref int bufferPosition, out int token)
+            public IOperation? GetOperation(byte[] buffer, int bufferLength, ref int bufferPosition, out int token)
             {
                 int originalPosition = bufferPosition;
                 TrieEvaluator<OperationTerminal> evaluator = new TrieEvaluator<OperationTerminal>(this);
@@ -147,9 +147,9 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
 
                 for (; bufferPosition < bufferLength; ++bufferPosition)
                 {
-                    if (evaluator.Accept(buffer[bufferPosition], ref sn, out TerminalLocation<OperationTerminal> terminal))
+                    if (evaluator.Accept(buffer[bufferPosition], ref sn, out TerminalLocation<OperationTerminal>? terminal))
                     {
-                        if (terminal.Location == originalPosition)
+                        if (terminal!.Location == originalPosition)
                         {
                             bufferPosition -= sn - terminal.Location - terminal.Terminal.End;
                             token = terminal.Terminal.Token;
@@ -168,7 +168,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
 
                 if (bufferPosition == bufferLength)
                 {
-                    evaluator.FinalizeMatchesInProgress(ref sn, out TerminalLocation<OperationTerminal> terminal);
+                    evaluator.FinalizeMatchesInProgress(ref sn, out TerminalLocation<OperationTerminal>? terminal);
 
                     if (terminal != null)
                     {

@@ -9,12 +9,12 @@ namespace Microsoft.TemplateEngine.Core
 {
     public static class TokenConfigExtensions
     {
-        public static ITokenConfig TokenConfig(this string s)
+        public static ITokenConfig TokenConfig(this string? s)
         {
             return Core.TokenConfig.FromValue(s);
         }
 
-        public static TokenConfig TokenConfigBuilder(this string s)
+        public static TokenConfig TokenConfigBuilder(this string? s)
         {
             return Core.TokenConfig.FromValue(s);
         }

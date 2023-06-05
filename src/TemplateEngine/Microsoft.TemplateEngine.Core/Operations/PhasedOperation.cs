@@ -11,17 +11,17 @@ namespace Microsoft.TemplateEngine.Core.Operations
     public class PhasedOperation : IOperationProvider
     {
         private readonly IReadOnlyList<Phase> _config;
-        private readonly string _id;
+        private readonly string? _id;
         private readonly bool _initialState;
 
-        public PhasedOperation(string id, IReadOnlyList<Phase> config, bool initialState)
+        public PhasedOperation(string? id, IReadOnlyList<Phase> config, bool initialState)
         {
             _id = id;
             _config = config;
             _initialState = initialState;
         }
 
-        public string Id => _id;
+        public string? Id => _id;
 
         public IOperation GetOperation(Encoding encoding, IProcessorState processorState)
         {
@@ -30,7 +30,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
 
             Stack<IEnumerator<Phase>> sourceParents = new Stack<IEnumerator<Phase>>();
             Stack<List<SpecializedPhase>> targetParents = new Stack<List<SpecializedPhase>>();
-            IEnumerator<Phase> currentSource = _config.GetEnumerator();
+            IEnumerator<Phase>? currentSource = _config.GetEnumerator();
             List<SpecializedPhase> currentTarget = new List<SpecializedPhase>();
 
             while (sourceParents.Count > 0 || currentSource != null)
@@ -93,7 +93,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
         {
             private readonly PhasedOperation _definition;
             private readonly IReadOnlyList<SpecializedPhase> _entryPoints;
-            private SpecializedPhase _currentPhase;
+            private SpecializedPhase? _currentPhase;
 
             public Impl(PhasedOperation definition, IReadOnlyList<IToken> config, IReadOnlyList<SpecializedPhase> entryPoints, bool initialState)
             {
@@ -103,7 +103,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
                 IsInitialStateOn = string.IsNullOrEmpty(_definition._id) || initialState;
             }
 
-            public string Id => _definition._id;
+            public string? Id => _definition._id;
 
             public IReadOnlyList<IToken> Tokens { get; }
 
@@ -117,7 +117,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
                 if (match != null)
                 {
                     _currentPhase = match.Next.Count > 0 ? match : null;
-                    processor.WriteToTarget(match.Replacement, 0, match.Replacement.Length);
+                    processor.WriteToTarget(match.Replacement!, 0, match.Replacement!.Length);
                     return match.Replacement.Length;
                 }
 
@@ -143,16 +143,16 @@ namespace Microsoft.TemplateEngine.Core.Operations
 
             public List<SpecializedPhase> Next { get; }
 
-            public byte[] Replacement { get; set; }
+            public byte[]? Replacement { get; set; }
 
             public List<int> ResetsWith { get; }
         }
 
         private class SpecializedPhasedOperationConfig
         {
-            public IReadOnlyList<SpecializedPhase> EntryPoints { get; set; }
+            public IReadOnlyList<SpecializedPhase>? EntryPoints { get; set; }
 
-            public IReadOnlyList<ITokenConfig> Tokens { get; set; }
+            public IReadOnlyList<ITokenConfig>? Tokens { get; set; }
         }
     }
 }

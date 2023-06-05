@@ -76,7 +76,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions
         /// <param name="onFault"></param>
         /// <param name="referencedVariablesKeys">If passed (if not null) it will be populated with references to variables used within the inspected expression.</param>
         /// <returns></returns>
-        public IEvaluable Build(ref int bufferLength, ref int bufferPosition, Action<IReadOnlyList<byte>> onFault, HashSet<string> referencedVariablesKeys = null)
+        public IEvaluable? Build(ref int bufferLength, ref int bufferPosition, Action<IReadOnlyList<byte>> onFault, HashSet<string>? referencedVariablesKeys = null)
         {
             Stack<ScopeIsolator> parents = new Stack<ScopeIsolator>();
             ScopeIsolator isolator = new ScopeIsolator
@@ -227,14 +227,14 @@ namespace Microsoft.TemplateEngine.Core.Expressions
                             else if (Equals(_closeGroup, mappedToken))
                             {
                                 ScopeIsolator tmp = parents.Pop();
-                                tmp.Active.TryAccept(isolator.Root);
+                                tmp.Active!.TryAccept(isolator.Root);
                                 isolator.Root = tmp.Active;
                                 isolator = tmp;
                             }
                             //Is it a variable?
                             else if (_knownTokensCount <= token)
                             {
-                                object value = _symbolValues[token - _knownTokensCount] ?? null;
+                                object? value = _symbolValues[token - _knownTokensCount] ?? null;
                                 referencedVariablesKeys?.Add(_symbolKeys[token - _knownTokensCount]);
                                 Token<TToken> t = new Token<TToken>(_literal, value);
                                 TokenScope<TToken> scope = new TokenScope<TToken>(isolator.Active, t);
@@ -281,7 +281,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions
                     //If we've encountered a literal after fully filling the tree, return
                     else if (isolator.Active.IsFull)
                     {
-                        IEvaluable parent = isolator.Active.Parent;
+                        IEvaluable? parent = isolator.Active.Parent;
 
                         while (parent != null && parent.IsFull)
                         {
@@ -332,9 +332,9 @@ namespace Microsoft.TemplateEngine.Core.Expressions
 
         private class ScopeIsolator
         {
-            public IEvaluable Active { get; set; }
+            public IEvaluable? Active { get; set; }
 
-            public IEvaluable Root { get; set; }
+            public IEvaluable? Root { get; set; }
         }
     }
 }

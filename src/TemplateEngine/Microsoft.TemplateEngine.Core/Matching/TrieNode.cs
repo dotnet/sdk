@@ -15,7 +15,7 @@ namespace Microsoft.TemplateEngine.Core.Matching
 
         public byte Match { get; }
 
-        public List<T> Terminals { get; set; }
+        public List<T>? Terminals { get; set; }
 
         public bool IsTerminal => Terminals != null;
     }

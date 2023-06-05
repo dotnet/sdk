@@ -19,7 +19,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions
             Register(new StringConverter());
         }
 
-        public static bool TryConvert<T>(object source, out T result)
+        public static bool TryConvert<T>(object? source, out T? result)
         {
             return ConverterItem<T>.TryExecute(source, out result);
         }
@@ -31,7 +31,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions
 
         private abstract class ConverterItem<T>
         {
-            public static ConverterItem<T> Instance { get; private set; }
+            public static ConverterItem<T>? Instance { get; private set; }
 
             public static void IsHandledBy<TInstance>(TInstance instance)
                 where TInstance : ConverterItem<T>
@@ -39,7 +39,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions
                 Instance = instance;
             }
 
-            public static bool TryExecute(object source, out T result)
+            public static bool TryExecute(object? source, out T? result)
             {
                 if (source is T x)
                 {
@@ -47,7 +47,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions
                     return true;
                 }
 
-                T handlerValue = default;
+                T? handlerValue = default;
                 bool? handlerResult = Instance?.TryExecuteInternal(source, out handlerValue);
 
                 if (handlerResult.HasValue)
@@ -80,12 +80,12 @@ namespace Microsoft.TemplateEngine.Core.Expressions
                 }
             }
 
-            protected abstract bool? TryExecuteInternal(object source, out T result);
+            protected abstract bool? TryExecuteInternal(object? source, out T? result);
         }
 
         private class BoolConverter : ConverterItem<bool>
         {
-            protected override bool? TryExecuteInternal(object source, out bool result)
+            protected override bool? TryExecuteInternal(object? source, out bool result)
             {
                 if (source is string s)
                 {
@@ -99,7 +99,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions
 
         private class IntConverter : ConverterItem<int>
         {
-            protected override bool? TryExecuteInternal(object source, out int result)
+            protected override bool? TryExecuteInternal(object? source, out int result)
             {
                 if (source is string s)
                 {
@@ -113,7 +113,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions
 
         private class LongConverter : ConverterItem<long>
         {
-            protected override bool? TryExecuteInternal(object source, out long result)
+            protected override bool? TryExecuteInternal(object? source, out long result)
             {
                 if (source is string s)
                 {
@@ -127,7 +127,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions
 
         private class FloatConverter : ConverterItem<float>
         {
-            protected override bool? TryExecuteInternal(object source, out float result)
+            protected override bool? TryExecuteInternal(object? source, out float result)
             {
                 if (source is string s)
                 {
@@ -141,7 +141,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions
 
         private class DoubleConverter : ConverterItem<double>
         {
-            protected override bool? TryExecuteInternal(object source, out double result)
+            protected override bool? TryExecuteInternal(object? source, out double result)
             {
                 if (source is string s)
                 {
@@ -155,7 +155,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions
 
         private class StringConverter : ConverterItem<string>
         {
-            protected override bool? TryExecuteInternal(object source, out string result)
+            protected override bool? TryExecuteInternal(object? source, out string? result)
             {
                 result = source?.ToString();
                 return true;

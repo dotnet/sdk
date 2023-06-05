@@ -28,7 +28,7 @@ namespace Microsoft.TemplateEngine.Core.Matching
 
         //TODO: Figure out how to do readahead detection better - tracking the last seen sequence number
         //  is too slow
-        public bool Accept(byte data, ref int sequenceNumber, out TerminalLocation<T> terminal)
+        public bool Accept(byte data, ref int sequenceNumber, out TerminalLocation<T>? terminal)
         {
             //If we're getting data from closer to the end of the stream instead
             //  of the next byte we're expecting, things that start before the new
@@ -141,12 +141,12 @@ namespace Microsoft.TemplateEngine.Core.Matching
             return TryGetNext(false, ref sequenceNumber, out terminal);
         }
 
-        public void FinalizeMatchesInProgress(ref int sequenceNumber, out TerminalLocation<T> terminals)
+        public void FinalizeMatchesInProgress(ref int sequenceNumber, out TerminalLocation<T>? terminals)
         {
             TryGetNext(true, ref sequenceNumber, out terminals);
         }
 
-        public bool TryGetNext(bool isFinal, ref int sequenceNumber, out TerminalLocation<T> terminalLocation)
+        public bool TryGetNext(bool isFinal, ref int sequenceNumber, out TerminalLocation<T>? terminalLocation)
         {
             //See if there's anything we can return yet using the following
             //  conditions
@@ -157,7 +157,7 @@ namespace Microsoft.TemplateEngine.Core.Matching
             if (_activePaths.Count > 0)
             {
                 int endedAt = 0;
-                T best = null;
+                T? best = null;
                 int bestPath = -1;
                 int minNonTerminatedPathStart = int.MaxValue;
                 int minTerminalStart = int.MaxValue;

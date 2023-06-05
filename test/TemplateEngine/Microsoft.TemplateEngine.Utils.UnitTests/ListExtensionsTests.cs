@@ -70,8 +70,8 @@ namespace Microsoft.TemplateEngine.Utils.UnitTests
 
         internal struct GroupByTestStruct
         {
-            internal string _identity;
-            internal string _groupIdentity;
+            internal string? _identity;
+            internal string? _groupIdentity;
         }
     }
 }

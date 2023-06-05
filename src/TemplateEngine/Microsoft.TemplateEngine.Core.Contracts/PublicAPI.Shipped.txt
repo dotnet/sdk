@@ -76,10 +76,10 @@ Microsoft.TemplateEngine.Core.Contracts.IReplacementTokens.VariableName.get -> s
 Microsoft.TemplateEngine.Core.Contracts.IRunSpec.GetOperations(System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Core.Contracts.IOperationProvider!>! sourceOperations) -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Core.Contracts.IOperationProvider!>!
 Microsoft.TemplateEngine.Core.Contracts.IRunSpec.VariableFormatString.get -> string!
 Microsoft.TemplateEngine.Core.Contracts.IToken.Value.get -> byte[]!
-Microsoft.TemplateEngine.Core.Contracts.ITokenConfig.After.get -> string!
-Microsoft.TemplateEngine.Core.Contracts.ITokenConfig.Before.get -> string!
+Microsoft.TemplateEngine.Core.Contracts.ITokenConfig.After.get -> string?
+Microsoft.TemplateEngine.Core.Contracts.ITokenConfig.Before.get -> string?
 Microsoft.TemplateEngine.Core.Contracts.ITokenConfig.ToToken(System.Text.Encoding! encoding) -> Microsoft.TemplateEngine.Core.Contracts.IToken!
-Microsoft.TemplateEngine.Core.Contracts.ITokenConfig.Value.get -> string!
+Microsoft.TemplateEngine.Core.Contracts.ITokenConfig.Value.get -> string?
 Microsoft.TemplateEngine.Core.Contracts.ITokenTrie.AddToken(Microsoft.TemplateEngine.Core.Contracts.IToken! token) -> int
 Microsoft.TemplateEngine.Core.Contracts.ITokenTrie.Append(Microsoft.TemplateEngine.Core.Contracts.ITokenTrie! trie) -> void
 Microsoft.TemplateEngine.Core.Contracts.ITokenTrie.CreateEvaluator() -> Microsoft.TemplateEngine.Core.Contracts.ITokenTrieEvaluator!

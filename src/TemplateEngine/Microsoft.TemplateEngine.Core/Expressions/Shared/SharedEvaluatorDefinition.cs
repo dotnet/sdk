@@ -30,7 +30,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Shared
 
         public static bool Evaluate(IProcessorState processor, ref int bufferLength, ref int currentBufferPosition, out bool faulted)
         {
-            bool result = Evaluate(processor, ref bufferLength, ref currentBufferPosition, out string faultedMessage, null, false);
+            bool result = Evaluate(processor, ref bufferLength, ref currentBufferPosition, out string? faultedMessage, null, false);
             faulted = !string.IsNullOrEmpty(faultedMessage);
             return result;
         }
@@ -45,7 +45,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Shared
         /// <returns></returns>
         public static bool EvaluateFromString(ILogger logger, string text, IVariableCollection variables)
         {
-            return EvaluateFromString(logger, text, variables, out string _, null);
+            return EvaluateFromString(logger, text, variables, out string? _, null);
         }
 
         /// <summary>
@@ -58,7 +58,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Shared
         /// <param name="faultedMessage">Error message detailing failing evaluation, should it fail.</param>
         /// <param name="referencedVariablesKeys">If passed (if not null) it will be populated with references to variables used within the inspected expression.</param>
         /// <returns></returns>
-        public static bool EvaluateFromString(ILogger logger, string text, IVariableCollection variables, out string faultedMessage, HashSet<string> referencedVariablesKeys = null)
+        public static bool EvaluateFromString(ILogger logger, string text, IVariableCollection variables, out string? faultedMessage, HashSet<string>? referencedVariablesKeys = null)
         {
             using (MemoryStream ms = new(Encoding.UTF8.GetBytes(text)))
             using (MemoryStream res = new())
@@ -71,7 +71,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Shared
             }
         }
 
-        protected static int Compare(object left, object right)
+        protected static int Compare(object? left, object? right)
         {
             if (Equals(right, NullToken))
             {
@@ -100,8 +100,8 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Shared
             IProcessorState processor,
             ref int bufferLength,
             ref int currentBufferPosition,
-            out string faultedMessage,
-            HashSet<string> referencedVariablesKeys,
+            out string? faultedMessage,
+            HashSet<string>? referencedVariablesKeys,
             // indicates whether passed buffer within processor contains only the analyzed expression,
             //  or it can possibly contain other content (e.g. the full template)
             bool shouldProcessWholeBuffer)
@@ -109,8 +109,8 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Shared
             faultedMessage = null;
             ITokenTrie tokens = Instance.GetSymbols(processor);
             ScopeBuilder<Operators, TTokens> builder = processor.ScopeBuilder(tokens, Map, DereferenceInLiteralsSetting);
-            string faultedSection = null;
-            IEvaluable expression = builder.Build(
+            string? faultedSection = null;
+            IEvaluable? expression = builder.Build(
                 ref bufferLength,
                 ref currentBufferPosition,
                 x => faultedSection = processor.Encoding.GetString(x.ToArray()),
@@ -137,7 +137,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Shared
 
                 try
                 {
-                    object evalResult = expression.Evaluate();
+                    object? evalResult = expression?.Evaluate();
                     result = (bool)Convert.ChangeType(evalResult, typeof(bool));
                 }
                 catch (Exception e)
@@ -156,7 +156,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Shared
             return result;
         }
 
-        private static int? AttemptBooleanComparison(object left, object right)
+        private static int? AttemptBooleanComparison(object? left, object? right)
         {
             bool leftIsBool = Map.TryConvert(left, out bool lb);
             bool rightIsBool = Map.TryConvert(right, out bool rb);
@@ -169,7 +169,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Shared
             return lb.CompareTo(rb);
         }
 
-        private static int? AttemptComparableComparison(object left, object right)
+        private static int? AttemptComparableComparison(object? left, object? right)
         {
             if (left is not IComparable ls || right is not IComparable rs)
             {
@@ -179,9 +179,9 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Shared
             return ls.CompareTo(rs);
         }
 
-        private static int? AttemptMultiValueComparison(object left, object right)
+        private static int? AttemptMultiValueComparison(object? left, object? right)
         {
-            if (MultiValueParameter.TryPerformMultiValueEqual(left, right, out bool result))
+            if (MultiValueParameter.TryPerformMultiValueEqual(left!, right!, out bool result))
             {
                 return result ? 0 : -1;
             }
@@ -189,7 +189,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Shared
             return null;
         }
 
-        private static int? AttemptLexographicComparison(object left, object right)
+        private static int? AttemptLexographicComparison(object? left, object? right)
         {
             if (left is not string ls || right is not string rs)
             {
@@ -199,7 +199,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Shared
             return string.Compare(ls, rs, StringComparison.OrdinalIgnoreCase);
         }
 
-        private static int? AttemptNumericComparison(object left, object right)
+        private static int? AttemptNumericComparison(object? left, object? right)
         {
             bool leftIsDouble = Map.TryConvert(left, out double ld);
             bool rightIsDouble = Map.TryConvert(right, out double rd);
@@ -227,9 +227,9 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Shared
             return ld.CompareTo(rd);
         }
 
-        private static int? AttemptVersionComparison(object left, object right)
+        private static int? AttemptVersionComparison(object? left, object? right)
         {
-            Version lv = left as Version;
+            Version? lv = left as Version;
 
             if (lv == null)
             {
@@ -239,7 +239,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Shared
                 }
             }
 
-            Version rv = right as Version;
+            Version? rv = right as Version;
 
             if (rv == null)
             {

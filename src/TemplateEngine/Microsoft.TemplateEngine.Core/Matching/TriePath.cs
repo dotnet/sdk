@@ -18,6 +18,6 @@ namespace Microsoft.TemplateEngine.Core.Matching
 
         public int StartSequenceNumber { get; }
 
-        public TrieNode<T> CurrentNode { get; set; }
+        public TrieNode<T>? CurrentNode { get; set; }
     }
 }

@@ -15,7 +15,7 @@ namespace Microsoft.TemplateEngine.Mocks
             _operation = operation;
         }
 
-        public string Id => _operation.Id;
+        public string? Id => _operation.Id;
 
         public IOperation GetOperation(Encoding encoding, IProcessorState processorState)
         {

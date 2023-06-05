@@ -20,9 +20,9 @@ namespace Microsoft.TemplateEngine.Core.Util
         public bool Accept(byte data, ref int bufferPosition, out int token)
         {
             ++_currentSequenceNumber;
-            if (Accept(data, ref _currentSequenceNumber, out TerminalLocation<Token> terminal))
+            if (Accept(data, ref _currentSequenceNumber, out TerminalLocation<Token>? terminal))
             {
-                token = terminal.Terminal.Index;
+                token = terminal!.Terminal.Index;
                 bufferPosition += _currentSequenceNumber - terminal.Location - terminal.Terminal.End;
                 return true;
             }
@@ -33,7 +33,7 @@ namespace Microsoft.TemplateEngine.Core.Util
 
         public bool TryFinalizeMatchesInProgress(ref int bufferPosition, out int token)
         {
-            FinalizeMatchesInProgress(ref _currentSequenceNumber, out TerminalLocation<Token> terminal);
+            FinalizeMatchesInProgress(ref _currentSequenceNumber, out TerminalLocation<Token>? terminal);
 
             if (terminal != null)
             {

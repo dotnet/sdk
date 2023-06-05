@@ -11,10 +11,10 @@ namespace Microsoft.TemplateEngine.Core.Operations
     {
         public static readonly string OperationName = "flags";
 
-        private readonly string _id;
+        private readonly string? _id;
         private readonly bool _initialState;
 
-        public SetFlag(string name, ITokenConfig on, ITokenConfig off, ITokenConfig onNoEmit, ITokenConfig offNoEmit, string id, bool initialState, bool? @default = null)
+        public SetFlag(string? name, ITokenConfig on, ITokenConfig off, ITokenConfig onNoEmit, ITokenConfig offNoEmit, string? id, bool initialState, bool? @default = null)
         {
             Name = name;
             On = on;
@@ -26,9 +26,9 @@ namespace Microsoft.TemplateEngine.Core.Operations
             _initialState = initialState;
         }
 
-        public string Id => _id;
+        public string? Id => _id;
 
-        public string Name { get; }
+        public string? Name { get; }
 
         public ITokenConfig On { get; }
 
@@ -52,7 +52,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
 
             if (Default.HasValue)
             {
-                processorState.Config.Flags[Name] = Default.Value;
+                processorState.Config.Flags[Name!] = Default.Value;
             }
 
             return new Impl(this, tokens, _id, _initialState);
@@ -61,9 +61,9 @@ namespace Microsoft.TemplateEngine.Core.Operations
         private class Impl : IOperation
         {
             private readonly SetFlag _owner;
-            private readonly string _id;
+            private readonly string? _id;
 
-            public Impl(SetFlag owner, IReadOnlyList<IToken> tokens, string id, bool initialState)
+            public Impl(SetFlag owner, IReadOnlyList<IToken> tokens, string? id, bool initialState)
             {
                 _owner = owner;
                 Tokens = tokens;
@@ -73,7 +73,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
 
             public IReadOnlyList<IToken> Tokens { get; }
 
-            public string Id => _id;
+            public string? Id => _id;
 
             public bool IsInitialStateOn { get; }
 
@@ -104,7 +104,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
                 //  to be done in the template definition file
                 if (flagsOn)
                 {
-                    processor.Config.Flags[_owner.Name] = turnOn;
+                    processor.Config.Flags[_owner.Name!] = turnOn;
                 }
                 else if (_owner.Name == SetFlag.OperationName && turnOn)
                 {

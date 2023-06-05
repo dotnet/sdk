@@ -23,11 +23,11 @@ namespace Microsoft.TemplateEngine.Core.Operations
         private readonly ITokenConfig _startToken;
         private readonly ITokenConfig _realEndToken;
         private readonly ITokenConfig _pseudoEndToken;
-        private readonly string _id;
-        private readonly string _resetFlag;
+        private readonly string? _id;
+        private readonly string? _resetFlag;
         private readonly bool _initialState;
 
-        public BalancedNesting(ITokenConfig startToken, ITokenConfig realEndToken, ITokenConfig pseudoEndToken, string id, string resetFlag, bool initialState)
+        public BalancedNesting(ITokenConfig startToken, ITokenConfig realEndToken, ITokenConfig pseudoEndToken, string? id, string? resetFlag, bool initialState)
         {
             _startToken = startToken;
             _realEndToken = realEndToken;
@@ -37,7 +37,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
             _initialState = initialState;
         }
 
-        public string Id => _id;
+        public string? Id => _id;
 
         public IOperation GetOperation(Encoding encoding, IProcessorState processorState)
         {
@@ -58,11 +58,11 @@ namespace Microsoft.TemplateEngine.Core.Operations
             private readonly IToken _startToken;
             private readonly IToken _realEndToken;
             private readonly IToken _psuedoEndToken;
-            private readonly string _id;
-            private readonly string _resetFlag;
+            private readonly string? _id;
+            private readonly string? _resetFlag;
             private int _depth;
 
-            public Impl(IToken start, IToken realEnd, IToken pseudoEnd, string id, string resetFlag, bool initialState)
+            public Impl(IToken start, IToken realEnd, IToken pseudoEnd, string? id, string? resetFlag, bool initialState)
             {
                 _startToken = start;
                 _realEndToken = realEnd;
@@ -74,7 +74,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
                 IsInitialStateOn = string.IsNullOrEmpty(id) || initialState;
             }
 
-            public string Id => _id;
+            public string? Id => _id;
 
             public IReadOnlyList<IToken> Tokens { get; }
 
@@ -87,9 +87,9 @@ namespace Microsoft.TemplateEngine.Core.Operations
                 //      <!-- <!-- comment -- >
                 // into this:
                 //      <!-- <!-- comment -->
-                if (processor.Config.Flags.TryGetValue(_resetFlag, out bool resetFlagValue) && resetFlagValue)
+                if (processor.Config.Flags.TryGetValue(_resetFlag!, out bool resetFlagValue) && resetFlagValue)
                 {
-                    processor.Config.Flags.Remove(_resetFlag);
+                    processor.Config.Flags.Remove(_resetFlag!);
                     _depth = 0;
                 }
 
