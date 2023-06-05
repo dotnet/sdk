@@ -35,12 +35,12 @@ internal interface IManifestOperations {
 /// <summary>
 /// Data derived from the 'start upload' call that is used to determine how perform the upload.
 /// </summary>
-internal record StartUploadInformation(int? registryDeclaredChunkSize, UriBuilder uploadUri);
+internal record StartUploadInformation(int? registryDeclaredChunkSize, Uri uploadUri);
 
 /// <summary>
 /// Captures the data needed to finalize an upload
 /// </summary>
-internal record FinalizeUploadInformation(UriBuilder uploadUri);
+internal record FinalizeUploadInformation(Uri uploadUri);
 
 internal interface IBlobUploadOperations {
     public Task<StartUploadInformation> StartAsync(string repositoryName, CancellationToken cancellationToken);
@@ -70,7 +70,7 @@ internal interface IBlobUploadOperations {
     /// </remarks>
     public Task<HttpResponseMessage> GetStatusAsync(Uri uploadUri, CancellationToken cancellationToken);
 
-    public Task<HttpResponseMessage> CompleteAsync(Uri uploadUri, string digest, CancellationToken cancellationToken);
+    public Task CompleteAsync(Uri uploadUri, string digest, CancellationToken cancellationToken);
 
     public Task<bool> TryMount(string destinationRepository, string sourceRepository, string digest);
 }
@@ -140,17 +140,17 @@ internal static class HttpExtensions {
     /// <summary>
     /// servers send the Location header on each response, which tells us where to send the next chunk.
     /// </summary>
-    public static UriBuilder GetNextLocation(this HttpResponseMessage response)
+    public static Uri GetNextLocation(this HttpResponseMessage response)
     {
         if (response.Headers.Location is { IsAbsoluteUri: true })
         {
-            return new UriBuilder(response.Headers.Location);
+            return response.Headers.Location;
         }
         else
         {
             // if we don't trim the BaseUri and relative Uri of slashes, you can get invalid urls.
             // Uri constructor does this on our behalf.
-            return new UriBuilder(new Uri(response.RequestMessage!.RequestUri!, response.Headers.Location?.OriginalString ?? ""));
+            return new Uri(response.RequestMessage!.RequestUri!, response.Headers.Location?.OriginalString ?? "");
         }
     }
 
@@ -276,7 +276,7 @@ internal class DefaultBlobUploadOperations: IBlobUploadOperations
         return await Client.GetAsync(uploadUri, token).ConfigureAwait(false);
     }
 
-    public async Task<HttpResponseMessage> CompleteAsync(Uri uploadUri, string digest, CancellationToken cancellationToken)
+    public async Task CompleteAsync(Uri uploadUri, string digest, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
         // PUT with digest to finalize
@@ -294,8 +294,6 @@ internal class DefaultBlobUploadOperations: IBlobUploadOperations
             string errorMessage = Resource.FormatString(nameof(Strings.BlobUploadFailed), $"PUT {putUri}", finalizeResponse.StatusCode, headers + Environment.NewLine + detail);
             throw new ApplicationException(errorMessage);
         }
-
-        return finalizeResponse;
     }
 
     public async Task<bool> TryMount(string destinationRepository, string sourceRepository, string digest)
@@ -623,7 +621,7 @@ internal sealed class Registry
         cancellationToken.ThrowIfCancellationRequested();
         string digest = layer.Descriptor.Digest;
 
-        using (FileStream contents = File.OpenRead(layer.BackingFile))
+        using (Stream contents = layer.OpenBackingFile())
         {
             await UploadBlobAsync(repository, digest, contents, logProgressMessage, cancellationToken).ConfigureAwait(false);
         }
@@ -635,7 +633,7 @@ internal sealed class Registry
     private async Task<FinalizeUploadInformation> UploadBlobChunkedAsync(string repository, string digest, Stream contents, StartUploadInformation uploadInfo, Action<LogMessage> logProgressMessage, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        Uri patchUri = uploadInfo.uploadUri.Uri;
+        Uri patchUri = uploadInfo.uploadUri;
         contents.Seek(0, SeekOrigin.Begin);
 
         byte[] chunkBackingStore = new byte[EffectiveChunkSize(uploadInfo.registryDeclaredChunkSize, IsAmazonECRRegistry)];
@@ -700,7 +698,7 @@ internal sealed class Registry
             void UpdateStateFromResponse(HttpResponseMessage response, bool ignoreRange)
             {
                 var amountSent = ignoreRange ? null : response.ParseRangeAmount();
-                patchUri = response.GetNextLocation().Uri;
+                patchUri = response.GetNextLocation();
                 if (amountSent is not null)
                 {
                     chunkStart = amountSent.Value + 1;
@@ -740,7 +738,7 @@ internal sealed class Registry
                 return () => { };
             }
         }
-        return new(new(patchUri));
+        return new(patchUri);
     }
 
     /// <summary>
@@ -797,7 +795,7 @@ internal sealed class Registry
             logProgressMessage(LogMessage.Trace("Chunk size undetected or was greater than content length of {0}, attempting to upload whole blob.", contents.Length));
             try
             {
-                return await API.Blob.Upload.UploadAtomicallyAsync(uploadInfo.uploadUri.Uri, contents, cancellationToken).ConfigureAwait(false);
+                return await API.Blob.Upload.UploadAtomicallyAsync(uploadInfo.uploadUri, contents, cancellationToken).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -838,7 +836,7 @@ internal sealed class Registry
         logProgressMessage(LogMessage.Trace("Uploaded content for {0}", digest));
         // * finish the upload session
         cancellationToken.ThrowIfCancellationRequested();
-        await API.Blob.Upload.CompleteAsync(finalizeInformation.uploadUri.Uri, digest, cancellationToken).ConfigureAwait(false);
+        await API.Blob.Upload.CompleteAsync(finalizeInformation.uploadUri, digest, cancellationToken).ConfigureAwait(false);
         logProgressMessage(LogMessage.Trace("Finalized upload session for {0}", digest));
     }
 
