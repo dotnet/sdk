@@ -51,7 +51,7 @@ namespace Microsoft.DotNet.PackageValidation
                     leftContentItems[leftIndex],
                     displayString: options.IsBaselineComparison ? Resources.Baseline + " " + leftContentItems[leftIndex].Path : null,
                     // Use the assembly references from the right package if the left package doesn't provide them.
-                    assemblyReferences: rightPackage is not null ? right[right.Length > leftIndex ? leftIndex : 0].References : null);
+                    assemblyReferences: leftPackage.AssemblyReferences is null && rightPackage is not null ? right[0].References : null);
             }
 
             apiCompatRunner.EnqueueWorkItem(new ApiCompatRunnerWorkItem(left, options, right));
@@ -65,24 +65,28 @@ namespace Microsoft.DotNet.PackageValidation
         {
             displayString ??= item.Path;
 
-            if (item.Properties.TryGetValue("tfm", out object? tfmObj))
+            if (package.AssemblyReferences is not null && item.Properties.TryGetValue("tfm", out object? tfmObj))
             {
-                string targetFramework = ((NuGetFramework)tfmObj).GetShortFolderName();
+                NuGetFramework nuGetFramework = (NuGetFramework)tfmObj;
 
-                if (package.AssemblyReferences != null)
+                foreach (PackageAssemblyReferenceCollection packageAssemblyReferenceCollection in package.AssemblyReferences)
                 {
-                    if (package.AssemblyReferences.TryGetValue(targetFramework, out string[]? assemblyReferencesRaw))
+                    if (packageAssemblyReferenceCollection.TargetFrameworkMoniker == nuGetFramework.DotNetFrameworkName &&
+                        // IgnoreCase because NuGet returns 'windows' lowercase but the SDK passes it in as 'Windows'.
+                        string.Equals(packageAssemblyReferenceCollection.TargetPlatformMoniker, nuGetFramework.HasPlatform ? nuGetFramework.DotNetPlatformName : null, System.StringComparison.OrdinalIgnoreCase))
                     {
-                        assemblyReferences = assemblyReferencesRaw;
+                        assemblyReferences = packageAssemblyReferenceCollection.AssemblyReferences;
+                        break;
                     }
-                    else
-                    {
-                        log.LogWarning(new Suppression(DiagnosticIds.SearchDirectoriesNotFoundForTfm) { Target = displayString },
-                           DiagnosticIds.SearchDirectoriesNotFoundForTfm,
-                           string.Format(Resources.MissingSearchDirectory,
-                               targetFramework,
-                               displayString));
-                    }
+                }
+
+                if (assemblyReferences is null)
+                {
+                    log.LogWarning(new Suppression(DiagnosticIds.SearchDirectoriesNotFoundForTfm) { Target = displayString },
+                        DiagnosticIds.SearchDirectoriesNotFoundForTfm,
+                        string.Format(Resources.MissingSearchDirectory,
+                            nuGetFramework.GetShortFolderName(),
+                            displayString));
                 }
             }
 

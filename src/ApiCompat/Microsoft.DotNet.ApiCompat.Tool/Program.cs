@@ -9,6 +9,7 @@ using System.CommandLine.Parsing;
 using System.IO;
 using Microsoft.DotNet.ApiCompatibility.Logging;
 using Microsoft.DotNet.ApiSymbolExtensions.Logging;
+using Microsoft.DotNet.PackageValidation;
 
 namespace Microsoft.DotNet.ApiCompat.Tool
 {
@@ -199,7 +200,7 @@ namespace Microsoft.DotNet.ApiCompat.Tool
             {
                 ArgumentHelpName = "nupkg"
             };
-            Option<Dictionary<string, string[]>?> packageAssemblyReferencesOption = new("--package-assembly-references",
+            Option<IEnumerable<PackageAssemblyReferenceCollection>?> packageAssemblyReferencesOption = new("--package-assembly-references",
                 description: "Paths to assembly references or their underlying directories for a specific target framework in the package. Values must be separated by commas: ','.",
                 parseArgument: ParsePackageAssemblyReferenceArgument)
             {
@@ -207,7 +208,7 @@ namespace Microsoft.DotNet.ApiCompat.Tool
                 Arity = ArgumentArity.ZeroOrMore,
                 ArgumentHelpName = "tfm=file1,file2,..."
             };
-            Option<Dictionary<string, string[]>?> baselinePackageAssemblyReferencesOption = new("--baseline-package-assembly-references",
+            Option<IEnumerable<PackageAssemblyReferenceCollection>?> baselinePackageAssemblyReferencesOption = new("--baseline-package-assembly-references",
                 description: "Paths to assembly references or their underlying directories for a specific target framework in the baseline package. Values must be separated by commas: ','.",
                 parseArgument: ParsePackageAssemblyReferenceArgument)
             {
@@ -250,8 +251,8 @@ namespace Microsoft.DotNet.ApiCompat.Tool
                 bool enableStrictModeForBaselineValidation = context.ParseResult.GetValue(enableStrictModeForBaselineValidationOption);
                 string? baselinePackage = context.ParseResult.GetValue(baselinePackageOption);
                 string? runtimeGraph = context.ParseResult.GetValue(runtimeGraphOption);
-                Dictionary<string, string[]>? packageAssemblyReferences = context.ParseResult.GetValue(packageAssemblyReferencesOption);
-                Dictionary<string, string[]>? baselinePackageAssemblyReferences = context.ParseResult.GetValue(baselinePackageAssemblyReferencesOption);
+                IEnumerable<PackageAssemblyReferenceCollection>? packageAssemblyReferences = context.ParseResult.GetValue(packageAssemblyReferencesOption);
+                IEnumerable<PackageAssemblyReferenceCollection>? baselinePackageAssemblyReferences = context.ParseResult.GetValue(baselinePackageAssemblyReferencesOption);
 
                 Func<ISuppressionEngine, SuppressableConsoleLog> logFactory = (suppressionEngine) => new(suppressionEngine, verbosity);
                 ValidatePackage.Run(logFactory,
@@ -320,31 +321,34 @@ namespace Microsoft.DotNet.ApiCompat.Tool
             return patterns;
         }
 
-        private static Dictionary<string, string[]>? ParsePackageAssemblyReferenceArgument(ArgumentResult argumentResult)
+        private static IEnumerable<PackageAssemblyReferenceCollection>? ParsePackageAssemblyReferenceArgument(ArgumentResult argumentResult)
         {
-            Dictionary<string, string[]> args = new();
+            const string invalidPackageAssemblyReferenceFormatMessage = "Invalid package assembly reference format {TargetFrameworkMoniker(+TargetPlatformMoniker)=assembly1,assembly2,assembly3,...}";
+
             foreach (Token token in argumentResult.Tokens)
             {
                 string[] parts = token.Value.Split('=');
                 if (parts.Length != 2)
                 {
-                    argumentResult.ErrorMessage = "Invalid package assembly reference format {tfm=assembly1,assembly2,assembly3,...}";
+                    argumentResult.ErrorMessage = invalidPackageAssemblyReferenceFormatMessage;
                     continue;
                 }
 
-                string tfm = parts[0];
-                string[] assemblies = parts[1].Split(',');
-
-                if (args.TryGetValue(tfm, out _))
+                string tfmInformation = parts[0];
+                string[] tfmInformationParts = tfmInformation.Split('+');
+                if (tfmInformationParts.Length < 1 || tfmInformationParts.Length > 2)
                 {
-                    argumentResult.ErrorMessage = $"Package assembly references for tfm '{tfm}' are already provided.";
-                    continue;
+                    argumentResult.ErrorMessage = invalidPackageAssemblyReferenceFormatMessage;
                 }
 
-                args.Add(tfm, assemblies);
-            }
+                string targetFrameworkMoniker = tfmInformationParts[0];
+                string? targetPlatformMoniker = tfmInformationParts.Length == 2 ? tfmInformationParts[1] : null;
+                string[] references = parts[1].Split(',');
 
-            return args;
+                yield return new PackageAssemblyReferenceCollection(targetFrameworkMoniker,
+                    targetPlatformMoniker,
+                    references);
+            }
         }
     }
 }

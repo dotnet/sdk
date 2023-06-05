@@ -4,8 +4,9 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Build.Framework;
-using Microsoft.NET.Build.Tasks;
 using Microsoft.DotNet.ApiCompatibility.Logging;
+using Microsoft.DotNet.PackageValidation;
+using Microsoft.NET.Build.Tasks;
 
 namespace Microsoft.DotNet.ApiCompat.Task
 {
@@ -161,23 +162,25 @@ namespace Microsoft.DotNet.ApiCompat.Task
                 ParsePackageAssemblyReferences(BaselinePackageAssemblyReferences));
         }
 
-        private static Dictionary<string, string[]>? ParsePackageAssemblyReferences(ITaskItem[]? packageAssemblyReferences)
+        private static IEnumerable<PackageAssemblyReferenceCollection>? ParsePackageAssemblyReferences(ITaskItem[]? packageAssemblyReferences)
         {
-            if (packageAssemblyReferences == null || packageAssemblyReferences.Length == 0)
-                return null;
+            if (packageAssemblyReferences is null)
+                yield break;
 
-            Dictionary<string, string[]>? packageAssemblyReferencesDict = new(packageAssemblyReferences.Length);
             foreach (ITaskItem taskItem in packageAssemblyReferences)
             {
-                string tfm = taskItem.GetMetadata("Identity");
+                string? targetFrameworkMoniker = taskItem.GetMetadata("TargetFrameworkMoniker");
+                string? targetPlatformMoniker = taskItem.GetMetadata("TargetPlatformMoniker");
                 string? referencePath = taskItem.GetMetadata("ReferencePath");
-                if (string.IsNullOrEmpty(referencePath))
+
+                // The TPM is null when the assembly doesn't target a platform.
+                if (string.IsNullOrEmpty(targetFrameworkMoniker) || string.IsNullOrEmpty(referencePath))
                     continue;
 
-                packageAssemblyReferencesDict.Add(tfm, referencePath.Split(','));
+                yield return new PackageAssemblyReferenceCollection(targetFrameworkMoniker,
+                    targetPlatformMoniker,
+                    referencePath.Split(','));
             }
-
-            return packageAssemblyReferencesDict;
         }
     }
 }

@@ -179,10 +179,10 @@ namespace Microsoft.DotNet.ApiCompat.Task.IntegrationTests
 
             // Now we do pass in references. With references, ApiCompat should now detect that an interface was removed in a
             // dependent assembly, causing one of our types to stop implementing that assembly. We validate that a CP0008 is logged.
-            Dictionary<string, string[]> references = new()
+            IEnumerable<PackageAssemblyReferenceCollection> references = new PackageAssemblyReferenceCollection[]
             {
-                { "netstandard2.0", new string[] { Path.Combine(asset.TestRoot, asset.TestProject.Name, "bin", "Debug", "netstandard2.0") } },
-                { ToolsetInfo.CurrentTargetFramework, new string[] { Path.Combine(asset.TestRoot, asset.TestProject.Name, "bin", "Debug", ToolsetInfo.CurrentTargetFramework) } }
+                new (".NETStandard,Version=v2.0", null, new string[] { Path.Combine(asset.TestRoot, asset.TestProject.Name, "bin", "Debug", "netstandard2.0") }),
+                new ($".NETCoreApp,Version=v{ToolsetInfo.CurrentTargetFrameworkVersion }", null, new string[] { Path.Combine(asset.TestRoot, asset.TestProject.Name, "bin", "Debug", ToolsetInfo.CurrentTargetFramework) })
             };
             package = Package.Create(packCommand.GetNuGetPackage(), references);
             validator.Validate(new PackageValidatorOption(package));
@@ -211,10 +211,10 @@ namespace Microsoft.DotNet.ApiCompat.Task.IntegrationTests
             var result = packCommand.Execute();
             Assert.Equal(string.Empty, result.StdErr);
 
-            Dictionary<string, string[]> references = new()
+            IEnumerable<PackageAssemblyReferenceCollection> references = new PackageAssemblyReferenceCollection[]
             {
-                { "netstandard2.0", new string[] { Path.Combine(asset.TestRoot, asset.TestProject.Name, "bin", "Debug", "netstandard2.0") } },
-                { ToolsetInfo.CurrentTargetFramework, new string[] { Path.Combine(asset.TestRoot, asset.TestProject.Name, "bin", "Debug", ToolsetInfo.CurrentTargetFramework) } }
+                new(".NETStandard,Version=v2.0", null, new string[] { Path.Combine(asset.TestRoot, asset.TestProject.Name, "bin", "Debug", "netstandard2.0") }),
+                new($".NETCoreApp,Version=v{ToolsetInfo.CurrentTargetFrameworkVersion }", null, new string[] { Path.Combine(asset.TestRoot, asset.TestProject.Name, "bin", "Debug", ToolsetInfo.CurrentTargetFramework) })
             };
             Package package = Package.Create(packCommand.GetNuGetPackage(), packageAssemblyReferences: useReferences ? references : null);
 
@@ -256,10 +256,10 @@ namespace PackageValidationTests { public class MyForwardedType : ISomeInterface
             var result = packCommand.Execute();
             Assert.Equal(string.Empty, result.StdErr);
 
-            Dictionary<string, string[]> references = new()
+            IEnumerable<PackageAssemblyReferenceCollection> references = new PackageAssemblyReferenceCollection[]
             {
-                { "netstandard2.0", new string[] { Path.Combine(asset.TestRoot, asset.TestProject.Name, "bin", "Debug", "netstandard2.0") } },
-                { ToolsetInfo.CurrentTargetFramework, new string[] { Path.Combine(asset.TestRoot, asset.TestProject.Name, "bin", "Debug", ToolsetInfo.CurrentTargetFramework) } }
+                new(".NETStandard,Version=v2.0", null, new string[] { Path.Combine(asset.TestRoot, asset.TestProject.Name, "bin", "Debug", "netstandard2.0") }),
+                new($".NETCoreApp,Version=v{ToolsetInfo.CurrentTargetFrameworkVersion}", null, new string[] { Path.Combine(asset.TestRoot, asset.TestProject.Name, "bin", "Debug", ToolsetInfo.CurrentTargetFramework) })
             };
             Package package = Package.Create(packCommand.GetNuGetPackage(), packageAssemblyReferences: useReferences ? references : null);
 
@@ -302,10 +302,10 @@ namespace PackageValidationTests { public class MyForwardedType : ISomeInterface
             var result = packCommand.Execute();
             Assert.Equal(string.Empty, result.StdErr);
 
-            Dictionary<string, string[]> references = new()
+            IEnumerable<PackageAssemblyReferenceCollection> references = new PackageAssemblyReferenceCollection[]
             {
-                { "netstandard2.0", new string[] { Path.Combine(asset.TestRoot, asset.TestProject.Name, "bin", "Debug", "netstandard2.0") } },
-                { ToolsetInfo.CurrentTargetFramework, new string[] { Path.Combine(asset.TestRoot, asset.TestProject.Name, "bin", "Debug", ToolsetInfo.CurrentTargetFramework) } }
+                new(".NETStandard,Version=v2.0", null, new string[] { Path.Combine(asset.TestRoot, asset.TestProject.Name, "bin", "Debug", "netstandard2.0") }),
+                new($".NETCoreApp,Version=v{ToolsetInfo.CurrentTargetFrameworkVersion}", null, new string[] { Path.Combine(asset.TestRoot, asset.TestProject.Name, "bin", "Debug", ToolsetInfo.CurrentTargetFramework) })
             };
             Package package = Package.Create(packCommand.GetNuGetPackage(), references);
 
@@ -328,9 +328,9 @@ namespace PackageValidationTests { public class MyForwardedType : ISomeInterface
             var result = packCommand.Execute();
             Assert.Equal(string.Empty, result.StdErr);
 
-            Dictionary<string, string[]> references = new()
+            IEnumerable<PackageAssemblyReferenceCollection> references = new PackageAssemblyReferenceCollection[]
             {
-                { "netstandard2.0", new string[] { Path.Combine(asset.TestRoot, asset.TestProject.Name, "bin", "Debug", "netstandard2.0") } }
+                new(".NETStandard,Version=v2.0", null, new string[] { Path.Combine(asset.TestRoot, asset.TestProject.Name, "bin", "Debug", "netstandard2.0") })
             };
             Package package = Package.Create(packCommand.GetNuGetPackage(), useReferences ? references : null);
             (SuppressableTestLog log, CompatibleFrameworkInPackageValidator validator) = CreateLoggerAndValidator();
@@ -341,6 +341,28 @@ namespace PackageValidationTests { public class MyForwardedType : ISomeInterface
                 Assert.Empty(log.warnings.Where(e => e.Contains("CP1003")));
             else
                 Assert.NotEmpty(log.warnings.Where(e => e.Contains("CP1003")));
+        }
+
+        [RequiresMSBuildVersionFact("17.0.0.32901", Skip = "https://github.com/dotnet/sdk/issues/23533")]
+        public void ValidateReferencesAreRespectedForPlatformSpecificTFMs()
+        {
+            TestProject testProject = CreateTestProject("public class MyType { }", $"netstandard2.0;{ToolsetInfo.CurrentTargetFramework}-windows");
+            TestAsset asset = _testAssetsManager.CreateTestProject(testProject, testProject.Name);
+            PackCommand packCommand = new(Log, Path.Combine(asset.TestRoot, testProject.Name));
+            var result = packCommand.Execute();
+            Assert.Empty(result.StdErr);
+
+            IEnumerable<PackageAssemblyReferenceCollection> references = new PackageAssemblyReferenceCollection[]
+            {
+                new(".NETStandard,Version=v2.0", null, new string[] { Path.Combine(asset.TestRoot, asset.TestProject.Name, "bin", "Debug", "netstandard2.0") }),
+                new($".NETCoreApp,Version=v{ToolsetInfo.CurrentTargetFrameworkVersion}", "Windows,Version=7.0", new string[] { Path.Combine(asset.TestRoot, asset.TestProject.Name, "bin", "Debug", $"net{ToolsetInfo.CurrentTargetFrameworkVersion}-windows") })
+            };
+            Package package = Package.Create(packCommand.GetNuGetPackage(), references);
+            (SuppressableTestLog log, CompatibleFrameworkInPackageValidator validator) = CreateLoggerAndValidator();
+
+            validator.Validate(new PackageValidatorOption(package));
+
+            Assert.Empty(log.warnings.Where(e => e.Contains("CP1003")));
         }
 
         [RequiresMSBuildVersionFact("17.0.0.32901", Skip = "https://github.com/dotnet/sdk/issues/23533")]

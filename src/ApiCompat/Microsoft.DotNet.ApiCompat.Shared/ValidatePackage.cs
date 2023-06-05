@@ -28,8 +28,8 @@ namespace Microsoft.DotNet.ApiCompat
             bool enableStrictModeForBaselineValidation,
             string? baselinePackagePath,
             string? runtimeGraph,
-            Dictionary<string, string[]>? packageAssemblyReferences,
-            Dictionary<string, string[]>? baselinePackageAssemblyReferences)
+            IEnumerable<PackageAssemblyReferenceCollection>? packageAssemblyReferences,
+            IEnumerable<PackageAssemblyReferenceCollection>? baselinePackageAssemblyReferences)
         {
             // Initialize the service provider
             ApiCompatServiceProvider serviceProvider = new(logFactory,
