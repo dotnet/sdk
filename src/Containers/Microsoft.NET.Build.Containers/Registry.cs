@@ -32,14 +32,6 @@ internal sealed class Registry
     private const string DockerContainerV1 = "application/vnd.docker.container.image.v1+json";
 
     /// <summary>
-    /// Whether we should upload blobs via chunked upload (enabled by default, but disabled for certain registries in conjunction with the explicit support check below).
-    /// </summary>
-    /// <remarks>
-    /// Relates to https://github.com/dotnet/sdk-container-builds/pull/383#issuecomment-1466408853
-    /// </remarks>
-    private static readonly bool s_chunkedUploadEnabled = Env.GetEnvironmentVariableAsBool(ContainerHelpers.ChunkedUploadEnabled, defaultValue: true);
-
-    /// <summary>
     /// When chunking is enabled, allows explicit control over the size of the chunks uploaded
     /// </summary>
     /// <remarks>
@@ -143,11 +135,6 @@ internal sealed class Registry
     {
         get => RegistryName.EndsWith("-docker.pkg.dev", StringComparison.Ordinal);
     }
-
-    /// <summary>
-    /// Google Artifact Registry doesn't support chunked upload, but Amazon ECR, GitHub Packages, and DockerHub do. We want the capability check to be agnostic to the target.
-    /// </summary>
-    private bool SupportsChunkedUpload => (!IsGoogleArtifactRegistry || IsAmazonECRRegistry || IsGithubPackageRegistry || IsDockerHub) && s_chunkedUploadEnabled;
 
     /// <summary>
     /// Pushing to ECR uses a much larger chunk size. To avoid getting too many socket disconnects trying to do too many
