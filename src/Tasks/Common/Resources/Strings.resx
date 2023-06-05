@@ -487,7 +487,7 @@ The following are names of parameters or literal values and should not be transl
     <comment>{StrBegin="NETSDK1094: "}</comment>
   </data>
   <data name="ReadyToRunTargetNotSupportedError" xml:space="preserve">
-    <value>NETSDK1095: Optimizing assemblies for performance is not supported for the selected target platform or architecture. Please verify you are using a supported runtime identifier, or set the PublishReadyToRun property to false.</value>
+    <value>NETSDK1095: Optimizing assemblies for performance is not supported for the selected target platform or architecture. Please verify you are using a supported runtime identifier, or set the PublishReadyToRun property to false. For more information, see https://aka.ms/netsdk1195</value>
     <comment>{StrBegin="NETSDK1095: "}</comment>
   </data>
   <data name="ReadyToRunCompilationFailed" xml:space="preserve">

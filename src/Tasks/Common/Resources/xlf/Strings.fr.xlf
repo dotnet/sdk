@@ -791,8 +791,8 @@ The following are names of parameters or literal values and should not be transl
         <note>{StrBegin="NETSDK1094: "}</note>
       </trans-unit>
       <trans-unit id="ReadyToRunTargetNotSupportedError">
-        <source>NETSDK1095: Optimizing assemblies for performance is not supported for the selected target platform or architecture. Please verify you are using a supported runtime identifier, or set the PublishReadyToRun property to false.</source>
-        <target state="translated">NETSDK1095: l'optimisation des assemblys afin d'améliorer le niveau de performance n'est pas prise en charge pour la plateforme ou l'architecture cible sélectionnée. Vérifiez que vous utilisez un identificateur de runtime pris en charge, ou affectez la valeur false à la propriété PublishReadyToRun.</target>
+        <source>NETSDK1095: Optimizing assemblies for performance is not supported for the selected target platform or architecture. Please verify you are using a supported runtime identifier, or set the PublishReadyToRun property to false. For more information, see https://aka.ms/netsdk1195</source>
+        <target state="needs-review-translation">NETSDK1095: l'optimisation des assemblys afin d'améliorer le niveau de performance n'est pas prise en charge pour la plateforme ou l'architecture cible sélectionnée. Vérifiez que vous utilisez un identificateur de runtime pris en charge, ou affectez la valeur false à la propriété PublishReadyToRun.</target>
         <note>{StrBegin="NETSDK1095: "}</note>
       </trans-unit>
       <trans-unit id="RollForwardRequiresVersion30">
