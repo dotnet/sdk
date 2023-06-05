@@ -258,9 +258,14 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             AddReservedNamesAndAliases(reservedAliases, _instantiateCommand);
 
             //add restricted aliases: language, type, baseline (they may be optional)
-            foreach (string alias in new[] { SharedOptionsFactory.CreateLanguageOption(), SharedOptionsFactory.CreateTypeOption(), SharedOptionsFactory.CreateBaselineOption() }.SelectMany(o => o.Aliases))
+            foreach (var option in new[] { SharedOptionsFactory.CreateLanguageOption(), SharedOptionsFactory.CreateTypeOption(), SharedOptionsFactory.CreateBaselineOption() })
             {
-                reservedAliases.Add(alias);
+                reservedAliases.Add(option.Name);
+
+                foreach (string alias in option.Aliases)
+                {
+                    reservedAliases.Add(alias);
+                }
             }
 
             foreach (string helpAlias in KnownHelpAliases)

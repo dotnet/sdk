@@ -62,7 +62,7 @@ namespace Microsoft.DotNet.Cli
 
         public static IEnumerable<string> ForwardedOptionValues<T>(this ParseResult parseResult, CliCommand command, string alias) =>
             command.Options?
-                .Where(o => o.Aliases.Contains(alias))?
+                .Where(o => o.Name.Equals(alias) || o.Aliases.Contains(alias))?
                 .OfType<IForwardedOption>()?
                 .FirstOrDefault()?
                 .GetForwardingFunction()(parseResult)

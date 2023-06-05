@@ -9,14 +9,16 @@ using System.CommandLine.Help;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.CommandFactory;
 using Microsoft.DotNet.Tools;
 using Microsoft.DotNet.Tools.Format;
 using Microsoft.DotNet.Tools.Help;
 using Microsoft.DotNet.Tools.MSBuild;
 using Microsoft.DotNet.Tools.NuGet;
-using CommandResult = System.CommandLine.Parsing.CommandResult;
+using NuGet.Frameworks;
 
 namespace Microsoft.DotNet.Cli
 {
@@ -74,9 +76,15 @@ namespace Microsoft.DotNet.Cli
 
         private static CliCommand ConfigureCommandLine(CliCommand rootCommand)
         {
-            foreach (CliOption option in rootCommand.Options)
+            for (int i = rootCommand.Options.Count - 1; i >= 0; i--)
             {
-                if (option is HelpOption helpOption)
+                CliOption option = rootCommand.Options[i];
+
+                if (option is VersionOption)
+                {
+                    rootCommand.Options.RemoveAt(i);
+                }
+                else if (option is HelpOption helpOption)
                 {
                     helpOption.Action = new HelpAction()
                     {
@@ -84,7 +92,6 @@ namespace Microsoft.DotNet.Cli
                     };
 
                     option.Description = CommandLineValidation.LocalizableStrings.ShowHelpInfo;
-                    break;
                 }
             }
 
@@ -104,13 +111,23 @@ namespace Microsoft.DotNet.Cli
             // Add argument
             rootCommand.Arguments.Add(DotnetSubCommand);
 
-            return rootCommand;
-        }
+            rootCommand.SetAction(parseResult =>
+            {
+                if (parseResult.GetValue(DiagOption) && parseResult.Tokens.Count == 1)
+                {
+                    // when user does not specify any args except of diagnostics ("dotnet -d"), we do nothing
+                    // as Program.ProcessArgs already enabled the diagnostic output
+                    return 0;
+                }
+                else
+                {
+                    // when user does not specify any args (just "dotnet"), a usage needs to be printed
+                    parseResult.Configuration.Output.WriteLine(HelpUsageText.UsageText);
+                    return 0;
+                }
+            });
 
-        private static CliConfiguration DisablePosixBinding(this CliConfiguration config)
-        {
-            config.EnablePosixBundling = false;
-            return config;
+            return rootCommand;
         }
 
         public static CliCommand GetBuiltInCommand(string commandName)
@@ -153,6 +170,35 @@ namespace Microsoft.DotNet.Cli
             Directives = { new DiagramDirective(), new SuggestDirective() },
             ResponseFileTokenReplacer = TokenPerLine
         };
+
+        internal static int ExceptionHandler(Exception exception, ParseResult parseResult)
+        {
+            if (exception is TargetInvocationException)
+            {
+                exception = exception.InnerException;
+            }
+
+            if (exception is Utils.GracefulException)
+            {
+                Reporter.Error.WriteLine(CommandLoggingContext.IsVerbose
+                    ? exception.ToString().Red().Bold()
+                    : exception.Message.Red().Bold());
+            }
+            else if (exception is CommandParsingException)
+            {
+                Reporter.Error.WriteLine(CommandLoggingContext.IsVerbose
+                    ? exception.ToString().Red().Bold()
+                    : exception.Message.Red().Bold());
+                parseResult.ShowHelp();
+            }
+            else
+            {
+                Reporter.Error.Write("Unhandled exception: ".Red().Bold());
+                Reporter.Error.WriteLine(exception.ToString().Red().Bold());
+            }
+
+            return 1;
+        }
 
         internal class DotnetHelpBuilder : HelpBuilder
         {
@@ -268,8 +314,16 @@ namespace Microsoft.DotNet.Cli
                 {
                     if (command.Name.Equals(ListProjectToProjectReferencesCommandParser.GetCommand().Name))
                     {
-                        ListCommandParser.SlnOrProjectArgument.HelpName = CommonLocalizableStrings.ProjectArgumentName;
-                        ListCommandParser.SlnOrProjectArgument.Description = CommonLocalizableStrings.ProjectArgumentDescription;
+                        CliCommand listCommand = command.Parents.Single() as CliCommand;
+
+                        for (int i = 0; i < listCommand.Arguments.Count; i++)
+                        {
+                            if (listCommand.Arguments[i].Name == CommonLocalizableStrings.SolutionOrProjectArgumentName)
+                            {
+                                // Name is immutable now, so we create a new Argument with the right name..
+                                listCommand.Arguments[i] = ListCommandParser.CreateSlnOrProjectArgument(CommonLocalizableStrings.ProjectArgumentName, CommonLocalizableStrings.ProjectArgumentDescription);
+                            }
+                        }
                     }
                     else if (command.Name.Equals(AddPackageParser.GetCommand().Name) || command.Name.Equals(AddCommandParser.GetCommand().Name))
                     {
@@ -280,9 +334,6 @@ namespace Microsoft.DotNet.Cli
                     base.Write(context);
                 }
             }
-
-
-
         }
     }
 }

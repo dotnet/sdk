@@ -4,84 +4,17 @@
 using System;
 using System.Collections.Generic;
 using System.CommandLine;
-using System.CommandLine.Help;
 using System.CommandLine.Parsing;
 using System.Diagnostics;
 using System.Linq;
-using System.Reflection;
 using System.Text.RegularExpressions;
 using Microsoft.DotNet.Cli.Utils;
 using static Microsoft.DotNet.Cli.Parser;
-using CommandResult = System.CommandLine.Parsing.CommandResult;
 
 namespace Microsoft.DotNet.Cli
 {
     public static class ParseResultExtensions
     {
-        public static int InvokeWithCustomLogic(this ParseResult parseResult, string commandName = "new")
-        {
-            CommandResult currentCommandResult = parseResult.CommandResult;
-            while (currentCommandResult != null && currentCommandResult.Command.Name != commandName)
-            {
-                currentCommandResult = currentCommandResult.Parent as CommandResult;
-            }
-
-            if (currentCommandResult is not null && parseResult.Errors.Any())
-            {
-                foreach (var error in parseResult.Errors)
-                {
-                    parseResult.Configuration.Error.WriteLine(error.Message);
-                }
-                parseResult.Configuration.Error.WriteLine();
-
-                HelpOption helpOption = parseResult.RootCommandResult.Command.Options.FirstOrDefault(option => option is HelpOption) as HelpOption;
-                HelpBuilder helpBuilder = helpOption is not null
-                    ? ((HelpAction)helpOption.Action).Builder
-                    : new HelpBuilder();
-
-                var helpContext = new HelpContext(helpBuilder,
-                                                  parseResult.CommandResult.Command,
-                                                  parseResult.Configuration.Output,
-                                                  parseResult);
-                helpBuilder.Write(helpContext);
-
-                return 127; //parse error
-            }
-
-            try
-            {
-                return parseResult.Invoke();
-            }
-            catch (Exception exception)
-            {
-                if (exception is TargetInvocationException)
-                {
-                    exception = exception.InnerException;
-                }
-
-                if (exception is Utils.GracefulException)
-                {
-                    Reporter.Error.WriteLine(CommandLoggingContext.IsVerbose
-                        ? exception.ToString().Red().Bold()
-                        : exception.Message.Red().Bold());
-                }
-                else if (exception is CommandParsingException)
-                {
-                    Reporter.Error.WriteLine(CommandLoggingContext.IsVerbose
-                        ? exception.ToString().Red().Bold()
-                        : exception.Message.Red().Bold());
-                    parseResult.ShowHelp();
-                }
-                else
-                {
-                    Reporter.Error.Write("Unhandled exception: ".Red().Bold());
-                    Reporter.Error.WriteLine(exception.ToString().Red().Bold());
-                }
-
-                return 1;
-            }
-        }
-
         ///<summary>
         /// Finds the command of the parse result and invokes help for that command.
         /// If no command is specified, invokes help for the application.
@@ -169,7 +102,7 @@ namespace Microsoft.DotNet.Cli
         public static bool CanBeInvoked(this ParseResult parseResult)
         {
             return Parser.GetBuiltInCommand(parseResult.RootSubCommandResult()) != null ||
-                parseResult.RootCommandResult.Tokens.Any(token => token.Type == CliTokenType.Directive) ||
+                parseResult.Tokens.Any(token => token.Type == CliTokenType.Directive) ||
                 (parseResult.IsTopLevelDotnetCommand() && string.IsNullOrEmpty(parseResult.GetValue(Parser.DotnetSubCommand)));
         }
 
@@ -195,7 +128,7 @@ namespace Microsoft.DotNet.Cli
             var runArgs = subargs.Contains("--") ? subargs.GetRange(subargs.IndexOf("--"), subargs.Count() - subargs.IndexOf("--")) : new List<string>();
             subargs = subargs.Contains("--") ? subargs.GetRange(0, subargs.IndexOf("--")) : subargs;
 
-            subargs.RemoveAll(arg => DiagOption.Aliases.Contains(arg));
+            subargs.RemoveAll(arg => DiagOption.Name.Equals(arg) || DiagOption.Aliases.Contains(arg));
             if (subargs[0].Equals("dotnet"))
             {
                 subargs.RemoveAt(0);

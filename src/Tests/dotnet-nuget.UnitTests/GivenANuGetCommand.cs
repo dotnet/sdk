@@ -101,7 +101,7 @@ namespace Microsoft.DotNet.Tools.Run.Tests
                 .Should()
                 .Fail()
                 .And
-                .HaveStdOutContaining("Required argument missing for option: '-ss'");
+                .HaveStdErrContaining("Required argument missing for option: '-ss'.");
         }
     }
 }

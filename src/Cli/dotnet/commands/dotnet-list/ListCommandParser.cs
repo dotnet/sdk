@@ -11,10 +11,12 @@ namespace Microsoft.DotNet.Cli
     {
         public static readonly string DocsLink = "https://aka.ms/dotnet-list";
 
-        public static readonly CliArgument<string> SlnOrProjectArgument = new CliArgument<string>("slnOrProject")
+        public static readonly CliArgument<string> SlnOrProjectArgument = CreateSlnOrProjectArgument(CommonLocalizableStrings.SolutionOrProjectArgumentName, CommonLocalizableStrings.SolutionOrProjectArgumentDescription);
+
+        internal static CliArgument<string> CreateSlnOrProjectArgument(string name, string description)
+            => new CliArgument<string>(name)
         {
-            HelpName = CommonLocalizableStrings.SolutionOrProjectArgumentName,
-            Description = CommonLocalizableStrings.SolutionOrProjectArgumentDescription,
+            Description = description,
             Arity = ArgumentArity.ZeroOrOne
         }.DefaultToCurrentDirectory();
 

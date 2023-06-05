@@ -6,18 +6,15 @@ using System.IO;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
-using System.CommandLine;
-using System.CommandLine.Parsing;
 using Microsoft.DotNet.Cli.Telemetry;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Configurer;
 using Microsoft.DotNet.ShellShim;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using LocalizableStrings = Microsoft.DotNet.Cli.Utils.LocalizableStrings;
-using NuGet.Frameworks;
 using System.Linq;
-using Microsoft.DotNet.Tools.Help;
 using Microsoft.DotNet.CommandFactory;
+using NuGet.Frameworks;
 
 namespace Microsoft.DotNet.Cli
 {
@@ -229,7 +226,22 @@ namespace Microsoft.DotNet.Cli
             if (parseResult.CanBeInvoked())
             {
                 PerformanceLogEventSource.Log.BuiltInCommandStart();
-                exitCode = parseResult.InvokeWithCustomLogic();
+
+                try
+                {
+                    exitCode = parseResult.Invoke();
+
+                    if (parseResult.Errors.Any() && parseResult.CommandResult.Command.Name == "new")
+                    {
+                        // default parse error exit code is 1, for the "new" command it needs to be 127
+                        exitCode = 127;
+                    }
+                }
+                catch (Exception exception)
+                {
+                    exitCode = Parser.ExceptionHandler(exception, parseResult);
+                }
+
                 PerformanceLogEventSource.Log.BuiltInCommandStop();
             }
             else

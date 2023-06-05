@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.CommandLine;
+using System.CommandLine.Parsing;
 using System.IO;
 using System.Linq;
 using Microsoft.DotNet.Workloads.Workload.Install;
@@ -106,6 +107,14 @@ namespace Microsoft.DotNet.Cli
             command.Subcommands.Add(WorkloadRestoreCommandParser.GetCommand());
             command.Subcommands.Add(WorkloadCleanCommandParser.GetCommand());
             command.Subcommands.Add(WorkloadElevateCommandParser.GetCommand());
+
+            command.Validators.Add(commandResult =>
+            {
+                if (commandResult.GetResult(InfoOption) is null && !commandResult.Children.Any(child => child is CommandResult))
+                {
+                    commandResult.AddError(Tools.CommonLocalizableStrings.RequiredCommandNotPassed);
+                }
+            });
 
             command.SetAction(ProcessArgs);
 
