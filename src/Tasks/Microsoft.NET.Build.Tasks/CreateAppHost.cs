@@ -1,5 +1,5 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.IO;
@@ -47,6 +47,8 @@ namespace Microsoft.NET.Build.Tasks
 
         public int RetryDelayMilliseconds { get; set; } = DefaultRetryDelayMilliseconds;
 
+        public bool EnableMacOSCodeSign { get; set; } = false;
+
         protected override void ExecuteCore()
         {
             try
@@ -75,13 +77,14 @@ namespace Microsoft.NET.Build.Tasks
                                                 appHostDestinationFilePath: AppHostDestinationPath,
                                                 appBinaryFilePath: AppBinaryName,
                                                 windowsGraphicalUserInterface: isGUI,
-                                                assemblyToCopyResorcesFrom: resourcesAssembly);
+                                                assemblyToCopyResourcesFrom: resourcesAssembly,
+                                                enableMacOSCodeSign: EnableMacOSCodeSign);
                         return;
                     }
                     catch (Exception ex) when (ex is IOException ||
                                                ex is UnauthorizedAccessException ||
-                                               // Note: replace this when https://github.com/dotnet/core-setup/issues/7516 is fixed
-                                               ex.GetType().Name == "HResultException")
+                                               ex is HResultException ||
+                                               (ex is AggregateException && (ex.InnerException is IOException || ex.InnerException is UnauthorizedAccessException)))
                     {
                         if (Retries < 0 || attempts == Retries) {
                             throw;
@@ -89,11 +92,17 @@ namespace Microsoft.NET.Build.Tasks
 
                         ++attempts;
 
+                        string message = ex.Message;
+                        if(ex is AggregateException)
+                        {
+                            message = ex.InnerException.Message;
+                        }
+
                         Log.LogWarning(
                             string.Format(Strings.AppHostCreationFailedWithRetry,
                                 attempts,
                                 Retries + 1,
-                                ex.Message));
+                                message));
 
                         if (RetryDelayMilliseconds > 0) {
                             Thread.Sleep(RetryDelayMilliseconds);
@@ -104,6 +113,10 @@ namespace Microsoft.NET.Build.Tasks
             catch (AppNameTooLongException ex)
             {
                 throw new BuildErrorException(Strings.FileNameIsTooLong, ex.LongName);
+            }
+            catch (AppHostSigningException ex)
+            {
+                throw new BuildErrorException(Strings.AppHostSigningFailed, ex.Message, ex.ExitCode.ToString());
             }
             catch (PlaceHolderNotFoundInAppHostException ex)
             {

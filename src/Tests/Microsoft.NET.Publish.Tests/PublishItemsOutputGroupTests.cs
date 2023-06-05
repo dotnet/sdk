@@ -1,5 +1,5 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -37,7 +37,7 @@ namespace Microsoft.NET.Publish.Tests
         public void RunPublishItemsOutputGroupTest(bool specifyRid, bool singleFile)
         {
             var testProject = this.SetupProject(specifyRid, singleFile);
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: specifyRid.ToString() + singleFile.ToString());
 
             var restoreCommand = new RestoreCommand(testAsset);
             restoreCommand
@@ -128,7 +128,7 @@ namespace Microsoft.NET.Publish.Tests
             var testProject = new TestProject()
             {
                 Name = "TestPublishOutputGroup",
-                TargetFrameworks = "netcoreapp3.0",
+                TargetFrameworks = "net6.0",
                 IsExe = true
             };
 

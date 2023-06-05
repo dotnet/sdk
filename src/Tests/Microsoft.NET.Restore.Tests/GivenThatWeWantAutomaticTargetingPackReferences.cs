@@ -1,3 +1,6 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 using System.IO;
 using System.Linq;
 using System.Xml.Linq;
@@ -24,7 +27,7 @@ namespace Microsoft.NET.Restore.Tests
         [Theory]
         [InlineData("4.7.1")]
         [InlineData("4.7.2")]
-        [InlineData("4.5.1")]
+        [InlineData("4.5.2")]
         [InlineData("4.8")]
         public void It_restores_net_framework_project_successfully(string version)
         {
@@ -36,7 +39,7 @@ namespace Microsoft.NET.Restore.Tests
                 TargetFrameworks = targetFramework,
             };
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: version);
 
             string projectAssetsJsonPath = Path.Combine(
                 testAsset.Path,
@@ -70,14 +73,14 @@ namespace Microsoft.NET.Restore.Tests
             var testProject = new TestProject()
             {
                 Name = "ProjectWithoutTargetingPackRef",
-                TargetFrameworks = "net471;net472;netcoreapp3.0",
+                TargetFrameworks = $"net471;net472;{ToolsetInfo.CurrentTargetFramework}",
             };
 
             TestAsset testAsset = null;
             if (includeExplicitReference)
             {
                 // Add explicit reference to assembly packs
-                testAsset = _testAssetsManager.CreateTestProject(testProject).WithProjectChanges(project =>
+                testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: includeExplicitReference.ToString()).WithProjectChanges(project =>
                 {
                     var ns = project.Root.Name.Namespace;
                     var itemGroup = project.Root.Elements(ns + "ItemGroup").FirstOrDefault();
@@ -149,7 +152,7 @@ namespace Microsoft.NET.Restore.Tests
                 var itemGroup = project.Root.Elements(ns + "ItemGroup").FirstOrDefault();
                 itemGroup.Add(new XElement(ns + "PackageReference",
                     new XAttribute("Include", $"Newtonsoft.Json"),
-                    new XAttribute("Version", $"11.0.2")));
+                    new XAttribute("Version", $"13.0.1")));
                 itemGroup.Add(new XElement(ns + "PackageReference",
                     new XAttribute("Include", $"sqlite"),
                     new XAttribute("Version", $"3.13.0")));

@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Globalization;
@@ -19,14 +19,9 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
         private readonly byte[] _scriptBytes;
         private readonly string _contentLength;
 
-        public BrowserScriptMiddleware(RequestDelegate next)
-            : this(Environment.GetEnvironmentVariable("ASPNETCORE_AUTO_RELOAD_WS_ENDPOINT")!)
+        public BrowserScriptMiddleware(RequestDelegate next, byte[] scriptBytes)
         {
-        }
-
-        internal BrowserScriptMiddleware(string webSocketUrl)
-        {
-            _scriptBytes = GetWebSocketClientJavaScript(webSocketUrl);
+            _scriptBytes = scriptBytes;
             _contentLength = _scriptBytes.Length.ToString(CultureInfo.InvariantCulture);
         }
 
@@ -39,11 +34,31 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             await context.Response.Body.WriteAsync(_scriptBytes.AsMemory(), context.RequestAborted);
         }
 
-        internal static byte[] GetWebSocketClientJavaScript(string hostString)
+        internal static byte[] GetBlazorHotReloadJS()
+        {
+            var jsFileName = "Microsoft.AspNetCore.Watch.BrowserRefresh.BlazorHotReload.js";
+            using var stream = new MemoryStream();
+            var manifestStream = typeof(WebSocketScriptInjection).Assembly.GetManifestResourceStream(jsFileName)!;
+            manifestStream.CopyTo(stream);
+
+            return stream.ToArray();
+        }
+
+        internal static byte[] GetBrowserRefreshJS()
+        {
+            var endpoint = Environment.GetEnvironmentVariable("ASPNETCORE_AUTO_RELOAD_WS_ENDPOINT")!;
+            var serverKey = Environment.GetEnvironmentVariable("ASPNETCORE_AUTO_RELOAD_WS_KEY") ?? string.Empty;
+
+            return GetWebSocketClientJavaScript(endpoint, serverKey);
+        }
+
+        internal static byte[] GetWebSocketClientJavaScript(string hostString, string serverKey)
         {
             var jsFileName = "Microsoft.AspNetCore.Watch.BrowserRefresh.WebSocketScriptInjection.js";
             using var reader = new StreamReader(typeof(WebSocketScriptInjection).Assembly.GetManifestResourceStream(jsFileName)!);
-            var script = reader.ReadToEnd().Replace("{{hostString}}", hostString);
+            var script = reader.ReadToEnd()
+                .Replace("{{hostString}}", hostString)
+                .Replace("{{ServerKey}}", serverKey);
 
             return Encoding.UTF8.GetBytes(script);
         }

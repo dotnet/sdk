@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using FluentAssertions;
 using Microsoft.DotNet.Tools.Add.PackageReference;
@@ -12,6 +12,7 @@ using Microsoft.NET.TestFramework.Commands;
 using Microsoft.NET.TestFramework.ProjectConstruction;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
 namespace Microsoft.DotNet.Cli.Package.Add.Tests
 {
@@ -31,7 +32,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
                 .Path;
 
             var packageName = "Newtonsoft.Json";
-            var packageVersion = "9.0.1";
+            var packageVersion = "13.0.1";
             var cmd = new DotnetCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
                 .Execute("add", "package", packageName, "--version",  packageVersion);
@@ -55,7 +56,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
         [MemberData(nameof(AddPkg_PackageVersionsLatestPrereleaseSucessData))]
         public void WhenPrereleaseOptionIsPassed(string[] inputVersions, string expectedVersion)
         {
-            var targetFramework = "net5.0";
+            var targetFramework = ToolsetInfo.CurrentTargetFramework;
             TestProject testProject = new TestProject()
             {
                 Name = "Project",
@@ -63,12 +64,12 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
                 TargetFrameworks = targetFramework,
             };
 
-            var packages = inputVersions.Select(e => GetPackagePath(targetFramework, "A", e)).ToArray(); 
+            var packages = inputVersions.Select(e => GetPackagePath(targetFramework, "A", e, identifier: expectedVersion + e +  inputVersions.GetHashCode().ToString())).ToArray(); 
 
             testProject.AdditionalProperties.Add("RestoreSources",
-                                     "$(RestoreSources);" + Path.GetDirectoryName(packages[0]));
+                                     "$(RestoreSources);" + string.Join(";", packages.Select(package => Path.GetDirectoryName(package))));
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: inputVersions.GetHashCode().ToString());
 
             var cmd = new DotnetCommand(Log)
                 .WithWorkingDirectory(Path.Combine(testAsset.TestRoot, testProject.Name))
@@ -89,7 +90,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
 
             var cmd = new DotnetCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
-                .Execute($"add", "package", "--prerelease", "Newtonsoft.Json", "--version", "9.6.0")
+                .Execute($"add", "package", "--prerelease", "Newtonsoft.Json", "--version", "13.0.1")
                 .Should().Fail()
                 .And.HaveStdOutContaining("The --prerelease and --version options are not supported in the same command.");
         }
@@ -106,7 +107,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
 
             var csproj = $"{projectDirectory + Path.DirectorySeparatorChar + testAsset}.csproj";
             var packageName = "Newtonsoft.Json";
-            var packageVersion = "9.0.1";
+            var packageVersion = "13.0.1";
             var cmd = new DotnetCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
                 .Execute("add", csproj, "package", packageName, "--version", packageVersion)
@@ -130,7 +131,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
 
             var csproj = $"{projectDirectory + Path.DirectorySeparatorChar + testAsset}.csproj";
             var packageName = "Newtonsoft.Json";
-            var packageVersion = "9.0.1";
+            var packageVersion = "13.0.1";
             var cmd = new DotnetCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
                 .Execute("add", csproj, "package", packageName, "--version", packageVersion, "--package-directory", packageDirectory)
@@ -154,7 +155,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
                 .Path;
 
             var packageName = "Newtonsoft.Json";
-            var packageVersion = "9.0.1";
+            var packageVersion = "13.0.1";
             var cmd = new DotnetCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
                 .Execute($"add", "package", "--version", packageVersion, packageName)
@@ -175,8 +176,8 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
                 .Path;
 
             var packageName = "Newtonsoft.Json";
-            var packageVersion = "9.0.1";
-            var framework = "netcoreapp3.1";
+            var packageVersion = "13.0.1";
+            var framework = ToolsetInfo.CurrentTargetFramework;
             var cmd = new DotnetCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
                 .Execute($"add", "package", packageName, "--version", packageVersion, "--framework", framework)
@@ -197,7 +198,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
                 .Path;
 
             var packageName = "Newtonsoft.Json";
-            var packageVersion = "9.0.1";
+            var packageVersion = "13.0.1";
             var cmd = new DotnetCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
                 .Execute($"add", "package", packageName, "--version", packageVersion)
@@ -249,10 +250,10 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
             return project;
         }
 
-        private string GetPackagePath(string targetFramework, string packageName, string version)
+        private string GetPackagePath(string targetFramework, string packageName, string version, [CallerMemberName] string callingMethod = "", string identifier = null)
         {
             var project = GetProject(targetFramework, packageName, version);
-            var packCommand = new PackCommand(Log, _testAssetsManager.CreateTestProject(project).TestRoot, packageName);
+            var packCommand = new PackCommand(_testAssetsManager.CreateTestProject(project, callingMethod: callingMethod, identifier: identifier));
 
             packCommand
                 .Execute()

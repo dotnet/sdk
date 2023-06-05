@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.IO;
@@ -13,6 +13,7 @@ using FluentAssertions;
 using Xunit;
 using Xunit.Abstractions;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
 namespace Microsoft.NET.Build.Tests
 {
@@ -29,7 +30,7 @@ namespace Microsoft.NET.Build.Tests
         {
             const string ProjectName = "WindowsDesktopSdkTest";
 
-            var asset = CreateWindowsDesktopSdkTestAsset(ProjectName, uiFrameworkProperty);
+            var asset = CreateWindowsDesktopSdkTestAsset(ProjectName, uiFrameworkProperty, uiFrameworkProperty);
 
             var command = new BuildCommand(asset);
 
@@ -46,7 +47,7 @@ namespace Microsoft.NET.Build.Tests
         {
             const string ProjectName = "WindowsDesktopSdkErrorTest";
 
-            var asset = CreateWindowsDesktopSdkTestAsset(ProjectName, uiFrameworkProperty);
+            var asset = CreateWindowsDesktopSdkTestAsset(ProjectName, uiFrameworkProperty, uiFrameworkProperty);
 
             var command = new BuildCommand(asset);
 
@@ -66,7 +67,7 @@ namespace Microsoft.NET.Build.Tests
         {
             const string ProjectName = "WindowsDesktopReferenceTest";
 
-            var asset = CreateWindowsDesktopReferenceTestAsset(ProjectName, desktopFramework);
+            var asset = CreateWindowsDesktopReferenceTestAsset(ProjectName, desktopFramework, desktopFramework);
 
             var command = new BuildCommand(asset);
 
@@ -84,7 +85,7 @@ namespace Microsoft.NET.Build.Tests
         {
             const string ProjectName = "WindowsDesktopReferenceErrorTest";
 
-            var asset = CreateWindowsDesktopReferenceTestAsset(ProjectName, desktopFramework);
+            var asset = CreateWindowsDesktopReferenceTestAsset(ProjectName, desktopFramework, desktopFramework);
 
             var command = new BuildCommand(asset);
 
@@ -96,32 +97,35 @@ namespace Microsoft.NET.Build.Tests
                 .HaveStdOutContaining(Strings.WindowsDesktopFrameworkRequiresWindows);
         }
 
-        [WindowsOnlyTheory]
-        [InlineData("net5.0", "TargetPlatformIdentifier", "Windows", "Exe")]
-        [InlineData("netcoreapp3.1", "UseWindowsForms", "true", "WinExe")]
-        [InlineData("netcoreapp3.1", "UseWPF", "true", "WinExe")]
-        [InlineData("netcoreapp3.1", "UseWPF", "false", "Exe")]
-        public void It_infers_WinExe_output_type(string targetFramework, string propName, string propValue, string expectedOutputType)
+        [PlatformSpecificFact(TestPlatforms.Linux | TestPlatforms.OSX | TestPlatforms.FreeBSD)]
+        public void AppTargetingWindows10CanBuildOnNonWindows()
         {
             var testProject = new TestProject()
             {
-                Name = "WinExeOutput",
-                TargetFrameworks = targetFramework,
-                IsExe = true,
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework + "-windows10.0.19041.0",
+                IsWinExe = true
             };
-            testProject.AdditionalProperties[propName] = propValue;
+            testProject.AdditionalProperties["EnableWindowsTargeting"] = "true";
 
-            var asset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
-            var getValuesCommand = new GetValuesCommand(asset, "OutputType");
-            getValuesCommand
+            new BuildCommand(testAsset)
                 .Execute()
                 .Should()
                 .Pass();
+        }
 
-            var values = getValuesCommand.GetValues();
-            values.Count.Should().Be(1);
-            values.First().Should().Be(expectedOutputType);
+        [PlatformSpecificFact(TestPlatforms.Linux | TestPlatforms.OSX | TestPlatforms.FreeBSD)]
+        public void WindowsFormsAppCanBuildOnNonWindows()
+        {
+            var testInstance = _testAssetsManager.CopyTestAsset("WindowsFormsTestApp")
+                .WithSource();
+
+            new BuildCommand(Log, testInstance.Path)
+                .WithEnvironmentVariable("EnableWindowsTargeting", "true")
+                .Execute()
+                .Should()
+                .Pass();
         }
 
         [WindowsOnlyRequiresMSBuildVersionFact("16.8.0")]
@@ -206,7 +210,7 @@ namespace Microsoft.NET.Build.Tests
                 .Should()
                 .Pass();
 
-            void Assert(DirectoryInfo outputDir)
+            static void Assert(DirectoryInfo outputDir)
             {
                 outputDir.File("Microsoft.Windows.SDK.NET.dll").Exists.Should().BeTrue("The output has cswinrt dll");
                 outputDir.File("WinRT.Runtime.dll").Exists.Should().BeTrue("The output has cswinrt dll");
@@ -218,7 +222,7 @@ namespace Microsoft.NET.Build.Tests
             Assert(buildCommand.GetOutputDirectory(tfm));
 
             var publishCommand = new PublishCommand(asset);
-            var runtimeIdentifier = "win-x64";
+            var runtimeIdentifier = $"{ToolsetInfo.LatestWinRuntimeIdentifier}-x64";
             publishCommand.Execute("-p:SelfContained=true", $"-p:RuntimeIdentifier={runtimeIdentifier}")
                 .Should()
                 .Pass();
@@ -291,7 +295,57 @@ namespace Microsoft.NET.Build.Tests
                 .Pass();
         }
 
-        private TestAsset CreateWindowsDesktopSdkTestAsset(string projectName, string uiFrameworkProperty)
+        [WindowsOnlyRequiresMSBuildVersionFact("16.8.0")]
+        public void Given_duplicated_ResolvedFileToPublish_It_Can_Publish()
+        {
+            const string ProjectName = "WindowsDesktopSdkTest_without_ProjectSdk_set";
+
+            const string tfm = "net5.0";
+
+            var testProject = new TestProject()
+            {
+                Name = ProjectName,
+                TargetFrameworks = tfm,
+                IsWinExe = true,
+            };
+
+            var testAsset = _testAssetsManager.CreateTestProject(testProject).WithProjectChanges((project) =>
+            {
+                var ns = project.Root.Name.Namespace;
+                var duplicatedResolvedFileToPublish = XElement.Parse(@"
+<ItemGroup>
+    <ResolvedFileToPublish Include=""obj\Debug\net5.0\WindowsDesktopSdkTest_without_ProjectSdk_set.dll"">
+      <RelativePath>WindowsDesktopSdkTest_without_ProjectSdk_set.dll</RelativePath>
+    </ResolvedFileToPublish>
+    <ResolvedFileToPublish Include=""obj\Debug\net5.0\WindowsDesktopSdkTest_without_ProjectSdk_set.dll"">
+      <RelativePath>WindowsDesktopSdkTest_without_ProjectSdk_set.dll</RelativePath>
+    </ResolvedFileToPublish>
+  </ItemGroup>
+");
+                project.Root.Add(duplicatedResolvedFileToPublish);
+            });
+
+            var publishItemsOutputGroupOutputsCommand = new GetValuesCommand(
+                Log,
+                Path.Combine(testAsset.Path, testProject.Name),
+                testProject.TargetFrameworks,
+                "PublishItemsOutputGroupOutputs",
+                GetValuesCommand.ValueType.Item)
+            {
+                DependsOnTargets = "Publish",
+                MetadataNames = { "OutputPath" },
+            };
+
+            publishItemsOutputGroupOutputsCommand.Execute().Should().Pass();
+            var publishItemsOutputGroupOutputsItems =
+                from item in publishItemsOutputGroupOutputsCommand.GetValuesWithMetadata()
+                select new
+                {
+                    OutputPath = item.metadata["OutputPath"]
+                };
+        }
+
+        private TestAsset CreateWindowsDesktopSdkTestAsset(string projectName, string uiFrameworkProperty, string identifier, [CallerMemberName] string callingMethod = "")
         {
             const string tfm = "netcoreapp3.0";
 
@@ -305,10 +359,10 @@ namespace Microsoft.NET.Build.Tests
 
             testProject.AdditionalProperties.Add(uiFrameworkProperty, "true");
 
-            return _testAssetsManager.CreateTestProject(testProject);
+            return _testAssetsManager.CreateTestProject(testProject, callingMethod, identifier);
         }
 
-        private TestAsset CreateWindowsDesktopReferenceTestAsset(string projectName, string desktopFramework)
+        private TestAsset CreateWindowsDesktopReferenceTestAsset(string projectName, string desktopFramework, string identifier, [CallerMemberName] string callingMethod = "")
         {
             const string tfm = "netcoreapp3.0";
 
@@ -321,7 +375,7 @@ namespace Microsoft.NET.Build.Tests
 
             testProject.FrameworkReferences.Add(desktopFramework);
 
-            return _testAssetsManager.CreateTestProject(testProject);
+            return _testAssetsManager.CreateTestProject(testProject, callingMethod, identifier);
         }
 
         private readonly string _fileUseWindowsType = @"

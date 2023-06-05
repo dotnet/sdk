@@ -1,5 +1,5 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.IO;
@@ -9,7 +9,7 @@ using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.DotNet.Watcher.Internal
 {
-    public class FileSetWatcher : IDisposable
+    internal sealed class FileSetWatcher : IDisposable
     {
         private readonly FileWatcher _fileWatcher;
         private readonly FileSet _fileSet;
@@ -29,10 +29,10 @@ namespace Microsoft.DotNet.Watcher.Internal
                 _fileWatcher.WatchDirectory(Path.GetDirectoryName(file.FilePath));
             }
 
-            var tcs = new TaskCompletionSource<FileItem?>();
+            var tcs = new TaskCompletionSource<FileItem?>(TaskCreationOptions.RunContinuationsAsynchronously);
             cancellationToken.Register(() => tcs.TrySetResult(null));
 
-            void callback(string path)
+            void FileChangedCallback(string path, bool newFile)
             {
                 if (_fileSet.TryGetValue(path, out var fileItem))
                 {
@@ -40,10 +40,10 @@ namespace Microsoft.DotNet.Watcher.Internal
                 }
             }
 
-            _fileWatcher.OnFileChange += callback;
+            _fileWatcher.OnFileChange += FileChangedCallback;
             startedWatching();
             var changedFile = await tcs.Task;
-            _fileWatcher.OnFileChange -= callback;
+            _fileWatcher.OnFileChange -= FileChangedCallback;
 
             return changedFile;
         }

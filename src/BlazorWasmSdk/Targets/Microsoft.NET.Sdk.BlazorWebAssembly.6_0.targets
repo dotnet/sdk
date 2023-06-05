@@ -1,0 +1,173 @@
+<!--
+***********************************************************************************************
+Microsoft.NET.Sdk.BlazorWebAssembly.targets
+
+WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and have
+          created a backup copy.  Incorrect changes to this file will make it
+          impossible to load or build your projects from the command-line or the IDE.
+
+Copyright (c) .NET Foundation. All rights reserved.
+***********************************************************************************************
+-->
+<Project ToolsVersion="14.0">
+
+  <PropertyGroup>
+    <EnableDefaultContentItems Condition=" '$(EnableDefaultContentItems)' == '' ">true</EnableDefaultContentItems>
+
+    <!-- Trimmer defaults that depend on user-definable settings.
+        This must be configured before it's initialized in the .NET SDK targets (which are imported by the Razor SDK). -->
+    <SuppressTrimAnalysisWarnings Condition="'$(SuppressTrimAnalysisWarnings)' == '' And '$(TrimmerDefaultAction)' != 'link'">true</SuppressTrimAnalysisWarnings>
+
+    <!-- Must happen before WasmSDK import -->
+    <WasmNestedPublishAppDependsOn>_GatherBlazorFilesToPublish;$(WasmNestedPublishAppDependsOn)</WasmNestedPublishAppDependsOn>
+  </PropertyGroup>
+
+  <Import Sdk="Microsoft.NET.Sdk.WebAssembly" Project="Sdk.targets" />
+
+  <PropertyGroup>
+    <!-- Paths to tools, tasks, and extensions are calculated relative to the BlazorWebAssemblySdkDirectoryRoot. This can be modified to test a local build. -->
+    <BlazorWebAssemblySdkDirectoryRoot Condition="'$(BlazorWebAssemblySdkDirectoryRoot)'==''">$(MSBuildThisFileDirectory)..\</BlazorWebAssemblySdkDirectoryRoot>
+    <_BlazorWebAssemblySdkTasksTFM Condition=" '$(MSBuildRuntimeType)' == 'Core'">net8.0</_BlazorWebAssemblySdkTasksTFM>
+    <_BlazorWebAssemblySdkTasksTFM Condition=" '$(MSBuildRuntimeType)' != 'Core'">net472</_BlazorWebAssemblySdkTasksTFM>
+    <_BlazorWebAssemblySdkTasksAssembly>$(BlazorWebAssemblySdkDirectoryRoot)tools\$(_BlazorWebAssemblySdkTasksTFM)\Microsoft.NET.Sdk.BlazorWebAssembly.Tasks.dll</_BlazorWebAssemblySdkTasksAssembly>
+    <_BlazorWebAssemblySdkToolAssembly>$(BlazorWebAssemblySdkDirectoryRoot)tools\net8.0\Microsoft.NET.Sdk.BlazorWebAssembly.Tool.dll</_BlazorWebAssemblySdkToolAssembly>
+  </PropertyGroup>
+
+  <UsingTask TaskName="Microsoft.NET.Sdk.BlazorWebAssembly.CreateBlazorTrimmerRootDescriptorFile" AssemblyFile="$(_BlazorWebAssemblySdkTasksAssembly)" />
+  <UsingTask TaskName="Microsoft.NET.Sdk.BlazorWebAssembly.GenerateBlazorBootExtensionJson" AssemblyFile="$(_BlazorWebAssemblySdkTasksAssembly)" />
+
+  <PropertyGroup>
+    <SelfContained>true</SelfContained>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+
+    <!-- Runtime feature defaults to trim unnecessary code -->
+    <InvariantGlobalization Condition="'$(InvariantGlobalization)' == ''">false</InvariantGlobalization>
+    <EventSourceSupport Condition="'$(EventSourceSupport)' == ''">false</EventSourceSupport>
+    <UseSystemResourceKeys Condition="'$(UseSystemResourceKeys)' == ''">true</UseSystemResourceKeys>
+    <EnableUnsafeUTF7Encoding Condition="'$(EnableUnsafeUTF7Encoding)' == ''">false</EnableUnsafeUTF7Encoding>
+    <HttpActivityPropagationSupport Condition="'$(HttpActivityPropagationSupport)' == ''">false</HttpActivityPropagationSupport>
+    <NullabilityInfoContextSupport Condition="'$(NullabilityInfoContextSupport)' == ''">false</NullabilityInfoContextSupport>
+    <_AggressiveAttributeTrimming Condition="'$(_AggressiveAttributeTrimming)' == ''">true</_AggressiveAttributeTrimming>
+    <DebuggerSupport Condition="'$(DebuggerSupport)' == '' and '$(Configuration)' != 'Debug'">false</DebuggerSupport>
+    <BlazorCacheBootResources Condition="'$(BlazorCacheBootResources)' == ''">true</BlazorCacheBootResources>
+
+    <_TargetingNET80OrLater>$([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '8.0'))</_TargetingNET80OrLater>
+    <WasmFingerprintDotnetJs>true</WasmFingerprintDotnetJs>
+    <WasmFingerprintDotnetJs Condition="'$(_TargetingNET80OrLater)' == 'true'">false</WasmFingerprintDotnetJs>
+    <WasmEnableWebcil Condition="'$(WasmEnableWebcil)' == '' and ('$(TargetFrameworkIdentifier)' != '.NETCoreApp' or '$(_TargetingNET80OrLater)' != 'true')">false</WasmEnableWebcil>
+
+    <!-- Don't generate a NETSDK1151 error if a non self-contained Exe references a Blazor Exe -->
+    <ShouldBeValidatedAsExecutableReference>false</ShouldBeValidatedAsExecutableReference>
+
+    <DisableAutoWasmBuildApp>true</DisableAutoWasmBuildApp>
+    <DisableAutoWasmPublishApp>true</DisableAutoWasmPublishApp>
+  </PropertyGroup>
+
+  <!-- Wire-up static web assets -->
+  <PropertyGroup>
+    <ResolveStaticWebAssetsInputsDependsOn>
+      $(ResolveStaticWebAssetsInputsDependsOn);
+      _ResolveBlazorWasmOutputs;
+    </ResolveStaticWebAssetsInputsDependsOn>
+
+    <GenerateBuildWasmBootJsonDependsOn>
+      $(GenerateBuildWasmBootJsonDependsOn);
+      GenerateBuildBlazorBootExtensionJson;
+    </GenerateBuildWasmBootJsonDependsOn>
+
+    <GeneratePublishWasmBootJsonDependsOn>
+      $(GeneratePublishWasmBootJsonDependsOn);
+      GeneratePublishBlazorBootExtensionJson;
+    </GeneratePublishWasmBootJsonDependsOn>
+  </PropertyGroup>
+
+  <Import Project="Microsoft.NET.Sdk.BlazorWebAssembly.ServiceWorkerAssetsManifest.targets" Condition="'$(ServiceWorkerAssetsManifest)' != ''" />
+
+  <Target Name="_BlazorWasmNativeForBuild" DependsOnTargets="_GatherBlazorFilesToBuild;WasmBuildApp" Condition="'$(UsingBrowserRuntimeWorkload)' == 'true'" />
+
+  <Target Name="_GatherBlazorFilesToBuild">
+    <ItemGroup>
+      <WasmAssembliesToBundle Condition="'%(WasmAssembliesToBundle.FileName)' == 'Microsoft.JSInterop.WebAssembly'" AOT_InternalForceToInterpret="true" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="_ResolveBlazorWasmOutputs" DependsOnTargets="ResolveWasmOutputs;ResolveReferences;PrepareResourceNames;ComputeIntermediateSatelliteAssemblies;_BlazorWasmNativeForBuild" BeforeTargets="_RazorPrepareForRun">
+    <ItemGroup>
+      <_BlazorJSFile Include="$(BlazorWebAssemblyJSPath)" />
+      <_BlazorJSFile Include="$(BlazorWebAssemblyJSMapPath)" Condition="Exists('$(BlazorWebAssemblyJSMapPath)')" />
+      <_BlazorJsFile>
+        <RelativePath>_framework/%(Filename)%(Extension)</RelativePath>
+      </_BlazorJsFile>
+
+      <!-- A missing blazor.webassembly.js is our packaging error. Produce an error so it's discovered early. -->
+      <Error
+        Text="Unable to find BlazorWebAssembly JS files. This usually indicates a packaging error."
+        Code="RAZORSDK1007"
+        Condition="'@(_BlazorJSFile->Count())' == '0'" />
+    </ItemGroup>
+
+    <DefineStaticWebAssets
+      CandidateAssets="@(_BlazorJSFile)"
+      SourceId="$(PackageId)"
+      SourceType="Computed"
+      AssetKind="All"
+      AssetRole="Primary"
+      AssetTraitName="WasmResource"
+      AssetTraitValue="boot"
+      CopyToOutputDirectory="PreserveNewest"
+      CopyToPublishDirectory="PreserveNewest"
+      ContentRoot="$(OutputPath)wwwroot"
+      BasePath="$(StaticWebAssetBasePath)"
+    >
+      <Output TaskParameter="Assets" ItemName="_BlazorJSStaticWebAsset" />
+    </DefineStaticWebAssets>
+
+    <ItemGroup>
+      <StaticWebAsset Include="@(_BlazorJSStaticWebAsset)" />
+    </ItemGroup>
+  </Target>
+
+  <!-- Just print a message here, static web assets takes care of all the copying -->
+  <Target Name="_BlazorCopyFilesToOutputDirectory" AfterTargets="CopyFilesToOutputDirectory">
+    <Message Importance="High" Text="$(MSBuildProjectName) (Blazor output) -&gt; $(TargetDir)wwwroot" Condition="'$(CopyBuildOutputToOutputDirectory)' == 'true' and '$(SkipCopyBuildProduct)'!='true'" />
+  </Target>
+
+  <!-- Make sure that ResolveAssemblyReferences runs early enough to ensure satellite assemblies are populated in the ResolvedFilesToPublish -->
+  <Target Name="_BlazorPrepareForPublish"
+    DependsOnTargets="PrepareResourceNames;ComputeIntermediateSatelliteAssemblies;ResolveAssemblyReferences"
+    BeforeTargets="PrepareForPublish" />
+
+  <Target Name="_GatherBlazorFilesToPublish">
+    <ItemGroup>
+      <WasmAssembliesToBundle Condition="'%(WasmAssembliesToBundle.FileName)' == 'Microsoft.JSInterop.WebAssembly'" AOT_InternalForceToInterpret="true" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="GenerateBuildBlazorBootExtensionJson">
+    <PropertyGroup>
+      <_BlazorBuildBootExtensionJsonPath>$(IntermediateOutputPath)blazor.build.boot-extension.json</_BlazorBuildBootExtensionJsonPath>
+    </PropertyGroup>
+
+    <GenerateBlazorBootExtensionJson OutputPath="$(_BlazorBuildBootExtensionJsonPath)" />
+
+    <ItemGroup>
+      <FileWrites Include="$(_BlazorBuildBootExtensionJsonPath)" />
+      <WasmBootConfigExtension Include="$(_BlazorBuildBootExtensionJsonPath)" Key="blazor" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="GeneratePublishBlazorBootExtensionJson">
+    <PropertyGroup>
+      <_BlazorPublishBootExtensionJsonPath>$(IntermediateOutputPath)blazor.publish.boot-extension.json</_BlazorPublishBootExtensionJsonPath>
+    </PropertyGroup>
+
+    <GenerateBlazorBootExtensionJson OutputPath="$(_BlazorPublishBootExtensionJsonPath)" />
+
+    <ItemGroup>
+      <FileWrites Include="$(_BlazorPublishBootExtensionJsonPath)" />
+      <WasmBootConfigExtension Remove="@(WasmBootConfigExtension)" Condition="'%(Key)' == 'blazor'" />
+      <WasmBootConfigExtension Include="$(_BlazorPublishBootExtensionJsonPath)" Key="blazor" />
+    </ItemGroup>
+  </Target>
+
+</Project>

@@ -1,5 +1,5 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Assertions;
@@ -13,6 +13,8 @@ using FluentAssertions;
 using System.Runtime.InteropServices;
 using System.Linq;
 using Xunit.Abstractions;
+using System.Runtime.CompilerServices;
+using System.Text.RegularExpressions;
 
 namespace Microsoft.NET.Build.Tests
 {
@@ -63,7 +65,7 @@ namespace Microsoft.NET.Build.Tests
                 TestPackageReference dependencyPackageReference = new TestPackageReference(
                     dependencyProject.Name,
                     "1.0.0",
-                    ConstantStringValues.ConstructNuGetPackageReferencePath(dependencyProject));
+                    ConstantStringValues.ConstructNuGetPackageReferencePath(dependencyProject, identifier: referencerTarget + testDescription + rawDependencyTargets));
 
                 //  Skip creating the NuGet package if not running on Windows; or if the NuGet package already exists
                 //        https://github.com/dotnet/sdk/issues/335
@@ -72,7 +74,7 @@ namespace Microsoft.NET.Build.Tests
                     if (!dependencyPackageReference.NuGetPackageExists())
                     {
                         //  Create the NuGet packages
-                        var dependencyTestAsset = _testAssetsManager.CreateTestProject(dependencyProject, ConstantStringValues.TestDirectoriesNamePrefix, ConstantStringValues.NuGetSharedDirectoryNamePostfix);
+                        var dependencyTestAsset = _testAssetsManager.CreateTestProject(dependencyProject, identifier: referencerTarget + testDescription + rawDependencyTargets);
                         var dependencyRestoreCommand = dependencyTestAsset.GetRestoreCommand(Log, relativePath: dependencyProject.Name).Execute().Should().Pass();
                         var dependencyProjectDirectory = Path.Combine(dependencyTestAsset.TestRoot, dependencyProject.Name);
 
@@ -141,7 +143,7 @@ namespace Microsoft.NET.Build.Tests
         {
             var testProjectName = targetFramework.Replace(".", "_") + "implicit_atf";
 
-            var (testProjectTestAsset, testPackageReference) = CreateTestAsset(testProjectName, targetFramework, "net461");
+            var (testProjectTestAsset, testPackageReference) = CreateTestAsset(testProjectName, targetFramework, "net461", identifer: targetFramework);
 
             var restoreCommand = testProjectTestAsset.GetRestoreCommand(Log, relativePath: testProjectName);
 
@@ -161,7 +163,7 @@ namespace Microsoft.NET.Build.Tests
         {
             var testProjectName = targetFramework.Replace(".", "_") + "non_implicit_atf";
 
-            var (testProjectTestAsset, testPackageReference) = CreateTestAsset(testProjectName, targetFramework, "net461");
+            var (testProjectTestAsset, testPackageReference) = CreateTestAsset(testProjectName, targetFramework, "net461", identifer: targetFramework);
 
             var restoreCommand = testProjectTestAsset.GetRestoreCommand(Log, relativePath: testProjectName);
             NuGetConfigWriter.Write(testProjectTestAsset.TestRoot, Path.GetDirectoryName(testPackageReference.NupkgPath));
@@ -187,11 +189,11 @@ namespace Microsoft.NET.Build.Tests
         [WindowsOnlyFact]
         public void It_chooses_lowest_netfx_in_default_atf()
         {
-            var testProjectName = "netcoreapp30_multiple_atf";
+            var testProjectName = $"{ToolsetInfo.CurrentTargetFramework.Replace(".", "")}_multiple_atf";
 
             var (testProjectTestAsset, testPackageReference) = CreateTestAsset(
                testProjectName,
-               "netcoreapp3.0",
+               ToolsetInfo.CurrentTargetFramework,
                "net462;net472",
                new Dictionary<string, string> { ["CopyLocalLockFileAssemblies"] = "true" });
 
@@ -205,7 +207,7 @@ namespace Microsoft.NET.Build.Tests
             var buildCommand = new BuildCommand(testProjectTestAsset);
             buildCommand.Execute().Should().Pass();
 
-            var referencedDll = buildCommand.GetOutputDirectory("netcoreapp3.0").File("net462_net472_pkg.dll").FullName;
+            var referencedDll = buildCommand.GetOutputDirectory().File("net462_net472_pkg.dll").FullName;
             var referencedTargetFramework = AssemblyInfo.Get(referencedDll)["TargetFrameworkAttribute"];
             referencedTargetFramework.Should().Be(".NETFramework,Version=v4.6.2");
         }
@@ -214,9 +216,11 @@ namespace Microsoft.NET.Build.Tests
             string testProjectName,
             string callerTargetFramework,
             string calleeTargetFrameworks,
-            Dictionary<string, string> additionalProperties = null)
+            Dictionary<string, string> additionalProperties = null,
+            [CallerMemberName] string testName = null,
+            string identifer = null)
         {
-            var testPackageReference = CreateTestPackage(calleeTargetFrameworks);
+            var testPackageReference = CreateTestPackage(calleeTargetFrameworks, testName, identifer);
 
             var testProject =
                 new TestProject
@@ -243,7 +247,7 @@ namespace Microsoft.NET.Build.Tests
             return (testProjectTestAsset, testPackageReference);
         }
 
-        private TestPackageReference CreateTestPackage(string targetFrameworks)
+        private TestPackageReference CreateTestPackage(string targetFrameworks, string identifier, [CallerMemberName] string callingMethod = "")
         {
             var project = 
                 new TestProject
@@ -256,15 +260,15 @@ namespace Microsoft.NET.Build.Tests
                 new TestPackageReference(
                     project.Name,
                     "1.0.0",
-                    ConstantStringValues.ConstructNuGetPackageReferencePath(project));
+                    ConstantStringValues.ConstructNuGetPackageReferencePath(project, identifier, callingMethod));
 
             if (!packageReference.NuGetPackageExists())
             {
                 var testAsset = 
                     _testAssetsManager.CreateTestProject(
                         project,
-                        ConstantStringValues.TestDirectoriesNamePrefix,
-                        ConstantStringValues.NuGetSharedDirectoryNamePostfix);
+                        callingMethod,
+                        identifier);
                 var packageRestoreCommand =
                     testAsset.GetRestoreCommand(Log, relativePath: project.Name).Execute().Should().Pass();
                 var dependencyProjectDirectory = Path.Combine(testAsset.TestRoot, project.Name);

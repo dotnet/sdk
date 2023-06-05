@@ -1,5 +1,5 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.IO;
@@ -86,7 +86,7 @@ namespace Microsoft.NET.Build.Tasks
                   && startupNode.Nodes().OfType<XElement>().Any(e => e.Name.LocalName == "supportedRuntime");
         }
 
-        //https://github.com/dotnet/docs/blob/master/docs/framework/configure-apps/file-schema/startup/supportedruntime-element.md
+        //https://github.com/dotnet/docs/blob/main/docs/framework/configure-apps/file-schema/startup/supportedruntime-element.md
         private static bool TryGetSupportRuntimeNode(
             string targetFrameworkIdentifier,
             string targetFrameworkVersion,

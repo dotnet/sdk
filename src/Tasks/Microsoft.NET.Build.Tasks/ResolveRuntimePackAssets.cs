@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -21,6 +24,8 @@ namespace Microsoft.NET.Build.Tasks
         public ITaskItem[] SatelliteResourceLanguages { get; set; } = Array.Empty<ITaskItem>();
 
         public bool DesignTimeBuild { get; set; }
+
+        public bool DisableTransitiveFrameworkReferenceDownloads { get; set; }
 
         [Output]
         public ITaskItem[] RuntimePackAssets { get; set; }
@@ -66,8 +71,16 @@ namespace Microsoft.NET.Build.Tasks
                         //  Don't treat this as an error if we are doing a design-time build.  This is because the design-time
                         //  build needs to succeed in order to get the right information in order to run a restore to download
                         //  the runtime pack.
-                        Log.LogError(Strings.RuntimePackNotDownloaded, runtimePack.ItemSpec,
-                            runtimePack.GetMetadata(MetadataKeys.RuntimeIdentifier));
+
+                        if (DisableTransitiveFrameworkReferenceDownloads)
+                        {
+                            Log.LogError(Strings.RuntimePackNotRestored_TransitiveDisabled, runtimePack.ItemSpec);
+                        }
+                        else
+                        {
+                            Log.LogError(Strings.RuntimePackNotDownloaded, runtimePack.ItemSpec,
+                                runtimePack.GetMetadata(MetadataKeys.RuntimeIdentifier));
+                        }
                     }
                     continue;
                 }
@@ -118,6 +131,10 @@ namespace Microsoft.NET.Build.Tasks
                 {
                     assetType = "native";
                 }
+                else if (typeAttributeValue.Equals("PgoData", StringComparison.OrdinalIgnoreCase))
+                {
+                    assetType = "pgodata";
+                }
                 else if (typeAttributeValue.Equals("Resources", StringComparison.OrdinalIgnoreCase))
                 {
                     assetType = "resources";
@@ -126,7 +143,7 @@ namespace Microsoft.NET.Build.Tasks
                     {
                         throw new BuildErrorException($"Culture not set in runtime manifest for {assetPath}");
                     }
-                    if (this.SatelliteResourceLanguages.Length > 1 &&
+                    if (this.SatelliteResourceLanguages.Length >= 1 &&
                         !this.SatelliteResourceLanguages.Any(lang => string.Equals(lang.ItemSpec, culture, StringComparison.OrdinalIgnoreCase)))
                     {
                         continue;
@@ -166,7 +183,9 @@ namespace Microsoft.NET.Build.Tasks
 
             var assetItem = new TaskItem(assetPath);
 
-            assetItem.SetMetadata(MetadataKeys.CopyLocal, "true");
+            if (assetType != "pgodata")
+                assetItem.SetMetadata(MetadataKeys.CopyLocal, "true");
+
             if (string.IsNullOrEmpty(culture))
             {
                 assetItem.SetMetadata(MetadataKeys.DestinationSubPath, Path.GetFileName(assetPath));

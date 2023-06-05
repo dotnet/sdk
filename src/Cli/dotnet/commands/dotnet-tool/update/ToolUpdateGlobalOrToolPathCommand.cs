@@ -1,8 +1,9 @@
-// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
+using System.CommandLine;
 using System.CommandLine.Parsing;
 using System.IO;
 using System.Linq;
@@ -19,7 +20,7 @@ using NuGet.Versioning;
 
 namespace Microsoft.DotNet.Tools.Tool.Update
 {
-    internal delegate IShellShimRepository CreateShellShimRepository(DirectoryPath? nonGlobalLocation = null);
+    internal delegate IShellShimRepository CreateShellShimRepository(string appHostSourceDirectory, DirectoryPath? nonGlobalLocation = null);
 
     internal delegate (IToolPackageStore, IToolPackageStoreQuery, IToolPackageInstaller, IToolPackageUninstaller) CreateToolPackageStoresAndInstallerAndUninstaller(
         DirectoryPath? nonGlobalLocation = null,
@@ -48,14 +49,14 @@ namespace Microsoft.DotNet.Tools.Tool.Update
             IReporter reporter = null)
             : base(parseResult)
         {
-            _packageId = new PackageId(parseResult.ValueForArgument<string>(ToolUninstallCommandParser.PackageIdArgument));
-            _configFilePath = parseResult.ValueForOption<string>(ToolUpdateCommandParser.ConfigOption);
-            _framework = parseResult.ValueForOption<string>(ToolUpdateCommandParser.FrameworkOption);
-            _additionalFeeds = parseResult.ValueForOption<string[]>(ToolUpdateCommandParser.AddSourceOption);
-            _packageVersion = parseResult.ValueForOption<string>(ToolUpdateCommandParser.VersionOption);
-            _global = parseResult.ValueForOption<bool>(ToolUpdateCommandParser.GlobalOption);
-            _verbosity = Enum.GetName(parseResult.ValueForOption<VerbosityOptions>(ToolUpdateCommandParser.VerbosityOption));
-            _toolPath = parseResult.ValueForOption<string>(ToolUpdateCommandParser.ToolPathOption);
+            _packageId = new PackageId(parseResult.GetValue(ToolUninstallCommandParser.PackageIdArgument));
+            _configFilePath = parseResult.GetValue(ToolUpdateCommandParser.ConfigOption);
+            _framework = parseResult.GetValue(ToolUpdateCommandParser.FrameworkOption);
+            _additionalFeeds = parseResult.GetValue(ToolUpdateCommandParser.AddSourceOption);
+            _packageVersion = parseResult.GetValue(ToolUpdateCommandParser.VersionOption);
+            _global = parseResult.GetValue(ToolUpdateCommandParser.GlobalOption);
+            _verbosity = Enum.GetName(parseResult.GetValue(ToolUpdateCommandParser.VerbosityOption));
+            _toolPath = parseResult.GetValue(ToolUpdateCommandParser.ToolPathOption);
             _forwardRestoreArguments = parseResult.OptionValuesToBeForwarded(ToolUpdateCommandParser.GetCommand());
 
             _createToolPackageStoreInstallerUninstaller = createToolPackageStoreInstallerUninstaller ??
@@ -73,26 +74,20 @@ namespace Microsoft.DotNet.Tools.Tool.Update
             ValidateArguments();
 
             DirectoryPath? toolPath = null;
-            if (_toolPath != null)
+            if (!string.IsNullOrEmpty(_toolPath))
             {
                 toolPath = new DirectoryPath(_toolPath);
             }
 
-            VersionRange versionRange = null;
-            if (!string.IsNullOrEmpty(_packageVersion) && !VersionRange.TryParse(_packageVersion, out versionRange))
-            {
-                throw new GracefulException(
-                    string.Format(
-                        LocalizableStrings.InvalidNuGetVersionRange,
-                        _packageVersion));
-            }
+            VersionRange versionRange = _parseResult.GetVersionRange();
 
             (IToolPackageStore toolPackageStore,
              IToolPackageStoreQuery toolPackageStoreQuery,
              IToolPackageInstaller toolPackageInstaller,
              IToolPackageUninstaller toolPackageUninstaller) = _createToolPackageStoreInstallerUninstaller(toolPath, _forwardRestoreArguments);
 
-            IShellShimRepository shellShimRepository = _createShellShimRepository(toolPath);
+            var appHostSourceDirectory = ShellShimTemplateFinder.GetDefaultAppHostSourceDirectory();
+            IShellShimRepository shellShimRepository = _createShellShimRepository(appHostSourceDirectory, toolPath);
 
             IToolPackage oldPackageNullable = GetOldPackage(toolPackageStoreQuery);
 
@@ -126,7 +121,7 @@ namespace Microsoft.DotNet.Tools.Tool.Update
 
                     foreach (RestoredCommand command in newInstalledPackage.Commands)
                     {
-                        shellShimRepository.CreateShim(command.Executable, command.Name);
+                        shellShimRepository.CreateShim(command.Executable, command.Name, newInstalledPackage.PackagedShims);
                     }
 
                     PrintSuccessMessage(oldPackageNullable, newInstalledPackage);
@@ -155,7 +150,7 @@ namespace Microsoft.DotNet.Tools.Tool.Update
 
         private void ValidateArguments()
         {
-            if (_configFilePath != null && !File.Exists(_configFilePath))
+            if (!string.IsNullOrEmpty(_configFilePath) && !File.Exists(_configFilePath))
             {
                 throw new GracefulException(
                     string.Format(
@@ -214,7 +209,7 @@ namespace Microsoft.DotNet.Tools.Tool.Update
         private FilePath? GetConfigFile()
         {
             FilePath? configFile = null;
-            if (_configFilePath != null)
+            if (!string.IsNullOrEmpty(_configFilePath))
             {
                 configFile = new FilePath(_configFilePath);
             }
@@ -268,7 +263,10 @@ namespace Microsoft.DotNet.Tools.Tool.Update
             {
                 _reporter.WriteLine(
                     string.Format(
-                        LocalizableStrings.UpdateSucceededVersionNoChange,
+                        (
+                        newInstalledPackage.Version.IsPrerelease ? 
+                        LocalizableStrings.UpdateSucceededPreVersionNoChange : LocalizableStrings.UpdateSucceededStableVersionNoChange
+                        ),
                         newInstalledPackage.Id, newInstalledPackage.Version).Green());
             }
         }

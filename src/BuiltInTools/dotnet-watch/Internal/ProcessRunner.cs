@@ -1,19 +1,23 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+#nullable enable
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.DotNet.Cli.Utils;
-using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Tools.Internal;
 using IReporter = Microsoft.Extensions.Tools.Internal.IReporter;
 
 namespace Microsoft.DotNet.Watcher.Internal
 {
-    public class ProcessRunner
+    internal sealed class ProcessRunner
     {
+        private static readonly Func<string, string?> _getEnvironmentVariable = static key => Environment.GetEnvironmentVariable(key);
+
         private readonly IReporter _reporter;
 
         public ProcessRunner(IReporter reporter)
@@ -67,7 +71,8 @@ namespace Microsoft.DotNet.Watcher.Internal
                 stopwatch.Start();
                 process.Start();
 
-                _reporter.Verbose($"Started '{processSpec.Executable}' '{process.StartInfo.Arguments}' with process id {process.Id}");
+                var args = processSpec.EscapedArguments ?? string.Join(" ", processSpec.Arguments);
+                _reporter.Verbose($"Started '{processSpec.Executable}' '{args}' with process id {process.Id}", emoji: "🚀");
 
                 if (readOutput)
                 {
@@ -96,7 +101,6 @@ namespace Microsoft.DotNet.Watcher.Internal
                 StartInfo =
                 {
                     FileName = processSpec.Executable,
-                    Arguments = ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(processSpec.Arguments),
                     UseShellExecute = false,
                     WorkingDirectory = processSpec.WorkingDirectory,
                     RedirectStandardOutput = processSpec.IsOutputCaptured || (processSpec.OnOutput != null),
@@ -104,19 +108,70 @@ namespace Microsoft.DotNet.Watcher.Internal
                 }
             };
 
+            if (processSpec.EscapedArguments is not null)
+            {
+                process.StartInfo.Arguments = processSpec.EscapedArguments;
+            }
+            else
+            {
+                for (var i = 0; i < processSpec.Arguments.Count; i++)
+                {
+                    process.StartInfo.ArgumentList.Add(processSpec.Arguments[i]);
+                }
+            }
+
             foreach (var env in processSpec.EnvironmentVariables)
             {
                 process.StartInfo.Environment.Add(env.Key, env.Value);
             }
 
+            SetEnvironmentVariable(process.StartInfo, "DOTNET_STARTUP_HOOKS", processSpec.EnvironmentVariables.DotNetStartupHooks, Path.PathSeparator, _getEnvironmentVariable);
+            SetEnvironmentVariable(process.StartInfo, "ASPNETCORE_HOSTINGSTARTUPASSEMBLIES", processSpec.EnvironmentVariables.AspNetCoreHostingStartupAssemblies, ';', _getEnvironmentVariable);
+
             return process;
+        }
+
+        internal static void SetEnvironmentVariable(ProcessStartInfo processStartInfo, string envVarName, List<string> envVarValues, char separator, Func<string, string?> getEnvironmentVariable)
+        {
+            if (envVarValues is { Count: 0 })
+            {
+                return;
+            }
+
+            var existing = getEnvironmentVariable(envVarName);
+            if (processStartInfo.Environment.TryGetValue(envVarName, out var value))
+            {
+                existing = CombineEnvironmentVariable(existing, value, separator);
+            }
+
+            string result;
+            if (!string.IsNullOrEmpty(existing))
+            {
+                result = existing + separator + string.Join(separator, envVarValues);
+            }
+            else
+            {
+                result = string.Join(separator, envVarValues);
+            }
+
+            processStartInfo.EnvironmentVariables[envVarName] = result;
+
+            static string? CombineEnvironmentVariable(string? a, string? b, char separator)
+            {
+                if (!string.IsNullOrEmpty(a))
+                {
+                    return !string.IsNullOrEmpty(b) ? (a + separator + b) : a;
+                }
+
+                return b;
+            }
         }
 
         private class ProcessState : IDisposable
         {
             private readonly IReporter _reporter;
             private readonly Process _process;
-            private readonly TaskCompletionSource<object> _tcs = new TaskCompletionSource<object>();
+            private readonly TaskCompletionSource _tcs = new TaskCompletionSource();
             private volatile bool _disposed;
 
             public ProcessState(Process process, IReporter reporter)
@@ -173,8 +228,8 @@ namespace Microsoft.DotNet.Watcher.Internal
                 }
             }
 
-            private void OnExited(object sender, EventArgs args)
-                => _tcs.TrySetResult(null);
+            private void OnExited(object? sender, EventArgs args)
+                => _tcs.TrySetResult();
 
             public void Dispose()
             {

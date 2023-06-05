@@ -37,11 +37,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     <EnableDefaultRazorComponentItems Condition="'$(EnableDefaultRazorComponentItems)'==''">true</EnableDefaultRazorComponentItems>
 
     <!--
-      Set to true to automatically include Razor (.razor.cs) files in @(ScopedCssInput) from @(Content).
-    -->
-    <EnableDefaultScopedCssItems Condition="'$(EnableDefaultScopedCssItems)'==''">true</EnableDefaultScopedCssItems>
-
-    <!--
       Set to true to copy RazorGenerate items (.cshtml) to the publish directory.
 
       Typically Razor files are not needed for a published application if they participate in compilation at build-time
@@ -67,12 +62,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     -->
     <RazorGenerateOutputFileExtension>.g.cs</RazorGenerateOutputFileExtension>
 
-    <!-- Determines if the deps file includes complication context -->
-    <PreserveCompilationContext>true</PreserveCompilationContext>
-
-    <!-- Determines if the refs folder is produced as part of build \ publish -->
-    <PreserveCompilationReferences>false</PreserveCompilationReferences>
-
     <!--
     List of file extensions that will cause VS to restart the application when RazorSDK is effective.
     This property affects C# projects targeting 3.0 or later.
@@ -91,7 +80,5 @@ Copyright (c) .NET Foundation. All rights reserved.
     <None Remove="**\*.cshtml" />
     <None Remove="**\*.razor" />
   </ItemGroup>
-
-  <Import Project="$(MSBuildThisFileDirectory)..\..\Sdk\Sdk.Razor.StaticAssets.ProjectSystem.props" />
 
 </Project>

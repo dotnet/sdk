@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -9,7 +9,7 @@ using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.DotNet.Watcher.Internal
 {
-    public class FileWatcher
+    internal sealed class FileWatcher
     {
         private bool _disposed;
 
@@ -26,7 +26,7 @@ namespace Microsoft.DotNet.Watcher.Internal
             _watchers = new Dictionary<string, IFileSystemWatcher>();
         }
 
-        public event Action<string> OnFileChange;
+        public event Action<string, bool> OnFileChange;
 
         public void WatchDirectory(string directory)
         {
@@ -95,16 +95,16 @@ namespace Microsoft.DotNet.Watcher.Internal
             }
         }
 
-        private void WatcherChangedHandler(object sender, string changedPath)
+        private void WatcherChangedHandler(object sender, (string changedPath, bool newFile) args)
         {
-            NotifyChange(changedPath);
+            NotifyChange(args.changedPath, args.newFile);
         }
 
-        private void NotifyChange(string path)
+        private void NotifyChange(string path, bool newFile)
         {
             if (OnFileChange != null)
             {
-                OnFileChange(path);
+                OnFileChange(path, newFile);
             }
         }
 

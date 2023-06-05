@@ -15,18 +15,18 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <PropertyGroup>
     <MicrosoftNETBuildTasksDirectoryRoot>$(MSBuildThisFileDirectory)..\tools\</MicrosoftNETBuildTasksDirectoryRoot>
-    <MicrosoftNETBuildTasksTFM Condition=" '$(MSBuildRuntimeType)' == 'Core'">net6.0</MicrosoftNETBuildTasksTFM>
+    <MicrosoftNETBuildTasksTFM Condition=" '$(MSBuildRuntimeType)' == 'Core'">net8.0</MicrosoftNETBuildTasksTFM>
     <MicrosoftNETBuildTasksTFM Condition=" '$(MicrosoftNETBuildTasksTFM)' == ''">net472</MicrosoftNETBuildTasksTFM>
-    <MicrosoftNETBuildTasksDirectory>$(MicrosoftNETBuildTasksDirectoryRoot)$(MicrosoftNETBuildTasksTFM)/</MicrosoftNETBuildTasksDirectory>
+    <MicrosoftNETBuildTasksDirectory>$(MicrosoftNETBuildTasksDirectoryRoot)$(MicrosoftNETBuildTasksTFM)\</MicrosoftNETBuildTasksDirectory>
     <MicrosoftNETBuildTasksAssembly>$(MicrosoftNETBuildTasksDirectory)Microsoft.NET.Build.Tasks.dll</MicrosoftNETBuildTasksAssembly>
 
     <!--
-          Hardcoded list of known implicit packges that are added to project from default SDK targets implicitly.
+          Hardcoded list of known implicit packages that are added to project from default SDK targets implicitly.
           Should be re-visited when multiple TFM support is added to Dependencies logic.
     -->
     <DefaultImplicitPackages>Microsoft.NETCore.App;NETStandard.Library</DefaultImplicitPackages>
   </PropertyGroup>
-  
+
   <!--
      Some versions of Microsoft.NET.Test.Sdk.targets change the OutputType after we've set _IsExecutable and
      HasRuntimeOutput default in Microsoft.NET.Sdk.BeforeCommon.targets. Refresh these value here for backwards
@@ -42,10 +42,15 @@ Copyright (c) .NET Foundation. All rights reserved.
     <DotnetCliToolTargetFramework>netcoreapp2.2</DotnetCliToolTargetFramework>
   </PropertyGroup>
 
-  <PropertyGroup>
-    <IncludeBuildOutput Condition=" '$(PackAsTool)' == 'true' ">false</IncludeBuildOutput>
-    <PackageType Condition=" '$(PackAsTool)' == 'true' ">DotnetTool</PackageType>
-    <RuntimeIdentifiers Condition=" '$(PackAsTool)' == 'true' ">$(RuntimeIdentifiers);$(PackAsToolShimRuntimeIdentifiers)</RuntimeIdentifiers>
+  <PropertyGroup Condition=" '$(PackAsTool)' == 'true' ">
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <PackageType>DotnetTool</PackageType>
+    <RuntimeIdentifiers>$(RuntimeIdentifiers);$(PackAsToolShimRuntimeIdentifiers)</RuntimeIdentifiers>
+    <RollForward Condition="'$(RollForward)' == ''">Major</RollForward>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(EnablePreviewFeatures)' == 'true' And '$(IsNetCoreAppTargetingLatestTFM)' == 'true'">
+    <LangVersion>Preview</LangVersion>
   </PropertyGroup>
 
   <UsingTask TaskName="NETSdkError" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />

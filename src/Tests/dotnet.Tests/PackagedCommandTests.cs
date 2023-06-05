@@ -1,5 +1,5 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -215,12 +215,15 @@ namespace Microsoft.DotNet.Tests
                 .And.NotHaveStdErr();
         }
 
-        [Fact(Skip="https://github.com/dotnet/cli/issues/9688")]
+        [Fact]
         public void ToolsCanAccessDependencyContextProperly()
         {
             var testInstance = _testAssetsManager.CopyTestAsset("DependencyContextFromTool")
-                .WithSource()
-                .Restore(Log);
+                .WithSource();
+
+            NuGetConfigWriter.Write(testInstance.Path, TestContext.Current.TestPackages);
+
+            testInstance.Restore(Log);
 
             new DotnetCommand(Log, "dependency-context-test")
                 .WithWorkingDirectory(testInstance.Path)

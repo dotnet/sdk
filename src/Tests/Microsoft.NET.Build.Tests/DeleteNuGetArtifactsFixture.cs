@@ -1,10 +1,11 @@
-// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.ProjectConstruction;
 using System;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace Microsoft.NET.Build.Tests
@@ -17,9 +18,9 @@ namespace Microsoft.NET.Build.Tests
         public static string NetstandardTargetFrameworkIdentifier = ".NETStandard";
         public static string DependencyDirectoryNamePrefix = "D_";
 
-        public static string ConstructNuGetPackageReferencePath(TestProject dependencyProject)
+        public static string ConstructNuGetPackageReferencePath(TestProject dependencyProject, string identifier, [CallerMemberName] string callingMethod = null)
         {
-            return TestAssetsManager.GetTestDestinationDirectoryPath(dependencyProject.Name, TestDirectoriesNamePrefix, NuGetSharedDirectoryNamePostfix);
+            return TestAssetsManager.GetTestDestinationDirectoryPath(dependencyProject.Name, callingMethod, identifier);
         }
     }
 

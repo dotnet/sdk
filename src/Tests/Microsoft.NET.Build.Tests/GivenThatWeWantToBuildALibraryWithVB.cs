@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.IO;
 using Microsoft.NET.TestFramework;
@@ -181,17 +181,21 @@ namespace Microsoft.NET.Build.Tests
 
             var definedConstants = ExpandSequence(getValuesCommand.GetValues()).ToList();
 
-            definedConstants.Should().BeEquivalentTo(expectedDefines.Concat(new[] { "PLATFORM=\"AnyCPU\"", "NETSTANDARD=-1", "NETSTANDARD1_5=-1" }));
+            definedConstants.Should().BeEquivalentTo(expectedDefines.Concat(new[] { "PLATFORM=\"AnyCPU\"", "NETSTANDARD=-1", "NETSTANDARD1_5=-1", "NETSTANDARD1_0_OR_GREATER=-1", 
+                "NETSTANDARD1_1_OR_GREATER=-1", "NETSTANDARD1_2_OR_GREATER=-1", "NETSTANDARD1_3_OR_GREATER=-1", "NETSTANDARD1_4_OR_GREATER=-1", "NETSTANDARD1_5_OR_GREATER=-1" }));
         }
 
         [Theory]
-        [InlineData(".NETStandard,Version=v1.0", new[] { "NETSTANDARD=-1", "NETSTANDARD1_0=-1", "_MyType=\"Empty\"" })]
-        [InlineData("netstandard1.3", new[] { "NETSTANDARD=-1", "NETSTANDARD1_3=-1", "_MyType=\"Empty\"" })]
-        [InlineData("netstandard1.6", new[] { "NETSTANDARD=-1", "NETSTANDARD1_6=-1", "_MyType=\"Empty\"" })]
+        [InlineData(".NETStandard,Version=v1.0", new[] { "NETSTANDARD=-1", "NETSTANDARD1_0=-1", "NETSTANDARD1_0_OR_GREATER=-1", "_MyType=\"Empty\"" })]
+        [InlineData("netstandard1.3", new[] { "NETSTANDARD=-1", "NETSTANDARD1_3=-1", "NETSTANDARD1_0_OR_GREATER=-1", "NETSTANDARD1_1_OR_GREATER=-1", "NETSTANDARD1_2_OR_GREATER=-1", "NETSTANDARD1_3_OR_GREATER=-1", "_MyType=\"Empty\"" })]
+        [InlineData("netstandard1.6", new[] { "NETSTANDARD=-1", "NETSTANDARD1_6=-1", "NETSTANDARD1_0_OR_GREATER=-1", "NETSTANDARD1_1_OR_GREATER=-1", "NETSTANDARD1_2_OR_GREATER=-1", "NETSTANDARD1_3_OR_GREATER=-1", 
+            "NETSTANDARD1_4_OR_GREATER=-1", "NETSTANDARD1_5_OR_GREATER=-1", "NETSTANDARD1_6_OR_GREATER=-1", "_MyType=\"Empty\"" })]
         [InlineData("net45", new[] { "NETFRAMEWORK=-1", "NET45=-1", "NET20_OR_GREATER=-1", "NET30_OR_GREATER=-1", "NET35_OR_GREATER=-1", "NET40_OR_GREATER=-1", "NET45_OR_GREATER=-1" })]
-        [InlineData("net461", new[] { "NETFRAMEWORK=-1", "NET461=-1", "NET20_OR_GREATER=-1", "NET30_OR_GREATER=-1", "NET35_OR_GREATER=-1", "NET40_OR_GREATER=-1", "NET45_OR_GREATER=-1", "NET451_OR_GREATER=-1", "NET452_OR_GREATER=-1", "NET46_OR_GREATER=-1", "NET461_OR_GREATER=-1" })]
+        [InlineData("net461", new[] { "NETFRAMEWORK=-1", "NET461=-1", "NET20_OR_GREATER=-1", "NET30_OR_GREATER=-1", "NET35_OR_GREATER=-1", "NET40_OR_GREATER=-1", "NET45_OR_GREATER=-1", "NET451_OR_GREATER=-1", 
+            "NET452_OR_GREATER=-1", "NET46_OR_GREATER=-1", "NET461_OR_GREATER=-1" })]
         [InlineData("netcoreapp1.0", new[] { "NETCOREAPP=-1", "NETCOREAPP1_0=-1", "_MyType=\"Empty\"", "NETCOREAPP1_0_OR_GREATER=-1" })]
-        [InlineData("net5.0", new[] { "NET=-1", "NET5_0=-1", "NETCOREAPP=-1", "_MyType=\"Empty\"", "NETCOREAPP1_0_OR_GREATER=-1", "NETCOREAPP1_1_OR_GREATER=-1", "NETCOREAPP2_0_OR_GREATER=-1", "NETCOREAPP2_1_OR_GREATER=-1", "NETCOREAPP2_2_OR_GREATER=-1", "NETCOREAPP3_0_OR_GREATER=-1", "NETCOREAPP3_1_OR_GREATER=-1", "NET5_0_OR_GREATER=-1" })]
+        [InlineData("net5.0", new[] { "NET=-1", "NET5_0=-1", "NETCOREAPP=-1", "_MyType=\"Empty\"", "NETCOREAPP1_0_OR_GREATER=-1", "NETCOREAPP1_1_OR_GREATER=-1", "NETCOREAPP2_0_OR_GREATER=-1", "NETCOREAPP2_1_OR_GREATER=-1", 
+            "NETCOREAPP2_2_OR_GREATER=-1", "NETCOREAPP3_0_OR_GREATER=-1", "NETCOREAPP3_1_OR_GREATER=-1", "NET5_0_OR_GREATER=-1" })]
         [InlineData(".NETPortable,Version=v4.5,Profile=Profile78", new string[] { "_MyType=\"Empty\"" })]
         [InlineData(".NETFramework,Version=v4.0,Profile=Client", new string[] { "NETFRAMEWORK=-1", "NET40=-1", "NET20_OR_GREATER=-1", "NET30_OR_GREATER=-1", "NET35_OR_GREATER=-1", "NET40_OR_GREATER=-1" })]
         [InlineData("Xamarin.iOS,Version=v1.0", new string[] { "XAMARINIOS=-1", "XAMARINIOS1_0=-1", "_MyType=\"Empty\"" })]
@@ -199,7 +203,7 @@ namespace Microsoft.NET.Build.Tests
         public void It_implicitly_defines_compilation_constants_for_the_target_framework(string targetFramework, string[] expectedDefines)
         {
             var testAsset = _testAssetsManager
-                .CopyTestAsset("AppWithLibraryVB", "ImplicitFrameworkConstantsVB", targetFramework)
+                .CopyTestAsset("AppWithLibraryVB", "ImplicitFrameworkConstantsVB", targetFramework, identifier: targetFramework)
                 .WithSource()
                 .WithProjectChanges(project =>
                 {

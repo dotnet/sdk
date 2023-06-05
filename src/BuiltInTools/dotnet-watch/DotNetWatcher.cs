@@ -1,7 +1,8 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
@@ -13,47 +14,43 @@ using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.DotNet.Watcher
 {
-    public class DotNetWatcher : IAsyncDisposable
+    internal sealed class DotNetWatcher : IAsyncDisposable
     {
         private readonly IReporter _reporter;
         private readonly ProcessRunner _processRunner;
         private readonly DotNetWatchOptions _dotnetWatchOptions;
-        private readonly FileChangeHandler _fileChangeHandler;
+        private readonly StaticFileHandler _staticFileHandler;
         private readonly IWatchFilter[] _filters;
+        private readonly string _muxerPath;
 
-        public DotNetWatcher(IReporter reporter, IFileSetFactory fileSetFactory, DotNetWatchOptions dotNetWatchOptions)
+        public DotNetWatcher(IReporter reporter, IFileSetFactory fileSetFactory, DotNetWatchOptions dotNetWatchOptions, string muxerPath)
         {
             Ensure.NotNull(reporter, nameof(reporter));
 
             _reporter = reporter;
             _processRunner = new ProcessRunner(reporter);
             _dotnetWatchOptions = dotNetWatchOptions;
-            _fileChangeHandler = new FileChangeHandler(reporter);
+            _staticFileHandler = new StaticFileHandler(reporter);
+            _muxerPath = muxerPath;
 
             _filters = new IWatchFilter[]
             {
                 new MSBuildEvaluationFilter(fileSetFactory),
                 new NoRestoreFilter(),
                 new LaunchBrowserFilter(dotNetWatchOptions),
+                new BrowserRefreshFilter(dotNetWatchOptions, _reporter, muxerPath),
             };
         }
 
-        public async Task WatchAsync(ProcessSpec processSpec, CancellationToken cancellationToken)
+        public async Task WatchAsync(DotNetWatchContext context, CancellationToken cancellationToken)
         {
-            Ensure.NotNull(processSpec, nameof(processSpec));
-
             var cancelledTaskSource = new TaskCompletionSource();
             cancellationToken.Register(state => ((TaskCompletionSource)state).TrySetResult(),
                 cancelledTaskSource);
 
+            var processSpec = context.ProcessSpec;
+            processSpec.Executable = _muxerPath;
             var initialArguments = processSpec.Arguments.ToArray();
-            var context = new DotNetWatchContext
-            {
-                Iteration = -1,
-                ProcessSpec = processSpec,
-                Reporter = _reporter,
-                SuppressMSBuildIncrementalism = _dotnetWatchOptions.SuppressMSBuildIncrementalism,
-            };
 
             if (context.SuppressMSBuildIncrementalism)
             {
@@ -95,11 +92,10 @@ namespace Microsoft.DotNet.Watcher
                     currentRunCancellationSource.Token))
                 using (var fileSetWatcher = new FileSetWatcher(fileSet, _reporter))
                 {
+                    _reporter.Verbose($"Running {processSpec.ShortDisplayName()} with the following arguments: '{string.Join(" ", processSpec.Arguments)}'");
                     var processTask = _processRunner.RunAsync(processSpec, combinedCancellationSource.Token);
-                    var args = string.Join(" ", processSpec.Arguments);
-                    _reporter.Verbose($"Running {processSpec.ShortDisplayName()} with the following arguments: {args}");
 
-                    _reporter.Output("Started");
+                    _reporter.Output("Started", emoji: "🚀");
 
                     Task<FileItem?> fileSetTask;
                     Task finishedTask;
@@ -108,10 +104,9 @@ namespace Microsoft.DotNet.Watcher
                     {
                         fileSetTask = fileSetWatcher.GetChangedFileAsync(combinedCancellationSource.Token);
                         finishedTask = await Task.WhenAny(processTask, fileSetTask, cancelledTaskSource.Task);
-
                         if (finishedTask == fileSetTask
                             && fileSetTask.Result is FileItem fileItem &&
-                            await _fileChangeHandler.TryHandleFileAction(context, fileItem, combinedCancellationSource.Token))
+                            await _staticFileHandler.TryHandleFileChange(context.BrowserRefreshServer, fileItem, combinedCancellationSource.Token))
                         {
                             // We're able to handle the file change event without doing a full-rebuild.
                         }
@@ -148,7 +143,7 @@ namespace Microsoft.DotNet.Watcher
                         // Process exited. Redo evaludation
                         context.RequiresMSBuildRevaluation = true;
                         // Now wait for a file to change before restarting process
-                        context.ChangedFile = await fileSetWatcher.GetChangedFileAsync(cancellationToken, () => _reporter.Warn("Waiting for a file to change before restarting dotnet..."));
+                        context.ChangedFile = await fileSetWatcher.GetChangedFileAsync(cancellationToken, () => _reporter.Warn("Waiting for a file to change before restarting dotnet...", emoji: "⏳"));
                     }
                     else
                     {

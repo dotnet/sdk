@@ -1,6 +1,5 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
-// See the LICENSE file in the project root for more information.
 
 using System;
 using System.IO;
@@ -19,7 +18,9 @@ namespace Microsoft.DotNet.Build.Tasks
     /// If there is a change depended on the latest runtime. Without override the runtime version in BundledNETCoreAppPackageVersion
     /// we would need to somehow get this change in without the test, and then insertion dotnet/installer
     /// and then update the stage 0 back.
-    /// 
+    ///
+    /// Override NETCoreSdkVersion to stage 0 sdk version like 6.0.100-dev
+    ///
     /// Use a task to override since it was generated as a string literal replace anyway.
     /// And using C# can have better error when anything goes wrong.
     /// </summary>
@@ -27,26 +28,31 @@ namespace Microsoft.DotNet.Build.Tasks
     {
         private static string _messageWhenMismatch =
             "{0} version {1} does not match BundledNETCoreAppPackageVersion {2}. " +
-            "The schema of https://github.com/dotnet/installer/blob/master/src/redist/targets/GenerateBundledVersions.targets might change. " +
+            "The schema of https://github.com/dotnet/installer/blob/main/src/redist/targets/GenerateBundledVersions.targets might change. " +
             "We need to ensure we can swap the runtime version from what's in stage0 to what dotnet/sdk used successfully";
 
         [Required] public string Stage0MicrosoftNETCoreAppRefPackageVersionPath { get; set; }
 
         [Required] public string MicrosoftNETCoreAppRefPackageVersion { get; set; }
 
+        [Required] public string NewSDKVersion { get; set; }
+
         [Required] public string OutputPath { get; set; }
 
         public override bool Execute()
         {
             File.WriteAllText(OutputPath,
-                ExecuteInternal(File.ReadAllText(Stage0MicrosoftNETCoreAppRefPackageVersionPath),
-                    MicrosoftNETCoreAppRefPackageVersion));
+                ExecuteInternal(
+                    File.ReadAllText(Stage0MicrosoftNETCoreAppRefPackageVersionPath),
+                    MicrosoftNETCoreAppRefPackageVersion,
+                    NewSDKVersion));
             return true;
         }
 
         public static string ExecuteInternal(
             string stage0MicrosoftNETCoreAppRefPackageVersionContent,
-            string microsoftNETCoreAppRefPackageVersion)
+            string microsoftNETCoreAppRefPackageVersion,
+            string newSDKVersion)
         {
             var projectXml = XDocument.Parse(stage0MicrosoftNETCoreAppRefPackageVersionContent);
 
@@ -56,8 +62,10 @@ namespace Microsoft.DotNet.Build.Tasks
 
             var isSDKServicing = IsSDKServicing(propertyGroup.Element(ns + "NETCoreSdkVersion").Value);
 
+            propertyGroup.Element(ns + "NETCoreSdkVersion").Value = newSDKVersion;
+
             var originalBundledNETCoreAppPackageVersion =
-            propertyGroup.Element(ns + "BundledNETCoreAppPackageVersion").Value;
+                propertyGroup.Element(ns + "BundledNETCoreAppPackageVersion").Value;
             propertyGroup.Element(ns + "BundledNETCoreAppPackageVersion").Value = microsoftNETCoreAppRefPackageVersion;
 
             void CheckAndReplaceElement(XElement element)
@@ -102,11 +110,17 @@ namespace Microsoft.DotNet.Build.Tasks
 
             CheckAndReplaceAttribute(itemGroup
                 .Elements(ns + "KnownFrameworkReference").First().Attribute("LatestRuntimeFrameworkVersion"));
-
             CheckAndReplaceAttribute(itemGroup
                 .Elements(ns + "KnownAppHostPack").First().Attribute("AppHostPackVersion"));
             CheckAndReplaceAttribute(itemGroup
                 .Elements(ns + "KnownCrossgen2Pack").First().Attribute("Crossgen2PackVersion"));
+            CheckAndReplaceAttribute(itemGroup
+                .Elements(ns + "KnownILCompilerPack").First().Attribute("ILCompilerPackVersion"));
+            CheckAndReplaceAttribute(itemGroup
+                .Elements(ns + "KnownILLinkPack").First().Attribute("ILLinkPackVersion"));
+
+            CheckAndReplaceAttribute(itemGroup
+                .Elements(ns + "KnownRuntimePack").First().Attribute("LatestRuntimeFrameworkVersion"));
 
             return projectXml.ToString();
         }

@@ -28,9 +28,9 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <PropertyGroup>
     <!-- Paths to tools, tasks, and extensions are calculated relative to the RazorSdkDirectoryRoot. This can be modified to test a local build. -->
-    <RazorSdkDirectoryRoot Condition="'$(RazorSdkDirectoryRoot)'==''">$(MSBuildThisFileDirectory)..\..\</RazorSdkDirectoryRoot>
+    <RazorSdkDirectoryRoot Condition="'$(RazorSdkDirectoryRoot)'==''">$(MSBuildThisFileDirectory)..\</RazorSdkDirectoryRoot>
     <RazorSdkBuildTasksDirectoryRoot Condition="'$(RazorSdkBuildTasksDirectoryRoot)'==''">$(RazorSdkDirectoryRoot)tasks\</RazorSdkBuildTasksDirectoryRoot>
-    <_RazorSdkTasksTFM Condition=" '$(MSBuildRuntimeType)' == 'Core'">net6.0</_RazorSdkTasksTFM>
+    <_RazorSdkTasksTFM Condition=" '$(MSBuildRuntimeType)' == 'Core'">net8.0</_RazorSdkTasksTFM>
     <_RazorSdkTasksTFM Condition=" '$(_RazorSdkTasksTFM)' == ''">net472</_RazorSdkTasksTFM>
     <RazorSdkBuildTasksAssembly>$(RazorSdkBuildTasksDirectoryRoot)$(_RazorSdkTasksTFM)\Microsoft.NET.Sdk.Razor.Tasks.dll</RazorSdkBuildTasksAssembly>
     <_RazorSdkToolAssembly>$(RazorSdkDirectoryRoot)tools\rzc.dll</_RazorSdkToolAssembly>
@@ -44,33 +44,52 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <!-- Resolve the TFM-specific attributes conditionally. -->
   <Choose>
+      <When Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND $([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '7.0')) ">
+      <PropertyGroup>
+        <_TargetingNETCoreApp30OrLater>true</_TargetingNETCoreApp30OrLater>
+        <_TargetingNET50OrLater>true</_TargetingNET50OrLater>
+        <_TargetingNET60OrLater>true</_TargetingNET60OrLater>
+        <_TargetingNET70OrLater>true</_TargetingNET70OrLater>
+        <UseRazorSourceGenerator Condition="'$(Language)' == 'C#' AND '$(UseRazorSourceGenerator)' == '' ">true</UseRazorSourceGenerator>
+        <RazorLangVersion Condition="'$(RazorLangVersion)' == '' ">7.0</RazorLangVersion>
+      </PropertyGroup>
+    </When>
     <When Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND $([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '6.0')) ">
       <PropertyGroup>
         <_TargetingNETCoreApp30OrLater>true</_TargetingNETCoreApp30OrLater>
         <_TargetingNET50OrLater>true</_TargetingNET50OrLater>
         <_TargetingNET60OrLater>true</_TargetingNET60OrLater>
-        <_UseRazorSourceGenerator>true</_UseRazorSourceGenerator>
-        <RazorLangVersion Condition="'$(RazorLangVersion)' == '' ">5.0</RazorLangVersion>
+        <UseRazorSourceGenerator Condition="'$(Language)' == 'C#' AND '$(UseRazorSourceGenerator)' == '' ">true</UseRazorSourceGenerator>
+        <RazorLangVersion Condition="'$(RazorLangVersion)' == '' ">6.0</RazorLangVersion>
       </PropertyGroup>
     </When>
     <When Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND $([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '5.0')) ">
       <PropertyGroup>
         <_TargetingNETCoreApp30OrLater>true</_TargetingNETCoreApp30OrLater>
         <_TargetingNET50OrLater>true</_TargetingNET50OrLater>
-        <_UseRazorSourceGenerator>false</_UseRazorSourceGenerator>
+        <UseRazorSourceGenerator>false</UseRazorSourceGenerator>
         <RazorLangVersion Condition="'$(RazorLangVersion)' == '' ">5.0</RazorLangVersion>
       </PropertyGroup>
     </When>
     <When Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND $([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '3.0')) ">
       <PropertyGroup>
         <_TargetingNETCoreApp30OrLater>true</_TargetingNETCoreApp30OrLater>
-        <_UseRazorSourceGenerator>false</_UseRazorSourceGenerator>
+        <UseRazorSourceGenerator>false</UseRazorSourceGenerator>
         <RazorLangVersion Condition="'$(RazorLangVersion)' == '' ">3.0</RazorLangVersion>
+      </PropertyGroup>
+    </When>
+    <When Condition="'$(TargetFrameworkIdentifier)' == '.NETStandard' AND $([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '2.1')) ">
+      <PropertyGroup>
+        <_TargetingNETStandard21OrLater>true</_TargetingNETStandard21OrLater>
+      </PropertyGroup>
+    </When>
+    <When Condition="'$(TargetFrameworkIdentifier)' == '.NETStandard' AND $([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '2.0')) ">
+      <PropertyGroup>
+        <_TargetingNETStandard20OrLater>true</_TargetingNETStandard20OrLater>
       </PropertyGroup>
     </When>
   </Choose>
 
-  
   <PropertyGroup>
     <!--
       In 3.0, we expect RazorLangVersion to either be specified in the template or inferred via TFM. In 2.x, RazorLangVersion is
@@ -84,15 +103,7 @@ Copyright (c) .NET Foundation. All rights reserved.
         '$(RazorLangVersion)' == 'Latest' OR
         '$(RazorLangVersion)' == 'Experimental' OR
         ('$(RazorLangVersion)' != '' AND '$(RazorLangVersion)' >= '3.0')">true</_Targeting30OrNewerRazorLangVersion>
-
-    <!-- Controls whether or not the static web assets feature is enabled. By default is enabled for netcoreapp3.0
-         applications and RazorLangVersion 3 or above. -->
-    <StaticWebAssetsEnabled Condition="'$(StaticWebAssetsEnabled)' == ''">$(_Targeting30OrNewerRazorLangVersion)</StaticWebAssetsEnabled>
-
-    <!-- Controls whether or not the scoped css feature is enabled. By default is enabled for net6.0 applications and RazorLangVersion 5 or above -->
-    <ScopedCssEnabled Condition="'$(ScopedCssEnabled)' == '' and '$(StaticWebAssetsEnabled)' == 'true'">$(_Targeting30OrNewerRazorLangVersion)</ScopedCssEnabled>
   </PropertyGroup>
-
 
   <PropertyGroup>
     <!--
@@ -101,6 +112,13 @@ Copyright (c) .NET Foundation. All rights reserved.
     -->
     <_IsTargetingRazor2X Condition="'$(IsRazorCompilerReferenced)'=='true'">true</_IsTargetingRazor2X>
   </PropertyGroup>
+
+  <!--
+    These are the targets that actually do compilation using CSC, separated from the main file for ease of maintenance.
+
+    RazorCoreCompile and any other targets that are needed for two-step compilation should be defined there.
+  -->
+  <Import Project="Microsoft.NET.Sdk.Razor.Compilation.targets" Condition="'$(UseRazorSourceGenerator)' != 'true'"/>
 
   <!--
     Razor defines two primary targets:
@@ -118,7 +136,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       _CheckForIncorrectMvcConfiguration;
     </PrepareForRazorGenerateDependsOn>
 
-    <PrepareForRazorGenerateDependsOn Condition="'$(_UseRazorSourceGenerator)' != 'true'">
+    <PrepareForRazorGenerateDependsOn Condition="'$(UseRazorSourceGenerator)' != 'true'">
       $(PrepareForRazorGenerateDependsOn);
       ResolveAssemblyReferenceRazorGenerateInputs;
       _CheckForMissingRazorCompiler;
@@ -136,7 +154,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       PrepareForRazorGenerate;
     </RazorGenerateDependsOn>
 
-    <RazorGenerateDependsOn Condition="'$(_UseRazorSourceGenerator)' != 'true'">
+    <RazorGenerateDependsOn Condition="'$(UseRazorSourceGenerator)' != 'true'">
       $(RazorGenerateDependsOn);
       _CheckForMissingRazorCompiler;
       RazorCoreGenerate
@@ -156,30 +174,15 @@ Copyright (c) .NET Foundation. All rights reserved.
       ResolveRazorEmbeddedResources;
     </ResolveRazorCompileInputsDependsOn>
 
-    <RazorCompileDependsOn>
-      PrepareForRazorCompile;
-      RazorCoreCompile
-    </RazorCompileDependsOn>
-
-    <BuiltProjectOutputGroupDependsOn>
-      $(BuiltProjectOutputGroupDependsOn);
-      _RazorAddBuiltProjectOutputGroupOutput
-    </BuiltProjectOutputGroupDependsOn>
+    <ResolveScopedCssOutputsDependsOn>
+      $(ResolveScopedCssOutputsDependsOn);
+      ResolveCssScopes;
+    </ResolveScopedCssOutputsDependsOn>
 
     <DebugSymbolsProjectOutputGroupDependsOn>
       $(DebugSymbolsProjectOutputGroupDependsOn);
       _RazorAddDebugSymbolsProjectOutputGroupOutput
     </DebugSymbolsProjectOutputGroupDependsOn>
-
-    <CoreCompileDependsOn Condition="'$(_UseRazorSourceGenerator)' != 'true' AND '$(DesignTimeBuild)'!='true'">
-      RazorComponentGenerate;
-      $(CoreCompileDependsOn)
-    </CoreCompileDependsOn>
-
-    <CoreCompileDependsOn Condition="'$(_UseRazorSourceGenerator)' != 'true' AND '$(DesignTimeBuild)'=='true'">
-      RazorGenerateComponentDeclarationDesignTime;
-      $(CoreCompileDependsOn)
-    </CoreCompileDependsOn>
 
     <PrepareForBuildDependsOn>
       $(PrepareForBuildDependsOn);
@@ -196,11 +199,10 @@ Copyright (c) .NET Foundation. All rights reserved.
       $(PrepareForRunDependsOn)
     </PrepareForRunDependsOn>
 
-    <GetCopyToOutputDirectoryItemsDependsOn>
-      _RazorGetCopyToOutputDirectoryItems;
-      $(GetCopyToOutputDirectoryItemsDependsOn)
-    </GetCopyToOutputDirectoryItemsDependsOn>
-
+    <_RazorGenerateComponentDesignTimeDependsOn>
+      ResolveRazorComponentInputs;
+      AssignRazorComponentTargetPaths
+    </_RazorGenerateComponentDesignTimeDependsOn>
   </PropertyGroup>
 
   <!--
@@ -345,23 +347,32 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <ItemGroup>
     <!--
-      Add all cshtml files to UpToDateCheckInput - a collection of files used by FastUpToDateCheck to determine
-      if any of the the project inputs have changed.
-    -->
-    <UpToDateCheckInput Condition="'$(RazorCompileOnBuild)'=='true'" Include="@(Content->WithMetadataValue('Extension', '.cshtml'))" Set="RazorViews" />
-
-    <!--
       Add all .razor files to UpToDateCheckInput. Component compilation is not controlled by RazorCompileOnBuild,
       which is why this itemgroup is unconditional.
     -->
     <UpToDateCheckInput Include="@(Content->WithMetadataValue('Extension', '.razor'))" />
+  </ItemGroup>
 
+  <!-- For apps building with the source generator, a separate Views assembly is produced out of the source
+  CSHTML files. In that scenario, the source CSHTML files and the output assembly
+  are treated in a separate set. -->
+  <ItemGroup Condition="'$(UseRazorSourceGenerator)' != 'true'">
+    <!--
+      Add all cshtml files to UpToDateCheckInput - a collection of files used by FastUpToDateCheck to determine
+      if any of the the project inputs have changed.
+    -->
+    <UpToDateCheckInput Condition="'$(RazorCompileOnBuild)'=='true'" Include="@(Content->WithMetadataValue('Extension', '.cshtml'))" Set="RazorViews" />
     <!--
       Add Razor output files to UpToDateCheckBuilt - a collection of files used by FastUpToDateCheck to determine
       if any of the project's outputs have changed.
     -->
     <UpToDateCheckBuilt Include="@(RazorIntermediateAssembly)"
       Condition="'$(RazorCompileOnBuild)'=='true' AND '@(Content->WithMetadataValue('Extension', '.cshtml'))' != ''" Set="RazorViews" />
+  </ItemGroup>
+
+  <!-- For apps building with the source generator, add .cshtml files to the default set since they are compiled into the app binary. -->
+  <ItemGroup Condition="'$(UseRazorSourceGenerator)' == 'true'">
+    <UpToDateCheckInput Include="@(Content->WithMetadataValue('Extension', '.cshtml'))" />
   </ItemGroup>
 
   <!--
@@ -371,34 +382,18 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <!-- Determine what compiler and versions of the language to target. For 2.x targeting projects, these are carried by packages referenced by the project. Use this -->
 
-  <!-- Use the 2.x compiler if we're building an application that references Microsoft.AspNetCore.Razor.Design. -->
-  <Import Project="$(RazorCodeGenerationTargetsPath)"
-    Condition="'$(IsRazorCompilerReferenced)' == 'true' AND '$(RazorCodeGenerationTargetsPath)' != '' AND Exists('$(RazorCodeGenerationTargetsPath)')" />
-
   <!-- When targeting 3.x and later projects, we have to infer configuration by inspecting the project. -->
   <Import Project="Microsoft.NET.Sdk.Razor.Configuration.targets" Condition="'$(_Targeting30OrNewerRazorLangVersion)' == 'true'" />
 
-  <!-- For projects targeting 3.x and later, use the compiler that ships in the SDK -->
-  <Import Project="Microsoft.NET.Sdk.Razor.CodeGeneration.targets" Condition="'$(_Targeting30OrNewerRazorLangVersion)' == 'true' AND '$(_UseRazorSourceGenerator)' != 'true'" />
+  <Import Project="Microsoft.NET.Sdk.Razor.CodeGeneration.targets" />
 
-  <Import Project="Microsoft.NET.Sdk.Razor.Component.targets" Condition="'$(_Targeting30OrNewerRazorLangVersion)' == 'true' AND '$(_UseRazorSourceGenerator)' != 'true'" />
+  <Import Project="Microsoft.NET.Sdk.Razor.Component.targets" Condition="'$(_Targeting30OrNewerRazorLangVersion)' == 'true' AND '$(UseRazorSourceGenerator)' != 'true'" />
 
-  <Import Project="Microsoft.NET.Sdk.Razor.SourceGenerators.targets" Condition="'$(_UseRazorSourceGenerator)' == 'true'" />
-
-  <Import Project="Microsoft.NET.Sdk.Razor.ScopedCss.targets" Condition="'$(ScopedCssEnabled)' == 'true'" />
-
-  <Import Project="Microsoft.NET.Sdk.Razor.StaticWebAssets.targets" Condition="'$(StaticWebAssetsEnabled)' == 'true'" />
+  <Import Project="Microsoft.NET.Sdk.Razor.SourceGenerators.targets" Condition="'$(UseRazorSourceGenerator)' == 'true'" />
 
   <Import Project="Microsoft.NET.Sdk.Razor.GenerateAssemblyInfo.targets" />
 
   <Import Project="Microsoft.NET.Sdk.Razor.MvcApplicationPartsDiscovery.targets" Condition="'$(_TargetingNETCoreApp30OrLater)' == 'true'" />
-
-  <!--
-    These are the targets that actually do compilation using CSC, separated from the main file for ease of maintenance.
-
-    RazorCoreCompile should be defined there.
-  -->
-  <Import Project="Microsoft.NET.Sdk.Razor.Compilation.targets" />
 
   <Target Name="PrepareForRazorGenerate" DependsOnTargets="$(PrepareForRazorGenerateDependsOn)">
   </Target>
@@ -415,7 +410,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Target Name="PrepareForRazorCompile" DependsOnTargets="$(PrepareForRazorCompileDependsOn)">
   </Target>
 
-  <Target Name="RazorCompile" DependsOnTargets="$(RazorCompileDependsOn)">
+  <Target Name="RazorCompile" DependsOnTargets="$(RazorCompileDependsOn)" Condition="'$(_UseSourceGenerators)' == ''">
   </Target>
 
   <!--
@@ -554,6 +549,26 @@ Copyright (c) .NET Foundation. All rights reserved.
     </ItemGroup>
   </Target>
 
+  <!-- This target validates that there is at most one scoped css file per component, that there are no scoped css files without a
+     matching component, and then adds the associated scope to the razor components that have a matching scoped css file.
+  -->
+  <Target
+    Name="ResolveCssScopes"
+    Condition="'$(ScopedCssEnabled)' == 'true'"
+    BeforeTargets="AssignRazorComponentTargetPaths;AssignRazorGenerateTargetPaths"
+    DependsOnTargets="ComputeCssScope;ResolveRazorComponentInputs;ResolveRazorGenerateInputs">
+    <ApplyCssScopes RazorComponents="@(RazorComponent)" RazorGenerate="@(RazorGenerate)" ScopedCss="@(_ScopedCss)">
+      <Output TaskParameter="RazorComponentsWithScopes" ItemName="_RazorComponentsWithScopes" />
+      <Output TaskParameter="RazorGenerateWithScopes" ItemName="_RazorGenerateWithScopes" />
+    </ApplyCssScopes>
+    <ItemGroup>
+      <RazorComponent Remove="@(_RazorComponentsWithScopes)" />
+      <RazorComponent Include="@(_RazorComponentsWithScopes)" />
+      <RazorGenerate Remove="@(_RazorGenerateWithScopes)" />
+      <RazorGenerate Include="@(_RazorGenerateWithScopes)" />
+    </ItemGroup>
+  </Target>
+
   <!--
     Temporarary workaround for https://github.com/dotnet/aspnetcore/issues/6859. This can be removed after a VS insertion with a newer copy of the DesignTime targets.
   -->
@@ -659,20 +674,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     Condition="'$(ResolvedRazorCompileToolset)'=='RazorSdk' and '$(RazorCompileOnPublish)'=='true' and '$(NoBuild)'!='true'">
   </Target>
 
-  <!--
-    This target adds the Razor assembly to the BuiltProjectOutputGroupOutput - which is used as input to the Pack target.
-  -->
-  <Target
-    Name="_RazorAddBuiltProjectOutputGroupOutput"
-    DependsOnTargets="_ResolveRazorTargetPath;ResolveRazorGenerateInputs"
-    Condition="'$(ResolvedRazorCompileToolset)'=='RazorSdk' and '$(RazorCompileOnBuild)'=='true'">
-
-    <ItemGroup Condition="'@(RazorGenerate)'!= ''">
-      <BuiltProjectOutputGroupOutput Include="%(RazorIntermediateAssembly.FullPath)" FinalOutputPath="$(RazorTargetPath)" />
-    </ItemGroup>
-
-  </Target>
-
   <Target
     Name="_RazorAddDebugSymbolsProjectOutputGroupOutput"
     DependsOnTargets="_ResolveRazorTargetPath;ResolveRazorGenerateInputs"
@@ -692,152 +693,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     Name="_RazorPrepareForRun"
     DependsOnTargets="RazorCompile"
     Condition="'$(ResolvedRazorCompileToolset)'=='RazorSdk' and '$(RazorCompileOnBuild)'=='true'" />
-
-  <!--
-    Called as part of GetCopyToOutputDirectoryItems - this target populates the list of items that get
-    copied to the output directory when building as a project reference.
-  -->
-  <Target
-    Name="_RazorGetCopyToOutputDirectoryItems"
-    DependsOnTargets="ResolveRazorGenerateInputs"
-    Condition="'$(ResolvedRazorCompileToolset)'=='RazorSdk' and '$(RazorCompileOnBuild)'=='true'">
-
-    <!--
-      This condition needs to be inside the target because it the itemgroup will be populated after the target's
-      condition is evaluated.
-    -->
-    <ItemGroup Condition="'@(RazorGenerate)'!=''">
-      <AllItemsFullPathWithTargetPath Include="@(RazorIntermediateAssembly->'%(FullPath)')">
-        <TargetPath>%(Filename)%(Extension)</TargetPath>
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </AllItemsFullPathWithTargetPath>
-      <AllItemsFullPathWithTargetPath Include="@(_RazorDebugSymbolsIntermediatePath->'%(FullPath)')">
-        <TargetPath>%(Filename)%(Extension)</TargetPath>
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </AllItemsFullPathWithTargetPath>
-    </ItemGroup>
-
-  </Target>
-
-  <!--
-    Called as part of GetCopyToPublishDirectoryItems - this target populates the list of items that get
-    copied to the publish directory when publishing as a project reference.
-
-    The dependency on RazorCompile is needed because this will be called during publish on each P2P
-    reference without calling RazorCompile for the P2P references.
-  -->
-  <Target
-    Name="_RazorGetCopyToPublishDirectoryItems"
-    BeforeTargets="GetCopyToPublishDirectoryItems"
-    DependsOnTargets="ResolveRazorGenerateInputs"
-    Condition="'$(ResolvedRazorCompileToolset)'=='RazorSdk' and '$(RazorCompileOnPublish)'=='true'">
-
-    <!--
-      This condition needs to be inside the target because it the itemgroup will be populated after the target's
-      condition is evaluated.
-    -->
-    <ItemGroup Condition="'@(RazorGenerate)'!=''">
-      <AllPublishItemsFullPathWithTargetPath Include="@(RazorIntermediateAssembly->'%(FullPath)')">
-        <TargetPath>%(Filename)%(Extension)</TargetPath>
-        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-        <!-- .Views.dll and .Views.pdb were part of the single file bundle in 3.1 apps. Lets keep this unchanged. -->
-        <ExcludeFromSingleFile Condition="'$(_TargetingNET50OrLater)' == 'true'">true</ExcludeFromSingleFile>
-      </AllPublishItemsFullPathWithTargetPath>
-      <AllPublishItemsFullPathWithTargetPath Include="@(_RazorDebugSymbolsIntermediatePath->'%(FullPath)')">
-        <TargetPath>%(Filename)%(Extension)</TargetPath>
-        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-        <ExcludeFromSingleFile Condition="'$(_TargetingNET50OrLater)' == 'true'">true</ExcludeFromSingleFile>
-      </AllPublishItemsFullPathWithTargetPath>
-    </ItemGroup>
-
-  </Target>
-
-  <!--
-    Called as part of CopyFilesToOutputDirectory - this target is called when building the project to copy
-    files to the output directory.
-  -->
-  <Target
-    Name="_RazorCopyFilesToOutputDirectory"
-    DependsOnTargets="_ResolveRazorTargetPath;RazorCompile"
-    AfterTargets="CopyFilesToOutputDirectory"
-    Condition="'$(ResolvedRazorCompileToolset)'=='RazorSdk' and '$(RazorCompileOnBuild)'=='true'">
-
-    <!-- Copy the Razor dll  -->
-    <Copy
-      SourceFiles="@(RazorIntermediateAssembly)"
-      DestinationFiles="$(RazorTargetPath)"
-      SkipUnchangedFiles="$(SkipCopyUnchangedFiles)"
-      OverwriteReadOnlyFiles="$(OverwriteReadOnlyFiles)"
-      Retries="$(CopyRetryCount)"
-      RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"
-      UseHardlinksIfPossible="$(CreateHardLinksForCopyFilesToOutputDirectoryIfPossible)"
-      UseSymboliclinksIfPossible="$(CreateSymbolicLinksForCopyFilesToOutputDirectoryIfPossible)"
-      Condition="Exists('@(RazorIntermediateAssembly)') and '$(CopyBuildOutputToOutputDirectory)' == 'true' and '$(SkipCopyBuildProduct)' != 'true'">
-
-      <Output TaskParameter="DestinationFiles" ItemName="_RazorAssembly"/>
-      <Output TaskParameter="DestinationFiles" ItemName="FileWrites"/>
-    </Copy>
-
-    <Message
-      Importance="High"
-      Text="$(MSBuildProjectName) -&gt; @(_RazorAssembly->'%(FullPath)')"
-      Condition="Exists('@(RazorIntermediateAssembly)') and '$(CopyBuildOutputToOutputDirectory)' == 'true' and '$(SkipCopyBuildProduct)'!='true'" />
-
-    <!-- Copy the Razor debug information file (.pdb), if any -->
-    <Copy
-      SourceFiles="@(_RazorDebugSymbolsIntermediatePath)"
-      DestinationFolder="$(RazorOutputPath)"
-      SkipUnchangedFiles="$(SkipCopyUnchangedFiles)"
-      OverwriteReadOnlyFiles="$(OverwriteReadOnlyFiles)"
-      Retries="$(CopyRetryCount)"
-      RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"
-      UseHardlinksIfPossible="$(CreateHardLinksForCopyFilesToOutputDirectoryIfPossible)"
-      UseSymboliclinksIfPossible="$(CreateSymbolicLinksForCopyFilesToOutputDirectoryIfPossible)"
-      Condition="Exists('@(_RazorDebugSymbolsIntermediatePath)') and '$(SkipCopyingSymbolsToOutputDirectory)' != 'true' and '$(CopyOutputSymbolsToOutputDirectory)'=='true'">
-
-      <Output TaskParameter="DestinationFiles" ItemName="FileWrites"/>
-    </Copy>
-
-    <!--
-    FastUpToDate check in VS does not consider the Views dll when determining if referencing projects need to be rebuilt.
-    We'll touch a marker file that is used during as input for up to date check. Based on
-    https://github.com/Microsoft/msbuild/blob/637f06e31ef46892faeb40044899a62a15b77f79/src/Tasks/Microsoft.Common.CurrentVersion.targets#L4364-L4368
-    -->
-    <Touch Files="@(CopyUpToDateMarker)" AlwaysCreate="true" Condition="'@(_RazorAssembly)' != ''">
-      <Output TaskParameter="TouchedFiles" ItemName="FileWrites" />
-    </Touch>
-
-  </Target>
-
-  <!--
-    Called after ComputeResolvedFilesToPublishList but before CopyFilesToPublishDirectory - this target is called when
-    publishing the project to get a list of files to the output directory.
-  -->
-  <Target
-    Name="_RazorComputeFilesToPublish"
-    AfterTargets="ComputeResolvedFilesToPublishList"
-    Condition="'$(ResolvedRazorCompileToolset)'=='RazorSdk' and '$(RazorCompileOnPublish)'=='true' and '@(RazorGenerate)'!=''">
-
-    <!-- If we generated an assembly/pdb then include those -->
-    <ItemGroup>
-      <ResolvedFileToPublish Include="@(RazorIntermediateAssembly)" Condition="'$(CopyBuildOutputToPublishDirectory)'=='true'">
-        <RelativePath>@(RazorIntermediateAssembly->'%(Filename)%(Extension)')</RelativePath>
-        <!-- Pass assembly to linker and crossgen -->
-        <PostprocessAssembly>true</PostprocessAssembly>
-      </ResolvedFileToPublish>
-      <ResolvedFileToPublish Include="@(_RazorDebugSymbolsIntermediatePath)" Condition="'$(CopyOutputSymbolsToPublishDirectory)'=='true'">
-        <RelativePath>@(_RazorDebugSymbolsIntermediatePath->'%(Filename)%(Extension)')</RelativePath>
-      </ResolvedFileToPublish>
-    </ItemGroup>
-
-    <!--
-      RazorGenerate items are usually populated from the '.cshtml' files in @(Content). These are published by default
-      so all we need to do is exclude them.
-    -->
-    <ItemGroup Condition="'$(CopyRazorGenerateFilesToPublishDirectory)'=='false'">
-      <ResolvedFileToPublish Remove="%(RazorGenerate.FullPath)"/>
-    </ItemGroup>
-  </Target>
 
   <Target
     Name="_RazorRemoveRefAssembliesFromPublish"
@@ -902,7 +757,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Target Name="_RazorSdkCustomCollectWatchItems">
     <ItemGroup>
       <Watch Include="%(Content.FullPath)" Condition="'%(Content.Extension)' == '.razor' AND '%(Content.Watch)' != 'false'" />
-      <Watch Include="%(None.FullPath)" Condition="$([System.String]::Copy('%(None.FullPath)').EndsWith('.razor.css')) AND '%(None.Watch)' != 'false'" />
+      <Watch Include="%(None.FullPath)" Condition="($([System.String]::Copy('%(None.FullPath)').EndsWith('.razor.css')) OR $([System.String]::Copy('%(None.FullPath)').EndsWith('.cshtml.css'))) AND '%(None.Watch)' != 'false'" />
       <Watch Include="%(Content.FullPath)"
         Condition="'$(_Targeting30OrNewerRazorLangVersion)' == 'true' AND '$(AddCshtmlFilesToDotNetWatchList)' != 'false' AND '%(Content.Extension)' == '.cshtml' AND '%(Content.Watch)' != 'false'" />
     </ItemGroup>

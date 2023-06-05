@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections;
@@ -7,13 +7,13 @@ using System.Collections.Generic;
 
 namespace Microsoft.DotNet.Watcher
 {
-    public class FileSet : IEnumerable<FileItem>
+    internal sealed class FileSet : IEnumerable<FileItem>
     {
         private readonly Dictionary<string, FileItem> _files;
 
-        public FileSet(bool isNetCoreApp31OrNewer, IEnumerable<FileItem> files)
+        public FileSet(ProjectInfo projectInfo, IEnumerable<FileItem> files)
         {
-            IsNetCoreApp31OrNewer = isNetCoreApp31OrNewer;
+            Project = projectInfo;
             _files = new Dictionary<string, FileItem>(StringComparer.Ordinal);
             foreach (var item in files)
             {
@@ -25,9 +25,9 @@ namespace Microsoft.DotNet.Watcher
 
         public int Count => _files.Count;
 
-        public bool IsNetCoreApp31OrNewer { get; }
+        public ProjectInfo Project { get; }
 
-        public static readonly FileSet Empty = new FileSet(false, Array.Empty<FileItem>());
+        public static readonly FileSet Empty = new FileSet(null, Array.Empty<FileItem>());
 
         public IEnumerator<FileItem> GetEnumerator() => _files.Values.GetEnumerator();
 

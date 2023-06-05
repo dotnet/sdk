@@ -1,5 +1,5 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -8,7 +8,6 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using Microsoft.DotNet.Cli;
-using Microsoft.DotNet.Cli.CommandLine;
 using System.Diagnostics;
 using Microsoft.DotNet.Cli.Telemetry;
 using Microsoft.DotNet.Cli.Utils;
@@ -57,6 +56,8 @@ namespace Microsoft.DotNet.Tools.MSBuild
             }
         }
 
+        public IEnumerable<string> MSBuildArguments { get { return _forwardingAppWithoutLogging.GetAllArguments(); } }
+
         public void EnvironmentVariable(string name, string value)
         {
             _forwardingAppWithoutLogging.EnvironmentVariable(name, value);
@@ -64,9 +65,23 @@ namespace Microsoft.DotNet.Tools.MSBuild
 
         public ProcessStartInfo GetProcessStartInfo()
         {
-            EnvironmentVariable(TelemetrySessionIdEnvironmentVariableName, Telemetry.CurrentSessionId);
+            InitializeRequiredEnvironmentVariables();
 
             return _forwardingAppWithoutLogging.GetProcessStartInfo();
+        }
+
+        private void InitializeRequiredEnvironmentVariables()
+        {
+            EnvironmentVariable(TelemetrySessionIdEnvironmentVariableName, Telemetry.CurrentSessionId);
+        }
+
+        /// <summary>
+        /// Test hook returning concatenated and escaped command line arguments that would be passed to MSBuild.
+        /// </summary>
+        internal string GetArgumentsToMSBuild()
+        {
+            var argumentsUnescaped = _forwardingAppWithoutLogging.GetAllArguments();
+            return Cli.Utils.ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(argumentsUnescaped);
         }
 
         public virtual int Execute()
@@ -75,11 +90,28 @@ namespace Microsoft.DotNet.Tools.MSBuild
             // Forwarding commands will just spawn the child process and exit
             Console.CancelKeyPress += (sender, e) => { e.Cancel = true; };
 
-            ProcessStartInfo startInfo = GetProcessStartInfo();
+            int exitCode;
+            if (_forwardingAppWithoutLogging.ExecuteMSBuildOutOfProc)
+            {
+                ProcessStartInfo startInfo = GetProcessStartInfo();
 
-            PerformanceLogEventSource.Log.LogMSBuildStart(startInfo);
-            int exitCode = startInfo.Execute();
-            PerformanceLogEventSource.Log.MSBuildStop(exitCode);
+                PerformanceLogEventSource.Log.LogMSBuildStart(startInfo.FileName, startInfo.Arguments);
+                exitCode = startInfo.Execute();
+                PerformanceLogEventSource.Log.MSBuildStop(exitCode);
+            }
+            else
+            {
+                InitializeRequiredEnvironmentVariables();
+                string[] arguments = _forwardingAppWithoutLogging.GetAllArguments();
+                if (PerformanceLogEventSource.Log.IsEnabled())
+                {
+                    PerformanceLogEventSource.Log.LogMSBuildStart(
+                        _forwardingAppWithoutLogging.MSBuildPath,
+                        ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(arguments));
+                }
+                exitCode = _forwardingAppWithoutLogging.ExecuteInProc(arguments);
+                PerformanceLogEventSource.Log.MSBuildStop(exitCode);
+            }
 
             return exitCode;
         }

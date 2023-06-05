@@ -1,17 +1,27 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
 
 namespace Microsoft.NET.Sdk.WorkloadManifestReader
 {
-    internal class WorkloadDefinition
+    public abstract class BaseWorkloadDefinition
     {
-        public WorkloadDefinition(
-            WorkloadDefinitionId id, bool isAbstract, string? description, WorkloadDefinitionKind kind, List<WorkloadDefinitionId>? extends,
-            List<WorkloadPackId>? packs, List<string>? platforms)
+        public BaseWorkloadDefinition (WorkloadId id)
         {
             Id = id;
+        }
+
+        public WorkloadId Id { get; }
+    }
+
+    public class WorkloadDefinition : BaseWorkloadDefinition
+    {
+        public WorkloadDefinition(
+            WorkloadId id, bool isAbstract, string? description, WorkloadDefinitionKind kind, List<WorkloadId>? extends,
+            List<WorkloadPackId>? packs, List<string>? platforms
+            ) : base (id)
+        {
             IsAbstract = isAbstract;
             Description = description;
             Kind = kind;
@@ -20,18 +30,27 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             Platforms = platforms;
         }
 
-        public WorkloadDefinitionId Id { get; }
         public bool IsAbstract { get; }
         public string? Description { get; }
         public WorkloadDefinitionKind Kind { get; }
-        public List<WorkloadDefinitionId>? Extends { get; }
+        public List<WorkloadId>? Extends { get; }
         public List<WorkloadPackId>? Packs { get; }
         public List<string>? Platforms { get; }
     }
 
-    internal enum WorkloadDefinitionKind
+    public enum WorkloadDefinitionKind
     {
         Dev,
         Build
+    }
+
+    public class WorkloadRedirect : BaseWorkloadDefinition
+    {
+        public WorkloadRedirect(WorkloadId id, WorkloadId replaceWith) : base (id)
+        {
+            ReplaceWith = replaceWith;
+        }
+
+        public WorkloadId ReplaceWith { get; }
     }
 }

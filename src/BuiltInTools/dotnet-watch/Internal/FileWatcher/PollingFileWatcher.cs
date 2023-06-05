@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -42,7 +42,7 @@ namespace Microsoft.DotNet.Watcher.Internal
             _pollingThread.Start();
         }
 
-        public event EventHandler<string> OnFileChange;
+        public event EventHandler<(string, bool)> OnFileChange;
 
 #pragma warning disable CS0067 // not used
         public event EventHandler<Exception> OnError;
@@ -222,7 +222,7 @@ namespace Microsoft.DotNet.Watcher.Internal
 
                 if (OnFileChange != null)
                 {
-                    OnFileChange(this, path);
+                    OnFileChange(this, (path, false));
                 }
             }
         }

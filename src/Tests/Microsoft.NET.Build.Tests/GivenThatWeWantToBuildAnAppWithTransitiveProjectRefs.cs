@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -41,7 +41,7 @@ namespace Microsoft.NET.Build.Tests
         void VerifyAppBuilds(TestAsset testAsset)
         {
             var buildCommand = new BuildCommand(testAsset, "TestApp");
-            var outputDirectory = buildCommand.GetOutputDirectory("netcoreapp1.1");
+            var outputDirectory = buildCommand.GetOutputDirectory(ToolsetInfo.CurrentTargetFramework);
 
             buildCommand
                 .Execute()
@@ -51,9 +51,9 @@ namespace Microsoft.NET.Build.Tests
             outputDirectory.Should().OnlyHaveFiles(new[] {
                 "TestApp.dll",
                 "TestApp.pdb",
+                $"TestApp{EnvironmentInfo.ExecutableExtension}",
                 "TestApp.deps.json",
                 "TestApp.runtimeconfig.json",
-                "TestApp.runtimeconfig.dev.json",
                 "MainLibrary.dll",
                 "MainLibrary.pdb",
                 "AuxLibrary.dll",
@@ -84,13 +84,13 @@ namespace Microsoft.NET.Build.Tests
                 .Should()
                 .Pass();
 
-            var outputDirectory = buildCommand.GetOutputDirectory("netcoreapp1.1");
+            var outputDirectory = buildCommand.GetOutputDirectory(ToolsetInfo.CurrentTargetFramework);
 
             outputDirectory.Should().OnlyHaveFiles(new[] {
                 "TestApp.dll",
                 "TestApp.pdb",
+                $"TestApp{EnvironmentInfo.ExecutableExtension}",
                 "TestApp.deps.json",
-                "TestApp.runtimeconfig.dev.json",
                 "TestApp.runtimeconfig.json",
                 "MainLibrary.dll",
                 "MainLibrary.pdb",
@@ -123,7 +123,9 @@ namespace Microsoft.NET.Build.Tests
             buildCommand
                 .Execute("/p:DisableTransitiveProjectReferences=true")
                 .Should()
-                .Fail();
+                .Fail()
+                .And
+                .HaveStdOutContaining("CS0103");
         }
     }
 }

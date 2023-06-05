@@ -1,4 +1,7 @@
-﻿using System.IO;
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using System.IO;
 using System.Linq;
 using System.Xml.Linq;
 using FluentAssertions;
@@ -106,6 +109,40 @@ namespace Microsoft.NET.Build.Tests
 
         }
 
+        [Fact]
+        public void AspNetRuntimePackIsNotRestoredForAndroid()
+        {
+            var testProject = new TestProject()
+            {
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
+                IsExe = true
+            };
+            testProject.AdditionalProperties["RuntimeIdentifiers"] = "android-arm;android-arm64;android-x86;android-x64";
+
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+
+            var knownFrameworkReferenceUpdate = new XElement("KnownFrameworkReference",
+                new XAttribute("Update", "Microsoft.AspNetCore.App"),
+                new XAttribute("RuntimePackExcludedRuntimeIdentifiers", "android"));
+
+            AddItem(testAsset, knownFrameworkReferenceUpdate);
+
+            var getValuesCommand = new GetValuesCommand(testAsset, "PackageDownload", GetValuesCommand.ValueType.Item)
+            {
+                DependsOnTargets = "ProcessFrameworkReferences",
+                ShouldRestore = false
+            };
+
+            getValuesCommand
+                .Execute()
+                .Should()
+                .Pass();
+
+            var packageDownloads = getValuesCommand.GetValues();
+
+            packageDownloads.Should().NotContain(packageDownload => packageDownload.StartsWith("Microsoft.AspNetCore.App.Runtime."));
+        }
+
         private XElement CreateTestKnownRuntimePack()
         {
             var knownRuntimePack = new XElement("KnownRuntimePack",
@@ -115,7 +152,7 @@ namespace Microsoft.NET.Build.Tests
                         new XAttribute("DefaultRuntimeFrameworkVersion", "5.0.0-preview1"),
                         new XAttribute("LatestRuntimeFrameworkVersion", "5.0.0-preview1.1"),
                         new XAttribute("RuntimePackNamePatterns", "Microsoft.NETCore.App.Runtime.Mono.**RID**"),
-                        new XAttribute("RuntimePackRuntimeIdentifiers", "linux-arm;linux-arm64;linux-musl-arm64;linux-musl-x64;linux-x64;osx-x64;rhel.6-x64;tizen.4.0.0-armel;tizen.5.0.0-armel;win-arm;win-arm64;win-x64;win-x86;ios-arm64;ios-arm;ios-x64;ios-x86;tvos-arm64;tvos-x64;android-arm64;android-arm;android-x64;android-x86;browser-wasm;maccatalyst-x64;maccatalyst-arm64"),
+                        new XAttribute("RuntimePackRuntimeIdentifiers", "linux-arm;linux-arm64;linux-musl-arm64;linux-musl-x64;linux-x64;osx-x64;rhel.6-x64;tizen.4.0.0-armel;tizen.5.0.0-armel;win-arm;win-arm64;win-x64;win-x86;ios-arm64;ios-arm;iossimulator-x64;iossimulator-arm64;iossimulator-x86;tvos-arm64;tvossimulator-x64;tvossimulator-arm64;android-arm64;android-arm;android-x64;android-x86;browser-wasm;maccatalyst-x64;maccatalyst-arm64"),
                         new XAttribute("IsTrimmable", "true"),
                         new XAttribute("RuntimePackLabels", "Mono"));
 
@@ -132,21 +169,6 @@ namespace Microsoft.NET.Build.Tests
                 project.Root.Add(itemGroup);
                 itemGroup.Add(item);
             });
-        }
-
-       [WindowsOnlyFact]
-        public void ItCantPublishArm64Wpf()
-        {
-            var testDirectory = _testAssetsManager.CreateTestDirectory().Path;
-
-            var newCommand = new DotnetCommand(Log, "new", "wpf", "--no-restore");
-            newCommand.WorkingDirectory = testDirectory;
-            newCommand.Execute().Should().Pass();
-
-            new PublishCommand(Log, testDirectory)
-                .Execute("/p:RuntimeIdentifier=win-arm64")
-                .Should()
-                .Fail();
         }
     }
 }

@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -31,11 +34,11 @@ namespace Microsoft.NET.Build.Tests
             var testProject = new TestProject()
             {
                 Name = "SkipRuntimeAssemblyFromPackage",
-                TargetFrameworks = "netcoreapp3.0",
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
                 IsExe = true
             };
 
-            testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", "12.0.1"));
+            testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", "13.0.1"));
 
             string filenameToSkip = "Newtonsoft.Json.dll";
 
@@ -48,8 +51,9 @@ namespace Microsoft.NET.Build.Tests
             var testProject = new TestProject()
             {
                 Name = "SkipRuntimeAssemblyFromRuntimePack",
-                TargetFrameworks = "netcoreapp3.0",
-                IsExe = true
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
+                IsExe = true,
+                SelfContained = "true"
             };
 
             testProject.RuntimeIdentifier = EnvironmentInfo.GetCompatibleRid(testProject.TargetFrameworks);
@@ -65,7 +69,7 @@ namespace Microsoft.NET.Build.Tests
             var testProject = new TestProject()
             {
                 Name = "SkipNativeAssetFromPackage",
-                TargetFrameworks = "netcoreapp3.0",
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
                 IsExe = true
             };
 
@@ -84,7 +88,7 @@ namespace Microsoft.NET.Build.Tests
             var testProject = new TestProject()
             {
                 Name = "SkipNativeAssetFromPackage",
-                TargetFrameworks = "netcoreapp3.0",
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
                 IsExe = true
             };
 
@@ -101,8 +105,9 @@ namespace Microsoft.NET.Build.Tests
             var testProject = new TestProject()
             {
                 Name = "SkipNativeAssetFromRuntimePack",
-                TargetFrameworks = "netcoreapp3.0",
-                IsExe = true
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
+                IsExe = true,
+                SelfContained = "true"
             };
 
             testProject.RuntimeIdentifier = EnvironmentInfo.GetCompatibleRid(testProject.TargetFrameworks);
@@ -118,11 +123,11 @@ namespace Microsoft.NET.Build.Tests
             var testProject = new TestProject()
             {
                 Name = "SkipResourceFromPackage",
-                TargetFrameworks = "netcoreapp3.0",
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
                 IsExe = true
             };
 
-            testProject.PackageReferences.Add(new TestPackageReference("Humanizer", "2.2.0"));
+            testProject.PackageReferences.Add(new TestPackageReference("Humanizer", "2.8.26"));
 
             string filenameToSkip = "de/Humanizer.resources.dll";
             string filenameNotToSkip = "es/Humanizer.resources.dll";
@@ -168,7 +173,7 @@ namespace Microsoft.NET.Build.Tests
 
         private void TestSkippingFile(TestProject testProject, string filenameToSkip, string assetType)
         {
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, testProject.Name)
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, testProject.Name, identifier: filenameToSkip + assetType)
                 .WithProjectChanges(project => AddSkipTarget(project, filenameToSkip));
 
             var buildCommand = new BuildCommand(testAsset);

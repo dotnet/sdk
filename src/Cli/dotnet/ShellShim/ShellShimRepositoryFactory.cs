@@ -1,5 +1,5 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.DotNet.Configurer;
 using Microsoft.Extensions.EnvironmentAbstractions;
@@ -8,9 +8,9 @@ namespace Microsoft.DotNet.ShellShim
 {
     internal static class ShellShimRepositoryFactory
     {
-        public static IShellShimRepository CreateShellShimRepository(DirectoryPath? nonGlobalLocation = null)
+        public static IShellShimRepository CreateShellShimRepository(string appHostSourceDirectory, DirectoryPath? nonGlobalLocation = null)
         {
-            return new ShellShimRepository(nonGlobalLocation ?? GetShimLocation());
+            return new ShellShimRepository(nonGlobalLocation ?? GetShimLocation(), appHostSourceDirectory);
         }
 
         private static DirectoryPath GetShimLocation()

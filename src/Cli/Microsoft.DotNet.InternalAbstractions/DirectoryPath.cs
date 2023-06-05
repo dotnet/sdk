@@ -1,5 +1,5 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.IO;
@@ -79,6 +79,37 @@ namespace Microsoft.Extensions.EnvironmentAbstractions
             }
 
             return new DirectoryPath(parentDirectory.FullName);
+        }
+
+        internal static void MoveDirectory(string sourcePath, string destPath)
+        {
+            try
+            {
+                Directory.Move(sourcePath, destPath);
+            }
+            catch (IOException)
+            {
+                // Note: cannot use Directory.Move because it errors when copying across mounts
+                CopyDirectoryAcrossMounts(sourcePath, destPath);
+            }
+        }
+
+        private static void CopyDirectoryAcrossMounts(string sourcePath, string destPath)
+        {
+            if (!Directory.Exists(destPath))
+            {
+                Directory.CreateDirectory(destPath);
+            }
+
+            foreach (var dir in Directory.GetDirectories(sourcePath))
+            {
+                CopyDirectoryAcrossMounts(dir, Path.Combine(destPath, Path.GetFileName(dir)));
+            }
+
+            foreach (var file in Directory.GetFiles(sourcePath))
+            {
+                new FileInfo(file).CopyTo(Path.Combine(destPath, Path.GetFileName(file)), true);
+            }
         }
     }
 }

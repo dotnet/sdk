@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using FluentAssertions;
 using Microsoft.DotNet.Cli.Sln.Internal;
@@ -12,6 +12,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Microsoft.Build.Evaluation;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -19,35 +20,18 @@ namespace Microsoft.DotNet.Cli.Sln.Remove.Tests
 {
     public class GivenDotnetSlnRemove : SdkTest
     {
-        private Func<string, string> HelpText = (defaultVal) => $@"remove:
+        private Func<string, string> HelpText = (defaultVal) => $@"Description:
   Remove one or more projects from a solution file.
 
 Usage:
-  dotnet sln <SLN_FILE> remove [options] <PROJECT_PATH>...
+  dotnet sln <SLN_FILE> remove [<PROJECT_PATH>...] [options]
 
 Arguments:
   <SLN_FILE>        The solution file to operate on. If not specified, the command will search the current directory for one. [default: {PathUtility.EnsureTrailingSlash(defaultVal)}]
   <PROJECT_PATH>    The paths to the projects to remove from the solution.
 
 Options:
-  -?, -h, --help    Show help and usage information";
-
-        private Func<string, string> SlnCommandHelpText = (defaultVal) => $@"sln:
-  .NET modify solution file command
-
-Usage:
-  dotnet sln [options] <SLN_FILE> [command]
-
-Arguments:
-  <SLN_FILE>    The solution file to operate on. If not specified, the command will search the current directory for one. [default: {PathUtility.EnsureTrailingSlash(defaultVal)}]
-
-Options:
-  -?, -h, --help    Show help and usage information
-
-Commands:
-  add <PROJECT_PATH>       Add one or more projects to a solution file.
-  list                     List all projects in a solution file.
-  remove <PROJECT_PATH>    Remove one or more projects from a solution file.";
+  -?, -h, --help    Show command line help.";
 
         private const string ExpectedSlnContentsAfterRemove = @"
 Microsoft Visual Studio Solution File, Format Version 12.00
@@ -312,14 +296,14 @@ EndGlobal
                 .Execute($"sln", solutionName, "remove", "p.csproj");
             cmd.Should().Fail();
             cmd.StdErr.Should().Be(string.Format(CommonLocalizableStrings.CouldNotFindSolutionOrDirectory, solutionName));
-            cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized(HelpText(Directory.GetCurrentDirectory()));
+            cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
         }
 
         [Fact]
         public void WhenInvalidSolutionIsPassedItPrintsErrorAndUsage()
         {
             var projectDirectory = _testAssetsManager
-                .CopyTestAsset("InvalidSolution")
+                .CopyTestAsset("InvalidSolution", identifier: "GivenDotnetSlnRemove")
                 .WithSource()
                 .Path;
 
@@ -329,7 +313,7 @@ EndGlobal
                 .Execute($"sln", "InvalidSolution.sln", "remove", projectToRemove);
             cmd.Should().Fail();
             cmd.StdErr.Should().Be(string.Format(CommonLocalizableStrings.InvalidSolutionFormatString, "InvalidSolution.sln", LocalizableStrings.FileHeaderMissingError));
-            cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized(HelpText(projectDirectory));
+            cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
         }
 
         [Fact]
@@ -347,14 +331,14 @@ EndGlobal
                 .Execute($"sln", "remove", projectToRemove);
             cmd.Should().Fail();
             cmd.StdErr.Should().Be(string.Format(CommonLocalizableStrings.InvalidSolutionFormatString, solutionPath, LocalizableStrings.FileHeaderMissingError));
-            cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized(HelpText(projectDirectory));
+            cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
         }
 
         [Fact]
         public void WhenNoProjectIsPassedItPrintsErrorAndUsage()
         {
             var projectDirectory = _testAssetsManager
-                .CopyTestAsset("TestAppWithSlnAndCsprojFiles")
+                .CopyTestAsset("TestAppWithSlnAndCsprojFiles", identifier: "GivenDotnetSlnRemove")
                 .WithSource()
                 .Path;
 
@@ -363,7 +347,7 @@ EndGlobal
                 .Execute(@"sln", "App.sln", "remove");
             cmd.Should().Fail();
             cmd.StdErr.Should().Be(CommonLocalizableStrings.SpecifyAtLeastOneProjectToRemove);
-            cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized(HelpText(projectDirectory));
+            cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
         }
 
         [Fact]
@@ -380,14 +364,14 @@ EndGlobal
                 .Execute(@"sln", "remove", "App.csproj");
             cmd.Should().Fail();
             cmd.StdErr.Should().Be(string.Format(CommonLocalizableStrings.SolutionDoesNotExist, solutionPath + Path.DirectorySeparatorChar));
-            cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized(HelpText(solutionPath));
+            cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
         }
 
         [Fact]
         public void WhenMoreThanOneSolutionExistsInTheDirectoryItPrintsErrorAndUsage()
         {
             var projectDirectory = _testAssetsManager
-                .CopyTestAsset("TestAppWithMultipleSlnFiles")
+                .CopyTestAsset("TestAppWithMultipleSlnFiles", identifier: "GivenDotnetSlnRemove")
                 .WithSource()
                 .Path;
 
@@ -397,7 +381,7 @@ EndGlobal
                 .Execute($"sln", "remove", projectToRemove);
             cmd.Should().Fail();
             cmd.StdErr.Should().Be(string.Format(CommonLocalizableStrings.MoreThanOneSolutionInDirectory, projectDirectory + Path.DirectorySeparatorChar));
-            cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized(HelpText(projectDirectory));
+            cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
         }
 
         [Fact]
@@ -583,7 +567,7 @@ EndGlobal
                 string.Format(
                     CommonLocalizableStrings.CouldNotFindAnyProjectInDirectory,
                     Path.Combine(projectDirectory, directoryToRemove)));
-            cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized(HelpText(projectDirectory));
+            cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
         }
 
         [Fact]
@@ -603,7 +587,7 @@ EndGlobal
                 string.Format(
                     CommonLocalizableStrings.MoreThanOneProjectInDirectory,
                     Path.Combine(projectDirectory, directoryToRemove)));
-            cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized(HelpText(projectDirectory));
+            cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
         }
 
         [Fact]
@@ -631,18 +615,18 @@ EndGlobal
 
             new DotnetCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
-                .Execute("build", "App.sln", "--configuration", "Release")
+                .Execute("build", "App.sln", "--configuration", "Release","/p:ProduceReferenceAssembly=false")
                 .Should().Pass();
 
             var reasonString = "should be built in release mode, otherwise it means build configurations are missing from the sln file";
 
-            var releaseDirectory = Directory.EnumerateDirectories(
-                Path.Combine(projectDirectory, "App", "bin"),
-                "Release",
-                SearchOption.AllDirectories);
-            releaseDirectory.Count().Should().Be(1, $"App {reasonString}");
-            Directory.EnumerateFiles(releaseDirectory.Single(), "App.dll", SearchOption.AllDirectories)
-                .Count().Should().Be(1, $"App {reasonString}");
+            var outputCalculator = OutputPathCalculator.FromProject(Path.Combine(projectDirectory, "App"));
+
+            new DirectoryInfo(outputCalculator.GetOutputDirectory(configuration: "Debug")).Should().NotExist(reasonString);
+
+            var outputDirectory = new DirectoryInfo(outputCalculator.GetOutputDirectory(configuration: "Release"));
+            outputDirectory.Should().Exist();
+            outputDirectory.Should().HaveFile("App.dll");
         }
 
         [Fact]
@@ -751,6 +735,27 @@ EndGlobal
 
             File.ReadAllText(solutionPath)
                 .Should().BeVisuallyEquivalentTo(ExpectedSlnContentsAfterRemoveProjectWithDependencies);
+        }
+
+        [Fact]
+        public void WhenSolutionIsPassedAsProjectItPrintsSuggestionAndUsage()
+        {
+            var projectDirectory = _testAssetsManager
+                .CopyTestAsset("TestAppWithSlnAndCsprojFiles")
+                .WithSource()
+                .Path;
+
+            var projectArg = Path.Combine("Lib", "Lib.csproj");
+            var cmd = new DotnetCommand(Log)
+                .WithWorkingDirectory(projectDirectory)
+                .Execute("sln", "remove", "App.sln", projectArg);
+            cmd.Should().Fail();
+            cmd.StdErr.Should().BeVisuallyEquivalentTo(
+                string.Format(CommonLocalizableStrings.SolutionArgumentMisplaced, "App.sln") + Environment.NewLine
+                + CommonLocalizableStrings.DidYouMean + Environment.NewLine
+                 + $"  dotnet sln App.sln remove {projectArg}"
+            );
+            cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
         }
     }
 }

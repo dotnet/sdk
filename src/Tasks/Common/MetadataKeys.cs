@@ -1,5 +1,10 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+//Microsoft.NET.Build.Extensions.Tasks (net7.0) has nullables disabled
+#pragma warning disable IDE0240 // Remove redundant nullable directive
+#nullable disable
+#pragma warning restore IDE0240 // Remove redundant nullable directive
 
 namespace Microsoft.NET.Build.Tasks
 {
@@ -17,6 +22,7 @@ namespace Microsoft.NET.Build.Tasks
         public const string AllowExplicitVersion = "AllowExplicitVersion";
         public const string RelativePath = "RelativePath";
         public const string DiagnosticLevel = "DiagnosticLevel";
+        public const string Implementation = "Implementation";      //  Metadata on WinMD references
 
         // Target Metadata
         public const string RuntimeIdentifier = "RuntimeIdentifier";
@@ -24,9 +30,8 @@ namespace Microsoft.NET.Build.Tasks
         public const string TargetFramework = "TargetFramework";
         public const string FrameworkName = "FrameworkName";
         public const string FrameworkVersion = "FrameworkVersion";
-        public const string IsTrimmable = "IsTrimmable"; 
+        public const string IsTrimmable = "IsTrimmable";
         public const string RuntimeFrameworkName = "RuntimeFrameworkName";
-        public const string RuntimePackRuntimeIdentifiers = "RuntimePackRuntimeIdentifiers";
 
         // SDK Metadata
         public const string SDKPackageItemSpec = "SDKPackageItemSpec";
@@ -82,11 +87,16 @@ namespace Microsoft.NET.Build.Tasks
 
         // Targeting packs
         public const string PackageConflictPreferredPackages = "PackageConflictPreferredPackages";
+        public const string RuntimePackRuntimeIdentifiers = "RuntimePackRuntimeIdentifiers";
+        public const string RuntimePackExcludedRuntimeIdentifiers = "RuntimePackExcludedRuntimeIdentifiers";
 
         // Runtime packs
         public const string DropFromSingleFile = "DropFromSingleFile";
         public const string RuntimePackLabels = "RuntimePackLabels";
         public const string AdditionalFrameworkReferences = "AdditionalFrameworkReferences";
+
+        //  Apphost packs
+        public const string ExcludedRuntimeIdentifiers = "ExcludedRuntimeIdentifiers";
 
         // Content files
         public const string PPOutputPath = "PPOutputPath";
@@ -122,6 +132,17 @@ namespace Microsoft.NET.Build.Tasks
         public const string OutputPDBImage = "OutputPDBImage";
         public const string EmitSymbols = "EmitSymbols";
         public const string IsVersion5 = "IsVersion5";
-        public const string IsVersion6Preview1 = "IsVersion6Preview1";
+        public const string CreateCompositeImage = "CreateCompositeImage";
+        public const string PerfmapFormatVersion = "PerfmapFormatVersion";
+
+        // Debug symbols
+        public const string RelatedProperty = "related";
+        public const string XmlExtension = ".xml";
+        public const string XmlFilePath = "XmlFilePath";
+        public const string PdbExtension = ".pdb";
+        public const string PdbFilePath = "PdbFilePath";
+
+        // Dependencies design time
+        public const string Resolved = "Resolved";
     }
 }

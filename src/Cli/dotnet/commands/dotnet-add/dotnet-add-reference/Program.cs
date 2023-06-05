@@ -1,8 +1,9 @@
-// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
+using System.CommandLine;
 using System.CommandLine.Parsing;
 using System.IO;
 using System.Linq;
@@ -21,21 +22,21 @@ namespace Microsoft.DotNet.Tools.Add.ProjectToProjectReference
 
         public AddProjectToProjectReferenceCommand(ParseResult parseResult) : base(parseResult)
         {
-            _fileOrDirectory = parseResult.ValueForArgument<string>(AddCommandParser.ProjectArgument);
+            _fileOrDirectory = parseResult.GetValue(AddCommandParser.ProjectArgument);
         }
 
         public override int Execute()
         {
             var projects = new ProjectCollection();
-            bool interactive = _parseResult.HasOption(AddProjectToProjectReferenceParser.InteractiveOption);
+            bool interactive = _parseResult.GetValue(AddProjectToProjectReferenceParser.InteractiveOption);
             MsbuildProject msbuildProj = MsbuildProject.FromFileOrDirectory(
                 projects,
                 _fileOrDirectory,
                 interactive);
 
-            var frameworkString = _parseResult.ValueForOption<string>(AddProjectToProjectReferenceParser.FrameworkOption);
+            var frameworkString = _parseResult.GetValue(AddProjectToProjectReferenceParser.FrameworkOption);
 
-            var arguments = _parseResult.ValueForArgument<IReadOnlyCollection<string>>(AddProjectToProjectReferenceParser.ProjectPathArgument);
+            var arguments = _parseResult.GetValue(AddProjectToProjectReferenceParser.ProjectPathArgument).ToList().AsReadOnly();
             PathUtility.EnsureAllPathsExist(arguments,
                 CommonLocalizableStrings.CouldNotFindProjectOrDirectory, true);
             List<MsbuildProject> refs =
@@ -43,7 +44,7 @@ namespace Microsoft.DotNet.Tools.Add.ProjectToProjectReference
                     .Select((r) => MsbuildProject.FromFileOrDirectory(projects, r, interactive))
                     .ToList();
 
-            if (frameworkString == null)
+            if (string.IsNullOrEmpty(frameworkString))
             {
                 foreach (var tfm in msbuildProj.GetTargetFrameworks())
                 {

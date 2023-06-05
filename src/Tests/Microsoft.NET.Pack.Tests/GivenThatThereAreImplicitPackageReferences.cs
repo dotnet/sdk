@@ -1,5 +1,5 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -119,8 +119,8 @@ namespace Microsoft.NET.Pack.Tests
         {
             TestProject testProject = new TestProject()
             {
-                Name = "PackNet461App",
-                TargetFrameworks = "net461",
+                Name = "Packnet462App",
+                TargetFrameworks = "net462",
             };
 
             testProject.PackageReferences.Add(
@@ -167,7 +167,7 @@ namespace Microsoft.NET.Pack.Tests
 
             testProject.PackageReferences.Add(new TestPackageReference(packageId, ""));
 
-            var dependencies = PackAndGetDependencies(testProject);
+            var dependencies = PackAndGetDependencies(testProject, packageId);
 
             dependencies.Should().BeEmpty();
 
@@ -202,13 +202,13 @@ namespace Microsoft.NET.Pack.Tests
             TestProject testProject = new TestProject()
             {
                 Name = "PackMultiTargetedLibrary",
-                TargetFrameworks = "netstandard1.1;netstandard2.0;netcoreapp1.1;netcoreapp2.0",
+                TargetFrameworks = $"netstandard1.1;netstandard2.0;netcoreapp1.1;{ToolsetInfo.CurrentTargetFramework}",
                 IsExe = false
             };
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                testProject.TargetFrameworks += ";net461";
+                testProject.TargetFrameworks += ";net462";
             }
 
             var dependencyGroups = GetDependencyGroups(PackAndGetNuspec(testProject), out var ns);
@@ -234,10 +234,10 @@ namespace Microsoft.NET.Pack.Tests
             ExpectDependencyGroup(".NETStandard1.1", "NETStandard.Library");
             ExpectDependencyGroup(".NETStandard2.0", null);
             ExpectDependencyGroup(".NETCoreApp1.1", "Microsoft.NETCore.App");
-            ExpectDependencyGroup(".NETCoreApp2.0", null);
+            ExpectDependencyGroup(ToolsetInfo.CurrentTargetFramework, null);
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                ExpectDependencyGroup(".NETFramework4.6.1", null);
+                ExpectDependencyGroup(".NETFramework4.6.2", null);
             }
         }
 
@@ -265,9 +265,9 @@ namespace Microsoft.NET.Pack.Tests
                 .ToList();
         }
 
-        private XDocument PackAndGetNuspec(TestProject testProject)
+        private XDocument PackAndGetNuspec(TestProject testProject, string identifier = null)
         {
-            var testProjectInstance = _testAssetsManager.CreateTestProject(testProject, testProject.Name);
+            var testProjectInstance = _testAssetsManager.CreateTestProject(testProject, testProject.Name, identifier);
 
             var packCommand = new PackCommand(Log, testProjectInstance.TestRoot, testProject.Name);
 
@@ -280,9 +280,9 @@ namespace Microsoft.NET.Pack.Tests
             return nuspec;
         }
 
-        private List<XElement> PackAndGetDependencies(TestProject testProject)
+        private List<XElement> PackAndGetDependencies(TestProject testProject, string identifier = null)
         {
-            var dependencyGroups = GetDependencyGroups(PackAndGetNuspec(testProject), out var ns);
+            var dependencyGroups = GetDependencyGroups(PackAndGetNuspec(testProject, identifier), out var ns);
 
             //  There should be only one dependency group for these tests
             dependencyGroups.Count().Should().Be(1);

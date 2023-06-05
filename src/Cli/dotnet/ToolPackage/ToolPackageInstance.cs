@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.IO;
@@ -12,6 +12,7 @@ using NuGet.ProjectModel;
 using NuGet.Versioning;
 using Microsoft.DotNet.Cli.Utils;
 using System.Threading;
+using NuGet.Frameworks;
 
 namespace Microsoft.DotNet.ToolPackage
 {
@@ -53,6 +54,8 @@ namespace Microsoft.DotNet.ToolPackage
             }
         }
 
+        public IEnumerable<NuGetFramework> Frameworks { get; private set; }
+
         private const string AssetsFileName = "project.assets.json";
         private const string ToolSettingsFileName = "DotnetToolSettings.xml";
 
@@ -76,6 +79,9 @@ namespace Microsoft.DotNet.ToolPackage
             _lockFile =
                 new Lazy<LockFile>(
                     () => new LockFileFormat().Read(assetsJsonParentDirectory.WithFile(AssetsFileName).Value));
+            var toolsPackagePath = Path.Combine(PackageDirectory.Value, Id.ToString(), Version.ToNormalizedString(), "tools");
+            Frameworks = Directory.GetDirectories(toolsPackagePath)
+                .Select(path => NuGetFramework.ParseFolder(Path.GetFileName(path)));
         }
 
         private IReadOnlyList<RestoredCommand> GetCommands()

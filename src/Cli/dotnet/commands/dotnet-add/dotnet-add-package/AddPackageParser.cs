@@ -1,58 +1,64 @@
-// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
 using System.CommandLine;
+using System.CommandLine.Completions;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading;
 using Microsoft.DotNet.Tools;
+using Microsoft.DotNet.Tools.Add.PackageReference;
 using LocalizableStrings = Microsoft.DotNet.Tools.Add.PackageReference.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli
 {
     internal static class AddPackageParser
     {
-        public static readonly Argument CmdPackageArgument = new Argument<string>(LocalizableStrings.CmdPackage)
+        public static readonly Argument<string> CmdPackageArgument = new Argument<string>(LocalizableStrings.CmdPackage)
         {
             Description = LocalizableStrings.CmdPackageDescription
-        }.AddSuggestions((parseResult, match) => QueryNuGet(match));
+        }.AddCompletions((context) => QueryNuGet(context.WordToComplete).Select(match => new CompletionItem(match)));
 
-        public static readonly Option VersionOption = new Option<string>(new string[] { "-v", "--version" },
-                              LocalizableStrings.CmdVersionDescription)
+        public static readonly Option<string> VersionOption = new ForwardedOption<string>(new string[] { "-v", "--version" }, LocalizableStrings.CmdVersionDescription)
         {
-            Argument = new Argument<string>(LocalizableStrings.CmdVersion)
+            ArgumentHelpName = LocalizableStrings.CmdVersion
         }.ForwardAsSingle(o => $"--version {o}");
 
-        public static readonly Option FrameworkOption = new Option<string>(new string[] { "-f", "--framework" },
-                              LocalizableStrings.CmdFrameworkDescription)
+        public static readonly Option<string> FrameworkOption = new ForwardedOption<string>(new string[] { "-f", "--framework" }, LocalizableStrings.CmdFrameworkDescription)
         {
-            Argument = new Argument<string>(LocalizableStrings.CmdFramework)
+            ArgumentHelpName = LocalizableStrings.CmdFramework
         }.ForwardAsSingle(o => $"--framework {o}");
 
-        public static readonly Option NoRestoreOption = new Option<bool>(new string[] { "-n", "--no-restore" }, LocalizableStrings.CmdNoRestoreDescription);
+        public static readonly Option<bool> NoRestoreOption = new Option<bool>(new string[] { "-n", "--no-restore" }, LocalizableStrings.CmdNoRestoreDescription);
 
-        public static readonly Option SourceOption = new Option<string>(new string[] { "-s", "--source" },
-                              LocalizableStrings.CmdSourceDescription)
+        public static readonly Option<string> SourceOption = new ForwardedOption<string>(new string[] { "-s", "--source" }, LocalizableStrings.CmdSourceDescription)
         {
-            Argument = new Argument<string>(LocalizableStrings.CmdSource)
+            ArgumentHelpName = LocalizableStrings.CmdSource
         }.ForwardAsSingle(o => $"--source {o}");
 
-
-        public static readonly Option PackageDirOption = new Option<string>("--package-directory", LocalizableStrings.CmdPackageDirectoryDescription)
+        public static readonly Option<string> PackageDirOption = new ForwardedOption<string>("--package-directory", LocalizableStrings.CmdPackageDirectoryDescription)
         {
-            Argument = new Argument<string>(LocalizableStrings.CmdPackageDirectory)
+            ArgumentHelpName = LocalizableStrings.CmdPackageDirectory
         }.ForwardAsSingle(o => $"--package-directory {o}");
 
-        public static readonly Option InteractiveOption = new Option<bool>("--interactive", CommonLocalizableStrings.CommandInteractiveOptionDescription)
+        public static readonly Option<bool> InteractiveOption = new ForwardedOption<bool>("--interactive", CommonLocalizableStrings.CommandInteractiveOptionDescription)
             .ForwardAs("--interactive");
 
-        public static readonly Option PrereleaseOption = new Option<bool>("--prerelease", CommonLocalizableStrings.CommandPrereleaseOptionDescription)
+        public static readonly Option<bool> PrereleaseOption = new ForwardedOption<bool>("--prerelease", CommonLocalizableStrings.CommandPrereleaseOptionDescription)
             .ForwardAs("--prerelease");
 
+        private static readonly Command Command = ConstructCommand();
+
         public static Command GetCommand()
+        {
+            return Command;
+        }
+
+        private static Command ConstructCommand()
         {
             var command = new Command("package", LocalizableStrings.AppFullName);
 
@@ -64,6 +70,8 @@ namespace Microsoft.DotNet.Cli
             command.AddOption(PackageDirOption);
             command.AddOption(InteractiveOption);
             command.AddOption(PrereleaseOption);
+
+            command.SetHandler((parseResult) => new AddPackageReferenceCommand(parseResult).Execute());
 
             return command;
         }

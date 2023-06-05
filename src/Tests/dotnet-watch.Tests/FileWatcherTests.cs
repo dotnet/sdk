@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -32,13 +32,7 @@ namespace Microsoft.DotNet.Watcher.Tools
         [InlineData(false)]
         public async Task NewFile(bool usePolling)
         {
-            if (!usePolling && OperatingSystem.IsMacOS())
-            {
-                // Skip on MacOS https://github.com/dotnet/aspnetcore/issues/29141
-                return;
-            }
-
-            var dir = _testAssetManager.CreateTestDirectory().Path;
+            var dir = _testAssetManager.CreateTestDirectory(identifier: usePolling.ToString()).Path;
 
             using var watcher = FileWatcherFactory.CreateWatcher(dir, usePolling);
 
@@ -47,7 +41,7 @@ namespace Microsoft.DotNet.Watcher.Tools
 
             watcher.OnFileChange += (_, f) =>
             {
-                filesChanged.Add(f);
+                filesChanged.Add(f.filePath);
                 changedEv.TrySetResult();
             };
             watcher.EnableRaisingEvents = true;
@@ -64,13 +58,7 @@ namespace Microsoft.DotNet.Watcher.Tools
         [InlineData(false)]
         public async Task ChangeFile(bool usePolling)
         {
-            if (!usePolling && OperatingSystem.IsMacOS())
-            {
-                // Skip on MacOS https://github.com/dotnet/aspnetcore/issues/29141
-                return;
-            }
-
-            var dir = _testAssetManager.CreateTestDirectory().Path;
+            var dir = _testAssetManager.CreateTestDirectory(identifier: usePolling.ToString()).Path;
 
             var testFileFullPath = Path.Combine(dir, "foo");
             File.WriteAllText(testFileFullPath, string.Empty);
@@ -80,13 +68,13 @@ namespace Microsoft.DotNet.Watcher.Tools
             var changedEv = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             var filesChanged = new HashSet<string>();
 
-            EventHandler<string> handler = null;
+            EventHandler<(string, bool)> handler = null;
             handler = (_, f) =>
             {
                 watcher.EnableRaisingEvents = false;
                 watcher.OnFileChange -= handler;
 
-                filesChanged.Add(f);
+                filesChanged.Add(f.Item1);
                 changedEv.TrySetResult();
             };
 
@@ -111,13 +99,7 @@ namespace Microsoft.DotNet.Watcher.Tools
         [InlineData(false)]
         public async Task MoveFile(bool usePolling)
         {
-            if (!usePolling && OperatingSystem.IsMacOS())
-            {
-                // Skip on MacOS https://github.com/dotnet/aspnetcore/issues/29141
-                return;
-            }
-
-            var dir = _testAssetManager.CreateTestDirectory().Path;
+            var dir = _testAssetManager.CreateTestDirectory(identifier: usePolling.ToString()).Path;
             var srcFile = Path.Combine(dir, "foo");
             var dstFile = Path.Combine(dir, "foo2");
 
@@ -128,10 +110,10 @@ namespace Microsoft.DotNet.Watcher.Tools
             var changedEv = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
             var filesChanged = new HashSet<string>();
 
-            EventHandler<string> handler = null;
+            EventHandler<(string, bool)> handler = null;
             handler = (_, f) =>
             {
-                filesChanged.Add(f);
+                filesChanged.Add(f.Item1);
 
                 if (filesChanged.Count >= 2)
                 {
@@ -168,10 +150,10 @@ namespace Microsoft.DotNet.Watcher.Tools
             var changedEv = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
             var filesChanged = new HashSet<string>();
 
-            EventHandler<string> handler = null;
+            EventHandler<(string, bool)> handler = null;
             handler = (_, f) =>
             {
-                filesChanged.Add(f);
+                filesChanged.Add(f.Item1);
 
                 if (filesChanged.Count >= 2)
                 {
@@ -201,13 +183,7 @@ namespace Microsoft.DotNet.Watcher.Tools
         [InlineData(false)]
         public async Task NoNotificationIfDisabled(bool usePolling)
         {
-            if (!usePolling && OperatingSystem.IsMacOS())
-            {
-                // Skip on MacOS https://github.com/dotnet/aspnetcore/issues/29141
-                return;
-            }
-
-            var dir = _testAssetManager.CreateTestDirectory().Path;
+            var dir = _testAssetManager.CreateTestDirectory(identifier: usePolling.ToString()).Path;
 
             using var watcher = FileWatcherFactory.CreateWatcher(dir, usePolling);
 
@@ -236,13 +212,7 @@ namespace Microsoft.DotNet.Watcher.Tools
         [InlineData(false)]
         public async Task DisposedNoEvents(bool usePolling)
         {
-            if (!usePolling && OperatingSystem.IsMacOS())
-            {
-                // Skip on MacOS https://github.com/dotnet/aspnetcore/issues/29141
-                return;
-            }
-
-            var dir = _testAssetManager.CreateTestDirectory().Path;
+            var dir = _testAssetManager.CreateTestDirectory(identifier: usePolling.ToString()).Path;
             var changedEv = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             using (var watcher = FileWatcherFactory.CreateWatcher(dir, usePolling))
             {
@@ -269,13 +239,7 @@ namespace Microsoft.DotNet.Watcher.Tools
         [InlineData(false)]
         public async Task MultipleFiles(bool usePolling)
         {
-            if (!usePolling && OperatingSystem.IsMacOS())
-            {
-                // Skip on MacOS https://github.com/dotnet/aspnetcore/issues/29141
-                return;
-            }
-
-            var dir = _testAssetManager.CreateTestDirectory().Path;
+            var dir = _testAssetManager.CreateTestDirectory(identifier: usePolling.ToString()).Path;
 
             File.WriteAllText(Path.Combine(dir, "foo1"), string.Empty);
             File.WriteAllText(Path.Combine(dir, "foo2"), string.Empty);
@@ -296,12 +260,12 @@ namespace Microsoft.DotNet.Watcher.Tools
             var changedEv = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
             var filesChanged = new HashSet<string>();
 
-            EventHandler<string> handler = null;
+            EventHandler<(string, bool)> handler = null;
             handler = (_, f) =>
             {
                 watcher.EnableRaisingEvents = false;
                 watcher.OnFileChange -= handler;
-                filesChanged.Add(f);
+                filesChanged.Add(f.Item1);
                 changedEv.TrySetResult(0);
             };
 
@@ -319,13 +283,7 @@ namespace Microsoft.DotNet.Watcher.Tools
         [InlineData(false)]
         public async Task MultipleTriggers(bool usePolling)
         {
-            if (!usePolling && OperatingSystem.IsMacOS())
-            {
-                // Skip on MacOS https://github.com/dotnet/aspnetcore/issues/29141
-                return;
-            }
-
-            var dir = _testAssetManager.CreateTestDirectory().Path;
+            var dir = _testAssetManager.CreateTestDirectory(identifier: usePolling.ToString()).Path;
 
             using var watcher = FileWatcherFactory.CreateWatcher(dir, usePolling);
 
@@ -343,12 +301,12 @@ namespace Microsoft.DotNet.Watcher.Tools
         {
             var changedEv = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
             var expectedPath = Path.Combine(directory, Path.GetRandomFileName());
-            EventHandler<string> handler = (object _, string f) =>
+            EventHandler<(string, bool)> handler = (_, f) =>
             {
                 _output.WriteLine("File changed: " + f);
                 try
                 {
-                    if (string.Equals(f, expectedPath, StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(f.Item1, expectedPath, StringComparison.OrdinalIgnoreCase))
                     {
                         changedEv.TrySetResult(0);
                     }
@@ -385,13 +343,7 @@ namespace Microsoft.DotNet.Watcher.Tools
         [InlineData(false)]
         public async Task DeleteSubfolder(bool usePolling)
         {
-            if (!usePolling && OperatingSystem.IsMacOS())
-            {
-                // Skip on MacOS https://github.com/dotnet/aspnetcore/issues/29141
-                return;
-            }
-
-            var dir = _testAssetManager.CreateTestDirectory().Path;
+            var dir = _testAssetManager.CreateTestDirectory(usePolling.ToString()).Path;
 
             var subdir = Path.Combine(dir, "subdir");
             Directory.CreateDirectory(subdir);
@@ -409,10 +361,10 @@ namespace Microsoft.DotNet.Watcher.Tools
             var changedEv = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             var filesChanged = new HashSet<string>();
 
-            EventHandler<string> handler = null;
+            EventHandler<(string, bool)> handler = null;
             handler = (_, f) =>
             {
-                filesChanged.Add(f);
+                filesChanged.Add(f.Item1);
 
                 if (filesChanged.Count >= 4)
                 {

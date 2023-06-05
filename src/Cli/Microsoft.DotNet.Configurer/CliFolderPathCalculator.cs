@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.IO;
@@ -11,8 +11,8 @@ namespace Microsoft.DotNet.Configurer
 {
     public static class CliFolderPathCalculator
     {
-        public const string DotnetHomeVariableName = "DOTNET_CLI_HOME";
-        private const string DotnetProfileDirectoryName = ".dotnet";
+        public const string DotnetHomeVariableName = CliFolderPathCalculatorCore.DotnetHomeVariableName;
+        private const string DotnetProfileDirectoryName = CliFolderPathCalculatorCore.DotnetProfileDirectoryName;
         private const string ToolsShimFolderName = "tools";
         private const string ToolsResolverCacheFolderName = "toolResolverCache";
 
@@ -45,28 +45,18 @@ namespace Microsoft.DotNet.Configurer
 
         public static string ToolsResolverCachePath => Path.Combine(DotnetUserProfileFolderPath, ToolsResolverCacheFolderName);
 
-        public static string PlatformHomeVariableName =>
-            OperatingSystem.IsWindows() ? "USERPROFILE" : "HOME";
+        public static string PlatformHomeVariableName => CliFolderPathCalculatorCore.PlatformHomeVariableName;
 
         public static string DotnetHomePath
         {
             get
             {
-                var home = Environment.GetEnvironmentVariable(DotnetHomeVariableName);
-                if (string.IsNullOrEmpty(home))
-                {
-                    home = Environment.GetEnvironmentVariable(PlatformHomeVariableName);
-                    if (string.IsNullOrEmpty(home))
-                    {
-                        throw new ConfigurationException(
-                                string.Format(
-                                    LocalizableStrings.FailedToDetermineUserHomeDirectory,
-                                    DotnetHomeVariableName))
-                            .DisplayAsError();
-                    }
-                }
-
-                return home;
+                return CliFolderPathCalculatorCore.GetDotnetHomePath()
+                    ?? throw new ConfigurationException(
+                            string.Format(
+                                LocalizableStrings.FailedToDetermineUserHomeDirectory,
+                                DotnetHomeVariableName))
+                        .DisplayAsError();
             }
         }
 

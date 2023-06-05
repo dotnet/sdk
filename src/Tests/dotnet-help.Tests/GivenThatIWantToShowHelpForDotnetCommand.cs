@@ -1,10 +1,6 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using Microsoft.DotNet.Tools.Test.Utilities;
 using Xunit;
 using FluentAssertions;
 using Microsoft.NET.TestFramework;
@@ -50,6 +46,7 @@ SDK commands:
   build             Build a .NET project.
   build-server      Interact with servers started by a build.
   clean             Clean build outputs of a .NET project.
+  format            Apply style preferences to a project or solution.
   help              Show command line help.
   list              List project references of a .NET project.
   msbuild           Run Microsoft Build Engine (MSBuild) commands.
@@ -60,16 +57,18 @@ SDK commands:
   remove            Remove a package or reference from a .NET project.
   restore           Restore dependencies specified in a .NET project.
   run               Build and run a .NET project output.
+  sdk               Manage .NET SDK installation.
   sln               Modify Visual Studio solution files.
   store             Store the specified assemblies in the runtime package store.
   test              Run unit tests using the test runner specified in a .NET project.
   tool              Install or manage tools that extend the .NET experience.
   vstest            Run Microsoft Test Engine (VSTest) commands.
+  workload          Manage optional workloads.
 
 Additional commands from bundled tools:
   dev-certs         Create and manage development certificates.
   fsi               Start F# Interactive / execute F# scripts.
-  sql-cache         SQL Server cache command-line tools.
+  user-jwts         Manage JSON Web Tokens in development.
   user-secrets      Manage development user secrets.
   watch             Start a file watcher that runs a command when files change.
 

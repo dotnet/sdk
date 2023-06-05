@@ -1,5 +1,5 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
 using System.IO;
@@ -23,6 +23,8 @@ namespace Microsoft.NET.TestFramework.Commands
 
         public string FullPathProjectFile => Path.Combine(ProjectRootPath, ProjectFile);
 
+        public string PackagesDirectory { get; set; }
+
         public NuGetExeRestoreCommand(ITestOutputHelper log, string projectRootPath, string relativePathToProject = null) : base(log)
         {
             _projectRootPath = projectRootPath;
@@ -38,7 +40,7 @@ namespace Microsoft.NET.TestFramework.Commands
             newArgs.Add(FullPathProjectFile);
 
             newArgs.Add("-PackagesDirectory");
-            newArgs.Add(TestContext.Current.NuGetCachePath);
+            newArgs.Add(PackagesDirectory ?? TestContext.Current.NuGetCachePath);
 
             newArgs.AddRange(args);
 
@@ -79,7 +81,7 @@ namespace Microsoft.NET.TestFramework.Commands
                 Arguments = newArgs
             };
 
-            TestContext.Current.AddTestEnvironmentVariables(ret);
+            TestContext.Current.AddTestEnvironmentVariables(ret.Environment);
 
             return ret;
         }

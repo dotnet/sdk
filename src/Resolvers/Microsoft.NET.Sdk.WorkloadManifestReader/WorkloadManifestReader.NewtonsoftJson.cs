@@ -1,9 +1,10 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 #if !USE_SYSTEM_TEXT_JSON
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 
 using Newtonsoft.Json;
@@ -12,18 +13,33 @@ using JsonTokenType = Newtonsoft.Json.JsonToken;
 
 namespace Microsoft.NET.Sdk.WorkloadManifestReader
 {
-    internal partial class WorkloadManifestReader
+    public partial class WorkloadManifestReader
     {
-
-        public static WorkloadManifest ReadWorkloadManifest(Stream manifestStream)
+        public static WorkloadManifest ReadWorkloadManifest(string manifestId, Stream manifestStream, Stream? localizationStream, string manifestPath)
         {
             using var textReader = new StreamReader(manifestStream, System.Text.Encoding.UTF8, true);
             using var jsonReader = new JsonTextReader(textReader);
 
-            var reader = new Utf8JsonStreamReader(jsonReader);
+            var manifestReader = new Utf8JsonStreamReader(jsonReader);
 
-            return ReadWorkloadManifest(ref reader);
+            return ReadWorkloadManifest(manifestId, manifestPath, ReadLocalizationCatalog(localizationStream), ref manifestReader); ;
         }
+
+        private static LocalizationCatalog? ReadLocalizationCatalog(Stream? localizationStream)
+        {
+            if (localizationStream == null)
+            {
+                return null;
+            }
+
+            using var textReader = new StreamReader(localizationStream, System.Text.Encoding.UTF8, true);
+            using var jsonReader = new JsonTextReader(textReader);
+
+            var localizationReader = new Utf8JsonStreamReader(jsonReader);
+
+            return ReadLocalizationCatalog(ref localizationReader);
+        }
+
         // this is a compat wrapper so the source matches the system.text.json impl
         private ref struct Utf8JsonStreamReader
         {
@@ -74,6 +90,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
     internal static class JsonTokenTypeExtensions
     {
         public static bool IsBool(this JsonTokenType tokenType) => tokenType == JsonTokenType.Boolean;
+        public static bool IsInt(this JsonTokenType tokenType) => tokenType == JsonTokenType.Integer;
     }
 }
 

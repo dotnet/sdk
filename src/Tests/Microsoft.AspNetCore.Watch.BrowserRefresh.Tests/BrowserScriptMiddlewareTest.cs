@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.IO;
 using System.Linq;
@@ -12,6 +12,8 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
 {
     public class BrowserScriptMiddlewareTest
     {
+        private readonly RequestDelegate _next = (context) => Task.CompletedTask;
+
         [Fact]
         public async Task InvokeAsync_ReturnsScript()
         {
@@ -19,7 +21,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             var context = new DefaultHttpContext();
             var stream = new MemoryStream();
             context.Response.Body = stream;
-            var middleware = new BrowserScriptMiddleware("some-host");
+            var middleware = new BrowserScriptMiddleware(_next, BrowserScriptMiddleware.GetWebSocketClientJavaScript("some-host", "test-key"));
 
             // Act
             await middleware.InvokeAsync(context);
@@ -29,6 +31,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             var script = Encoding.UTF8.GetString(stream.ToArray());
             Assert.Contains("// dotnet-watch browser reload script", script);
             Assert.Contains("'some-host'", script);
+            Assert.Contains("'test-key'", script);
         }
 
         [Fact]
@@ -37,7 +40,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             // Arrange
             var context = new DefaultHttpContext();
             context.Response.Body = new MemoryStream();
-            var middleware = new BrowserScriptMiddleware("some-host");
+            var middleware = new BrowserScriptMiddleware(_next, BrowserScriptMiddleware.GetWebSocketClientJavaScript("some-host", "test-key"));
 
             // Act
             await middleware.InvokeAsync(context);

@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.DotNet.Tools.Test.Utilities;
 using Xunit;
@@ -14,17 +14,17 @@ namespace Microsoft.DotNet.Help.Tests
     public class GivenThatIWantToShowHelpForDotnetHelpCommand : SdkTest
     {
         private const string HelpText =
-@"help:
+@"Description:
   .NET CLI help utility
 
 Usage:
-  dotnet help [options] [<COMMAND_NAME>]
+  dotnet help [<COMMAND_NAME>] [options]
 
 Arguments:
-  <COMMAND_NAME>    The SDK command to launch online help for.
+  <COMMAND_NAME>  The SDK command to launch online help for.
 
 Options:
-  -?, -h, --help    Show help and usage information";
+  -?, -h, --help  Show command line help.";
 
         public GivenThatIWantToShowHelpForDotnetHelpCommand(ITestOutputHelper log) : base(log)
         {

@@ -1,5 +1,5 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Build.Framework;
 using Microsoft.NET.HostModel.Bundle;
@@ -29,7 +29,9 @@ namespace Microsoft.NET.Build.Tasks
         [Required]
         public string OutputDir { get; set; }
         [Required]
-        public bool ShowDiagnosticOutput { get; set; }
+        public bool ShowDiagnosticOutput { get; set; }        
+        [Required]
+        public bool EnableCompressionInSingleFile { get; set; }
 
         [Output]
         public ITaskItem[] ExcludedFiles { get; set; }
@@ -49,14 +51,16 @@ namespace Microsoft.NET.Build.Tasks
             options |= IncludeNativeLibraries ? BundleOptions.BundleNativeBinaries : BundleOptions.None;
             options |= IncludeAllContent ? BundleOptions.BundleAllContent : BundleOptions.None;
             options |= IncludeSymbols ? BundleOptions.BundleSymbolFiles : BundleOptions.None;
+            options |= EnableCompressionInSingleFile ? BundleOptions.EnableCompression : BundleOptions.None;
 
+            Version version = new Version(TargetFrameworkVersion);
             var bundler = new Bundler(
                 AppHostName,
                 OutputDir,
                 options,
                 targetOS,
                 targetArch,
-                new Version(TargetFrameworkVersion),
+                version,
                 ShowDiagnosticOutput);
 
             var fileSpec = new List<FileSpec>(FilesToBundle.Length);

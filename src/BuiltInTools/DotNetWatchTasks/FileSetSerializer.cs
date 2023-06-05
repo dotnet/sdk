@@ -1,5 +1,5 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -16,7 +16,19 @@ namespace DotNetWatchTasks
     {
         public ITaskItem[] WatchFiles { get; set; }
 
-        public bool IsNetCoreApp31OrNewer { get; set; }
+        public bool IsNetCoreApp { get; set; }
+
+        public string TargetFrameworkVersion { get; set; }
+
+        public string RuntimeIdentifier { get; set; }
+
+        public string DefaultAppHostRuntimeIdentifier { get; set; }
+
+        public string RunCommand { get; set; }
+
+        public string RunArguments { get; set; }
+
+        public string RunWorkingDirectory { get; set; }
 
         public ITaskItem OutputPath { get; set; }
 
@@ -27,7 +39,13 @@ namespace DotNetWatchTasks
             var projectItems = new Dictionary<string, ProjectItems>(StringComparer.OrdinalIgnoreCase);
             var fileSetResult = new MSBuildFileSetResult
             {
-                IsNetCoreApp31OrNewer = IsNetCoreApp31OrNewer,
+                IsNetCoreApp = IsNetCoreApp,
+                TargetFrameworkVersion = TargetFrameworkVersion,
+                RuntimeIdentifier = RuntimeIdentifier,
+                DefaultAppHostRuntimeIdentifier = DefaultAppHostRuntimeIdentifier,
+                RunCommand = RunCommand,
+                RunArguments = RunArguments,
+                RunWorkingDirectory = RunWorkingDirectory,
                 Projects = projectItems
             };
 

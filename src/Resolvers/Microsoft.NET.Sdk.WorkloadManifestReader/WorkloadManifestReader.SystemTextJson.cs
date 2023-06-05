@@ -1,18 +1,19 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 #if USE_SYSTEM_TEXT_JSON
 
 using System;
 using System.Buffers;
+using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
 
 namespace Microsoft.NET.Sdk.WorkloadManifestReader
 {
-    internal partial class WorkloadManifestReader
+    public partial class WorkloadManifestReader
     {
-        public static WorkloadManifest ReadWorkloadManifest(Stream manifestStream)
+        public static WorkloadManifest ReadWorkloadManifest(string manifestId, Stream manifestStream, Stream? localizationStream, string manifestPath)
         {
             var readerOptions = new JsonReaderOptions
             {
@@ -20,9 +21,21 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                 CommentHandling = JsonCommentHandling.Skip
             };
 
-            var reader = new Utf8JsonStreamReader(manifestStream, readerOptions);
+            var localizationCatalog = ReadLocalizationCatalog(localizationStream, readerOptions);
+            var manifestReader = new Utf8JsonStreamReader(manifestStream, readerOptions);
 
-            return ReadWorkloadManifest(ref reader);
+            return ReadWorkloadManifest(manifestId, manifestPath, localizationCatalog, ref manifestReader);
+        }
+
+        private static LocalizationCatalog? ReadLocalizationCatalog(Stream? localizationStream, JsonReaderOptions readerOptions)
+        {
+            if (localizationStream == null)
+            {
+                return null;
+            }
+
+            var localizationReader = new Utf8JsonStreamReader(localizationStream, readerOptions);
+            return ReadLocalizationCatalog(ref localizationReader);
         }
 
         private ref struct Utf8JsonStreamReader
@@ -109,6 +122,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
     internal static class JsonTokenTypeExtensions
     {
         public static bool IsBool(this JsonTokenType tokenType) => tokenType == JsonTokenType.True || tokenType == JsonTokenType.False;
+        public static bool IsInt(this JsonTokenType tokenType) => tokenType == JsonTokenType.Number;
     }
 }
 

@@ -1,5 +1,5 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -29,7 +29,7 @@ namespace Microsoft.NET.Pack.Tests
             TestProject testProject = new TestProject()
             {
                 Name = "PackImplicitReferences",
-                TargetFrameworks = "net461",
+                TargetFrameworks = "net462",
                 IsExe = false
             };
 
@@ -51,11 +51,12 @@ namespace Microsoft.NET.Pack.Tests
             TestProject testProject = new TestProject()
             {
                 Name = "PackImplicitReferences",
-                TargetFrameworks = "net461",
+                TargetFrameworks = "net462",
                 IsExe = false
             };
 
             var nuspecPath = PackAndGetNuspecPath(testProject,
+                "PackImplicitRefs",
                 p =>
                 {
                     var pns = p.Root.Name.Namespace;
@@ -78,9 +79,9 @@ namespace Microsoft.NET.Pack.Tests
             frameworkAssemblies.Should().Contain(i => i.Attribute("assemblyName").Value == "System.Xml.Linq");
         }
 
-        private string PackAndGetNuspecPath(TestProject testProject, Action<XDocument> xmlAction = null)
+        private string PackAndGetNuspecPath(TestProject testProject, string identifier = null, Action<XDocument> xmlAction = null)
         {
-            var testProjectInstance = _testAssetsManager.CreateTestProject(testProject, testProject.Name);
+            var testProjectInstance = _testAssetsManager.CreateTestProject(testProject, testProject.Name, identifier);
 
             if (xmlAction != null)
             {

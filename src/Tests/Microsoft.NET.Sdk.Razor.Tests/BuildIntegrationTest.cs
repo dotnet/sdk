@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.IO;
@@ -42,12 +42,12 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             build.Execute()
                 .Should()
                 .Pass()
-                .And.HaveStdOutContaining($"SimpleMvc -> {Path.Combine(projectDirectory.Path, outputPath, "SimpleMvc.Views.dll")}");
+                .And.NotHaveStdOutContaining($"SimpleMvc -> {Path.Combine(projectDirectory.Path, outputPath, "SimpleMvc.Views.dll")}");
 
             new FileInfo(Path.Combine(outputPath, "SimpleMvc.dll")).Should().Exist();
             new FileInfo(Path.Combine(outputPath, "SimpleMvc.pdb")).Should().Exist();
-            new FileInfo(Path.Combine(outputPath, "SimpleMvc.Views.dll")).Should().Exist();
-            new FileInfo(Path.Combine(outputPath, "SimpleMvc.Views.pdb")).Should().Exist();
+            new FileInfo(Path.Combine(outputPath, "SimpleMvc.Views.dll")).Should().NotExist();
+            new FileInfo(Path.Combine(outputPath, "SimpleMvc.Views.pdb")).Should().NotExist();
         }
 
         [Fact]
@@ -67,30 +67,32 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             new FileInfo(Path.Combine(outputPath, "SimpleMvc.Views.pdb")).Should().NotExist();
         }
 
-        [Fact]
+        [CoreMSBuildOnlyFact]
         public void Build_ErrorInGeneratedCode_ReportsMSBuildError()
         {
             var testAsset = "RazorSimpleMvc";
             var projectDirectory = CreateAspNetSdkTestAsset(testAsset);
 
             var filePath = Path.Combine(projectDirectory.Path, "Views", "Home", "Index.cshtml");
+
             File.WriteAllText(filePath, "@{ var foo = \"\".Substring(\"bleh\"); }");
 
             var location = filePath + "(1,27)";
             var build = new BuildCommand(projectDirectory);
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX) || RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 // Absolute paths on OSX don't work well.
                 build.Execute().Should().Fail().And.HaveStdOutContaining("CS1503");
-            } else {
+            }
+            else
+            {
                 build.Execute().Should().Fail().And.HaveStdOutContaining("CS1503").And.HaveStdOutContaining(location);
             }
 
             var intermediateOutputPath = Path.Combine(build.GetBaseIntermediateDirectory().ToString(), "Debug", DefaultTfm);
 
-            // Compilation failed without creating the views assembly
-            new FileInfo(Path.Combine(intermediateOutputPath, "SimpleMvc.dll")).Should().Exist();
-            new FileInfo(Path.Combine(intermediateOutputPath, "SimpleMvc.Views.dll")).Should().NotExist();
+            // Compilation failed without creating the app assembly
+            new FileInfo(Path.Combine(intermediateOutputPath, "SimpleMvc.dll")).Should().NotExist();
         }
 
         [Fact]
@@ -106,16 +108,16 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 
             new FileInfo(Path.Combine(outputPath, "AppWithP2PReference.dll")).Should().Exist();
             new FileInfo(Path.Combine(outputPath, "AppWithP2PReference.pdb")).Should().Exist();
-            new FileInfo(Path.Combine(outputPath, "AppWithP2PReference.Views.dll")).Should().Exist();
-            new FileInfo(Path.Combine(outputPath, "AppWithP2PReference.Views.pdb")).Should().Exist();
+            new FileInfo(Path.Combine(outputPath, "AppWithP2PReference.Views.dll")).Should().NotExist();
+            new FileInfo(Path.Combine(outputPath, "AppWithP2PReference.Views.pdb")).Should().NotExist();
             new FileInfo(Path.Combine(outputPath, "ClassLibrary.dll")).Should().Exist();
             new FileInfo(Path.Combine(outputPath, "ClassLibrary.pdb")).Should().Exist();
-            new FileInfo(Path.Combine(outputPath, "ClassLibrary.Views.dll")).Should().Exist();
-            new FileInfo(Path.Combine(outputPath, "ClassLibrary.Views.pdb")).Should().Exist();
+            new FileInfo(Path.Combine(outputPath, "ClassLibrary.Views.dll")).Should().NotExist();
+            new FileInfo(Path.Combine(outputPath, "ClassLibrary.Views.pdb")).Should().NotExist();
         }
 
         [Fact]
-        public void Build_WithViews_ProducesDepsFileWithCompilationContext_ButNoReferences()
+        public void Build_CompilationContextAndRefsDirectoryAreNotPreserved()
         {
             var testAsset = "RazorSimpleMvc";
             var projectDirectory = CreateAspNetSdkTestAsset(testAsset);
@@ -130,14 +132,9 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var depsFilePath = Path.Combine(outputPath, "SimpleMvc.deps.json");
             var dependencyContext = ReadDependencyContext(depsFilePath);
 
-            // Pick a couple of libraries and ensure they have some compile references
-            var packageReference = dependencyContext.CompileLibraries.First(l => l.Name == "System.Diagnostics.DiagnosticSource");
-            packageReference.Assemblies.Should().NotBeEmpty();
-
-            var projectReference = dependencyContext.CompileLibraries.First(l => l.Name == "SimpleMvc");
-            projectReference.Assemblies.Should().NotBeEmpty();
-
-            dependencyContext.CompilationOptions.Defines.Should().Contain(customDefine);
+            var library = Assert.Single(dependencyContext.CompileLibraries);
+            Assert.Empty(library.Assemblies);
+            Assert.Empty(dependencyContext.CompilationOptions.Defines);
 
             // Verify no refs folder is produced
             new DirectoryInfo(Path.Combine(outputPath, "publish", "refs")).Should().NotExist();
@@ -174,15 +171,11 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 
             var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
 
-            var razorAssemblyInfoPath = Path.Combine(intermediateOutputPath, "SimpleMvc.RazorAssemblyInfo.cs");
-            var razorTargetAssemblyInfo = Path.Combine(intermediateOutputPath, "SimpleMvc.RazorTargetAssemblyInfo.cs");
+            var assemblyPath = Path.Combine(intermediateOutputPath, "SimpleMvc.dll");
 
-            new FileInfo(razorAssemblyInfoPath).Should().Exist();
-            new FileInfo(razorAssemblyInfoPath).Should().Contain("[assembly: Microsoft.AspNetCore.Mvc.ApplicationParts.RelatedAssemblyAttribute(\"SimpleMvc.Views\")]");
+            AssemblyInfo.Get(assemblyPath)["AssemblyTitleAttribute"].Should().Be("SimpleMvc");
+            AssemblyInfo.Get(assemblyPath)["ProvideApplicationPartFactoryAttribute"].Should().Contain("ConsolidatedAssemblyApplicationPartFactory");
 
-            new FileInfo(razorTargetAssemblyInfo).Should().Exist();
-            new FileInfo(razorTargetAssemblyInfo).Should().Contain("[assembly: System.Reflection.AssemblyTitleAttribute(\"SimpleMvc.Views\")]");
-            new FileInfo(razorTargetAssemblyInfo).Should().Contain("[assembly: Microsoft.AspNetCore.Mvc.ApplicationParts.ProvideApplicationPartFactoryAttribute(\"Microsoft.AspNetCore.Mvc.ApplicationParts.CompiledRazorAssemblyApplicationPartFac\"");
         }
 
         [Fact]
@@ -190,7 +183,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         {
             var testAsset = "RazorSimpleMvc";
             var projectDirectory = CreateAspNetSdkTestAsset(testAsset);
-            
+
             var build = new BuildCommand(projectDirectory);
             build.Execute("/p:RazorCompileOnBuild=false", "/p:RazorCompileOnPublish=false").Should().Pass();
 
@@ -199,22 +192,6 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 
             new FileInfo(razorAssemblyInfo).Should().NotExist();
             new FileInfo(Path.Combine(intermediateOutputPath, "SimpleMvc.RazorTargetAssemblyInfo.cs")).Should().NotExist();
-        }
-
-        [Fact]
-        public void Build_AddsRelatedAssemblyPart_IfGenerateAssemblyInfoIsFalse()
-        {
-            var testAsset = "RazorSimpleMvc";
-            var projectDirectory = CreateAspNetSdkTestAsset(testAsset);
-            
-            var build = new BuildCommand(projectDirectory);
-            build.Execute("/p:GenerateAssemblyInfo=false").Should().Pass();
-
-            var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
-            var razorAssemblyInfo = Path.Combine(intermediateOutputPath, "SimpleMvc.RazorAssemblyInfo.cs");
-
-            new FileInfo(razorAssemblyInfo).Should().Exist();
-            new FileInfo(razorAssemblyInfo).Should().Contain("[assembly: Microsoft.AspNetCore.Mvc.ApplicationParts.RelatedAssemblyAttribute(\"SimpleMvc.Views\")]");
         }
 
         [Fact]
@@ -238,11 +215,11 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var outputPath = build.GetOutputDirectory(DefaultTfm, "Debug").ToString();
 
             new FileInfo(Path.Combine(outputPath, "AppWithP2PReference.dll")).Should().Exist();
-            new FileInfo(Path.Combine(outputPath, "AppWithP2PReference.Views.dll")).Should().Exist();
+            new FileInfo(Path.Combine(outputPath, "AppWithP2PReference.Views.dll")).Should().NotExist();
             new FileInfo(Path.Combine(outputPath, "ClassLibrary.dll")).Should().Exist();
-            new FileInfo(Path.Combine(outputPath, "ClassLibrary.Views.dll")).Should().Exist();
+            new FileInfo(Path.Combine(outputPath, "ClassLibrary.Views.dll")).Should().NotExist();
             new FileInfo(Path.Combine(outputPath, "AnotherClassLib.dll")).Should().Exist();
-            new FileInfo(Path.Combine(outputPath, "AnotherClassLib.Views.dll")).Should().Exist();
+            new FileInfo(Path.Combine(outputPath, "AnotherClassLib.Views.dll")).Should().NotExist();
 
             // Force a rebuild of ClassLibrary2 by changing a file
             var class2Path = Path.Combine(projectDirectory.Path, "AnotherClassLib", "Class2.cs");
@@ -277,9 +254,9 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var outputPath = build.GetOutputDirectory(DefaultTfm, "Debug").ToString();
 
             new FileInfo(Path.Combine(outputPath, "AppWithP2PReference.dll")).Should().Exist();
-            new FileInfo(Path.Combine(outputPath, "AppWithP2PReference.Views.dll")).Should().Exist();
+            new FileInfo(Path.Combine(outputPath, "AppWithP2PReference.Views.dll")).Should().NotExist();
             new FileInfo(Path.Combine(outputPath, "ClassLibrary.dll")).Should().Exist();
-            new FileInfo(Path.Combine(outputPath, "ClassLibrary.Views.dll")).Should().Exist();
+            new FileInfo(Path.Combine(outputPath, "ClassLibrary.Views.dll")).Should().NotExist();
             new FileInfo(Path.Combine(outputPath, "ClassLibraryMvc21.dll")).Should().Exist();
             new FileInfo(Path.Combine(outputPath, "ClassLibraryMvc21.Views.dll")).Should().Exist();
         }
@@ -295,33 +272,9 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 
             var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
 
-            new FileInfo(Path.Combine(intermediateOutputPath, "SimpleMvc.Views.dll")).Should().Exist();
-            new FileInfo(Path.Combine(intermediateOutputPath, "SimpleMvc.Views.pdb")).Should().Exist();
-        }
-
-        [Fact]
-        public void Build_WithDeterministicFlagSet_OutputsDeterministicViewsAssembly()
-        {
-            var testAsset = "RazorSimpleMvc";
-            var projectDirectory = CreateAspNetSdkTestAsset(testAsset);
-            
-            var build = new BuildCommand(projectDirectory);
-            build.Execute($"/p:Deterministic=true").Should().Pass();
-
-            var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
-
-            new FileInfo(Path.Combine(intermediateOutputPath, "SimpleMvc.Views.dll")).Should().Exist();
-            var filePath = Path.Combine(intermediateOutputPath, "SimpleMvc.Views.dll");
-            var firstAssemblyBytes = File.ReadAllBytes(filePath);
-
-            // Build 2
-            build = new BuildCommand(projectDirectory);
-            build.Execute($"/p:Deterministic=true").Should().Pass();
-
-            new FileInfo(Path.Combine(intermediateOutputPath, "SimpleMvc.Views.dll")).Should().Exist();
-
-            var secondAssemblyBytes = File.ReadAllBytes(filePath);
-            Assert.Equal(firstAssemblyBytes, secondAssemblyBytes);
+            new FileInfo(Path.Combine(intermediateOutputPath, "SimpleMvc.dll")).Should().Exist();
+            new FileInfo(Path.Combine(intermediateOutputPath, "SimpleMvc.Views.dll")).Should().NotExist();
+            new FileInfo(Path.Combine(intermediateOutputPath, "SimpleMvc.Views.pdb")).Should().NotExist();
         }
 
         private static DependencyContext ReadDependencyContext(string depsFilePath)

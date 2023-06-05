@@ -1,8 +1,9 @@
-// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using FluentAssertions;
 using Microsoft.DotNet.Cli.Sln.Internal;
+using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools;
 using Microsoft.DotNet.Tools.Common;
 using Microsoft.NET.TestFramework;
@@ -11,6 +12,7 @@ using Microsoft.NET.TestFramework.Commands;
 using System;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using Xunit;
 using Xunit.Abstractions;
@@ -19,11 +21,11 @@ namespace Microsoft.DotNet.Cli.Sln.Add.Tests
 {
     public class GivenDotnetSlnAdd : SdkTest
     {
-        private Func<string, string> HelpText = (defaultVal) => $@"add:
+        private Func<string, string> HelpText = (defaultVal) => $@"Description:
   Add one or more projects to a solution file.
 
 Usage:
-  dotnet sln <SLN_FILE> add [options] <PROJECT_PATH>...
+  dotnet sln <SLN_FILE> add [<PROJECT_PATH>...] [options]
 
 Arguments:
   <SLN_FILE>        The solution file to operate on. If not specified, the command will search the current directory for one. [default: {PathUtility.EnsureTrailingSlash(defaultVal)}]
@@ -32,24 +34,7 @@ Arguments:
 Options:
   --in-root                                  Place project in root of the solution, rather than creating a solution folder.
   -s, --solution-folder <solution-folder>    The destination solution folder path to add the projects to.
-  -?, -h, --help                             Show help and usage information";
-
-        private Func<string, string> SlnCommandHelpText = (defaultVal) => $@"sln:
-  .NET modify solution file command
-
-Usage:
-  dotnet sln [options] <SLN_FILE> [command]
-
-Arguments:
-  <SLN_FILE>    The solution file to operate on. If not specified, the command will search the current directory for one. [default: {PathUtility.EnsureTrailingSlash(defaultVal)}]
-
-Options:
-  -?, -h, --help    Show help and usage information
-
-Commands:
-  add <PROJECT_PATH>       Add one or more projects to a solution file.
-  list                     List all projects in a solution file.
-  remove <PROJECT_PATH>    Remove one or more projects from a solution file.";
+  -?, -h, --help                             Show command line help";
 
         public GivenDotnetSlnAdd(ITestOutputHelper log) : base(log)
         {
@@ -479,14 +464,14 @@ EndGlobal
                 .Execute($"sln", solutionName, "add", "p.csproj");
             cmd.Should().Fail();
             cmd.StdErr.Should().Be(string.Format(CommonLocalizableStrings.CouldNotFindSolutionOrDirectory, solutionName));
-            cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized(HelpText(Directory.GetCurrentDirectory()));
+            cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
         }
 
         [Fact]
         public void WhenInvalidSolutionIsPassedItPrintsErrorAndUsage()
         {
             var projectDirectory = _testAssetsManager
-                .CopyTestAsset("InvalidSolution")
+                .CopyTestAsset("InvalidSolution", identifier: "GivenDotnetSlnAdd")
                 .WithSource()
                 .Path;
 
@@ -496,7 +481,7 @@ EndGlobal
                 .Execute($"sln", "InvalidSolution.sln", "add", projectToAdd);
             cmd.Should().Fail();
             cmd.StdErr.Should().Be(string.Format(CommonLocalizableStrings.InvalidSolutionFormatString, "InvalidSolution.sln", LocalizableStrings.FileHeaderMissingError));
-            cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized(HelpText(projectDirectory));
+            cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
         }
 
         [Fact]
@@ -514,14 +499,14 @@ EndGlobal
                 .Execute($"sln", "add", projectToAdd);
             cmd.Should().Fail();
             cmd.StdErr.Should().Be(string.Format(CommonLocalizableStrings.InvalidSolutionFormatString, solutionPath, LocalizableStrings.FileHeaderMissingError));
-            cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized(HelpText(projectDirectory));
+            cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
         }
 
         [Fact]
         public void WhenNoProjectIsPassedItPrintsErrorAndUsage()
         {
             var projectDirectory = _testAssetsManager
-                .CopyTestAsset("TestAppWithSlnAndCsprojFiles")
+                .CopyTestAsset("TestAppWithSlnAndCsprojFiles", identifier: "GivenDotnetSlnAdd")
                 .WithSource()
                 .Path;
 
@@ -530,8 +515,7 @@ EndGlobal
                 .Execute(@"sln", "App.sln", "add");
             cmd.Should().Fail();
             cmd.StdErr.Should().Be(CommonLocalizableStrings.SpecifyAtLeastOneProjectToAdd);
-
-            cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized(HelpText(projectDirectory));
+            cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
         }
 
         [Fact]
@@ -548,14 +532,14 @@ EndGlobal
                 .Execute(@"sln", "add", "App.csproj");
             cmd.Should().Fail();
             cmd.StdErr.Should().Be(string.Format(CommonLocalizableStrings.SolutionDoesNotExist, solutionPath + Path.DirectorySeparatorChar));
-            cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized(HelpText(solutionPath));
+            cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
         }
 
         [Fact]
         public void WhenMoreThanOneSolutionExistsInTheDirectoryItPrintsErrorAndUsage()
         {
             var projectDirectory = _testAssetsManager
-                .CopyTestAsset("TestAppWithMultipleSlnFiles")
+                .CopyTestAsset("TestAppWithMultipleSlnFiles", identifier: "GivenDotnetSlnAdd")
                 .WithSource()
                 .Path;
 
@@ -565,7 +549,7 @@ EndGlobal
                 .Execute($"sln", "add", projectToAdd);
             cmd.Should().Fail();
             cmd.StdErr.Should().Be(string.Format(CommonLocalizableStrings.MoreThanOneSolutionInDirectory, projectDirectory + Path.DirectorySeparatorChar));
-            cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized(HelpText(projectDirectory));
+            cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
         }
 
         [Fact]
@@ -586,13 +570,63 @@ EndGlobal
             var expectedSlnContents = GetExpectedSlnContents(slnPath, ExpectedSlnFileAfterAddingNestedProj);
             File.ReadAllText(slnPath)
                 .Should().BeVisuallyEquivalentTo(expectedSlnContents);
+
+            cmd = new DotnetCommand(Log)
+                .WithWorkingDirectory(projectDirectory)
+                .Execute($"build", "App.sln");
+            cmd.Should().Pass();
         }
 
-        [Fact]
-        public void WhenDirectoryContainingProjectIsGivenProjectIsAdded()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void WhenNestedProjectIsAddedSolutionFoldersAreCreatedBuild(bool fooFirst)
         {
             var projectDirectory = _testAssetsManager
-                .CopyTestAsset("TestAppWithSlnAndCsprojFiles")
+                .CopyTestAsset("TestAppWithSlnAndCsprojInSubDirVS")
+                .WithSource()
+                .Path;
+            string projectToAdd;
+            CommandResult cmd;
+
+            if (fooFirst)
+            {
+                projectToAdd = "foo";
+                cmd = new DotnetCommand(Log)
+                    .WithWorkingDirectory(projectDirectory)
+                    .Execute($"sln", "App.sln", "add", projectToAdd);
+                cmd.Should().Pass();
+            }
+
+            projectToAdd = Path.Combine("foo", "bar");
+            cmd = new DotnetCommand(Log)
+                .WithWorkingDirectory(projectDirectory)
+                .Execute($"sln", "App.sln", "add", projectToAdd);
+            cmd.Should().Pass();
+
+            if (!fooFirst)
+            {
+                projectToAdd = "foo";
+                cmd = new DotnetCommand(Log)
+                    .WithWorkingDirectory(projectDirectory)
+                    .Execute($"sln", "App.sln", "add", projectToAdd);
+                cmd.Should().Pass();
+            }
+
+            cmd = new DotnetCommand(Log)
+                .WithWorkingDirectory(projectDirectory)
+                .Execute($"build", "App.sln");
+            cmd.Should().Pass();
+
+        }
+
+        [Theory]
+        [InlineData("TestAppWithSlnAndCsprojFiles")]
+        [InlineData("TestAppWithSlnAnd472CsprojFiles")]
+        public void WhenDirectoryContainingProjectIsGivenProjectIsAdded(string testAsset)
+        {
+            var projectDirectory = _testAssetsManager
+                .CopyTestAsset(testAsset)
                 .WithSource()
                 .Path;
 
@@ -684,7 +718,7 @@ EndGlobal
         public void WhenSolutionFolderExistsItDoesNotGetAdded(string firstComponent)
         {
             var projectDirectory = _testAssetsManager
-                .CopyTestAsset("TestAppWithSlnAndSolutionFolders")
+                .CopyTestAsset("TestAppWithSlnAndSolutionFolders", identifier: firstComponent)
                 .WithSource()
                 .Path;
 
@@ -848,21 +882,15 @@ EndGlobal
 
             var reasonString = "should be built in release mode, otherwise it means build configurations are missing from the sln file";
 
-            var appReleaseDirectory = Directory.EnumerateDirectories(
-                Path.Combine(projectDirectory, "App", "bin"),
-                "Release",
-                SearchOption.AllDirectories);
-            appReleaseDirectory.Count().Should().Be(1, $"App {reasonString}");
-            Directory.EnumerateFiles(appReleaseDirectory.Single(), "App.dll", SearchOption.AllDirectories)
-                .Count().Should().Be(1, $"App {reasonString}");
+            var appPathCalculator = OutputPathCalculator.FromProject(Path.Combine(projectDirectory, "App", "App.csproj"));
+            new DirectoryInfo(appPathCalculator.GetOutputDirectory(configuration: "Debug")).Should().NotExist(reasonString);
+            new DirectoryInfo(appPathCalculator.GetOutputDirectory(configuration: "Release")).Should().Exist()
+                .And.HaveFile("App.dll");
 
-            var libReleaseDirectory = Directory.EnumerateDirectories(
-                Path.Combine(projectDirectory, "Lib", "bin"),
-                "Release",
-                SearchOption.AllDirectories);
-            libReleaseDirectory.Count().Should().Be(1, $"Lib {reasonString}");
-            Directory.EnumerateFiles(libReleaseDirectory.Single(), "Lib.dll", SearchOption.AllDirectories)
-                .Count().Should().Be(1, $"Lib {reasonString}");
+            var libPathCalculator = OutputPathCalculator.FromProject(Path.Combine(projectDirectory, "Lib", "Lib.csproj"));
+            new DirectoryInfo(libPathCalculator.GetOutputDirectory(configuration: "Debug")).Should().NotExist(reasonString);
+            new DirectoryInfo(libPathCalculator.GetOutputDirectory(configuration: "Release")).Should().Exist()
+                .And.HaveFile("Lib.dll");
         }
 
         [Theory]
@@ -1179,12 +1207,35 @@ EndGlobal
                 .WithWorkingDirectory(solutionDirectory)
                 .Execute($"sln", "App.sln", "add", "--solution-folder", "blah", "--in-root", projectToAdd);
             cmd.Should().Fail();
+            cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
             cmd.StdErr.Should().Be(Microsoft.DotNet.Tools.Sln.LocalizableStrings.SolutionFolderAndInRootMutuallyExclusive);
-            cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized(HelpText(solutionDirectory));
+            cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
 
             File.ReadAllText(solutionPath)
                 .Should()
                 .BeVisuallyEquivalentTo(contentBefore);
+        }
+
+        [Theory]
+        [InlineData("/TestFolder//", "ForwardSlash")]
+        [InlineData("\\TestFolder\\\\", "BackwardSlash")]
+        public void WhenSolutionFolderIsPassedWithDirectorySeparatorFolderStructureIsCorrect(string solutionFolder, string testIdentifier)
+        {
+            var projectDirectory = _testAssetsManager
+                .CopyTestAsset("TestAppWithSlnAndCsprojInSubDir", identifier: testIdentifier)
+                .WithSource()
+                .Path;
+
+            var projectToAdd = Path.Combine("src", "Lib", "Lib.csproj");
+            var cmd = new DotnetCommand(Log)
+                .WithWorkingDirectory(projectDirectory)
+                .Execute($"sln", "App.sln", "add", "--solution-folder", solutionFolder, projectToAdd);
+            cmd.Should().Pass();
+
+            var slnPath = Path.Combine(projectDirectory, "App.sln");
+            var expectedSlnContents = GetExpectedSlnContents(slnPath, ExpectedSlnFileAfterAddingProjectWithSolutionFolderOption);
+            File.ReadAllText(slnPath)
+                .Should().BeVisuallyEquivalentTo(expectedSlnContents);
         }
 
         private string GetExpectedSlnContents(
@@ -1223,6 +1274,43 @@ EndGlobal
             }
 
             return slnContents;
+        }
+
+        [Fact]
+        public void WhenSolutionIsPassedAsProjectItPrintsSuggestionAndUsage()
+        {
+            VerifySuggestionAndUsage("");
+        }
+
+        [Fact]
+        public void WhenSolutionIsPassedAsProjectWithInRootItPrintsSuggestionAndUsage()
+        {
+            VerifySuggestionAndUsage("--in-root");
+        }
+
+        [Fact]
+        public void WhenSolutionIsPassedAsProjectWithSolutionFolderItPrintsSuggestionAndUsage()
+        {
+            VerifySuggestionAndUsage("--solution-folder");
+        }
+        private void VerifySuggestionAndUsage(string arguments)
+        {
+            var projectDirectory = _testAssetsManager
+                .CopyTestAsset("TestAppWithSlnAndCsprojFiles")
+                .WithSource()
+                .Path;
+
+            var projectArg = Path.Combine("Lib", "Lib.csproj");
+            var cmd = new DotnetCommand(Log)
+                .WithWorkingDirectory(projectDirectory)
+                .Execute("sln", "add", arguments, "Lib", "App.sln", projectArg);
+            cmd.Should().Fail();
+            cmd.StdErr.Should().BeVisuallyEquivalentTo(
+                string.Format(CommonLocalizableStrings.SolutionArgumentMisplaced, "App.sln") + Environment.NewLine
+                + CommonLocalizableStrings.DidYouMean + Environment.NewLine
+                + $"  dotnet sln App.sln add {arguments} Lib {projectArg}"
+            );
+            cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
         }
     }
 }

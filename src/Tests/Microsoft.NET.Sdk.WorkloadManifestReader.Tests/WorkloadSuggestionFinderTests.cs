@@ -1,43 +1,54 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using FluentAssertions;
 
 using Microsoft.NET.Sdk.WorkloadManifestReader;
-
+using Microsoft.NET.TestFramework;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
 using Xunit;
-
+using Xunit.Abstractions;
 using WorkloadSuggestionCandidate = Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadSuggestionFinder.WorkloadSuggestionCandidate;
 
 namespace ManifestReaderTests
 {
-    public class WorkloadSuggestionFinderTests
+    public class WorkloadSuggestionFinderTests : SdkTest
     {
         private const string fakeRootPath = "fakeRootPath";
+        private readonly string ManifestPath;
+
+        public WorkloadSuggestionFinderTests(ITestOutputHelper log) : base(log)
+        {
+            ManifestPath = Path.Combine(_testAssetsManager.GetAndValidateTestProjectDirectory("SampleManifest"), "Sample.json");
+        }
 
         [Fact]
         public void CanSuggestSimpleWorkload()
         {
-            var manifestProvider = new FakeManifestProvider(Path.Combine("Manifests", "Sample.json"));
-            var resolver = WorkloadResolver.CreateForTests(manifestProvider, fakeRootPath, ManifestTests.TEST_RUNTIME_IDENTIFIER_CHAIN);
+            var manifestProvider = new FakeManifestProvider(ManifestPath);
+            var resolver = WorkloadResolver.CreateForTests(manifestProvider, fakeRootPath);
 
             FakeFileSystemChecksSoThesePackagesAppearInstalled(resolver, "Xamarin.Android.Sdk", "Xamarin.Android.BuildTools");
 
-            var suggestions = resolver.GetWorkloadSuggestionForMissingPacks(new[] { "Mono.Android.Sdk" });
-            suggestions.Count().Should().Be(1);
-            suggestions.First().Id.Should().Be("xamarin-android-build");
+            var suggestions = resolver.GetWorkloadSuggestionForMissingPacks(
+                new[] { "Mono.Android.Sdk" }.Select(s => new WorkloadPackId(s)).ToList(),
+                out var unsatisfiable);
+
+            unsatisfiable.Count().Should().Be(0);
+            suggestions.Should().NotBeNull();
+            suggestions!.Count().Should().Be(1);
+            suggestions!.First().Id.ToString().Should().Be("xamarin-android-build");
         }
 
         [Fact]
         public void CanSuggestTwoWorkloadsToFulfilTwoRequirements()
         {
-            var manifestProvider = new FakeManifestProvider(Path.Combine("Manifests", "Sample.json"));
-            var resolver = WorkloadResolver.CreateForTests(manifestProvider, fakeRootPath, ManifestTests.TEST_RUNTIME_IDENTIFIER_CHAIN);
+            var manifestProvider = new FakeManifestProvider(ManifestPath);
+            var resolver = WorkloadResolver.CreateForTests(manifestProvider, fakeRootPath);
 
             FakeFileSystemChecksSoThesePackagesAppearInstalled(resolver,
                 //xamarin-android-build is fully installed
@@ -47,17 +58,22 @@ namespace ManifestReaderTests
                 "Xamarin.Android.Runtime",
                 "Mono.Android.Sdk");
 
-            var suggestions = resolver.GetWorkloadSuggestionForMissingPacks(new[] { "Mono.Android.Runtime.x86", "Mono.Android.Runtime.Armv7a" });
-            suggestions.Count().Should().Be(2);
-            suggestions.Should().Contain(s => s.Id == "xamarin-android-build-armv7a");
-            suggestions.Should().Contain(s => s.Id == "xamarin-android-build-x86");
+            var suggestions = resolver.GetWorkloadSuggestionForMissingPacks(
+                new[] { "Mono.Android.Runtime.x86", "Mono.Android.Runtime.Armv7a" }.Select(s => new WorkloadPackId(s)).ToList(),
+                out var unsatisfiable);
+
+            unsatisfiable.Count().Should().Be(0);
+            suggestions.Should().NotBeNull();
+            suggestions!.Count().Should().Be(2);
+            suggestions!.Should().Contain(s => s.Id == "xamarin-android-build-armv7a");
+            suggestions!.Should().Contain(s => s.Id == "xamarin-android-build-x86");
         }
 
         [Fact]
         public void CanSuggestWorkloadThatFulfillsTwoRequirements()
         {
-            var manifestProvider = new FakeManifestProvider(Path.Combine("Manifests", "Sample.json"));
-            var resolver = WorkloadResolver.CreateForTests(manifestProvider, fakeRootPath, ManifestTests.TEST_RUNTIME_IDENTIFIER_CHAIN);
+            var manifestProvider = new FakeManifestProvider(ManifestPath);
+            var resolver = WorkloadResolver.CreateForTests(manifestProvider, fakeRootPath);
 
             FakeFileSystemChecksSoThesePackagesAppearInstalled(resolver,
                 //xamarin-android-build is fully installed
@@ -67,9 +83,14 @@ namespace ManifestReaderTests
                 "Xamarin.Android.Runtime",
                 "Mono.Android.Sdk");
 
-            var suggestions = resolver.GetWorkloadSuggestionForMissingPacks(new[] { "Xamarin.Android.Templates", "Xamarin.Android.LLVM.Aot.armv7a" });
-            suggestions.Count().Should().Be(1);
-            suggestions.First().Id.Should().Be("xamarin-android-complete");
+            var suggestions = resolver.GetWorkloadSuggestionForMissingPacks(
+                new[] { "Xamarin.Android.Templates", "Xamarin.Android.LLVM.Aot.armv7a" }.Select(s => new WorkloadPackId(s)).ToList(),
+                out var unsatisfiable);
+
+            unsatisfiable.Count().Should().Be(0);
+            suggestions.Should().NotBeNull();
+            suggestions!.Count().Should().Be(1);
+            suggestions!.First().Id.ToString().Should().Be("xamarin-android-complete");
         }
 
         [Fact]
@@ -84,7 +105,7 @@ namespace ManifestReaderTests
                 ("workload5", new[] { "pack2", "pack3", "pack4" }), //complete
                 ("workload6", new[] { "pack2", "pack4" }) //partial
             }
-            .Select (a => (new WorkloadDefinitionId(a.workloadId), a.packIds.Select(p => new WorkloadPackId(p)).ToHashSet()));
+            .Select (a => (new WorkloadId(a.workloadId), a.packIds.Select(p => new WorkloadPackId(p)).ToHashSet()));
 
             var requestedPacks = new[]
             {
@@ -114,8 +135,8 @@ namespace ManifestReaderTests
             static HashSet<WorkloadPackId> ConstructPackHash (params string[] packIds)
                 => new HashSet<WorkloadPackId> (packIds.Select(id => new WorkloadPackId(id)));
 
-            static HashSet<WorkloadDefinitionId> ConstructWorkloadHash (params string[] workloadIds)
-                => new HashSet<WorkloadDefinitionId> (workloadIds.Select(id => new WorkloadDefinitionId(id)));
+            static HashSet<WorkloadId> ConstructWorkloadHash (params string[] workloadIds)
+                => new HashSet<WorkloadId> (workloadIds.Select(id => new WorkloadId(id)));
 
             static WorkloadSuggestionCandidate ConstructCandidate(string[] workloadIds, string[] packIds, string[] unsatisfiedPackIds)
                 => new WorkloadSuggestionCandidate (ConstructWorkloadHash(workloadIds), ConstructPackHash(packIds), ConstructPackHash(unsatisfiedPackIds));
@@ -141,7 +162,7 @@ namespace ManifestReaderTests
                 {
                     if (suggestion.Workloads.Count == workloadIds.Length)
                     {
-                        if (workloadIds.All(id => suggestion.Workloads.Contains(new WorkloadDefinitionId(id))))
+                        if (workloadIds.All(id => suggestion.Workloads.Contains(new WorkloadId(id))))
                         {
                             found++;
                         }
@@ -160,7 +181,7 @@ namespace ManifestReaderTests
         public static void CanDetermineBestSuggestion()
         {
             static WorkloadSuggestionFinder.WorkloadSuggestion Suggestion(int extraPacks, params string[] workloadIds)
-                => new WorkloadSuggestionFinder.WorkloadSuggestion(new HashSet<WorkloadDefinitionId>(workloadIds.Select(id => new WorkloadDefinitionId(id))), extraPacks);
+                => new WorkloadSuggestionFinder.WorkloadSuggestion(new HashSet<WorkloadId>(workloadIds.Select(id => new WorkloadId(id))), extraPacks);
 
             var suggestions = new[]
             {
@@ -175,8 +196,8 @@ namespace ManifestReaderTests
 
             Assert.Equal(0, best.ExtraPacks);
             Assert.Equal(2, best.Workloads.Count);
-            Assert.Contains(new WorkloadDefinitionId("TheBest"), best.Workloads);
-            Assert.Contains(new WorkloadDefinitionId("Match"), best.Workloads);
+            Assert.Contains(new WorkloadId("TheBest"), best.Workloads);
+            Assert.Contains(new WorkloadId("Match"), best.Workloads);
         }
 
         private static void FakeFileSystemChecksSoThesePackagesAppearInstalled(WorkloadResolver resolver, params string[] ids)
@@ -191,12 +212,12 @@ namespace ManifestReaderTests
                 fileName =>
                 {
                     var versionDir = Path.GetDirectoryName(fileName);
-                    var idDir = Path.GetDirectoryName(versionDir);
+                    var idDir = Path.GetDirectoryName(versionDir)!;
                     return installedPacks.Contains(Path.GetFileName(idDir));
                 },
                 dirName =>
                 {
-                    var idDir = Path.GetDirectoryName(dirName);
+                    var idDir = Path.GetDirectoryName(dirName)!;
                     return installedPacks.Contains(Path.GetFileName(idDir));
                 });
         }

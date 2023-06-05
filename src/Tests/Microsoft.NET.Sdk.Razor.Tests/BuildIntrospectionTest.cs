@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.IO;
 using System.Threading.Tasks;
@@ -29,8 +29,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 .Should()
                 .Pass()
                 .And.HaveStdOutContaining($"UpToDateCheckInput: {Path.Combine("Views", "Home", "Index.cshtml")}")
-                .And.HaveStdOutContaining($"UpToDateCheckInput: {Path.Combine("Views", "_ViewStart.cshtml")}")
-                .And.HaveStdOutContaining($"UpToDateCheckBuilt: {Path.Combine("obj", "Debug", DefaultTfm, "SimpleMvc.Views.dll")}");
+                .And.HaveStdOutContaining($"UpToDateCheckInput: {Path.Combine("Views", "_ViewStart.cshtml")}");
         }
 
         [Fact]
@@ -115,6 +114,22 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 .Pass()
                 .And.HaveStdOutContaining("Watch: Index.razor")
                 .And.HaveStdOutContaining("Watch: Index.razor.css");
+        }
+
+        [Fact]
+        public void IntrospectRazorDesignTimeTargets()
+        {
+            var expected1 = Path.Combine("Components", "App.razor");
+            var expected2 = Path.Combine("Components", "Shared", "MainLayout.razor");
+            var testAsset = "RazorComponentApp";
+            var projectDirectory = CreateAspNetSdkTestAsset(testAsset);
+
+            var build = new MSBuildCommand(Log, "_IntrospectRazorGenerateComponentDesignTime", projectDirectory.Path);
+            build.Execute()
+                .Should()
+                .Pass()
+                .And.HaveStdOutContaining($"RazorComponentWithTargetPath: App {expected1}")
+                .And.HaveStdOutContaining($"RazorComponentWithTargetPath: MainLayout {expected2}");
         }
     }
 }

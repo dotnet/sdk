@@ -1,10 +1,14 @@
-// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
+using FluentAssertions;
+using Microsoft.NET.TestFramework.Assertions;
+using Microsoft.NET.TestFramework.Commands;
 using Microsoft.NET.TestFramework.ProjectConstruction;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
@@ -36,19 +40,34 @@ namespace Microsoft.NET.TestFramework
         public TestAsset CopyTestAsset(
             string testProjectName,
             [CallerMemberName] string callingMethod = "",
+            [CallerFilePath] string callerFilePath = null,
             string identifier = "",
-            string testAssetSubdirectory = "")
+            string testAssetSubdirectory = "",
+            string testDestinationDirectory = null,
+            bool allowCopyIfPresent = false)
         {
             var testProjectDirectory = GetAndValidateTestProjectDirectory(testProjectName, testAssetSubdirectory);
 
-            var testDestinationDirectory =
-                GetTestDestinationDirectoryPath(testProjectName, callingMethod, identifier);
+            var fileName = Path.GetFileNameWithoutExtension(callerFilePath);
+            testDestinationDirectory ??= GetTestDestinationDirectoryPath(testProjectName, callingMethod + "_" + fileName, identifier, allowCopyIfPresent);
             TestDestinationDirectories.Add(testDestinationDirectory);
 
             var testAsset = new TestAsset(testProjectDirectory, testDestinationDirectory, TestContext.Current.SdkVersion, Log);
             return testAsset;
         }
 
+        /// <summary>
+        /// Writes an in-memory test project onto the disk.
+        /// </summary>
+        /// <param name="testProject">The testProject used to create a testAsset with.</param>
+        /// <param name="callingMethod">Defaults to the name of the caller function (presumably the test).
+        /// Used to prevent file collisions on tests which share the same test project.</param>
+        /// <param name="identifier">Use this for theories.
+        /// Pass in the unique theory parameters that can indentify that theory from others.
+        /// The Identifier is used to distinguish between theory child tests.  Generally it should be created using a combination of all of the theory parameter values.
+        /// This is distinct from the test project name and is used to prevent file collisions between theory tests that use the same test project.</param>
+        /// <param name="targetExtension">The extension type of the desired test project, e.g. .csproj, or .fsproj.</param>
+        /// <returns>A new TestAsset directory for the TestProject.</returns>
         public TestAsset CreateTestProject(
             TestProject testProject,
             [CallerMemberName] string callingMethod = "",
@@ -59,12 +78,66 @@ namespace Microsoft.NET.TestFramework
                 GetTestDestinationDirectoryPath(testProject.Name, callingMethod, identifier);
             TestDestinationDirectories.Add(testDestinationDirectory);
 
-            var testAsset = new TestAsset(testDestinationDirectory, TestContext.Current.SdkVersion, Log);
+            var testAsset = CreateTestProjectsInDirectory(new List<TestProject>() { testProject }, testDestinationDirectory, targetExtension);
             testAsset.TestProject = testProject;
 
-            Stack<TestProject> projectStack = new Stack<TestProject>();
-            projectStack.Push(testProject);
+            return testAsset;
+        }
 
+        /// <summary>
+        /// Creates a list of test projects and adds them to a solution
+        /// </summary>
+        /// <param name="testProjects">The in-memory test projects to write to disk</param>
+        /// <param name="callingMethod">Defaults to the name of the caller function (presumably the test).
+        /// Used to prevent file collisions on tests which share the same test project.</param>
+        /// <param name="identifier">Use this for theories.
+        /// Pass in the unique theory parameters that can indentify that theory from others.
+        /// The Identifier is used to distinguish between theory child tests.  Generally it should be created using a combination of all of the theory parameter values.
+        /// This is distinct from the test project name and is used to prevent file collisions between theory tests that use the same test project.</param>
+        /// <param name="targetExtension">The extension type of the desired test project, e.g. .csproj, or .fsproj.</param>
+        /// <returns>A new TestAsset directory with the solution and test projects in it.</returns>
+        public TestAsset CreateTestProjects(
+            IEnumerable<TestProject> testProjects,
+            [CallerMemberName] string callingMethod = "",
+            string identifier = "",
+            string targetExtension = ".csproj")
+        {
+            var testDestinationDirectory =
+                GetTestDestinationDirectoryPath(callingMethod, callingMethod, identifier);
+            TestDestinationDirectories.Add(testDestinationDirectory);
+
+            var testAsset = CreateTestProjectsInDirectory(testProjects, testDestinationDirectory, targetExtension);
+
+            var slnCreationResult = new DotnetNewCommand(Log, "sln")
+                .WithVirtualHive()
+                .WithWorkingDirectory(testDestinationDirectory)
+                .Execute();
+
+            if (slnCreationResult.ExitCode != 0)
+            {
+                throw new Exception($"This test failed during a call to dotnet new. If {testDestinationDirectory} is valid, it's likely this test is failing because of dotnet new. If there are failing .NET new tests, please fix those and then see if this test still fails.");
+            }
+
+            foreach (var testProject in testProjects)
+            {
+                new DotnetCommand(Log, "sln", "add", testProject.Name)
+                    .WithWorkingDirectory(testDestinationDirectory)
+                    .Execute()
+                    .Should()
+                    .Pass();
+            }
+
+            return testAsset;
+        }
+
+        private TestAsset CreateTestProjectsInDirectory(
+            IEnumerable<TestProject> testProjects,
+            string testDestinationDirectory,
+            string targetExtension = ".csproj")
+        {
+            var testAsset = new TestAsset(testDestinationDirectory, TestContext.Current.SdkVersion, Log);
+
+            Stack<TestProject> projectStack = new Stack<TestProject>(testProjects);
             HashSet<TestProject> createdProjects = new HashSet<TestProject>();
 
             while (projectStack.Count > 0)
@@ -109,13 +182,14 @@ namespace Microsoft.NET.TestFramework
 
         public static string GetTestDestinationDirectoryPath(
             string testProjectName,
-            string callingMethod,
-            string identifier)
+            string callingMethodAndFileName,
+            string identifier,
+            bool allowCopyIfPresent = false)
         {
             string baseDirectory = TestContext.Current.TestExecutionDirectory;
-            var directoryName = new StringBuilder(callingMethod).Append(identifier);
+            var directoryName = new StringBuilder(callingMethodAndFileName).Append(identifier);
 
-            if (testProjectName != callingMethod)
+            if (testProjectName != callingMethodAndFileName)
             {
                 directoryName = directoryName.Append(testProjectName);
             }
@@ -137,7 +211,20 @@ namespace Microsoft.NET.TestFramework
                 }
             }
 
-            return Path.Combine(baseDirectory, directoryName.ToString());
+            var directoryPath = Path.Combine(baseDirectory, directoryName.ToString());
+#if CI_BUILD
+            if (!allowCopyIfPresent && Directory.Exists(directoryPath))
+            {
+                //Arcade test retry reuses the machine so the directory might already be present in CI
+                directoryPath = Directory.Exists(directoryPath+"_1") ? directoryPath+"_2" : directoryPath+"_1";
+                if (Directory.Exists(directoryPath))
+                {
+                    throw new Exception($"Test dir {directoryPath} already exists");
+                }
+            }
+#endif
+
+            return directoryPath;
         }
     }
 }

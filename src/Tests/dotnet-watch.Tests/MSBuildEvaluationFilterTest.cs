@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -22,6 +22,7 @@ namespace Microsoft.DotNet.Watcher.Tools
             var filter = new MSBuildEvaluationFilter(_fileSetFactory);
             var context = new DotNetWatchContext
             {
+                HotReloadEnabled = false,
                 Iteration = 0,
             };
 
@@ -45,6 +46,7 @@ namespace Microsoft.DotNet.Watcher.Tools
             var filter = new MSBuildEvaluationFilter(_fileSetFactory);
             var context = new DotNetWatchContext
             {
+                HotReloadEnabled = false,
                 Iteration = 0,
             };
 
@@ -69,6 +71,7 @@ namespace Microsoft.DotNet.Watcher.Tools
             var filter = new MSBuildEvaluationFilter(_fileSetFactory);
             var context = new DotNetWatchContext
             {
+                HotReloadEnabled = false,
                 Iteration = 0,
                 SuppressMSBuildIncrementalism = true,
             };
@@ -85,7 +88,6 @@ namespace Microsoft.DotNet.Watcher.Tools
             // Assert
             Assert.True(context.RequiresMSBuildRevaluation);
             Mock.Get(_fileSetFactory).Verify(v => v.CreateAsync(It.IsAny<CancellationToken>()), Times.Exactly(2));
-
         }
 
         [Fact]
@@ -95,7 +97,7 @@ namespace Microsoft.DotNet.Watcher.Tools
             // concurrent edits. MSBuildEvaluationFilter uses timestamps to additionally track changes to these files.
 
             // Arrange
-            var fileSet = new FileSet(false, new[] { new FileItem { FilePath = "Controlller.cs" }, new FileItem { FilePath = "Proj.csproj" } });
+            var fileSet = new FileSet(null, new[] { new FileItem { FilePath = "Controlller.cs" }, new FileItem { FilePath = "Proj.csproj" } });
             var fileSetFactory = Mock.Of<IFileSetFactory>(f => f.CreateAsync(It.IsAny<CancellationToken>()) == Task.FromResult<FileSet>(fileSet));
 
             var filter = new TestableMSBuildEvaluationFilter(fileSetFactory)
@@ -108,6 +110,7 @@ namespace Microsoft.DotNet.Watcher.Tools
             };
             var context = new DotNetWatchContext
             {
+                HotReloadEnabled = false,
                 Iteration = 0,
             };
 
@@ -124,7 +127,7 @@ namespace Microsoft.DotNet.Watcher.Tools
             Assert.True(context.RequiresMSBuildRevaluation);
         }
 
-        public class TestableMSBuildEvaluationFilter : MSBuildEvaluationFilter
+        private class TestableMSBuildEvaluationFilter : MSBuildEvaluationFilter
         {
             public TestableMSBuildEvaluationFilter(IFileSetFactory factory)
                 : base(factory)
@@ -133,7 +136,7 @@ namespace Microsoft.DotNet.Watcher.Tools
 
             public Dictionary<string, DateTime> Timestamps { get; } = new Dictionary<string, DateTime>();
 
-            protected override DateTime GetLastWriteTimeUtcSafely(string file) => Timestamps[file];
+            private protected override DateTime GetLastWriteTimeUtcSafely(string file) => Timestamps[file];
         }
     }
 }

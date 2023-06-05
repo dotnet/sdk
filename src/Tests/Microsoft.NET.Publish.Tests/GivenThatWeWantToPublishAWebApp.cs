@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using FluentAssertions;
 using Microsoft.DotNet.Cli.Utils;
@@ -45,16 +45,14 @@ namespace Microsoft.NET.Publish.Tests
                 .Pass();
 
             var publishDirectory =
-                command.GetOutputDirectory(targetFramework: "netcoreapp2.0", configuration: "Release");
+                command.GetOutputDirectory(targetFramework: ToolsetInfo.CurrentTargetFramework, configuration: "Release");
 
             publishDirectory.Should().NotHaveSubDirectories();
-            publishDirectory.Should().OnlyHaveFiles(new[] {
+            publishDirectory.Should().HaveFiles(new[] {
                 "web.config",
                 "web.deps.json",
                 "web.dll",
                 "web.pdb",
-                "web.PrecompiledViews.dll",
-                "web.PrecompiledViews.pdb",
                 "web.runtimeconfig.json",
             });
         }
@@ -133,7 +131,7 @@ namespace Microsoft.NET.Publish.Tests
             testProject.PackageReferences.Add(new TestPackageReference(platformLibrary));
             testProject.PackageReferences.Add(new TestPackageReference("Microsoft.AspNetCore.Razor.Design", version: "2.2.0", privateAssets: "all"));
 
-            var testProjectInstance = _testAssetsManager.CreateTestProject(testProject);
+            var testProjectInstance = _testAssetsManager.CreateTestProject(testProject, platformLibrary);
 
             var command = new PublishCommand(testProjectInstance);
 
@@ -167,9 +165,9 @@ namespace Microsoft.NET.Publish.Tests
         [InlineData(true, false)]
         [InlineData(false, true)]
         [InlineData(true, true)]
-        public void It_publishes_with_a_publish_profile(bool? selfContained, bool? useAppHost)
+        public void PublishWebAppWithPublishProfile(bool? selfContained, bool? useAppHost)
         {
-            var tfm = "netcoreapp2.2";
+            var tfm = ToolsetInfo.CurrentTargetFramework;
             var rid = EnvironmentInfo.GetCompatibleRid(tfm);
 
             var testProject = new TestProject()
@@ -184,7 +182,8 @@ namespace Microsoft.NET.Publish.Tests
             testProject.PackageReferences.Add(new TestPackageReference("Microsoft.AspNetCore.App"));
             testProject.PackageReferences.Add(new TestPackageReference("Microsoft.AspNetCore.Razor.Design", version: "2.2.0", privateAssets: "all"));
 
-            var testProjectInstance = _testAssetsManager.CreateTestProject(testProject);
+            var identifier = (selfContained == null ? "null" : selfContained.ToString()) + (useAppHost == null ? "null" : useAppHost.ToString());
+            var testProjectInstance = _testAssetsManager.CreateTestProject(testProject, identifier: identifier);
 
             var projectDirectory = Path.Combine(testProjectInstance.Path, testProject.Name);
             var publishProfilesDirectory = Path.Combine(projectDirectory, "Properties", "PublishProfiles");
@@ -195,7 +194,7 @@ namespace Microsoft.NET.Publish.Tests
   <PropertyGroup>
     <RuntimeIdentifier>{rid}</RuntimeIdentifier>
     {(selfContained.HasValue ? $"<SelfContained>{selfContained}</SelfContained>" : "")}
-    {((!(selfContained ?? true) && useAppHost.HasValue) ? $"<UseAppHost>{useAppHost}</UseAppHost>" : "")}
+    {((!(selfContained ?? false) && useAppHost.HasValue) ? $"<UseAppHost>{useAppHost}</UseAppHost>" : "")}
   </PropertyGroup>
 </Project>
 ");
@@ -212,11 +211,10 @@ namespace Microsoft.NET.Publish.Tests
                 $"{testProject.Name}.dll",
                 $"{testProject.Name}.pdb",
                 $"{testProject.Name}.deps.json",
-                $"{testProject.Name}.runtimeconfig.json",
-                "web.config",
+                $"{testProject.Name}.runtimeconfig.json"
             });
 
-            if (selfContained ?? true)
+            if (selfContained ?? false)
             {
                 output.Should().HaveFiles(new[] {
                     $"{FileConstants.DynamicLibPrefix}hostfxr{FileConstants.DynamicLibSuffix}",
@@ -231,7 +229,7 @@ namespace Microsoft.NET.Publish.Tests
                 });
             }
 
-            if ((selfContained ?? true) || (useAppHost ?? true))
+            if ((selfContained ?? false) || (useAppHost ?? true))
             {
                 output.Should().HaveFile($"{testProject.Name}{Constants.ExeSuffix}");
             }

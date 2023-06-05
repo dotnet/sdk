@@ -1,7 +1,8 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.NET.TestFramework;
@@ -20,7 +21,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         [CoreMSBuildOnlyFact]
         public void Build_Components_WithDotNetCoreMSBuild_Works() => Build_ComponentsWorks();
 
-        [FullMSBuildOnlyFact]
+        [RequiresMSBuildVersionFact("17.7.0.25102")]
         public void Build_Components_WithDesktopMSBuild_Works() => Build_ComponentsWorks();
 
         [Fact]
@@ -42,10 +43,10 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             new FileInfo(Path.Combine(outputPath, "ComponentLibrary.Views.pdb")).Should().NotExist();
         }
 
-        private void Build_ComponentsWorks()
+        private void Build_ComponentsWorks([CallerMemberName] string callerName = "")
         {
             var testAsset = "RazorMvcWithComponents";
-            var projectDirectory = CreateAspNetSdkTestAsset(testAsset);
+            var projectDirectory = CreateAspNetSdkTestAsset(testAsset, callerName);
 
             var build = new BuildCommand(projectDirectory);
             build.Execute().Should().Pass();
@@ -54,21 +55,16 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 
             new FileInfo(Path.Combine(outputPath, "MvcWithComponents.dll")).Should().Exist();
             new FileInfo(Path.Combine(outputPath, "MvcWithComponents.pdb")).Should().Exist();
-            new FileInfo(Path.Combine(outputPath, "MvcWithComponents.Views.dll")).Should().Exist();
-            new FileInfo(Path.Combine(outputPath, "MvcWithComponents.Views.pdb")).Should().Exist();
+            new FileInfo(Path.Combine(outputPath, "MvcWithComponents.Views.dll")).Should().NotExist();
+            new FileInfo(Path.Combine(outputPath, "MvcWithComponents.Views.pdb")).Should().NotExist();
 
             new FileInfo(Path.Combine(outputPath, "MvcWithComponents.dll")).AssemblyShould().ContainType("MvcWithComponents.TestComponent");
             new FileInfo(Path.Combine(outputPath, "MvcWithComponents.dll")).AssemblyShould().ContainType("MvcWithComponents.Views.Shared.NavMenu");
 
-            // This is a component file with a .cshtml extension. It should appear in the main assembly, but not in the views dll.
+            // Components should appear in the app assembly.
             new FileInfo(Path.Combine(outputPath, "MvcWithComponents.dll")).AssemblyShould().ContainType("MvcWithComponents.Components.Counter");
-            new FileInfo(Path.Combine(outputPath, "MvcWithComponents.Views.dll")).AssemblyShould().NotContainType("MvcWithComponents.Components.Counter");
-            new FileInfo(Path.Combine(outputPath, "MvcWithComponents.Views.dll")).AssemblyShould().NotContainType("AspNetCore.Components_Counter");
-
-            // Verify a regular View appears in the views dll, but not in the main assembly.
-            new FileInfo(Path.Combine(outputPath, "MvcWithComponents.dll")).AssemblyShould().NotContainType("AspNetCore.Views.Home.Index");
-            new FileInfo(Path.Combine(outputPath, "MvcWithComponents.dll")).AssemblyShould().NotContainType("AspNetCore.Views_Home_Index");
-            new FileInfo(Path.Combine(outputPath, "MvcWithComponents.Views.dll")).AssemblyShould().ContainType("AspNetCore.Views_Home_Index");
+            // Views should also appear in the app assembly.
+            new FileInfo(Path.Combine(outputPath, "MvcWithComponents.dll")).AssemblyShould().ContainType("AspNetCoreGeneratedDocument.Views_Home_Index");
         }
     }
 }

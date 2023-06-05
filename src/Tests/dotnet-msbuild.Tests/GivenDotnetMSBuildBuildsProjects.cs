@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Linq;
@@ -40,14 +40,14 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             var testProjectDirectory = testInstance.Path;
 
             new MSBuildCommand(Log, "SayHello", testProjectDirectory)
-                .Execute()
+                .ExecuteWithoutRestore()
                 .Should()
                 .Pass()
                 .And
                 .HaveStdOutContaining("Hello, from MSBuild!");
 
             new MSBuildCommand(Log, "SayGoodbye", testProjectDirectory)
-                .Execute()
+                .ExecuteWithoutRestore()
                 .Should()
                 .Pass()
                 .And
@@ -94,7 +94,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             }
 
             // this is a workaround for https://github.com/Microsoft/msbuild/issues/1622
-            var testInstance = _testAssetsManager.CopyTestAsset("LibraryWithUnresolvablePackageReference")
+            var testInstance = _testAssetsManager.CopyTestAsset("LibraryWithUnresolvablePackageReference", identifier: propertyFormat.GetHashCode().ToString())
                                         .WithSource();
 
             var root = testInstance.Path;

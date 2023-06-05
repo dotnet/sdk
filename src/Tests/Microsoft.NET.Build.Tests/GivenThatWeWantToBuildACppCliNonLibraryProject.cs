@@ -1,5 +1,5 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.IO;
 using System.Linq;
@@ -20,7 +20,7 @@ namespace Microsoft.NET.Build.Tests
         {
         }
 
-        [FullMSBuildOnlyFact(Skip = "https://github.com/dotnet/sdk/issues/11008")]
+        [FullMSBuildOnlyFact]
         public void Given_an_exe_project_It_should_fail_with_error_message()
         {
             var testAsset = _testAssetsManager
@@ -34,7 +34,7 @@ namespace Microsoft.NET.Build.Tests
                 .And.HaveStdOutContaining(Strings.NoSupportCppNonDynamicLibraryDotnetCore);
         }
 
-        [FullMSBuildOnlyFact(Skip = "https://github.com/dotnet/sdk/issues/11008")]
+        [FullMSBuildOnlyFact]
         public void Given_an_StaticLibrary_project_It_should_fail_with_error_message()
         {
             var testAsset = _testAssetsManager
