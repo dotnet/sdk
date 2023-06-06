@@ -1,22 +1,8 @@
 ﻿const Microsoft.NET.Build.Containers.KnownDaemonTypes.Docker = "Docker" -> string!
 Microsoft.NET.Build.Containers.BaseImageNotFoundException
 Microsoft.NET.Build.Containers.Constants
-Microsoft.NET.Build.Containers.LogMessage
-Microsoft.NET.Build.Containers.LogMessage.formatArgs.get -> object![]!
-Microsoft.NET.Build.Containers.LogMessage.formatArgs.set -> void
-Microsoft.NET.Build.Containers.LogMessage.level.get -> Microsoft.NET.Build.Containers.ProgressMessageLevel
-Microsoft.NET.Build.Containers.LogMessage.level.set -> void
-Microsoft.NET.Build.Containers.LogMessage.LogMessage() -> void
-Microsoft.NET.Build.Containers.LogMessage.LogMessage(Microsoft.NET.Build.Containers.ProgressMessageLevel level, string! messageFormat, object![]! formatArgs) -> void
-Microsoft.NET.Build.Containers.LogMessage.messageFormat.get -> string!
-Microsoft.NET.Build.Containers.LogMessage.messageFormat.set -> void
-Microsoft.NET.Build.Containers.ProgressMessageLevel
-Microsoft.NET.Build.Containers.ProgressMessageLevel.Info = 0 -> Microsoft.NET.Build.Containers.ProgressMessageLevel
-Microsoft.NET.Build.Containers.ProgressMessageLevel.Trace = 1 -> Microsoft.NET.Build.Containers.ProgressMessageLevel
 Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageTag.ComputeDotnetBaseImageTag() -> void
-static Microsoft.NET.Build.Containers.ContainerBuilder.ContainerizeAsync(System.IO.DirectoryInfo! publishDirectory, string! workingDir, string! baseRegistry, string! baseImageName, string! baseImageTag, string![]! entrypoint, string![]? entrypointArgs, string! imageName, string![]! imageTags, string? outputRegistry, System.Collections.Generic.Dictionary<string!, string!>! labels, Microsoft.NET.Build.Containers.Port[]? exposedPorts, System.Collections.Generic.Dictionary<string!, string!>! envVars, string! containerRuntimeIdentifier, string! ridGraphPath, string! localContainerDaemon, string? containerUser, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<int>!
-static Microsoft.NET.Build.Containers.LogMessage.Info(string! messageFormat, params object![]! formatArgs) -> Microsoft.NET.Build.Containers.LogMessage
-static Microsoft.NET.Build.Containers.LogMessage.Trace(string! messageFormat, params object![]! formatArgs) -> Microsoft.NET.Build.Containers.LogMessage
+static Microsoft.NET.Build.Containers.ContainerBuilder.ContainerizeAsync(System.IO.DirectoryInfo! publishDirectory, string! workingDir, string! baseRegistry, string! baseImageName, string! baseImageTag, string![]! entrypoint, string![]? entrypointArgs, string! imageName, string![]! imageTags, string? outputRegistry, System.Collections.Generic.Dictionary<string!, string!>! labels, Microsoft.NET.Build.Containers.Port[]? exposedPorts, System.Collections.Generic.Dictionary<string!, string!>! envVars, string! containerRuntimeIdentifier, string! ridGraphPath, string! localContainerDaemon, string? containerUser, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<int>!
 static readonly Microsoft.NET.Build.Containers.Constants.Version -> string!
 Microsoft.NET.Build.Containers.ContainerBuilder
 Microsoft.NET.Build.Containers.ContainerHelpers

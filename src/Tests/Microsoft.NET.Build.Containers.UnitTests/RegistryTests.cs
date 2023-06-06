@@ -1,14 +1,33 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.Extensions.Logging;
+using Microsoft.NET.Build.Containers.Registry;
+using Microsoft.NET.TestFramework;
 using Moq;
 using System.Net;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Microsoft.NET.Build.Containers.UnitTests
 {
-    public class RegistryTests
+    public class RegistryTests : IDisposable
     {
+        private ITestOutputHelper _testOutput;
+        private readonly TestLoggerFactory _loggerFactory;
+
+        public RegistryTests(ITestOutputHelper testOutput)
+        {
+            _testOutput = testOutput;
+            _loggerFactory = new TestLoggerFactory(testOutput);
+        }
+
+        public void Dispose()
+        {
+            _loggerFactory.Dispose();
+        }
+
+
         [InlineData("public.ecr.aws", true)]
         [InlineData("123412341234.dkr.ecr.us-west-2.amazonaws.com", true)]
         [InlineData("123412341234.dkr.ecr-fips.us-west-2.amazonaws.com", true)]
@@ -20,7 +39,8 @@ namespace Microsoft.NET.Build.Containers.UnitTests
         [Theory]
         public void CheckIfAmazonECR(string registryName, bool isECR)
         {
-            Registry registry = new Registry(ContainerHelpers.TryExpandRegistryToUri(registryName));
+            ILogger logger = _loggerFactory.CreateLogger(nameof(CheckIfAmazonECR));
+            RegistryManager registry = new RegistryManager(ContainerHelpers.TryExpandRegistryToUri(registryName), logger);
             Assert.Equal(isECR, registry.IsAmazonECRRegistry);
         }
 
@@ -29,7 +49,8 @@ namespace Microsoft.NET.Build.Containers.UnitTests
         [Theory]
         public void CheckIfGoogleArtifactRegistry(string registryName, bool isECR)
         {
-            Registry registry = new Registry(ContainerHelpers.TryExpandRegistryToUri(registryName));
+            ILogger logger = _loggerFactory.CreateLogger(nameof(CheckIfGoogleArtifactRegistry));
+            RegistryManager registry = new RegistryManager(ContainerHelpers.TryExpandRegistryToUri(registryName), logger);
             Assert.Equal(isECR, registry.IsGoogleArtifactRegistry);
         }
 
@@ -53,8 +74,8 @@ namespace Microsoft.NET.Build.Containers.UnitTests
 
             api.Verify(api => api.Blob.Upload.UploadChunkAsync(uploadPath, It.IsAny<HttpContent>(), It.IsAny<CancellationToken>()), Times.Never());
 
-            Registry registry = new Registry(ContainerHelpers.TryExpandRegistryToUri("public.ecr.aws"), api.Object);
-            await registry.PushAsync(mockLayer.Object, repoName, _ => { }, CancellationToken.None);
+            RegistryManager registry = new RegistryManager(ContainerHelpers.TryExpandRegistryToUri("public.ecr.aws"), api.Object);
+            await registry.PushAsync(mockLayer.Object, repoName, CancellationToken.None);
         }
     }
 }

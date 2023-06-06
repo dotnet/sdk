@@ -1,23 +1,14 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.Extensions.Logging;
+using Microsoft.NET.Build.Containers.Registry;
 using Microsoft.NET.Build.Containers.Resources;
-using System.Text;
 
 namespace Microsoft.NET.Build.Containers;
 
 public static class ContainerBuilder
 {
-
-    private static void WriteLogMessage(LogMessage message) {
-        if (message.level is ProgressMessageLevel.Info) {
-            var builder = new StringBuilder("Containerize: ");
-            builder.AppendFormat(message.messageFormat, message.formatArgs);
-            Console.WriteLine(builder.ToString());
-        }
-        // TODO: dropping Trace level messages - this should be ok for the net472 VS experience. CI systems will get them in binlogs.
-    }
-
     public static async Task<int> ContainerizeAsync(
         DirectoryInfo publishDirectory,
         string workingDir,
@@ -36,19 +27,21 @@ public static class ContainerBuilder
         string ridGraphPath,
         string localContainerDaemon,
         string? containerUser,
+        ILoggerFactory loggerFactory,
         CancellationToken cancellationToken)
     {
+        ILogger logger = loggerFactory.CreateLogger("Containerize");
         cancellationToken.ThrowIfCancellationRequested();
         if (!publishDirectory.Exists)
         {
             throw new ArgumentException(string.Format(Resource.GetString(nameof(Strings.PublishDirectoryDoesntExist)), nameof(publishDirectory), publishDirectory.FullName));
         }
         bool isDaemonPull = string.IsNullOrEmpty(baseRegistry);
-        Registry? sourceRegistry = isDaemonPull ? null : new Registry(ContainerHelpers.TryExpandRegistryToUri(baseRegistry));
+        RegistryManager? sourceRegistry = isDaemonPull ? null : new RegistryManager(ContainerHelpers.TryExpandRegistryToUri(baseRegistry), logger: logger);
         ImageReference sourceImageReference = new(sourceRegistry, baseImageName, baseImageTag);
 
         bool isDaemonPush = string.IsNullOrEmpty(outputRegistry);
-        Registry? destinationRegistry = isDaemonPush ? null : new Registry(ContainerHelpers.TryExpandRegistryToUri(outputRegistry!));
+        RegistryManager? destinationRegistry = isDaemonPush ? null : new RegistryManager(ContainerHelpers.TryExpandRegistryToUri(outputRegistry!), logger: logger);
         IEnumerable<ImageReference> destinationImageReferences = imageTags.Select(t => new ImageReference(destinationRegistry, imageName, t));
 
         ImageBuilder? imageBuilder;
@@ -70,7 +63,7 @@ public static class ContainerBuilder
             Console.WriteLine(DiagnosticMessage.ErrorFromResourceWithCode(nameof(Strings.BaseImageNotFound), sourceImageReference.RepositoryAndTag, containerRuntimeIdentifier));
             return 1;
         }
-        WriteLogMessage(LogMessage.Info("Building image '{0}' with tags {1} on top of base image {2}", imageName, string.Join(",", imageName), sourceImageReference));
+        logger.LogInformation("Building image '{0}' with tags {1} on top of base image {2}", imageName, string.Join(",", imageName), sourceImageReference);
         cancellationToken.ThrowIfCancellationRequested();
 
         Layer newLayer = Layer.FromDirectory(publishDirectory.FullName, workingDir, imageBuilder.IsWindows);
@@ -102,7 +95,7 @@ public static class ContainerBuilder
         {
             if (isDaemonPush)
             {
-                LocalDocker localDaemon = GetLocalDaemon(localContainerDaemon, WriteLogMessage);
+                LocalDocker localDaemon = GetLocalDaemon(localContainerDaemon, logger);
                 if (!(await localDaemon.IsAvailableAsync(cancellationToken).ConfigureAwait(false)))
                 {
                     Console.WriteLine(DiagnosticMessage.ErrorFromResourceWithCode(nameof(Strings.LocalDaemonNotAvailable)));
@@ -112,7 +105,7 @@ public static class ContainerBuilder
                 try
                 {
                     await localDaemon.LoadAsync(builtImage, sourceImageReference, destinationImageReference, cancellationToken).ConfigureAwait(false);
-                    WriteLogMessage(LogMessage.Info("Pushed container '{0}' to Docker daemon", destinationImageReference.RepositoryAndTag));
+                    logger.LogInformation("Pushed container '{0}' to Docker daemon", destinationImageReference.RepositoryAndTag);
                 }
                 catch (Exception ex)
                 {
@@ -130,9 +123,8 @@ public static class ContainerBuilder
                             builtImage,
                             sourceImageReference,
                             destinationImageReference,
-                            WriteLogMessage,
                             cancellationToken)).ConfigureAwait(false);
-                        WriteLogMessage(LogMessage.Info("Pushed container '{0}' to registry '{1}'", destinationImageReference.RepositoryAndTag, destinationImageReference.Registry.RegistryName));
+                        logger.LogInformation("Pushed container '{0}' to registry '{1}'", destinationImageReference.RepositoryAndTag, destinationImageReference.Registry.RegistryName);
                     }
                 }
                 catch (Exception e)
@@ -145,7 +137,7 @@ public static class ContainerBuilder
         return 0;
     }
 
-    private static LocalDocker GetLocalDaemon(string localDaemonType, Action<LogMessage> logger)
+    private static LocalDocker GetLocalDaemon(string localDaemonType, ILogger logger)
     {
         LocalDocker daemon = localDaemonType switch
         {

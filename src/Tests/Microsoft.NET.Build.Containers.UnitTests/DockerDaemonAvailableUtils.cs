@@ -2,15 +2,26 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Xunit;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Console;
 
 namespace Microsoft.NET.Build.Containers.UnitTests;
 
 public class DockerDaemonAvailableTheoryAttribute : TheoryAttribute
 {
-    private static bool IsDaemonAvailable = new LocalDocker(message => Console.WriteLine($"{message.level}: {String.Format(message.messageFormat, message.formatArgs)}")).IsAvailable();
+    private static readonly ILogger s_logger = LoggerFactory
+        .Create(
+        builder =>
+            builder
+                .AddSimpleConsole(c => c.ColorBehavior = LoggerColorBehavior.Disabled)
+                .SetMinimumLevel(LogLevel.Trace))
+        .CreateLogger(nameof(DockerDaemonAvailableTheoryAttribute));
+
+    private static readonly bool s_isDaemonAvailable = new LocalDocker(s_logger).IsAvailable();
     public DockerDaemonAvailableTheoryAttribute()
     {
-        if (!IsDaemonAvailable)
+        if (!s_isDaemonAvailable)
         {
             base.Skip = "Skipping test because Docker is not available on this host.";
         }
@@ -19,12 +30,20 @@ public class DockerDaemonAvailableTheoryAttribute : TheoryAttribute
 
 public class DockerDaemonAvailableFactAttribute : FactAttribute
 {
+    private static readonly ILogger s_logger = LoggerFactory
+        .Create(
+        builder =>
+            builder
+                .AddSimpleConsole(c => c.ColorBehavior = LoggerColorBehavior.Disabled)
+                .SetMinimumLevel(LogLevel.Trace))
+        .CreateLogger(nameof(DockerDaemonAvailableFactAttribute));
+
     // tiny optimization - since there are many instances of this attribute we should only get
     // the daemon status once
-    private static bool IsDaemonAvailable = new LocalDocker(message => Console.WriteLine($"{message.level}: {String.Format(message.messageFormat, message.formatArgs)}")).IsAvailable();
+    private static readonly bool s_isDaemonAvailable = new LocalDocker(s_logger).IsAvailable();
     public DockerDaemonAvailableFactAttribute()
     {
-        if (!IsDaemonAvailable)
+        if (!s_isDaemonAvailable)
         {
             base.Skip = "Skipping test because Docker is not available on this host.";
         }

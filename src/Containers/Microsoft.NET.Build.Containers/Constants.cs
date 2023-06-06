@@ -6,6 +6,6 @@ using System.Reflection;
 namespace Microsoft.NET.Build.Containers;
 
 public static class Constants {
-    public static readonly string Version = typeof(Registry).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? "";
+    public static readonly string Version = typeof(Registry.RegistryManager).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? "";
 
 }

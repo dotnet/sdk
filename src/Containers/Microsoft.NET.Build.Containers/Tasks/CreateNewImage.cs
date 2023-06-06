@@ -3,7 +3,11 @@
 
 using System.Text.Json;
 using Microsoft.Build.Framework;
+using Microsoft.Extensions.Logging;
+using Microsoft.NET.Build.Containers.Logging;
+using Microsoft.NET.Build.Containers.Registry;
 using Microsoft.NET.Build.Containers.Resources;
+using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace Microsoft.NET.Build.Containers.Tasks;
 
@@ -35,16 +39,26 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
     internal async Task<bool> ExecuteAsync(CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
+
+        using MSBuildLoggerProvider loggerProvider = new(Log);
+        ILoggerFactory msbuildLoggerFactory = new LoggerFactory(new[] { loggerProvider });
+        ILogger logger = msbuildLoggerFactory.CreateLogger<CreateNewImage>();
+
         if (!Directory.Exists(PublishDirectory))
         {
             Log.LogErrorWithCodeFromResources(nameof(Strings.PublishDirectoryDoesntExist), nameof(PublishDirectory), PublishDirectory);
             return !Log.HasLoggedErrors;
         }
-        ImageReference sourceImageReference = new(SourceRegistry.Value, BaseImageName, BaseImageTag);
-        var destinationImageReferences = ImageTags.Select(t => new ImageReference(DestinationRegistry.Value, Repository, t));
+
+        RegistryManager? sourceRegistry = IsDaemonPull ? null : new RegistryManager(ContainerHelpers.TryExpandRegistryToUri(BaseRegistry), logger);
+        ImageReference sourceImageReference = new(sourceRegistry, BaseImageName, BaseImageTag);
+
+        RegistryManager? destinationRegistry = IsDaemonPush ? null : new RegistryManager(ContainerHelpers.TryExpandRegistryToUri(OutputRegistry), logger);
+
+        var destinationImageReferences = ImageTags.Select(t => new ImageReference(destinationRegistry, Repository, t));
 
         ImageBuilder? imageBuilder;
-        if (SourceRegistry.Value is { } registry)
+        if (sourceRegistry is { } registry)
         {
             imageBuilder = await registry.GetImageManifestAsync(
                 BaseImageName,
@@ -102,7 +116,7 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
         {
             if (IsDaemonPush)
             {
-                LocalDocker localDaemon = GetLocalDaemon(SafeLog);
+                LocalDocker localDaemon = GetLocalDaemon(logger);
                 if (!(await localDaemon.IsAvailableAsync(cancellationToken).ConfigureAwait(false)))
                 {
                     Log.LogErrorWithCodeFromResources(nameof(Strings.LocalDaemonNotAvailable));
@@ -128,7 +142,6 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
                             builtImage,
                             sourceImageReference,
                             destinationImageReference,
-                            message => SafeLog(message),
                             cancellationToken).ConfigureAwait(false);
                         SafeLog("Pushed container '{0}' to registry '{1}'", destinationImageReference.RepositoryAndTag, OutputRegistry);
                     }
@@ -191,7 +204,7 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
         }
     }
 
-    private LocalDocker GetLocalDaemon(Action<LogMessage> logger) {
+    private LocalDocker GetLocalDaemon(ILogger logger) {
         var daemon = LocalContainerDaemon switch {
             KnownDaemonTypes.Docker => new LocalDocker(logger),
             _ => throw new NotSupportedException(
@@ -201,27 +214,6 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
                     string.Join(",", KnownDaemonTypes.SupportedLocalDaemonTypes)))
         };
         return daemon;
-    }
-
-    private Lazy<Registry?> SourceRegistry
-    {
-        get {
-            if(IsDaemonPull) {
-                return new Lazy<Registry?>(() => null);
-            } else {
-                return new Lazy<Registry?>(() => new Registry(ContainerHelpers.TryExpandRegistryToUri(BaseRegistry)));
-            }
-        }
-    }
-
-    private Lazy<Registry?> DestinationRegistry {
-        get {
-            if(IsDaemonPush) {
-                return new Lazy<Registry?>(() => null);
-            } else {
-                return new Lazy<Registry?>(() => new Registry(ContainerHelpers.TryExpandRegistryToUri(OutputRegistry)));
-            }
-        }
     }
 
     private static void SetEnvironmentVariables(ImageBuilder img, ITaskItem[] envVars)
@@ -234,20 +226,6 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
 
     private void SafeLog(string message, params object[] formatParams) {
         if(BuildEngine != null) Log.LogMessage(MessageImportance.High, message, formatParams);
-    }
-    private void SafeLog(LogMessage message) {
-        if (BuildEngine is not null) {
-            switch(message.level) {
-                case ProgressMessageLevel.Info:
-                    Log.LogMessage(MessageImportance.High, message.messageFormat, message.formatArgs);
-                    break;
-                case ProgressMessageLevel.Trace:
-                    Log.LogMessage(MessageImportance.Low, message.messageFormat, message.formatArgs);
-                    break;
-                default:
-                    break;
-            };
-        }
     }
 
     public void Dispose()
