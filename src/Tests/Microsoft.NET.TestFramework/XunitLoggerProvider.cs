@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text;
 using Microsoft.Extensions.Logging;
 using Xunit.Abstractions;
+using Xunit.Sdk;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 
@@ -123,7 +124,7 @@ namespace Microsoft.NET.TestFramework
 
             public bool IsEnabled(LogLevel logLevel)
                 => logLevel >= _minLogLevel;
-            public IDisposable BeginScope<TState>(TState state) => new NullScope();
+            public IDisposable? BeginScope<TState>(TState? state) where TState : notnull => new NullScope();
 
             private class NullScope : IDisposable
             {
