@@ -12,9 +12,10 @@ using Microsoft.DotNet.Configurer;
 using Microsoft.DotNet.ShellShim;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using LocalizableStrings = Microsoft.DotNet.Cli.Utils.LocalizableStrings;
-using System.Linq;
 using Microsoft.DotNet.CommandFactory;
 using NuGet.Frameworks;
+using CommandResult = System.CommandLine.Parsing.CommandResult;
+using System.CommandLine;
 
 namespace Microsoft.DotNet.Cli
 {
@@ -230,12 +231,7 @@ namespace Microsoft.DotNet.Cli
                 try
                 {
                     exitCode = parseResult.Invoke();
-
-                    if (parseResult.Errors.Any() && parseResult.CommandResult.Command.Name == "new")
-                    {
-                        // default parse error exit code is 1, for the "new" command it needs to be 127
-                        exitCode = 127;
-                    }
+                    exitCode = AdjustExitCode(parseResult, exitCode);
                 }
                 catch (Exception exception)
                 {
@@ -265,6 +261,28 @@ namespace Microsoft.DotNet.Cli
             PerformanceLogEventSource.Log.TelemetryClientFlushStop();
 
             telemetryClient.Dispose();
+
+            return exitCode;
+        }
+
+        private static int AdjustExitCode(ParseResult parseResult, int exitCode)
+        {
+            if (parseResult.Errors.Count > 0)
+            {
+                var commandResult = parseResult.CommandResult;
+
+                while (commandResult is not null)
+                {
+                    if (commandResult.Command.Name == "new")
+                    {
+                        // default parse error exit code is 1
+                        // for the "new" command and its subcommands it needs to be 127
+                        return 127;
+                    }
+
+                    commandResult = commandResult.Parent as CommandResult;
+                }
+            }
 
             return exitCode;
         }

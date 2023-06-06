@@ -484,7 +484,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             IEnumerable<string> possibleSubcommands =
                 instantiateArgs.Command.Subcommands
                     .Where(sc => !sc.Hidden)
-                    .SelectMany(sc => sc.Aliases);
+                    .SelectMany(sc => new[] { sc.Name }.Concat(sc.Aliases));
 
             IEnumerable<string> possibleSubcommandsMatches = TypoCorrection.GetSimilarTokens(possibleSubcommands, instantiateArgs.ShortName);
             if (possibleSubcommandsMatches.Any())

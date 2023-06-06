@@ -118,7 +118,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 
         internal Example WithSubcommand(string token)
         {
-            CliCommand? commandToUse = _currentCommand.Subcommands.FirstOrDefault(c => c.Aliases.Contains(token));
+            CliCommand? commandToUse = _currentCommand.Subcommands.FirstOrDefault(c => c.Name.Equals(token) || c.Aliases.Contains(token));
 
             if (commandToUse is null)
             {
