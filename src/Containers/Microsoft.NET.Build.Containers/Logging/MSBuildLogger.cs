@@ -16,12 +16,10 @@ internal sealed class MSBuildLogger : ILogger
 {
     private static readonly IDisposable Scope = new DummyDisposable();
 
-    private readonly string _categoryHeader;
     private readonly TaskLoggingHelper _loggingHelper;
 
     public MSBuildLogger(string category, TaskLoggingHelper loggingHelperToWrap)
     {
-        _categoryHeader = category + ": ";
         _loggingHelper = loggingHelperToWrap;
     }
 
@@ -34,18 +32,18 @@ internal sealed class MSBuildLogger : ILogger
         switch (logLevel)
         {
             case LogLevel.Trace:
-                _loggingHelper.LogMessage(MessageImportance.Low, _categoryHeader + formatter(state, exception));
+                _loggingHelper.LogMessage(MessageImportance.Low, formatter(state, exception));
                 break;
             case LogLevel.Debug:
             case LogLevel.Information:
-                _loggingHelper.LogMessage(MessageImportance.High, _categoryHeader + formatter(state, exception));
+                _loggingHelper.LogMessage(MessageImportance.High, formatter(state, exception));
                 break;
             case LogLevel.Warning:
-                _loggingHelper.LogWarning(_categoryHeader + formatter(state, exception));
+                _loggingHelper.LogWarning(formatter(state, exception));
                 break;
             case LogLevel.Error:
             case LogLevel.Critical:
-                _loggingHelper.LogError(_categoryHeader + formatter(state, exception));
+                _loggingHelper.LogError(formatter(state, exception));
                 break;
             case LogLevel.None:
                 break;
