@@ -7,6 +7,7 @@ using Microsoft.Build.Framework;
 using Microsoft.DotNet.ApiCompatibility.Logging;
 using Microsoft.DotNet.PackageValidation;
 using Microsoft.NET.Build.Tasks;
+using NuGet.Frameworks;
 
 namespace Microsoft.DotNet.ApiCompat.Task
 {
@@ -142,26 +143,33 @@ namespace Microsoft.DotNet.ApiCompat.Task
                 EnableStrictModeForBaselineValidation,
                 BaselinePackageTargetPath,
                 RuntimeGraph,
-                PackageAssemblyReferences is not null ? ParsePackageAssemblyReferences(PackageAssemblyReferences) : null,
-                BaselinePackageAssemblyReferences is not null ? ParsePackageAssemblyReferences(BaselinePackageAssemblyReferences) : null);
+                ParsePackageAssemblyReferences(PackageAssemblyReferences),
+                ParsePackageAssemblyReferences(BaselinePackageAssemblyReferences));
         }
 
-        private static IEnumerable<PackageAssemblyReferenceCollection> ParsePackageAssemblyReferences(ITaskItem[] packageAssemblyReferences)
+        private static Dictionary<NuGetFramework, IEnumerable<string>>? ParsePackageAssemblyReferences(ITaskItem[]? packageAssemblyReferences)
         {
+            if (packageAssemblyReferences == null || packageAssemblyReferences.Length == 0)
+                return null;
+
+            Dictionary<NuGetFramework, IEnumerable<string>>? packageAssemblyReferencesDict = new(packageAssemblyReferences.Length);
             foreach (ITaskItem taskItem in packageAssemblyReferences)
             {
-                string? targetFrameworkMoniker = taskItem.GetMetadata("TargetFrameworkMoniker");
+                string targetFrameworkMoniker = taskItem.GetMetadata("TargetFrameworkMoniker");
                 string targetPlatformMoniker = taskItem.GetMetadata("TargetPlatformMoniker");
-                string? referencePath = taskItem.GetMetadata("ReferencePath");
+                string referencePath = taskItem.GetMetadata("ReferencePath");
 
                 // The TPM is null when the assembly doesn't target a platform.
-                if (string.IsNullOrEmpty(targetFrameworkMoniker) || string.IsNullOrEmpty(referencePath))
+                if (targetFrameworkMoniker == string.Empty || referencePath == string.Empty)
                     continue;
 
-                yield return new PackageAssemblyReferenceCollection(targetFrameworkMoniker,
-                    targetPlatformMoniker,
-                    referencePath.Split(','));
+                NuGetFramework nuGetFramework = NuGetFramework.ParseComponents(targetFrameworkMoniker, targetPlatformMoniker);
+                string[] references = referencePath.Split(',');
+
+                packageAssemblyReferencesDict.Add(nuGetFramework, references);
             }
+
+            return packageAssemblyReferencesDict;
         }
     }
 }

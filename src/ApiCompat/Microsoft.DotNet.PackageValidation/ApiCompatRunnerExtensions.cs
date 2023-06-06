@@ -4,7 +4,6 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using Microsoft.DotNet.ApiCompatibility;
 using Microsoft.DotNet.ApiCompatibility.Logging;
 using Microsoft.DotNet.ApiCompatibility.Runner;
@@ -66,22 +65,13 @@ namespace Microsoft.DotNet.PackageValidation
         {
             displayString ??= item.Path;
 
-            if (package.AssemblyReferences is not null && package.AssemblyReferences.Any() && item.Properties.TryGetValue("tfm", out object? tfmObj))
+            if (package.AssemblyReferences is not null && package.AssemblyReferences.Count > 0 && item.Properties.TryGetValue("tfm", out object? tfmObj))
             {
+                // Retrieve the content item's target framework
                 NuGetFramework nuGetFramework = (NuGetFramework)tfmObj;
 
-                foreach (PackageAssemblyReferenceCollection packageAssemblyReferenceCollection in package.AssemblyReferences)
-                {
-                    if (packageAssemblyReferenceCollection.TargetFrameworkMoniker == nuGetFramework.DotNetFrameworkName &&
-                        // IgnoreCase because NuGet returns 'windows' lowercase but the SDK passes it in as 'Windows'.
-                        string.Equals(packageAssemblyReferenceCollection.TargetPlatformMoniker, nuGetFramework.DotNetPlatformName, System.StringComparison.OrdinalIgnoreCase))
-                    {
-                        assemblyReferences = packageAssemblyReferenceCollection.AssemblyReferences;
-                        break;
-                    }
-                }
-
-                if (assemblyReferences is null)
+                // See if the package's assembly reference entries have the same target framework.
+                if (!package.AssemblyReferences.TryGetValue(nuGetFramework, out assemblyReferences))
                 {
                     log.LogWarning(new Suppression(DiagnosticIds.SearchDirectoriesNotFoundForTfm) { Target = displayString },
                         DiagnosticIds.SearchDirectoriesNotFoundForTfm,

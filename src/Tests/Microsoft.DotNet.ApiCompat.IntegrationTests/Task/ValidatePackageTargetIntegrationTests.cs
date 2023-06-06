@@ -18,6 +18,7 @@ using Microsoft.NET.TestFramework.Commands;
 using Microsoft.NET.TestFramework.ProjectConstruction;
 using Xunit;
 using Xunit.Abstractions;
+using NuGet.Frameworks;
 
 namespace Microsoft.DotNet.ApiCompat.Task.IntegrationTests
 {
@@ -179,10 +180,10 @@ namespace Microsoft.DotNet.ApiCompat.Task.IntegrationTests
 
             // Now we do pass in references. With references, ApiCompat should now detect that an interface was removed in a
             // dependent assembly, causing one of our types to stop implementing that assembly. We validate that a CP0008 is logged.
-            IEnumerable<PackageAssemblyReferenceCollection> references = new PackageAssemblyReferenceCollection[]
+            Dictionary<NuGetFramework, IEnumerable<string>> references = new()
             {
-                new (".NETStandard,Version=v2.0", null, new string[] { Path.Combine(asset.TestRoot, asset.TestProject.Name, "bin", "Debug", "netstandard2.0") }),
-                new ($".NETCoreApp,Version=v{ToolsetInfo.CurrentTargetFrameworkVersion }", null, new string[] { Path.Combine(asset.TestRoot, asset.TestProject.Name, "bin", "Debug", ToolsetInfo.CurrentTargetFramework) })
+                { NuGetFramework.ParseFolder("netstandard2.0"), new string[] { Path.Combine(asset.TestRoot, asset.TestProject.Name, "bin", "Debug", "netstandard2.0") } },
+                { NuGetFramework.ParseFolder(ToolsetInfo.CurrentTargetFramework), new string[] { Path.Combine(asset.TestRoot, asset.TestProject.Name, "bin", "Debug", ToolsetInfo.CurrentTargetFramework) } }
             };
             package = Package.Create(packCommand.GetNuGetPackage(), references);
             validator.Validate(new PackageValidatorOption(package));
@@ -211,10 +212,10 @@ namespace Microsoft.DotNet.ApiCompat.Task.IntegrationTests
             var result = packCommand.Execute();
             Assert.Equal(string.Empty, result.StdErr);
 
-            IEnumerable<PackageAssemblyReferenceCollection> references = new PackageAssemblyReferenceCollection[]
+            Dictionary<NuGetFramework, IEnumerable<string>> references = new()
             {
-                new(".NETStandard,Version=v2.0", null, new string[] { Path.Combine(asset.TestRoot, asset.TestProject.Name, "bin", "Debug", "netstandard2.0") }),
-                new($".NETCoreApp,Version=v{ToolsetInfo.CurrentTargetFrameworkVersion }", null, new string[] { Path.Combine(asset.TestRoot, asset.TestProject.Name, "bin", "Debug", ToolsetInfo.CurrentTargetFramework) })
+                { NuGetFramework.ParseFolder("netstandard2.0"), new string[] { Path.Combine(asset.TestRoot, asset.TestProject.Name, "bin", "Debug", "netstandard2.0") } },
+                { NuGetFramework.ParseFolder(ToolsetInfo.CurrentTargetFramework), new string[] { Path.Combine(asset.TestRoot, asset.TestProject.Name, "bin", "Debug", ToolsetInfo.CurrentTargetFramework) } }
             };
             Package package = Package.Create(packCommand.GetNuGetPackage(), packageAssemblyReferences: useReferences ? references : null);
 
@@ -256,10 +257,10 @@ namespace PackageValidationTests { public class MyForwardedType : ISomeInterface
             var result = packCommand.Execute();
             Assert.Equal(string.Empty, result.StdErr);
 
-            IEnumerable<PackageAssemblyReferenceCollection> references = new PackageAssemblyReferenceCollection[]
+            Dictionary<NuGetFramework, IEnumerable<string>> references = new()
             {
-                new(".NETStandard,Version=v2.0", null, new string[] { Path.Combine(asset.TestRoot, asset.TestProject.Name, "bin", "Debug", "netstandard2.0") }),
-                new($".NETCoreApp,Version=v{ToolsetInfo.CurrentTargetFrameworkVersion}", null, new string[] { Path.Combine(asset.TestRoot, asset.TestProject.Name, "bin", "Debug", ToolsetInfo.CurrentTargetFramework) })
+                { NuGetFramework.ParseFolder("netstandard2.0"), new string[] { Path.Combine(asset.TestRoot, asset.TestProject.Name, "bin", "Debug", "netstandard2.0") } },
+                { NuGetFramework.ParseFolder(ToolsetInfo.CurrentTargetFramework), new string[] { Path.Combine(asset.TestRoot, asset.TestProject.Name, "bin", "Debug", ToolsetInfo.CurrentTargetFramework) } }
             };
             Package package = Package.Create(packCommand.GetNuGetPackage(), packageAssemblyReferences: useReferences ? references : null);
 
@@ -302,10 +303,10 @@ namespace PackageValidationTests { public class MyForwardedType : ISomeInterface
             var result = packCommand.Execute();
             Assert.Equal(string.Empty, result.StdErr);
 
-            IEnumerable<PackageAssemblyReferenceCollection> references = new PackageAssemblyReferenceCollection[]
+            Dictionary<NuGetFramework, IEnumerable<string>> references = new()
             {
-                new(".NETStandard,Version=v2.0", null, new string[] { Path.Combine(asset.TestRoot, asset.TestProject.Name, "bin", "Debug", "netstandard2.0") }),
-                new($".NETCoreApp,Version=v{ToolsetInfo.CurrentTargetFrameworkVersion}", null, new string[] { Path.Combine(asset.TestRoot, asset.TestProject.Name, "bin", "Debug", ToolsetInfo.CurrentTargetFramework) })
+                { NuGetFramework.ParseFolder("netstandard2.0"), new string[] { Path.Combine(asset.TestRoot, asset.TestProject.Name, "bin", "Debug", "netstandard2.0") } },
+                { NuGetFramework.ParseFolder(ToolsetInfo.CurrentTargetFramework), new string[] { Path.Combine(asset.TestRoot, asset.TestProject.Name, "bin", "Debug", ToolsetInfo.CurrentTargetFramework) } }
             };
             Package package = Package.Create(packCommand.GetNuGetPackage(), references);
 
@@ -328,9 +329,9 @@ namespace PackageValidationTests { public class MyForwardedType : ISomeInterface
             var result = packCommand.Execute();
             Assert.Equal(string.Empty, result.StdErr);
 
-            IEnumerable<PackageAssemblyReferenceCollection> references = new PackageAssemblyReferenceCollection[]
+            Dictionary<NuGetFramework, IEnumerable<string>> references = new()
             {
-                new(".NETStandard,Version=v2.0", null, new string[] { Path.Combine(asset.TestRoot, asset.TestProject.Name, "bin", "Debug", "netstandard2.0") })
+                { NuGetFramework.ParseFolder("netstandard2.0"), new string[] { Path.Combine(asset.TestRoot, asset.TestProject.Name, "bin", "Debug", "netstandard2.0") } }
             };
             Package package = Package.Create(packCommand.GetNuGetPackage(), useReferences ? references : null);
             (SuppressableTestLog log, CompatibleFrameworkInPackageValidator validator) = CreateLoggerAndValidator();
@@ -352,10 +353,10 @@ namespace PackageValidationTests { public class MyForwardedType : ISomeInterface
             var result = packCommand.Execute();
             Assert.Empty(result.StdErr);
 
-            IEnumerable<PackageAssemblyReferenceCollection> references = new PackageAssemblyReferenceCollection[]
+            Dictionary<NuGetFramework, IEnumerable<string>> references = new()
             {
-                new(".NETStandard,Version=v2.0", null, new string[] { Path.Combine(asset.TestRoot, asset.TestProject.Name, "bin", "Debug", "netstandard2.0") }),
-                new($".NETCoreApp,Version=v{ToolsetInfo.CurrentTargetFrameworkVersion}", "Windows,Version=7.0", new string[] { Path.Combine(asset.TestRoot, asset.TestProject.Name, "bin", "Debug", $"net{ToolsetInfo.CurrentTargetFrameworkVersion}-windows") })
+                { NuGetFramework.Parse("netstandard2.0"), new string[] { Path.Combine(asset.TestRoot, asset.TestProject.Name, "bin", "Debug", "netstandard2.0") } },
+                { NuGetFramework.ParseComponents($".NETCoreApp,Version=v{ToolsetInfo.CurrentTargetFrameworkVersion}", "Windows,Version=7.0"), new string[] { Path.Combine(asset.TestRoot, asset.TestProject.Name, "bin", "Debug", $"net{ToolsetInfo.CurrentTargetFrameworkVersion}-windows") } }
             };
             Package package = Package.Create(packCommand.GetNuGetPackage(), references);
             (SuppressableTestLog log, CompatibleFrameworkInPackageValidator validator) = CreateLoggerAndValidator();

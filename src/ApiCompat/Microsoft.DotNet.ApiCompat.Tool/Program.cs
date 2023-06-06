@@ -10,6 +10,7 @@ using System.IO;
 using Microsoft.DotNet.ApiCompatibility.Logging;
 using Microsoft.DotNet.ApiSymbolExtensions.Logging;
 using Microsoft.DotNet.PackageValidation;
+using NuGet.Frameworks;
 
 namespace Microsoft.DotNet.ApiCompat.Tool
 {
@@ -200,7 +201,7 @@ namespace Microsoft.DotNet.ApiCompat.Tool
             {
                 ArgumentHelpName = "nupkg"
             };
-            Option<IEnumerable<PackageAssemblyReferenceCollection>?> packageAssemblyReferencesOption = new("--package-assembly-references",
+            Option<Dictionary<NuGetFramework, IEnumerable<string>>?> packageAssemblyReferencesOption = new("--package-assembly-references",
                 description: "Paths to assembly references or their underlying directories for a specific target framework in the package. Values must be separated by commas: ','.",
                 parseArgument: ParsePackageAssemblyReferenceArgument)
             {
@@ -208,7 +209,7 @@ namespace Microsoft.DotNet.ApiCompat.Tool
                 Arity = ArgumentArity.ZeroOrMore,
                 ArgumentHelpName = "tfm=file1,file2,..."
             };
-            Option<IEnumerable<PackageAssemblyReferenceCollection>?> baselinePackageAssemblyReferencesOption = new("--baseline-package-assembly-references",
+            Option<Dictionary<NuGetFramework, IEnumerable<string>>?> baselinePackageAssemblyReferencesOption = new("--baseline-package-assembly-references",
                 description: "Paths to assembly references or their underlying directories for a specific target framework in the baseline package. Values must be separated by commas: ','.",
                 parseArgument: ParsePackageAssemblyReferenceArgument)
             {
@@ -251,8 +252,8 @@ namespace Microsoft.DotNet.ApiCompat.Tool
                 bool enableStrictModeForBaselineValidation = context.ParseResult.GetValue(enableStrictModeForBaselineValidationOption);
                 string? baselinePackage = context.ParseResult.GetValue(baselinePackageOption);
                 string? runtimeGraph = context.ParseResult.GetValue(runtimeGraphOption);
-                IEnumerable<PackageAssemblyReferenceCollection>? packageAssemblyReferences = context.ParseResult.GetValue(packageAssemblyReferencesOption);
-                IEnumerable<PackageAssemblyReferenceCollection>? baselinePackageAssemblyReferences = context.ParseResult.GetValue(baselinePackageAssemblyReferencesOption);
+                Dictionary<NuGetFramework, IEnumerable<string>>? packageAssemblyReferences = context.ParseResult.GetValue(packageAssemblyReferencesOption);
+                Dictionary<NuGetFramework, IEnumerable<string>>? baselinePackageAssemblyReferences = context.ParseResult.GetValue(baselinePackageAssemblyReferencesOption);
 
                 Func<ISuppressionEngine, SuppressableConsoleLog> logFactory = (suppressionEngine) => new(suppressionEngine, verbosity);
                 ValidatePackage.Run(logFactory,
@@ -321,10 +322,11 @@ namespace Microsoft.DotNet.ApiCompat.Tool
             return patterns;
         }
 
-        private static IEnumerable<PackageAssemblyReferenceCollection>? ParsePackageAssemblyReferenceArgument(ArgumentResult argumentResult)
+        private static Dictionary<NuGetFramework, IEnumerable<string>>? ParsePackageAssemblyReferenceArgument(ArgumentResult argumentResult)
         {
             const string invalidPackageAssemblyReferenceFormatMessage = "Invalid package assembly reference format {TargetFrameworkMoniker(+TargetPlatformMoniker)=assembly1,assembly2,assembly3,...}";
 
+            Dictionary<NuGetFramework, IEnumerable<string>> packageAssemblyReferencesDict = new(argumentResult.Tokens.Count);
             foreach (Token token in argumentResult.Tokens)
             {
                 string[] parts = token.Value.Split('=');
@@ -335,6 +337,8 @@ namespace Microsoft.DotNet.ApiCompat.Tool
                 }
 
                 string tfmInformation = parts[0];
+                string referencePath = parts[1];
+
                 string[] tfmInformationParts = tfmInformation.Split('+');
                 if (tfmInformationParts.Length < 1 || tfmInformationParts.Length > 2)
                 {
@@ -345,12 +349,18 @@ namespace Microsoft.DotNet.ApiCompat.Tool
                 string targetPlatformMoniker = tfmInformationParts.Length == 2 ?
                     tfmInformationParts[1] :
                     string.Empty;
-                string[] references = parts[1].Split(',');
 
-                yield return new PackageAssemblyReferenceCollection(targetFrameworkMoniker,
-                    targetPlatformMoniker,
-                    references);
+                // The TPM is null when the assembly doesn't target a platform.
+                if (targetFrameworkMoniker == string.Empty || referencePath == string.Empty)
+                    continue;
+
+                NuGetFramework nuGetFramework = NuGetFramework.ParseComponents(targetFrameworkMoniker, targetPlatformMoniker);
+                string[] references = referencePath.Split(',');
+
+                packageAssemblyReferencesDict.Add(nuGetFramework, references);
             }
+
+            return packageAssemblyReferencesDict;
         }
     }
 }

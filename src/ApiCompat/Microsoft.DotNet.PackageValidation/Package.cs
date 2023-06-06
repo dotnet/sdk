@@ -82,7 +82,7 @@ namespace Microsoft.DotNet.PackageValidation
         /// <summary>
         /// List of assembly references grouped by target framework.
         /// </summary>
-        public IEnumerable<PackageAssemblyReferenceCollection>? AssemblyReferences { get; }
+        public Dictionary<NuGetFramework, IEnumerable<string>>? AssemblyReferences { get; }
 
         /// <summary>
         /// List of the frameworks in the package.
@@ -94,7 +94,7 @@ namespace Microsoft.DotNet.PackageValidation
             string version,
             IEnumerable<string> packageAssets,
             Dictionary<NuGetFramework, IEnumerable<PackageDependency>> packageDependencies,
-            IEnumerable<PackageAssemblyReferenceCollection>? assemblyReferences = null)
+            Dictionary<NuGetFramework, IEnumerable<string>>? assemblyReferences = null)
         {
             PackagePath = packagePath;
             PackageId = packageId;
@@ -131,7 +131,7 @@ namespace Microsoft.DotNet.PackageValidation
         /// </summary>
         /// <param name="packagePath">The path to the package path.</param>
         /// <param name="packageAssemblyReferences">Optional assembly references with target framework information.</param>
-        public static Package Create(string? packagePath, IEnumerable<PackageAssemblyReferenceCollection>? packageAssemblyReferences = null)
+        public static Package Create(string? packagePath, Dictionary<NuGetFramework, IEnumerable<string>>? packageAssemblyReferences = null)
         {
             if (string.IsNullOrEmpty(packagePath))
             {
