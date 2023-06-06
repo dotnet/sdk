@@ -14,7 +14,7 @@ internal class DefaultManifestOperations : IManifestOperations
     public async Task<HttpResponseMessage> GetAsync(string repositoryName, string reference, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        using var request = new HttpRequestMessage(HttpMethod.Get, new Uri($"/v2/{repositoryName}/manifests/{reference}")).AcceptManifestFormats();
+        using var request = new HttpRequestMessage(HttpMethod.Get, new Uri(Client.BaseAddress!, $"/v2/{repositoryName}/manifests/{reference}")).AcceptManifestFormats();
         var response = await Client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
         return response;
@@ -22,6 +22,6 @@ internal class DefaultManifestOperations : IManifestOperations
 
     public async Task<HttpResponseMessage> PutAsync(string repositoryName, string reference, HttpContent content, CancellationToken cancellationToken)
     {
-        return await Client.PutAsync(new Uri($"/v2/{repositoryName}/manifests/{reference}"), content, cancellationToken).ConfigureAwait(false);
+        return await Client.PutAsync(new Uri(Client.BaseAddress!, $"/v2/{repositoryName}/manifests/{reference}"), content, cancellationToken).ConfigureAwait(false);
     }
 }
