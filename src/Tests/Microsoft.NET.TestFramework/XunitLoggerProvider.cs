@@ -124,7 +124,8 @@ namespace Microsoft.NET.TestFramework
 
             public bool IsEnabled(LogLevel logLevel)
                 => logLevel >= _minLogLevel;
-            public IDisposable BeginScope<TState>(TState state) => new NullScope();
+
+            IDisposable ILogger.BeginScope<TState>(TState state) => new NullScope();
 
             private class NullScope : IDisposable
             {

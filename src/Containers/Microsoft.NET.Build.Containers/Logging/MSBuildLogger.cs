@@ -25,7 +25,7 @@ internal sealed class MSBuildLogger : ILogger
         _loggingHelper = loggingHelperToWrap;
     }
 
-    public IDisposable BeginScope<TState>(TState state) => Scope;
+    IDisposable ILogger.BeginScope<TState>(TState state) => Scope;
 
     public bool IsEnabled(LogLevel logLevel) => true;
 
