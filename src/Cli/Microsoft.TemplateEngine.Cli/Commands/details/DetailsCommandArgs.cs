@@ -16,6 +16,8 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             VersionCriteria = parseResult.GetValueForOptionOrNull(DetailsCommand.VersionOption);
         }
 
+        internal bool Interactive { get; }
+
         internal string NameCriteria { get; }
 
         internal string? VersionCriteria { get; }

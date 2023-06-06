@@ -386,12 +386,16 @@ namespace Microsoft.TemplateEngine.Cli
             string packageIdentity,
             string? packageVersion,
             NugetApiManager nugetApiManager,
+            bool interactiveAuth,
             CancellationToken cancellationToken = default)
         {
             var metadataOutput = new List<string>();
             NugetPackageMetadata? extendedPackageMetadata;
             IEnumerable<ITemplateInfo>? packageTemplates;
             IManagedTemplatePackage? localPackage;
+
+            InitializeNuGetCredentialService(interactiveAuth);
+
             try
             {
                 (localPackage, packageTemplates) = await _templatePackageManager
