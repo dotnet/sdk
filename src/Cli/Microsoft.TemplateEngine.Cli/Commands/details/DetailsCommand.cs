@@ -14,9 +14,8 @@ namespace Microsoft.TemplateEngine.Cli.Commands
         private static NugetApiManager _nugetApiManager = new NugetApiManager();
 
         internal DetailsCommand(
-            Func<ParseResult, ITemplateEngineHost> hostBuilder,
-            string commandName)
-            : base(hostBuilder, commandName, SymbolStrings.Command_Details_Description)
+            Func<ParseResult, ITemplateEngineHost> hostBuilder)
+            : base(hostBuilder, "details", SymbolStrings.Command_Details_Description)
         {
             AddArgument(NameArgument);
             AddOption(VersionOption);

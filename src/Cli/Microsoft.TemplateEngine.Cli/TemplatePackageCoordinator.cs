@@ -399,11 +399,8 @@ namespace Microsoft.TemplateEngine.Cli
             }
             catch
             {
-                Reporter.Output.WriteLine(
-                LocalizableStrings.Generic_Info_NoMatchingTemplatePackage.Bold().Red(),
-                $"{packageIdentity}{(string.IsNullOrWhiteSpace(packageVersion) ? string.Empty : $"::{packageVersion}")}");
-
-                return NewCommandStatus.NotFound;
+                localPackage = null;
+                packageTemplates = null;
             }
 
             // The package was found locally
@@ -429,26 +426,8 @@ namespace Microsoft.TemplateEngine.Cli
 
             if (extendedPackageMetadata != null && packageTemplates.Any())
             {
-                Reporter.Output.WriteLine($"{packageIdentity}");
-
-                DisplayPackageMetadata(extendedPackageMetadata);
-
-                Reporter.Output.WriteLine();
-                Reporter.Output.WriteLine($"{SymbolStrings.Command_Details_Templates_Property}:".Indent(1));
-
                 var templatesToDisplay = TemplateGroupDisplay.GetTemplateGroupsForListDisplay(packageTemplates, null, null, _engineEnvironmentSettings.Environment);
-                TabularOutput<TemplateGroupTableRow> formatter =
-                    TabularOutput.TabularOutput
-                        .For(
-                            new TabularOutputSettings(_engineEnvironmentSettings.Environment),
-                            templatesToDisplay)
-                        .DefineColumn(t => t.Name, LocalizableStrings.ColumnNameTemplateName, minWidth: 15, showAlways: true)
-                        .DefineColumn(t => t.ShortNames, LocalizableStrings.ColumnNameShortName, minWidth: 15, showAlways: true)
-                        .DefineColumn(t => t.Type, LocalizableStrings.ColumnNameType, minWidth: 15, showAlways: true)
-                        .DefineColumn(t => t.Classifications, LocalizableStrings.ColumnNameTags, minWidth: 15, showAlways: true)
-                        .DefineColumn(t => t.Languages, LocalizableStrings.ColumnNameLanguage, minWidth: 15, showAlways: true);
-
-                Reporter.Output.WriteLine(formatter.Layout(2));
+                DisplayPackageMetadata(extendedPackageMetadata, templatesToDisplay, Reporter.Output);
 
                 return NewCommandStatus.Success;
             }
@@ -458,6 +437,79 @@ namespace Microsoft.TemplateEngine.Cli
                 $"{packageIdentity}{(string.IsNullOrWhiteSpace(packageVersion) ? string.Empty : $"::{packageVersion}")}");
 
             return NewCommandStatus.NotFound;
+        }
+
+        internal void DisplayPackageMetadata(NugetPackageMetadata packageMetadata, IReadOnlyList<TemplateGroupTableRow> templatesToDisplay, IReporter reporter)
+        {
+            reporter.WriteLine($"{packageMetadata.Identity}");
+
+            WriteIfNotNull(SymbolStrings.Command_Details_Description_Property, packageMetadata.Description, reporter, 1);
+            if (!string.IsNullOrEmpty(packageMetadata.Authors))
+            {
+                reporter.WriteLine($"{SymbolStrings.Command_Details_Authors_Property}:".Indent(1));
+
+                var packageAuthors = packageMetadata.Authors.Split(",");
+                foreach (var author in packageAuthors)
+                {
+                    reporter.WriteLine(author.Trim().Indent(2));
+                }
+            }
+
+            if (!string.IsNullOrEmpty(packageMetadata.Owners))
+            {
+                reporter.WriteLine($"{SymbolStrings.Command_Details_Owners_Property}:".Indent(1));
+
+                var packageOwners = packageMetadata.Owners.Split(",");
+                foreach (var owner in packageOwners)
+                {
+                    reporter.WriteLine(AnsiExtensions.Url($"https://nuget.org/profiles/{owner.Trim()}", owner).Indent(2));
+                }
+            }
+
+            reporter.WriteLine($"{SymbolStrings.Command_Details_LicenseMetadata_Property}:".Indent(1));
+            WriteIfNotNull(SymbolStrings.Command_Details_License_Property, packageMetadata.License, reporter, 2);
+            WriteIfNotNull(SymbolStrings.Command_Details_License_Expression_Property, packageMetadata.LicenseExpression, reporter, 2);
+
+            if (!string.IsNullOrEmpty(packageMetadata.LicenseExpression))
+            {
+                var licenseExpressionUrl = "https://licenses.nuget.org/" + packageMetadata.LicenseExpression;
+                reporter.WriteLine(
+                    $"{SymbolStrings.Command_Details_License_Expression_Property}: ".Indent(1) +
+                    $"{AnsiExtensions.Url(licenseExpressionUrl, packageMetadata.LicenseExpression)}");
+            }
+
+            var licenseUrl = packageMetadata.LicenseUrl?.ToString();
+            if (!string.IsNullOrEmpty(licenseUrl))
+            {
+                reporter.WriteLine(
+                    $"{SymbolStrings.Command_Details_License_Url_Property}: ".Indent(2) +
+                    $"{AnsiExtensions.Url(licenseUrl, licenseUrl)}");
+            }
+
+            var projectUrl = packageMetadata.ProjectUrl?.ToString();
+            if (!string.IsNullOrEmpty(projectUrl))
+            {
+                var repoUrlInfo = packageMetadata.ProjectUrl?.ToString().Split("/");
+                reporter.WriteLine(
+                    $"{SymbolStrings.Command_Details_Repository_Url_Property}: ".Indent(2) +
+                    $"{AnsiExtensions.Url(projectUrl, repoUrlInfo![3] + repoUrlInfo![4])}");
+            }
+
+            reporter.WriteLine();
+            reporter.WriteLine($"{SymbolStrings.Command_Details_Templates_Property}:".Indent(1));
+
+            TabularOutput<TemplateGroupTableRow> formatter =
+                TabularOutput.TabularOutput
+                    .For(
+                        new TabularOutputSettings(_engineEnvironmentSettings.Environment),
+                        templatesToDisplay)
+                    .DefineColumn(t => t.Name, LocalizableStrings.ColumnNameTemplateName, minWidth: 15, showAlways: true)
+                    .DefineColumn(t => t.ShortNames, LocalizableStrings.ColumnNameShortName, minWidth: 15, showAlways: true)
+                    .DefineColumn(t => t.Type, LocalizableStrings.ColumnNameType, minWidth: 15, showAlways: true)
+                    .DefineColumn(t => t.Classifications, LocalizableStrings.ColumnNameTags, minWidth: 15, showAlways: true)
+                    .DefineColumn(t => t.Languages, LocalizableStrings.ColumnNameLanguage, minWidth: 15, showAlways: true);
+
+            reporter.WriteLine(formatter.Layout(2));
         }
 
         private static void InitializeNuGetCredentialService(bool interactive)
@@ -472,66 +524,11 @@ namespace Microsoft.TemplateEngine.Cli
             }
         }
 
-        private void WriteIfNotNull(string metadataName, string? metadataEntry, int indent = 0)
+        private void WriteIfNotNull(string metadataName, string? metadataEntry, IReporter reporter, int indent = 0)
         {
             if (!string.IsNullOrEmpty(metadataEntry))
             {
-                Reporter.Output.WriteLine($"{metadataName}:  {metadataEntry}".Indent(indent));
-            }
-        }
-
-        private void DisplayPackageMetadata(NugetPackageMetadata packageMetadata)
-        {
-            WriteIfNotNull(SymbolStrings.Command_Details_Description_Property, packageMetadata.Description, 1);
-            if (!string.IsNullOrEmpty(packageMetadata.Authors))
-            {
-                Reporter.Output.WriteLine($"{SymbolStrings.Command_Details_Authors_Property}:".Indent(1));
-
-                var packageAuthors = packageMetadata.Authors.Split(",");
-                foreach (var author in packageAuthors)
-                {
-                    Reporter.Output.WriteLine(author.Indent(2));
-                }
-            }
-
-            if (!string.IsNullOrEmpty(packageMetadata.Owners))
-            {
-                Reporter.Output.WriteLine($"{SymbolStrings.Command_Details_Owners_Property}:".Indent(1));
-
-                var packageOwners = packageMetadata.Owners.Split(",");
-                foreach (var owner in packageOwners)
-                {
-                    Reporter.Output.WriteLine(AnsiExtensions.Url($"https://nuget.org/profiles/{owner.Trim()}", owner).Indent(2));
-                }
-            }
-
-            Reporter.Output.WriteLine($"{SymbolStrings.Command_Details_LicenseMetadata_Property}:".Indent(1));
-            WriteIfNotNull(SymbolStrings.Command_Details_License_Property, packageMetadata.License, 2);
-            WriteIfNotNull(SymbolStrings.Command_Details_License_Expression_Property, packageMetadata.LicenseExpression, 2);
-
-            if (!string.IsNullOrEmpty(packageMetadata.LicenseExpression))
-            {
-                var licenseExpressionUrl = "https://licenses.nuget.org/" + packageMetadata.LicenseExpression;
-                Reporter.Output.WriteLine(
-                    $"{SymbolStrings.Command_Details_License_Expression_Property}: ".Indent(1) +
-                    $"{AnsiExtensions.Url(licenseExpressionUrl, packageMetadata.LicenseExpression)}");
-            }
-
-            var licenseUrl = packageMetadata.LicenseUrl?.ToString();
-            if (!string.IsNullOrEmpty(licenseUrl))
-            {
-                Reporter.Output.WriteLine(
-                    $"{SymbolStrings.Command_Details_License_Url_Property}: ".Indent(2) +
-                    $"{AnsiExtensions.Url(licenseUrl, licenseUrl)}");
-            }
-
-            var projectUrl = packageMetadata.ProjectUrl?.ToString();
-            if (!string.IsNullOrEmpty(projectUrl))
-            {
-                var repoUrlInfo = packageMetadata.ProjectUrl?.ToString().Split("/");
-                Reporter.Output.WriteLine(
-                    $"{SymbolStrings.Command_Details_Repository_Url_Property}: ".Indent(2) +
-                    $"{AnsiExtensions.Url(projectUrl, repoUrlInfo![3] + repoUrlInfo![4])}");
+                reporter.WriteLine($"{metadataName}:  {metadataEntry}".Indent(indent));
             }
         }
 
