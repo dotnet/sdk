@@ -791,8 +791,8 @@ The following are names of parameters or literal values and should not be transl
         <note>{StrBegin="NETSDK1094: "}</note>
       </trans-unit>
       <trans-unit id="ReadyToRunTargetNotSupportedError">
-        <source>NETSDK1095: Optimizing assemblies for performance is not supported for the selected target platform or architecture. Please verify you are using a supported runtime identifier, or set the PublishReadyToRun property to false. For more information, see https://aka.ms/netsdk1195</source>
-        <target state="needs-review-translation">NETSDK1095: 選取的目標平台或架構不支援最佳化組件的效能。請務必使用支援的執行階段識別碼，或將 PublishReadyToRun 屬性設為 false。</target>
+        <source>NETSDK1095: Optimizing assemblies for performance is not supported for the selected target platform or architecture. Please verify you are using a supported runtime identifier, or set the PublishReadyToRun property to false.</source>
+        <target state="translated">NETSDK1095: 選取的目標平台或架構不支援最佳化組件的效能。請務必使用支援的執行階段識別碼，或將 PublishReadyToRun 屬性設為 false。</target>
         <note>{StrBegin="NETSDK1095: "}</note>
       </trans-unit>
       <trans-unit id="RollForwardRequiresVersion30">
