@@ -4,6 +4,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using Microsoft.DotNet.ApiCompatibility;
 using Microsoft.DotNet.ApiCompatibility.Logging;
 using Microsoft.DotNet.ApiCompatibility.Runner;
@@ -65,7 +66,7 @@ namespace Microsoft.DotNet.PackageValidation
         {
             displayString ??= item.Path;
 
-            if (package.AssemblyReferences is not null && item.Properties.TryGetValue("tfm", out object? tfmObj))
+            if (package.AssemblyReferences is not null && package.AssemblyReferences.Any() && item.Properties.TryGetValue("tfm", out object? tfmObj))
             {
                 NuGetFramework nuGetFramework = (NuGetFramework)tfmObj;
 
@@ -73,7 +74,7 @@ namespace Microsoft.DotNet.PackageValidation
                 {
                     if (packageAssemblyReferenceCollection.TargetFrameworkMoniker == nuGetFramework.DotNetFrameworkName &&
                         // IgnoreCase because NuGet returns 'windows' lowercase but the SDK passes it in as 'Windows'.
-                        string.Equals(packageAssemblyReferenceCollection.TargetPlatformMoniker, nuGetFramework.HasPlatform ? nuGetFramework.DotNetPlatformName : null, System.StringComparison.OrdinalIgnoreCase))
+                        string.Equals(packageAssemblyReferenceCollection.TargetPlatformMoniker, nuGetFramework.DotNetPlatformName, System.StringComparison.OrdinalIgnoreCase))
                     {
                         assemblyReferences = packageAssemblyReferenceCollection.AssemblyReferences;
                         break;

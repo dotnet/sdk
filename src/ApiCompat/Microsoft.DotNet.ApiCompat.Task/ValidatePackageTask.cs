@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Microsoft.Build.Framework;
 using Microsoft.DotNet.ApiCompatibility.Logging;
 using Microsoft.DotNet.PackageValidation;
@@ -125,22 +126,6 @@ namespace Microsoft.DotNet.ApiCompat.Task
 
         protected override void ExecuteCore()
         {
-            Dictionary<string, string[]>? packageAssemblyReferences = null;
-
-            if (PackageAssemblyReferences != null)
-            {
-                packageAssemblyReferences = new Dictionary<string, string[]>(PackageAssemblyReferences.Length);
-                foreach (ITaskItem taskItem in PackageAssemblyReferences)
-                {
-                    string tfm = taskItem.GetMetadata("Identity");
-                    string? referencePath = taskItem.GetMetadata("ReferencePath");
-                    if (string.IsNullOrEmpty(referencePath))
-                        continue;
-
-                    packageAssemblyReferences.Add(tfm, referencePath.Split(','));
-                }
-            }
-
             Func<ISuppressionEngine, SuppressableMSBuildLog> logFactory = (suppressionEngine) => new(Log, suppressionEngine);
             ValidatePackage.Run(logFactory,
                 GenerateSuppressionFile,
@@ -158,19 +143,16 @@ namespace Microsoft.DotNet.ApiCompat.Task
                 EnableStrictModeForBaselineValidation,
                 BaselinePackageTargetPath,
                 RuntimeGraph,
-                ParsePackageAssemblyReferences(PackageAssemblyReferences),
-                ParsePackageAssemblyReferences(BaselinePackageAssemblyReferences));
+                PackageAssemblyReferences is not null ? ParsePackageAssemblyReferences(PackageAssemblyReferences) : null,
+                BaselinePackageAssemblyReferences is not null ? ParsePackageAssemblyReferences(BaselinePackageAssemblyReferences) : null);
         }
 
-        private static IEnumerable<PackageAssemblyReferenceCollection>? ParsePackageAssemblyReferences(ITaskItem[]? packageAssemblyReferences)
+        private static IEnumerable<PackageAssemblyReferenceCollection> ParsePackageAssemblyReferences(ITaskItem[] packageAssemblyReferences)
         {
-            if (packageAssemblyReferences is null)
-                yield break;
-
             foreach (ITaskItem taskItem in packageAssemblyReferences)
             {
                 string? targetFrameworkMoniker = taskItem.GetMetadata("TargetFrameworkMoniker");
-                string? targetPlatformMoniker = taskItem.GetMetadata("TargetPlatformMoniker");
+                string targetPlatformMoniker = taskItem.GetMetadata("TargetPlatformMoniker");
                 string? referencePath = taskItem.GetMetadata("ReferencePath");
 
                 // The TPM is null when the assembly doesn't target a platform.

@@ -65,8 +65,9 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ItemGroup>
       <ApiCompatAssemblyReferencesWithTargetFramework Include="$(TargetFramework)"
                                                       TargetFrameworkMoniker="$(TargetFrameworkMoniker)"
-                                                      TargetPlatformMoniker="$(TargetPlatformMoniker)"
-                                                      ReferencePath="@(ReferencePathWithRefAssemblies, ',')" />
+                                                      ReferencePath="@(ReferencePathWithRefAssemblies, ',')">
+          <TargetPlatformMoniker Condition="'$(ApiCompatIgnoreTargetPlatformMoniker)' != 'true'">$(TargetPlatformMoniker)</TargetPlatformMoniker>
+        </ApiCompatAssemblyReferencesWithTargetFramework>
     </ItemGroup>
   </Target>
 

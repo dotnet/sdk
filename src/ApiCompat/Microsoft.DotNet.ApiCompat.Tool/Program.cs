@@ -342,7 +342,9 @@ namespace Microsoft.DotNet.ApiCompat.Tool
                 }
 
                 string targetFrameworkMoniker = tfmInformationParts[0];
-                string? targetPlatformMoniker = tfmInformationParts.Length == 2 ? tfmInformationParts[1] : null;
+                string targetPlatformMoniker = tfmInformationParts.Length == 2 ?
+                    tfmInformationParts[1] :
+                    string.Empty;
                 string[] references = parts[1].Split(',');
 
                 yield return new PackageAssemblyReferenceCollection(targetFrameworkMoniker,
