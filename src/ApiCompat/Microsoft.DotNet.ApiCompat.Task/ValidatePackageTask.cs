@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using Microsoft.Build.Framework;
 using Microsoft.DotNet.ApiCompatibility.Logging;
 using Microsoft.DotNet.PackageValidation;
