@@ -60,7 +60,11 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Target Name="ProcessFrameworkReferences" BeforeTargets="_CheckForInvalidConfigurationAndPlatform;CollectPackageReferences;CollectPackageDownloads"
           DependsOnTargets="AddWindowsSdkKnownFrameworkReferences"
-          Condition="'@(FrameworkReference)' != ''">
+          Condition="'@(FrameworkReference)' != '' Or
+            '$(_RequiresILLinkPack)' == 'true' Or
+            '$(PublishReadyToRun)' == 'true' Or
+            '$(PublishAot)' == 'true' Or
+            '$(UsingMicrosoftNETSdkWebAssembly)' == 'true'">
 
     <CheckForDuplicateFrameworkReferences
         FrameworkReferences="@(FrameworkReference)"
