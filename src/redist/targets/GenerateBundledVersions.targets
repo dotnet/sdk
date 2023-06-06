@@ -326,8 +326,11 @@
       <WindowsDesktopRuntimePackRids Include="@(WindowsDesktop50RuntimePackRids)" />
 
       <_KnownRuntimeIdentiferPlatforms Include="$(ProductMonikerRid.Substring(0, $(Rid.LastIndexOf('-'))))" Condition="'$(DotNetBuildFromSource)' == 'true'" />
-      <_KnownRuntimeIdentiferPlatforms Include="any;freebsd;illumos;linux;linux-bionic;linux-musl;osx;solaris;unix;win" />
-      <_KnownRuntimeIdentiferPlatforms Include="android;aot;browser;ios;iossimulator;maccatalyst;tvos;tvossimulator" />
+      <_KnownRuntimeIdentiferPlatforms Include="any;aot;freebsd;illumos;solaris;unix" />
+      <_ExcludedKnownRuntimeIdentiferPlatforms Include="rhel.6;tizen.4.0.0;tizen.5.0.0" Condition="'$(DotNetBuildFromSource)' != 'true'" />
+      <_ExcludedKnownRuntimeIdentiferPlatforms Include="rhel.6" Condition="'$(DotNetBuildFromSource)' == 'true' and !$(ProductMonikerRid.StartsWith('rhel.6-'))" />
+      <_ExcludedKnownRuntimeIdentiferPlatforms Include="tizen.4.0.0" Condition="'$(DotNetBuildFromSource)' == 'true' and !$(ProductMonikerRid.StartsWith('tizen.4.0.0-'))" />
+      <_ExcludedKnownRuntimeIdentiferPlatforms Include="tizen.5.0.0" Condition="'$(DotNetBuildFromSource)' == 'true' and !$(ProductMonikerRid.StartsWith('tizen.5.0.0-'))" />
     </ItemGroup>
 
     <!--
@@ -1134,7 +1137,15 @@ Copyright (c) .NET Foundation. All rights reserved.
     <WindowsSdkSupportedTargetPlatformVersion Include="8.0" />
     <WindowsSdkSupportedTargetPlatformVersion Include="7.0" />
 
+    <_KnownRuntimeIdentifersForTfm Include="%40(KnownRuntimePack->WithMetadataValue('TargetFramework', %24(TargetFramework))->Metadata('RuntimePackRuntimeIdentifiers'))" />
+    <_KnownRuntimeIdentifersForTfm Include="%40(KnownFrameworkReference->WithMetadataValue('TargetFramework', %24(TargetFramework))->Metadata('RuntimePackRuntimeIdentifiers'))" />
+    <_KnownRuntimeIdentifersForTfmWithPlatform Include="%40(_KnownRuntimeIdentifersForTfm->ClearMetadata()->Distinct())">
+      <Platform Condition="%24([System.String]::new('%25(Identity)').LastIndexOf('-')) == -1">%25(Identity)</Platform>
+      <Platform Condition="%24([System.String]::new('%25(Identity)').LastIndexOf('-')) != -1">%24([System.String]::new('%25(Identity)').Substring(0, %24([System.String]::new('%25(Identity)').LastIndexOf('-'))))</Platform>
+    </_KnownRuntimeIdentifersForTfmWithPlatform>
+
     <_KnownRuntimeIdentiferPlatforms Include="@(_KnownRuntimeIdentiferPlatforms, '%3B')" />
+    <_KnownRuntimeIdentiferPlatforms Include="%40(_KnownRuntimeIdentifersForTfmWithPlatform->Metadata('Platform')->ClearMetadata()->Distinct())" Exclude="@(_ExcludedKnownRuntimeIdentiferPlatforms, '%3B')" />
   </ItemGroup>
 </Project>
 ]]>
