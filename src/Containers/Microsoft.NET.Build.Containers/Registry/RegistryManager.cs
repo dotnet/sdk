@@ -39,7 +39,7 @@ internal sealed class RegistryManager
     private static readonly int s_fiveMegs = 5_242_880;
 
     private readonly ILogger _logger;
-    
+
     public RegistryManager(Uri baseUri, ILogger? logger = null)
     {
         BaseUri = baseUri;
@@ -540,7 +540,7 @@ internal sealed class RegistryManager
                 return;
             }
 
-            if (await API.Blob.Upload.TryMount(destination.Repository, source.Repository, digest))
+            if (!(await API.Blob.Upload.TryMount(destination.Repository, source.Repository, digest)))
             {
                 // The blob wasn't already available in another namespace, so fall back to explicitly uploading it
                 if (source.Registry is { } sourceRegistry)
