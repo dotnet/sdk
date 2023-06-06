@@ -164,8 +164,13 @@ namespace Microsoft.DotNet.ApiCompat.Task
                     continue;
 
                 NuGetFramework nuGetFramework = NuGetFramework.ParseComponents(targetFrameworkMoniker, targetPlatformMoniker);
-                string[] references = referencePath.Split(',');
+                // Skip duplicate frameworks which could be passed in when using TFM aliases.
+                if (packageAssemblyReferencesDict.ContainsKey(nuGetFramework))
+                {
+                    continue;
+                }
 
+                string[] references = referencePath.Split(',');
                 packageAssemblyReferencesDict.Add(nuGetFramework, references);
             }
 
