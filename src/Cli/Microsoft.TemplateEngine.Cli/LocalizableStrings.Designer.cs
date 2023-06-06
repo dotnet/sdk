@@ -730,6 +730,141 @@ namespace Microsoft.TemplateEngine.Cli {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Package identifier.
+        /// </summary>
+        internal static string DetailsCommand_Argument_PackageIdentifier {
+            get {
+                return ResourceManager.GetString("DetailsCommand_Argument_PackageIdentifier", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Specifies a concrete version for displaying details. If not specified the last is taken..
+        /// </summary>
+        internal static string DetailsCommand_Option_Version {
+            get {
+                return ResourceManager.GetString("DetailsCommand_Option_Version", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Authors.
+        /// </summary>
+        internal static string DetailsCommand_Property_Authors {
+            get {
+                return ResourceManager.GetString("DetailsCommand_Property_Authors", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to .
+        /// </summary>
+        internal static string DetailsCommand_Property_Constraints {
+            get {
+                return ResourceManager.GetString("DetailsCommand_Property_Constraints", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Details.
+        /// </summary>
+        internal static string DetailsCommand_Property_Description {
+            get {
+                return ResourceManager.GetString("DetailsCommand_Property_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Languages.
+        /// </summary>
+        internal static string DetailsCommand_Property_Languages {
+            get {
+                return ResourceManager.GetString("DetailsCommand_Property_Languages", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to License.
+        /// </summary>
+        internal static string DetailsCommand_Property_License {
+            get {
+                return ResourceManager.GetString("DetailsCommand_Property_License", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to License Expression.
+        /// </summary>
+        internal static string DetailsCommand_Property_LicenseExpression {
+            get {
+                return ResourceManager.GetString("DetailsCommand_Property_LicenseExpression", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to License Metadata.
+        /// </summary>
+        internal static string DetailsCommand_Property_LicenseMetadata {
+            get {
+                return ResourceManager.GetString("DetailsCommand_Property_LicenseMetadata", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to License Url.
+        /// </summary>
+        internal static string DetailsCommand_Property_LicenseUrl {
+            get {
+                return ResourceManager.GetString("DetailsCommand_Property_LicenseUrl", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Owners.
+        /// </summary>
+        internal static string DetailsCommand_Property_Owners {
+            get {
+                return ResourceManager.GetString("DetailsCommand_Property_Owners", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Repository Url.
+        /// </summary>
+        internal static string DetailsCommand_Property_RepoUrl {
+            get {
+                return ResourceManager.GetString("DetailsCommand_Property_RepoUrl", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Short Names.
+        /// </summary>
+        internal static string DetailsCommand_Property_ShortNames {
+            get {
+                return ResourceManager.GetString("DetailsCommand_Property_ShortNames", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Tags.
+        /// </summary>
+        internal static string DetailsCommand_Property_Tags {
+            get {
+                return ResourceManager.GetString("DetailsCommand_Property_Tags", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Templates.
+        /// </summary>
+        internal static string DetailsCommand_Property_Templates {
+            get {
+                return ResourceManager.GetString("DetailsCommand_Property_Templates", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Displays help for this command..
         /// </summary>
         internal static string DisplaysHelp {

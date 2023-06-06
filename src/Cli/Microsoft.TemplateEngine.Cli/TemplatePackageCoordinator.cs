@@ -443,10 +443,10 @@ namespace Microsoft.TemplateEngine.Cli
         {
             reporter.WriteLine($"{packageMetadata.Identity}");
 
-            WriteIfNotNull(SymbolStrings.Command_Details_Description_Property, packageMetadata.Description, reporter, 1);
+            WriteIfNotNull(LocalizableStrings.DetailsCommand_Property_Description, packageMetadata.Description, reporter, 1);
             if (!string.IsNullOrEmpty(packageMetadata.Authors))
             {
-                reporter.WriteLine($"{SymbolStrings.Command_Details_Authors_Property}:".Indent(1));
+                reporter.WriteLine($"{LocalizableStrings.DetailsCommand_Property_Authors}:".Indent(1));
 
                 var packageAuthors = packageMetadata.Authors.Split(",");
                 foreach (var author in packageAuthors)
@@ -457,7 +457,7 @@ namespace Microsoft.TemplateEngine.Cli
 
             if (!string.IsNullOrEmpty(packageMetadata.Owners))
             {
-                reporter.WriteLine($"{SymbolStrings.Command_Details_Owners_Property}:".Indent(1));
+                reporter.WriteLine($"{LocalizableStrings.DetailsCommand_Property_Owners}:".Indent(1));
 
                 var packageOwners = packageMetadata.Owners.Split(",");
                 foreach (var owner in packageOwners)
@@ -466,15 +466,15 @@ namespace Microsoft.TemplateEngine.Cli
                 }
             }
 
-            reporter.WriteLine($"{SymbolStrings.Command_Details_LicenseMetadata_Property}:".Indent(1));
-            WriteIfNotNull(SymbolStrings.Command_Details_License_Property, packageMetadata.License, reporter, 2);
-            WriteIfNotNull(SymbolStrings.Command_Details_License_Expression_Property, packageMetadata.LicenseExpression, reporter, 2);
+            reporter.WriteLine($"{LocalizableStrings.DetailsCommand_Property_LicenseMetadata}:".Indent(1));
+            WriteIfNotNull(LocalizableStrings.DetailsCommand_Property_License, packageMetadata.License, reporter, 2);
+            WriteIfNotNull(LocalizableStrings.DetailsCommand_Property_LicenseExpression, packageMetadata.LicenseExpression, reporter, 2);
 
             if (!string.IsNullOrEmpty(packageMetadata.LicenseExpression))
             {
                 var licenseExpressionUrl = "https://licenses.nuget.org/" + packageMetadata.LicenseExpression;
                 reporter.WriteLine(
-                    $"{SymbolStrings.Command_Details_License_Expression_Property}: ".Indent(1) +
+                    $"{LocalizableStrings.DetailsCommand_Property_LicenseExpression}: ".Indent(1) +
                     $"{AnsiExtensions.Url(licenseExpressionUrl, packageMetadata.LicenseExpression)}");
             }
 
@@ -482,7 +482,7 @@ namespace Microsoft.TemplateEngine.Cli
             if (!string.IsNullOrEmpty(licenseUrl))
             {
                 reporter.WriteLine(
-                    $"{SymbolStrings.Command_Details_License_Url_Property}: ".Indent(2) +
+                    $"{LocalizableStrings.DetailsCommand_Property_RepoUrl}: ".Indent(2) +
                     $"{AnsiExtensions.Url(licenseUrl, licenseUrl)}");
             }
 
@@ -491,12 +491,12 @@ namespace Microsoft.TemplateEngine.Cli
             {
                 var repoUrlInfo = packageMetadata.ProjectUrl?.ToString().Split("/");
                 reporter.WriteLine(
-                    $"{SymbolStrings.Command_Details_Repository_Url_Property}: ".Indent(2) +
+                    $"{LocalizableStrings.DetailsCommand_Property_RepoUrl}: ".Indent(2) +
                     $"{AnsiExtensions.Url(projectUrl, repoUrlInfo![3] + repoUrlInfo![4])}");
             }
 
             reporter.WriteLine();
-            reporter.WriteLine($"{SymbolStrings.Command_Details_Templates_Property}:".Indent(1));
+            reporter.WriteLine($"{LocalizableStrings.DetailsCommand_Property_Templates}:".Indent(1));
 
             TabularOutput<TemplateGroupTableRow> formatter =
                 TabularOutput.TabularOutput

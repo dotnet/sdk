@@ -859,6 +859,55 @@ The header is followed by the list of parameters and their errors (might be seve
   <data name="Generic_CommandHints_List" xml:space="preserve">
     <value>To list installed templates, run:</value>
   </data>
+  <data name="DetailsCommand_Argument_PackageIdentifier">
+    <value>Package identifier</value>
+  </data>
+  <data name="DetailsCommand_Option_Version">
+    <value>Specifies a concrete version for displaying details. If not specified the last is taken.</value>
+  </data>
+  <data name="DetailsCommand_Property_Authors">
+    <value>Authors</value>
+  </data>
+  <data name="DetailsCommand_Property_Constraints">
+    <value></value>
+    <comment></comment>
+  </data>
+  <data name="DetailsCommand_Property_Description">
+    <value>Details</value>
+  </data>
+  <data name="DetailsCommand_Property_Languages">
+    <value>Languages</value>
+    <comment></comment>
+  </data>
+  <data name="DetailsCommand_Property_LicenseMetadata">
+    <value>License Metadata</value>
+  </data>
+  <data name="DetailsCommand_Property_LicenseExpression">
+    <value>License Expression</value>
+  </data>
+  <data name="DetailsCommand_Property_License">
+    <value>License</value>
+  </data>
+  <data name="DetailsCommand_Property_LicenseUrl">
+    <value>License Url</value>
+  </data>
+  <data name="DetailsCommand_Property_Owners">
+    <value>Owners</value>
+  </data>
+  <data name="DetailsCommand_Property_RepoUrl">
+    <value>Repository Url</value>
+  </data>
+  <data name="DetailsCommand_Property_ShortNames">
+    <value>Short Names</value>
+    <comment></comment>
+  </data>
+  <data name="DetailsCommand_Property_Tags">
+    <value>Tags</value>
+    <comment></comment>
+  </data>
+  <data name="DetailsCommand_Property_Templates">
+    <value>Templates</value>
+  </data>
   <data name="OperationCancelled" xml:space="preserve">
     <value>The operation was cancelled.</value>
   </data>

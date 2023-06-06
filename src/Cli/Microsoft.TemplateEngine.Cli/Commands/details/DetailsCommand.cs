@@ -23,13 +23,13 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 
         internal static Argument<string> NameArgument { get; } = new("package-identifier")
         {
-            Description = SymbolStrings.Command_Details_Argument_PackageIdentifier,
+            Description = LocalizableStrings.DetailsCommand_Argument_PackageIdentifier,
             Arity = new ArgumentArity(1, 1)
         };
 
         internal static Option<string> VersionOption { get; } = new Option<string>(new string[] { "-version", "--version" })
         {
-            Description = SymbolStrings.Command_Details_Option_Version,
+            Description = LocalizableStrings.DetailsCommand_Option_Version,
             Arity = new ArgumentArity(0, 1)
         };
 
