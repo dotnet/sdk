@@ -1,6 +1,7 @@
 # Table of contents
 
 - [Introduction](#introduction)
+- [Known Issues](#known-issues)
 - [Language Source Files](#language-source-files)
   - [Samples](#samples)
   - [Ignore conditions expressions in language files](#ignore-conditions-expressions-in-language-files)
@@ -59,7 +60,11 @@ To learn more about conditional expressions evaluation go to [Conditions](Condit
 |[JSX Files](#jsx-files)| Jsx and Tsx files.|   
 |[Other File](#other-file-types)| Default rules for file type not in this list.|  
 
-## Language Source Files
+## Known Issues
+
+| Name     | Description   | Incorrect Use   | Correct Use    |  
+|----------|---------------|-----------------|----------------| 
+|[Conditional statement overlaps with Replacement functionality](https://github.com/dotnet/templating/issues/6536)| There is a problem with using different types of conditional comments in replacement statements. In order to workaround it avoid using comments (e.g. "//") as a part of the candidate string for replacing.| "http://localhost:"| "localhost:"|
 
 #### File Extensions
 `.cs`, `.fs`,`.cpp`, `.h`, `.hpp`, `.cake`.

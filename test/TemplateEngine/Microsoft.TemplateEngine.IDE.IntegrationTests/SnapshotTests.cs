@@ -61,6 +61,26 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             return engine.Execute(options);
         }
 
+        [Fact]
+        public Task TemplateWithOnlyIfStatementTestForLocalhostTest()
+        {
+            string templateLocation = GetTestTemplateLocation("TemplateWithOnlyIfForLocalhost");
+
+            TemplateVerifierOptions options =
+                new TemplateVerifierOptions(templateName: "TestAssets.TemplateWithOnlyIfForLocalhost")
+                {
+                    TemplatePath = templateLocation,
+                    SnapshotsDirectory = "Approvals",
+                    DoNotPrependTemplateNameToScenarioName = true,
+                    DoNotAppendTemplateArgsToScenarioName = true,
+                    ScenarioName = "Basic"
+                }
+                .WithInstantiationThroughTemplateCreatorApi(new Dictionary<string, string?>() { { "default-port", "3332" } });
+
+            VerificationEngine engine = new VerificationEngine(_log);
+            return engine.Execute(options);
+        }
+
         [Theory]
         [InlineData("no options", null)]
         [InlineData("options without value", new[] { "A", null, "B", null, "C", null, "D", null })]
