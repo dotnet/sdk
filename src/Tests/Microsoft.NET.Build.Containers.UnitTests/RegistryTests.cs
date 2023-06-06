@@ -113,6 +113,40 @@ namespace Microsoft.NET.Build.Containers.UnitTests
             api.Verify(api => api.Blob.Upload.UploadChunkAsync(It.IsIn(absoluteUploadUri, uploadPath), It.IsAny<HttpContent>(), It.IsAny<CancellationToken>()), Times.Exactly(contentLength/chunkSizeLessThanContentLength));
         }
 
+        [Fact]
+        public async Task RegistriesThatFailAtomicUploadFallbackToChunked()
+        {
+            ILogger logger = _loggerFactory.CreateLogger(nameof(CheckIfAmazonECR));
+            var repoName = "testRepo";
+            var layerDigest = "sha256:fafafafafafafafafafafafafafafafa";
+            var mockLayer = new Mock<Layer>(MockBehavior.Strict);
+            var contentLength = 100000;
+            var chunkSizeLessThanContentLength = 100000;
+            var registryUri = ContainerHelpers.TryExpandRegistryToUri("public.ecr.aws");
+            mockLayer
+                .Setup(l => l.OpenBackingFile()).Returns(new MemoryStream(new byte[100000]));
+            mockLayer
+                .Setup(l => l.Descriptor).Returns(new Descriptor("blah", layerDigest, 1234));
+
+            var uploadPath = new Uri("/uploads/foo/12345", UriKind.Relative);
+            var absoluteUploadUri = new Uri(registryUri, uploadPath);
+            var api = new Mock<IRegistryAPI>(MockBehavior.Loose);
+            var uploadedCount = 0;
+            api.Setup(api => api.Blob.ExistsAsync(repoName, layerDigest, It.IsAny<CancellationToken>())).Returns(Task.FromResult(false));
+            api.Setup(api => api.Blob.Upload.StartAsync(repoName, It.IsAny<CancellationToken>())).Returns(Task.FromResult(new StartUploadInformation(null, uploadPath)));
+            api.Setup(api => api.Blob.Upload.UploadAtomicallyAsync(It.IsIn(absoluteUploadUri, uploadPath), It.IsAny<Stream>(), It.IsAny<CancellationToken>())).Throws(new Exception("Server-side shutdown the thing"));
+            api.Setup(api => api.Blob.Upload.UploadChunkAsync(It.IsIn(absoluteUploadUri, uploadPath), It.IsAny<HttpContent>(), It.IsAny<CancellationToken>())).Returns(() => {
+                uploadedCount += chunkSizeLessThanContentLength;
+                return Task.FromResult(ChunkUploadSuccessful(absoluteUploadUri, uploadPath, uploadedCount));
+            });
+
+            RegistryManager registry = new(registryUri, api.Object, logger);
+            await registry.PushAsync(mockLayer.Object, repoName, CancellationToken.None);
+
+            api.Verify(api => api.Blob.Upload.UploadAtomicallyAsync(It.IsIn(absoluteUploadUri, uploadPath), It.IsAny<Stream>(), It.IsAny<CancellationToken>()), Times.Once());
+            api.Verify(api => api.Blob.Upload.UploadChunkAsync(It.IsIn(absoluteUploadUri, uploadPath), It.IsAny<HttpContent>(), It.IsAny<CancellationToken>()), Times.Exactly(contentLength/chunkSizeLessThanContentLength));
+        }
+
         private static HttpResponseMessage ChunkUploadSuccessful(Uri requestUri, Uri uploadUrl, int? contentLength)
         {
             var response = new HttpResponseMessage(HttpStatusCode.Accepted);
@@ -121,5 +155,6 @@ namespace Microsoft.NET.Build.Containers.UnitTests
             if (contentLength is int len) response.Headers.Add("Range", $"0-{len - 1}");
             return response;
         }
+
     }
 }
