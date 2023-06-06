@@ -39,7 +39,7 @@ public class DockerDaemonTests : IDisposable
         try
         {
             Environment.SetEnvironmentVariable("DOCKER_HOST", "tcp://123.123.123.123:12345");
-            var available = await new LocalDocker(NullLogger.Instance).IsAvailableAsync(default).ConfigureAwait(false);
+            var available = await new LocalDocker(logger).IsAvailableAsync(default).ConfigureAwait(false);
             Assert.False(available, "No daemon should be listening at that port");
         }
         finally
@@ -52,7 +52,7 @@ public class DockerDaemonTests : IDisposable
     public async Task Can_detect_when_daemon_is_running()
     {
         ILogger logger = _loggerFactory.CreateLogger(nameof(Can_detect_when_daemon_is_running));
-        var available = await new LocalDocker(NullLogger.Instance).IsAvailableAsync(default).ConfigureAwait(false);
+        var available = await new LocalDocker(logger).IsAvailableAsync(default).ConfigureAwait(false);
         Assert.True(available, "Should have found a working daemon");
     }
 }

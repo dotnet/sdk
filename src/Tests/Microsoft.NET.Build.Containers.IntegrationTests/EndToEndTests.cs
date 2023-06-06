@@ -119,7 +119,7 @@ public class EndToEndTests : IDisposable
         var sourceReference = new ImageReference(registry, DockerRegistryManager.BaseImage, DockerRegistryManager.Net6ImageTag);
         var destinationReference = new ImageReference(registry, NewImageName(), "latest");
 
-        await new LocalDocker(NullLogger.Instance).LoadAsync(builtImage, sourceReference, destinationReference, default).ConfigureAwait(false);
+        await new LocalDocker(logger).LoadAsync(builtImage, sourceReference, destinationReference, default).ConfigureAwait(false);
 
         // Run the image
         new RunExeCommand(_testOutput, "docker", "run", "--rm", "--tty", $"{NewImageName()}:latest")
@@ -436,7 +436,7 @@ public class EndToEndTests : IDisposable
         // Load the image into the local Docker daemon
         var sourceReference = new ImageReference(registry, DockerRegistryManager.BaseImage, DockerRegistryManager.Net7ImageTag);
         var destinationReference = new ImageReference(registry, NewImageName(), rid);
-        await new LocalDocker(NullLogger.Instance).LoadAsync(builtImage, sourceReference, destinationReference, default).ConfigureAwait(false);
+        await new LocalDocker(logger).LoadAsync(builtImage, sourceReference, destinationReference, default).ConfigureAwait(false);
 
         // Run the image
         new RunExeCommand(
