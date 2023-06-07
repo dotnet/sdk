@@ -67,7 +67,7 @@ stages:
           demands: ImageOverride -equals windows.vs2022preview.amd64.open
         ${{ if ne(variables['System.TeamProject'], 'public') }}:
           name: NetCore1ESPool-Svc-Internal
-          demands: ImageOverride -equals windows.vs2022preview.amd64
+          demands: ImageOverride -equals 1es-windows-2022
       ${{ if eq(variables['System.TeamProject'], 'public') }}:
         helixTargetQueue: Windows.Amd64.VS2022.Pre.Open
       ${{ if ne(variables['System.TeamProject'], 'public') }}:
@@ -98,7 +98,7 @@ stages:
             demands: ImageOverride -equals windows.vs2022preview.amd64.open
           ${{ if ne(variables['System.TeamProject'], 'public') }}:
             name: NetCore1ESPool-Svc-Internal
-            demands: ImageOverride -equals windows.vs2022preview.amd64
+            demands: ImageOverride -equals 1es-windows-2022
         ${{ if eq(variables['System.TeamProject'], 'public') }}:
           helixTargetQueue: Windows.Amd64.VS2022.Pre.Open
         ${{ if ne(variables['System.TeamProject'], 'public') }}:
