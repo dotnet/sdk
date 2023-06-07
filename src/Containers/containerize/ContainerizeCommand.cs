@@ -39,9 +39,9 @@ internal class ContainerizeCommand : CliRootCommand
         Required = false
     };
 
-    internal CliOption<string> ImageNameOption { get; } = new("--imagename")
+    internal CliOption<string> RepositoryOption { get; } = new("--repository")
     {
-        Description = "The name of the output image that will be pushed to the registry.",
+        Description = "The name of the output container repository that will be pushed to the registry.",
         Required = true
     };
 
@@ -163,7 +163,7 @@ internal class ContainerizeCommand : CliRootCommand
         this.Options.Add(BaseImageNameOption);
         this.Options.Add(BaseImageTagOption);
         this.Options.Add(OutputRegistryOption);
-        this.Options.Add(ImageNameOption);
+        this.Options.Add(RepositoryOption);
         this.Options.Add(ImageTagsOption);
         this.Options.Add(WorkingDirectoryOption);
         this.Options.Add(EntrypointOption);
@@ -184,7 +184,7 @@ internal class ContainerizeCommand : CliRootCommand
             string _baseName = parseResult.GetValue(BaseImageNameOption)!;
             string _baseTag = parseResult.GetValue(BaseImageTagOption)!;
             string? _outputReg = parseResult.GetValue(OutputRegistryOption);
-            string _name = parseResult.GetValue(ImageNameOption)!;
+            string _name = parseResult.GetValue(RepositoryOption)!;
             string[] _tags = parseResult.GetValue(ImageTagsOption)!;
             string _workingDir = parseResult.GetValue(WorkingDirectoryOption)!;
             string[] _entrypoint = parseResult.GetValue(EntrypointOption)!;
