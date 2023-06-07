@@ -77,12 +77,12 @@ Examples:
 
     public static CommandLineOptions? Parse(string[] args, IReporter reporter, out int errorCode, TextWriter? output = null, TextWriter? error = null)
     {
-        CliOption<bool> quietOption = new("--quiet", "-q")
+        var quietOption = new CliOption<bool>("--quiet", "-q")
         {
             Description = "Suppresses all output except warnings and errors"
         };
 
-        CliOption<bool> verboseOption = new("--verbose", "-v")
+        var verboseOption = new CliOption<bool>("--verbose", "-v")
         {
             Description = "Show verbose output"
         };
@@ -95,29 +95,29 @@ Examples:
             }
         });
 
-        CliOption<bool> listOption = new("--list") { Description = "Lists all discovered files without starting the watcher." };
-        CliOption<string> shortProjectOption = new("-p") { Description = "The project to watch.", Hidden = true };
-        CliOption<string> longProjectOption = new("--project") { Description = "The project to watch" };
+        var listOption = new CliOption<bool>("--list") { Description = "Lists all discovered files without starting the watcher." };
+        var shortProjectOption = new CliOption<string>("-p") { Description = "The project to watch.", Hidden = true };
+        var longProjectOption = new CliOption<string>("--project") { Description = "The project to watch" };
 
         // launch profile used by dotnet-watch
-        CliOption<string> launchProfileWatchOption = new(LaunchProfileOptionName, "-lp")
+        var launchProfileWatchOption = new CliOption<string>(LaunchProfileOptionName, "-lp")
         {
             Description = "The launch profile to start the project with (case-sensitive)."
         };
-        CliOption<bool> noLaunchProfileWatchOption = new(NoLaunchProfileOptionName)
+        var noLaunchProfileWatchOption = new CliOption<bool>(NoLaunchProfileOptionName)
         {
             Description = "Do not attempt to use launchSettings.json to configure the application."
         };
 
         // launch profile used by dotnet-run
-        CliOption<string> launchProfileRunOption = new (LaunchProfileOptionName, "-lp") { Hidden = true };
-        CliOption<bool> noLaunchProfileRunOption = new(NoLaunchProfileOptionName) { Hidden = true };
+        var launchProfileRunOption = new CliOption<string>(LaunchProfileOptionName, "-lp") { Hidden = true };
+        var noLaunchProfileRunOption = new CliOption<bool>(NoLaunchProfileOptionName) { Hidden = true };
 
-        CliOption<string> targetFrameworkOption = new("--framework", "-f")
+        var targetFrameworkOption = new CliOption<string>("--framework", "-f")
         {
             Description = "The target framework to run for. The target framework must also be specified in the project file."
         };
-        CliOption<string[]> propertyOption = new("--property")
+        var propertyOption = new CliOption<string[]>("--property")
         {
             Description = "Properties to be passed to MSBuild."
         };
@@ -133,15 +133,15 @@ Examples:
             }
         });
 
-        CliOption<bool> noHotReloadOption = new("--no-hot-reload") { Description = "Suppress hot reload for supported apps." };
-        CliOption<bool> nonInteractiveOption = new("--non-interactive")
+        var noHotReloadOption = new CliOption<bool>("--no-hot-reload") { Description = "Suppress hot reload for supported apps." };
+        var nonInteractiveOption = new CliOption<bool>("--non-interactive")
         {
             Description = "Runs dotnet-watch in non-interactive mode. This option is only supported when running with Hot Reload enabled. " +
             "Use this option to prevent console input from being captured."
         };
 
-        CliArgument<string[]> remainingWatchArgs = new("forwardedArgs") { Description = "Arguments to pass to the child dotnet process." };
-        CliArgument<string[]> remainingRunArgs = new ("remainingRunArgs");
+        var remainingWatchArgs = new CliArgument<string[]>("forwardedArgs") { Description = "Arguments to pass to the child dotnet process." };
+        var remainingRunArgs = new CliArgument<string[]>("remainingRunArgs");
 
         var runCommand = new CliCommand("run") { Hidden = true };
         var rootCommand = new CliRootCommand(Description);
