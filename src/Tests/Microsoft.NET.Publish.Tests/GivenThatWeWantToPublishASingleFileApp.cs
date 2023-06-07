@@ -152,7 +152,7 @@ namespace Microsoft.NET.Publish.Tests
             var testProject = new TestProject()
             {
                 Name = "ClassLib",
-                TargetFrameworks = "netstandard2.0",
+                TargetFrameworks = "netcoreapp3.0",
                 IsExe = false,
             };
 
@@ -187,7 +187,9 @@ namespace Microsoft.NET.Publish.Tests
                 .Should()
                 .Fail()
                 .And
-                .HaveStdOutContaining(Strings.CanOnlyHaveSingleFileWithNetCoreApp)
+                // Single-file depends on ILLink analyzers, so fails early when trying
+                // to add the analyzer reference for an unsupported TFM.
+                .HaveStdOutContaining(Strings.ILLinkNoValidRuntimePackageError)
                 .And
                 .NotHaveStdOutContaining(Strings.CannotHaveSingleFileWithoutExecutable);
         }
@@ -210,7 +212,9 @@ namespace Microsoft.NET.Publish.Tests
                 .Should()
                 .Fail()
                 .And
-                .HaveStdOutContaining(Strings.PublishSingleFileRequiresVersion30);
+                // Single-file depends on ILLink analyzers, so fails early when trying
+                // to add the analyzer reference for an unsupported TFM.
+                .HaveStdOutContaining(Strings.ILLinkNoValidRuntimePackageError);
         }
 
         [RequiresMSBuildVersionFact("16.8.0")]
