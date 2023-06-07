@@ -5,9 +5,11 @@ using Microsoft.Extensions.Logging;
 using Microsoft.NET.Build.Containers.Registry;
 using Microsoft.NET.TestFramework;
 using Moq;
+using System.Diagnostics;
 using System.Net;
 using Xunit;
 using Xunit.Abstractions;
+using Xunit.Sdk;
 
 namespace Microsoft.NET.Build.Containers.UnitTests
 {
@@ -57,7 +59,7 @@ namespace Microsoft.NET.Build.Containers.UnitTests
         [Fact]
         public async Task RegistriesThatProvideNoUploadSizeAttemptFullUpload()
         {
-            ILogger logger = _loggerFactory.CreateLogger(nameof(CheckIfAmazonECR));
+            ILogger logger = _loggerFactory.CreateLogger(nameof(RegistriesThatProvideNoUploadSizeAttemptFullUpload));
             var repoName = "testRepo";
             var layerDigest = "sha256:fafafafafafafafafafafafafafafafa";
             var mockLayer = new Mock<Layer>(MockBehavior.Strict);
@@ -82,7 +84,7 @@ namespace Microsoft.NET.Build.Containers.UnitTests
         [Fact]
         public async Task RegistriesThatProvideUploadSizeSkipFullUploadWhenChunkSizeIsLowerThanContentLength()
         {
-            ILogger logger = _loggerFactory.CreateLogger(nameof(CheckIfAmazonECR));
+            ILogger logger = _loggerFactory.CreateLogger(nameof(RegistriesThatProvideUploadSizeSkipFullUploadWhenChunkSizeIsLowerThanContentLength));
             var repoName = "testRepo";
             var layerDigest = "sha256:fafafafafafafafafafafafafafafafa";
             var mockLayer = new Mock<Layer>(MockBehavior.Strict);
@@ -116,7 +118,7 @@ namespace Microsoft.NET.Build.Containers.UnitTests
         [Fact]
         public async Task RegistriesThatFailAtomicUploadFallbackToChunked()
         {
-            ILogger logger = _loggerFactory.CreateLogger(nameof(CheckIfAmazonECR));
+            ILogger logger = _loggerFactory.CreateLogger(nameof(RegistriesThatFailAtomicUploadFallbackToChunked));
             var repoName = "testRepo";
             var layerDigest = "sha256:fafafafafafafafafafafafafafafafa";
             var mockLayer = new Mock<Layer>(MockBehavior.Strict);
@@ -145,6 +147,38 @@ namespace Microsoft.NET.Build.Containers.UnitTests
 
             api.Verify(api => api.Blob.Upload.UploadAtomicallyAsync(It.IsIn(absoluteUploadUri, uploadPath), It.IsAny<Stream>(), It.IsAny<CancellationToken>()), Times.Once());
             api.Verify(api => api.Blob.Upload.UploadChunkAsync(It.IsIn(absoluteUploadUri, uploadPath), It.IsAny<HttpContent>(), It.IsAny<CancellationToken>()), Times.Exactly(contentLength/chunkSizeLessThanContentLength));
+        }
+
+        [Fact]
+        public async Task PushAsync_Logging()
+        {
+            using TestLoggerFactory loggerFactory = new(_testOutput);
+            List<(LogLevel, string)> loggedMessages = new();
+            loggerFactory.AddProvider(new InMemoryLoggerProvider(loggedMessages));
+            ILogger logger = loggerFactory.CreateLogger(nameof(PushAsync_Logging));
+
+            var repoName = "testRepo";
+            var layerDigest = "sha256:fafafafafafafafafafafafafafafafa";
+            var mockLayer = new Mock<Layer>(MockBehavior.Strict);
+            mockLayer
+                .Setup(l => l.OpenBackingFile()).Returns(new MemoryStream(new byte[1000]));
+            mockLayer
+                .Setup(l => l.Descriptor).Returns(new Descriptor("blah", layerDigest, 1234));
+
+            var uploadPath = new Uri("/uploads/foo/12345", UriKind.Relative);
+            var api = new Mock<IRegistryAPI>(MockBehavior.Loose);
+            api.Setup(api => api.Blob.ExistsAsync(repoName, layerDigest, It.IsAny<CancellationToken>())).Returns(Task.FromResult(false));
+            api.Setup(api => api.Blob.Upload.StartAsync(repoName, It.IsAny<CancellationToken>())).Returns(Task.FromResult(new StartUploadInformation(null, uploadPath)));
+            api.Setup(api => api.Blob.Upload.UploadAtomicallyAsync(uploadPath, It.IsAny<Stream>(), It.IsAny<CancellationToken>())).Returns(Task.FromResult(new FinalizeUploadInformation(uploadPath)));
+
+            RegistryManager registry = new(ContainerHelpers.TryExpandRegistryToUri("public.ecr.aws"), api.Object, logger);
+            await registry.PushAsync(mockLayer.Object, repoName, CancellationToken.None);
+
+            Assert.NotEmpty(loggedMessages);
+            Assert.True(loggedMessages.All(m => m.Item1 == LogLevel.Trace));
+            var messages = loggedMessages.Select(m => m.Item2).ToList();
+            Assert.Contains(messages, m => m == "Started upload session for sha256:fafafafafafafafafafafafafafafafa to /uploads/foo/12345 with chunk size 5242880");
+            Assert.Contains(messages, m => m == "Finalized upload session for sha256:fafafafafafafafafafafafafafafafa");
         }
 
         private static HttpResponseMessage ChunkUploadSuccessful(Uri requestUri, Uri uploadUrl, int? contentLength)
