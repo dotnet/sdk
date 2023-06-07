@@ -122,9 +122,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
 
                     context.RegisterOperationAction(context =>
                     {
-                        var parameterRef = (IParameterReferenceOperation)context.Operation;
-                        if (parameterRef.Parameter.ContainingSymbol is IMethodSymbol { MethodKind: MethodKind.Constructor } constructor &&
-                            !methodSymbol.Equals(constructor))
+                        if (context.Operation is IParameterReferenceOperation { Parameter.ContainingSymbol: IMethodSymbol { MethodKind: MethodKind.Constructor } })
                         {
                             // we're referencing a parameter not from our actual method, but from a type constructor.
                             // This must be a primary constructor scenario, and we're capturing the parameter here.  
