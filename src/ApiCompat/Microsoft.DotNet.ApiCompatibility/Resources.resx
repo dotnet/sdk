@@ -123,111 +123,111 @@
       Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="AssemblyNameDoesNotExist" xml:space="preserve">
-  <value>'{0}' assembly does not exist at {1}.</value>
-</data>
+    <value>'{0}' assembly does not exist at {1}.</value>
+  </data>
   <data name="AssemblyNameDoesNotMatch" xml:space="preserve">
-  <value>'{0}' assembly name does not match '{1}'.</value>
-</data>
+    <value>'{0}' assembly name does not match '{1}'.</value>
+  </data>
   <data name="AssemblyPublicKeyTokenDoesNotMatch" xml:space="preserve">
-  <value>'{0}' assembly public key token does not match '{1}'.</value>
-</data>
+    <value>'{0}' assembly public key token does not match '{1}'.</value>
+  </data>
   <data name="AssemblySearchDirectoryDoesNotExist" xml:space="preserve">
-  <value>Provided search directory '{0}' does not exist.</value>
-</data>
+    <value>Provided search directory '{0}' does not exist.</value>
+  </data>
   <data name="CannotAddAbstractMember" xml:space="preserve">
-  <value>Cannot add abstract member '{0}' to {1}.</value>
-</data>
+    <value>Cannot add abstract member '{0}' to {1}.</value>
+  </data>
   <data name="AssemblyCultureDoesNotMatch" xml:space="preserve">
-  <value>'{0}' assembly culture does not match '{1}'.</value>
-</data>
+    <value>'{0}' assembly culture does not match '{1}'.</value>
+  </data>
   <data name="AssemblyVersionDoesNotMatch" xml:space="preserve">
-  <value>'{1}' assembly version should be '{0}'.</value>
-</data>
+    <value>'{1}' assembly version should be '{0}'.</value>
+  </data>
   <data name="AssemblyVersionIsNotCompatible" xml:space="preserve">
-  <value>'{0}' assembly version should be equal to or higher than '{1}'.</value>
-</data>
+    <value>'{0}' assembly version should be equal to or higher than '{1}'.</value>
+  </data>
   <data name="ElementShouldNotBeNullAtIndex" xml:space="preserve">
-  <value>Element should not be null at index: {0}.</value>
-</data>
+    <value>Element should not be null at index: {0}.</value>
+  </data>
   <data name="IndexShouldBeWithinSetSizeRange" xml:space="preserve">
-  <value>Index should be within the right set size range.</value>
-</data>
+    <value>Index should be within the right set size range.</value>
+  </data>
   <data name="MatchingAssemblyNotFound" xml:space="preserve">
-  <value>Could not find matching assembly: '{0}'.</value>
-</data>
+    <value>Could not find matching assembly: '{0}'.</value>
+  </data>
   <data name="MemberExistsOnLeft" xml:space="preserve">
-  <value>Member '{0}' exists on {1} but not on {2}.</value>
-</data>
+    <value>Member '{0}' exists on {1} but not on {2}.</value>
+  </data>
   <data name="MemberExistsOnRight" xml:space="preserve">
-  <value>Member '{0}' exists on {2} but not on {1}.</value>
-</data>
+    <value>Member '{0}' exists on {2} but not on {1}.</value>
+  </data>
   <data name="RightNamesAtLeastOne" xml:space="preserve">
-  <value>Should contain at least one right name.</value>
-</data>
+    <value>Should contain at least one right name.</value>
+  </data>
   <data name="ShouldBeGreaterThanZero" xml:space="preserve">
-  <value>Value should be greater than 0.</value>
-</data>
+    <value>Value should be greater than 0.</value>
+  </data>
   <data name="TypeMissingOnSide" xml:space="preserve">
-  <value>Type '{0}' exists on {1} but not on {2}.</value>
-</data>
+    <value>Type '{0}' exists on {1} but not on {2}.</value>
+  </data>
   <data name="VisitorRightCountShouldMatchMappersSetSize" xml:space="preserve">
-  <value>Provided right count should match right set size.</value>
-</data>
+    <value>Provided right count should match right set size.</value>
+  </data>
   <data name="CannotAddMemberToInterface" xml:space="preserve">
-  <value>Cannot add interface member '{0}' to {1}.</value>
-</data>
+    <value>Cannot add interface member '{0}' to {1}.</value>
+  </data>
   <data name="CannotRemoveBaseInterface" xml:space="preserve">
-  <value>Type '{0}' does not implement interface '{1}' on {2}.</value>
-</data>
+    <value>Type '{0}' does not implement interface '{1}' on {2}.</value>
+  </data>
   <data name="CannotRemoveBaseType" xml:space="preserve">
-  <value>Type '{0}' does not inherit from base type '{1}' on {2}.</value>
-</data>
+    <value>Type '{0}' does not inherit from base type '{1}' on {2}.</value>
+  </data>
   <data name="TypeIsActuallySealed" xml:space="preserve">
-  <value>Type '{0}' is sealed on {1}.</value>
-</data>
+    <value>Type '{0}' is sealed on {1}.</value>
+  </data>
   <data name="TypeIsEffectivelySealed" xml:space="preserve">
-  <value>Type '{0}' is sealed due to no visible constructor on {1}.</value>
-</data>
+    <value>Type '{0}' is sealed due to no visible constructor on {1}.</value>
+  </data>
   <data name="EnumValuesMustMatch" xml:space="preserve">
-  <value>Value of '{1}' in enum '{0}' changed from '{2}' to '{3}'.</value>
-</data>
+    <value>Value of '{1}' in enum '{0}' changed from '{2}' to '{3}'.</value>
+  </data>
   <data name="EnumTypesMustMatch" xml:space="preserve">
-  <value>Underlying type of enum '{0}' changed from '{1}' to '{2}'.</value>
-</data>
+    <value>Underlying type of enum '{0}' changed from '{1}' to '{2}'.</value>
+  </data>
   <data name="CannotAddVirtualToMember" xml:space="preserve">
-  <value>Cannot add virtual keyword to member '{0}'.</value>
-</data>
+    <value>Cannot add virtual keyword to member '{0}'.</value>
+  </data>
   <data name="CannotRemoveVirtualFromMember" xml:space="preserve">
-  <value>Cannot remove virtual keyword from member '{0}'.</value>
-</data>
+    <value>Cannot remove virtual keyword from member '{0}'.</value>
+  </data>
   <data name="ApiCompatibilityHeader" xml:space="preserve">
-  <value>API compatibility errors between '{0}' ({2}) and '{1}' ({3}).</value>
-</data>
+    <value>API compatibility errors between '{0}' ({2}) and '{1}' ({3}).</value>
+  </data>
   <data name="ApiCompatRunnerExecutingWorkItems" xml:space="preserve">
-  <value>Executing {0} work item(s)...</value>
-</data>
+    <value>Executing {0} work item(s)...</value>
+  </data>
   <data name="AssemblyLoadError" xml:space="preserve">
-  <value>Could not load assembly symbols for '{0}'. Skipping the assembly.</value>
-</data>
+    <value>Could not load assembly symbols for '{0}'. Skipping the assembly.</value>
+  </data>
   <data name="CannotAddAttribute" xml:space="preserve">
-  <value>Cannot add attribute '{0}' to '{1}'.</value>
-</data>
+    <value>Cannot add attribute '{0}' to '{1}'.</value>
+  </data>
   <data name="CannotChangeAttribute" xml:space="preserve">
-  <value>Cannot change arguments of attribute '{0}' on '{1}'.</value>
-</data>
+    <value>Cannot change arguments of attribute '{0}' on '{1}'.</value>
+  </data>
   <data name="CannotRemoveAttribute" xml:space="preserve">
-  <value>Cannot remove attribute '{0}' from '{1}'.</value>
-</data>
+    <value>Cannot remove attribute '{0}' from '{1}'.</value>
+  </data>
   <data name="CannotChangeParameterName" xml:space="preserve">
-  <value>Parameter name on member '{0}' changed from '{1}' to '{2}'.</value>
-</data>
+    <value>Parameter name on member '{0}' changed from '{1}' to '{2}'.</value>
+  </data>
   <data name="CannotAddSealedToInterfaceMember" xml:space="preserve">
-  <value>Cannot add sealed keyword to default interface member '{0}'.</value>
-</data>
+    <value>Cannot add sealed keyword to default interface member '{0}'.</value>
+  </data>
   <data name="CannotExpandVisibility" xml:space="preserve">
-  <value>Visibility of '{0}' expanded from '{1}' to '{2}'.</value>
-</data>
+    <value>Visibility of '{0}' expanded from '{1}' to '{2}'.</value>
+  </data>
   <data name="CannotReduceVisibility" xml:space="preserve">
-  <value>Visibility of '{0}' reduced from '{1}' to '{2}'.</value>
-</data>
+    <value>Visibility of '{0}' reduced from '{1}' to '{2}'.</value>
+  </data>
 </root>
