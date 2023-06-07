@@ -118,8 +118,8 @@
         <note />
       </trans-unit>
       <trans-unit id="ElementShouldNotBeNullAtIndex">
-        <source>Element should not be null. Found null at index: {0}.</source>
-        <target state="translated">L’élément ne doit pas être null. Null trouvé à l’index : {0}.</target>
+        <source>Element at index {0} should not be null.</source>
+        <target state="needs-review-translation">L’élément ne doit pas être null. Null trouvé à l’index : {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="EnumTypesMustMatch">
@@ -133,8 +133,8 @@
         <note />
       </trans-unit>
       <trans-unit id="IndexShouldBeWithinSetSizeRange">
-        <source>The index should be within the right set size range.</source>
-        <target state="translated">L’index doit se trouver dans la plage de taille de jeu appropriée.</target>
+        <source>The index should be within the right set size range (0, {0}).</source>
+        <target state="new">The index should be within the right set size range (0, {0}).</target>
         <note />
       </trans-unit>
       <trans-unit id="MatchingAssemblyNotFound">
@@ -158,8 +158,8 @@
         <note />
       </trans-unit>
       <trans-unit id="ShouldBeGreaterThanZero">
-        <source>Value should be greater than 0.</source>
-        <target state="translated">La valeur doit être supérieure à 0</target>
+        <source>Value of '{0}' should be greater than 0.</source>
+        <target state="new">Value of '{0}' should be greater than 0.</target>
         <note />
       </trans-unit>
       <trans-unit id="TypeIsActuallySealed">
