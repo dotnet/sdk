@@ -1785,10 +1785,10 @@ namespace Microsoft.NET.Publish.Tests
 
             publishCommand.Execute($"/p:PublishTrimmed=true")
                 .Should()
-                .Pass()
+                .Fail()
                 .And
-                // Fails early when trying to add the illink pack reference for
-                // an unsupported TFM.
+                // Fails early when trying to add the illink pack for an
+                // unsupported TFM.
                 .HaveStdOutContaining(Strings.ILLinkNoValidRuntimePackageError);
         }
 
