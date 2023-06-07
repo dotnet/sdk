@@ -49,6 +49,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
                 Arity = new ArgumentArity(1, 99),
                 Description = SymbolStrings.Option_AddSource,
                 AllowMultipleArgumentsPerToken = true,
+                HelpName = "nuget-source"
             };
         }
 

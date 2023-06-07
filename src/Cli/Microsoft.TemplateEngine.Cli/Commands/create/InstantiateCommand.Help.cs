@@ -273,7 +273,12 @@ namespace Microsoft.TemplateEngine.Cli.Commands
                 return;
             }
 
-            IEnumerable<TwoColumnHelpRow> optionsToWrite = optionsToShow.Select(o => context.HelpBuilder.GetTwoColumnRow(o.Option, context));
+            IEnumerable<TwoColumnHelpRow> optionsToWrite = optionsToShow.Select(o =>
+            {
+                o.Option.EnsureHelpName();
+
+                return context.HelpBuilder.GetTwoColumnRow(o.Option, context);
+            });
             context.HelpBuilder.WriteColumns(optionsToWrite.ToArray(), context);
             context.Output.WriteLine();
         }
@@ -315,6 +320,11 @@ namespace Microsoft.TemplateEngine.Cli.Commands
                     optionsToShow.Add(template.AllowScriptsOption);
                     break;
                 }
+            }
+
+            foreach (CliOption cliOption in optionsToShow)
+            {
+                cliOption.EnsureHelpName();
             }
 
             context.Output.WriteLine(HelpOptionsTitle());

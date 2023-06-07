@@ -15,6 +15,7 @@ using Microsoft.DotNet.Tools.Format;
 using Microsoft.DotNet.Tools.Help;
 using Microsoft.DotNet.Tools.MSBuild;
 using Microsoft.DotNet.Tools.NuGet;
+using Microsoft.TemplateEngine.Cli;
 
 namespace Microsoft.DotNet.Cli
 {
@@ -266,8 +267,15 @@ namespace Microsoft.DotNet.Cli
                 if (command.Equals(RootCommand))
                 {
                     Console.Out.WriteLine(HelpUsageText.UsageText);
+                    return;
                 }
-                else if (command.Name.Equals(NuGetCommandParser.GetCommand().Name))
+
+                foreach (var option in command.Options)
+                {
+                    option.EnsureHelpName();
+                }
+
+                if (command.Name.Equals(NuGetCommandParser.GetCommand().Name))
                 {
                     NuGetCommand.Run(context.ParseResult);
                 }

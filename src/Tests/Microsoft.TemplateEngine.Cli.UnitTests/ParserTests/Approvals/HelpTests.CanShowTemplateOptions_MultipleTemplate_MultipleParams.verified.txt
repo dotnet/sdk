@@ -6,7 +6,7 @@
                                    val2  
                                  Default: def-val
                                  Default if option is provided without a value: def-val-no-arg
-  -in, --int                     my int
+  -in, --int <int>               my int
                                  Type: integer
                                  Default: 0
                                  Default if option is provided without a value: 10
