@@ -104,7 +104,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
 
                     context.RegisterOperationAction(context =>
                     {
-                        if (((IInstanceReferenceOperation)context.Operation).ReferenceKind == InstanceReferenceKind.ContainingTypeInstance
+                        if (context.Operation is IInstanceReferenceOperation { ReferenceKind: InstanceReferenceKind.ContainingTypeInstance }
                             && (context.Operation.Parent is not IInvocationOperation invocation || !invocation.TargetMethod.Equals(methodSymbol, SymbolEqualityComparer.Default)))
                         {
                             isInstanceReferenced = true;
@@ -119,6 +119,19 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                             isInstanceReferenced = true;
                         }
                     }, OperationKind.None);
+
+                    context.RegisterOperationAction(context =>
+                    {
+                        var parameterRef = (IParameterReferenceOperation)context.Operation;
+                        if (parameterRef.Parameter.ContainingSymbol is IMethodSymbol { MethodKind: MethodKind.Constructor } constructor &&
+                            !methodSymbol.Equals(constructor))
+                        {
+                            // we're referencing a parameter not from our actual method, but from a type constructor.
+                            // This must be a primary constructor scenario, and we're capturing the parameter here.  
+                            // This member cannot be made static.
+                            isInstanceReferenced = true;
+                        }
+                    }, OperationKind.ParameterReference);
 
                     context.RegisterOperationBlockEndAction(context =>
                     {

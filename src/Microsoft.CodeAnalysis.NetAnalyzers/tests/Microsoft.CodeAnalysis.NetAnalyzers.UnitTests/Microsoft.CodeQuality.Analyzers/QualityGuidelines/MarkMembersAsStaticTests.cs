@@ -1,19 +1,18 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeQuality.CSharp.Analyzers.QualityGuidelines;
+using Microsoft.CodeQuality.VisualBasic.Analyzers.QualityGuidelines;
 using Test.Utilities;
 using Xunit;
-using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
-    Microsoft.CodeQuality.Analyzers.QualityGuidelines.MarkMembersAsStaticAnalyzer,
-    Microsoft.CodeQuality.CSharp.Analyzers.QualityGuidelines.CSharpMarkMembersAsStaticFixer>;
-using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
-    Microsoft.CodeQuality.Analyzers.QualityGuidelines.MarkMembersAsStaticAnalyzer,
-    Microsoft.CodeQuality.VisualBasic.Analyzers.QualityGuidelines.BasicMarkMembersAsStaticFixer>;
 
 namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.UnitTests
 {
+    using VerifyCS = CSharpCodeFixVerifier<MarkMembersAsStaticAnalyzer, CSharpMarkMembersAsStaticFixer>;
+    using VerifyVB = VisualBasicCodeFixVerifier<MarkMembersAsStaticAnalyzer, BasicMarkMembersAsStaticFixer>;
+
     public class MarkMembersAsStaticTests
     {
         [Fact]
@@ -1473,13 +1472,13 @@ using System;
 public class Test
 {
     public void [|Recursive|](string argument)
-	{
-		if (argument.Length > 1)
-		{
+    {
+        if (argument.Length > 1)
+        {
             Recursive(argument[1..]);
-		}
+        }
 
-		Console.WriteLine($""argument[-1]: {argument}"");
+        Console.WriteLine($""argument[-1]: {argument}"");
     }
 }",
                 FixedCode = @"
@@ -1488,16 +1487,46 @@ using System;
 public class Test
 {
     public static void Recursive(string argument)
-	{
-		if (argument.Length > 1)
-		{
+    {
+        if (argument.Length > 1)
+        {
             Recursive(argument[1..]);
-		}
+        }
 
-		Console.WriteLine($""argument[-1]: {argument}"");
+        Console.WriteLine($""argument[-1]: {argument}"");
     }
 }",
                 LanguageVersion = LanguageVersion.CSharp8
+            }.RunAsync();
+        }
+
+        [Fact, WorkItem(6573, "https://github.com/dotnet/roslyn-analyzers/issues/6573")]
+        public Task PrimaryConstructor()
+        {
+            return new VerifyCS.Test
+            {
+                TestCode = """
+                    using System;
+                    using System.Collections.Generic; 
+                    using System.Linq;
+
+                    public class Student(int id, string name, IEnumerable<decimal> grades)
+                    {
+                        public Student(int id, string name) : this(id, name, new List<decimal>()) { }
+                        public int Id => id;
+                        public string Name { get; set; } = name.Trim();
+
+                        // validate property
+                        public decimal GPA => grades.Any() ? grades.Average() : 4.0m;
+
+                        // validate method
+                        public decimal GetGPA() => grades.Any() ? grades.Average() : 4.0m;
+
+                        // validate indexer
+                        public int this[int x] => id;
+                    }
+                    """,
+                LanguageVersion = LanguageVersion.Preview
             }.RunAsync();
         }
     }
