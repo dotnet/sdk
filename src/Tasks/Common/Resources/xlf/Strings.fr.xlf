@@ -480,8 +480,8 @@
         <note>{StrBegin="NETSDK1144: "}</note>
       </trans-unit>
       <trans-unit id="ILLinkNoValidRuntimePackageError">
-        <source>NETSDK1195: Unable to optimize assemblies for size: a valid runtime package was not found. Either set the PublishTrimmed property to false, or use a supported target framework when publishing.</source>
-        <target state="new">NETSDK1195: Unable to optimize assemblies for size: a valid runtime package was not found. Either set the PublishTrimmed property to false, or use a supported target framework when publishing.</target>
+        <source>NETSDK1195: Trimming, or code compatibility analysis for trimming, single-file deployment, or ahead-of-time compilation is not supported for the target framework. For more information, see https://aka.ms/netsdk1195</source>
+        <target state="new">NETSDK1195: Trimming, or code compatibility analysis for trimming, single-file deployment, or ahead-of-time compilation is not supported for the target framework. For more information, see https://aka.ms/netsdk1195</target>
         <note>{StrBegin="NETSDK1195: "}</note>
       </trans-unit>
       <trans-unit id="ILLinkNotSupportedError">
@@ -1014,7 +1014,7 @@ The following are names of parameters or literal values and should not be transl
       </trans-unit>
       <trans-unit id="WorkloadIsEol">
         <source>NETSDK1202: The workload '{0}' is out of support and will not receive security updates in the future. Please refer to {1} for more information about the support policy.</source>
-        <target state="new">NETSDK1202: The workload '{0}' is out of support and will not receive security updates in the future. Please refer to {1} for more information about the support policy.</target>
+        <target state="translated">NETSDK1202: La charge de travail '{0}' n’est pas prise en charge et ne recevra pas les mises à jour de sécurité. Consultez {1} pour plus d’informations sur la stratégie de support.</target>
         <note>{StrBegin="NETSDK1202: "}</note>
       </trans-unit>
       <trans-unit id="WorkloadNotAvailable">
