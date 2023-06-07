@@ -121,7 +121,7 @@ namespace Microsoft.DotNet.Watcher.Tests
             TestFlags testFlags = TestFlags.RunningAsTest,
             [CallerMemberName] string name = null)
         {
-            var args = new[] { "run", "--verbose", "--" };
+            var args = new[] { "run", "--" };
             if (applicationArguments != null)
             {
                 args = args.Concat(applicationArguments).ToArray();
