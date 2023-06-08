@@ -40,6 +40,12 @@ public class VirtualMonoRepo_Initialize : Build.Utilities.Task, ICancelableTask
 
     public string PackageVersion { get; set; }
 
+    public string InstallerPath { get; set; }
+
+    public string ReadmeTemplatePath { get; set; }
+
+    public string TpnTemplatePath { get; set; }
+
     public bool Recursive { get; set; }
 
     public VirtualMonoRepo_Initialize()
@@ -54,6 +60,10 @@ public class VirtualMonoRepo_Initialize : Build.Utilities.Task, ICancelableTask
         VmrPath = Path.GetFullPath(VmrPath);
         TmpPath = Path.GetFullPath(TmpPath);
 
+        var additionalRemotes = InstallerPath == null
+            ? Array.Empty<AdditionalRemote>()
+            : new[] { new AdditionalRemote("installer", InstallerPath) };
+
         var vmrInitializer = _serviceProvider.Value.GetRequiredService<IVmrInitializer>();
         await vmrInitializer.InitializeRepository(
             Repository,
@@ -61,7 +71,9 @@ public class VirtualMonoRepo_Initialize : Build.Utilities.Task, ICancelableTask
             PackageVersion,
             Recursive,
             new NativePath(SourceMappingsPath),
-            Array.Empty<AdditionalRemote>(),
+            additionalRemotes,
+            ReadmeTemplatePath,
+            TpnTemplatePath,
             _cancellationToken.Token);
         return true;
     }
