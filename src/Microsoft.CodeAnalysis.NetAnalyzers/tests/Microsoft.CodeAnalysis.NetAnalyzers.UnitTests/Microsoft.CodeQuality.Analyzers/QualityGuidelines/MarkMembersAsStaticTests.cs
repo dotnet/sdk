@@ -1500,7 +1500,7 @@ public class Test
             }.RunAsync();
         }
 
-        [Fact, WorkItem(6573, "https://github.com/dotnet/roslyn-analyzers/issues/6573")]
+        [Fact(Skip = "Need update of roslyn to parse primary constructors properly"), WorkItem(6573, "https://github.com/dotnet/roslyn-analyzers/issues/6573")]
         public Task PrimaryConstructor()
         {
             return new VerifyCS.Test
