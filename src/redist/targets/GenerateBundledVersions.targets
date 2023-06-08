@@ -325,7 +325,6 @@
       <WindowsDesktop50RuntimePackRids Include="@(WindowsDesktop31RuntimePackRids);win-arm64" />
       <WindowsDesktopRuntimePackRids Include="@(WindowsDesktop50RuntimePackRids)" />
 
-      <_KnownRuntimeIdentiferPlatforms Include="$(ProductMonikerRid.Substring(0, $(Rid.LastIndexOf('-'))))" Condition="'$(DotNetBuildFromSource)' == 'true'" />
       <_KnownRuntimeIdentiferPlatforms Include="any;aot;freebsd;illumos;solaris;unix" />
       <_ExcludedKnownRuntimeIdentiferPlatforms Include="rhel.6;tizen.4.0.0;tizen.5.0.0" Condition="'$(DotNetBuildFromSource)' != 'true'" />
       <_ExcludedKnownRuntimeIdentiferPlatforms Include="rhel.6" Condition="'$(DotNetBuildFromSource)' == 'true' and !$(ProductMonikerRid.StartsWith('rhel.6-'))" />
