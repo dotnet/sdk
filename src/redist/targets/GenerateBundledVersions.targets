@@ -335,6 +335,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <NetCoreRoot Condition="'%24(NetCoreRoot)' == ''">%24([MSBuild]::NormalizePath('%24(MSBuildThisFileDirectory)..\..\'))</NetCoreRoot>
     <NetCoreTargetingPackRoot Condition="'%24(NetCoreTargetingPackRoot)' == ''">%24([MSBuild]::EnsureTrailingSlash('%24(NetCoreRoot)'))packs</NetCoreTargetingPackRoot>
 
+    <_NetFrameworkHostedCompilersVersion>$(MicrosoftNetCompilersToolsetPackageVersion)</_NetFrameworkHostedCompilersVersion>
     <NETCoreAppMaximumVersion>$(_NETCoreAppTargetFrameworkVersion)</NETCoreAppMaximumVersion>
     <BundledNETCoreAppTargetFrameworkVersion>$(_NETCoreAppTargetFrameworkVersion)</BundledNETCoreAppTargetFrameworkVersion>
     <BundledNETCoreAppPackageVersion>$(_NETCoreAppPackageVersion)</BundledNETCoreAppPackageVersion>
