@@ -56,7 +56,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Mapping
             else
             {
                 if ((uint)setIndex >= Right.Length)
-                    throw new ArgumentOutOfRangeException(nameof(setIndex), string.Format(Resources.IndexShouldBeWithinSetSizeRange, Right.Length));
+                    throw new ArgumentOutOfRangeException(nameof(setIndex), string.Format(Resources.IndexShouldBeWithinSetSizeRange, nameof(Right), Right.Length - 1));
 
                 Right[setIndex] = element;
             }
