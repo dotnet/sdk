@@ -1137,15 +1137,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     <WindowsSdkSupportedTargetPlatformVersion Include="8.0" />
     <WindowsSdkSupportedTargetPlatformVersion Include="7.0" />
 
-    <_KnownRuntimeIdentifersForTfm Include="%40(KnownRuntimePack->WithMetadataValue('TargetFramework', %24(TargetFramework))->Metadata('RuntimePackRuntimeIdentifiers'))" />
-    <_KnownRuntimeIdentifersForTfm Include="%40(KnownFrameworkReference->WithMetadataValue('TargetFramework', %24(TargetFramework))->Metadata('RuntimePackRuntimeIdentifiers'))" />
-    <_KnownRuntimeIdentifersForTfmWithPlatform Include="%40(_KnownRuntimeIdentifersForTfm->ClearMetadata()->Distinct())">
-      <Platform Condition="%24([System.String]::new('%25(Identity)').LastIndexOf('-')) == -1">%25(Identity)</Platform>
-      <Platform Condition="%24([System.String]::new('%25(Identity)').LastIndexOf('-')) != -1">%24([System.String]::new('%25(Identity)').Substring(0, %24([System.String]::new('%25(Identity)').LastIndexOf('-'))))</Platform>
-    </_KnownRuntimeIdentifersForTfmWithPlatform>
-
     <_KnownRuntimeIdentiferPlatforms Include="@(_KnownRuntimeIdentiferPlatforms, '%3B')" />
-    <_KnownRuntimeIdentiferPlatforms Include="%40(_KnownRuntimeIdentifersForTfmWithPlatform->Metadata('Platform')->ClearMetadata()->Distinct())" Exclude="@(_ExcludedKnownRuntimeIdentiferPlatforms, '%3B')" />
+    <_ExcludedKnownRuntimeIdentiferPlatforms Include="@(_ExcludedKnownRuntimeIdentiferPlatforms, '%3B')" />
   </ItemGroup>
 </Project>
 ]]>
