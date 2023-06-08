@@ -133,8 +133,8 @@
         <note />
       </trans-unit>
       <trans-unit id="IndexShouldBeWithinSetSizeRange">
-        <source>The {0} index should be in the range zero through {1}.</source>
-        <target state="new">The {0} index should be in the range zero through {1}.</target>
+        <source>The {0} index should be in the range zero through {1} inclusive.</source>
+        <target state="new">The {0} index should be in the range zero through {1} inclusive.</target>
         <note />
       </trans-unit>
       <trans-unit id="MatchingAssemblyNotFound">

@@ -145,7 +145,7 @@
     <value>Element at index {0} should not be null.</value>
   </data>
   <data name="IndexShouldBeWithinSetSizeRange" xml:space="preserve">
-    <value>The {0} index should be in the range zero through {1}.</value>
+    <value>The {0} index should be in the range zero through {1} inclusive.</value>
   </data>
   <data name="MatchingAssemblyNotFound" xml:space="preserve">
     <value>Could not find matching assembly: '{0}' in any of the search directories.</value>
