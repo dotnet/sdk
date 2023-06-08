@@ -32,7 +32,7 @@
     <RuntimePack Include="Microsoft.NETCore.App.Host" Version="[$(MicrosoftNETCoreAppHostPackageVersion)]" />
     <RuntimePack Include="Microsoft.NETCore.App.Runtime" Version="[$(MicrosoftNETCoreAppRuntimeVersion)]" />
 
-    <PortablePackage Include="Microsoft.DotNet.IlCompiler" Version="[$(MicrosoftDotNetIlCompilerVersion)]" />
+    <PortablePackage Include="Microsoft.DotNet.ILCompiler" Version="[$(MicrosoftDotNetILCompilerVersion)]" />
     <PortablePackage Include="Microsoft.NETCore.DotNetAppHost" Version="[$(MicrosoftNETCoreDotNetAppHostVersion)]" />
     <PortablePackage Include="Microsoft.NETCore.DotNetHost" Version="[$(MicrosoftNETCoreDotNetHostVersion)]" />
     <PortablePackage Include="Microsoft.NETCore.DotNetHostPolicy" Version="[$(MicrosoftNETCoreDotNetHostPolicyVersion)]" />
