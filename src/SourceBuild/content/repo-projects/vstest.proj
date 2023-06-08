@@ -11,6 +11,8 @@
     <!-- IDE0059 - Unnecessary assignment of a value: https://github.com/microsoft/vstest/issues/4424 -->
     <!-- SYSLIB0051 - Type or member is obsolete: https://github.com/microsoft/vstest/pull/4425 -->
     <RepoNoWarns>IDE0059;SYSLIB0051</RepoNoWarns>
+
+    <PackageVersionPropsFlowType>DependenciesOnly</PackageVersionPropsFlowType>
   </PropertyGroup>
 
   <ItemGroup>
