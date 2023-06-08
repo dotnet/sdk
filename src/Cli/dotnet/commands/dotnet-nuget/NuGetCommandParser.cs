@@ -24,6 +24,9 @@ namespace Microsoft.DotNet.Cli
         {
             var command = new DocumentedCommand("nuget", DocsLink);
 
+            // some subcommands are not defined here and just forwarded to NuGet app
+            command.TreatUnmatchedTokensAsErrors = false;
+
             command.Options.Add(new CliOption<bool>("--version"));
             command.Options.Add(new CliOption<string>("--verbosity", "-v"));
 
