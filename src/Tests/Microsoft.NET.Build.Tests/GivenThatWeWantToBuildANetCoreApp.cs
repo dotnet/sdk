@@ -1002,7 +1002,7 @@ class Program
             testProject.AddItem("_KnownRuntimeIdentiferPlatforms",
                 new Dictionary<string, string>()
                 {
-                    { "Include", "linux;linux-musl;osx;unix;win" },
+                    { "Include", "unix" },
                     { "Condition", "'@(_KnownRuntimeIdentiferPlatforms)'==''" }
                 });
 
