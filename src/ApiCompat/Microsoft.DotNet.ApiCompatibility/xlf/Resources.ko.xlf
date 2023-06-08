@@ -133,8 +133,8 @@
         <note />
       </trans-unit>
       <trans-unit id="IndexShouldBeWithinSetSizeRange">
-        <source>The index should be within the right set size range (0, {0}).</source>
-        <target state="new">The index should be within the right set size range (0, {0}).</target>
+        <source>The {0} index should be in the range zero through {1}.</source>
+        <target state="new">The {0} index should be in the range zero through {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="MatchingAssemblyNotFound">
@@ -175,11 +175,6 @@
       <trans-unit id="TypeMissingOnSide">
         <source>Type '{0}' exists on {1} but not on {2}</source>
         <target state="translated">'{0}' 유형이 {1}에 있지만 {2}에 없음</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="VisitorRightCountShouldMatchMappersSetSize">
-        <source>The provided right count when creating the visitor should match the right set size specified for the mappers.</source>
-        <target state="translated">방문자를 만들 때 제공된 올바른 개수는 매퍼에 대해 지정된 올바른 집합 크기와 일치해야 합니다.</target>
         <note />
       </trans-unit>
     </body>
