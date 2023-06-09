@@ -208,7 +208,7 @@ namespace Microsoft.NET.Build.Tasks
                         }
 
                         // Update the known runtime identifier platforms based on the selected Microsoft.NETCore.App pack
-                        if (selectedRuntimePack?.Name == "Microsoft.NETCore.App")
+                        if (selectedRuntimePack?.Name?.Equals("Microsoft.NETCore.App", StringComparison.InvariantIgnoreCase))
                         {
                             int separator = runtimeIdentifier.LastIndexOf('-');
                             string platform = separator < 0 ? runtimeIdentifier : runtimeIdentifier.Substring(0, separator);

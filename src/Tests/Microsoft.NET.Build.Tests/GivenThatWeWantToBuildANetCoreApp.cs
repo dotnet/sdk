@@ -979,7 +979,7 @@ class Program
             }
 
             // Identifer based on test inputs to create test assets that are unique for each test case
-            string assetIdentifier = $"{nameof(It_warns_on_nonportable_rids)}{targetFramework}{string.Join(null, rids)}{addLibAssets}{addNativeAssets}{useRidGraph}{shouldWarn}";
+            string assetIdentifier = $"{targetFramework}{string.Join(null, rids)}{addLibAssets}{addNativeAssets}{useRidGraph}{shouldWarn}";
 
             var packCommand = new PackCommand(_testAssetsManager.CreateTestProject(packageProject, assetIdentifier));
             packCommand.Execute().Should().Pass();
