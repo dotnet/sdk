@@ -2,8 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-#nullable enable
-
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -57,7 +55,7 @@ namespace Microsoft.DotNet.Build.Tasks
             };
 
             // Group them by file size.
-            IEnumerable<string?[]> filesGroupedBySize = fse.GroupBy(file => file.Length,
+            IEnumerable<string[]> filesGroupedBySize = fse.GroupBy(file => file.Length,
                                                                     file => file.FullName,
                                                                     (size, files) => files.ToArray());
 
@@ -66,14 +64,14 @@ namespace Microsoft.DotNet.Build.Tasks
             {
                 for (int i = 0; i < files.Length; i++)
                 {
-                    string? path1 = files[i];
+                    string path1 = files[i];
                     if (path1 is null)
                     {
                         continue; // already linked.
                     }
                     for (int j = i + 1; j < files.Length; j++)
                     {
-                        string? path2 = files[j];
+                        string path2 = files[j];
                         if (path2 is null)
                         {
                             continue; // already linked.
