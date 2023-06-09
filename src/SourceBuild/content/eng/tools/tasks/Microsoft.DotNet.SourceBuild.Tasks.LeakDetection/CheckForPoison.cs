@@ -160,11 +160,6 @@ namespace Microsoft.DotNet.SourceBuild.Tasks.LeakDetection
             {
                 Log.LogWarning($"{poisons.Count()} marked files leaked to output.  See complete report '{PoisonReportOutputFilePath}' for details.");
             }
-            else
-            {
-                Log.LogError($"No leaked files found in output.  Either something is broken or it is the future and we have fixed all leaks - please verify and remove this error if so (and default {nameof(FailOnPoisonFound)} to true).");
-                return false;
-            }
 
             return !Log.HasLoggedErrors;
         }
