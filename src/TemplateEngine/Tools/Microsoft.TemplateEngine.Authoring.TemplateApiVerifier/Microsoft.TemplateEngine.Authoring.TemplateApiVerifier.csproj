@@ -5,7 +5,6 @@
     <TargetFramework>$(NETCoreTargetFramework)</TargetFramework>
     <Description>The extension of templates verification engine enabling verification testing through dotnet template engine API.</Description>
     <IsPackable>false</IsPackable>
-    <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <EnablePublicApiAnalyzer>true</EnablePublicApiAnalyzer>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>

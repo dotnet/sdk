@@ -4,7 +4,6 @@
     <TargetFrameworks>$(NETStandardTargetFramework)</TargetFrameworks>
     <Description>MSBuild tasks for template authoring.</Description>
     <IsPackable>true</IsPackable>
-    <Nullable>enable</Nullable>
     <BuildOutputTargetFolder>tasks</BuildOutputTargetFolder>
     <TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);CopyProjectReferencesToPackage</TargetsForTfmSpecificBuildOutput>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>

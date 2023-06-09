@@ -5,7 +5,6 @@
     <TargetFramework>$(NETCoreTargetFramework)</TargetFramework>
     <Description>A dotnet CLI tool with commands for template authoring.</Description>
     <IsPackable>true</IsPackable>
-    <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
 
     <PackAsTool>true</PackAsTool>

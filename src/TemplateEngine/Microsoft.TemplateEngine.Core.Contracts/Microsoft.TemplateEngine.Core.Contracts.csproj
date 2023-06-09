@@ -5,7 +5,6 @@
     <Description>Contracts for extending Microsoft.TemplateEngine.Core</Description>
     <IsPackable>true</IsPackable>
     <EnablePublicApiAnalyzer>true</EnablePublicApiAnalyzer>
-    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>

@@ -3,7 +3,6 @@
       <TargetFrameworks Condition="'$(PackSpecific)' != 'true'">$(NETCoreTargetFramework);$(NETFullTargetFramework)</TargetFrameworks>
       <TargetFrameworks Condition="'$(PackSpecific)' == 'true'">$(NETCoreTargetFramework)</TargetFrameworks>
       <ImplicitUsings>enable</ImplicitUsings>
-      <Nullable>enable</Nullable>
     </PropertyGroup>
     <ItemGroup>
       <None Remove="xunit.runner.json" />

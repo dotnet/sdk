@@ -13,8 +13,6 @@ using Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-#nullable enable
-
 namespace Microsoft.TemplateEngine
 {
     internal static class JExtensions
