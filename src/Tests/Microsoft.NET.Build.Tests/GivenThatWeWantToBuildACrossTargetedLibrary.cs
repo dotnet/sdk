@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.IO;
 using System.Runtime.InteropServices;
@@ -24,16 +24,16 @@ namespace Microsoft.NET.Build.Tests
         public void It_builds_nondesktop_library_successfully_on_all_platforms()
         {
             var testAsset = _testAssetsManager
-                .CopyTestAsset("CrossTargeting")
+                .CopyTestAsset(Path.Combine("CrossTargeting", "NetStandardAndNetCoreApp"))
                 .WithSource();
 
-            var buildCommand = new BuildCommand(testAsset, "NetStandardAndNetCoreApp");
+            var buildCommand = new BuildCommand(testAsset);
             buildCommand
                 .Execute()
                 .Should()
                 .Pass();
 
-            var outputDirectory = buildCommand.GetOutputDirectory(targetFramework: "");
+            var outputDirectory = new DirectoryInfo(Path.Combine(buildCommand.ProjectRootPath, "bin", "Debug"));
             outputDirectory.Should().OnlyHaveFiles(new[] {
                 $"{ToolsetInfo.CurrentTargetFramework}/NetStandardAndNetCoreApp.dll",
                 $"{ToolsetInfo.CurrentTargetFramework}/NetStandardAndNetCoreApp.pdb",
@@ -61,7 +61,7 @@ namespace Microsoft.NET.Build.Tests
                 .Should()
                 .Pass();
 
-            var outputDirectory = buildCommand.GetOutputDirectory(targetFramework: "");
+            var outputDirectory = new DirectoryInfo(Path.Combine(buildCommand.ProjectRootPath, "bin", "Debug"));
             outputDirectory.Should().OnlyHaveFiles(new[] {
                 "net40/DesktopAndNetStandard.dll",
                 "net40/DesktopAndNetStandard.pdb",

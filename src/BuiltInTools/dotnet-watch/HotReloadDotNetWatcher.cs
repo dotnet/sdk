@@ -1,5 +1,5 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable enable
 
@@ -126,6 +126,9 @@ namespace Microsoft.DotNet.Watcher
                 try
                 {
                     using var hotReload = new HotReload(_reporter);
+
+                    // Solution must be initialized before we start watching for file changes to avoid race condition
+                    // when the solution captures state of the file after the changes has already been made.
                     await hotReload.InitializeAsync(context, cancellationToken);
 
                     _reporter.Verbose($"Running {processSpec.ShortDisplayName()} with the following arguments: '{string.Join(" ", processSpec.Arguments)}'");
@@ -321,7 +324,7 @@ namespace Microsoft.DotNet.Watcher
                 processSpec.EnvironmentVariables[rootVariableName] = Path.GetDirectoryName(_muxerPath);
             }
 
-            if (context.LaunchSettingsProfile.EnvironmentVariables is IDictionary<string, string> envVariables)
+            if (context.LaunchSettingsProfile.EnvironmentVariables is { } envVariables)
             {
                 foreach (var entry in envVariables)
                 {

@@ -3,8 +3,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
+using System.Reflection;
+using System.Runtime.CompilerServices;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Formatting;
@@ -93,7 +96,6 @@ namespace Microsoft.DotNet.GenAPI
 
             document.GetSyntaxRootAsync().Result!
                 .Rewrite(new SingleLineStatementCSharpSyntaxRewriter())
-                .Rewrite(new TypeForwardAttributeCSharpSyntaxRewriter())
                 .WriteTo(_textWriter);
         }
 
@@ -120,6 +122,52 @@ namespace Microsoft.DotNet.GenAPI
             return namespaceNode;
         }
 
+        // Name hiding through inheritance occurs when classes or structs redeclare names that were inherited from base classes.This type of name hiding takes one of the following forms:
+        // - A constant, field, property, event, or type introduced in a class or struct hides all base class members with the same name.
+        // - A method introduced in a class or struct hides all non-method base class members with the same name, and all base class methods with the same signature(§7.6).
+        // - An indexer introduced in a class or struct hides all base class indexers with the same signature(§7.6) .
+        private bool HidesBaseMember(ISymbol member)
+        {
+            if (member.IsOverride)
+            {
+                return false;
+            }
+
+            if (member.ContainingType.BaseType is not INamedTypeSymbol baseType)
+            {
+                return false;
+            }
+
+            if (member is IMethodSymbol method)
+            {
+                if (method.MethodKind == MethodKind.ExplicitInterfaceImplementation)
+                {
+                    return false;
+                }
+
+                // If they're methods, compare their names and signatures.
+                return baseType.GetMembers(member.Name)
+                    .Any(baseMember => _symbolFilter.Include(baseMember) &&
+                         (baseMember.Kind != SymbolKind.Method ||
+                          method.SignatureEquals((IMethodSymbol)baseMember)));
+            }
+            else if (member is IPropertySymbol prop && prop.IsIndexer)
+            {
+                // If they're indexers, compare their signatures.
+                return baseType.GetMembers(member.Name)
+                    .Any(baseMember => baseMember is IPropertySymbol baseProperty &&
+                         _symbolFilter.Include(baseMember) &&
+                         (prop.GetMethod.SignatureEquals(baseProperty.GetMethod) ||
+                          prop.SetMethod.SignatureEquals(baseProperty.SetMethod)));
+            }
+            else
+            {
+                // For all other kinds of members, compare their names.
+                return baseType.GetMembers(member.Name)
+                    .Any(_symbolFilter.Include);
+            }
+        }
+
         private SyntaxNode Visit(SyntaxNode namedTypeNode, INamedTypeSymbol namedType)
         {
             IEnumerable<ISymbol> members = namedType.GetMembers().Where(_symbolFilter.Include);
@@ -134,15 +182,24 @@ namespace Microsoft.DotNet.GenAPI
 
             foreach (ISymbol member in members.Order())
             {
-                // If the method is ExplicitInterfaceImplementation and is derived from an interface that was filtered out, we must filter out it either.
-                if (member is IMethodSymbol method &&
-                    method.MethodKind == MethodKind.ExplicitInterfaceImplementation &&
-                    method.ExplicitInterfaceImplementations.Any(m => !_symbolFilter.Include(m.ContainingSymbol) ||
+                if (member is IMethodSymbol method)
+                {
+                    // If the method is ExplicitInterfaceImplementation and is derived from an interface that was filtered out, we must filter out it as well.
+                    if (method.MethodKind == MethodKind.ExplicitInterfaceImplementation &&
+                        method.ExplicitInterfaceImplementations.Any(m => !_symbolFilter.Include(m.ContainingSymbol) ||
                         // if explicit interface implementation method has inaccessible type argument
                         m.ContainingType.HasInaccessibleTypeArgument(_symbolFilter)))
-                {
-                    continue;
+                    {
+                        continue;
+                    }
+
+                    // Filter out default constructors since these will be added automatically
+                    if (method.IsImplicitDefaultConstructor(_symbolFilter))
+                    {
+                        continue;
+                    }
                 }
+
                 // If the property is derived from an interface that was filter out, we must filtered out it either.
                 if (member is IPropertySymbol property && !property.ExplicitInterfaceImplementations.IsEmpty &&
                     property.ExplicitInterfaceImplementations.Any(m => !_symbolFilter.Include(m.ContainingSymbol)))
@@ -156,6 +213,12 @@ namespace Microsoft.DotNet.GenAPI
                 if (member is INamedTypeSymbol nestedTypeSymbol)
                 {
                     memberDeclaration = Visit(memberDeclaration, nestedTypeSymbol);
+                }
+
+                if (HidesBaseMember(member))
+                {
+                    DeclarationModifiers mods = _syntaxGenerator.GetModifiers(memberDeclaration);
+                    memberDeclaration = _syntaxGenerator.WithModifiers(memberDeclaration, mods.WithIsNew(isNew: true));
                 }
 
                 try
@@ -175,12 +238,38 @@ namespace Microsoft.DotNet.GenAPI
 
         private SyntaxNode GenerateAssemblyAttributes(IAssemblySymbol assembly, SyntaxNode compilationUnit)
         {
-            foreach (AttributeData? attribute in assembly.GetAttributes().ExcludeNonVisibleOutsideOfAssembly(_symbolFilter))
+            // When assembly references aren't available, assembly attributes with foreign types won't be resolved.
+            ImmutableArray<AttributeData> attributes = assembly.GetAttributes().ExcludeNonVisibleOutsideOfAssembly(_symbolFilter);
+
+            // Emit assembly attributes from the IAssemblySymbol
+            List<SyntaxNode> attributeSyntaxNodes = attributes.Select(attribute => _syntaxGenerator.Attribute(attribute)
+                .WithTrailingTrivia(SyntaxFactory.LineFeed))
+                .ToList();
+
+            // [assembly: System.Reflection.AssemblyVersion("x.x.x.x")]
+            if (attributes.All(attribute => attribute.AttributeClass?.ToDisplayString() != typeof(AssemblyVersionAttribute).FullName))
             {
-                compilationUnit = _syntaxGenerator.AddAttributes(compilationUnit, _syntaxGenerator.Attribute(attribute)
+                attributeSyntaxNodes.Add(_syntaxGenerator.Attribute(typeof(AssemblyVersionAttribute).FullName!,
+                    SyntaxFactory.AttributeArgument(SyntaxFactory.IdentifierName($"\"{assembly.Identity.Version}\"")))
                     .WithTrailingTrivia(SyntaxFactory.LineFeed));
             }
-            return compilationUnit;
+
+            // [assembly: System.Runtime.CompilerServices.ReferenceAssembly]
+            if (attributes.All(attribute => attribute.AttributeClass?.ToDisplayString() != typeof(ReferenceAssemblyAttribute).FullName))
+            {
+                attributeSyntaxNodes.Add(_syntaxGenerator.Attribute(typeof(ReferenceAssemblyAttribute).FullName!)
+                    .WithTrailingTrivia(SyntaxFactory.LineFeed));
+            }
+
+            // [assembly: System.Reflection.AssemblyFlags((System.Reflection.AssemblyNameFlags)0x70)]
+            if (attributes.All(attribute => attribute.AttributeClass?.ToDisplayString() != typeof(AssemblyFlagsAttribute).FullName))
+            {
+                attributeSyntaxNodes.Add(_syntaxGenerator.Attribute(typeof(AssemblyFlagsAttribute).FullName!,
+                    SyntaxFactory.AttributeArgument(SyntaxFactory.IdentifierName("(System.Reflection.AssemblyNameFlags)0x70")))
+                    .WithTrailingTrivia(SyntaxFactory.LineFeed));
+            }
+
+            return _syntaxGenerator.AddAttributes(compilationUnit, attributeSyntaxNodes);
         }
 
         private SyntaxNode GenerateForwardedTypeAssemblyAttributes(IAssemblySymbol assembly, SyntaxNode compilationUnit)
@@ -189,9 +278,11 @@ namespace Microsoft.DotNet.GenAPI
             {
                 if (symbol.TypeKind != TypeKind.Error)
                 {
-                    TypeSyntax typeSyntaxNode = (TypeSyntax)_syntaxGenerator.TypeExpression(symbol);
+                    // see https://github.com/dotnet/roslyn/issues/67341
+                    // GetForwardedTypes returns bound generics, but `typeof` requires unbound
+                    TypeSyntax typeSyntaxNode = (TypeSyntax)_syntaxGenerator.TypeExpression(symbol.MakeUnboundIfGeneric());
                     compilationUnit = _syntaxGenerator.AddAttributes(compilationUnit,
-                        _syntaxGenerator.Attribute("System.Runtime.CompilerServices.TypeForwardedToAttribute",
+                        _syntaxGenerator.Attribute(typeof(TypeForwardedToAttribute).FullName!,
                             SyntaxFactory.TypeOfExpression(typeSyntaxNode)).WithTrailingTrivia(SyntaxFactory.LineFeed));
                 }
                 else
@@ -226,7 +317,7 @@ namespace Microsoft.DotNet.GenAPI
 
         private OptionSet DefineFormattingOptions()
         {
-            /// TODO: consider to move configuration into file.
+            // TODO: consider to move configuration into file.
             return _adhocWorkspace.Options
                 .WithChangedOption(CSharpFormattingOptions.NewLinesForBracesInTypes, true)
                 .WithChangedOption(CSharpFormattingOptions.WrappingKeepStatementsOnSingleLine, true)

@@ -1,3 +1,6 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 using System;
 using System.Collections.Generic;
 using System.CommandLine;
@@ -77,8 +80,7 @@ namespace Microsoft.DotNet.Workloads.Workload.List
 #if !DOT_NET_BUILD_FROM_SOURCE
             if (OperatingSystem.IsWindows())
             {
-                VisualStudioWorkloads.GetInstalledWorkloads(WorkloadResolver, _currentSdkFeatureBand,
-                    installedWorkloads);
+                VisualStudioWorkloads.GetInstalledWorkloads(WorkloadResolver, installedWorkloads);
             }
 #endif
             return installedWorkloads;
