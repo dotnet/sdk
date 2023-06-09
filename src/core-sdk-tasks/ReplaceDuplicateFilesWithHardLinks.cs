@@ -22,7 +22,7 @@ namespace Microsoft.DotNet.Build.Tasks
     /// <summary>
     /// Replaces files that have the same content with hard links.
     /// </summary>
-    public sealed class RemoveDuplicateFilesWithHardLinks  : Task
+    public sealed class ReplaceDuplicateFilesWithHardLinks  : Task
     {
         /// <summary>
         /// The path to the directory.
@@ -33,7 +33,7 @@ namespace Microsoft.DotNet.Build.Tasks
 #if NETFRAMEWORK
         public override bool Execute()
         {
-            Log.LogError($"{nameof(RemoveDuplicateFilesWithHardLinks)} is not supported on .NET Framework.");
+            Log.LogError($"{nameof(ReplaceDuplicateFilesWithHardLinks)} is not supported on .NET Framework.");
             return false;
         }
 #else
@@ -41,7 +41,7 @@ namespace Microsoft.DotNet.Build.Tasks
         {
             if (OperatingSystem.IsWindows())
             {
-                Log.LogError($"{nameof(RemoveDuplicateFilesWithHardLinks)} is not supported on Windows.");
+                Log.LogError($"{nameof(ReplaceDuplicateFilesWithHardLinks)} is not supported on Windows.");
                 return false;
             }
 

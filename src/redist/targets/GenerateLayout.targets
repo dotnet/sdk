@@ -568,7 +568,7 @@
        and the corresponding shared frameworks are included in a distro package their data is shared instead of duplicated. -->
   <Target Name="ReplaceDuplicateFilesWithHardLinks" DependsOnTargets="LayoutBundledComponents"
                                                     Condition="'$(BundleRuntimePacks)' == 'true' and  !$([MSBuild]::IsOSPlatform('WINDOWS'))">
-    <RemoveDuplicateFilesWithHardLinks Directory="$(RedistLayoutPath)" />
+    <ReplaceDuplicateFilesWithHardLinks Directory="$(RedistLayoutPath)" />
   </Target>
 
   <Target Name="GenerateLayout"
