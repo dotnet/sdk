@@ -1,0 +1,34 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nikola Milosavljevic <nikolam@microsoft.com>
+Date: Thu, 8 Jun 2023 18:39:26 +0000
+Subject: [PATCH] Add System.Collections.Immutable package dependency
+
+Backport: https://github.com/dotnet/razor/pull/8817
+---
+ eng/Version.Details.xml | 10 +++++++---
+ 1 file changed, 7 insertions(+), 3 deletions(-)
+
+diff --git a/eng/Version.Details.xml b/eng/Version.Details.xml
+index 3d75f97f3..c52b0a554 100644
+--- a/eng/Version.Details.xml
++++ b/eng/Version.Details.xml
+@@ -105,12 +105,16 @@
+       <Sha>9e7fbcab4e5275f63c0cd37553ba426de9194309</Sha>
+       <SourceBuild RepoName="xliff-tasks" ManagedOnly="true" />
+     </Dependency>
+-    <!-- Necessary for source-build. This allows the package to be retrieved from previously-source-built artifacts
+-         and flow in as dependencies of the packages produced by razor. Without this entry an SBRP version of the
+-         dependency would be bundled together with the produced package, causing issues for the consumer. -->
++    <!-- Necessary for source-build. This allows Microsoft.Extensions.ObjectPool and System.Collections.Immutable packages
++         to be retrieved from live source-build and their content consumed by packages produced by razor.
++         Without these entries, due to PVP flow work, SBRP packages would be consumed causing runtime issue. -->
+     <Dependency Name="Microsoft.Extensions.ObjectPool" Version="6.0.0">
+       <Uri>https://github.com/dotnet/aspnetcore</Uri>
+       <Sha>ae1a6cbe225b99c0bf38b7e31bf60cb653b73a52</Sha>
+     </Dependency>
++    <Dependency Name="System.Collections.Immutable" Version="6.0.0">
++      <Uri>https://github.com/dotnet/runtime</Uri>
++      <Sha>4822e3c3aa77eb82b2fb33c9321f923cf11ddde6</Sha>
++    </Dependency>
+   </ToolsetDependencies>
+ </Dependencies>

@@ -70,7 +70,8 @@
                     HashCatalogFilePath="$(PoisonReportDataFile)"
                     MarkerFileName="$(PoisonMarkerFile)"
                     PoisonReportOutputFilePath="$(PoisonUsageReportFile)"
-                    NonShippingPackagesListFiles="@(NonShippingPackagesList)" />
+                    NonShippingPackagesListFiles="@(NonShippingPackagesList)"
+                    FailOnPoisonFound="true" />
 
     <WriteLinesToFile File="$(CompletedSemaphorePath)ReportPoisonUsage.complete" Overwrite="true" />
     <Message Importance="High" Text="[$([System.DateTime]::Now.ToString('HH:mm:ss.ff'))] Done checking for poison." />
@@ -93,7 +94,6 @@
     </ItemGroup>
 
     <PropertyGroup>
-      <CustomTestEnvVars Condition="'$(EnablePoison)' == 'true'">SMOKE_TESTS_POISON_REPORT_PATH=$(PoisonUsageReportFile);</CustomTestEnvVars>
       <SdkTarballPath>%(SdkTarballItem.Identity)</SdkTarballPath>
       <SourceBuiltArtifactsPath>%(SourceBuiltArtifactsItem.Identity)</SourceBuiltArtifactsPath>
       <SmokeTestConsoleVerbosity Condition="'$(SmokeTestConsoleVerbosity)' == ''">normal</SmokeTestConsoleVerbosity>
