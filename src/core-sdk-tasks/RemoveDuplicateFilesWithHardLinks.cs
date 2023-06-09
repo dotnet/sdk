@@ -2,6 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+#if !NETFRAMEWORK
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -10,6 +13,7 @@ using System.IO.Enumeration;
 using System.IO.MemoryMappedFiles;
 using System.Linq;
 using System.Runtime.InteropServices;
+#endif
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 
@@ -26,6 +30,13 @@ namespace Microsoft.DotNet.Build.Tasks
         [Required]
         public string Directory { get; set; } = "";
 
+#if NETFRAMEWORK
+        public override bool Execute()
+        {
+            Log.LogError($"{nameof(RemoveDuplicateFilesWithHardLinks)} is not supported on .NET Framework.");
+            return false;
+        }
+#else
         public override bool Execute()
         {
             if (OperatingSystem.IsWindows())
@@ -55,7 +66,7 @@ namespace Microsoft.DotNet.Build.Tasks
             };
 
             // Group them by file size.
-            IEnumerable<string[]> filesGroupedBySize = fse.GroupBy(file => file.Length,
+            IEnumerable<string?[]> filesGroupedBySize = fse.GroupBy(file => file.Length,
                                                                     file => file.FullName,
                                                                     (size, files) => files.ToArray());
 
@@ -64,14 +75,14 @@ namespace Microsoft.DotNet.Build.Tasks
             {
                 for (int i = 0; i < files.Length; i++)
                 {
-                    string path1 = files[i];
+                    string? path1 = files[i];
                     if (path1 is null)
                     {
                         continue; // already linked.
                     }
                     for (int j = i + 1; j < files.Length; j++)
                     {
-                        string path2 = files[j];
+                        string? path2 = files[j];
                         if (path2 is null)
                         {
                             continue; // already linked.
@@ -155,5 +166,6 @@ namespace Microsoft.DotNet.Build.Tasks
         // This native method is used by the runtime to create hard links. It is not exposed through a public .NET API.
         [DllImport("libSystem.Native", SetLastError = true)]
         static extern int SystemNative_Link(string source, string link);
+#endif
     }
 }
