@@ -162,6 +162,22 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
+        [InlineData("netstandard2.0")]
+        [InlineData("netstandard2.1")]
+        public void ILLink_can_use_latest_with_unsupported_target_framework(string targetFramework)
+        {
+            var projectName = "TrimmableNetstandardLibrary";
+            var testAsset = _testAssetsManager.CopyTestAsset(projectName)
+                .WithSource()
+                .WithTargetFramework(targetFramework);
+
+            var buildCommand = new BuildCommand(testAsset);
+            buildCommand.Execute("/p:IsTrimmable=true")
+                .Should().Pass()
+                .And.HaveStdOutContaining("warning IL2026");
+        }
+
+        [RequiresMSBuildVersionTheory("17.0.0.32901")]
         [MemberData(nameof(SupportedTfms), MemberType = typeof(PublishTestUtils))]
         public void PrepareForILLink_can_set_IsTrimmable(string targetFramework)
         {
