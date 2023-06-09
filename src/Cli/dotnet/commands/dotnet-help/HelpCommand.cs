@@ -4,7 +4,8 @@
 using System;
 using System.CommandLine.Parsing;
 using System.Diagnostics;
-using System.Linq;
+using System.IO;
+using System.Runtime.InteropServices;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
 
@@ -67,9 +68,13 @@ namespace Microsoft.DotNet.Tools.Help
             }
             else
             {
+                var fileName = File.Exists(@"/usr/bin/xdg-open") ? @"/usr/bin/xdg-open" :
+                               File.Exists(@"/usr/sbin/xdg-open") ? @"/usr/sbin/xdg-open" :
+                               File.Exists(@"/sbin/xdg-open") ? @"/sbin/xdg-open" :
+                               "xdg-open";
                 psInfo = new ProcessStartInfo
                 {
-                    FileName = @"/usr/bin/xdg-open",
+                    FileName = fileName,
                     Arguments = docUrl
                 };
             }
