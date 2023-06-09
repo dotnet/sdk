@@ -380,7 +380,7 @@ namespace Microsoft.TemplateEngine.Cli
         }
 
         /// <summary>
-        /// Searches for template package metadata.
+        /// Searches and displays a package metadata.
         /// </summary>
         internal async Task<NewCommandStatus> DisplayTemplatePackageMetadata(
             string packageIdentity,
@@ -389,8 +389,7 @@ namespace Microsoft.TemplateEngine.Cli
             bool interactiveAuth,
             CancellationToken cancellationToken = default)
         {
-            var metadataOutput = new List<string>();
-            NugetPackageMetadata? extendedPackageMetadata;
+            NugetPackageMetadata? nuGetPackageMetadata;
             IEnumerable<ITemplateInfo>? packageTemplates;
             IManagedTemplatePackage? localPackage;
 
@@ -411,16 +410,24 @@ namespace Microsoft.TemplateEngine.Cli
             if (localPackage != null && packageTemplates != null)
             {
                 string? packageSource = string.Empty;
-                localPackage?.GetDetails().TryGetValue(SourceFeedKey, out packageSource);
-                extendedPackageMetadata = await nugetApiManager.GetPackageMetadataAsync(
+                localPackage.GetDetails().TryGetValue(SourceFeedKey, out packageSource);
+                nuGetPackageMetadata = await nugetApiManager.GetPackageMetadataAsync(
                     packageIdentity,
                     packageVersion,
                     packageSource,
                     cancellationToken).ConfigureAwait(false);
+                if (nuGetPackageMetadata == null)
+                {
+                    DisplayLocalPackageMetadata(localPackage, Reporter.Output);
+
+                    var templatesToDisplay = TemplateGroupDisplay.GetTemplateGroupsForListDisplay(packageTemplates, null, null, _engineEnvironmentSettings.Environment);
+                    DisplayPackageTemplateList(templatesToDisplay, Reporter.Output);
+                    return NewCommandStatus.Success;
+                }
             }
             else
             {
-                (extendedPackageMetadata, packageTemplates) = await CliTemplateSearchCoordinator.SearchForPackageDetailsAsync(
+                (nuGetPackageMetadata, packageTemplates) = await CliTemplateSearchCoordinator.SearchForPackageDetailsAsync(
                     _engineEnvironmentSettings,
                     nugetApiManager,
                     packageIdentity,
@@ -428,11 +435,12 @@ namespace Microsoft.TemplateEngine.Cli
                     cancellationToken).ConfigureAwait(false);
             }
 
-            if (extendedPackageMetadata != null && packageTemplates.Any())
+            if (nuGetPackageMetadata != null && packageTemplates.Any())
             {
-                var templatesToDisplay = TemplateGroupDisplay.GetTemplateGroupsForListDisplay(packageTemplates, null, null, _engineEnvironmentSettings.Environment);
-                DisplayPackageMetadata(extendedPackageMetadata, templatesToDisplay, Reporter.Output);
+                DisplayNuGetPackageMetadata(nuGetPackageMetadata, Reporter.Output);
 
+                var templatesToDisplay = TemplateGroupDisplay.GetTemplateGroupsForListDisplay(packageTemplates, null, null, _engineEnvironmentSettings.Environment);
+                DisplayPackageTemplateList(templatesToDisplay, Reporter.Output);
                 return NewCommandStatus.Success;
             }
 
@@ -443,7 +451,7 @@ namespace Microsoft.TemplateEngine.Cli
             return NewCommandStatus.NotFound;
         }
 
-        internal void DisplayPackageMetadata(NugetPackageMetadata packageMetadata, IReadOnlyList<TemplateGroupTableRow> templatesToDisplay, IReporter reporter)
+        internal void DisplayNuGetPackageMetadata(NugetPackageMetadata packageMetadata, IReporter reporter)
         {
             reporter.WriteLine($"{packageMetadata.Identity}");
 
@@ -498,8 +506,40 @@ namespace Microsoft.TemplateEngine.Cli
                     $"{LocalizableStrings.DetailsCommand_Property_RepoUrl}: ".Indent(2) +
                     $"{AnsiExtensions.Url(projectUrl, repoUrlInfo![3] + repoUrlInfo![4])}");
             }
+        }
 
-            reporter.WriteLine();
+        internal void DisplayLocalPackageMetadata(IManagedTemplatePackage package, IReporter reporter)
+        {
+            reporter.WriteLine($"{package.Identifier}");
+
+            var packageDetails = package.GetDetails();
+
+            string? authors;
+            packageDetails.TryGetValue("Author", out authors);
+            if (!string.IsNullOrEmpty(authors))
+            {
+                reporter.WriteLine($"{LocalizableStrings.DetailsCommand_Property_Authors}:".Indent(1));
+
+                var packageAuthors = authors.Split(",");
+                foreach (var author in packageAuthors)
+                {
+                    reporter.WriteLine(author.Trim().Indent(2));
+                }
+            }
+
+            string? nuGetSource;
+            packageDetails.TryGetValue("NuGetSource", out nuGetSource);
+
+            if (!string.IsNullOrEmpty(nuGetSource))
+            {
+                var repoUrlInfo = nuGetSource.Split("/");
+                reporter.WriteLine(
+                    $"{LocalizableStrings.DetailsCommand_Property_RepoUrl}: {nuGetSource}".Indent(1));
+            }
+        }
+
+        internal void DisplayPackageTemplateList(IReadOnlyList<TemplateGroupTableRow> templatesToDisplay, IReporter reporter)
+        {
             reporter.WriteLine($"{LocalizableStrings.DetailsCommand_Property_Templates}:".Indent(1));
 
             TabularOutput<TemplateGroupTableRow> formatter =
