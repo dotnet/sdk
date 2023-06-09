@@ -21,6 +21,8 @@
     <BuildCommandArgs>$(StandardSourceBuildArgs)</BuildCommandArgs>
 
     <BuildCommand>$(ProjectDirectory)eng/source-build/build$(ShellExtension) $(BuildCommandArgs)</BuildCommand>
+
+    <PackageVersionPropsFlowType>DependenciesOnly</PackageVersionPropsFlowType>
   </PropertyGroup>
 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
