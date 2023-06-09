@@ -23,20 +23,19 @@ namespace Microsoft.NET.Build.Tests
         {
             Type type = typeof(Strings);
             var resourceStrings = type.GetRuntimeProperties();
-            List<string> listOfErrorCode = new List<string>();
+            HashSet<string> listOfErrorCode = new HashSet<string>();
             foreach (var resource in resourceStrings )
             {
                 if ( resource.PropertyType == typeof(string))
                 {
-                    string errorCode = Strings.GetResourceString(resource.Name).Substring(0, 10);
-                    if (errorCode.Contains("NETSDK"))
+                    string resourceString = Strings.GetResourceString(resource.Name);
+                    if (resourceString.StartsWith("NETSDK"))
                     {
-                        listOfErrorCode.Add(errorCode);
+                        string errorCode = resourceString.Substring(0, 10);
+                        Assert.True(listOfErrorCode.Add(errorCode), $"Duplicate error code found: {errorCode}");
                     }
                 }
             }
-            var anyDuplicate = listOfErrorCode.GroupBy(x => x).Where(g => g.Count() > 1);
-            Assert.True(anyDuplicate.Count() == 0,$"Duplicate error code found: {anyDuplicate.First().Key}");
         }
     }
 }
