@@ -20,7 +20,6 @@
     <RepositoryReference Include="command-line-api" />
     <RepositoryReference Include="diagnostics" />
     <RepositoryReference Include="emsdk" />
-    <RepositoryReference Include="razor" />
     <RepositoryReference Include="xliff-tasks" />
     <RepositoryReference Include="cecil" />
     <RepositoryReference Include="symreader" />
@@ -31,6 +30,7 @@
     <RepositoryReference Include="msbuild" />
     <RepositoryReference Include="roslyn-analyzers" />
     <RepositoryReference Include="aspnetcore" />
+    <RepositoryReference Include="razor" />
     <RepositoryReference Include="deployment-tools" />
     <RepositoryReference Include="format" />
     <RepositoryReference Include="nuget-client" />
