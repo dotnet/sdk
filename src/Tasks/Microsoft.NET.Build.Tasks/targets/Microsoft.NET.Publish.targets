@@ -138,6 +138,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                    ResourceName="PublishProfileNotPresent"
                    FormatArguments="$(PublishProfile)"/>
 
+    <!-- If the TFM is valid, ProcessFrameworkReferences task will warn in restore. If we reach here without a ILCompiler pack, its an invalid TFM -->
     <NETSdkError Condition="'$(PublishAOT)' == 'true' and '@(TargetILCompilerPack)' == '' and '@(HostILCompilerPack)' == ''"
                  ResourceName="AotUnsupportedTargetFramework" />
 
