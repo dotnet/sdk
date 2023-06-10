@@ -456,4 +456,202 @@ public class EndToEndTests : IDisposable
             return new[] { $"{workingDir}/{binary}" };
         }
     }
+
+    [DockerAvailableFact]
+    public void CanPublishForMultipleRids()
+    {
+        DirectoryInfo newProjectDir = new DirectoryInfo(Path.Combine(TestSettings.TestArtifactsDirectory, nameof(CanPublishForMultipleRids)));
+        DirectoryInfo privateNuGetAssets = new DirectoryInfo(Path.Combine(TestSettings.TestArtifactsDirectory, "ContainerNuGet"));
+
+        if (newProjectDir.Exists)
+        {
+            newProjectDir.Delete(recursive: true);
+        }
+
+        if (privateNuGetAssets.Exists)
+        {
+            privateNuGetAssets.Delete(recursive: true);
+        }
+
+        newProjectDir.Create();
+        privateNuGetAssets.Create();
+
+        var packageDirPath = Path.Combine(TestContext.Current.TestExecutionDirectory, "Container", "package");
+        var packagedir = new DirectoryInfo(packageDirPath);
+
+        foreach (var rid in new[]{"amd64", "arm64"}) {
+            new RunExeCommand(_testOutput, "docker", "image", "rm", nameof(CanPublishForMultipleRids).ToLowerInvariant()+$":1.0.0-{rid}")
+                .WithWorkingDirectory(newProjectDir.FullName)
+                .Execute();
+        }
+
+        FileInfo[] nupkgs = packagedir.GetFiles("*.nupkg");
+        if (nupkgs == null || nupkgs.Length == 0)
+        {
+            // Build Microsoft.NET.Build.Containers.csproj & wait.
+            // for now, fail.
+            Assert.Fail("No nupkg found in expected package folder. You may need to rerun the build");
+        }
+
+        new DotnetNewCommand(_testOutput, "webapi")
+            .WithVirtualHive()
+            .WithWorkingDirectory(newProjectDir.FullName)
+            // do not pollute the primary/global NuGet package store with the private package(s)
+            .WithEnvironmentVariable("NUGET_PACKAGES", privateNuGetAssets.FullName)
+            .Execute()
+            .Should().Pass();
+
+        File.Copy(Path.Combine(TestContext.Current.TestExecutionDirectory, "NuGet.config"), Path.Combine(newProjectDir.FullName, "NuGet.config"));
+
+        new DotnetCommand(_testOutput, "nuget", "add", "source", packagedir.FullName, "--name", "local-temp")
+            .WithEnvironmentVariable("NUGET_PACKAGES", privateNuGetAssets.FullName)
+            .WithWorkingDirectory(newProjectDir.FullName)
+            .Execute()
+            .Should().Pass();
+
+        // Add package to the project
+        new DotnetCommand(_testOutput, "add", "package", "Microsoft.NET.Build.Containers", "-f", ToolsetInfo.CurrentTargetFramework, "-v", TestContext.Current.ToolsetUnderTest.SdkVersion)
+            .WithEnvironmentVariable("NUGET_PACKAGES", privateNuGetAssets.FullName)
+            .WithWorkingDirectory(newProjectDir.FullName)
+            .Execute()
+            .Should().Pass();
+
+        // now we need to add rids to the project
+        string projectFile = Path.Combine(newProjectDir.FullName, $"{nameof(CanPublishForMultipleRids)}.csproj");
+
+        var project = Microsoft.Build.Construction.ProjectRootElement.Open(projectFile);
+        project.PropertyGroups.First().AddProperty("RuntimeIdentifiers", "linux-x64;linux-arm64");
+        project.Save();
+
+        new DotnetCommand(_testOutput, "publish", "-bl", "/t:Containerize", "-p", "Version=1.0.0", "--self-contained", "false")
+            .WithWorkingDirectory(newProjectDir.FullName)
+            .Execute()
+            .Should().Pass();
+
+        // we should have two images
+        new RunExeCommand(_testOutput, "docker", "image", "list", nameof(CanPublishForMultipleRids).ToLowerInvariant(), "--format", "\"{{.Tag}}\"")
+            .WithWorkingDirectory(newProjectDir.FullName)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOutContaining($"1.0.0-amd64")
+            .And.HaveStdOutContaining($"1.0.0-arm64")
+            .And.NotHaveStdOutContaining($"1.0.0-x64");
+    }
+
+    [DockerAvailableFact]
+    public void CanPublishSolution()
+    {
+        DirectoryInfo newProjectDir = new DirectoryInfo(Path.Combine(TestSettings.TestArtifactsDirectory, nameof(CanPublishSolution)));
+        DirectoryInfo privateNuGetAssets = new DirectoryInfo(Path.Combine(TestSettings.TestArtifactsDirectory, "ContainerNuGet"));
+
+        string project1 = nameof(project1);
+        string project2 = nameof(project2);
+
+        if (newProjectDir.Exists)
+        {
+            newProjectDir.Delete(recursive: true);
+        }
+
+        if (privateNuGetAssets.Exists)
+        {
+            privateNuGetAssets.Delete(recursive: true);
+        }
+
+        newProjectDir.Create();
+        privateNuGetAssets.Create();
+
+        var packageDirPath = Path.Combine(TestContext.Current.TestExecutionDirectory, "Container", "package");
+        var packagedir = new DirectoryInfo(packageDirPath);
+
+        foreach (var rid in new[]{project1, project2}) {
+            new RunExeCommand(_testOutput, "docker", "image", "rm", project1.ToLowerInvariant()+$":1.0.0")
+                .WithWorkingDirectory(newProjectDir.FullName)
+                .Execute();
+        }
+
+        FileInfo[] nupkgs = packagedir.GetFiles("*.nupkg");
+        if (nupkgs == null || nupkgs.Length == 0)
+        {
+            // Build Microsoft.NET.Build.Containers.csproj & wait.
+            // for now, fail.
+            Assert.Fail("No nupkg found in expected package folder. You may need to rerun the build");
+        }
+
+        new DotnetNewCommand(_testOutput, "sln")
+            .WithVirtualHive()
+            .WithWorkingDirectory(newProjectDir.FullName)
+            // do not pollute the primary/global NuGet package store with the private package(s)
+            .WithEnvironmentVariable("NUGET_PACKAGES", privateNuGetAssets.FullName)
+            .Execute()
+            .Should().Pass();
+
+        new DotnetNewCommand(_testOutput, "webapi", "-o", project1)
+            .WithVirtualHive()
+            .WithWorkingDirectory(newProjectDir.FullName)
+            // do not pollute the primary/global NuGet package store with the private package(s)
+            .WithEnvironmentVariable("NUGET_PACKAGES", privateNuGetAssets.FullName)
+            .Execute()
+            .Should().Pass();
+
+        new DotnetNewCommand(_testOutput, "webapi", "-o", project2)
+            .WithVirtualHive()
+            .WithWorkingDirectory(newProjectDir.FullName)
+            // do not pollute the primary/global NuGet package store with the private package(s)
+            .WithEnvironmentVariable("NUGET_PACKAGES", privateNuGetAssets.FullName)
+            .Execute()
+            .Should().Pass();
+
+        new DotnetCommand(_testOutput, "sln", "add", project1)
+            .WithWorkingDirectory(newProjectDir.FullName)
+            // do not pollute the primary/global NuGet package store with the private package(s)
+            .WithEnvironmentVariable("NUGET_PACKAGES", privateNuGetAssets.FullName)
+            .Execute()
+            .Should().Pass();
+
+        new DotnetCommand(_testOutput, "sln", "add", project2)
+            .WithWorkingDirectory(newProjectDir.FullName)
+            // do not pollute the primary/global NuGet package store with the private package(s)
+            .WithEnvironmentVariable("NUGET_PACKAGES", privateNuGetAssets.FullName)
+            .Execute()
+            .Should().Pass();
+
+        File.Copy(Path.Combine(TestContext.Current.TestExecutionDirectory, "NuGet.config"), Path.Combine(newProjectDir.FullName, "NuGet.config"));
+
+        new DotnetCommand(_testOutput, "nuget", "add", "source", packagedir.FullName, "--name", "local-temp")
+            .WithEnvironmentVariable("NUGET_PACKAGES", privateNuGetAssets.FullName)
+            .WithWorkingDirectory(newProjectDir.FullName)
+            .Execute()
+            .Should().Pass();
+
+        // Add package to the projects
+        new DotnetCommand(_testOutput, "add", "package", "Microsoft.NET.Build.Containers", "-f", ToolsetInfo.CurrentTargetFramework, "-v", TestContext.Current.ToolsetUnderTest.SdkVersion)
+            .WithEnvironmentVariable("NUGET_PACKAGES", privateNuGetAssets.FullName)
+            .WithWorkingDirectory(Path.Combine(newProjectDir.FullName, project1))
+            .Execute()
+            .Should().Pass();
+
+        new DotnetCommand(_testOutput, "add", "package", "Microsoft.NET.Build.Containers", "-f", ToolsetInfo.CurrentTargetFramework, "-v", TestContext.Current.ToolsetUnderTest.SdkVersion)
+            .WithEnvironmentVariable("NUGET_PACKAGES", privateNuGetAssets.FullName)
+            .WithWorkingDirectory(Path.Combine(newProjectDir.FullName, project2))
+            .Execute()
+            .Should().Pass();
+
+        new DotnetCommand(_testOutput, "build", "-bl", "/t:Containerize", "-p", "Version=1.0.0", "--self-contained", "false")
+            .WithWorkingDirectory(newProjectDir.FullName)
+            .Execute()
+            .Should().Pass();
+
+        // we should have two images
+        new RunExeCommand(_testOutput, "docker", "image", "list", nameof(project1).ToLowerInvariant(), "--format", "\"{{.Tag}}\"")
+            .WithWorkingDirectory(newProjectDir.FullName)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOutContaining($"1.0.0");
+
+        new RunExeCommand(_testOutput, "docker", "image", "list", nameof(project2).ToLowerInvariant(), "--format", "\"{{.Tag}}\"")
+            .WithWorkingDirectory(newProjectDir.FullName)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOutContaining($"1.0.0");
+    }
 }

@@ -190,6 +190,7 @@
     </PublishContainerDependsOn>
   </PropertyGroup>
 
+  <!-- Main entrypoint for creating a specific container -->
   <Target Name="PublishContainer" DependsOnTargets="$(PublishContainerDependsOn)">
 
     <PropertyGroup Condition="'$(DOTNET_HOST_PATH)' == ''">
@@ -221,10 +222,69 @@
                     ContainerEnvironmentVariables="@(ContainerEnvironmentVariables)"
                     ContainerRuntimeIdentifier="$(ContainerRuntimeIdentifier)"
                     ContainerUser="$(ContainerUser)"
-                    RuntimeIdentifierGraphPath="$(RuntimeIdentifierGraphPath)"> <!-- The RID graph path is provided as a property by the SDK. -->
+                    RuntimeIdentifierGraphPath="$(RuntimeIdentifierGraphPath)" > <!-- The RID graph path is provided as a property by the SDK. -->
 
       <Output TaskParameter="GeneratedContainerManifest" PropertyName="GeneratedContainerManifest" />
       <Output TaskParameter="GeneratedContainerConfiguration" PropertyName="GeneratedContainerConfiguration" />
     </CreateNewImage>
+  </Target>
+
+  <!-- Secondary entrypoint, either from solution-level `/t:Containerize` or project-level `/t:Containerize` -->
+  <Target Name="Containerize" Condition="'$(EnableSdkContainerSupport)' == 'true'">
+    <PropertyGroup>
+      <!-- We have to build Publish AND PublishContainer because PublishContainer (and other
+          PublishProfile-delivered targets) don't have an explicit Publish dependency. -->
+      <_RequiredContainerPublishTargets>Publish;PublishContainer</_RequiredContainerPublishTargets>
+    </PropertyGroup>
+
+    <!-- Strategy here is that we will figure out what project(s) to build the containerization targets(s) for
+         based on project state. We use `AdditionalProperties` to customize the outputs of each of the builds. -->
+
+    <!-- Properties set here:
+      * TargetFramework - multitargeting - changes inference for base image based on TFM
+      * ContainerImageTag - this is a rough cut
+      * ContainerRuntimeIdentifier - if we're building for a specific RID, we need to set this so that the
+                                     containerization targets know what RID to build for
+      * RuntimeIdentifier - if we're building for a specific RID, we need to set this so that we get optimized
+                            RID-specific assets in the publish output
+
+      NOTE: we could get away with setting `RuntimeIdentfier` here to control `ContainerRuntimeIdentifier` inference
+            but this is also nice and explicit.
+     -->
+
+    <!-- TFMs but no TF -> multitarget, making image for each TFM -->
+    <ItemGroup Condition="'$(TargetFrameworks)' != ''
+                          and '$(TargetFramework)' == ''" >
+      <_TFMItems Include="$(TargetFrameworks)" />
+      <_SingleContainerPublish Include="$(MSBuildProjectFullPath)"
+        AdditionalProperties="TargetFramework=%(_TFMItems.Identity);
+                              ContainerImageTag=$([MSBuild]::GetTargetFrameworkVersion('%(_TFMItems.Identity)', 2))" />
+    </ItemGroup>
+
+    <!-- TF but no TFMs -> single image (aka the default pathway) up until now -->
+    <ItemGroup Condition="'$(TargetFramework)' != ''
+                          and '$(RuntimeIdentifiers)' == ''">
+        <_SingleContainerPublish Include="$(MSBuildProjectFullPath)" />
+    </ItemGroup>
+
+    <!-- TF with RIDs -> multi-arch, single image per arch -->
+    <ItemGroup Condition="'$(TargetFramework)' != ''
+                          and '$(RuntimeIdentifiers)' != ''">
+      <_RIDItems Include="$(RuntimeIdentifiers)" />
+    </ItemGroup>
+    <MapRidToDockerPlatform Condition="'$(TargetFramework)' != ''
+                                      and '$(RuntimeIdentifiers)' != ''"
+                            RuntimeIdentifiers="@(_RIDItems)">
+      <Output TaskParameter="ModifiedRuntimeIdentifiers" ItemName="_RIDItemsWithDockerPlatformTag" />
+    </MapRidToDockerPlatform>
+    <ItemGroup Condition="'$(TargetFramework)' != ''
+                          and '$(RuntimeIdentifiers)' != ''">
+      <_SingleContainerPublish Include="$(MSBuildProjectFullPath)"
+          AdditionalProperties="ContainerRuntimeIdentifier=%(_RIDItemsWithDockerPlatformTag.Identity);
+                                RuntimeIdentifier=%(_RIDItemsWithDockerPlatformTag.Identity);
+                                ContainerImageTag=$(Version)-%(_RIDItemsWithDockerPlatformTag.DockerPlatformTag);" />
+    </ItemGroup>
+
+    <MSBuild Projects="@(_SingleContainerPublish)" Targets="$(_RequiredContainerPublishTargets)" BuildInParallel="true" />
   </Target>
 </Project>

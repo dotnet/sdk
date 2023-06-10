@@ -192,35 +192,14 @@ internal sealed class Registry
         return null;
     }
 
-    private static string? CreateRidForPlatform(PlatformInformation platform)
+    private static string? CreateRidForPlatform(PlatformInformation platform, bool isMuslBased = false)
     {
-        // we only support linux and windows containers explicitly, so anything else we should skip past.
-        var osPart = platform.os switch
-        {
-            "linux" => "linux",
-            "windows" => "win",
-            _ => null
-        };
-        // TODO: this part needs a lot of work, the RID graph isn't super precise here and version numbers (especially on windows) are _whack_
-        // TODO: we _may_ need OS-specific version parsing. Need to do more research on what the field looks like across more manifest lists.
-        var versionPart = platform.version?.Split('.') switch
-        {
-            [var major, .. ] => major,
-            _ => null
-        };
-        var platformPart = platform.architecture switch
-        {
-            "amd64" => "x64",
-            "x386" => "x86",
-            "arm" => $"arm{(platform.variant != "v7" ? platform.variant : "")}",
-            "arm64" => "arm64",
-            "ppc64le" => "ppc64le",
-            "s390x" => "s390x",
-            _ => null
-        };
-
-        if (osPart is null || platformPart is null) return null;
-        return $"{osPart}{versionPart ?? ""}-{platformPart}";
+        var dockerPlatformString = $"{platform.os}/{platform.architecture}{(platform.variant is null ? "" : $"/{platform.variant}")}";
+        if (PlatformMapping.TryGetRidForDockerPlatform(dockerPlatformString, isMuslBased: isMuslBased, out string? rid)) {
+            return rid;
+        } else {
+            return null;
+        }
     }
 
     private static RuntimeGraph GetRuntimeGraphForDotNet(string ridGraphPath) => JsonRuntimeFormat.ReadRuntimeGraph(ridGraphPath);
@@ -298,7 +277,7 @@ internal sealed class Registry
             // manual because ACR throws an error with the .NET type {"Range":"bytes 0-84521/*","Reason":"the Content-Range header format is invalid"}
             //    content.Headers.Add("Content-Range", $"0-{contents.Length - 1}");
             Debug.Assert(content.Headers.TryAddWithoutValidation("Content-Range", $"{chunkStart}-{chunkStart + bytesRead - 1}"));
-            
+
             NextChunkUploadInformation nextChunk = await _registryAPI.Blob.Upload.UploadChunkAsync(patchUri, content, cancellationToken).ConfigureAwait(false);
             patchUri = nextChunk.UploadUri;
 

@@ -3,6 +3,9 @@
 
 using System.CommandLine;
 using System.CommandLine.Parsing;
+using System.ComponentModel.Design;
+using System.Diagnostics;
+using System.ComponentModel;
 using System.Text;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.Logging;

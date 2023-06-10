@@ -83,6 +83,10 @@ Microsoft.NET.Build.Containers.PlatformInformation.variant.get -> string?
 Microsoft.NET.Build.Containers.PlatformInformation.variant.set -> void
 Microsoft.NET.Build.Containers.PlatformInformation.version.get -> string?
 Microsoft.NET.Build.Containers.PlatformInformation.version.set -> void
+Microsoft.NET.Build.Containers.PlatformMapping
+static Microsoft.NET.Build.Containers.PlatformMapping.TryGetRidForDockerPlatform(string! golangPlatform, bool isMuslBased, out string? runtimeIdentifier) -> bool
+static Microsoft.NET.Build.Containers.PlatformMapping.TryGetDockerPlatformForRid(string! runtimeIdentifier, out string? dockerPlatform) -> bool
+static Microsoft.NET.Build.Containers.PlatformMapping.TryGetDockerImageTagForRid(string! runtimeIdentifier, out string? dockerPlatformTag) -> bool
 Microsoft.NET.Build.Containers.PlatformSpecificManifest
 Microsoft.NET.Build.Containers.PlatformSpecificManifest.digest.get -> string!
 Microsoft.NET.Build.Containers.PlatformSpecificManifest.digest.set -> void
@@ -166,6 +170,13 @@ Microsoft.NET.Build.Containers.Tasks.CreateNewImage.ToolPath.get -> string!
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.ToolPath.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.WorkingDirectory.get -> string!
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.WorkingDirectory.set -> void
+Microsoft.NET.Build.Containers.Tasks.MapRidToDockerPlatform
+Microsoft.NET.Build.Containers.Tasks.MapRidToDockerPlatform.MapRidToDockerPlatform() -> void
+Microsoft.NET.Build.Containers.Tasks.MapRidToDockerPlatform.RuntimeIdentifiers.get -> Microsoft.Build.Framework.ITaskItem![]!
+Microsoft.NET.Build.Containers.Tasks.MapRidToDockerPlatform.RuntimeIdentifiers.set -> void
+Microsoft.NET.Build.Containers.Tasks.MapRidToDockerPlatform.ModifiedRuntimeIdentifiers.get -> Microsoft.Build.Framework.ITaskItem![]!
+Microsoft.NET.Build.Containers.Tasks.MapRidToDockerPlatform.ModifiedRuntimeIdentifiers.set -> void
+override Microsoft.NET.Build.Containers.Tasks.MapRidToDockerPlatform.Execute() -> bool
 Microsoft.NET.Build.Containers.Tasks.ParseContainerProperties
 Microsoft.NET.Build.Containers.Tasks.ParseContainerProperties.ContainerEnvironmentVariables.get -> Microsoft.Build.Framework.ITaskItem![]!
 Microsoft.NET.Build.Containers.Tasks.ParseContainerProperties.ContainerEnvironmentVariables.set -> void
