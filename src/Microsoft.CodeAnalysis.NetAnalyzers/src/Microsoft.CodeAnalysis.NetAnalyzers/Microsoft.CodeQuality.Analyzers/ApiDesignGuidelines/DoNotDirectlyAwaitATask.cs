@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Immutable;
 using System.Linq;
 using Analyzer.Utilities;
@@ -16,8 +17,8 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
     /// <summary>
     /// CA2007: <inheritdoc cref="DoNotDirectlyAwaitATaskTitle"/>
     /// </summary>
-    [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
-    public sealed class DoNotDirectlyAwaitATaskAnalyzer : DiagnosticAnalyzer
+    [DiagnosticAnalyzer(LanguageNames.VisualBasic)]
+    public class DoNotDirectlyAwaitATaskAnalyzer : DiagnosticAnalyzer
     {
         internal const string RuleId = "CA2007";
 
@@ -52,7 +53,9 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     return;
                 }
 
-                var configuredAsyncDisposable = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeCompilerServicesConfiguredAsyncDisposable);
+                var wellKnownTypeProvider = WellKnownTypeProvider.GetOrCreate(context.Compilation);
+                var configuredAsyncDisposable = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeCompilerServicesConfiguredAsyncDisposable);
+                var configuredAsyncEnumerable = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeCompilerServicesConfiguredCancelableAsyncEnumerable);
 
                 context.RegisterOperationBlockStartAction(context =>
                 {
@@ -77,9 +80,20 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                             context.RegisterOperationAction(context => AnalyzeUsingOperation(context, configuredAsyncDisposable), OperationKind.Using);
                             context.RegisterOperationAction(context => AnalyzeUsingDeclarationOperation(context, configuredAsyncDisposable), OperationKindEx.UsingDeclaration);
                         }
+
+                        if (configuredAsyncEnumerable is not null)
+                        {
+                            var (analysis, operationKind) = AnalyzeAwaitForEachLoopOperation(configuredAsyncEnumerable);
+                            context.RegisterOperationAction(analysis, operationKind);
+                        }
                     }
                 });
             });
+        }
+
+        public virtual (Action<OperationAnalysisContext> Analysis, OperationKind OperationKind) AnalyzeAwaitForEachLoopOperation(INamedTypeSymbol configuredAsyncEnumerable)
+        {
+            return (_ => { }, OperationKind.None);
         }
 
         private static void AnalyzeAwaitOperation(OperationAnalysisContext context, ImmutableArray<INamedTypeSymbol> taskTypes)
