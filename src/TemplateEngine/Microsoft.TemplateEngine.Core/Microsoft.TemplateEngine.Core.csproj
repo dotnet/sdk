@@ -27,4 +27,8 @@
       <LastGenOutput>LocalizableStrings.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.TemplateEngine.Core.UnitTests" Key="$(TemplateEnginePublicKey)" />
+  </ItemGroup>
 </Project>

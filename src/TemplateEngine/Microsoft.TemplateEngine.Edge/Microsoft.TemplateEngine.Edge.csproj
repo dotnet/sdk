@@ -43,4 +43,9 @@
     </EmbeddedResource>
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.TemplateEngine.Edge.UnitTests" Key="$(TemplateEnginePublicKey)" />
+    <InternalsVisibleTo Include="Microsoft.TemplateEngine.Cli.UnitTests" Key="$(TemplateEnginePublicKey)" />
+  </ItemGroup>
+
 </Project>

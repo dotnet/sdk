@@ -30,4 +30,7 @@
     <Compile Include="..\Shared\**\*.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests" Key="$(TemplateEnginePublicKey)" />
+  </ItemGroup>
 </Project>
