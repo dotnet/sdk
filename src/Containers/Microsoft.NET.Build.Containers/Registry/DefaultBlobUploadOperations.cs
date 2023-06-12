@@ -44,7 +44,6 @@ internal class DefaultBlobUploadOperations : IBlobUploadOperations
     {
         token.ThrowIfCancellationRequested();
         StreamContent content = new StreamContent(contents);
-        content.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
         content.Headers.ContentLength = contents.Length;
         var patchResponse = await Client.PatchAsync(uploadUri, content, token).ConfigureAwait(false);
 

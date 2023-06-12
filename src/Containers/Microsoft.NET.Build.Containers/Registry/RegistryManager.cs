@@ -344,7 +344,6 @@ internal sealed class RegistryManager
 
                 int bytesRead = await contents.ReadAsync(chunkBackingStore, cancellationToken).ConfigureAwait(false);
                 ByteArrayContent content = new(chunkBackingStore, offset: 0, count: bytesRead);
-                content.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
                 content.Headers.ContentLength = bytesRead;
 
                 // manual because ACR throws an error with the .NET type {"Range":"bytes 0-84521/*","Reason":"the Content-Range header format is invalid"}
