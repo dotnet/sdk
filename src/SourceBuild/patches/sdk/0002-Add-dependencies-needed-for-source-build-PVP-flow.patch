@@ -1,0 +1,143 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nikola Milosavljevic <nikolam@microsoft.com>
+Date: Thu, 8 Jun 2023 22:21:02 +0000
+Subject: [PATCH] Add dependencies needed for source-build PVP flow
+
+Backport: https://github.com/dotnet/sdk/pull/33039
+---
+ eng/Version.Details.xml | 68 +++++++++++++++++++++++++++++++++++++++++
+ eng/Versions.props      | 28 ++++++++---------
+ 2 files changed, 82 insertions(+), 14 deletions(-)
+
+diff --git a/eng/Version.Details.xml b/eng/Version.Details.xml
+index 2bf363fc70..a242f463ee 100644
+--- a/eng/Version.Details.xml
++++ b/eng/Version.Details.xml
+@@ -112,15 +112,83 @@
+       <Uri>https://github.com/dotnet/aspnetcore</Uri>
+       <Sha>8dea0b8d3bf5852fe61b2d98b94ae190f68b9768</Sha>
+     </Dependency>
++    <Dependency Name="Microsoft.Build.NuGetSdkResolver" Version="6.7.0-preview.3.57">
++      <Uri>https://github.com/nuget/nuget.client</Uri>
++      <Sha>1f85d874ef0bc82affad2c2175fdd47c5b4bb387</Sha>
++    </Dependency>
+     <Dependency Name="NuGet.Build.Tasks" Version="6.7.0-preview.3.57">
+       <Uri>https://github.com/nuget/nuget.client</Uri>
+       <Sha>1f85d874ef0bc82affad2c2175fdd47c5b4bb387</Sha>
+     </Dependency>
++    <Dependency Name="NuGet.Build.Tasks.Console" Version="6.7.0-preview.3.57">
++      <Uri>https://github.com/nuget/nuget.client</Uri>
++      <Sha>1f85d874ef0bc82affad2c2175fdd47c5b4bb387</Sha>
++    </Dependency>
++    <Dependency Name="NuGet.Build.Tasks.Pack" Version="6.7.0-preview.3.57">
++      <Uri>https://github.com/nuget/nuget.client</Uri>
++      <Sha>1f85d874ef0bc82affad2c2175fdd47c5b4bb387</Sha>
++    </Dependency>
++    <Dependency Name="NuGet.Commands" Version="6.7.0-preview.3.57">
++      <Uri>https://github.com/nuget/nuget.client</Uri>
++      <Sha>1f85d874ef0bc82affad2c2175fdd47c5b4bb387</Sha>
++    </Dependency>
++    <Dependency Name="NuGet.CommandLine.XPlat" Version="6.7.0-preview.3.57">
++      <Uri>https://github.com/nuget/nuget.client</Uri>
++      <Sha>1f85d874ef0bc82affad2c2175fdd47c5b4bb387</Sha>
++    </Dependency>
++    <Dependency Name="NuGet.Common" Version="6.7.0-preview.3.57">
++      <Uri>https://github.com/nuget/nuget.client</Uri>
++      <Sha>1f85d874ef0bc82affad2c2175fdd47c5b4bb387</Sha>
++    </Dependency>
++    <Dependency Name="NuGet.Configuration" Version="6.7.0-preview.3.57">
++      <Uri>https://github.com/nuget/nuget.client</Uri>
++      <Sha>1f85d874ef0bc82affad2c2175fdd47c5b4bb387</Sha>
++    </Dependency>
++    <Dependency Name="NuGet.Credentials" Version="6.7.0-preview.3.57">
++      <Uri>https://github.com/nuget/nuget.client</Uri>
++      <Sha>1f85d874ef0bc82affad2c2175fdd47c5b4bb387</Sha>
++    </Dependency>
++    <Dependency Name="NuGet.DependencyResolver.Core" Version="6.7.0-preview.3.57">
++      <Uri>https://github.com/nuget/nuget.client</Uri>
++      <Sha>1f85d874ef0bc82affad2c2175fdd47c5b4bb387</Sha>
++    </Dependency>
++    <Dependency Name="NuGet.Frameworks" Version="6.7.0-preview.3.57">
++      <Uri>https://github.com/nuget/nuget.client</Uri>
++      <Sha>1f85d874ef0bc82affad2c2175fdd47c5b4bb387</Sha>
++    </Dependency>
++    <Dependency Name="NuGet.LibraryModel" Version="6.7.0-preview.3.57">
++      <Uri>https://github.com/nuget/nuget.client</Uri>
++      <Sha>1f85d874ef0bc82affad2c2175fdd47c5b4bb387</Sha>
++    </Dependency>
++    <Dependency Name="NuGet.ProjectModel" Version="6.7.0-preview.3.57">
++      <Uri>https://github.com/nuget/nuget.client</Uri>
++      <Sha>1f85d874ef0bc82affad2c2175fdd47c5b4bb387</Sha>
++    </Dependency>
++    <Dependency Name="NuGet.Protocol" Version="6.7.0-preview.3.57">
++      <Uri>https://github.com/nuget/nuget.client</Uri>
++      <Sha>1f85d874ef0bc82affad2c2175fdd47c5b4bb387</Sha>
++    </Dependency>
++    <Dependency Name="NuGet.Packaging" Version="6.7.0-preview.3.57">
++      <Uri>https://github.com/nuget/nuget.client</Uri>
++      <Sha>1f85d874ef0bc82affad2c2175fdd47c5b4bb387</Sha>
++    </Dependency>
++    <Dependency Name="NuGet.Versioning" Version="6.7.0-preview.3.57">
++      <Uri>https://github.com/nuget/nuget.client</Uri>
++      <Sha>1f85d874ef0bc82affad2c2175fdd47c5b4bb387</Sha>
++    </Dependency>
+     <Dependency Name="Microsoft.NET.Test.Sdk" Version="17.7.0-preview.23307.1">
+       <Uri>https://github.com/microsoft/vstest</Uri>
+       <Sha>8381658bfb847e67b4f41a997411e8a804e1ecb4</Sha>
+       <SourceBuild RepoName="vstest" ManagedOnly="true" />
+     </Dependency>
++    <Dependency Name="Microsoft.TestPlatform.CLI" Version="17.7.0-preview.23307.1">
++      <Uri>https://github.com/microsoft/vstest</Uri>
++      <Sha>8381658bfb847e67b4f41a997411e8a804e1ecb4</Sha>
++    </Dependency>
++    <Dependency Name="Microsoft.TestPlatform.Build" Version="17.7.0-preview.23307.1">
++      <Uri>https://github.com/microsoft/vstest</Uri>
++      <Sha>8381658bfb847e67b4f41a997411e8a804e1ecb4</Sha>
++    </Dependency>
+     <Dependency Name="Microsoft.NET.ILLink.Tasks" Version="8.0.0-preview.6.23307.4">
+       <Uri>https://github.com/dotnet/runtime</Uri>
+       <Sha>54dab738de58291ebefc8ff0569a799efaff5d82</Sha>
+diff --git a/eng/Versions.props b/eng/Versions.props
+index dfa5c80636..ee10eec2d2 100644
+--- a/eng/Versions.props
++++ b/eng/Versions.props
+@@ -61,25 +61,25 @@
+   <PropertyGroup>
+     <!-- Dependencies from https://github.com/nuget/nuget.client -->
+     <NuGetBuildTasksPackageVersion>6.7.0-preview.3.57</NuGetBuildTasksPackageVersion>
+-    <NuGetBuildTasksConsolePackageVersion>$(NuGetBuildTasksPackageVersion)</NuGetBuildTasksConsolePackageVersion>
++    <NuGetBuildTasksConsolePackageVersion>6.7.0-preview.3.57</NuGetBuildTasksConsolePackageVersion>
+     <NuGetLocalizationPackageVersion>6.0.0-rc.278</NuGetLocalizationPackageVersion>
+-    <NuGetBuildTasksPackPackageVersion>$(NuGetBuildTasksPackageVersion)</NuGetBuildTasksPackPackageVersion>
+-    <NuGetCommandLineXPlatPackageVersion>$(NuGetBuildTasksPackageVersion)</NuGetCommandLineXPlatPackageVersion>
+-    <NuGetProjectModelPackageVersion>$(NuGetBuildTasksPackageVersion)</NuGetProjectModelPackageVersion>
+-    <MicrosoftBuildNuGetSdkResolverPackageVersion>$(NuGetBuildTasksPackageVersion)</MicrosoftBuildNuGetSdkResolverPackageVersion>
+-    <NuGetCommonPackageVersion>$(NuGetBuildTasksPackageVersion)</NuGetCommonPackageVersion>
+-    <NuGetConfigurationPackageVersion>$(NuGetBuildTasksPackageVersion)</NuGetConfigurationPackageVersion>
+-    <NuGetFrameworksPackageVersion>$(NuGetBuildTasksPackageVersion)</NuGetFrameworksPackageVersion>
+-    <NuGetPackagingPackageVersion>$(NuGetBuildTasksPackageVersion)</NuGetPackagingPackageVersion>
+-    <NuGetVersioningPackageVersion>$(NuGetBuildTasksPackageVersion)</NuGetVersioningPackageVersion>
+-    <NuGetPackagingVersion>$(NuGetPackagingPackageVersion)</NuGetPackagingVersion>
+-    <NuGetProjectModelVersion>$(NuGetProjectModelPackageVersion)</NuGetProjectModelVersion>
++    <NuGetBuildTasksPackPackageVersion>6.7.0-preview.3.57</NuGetBuildTasksPackPackageVersion>
++    <NuGetCommandLineXPlatPackageVersion>6.7.0-preview.3.57</NuGetCommandLineXPlatPackageVersion>
++    <NuGetProjectModelPackageVersion>6.7.0-preview.3.57</NuGetProjectModelPackageVersion>
++    <MicrosoftBuildNuGetSdkResolverPackageVersion>6.7.0-preview.3.57</MicrosoftBuildNuGetSdkResolverPackageVersion>
++    <NuGetCommonPackageVersion>6.7.0-preview.3.57</NuGetCommonPackageVersion>
++    <NuGetConfigurationPackageVersion>6.7.0-preview.3.57</NuGetConfigurationPackageVersion>
++    <NuGetFrameworksPackageVersion>6.7.0-preview.3.57</NuGetFrameworksPackageVersion>
++    <NuGetPackagingPackageVersion>6.7.0-preview.3.57</NuGetPackagingPackageVersion>
++    <NuGetVersioningPackageVersion>6.7.0-preview.3.57</NuGetVersioningPackageVersion>
++    <NuGetPackagingVersion>6.7.0-preview.3.57</NuGetPackagingVersion>
++    <NuGetProjectModelVersion>6.7.0-preview.3.57</NuGetProjectModelVersion>
+   </PropertyGroup>
+   <PropertyGroup>
+     <!-- Dependencies from https://github.com/Microsoft/vstest -->
+     <MicrosoftNETTestSdkPackageVersion>17.7.0-preview.23307.1</MicrosoftNETTestSdkPackageVersion>
+-    <MicrosoftTestPlatformCLIPackageVersion>$(MicrosoftNETTestSdkPackageVersion)</MicrosoftTestPlatformCLIPackageVersion>
+-    <MicrosoftTestPlatformBuildPackageVersion>$(MicrosoftNETTestSdkPackageVersion)</MicrosoftTestPlatformBuildPackageVersion>
++    <MicrosoftTestPlatformCLIPackageVersion>17.7.0-preview.23307.1</MicrosoftTestPlatformCLIPackageVersion>
++    <MicrosoftTestPlatformBuildPackageVersion>17.7.0-preview.23307.1</MicrosoftTestPlatformBuildPackageVersion>
+   </PropertyGroup>
+   <PropertyGroup>
+     <!-- Dependencies from https://github.com/dotnet/runtime -->
