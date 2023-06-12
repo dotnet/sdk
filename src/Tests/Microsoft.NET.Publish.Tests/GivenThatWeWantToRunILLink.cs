@@ -162,7 +162,11 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
-        [InlineData("netstandard2.0")]
+        // TODO: enable netstandard2.0 once ProcessFrameworkReferences is fixed to run
+        // when tool packs are referenced. See https://github.com/dotnet/sdk/pull/33062.
+        // Currently netstandard2.0 skips ProcessFrameworkReference because FrameworkReference
+        // is empty.
+        // [InlineData("netstandard2.0")]
         [InlineData("netstandard2.1")]
         public void ILLink_can_use_latest_with_unsupported_target_framework(string targetFramework)
         {
