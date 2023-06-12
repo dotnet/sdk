@@ -461,24 +461,15 @@ internal sealed class RegistryManager
     private async Task<FinalizeUploadInformation> UploadBlobContentsAsync(string repository, string digest, Stream contents, StartUploadInformation uploadInfo, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-
-        if (uploadInfo.registryDeclaredChunkSize is null || uploadInfo.registryDeclaredChunkSize >= contents.Length)
+        _logger.LogTrace("Attempting to upload whole blob, content length: {0}.", contents.Length);
+        try
         {
-            _logger.LogTrace("Chunk size undetected or was greater than content length of {0}, attempting to upload whole blob.", contents.Length);
-            try
-            {
-                return await API.Blob.Upload.UploadAtomicallyAsync(uploadInfo.uploadUri, contents, cancellationToken).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogTrace("Errored while uploading whole blob: {0}.\nRetrying with chunked upload.", ex);
-                contents.Seek(0, SeekOrigin.Begin);
-                return await UploadBlobChunkedAsync(repository, digest, contents, uploadInfo, cancellationToken).ConfigureAwait(false);
-            }
+            return await API.Blob.Upload.UploadAtomicallyAsync(uploadInfo.uploadUri, contents, cancellationToken).ConfigureAwait(false);
         }
-        else
+        catch (Exception ex)
         {
-            _logger.LogTrace("Chunk size was smaller than content length of {0}, uploading chunks.", contents.Length);
+            _logger.LogTrace("Errored while uploading whole blob: {0}.\nRetrying with chunked upload. Content length: {1}, chunk size: {2}.", ex, contents.Length, uploadInfo.registryDeclaredChunkSize);
+            contents.Seek(0, SeekOrigin.Begin);
             return await UploadBlobChunkedAsync(repository, digest, contents, uploadInfo, cancellationToken).ConfigureAwait(false);
         }
     }
