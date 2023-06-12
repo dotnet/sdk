@@ -11,7 +11,6 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.CodeAnalysis.Tools.Perf.Micro
 {
-    [SimpleJob(RuntimeMoniker.NetCoreApp31)]
     public class FormattedFiles
     {
         private const string UnformattedProjectPath = "tests/projects/for_code_formatter/unformatted_project/";
