@@ -72,8 +72,8 @@
     <NuGetFrameworksPackageVersion>6.7.0-preview.3.65</NuGetFrameworksPackageVersion>
     <NuGetPackagingPackageVersion>6.7.0-preview.3.65</NuGetPackagingPackageVersion>
     <NuGetVersioningPackageVersion>6.7.0-preview.3.65</NuGetVersioningPackageVersion>
-    <NuGetPackagingVersion>6.7.0-preview.3.59</NuGetPackagingVersion>
-    <NuGetProjectModelVersion>6.7.0-preview.3.59</NuGetProjectModelVersion>
+    <NuGetPackagingVersion>$(NuGetPackagingPackageVersion)</NuGetPackagingVersion>
+    <NuGetProjectModelVersion>$(NuGetProjectModelPackageVersion)</NuGetProjectModelVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/Microsoft/vstest -->
