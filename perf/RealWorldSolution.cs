@@ -82,8 +82,6 @@ namespace Microsoft.CodeAnalysis.Tools.Perf.Real
             public RealWorldConfig()
             {
                 var job = Job.Dry
-                    .WithPlatform(BenchmarkDotNet.Environments.Platform.X64)
-                    .WithRuntime(CoreRuntime.Core21)
                     .WithWarmupCount(1)
                     .WithIterationCount(12)
                     .WithOutlierMode(Perfolizer.Mathematics.OutlierDetection.OutlierMode.RemoveAll);
