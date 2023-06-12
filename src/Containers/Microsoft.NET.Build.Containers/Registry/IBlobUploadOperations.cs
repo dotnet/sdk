@@ -5,15 +5,19 @@ namespace Microsoft.NET.Build.Containers.Registry;
 
 internal interface IBlobUploadOperations
 {
-    public Task<StartUploadInformation> StartAsync(string repositoryName, CancellationToken cancellationToken);
+    public Task CompleteAsync(Uri uploadUri, string digest, CancellationToken cancellationToken);
 
     /// <summary>
-    /// Uploads a chunk of data to the registry. The chunk size is determined by the registry.
+    /// Check on the status of an upload operation.
     /// </summary>
     /// <remarks>
     /// Note that unlike other operations, this method uses a full URI. This is because we are data-driven entirely by the registry, no path-patterns to follow.
     /// </remarks>
-    public Task<HttpResponseMessage> UploadChunkAsync(Uri uploadUri, HttpContent content, CancellationToken cancellationToken);
+    public Task<HttpResponseMessage> GetStatusAsync(Uri uploadUri, CancellationToken cancellationToken);
+
+    public Task<StartUploadInformation> StartAsync(string repositoryName, CancellationToken cancellationToken);
+
+    public Task<bool> TryMountAsync(string destinationRepository, string sourceRepository, string digest, CancellationToken cancellationToken);
 
     /// <summary>
     /// Uploads a stream of data to the registry atomically.
@@ -25,14 +29,10 @@ internal interface IBlobUploadOperations
     public Task<FinalizeUploadInformation> UploadAtomicallyAsync(Uri uploadUri, Stream content, CancellationToken cancellationToken);
 
     /// <summary>
-    /// Check on the status of an upload operation.
+    /// Uploads a chunk of data to the registry. The chunk size is determined by the registry.
     /// </summary>
     /// <remarks>
     /// Note that unlike other operations, this method uses a full URI. This is because we are data-driven entirely by the registry, no path-patterns to follow.
     /// </remarks>
-    public Task<HttpResponseMessage> GetStatusAsync(Uri uploadUri, CancellationToken cancellationToken);
-
-    public Task CompleteAsync(Uri uploadUri, string digest, CancellationToken cancellationToken);
-
-    public Task<bool> TryMountAsync(string destinationRepository, string sourceRepository, string digest, CancellationToken cancellationToken);
+    public Task<HttpResponseMessage> UploadChunkAsync(Uri uploadUri, HttpContent content, CancellationToken cancellationToken);
 }

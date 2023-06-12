@@ -21,7 +21,7 @@ internal class DefaultBlobUploadOperations : IBlobUploadOperations
         // PUT with digest to finalize
         UriBuilder builder = new(uploadUri.IsAbsoluteUri ? uploadUri : new Uri(Client.BaseAddress!, uploadUri));
         builder.Query += $"&digest={Uri.EscapeDataString(digest)}";
-        var putUri = builder.Uri;
+        Uri putUri = builder.Uri;
         HttpResponseMessage finalizeResponse = await Client.PutAsync(putUri, null, cancellationToken).ConfigureAwait(false);
 
         cancellationToken.ThrowIfCancellationRequested();

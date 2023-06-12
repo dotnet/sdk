@@ -16,46 +16,6 @@ internal static class HttpExtensions
     }
 
     /// <summary>
-    /// servers tell us the total Range they've processed via the range headers. we use this to determine where
-    /// the next chunk should start.
-    /// </summary>
-    public static int? ParseRangeAmount(this HttpResponseMessage response)
-    {
-        if (response.Headers.TryGetValues("Range", out var rangeValues))
-        {
-            var range = rangeValues.First();
-            var parts = range.Split('-', 2);
-            if (parts.Length == 2 && int.TryParse(parts[1], out var amountRead))
-            {
-                // github returns a 0 range, this leads to bad behavior
-                if (amountRead <= 0)
-                {
-                    return null;
-                }
-                return amountRead;
-            }
-        }
-        return null;
-    }
-
-    /// <summary>
-    /// the OCI-Chunk-Min-Length header can be returned on the start of a blob upload. this tells us the minimum
-    /// chunk size the server will accept. we use this to help determine if we should chunk or not.
-    /// </summary>
-    public static int? ParseOCIChunkMinSizeAmount(this HttpResponseMessage response)
-    {
-        if (response.Headers.TryGetValues("OCI-Chunk-Min-Length", out var minLengthValues))
-        {
-            var minLength = minLengthValues.First();
-            if (int.TryParse(minLength, out var amountRead))
-            {
-                return amountRead;
-            }
-        }
-        return null;
-    }
-
-    /// <summary>
     /// servers send the Location header on each response, which tells us where to send the next chunk.
     /// </summary>
     public static Uri GetNextLocation(this HttpResponseMessage response)
@@ -89,5 +49,45 @@ internal static class HttpExtensions
         }
 
         return false;
+    }
+
+    /// <summary>
+    /// the OCI-Chunk-Min-Length header can be returned on the start of a blob upload. this tells us the minimum
+    /// chunk size the server will accept. we use this to help determine if we should chunk or not.
+    /// </summary>
+    public static int? ParseOCIChunkMinSizeAmount(this HttpResponseMessage response)
+    {
+        if (response.Headers.TryGetValues("OCI-Chunk-Min-Length", out var minLengthValues))
+        {
+            var minLength = minLengthValues.First();
+            if (int.TryParse(minLength, out var amountRead))
+            {
+                return amountRead;
+            }
+        }
+        return null;
+    }
+
+    /// <summary>
+    /// servers tell us the total Range they've processed via the range headers. we use this to determine where
+    /// the next chunk should start.
+    /// </summary>
+    public static int? ParseRangeAmount(this HttpResponseMessage response)
+    {
+        if (response.Headers.TryGetValues("Range", out var rangeValues))
+        {
+            var range = rangeValues.First();
+            var parts = range.Split('-', 2);
+            if (parts.Length == 2 && int.TryParse(parts[1], out var amountRead))
+            {
+                // github returns a 0 range, this leads to bad behavior
+                if (amountRead <= 0)
+                {
+                    return null;
+                }
+                return amountRead;
+            }
+        }
+        return null;
     }
 }

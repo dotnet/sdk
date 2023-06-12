@@ -6,4 +6,4 @@ namespace Microsoft.NET.Build.Containers.Registry;
 /// <summary>
 /// Captures the data needed to finalize an upload
 /// </summary>
-internal record FinalizeUploadInformation(Uri uploadUri);
+internal record FinalizeUploadInformation(Uri UploadUri);

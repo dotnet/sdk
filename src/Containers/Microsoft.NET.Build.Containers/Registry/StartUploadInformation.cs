@@ -6,4 +6,4 @@ namespace Microsoft.NET.Build.Containers.Registry;
 /// <summary>
 /// Data derived from the 'start upload' call that is used to determine how perform the upload.
 /// </summary>
-internal record StartUploadInformation(int? registryDeclaredChunkSize, Uri uploadUri);
+internal record StartUploadInformation(int? RegistryDeclaredChunkSize, Uri UploadUri);

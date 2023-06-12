@@ -5,6 +5,6 @@ namespace Microsoft.NET.Build.Containers.Registry;
 
 internal interface IRegistryAPI
 {
-    public IManifestOperations Manifest { get; }
     public IBlobOperations Blob { get; }
+    public IManifestOperations Manifest { get; }
 }

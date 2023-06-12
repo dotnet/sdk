@@ -6,8 +6,6 @@ namespace Microsoft.NET.Build.Containers.Registry;
 internal class DefaultRegistryAPI : IRegistryAPI
 {
 
-    private HttpClient Client { get; }
-
     public DefaultRegistryAPI(Uri baseUri)
     {
         var isAmazonECRRegistry = baseUri.IsAmazonECRRegistry();
@@ -16,9 +14,9 @@ internal class DefaultRegistryAPI : IRegistryAPI
         Blob = new DefaultBlobOperations(Client);
     }
 
-    public IManifestOperations Manifest { get; }
     public IBlobOperations Blob { get; }
-
+    public IManifestOperations Manifest { get; }
+    private HttpClient Client { get; }
     private HttpClient CreateClient(Uri baseUri, bool isAmazonECRRegistry = false)
     {
         HttpMessageHandler clientHandler = new AuthHandshakeMessageHandler(new SocketsHttpHandler()

@@ -5,12 +5,12 @@ namespace Microsoft.NET.Build.Containers.Registry;
 
 internal class DefaultManifestOperations : IManifestOperations
 {
-    private HttpClient Client { get; }
     public DefaultManifestOperations(HttpClient client)
     {
         Client = client;
     }
 
+    private HttpClient Client { get; }
     public async Task<HttpResponseMessage> GetAsync(string repositoryName, string reference, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();

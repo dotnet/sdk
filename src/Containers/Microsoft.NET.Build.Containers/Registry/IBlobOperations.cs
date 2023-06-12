@@ -5,7 +5,9 @@ namespace Microsoft.NET.Build.Containers.Registry;
 
 internal interface IBlobOperations
 {
-    public Task<HttpResponseMessage> GetAsync(string repositoryName, string digest, CancellationToken cancellationToken);
-    public Task<bool> ExistsAsync(string repositoryName, string digest, CancellationToken cancellationToken);
     public IBlobUploadOperations Upload { get; }
+
+    public Task<bool> ExistsAsync(string repositoryName, string digest, CancellationToken cancellationToken);
+
+    public Task<HttpResponseMessage> GetAsync(string repositoryName, string digest, CancellationToken cancellationToken);
 }
