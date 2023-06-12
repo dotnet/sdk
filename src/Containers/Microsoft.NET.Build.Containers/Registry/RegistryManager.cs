@@ -321,7 +321,7 @@ internal sealed class RegistryManager
         while (contents.Position < contents.Length)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var (content, bytesRead) = await ReadChunk();
+            var (content, bytesRead) = await ReadChunk().ConfigureAwait(false);
             HttpResponseMessage patchResponse = await API.Blob.Upload.UploadChunkAsync(patchUri, content, cancellationToken).ConfigureAwait(false);
 
             // central state machine -
@@ -530,7 +530,7 @@ internal sealed class RegistryManager
                 return;
             }
 
-            if (!(await API.Blob.Upload.TryMount(destination.Repository, source.Repository, digest)))
+            if (!(await API.Blob.Upload.TryMountAsync(destination.Repository, source.Repository, digest, cancellationToken)))
             {
                 // The blob wasn't already available in another namespace, so fall back to explicitly uploading it
                 if (source.Registry is { } sourceRegistry)

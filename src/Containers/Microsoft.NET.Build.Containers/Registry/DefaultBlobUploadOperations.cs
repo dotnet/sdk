@@ -1,18 +1,43 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.NET.Build.Containers.Resources;
 using System.Net;
 using System.Net.Http.Headers;
+using Microsoft.NET.Build.Containers.Resources;
 
 namespace Microsoft.NET.Build.Containers.Registry;
 
 internal class DefaultBlobUploadOperations : IBlobUploadOperations
 {
-    private HttpClient Client { get; }
     public DefaultBlobUploadOperations(HttpClient client)
     {
         Client = client;
+    }
+
+    private HttpClient Client { get; }
+    public async Task CompleteAsync(Uri uploadUri, string digest, CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        // PUT with digest to finalize
+        UriBuilder builder = new(uploadUri.IsAbsoluteUri ? uploadUri : new Uri(Client.BaseAddress!, uploadUri));
+        builder.Query += $"&digest={Uri.EscapeDataString(digest)}";
+        var putUri = builder.Uri;
+        HttpResponseMessage finalizeResponse = await Client.PutAsync(putUri, null, cancellationToken).ConfigureAwait(false);
+
+        cancellationToken.ThrowIfCancellationRequested();
+
+        if (finalizeResponse.StatusCode != HttpStatusCode.Created)
+        {
+            var headers = finalizeResponse.Headers.ToString();
+            var detail = await finalizeResponse.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            string errorMessage = Resource.FormatString(nameof(Strings.BlobUploadFailed), $"PUT {putUri}", finalizeResponse.StatusCode, headers + Environment.NewLine + detail);
+            throw new ApplicationException(errorMessage);
+        }
+    }
+
+    public async Task<HttpResponseMessage> GetStatusAsync(Uri uploadUri, CancellationToken cancellationToken)
+    {
+        return await Client.GetAsync(uploadUri.IsAbsoluteUri ? uploadUri : new Uri(Client.BaseAddress!, uploadUri), cancellationToken).ConfigureAwait(false);
     }
 
     public async Task<StartUploadInformation> StartAsync(string repositoryName, CancellationToken cancellationToken)
@@ -35,59 +60,50 @@ internal class DefaultBlobUploadOperations : IBlobUploadOperations
         return new(chunkSize, location);
     }
 
-    public async Task<HttpResponseMessage> UploadChunkAsync(Uri uploadUri, HttpContent content, CancellationToken token)
+    public async Task<bool> TryMountAsync(string destinationRepository, string sourceRepository, string digest, CancellationToken cancellationToken)
     {
-        return await Client.PatchAsync(uploadUri.IsAbsoluteUri ? uploadUri : new Uri(Client.BaseAddress!, uploadUri), content, token).ConfigureAwait(false);
+        // Blob wasn't there; can we tell the server to get it from the base image?
+        HttpResponseMessage pushResponse = await Client.PostAsync(new Uri(Client.BaseAddress!, $"/v2/{destinationRepository}/blobs/uploads/?mount={digest}&from={sourceRepository}"), content: null, cancellationToken).ConfigureAwait(false);
+        return pushResponse.StatusCode == HttpStatusCode.Created;
     }
 
-    public async Task<FinalizeUploadInformation> UploadAtomicallyAsync(Uri uploadUri, Stream contents, CancellationToken token)
+    public async Task<FinalizeUploadInformation> UploadAtomicallyAsync(Uri uploadUri, Stream content, CancellationToken cancellationToken)
     {
-        token.ThrowIfCancellationRequested();
-        StreamContent content = new StreamContent(contents);
-        content.Headers.ContentLength = contents.Length;
-        var patchResponse = await Client.PatchAsync(uploadUri, content, token).ConfigureAwait(false);
+        cancellationToken.ThrowIfCancellationRequested();
 
-        token.ThrowIfCancellationRequested();
+        StreamContent httpContent = new(content);
+        httpContent.Headers.ContentLength = content.Length;
+
+        HttpRequestMessage patchMessage = GetPatchHttpRequest(uploadUri, httpContent);
+        HttpResponseMessage patchResponse = await Client.SendAsync(patchMessage, cancellationToken).ConfigureAwait(false);
+
+        cancellationToken.ThrowIfCancellationRequested();
         // Fail the upload if the response code is not Accepted (202) or if uploading to Amazon ECR which returns back Created (201).
         if (!(patchResponse.StatusCode == HttpStatusCode.Accepted || uploadUri.IsAmazonECRRegistry() && patchResponse.StatusCode == HttpStatusCode.Created))
         {
             var headers = patchResponse.Headers.ToString();
-            var detail = await patchResponse.Content.ReadAsStringAsync(token).ConfigureAwait(false);
+            var detail = await patchResponse.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
             string errorMessage = Resource.FormatString(nameof(Strings.BlobUploadFailed), $"Whole PATCH {uploadUri}", patchResponse.StatusCode, headers + Environment.NewLine + detail);
             throw new ApplicationException(errorMessage);
         }
         return new(patchResponse.GetNextLocation());
     }
 
-    public async Task<HttpResponseMessage> GetStatusAsync(Uri uploadUri, CancellationToken token)
+    public Task<HttpResponseMessage> UploadChunkAsync(Uri uploadUri, HttpContent content, CancellationToken cancellationToken)
     {
-        return await Client.GetAsync(uploadUri.IsAbsoluteUri ? uploadUri : new Uri(Client.BaseAddress!, uploadUri), token).ConfigureAwait(false);
+        cancellationToken.ThrowIfCancellationRequested();
+        HttpRequestMessage patchMessage = GetPatchHttpRequest(uploadUri, content);
+        return Client.SendAsync(patchMessage, cancellationToken);
     }
 
-    public async Task CompleteAsync(Uri uploadUri, string digest, CancellationToken cancellationToken)
+    private HttpRequestMessage GetPatchHttpRequest(Uri uploadUri, HttpContent httpContent)
     {
-        cancellationToken.ThrowIfCancellationRequested();
-        // PUT with digest to finalize
-        UriBuilder builder = new(uploadUri.IsAbsoluteUri ? uploadUri : new Uri(Client.BaseAddress!, uploadUri));
-        builder.Query += $"&digest={Uri.EscapeDataString(digest)}";
-        var putUri = builder.Uri;
-        HttpResponseMessage finalizeResponse = await Client.PutAsync(putUri, null, cancellationToken).ConfigureAwait(false);
-
-        cancellationToken.ThrowIfCancellationRequested();
-
-        if (finalizeResponse.StatusCode != HttpStatusCode.Created)
+        Uri finalUri = uploadUri.IsAbsoluteUri ? uploadUri : new Uri(Client.BaseAddress!, uploadUri);
+        HttpRequestMessage patchMessage = new(HttpMethod.Patch, finalUri)
         {
-            var headers = finalizeResponse.Headers.ToString();
-            var detail = await finalizeResponse.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-            string errorMessage = Resource.FormatString(nameof(Strings.BlobUploadFailed), $"PUT {putUri}", finalizeResponse.StatusCode, headers + Environment.NewLine + detail);
-            throw new ApplicationException(errorMessage);
-        }
-    }
-
-    public async Task<bool> TryMount(string destinationRepository, string sourceRepository, string digest)
-    {
-        // Blob wasn't there; can we tell the server to get it from the base image?
-        HttpResponseMessage pushResponse = await Client.PostAsync(new Uri(Client.BaseAddress!, $"/v2/{destinationRepository}/blobs/uploads/?mount={digest}&from={sourceRepository}"), content: null).ConfigureAwait(false);
-        return pushResponse.StatusCode == HttpStatusCode.Created;
+            Content = httpContent
+        };
+        patchMessage.Headers.AcceptEncoding.Add(new StringWithQualityHeaderValue("gzip"));
+        return patchMessage;
     }
 }

@@ -166,11 +166,6 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
             request.Headers.Authorization = cachedAuthentication;
         }
 
-        if (request.Method == HttpMethod.Patch && request.Content?.Headers.ContentLength > 0)
-        {
-            request.Headers.AcceptEncoding.Add(new StringWithQualityHeaderValue("gzip"));
-        }
-
         int retryCount = 0;
 
         while (retryCount < MaxRequestRetries)

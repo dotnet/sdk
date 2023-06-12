@@ -34,5 +34,5 @@ internal interface IBlobUploadOperations
 
     public Task CompleteAsync(Uri uploadUri, string digest, CancellationToken cancellationToken);
 
-    public Task<bool> TryMount(string destinationRepository, string sourceRepository, string digest);
+    public Task<bool> TryMountAsync(string destinationRepository, string sourceRepository, string digest, CancellationToken cancellationToken);
 }
