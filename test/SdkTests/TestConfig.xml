@@ -61,5 +61,9 @@
             Skip="true"
             Issue=""
             Reason="Test doesn't work with newer RIDs"/>
+    <Method Name="Microsoft.NET.Publish.Tests.GivenThatWeWantToRunILLink.ILLink_can_use_latest_with_unsupported_target_framework"
+            Skip="true"
+            Issue=""
+            Reason="Requires props file not in installer repo"/>
   </SkippedTests>
 </Tests>
