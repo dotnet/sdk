@@ -6,10 +6,12 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.NET.Build.Containers.Resources;
 using NuGet.RuntimeModel;
+using System;
 using System.Diagnostics;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Runtime.Intrinsics.X86;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -44,7 +46,7 @@ internal sealed class RegistryManager
         BaseUri = baseUri;
         _logger = logger ?? (ILogger)NullLogger.Instance;
         RegistryName = DeriveRegistryName(baseUri);
-        API = new DefaultRegistryAPI(BaseUri);
+        API = new DefaultRegistryAPI(BaseUri, _logger);
     }
 
     /// <summary>
@@ -282,6 +284,144 @@ internal sealed class RegistryManager
         }
     }
 
+    /// <summary>
+    /// Upload a blob to the registry using chunks. The chunks are uploaded sequentially, and the size of the chunks is determined by the UploadInformation derived from the 'Start' call
+    /// </summary>
+    internal async Task<FinalizeUploadInformation> UploadBlobChunkedAsync(Stream contents, StartUploadInformation uploadInfo, CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        Uri patchUri = uploadInfo.UploadUri;
+        contents.Seek(0, SeekOrigin.Begin);
+
+        byte[] chunkBackingStore = new byte[EffectiveChunkSize(uploadInfo.RegistryDeclaredChunkSize, IsAmazonECRRegistry)];
+
+        int chunkCount = 0;
+        int chunkStart = 0;
+        // chunked upload retries inspired from regclient -
+        // we allow up to N retries across the whole operation, and
+        // successes 'reclaim' retry attempts for future failures.
+        int retryMax = 10;
+        int retryCount = 0;
+
+        _logger.LogTrace("Uploading {0} bytes of content in chunks of {1} bytes.", contents.Length, chunkBackingStore.Length);
+
+        while (contents.Position < contents.Length)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            _logger.LogTrace("Processing next chunk because current position {0} < content size {1}, chunk size: {2}.", contents.Position, contents.Length, chunkBackingStore.Length);
+
+            var (content, bytesRead) = await ReadChunk().ConfigureAwait(false);
+
+            _logger.LogTrace("Uploading {0} bytes of content at {1}", bytesRead, patchUri);
+
+            HttpResponseMessage patchResponse = await API.Blob.Upload.UploadChunkAsync(patchUri, content, cancellationToken).ConfigureAwait(false);
+
+            _logger.LogTrace("Received status code '{0}' from upload.", patchResponse.StatusCode);
+
+            // central state machine -
+            // successes move to the next chunk,
+            // failures are retried up to retryMax times,
+            // or else we fail the whole operation.
+            (patchResponse.StatusCode switch
+            {
+                HttpStatusCode.Accepted => ProcessSuccessfulChunk(patchResponse),
+                // known quirk - AWS ECR sends 201 Created instead of 202 Accepted
+                HttpStatusCode.Created when IsAmazonECRRegistry => ProcessSuccessfulChunk(patchResponse),
+                _ when retryCount < retryMax => await CheckReadAmountAndRetry(patchUri, cancellationToken).ConfigureAwait(false),
+                _ => await LogError(patchResponse, patchUri, cancellationToken).ConfigureAwait(false)
+            })();
+
+            // handles all the logic for reading a new chunk from the stream, including setting content type.
+            async Task<(ByteArrayContent, int)> ReadChunk()
+            {
+                int bytesRead = await contents.ReadAsync(chunkBackingStore, cancellationToken).ConfigureAwait(false);
+                ByteArrayContent content = new(chunkBackingStore, offset: 0, count: bytesRead);
+                content.Headers.ContentLength = bytesRead;
+
+                _logger.LogTrace("Read {0} bytes from content.", bytesRead);
+
+                // manual because ACR throws an error with the .NET type {"Range":"bytes 0-84521/*","Reason":"the Content-Range header format is invalid"}
+                //    content.Headers.Add("Content-Range", $"0-{contents.Length - 1}");
+                Debug.Assert(content.Headers.TryAddWithoutValidation("Content-Range", $"{chunkStart}-{chunkStart + bytesRead - 1}"));
+
+                return new(content, bytesRead);
+            }
+
+            // for a successful chunk, we decrement retries (if any) and read the amount written by the server + next location
+            Action ProcessSuccessfulChunk(HttpResponseMessage response) => () =>
+            {
+                if (retryCount > 0)
+                {
+                    retryCount -= 1;
+                }
+                chunkCount += 1;
+                UpdateStateFromResponse(response);
+            };
+
+            // responses can tell us a) where to upload the next chunk, and b) how much of the last chunk was written.
+            // we use this data to update our internal state before each new iteration.
+            void UpdateStateFromResponse(HttpResponseMessage response)
+            {
+                var amountSent = response.ParseRangeAmount();
+                patchUri = response.GetNextLocation();
+                if (amountSent is not null)
+                {
+                    chunkStart = amountSent.Value + 1;
+                    // what the server actually read/processed may not align with the bytesRead from the content originally,
+                    // so seek to that position to ensure no gaps
+                    contents.Seek(chunkStart, SeekOrigin.Begin);
+                }
+                else
+                {
+                    chunkStart += bytesRead;
+                }
+                _logger.LogTrace("Next position of content to read is {0}.", chunkStart);
+            }
+
+            async Task<Action> LogError(HttpResponseMessage response, Uri patchUri, CancellationToken cancellationToken)
+            {
+                _logger.LogTrace("Max number of retries reached: {0}", retryMax);
+                await response.LogHttpResponse(_logger, cancellationToken).ConfigureAwait(false);
+                string errorMessage = Resource.FormatString(nameof(Strings.BlobUploadFailed), $"PATCH {patchUri}", response.StatusCode);
+                return () => throw new ApplicationException(errorMessage);
+            }
+
+            // when an error occurs, we can check on the state of the upload from the registry. notably this gives us the same
+            // location and range information as the success, so we can use this for our iteration processing.
+            async Task<Action> CheckReadAmountAndRetry(Uri patchUri, CancellationToken cancellationToken)
+            {
+                retryCount += 1;
+                _logger.LogTrace("Checking the size of the content uploaded to server at {0}", patchUri);
+                HttpResponseMessage getResponse = await API.Blob.Upload.GetStatusAsync(patchUri, cancellationToken).ConfigureAwait(false);
+
+                //the current logic
+                // - if SC is NoContent
+                //    - if Range header is there and second part is >0, we use that range
+                //    - if Range is 0-0, 0--1, or not there we assumed the chunk was uploaded fully
+                // - if SC is not NoContent
+                //    - we assume that chunk was not uploaded at all and retry
+                
+                // two cases handled by same status code check here:
+                // * error response (4xx/5xx) from server
+                // * non-spec-compliant but incorrect (2xx) from server
+                if (getResponse.StatusCode == HttpStatusCode.NoContent)
+                {
+                    _logger.LogTrace("Size of the content upload to server: {0}", getResponse.ParseRangeAmount());
+                    UpdateStateFromResponse(getResponse);
+                }
+                else
+                {
+                    _logger.LogTrace("Failed to read position from server {0}, attempting upload from beginning.", getResponse.StatusCode);
+                    // reset back to previous chunk so we can retry
+                    contents.Seek(chunkStart, SeekOrigin.Begin);
+                }
+                return () => { };
+            }
+        }
+        return new(patchUri);
+    }
+
     private static string? CheckIfRidExistsInGraph(RuntimeGraph graphForManifestList, IEnumerable<string> leafRids, string userRid) => leafRids.FirstOrDefault(leaf => graphForManifestList.AreCompatible(leaf, userRid));
 
     private static string? CreateRidForPlatform(PlatformInformation platform)
@@ -464,122 +604,6 @@ internal sealed class RegistryManager
         await API.Blob.Upload.CompleteAsync(finalizeInformation.UploadUri, digest, cancellationToken).ConfigureAwait(false);
         _logger.LogTrace("Finalized upload session for {0}", digest);
     }
-
-    /// <summary>
-    /// Upload a blob to the registry using chunks. The chunks are uploaded sequentially, and the size of the chunks is determined by the UploadInformation derived from the 'Start' call
-    /// </summary>
-    private async Task<FinalizeUploadInformation> UploadBlobChunkedAsync(string repository, string digest, Stream contents, StartUploadInformation uploadInfo, CancellationToken cancellationToken)
-    {
-        cancellationToken.ThrowIfCancellationRequested();
-        Uri patchUri = uploadInfo.UploadUri;
-        contents.Seek(0, SeekOrigin.Begin);
-
-        byte[] chunkBackingStore = new byte[EffectiveChunkSize(uploadInfo.RegistryDeclaredChunkSize, IsAmazonECRRegistry)];
-
-        int chunkCount = 0;
-        int chunkStart = 0;
-        // chunked upload retries inspired from regclient -
-        // we allow up to N retries across the whole operation, and
-        // successes 'reclaim' retry attempts for future failures.
-        int retryMax = 10;
-        int retryCount = 0;
-
-        while (contents.Position < contents.Length)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            var (content, bytesRead) = await ReadChunk().ConfigureAwait(false);
-            HttpResponseMessage patchResponse = await API.Blob.Upload.UploadChunkAsync(patchUri, content, cancellationToken).ConfigureAwait(false);
-
-            // central state machine -
-            // successes move to the next chunk,
-            // failures are retried up to retryMax times,
-            // or else we fail the whole operation.
-            (patchResponse.StatusCode switch
-            {
-                HttpStatusCode.Accepted => ProcessSuccessfulChunk(patchResponse),
-                // known quirk - AWS ECR sends 201 Created instead of 202 Accepted
-                HttpStatusCode.Created when IsAmazonECRRegistry => ProcessSuccessfulChunk(patchResponse),
-                _ when retryCount < retryMax => await CheckReadAmountAndRetry(patchUri, cancellationToken).ConfigureAwait(false),
-                _ => await LogError(patchResponse, patchUri, cancellationToken).ConfigureAwait(false)
-            })();
-
-            // handles all the logic for reading a new chunk from the stream, including setting content type.
-            async Task<(ByteArrayContent, int)> ReadChunk()
-            {
-                _logger.LogTrace("Processing chunk because ({0} < {1})", contents.Position, contents.Length);
-
-                int bytesRead = await contents.ReadAsync(chunkBackingStore, cancellationToken).ConfigureAwait(false);
-                ByteArrayContent content = new(chunkBackingStore, offset: 0, count: bytesRead);
-                content.Headers.ContentLength = bytesRead;
-
-                // manual because ACR throws an error with the .NET type {"Range":"bytes 0-84521/*","Reason":"the Content-Range header format is invalid"}
-                //    content.Headers.Add("Content-Range", $"0-{contents.Length - 1}");
-                Debug.Assert(content.Headers.TryAddWithoutValidation("Content-Range", $"{chunkStart}-{chunkStart + bytesRead - 1}"));
-
-                return new(content, bytesRead);
-            }
-
-            // for a successful chunk, we decrement retries (if any) and read the amount written by the server + next location
-            Action ProcessSuccessfulChunk(HttpResponseMessage response) => () =>
-            {
-                if (retryCount > 0)
-                {
-                    retryCount -= 1;
-                }
-                chunkCount += 1;
-                UpdateStateFromResponse(response);
-            };
-
-            // responses can tell us a) where to upload the next chunk, and b) how much of the last chunk was written.
-            // we use this data to update our internal state before each new iteration.
-            void UpdateStateFromResponse(HttpResponseMessage response)
-            {
-                var amountSent = response.ParseRangeAmount();
-                patchUri = response.GetNextLocation();
-                if (amountSent is not null)
-                {
-                    chunkStart = amountSent.Value + 1;
-                    // what the server actually read/processed may not align with the bytesRead from the content originally,
-                    // so seek to that position to ensure no gaps
-                    contents.Seek(chunkStart, SeekOrigin.Begin);
-                }
-                else
-                {
-                    chunkStart += bytesRead;
-                }
-            }
-
-            static async Task<Action> LogError(HttpResponseMessage response, Uri patchUri, CancellationToken cancellationToken)
-            {
-                var headers = response.Headers.ToString();
-                var detail = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-                string errorMessage = Resource.FormatString(nameof(Strings.BlobUploadFailed), $"Chunked PATCH {patchUri}", response.StatusCode, headers + Environment.NewLine + detail);
-                return () => throw new ApplicationException(errorMessage);
-            }
-
-            // when an error occurs, we can check on the state of the upload from the registry. notably this gives us the same
-            // location and range information as the success, so we can use this for our iteration processing.
-            async Task<Action> CheckReadAmountAndRetry(Uri patchUri, CancellationToken cancellationToken)
-            {
-                retryCount += 1;
-                var getResponse = await API.Blob.Upload.GetStatusAsync(patchUri, cancellationToken).ConfigureAwait(false);
-                // two cases handled by same status code check here:
-                // * error response (4xx/5xx) from server
-                // * non-spec-compliant but incorrect (2xx) from server
-                if (getResponse.StatusCode != HttpStatusCode.NoContent)
-                {
-                    // reset back to previous chunk so we can retry
-                    contents.Seek(chunkStart, SeekOrigin.Begin);
-                }
-                else
-                {
-                    UpdateStateFromResponse(getResponse);
-                }
-                return () => { };
-            }
-        }
-        return new(patchUri);
-    }
     /// <summary>
     /// Uploads the contents of the stream, either in an atomic PUT or in chunks.
     /// </summary>
@@ -600,7 +624,7 @@ internal sealed class RegistryManager
         {
             _logger.LogTrace("Errored while uploading whole blob: {0}.\nRetrying with chunked upload. Content length: {1}, chunk size: {2}.", ex, contents.Length, uploadInfo.RegistryDeclaredChunkSize);
             contents.Seek(0, SeekOrigin.Begin);
-            return await UploadBlobChunkedAsync(repository, digest, contents, uploadInfo, cancellationToken).ConfigureAwait(false);
+            return await UploadBlobChunkedAsync(contents, uploadInfo, cancellationToken).ConfigureAwait(false);
         }
     }
 }

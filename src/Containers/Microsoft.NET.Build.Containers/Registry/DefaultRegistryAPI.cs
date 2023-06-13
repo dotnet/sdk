@@ -1,17 +1,19 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.Extensions.Logging;
+
 namespace Microsoft.NET.Build.Containers.Registry;
 
 internal class DefaultRegistryAPI : IRegistryAPI
 {
 
-    public DefaultRegistryAPI(Uri baseUri)
+    public DefaultRegistryAPI(Uri baseUri, ILogger logger)
     {
         var isAmazonECRRegistry = baseUri.IsAmazonECRRegistry();
         Client = CreateClient(baseUri, isAmazonECRRegistry: isAmazonECRRegistry);
         Manifest = new DefaultManifestOperations(Client);
-        Blob = new DefaultBlobOperations(Client);
+        Blob = new DefaultBlobOperations(Client, logger);
     }
 
     public IBlobOperations Blob { get; }

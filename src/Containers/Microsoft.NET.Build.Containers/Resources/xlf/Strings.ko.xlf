@@ -28,8 +28,8 @@
         <note>{StrBegin="CONTAINER1011: "}</note>
       </trans-unit>
       <trans-unit id="BlobUploadFailed">
-        <source>CONTAINER1001: Failed to upload blob to {0}; received {1} with detail {2}.</source>
-        <target state="translated">CONTAINER1001: Blob을 {0}에 업로드하지 못했습니다. 세부 정보가 {2}인 {1}을(를) 받았습니다.</target>
+        <source>CONTAINER1001: Failed to upload blob using {0}; received status code '{1}'.</source>
+        <target state="new">CONTAINER1001: Failed to upload blob using {0}; received status code '{1}'.</target>
         <note>{StrBegin="CONTAINER1001: "}</note>
       </trans-unit>
       <trans-unit id="CouldntDeserializeJsonToken">

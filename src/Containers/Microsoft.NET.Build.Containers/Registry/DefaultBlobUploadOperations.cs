@@ -3,18 +3,23 @@
 
 using System.Net;
 using System.Net.Http.Headers;
+using Microsoft.Extensions.Logging;
 using Microsoft.NET.Build.Containers.Resources;
 
 namespace Microsoft.NET.Build.Containers.Registry;
 
 internal class DefaultBlobUploadOperations : IBlobUploadOperations
 {
-    public DefaultBlobUploadOperations(HttpClient client)
+    private readonly ILogger _logger;
+
+    public DefaultBlobUploadOperations(HttpClient client, ILogger logger)
     {
         Client = client;
+        _logger = logger;
     }
 
     private HttpClient Client { get; }
+
     public async Task CompleteAsync(Uri uploadUri, string digest, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -28,9 +33,8 @@ internal class DefaultBlobUploadOperations : IBlobUploadOperations
 
         if (finalizeResponse.StatusCode != HttpStatusCode.Created)
         {
-            var headers = finalizeResponse.Headers.ToString();
-            var detail = await finalizeResponse.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-            string errorMessage = Resource.FormatString(nameof(Strings.BlobUploadFailed), $"PUT {putUri}", finalizeResponse.StatusCode, headers + Environment.NewLine + detail);
+            await finalizeResponse.LogHttpResponse(_logger, cancellationToken).ConfigureAwait(false);
+            string errorMessage = Resource.FormatString(nameof(Strings.BlobUploadFailed), $"PUT {putUri}", finalizeResponse.StatusCode);
             throw new ApplicationException(errorMessage);
         }
     }
@@ -49,9 +53,8 @@ internal class DefaultBlobUploadOperations : IBlobUploadOperations
 
         if (pushResponse.StatusCode != HttpStatusCode.Accepted)
         {
-            var headers = pushResponse.Headers.ToString();
-            var detail = await pushResponse.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-            string errorMessage = Resource.FormatString(nameof(Strings.BlobUploadFailed), $"POST {startUploadUri}", pushResponse.StatusCode, headers + Environment.NewLine + detail);
+            await pushResponse.LogHttpResponse(_logger, cancellationToken).ConfigureAwait(false);
+            string errorMessage = Resource.FormatString(nameof(Strings.BlobUploadFailed), $"POST {startUploadUri}", pushResponse.StatusCode);
             throw new ApplicationException(errorMessage);
         }
         cancellationToken.ThrowIfCancellationRequested();
@@ -81,9 +84,8 @@ internal class DefaultBlobUploadOperations : IBlobUploadOperations
         // Fail the upload if the response code is not Accepted (202) or if uploading to Amazon ECR which returns back Created (201).
         if (!(patchResponse.StatusCode == HttpStatusCode.Accepted || uploadUri.IsAmazonECRRegistry() && patchResponse.StatusCode == HttpStatusCode.Created))
         {
-            var headers = patchResponse.Headers.ToString();
-            var detail = await patchResponse.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-            string errorMessage = Resource.FormatString(nameof(Strings.BlobUploadFailed), $"Whole PATCH {uploadUri}", patchResponse.StatusCode, headers + Environment.NewLine + detail);
+            await patchResponse.LogHttpResponse(_logger, cancellationToken).ConfigureAwait(false);
+            string errorMessage = Resource.FormatString(nameof(Strings.BlobUploadFailed), $"PATCH {uploadUri}", patchResponse.StatusCode);
             throw new ApplicationException(errorMessage);
         }
         return new(patchResponse.GetNextLocation());

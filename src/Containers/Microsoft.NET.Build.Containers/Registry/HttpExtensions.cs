@@ -1,6 +1,9 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text;
+using Microsoft.Extensions.Logging;
+
 namespace Microsoft.NET.Build.Containers.Registry;
 
 internal static class HttpExtensions
@@ -89,5 +92,17 @@ internal static class HttpExtensions
             }
         }
         return null;
+    }
+
+    public static async Task LogHttpResponse(this HttpResponseMessage response, ILogger logger, CancellationToken cancellationToken)
+    {
+        StringBuilder s = new();
+        s.AppendLine($"Last request URI: {response.RequestMessage?.RequestUri?.ToString()}");
+        s.AppendLine($"Status code: {response.StatusCode}");
+        s.AppendLine($"Response headers:");
+        s.AppendLine(response.Headers.ToString());
+        string detail = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+        s.AppendLine($"Response content: {(string.IsNullOrWhiteSpace(detail) ? "<empty>" : detail)}");
+        logger.LogTrace(s.ToString());
     }
 }

@@ -2,19 +2,22 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Net;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.NET.Build.Containers.Registry;
 
 internal class DefaultBlobOperations : IBlobOperations
 {
-    public DefaultBlobOperations(HttpClient client)
+    public DefaultBlobOperations(HttpClient client, ILogger logger)
     {
         Client = client;
-        Upload = new DefaultBlobUploadOperations(Client);
+        Upload = new DefaultBlobUploadOperations(Client, logger);
     }
 
     public IBlobUploadOperations Upload { get; }
+
     private HttpClient Client { get; }
+
     public async Task<bool> ExistsAsync(string repositoryName, string digest, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
