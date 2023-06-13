@@ -1,0 +1,64 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nikola Milosavljevic <nikolam@microsoft.com>
+Date: Tue, 13 Jun 2023 15:16:45 +0000
+Subject: [PATCH] Add System.Security.Cryptography.Xml dependency
+
+Backport: https://github.com/NuGet/NuGet.Client/pull/5228
+---
+ Directory.Packages.props | 14 ++++++++------
+ eng/Version.Details.xml  |  4 ++++
+ 2 files changed, 12 insertions(+), 6 deletions(-)
+
+diff --git a/Directory.Packages.props b/Directory.Packages.props
+index e1b991802..75ac7356a 100644
+--- a/Directory.Packages.props
++++ b/Directory.Packages.props
+@@ -14,17 +14,19 @@
+     <MicrosoftBuildVersion Condition="'$(TargetFramework)' == 'netcoreapp3.1' Or '$(TargetFramework)' == 'netstandard2.0'">16.8.0</MicrosoftBuildVersion>
+     <!-- The last package version of MSBuild that works with net5.0 is 16.11.0.  Our assemblies are still compiled against MSBuild assembly version 15.1.0.0 which will work with all versions -->
+     <MicrosoftBuildVersion Condition="'$(TargetFramework)' == 'netcoreapp5.0'">16.11.0</MicrosoftBuildVersion>
+-
+-    <!-- System.Security.Cryptography.Xml is a dependency of Microsoft.Build.Tasks.Core. This property can be probably removed when MSBuild is updated to a newer version. -->
+-    <SystemSecurityCryptographyXml Condition="'$(SystemSecurityCryptographyXml)' == ''">6.0.1</SystemSecurityCryptographyXml>
+-    <SystemSecurityCryptographyXml Condition="'$(MicrosoftBuildVersion)' == '16.8.0' Or '$(MicrosoftBuildVersion)' == '16.11.0'">4.7.1</SystemSecurityCryptographyXml>
++  </PropertyGroup>
+ 
+     <!-- Overridden by source build to ensure the same version is used across products, do not remove these properties -->
+-    <!-- For each property here, there is an appropriate package dependency in eng/Version.Details.xml -->
++    <!-- For each property in this group, there is an appropriate package dependency in eng/Version.Details.xml -->
++    <!-- All .NET package dependencies have to use proper version property names -->
++  <PropertyGroup>
+     <MicrosoftExtensionsFileProvidersAbstractionsPackageVersion Condition="'$(MicrosoftExtensionsFileProvidersAbstractionsPackageVersion)' == ''">6.0.0</MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>
+     <MicrosoftExtensionsFileSystemGlobbingPackageVersion Condition="'$(MicrosoftExtensionsFileSystemGlobbingPackageVersion)' == ''">6.0.0</MicrosoftExtensionsFileSystemGlobbingPackageVersion>
+     <MicrosoftWebXdtPackageVersion Condition="'$(MicrosoftWebXdtPackageVersion)' == ''">3.0.0</MicrosoftWebXdtPackageVersion>
+     <SystemComponentModelCompositionPackageVersion Condition="'$(SystemComponentModelCompositionPackageVersion)' == ''">4.5.0</SystemComponentModelCompositionPackageVersion>
++    <!-- System.Security.Cryptography.Xml is a dependency of Microsoft.Build.Tasks.Core. This property can be probably removed when MSBuild is updated to a newer version. -->
++    <SystemSecurityCryptographyXmlVersion Condition="'$(SystemSecurityCryptographyXmlVersion)' == ''">6.0.1</SystemSecurityCryptographyXmlVersion>
++    <SystemSecurityCryptographyXmlVersion Condition="'$(MicrosoftBuildVersion)' == '16.8.0' Or '$(MicrosoftBuildVersion)' == '16.11.0'">4.7.1</SystemSecurityCryptographyXmlVersion>
+   </PropertyGroup>
+ 
+   <ItemGroup>
+@@ -96,7 +98,7 @@
+     <PackageVersion Include="System.Security.Cryptography.Cng" Version="$(CryptographyPackagesVersion)" />
+     <PackageVersion Include="System.Security.Cryptography.Pkcs" Version="$(CryptographyPackagesVersion)" />
+     <PackageVersion Include="System.Security.Cryptography.ProtectedData" Version="4.4.0" />
+-    <PackageVersion Include="System.Security.Cryptography.Xml" Version="$(SystemSecurityCryptographyXml)" />
++    <PackageVersion Include="System.Security.Cryptography.Xml" Version="$(SystemSecurityCryptographyXmlVersion)" />
+     <PackageVersion Include="System.Text.Encoding.Extensions" Version="$(SystemPackagesVersion)" />
+     <PackageVersion Include="System.Threading" Version="$(SystemPackagesVersion)" />
+     <PackageVersion Include="System.Threading.Tasks" Version="$(SystemPackagesVersion)" />
+diff --git a/eng/Version.Details.xml b/eng/Version.Details.xml
+index 3d01f5de6..38e1eba71 100644
+--- a/eng/Version.Details.xml
++++ b/eng/Version.Details.xml
+@@ -34,5 +34,9 @@
+       <Uri>https://github.com/dotnet/corefx</Uri>
+       <Sha>30ab651fcb4354552bd4891619a0bdd81e0ebdbf</Sha>
+     </Dependency>
++    <Dependency Name="System.Security.Cryptography.Xml" Version="6.0.1">
++      <Uri>https://github.com/dotnet/runtime</Uri>
++      <Sha>55fb7ef977e7d120dc12f0960edcff0739d7ee0e</Sha>
++    </Dependency>
+   </ProductDependencies>
+ </Dependencies>
+\ No newline at end of file
