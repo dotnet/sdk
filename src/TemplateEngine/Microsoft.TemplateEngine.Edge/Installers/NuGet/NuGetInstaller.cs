@@ -12,6 +12,7 @@ using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Installer;
 using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
 using NuGet.Packaging;
+using static Microsoft.TemplateEngine.Edge.Installers.NuGet.NuGetApiPackageManager;
 
 namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
 {
@@ -110,7 +111,10 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
             return NuGetManagedTemplatePackage.Deserialize(_environmentSettings, this, provider, data.MountPointUri, data.Details);
         }
 
-        public async Task<IReadOnlyList<CheckUpdateResult>> GetLatestVersionAsync(IEnumerable<IManagedTemplatePackage> packages, IManagedTemplatePackageProvider provider, CancellationToken cancellationToken)
+        public async Task<IReadOnlyList<CheckUpdateResult>> GetLatestVersionAsync(
+            IEnumerable<IManagedTemplatePackage> packages,
+            IManagedTemplatePackageProvider provider,
+            CancellationToken cancellationToken)
         {
             _ = packages ?? throw new ArgumentNullException(nameof(packages));
             return await Task.WhenAll(packages.Select(async package =>
@@ -119,22 +123,25 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
                     {
                         try
                         {
-                            (string latestVersion, bool isLatestVersion, IReadOnlyList<VulnerabilityInfo> vulnerabilities) = await _updateChecker.GetLatestVersionAsync(
+                            (string version, bool isLatestVersion, NugetPackageMetadata packageMetadata) = await _updateChecker.GetLatestVersionAsync(
                                 nugetPackage.Identifier,
                                 nugetPackage.Version,
                                 nugetPackage.NuGetSource,
                                 cancellationToken).ConfigureAwait(false);
 
-                            if (vulnerabilities != null && vulnerabilities.Any())
+                            if (packageMetadata.Vulnerabilities != null && packageMetadata.Vulnerabilities.Any())
                             {
                                 throw new VulnerablePackageException(
                                     string.Format(LocalizableStrings.NuGetApiPackageManager_UpdateCheckError_VulnerablePackage, nugetPackage.Identifier),
                                     nugetPackage.Identifier,
                                     nugetPackage?.Version ?? string.Empty,
-                                    vulnerabilities);
+                                    packageMetadata.Vulnerabilities);
                             }
 
-                            return CheckUpdateResult.CreateSuccess(package, latestVersion, isLatestVersion);
+                            nugetPackage.Owners = packageMetadata.Owners;
+                            nugetPackage.Reserved = packageMetadata.PrefixReserved.ToString();
+
+                            return CheckUpdateResult.CreateSuccess(nugetPackage, version, isLatestVersion);
                         }
                         catch (PackageNotFoundException e)
                         {

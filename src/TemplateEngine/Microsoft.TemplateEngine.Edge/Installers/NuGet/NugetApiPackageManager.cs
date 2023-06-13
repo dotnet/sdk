@@ -95,7 +95,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
                     string.Format(LocalizableStrings.NuGetApiPackageManager_DownloadError_VulnerablePackage, source),
                     packageMetadata.Identity.Id,
                     foundPackageVersion,
-                    ConvertVulnerabilityMetadata(packageMetadata.Vulnerabilities));
+                    packageMetadata.Vulnerabilities);
             }
 
             FindPackageByIdResource resource;
@@ -136,7 +136,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
                         source.Source,
                         packageMetadata.Identity.Id,
                         packageMetadata.Identity.Version.ToNormalizedString(),
-                        ConvertVulnerabilityMetadata(packageMetadata.Vulnerabilities));
+                        packageMetadata.Vulnerabilities);
                 }
                 else
                 {
@@ -195,7 +195,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
         /// <returns>the latest version for the <paramref name="identifier"/> and indication if installed version is latest.</returns>
         /// <exception cref="InvalidNuGetSourceException">when sources passed to install request are not valid NuGet feeds or failed to read default NuGet configuration.</exception>
         /// <exception cref="PackageNotFoundException">when the package cannot be find in default or source NuGet feeds.</exception>
-        public async Task<(string LatestVersion, bool IsLatestVersion, IReadOnlyList<VulnerabilityInfo> Vulnerabilities)> GetLatestVersionAsync(string identifier, string? version = null, string? additionalSource = null, CancellationToken cancellationToken = default)
+        public async Task<(string LatestVersion, bool IsLatestVersion, NugetPackageMetadata PackageMetadata)> GetLatestVersionAsync(string identifier, string? version = null, string? additionalSource = null, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(identifier))
             {
@@ -216,7 +216,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
             var (_, package) = await GetLatestVersionInternalAsync(identifier, packageSources, floatRange, cancellationToken).ConfigureAwait(false);
             bool isLatestVersion = currentVersion != null && currentVersion >= package.Identity.Version;
 
-            return (package.Identity.Version.ToNormalizedString(), isLatestVersion, ConvertVulnerabilityMetadata(package.Vulnerabilities));
+            return (package.Identity.Version.ToNormalizedString(), isLatestVersion, package);
         }
 
         internal IEnumerable<PackageSource> RemoveInsecurePackages(IEnumerable<PackageSource> packagesSources)
@@ -498,22 +498,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
             return retrievedSources;
         }
 
-        private IReadOnlyList<VulnerabilityInfo> ConvertVulnerabilityMetadata(IEnumerable<PackageVulnerabilityMetadata>? vulnerabilities)
-        {
-            if (vulnerabilities is null)
-            {
-                return Array.Empty<VulnerabilityInfo>();
-            }
-
-            return vulnerabilities.GroupBy(x => x.Severity)
-                .Select(g => new VulnerabilityInfo(
-                    g.Key,
-                    g.Select(x => x.AdvisoryUrl.AbsoluteUri).ToArray()))
-                .OrderBy(x => x.Severity)
-                .ToList();
-        }
-
-        private class NugetPackageMetadata
+        internal class NugetPackageMetadata
         {
             public NugetPackageMetadata(IPackageSearchMetadata metadata, string owners, bool reserved)
             {
@@ -521,7 +506,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
                 Identity = metadata.Identity;
                 PrefixReserved = reserved;
                 Owners = owners;
-                Vulnerabilities = Vulnerabilities = metadata.Vulnerabilities?.ToList() ?? new List<PackageVulnerabilityMetadata>();
+                Vulnerabilities = ConvertVulnerabilityMetadata(metadata.Vulnerabilities);
             }
 
             public string Authors { get; }
@@ -532,7 +517,22 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
 
             public bool PrefixReserved { get; }
 
-            public IReadOnlyList<PackageVulnerabilityMetadata> Vulnerabilities { get; }
+            public IReadOnlyList<VulnerabilityInfo> Vulnerabilities { get; }
+
+            private IReadOnlyList<VulnerabilityInfo> ConvertVulnerabilityMetadata(IEnumerable<PackageVulnerabilityMetadata>? vulnerabilities)
+            {
+                if (vulnerabilities is null)
+                {
+                    return Array.Empty<VulnerabilityInfo>();
+                }
+
+                return vulnerabilities.GroupBy(x => x.Severity)
+                    .Select(g => new VulnerabilityInfo(
+                        g.Key,
+                        g.Select(x => x.AdvisoryUrl.AbsoluteUri).ToArray()))
+                    .OrderBy(x => x.Severity)
+                    .ToList();
+            }
         }
     }
 }

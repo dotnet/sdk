@@ -15,7 +15,11 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
         private const string HostIdentifier = "IDE.IntegrationTests";
         private const string HostVersion = "v1.0.0";
 
-        internal static Bootstrapper GetBootstrapper(IEnumerable<string>? additionalVirtualLocations = null, bool loadTestTemplates = false, IEnumerable<ILoggerProvider>? addLoggerProviders = null)
+        internal static Bootstrapper GetBootstrapper(
+            IEnumerable<string>? additionalVirtualLocations = null,
+            bool loadTestTemplates = false,
+            IEnumerable<ILoggerProvider>? addLoggerProviders = null,
+            string packageJsonContent = "")
         {
             ITemplateEngineHost host = CreateHost(loadTestTemplates, addLoggerProviders);
             if (additionalVirtualLocations != null)
@@ -25,7 +29,19 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
                     host.VirtualizeDirectory(virtualLocation);
                 }
             }
-            return new Bootstrapper(host, virtualizeConfiguration: true, loadDefaultComponents: true);
+
+            // Need to virtualize paths before mocking a file content.
+            var bootstrapper = new Bootstrapper(host, virtualizeConfiguration: true, loadDefaultComponents: true);
+            // Mocks .templateengine\package.json
+            if (!string.IsNullOrEmpty(packageJsonContent))
+            {
+                var path = Path.Combine(new EngineEnvironmentSettings(host).Paths.GlobalSettingsDir, "packages.json");
+                host.FileSystem.WriteAllText(
+                    path.Replace('\\', '/'),
+                    packageJsonContent);
+            }
+
+            return bootstrapper;
         }
 
         internal static async Task InstallTestTemplateAsync(Bootstrapper bootstrapper, params string[] templates)

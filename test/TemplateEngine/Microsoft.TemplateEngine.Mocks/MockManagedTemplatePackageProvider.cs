@@ -10,8 +10,7 @@ using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
 
 namespace Microsoft.TemplateEngine.Mocks
 {
-    public class MockManagedTemplatePackageProvider
-        : IManagedTemplatePackageProvider
+    public class MockManagedTemplatePackageProvider : IManagedTemplatePackageProvider
     {
         public event Action? TemplatePackagesChanged
         {
@@ -30,5 +29,7 @@ namespace Microsoft.TemplateEngine.Mocks
         public Task<IReadOnlyList<UninstallResult>> UninstallAsync(IEnumerable<IManagedTemplatePackage> managedSources, CancellationToken cancellationToken) => throw new NotImplementedException();
 
         public Task<IReadOnlyList<UpdateResult>> UpdateAsync(IEnumerable<UpdateRequest> updateRequests, CancellationToken cancellationToken) => throw new NotImplementedException();
+
+        public Task UpdateTemplatePackageMetadataAsync(IEnumerable<IManagedTemplatePackage> templatePackages, CancellationToken cancellationToken) => throw new NotImplementedException();
     }
 }

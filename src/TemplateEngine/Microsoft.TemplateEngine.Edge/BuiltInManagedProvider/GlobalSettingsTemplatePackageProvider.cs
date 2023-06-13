@@ -102,6 +102,9 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
             {
                 result.AddRange(task.Result);
             }
+
+            await UpdateTemplatePackagesMetadataAsync(result.Select(r => r.TemplatePackage), cancellationToken).ConfigureAwait(false);
+
             return result;
         }
 
@@ -205,6 +208,21 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
         public void Dispose()
         {
             _globalSettings.Dispose();
+        }
+
+        private async Task UpdateTemplatePackagesMetadataAsync(IEnumerable<IManagedTemplatePackage> templatePackages, CancellationToken cancellationToken)
+        {
+            _ = templatePackages ?? throw new ArgumentNullException(nameof(templatePackages));
+            var updatedPackages = new List<TemplatePackageData>(templatePackages.Select(tp => ((ISerializableInstaller)tp.Installer).Serialize(tp)));
+            var cachedPackages = await _globalSettings.GetInstalledTemplatePackagesAsync(cancellationToken).ConfigureAwait(false);
+
+            var updatedCachePackages = cachedPackages.Select(cp =>
+            {
+                var updatedPackage = updatedPackages.FirstOrDefault(up => up.MountPointUri == cp.MountPointUri);
+                return updatedPackage ?? cp;
+            }).ToArray();
+            using var disposable = await _globalSettings.LockAsync(cancellationToken).ConfigureAwait(false);
+            await _globalSettings.SetInstalledTemplatePackagesAsync(updatedCachePackages, cancellationToken).ConfigureAwait(false);
         }
 
         private async Task<UpdateResult> UpdateAsync(List<TemplatePackageData> packages, UpdateRequest updateRequest, CancellationToken cancellationToken)
