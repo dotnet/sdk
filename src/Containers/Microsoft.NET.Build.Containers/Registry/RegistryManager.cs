@@ -498,7 +498,7 @@ internal sealed class RegistryManager
             {
                 HttpStatusCode.Accepted => ProcessSuccessfulChunk(patchResponse),
                 // known quirk - AWS ECR sends 201 Created instead of 202 Accepted
-                HttpStatusCode.Created when IsAmazonECRRegistry => ProcessSuccessfulChunk(patchResponse, ignoreRange: true),
+                HttpStatusCode.Created when IsAmazonECRRegistry => ProcessSuccessfulChunk(patchResponse),
                 _ when retryCount < retryMax => await CheckReadAmountAndRetry(patchUri, cancellationToken).ConfigureAwait(false),
                 _ => await LogError(patchResponse, patchUri, cancellationToken).ConfigureAwait(false)
             })();
@@ -520,21 +520,21 @@ internal sealed class RegistryManager
             }
 
             // for a successful chunk, we decrement retries (if any) and read the amount written by the server + next location
-            Action ProcessSuccessfulChunk(HttpResponseMessage response, bool ignoreRange = false) => () =>
+            Action ProcessSuccessfulChunk(HttpResponseMessage response) => () =>
             {
                 if (retryCount > 0)
                 {
                     retryCount -= 1;
                 }
                 chunkCount += 1;
-                UpdateStateFromResponse(response, ignoreRange);
+                UpdateStateFromResponse(response);
             };
 
             // responses can tell us a) where to upload the next chunk, and b) how much of the last chunk was written.
             // we use this data to update our internal state before each new iteration.
-            void UpdateStateFromResponse(HttpResponseMessage response, bool ignoreRange)
+            void UpdateStateFromResponse(HttpResponseMessage response)
             {
-                var amountSent = ignoreRange ? null : response.ParseRangeAmount();
+                var amountSent = response.ParseRangeAmount();
                 patchUri = response.GetNextLocation();
                 if (amountSent is not null)
                 {
@@ -563,14 +563,17 @@ internal sealed class RegistryManager
             {
                 retryCount += 1;
                 var getResponse = await API.Blob.Upload.GetStatusAsync(patchUri, cancellationToken).ConfigureAwait(false);
-                if (!getResponse.IsSuccessStatusCode || getResponse.StatusCode != HttpStatusCode.NoContent)
+                // two cases handled by same status code check here:
+                // * error response (4xx/5xx) from server
+                // * non-spec-compliant but incorrect (2xx) from server
+                if (getResponse.StatusCode != HttpStatusCode.NoContent)
                 {
                     // reset back to previous chunk so we can retry
                     contents.Seek(chunkStart, SeekOrigin.Begin);
                 }
                 else
                 {
-                    UpdateStateFromResponse(getResponse, false);
+                    UpdateStateFromResponse(getResponse);
                 }
                 return () => { };
             }
