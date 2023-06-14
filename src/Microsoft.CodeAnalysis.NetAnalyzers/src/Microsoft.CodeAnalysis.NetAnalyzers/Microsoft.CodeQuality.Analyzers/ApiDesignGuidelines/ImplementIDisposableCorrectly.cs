@@ -161,18 +161,11 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         /// <summary>
         /// Analyzes single instance of compilation.
         /// </summary>
-        private class PerCompilationAnalyzer
+        private class PerCompilationAnalyzer(INamedTypeSymbol disposableType, IMethodSymbol disposeInterfaceMethod, IMethodSymbol suppressFinalizeMethod)
         {
-            private readonly INamedTypeSymbol _disposableType;
-            private readonly IMethodSymbol _disposeInterfaceMethod;
-            private readonly IMethodSymbol _suppressFinalizeMethod;
-
-            public PerCompilationAnalyzer(INamedTypeSymbol disposableType, IMethodSymbol disposeInterfaceMethod, IMethodSymbol suppressFinalizeMethod)
-            {
-                _disposableType = disposableType;
-                _disposeInterfaceMethod = disposeInterfaceMethod;
-                _suppressFinalizeMethod = suppressFinalizeMethod;
-            }
+            private readonly INamedTypeSymbol _disposableType = disposableType;
+            private readonly IMethodSymbol _disposeInterfaceMethod = disposeInterfaceMethod;
+            private readonly IMethodSymbol _suppressFinalizeMethod = suppressFinalizeMethod;
 
             public void Initialize(CompilationStartAnalysisContext context)
             {
@@ -501,20 +494,12 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         /// <summary>
         /// Validates implementation of Dispose method. The method must call Dispose(true) and then GC.SuppressFinalize(this).
         /// </summary>
-        private sealed class DisposeImplementationValidator
+        private sealed class DisposeImplementationValidator(IMethodSymbol suppressFinalizeMethod, INamedTypeSymbol type)
         {
-            private readonly IMethodSymbol _suppressFinalizeMethod;
-            private readonly INamedTypeSymbol _type;
-            private bool _callsDisposeBool;
-            private bool _callsSuppressFinalize;
-
-            public DisposeImplementationValidator(IMethodSymbol suppressFinalizeMethod, INamedTypeSymbol type)
-            {
-                _callsDisposeBool = false;
-                _callsSuppressFinalize = false;
-                _suppressFinalizeMethod = suppressFinalizeMethod;
-                _type = type;
-            }
+            private readonly IMethodSymbol _suppressFinalizeMethod = suppressFinalizeMethod;
+            private readonly INamedTypeSymbol _type = type;
+            private bool _callsDisposeBool = false;
+            private bool _callsSuppressFinalize = false;
 
             public bool Validate(ImmutableArray<IOperation> operations)
             {
@@ -629,16 +614,10 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         /// <summary>
         /// Validates implementation of the finalizer. This method must call Dispose(false) and then return
         /// </summary>
-        private sealed class FinalizeImplementationValidator
+        private sealed class FinalizeImplementationValidator(INamedTypeSymbol type)
         {
-            private readonly INamedTypeSymbol _type;
-            private bool _callDispose;
-
-            public FinalizeImplementationValidator(INamedTypeSymbol type)
-            {
-                _type = type;
-                _callDispose = false;
-            }
+            private readonly INamedTypeSymbol _type = type;
+            private bool _callDispose = false;
 
             public bool Validate(ImmutableArray<IOperation> operations)
             {

@@ -158,20 +158,12 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             }
         }
 
-        private class ExpectedMethodSignature
+        private class ExpectedMethodSignature(string name, ITypeSymbol returnType, IEnumerable<(string name, ITypeSymbol typeSymbol)> parameters, bool isStatic)
         {
-            public string Name { get; }
-            public ITypeSymbol ReturnType { get; }
-            public IEnumerable<(string name, ITypeSymbol typeSymbol)> Parameters { get; }
-            public bool IsStatic { get; }
-
-            public ExpectedMethodSignature(string name, ITypeSymbol returnType, IEnumerable<(string name, ITypeSymbol typeSymbol)> parameters, bool isStatic)
-            {
-                Name = name;
-                ReturnType = returnType;
-                Parameters = parameters;
-                IsStatic = isStatic;
-            }
+            public string Name { get; } = name;
+            public ITypeSymbol ReturnType { get; } = returnType;
+            public IEnumerable<(string name, ITypeSymbol typeSymbol)> Parameters { get; } = parameters;
+            public bool IsStatic { get; } = isStatic;
         }
     }
 }

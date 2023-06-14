@@ -95,15 +95,9 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
             public ISymbol Symbol { get; }
         }
 
-        private class ChangeModifierAction : ChangeSymbolAction
+        private class ChangeModifierAction(string title, string equivalenceKey, Solution solution, ISymbol symbol, DeclarationModifiers newModifiers) : ChangeSymbolAction(title, equivalenceKey, solution, symbol)
         {
-            private readonly DeclarationModifiers _newModifiers;
-
-            public ChangeModifierAction(string title, string equivalenceKey, Solution solution, ISymbol symbol, DeclarationModifiers newModifiers)
-                : base(title, equivalenceKey, solution, symbol)
-            {
-                _newModifiers = newModifiers;
-            }
+            private readonly DeclarationModifiers _newModifiers = newModifiers;
 
             protected override async Task<Solution> GetChangedSolutionAsync(CancellationToken cancellationToken)
             {
@@ -122,15 +116,9 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
             }
         }
 
-        private class ChangeAccessibilityAction : ChangeSymbolAction
+        private class ChangeAccessibilityAction(string title, string equivalenceKey, Solution solution, ISymbol symbol, Accessibility newAccessibilty) : ChangeSymbolAction(title, equivalenceKey, solution, symbol)
         {
-            private readonly Accessibility _newAccessibility;
-
-            public ChangeAccessibilityAction(string title, string equivalenceKey, Solution solution, ISymbol symbol, Accessibility newAccessibilty)
-                : base(title, equivalenceKey, solution, symbol)
-            {
-                _newAccessibility = newAccessibilty;
-            }
+            private readonly Accessibility _newAccessibility = newAccessibilty;
 
             protected override async Task<Solution> GetChangedSolutionAsync(CancellationToken cancellationToken)
             {

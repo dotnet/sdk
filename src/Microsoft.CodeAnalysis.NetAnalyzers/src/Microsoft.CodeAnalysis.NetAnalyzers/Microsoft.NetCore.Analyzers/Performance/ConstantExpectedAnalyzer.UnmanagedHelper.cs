@@ -60,14 +60,9 @@ namespace Microsoft.NetCore.Analyzers.Performance
 #pragma warning restore CA1000 // Do not declare static members on generic types
 
             public delegate bool TryTransform(object constant, out T value, out bool isInvalid);
-            public sealed class TransformHelper
+            public sealed class TransformHelper(TryTransform tryTransform)
             {
-                private readonly TryTransform _tryTransform;
-
-                public TransformHelper(TryTransform tryTransform)
-                {
-                    _tryTransform = tryTransform;
-                }
+                private readonly TryTransform _tryTransform = tryTransform;
 
 #pragma warning disable CA1822 // Mark members as static - Suppressed for improved readability at callsites
                 public bool IsLessThan(T operand1, T operand2) => Comparer<T>.Default.Compare(operand1, operand2) < 0;
@@ -97,14 +92,10 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 public bool TryConvert(object val, out T value) => _tryTransform(val, out value, out _);
             }
 
-            public sealed class ConstantExpectedParameterFactory
+            public sealed class ConstantExpectedParameterFactory(TransformHelper helper)
             {
-                private readonly TransformHelper _helper;
+                private readonly TransformHelper _helper = helper;
 
-                public ConstantExpectedParameterFactory(TransformHelper helper)
-                {
-                    _helper = helper;
-                }
                 public bool Validate(IParameterSymbol parameterSymbol, AttributeData attributeData, T typeMin, T typeMax, DiagnosticHelper diagnosticHelper, out ImmutableArray<Diagnostic> diagnostics)
                 {
                     if (!IsValidMinMax(attributeData, typeMin, typeMax, out _, out _, out ErrorKind errorFlags))
@@ -166,18 +157,12 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 }
             }
 
-            public sealed class UnmanagedConstantExpectedParameter : ConstantExpectedParameter
+            public sealed class UnmanagedConstantExpectedParameter(IParameterSymbol parameter, T min, T max, TransformHelper helper) : ConstantExpectedParameter(parameter)
             {
-                private readonly TransformHelper _helper;
-                public UnmanagedConstantExpectedParameter(IParameterSymbol parameter, T min, T max, TransformHelper helper) : base(parameter)
-                {
-                    Min = min;
-                    Max = max;
-                    _helper = helper;
-                }
+                private readonly TransformHelper _helper = helper;
 
-                public T Min { get; }
-                public T Max { get; }
+                public T Min { get; } = min;
+                public T Max { get; } = max;
 
                 public override bool ValidateParameterIsWithinRange(ConstantExpectedParameter subsetCandidate, IArgumentOperation argument, [NotNullWhen(false)] out Diagnostic? validationDiagnostics)
                 {

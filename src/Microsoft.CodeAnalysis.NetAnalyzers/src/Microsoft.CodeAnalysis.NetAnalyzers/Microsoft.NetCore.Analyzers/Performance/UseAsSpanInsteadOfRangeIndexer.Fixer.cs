@@ -70,36 +70,25 @@ namespace Microsoft.NetCore.Analyzers.Performance
             [NotNullWhen(true)] out SyntaxNode? target,
             [NotNullWhen(true)] out IEnumerable<SyntaxNode>? arguments);
 
-        private class UseAsSpanInsteadOfRangeIndexerCodeAction : CodeAction
+        private class UseAsSpanInsteadOfRangeIndexerCodeAction(
+            string ruleId,
+            string targetMethod,
+            Document document,
+            SyntaxNode toReplace,
+            SyntaxNode methodTarget,
+            IEnumerable<SyntaxNode> rangeArguments) : CodeAction
         {
-            private readonly string _targetMethod;
-            private readonly Document _document;
-            private readonly SyntaxNode _toReplace;
-            private readonly SyntaxNode _methodTarget;
-            private readonly IEnumerable<SyntaxNode> _rangeArguments;
+            private readonly string _targetMethod = targetMethod;
+            private readonly Document _document = document;
+            private readonly SyntaxNode _toReplace = toReplace;
+            private readonly SyntaxNode _methodTarget = methodTarget;
+            private readonly IEnumerable<SyntaxNode> _rangeArguments = rangeArguments;
 
-            public override string Title { get; }
-
-            public override string EquivalenceKey { get; }
-
-            public UseAsSpanInsteadOfRangeIndexerCodeAction(
-                string ruleId,
-                string targetMethod,
-                Document document,
-                SyntaxNode toReplace,
-                SyntaxNode methodTarget,
-                IEnumerable<SyntaxNode> rangeArguments)
-            {
-                _targetMethod = targetMethod;
-                _document = document;
-                _toReplace = toReplace;
-                _methodTarget = methodTarget;
-                _rangeArguments = rangeArguments;
-                EquivalenceKey = ruleId;
-                Title = ruleId.Equals(UseAsSpanInsteadOfRangeIndexerAnalyzer.StringRuleId, StringComparison.InvariantCulture) ?
+            public override string Title { get; } = ruleId.Equals(UseAsSpanInsteadOfRangeIndexerAnalyzer.StringRuleId, StringComparison.InvariantCulture) ?
                     string.Format(CultureInfo.InvariantCulture, MicrosoftNetCoreAnalyzersResources.UseAsSpanInsteadOfRangeIndexerOnAStringCodeFixTitle, targetMethod) :
                     string.Format(CultureInfo.InvariantCulture, MicrosoftNetCoreAnalyzersResources.UseAsSpanInsteadOfRangeIndexerOnAnArrayCodeFixTitle, targetMethod);
-            }
+
+            public override string EquivalenceKey { get; } = ruleId;
 
             protected override async Task<Document> GetChangedDocumentAsync(CancellationToken cancellationToken)
             {

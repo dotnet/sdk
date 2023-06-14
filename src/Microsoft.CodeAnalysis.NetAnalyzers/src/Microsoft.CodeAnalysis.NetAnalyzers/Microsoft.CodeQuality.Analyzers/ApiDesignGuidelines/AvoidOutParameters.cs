@@ -47,14 +47,9 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             });
         }
 
-        private class MethodAnalyzer
+        private class MethodAnalyzer(INamedTypeSymbol? outAttributeSymbol)
         {
-            private readonly INamedTypeSymbol? outAttributeSymbol;
-
-            public MethodAnalyzer(INamedTypeSymbol? outAttributeSymbol)
-            {
-                this.outAttributeSymbol = outAttributeSymbol;
-            }
+            private readonly INamedTypeSymbol? outAttributeSymbol = outAttributeSymbol;
 
             public void Analyze(SymbolAnalysisContext analysisContext)
             {

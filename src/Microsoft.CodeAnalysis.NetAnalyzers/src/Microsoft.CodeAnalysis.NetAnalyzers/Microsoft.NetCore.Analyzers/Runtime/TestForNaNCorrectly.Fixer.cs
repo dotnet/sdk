@@ -103,20 +103,12 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         protected abstract SyntaxNode GetLeftOperand(SyntaxNode binaryExpressionSyntax);
         protected abstract SyntaxNode GetRightOperand(SyntaxNode binaryExpressionSyntax);
 
-        private sealed class FixResolution
+        private sealed class FixResolution(SyntaxNode binaryExpressionSyntax, ITypeSymbol floatingSystemType, SyntaxNode comparisonOperand, bool usesEqualsOperator)
         {
-            public SyntaxNode BinaryExpressionSyntax { get; }
-            public ITypeSymbol FloatingSystemType { get; }
-            public SyntaxNode ComparisonOperand { get; }
-            public bool UsesEqualsOperator { get; }
-
-            public FixResolution(SyntaxNode binaryExpressionSyntax, ITypeSymbol floatingSystemType, SyntaxNode comparisonOperand, bool usesEqualsOperator)
-            {
-                BinaryExpressionSyntax = binaryExpressionSyntax;
-                FloatingSystemType = floatingSystemType;
-                ComparisonOperand = comparisonOperand;
-                UsesEqualsOperator = usesEqualsOperator;
-            }
+            public SyntaxNode BinaryExpressionSyntax { get; } = binaryExpressionSyntax;
+            public ITypeSymbol FloatingSystemType { get; } = floatingSystemType;
+            public SyntaxNode ComparisonOperand { get; } = comparisonOperand;
+            public bool UsesEqualsOperator { get; } = usesEqualsOperator;
         }
     }
 }

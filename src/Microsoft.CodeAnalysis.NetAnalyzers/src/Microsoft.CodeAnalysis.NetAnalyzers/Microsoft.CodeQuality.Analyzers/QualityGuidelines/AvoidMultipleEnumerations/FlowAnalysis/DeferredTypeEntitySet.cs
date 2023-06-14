@@ -9,12 +9,9 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
     /// <summary>
     /// Represents a symbol with the deferred type that might come from many sources.
     /// </summary>
-    internal class DeferredTypeEntitySet : CacheBasedEquatable<DeferredTypeEntitySet>, IDeferredTypeEntity
+    internal class DeferredTypeEntitySet(ImmutableHashSet<AbstractLocation> deferredTypeEntities) : CacheBasedEquatable<DeferredTypeEntitySet>, IDeferredTypeEntity
     {
-        public ImmutableHashSet<AbstractLocation> DeferredTypeLocations { get; }
-
-        public DeferredTypeEntitySet(ImmutableHashSet<AbstractLocation> deferredTypeEntities)
-            => DeferredTypeLocations = deferredTypeEntities;
+        public ImmutableHashSet<AbstractLocation> DeferredTypeLocations { get; } = deferredTypeEntities;
 
         protected override void ComputeHashCodeParts(ref RoslynHashCode hashCode)
             => hashCode.Add(HashUtilities.Combine(DeferredTypeLocations));

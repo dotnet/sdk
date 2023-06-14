@@ -69,26 +69,20 @@ namespace Microsoft.NetFramework.Analyzers
         private static bool ReferencesAnyTargetType(CompilationSecurityTypes types)
             => types.XmlDocument != null || types.XmlTextReader != null;
 
-        private sealed class SymbolAndNodeAnalyzer
+        private sealed class SymbolAndNodeAnalyzer(CompilationSecurityTypes xmlTypes,
+            Version targetFrameworkVersion)
         {
             // .NET frameworks >= 4.5.2 have secure default settings for XmlTextReader:
             //      DtdProcessing is enabled with null resolver
             private static readonly Version s_minSecureFxVersion = new(4, 5, 2);
 
-            private readonly CompilationSecurityTypes _xmlTypes;
-            private readonly bool _isFrameworkSecure;
+            private readonly CompilationSecurityTypes _xmlTypes = xmlTypes;
+            private readonly bool _isFrameworkSecure = targetFrameworkVersion >= s_minSecureFxVersion;
 
             // key: symbol for type derived from XmlDocument/XmlTextReader (exclude base type itself)
             // value: if it has explicitly defined constructor
             private readonly ConcurrentDictionary<INamedTypeSymbol, bool> _xmlDocumentDerivedTypes = new();
             private readonly ConcurrentDictionary<INamedTypeSymbol, bool> _xmlTextReaderDerivedTypes = new();
-
-            public SymbolAndNodeAnalyzer(CompilationSecurityTypes xmlTypes,
-                Version targetFrameworkVersion)
-            {
-                _xmlTypes = xmlTypes;
-                _isFrameworkSecure = targetFrameworkVersion >= s_minSecureFxVersion;
-            }
 
             public void AnalyzeOperationBlock(OperationBlockStartAnalysisContext context)
             {
@@ -521,16 +515,11 @@ namespace Microsoft.NetFramework.Analyzers
             }
         }
 
-        private class ThreadSafeBoolean
+        private class ThreadSafeBoolean(bool initialValue = false)
         {
             private const int TRUE_VALUE = 1;
             private const int FALSE_VALUE = 0;
-            private int zeroOrOne = FALSE_VALUE;
-
-            public ThreadSafeBoolean(bool initialValue = false)
-            {
-                zeroOrOne = initialValue ? TRUE_VALUE : FALSE_VALUE;
-            }
+            private int zeroOrOne = initialValue ? TRUE_VALUE : FALSE_VALUE;
 
             public bool Value
             {

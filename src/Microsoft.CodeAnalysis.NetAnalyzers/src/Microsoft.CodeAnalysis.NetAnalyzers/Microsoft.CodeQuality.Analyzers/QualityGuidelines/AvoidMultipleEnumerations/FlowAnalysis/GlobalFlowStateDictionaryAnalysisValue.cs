@@ -8,23 +8,17 @@ using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow;
 
 namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumerations.FlowAnalysis
 {
-    internal class GlobalFlowStateDictionaryAnalysisValue : CacheBasedEquatable<GlobalFlowStateDictionaryAnalysisValue>
+    internal class GlobalFlowStateDictionaryAnalysisValue(
+        ImmutableDictionary<IDeferredTypeEntity, TrackingEnumerationSet> trackedEntities,
+        GlobalFlowStateDictionaryAnalysisValueKind kind) : CacheBasedEquatable<GlobalFlowStateDictionaryAnalysisValue>
     {
-        public ImmutableDictionary<IDeferredTypeEntity, TrackingEnumerationSet> TrackedEntities { get; }
+        public ImmutableDictionary<IDeferredTypeEntity, TrackingEnumerationSet> TrackedEntities { get; } = trackedEntities;
 
-        public GlobalFlowStateDictionaryAnalysisValueKind Kind { get; }
+        public GlobalFlowStateDictionaryAnalysisValueKind Kind { get; } = kind;
 
         public static readonly GlobalFlowStateDictionaryAnalysisValue Empty = new(ImmutableDictionary<IDeferredTypeEntity, TrackingEnumerationSet>.Empty, GlobalFlowStateDictionaryAnalysisValueKind.Empty);
 
         public static readonly GlobalFlowStateDictionaryAnalysisValue Unknown = new(ImmutableDictionary<IDeferredTypeEntity, TrackingEnumerationSet>.Empty, GlobalFlowStateDictionaryAnalysisValueKind.Unknown);
-
-        public GlobalFlowStateDictionaryAnalysisValue(
-            ImmutableDictionary<IDeferredTypeEntity, TrackingEnumerationSet> trackedEntities,
-            GlobalFlowStateDictionaryAnalysisValueKind kind)
-        {
-            TrackedEntities = trackedEntities;
-            Kind = kind;
-        }
 
         /// <summary>
         /// Merge <param name="value1"/> and <param name="value2"/>, if <param name="intersectValueInCommonKeys"/> is true,

@@ -15,32 +15,28 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
     using GlobalFlowStateDictionaryAnalysisData = DictionaryAnalysisData<AnalysisEntity, GlobalFlowStateDictionaryAnalysisValue>;
     using GlobalFlowStateDictionaryAnalysisResult = DataFlowAnalysisResult<GlobalFlowStateDictionaryBlockAnalysisResult, GlobalFlowStateDictionaryAnalysisValue>;
 
-    internal class GlobalFlowStateDictionaryAnalysisContext : AbstractDataFlowAnalysisContext<
+    internal class GlobalFlowStateDictionaryAnalysisContext(
+        AbstractValueDomain<GlobalFlowStateDictionaryAnalysisValue> valueDomain,
+        WellKnownTypeProvider wellKnownTypeProvider,
+        ControlFlowGraph controlFlowGraph,
+        ISymbol owningSymbol,
+        AnalyzerOptions analyzerOptions,
+        InterproceduralAnalysisConfiguration interproceduralAnalysisConfig,
+        bool pessimisticAnalysis,
+        bool predicateAnalysis,
+        bool exceptionPathsAnalysis,
+        DataFlowAnalysisResult<CopyBlockAnalysisResult, CopyAbstractValue>? copyAnalysisResult,
+        PointsToAnalysisResult? pointsToAnalysisResult,
+        DataFlowAnalysisResult<ValueContentBlockAnalysisResult, ValueContentAbstractValue>? valueContentAnalysisResult,
+        Func<GlobalFlowStateDictionaryAnalysisContext, GlobalFlowStateDictionaryAnalysisResult?> tryGetOrComputeAnalysisResult,
+        ControlFlowGraph? parentControlFlowGraph = null,
+        InterproceduralAnalysisData<GlobalFlowStateDictionaryAnalysisData, GlobalFlowStateDictionaryAnalysisContext, GlobalFlowStateDictionaryAnalysisValue>? interproceduralAnalysisData = null,
+        InterproceduralAnalysisPredicate? interproceduralAnalysisPredicate = null) : AbstractDataFlowAnalysisContext<
         GlobalFlowStateDictionaryAnalysisData,
         GlobalFlowStateDictionaryAnalysisContext,
         GlobalFlowStateDictionaryAnalysisResult,
-        GlobalFlowStateDictionaryAnalysisValue>
+        GlobalFlowStateDictionaryAnalysisValue>(valueDomain, wellKnownTypeProvider, controlFlowGraph, owningSymbol, analyzerOptions, interproceduralAnalysisConfig, pessimisticAnalysis, predicateAnalysis, exceptionPathsAnalysis, copyAnalysisResult, pointsToAnalysisResult, valueContentAnalysisResult, tryGetOrComputeAnalysisResult, parentControlFlowGraph, interproceduralAnalysisData, interproceduralAnalysisPredicate)
     {
-        public GlobalFlowStateDictionaryAnalysisContext(
-            AbstractValueDomain<GlobalFlowStateDictionaryAnalysisValue> valueDomain,
-            WellKnownTypeProvider wellKnownTypeProvider,
-            ControlFlowGraph controlFlowGraph,
-            ISymbol owningSymbol,
-            AnalyzerOptions analyzerOptions,
-            InterproceduralAnalysisConfiguration interproceduralAnalysisConfig,
-            bool pessimisticAnalysis,
-            bool predicateAnalysis,
-            bool exceptionPathsAnalysis,
-            DataFlowAnalysisResult<CopyBlockAnalysisResult, CopyAbstractValue>? copyAnalysisResult,
-            PointsToAnalysisResult? pointsToAnalysisResult,
-            DataFlowAnalysisResult<ValueContentBlockAnalysisResult, ValueContentAbstractValue>? valueContentAnalysisResult,
-            Func<GlobalFlowStateDictionaryAnalysisContext, GlobalFlowStateDictionaryAnalysisResult?> tryGetOrComputeAnalysisResult,
-            ControlFlowGraph? parentControlFlowGraph = null,
-            InterproceduralAnalysisData<GlobalFlowStateDictionaryAnalysisData, GlobalFlowStateDictionaryAnalysisContext, GlobalFlowStateDictionaryAnalysisValue>? interproceduralAnalysisData = null,
-            InterproceduralAnalysisPredicate? interproceduralAnalysisPredicate = null) : base(valueDomain, wellKnownTypeProvider, controlFlowGraph, owningSymbol, analyzerOptions, interproceduralAnalysisConfig, pessimisticAnalysis, predicateAnalysis, exceptionPathsAnalysis, copyAnalysisResult, pointsToAnalysisResult, valueContentAnalysisResult, tryGetOrComputeAnalysisResult, parentControlFlowGraph, interproceduralAnalysisData, interproceduralAnalysisPredicate)
-        {
-        }
-
         public override GlobalFlowStateDictionaryAnalysisContext ForkForInterproceduralAnalysis(
             IMethodSymbol invokedMethod,
             ControlFlowGraph invokedCfg,

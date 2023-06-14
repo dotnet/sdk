@@ -112,36 +112,28 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         /// <summary>
         /// This object describes a class of methods where exception throwing statements should be analyzed.
         /// </summary>
-        private class MethodCategory
+        private class MethodCategory(Func<IMethodSymbol, Compilation, bool> matchFunction, bool analyzeOnlyPublicMethods, DiagnosticDescriptor rule, params ITypeSymbol?[] allowedExceptionTypes)
         {
             /// <summary>
             /// Function used to determine whether a given method symbol falls into this category.
             /// </summary>
-            private readonly Func<IMethodSymbol, Compilation, bool> _matchFunction;
+            private readonly Func<IMethodSymbol, Compilation, bool> _matchFunction = matchFunction;
 
             /// <summary>
             /// Determines if we should analyze non-public methods of a given type.
             /// </summary>
-            private readonly bool _analyzeOnlyPublicMethods;
+            private readonly bool _analyzeOnlyPublicMethods = analyzeOnlyPublicMethods;
 
             /// <summary>
             /// The rule that should be fired if there is an exception in this kind of method.
             /// </summary>
-            public DiagnosticDescriptor Rule { get; }
+            public DiagnosticDescriptor Rule { get; } = rule;
 
             /// <summary>
             /// List of exception types which are allowed to be thrown inside this category of method.
             /// This list will be empty if no exceptions are allowed.
             /// </summary>
-            public ImmutableHashSet<ITypeSymbol> AllowedExceptions { get; }
-
-            public MethodCategory(Func<IMethodSymbol, Compilation, bool> matchFunction, bool analyzeOnlyPublicMethods, DiagnosticDescriptor rule, params ITypeSymbol?[] allowedExceptionTypes)
-            {
-                _matchFunction = matchFunction;
-                _analyzeOnlyPublicMethods = analyzeOnlyPublicMethods;
-                this.Rule = rule;
-                AllowedExceptions = allowedExceptionTypes.WhereNotNull().ToImmutableHashSet();
-            }
+            public ImmutableHashSet<ITypeSymbol> AllowedExceptions { get; } = allowedExceptionTypes.WhereNotNull().ToImmutableHashSet();
 
             /// <summary>
             /// Checks if the given method belong this category

@@ -145,28 +145,16 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             return symbol?.OriginalDefinition.Inherits(baseType) ?? false;
         }
 
-        private sealed class KnownTypes
+        private sealed class KnownTypes(WellKnownTypeProvider wellKnownTypeProvider)
         {
-            public KnownTypes(WellKnownTypeProvider wellKnownTypeProvider)
-            {
-                ICollectionType = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsICollection);
-                GenericICollectionType = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsGenericICollection1);
-                ArrayType = wellKnownTypeProvider.Compilation.GetSpecialType(SpecialType.System_Array);
-                DataMemberAttribute = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeSerializationDataMemberAttribute);
-                ImmutableInterfaces = GetIImmutableInterfaces(wellKnownTypeProvider);
-                ReadonlyCollection = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsObjectModelReadOnlyCollection1);
-                ReadonlyDictionary = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsObjectModelReadOnlyDictionary2);
-                ReadonlyObservableCollection = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsObjectModelReadOnlyObservableCollection1);
-            }
-
-            public INamedTypeSymbol? ICollectionType { get; }
-            public INamedTypeSymbol? GenericICollectionType { get; }
-            public INamedTypeSymbol? ArrayType { get; }
-            public INamedTypeSymbol? DataMemberAttribute { get; }
-            public ImmutableHashSet<INamedTypeSymbol> ImmutableInterfaces { get; }
-            public INamedTypeSymbol? ReadonlyCollection { get; }
-            public INamedTypeSymbol? ReadonlyDictionary { get; }
-            public INamedTypeSymbol? ReadonlyObservableCollection { get; }
+            public INamedTypeSymbol? ICollectionType { get; } = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsICollection);
+            public INamedTypeSymbol? GenericICollectionType { get; } = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsGenericICollection1);
+            public INamedTypeSymbol? ArrayType { get; } = wellKnownTypeProvider.Compilation.GetSpecialType(SpecialType.System_Array);
+            public INamedTypeSymbol? DataMemberAttribute { get; } = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeSerializationDataMemberAttribute);
+            public ImmutableHashSet<INamedTypeSymbol> ImmutableInterfaces { get; } = GetIImmutableInterfaces(wellKnownTypeProvider);
+            public INamedTypeSymbol? ReadonlyCollection { get; } = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsObjectModelReadOnlyCollection1);
+            public INamedTypeSymbol? ReadonlyDictionary { get; } = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsObjectModelReadOnlyDictionary2);
+            public INamedTypeSymbol? ReadonlyObservableCollection { get; } = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsObjectModelReadOnlyObservableCollection1);
 
             private static ImmutableHashSet<INamedTypeSymbol> GetIImmutableInterfaces(WellKnownTypeProvider wellKnownTypeProvider)
             {

@@ -80,27 +80,18 @@ namespace Microsoft.NetCore.Analyzers.Performance
         /// This class cannot be inherited.
         /// </summary>
         /// <seealso cref="Microsoft.CodeAnalysis.CodeActions.CodeAction" />
-        private sealed class UsePropertyInsteadOfCountMethodWhenAvailableCodeAction : CodeAction
+        private sealed class UsePropertyInsteadOfCountMethodWhenAvailableCodeAction(
+            Document document,
+            SyntaxNode invocationNode,
+            SyntaxNode memberAccessNode,
+            SyntaxNode nameNode,
+            string propertyName) : CodeAction
         {
-            private readonly Document _document;
-            private readonly SyntaxNode _invocationNode;
-            private readonly SyntaxNode _memberAccessNode;
-            private readonly SyntaxNode _nameNode;
-            private readonly string _propertyName;
-
-            public UsePropertyInsteadOfCountMethodWhenAvailableCodeAction(
-                Document document,
-                SyntaxNode invocationNode,
-                SyntaxNode memberAccessNode,
-                SyntaxNode nameNode,
-                string propertyName)
-            {
-                this._document = document;
-                this._invocationNode = invocationNode;
-                this._memberAccessNode = memberAccessNode;
-                this._nameNode = nameNode;
-                this._propertyName = propertyName;
-            }
+            private readonly Document _document = document;
+            private readonly SyntaxNode _invocationNode = invocationNode;
+            private readonly SyntaxNode _memberAccessNode = memberAccessNode;
+            private readonly SyntaxNode _nameNode = nameNode;
+            private readonly string _propertyName = propertyName;
 
             /// <inheritdoc/>
             public override string Title { get; } = MicrosoftNetCoreAnalyzersResources.UsePropertyInsteadOfCountMethodWhenAvailableTitle;

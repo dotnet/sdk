@@ -99,16 +99,11 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             });
         }
 
-        private class AtomicBoolean
+        private class AtomicBoolean(bool initialValue = false)
         {
             private const int TRUE_VALUE = 1;
             private const int FALSE_VALUE = 0;
-            private int zeroOrOne = FALSE_VALUE;
-
-            public AtomicBoolean(bool initialValue = false)
-            {
-                zeroOrOne = initialValue ? TRUE_VALUE : FALSE_VALUE;
-            }
+            private int zeroOrOne = initialValue ? TRUE_VALUE : FALSE_VALUE;
 
             public bool Value
             {

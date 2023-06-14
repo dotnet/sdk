@@ -20,20 +20,14 @@ namespace Roslyn.Utilities
     /// 
     /// Takes ownership of the given <see cref="TextWriter" /> at construction and handles its disposal.
     /// </summary>
-    internal sealed class JsonWriter : IDisposable
+    internal sealed class JsonWriter(TextWriter output) : IDisposable
     {
-        private readonly TextWriter _output;
+        private readonly TextWriter _output = output;
         private int _indent;
-        private Pending _pending;
+        private Pending _pending = Pending.None;
 
         private enum Pending { None, NewLineAndIndent, CommaNewLineAndIndent };
         private const string Indentation = "  ";
-
-        public JsonWriter(TextWriter output)
-        {
-            _output = output;
-            _pending = Pending.None;
-        }
 
         public void WriteObjectStart()
         {

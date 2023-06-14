@@ -14,23 +14,15 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
 {
     public sealed partial class PlatformCompatibilityAnalyzer
     {
-        private sealed class OperationVisitor : GlobalFlowStateValueSetFlowOperationVisitor
+        private sealed class OperationVisitor(
+            ImmutableArray<IMethodSymbol> platformCheckMethods,
+            INamedTypeSymbol? osPlatformType,
+            SmallDictionary<string, (string relatedPlatform, bool isSubset)> relatedPlatforms,
+            GlobalFlowStateAnalysisContext analysisContext) : GlobalFlowStateValueSetFlowOperationVisitor(analysisContext, hasPredicatedGlobalState: true)
         {
-            private readonly ImmutableArray<IMethodSymbol> _platformCheckMethods;
-            private readonly INamedTypeSymbol? _osPlatformType;
-            private readonly SmallDictionary<string, (string relatedPlatform, bool isSubset)> _relatedPlatforms;
-
-            public OperationVisitor(
-                ImmutableArray<IMethodSymbol> platformCheckMethods,
-                INamedTypeSymbol? osPlatformType,
-                SmallDictionary<string, (string relatedPlatform, bool isSubset)> relatedPlatforms,
-                GlobalFlowStateAnalysisContext analysisContext)
-                : base(analysisContext, hasPredicatedGlobalState: true)
-            {
-                _platformCheckMethods = platformCheckMethods;
-                _osPlatformType = osPlatformType;
-                _relatedPlatforms = relatedPlatforms;
-            }
+            private readonly ImmutableArray<IMethodSymbol> _platformCheckMethods = platformCheckMethods;
+            private readonly INamedTypeSymbol? _osPlatformType = osPlatformType;
+            private readonly SmallDictionary<string, (string relatedPlatform, bool isSubset)> _relatedPlatforms = relatedPlatforms;
 
             /// <summary>
             /// If the <paramref name="symbol"/> provided annotated with any guard attribute update the <paramref name="value"/> accordingly.

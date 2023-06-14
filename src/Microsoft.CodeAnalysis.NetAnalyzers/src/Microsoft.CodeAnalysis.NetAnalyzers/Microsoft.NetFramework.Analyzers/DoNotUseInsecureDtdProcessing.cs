@@ -122,7 +122,7 @@ namespace Microsoft.NetFramework.Analyzers
                 });
         }
 
-        private class OperationAnalyzer
+        private class OperationAnalyzer(CompilationSecurityTypes xmlTypes, Version targetFrameworkVersion)
         {
             #region Environment classes
             private class XmlDocumentEnvironment
@@ -182,18 +182,12 @@ namespace Microsoft.NetFramework.Analyzers
             // .NET frameworks >= 4.5.2 have secure default settings
             private static readonly Version s_minSecureFxVersion = new(4, 5, 2);
 
-            private readonly CompilationSecurityTypes _xmlTypes;
-            private readonly bool _isFrameworkSecure;
+            private readonly CompilationSecurityTypes _xmlTypes = xmlTypes;
+            private readonly bool _isFrameworkSecure = targetFrameworkVersion != null && targetFrameworkVersion >= s_minSecureFxVersion;
             private readonly HashSet<IOperation> _objectCreationOperationsAnalyzed = new();
             private readonly Dictionary<ISymbol, XmlDocumentEnvironment> _xmlDocumentEnvironments = new();
             private readonly Dictionary<ISymbol, XmlTextReaderEnvironment> _xmlTextReaderEnvironments = new();
             private readonly Dictionary<ISymbol, XmlReaderSettingsEnvironment> _xmlReaderSettingsEnvironments = new();
-
-            public OperationAnalyzer(CompilationSecurityTypes xmlTypes, Version targetFrameworkVersion)
-            {
-                _xmlTypes = xmlTypes;
-                _isFrameworkSecure = targetFrameworkVersion != null && targetFrameworkVersion >= s_minSecureFxVersion;
-            }
 
             public void AnalyzeOperationBlock(OperationBlockAnalysisContext context)
             {

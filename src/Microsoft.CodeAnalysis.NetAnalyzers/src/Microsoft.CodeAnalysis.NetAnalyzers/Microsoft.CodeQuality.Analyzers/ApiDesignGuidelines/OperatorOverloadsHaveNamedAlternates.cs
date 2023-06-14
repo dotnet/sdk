@@ -253,16 +253,10 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             }
         }
 
-        internal class ExpectedAlternateMethodGroup
+        internal class ExpectedAlternateMethodGroup(string alternateMethod1, string? alternateMethod2 = null)
         {
-            public string AlternateMethod1 { get; }
-            public string? AlternateMethod2 { get; }
-
-            public ExpectedAlternateMethodGroup(string alternateMethod1, string? alternateMethod2 = null)
-            {
-                AlternateMethod1 = alternateMethod1;
-                AlternateMethod2 = alternateMethod2;
-            }
+            public string AlternateMethod1 { get; } = alternateMethod1;
+            public string? AlternateMethod2 { get; } = alternateMethod2;
         }
     }
 }

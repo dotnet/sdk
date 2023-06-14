@@ -17,21 +17,16 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
     /// <summary>
     /// An analysis that tracks the state of a set of <see cref="AnalysisEntity"/>. The state is shared among the block.
     /// </summary>
-    internal class GlobalFlowStateDictionaryAnalysis : ForwardDataFlowAnalysis<
+    internal class GlobalFlowStateDictionaryAnalysis(
+        AbstractAnalysisDomain<GlobalFlowStateDictionaryAnalysisData> analysisDomain,
+        DataFlowOperationVisitor<GlobalFlowStateDictionaryAnalysisData, GlobalFlowStateDictionaryAnalysisContext, GlobalFlowStateDictionaryAnalysisResult, GlobalFlowStateDictionaryAnalysisValue> operationVisitor) : ForwardDataFlowAnalysis<
         GlobalFlowStateDictionaryAnalysisData,
         GlobalFlowStateDictionaryAnalysisContext,
         GlobalFlowStateDictionaryAnalysisResult,
         GlobalFlowStateDictionaryBlockAnalysisResult,
-        GlobalFlowStateDictionaryAnalysisValue>
+        GlobalFlowStateDictionaryAnalysisValue>(analysisDomain, operationVisitor)
     {
         public static readonly GlobalFlowStateDictionaryAnalysisDomain Domain = new(GlobalFlowStateDictionaryAnalysisValueDomain.Instance);
-
-        public GlobalFlowStateDictionaryAnalysis(
-            AbstractAnalysisDomain<GlobalFlowStateDictionaryAnalysisData> analysisDomain,
-            DataFlowOperationVisitor<GlobalFlowStateDictionaryAnalysisData, GlobalFlowStateDictionaryAnalysisContext, GlobalFlowStateDictionaryAnalysisResult, GlobalFlowStateDictionaryAnalysisValue> operationVisitor)
-            : base(analysisDomain, operationVisitor)
-        {
-        }
 
         public static GlobalFlowStateDictionaryAnalysisResult? TryGetOrComputeResult(
             ControlFlowGraph cfg,

@@ -128,30 +128,20 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 });
         }
 
-        private sealed class SymbolAnalyzer
+        private sealed class SymbolAnalyzer(
+            INamedTypeSymbol iserializableTypeSymbol,
+            INamedTypeSymbol serializationInfoTypeSymbol,
+            INamedTypeSymbol streamingContextTypeSymbol,
+            INamedTypeSymbol serializableAttributeTypeSymbol,
+            INamedTypeSymbol nonSerializedAttributeTypeSymbol,
+            bool isNetStandardAssembly)
         {
-            private readonly INamedTypeSymbol _iserializableTypeSymbol;
-            private readonly INamedTypeSymbol _serializationInfoTypeSymbol;
-            private readonly INamedTypeSymbol _streamingContextTypeSymbol;
-            private readonly INamedTypeSymbol _serializableAttributeTypeSymbol;
-            private readonly INamedTypeSymbol _nonSerializedAttributeTypeSymbol;
-            private readonly bool _isNetStandardAssembly;
-
-            public SymbolAnalyzer(
-                INamedTypeSymbol iserializableTypeSymbol,
-                INamedTypeSymbol serializationInfoTypeSymbol,
-                INamedTypeSymbol streamingContextTypeSymbol,
-                INamedTypeSymbol serializableAttributeTypeSymbol,
-                INamedTypeSymbol nonSerializedAttributeTypeSymbol,
-                bool isNetStandardAssembly)
-            {
-                _iserializableTypeSymbol = iserializableTypeSymbol;
-                _serializationInfoTypeSymbol = serializationInfoTypeSymbol;
-                _streamingContextTypeSymbol = streamingContextTypeSymbol;
-                _serializableAttributeTypeSymbol = serializableAttributeTypeSymbol;
-                _nonSerializedAttributeTypeSymbol = nonSerializedAttributeTypeSymbol;
-                _isNetStandardAssembly = isNetStandardAssembly;
-            }
+            private readonly INamedTypeSymbol _iserializableTypeSymbol = iserializableTypeSymbol;
+            private readonly INamedTypeSymbol _serializationInfoTypeSymbol = serializationInfoTypeSymbol;
+            private readonly INamedTypeSymbol _streamingContextTypeSymbol = streamingContextTypeSymbol;
+            private readonly INamedTypeSymbol _serializableAttributeTypeSymbol = serializableAttributeTypeSymbol;
+            private readonly INamedTypeSymbol _nonSerializedAttributeTypeSymbol = nonSerializedAttributeTypeSymbol;
+            private readonly bool _isNetStandardAssembly = isNetStandardAssembly;
 
             public void AnalyzeSymbol(SymbolAnalysisContext context)
             {

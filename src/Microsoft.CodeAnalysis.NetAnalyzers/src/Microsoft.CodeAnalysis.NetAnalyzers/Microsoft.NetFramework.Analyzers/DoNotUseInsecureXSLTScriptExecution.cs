@@ -96,18 +96,12 @@ namespace Microsoft.NetFramework.Analyzers
                 });
         }
 
-        private sealed class OperationBlockAnalyzer
+        private sealed class OperationBlockAnalyzer(CompilationSecurityTypes xmlTypes, ISymbol enclosingSymbol)
         {
-            private readonly CompilationSecurityTypes _xmlTypes;
-            private readonly ISymbol _enclosingSymbol;
+            private readonly CompilationSecurityTypes _xmlTypes = xmlTypes;
+            private readonly ISymbol _enclosingSymbol = enclosingSymbol;
 
             private readonly ConcurrentDictionary<ISymbol, XsltSettingsEnvironment> _xsltSettingsEnvironments = new();
-
-            public OperationBlockAnalyzer(CompilationSecurityTypes xmlTypes, ISymbol enclosingSymbol)
-            {
-                _xmlTypes = xmlTypes;
-                _enclosingSymbol = enclosingSymbol;
-            }
 
             public void AnalyzeNodeForXslCompiledTransformLoad<TContext>(IMethodSymbol methodSymbol,
                 ImmutableArray<IArgumentOperation> arguments, Action<TContext, Diagnostic> reportDiagnostic, TContext context)
