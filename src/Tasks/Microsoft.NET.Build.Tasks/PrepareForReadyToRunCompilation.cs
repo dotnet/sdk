@@ -152,11 +152,14 @@ namespace Microsoft.NET.Build.Tasks
 
                 if (EmitSymbols)
                 {
-                    if (IsTargetWindows && hasValidDiaSymReaderLib)
+                    if (IsTargetWindows)
                     {
-                        outputPDBImage = Path.ChangeExtension(outputR2RImage, "ni.pdb");
-                        outputPDBImageRelativePath = Path.ChangeExtension(outputR2RImageRelativePath, "ni.pdb");
-                        crossgen1CreatePDBCommand = $"/CreatePDB \"{Path.GetDirectoryName(outputPDBImage)}\"";
+                        if (hasValidDiaSymReaderLib)
+                        {
+                            outputPDBImage = Path.ChangeExtension(outputR2RImage, "ni.pdb");
+                            outputPDBImageRelativePath = Path.ChangeExtension(outputR2RImageRelativePath, "ni.pdb");
+                            crossgen1CreatePDBCommand = $"/CreatePDB \"{Path.GetDirectoryName(outputPDBImage)}\"";
+                        }
                     }
                     else
                     {
@@ -258,10 +261,13 @@ namespace Microsoft.NET.Build.Tasks
                 {
                     string compositePDBImage = null;
                     string compositePDBRelativePath = null;
-                    if (IsTargetWindows && hasValidDiaSymReaderLib)
+                    if (IsTargetWindows)
                     {
-                        compositePDBImage = Path.ChangeExtension(compositeR2RImage, ".ni.pdb");
-                        compositePDBRelativePath = Path.ChangeExtension(compositeR2RImageRelativePath, ".ni.pdb");
+                        if (hasValidDiaSymReaderLib)
+                        {
+                            compositePDBImage = Path.ChangeExtension(compositeR2RImage, ".ni.pdb");
+                            compositePDBRelativePath = Path.ChangeExtension(compositeR2RImageRelativePath, ".ni.pdb");
+                        }
                     }
                     else
                     {
