@@ -209,7 +209,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             Action a = () => toolManifest.Find();
 
-            a.ShouldThrow<ToolManifestException>().And.Message.Should()
+            a.Should().Throw<ToolManifestException>().And.Message.Should()
                 .Contain(string.Format(string.Format(LocalizableStrings.MultipleSamePackageId,
                     string.Join(", ", "t-rex")), ""));
         }
@@ -252,10 +252,10 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                     new FakeDangerousFileDetector());
 
             Action a = () => toolManifest.Find(new FilePath(Path.Combine(_testDirectoryRoot, "non-exists")));
-            a.ShouldThrow<ToolManifestCannotBeFoundException>().And.Message.Should()
+            a.Should().Throw<ToolManifestCannotBeFoundException>().And.Message.Should()
                 .Contain(LocalizableStrings.CannotFindAManifestFile);
 
-            a.ShouldThrow<ToolManifestCannotBeFoundException>().And.VerboseMessage.Should()
+            a.Should().Throw<ToolManifestCannotBeFoundException>().And.VerboseMessage.Should()
                 .Contain(string.Format(LocalizableStrings.ListOfSearched, ""))
                 .And.Contain(
                     Path.Combine(_testDirectoryRoot, "non-exists"),
@@ -272,10 +272,10 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                     new FakeDangerousFileDetector());
 
             Action a = () => toolManifest.Find();
-            a.ShouldThrow<ToolManifestCannotBeFoundException>().And.Message.Should()
+            a.Should().Throw<ToolManifestCannotBeFoundException>().And.Message.Should()
                  .Contain(LocalizableStrings.CannotFindAManifestFile);
 
-            a.ShouldThrow<ToolManifestCannotBeFoundException>().And.VerboseMessage.Should()
+            a.Should().Throw<ToolManifestCannotBeFoundException>().And.VerboseMessage.Should()
                 .Contain(string.Format(LocalizableStrings.ListOfSearched, ""));
         }
 
@@ -291,7 +291,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             Action a = () => toolManifest.Find();
 
-            a.ShouldThrow<ToolManifestException>().And.Message.Should().Contain(
+            a.Should().Throw<ToolManifestException>().And.Message.Should().Contain(
                 string.Format(LocalizableStrings.InvalidManifestFilePrefix,
                     Path.Combine(_testDirectoryRoot, _manifestFilename),
                     "\t" + string.Format(LocalizableStrings.InPackage, "t-rex",
@@ -311,7 +311,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             Action a = () => toolManifest.Find();
 
-            a.ShouldThrow<ToolManifestException>().And.Message.Should()
+            a.Should().Throw<ToolManifestException>().And.Message.Should()
                 .Contain(string.Format(LocalizableStrings.VersionIsInvalid, "1.*"));
         }
 
@@ -328,7 +328,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             Action a = () => toolManifest.Find();
 
-            a.ShouldThrow<ToolManifestException>()
+            a.Should().Throw<ToolManifestException>()
                 .And.Message.Should().Contain(string.Format(LocalizableStrings.UnexpectedTypeInJson, "True|False" ,"isRoot"));
         }
 
@@ -345,7 +345,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             Action a = () => toolManifest.Find();
 
-            a.ShouldThrow<ToolManifestException>();
+            a.Should().Throw<ToolManifestException>();
         }
 
         [Fact]
@@ -439,10 +439,10 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             Action a = () => toolManifest.FindByPackageId(new PackageId("t-rex"));
 
-            a.ShouldThrow<ToolManifestCannotBeFoundException>().And.Message.Should()
+            a.Should().Throw<ToolManifestCannotBeFoundException>().And.Message.Should()
                 .Contain(LocalizableStrings.CannotFindAManifestFile);
 
-            a.ShouldThrow<ToolManifestCannotBeFoundException>().And.VerboseMessage.Should()
+            a.Should().Throw<ToolManifestCannotBeFoundException>().And.VerboseMessage.Should()
                 .Contain(string.Format(LocalizableStrings.ListOfSearched, ""));
         }
 
@@ -478,7 +478,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             Action a = () => toolManifest.Find();
 
-            a.ShouldThrow<ToolManifestException>().And.Message.Should().Contain(string.Format(
+            a.Should().Throw<ToolManifestException>().And.Message.Should().Contain(string.Format(
                             LocalizableStrings.ManifestVersionHigherThanSupported,
                             99, 1));
         }
@@ -495,7 +495,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             Action a = () => toolManifest.Find();
 
-            a.ShouldThrow<ToolManifestException>().And.Message.Should().Contain(LocalizableStrings.ManifestMissingIsRoot);
+            a.Should().Throw<ToolManifestException>().And.Message.Should().Contain(LocalizableStrings.ManifestMissingIsRoot);
         }
 
         [Fact]
@@ -579,7 +579,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                     new FakeDangerousFileDetector());
 
             Action a = () => toolManifest.TryFind(new ToolCommandName("dotnetSay"), out var result);
-            a.ShouldThrow<ToolManifestException>();
+            a.Should().Throw<ToolManifestException>();
         }
 
         [Fact]
@@ -593,7 +593,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                     new FakeDangerousFileDetector());
 
             Action a = () => toolManifest.TryFind(new ToolCommandName("dotnetSay"), out var result);
-            a.ShouldThrow<ToolManifestException>();
+            a.Should().Throw<ToolManifestException>();
         }
 
         [Fact]
@@ -607,7 +607,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                     new FakeDangerousFileDetector());
 
             Action a = () => toolManifest.TryFind(new ToolCommandName("dotnetSay"), out var result);
-            a.ShouldThrow<ToolManifestException>();
+            a.Should().Throw<ToolManifestException>();
         }
 
         [Fact]
@@ -664,7 +664,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             var toolManifest
                 = new ToolManifestFinder(new DirectoryPath(_testDirectoryRoot), _fileSystem, fakeMarkOfTheWebDetector);
             Action a = () => toolManifest.Find();
-            a.ShouldThrow<ToolManifestException>()
+            a.Should().Throw<ToolManifestException>()
                 .And.Message
 
                 .Should().Contain(
@@ -685,7 +685,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
 
             Action a = () => toolManifest.TryFind(new ToolCommandName("dotnetsay"), out var result);
-            a.ShouldThrow<ToolManifestException>();
+            a.Should().Throw<ToolManifestException>();
         }
 
         [Fact]
@@ -731,10 +731,10 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             Action a = () => toolManifest.FindFirst();
 
-            a.ShouldThrow<ToolManifestCannotBeFoundException>().And.Message.Should()
+            a.Should().Throw<ToolManifestCannotBeFoundException>().And.Message.Should()
                 .Contain(LocalizableStrings.CannotFindAManifestFile);
 
-            a.ShouldThrow<ToolManifestCannotBeFoundException>().And.VerboseMessage.Should()
+            a.Should().Throw<ToolManifestCannotBeFoundException>().And.VerboseMessage.Should()
                 .Contain(string.Format(LocalizableStrings.ListOfSearched, ""));
         }
 
@@ -766,7 +766,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             var testRoot = Path.Combine(_testDirectoryRoot);
             var toolManifest = new ToolManifestFinder(new DirectoryPath(testRoot), _fileSystem);
             Action a = () => toolManifest.Inspect();
-            a.ShouldNotThrow();
+            a.Should().NotThrow();
         }
 
         private string _jsonContent =
