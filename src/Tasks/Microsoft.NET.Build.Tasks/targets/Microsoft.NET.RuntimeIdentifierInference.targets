@@ -69,8 +69,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                              $([MSBuild]::VersionGreaterThanOrEquals($(_TargetFrameworkVersionWithoutV), '8.0')) and
                               (
                                   '$(PublishTrimmed)' == 'true' or
-                                  '$(PublishSingleFile)' == 'true' or
-                                  '$(PublishAot)' == 'true'
+                                  '$(PublishSingleFile)' == 'true'
                               )">
     <PublishSelfContained>true</PublishSelfContained>
   </PropertyGroup>
@@ -173,6 +172,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                               $([MSBuild]::VersionLessThan($(_TargetFrameworkVersionWithoutV), '8.0'))">true</SelfContained>
     
     <SelfContained Condition="'$(SelfContained)' == ''">false</SelfContained>
+    <SelfContained Condition="'$(PublishAot)' == 'true' and '$(_IsPublishing)' == 'true'">false</SelfContained>
     <_RuntimeIdentifierUsesAppHost Condition="$(RuntimeIdentifier.StartsWith('ios')) or $(RuntimeIdentifier.StartsWith('tvos')) or $(RuntimeIdentifier.StartsWith('maccatalyst')) or $(RuntimeIdentifier.StartsWith('android')) or $(RuntimeIdentifier.StartsWith('browser'))">false</_RuntimeIdentifierUsesAppHost>
     <_RuntimeIdentifierUsesAppHost Condition="'$(_RuntimeIdentifierUsesAppHost)' == ''">true</_RuntimeIdentifierUsesAppHost>
     <UseAppHost Condition="'$(UseAppHost)' == '' and
@@ -181,6 +181,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                             ('$(RuntimeIdentifier)' != '' and '$(_TargetFrameworkVersionWithoutV)' >= '2.1') or
                             '$(_TargetFrameworkVersionWithoutV)' >= '3.0')">true</UseAppHost>
     <UseAppHost Condition="'$(UseAppHost)' == ''">false</UseAppHost>
+    <UseAppHost Condition="'$(PublishAot)' == 'true' and '$(_IsPublishing)' == 'true'">false</UseAppHost>
   </PropertyGroup>
 
   <!-- Only use the default apphost if building without a RID and without a deps file path (used by GenerateDeps.proj for CLI tools). -->
