@@ -309,6 +309,8 @@
           tvossimulator-x64;
           maccatalyst-arm64;
           maccatalyst-x64;
+          linux-bionic-arm64;
+          linux-bionic-x64;
           "
           />
 
