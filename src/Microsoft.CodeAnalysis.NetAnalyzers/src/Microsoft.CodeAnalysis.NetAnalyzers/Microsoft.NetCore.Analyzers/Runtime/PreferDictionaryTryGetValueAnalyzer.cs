@@ -66,7 +66,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                        Equals(AdditionalArrayIndexReferences, other.AdditionalArrayIndexReferences);
             }
 
-            public override bool Equals(object? obj)
+            public override readonly bool Equals(object? obj)
             {
                 return obj is DictionaryUsageContext other && Equals(other);
             }
