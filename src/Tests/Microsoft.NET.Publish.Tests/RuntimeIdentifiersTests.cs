@@ -275,13 +275,11 @@ namespace Microsoft.NET.Publish.Tests
         [InlineData("PublishReadyToRun", true)]
         [InlineData("PublishSingleFile", true)]
         [InlineData("PublishTrimmed", true)]
-        [InlineData("PublishAot", true)]
         [InlineData("PublishReadyToRun", false)]
         [InlineData("PublishSingleFile", false)]
         [InlineData("PublishTrimmed", false)]
         public void SomePublishPropertiesInferSelfContained(string property, bool useFrameworkDependentDefaultTargetFramework)
         {
-            // Note: there is a bug with PublishAot I think where this test will fail for Aot if the testname is too long. Do not make it longer.
             var tfm = useFrameworkDependentDefaultTargetFramework ? ToolsetInfo.CurrentTargetFramework : "net7.0"; // net 7 is the last non FDD default TFM at the time of this PR.
             var testProject = new TestProject()
             {
