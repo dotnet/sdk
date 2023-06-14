@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
 using System.Linq;
@@ -498,8 +498,8 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         {
             private readonly IMethodSymbol _suppressFinalizeMethod = suppressFinalizeMethod;
             private readonly INamedTypeSymbol _type = type;
-            private bool _callsDisposeBool = false;
-            private bool _callsSuppressFinalize = false;
+            private bool _callsDisposeBool;
+            private bool _callsSuppressFinalize;
 
             public bool Validate(ImmutableArray<IOperation> operations)
             {
@@ -617,7 +617,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         private sealed class FinalizeImplementationValidator(INamedTypeSymbol type)
         {
             private readonly INamedTypeSymbol _type = type;
-            private bool _callDispose = false;
+            private bool _callDispose;
 
             public bool Validate(ImmutableArray<IOperation> operations)
             {
