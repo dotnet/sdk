@@ -1,6 +1,9 @@
 ﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+#pragma warning disable IDE0240 // Nullable directive is redundant (when file is included to a project that already enables nullable
+#nullable enable
+
 using System.Runtime.InteropServices;
 using System;
 
