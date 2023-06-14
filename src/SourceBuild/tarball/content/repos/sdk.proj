@@ -39,6 +39,7 @@
     <RepositoryReference Include="fsharp" />
     <RepositoryReference Include="format" />
     <RepositoryReference Include="deployment-tools" />
+    <RepositoryReference Include="razor-compiler" />
   </ItemGroup>
 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
