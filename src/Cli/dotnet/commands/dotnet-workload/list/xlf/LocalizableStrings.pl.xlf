@@ -9,7 +9,7 @@
       </trans-unit>
       <trans-unit id="WorkloadIdColumn">
         <source>Installed Workload Ids</source>
-        <target state="translated">Zainstalowane identyfikatory obciążenia</target>
+        <target state="new">Installed Workload Ids</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadListFooter">
@@ -17,14 +17,19 @@
         <target state="translated">Użyj polecenia „dotnet workload search”, aby znaleźć dodatkowe obciążenia do zainstalowania.</target>
         <note />
       </trans-unit>
+      <trans-unit id="WorkloadManfiestVersionColumn">
+        <source>Manifest Version</source>
+        <target state="new">Manifest Version</target>
+        <note />
+      </trans-unit>
       <trans-unit id="WorkloadSourceColumn">
         <source>Installation Source</source>
-        <target state="translated">Źródło instalacji</target>
+        <target state="new">Installation Source</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadUpdatesAvailable">
         <source>Updates are avaliable for the following workload(s): {0}. Run `dotnet workload update` to get the latest.</source>
-        <target state="translated">Aktualizacje są dostępne dla następujących obciążeń: {0}. Uruchom polecenie „dotnet workload update”, aby uzyskać najnowszą wersję.</target>
+        <target state="needs-review-translation">Aktualizacje są dostępne dla następujących obciążeń: {0}. Uruchom polecenie „aktualizacja obciążenia dotnet”, aby uzyskać najnowszą wersję.</target>
         <note />
       </trans-unit>
     </body>

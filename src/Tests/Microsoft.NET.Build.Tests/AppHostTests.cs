@@ -300,7 +300,7 @@ namespace Microsoft.NET.Build.Tests
         [WindowsOnlyFact]
         public void AppHost_contains_resources_from_the_managed_dll()
         {
-            var targetFramework = "netcoreapp2.0";
+            var targetFramework = ToolsetInfo.CurrentTargetFramework;
             var runtimeIdentifier = EnvironmentInfo.GetCompatibleRid(targetFramework);
 
             var version = "5.6.7.8";
@@ -397,7 +397,6 @@ namespace Microsoft.NET.Build.Tests
 
             // enable generating apphost even on macOS
             testProject.AdditionalProperties.Add("UseApphost", "true");
-            testProject.AdditionalProperties.Add("NoWarn", "NU1505");
 
             var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
