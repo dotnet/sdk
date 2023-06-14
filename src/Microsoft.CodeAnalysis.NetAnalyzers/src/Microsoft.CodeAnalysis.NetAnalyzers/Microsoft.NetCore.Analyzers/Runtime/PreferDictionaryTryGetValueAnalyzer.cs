@@ -57,7 +57,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 }
             }
 
-            public bool Equals(DictionaryUsageContext other)
+            public readonly bool Equals(DictionaryUsageContext other)
             {
                 return Equals(_usageLocations, other._usageLocations) &&
                        DictionaryReference.Equals(other.DictionaryReference) &&
@@ -71,7 +71,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 return obj is DictionaryUsageContext other && Equals(other);
             }
 
-            public override int GetHashCode()
+            public override readonly int GetHashCode()
             {
                 return RoslynHashCode.Combine(_usageLocations, DictionaryReference, IndexReference, SetterLocation, AdditionalArrayIndexReferences);
             }
