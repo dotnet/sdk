@@ -51,6 +51,8 @@
 
     <!-- This repo uses text-only template packages from the internal transport feed. -->
     <SetUpInternalTransportFeed>true</SetUpInternalTransportFeed>
+
+    <RepoNoWarns>CS9057</RepoNoWarns>
   </PropertyGroup>
 
   <ItemGroup>

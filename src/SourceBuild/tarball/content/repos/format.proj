@@ -7,6 +7,7 @@
     <GlobalJsonFile>$(ProjectDirectory)global.json</GlobalJsonFile>
     <NuGetConfigFile>$(ProjectDirectory)NuGet.config</NuGetConfigFile>
     <OutputPlacementRepoApiImplemented>false</OutputPlacementRepoApiImplemented>
+    <RepoNoWarns>CS9057</RepoNoWarns>
   </PropertyGroup>
 
   <ItemGroup>

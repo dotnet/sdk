@@ -25,8 +25,12 @@
 
     <!-- CS0618 - Caused from deprecated IOperation.Children in
                   Microsoft.CodeAnalysis 4.3.0, but aspnetcore references version 4.2.0.
-                  Requires https://github.com/dotnet/source-build/issues/2482 -->
-    <RepoNoWarns>CS0618</RepoNoWarns>
+                  Requires https://github.com/dotnet/source-build/issues/2482
+         CS8600 - Converting null literal or possible null value to non-nullable type.
+                  Requires https://github.com/dotnet/aspnetcore/issues/45882.
+         CS8604 - Possible null reference argument for parameter.
+                  Requires https://github.com/dotnet/aspnetcore/issues/45882. -->
+    <RepoNoWarns>CS0618;CA1825;CS8600;CS8604</RepoNoWarns>
   </PropertyGroup>
 
   <ItemGroup>
