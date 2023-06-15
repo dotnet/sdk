@@ -1,12 +1,12 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Packaging.Core;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
-using ILogger = NuGet.Common.ILogger;
 
 namespace Microsoft.TemplateEngine.Cli.NuGet
 {
@@ -21,7 +21,7 @@ namespace Microsoft.TemplateEngine.Cli.NuGet
             DirectDownload = true
         };
 
-        private readonly ILogger _nugetLogger = new CliNuGetLogger();
+        private readonly ILogger _nugetLogger = NullLogger.Instance;
 
         internal NugetApiManager()
         {
@@ -34,7 +34,6 @@ namespace Microsoft.TemplateEngine.Cli.NuGet
             PackageSource? sourceFeed = null,
             CancellationToken cancellationToken = default)
         {
-            // TODO: in case of no version, return the latest version available from all feeds
             if (sourceFeed == null)
             {
                 sourceFeed = _nugetOrgSource;
@@ -44,7 +43,7 @@ namespace Microsoft.TemplateEngine.Cli.NuGet
             PackageMetadataResource resource = await repository.GetResourceAsync<PackageMetadataResource>(cancellationToken).ConfigureAwait(false);
             IEnumerable<IPackageSearchMetadata> packagesMetadata = await resource.GetMetadataAsync(
                 packageIdentifier,
-                includePrerelease: false,
+                includePrerelease: true,
                 includeUnlisted: false,
                 _cacheSettings,
                 _nugetLogger,
@@ -120,6 +119,7 @@ namespace Microsoft.TemplateEngine.Cli.NuGet
                 Identity = metadata.Identity;
                 LicenseExpression = metadata.LicenseMetadata?.LicenseExpression.ToString();
                 Source = packageSource;
+                PackageVersion = metadata.Identity.Version;
             }
 
             public string? Description { get; }
@@ -139,6 +139,8 @@ namespace Microsoft.TemplateEngine.Cli.NuGet
             public string Owners { get; }
 
             public PackageSource Source { get; }
+
+            public NuGetVersion PackageVersion { get; }
         }
     }
 }

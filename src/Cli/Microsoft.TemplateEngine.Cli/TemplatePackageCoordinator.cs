@@ -27,6 +27,7 @@ namespace Microsoft.TemplateEngine.Cli
     internal class TemplatePackageCoordinator
     {
         private const string SourceFeedKey = "NuGetSource";
+        private const string NugetOrgFeed = "https://api.nuget.org/v3/index.json";
 
         private readonly IEngineEnvironmentSettings _engineEnvironmentSettings;
         private readonly TemplatePackageManager _templatePackageManager;
@@ -438,9 +439,9 @@ namespace Microsoft.TemplateEngine.Cli
             }
             else
             {
-                IEnumerable<PackageSource> packageSources = LoadNuGetSources(additionalSources);
+                IEnumerable<PackageSource> packageSources = LoadNuGetSources(additionalSources, true);
 
-                nuGetPackageMetadata = await GetMetadataAsync(packageSources, packageIdentity, packageVersion, cancellationToken).ConfigureAwait(false);
+                nuGetPackageMetadata = await GetPackageMetadataFromMultipleFeedsAsync(packageSources, nugetApiManager, packageIdentity, packageVersion, cancellationToken).ConfigureAwait(false);
                 if (nuGetPackageMetadata != null && nuGetPackageMetadata.Source.Source.Contains("api.nuget.org"))
                 {
                     packageTemplates = await CliTemplateSearchCoordinator.SearchForPackageTemplatesAsync(
@@ -1082,8 +1083,7 @@ namespace Microsoft.TemplateEngine.Cli
             }
         }
 
-        // This is a function from the Template Edge api, adding it here temporarily
-        private IEnumerable<PackageSource> LoadNuGetSources(IEnumerable<string>? additionalSources)
+        private IEnumerable<PackageSource> LoadNuGetSources(IEnumerable<string>? additionalSources, bool includeNuGetFeed)
         {
             IEnumerable<PackageSource> defaultSources;
             string currentDirectory = string.Empty;
@@ -1093,6 +1093,11 @@ namespace Microsoft.TemplateEngine.Cli
                 ISettings settings = global::NuGet.Configuration.Settings.LoadDefaultSettings(currentDirectory);
                 PackageSourceProvider packageSourceProvider = new PackageSourceProvider(settings);
                 defaultSources = packageSourceProvider.LoadPackageSources().Where(source => source.IsEnabled);
+                if (includeNuGetFeed)
+                {
+                    var nuGetFeed = new PackageSource(NugetOrgFeed);
+                    defaultSources = defaultSources.Append(nuGetFeed);
+                }
             }
             catch (Exception ex)
             {
@@ -1137,23 +1142,33 @@ namespace Microsoft.TemplateEngine.Cli
             return retrievedSources;
         }
 
-        private async Task<NugetPackageMetadata?> GetMetadataAsync(
+        private async Task<NugetPackageMetadata?> GetPackageMetadataFromMultipleFeedsAsync(
             IEnumerable<PackageSource> sources,
+            NugetApiManager apiManager,
             string packageIdentifier,
             string? packageVersion = null,
             CancellationToken cancellationToken = default)
         {
-            NugetApiManager nuGetStuffs = new NugetApiManager();
+            NugetPackageMetadata? highestVersion = null;
+
             foreach (PackageSource source in sources)
             {
-                NugetPackageMetadata? package = await nuGetStuffs.GetPackageMetadataAsync(packageIdentifier, packageVersion, source, cancellationToken).ConfigureAwait(false);
+                NugetPackageMetadata? package = await apiManager.GetPackageMetadataAsync(packageIdentifier, packageVersion, source, cancellationToken).ConfigureAwait(false);
                 if (package != null)
                 {
-                    return package;
+                    if (packageVersion != null)
+                    {
+                        return package;
+                    }
+
+                    if (highestVersion == null || package.PackageVersion > highestVersion.PackageVersion)
+                    {
+                        highestVersion = package;
+                    }
                 }
             }
 
-            return null;
+            return highestVersion;
         }
     }
 }
