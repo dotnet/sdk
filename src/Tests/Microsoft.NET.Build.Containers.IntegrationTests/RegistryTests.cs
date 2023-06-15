@@ -44,4 +44,34 @@ public class RegistryTests : IDisposable
 
         Assert.NotNull(downloadedImage);
     }
+
+    [InlineData("quay.io/centos/centos")]
+    [InlineData("registry.access.redhat.com/ubi8/dotnet-70")]
+    [Theory]
+    public async Task CanReadManifestFromRegistry(string fullyQualifiedContainerName)
+    {
+        ILogger logger = _loggerFactory.CreateLogger(nameof(CanReadManifestFromRegistry));
+        bool parsed = ContainerHelpers.TryParseFullyQualifiedContainerName(fullyQualifiedContainerName,
+                                                                           out string? containerRegistry,
+                                                                           out string? containerName,
+                                                                           out string? containerTag,
+                                                                           out string? containerDigest);
+        Assert.True(parsed);
+        Assert.NotNull(containerRegistry);
+        Assert.NotNull(containerName);
+        containerTag ??= "latest";
+
+        Registry registry = new Registry(new Uri($"https://{containerRegistry}"), logger);
+
+        var ridgraphfile = ToolsetUtils.GetRuntimeGraphFilePath();
+
+        ImageBuilder? downloadedImage = await registry.GetImageManifestAsync(
+            containerName,
+            containerTag,
+            "linux-x64",
+            ridgraphfile,
+            cancellationToken: default).ConfigureAwait(false);
+
+        Assert.NotNull(downloadedImage);
+    }
 }
