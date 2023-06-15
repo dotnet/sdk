@@ -4,8 +4,8 @@
 #pragma warning disable IDE0240 // Nullable directive is redundant (when file is included to a project that already enables nullable
 #nullable enable
 
-using System.Runtime.InteropServices;
 using System;
+using System.Runtime.InteropServices;
 
 namespace Microsoft.DotNet.Cli
 {
