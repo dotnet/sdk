@@ -60,7 +60,7 @@ namespace Microsoft.DotNet.ToolPackage
             return new DirectoryPath(CliFolderPathCalculator.ToolsPackagePath);
         }
 
-        private static ToolPackageStoreAndQuery CreateConcreteToolPackageStore(
+        public static ToolPackageStoreAndQuery CreateConcreteToolPackageStore(
             DirectoryPath? nonGlobalLocation = null)
         {
             var toolPackageStore =

@@ -97,8 +97,9 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                         Path.GetFullPath(_configFilePath)));
             }
 
-            Console.WriteLine("1");
             VersionRange versionRange = _parseResult.GetVersionRange();
+            Console.WriteLine("The versionRange at execute is: ");
+            Console.WriteLine(versionRange);
 
             DirectoryPath? toolPath = null;
             if (!string.IsNullOrEmpty(_toolPath))
@@ -125,17 +126,53 @@ namespace Microsoft.DotNet.Tools.Tool.Install
 
             try
             {
-                ToolPackageStoreAndQuery downloaderStore = ToolPackageFactory.CreateConcreteToolPackageStore(toolPath);
-                var toolPackageDownloader = new ToolPackageDownloader();
-                var res = toolPackageDownloader.InstallPackageAsync(
+                //ToolPackageStoreAndQuery downloaderStore = ToolPackageFactory.CreateConcreteToolPackageStore(toolPath);
+                IToolPackage package = null;
+                // transaction scope: if something fails in the middle undo the process
+                using (var scope = new TransactionScope(
+                    TransactionScopeOption.Required,
+                    TimeSpan.Zero))
+                {
+                    var toolPackageDownloader = new ToolPackageDownloader();
+                    package = toolPackageDownloader.InstallPackageAsync(
                     new PackageLocation(nugetConfig: configFile, additionalFeeds: _source),
                         packageId: _packageId,
                         versionRange: versionRange,
                         targetFramework: _framework, verbosity: _verbosity
                     ).GetAwaiter().GetResult();
 
+                    NuGetFramework framework;
+                    if (string.IsNullOrEmpty(_framework) && package.Frameworks.Count() > 0)
+                    {
+                        framework = package.Frameworks
+                            .Where(f => f.Version < (new NuGetVersion(Product.Version)).Version)
+                            .MaxBy(f => f.Version);
+                    }
+                    else
+                    {
+                        framework = string.IsNullOrEmpty(_framework) ?
+                            null :
+                            NuGetFramework.Parse(_framework);
+                    }
+
+                    string appHostSourceDirectory = _shellShimTemplateFinder.ResolveAppHostSourceDirectoryAsync(_architectureOption, framework, RuntimeInformation.ProcessArchitecture).Result;
+                    IShellShimRepository shellShimRepository = _createShellShimRepository(appHostSourceDirectory, toolPath);
+
+                    Console.WriteLine(package.Commands);
+
+                    // actual executable that runs
+                    foreach (var command in package.Commands)
+                    {
+                        shellShimRepository.CreateShim(command.Executable, command.Name, package.PackagedShims);
+                    }
+
+                    scope.Complete();
+                }
+
+
+
                 // Original Code Below
-                IToolPackage package = null;
+                /*IToolPackage package = null;
                 // transaction scope: if something fails in the middle undo the process
                 using (var scope = new TransactionScope(
                     TransactionScopeOption.Required,
@@ -171,7 +208,8 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                     }
 
                     scope.Complete();
-                }
+                }*/
+
 
                 foreach (string w in package.Warnings)
                 {

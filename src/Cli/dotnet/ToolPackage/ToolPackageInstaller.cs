@@ -49,6 +49,7 @@ namespace Microsoft.DotNet.ToolPackage
                 {
                     try
                     {
+                        // create a temp project with a package reference to the tool and download it
                         var stageDirectory = _store.GetRandomStagingDirectory();
                         Directory.CreateDirectory(stageDirectory.Value);
                         rollbackDirectory = stageDirectory.Value;
@@ -76,6 +77,7 @@ namespace Microsoft.DotNet.ToolPackage
 
                         var version = _store.GetStagedPackageVersion(stageDirectory, packageId);
                         var packageDirectory = _store.GetPackageDirectory(packageId, version);
+                        
                         if (Directory.Exists(packageDirectory.Value))
                         {
                             throw new ToolPackageException(
@@ -88,7 +90,8 @@ namespace Microsoft.DotNet.ToolPackage
                         Directory.CreateDirectory(packageRootDirectory.Value);
                         FileAccessRetrier.RetryOnMoveAccessFailure(() => Directory.Move(stageDirectory.Value, packageDirectory.Value));
                         rollbackDirectory = packageDirectory.Value;
-
+                        Console.WriteLine("In toolPackageInstaller the package directory value is: ");
+                        Console.WriteLine(packageDirectory.Value);
                         return new ToolPackageInstance(id: packageId,
                             version: version,
                             packageDirectory: packageDirectory,
