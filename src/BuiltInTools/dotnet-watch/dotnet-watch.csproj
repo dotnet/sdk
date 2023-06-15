@@ -33,11 +33,31 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\BrowserRefresh\Microsoft.AspNetCore.Watch.BrowserRefresh.csproj" PrivateAssets="All" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" UndefineProperties="TargetFramework;TargetFrameworks" OutputItemType="Content" TargetPath="middleware\Microsoft.AspNetCore.Watch.BrowserRefresh.dll" CopyToOutputDirectory="PreserveNewest" />
+    <ProjectReference Include="..\BrowserRefresh\Microsoft.AspNetCore.Watch.BrowserRefresh.csproj"
+                      PrivateAssets="All"
+                      ReferenceOutputAssembly="false"
+                      SkipGetTargetFrameworkProperties="true"
+                      UndefineProperties="TargetFramework;TargetFrameworks"
+                      OutputItemType="Content"
+                      TargetPath="middleware\Microsoft.AspNetCore.Watch.BrowserRefresh.dll"
+                      CopyToOutputDirectory="PreserveNewest"/>
 
-    <ProjectReference Include="..\DotNetDeltaApplier\Microsoft.Extensions.DotNetDeltaApplier.csproj" PrivateAssets="All" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" UndefineProperties="TargetFramework;TargetFrameworks" OutputItemType="Content" TargetPath="hotreload\Microsoft.Extensions.DotNetDeltaApplier.dll" CopyToOutputDirectory="PreserveNewest" />
+    <ProjectReference Include="..\DotNetDeltaApplier\Microsoft.Extensions.DotNetDeltaApplier.csproj"
+                      PrivateAssets="All"
+                      ReferenceOutputAssembly="false"
+                      SkipGetTargetFrameworkProperties="true"
+                      UndefineProperties="TargetFramework;TargetFrameworks"
+                      OutputItemType="Content"
+                      TargetPath="hotreload\Microsoft.Extensions.DotNetDeltaApplier.dll"
+                      CopyToOutputDirectory="PreserveNewest"/>
 
-    <ProjectReference Include="..\DotNetWatchTasks\DotNetWatchTasks.csproj" PrivateAssets="All" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" UndefineProperties="TargetFramework;TargetFrameworks" OutputItemType="Content" CopyToOutputDirectory="PreserveNewest" />
+    <ProjectReference Include="..\DotNetWatchTasks\DotNetWatchTasks.csproj"
+                      PrivateAssets="All"
+                      ReferenceOutputAssembly="false"
+                      SkipGetTargetFrameworkProperties="true"
+                      UndefineProperties="TargetFramework;TargetFrameworks"
+                      OutputItemType="Content"
+                      CopyToOutputDirectory="PreserveNewest"/>
   </ItemGroup>
 
   <!--
@@ -45,5 +65,7 @@
     These files are used for layout generation in redist project.
     Tests are also running dotnet.exe from redist artifacts.
   -->
-  <Target Name="PublishToRedist" DependsOnTargets="PublishDotnetWatchToRedist" BeforeTargets="AfterBuild" />
+  <Target Name="PublishToRedist"
+          DependsOnTargets="PublishDotnetWatchToRedist"
+          BeforeTargets="AfterBuild" />
 </Project>
