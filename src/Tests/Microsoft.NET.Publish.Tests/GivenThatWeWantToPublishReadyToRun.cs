@@ -411,7 +411,7 @@ namespace Microsoft.NET.Publish.Tests
             else
                 publishDirectory.Should().NotHaveFile("System.Private.CoreLib.dll");
 
-            if (emitNativeSymbols && !IsTargetOsOsX(testProject.RuntimeIdentifier))
+            if (emitNativeSymbols)
             {
                 NuGetFramework framework = NuGetFramework.Parse(targetFramework);
                 Log.WriteLine("Checking for symbol files");
