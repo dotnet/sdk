@@ -2,8 +2,8 @@
 
 using System.Collections.Immutable;
 using System.CommandLine;
-using System.CommandLine.IO;
-using System.Threading;
+using System.CommandLine.Invocation;
+using System.CommandLine.Parsing;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using static Microsoft.CodeAnalysis.Tools.FormatCommandCommon;
@@ -14,9 +14,9 @@ namespace Microsoft.CodeAnalysis.Tools.Commands
     {
         private static readonly FormatCommandDefaultHandler s_formatCommandHandler = new();
 
-        public static CliRootCommand GetCommand()
+        public static RootCommand GetCommand()
         {
-            var formatCommand = new CliRootCommand(Resources.Formats_code_to_match_editorconfig_settings)
+            var formatCommand = new RootCommand(Resources.Formats_code_to_match_editorconfig_settings)
             {
                 FormatWhitespaceCommand.GetCommand(),
                 FormatStyleCommand.GetCommand(),
@@ -26,35 +26,36 @@ namespace Microsoft.CodeAnalysis.Tools.Commands
                 SeverityOption,
             };
             formatCommand.AddCommonOptions();
-            formatCommand.Action = s_formatCommandHandler;
+            formatCommand.Handler = s_formatCommandHandler;
             return formatCommand;
         }
 
-        private class FormatCommandDefaultHandler : CliAction
+        private class FormatCommandDefaultHandler : ICommandHandler
         {
-            public override int Invoke(ParseResult parseResult) => InvokeAsync(parseResult, CancellationToken.None).GetAwaiter().GetResult();
+            public int Invoke(InvocationContext context) => InvokeAsync(context).GetAwaiter().GetResult();
 
-            public override async Task<int> InvokeAsync(ParseResult parseResult, CancellationToken cancellationToken)
+            public async Task<int> InvokeAsync(InvocationContext context)
             {
+                var parseResult = context.ParseResult;
                 var formatOptions = parseResult.ParseVerbosityOption(FormatOptions.Instance);
-                var logger = new SystemConsole().SetupLogging(minimalLogLevel: formatOptions.LogLevel, minimalErrorLevel: LogLevel.Warning);
+                var logger = context.Console.SetupLogging(minimalLogLevel: formatOptions.LogLevel, minimalErrorLevel: LogLevel.Warning);
                 formatOptions = parseResult.ParseCommonOptions(formatOptions, logger);
                 formatOptions = parseResult.ParseWorkspaceOptions(formatOptions);
 
-                if (parseResult.GetResult(SeverityOption) is not null &&
+                if (parseResult.HasOption(SeverityOption) &&
                     parseResult.GetValue(SeverityOption) is string { Length: > 0 } defaultSeverity)
                 {
                     formatOptions = formatOptions with { AnalyzerSeverity = GetSeverity(defaultSeverity) };
                     formatOptions = formatOptions with { CodeStyleSeverity = GetSeverity(defaultSeverity) };
                 }
 
-                if (parseResult.GetResult(DiagnosticsOption) is not null &&
+                if (parseResult.HasOption(DiagnosticsOption) &&
                     parseResult.GetValue(DiagnosticsOption) is string[] { Length: > 0 } diagnostics)
                 {
                     formatOptions = formatOptions with { Diagnostics = diagnostics.ToImmutableHashSet() };
                 }
 
-                if (parseResult.GetResult(ExcludeDiagnosticsOption) is not null &&
+                if (parseResult.HasOption(ExcludeDiagnosticsOption) &&
                     parseResult.GetValue(ExcludeDiagnosticsOption) is string[] { Length: > 0 } excludeDiagnostics)
                 {
                     formatOptions = formatOptions with { ExcludeDiagnostics = excludeDiagnostics.ToImmutableHashSet() };
@@ -62,7 +63,7 @@ namespace Microsoft.CodeAnalysis.Tools.Commands
 
                 formatOptions = formatOptions with { FixCategory = FixCategory.Whitespace | FixCategory.CodeStyle | FixCategory.Analyzers };
 
-                return await FormatAsync(formatOptions, logger, cancellationToken).ConfigureAwait(false);
+                return await FormatAsync(formatOptions, logger, context.GetCancellationToken()).ConfigureAwait(false);
             }
         }
     }
