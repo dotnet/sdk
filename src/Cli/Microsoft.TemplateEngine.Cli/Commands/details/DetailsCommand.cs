@@ -20,6 +20,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             AddArgument(NameArgument);
             AddOption(VersionOption);
             AddOption(InteractiveOption);
+            AddOption(AddSourceOption);
         }
 
         internal static Argument<string> NameArgument { get; } = new("package-identifier")
@@ -36,6 +37,8 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 
         internal virtual Option<bool> InteractiveOption { get; } = SharedOptions.InteractiveOption;
 
+        internal virtual Option<string[]> AddSourceOption { get; } = SharedOptionsFactory.CreateAddSourceOption();
+
         protected async override Task<NewCommandStatus> ExecuteAsync(
             DetailsCommandArgs args,
             IEngineEnvironmentSettings environmentSettings,
@@ -45,10 +48,8 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             var templatePackageCoordinator = new TemplatePackageCoordinator(environmentSettings, templatePackageManager);
 
             NewCommandStatus status = await templatePackageCoordinator.DisplayTemplatePackageMetadata(
-                args.NameCriteria,
-                args.VersionCriteria,
+                args,
                 _nugetApiManager,
-                args.Interactive,
                 context.GetCancellationToken()).ConfigureAwait(false);
 
             await CheckTemplatesWithSubCommandName(args, templatePackageManager, context.GetCancellationToken()).ConfigureAwait(false);

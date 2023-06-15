@@ -14,6 +14,8 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 
             NameCriteria = nameCriteria;
             VersionCriteria = parseResult.GetValueForOptionOrNull(DetailsCommand.VersionOption);
+            Interactive = parseResult.GetValue(detailsCommand.InteractiveOption);
+            AdditionalSources = parseResult.GetValue(detailsCommand.AddSourceOption);
         }
 
         internal bool Interactive { get; }
@@ -21,5 +23,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
         internal string NameCriteria { get; }
 
         internal string? VersionCriteria { get; }
+
+        internal IReadOnlyList<string>? AdditionalSources { get; }
     }
 }

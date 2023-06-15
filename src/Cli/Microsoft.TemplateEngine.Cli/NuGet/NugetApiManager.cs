@@ -1,7 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Packaging.Core;
 using NuGet.Protocol;
@@ -22,7 +21,7 @@ namespace Microsoft.TemplateEngine.Cli.NuGet
             DirectDownload = true
         };
 
-        private readonly ILogger _nugetLogger = NullLogger.Instance;
+        private readonly ILogger _nugetLogger = new CliNuGetLogger();
 
         internal NugetApiManager()
         {
@@ -32,11 +31,16 @@ namespace Microsoft.TemplateEngine.Cli.NuGet
         public async Task<NugetPackageMetadata?> GetPackageMetadataAsync(
             string packageIdentifier,
             string? packageVersion = null,
-            string? sourceFeed = null,
+            PackageSource? sourceFeed = null,
             CancellationToken cancellationToken = default)
         {
-            var source = string.IsNullOrWhiteSpace(sourceFeed) ? _nugetOrgSource : new PackageSource(sourceFeed);
-            SourceRepository repository = GetSourceRepository(source);
+            // TODO: in case of no version, return the latest version available from all feeds
+            if (sourceFeed == null)
+            {
+                sourceFeed = _nugetOrgSource;
+            }
+
+            SourceRepository repository = GetSourceRepository(sourceFeed);
             PackageMetadataResource resource = await repository.GetResourceAsync<PackageMetadataResource>(cancellationToken).ConfigureAwait(false);
             IEnumerable<IPackageSearchMetadata> packagesMetadata = await resource.GetMetadataAsync(
                 packageIdentifier,
@@ -46,13 +50,31 @@ namespace Microsoft.TemplateEngine.Cli.NuGet
                 _nugetLogger,
                 cancellationToken).ConfigureAwait(false);
 
-            var matchedPackage = string.IsNullOrWhiteSpace(packageVersion)
-                ? packagesMetadata.FirstOrDefault()
-                : packagesMetadata.FirstOrDefault(pm => pm.Identity.Version == new NuGetVersion(packageVersion));
+            IPackageSearchMetadata? matchedPackage = null;
+            if (!string.IsNullOrWhiteSpace(packageVersion))
+            {
+                matchedPackage = packagesMetadata.FirstOrDefault(pm => pm.Identity.Version == new NuGetVersion(packageVersion));
+            }
+            else
+            {
+                var floatRange = new FloatRange(NuGetVersionFloatBehavior.AbsoluteLatest);
+                matchedPackage = packagesMetadata.Aggregate(
+                    null,
+                    (IPackageSearchMetadata? max, IPackageSearchMetadata current) =>
+                        ((max != null &&
+                        !(current.Identity.Version > max!.Identity.Version))
+                        || !floatRange.Satisfies(current.Identity.Version))
+                            ? max
+                            : current
+                    );
+            }
 
             return matchedPackage == default
                 ? null
-                : new NugetPackageMetadata(matchedPackage, await GetPackageOwners(repository, packageIdentifier, cancellationToken).ConfigureAwait(false));
+                : new NugetPackageMetadata(
+                    matchedPackage,
+                    await GetPackageOwners(repository, packageIdentifier, cancellationToken).ConfigureAwait(false),
+                    sourceFeed);
         }
 
         private async Task<string> GetPackageOwners(
@@ -86,7 +108,7 @@ namespace Microsoft.TemplateEngine.Cli.NuGet
 
         internal class NugetPackageMetadata
         {
-            public NugetPackageMetadata(IPackageSearchMetadata metadata, string owners)
+            public NugetPackageMetadata(IPackageSearchMetadata metadata, string owners, PackageSource packageSource)
             {
                 Authors = metadata.Authors;
                 Identity = metadata.Identity;
@@ -97,6 +119,7 @@ namespace Microsoft.TemplateEngine.Cli.NuGet
                 License = metadata.LicenseMetadata?.License;
                 Identity = metadata.Identity;
                 LicenseExpression = metadata.LicenseMetadata?.LicenseExpression.ToString();
+                Source = packageSource;
             }
 
             public string? Description { get; }
@@ -114,6 +137,8 @@ namespace Microsoft.TemplateEngine.Cli.NuGet
             public PackageIdentity Identity { get; }
 
             public string Owners { get; }
+
+            public PackageSource Source { get; }
         }
     }
 }

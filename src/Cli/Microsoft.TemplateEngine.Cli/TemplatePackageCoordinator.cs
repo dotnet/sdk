@@ -14,6 +14,7 @@ using Microsoft.TemplateEngine.Cli.TemplateSearch;
 using Microsoft.TemplateEngine.Edge;
 using Microsoft.TemplateEngine.Edge.Settings;
 using Microsoft.TemplateEngine.Utils;
+using NuGet.Configuration;
 using NuGet.Credentials;
 using NuGet.Versioning;
 using static Microsoft.TemplateEngine.Cli.NuGet.NugetApiManager;
@@ -383,15 +384,19 @@ namespace Microsoft.TemplateEngine.Cli
         /// Searches and displays a package metadata.
         /// </summary>
         internal async Task<NewCommandStatus> DisplayTemplatePackageMetadata(
-            string packageIdentity,
-            string? packageVersion,
+            DetailsCommandArgs args,
             NugetApiManager nugetApiManager,
-            bool interactiveAuth,
             CancellationToken cancellationToken = default)
         {
+            string packageIdentity = args.NameCriteria;
+            string? packageVersion = args.VersionCriteria;
+            bool interactiveAuth = args.Interactive;
+            IReadOnlyList<string>? additionalSources = args.AdditionalSources;
+
             NugetPackageMetadata? nuGetPackageMetadata;
             IEnumerable<ITemplateInfo>? packageTemplates;
             IManagedTemplatePackage? localPackage;
+            // PackageSource? packageSource;
 
             InitializeNuGetCredentialService(interactiveAuth);
 
@@ -410,12 +415,18 @@ namespace Microsoft.TemplateEngine.Cli
             if (localPackage != null && packageTemplates != null)
             {
                 string? packageSource = string.Empty;
-                localPackage.GetDetails().TryGetValue(SourceFeedKey, out packageSource);
+                PackageSource? sourceFeed = null;
+                if (localPackage.GetDetails().TryGetValue(SourceFeedKey, out packageSource))
+                {
+                    sourceFeed = new PackageSource(packageSource);
+                }
+
                 nuGetPackageMetadata = await nugetApiManager.GetPackageMetadataAsync(
                     packageIdentity,
                     packageVersion,
-                    packageSource,
+                    sourceFeed,
                     cancellationToken).ConfigureAwait(false);
+
                 if (nuGetPackageMetadata == null)
                 {
                     DisplayLocalPackageMetadata(localPackage, Reporter.Output);
@@ -427,20 +438,28 @@ namespace Microsoft.TemplateEngine.Cli
             }
             else
             {
-                (nuGetPackageMetadata, packageTemplates) = await CliTemplateSearchCoordinator.SearchForPackageDetailsAsync(
-                    _engineEnvironmentSettings,
-                    nugetApiManager,
-                    packageIdentity,
-                    packageVersion,
-                    cancellationToken).ConfigureAwait(false);
+                IEnumerable<PackageSource> packageSources = LoadNuGetSources(additionalSources);
+
+                nuGetPackageMetadata = await GetMetadataAsync(packageSources, packageIdentity, packageVersion, cancellationToken).ConfigureAwait(false);
+                if (nuGetPackageMetadata != null && nuGetPackageMetadata.Source.Source.Contains("api.nuget.org"))
+                {
+                    packageTemplates = await CliTemplateSearchCoordinator.SearchForPackageTemplatesAsync(
+                        _engineEnvironmentSettings,
+                        packageIdentity,
+                        packageVersion,
+                        cancellationToken).ConfigureAwait(false);
+                }
+
             }
 
-            if (nuGetPackageMetadata != null && packageTemplates.Any())
+            if (nuGetPackageMetadata != null)
             {
                 DisplayNuGetPackageMetadata(nuGetPackageMetadata, Reporter.Output);
-
-                var templatesToDisplay = TemplateGroupDisplay.GetTemplateGroupsForListDisplay(packageTemplates, null, null, _engineEnvironmentSettings.Environment);
-                DisplayPackageTemplateList(templatesToDisplay, Reporter.Output);
+                if (packageTemplates != null && packageTemplates.Any())
+                {
+                    var templatesToDisplay = TemplateGroupDisplay.GetTemplateGroupsForListDisplay(packageTemplates, null, null, _engineEnvironmentSettings.Environment);
+                    DisplayPackageTemplateList(templatesToDisplay, Reporter.Output);
+                }
                 return NewCommandStatus.Success;
             }
 
@@ -1061,6 +1080,80 @@ namespace Microsoft.TemplateEngine.Cli
                             result.ErrorMessage).Bold().Red());
                     break;
             }
+        }
+
+        // This is a function from the Template Edge api, adding it here temporarily
+        private IEnumerable<PackageSource> LoadNuGetSources(IEnumerable<string>? additionalSources)
+        {
+            IEnumerable<PackageSource> defaultSources;
+            string currentDirectory = string.Empty;
+            try
+            {
+                currentDirectory = Directory.GetCurrentDirectory();
+                ISettings settings = global::NuGet.Configuration.Settings.LoadDefaultSettings(currentDirectory);
+                PackageSourceProvider packageSourceProvider = new PackageSourceProvider(settings);
+                defaultSources = packageSourceProvider.LoadPackageSources().Where(source => source.IsEnabled);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Failed to load NuGet sources configured for the folder {currentDirectory}", ex);
+            }
+
+            if (additionalSources == null || !additionalSources.Any())
+            {
+                if (!defaultSources.Any())
+                {
+                    throw new Exception("No NuGet sources are defined or enabled");
+                }
+                return defaultSources;
+            }
+
+            List<PackageSource> customSources = new List<PackageSource>();
+            foreach (string source in additionalSources)
+            {
+                if (string.IsNullOrWhiteSpace(source))
+                {
+                    continue;
+                }
+                if (defaultSources.Any(s => s.Source.Equals(source, StringComparison.OrdinalIgnoreCase)))
+                {
+                    Reporter.Output.WriteLine($"Custom source {source} is already loaded from default configuration.");
+                    continue;
+                }
+                PackageSource packageSource = new PackageSource(source);
+                if (packageSource.TrySourceAsUri == null)
+                {
+                    Reporter.Output.WriteLine(string.Format("Failed to load resource {0} message", source));
+                    continue;
+                }
+                customSources.Add(packageSource);
+            }
+
+            IEnumerable<PackageSource> retrievedSources = customSources.Concat(defaultSources);
+            if (!retrievedSources.Any())
+            {
+                throw new Exception("No NuGet sources are defined or enabled");
+            }
+            return retrievedSources;
+        }
+
+        private async Task<NugetPackageMetadata?> GetMetadataAsync(
+            IEnumerable<PackageSource> sources,
+            string packageIdentifier,
+            string? packageVersion = null,
+            CancellationToken cancellationToken = default)
+        {
+            NugetApiManager nuGetStuffs = new NugetApiManager();
+            foreach (PackageSource source in sources)
+            {
+                NugetPackageMetadata? package = await nuGetStuffs.GetPackageMetadataAsync(packageIdentifier, packageVersion, source, cancellationToken).ConfigureAwait(false);
+                if (package != null)
+                {
+                    return package;
+                }
+            }
+
+            return null;
         }
     }
 }
