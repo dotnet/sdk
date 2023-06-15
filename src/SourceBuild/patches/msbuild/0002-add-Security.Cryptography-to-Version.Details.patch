@@ -1,0 +1,28 @@
+From f54948aa6cd6c5be2f35a9fb6766c66176303abe Mon Sep 17 00:00:00 2001
+From: Oleksandr Didyk <odidyk@microsoft.com>
+Date: Thu, 15 Jun 2023 13:57:35 +0000
+Subject: [PATCH] add Security.Cryptography to Version.Details
+
+Backport: https://github.com/dotnet/msbuild/pull/8888
+---
+ eng/Version.Details.xml | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/eng/Version.Details.xml b/eng/Version.Details.xml
+index d3a75d781..97cc2bf3a 100644
+--- a/eng/Version.Details.xml
++++ b/eng/Version.Details.xml
+@@ -12,6 +12,10 @@
+       <Uri>https://github.com/dotnet/runtime</Uri>
+       <Sha>d099f075e45d2aa6007a22b71b45a08758559f80</Sha>
+     </Dependency>
++    <Dependency Name="System.Security.Cryptography.Pkcs" Version="7.0.0">
++      <Uri>https://github.com/dotnet/runtime</Uri>
++      <Sha>d099f075e45d2aa6007a22b71b45a08758559f80</Sha>
++    </Dependency>
+   </ProductDependencies>
+   <ToolsetDependencies>
+     <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="6.0.0-beta.23301.1">
+-- 
+2.25.1
+
