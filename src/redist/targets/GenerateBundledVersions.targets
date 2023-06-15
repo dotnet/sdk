@@ -162,8 +162,6 @@
       <Net60RuntimePackRids Include="
           @(Net50RuntimePackRids);
           osx-arm64;
-          maccatalyst-x64;
-          maccatalyst-arm64;
           linux-s390x;
           " />
 
@@ -231,6 +229,8 @@
           tvos-arm64;
           tvossimulator-arm64;
           tvossimulator-x64;
+          maccatalyst-x64;
+          maccatalyst-arm64;
           android-arm64;
           android-arm;
           android-x64;
