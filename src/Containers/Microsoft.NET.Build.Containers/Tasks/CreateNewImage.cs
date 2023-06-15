@@ -41,7 +41,7 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
             return !Log.HasLoggedErrors;
         }
         ImageReference sourceImageReference = new(SourceRegistry.Value, BaseImageName, BaseImageTag);
-        var destinationImageReferences = ImageTags.Select(t => new ImageReference(DestinationRegistry.Value, ImageName, t));
+        var destinationImageReferences = ImageTags.Select(t => new ImageReference(DestinationRegistry.Value, Repository, t));
 
         ImageBuilder? imageBuilder;
         if (SourceRegistry.Value is { } registry)
@@ -60,11 +60,11 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
 
         if (imageBuilder is null)
         {
-            Log.LogErrorWithCodeFromResources(nameof(Strings.BaseImageNotFound), sourceImageReference.RepositoryAndTag, ContainerRuntimeIdentifier);
+            Log.LogErrorWithCodeFromResources(nameof(Strings.BaseImageNotFound), sourceImageReference, ContainerRuntimeIdentifier);
             return !Log.HasLoggedErrors;
         }
 
-        SafeLog("Building image '{0}' with tags {1} on top of base image {2}", ImageName, String.Join(",", ImageTags), sourceImageReference);
+        SafeLog("Building image '{0}' with tags {1} on top of base image {2}", Repository, String.Join(",", ImageTags), sourceImageReference);
 
         Layer newLayer = Layer.FromDirectory(PublishDirectory, WorkingDirectory, imageBuilder.IsWindows);
         imageBuilder.AddLayer(newLayer);
@@ -102,7 +102,7 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
         {
             if (IsLocalPush)
             {
-                ILocalRegistry localRegistry = GetLocalRegistry(msg => Log.LogMessage(msg));
+                ILocalRegistry localRegistry = KnownLocalRegistryTypes.CreateLocalRegistry(LocalRegistry, msg => Log.LogMessage(msg));
                 if (!(await localRegistry.IsAvailableAsync(cancellationToken).ConfigureAwait(false)))
                 {
                     Log.LogErrorWithCodeFromResources(nameof(Strings.LocalRegistryNotAvailable));
@@ -111,7 +111,7 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
                 try
                 {
                     await localRegistry.LoadAsync(builtImage, sourceImageReference, destinationImageReference, cancellationToken).ConfigureAwait(false);
-                    SafeLog("Pushed container '{0}' to local registry", destinationImageReference.RepositoryAndTag);
+                    SafeLog("Pushed image '{0}' to local registry", destinationImageReference.RepositoryAndTag);
                 }
                 catch (AggregateException ex) when (ex.InnerException is DockerLoadException dle)
                 {
@@ -130,7 +130,7 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
                             destinationImageReference,
                             message => SafeLog(message),
                             cancellationToken).ConfigureAwait(false);
-                        SafeLog("Pushed container '{0}' to registry '{1}'", destinationImageReference.RepositoryAndTag, OutputRegistry);
+                        SafeLog("Pushed image '{0}' to registry '{1}'", destinationImageReference, OutputRegistry);
                     }
                 }
                 catch (ContainerHttpException e)
@@ -167,7 +167,7 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
             else
             {
                 ContainerHelpers.ParsePortError parsedErrors = (ContainerHelpers.ParsePortError)errors!;
-                
+
                 if (parsedErrors.HasFlag(ContainerHelpers.ParsePortError.MissingPortNumber))
                 {
                     Log.LogErrorWithCodeFromResources(nameof(Strings.MissingPortNumber), port.ItemSpec);
@@ -189,18 +189,6 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
                 }
             }
         }
-    }
-
-    private ILocalRegistry GetLocalRegistry(Action<string> logger) {
-        var registry = LocalRegistry switch {
-            KnownLocalRegistryTypes.Docker => new DockerCli(logger),
-            _ => throw new NotSupportedException(
-                Resource.FormatString(
-                    nameof(Strings.UnknownLocalRegistryType),
-                    LocalRegistry,
-                    string.Join(",", KnownLocalRegistryTypes.SupportedLocalRegistryTypes)))
-        };
-        return registry;
     }
 
     private Lazy<Registry?> SourceRegistry

@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -15,6 +15,7 @@ using Microsoft.DotNet.Workloads.Workload;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using Newtonsoft.Json;
 using NuGet.Frameworks;
+using NuGet.Versioning;
 
 namespace Microsoft.NET.Build.Tasks
 {
@@ -44,7 +45,7 @@ namespace Microsoft.NET.Build.Tasks
 
         public bool ReadyToRunUseCrossgen2 { get; set; }
 
-        public bool TrimmingEnabled { get; set; }
+        public bool RequiresILLinkPack { get; set; }
 
         public bool AotEnabled { get; set; }
 
@@ -121,6 +122,9 @@ namespace Microsoft.NET.Build.Tasks
         [Output]
         public ITaskItem[] UnavailableRuntimePacks { get; set; }
 
+        [Output]
+        public string[] KnownRuntimeIdentifierPlatforms { get; set; }
+
         private Version _normalizedTargetFrameworkVersion;
 
         protected override void ExecuteCore()
@@ -162,6 +166,7 @@ namespace Microsoft.NET.Build.Tasks
             List<ITaskItem> runtimePacks = new List<ITaskItem>();
             List<ITaskItem> unavailableRuntimePacks = new List<ITaskItem>();
 
+            HashSet<string> knownRuntimeIdentifierPlatforms = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             HashSet<string> unrecognizedRuntimeIdentifiers = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
             bool windowsOnlyErrorLogged = false;
@@ -201,6 +206,14 @@ namespace Microsoft.NET.Build.Tasks
                         {
                             string runtimePackName = runtimePackNamePattern.Replace("**RID**", runtimeIdentifier);
                             preferredPackages.Add(runtimePackName);
+                        }
+
+                        // Update the known runtime identifier platforms based on the selected Microsoft.NETCore.App pack
+                        if (selectedRuntimePack.Value.Name.Equals("Microsoft.NETCore.App", StringComparison.OrdinalIgnoreCase))
+                        {
+                            int separator = runtimeIdentifier.LastIndexOf('-');
+                            string platform = separator < 0 ? runtimeIdentifier : runtimeIdentifier.Substring(0, separator);
+                            knownRuntimeIdentifierPlatforms.Add(platform);
                         }
                     }
                 }
@@ -368,7 +381,7 @@ namespace Microsoft.NET.Build.Tasks
 
             if (ReadyToRunEnabled && ReadyToRunUseCrossgen2)
             {
-                if (!AddToolPack(ToolPackType.Crossgen2, _normalizedTargetFrameworkVersion, packagesToDownload, implicitPackageReferences))
+                if (AddToolPack(ToolPackType.Crossgen2, _normalizedTargetFrameworkVersion, packagesToDownload, implicitPackageReferences) is not ToolPackSupport.Supported)
                 {
                     Log.LogError(Strings.ReadyToRunNoValidRuntimePackageError);
                     return;
@@ -377,16 +390,25 @@ namespace Microsoft.NET.Build.Tasks
 
             if (AotEnabled)
             {
-                if (!AddToolPack(ToolPackType.ILCompiler, _normalizedTargetFrameworkVersion, packagesToDownload, implicitPackageReferences))
+                switch (AddToolPack(ToolPackType.ILCompiler, _normalizedTargetFrameworkVersion, packagesToDownload, implicitPackageReferences))
                 {
-                    Log.LogError(Strings.AotNoValidRuntimePackageError);
-                    return;
+                    case ToolPackSupport.UnsupportedForTargetFramework:
+                        Log.LogError(Strings.AotUnsupportedTargetFramework);
+                        return;
+                    case ToolPackSupport.UnsupportedForHostRuntimeIdentifier:
+                        Log.LogError(Strings.AotUnsupportedHostRuntimeIdentifier, NETCoreSdkRuntimeIdentifier);
+                        return;
+                    case ToolPackSupport.UnsupportedForTargetRuntimeIdentifier:
+                        Log.LogError(Strings.AotUnsupportedTargetRuntimeIdentifier, RuntimeIdentifier);
+                        return;
+                    case ToolPackSupport.Supported:
+                        break;
                 }
             }
 
-            if (TrimmingEnabled)
+            if (RequiresILLinkPack)
             {
-                if (!AddToolPack(ToolPackType.ILLink, _normalizedTargetFrameworkVersion, packagesToDownload, implicitPackageReferences))
+                if (AddToolPack(ToolPackType.ILLink, _normalizedTargetFrameworkVersion, packagesToDownload, implicitPackageReferences) is not ToolPackSupport.Supported)
                 {
                     Log.LogError(Strings.ILLinkNoValidRuntimePackageError);
                     return;
@@ -427,6 +449,11 @@ namespace Microsoft.NET.Build.Tasks
             if (implicitPackageReferences.Any())
             {
                 ImplicitPackageReferences = implicitPackageReferences.ToArray();
+            }
+
+            if (knownRuntimeIdentifierPlatforms.Count > 0)
+            {
+                KnownRuntimeIdentifierPlatforms = knownRuntimeIdentifierPlatforms.ToArray();
             }
         }
 
@@ -610,7 +637,14 @@ namespace Microsoft.NET.Build.Tasks
             WebAssemblySdk
         }
 
-        private bool AddToolPack(
+        enum ToolPackSupport {
+            UnsupportedForTargetFramework,
+            UnsupportedForHostRuntimeIdentifier,
+            UnsupportedForTargetRuntimeIdentifier,
+            Supported
+        }
+
+        private ToolPackSupport AddToolPack(
             ToolPackType toolPackType,
             Version normalizedTargetFrameworkVersion,
             List<ITaskItem> packagesToDownload,
@@ -634,7 +668,7 @@ namespace Microsoft.NET.Build.Tasks
 
             if (knownPack == null)
             {
-                return false;
+                return ToolPackSupport.UnsupportedForTargetFramework;
             }
 
             var packName = toolPackType.ToString();
@@ -655,7 +689,7 @@ namespace Microsoft.NET.Build.Tasks
                 var hostRuntimeIdentifier = NuGetUtils.GetBestMatchingRid(runtimeGraph, NETCoreSdkRuntimeIdentifier, packSupportedRuntimeIdentifiers, out bool wasInGraph);
                 if (hostRuntimeIdentifier == null)
                 {
-                    return false;
+                    return ToolPackSupport.UnsupportedForHostRuntimeIdentifier;
                 }
 
                 var runtimePackName = packNamePattern.Replace("**RID**", hostRuntimeIdentifier);
@@ -688,7 +722,7 @@ namespace Microsoft.NET.Build.Tasks
                             var targetRuntimeIdentifier = NuGetUtils.GetBestMatchingRid(runtimeGraph, RuntimeIdentifier, packSupportedRuntimeIdentifiers, out bool wasInGraph2);
                             if (targetRuntimeIdentifier == null)
                             {
-                                return false;
+                                return ToolPackSupport.UnsupportedForTargetRuntimeIdentifier;
                             }
                             if (!hostRuntimeIdentifier.Equals(targetRuntimeIdentifier))
                             {
@@ -712,7 +746,19 @@ namespace Microsoft.NET.Build.Tasks
                 implicitPackageReferences.Add(buildPackage);
             }
 
-            return true;
+            // Before net8.0, ILLink analyzers shipped in a separate package.
+            // Add the analyzer package with version taken from KnownILLinkPack if the version is less than 8.0.0.
+            // The version comparison doesn't consider prerelease labels, so 8.0.0-foo will be considered equal to 8.0.0 and
+            // will not get the extra analyzer package reference.
+            if (toolPackType is ToolPackType.ILLink &&
+                new VersionComparer(VersionComparison.Version).Compare(NuGetVersion.Parse(packVersion), new NuGetVersion(8, 0, 0)) < 0)
+            {
+                var analyzerPackage = new TaskItem("Microsoft.NET.ILLink.Analyzers");
+                analyzerPackage.SetMetadata(MetadataKeys.Version, packVersion);
+                implicitPackageReferences.Add(analyzerPackage);
+            }
+
+            return ToolPackSupport.Supported;
         }
 
         private string GetRuntimeFrameworkVersion(

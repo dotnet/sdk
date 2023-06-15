@@ -233,10 +233,6 @@
     <value>NETSDK1031: It is not supported to build or publish a self-contained application without specifying a RuntimeIdentifier. You must either specify a RuntimeIdentifier or set SelfContained to false.</value>
     <comment>{StrBegin="NETSDK1031: "}</comment>
   </data>
-  <data name="CannotDirectlyReferenceMicrosoftNetCompilersToolsetFramework" xml:space="preserve">
-    <value>NETSDK1080: The Microsoft.Net.Compilers.Toolset.Framework package should not be set directly. Set the property 'BuildWithNetFrameworkHostedCompiler' to 'true' instead if you need it.</value>
-    <comment>{StrBegin="NETSDK1080: "}{Locked="Microsoft.Net.Compilers.Toolset.Framework"}{Locked="BuildWithNetFrameworkHostedCompiler"}</comment>
-  </data>
   <data name="CannotHaveRuntimeIdentifierPlatformMismatchPlatformTarget" xml:space="preserve">
     <value>NETSDK1032: The RuntimeIdentifier platform '{0}' and the PlatformTarget '{1}' must be compatible.</value>
     <comment>{StrBegin="NETSDK1032: "}</comment>
@@ -839,10 +835,6 @@ You may need to build the project on another operating system or architecture, o
     <value>NETSDK1182: Targeting .NET 6.0 or higher in Visual Studio 2019 is not supported.</value>
     <comment>{StrBegin="NETSDK1182: "}</comment>
   </data>
-  <data name="AotNoValidRuntimePackageError" xml:space="preserve">
-    <value>NETSDK1183: Unable to optimize assemblies for ahead-of-time compilation: a valid runtime package was not found. Either set the PublishAot property to false, or use a supported runtime identifier when publishing. When targeting .NET 7 or higher, make sure to restore packages with the PublishAot property set to true.</value>
-    <comment>{StrBegin="NETSDK1183: "}</comment>
-  </data>
   <data name="TargetingPackNotRestored_TransitiveDisabled" xml:space="preserve">
     <value>NETSDK1184: The Targeting Pack for FrameworkReference '{0}' was not available. This may be because DisableTransitiveFrameworkReferenceDownloads was set to true.</value>
     <comment>{StrBegin="NETSDK1184: "}</comment>
@@ -869,7 +861,7 @@ You may need to build the project on another operating system or architecture, o
   </data>
   <data name="ImplicitRuntimeIdentifierResolutionForPublishPropertyFailed" xml:space="preserve">
     <value>NETSDK1191: A runtime identifier for the property '{0}' couldn't be inferred. Specify a rid explicitly.</value>
-      <comment>{StrBegin="NETSDK1191: "}</comment>
+    <comment>{StrBegin="NETSDK1191: "}</comment>
   </data>
   <data name="Net7NotCompatibleWithDev173" xml:space="preserve">
     <value>NETSDK1192: Targeting .NET 7.0 or higher in Visual Studio 2022 17.3 is not supported.</value>
@@ -884,7 +876,7 @@ You may need to build the project on another operating system or architecture, o
     <comment>{StrBegin="NETSDK1194: "}{Locked="--output"}</comment>
   </data>
   <data name="ILLinkNoValidRuntimePackageError" xml:space="preserve">
-    <value>NETSDK1195: Unable to optimize assemblies for size: a valid runtime package was not found. Either set the PublishTrimmed property to false, or use a supported target framework when publishing.</value>
+    <value>NETSDK1195: Trimming, or code compatibility analysis for trimming, single-file deployment, or ahead-of-time compilation is not supported for the target framework. For more information, see https://aka.ms/netsdk1195</value>
     <comment>{StrBegin="NETSDK1195: "}</comment>
   </data>
   <data name="AotNotSupported" xml:space="preserve">
@@ -915,5 +907,25 @@ You may need to build the project on another operating system or architecture, o
   <data name="WorkloadIsEol" xml:space="preserve">
     <value>NETSDK1202: The workload '{0}' is out of support and will not receive security updates in the future. Please refer to {1} for more information about the support policy.</value>
     <comment>{StrBegin="NETSDK1202: "}</comment>
+  </data>
+  <data name="AotUnsupportedTargetRuntimeIdentifier" xml:space="preserve">
+    <value>NETSDK1203: Ahead-of-time compilation is not supported for the target runtime identifier '{0}'.</value>
+    <comment>{StrBegin="NETSDK1203: "}</comment>
+  </data>
+  <data name="AotUnsupportedHostRuntimeIdentifier" xml:space="preserve">
+    <value>NETSDK1204: Ahead-of-time compilation is not supported on the current platform '{0}'.</value>
+    <comment>{StrBegin="NETSDK1204: "}</comment>
+  </data>
+  <data name="CannotDirectlyReferenceMicrosoftNetCompilersToolsetFramework" xml:space="preserve">
+    <value>NETSDK1205: The Microsoft.Net.Compilers.Toolset.Framework package should not be set directly. Set the property 'BuildWithNetFrameworkHostedCompiler' to 'true' instead if you need it.</value>
+    <comment>{StrBegin="NETSDK1205: "}{Locked="Microsoft.Net.Compilers.Toolset.Framework"}{Locked="BuildWithNetFrameworkHostedCompiler"}</comment>
+  </data>
+  <data name="NonPortableRuntimeIdentifierDetected" xml:space="preserve">
+    <value>NETSDK1206: Found version-specific or distribution-specific runtime identifier(s): {0}. Affected libraries: {1}. In .NET 8.0 and higher, assets for version-specific and distribution-specific runtime identifiers will not be found by default. See https://aka.ms/dotnet/rid-usage for details.</value>
+    <comment>{StrBegin="NETSDK1206: "}</comment>
+  </data>
+  <data name="AotUnsupportedTargetFramework" xml:space="preserve">
+    <value>NETSDK1207: Ahead-of-time compilation is not supported for the target framework.</value>
+    <comment>{StrBegin="NETSDK1207: "}</comment>
   </data>
 </root>

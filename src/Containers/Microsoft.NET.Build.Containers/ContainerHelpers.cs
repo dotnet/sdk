@@ -22,16 +22,12 @@ public static class ContainerHelpers
 
     internal const string ParallelUploadEnabled = "SDK_CONTAINER_REGISTRY_PARALLEL_UPLOAD";
 
+    internal const string DockerRegistryAlias = "docker.io";
+
     /// <summary>
     /// Matches an environment variable name - must start with a letter or underscore, and can only contain letters, numbers, and underscores.
     /// </summary>
     private static Regex envVarRegex = new Regex(@"^[a-zA-Z_]{1,}[a-zA-Z0-9_]*$");
-
-    /// <summary>
-    /// DockerRegistry is the default registry used when no registry is specified.
-    /// </summary>
-    private const string DockerRegistry = "registry-1.docker.io";
-    internal const string DockerRegistryAlias = "docker.io";
 
     /// <summary>
     /// Matches if the string is not lowercase or numeric, or ., _, or -.
@@ -240,9 +236,6 @@ public static class ContainerHelpers
 
             if (containerRegistry == DockerRegistryAlias)
             {
-                // Treat 'docker.io' as an alias for the Docker registry.
-                containerRegistry = DockerRegistry;
-
                 // Add the 'library/' prefix to expand short names like 'ubuntu' to 'library/ubuntu'.
                 if (!containerName.Contains("/"))
                 {
@@ -274,21 +267,21 @@ public static class ContainerHelpers
     /// <summary>
     /// Checks if a given container image name adheres to the image name spec. If not, and recoverable, then normalizes invalid characters.
     /// </summary>
-    internal static bool NormalizeImageName(string containerImageName,
+    internal static bool NormalizeRepository(string containerRepository,
                                          [NotNullWhen(false)] out string? normalizedImageName)
     {
-        if (IsValidImageName(containerImageName))
+        if (IsValidImageName(containerRepository))
         {
             normalizedImageName = null;
             return true;
         }
         else
         {
-            if (!Char.IsLetterOrDigit(containerImageName, 0))
+            if (!Char.IsLetterOrDigit(containerRepository, 0))
             {
                 throw new ArgumentException(Resources.Resource.GetString(nameof(Strings.InvalidImageName)));
             }
-            var loweredImageName = containerImageName.ToLowerInvariant();
+            var loweredImageName = containerRepository.ToLowerInvariant();
             normalizedImageName = imageNameCharacters.Replace(loweredImageName, "-");
             return false;
         }
