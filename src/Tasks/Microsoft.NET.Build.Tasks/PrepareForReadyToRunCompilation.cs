@@ -281,7 +281,7 @@ namespace Microsoft.NET.Build.Tasks
                             compositePDBRelativePath = Path.ChangeExtension(compositeR2RImageRelativePath, ".ni.pdb");
                         }
                     }
-                    else if (!_crossgen2IsVersion5 || IsTargetLinux)
+                    else if ((ReadyToRunUseCrossgen2 && !_crossgen2IsVersion5) || IsTargetLinux)
                     {
                         string perfmapExtension = (_perfmapFormatVersion >= 1 ? ".ni.r2rmap" : ".ni.{composite}.map");
                         compositePDBImage = Path.ChangeExtension(compositeR2RImage, perfmapExtension);

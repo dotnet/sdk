@@ -407,7 +407,7 @@ namespace Microsoft.NET.Publish.Tests
                 publishDirectory.Should().NotHaveFile("System.Private.CoreLib.dll");
 
             NuGetFramework framework = NuGetFramework.Parse(targetFramework);
-            if (emitNativeSymbols && (!IsTargetOsOsX(runtimeIdentifier) || framework.Version.Major >= 6))
+            if (emitNativeSymbols && (!IsTargetOsOsX(testProject.RuntimeIdentifier) || framework.Version.Major >= 6))
             {
                 Log.WriteLine("Checking for symbol files");
                 IEnumerable<string> pdbFiles;
