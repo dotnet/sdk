@@ -1,12 +1,11 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Net;
 using Microsoft.Extensions.Logging;
 using Microsoft.NET.Build.Containers.Registry;
 using Microsoft.NET.TestFramework;
 using Moq;
-using System.Diagnostics;
-using System.Net;
 using Xunit;
 using Xunit.Abstractions;
 using Xunit.Sdk;
@@ -74,7 +73,7 @@ namespace Microsoft.NET.Build.Containers.UnitTests
             api.Setup(api => api.Blob.Upload.StartAsync(repoName, It.IsAny<CancellationToken>())).Returns(Task.FromResult(new StartUploadInformation(null, uploadPath)));
             api.Setup(api => api.Blob.Upload.UploadAtomicallyAsync(uploadPath, It.IsAny<Stream>(), It.IsAny<CancellationToken>())).Returns(Task.FromResult(new FinalizeUploadInformation(uploadPath)));
 
-            RegistryManager registry = new(ContainerHelpers.TryExpandRegistryToUri("public.ecr.aws"), api.Object, logger);
+            RegistryManager registry = new(ContainerHelpers.TryExpandRegistryToUri("public.ecr.aws"), api.Object, logger, new RegistrySettings());
             await registry.PushAsync(mockLayer.Object, repoName, CancellationToken.None);
 
             api.Verify(api => api.Blob.Upload.UploadChunkAsync(uploadPath, It.IsAny<HttpContent>(), It.IsAny<CancellationToken>()), Times.Never());
@@ -107,7 +106,7 @@ namespace Microsoft.NET.Build.Containers.UnitTests
                 return Task.FromResult(ChunkUploadSuccessful(absoluteUploadUri, uploadPath, uploadedCount));
             });
 
-            RegistryManager registry = new(registryUri, api.Object, logger);
+            RegistryManager registry = new(registryUri, api.Object, logger, new RegistrySettings());
             await registry.PushAsync(mockLayer.Object, repoName, CancellationToken.None);
 
             api.Verify(api => api.Blob.Upload.UploadAtomicallyAsync(It.IsIn(absoluteUploadUri, uploadPath), It.IsAny<Stream>(), It.IsAny<CancellationToken>()), Times.Exactly(1));
@@ -141,7 +140,7 @@ namespace Microsoft.NET.Build.Containers.UnitTests
                 return Task.FromResult(ChunkUploadSuccessful(absoluteUploadUri, uploadPath, uploadedCount));
             });
 
-            RegistryManager registry = new(registryUri, api.Object, logger);
+            RegistryManager registry = new(registryUri, api.Object, logger, new RegistrySettings());
             await registry.PushAsync(mockLayer.Object, repoName, CancellationToken.None);
 
             api.Verify(api => api.Blob.Upload.UploadAtomicallyAsync(It.IsIn(absoluteUploadUri, uploadPath), It.IsAny<Stream>(), It.IsAny<CancellationToken>()), Times.Once());
@@ -175,7 +174,7 @@ namespace Microsoft.NET.Build.Containers.UnitTests
                 return Task.FromResult(ChunkUploadSuccessful(absoluteUploadUri, uploadPath, uploadedCount));
             });
 
-            RegistryManager registry = new(registryUri, api.Object, logger);
+            RegistryManager registry = new(registryUri, api.Object, logger, new RegistrySettings());
             await registry.PushAsync(mockLayer.Object, repoName, CancellationToken.None);
 
             api.Verify(api => api.Blob.Upload.UploadAtomicallyAsync(It.IsIn(absoluteUploadUri, uploadPath), It.IsAny<Stream>(), It.IsAny<CancellationToken>()), Times.Once());
@@ -204,7 +203,7 @@ namespace Microsoft.NET.Build.Containers.UnitTests
             api.Setup(api => api.Blob.Upload.StartAsync(repoName, It.IsAny<CancellationToken>())).Returns(Task.FromResult(new StartUploadInformation(null, uploadPath)));
             api.Setup(api => api.Blob.Upload.UploadAtomicallyAsync(uploadPath, It.IsAny<Stream>(), It.IsAny<CancellationToken>())).Returns(Task.FromResult(new FinalizeUploadInformation(uploadPath)));
 
-            RegistryManager registry = new(ContainerHelpers.TryExpandRegistryToUri("public.ecr.aws"), api.Object, logger);
+            RegistryManager registry = new(ContainerHelpers.TryExpandRegistryToUri("public.ecr.aws"), api.Object, logger, new RegistrySettings());
             await registry.PushAsync(mockLayer.Object, repoName, CancellationToken.None);
 
             Assert.NotEmpty(loggedMessages);
@@ -214,6 +213,45 @@ namespace Microsoft.NET.Build.Containers.UnitTests
             Assert.Contains(messages, m => m == "Finalized upload session for sha256:fafafafafafafafafafafafafafafafa");
         }
 
+        [Fact]
+        public async Task PushAsync_ForceChunkedUpload()
+        {
+            ILogger logger = _loggerFactory.CreateLogger(nameof(PushAsync_ForceChunkedUpload));
+
+            string repoName = "testRepo";
+            string layerDigest = "sha256:fafafafafafafafafafafafafafafafa";
+            Mock<Layer> mockLayer = new(MockBehavior.Strict);
+            int contentLength = 1000000;
+            int chunkSizeLessThanContentLength = 100000;
+            Uri registryUri = ContainerHelpers.TryExpandRegistryToUri("public.ecr.aws");
+            mockLayer
+                .Setup(l => l.OpenBackingFile()).Returns(new MemoryStream(new byte[contentLength]));
+            mockLayer
+                .Setup(l => l.Descriptor).Returns(new Descriptor("blah", layerDigest, 1234));
+
+            Uri uploadPath = new("/uploads/foo/12345", UriKind.Relative);
+            Uri absoluteUploadUri = new(registryUri, uploadPath);
+            Mock<IRegistryAPI> api = new(MockBehavior.Loose);
+            int uploadedCount = 0;
+            api.Setup(api => api.Blob.ExistsAsync(repoName, layerDigest, It.IsAny<CancellationToken>())).Returns(Task.FromResult(false));
+            api.Setup(api => api.Blob.Upload.StartAsync(repoName, It.IsAny<CancellationToken>())).Returns(Task.FromResult(new StartUploadInformation(null, uploadPath)));
+            api.Setup(api => api.Blob.Upload.UploadChunkAsync(It.IsIn(absoluteUploadUri, uploadPath), It.IsAny<HttpContent>(), It.IsAny<CancellationToken>())).Returns(() => {
+                uploadedCount += chunkSizeLessThanContentLength;
+                return Task.FromResult(ChunkUploadSuccessful(absoluteUploadUri, uploadPath, uploadedCount));
+            });
+
+            RegistrySettings settings = new()
+            {
+                ParallelUploadEnabled = false,
+                ForceChunkedUpload = true
+            };
+
+            RegistryManager registry = new(registryUri, api.Object, logger, settings);
+            await registry.PushAsync(mockLayer.Object, repoName, CancellationToken.None);
+
+            api.Verify(api => api.Blob.Upload.UploadAtomicallyAsync(It.IsIn(absoluteUploadUri, uploadPath), It.IsAny<Stream>(), It.IsAny<CancellationToken>()), Times.Never());
+            api.Verify(api => api.Blob.Upload.UploadChunkAsync(It.IsIn(absoluteUploadUri, uploadPath), It.IsAny<HttpContent>(), It.IsAny<CancellationToken>()), Times.Exactly(10));
+        }
 
         [Fact]
         public async Task CanParseRegistryDeclaredChunkSize_FromRange()
@@ -309,7 +347,7 @@ namespace Microsoft.NET.Build.Containers.UnitTests
                 return Task.FromResult(ChunkUploadSuccessful(absoluteUploadUri, uploadPath, uploadedCount));
             });
 
-            RegistryManager registry = new(registryUri, api.Object, logger);
+            RegistryManager registry = new(registryUri, api.Object, logger, new RegistrySettings());
             await registry.UploadBlobChunkedAsync(testStream, new StartUploadInformation(chunkSize, absoluteUploadUri), CancellationToken.None);
 
             api.Verify(api => api.Blob.Upload.UploadChunkAsync(It.IsIn(absoluteUploadUri, uploadPath), It.IsAny<HttpContent>(), It.IsAny<CancellationToken>()), Times.Exactly(5));
@@ -335,7 +373,7 @@ namespace Microsoft.NET.Build.Containers.UnitTests
                 return Task.FromResult(ChunkUploadSuccessful(absoluteUploadUri, uploadPath, uploadedCount));
             });
 
-            RegistryManager registry = new(registryUri, api.Object, logger);
+            RegistryManager registry = new(registryUri, api.Object, logger, new RegistrySettings());
             await registry.UploadBlobChunkedAsync(testStream, new StartUploadInformation(chunkSize, absoluteUploadUri), CancellationToken.None);
 
             api.Verify(api => api.Blob.Upload.UploadChunkAsync(It.IsIn(absoluteUploadUri, uploadPath), It.IsAny<HttpContent>(), It.IsAny<CancellationToken>()), Times.Exactly(10));
@@ -371,7 +409,7 @@ namespace Microsoft.NET.Build.Containers.UnitTests
                 return Task.FromResult(ChunkUploadSuccessful(absoluteUploadUri, uploadPath, uploaded, HttpStatusCode.NoContent));
             });
 
-            RegistryManager registry = new(registryUri, api.Object, logger);
+            RegistryManager registry = new(registryUri, api.Object, logger,new RegistrySettings());
             await registry.UploadBlobChunkedAsync(testStream, new StartUploadInformation(chunkSize, absoluteUploadUri), CancellationToken.None);
 
             //5 successful uploads + 4 retried
@@ -408,7 +446,7 @@ namespace Microsoft.NET.Build.Containers.UnitTests
                 return Task.FromResult(ChunkUploadSuccessful(absoluteUploadUri, uploadPath, uploaded - chunkSize / 2, HttpStatusCode.NoContent));
             });
 
-            RegistryManager registry = new(registryUri, api.Object, logger);
+            RegistryManager registry = new(registryUri, api.Object, logger, new RegistrySettings());
             await registry.UploadBlobChunkedAsync(testStream, new StartUploadInformation(chunkSize, absoluteUploadUri), CancellationToken.None);
 
             //5 successful uploads + 4 retried
@@ -447,7 +485,7 @@ namespace Microsoft.NET.Build.Containers.UnitTests
                 return Task.FromResult(ChunkUploadSuccessful(absoluteUploadUri, uploadPath, null, code));
             });
 
-            RegistryManager registry = new(registryUri, api.Object, logger);
+            RegistryManager registry = new(registryUri, api.Object, logger, new RegistrySettings());
             await registry.UploadBlobChunkedAsync(testStream, new StartUploadInformation(chunkSize, absoluteUploadUri), CancellationToken.None);
 
             //5 successful uploads + 4 retried
@@ -484,7 +522,7 @@ namespace Microsoft.NET.Build.Containers.UnitTests
                 return Task.FromResult(ChunkUploadSuccessful(absoluteUploadUri, uploadPath, uploaded, HttpStatusCode.NoContent));
             });
 
-            RegistryManager registry = new(registryUri, api.Object, logger);
+            RegistryManager registry = new(registryUri, api.Object, logger, new RegistrySettings());
             ApplicationException e = await Assert.ThrowsAsync<ApplicationException>(() => registry.UploadBlobChunkedAsync(testStream, new StartUploadInformation(chunkSize, absoluteUploadUri), CancellationToken.None));
 
             Assert.Equal("CONTAINER1001: Failed to upload blob using PATCH https://my-registry.com/uploads/foo/12345; received status code 'InternalServerError'.", e.Message);
@@ -492,7 +530,6 @@ namespace Microsoft.NET.Build.Containers.UnitTests
             //5 successful uploads + 4 retried
             api.Verify(api => api.Blob.Upload.UploadChunkAsync(It.IsIn(absoluteUploadUri, uploadPath), It.IsAny<HttpContent>(), It.IsAny<CancellationToken>()), Times.Exactly(18));
         }
-
 
         private static HttpResponseMessage ChunkUploadSuccessful(Uri requestUri, Uri uploadUrl, int? contentLength, HttpStatusCode code = HttpStatusCode.Accepted)
         {

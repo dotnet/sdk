@@ -1,17 +1,14 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.NET.Build.Containers.Resources;
 using NuGet.RuntimeModel;
-using System;
 using System.Diagnostics;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
-using System.Runtime.Intrinsics.X86;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -20,42 +17,19 @@ namespace Microsoft.NET.Build.Containers.Registry;
 
 internal sealed class RegistryManager
 {
-    /// <summary>
-    /// When chunking is enabled, allows explicit control over the size of the chunks uploaded
-    /// </summary>
-    /// <remarks>
-    /// Our default of 64KB is very conservative, so raising this to 1MB or more can speed up layer uploads reasonably well.
-    /// </remarks>
-    private static readonly int? s_chunkedUploadSizeBytes = Env.GetEnvironmentVariableAsNullableInt(ContainerHelpers.ChunkedUploadSizeBytes);
-
-    private static readonly int s_defaultChunkSizeBytes = 1024 * 64;
-
-    private static readonly int s_fiveMegs = 5_242_880;
-
-    /// <summary>
-    /// Whether we should upload blobs in parallel (enabled by default, but disabled for certain registries in conjunction with the explicit support check below).
-    /// </summary>
-    /// <remarks>
-    /// Enabling this can swamp some registries, so this is an escape hatch.
-    /// </remarks>
-    private static readonly bool s_parallelUploadEnabled = Env.GetEnvironmentVariableAsBool(ContainerHelpers.ParallelUploadEnabled, defaultValue: true);
     private readonly ILogger _logger;
+    private readonly RegistrySettings _settings;
 
-    public RegistryManager(Uri baseUri, ILogger? logger = null)
-    {
-        BaseUri = baseUri;
-        _logger = logger ?? (ILogger)NullLogger.Instance;
-        RegistryName = DeriveRegistryName(baseUri);
-        API = new DefaultRegistryAPI(BaseUri, _logger);
-    }
+    public RegistryManager(Uri baseUri, ILogger? logger = null) : this(baseUri, new DefaultRegistryAPI(baseUri, logger ?? NullLogger.Instance), logger ?? NullLogger.Instance, new RegistrySettings()) { }
 
     /// <summary>
     /// Creates a new registry instance with the specified base URI and API for testing purposes
     /// </summary>
-    internal RegistryManager(Uri baseUri, IRegistryAPI api, ILogger? logger = null)
+    internal RegistryManager(Uri baseUri, IRegistryAPI api, ILogger logger, RegistrySettings settings)
     {
         BaseUri = baseUri;
-        _logger = logger ?? (ILogger)NullLogger.Instance;
+        _logger = logger ?? NullLogger.Instance;
+        _settings = settings;
         RegistryName = DeriveRegistryName(baseUri);
         API = api;
     }
@@ -104,7 +78,7 @@ internal sealed class RegistryManager
     /// Pushing to ECR uses a much larger chunk size. To avoid getting too many socket disconnects trying to do too many
     /// parallel uploads be more conservative and upload one layer at a time.
     /// </summary>
-    private bool SupportsParallelUploads => !IsAmazonECRRegistry && s_parallelUploadEnabled;
+    private bool SupportsParallelUploads => !IsAmazonECRRegistry && _settings.ParallelUploadEnabled;
 
     /// <summary>
     /// Ensure a blob associated with <paramref name="repository"/> from the registry is available locally.
@@ -198,34 +172,34 @@ internal sealed class RegistryManager
         async Task PushLayers()
         {
             Func<Descriptor, Task> uploadLayerFunc = async (descriptor) =>
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            string digest = descriptor.Digest;
-
-            _logger.LogInformation("Uploading layer {0} to {1}", digest, destinationRegistry.RegistryName);
-            if (await API.Blob.ExistsAsync(destination.Repository, digest, cancellationToken).ConfigureAwait(false))
             {
-                _logger.LogInformation("Layer {0} already existed", digest);
-                return;
-            }
+                cancellationToken.ThrowIfCancellationRequested();
+                string digest = descriptor.Digest;
 
-            if (!(await API.Blob.Upload.TryMountAsync(destination.Repository, source.Repository, digest, cancellationToken)))
-            {
-                // The blob wasn't already available in another namespace, so fall back to explicitly uploading it
-                if (source.Registry is { } sourceRegistry)
+                _logger.LogInformation("Uploading layer {0} to {1}", digest, destinationRegistry.RegistryName);
+                if (await API.Blob.ExistsAsync(destination.Repository, digest, cancellationToken).ConfigureAwait(false))
                 {
-                    // Ensure the blob is available locally
-                    await sourceRegistry.DownloadBlobAsync(source.Repository, descriptor, cancellationToken).ConfigureAwait(false);
-                    // Then push it to the destination registry
-                    await destinationRegistry.PushAsync(Layer.FromDescriptor(descriptor), destination.Repository, cancellationToken).ConfigureAwait(false);
-                    _logger.LogInformation("Finished uploading layer {0} to {1}", digest, destinationRegistry.RegistryName);
+                    _logger.LogInformation("Layer {0} already existed", digest);
+                    return;
                 }
-                else
+
+                if (!(await API.Blob.Upload.TryMountAsync(destination.Repository, source.Repository, digest, cancellationToken)))
                 {
-                    throw new NotImplementedException(Resource.GetString(nameof(Strings.MissingLinkToRegistry)));
+                    // The blob wasn't already available in another namespace, so fall back to explicitly uploading it
+                    if (source.Registry is { } sourceRegistry)
+                    {
+                        // Ensure the blob is available locally
+                        await sourceRegistry.DownloadBlobAsync(source.Repository, descriptor, cancellationToken).ConfigureAwait(false);
+                        // Then push it to the destination registry
+                        await destinationRegistry.PushAsync(Layer.FromDescriptor(descriptor), destination.Repository, cancellationToken).ConfigureAwait(false);
+                        _logger.LogInformation("Finished uploading layer {0} to {1}", digest, destinationRegistry.RegistryName);
+                    }
+                    else
+                    {
+                        throw new NotImplementedException(Resource.GetString(nameof(Strings.MissingLinkToRegistry)));
+                    }
                 }
-            }
-        };
+            };
 
             if (SupportsParallelUploads)
             {
@@ -240,7 +214,7 @@ internal sealed class RegistryManager
             }
 
             cancellationToken.ThrowIfCancellationRequested();
-        }
+        };
 
         async Task PushConfig()
         {
@@ -293,7 +267,7 @@ internal sealed class RegistryManager
         Uri patchUri = uploadInfo.UploadUri;
         contents.Seek(0, SeekOrigin.Begin);
 
-        byte[] chunkBackingStore = new byte[EffectiveChunkSize(uploadInfo.RegistryDeclaredChunkSize, IsAmazonECRRegistry)];
+        byte[] chunkBackingStore = new byte[_settings.EffectiveChunkSize(uploadInfo.RegistryDeclaredChunkSize, IsAmazonECRRegistry)];
 
         int chunkCount = 0;
         int chunkStart = 0;
@@ -469,42 +443,7 @@ internal sealed class RegistryManager
             return baseUri.GetComponents(UriComponents.Host, UriFormat.Unescaped);
         }
     }
-    /// <summary>
-    /// Computes the effective chunk size to use for the upload
-    /// </summary>
-    /// <remarks>
-    /// The chunk size is determined by the following rules:
-    /// We compare the registry's expressed chunk size with any user-provided chunk size (via env var).
-    /// If both are set, we use the smaller of the two.
-    /// If only one is set, we use that one.
-    /// If either is zero, we use the other.
-    /// If neither is set, we use the default chunk size.
-    /// Finally, AWS ECR has a min size that we use to override the above if it would be below that min size.
-    /// </remarks>
-    private static int EffectiveChunkSize(int? registryChunkSize, bool isAWS)
-    {
 
-        var result =
-            (registryChunkSize, s_chunkedUploadSizeBytes) switch
-            {
-                (0, int u) => u,
-                (int r, 0) => r,
-                (int r, int u) => Math.Min(r, u),
-                (int r, null) => r,
-                (null, int u) => u,
-                (null, null) => s_defaultChunkSizeBytes
-            };
-
-        if (isAWS)
-        {
-            // AWS ECR requires a min chunk size of 5MB for all chunks except the last.
-            return Math.Max(result, s_fiveMegs);
-        }
-        else
-        {
-            return result;
-        }
-    }
 
     private static RuntimeGraph GetRuntimeGraphForDotNet(string ridGraphPath) => JsonRuntimeFormat.ReadRuntimeGraph(ridGraphPath);
 
@@ -594,10 +533,10 @@ internal sealed class RegistryManager
         cancellationToken.ThrowIfCancellationRequested();
         var uploadInfo = await API.Blob.Upload.StartAsync(repository, cancellationToken).ConfigureAwait(false);
 
-        _logger.LogTrace("Started upload session for {0} to {1} with chunk size {2}", digest, uploadInfo.UploadUri, EffectiveChunkSize(uploadInfo.RegistryDeclaredChunkSize, IsAmazonECRRegistry));
+        _logger.LogTrace("Started upload session for {0} to {1} with chunk size {2}", digest, uploadInfo.UploadUri, _settings.EffectiveChunkSize(uploadInfo.RegistryDeclaredChunkSize, IsAmazonECRRegistry));
         // * upload the blob
         cancellationToken.ThrowIfCancellationRequested();
-        var finalizeInformation = await UploadBlobContentsAsync(repository, digest, contents, uploadInfo, cancellationToken).ConfigureAwait(false);
+        var finalizeInformation = await UploadBlobContentsAsync(contents, uploadInfo, cancellationToken).ConfigureAwait(false);
         _logger.LogTrace("Uploaded content for {0}", digest);
         // * finish the upload session
         cancellationToken.ThrowIfCancellationRequested();
@@ -612,12 +551,20 @@ internal sealed class RegistryManager
     /// If the atomic PUT fails, we fall back to chunked uploads.
     /// If the registry provides a chunk max and that max is less than the content length, then we use chunked uploads.
     /// </remarks>
-    private async Task<FinalizeUploadInformation> UploadBlobContentsAsync(string repository, string digest, Stream contents, StartUploadInformation uploadInfo, CancellationToken cancellationToken)
+    private async Task<FinalizeUploadInformation> UploadBlobContentsAsync(Stream contents, StartUploadInformation uploadInfo, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        _logger.LogTrace("Attempting to upload whole blob, content length: {0}.", contents.Length);
+
+        if (_settings.ForceChunkedUpload)
+        {
+            //the chunked upload was forced in configuration
+            _logger.LogTrace("Chunked upload is forced in configuration, attempting to upload blob in chunks. Content length: {0}, chunk size: {1}.", contents.Length, uploadInfo.RegistryDeclaredChunkSize);
+            return await UploadBlobChunkedAsync(contents, uploadInfo, cancellationToken).ConfigureAwait(false);
+        }
+
         try
         {
+            _logger.LogTrace("Attempting to upload whole blob, content length: {0}.", contents.Length);
             return await API.Blob.Upload.UploadAtomicallyAsync(uploadInfo.UploadUri, contents, cancellationToken).ConfigureAwait(false);
         }
         catch (Exception ex)
