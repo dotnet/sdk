@@ -12,11 +12,26 @@
 # We do not want to filter-out folder entries, therefore, we should use: '?*' and not just '*'
 
 msft,./sdk/x.y.z/TestHostNetFramework/?*   # Intentional - MSFT build includes test-host that targets netcoreapp3.1
-msft,./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/net472/?*   # Intentional - source-build includes SDK Publishing package that target latest .NET TFM
 msft,./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WindowsDesktop/?*   # Intentional - explicitly excluded from source-build
-sb,./sdk/x.y.z/TestHost/?*   # Intentional - source-build includes test-host that targets latest .NET TFM
 
-# vstest localization is disabled in Linux builds - https://github.com/microsoft/vstest/issues/4305
+# netfx tooling and tasks, not building in source-build - https://github.com/dotnet/source-build/issues/3514
+msft,./sdk/x.y.z/Sdks/Microsoft.Build.Tasks.Git/tools/net472/*
+msft,./sdk/x.y.z/Sdks/Microsoft.NET.Sdk/tools/net472/*
+msft,./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.BlazorWebAssembly/tools/net472/*
+msft,./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/net472/*
+msft,./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/tasks/net472/*
+msft,./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.StaticWebAssets/tasks/net472/*
+msft,./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Web/tools/net472/*
+msft,./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Web.ProjectSystem/tools/net472/*
+msft,./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WebAssembly/tools/net472/*
+msft,./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Worker/tools/net472/*
+msft,./sdk/x.y.z/Sdks/Microsoft.SourceLink.AzureRepos.Git/tools/net472/*
+msft,./sdk/x.y.z/Sdks/Microsoft.SourceLink.Bitbucket.Git/tools/net472/*
+msft,./sdk/x.y.z/Sdks/Microsoft.SourceLink.Common/tools/net472/*
+msft,./sdk/x.y.z/Sdks/Microsoft.SourceLink.GitHub/tools/net472/*
+msft,./sdk/x.y.z/Sdks/Microsoft.SourceLink.GitLab/tools/net472/*
+
+# vstest localization is disabled in Linux builds - https://github.com/dotnet/source-build/issues/3517
 msft,./sdk/x.y.z/*?/Microsoft.CodeCoverage.IO.resources.dll
 msft,./sdk/x.y.z/*?/Microsoft.TestPlatform.*?.resources.dll
 msft,./sdk/x.y.z/*?/Microsoft.VisualStudio.TestPlatform.*?.resources.dll
@@ -40,3 +55,30 @@ msft,./sdk-manifests/x.y.z/microsoft.net.sdk.maccatalyst/*
 msft,./sdk-manifests/x.y.z/microsoft.net.sdk.macos/*
 msft,./sdk-manifests/x.y.z/microsoft.net.sdk.maui/*
 msft,./sdk-manifests/x.y.z/microsoft.net.sdk.tvos/*
+
+# linux runtimes are included in source-build for self-contained apps - https://github.com/dotnet/source-build/issues/3507
+sb,./packs/Microsoft.AspNetCore.App.Runtime.*/*
+sb,./packs/Microsoft.NETCore.App.Runtime.*/*
+
+# netfx tooling - dumpminitool - https://github.com/dotnet/source-build/issues/3289
+msft,./sdk/x.y.z/Extensions/dump/*
+
+# netfx runtimes for dotnet-watch - https://github.com/dotnet/source-build/issues/3285
+msft,./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/Microsoft.CodeAnalysis.Elfie.dll
+msft,./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/Microsoft.Win32.SystemEvents.dll
+msft,./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/runtimes/*
+msft,./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/System.Configuration.ConfigurationManager.dll
+msft,./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/System.Drawing.Common.dll
+msft,./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/System.Security.Cryptography.ProtectedData.dll
+msft,./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/System.Security.Permissions.dll
+msft,./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/System.Windows.Extensions.dll
+
+# netfx runtimes for dotnet-format - https://github.com/dotnet/source-build/issues/3509
+msft,./sdk/x.y.z/DotnetTools/dotnet-format/Microsoft.CodeAnalysis.Elfie.dll
+msft,./sdk/x.y.z/DotnetTools/dotnet-format/Microsoft.Win32.SystemEvents.dll
+msft,./sdk/x.y.z/DotnetTools/dotnet-format/runtimes/*
+msft,./sdk/x.y.z/DotnetTools/dotnet-format/System.Configuration.ConfigurationManager.dll
+msft,./sdk/x.y.z/DotnetTools/dotnet-format/System.Drawing.Common.dll
+msft,./sdk/x.y.z/DotnetTools/dotnet-format/System.Security.Cryptography.ProtectedData.dll
+msft,./sdk/x.y.z/DotnetTools/dotnet-format/System.Security.Permissions.dll
+msft,./sdk/x.y.z/DotnetTools/dotnet-format/System.Windows.Extensions.dll
