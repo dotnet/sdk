@@ -1,8 +1,7 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Testing;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeAnalysis.Testing.EmptyDiagnosticAnalyzer, // Diagnostic is from the compiler
@@ -140,7 +139,6 @@ class {|CS0659:{|CS0661:C|}|}
         {
             await new VerifyVB.Test
             {
-                CodeFixTestBehaviors = CodeFixTestBehaviors.SkipLocalDiagnosticCheck,
                 TestCode = @"
 Class [|C|]
     Public Shared Operator =(c1 As C, c2 As C) As Boolean
@@ -183,7 +181,6 @@ End Class
         {
             await new VerifyVB.Test
             {
-                CodeFixTestBehaviors = CodeFixTestBehaviors.SkipLocalDiagnosticCheck,
                 TestCode = @"
 Imports System
 

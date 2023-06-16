@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -76,13 +76,22 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             context.EnableConcurrentExecution();
             context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 
-            context.RegisterSymbolAction(AnalyzeSymbol, SymbolKind.Method);
+            context.RegisterSymbolAction(context =>
+            {
+                var namedType = (INamedTypeSymbol)context.Symbol;
+                foreach (var member in namedType.GetMembers())
+                {
+                    if (member is IMethodSymbol method &&
+                        method.MethodKind is MethodKind.UserDefinedOperator or MethodKind.Conversion)
+                    {
+                        AnalyzeMethod(method, context);
+                    }
+                }
+            }, SymbolKind.NamedType);
         }
 
-        private static void AnalyzeSymbol(SymbolAnalysisContext symbolContext)
+        private static void AnalyzeMethod(IMethodSymbol methodSymbol, SymbolAnalysisContext symbolContext)
         {
-            var methodSymbol = (IMethodSymbol)symbolContext.Symbol;
-
             // FxCop compat: only analyze externally visible symbols by default.
             // Note all the descriptors/rules for this analyzer have the same ID and category and hence
             // will always have identical configured visibility.
@@ -91,77 +100,75 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 return;
             }
 
-            if (methodSymbol.ContainingSymbol is ITypeSymbol typeSymbol && (methodSymbol.MethodKind == MethodKind.UserDefinedOperator || methodSymbol.MethodKind == MethodKind.Conversion))
+            string operatorName = methodSymbol.Name;
+            var typeSymbol = methodSymbol.ContainingType;
+            if (IsPropertyExpected(operatorName) && operatorName != OpFalseText)
             {
-                string operatorName = methodSymbol.Name;
-                if (IsPropertyExpected(operatorName) && operatorName != OpFalseText)
+                // don't report a diagnostic on the `op_False` method because then the user would see two diagnostics for what is really one error
+                // special-case looking for `IsTrue` instance property
+                // named properties can't be overloaded so there will only ever be 0 or 1
+                IPropertySymbol property = typeSymbol.GetMembers(IsTrueText).OfType<IPropertySymbol>().FirstOrDefault();
+                if (property == null || property.Type.SpecialType != SpecialType.System_Boolean)
                 {
-                    // don't report a diagnostic on the `op_False` method because then the user would see two diagnostics for what is really one error
-                    // special-case looking for `IsTrue` instance property
-                    // named properties can't be overloaded so there will only ever be 0 or 1
-                    IPropertySymbol property = typeSymbol.GetMembers(IsTrueText).OfType<IPropertySymbol>().FirstOrDefault();
-                    if (property == null || property.Type.SpecialType != SpecialType.System_Boolean)
+                    symbolContext.ReportDiagnostic(CreateDiagnostic(PropertyRule, GetSymbolLocation(methodSymbol), AddAlternateText, IsTrueText, operatorName));
+                }
+                else if (!property.IsPublic())
+                {
+                    symbolContext.ReportDiagnostic(CreateDiagnostic(VisibilityRule, GetSymbolLocation(property), FixVisibilityText, IsTrueText, operatorName));
+                }
+            }
+            else
+            {
+                ExpectedAlternateMethodGroup? expectedGroup = GetExpectedAlternateMethodGroup(operatorName, methodSymbol.ReturnType, methodSymbol.Parameters.FirstOrDefault()?.Type);
+                if (expectedGroup == null)
+                {
+                    // no alternate methods required
+                    return;
+                }
+
+                var matchedMethods = new List<IMethodSymbol>();
+                var unmatchedMethods = new HashSet<string>() { expectedGroup.AlternateMethod1 };
+                if (expectedGroup.AlternateMethod2 != null)
+                {
+                    unmatchedMethods.Add(expectedGroup.AlternateMethod2);
+                }
+
+                foreach (IMethodSymbol candidateMethod in typeSymbol.GetMembers().OfType<IMethodSymbol>())
+                {
+                    if (candidateMethod.Name == expectedGroup.AlternateMethod1 || candidateMethod.Name == expectedGroup.AlternateMethod2)
                     {
-                        symbolContext.ReportDiagnostic(CreateDiagnostic(PropertyRule, GetSymbolLocation(methodSymbol), AddAlternateText, IsTrueText, operatorName));
+                        // found an appropriately-named method
+                        matchedMethods.Add(candidateMethod);
+                        unmatchedMethods.Remove(candidateMethod.Name);
                     }
-                    else if (!property.IsPublic())
-                    {
-                        symbolContext.ReportDiagnostic(CreateDiagnostic(VisibilityRule, GetSymbolLocation(property), FixVisibilityText, IsTrueText, operatorName));
-                    }
+                }
+
+                // only one public method match is required
+                if (matchedMethods.Any(m => m.IsPublic()))
+                {
+                    // at least one public alternate method was found, do nothing
                 }
                 else
                 {
-                    ExpectedAlternateMethodGroup? expectedGroup = GetExpectedAlternateMethodGroup(operatorName, methodSymbol.ReturnType, methodSymbol.Parameters.FirstOrDefault()?.Type);
-                    if (expectedGroup == null)
+                    // either we found at least one method that should be public or we didn't find anything
+                    IMethodSymbol notPublicMethod = matchedMethods.FirstOrDefault(m => !m.IsPublic());
+                    if (notPublicMethod != null)
                     {
-                        // no alternate methods required
-                        return;
-                    }
-
-                    var matchedMethods = new List<IMethodSymbol>();
-                    var unmatchedMethods = new HashSet<string>() { expectedGroup.AlternateMethod1 };
-                    if (expectedGroup.AlternateMethod2 != null)
-                    {
-                        unmatchedMethods.Add(expectedGroup.AlternateMethod2);
-                    }
-
-                    foreach (IMethodSymbol candidateMethod in typeSymbol.GetMembers().OfType<IMethodSymbol>())
-                    {
-                        if (candidateMethod.Name == expectedGroup.AlternateMethod1 || candidateMethod.Name == expectedGroup.AlternateMethod2)
-                        {
-                            // found an appropriately-named method
-                            matchedMethods.Add(candidateMethod);
-                            unmatchedMethods.Remove(candidateMethod.Name);
-                        }
-                    }
-
-                    // only one public method match is required
-                    if (matchedMethods.Any(m => m.IsPublic()))
-                    {
-                        // at least one public alternate method was found, do nothing
+                        // report error for improper visibility directly on the method itself
+                        symbolContext.ReportDiagnostic(CreateDiagnostic(VisibilityRule, GetSymbolLocation(notPublicMethod), FixVisibilityText, notPublicMethod.Name, operatorName));
                     }
                     else
                     {
-                        // either we found at least one method that should be public or we didn't find anything
-                        IMethodSymbol notPublicMethod = matchedMethods.FirstOrDefault(m => !m.IsPublic());
-                        if (notPublicMethod != null)
+                        // report error for missing methods on the operator overload
+                        if (expectedGroup.AlternateMethod2 == null)
                         {
-                            // report error for improper visibility directly on the method itself
-                            symbolContext.ReportDiagnostic(CreateDiagnostic(VisibilityRule, GetSymbolLocation(notPublicMethod), FixVisibilityText, notPublicMethod.Name, operatorName));
+                            // only one alternate expected
+                            symbolContext.ReportDiagnostic(CreateDiagnostic(DefaultRule, GetSymbolLocation(methodSymbol), AddAlternateText, expectedGroup.AlternateMethod1, operatorName));
                         }
                         else
                         {
-                            // report error for missing methods on the operator overload
-                            if (expectedGroup.AlternateMethod2 == null)
-                            {
-                                // only one alternate expected
-                                symbolContext.ReportDiagnostic(CreateDiagnostic(DefaultRule, GetSymbolLocation(methodSymbol), AddAlternateText, expectedGroup.AlternateMethod1, operatorName));
-                            }
-                            else
-                            {
-                                // one of two alternates expected
-                                symbolContext.ReportDiagnostic(CreateDiagnostic(MultipleRule, GetSymbolLocation(methodSymbol), AddAlternateText, expectedGroup.AlternateMethod1, expectedGroup.AlternateMethod2, operatorName));
-                            }
+                            // one of two alternates expected
+                            symbolContext.ReportDiagnostic(CreateDiagnostic(MultipleRule, GetSymbolLocation(methodSymbol), AddAlternateText, expectedGroup.AlternateMethod1, expectedGroup.AlternateMethod2, operatorName));
                         }
                     }
                 }
