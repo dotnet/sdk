@@ -1,0 +1,2 @@
+﻿Failed to create template.
+Details: Parameter conditions contain cyclic dependency: [switchCheck, switchCheck2, switchCheck] that is preventing deterministic evaluation.

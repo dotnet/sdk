@@ -15,6 +15,7 @@ using Microsoft.TemplateEngine.Abstractions.Parameters;
 using Microsoft.TemplateEngine.Core;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Core.Expressions.Cpp2;
+using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Validation;
 using Microsoft.TemplateEngine.Utils;
 
@@ -136,7 +137,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             IVariableCollection variables = SetupVariables(parameters, templateConfig.GlobalOperationConfig.VariableSetup);
             await templateConfig.EvaluateBindSymbolsAsync(environmentSettings, variables, cancellationToken).ConfigureAwait(false);
             cancellationToken.ThrowIfCancellationRequested();
-            MacroProcessor.ProcessMacros(environmentSettings, templateConfig.GlobalOperationConfig, variables);
+            IReadOnlyList<IMacroConfig> sortedMacroConfigs = MacroProcessor.SortMacroConfigsByDependencies(templateConfig.GlobalOperationConfig.SymbolNames, templateConfig.GlobalOperationConfig.Macros);
+            MacroProcessor.ProcessMacros(environmentSettings, sortedMacroConfigs, variables);
             templateConfig.Evaluate(variables);
 
             IOrchestrator basicOrchestrator = new Core.Util.Orchestrator(environmentSettings.Host.Logger, environmentSettings.Host.FileSystem);
@@ -312,7 +314,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             await runnableProjectConfig.EvaluateBindSymbolsAsync(environmentSettings, variables, cancellationToken).ConfigureAwait(false);
 
             cancellationToken.ThrowIfCancellationRequested();
-            MacroProcessor.ProcessMacros(environmentSettings, runnableProjectConfig.GlobalOperationConfig, variables);
+            IReadOnlyList<IMacroConfig> sortedMacroConfigs = MacroProcessor.SortMacroConfigsByDependencies(runnableProjectConfig.GlobalOperationConfig.SymbolNames, runnableProjectConfig.GlobalOperationConfig.Macros);
+            MacroProcessor.ProcessMacros(environmentSettings, sortedMacroConfigs, variables);
             runnableProjectConfig.Evaluate(variables);
 
             IOrchestrator basicOrchestrator = new Core.Util.Orchestrator(environmentSettings.Host.Logger, environmentSettings.Host.FileSystem);

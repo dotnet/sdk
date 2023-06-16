@@ -2,10 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Generic;
+using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 {
-    internal class EvaluateMacroConfig : BaseMacroConfig<EvaluateMacro, EvaluateMacroConfig>
+    internal class EvaluateMacroConfig : BaseMacroConfig<EvaluateMacro, EvaluateMacroConfig>, IMacroConfigDependency
     {
         private const EvaluatorType DefaultEvaluator = EvaluatorType.CPP2;
         private static readonly EvaluateMacro DefaultMacro = new();
@@ -28,5 +30,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
         internal string Condition { get; private set; }
 
         internal ConditionStringEvaluator Evaluator { get; private set; } = EvaluatorSelector.SelectStringEvaluator(DefaultEvaluator);
+
+        public void ResolveSymbolDependencies(IReadOnlyList<string> symbols)
+        {
+            MacroDependenciesResolved = true;
+            PopulateMacroConfigDependencies(Condition, symbols);
+        }
     }
 }

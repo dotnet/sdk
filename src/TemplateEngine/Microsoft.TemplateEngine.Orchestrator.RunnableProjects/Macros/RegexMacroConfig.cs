@@ -9,7 +9,7 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 {
-    internal class RegexMacroConfig : BaseMacroConfig<RegexMacro, RegexMacroConfig>
+    internal class RegexMacroConfig : BaseMacroConfig<RegexMacro, RegexMacroConfig>, IMacroConfigDependency
     {
         private const string StepsPropertyName = "steps";
         private const string StepsRegexPropertyName = "regex";
@@ -64,5 +64,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
         internal string Source { get; private set; }
 
         internal IReadOnlyList<(string Regex, string Replacement)> Steps { get; private set; }
+
+        public void ResolveSymbolDependencies(IReadOnlyList<string> symbols)
+        {
+            MacroDependenciesResolved = true;
+            PopulateMacroConfigDependencies(Source, symbols);
+        }
     }
 }

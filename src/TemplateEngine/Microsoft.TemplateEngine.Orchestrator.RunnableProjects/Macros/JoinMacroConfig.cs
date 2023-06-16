@@ -9,7 +9,7 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 {
-    internal class JoinMacroConfig : BaseMacroConfig<JoinMacro, JoinMacroConfig>
+    internal class JoinMacroConfig : BaseMacroConfig<JoinMacro, JoinMacroConfig>, IMacroConfigDependency
     {
         private const string SymbolsPropertyName = "symbols";
         private const string SymbolsTypePropertyName = "type";
@@ -78,5 +78,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
         internal string Separator { get; private set; }
 
         internal bool RemoveEmptyValues { get; private set; }
+
+        public void ResolveSymbolDependencies(IReadOnlyList<string> symbols)
+        {
+            MacroDependenciesResolved = true;
+            Symbols.ForEach(s => PopulateMacroConfigDependencies(s.Value, symbols));
+        }
     }
 }

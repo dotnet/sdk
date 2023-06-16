@@ -3,11 +3,12 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 {
-    internal class ProcessValueFormMacroConfig : BaseMacroConfig<ProcessValueFormMacro, ProcessValueFormMacroConfig>
+    internal class ProcessValueFormMacroConfig : BaseMacroConfig<ProcessValueFormMacro, ProcessValueFormMacroConfig>, IMacroConfigDependency
     {
         private static readonly ProcessValueFormMacro DefaultMacro = new();
 
@@ -36,5 +37,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
         internal IReadOnlyDictionary<string, IValueForm> Forms { get; }
 
         internal IValueForm Form { get; }
+
+        public void ResolveSymbolDependencies(IReadOnlyList<string> symbols)
+        {
+            MacroDependenciesResolved = true;
+            PopulateMacroConfigDependencies(SourceVariable, symbols);
+        }
     }
 }

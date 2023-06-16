@@ -2,8 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
-using Microsoft.TemplateEngine.Abstractions;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.TemplateEngine.Core;
+using Microsoft.TemplateEngine.Core.Expressions.Cpp2;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions;
 using Microsoft.TemplateEngine.Utils;
 using Newtonsoft.Json.Linq;
@@ -36,39 +40,34 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 
         internal string DataType { get; } = "string";
 
-        internal abstract void Evaluate(IEngineEnvironmentSettings environmentSettings, IVariableCollection vars);
-
-        internal virtual void EvaluateDeterministically(IEngineEnvironmentSettings environmentSettings, IVariableCollection vars) => Evaluate(environmentSettings, vars);
+        internal IList<string> MacroErrors { get; set; } = new List<string>();
     }
 
     internal abstract class BaseMacroConfig<TMacro, TMacroConfig> : BaseMacroConfig, IMacroConfig
         where TMacro : IMacro<TMacroConfig>
         where TMacroConfig : BaseMacroConfig<TMacro, TMacroConfig>, IMacroConfig
     {
+        private HashSet<string> _dependencies = new HashSet<string>();
+
         protected BaseMacroConfig(TMacro macro, string variableName, string? dataType = null)
-            : base(macro.Type, variableName, dataType)
-        {
-            Macro = macro ?? throw new ArgumentNullException(nameof(macro));
-        }
+            : base(macro.Type, variableName, dataType) { }
 
-        internal TMacro Macro { get; }
-
-        internal override void Evaluate(IEngineEnvironmentSettings environmentSettings, IVariableCollection vars)
+        public HashSet<string> Dependencies
         {
-            Macro.Evaluate(environmentSettings, vars, (TMacroConfig)this);
-        }
-
-        internal override void EvaluateDeterministically(IEngineEnvironmentSettings environmentSettings, IVariableCollection vars)
-        {
-            if (Macro is IDeterministicModeMacro<TMacroConfig> deterministicMacro)
+            get
             {
-                deterministicMacro.EvaluateDeterministically(environmentSettings, vars, (TMacroConfig)this);
+                if (!MacroDependenciesResolved)
+                {
+                    throw new ArgumentException(string.Format(
+                        LocalizableStrings.MacroConfig_Exception_AccessToDependencies, nameof(PopulateMacroConfigDependency), nameof(Dependencies)));
+                }
+
+                return _dependencies;
             }
-            else
-            {
-                Evaluate(environmentSettings, vars);
-            }
+            set => _dependencies = value;
         }
+
+        protected bool MacroDependenciesResolved { get; set; }
 
         protected static string? GetOptionalParameterValue(IGeneratedSymbolConfig config, string parameterName, string? defaultValue = default)
         {
@@ -196,6 +195,26 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
                 throw new TemplateAuthoringException(string.Format(LocalizableStrings.MacroConfig_Exception_MissingMandatoryProperty, config.VariableName, Type, parameterName), config.VariableName);
             }
             return ConvertJTokenToJArray(token, config, parameterName);
+        }
+
+        protected void PopulateMacroConfigDependencies(
+            string condition,
+            IReadOnlyList<string> symbols)
+        {
+            var referencedVariablesKeys = new HashSet<string>();
+            var expression = Cpp2StyleEvaluatorDefinition.GetEvaluableExpression(
+                NullLogger<RunnableProjectGenerator>.Instance,
+                condition,
+                new VariableCollection(null, symbols.ToDictionary(s => s, s => s as object)),
+                out var evaluableExpressionError,
+                referencedVariablesKeys);
+
+            referencedVariablesKeys.ForEach(PopulateMacroConfigDependency);
+        }
+
+        private void PopulateMacroConfigDependency(string referencedValue)
+        {
+            Dependencies.Add(referencedValue);
         }
     }
 }

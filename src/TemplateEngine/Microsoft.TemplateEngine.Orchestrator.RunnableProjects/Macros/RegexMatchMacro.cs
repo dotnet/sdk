@@ -33,6 +33,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
             environmentSettings.Host.Logger.LogDebug("[{macro}]: Assigned variable '{var}' to '{value}'.", nameof(RegexMatchMacro), config.VariableName, result);
         }
 
-        protected override RegexMatchMacroConfig CreateConfig(IEngineEnvironmentSettings environmentSettings, IGeneratedSymbolConfig deferredConfig) => new(this, deferredConfig);
+        public override RegexMatchMacroConfig CreateConfig(IEngineEnvironmentSettings environmentSettings, IGeneratedSymbolConfig deferredConfig) => new(this, deferredConfig);
     }
 }

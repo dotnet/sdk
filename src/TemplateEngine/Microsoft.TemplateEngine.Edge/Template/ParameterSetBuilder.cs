@@ -218,7 +218,7 @@ namespace Microsoft.TemplateEngine.Edge.Template
             Dictionary<EvalData, HashSet<EvalData>> parametersDependencies = new();
 
             // First parameters traversal.
-            //   - evaluate all IsEnabledCondition - and get the dependecies between the parameters during doing so
+            //   - evaluate all IsEnabledCondition - and get the dependencies between the parameters during doing so
             foreach (EvalData parameter in parameters)
             {
                 if (!string.IsNullOrEmpty(parameter.ParameterDefinition.Precedence.IsEnabledCondition))

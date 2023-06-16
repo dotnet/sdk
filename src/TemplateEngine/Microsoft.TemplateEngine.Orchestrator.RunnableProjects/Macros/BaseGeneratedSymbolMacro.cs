@@ -12,7 +12,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
     /// </summary>
     /// <typeparam name="T">The macro config.</typeparam>
 #pragma warning disable CS0618 // Type or member is obsolete
-    internal abstract class BaseGeneratedSymbolMacro<T> : BaseMacro<T>, IGeneratedSymbolMacro, IDeferredMacro where T : BaseMacroConfig, IMacroConfig
+    internal abstract class BaseGeneratedSymbolMacro<T> : BaseMacro<T>, IGeneratedSymbolMacro, IGeneratedSymbolMacro<T>, IDeferredMacro where T : BaseMacroConfig, IMacroConfig
 #pragma warning restore CS0618 // Type or member is obsolete
     {
         public IMacroConfig CreateConfig(IEngineEnvironmentSettings environmentSettings, IMacroConfig rawConfig)
@@ -29,7 +29,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
             Evaluate(environmentSettings, vars, CreateConfig(environmentSettings, deferredConfig));
         }
 
-        protected abstract T CreateConfig(IEngineEnvironmentSettings environmentSettings, IGeneratedSymbolConfig deferredConfig);
+        public abstract T CreateConfig(IEngineEnvironmentSettings environmentSettings, IGeneratedSymbolConfig deferredConfig);
+
+        IMacroConfig IGeneratedSymbolMacro.CreateConfig(IEngineEnvironmentSettings environmentSettings, IGeneratedSymbolConfig generatedSymbolConfig) => CreateConfig(environmentSettings, generatedSymbolConfig);
     }
 
     /// <summary>
@@ -46,8 +48,17 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
     /// Base class for the macro defined via generated symbol, that may run undeterministially and implements deterministic mode for the macro as generated symbol.
     /// </summary>
     /// <typeparam name="T">The macro config.</typeparam>
-    internal abstract class BaseNondeterministicGenSymMacro<T> : BaseNondeterministicMacro<T>, IDeterministicModeMacro<IGeneratedSymbolConfig> where T : BaseMacroConfig, IMacroConfig
+    internal abstract class BaseNondeterministicGenSymMacro<T> : BaseNondeterministicMacro<T>, IDeterministicModeMacro<T>, IDeterministicModeMacro where T : BaseMacroConfig, IMacroConfig
     {
-        public void EvaluateDeterministically(IEngineEnvironmentSettings environmentSettings, IVariableCollection variables, IGeneratedSymbolConfig config) => EvaluateDeterministically(environmentSettings, variables, CreateConfig(environmentSettings, config));
+        //public void EvaluateDeterministically(IEngineEnvironmentSettings environmentSettings, IVariableCollection variables, IGeneratedSymbolConfig config) => EvaluateDeterministically(environmentSettings, variables, CreateConfig(environmentSettings, config));
+
+        public void EvaluateConfigDeterministically(IEngineEnvironmentSettings environmentSettings, IVariableCollection variables, IMacroConfig config)
+        {
+            if (config is not T calculatedConfig)
+            {
+                throw new InvalidCastException($"Couldn't cast the {nameof(config)} as {typeof(T)}.");
+            }
+            EvaluateDeterministically(environmentSettings, variables, calculatedConfig);
+        }
     }
 }

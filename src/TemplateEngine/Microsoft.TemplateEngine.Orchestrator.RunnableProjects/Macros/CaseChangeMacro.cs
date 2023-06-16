@@ -33,6 +33,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
             environmentSettings.Host.Logger.LogDebug("[{macro}]: Assigned variable '{var}' to '{value}'.", nameof(CaseChangeMacro), config.VariableName, value);
         }
 
-        protected override CaseChangeMacroConfig CreateConfig(IEngineEnvironmentSettings environmentSettings, IGeneratedSymbolConfig deferredConfig) => new(this, deferredConfig);
+        public override CaseChangeMacroConfig CreateConfig(IEngineEnvironmentSettings environmentSettings, IGeneratedSymbolConfig deferredConfig) => new(this, deferredConfig);
     }
 }

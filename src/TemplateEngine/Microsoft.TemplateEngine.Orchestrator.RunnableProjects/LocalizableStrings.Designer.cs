@@ -97,6 +97,15 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Parameter conditions contain cyclic dependency: [{0}] that is preventing deterministic evaluation..
+        /// </summary>
+        internal static string Authoring_CyclicDependencyInSymbols {
+            get {
+                return ResourceManager.GetString("Authoring_CyclicDependencyInSymbols", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Localization file should only contain elements with type &apos;string&apos;. Remove elements that are not strings..
         /// </summary>
         internal static string Authoring_InvalidJsonElementInLocalizationFile {
@@ -269,6 +278,15 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Template authoring error encountered while processing macro &apos;{0}&apos;: Variable &apos;{1}&apos;. Neither source nor fallback variable was found..
+        /// </summary>
+        internal static string CoalesceMacro_Exception_MissedVariables {
+            get {
+                return ResourceManager.GetString("CoalesceMacro_Exception_MissedVariables", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Unrecognized evaluator: &apos;{0}&apos;..
         /// </summary>
         internal static string EvaluatorSelector_Exception_UnknownEvaluator {
@@ -328,6 +346,15 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects {
         internal static string LocalizationModelDeserializer_Error_UnknownLocale {
             get {
                 return ResourceManager.GetString("LocalizationModelDeserializer_Error_UnknownLocale", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The method &apos;{0}&apos; must be called prior &apos;{1}&apos; property reading..
+        /// </summary>
+        internal static string MacroConfig_Exception_AccessToDependencies {
+            get {
+                return ResourceManager.GetString("MacroConfig_Exception_AccessToDependencies", resourceCulture);
             }
         }
         
@@ -409,6 +436,15 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects {
         internal static string MacroConfig_Exception_ValueShouldBeString {
             get {
                 return ResourceManager.GetString("MacroConfig_Exception_ValueShouldBeString", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &apos;{0}&apos; was not processed due to the next issues in dependencises: &apos;{1}&apos;..
+        /// </summary>
+        internal static string MacroProcessing_Warning_DependencyErrors {
+            get {
+                return ResourceManager.GetString("MacroProcessing_Warning_DependencyErrors", resourceCulture);
             }
         }
         

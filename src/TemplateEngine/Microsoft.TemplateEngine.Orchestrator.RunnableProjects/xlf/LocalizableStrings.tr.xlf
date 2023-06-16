@@ -25,6 +25,11 @@ Do not localize: actionId</note>
         <target state="translated">'{1}' içinde yapılandırılmış '{0}' bağımsız değişkeni '{2}' içinde listelenmediğinden işlenmeden atlanacak.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Authoring_CyclicDependencyInSymbols">
+        <source>Parameter conditions contain cyclic dependency: [{0}] that is preventing deterministic evaluation.</source>
+        <target state="new">Parameter conditions contain cyclic dependency: [{0}] that is preventing deterministic evaluation.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Authoring_InvalidJsonElementInLocalizationFile">
         <source>Localization file should only contain elements with type 'string'. Remove elements that are not strings.</source>
         <target state="translated">Yerelleştirme dosyası yalnızca ‘dize’ türünde öğeler içermelidir. Dize olmayan öğeleri kaldırın.</target>
@@ -125,6 +130,11 @@ Ayrıntılar: {1}</target>
 {1} - the comma separated list of sources (localized values) which define the binding
 {2} - the comma separated list of prefixes that can be used to define the source of the value</note>
       </trans-unit>
+      <trans-unit id="CoalesceMacro_Exception_MissedVariables">
+        <source>Template authoring error encountered while processing macro '{0}': Variable '{1}'. Neither source nor fallback variable was found.</source>
+        <target state="new">Template authoring error encountered while processing macro '{0}': Variable '{1}'. Neither source nor fallback variable was found.</target>
+        <note>{0} - macro type, {1} - macro name</note>
+      </trans-unit>
       <trans-unit id="EvaluatorSelector_Exception_UnknownEvaluator">
         <source>Unrecognized evaluator: '{0}'.</source>
         <target state="translated">Tanınmayan değerlendirici: '{0}'.</target>
@@ -159,6 +169,16 @@ Ayrıntılar: {1}</target>
         <source>Locale '{0}' does not match any known cultures.</source>
         <target state="translated">Yerel ayar ('{0})' bilinen kültürlerle eşleşmiyor.</target>
         <note />
+      </trans-unit>
+      <trans-unit id="MacroConfig_Exception_AccessToDependencies">
+        <source>The method '{0}' must be called prior '{1}' property reading.</source>
+        <target state="new">The method '{0}' must be called prior '{1}' property reading.</target>
+        <note>erty name.</note>
+      </trans-unit>
+      <trans-unit id="MacroProcessing_Warning_DependencyErrors">
+        <source>'{0}' was not processed due to the next issues in dependencises: '{1}'.</source>
+        <target state="new">'{0}' was not processed due to the next issues in dependencises: '{1}'.</target>
+        <note>{0} - macro name, {1} - dependent macros errors</note>
       </trans-unit>
       <trans-unit id="RunnableProjectConfig_OperationSetup_UnknownForm">
         <source>The symbol '{0}': unable to find a form '{1}', the further processing of the symbol will be skipped.</source>

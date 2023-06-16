@@ -4,6 +4,7 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
+using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros;
 using Microsoft.TemplateEngine.TestHelper;
@@ -53,8 +54,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Value
             }
 
             Assert.NotNull(runConfig);
-            Assert.Equal(1, globalRunConfig.ComputedMacros.Count(m => m.VariableName.StartsWith("mySymbol")));
-            BaseMacroConfig mySymbolMacro = globalRunConfig.ComputedMacros.Single(m => m.VariableName.StartsWith("mySymbol"));
+            Assert.Equal(1, globalRunConfig.Macros.Count(m => m.VariableName.StartsWith("mySymbol")));
+            IMacroConfig mySymbolMacro = globalRunConfig.Macros.Single(m => m.VariableName.StartsWith("mySymbol"));
 
             Assert.True(mySymbolMacro is ProcessValueFormMacroConfig);
             ProcessValueFormMacroConfig? identityFormConfig = mySymbolMacro as ProcessValueFormMacroConfig;

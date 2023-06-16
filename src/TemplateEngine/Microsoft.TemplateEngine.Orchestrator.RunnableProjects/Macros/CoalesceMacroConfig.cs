@@ -1,11 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
+using System.Collections.Generic;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 {
-    internal class CoalesceMacroConfig : BaseMacroConfig<CoalesceMacro, CoalesceMacroConfig>
+    internal class CoalesceMacroConfig : BaseMacroConfig<CoalesceMacro, CoalesceMacroConfig>, IMacroConfigDependency
     {
         internal CoalesceMacroConfig(
             CoalesceMacro macro,
@@ -18,12 +20,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
         {
             if (string.IsNullOrWhiteSpace(sourceVariableName))
             {
-                throw new System.ArgumentException($"'{nameof(sourceVariableName)}' cannot be null or whitespace.", nameof(sourceVariableName));
+                throw new ArgumentException($"'{nameof(sourceVariableName)}' cannot be null or whitespace.", nameof(sourceVariableName));
             }
 
             if (string.IsNullOrWhiteSpace(fallbackVariableName))
             {
-                throw new System.ArgumentException($"'{nameof(fallbackVariableName)}' cannot be null or whitespace.", nameof(fallbackVariableName));
+                throw new ArgumentException($"'{nameof(fallbackVariableName)}' cannot be null or whitespace.", nameof(fallbackVariableName));
             }
 
             SourceVariableName = sourceVariableName;
@@ -44,5 +46,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
         internal string? DefaultValue { get; }
 
         internal string FallbackVariableName { get; }
+
+        public void ResolveSymbolDependencies(IReadOnlyList<string> symbols)
+        {
+            MacroDependenciesResolved = true;
+            PopulateMacroConfigDependencies(SourceVariableName, symbols);
+            PopulateMacroConfigDependencies(FallbackVariableName, symbols);
+        }
     }
 }

@@ -22,7 +22,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
             environmentSettings.Host.Logger.LogDebug("[{macro}]: Variable '{var}' was assigned to value '{value}'.", nameof(NowMacro), config.VariableName, value);
         }
 
-        public override void EvaluateDeterministically(IEngineEnvironmentSettings environmentSettings, IVariableCollection variables, NowMacroConfig config)
+        public override void EvaluateDeterministically(
+            IEngineEnvironmentSettings environmentSettings,
+            IVariableCollection variables,
+            NowMacroConfig config)
         {
             DateTime time = new DateTime(1900, 01, 01);
             string value = time.ToString(config.Format);
@@ -30,6 +33,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
             environmentSettings.Host.Logger.LogDebug("[{macro}]: Variable '{var}' was assigned to value '{value}' in deterministic mode.", nameof(NowMacro), config.VariableName, value);
         }
 
-        protected override NowMacroConfig CreateConfig(IEngineEnvironmentSettings environmentSettings, IGeneratedSymbolConfig deferredConfig) => new(this, deferredConfig);
+        public override NowMacroConfig CreateConfig(IEngineEnvironmentSettings environmentSettings, IGeneratedSymbolConfig deferredConfig) => new(this, deferredConfig);
     }
 }

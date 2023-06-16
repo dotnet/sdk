@@ -85,7 +85,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             IVariableCollection variables = new VariableCollection();
             GeneratePortNumberMacro macro = new();
 
-            macro.EvaluateDeterministically(_engineEnvironmentSettings, variables, deferredConfig);
+            macro.EvaluateDeterministically(_engineEnvironmentSettings, variables, macro.CreateConfig(_engineEnvironmentSettings, deferredConfig));
             Assert.Equal(1, variables.Count);
             Assert.Equal(4000, variables["test"]);
         }
@@ -101,7 +101,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             IVariableCollection variables = new VariableCollection();
             GeneratePortNumberMacro macro = new();
 
-            macro.EvaluateDeterministically(_engineEnvironmentSettings, variables, deferredConfig);
+            macro.EvaluateDeterministically(_engineEnvironmentSettings, variables, macro.CreateConfig(_engineEnvironmentSettings, deferredConfig));
             Assert.Equal(1, variables.Count);
             Assert.Equal(GeneratePortNumberConfig.LowPortDefault, variables["test"]);
         }

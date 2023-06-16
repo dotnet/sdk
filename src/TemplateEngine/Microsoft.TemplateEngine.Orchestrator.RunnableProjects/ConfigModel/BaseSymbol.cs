@@ -23,13 +23,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
 
         /// <summary>
         /// Gets the name of the symbol.
-        /// Correpsonds to key that defines the symbol in "symbols" JSON object.
+        /// Corresponds to key that defines the symbol in "symbols" JSON object.
         /// </summary>
         public string Name { get; }
 
         /// <summary>
         /// Gets the type of the symbol.
-        /// Correpsonds to "type" JSON property.
+        /// Corresponds to "type" JSON property.
         /// </summary>
         public abstract string Type { get; }
 

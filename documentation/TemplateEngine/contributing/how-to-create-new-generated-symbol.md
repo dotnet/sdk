@@ -39,7 +39,11 @@ The implementation should have:
 - `Type` property - unique `string` name, matching generated symbol type
 - `Evaluate(IEngineEnvironmentSettings environmentSettings, IVariableCollection variables, T config)` method - evaluates the variables based on `config` specified
 - `Evaluate(IEngineEnvironmentSettings environmentSettings, IVariableCollection variables, IGeneratedSymbolConfig generatedSymbolConfig)` method - evaluates the variables based on `generatedSymbolConfig` specified
-- `CreateConfig(IEngineEnvironmentSettings environmentSettings, IGeneratedSymbolConfig generatedSymbolConfig)` method - creates macro-specific configuration from `generatedSymbolConfig`, that later on can be passed to `Evaluate` method
+- `CreateConfig(IEngineEnvironmentSettings environmentSettings, IGeneratedSymbolConfig generatedSymbolConfig)` method - creates macro-specific configuration from `generatedSymbolConfig`, that later on can be passed to `Evaluate` method.
+
+The implementation of macro config may have:
+- Properties/methods derived from `IMacroConfigDependency` interface:
+    `ResolveSymbolDependencies(IReadOnlyList<string> symbols)` - the method should identify the dependencies of macro configuration on symbols, and populate `Dependencies` property of the macro with dependent symbol names.
 
 You may want to derive your own implementation from `BaseGeneratedSymbolMacro<T>` base class that offers some common logic. Configuration of the macro may derive from `BaseMacroConfig` class, that already have some utilities to parse the JSON configuration.
 When using base class, you need to implement the following members:
@@ -63,30 +67,47 @@ The very basic implementation may be:
             environmentSettings.Host.Logger.LogDebug("[{macro}]: Variable '{var}' was assigned to value '{value}'.", nameof(HelloMacro), config.VariableName, greetings);
         }
 
-        protected override HelloMacroConfig CreateConfig(IGeneratedSymbolConfig generatedSymbolConfig) => new(this, generatedSymbolConfig);
+        public override HelloMacroConfig CreateConfig(IEngineEnvironmentSettings environmentSettings, IGeneratedSymbolConfig generatedSymbolConfig) => new(this, generatedSymbolConfig);
     }
 
-    internal class HelloMacroConfig : BaseMacroConfig<HelloMacro, HelloMacroConfig>
+    internal class HelloMacroConfig : BaseMacroConfig<HelloMacro, HelloMacroConfig>, IMacroConfigDependency
     {
-        internal HelloMacroConfig(HelloMacro macro, string variableName, string? dataType = null, string nameToGreet) : base(macro, variableName, dataType)
+        internal HelloMacroConfig(HelloMacro macro, string variableName, string nameToGreet, string sourceVariable, string? dataType = null) : base(macro, variableName, dataType)
         {
             if (string.IsNullOrEmpty(nameToGreet))
             {
                 throw new ArgumentException($"'{nameof(nameToGreet)}' cannot be null or empty.", nameof(nameToGreet));
             }
 
+            if (string.IsNullOrWhiteSpace(sourceVariable))
+            {
+                throw new ArgumentException($"'{nameof(sourceVariable)}' cannot be null or whitespace.", nameof(sourceVariable));
+            }
+
             NameToGreet = nameToGreet;
+            Source = sourceVariable;
         }
 
         internal HelloMacroConfig(HelloMacro macro, IGeneratedSymbolConfig generatedSymbolConfig)
             : base(macro, generatedSymbolConfig.VariableName, generatedSymbolConfig.DataType)
         {
             NameToGreet = GetMandatoryParameterValue(generatedSymbolConfig, nameof(NameToGreet));
+            Source = GetMandatoryParameterValue(generatedSymbolConfig, "source");
         }
 
         internal string NameToGreet { get; }
+
+        internal string Source { get; private set; }
+
+        public void ResolveSymbolDependencies(IReadOnlyList<string> symbols)
+        {
+            PopulateMacroConfigDependencies(Source, symbols);
+        }
     }
 ```
+
+`IMacroConfigDependency` interface depicts macro capability to derive it value(s) from other macros.
+Dependencies are defined based on passed `IReadOnlyList<string> symbols` collection. An example of implemetation can be find here: [`CoalesceMacroConfig.cs`](../../src/Microsoft.TemplateEngine.Orchestrator.RunnableProjects/Macros/CoalesceMacroConfig.cs).
 
 `IGeneratedSymbolConfig` config already contains the pre-parsed JSON from template.json. It has properties for: symbol name, data type (if specified) and parameters collection. 
 Parameters collection contains parameter key-value pairs from JSON. Note that value is in JSON format, i.e. if the parameter value is string, then it contains `"\"string-value\""`.

@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using Microsoft.TemplateEngine.Abstractions;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions
@@ -19,7 +18,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions
         /// <summary>
         /// Evaluates the macro based on <paramref name="config"/>. The result is modification of variable collection <paramref name="vars"/>.
         /// </summary>
-        [Obsolete("Use IMacro<T>.Evaluate instead")]
         void EvaluateConfig(IEngineEnvironmentSettings environmentSettings, IVariableCollection vars, IMacroConfig config);
     }
 

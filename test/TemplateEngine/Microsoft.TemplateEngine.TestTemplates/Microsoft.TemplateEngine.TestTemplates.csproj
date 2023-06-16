@@ -21,4 +21,5 @@
     <Content Include="nupkg_templates\**" />
     <None Include="nupkg_templates\**" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
+
 </Project>

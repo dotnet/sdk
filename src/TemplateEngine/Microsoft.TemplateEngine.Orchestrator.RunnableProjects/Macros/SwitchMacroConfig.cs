@@ -8,7 +8,7 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 {
-    internal class SwitchMacroConfig : BaseMacroConfig<SwitchMacro, SwitchMacroConfig>
+    internal class SwitchMacroConfig : BaseMacroConfig<SwitchMacro, SwitchMacroConfig>, IMacroConfigDependency
     {
         private const string CasesPropertyName = "cases";
         private const string CasesConditionPropertyName = "condition";
@@ -23,7 +23,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
         }
 
         internal SwitchMacroConfig(SwitchMacro macro, IGeneratedSymbolConfig generatedSymbolConfig)
-        : base(macro, generatedSymbolConfig.VariableName, generatedSymbolConfig.DataType)
+            : base(macro, generatedSymbolConfig.VariableName, generatedSymbolConfig.DataType)
         {
             string? evaluator = GetOptionalParameterValue(generatedSymbolConfig, "evaluator");
             if (!string.IsNullOrWhiteSpace(evaluator))
@@ -56,5 +56,17 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
         internal ConditionStringEvaluator Evaluator { get; private set; } = EvaluatorSelector.SelectStringEvaluator(DefaultEvaluator);
 
         internal IReadOnlyList<(string? Condition, string Value)> Cases { get; private set; }
+
+        public void ResolveSymbolDependencies(IReadOnlyList<string> symbols)
+        {
+            MacroDependenciesResolved = true;
+            foreach ((string? condition, string _) in Cases)
+            {
+                if (!string.IsNullOrEmpty(condition))
+                {
+                    PopulateMacroConfigDependencies(condition!, symbols);
+                }
+            }
+        }
     }
 }

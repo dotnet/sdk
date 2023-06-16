@@ -102,7 +102,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             IVariableCollection variables = new VariableCollection();
             RandomMacro macro = new();
 
-            macro.EvaluateDeterministically(_engineEnvironmentSettings, variables, deferredConfig);
+            macro.EvaluateDeterministically(_engineEnvironmentSettings, variables, macro.CreateConfig(_engineEnvironmentSettings, deferredConfig));
 
             Assert.Equal(1, variables.Count);
             Assert.Equal(10, variables["test"]);

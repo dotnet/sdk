@@ -14,7 +14,6 @@ using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
 using Microsoft.TemplateEngine.Core;
 using Microsoft.TemplateEngine.Core.Contracts;
-using Microsoft.TemplateEngine.Core.Expressions.Cpp2;
 using Microsoft.TemplateEngine.Core.Operations;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel;
@@ -48,7 +47,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         private static readonly string[] DefaultPlaceholderFilenames = new[] { "-.-", "_._" };
         private readonly Dictionary<Guid, string> _guidToGuidPrefixMap = new();
 
-        private readonly TemplateLocalizationInfo? _localizaitonInfo;
+        private readonly TemplateLocalizationInfo? _localizationInfo;
         private readonly IFile? _hostConfigFile;
 
         private IReadOnlyList<FileSourceMatchInfo>? _sources;
@@ -73,7 +72,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 try
                 {
                     LocalizationModel locModel = LocalizationModelDeserializer.Deserialize(localeConfigFile);
-                    _localizaitonInfo = new TemplateLocalizationInfo(ParseLocFileName(localeConfigFile) ?? CultureInfo.InvariantCulture, locModel, localeConfigFile);
+                    _localizationInfo = new TemplateLocalizationInfo(ParseLocFileName(localeConfigFile) ?? CultureInfo.InvariantCulture, locModel, localeConfigFile);
                 }
                 catch (Exception ex)
                 {
@@ -169,7 +168,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         /// </summary>
         internal IMountPoint SourceMountPoint { get; }
 
-        internal TemplateLocalizationInfo? Localization => _localizaitonInfo;
+        internal TemplateLocalizationInfo? Localization => _localizationInfo;
 
         internal IReadOnlyList<IReplacementTokens> SymbolFilenameReplacements
         {
@@ -181,11 +180,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         }
 
         internal override IReadOnlyDictionary<CultureInfo, TemplateLocalizationInfo> Localizations =>
-             _localizaitonInfo is null
+             _localizationInfo is null
                 ? new Dictionary<CultureInfo, TemplateLocalizationInfo>()
                 : new Dictionary<CultureInfo, TemplateLocalizationInfo>()
                 {
-                    { _localizaitonInfo.Locale, _localizaitonInfo }
+                    { _localizationInfo.Locale, _localizationInfo }
                 };
 
         internal override IReadOnlyDictionary<string, IFile> HostFiles =>
@@ -202,27 +201,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         }
 
         /// <summary>
-        /// Evaluates the conditions in template configurations: computed symbols, conditions in special custom operations, in sources anr primary outputs.
+        /// Evaluates the conditions in template configurations: conditions in special custom operations, in sources and primary outputs.
         /// File renames are also applied at this step.
         /// </summary>
         /// <param name="rootVariableCollection"></param>
         public void Evaluate(IVariableCollection rootVariableCollection)
         {
-            bool stable = false;
-            Dictionary<string, bool> computed = new Dictionary<string, bool>();
-
-            while (!stable)
-            {
-                stable = true;
-                foreach (ComputedSymbol symbol in ConfigurationModel.Symbols.OfType<ComputedSymbol>())
-                {
-                    bool value = Cpp2StyleEvaluatorDefinition.EvaluateFromString(EngineEnvironmentSettings.Host.Logger, symbol.Value, rootVariableCollection);
-                    stable &= computed.TryGetValue(symbol.Name, out bool currentValue) && currentValue == value;
-                    rootVariableCollection[symbol.Name] = value;
-                    computed[symbol.Name] = value;
-                }
-            }
-
             // evaluate the file glob (specials) conditions
             // the result is needed for SpecialOperationConfig
             foreach (CustomFileGlobModel fileGlobModel in ConfigurationModel.SpecialCustomOperations)
@@ -367,30 +351,28 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
 
             IVariableConfig variableConfig = customGlobModel != null ? customGlobModel.VariableFormat : VariableConfig.Default;
-            List<IGeneratedSymbolConfig> generatedSymbolMacros = new();
-            List<BaseMacroConfig> computedMacros = new();
+
             List<IReplacementTokens> macroGeneratedReplacements = new();
+
+            List<IMacroConfig> macros = new();
 
             if (generateMacros)
             {
-                generatedSymbolMacros = ProduceGeneratedSymbolsMacroConfig();
-                computedMacros = ProduceComputedMacroConfig();
+                macros.AddRange(ProduceGeneratedSymbolsMacroConfig());
+                macros.AddRange(ProduceComputedMacroConfig());
             }
 
             foreach (BaseSymbol symbol in ConfigurationModel.Symbols)
             {
-                if (symbol is DerivedSymbol derivedSymbol)
+                if (symbol is DerivedSymbol derivedSymbol && generateMacros)
                 {
-                    if (generateMacros)
+                    if (ConfigurationModel.Forms.TryGetValue(derivedSymbol.ValueTransform, out _))
                     {
-                        if (ConfigurationModel.Forms.TryGetValue(derivedSymbol.ValueTransform, out _))
-                        {
-                            computedMacros.Add(new ProcessValueFormMacroConfig(derivedSymbol.ValueSource, symbol.Name, derivedSymbol.DataType, derivedSymbol.ValueTransform, ConfigurationModel.Forms));
-                        }
-                        else
-                        {
-                            EngineEnvironmentSettings.Host.Logger.LogWarning(LocalizableStrings.RunnableProjectConfig_OperationSetup_UnknownForm, derivedSymbol.Name, derivedSymbol.ValueTransform);
-                        }
+                        macros.Add(new ProcessValueFormMacroConfig(derivedSymbol.ValueSource, symbol.Name, derivedSymbol.DataType, derivedSymbol.ValueTransform, ConfigurationModel.Forms));
+                    }
+                    else
+                    {
+                        EngineEnvironmentSettings.Host.Logger.LogWarning(LocalizableStrings.RunnableProjectConfig_OperationSetup_UnknownForm, derivedSymbol.Name, derivedSymbol.ValueTransform);
                     }
                 }
 
@@ -415,7 +397,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                                 }
                                 if (generateMacros)
                                 {
-                                    computedMacros.Add(new ProcessValueFormMacroConfig(sourceVariable, symbolName, "string", formName, ConfigurationModel.Forms));
+                                    macros.Add(new ProcessValueFormMacroConfig(sourceVariable, symbolName, "string", formName, ConfigurationModel.Forms));
                                 }
                             }
                             else
@@ -430,6 +412,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     }
                 }
             }
+
             foreach (KeyValuePair<Guid, string> map in _guidToGuidPrefixMap)
             {
                 foreach (char format in GuidMacroConfig.DefaultFormats)
@@ -460,11 +443,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             {
                 Operations = operations,
                 VariableSetup = variableConfig,
-                GeneratedSymbolMacros = generatedSymbolMacros,
-                ComputedMacros = computedMacros,
+                Macros = macros,
+                SymbolNames = ConfigurationModel.Symbols.Select(x => x.Name).ToList(),
                 Replacements = macroGeneratedReplacements,
                 CustomOperations = customOperationConfig
             };
+
             return config;
         }
 
@@ -501,9 +485,29 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             filenameReplacements.Add(new ReplacementTokens(sourceVariable, replacementConfig));
         }
 
-        private List<IGeneratedSymbolConfig> ProduceGeneratedSymbolsMacroConfig()
+        private List<IMacroConfig> ProduceGeneratedSymbolsMacroConfig()
         {
-            return ConfigurationModel.Symbols.OfType<IGeneratedSymbolConfig>().ToList();
+            var generatedSymbolsConfigs = ConfigurationModel.Symbols.OfType<IGeneratedSymbolConfig>().ToList();
+            Dictionary<string, IGeneratedSymbolMacro> generatedSymbolMacros = EngineEnvironmentSettings.Components.OfType<IGeneratedSymbolMacro>()
+                .ToDictionary(m => m.Type, m => m);
+
+            var generatedMacroConfigs = new List<IMacroConfig>();
+            foreach (var generatedSymbolConfig in generatedSymbolsConfigs)
+            {
+                if (generatedSymbolMacros.TryGetValue(generatedSymbolConfig.Type, out var generatedSymbolMacro))
+                {
+                    generatedMacroConfigs.Add(generatedSymbolMacro.CreateConfig(EngineEnvironmentSettings, generatedSymbolConfig));
+                }
+                else
+                {
+                    EngineEnvironmentSettings.Host.Logger.LogWarning(
+                        LocalizableStrings.MacroProcessor_Warning_UnknownMacro,
+                        generatedSymbolConfig.VariableName,
+                        generatedSymbolConfig.Type);
+                }
+            }
+
+            return generatedMacroConfigs;
         }
 
         private List<BaseMacroConfig> ProduceComputedMacroConfig()

@@ -15,68 +15,104 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
     internal static class MacroProcessor
     {
         /// <summary>
-        /// Processes the macros defined in <paramref name="runConfig"/>.
+        /// Processes the macros defined in <paramref name="macroConfigs"/>.
         /// </summary>
         /// <exception cref="TemplateAuthoringException">when <see cref="IGeneratedSymbolMacro"/> config is invalid.</exception>
         /// <exception cref="MacroProcessingException">when the error occurs when macro is processed.</exception>
         internal static void ProcessMacros(
             IEngineEnvironmentSettings environmentSettings,
-            GlobalRunConfig runConfig,
+            IReadOnlyList<IMacroConfig> macroConfigs,
             IVariableCollection variables)
         {
             bool deterministicMode = IsDeterministicModeEnabled(environmentSettings);
+            Dictionary<string, IMacro> knownMacros = environmentSettings.Components.OfType<IMacro>().ToDictionary(m => m.Type, m => m);
 
-            foreach (BaseMacroConfig config in runConfig.ComputedMacros)
+            foreach (IMacroConfig config in macroConfigs)
             {
+                // Errors in macro dependencies are not supposed to interrupt template generation.
+                // Skip this macro and add info in the output.
+                if (config is IMacroConfigDependency macroWithDep && macroWithDep.Dependencies.Any())
+                {
+                    HashSet<IMacroConfig> dependentMacros = GetDependentMacros(config, macroConfigs);
+                    if (dependentMacros.OfType<BaseMacroConfig>().Any(bmc => bmc.MacroErrors.Any()))
+                    {
+                        environmentSettings.Host.Logger.LogWarning(
+                            string.Format(
+                                LocalizableStrings.MacroProcessing_Warning_DependencyErrors,
+                                config.VariableName,
+                                string.Join(",", dependentMacros.OfType<BaseMacroConfig>().SelectMany(d => d.MacroErrors))));
+
+                        continue;
+                    }
+                }
+
                 try
                 {
-                    if (deterministicMode)
+                    if (knownMacros.TryGetValue(config.Type, out IMacro executingMacro))
                     {
-                        config.EvaluateDeterministically(environmentSettings, variables);
+                        if (deterministicMode && executingMacro is IDeterministicModeMacro detMacro)
+                        {
+                            detMacro.EvaluateConfigDeterministically(environmentSettings, variables, config);
+                        }
+                        else
+                        {
+                            executingMacro.EvaluateConfig(environmentSettings, variables, config);
+                        }
                     }
                     else
                     {
-                        config.Evaluate(environmentSettings, variables);
+                        environmentSettings.Host.Logger.LogWarning(LocalizableStrings.MacroProcessor_Warning_UnknownMacro, config.VariableName, config.Type);
                     }
                 }
-                catch (Exception ex)
+                //TemplateAuthoringException means that config was invalid, just pass it.
+                catch (Exception ex) when (ex is not TemplateAuthoringException)
                 {
                     throw new MacroProcessingException(config, ex);
                 }
             }
+        }
 
-            if (!runConfig.GeneratedSymbolMacros.Any())
+        internal static IReadOnlyList<IMacroConfig> SortMacroConfigsByDependencies(IReadOnlyList<string> symbols, IReadOnlyList<IMacroConfig> macroConfigs)
+        {
+            IEnumerable<(IMacroConfig, HashSet<IMacroConfig>)> preparedMacroConfigs = macroConfigs.Select(mc =>
             {
-                return;
+                if (mc is IMacroConfigDependency macroWithDeps)
+                {
+                    macroWithDeps.ResolveSymbolDependencies(symbols);
+                    return (mc, GetDependentMacros(mc, macroConfigs));
+                }
+                return (mc, new HashSet<IMacroConfig>());
+            });
+
+            DirectedGraph<IMacroConfig> parametersDependenciesGraph = new(preparedMacroConfigs.ToDictionary(mc => mc.Item1, mc => mc.Item2));
+            if (!parametersDependenciesGraph.TryGetTopologicalSort(out IReadOnlyList<IMacroConfig> sortedConfigs) && parametersDependenciesGraph.HasCycle(out IReadOnlyList<IMacroConfig> cycle))
+            {
+                throw new TemplateAuthoringException(
+                    string.Format(
+                        LocalizableStrings.Authoring_CyclicDependencyInSymbols,
+                        cycle.Select(p => p.VariableName).ToCsvString()),
+                    "Symbol circle");
+            }
+            return sortedConfigs;
+        }
+
+        private static HashSet<IMacroConfig> GetDependentMacros(IMacroConfig config, IReadOnlyList<IMacroConfig> allMacroConfigs)
+        {
+            HashSet<IMacroConfig> dependents = new();
+            if (config is not IMacroConfigDependency macroWithDep)
+            {
+                return dependents;
             }
 
-            Dictionary<string, IGeneratedSymbolMacro> generatedSymbolMacros = environmentSettings.Components.OfType<IGeneratedSymbolMacro>().ToDictionary(m => m.Type, m => m);
-            foreach (IGeneratedSymbolConfig config in runConfig.GeneratedSymbolMacros)
+            foreach (string dependent in macroWithDep.Dependencies)
             {
-                if (generatedSymbolMacros.TryGetValue(config.Type, out IGeneratedSymbolMacro generatedSymbolMacro))
+                IMacroConfig macro = allMacroConfigs.FirstOrDefault(mc => mc.VariableName == dependent);
+                if (macro != null)
                 {
-                    try
-                    {
-                        if (deterministicMode && generatedSymbolMacro is IDeterministicModeMacro<IGeneratedSymbolConfig> deterministicMacro)
-                        {
-                            deterministicMacro.EvaluateDeterministically(environmentSettings, variables, config);
-                        }
-                        else
-                        {
-                            generatedSymbolMacro.Evaluate(environmentSettings, variables, config);
-                        }
-                    }
-                    //TemplateAuthoringException means that config was invalid, just pass it.
-                    catch (Exception ex) when (ex is not TemplateAuthoringException)
-                    {
-                        throw new MacroProcessingException(config, ex);
-                    }
-                }
-                else
-                {
-                    environmentSettings.Host.Logger.LogWarning(LocalizableStrings.MacroProcessor_Warning_UnknownMacro, config.VariableName, config.Type);
+                    dependents.Add(macro);
                 }
             }
+            return dependents;
         }
 
         private static bool IsDeterministicModeEnabled(IEngineEnvironmentSettings environmentSettings)

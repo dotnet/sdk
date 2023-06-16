@@ -8,7 +8,7 @@ namespace Microsoft.TemplateEngine.Abstractions
     /// <summary>
     /// Defines an interface for generic variable collection.
     /// The variable collection may have a parent.
-    /// The parenet collection is used when the value is not found in current collection.
+    /// The parent collection is used when the value is not found in current collection.
     /// </summary>
     public interface IVariableCollection : IDictionary<string, object>
     {
