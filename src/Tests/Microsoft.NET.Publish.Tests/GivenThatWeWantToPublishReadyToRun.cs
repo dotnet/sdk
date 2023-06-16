@@ -351,19 +351,9 @@ namespace Microsoft.NET.Publish.Tests
             return TargetOSEnum.Windows;
         }
 
-        private static bool IsTargetOsOsX(string runtimeIdentifier)
-        {
-            return GetTargetOS(runtimeIdentifier) == TargetOSEnum.OsX;
-        }
-
         private static bool IsTargetOsWindows(string runtimeIdentifier)
         {
             return GetTargetOS(runtimeIdentifier) == TargetOSEnum.Windows;
-        }
-
-        private static bool IsTargetOsLinux(string runtimeIdentifier)
-        {
-            return GetTargetOS(runtimeIdentifier) == TargetOSEnum.Linux;
         }
 
         private void TestProjectPublishing_Internal(string projectName,
@@ -484,8 +474,7 @@ public class Program
             {
                 return Path.GetFileName(Path.ChangeExtension(assemblyFile, "ni.pdb"));
             }
-
-            if (IsTargetOsLinux(runtimeIdentifier))
+            else
             {
                 if (framework.Version.Major >= 6)
                 {
