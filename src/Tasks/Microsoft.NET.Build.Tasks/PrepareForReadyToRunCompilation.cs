@@ -173,7 +173,7 @@ namespace Microsoft.NET.Build.Tasks
                             crossgen1CreatePDBCommand = $"/CreatePDB \"{Path.GetDirectoryName(outputPDBImage)}\"";
                         }
                     }
-                    else if (!_crossgen2IsVersion5 || IsTargetLinux)
+                    else if ((ReadyToRunUseCrossgen2 && !_crossgen2IsVersion5) || IsTargetLinux)
                     {
                         string perfmapExtension;
                         if (ReadyToRunUseCrossgen2 && !_crossgen2IsVersion5 && _perfmapFormatVersion >= 1)
