@@ -78,6 +78,18 @@ namespace Microsoft.NET.Build.Tasks
             }
         }
 
+        private bool IsTargetLinux
+        {
+            get
+            {
+                // Crossgen2 V6 and above always has TargetOS metadata available
+                if (ReadyToRunUseCrossgen2 && !string.IsNullOrEmpty(Crossgen2Tool.GetMetadata(MetadataKeys.TargetOS))) 
+                    return Crossgen2Tool.GetMetadata(MetadataKeys.TargetOS) == "linux";
+                else
+                    return RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
+            }
+        }
+
         protected override void ExecuteCore()
         {
             if (ReadyToRunUseCrossgen2)
@@ -161,7 +173,7 @@ namespace Microsoft.NET.Build.Tasks
                             crossgen1CreatePDBCommand = $"/CreatePDB \"{Path.GetDirectoryName(outputPDBImage)}\"";
                         }
                     }
-                    else
+                    else if (!_crossgen2IsVersion5 || IsTargetLinux)
                     {
                         string perfmapExtension;
                         if (ReadyToRunUseCrossgen2 && !_crossgen2IsVersion5 && _perfmapFormatVersion >= 1)
@@ -269,7 +281,7 @@ namespace Microsoft.NET.Build.Tasks
                             compositePDBRelativePath = Path.ChangeExtension(compositeR2RImageRelativePath, ".ni.pdb");
                         }
                     }
-                    else
+                    else if (!_crossgen2IsVersion5 || IsTargetLinux)
                     {
                         string perfmapExtension = (_perfmapFormatVersion >= 1 ? ".ni.r2rmap" : ".ni.{composite}.map");
                         compositePDBImage = Path.ChangeExtension(compositeR2RImage, perfmapExtension);
