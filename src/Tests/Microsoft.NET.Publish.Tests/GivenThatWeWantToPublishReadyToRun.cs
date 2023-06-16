@@ -496,6 +496,8 @@ public class Program
                     return Path.GetFileName(Path.ChangeExtension(assemblyFile, "ni.{" + mvid + "}.map"));
                 }
             }
+
+            return null;
         }
 
         public static bool DoesImageHaveR2RInfo(string path)
