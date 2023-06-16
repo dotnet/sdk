@@ -7,7 +7,7 @@ using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow;
 
 namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumerations.FlowAnalysis
 {
-    internal class TrackingEnumerationSet(ImmutableHashSet<IOperation> operations, EnumerationCount enumerationCount) : CacheBasedEquatable<TrackingEnumerationSet>
+    internal class TrackingEnumerationSet : CacheBasedEquatable<TrackingEnumerationSet>
     {
         /// <summary>
         /// All the operations that might contribute to the <see cref="EnumerationCount"/>
@@ -25,14 +25,20 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         /// Here the block after the two if-branches would have a Zero EnumerationCount (because 'Bar' is not enumerated on all paths),
         /// with Bar.First() recorded in this property
         /// </remarks>
-        public ImmutableHashSet<IOperation> Operations { get; } = operations;
+        public ImmutableHashSet<IOperation> Operations { get; }
 
         /// <summary>
         /// The total number of enumeration.
         /// </summary>
-        public EnumerationCount EnumerationCount { get; } = enumerationCount;
+        public EnumerationCount EnumerationCount { get; }
 
         public static readonly TrackingEnumerationSet Empty = new(ImmutableHashSet<IOperation>.Empty, EnumerationCount.Zero);
+
+        public TrackingEnumerationSet(ImmutableHashSet<IOperation> operations, EnumerationCount enumerationCount)
+        {
+            Operations = operations;
+            EnumerationCount = enumerationCount;
+        }
 
         protected override void ComputeHashCodeParts(ref RoslynHashCode hashCode)
         {

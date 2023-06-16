@@ -72,11 +72,19 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
     }
 
 #pragma warning disable CA1815 // Override equals and operator equals on value types
-    public readonly struct OperatorKind(Func<int, int, bool> operation, int basicOperatorLength, int csharpOperatorLength, BinaryOperatorKind operatorKind)
+    public readonly struct OperatorKind
     {
-        public int BasicOperatorLength { get; } = basicOperatorLength;
-        public int CSharpOperatorLength { get; } = csharpOperatorLength;
-        public Func<int, int, bool> Operation { get; } = operation;
-        public BinaryOperatorKind BinaryOperatorKind { get; } = operatorKind;
+        public int BasicOperatorLength { get; }
+        public int CSharpOperatorLength { get; }
+        public Func<int, int, bool> Operation { get; }
+        public BinaryOperatorKind BinaryOperatorKind { get; }
+
+        public OperatorKind(Func<int, int, bool> operation, int basicOperatorLength, int csharpOperatorLength, BinaryOperatorKind operatorKind)
+        {
+            Operation = operation;
+            BinaryOperatorKind = operatorKind;
+            BasicOperatorLength = basicOperatorLength;
+            CSharpOperatorLength = csharpOperatorLength;
+        }
     }
 }

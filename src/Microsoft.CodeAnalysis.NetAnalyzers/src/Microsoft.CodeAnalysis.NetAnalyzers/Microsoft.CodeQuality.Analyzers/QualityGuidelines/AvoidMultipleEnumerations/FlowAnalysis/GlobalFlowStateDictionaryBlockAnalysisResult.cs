@@ -8,8 +8,13 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
 {
     using GlobalFlowStateDictionaryAnalysisData = DictionaryAnalysisData<AnalysisEntity, GlobalFlowStateDictionaryAnalysisValue>;
 
-    internal class GlobalFlowStateDictionaryBlockAnalysisResult(BasicBlock basicBlock, GlobalFlowStateDictionaryAnalysisData data) : AbstractBlockAnalysisResult(basicBlock)
+    internal class GlobalFlowStateDictionaryBlockAnalysisResult : AbstractBlockAnalysisResult
     {
-        public ImmutableDictionary<AnalysisEntity, GlobalFlowStateDictionaryAnalysisValue> Data { get; } = data.ToImmutableDictionary();
+        public GlobalFlowStateDictionaryBlockAnalysisResult(BasicBlock basicBlock, GlobalFlowStateDictionaryAnalysisData data) : base(basicBlock)
+        {
+            Data = data.ToImmutableDictionary();
+        }
+
+        public ImmutableDictionary<AnalysisEntity, GlobalFlowStateDictionaryAnalysisValue> Data { get; }
     }
 }

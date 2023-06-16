@@ -146,12 +146,20 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         private static SymbolDisplayFormat GetLanguageSpecificFormat(IOperation operation) =>
                 operation.Language == LanguageNames.CSharp ? SymbolDisplayFormat.CSharpShortErrorMessageFormat : SymbolDisplayFormat.VisualBasicShortErrorMessageFormat;
 
-        internal class SyncBlockingSymbol(string Name, string Namespace, SymbolKind Kind, ISymbol Value)
+        internal class SyncBlockingSymbol
         {
-            public string Name { get; set; } = Name;
-            public string Namespace { get; set; } = Namespace;
-            public SymbolKind Kind { get; set; } = Kind;
-            public ISymbol Value { get; set; } = Value;
+            public SyncBlockingSymbol(string Name, string Namespace, SymbolKind Kind, ISymbol Value)
+            {
+                this.Name = Name;
+                this.Namespace = Namespace;
+                this.Kind = Kind;
+                this.Value = Value;
+            }
+
+            public string Name { get; set; }
+            public string Namespace { get; set; }
+            public SymbolKind Kind { get; set; }
+            public ISymbol Value { get; set; }
         }
 
         private static void GetTypeAndAddToDictionary(string key, string typeName, ConcurrentDictionary<string, INamedTypeSymbol> syncBlockingTypes, Compilation compilation)

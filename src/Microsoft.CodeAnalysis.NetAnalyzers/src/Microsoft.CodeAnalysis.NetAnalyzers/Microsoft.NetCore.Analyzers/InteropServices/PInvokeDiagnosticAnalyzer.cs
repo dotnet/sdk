@@ -82,16 +82,24 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 });
         }
 
-        private sealed class SymbolAnalyzer(
-            INamedTypeSymbol dllImportType,
-            INamedTypeSymbol marshalAsType,
-            INamedTypeSymbol stringBuilderType,
-            INamedTypeSymbol unmanagedType)
+        private sealed class SymbolAnalyzer
         {
-            private readonly INamedTypeSymbol _dllImportType = dllImportType;
-            private readonly INamedTypeSymbol _marshalAsType = marshalAsType;
-            private readonly INamedTypeSymbol _stringBuilderType = stringBuilderType;
-            private readonly INamedTypeSymbol _unmanagedType = unmanagedType;
+            private readonly INamedTypeSymbol _dllImportType;
+            private readonly INamedTypeSymbol _marshalAsType;
+            private readonly INamedTypeSymbol _stringBuilderType;
+            private readonly INamedTypeSymbol _unmanagedType;
+
+            public SymbolAnalyzer(
+                INamedTypeSymbol dllImportType,
+                INamedTypeSymbol marshalAsType,
+                INamedTypeSymbol stringBuilderType,
+                INamedTypeSymbol unmanagedType)
+            {
+                _dllImportType = dllImportType;
+                _marshalAsType = marshalAsType;
+                _stringBuilderType = stringBuilderType;
+                _unmanagedType = unmanagedType;
+            }
 
             public void AnalyzeSymbol(SymbolAnalysisContext context)
             {

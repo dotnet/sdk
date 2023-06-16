@@ -48,16 +48,22 @@ namespace Microsoft.NetCore.Analyzers.Performance
             }
         }
 
-        private sealed class HashDataCodeAction(Document document, HashInstanceTarget hashInstanceTarget, PreferHashDataOverComputeHashFixHelper helper, SyntaxNode root) : CodeAction
+        private sealed class HashDataCodeAction : CodeAction
         {
-            private readonly HashInstanceTarget _hashInstanceTarget = hashInstanceTarget;
-            private readonly PreferHashDataOverComputeHashFixHelper _helper = helper;
-            private readonly SyntaxNode _root = root;
-
+            private readonly HashInstanceTarget _hashInstanceTarget;
+            private readonly PreferHashDataOverComputeHashFixHelper _helper;
+            private readonly SyntaxNode _root;
+            public HashDataCodeAction(Document document, HashInstanceTarget hashInstanceTarget, PreferHashDataOverComputeHashFixHelper helper, SyntaxNode root)
+            {
+                Document = document;
+                _hashInstanceTarget = hashInstanceTarget;
+                _helper = helper;
+                _root = root;
+            }
             public override string Title => MicrosoftNetCoreAnalyzersResources.PreferHashDataCodefixTitle;
             public override string EquivalenceKey => nameof(MicrosoftNetCoreAnalyzersResources.PreferHashDataCodefixTitle);
 
-            public Document Document { get; } = document;
+            public Document Document { get; }
 
             protected override Task<Document> GetChangedDocumentAsync(CancellationToken cancellationToken)
             {
@@ -69,12 +75,19 @@ namespace Microsoft.NetCore.Analyzers.Performance
             }
         }
 
-        private sealed class PreferHashDataOverComputeHashFixAllCodeAction(string title, Solution solution, List<KeyValuePair<Project, ImmutableArray<Diagnostic>>> diagnosticsToFix, PreferHashDataOverComputeHashFixHelper helper) : CodeAction
+        private sealed class PreferHashDataOverComputeHashFixAllCodeAction : CodeAction
         {
-            private readonly List<KeyValuePair<Project, ImmutableArray<Diagnostic>>> _diagnosticsToFix = diagnosticsToFix;
-            private readonly Solution _solution = solution;
-            private readonly PreferHashDataOverComputeHashFixHelper _helper = helper;
+            private readonly List<KeyValuePair<Project, ImmutableArray<Diagnostic>>> _diagnosticsToFix;
+            private readonly Solution _solution;
+            private readonly PreferHashDataOverComputeHashFixHelper _helper;
 
+            public PreferHashDataOverComputeHashFixAllCodeAction(string title, Solution solution, List<KeyValuePair<Project, ImmutableArray<Diagnostic>>> diagnosticsToFix, PreferHashDataOverComputeHashFixHelper helper)
+            {
+                Title = title;
+                _solution = solution;
+                _diagnosticsToFix = diagnosticsToFix;
+                _helper = helper;
+            }
             public override string EquivalenceKey => nameof(MicrosoftNetCoreAnalyzersResources.PreferHashDataCodefixTitle);
 
             protected override async Task<Solution> GetChangedSolutionAsync(CancellationToken cancellationToken)
@@ -118,7 +131,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 return newSolution;
             }
 
-            public override string Title { get; } = title;
+            public override string Title { get; }
 
             private HashInstanceTarget[]? CollectTargets(SyntaxNode root, IGrouping<SyntaxTree, Diagnostic> grouping, CancellationToken cancellationToken)
             {
@@ -196,11 +209,17 @@ namespace Microsoft.NetCore.Analyzers.Performance
 #pragma warning restore CA1819 // Properties should not return arrays
         }
 
-        protected sealed class ComputeHashSyntaxHolder(SyntaxNode computeHashNode, PreferHashDataOverComputeHashAnalyzer.ComputeType computeType, string hashTypeName)
+        protected sealed class ComputeHashSyntaxHolder
         {
-            public SyntaxNode ComputeHashNode { get; } = computeHashNode;
-            public PreferHashDataOverComputeHashAnalyzer.ComputeType ComputeType { get; } = computeType;
-            public string HashTypeName { get; } = hashTypeName;
+            public ComputeHashSyntaxHolder(SyntaxNode computeHashNode, PreferHashDataOverComputeHashAnalyzer.ComputeType computeType, string hashTypeName)
+            {
+                ComputeHashNode = computeHashNode;
+                ComputeType = computeType;
+                HashTypeName = hashTypeName;
+            }
+            public SyntaxNode ComputeHashNode { get; }
+            public PreferHashDataOverComputeHashAnalyzer.ComputeType ComputeType { get; }
+            public string HashTypeName { get; }
         }
 
         protected abstract class PreferHashDataOverComputeHashFixAllProvider : FixAllProvider

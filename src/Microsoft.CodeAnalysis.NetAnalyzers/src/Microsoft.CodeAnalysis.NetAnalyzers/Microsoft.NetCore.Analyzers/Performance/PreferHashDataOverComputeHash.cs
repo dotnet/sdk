@@ -318,12 +318,18 @@ namespace Microsoft.NetCore.Analyzers.Performance
         }
 
 #pragma warning disable CA1815 // Override equals and operator equals on value types
-        private readonly struct DeclarationTuple(IVariableInitializerOperation variableIntitializerOperation, ITypeSymbol type)
+        private readonly struct DeclarationTuple
 #pragma warning restore CA1815 // Override equals and operator equals on value types
         {
-            public IVariableInitializerOperation VariableIntitializerOperation { get; } = variableIntitializerOperation;
+            public IVariableInitializerOperation VariableIntitializerOperation { get; }
 
-            public ITypeSymbol OriginalType { get; } = type;
+            public ITypeSymbol OriginalType { get; }
+
+            public DeclarationTuple(IVariableInitializerOperation variableIntitializerOperation, ITypeSymbol type)
+            {
+                VariableIntitializerOperation = variableIntitializerOperation;
+                OriginalType = type;
+            }
         }
 
         public enum ComputeType
@@ -679,16 +685,24 @@ namespace Microsoft.NetCore.Analyzers.Performance
             }
         }
 
-        private sealed class DataResult(PooledConcurrentDictionary<ILocalSymbol, DeclarationTuple> createdSymbolMap,
-            PooledDictionary<ILocalSymbol, ImmutableArray<IInvocationOperation>>? disposeMap,
-            PooledDictionary<ILocalSymbol, int> computeHashOnlySymbolCountMap,
-            PooledConcurrentDictionary<IInvocationOperation, ComputeType> computeHashMap)
+        private sealed class DataResult
         {
-            private readonly PooledConcurrentDictionary<ILocalSymbol, DeclarationTuple> _createdSymbolMap = createdSymbolMap;
-            private readonly PooledDictionary<ILocalSymbol, int> _computeHashOnlySymbolCountMap = computeHashOnlySymbolCountMap;
-            private readonly PooledDictionary<ILocalSymbol, ImmutableArray<IInvocationOperation>>? _disposeMap = disposeMap;
+            private readonly PooledConcurrentDictionary<ILocalSymbol, DeclarationTuple> _createdSymbolMap;
+            private readonly PooledDictionary<ILocalSymbol, int> _computeHashOnlySymbolCountMap;
+            private readonly PooledDictionary<ILocalSymbol, ImmutableArray<IInvocationOperation>>? _disposeMap;
 
-            public PooledConcurrentDictionary<IInvocationOperation, ComputeType> ComputeHashMap { get; } = computeHashMap;
+            public DataResult(PooledConcurrentDictionary<ILocalSymbol, DeclarationTuple> createdSymbolMap,
+                PooledDictionary<ILocalSymbol, ImmutableArray<IInvocationOperation>>? disposeMap,
+                PooledDictionary<ILocalSymbol, int> computeHashOnlySymbolCountMap,
+                PooledConcurrentDictionary<IInvocationOperation, ComputeType> computeHashMap)
+            {
+                _createdSymbolMap = createdSymbolMap;
+                _disposeMap = disposeMap;
+                _computeHashOnlySymbolCountMap = computeHashOnlySymbolCountMap;
+                ComputeHashMap = computeHashMap;
+            }
+
+            public PooledConcurrentDictionary<IInvocationOperation, ComputeType> ComputeHashMap { get; }
 
             public bool TryGetDeclarationTuple(ILocalSymbol localSymbol, out DeclarationTuple declarationTuple) => _createdSymbolMap.TryGetValue(localSymbol, out declarationTuple);
 

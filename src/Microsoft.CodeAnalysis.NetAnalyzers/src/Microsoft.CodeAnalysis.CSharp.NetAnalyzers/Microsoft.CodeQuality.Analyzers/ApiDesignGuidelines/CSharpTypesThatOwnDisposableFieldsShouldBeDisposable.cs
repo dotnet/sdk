@@ -19,8 +19,12 @@ namespace Microsoft.CodeQuality.CSharp.Analyzers.ApiDesignGuidelines
             return new CSharpDisposableFieldAnalyzer(compilation);
         }
 
-        private class CSharpDisposableFieldAnalyzer(Compilation compilation) : DisposableFieldAnalyzer(compilation)
+        private class CSharpDisposableFieldAnalyzer : DisposableFieldAnalyzer
         {
+            public CSharpDisposableFieldAnalyzer(Compilation compilation)
+                : base(compilation)
+            { }
+
             protected override IEnumerable<IFieldSymbol> GetDisposableFieldCreations(SyntaxNode node, SemanticModel model,
                 HashSet<ISymbol> disposableFields, CancellationToken cancellationToken)
             {

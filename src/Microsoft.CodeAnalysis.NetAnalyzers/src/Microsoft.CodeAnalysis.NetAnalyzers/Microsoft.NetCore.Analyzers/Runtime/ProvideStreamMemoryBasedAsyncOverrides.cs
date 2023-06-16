@@ -192,19 +192,30 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         //  There is no trade-off for doing so because this type is never passed by-value.
         //  We never do equality operations on instances. 
 #pragma warning disable CA1815 // Override equals and operator equals on value types
-        private readonly struct RequiredSymbols(
-            ITypeSymbol streamType, ITypeSymbol memoryOfByteType, ITypeSymbol readOnlyMemoryOfByteType,
-            IMethodSymbol readAsyncArrayMethod, IMethodSymbol readAsyncMemoryMethod,
-            IMethodSymbol writeAsyncArrayMethod, IMethodSymbol writeAsyncMemoryMethod)
+        private readonly struct RequiredSymbols
 #pragma warning restore CA1815 // Override equals and operator equals on value types
         {
-            public ITypeSymbol StreamType { get; } = streamType;
-            public ITypeSymbol MemoryOfByteType { get; } = memoryOfByteType;
-            public ITypeSymbol ReadOnlyMemoryOfByteType { get; } = readOnlyMemoryOfByteType;
-            public IMethodSymbol ReadAsyncArrayMethod { get; } = readAsyncArrayMethod;
-            public IMethodSymbol ReadAsyncMemoryMethod { get; } = readAsyncMemoryMethod;
-            public IMethodSymbol WriteAsyncArrayMethod { get; } = writeAsyncArrayMethod;
-            public IMethodSymbol WriteAsyncMemoryMethod { get; } = writeAsyncMemoryMethod;
+            public RequiredSymbols(
+                ITypeSymbol streamType, ITypeSymbol memoryOfByteType, ITypeSymbol readOnlyMemoryOfByteType,
+                IMethodSymbol readAsyncArrayMethod, IMethodSymbol readAsyncMemoryMethod,
+                IMethodSymbol writeAsyncArrayMethod, IMethodSymbol writeAsyncMemoryMethod)
+            {
+                StreamType = streamType;
+                MemoryOfByteType = memoryOfByteType;
+                ReadOnlyMemoryOfByteType = readOnlyMemoryOfByteType;
+                ReadAsyncArrayMethod = readAsyncArrayMethod;
+                ReadAsyncMemoryMethod = readAsyncMemoryMethod;
+                WriteAsyncArrayMethod = writeAsyncArrayMethod;
+                WriteAsyncMemoryMethod = writeAsyncMemoryMethod;
+            }
+
+            public ITypeSymbol StreamType { get; }
+            public ITypeSymbol MemoryOfByteType { get; }
+            public ITypeSymbol ReadOnlyMemoryOfByteType { get; }
+            public IMethodSymbol ReadAsyncArrayMethod { get; }
+            public IMethodSymbol ReadAsyncMemoryMethod { get; }
+            public IMethodSymbol WriteAsyncArrayMethod { get; }
+            public IMethodSymbol WriteAsyncMemoryMethod { get; }
         }
     }
 }

@@ -97,21 +97,26 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             internal abstract object GetLogicalNotText(bool negate);
         }
 
-        public sealed class CSharpTestsSourceCodeProvider(
-            string operationName,
-            string targetType,
-            string extensionsNamespace,
-            string extensionsClass,
-            bool isAsync) : TestsSourceCodeProvider(
-                operationName,
-                targetType,
-                extensionsNamespace,
-                extensionsClass,
-                isAsync,
-                "async",
-                "await",
-                "//")
+        public sealed class CSharpTestsSourceCodeProvider : TestsSourceCodeProvider
         {
+            public CSharpTestsSourceCodeProvider(
+                string operationName,
+                string targetType,
+                string extensionsNamespace,
+                string extensionsClass,
+                bool isAsync)
+                : base(
+                    operationName,
+                    targetType,
+                    extensionsNamespace,
+                    extensionsClass,
+                    isAsync,
+                    "async",
+                    "await",
+                    "//")
+            {
+            }
+
             public override string GetCodeWithExpression(string expression, params string[] additionalNamspaces)
             {
                 var builder = new StringBuilder()
@@ -227,21 +232,26 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             internal override object GetLogicalNotText(bool negate) => negate ? "!" : string.Empty;
         }
 
-        public sealed class BasicTestsSourceCodeProvider(
-            string operationName,
-            string targetType,
-            string extensionsNamespace,
-            string extensionsClass,
-            bool isAsync) : TestsSourceCodeProvider(
-                operationName,
-                targetType,
-                extensionsNamespace,
-                extensionsClass,
-                isAsync,
-                "Async",
-                "Await",
-                "'")
+        public sealed class BasicTestsSourceCodeProvider : TestsSourceCodeProvider
         {
+            public BasicTestsSourceCodeProvider(
+                string operationName,
+                string targetType,
+                string extensionsNamespace,
+                string extensionsClass,
+                bool isAsync)
+                : base(
+                    operationName,
+                    targetType,
+                    extensionsNamespace,
+                    extensionsClass,
+                    isAsync,
+                    "Async",
+                    "Await",
+                    "'")
+            {
+            }
+
             public override string GetCodeWithExpression(string expression, params string[] additionalNamspaces)
             {
                 var builder = new StringBuilder()
@@ -391,11 +401,16 @@ End Namespace
             }
         }
 
-        protected sealed class CSharpVerifier<TAnalyzer, TCodeFix>(string diagnosticId)
-            : VerifierBase(diagnosticId)
+        protected sealed class CSharpVerifier<TAnalyzer, TCodeFix>
+            : VerifierBase
             where TAnalyzer : DiagnosticAnalyzer, new()
             where TCodeFix : CodeFixProvider, new()
         {
+            public CSharpVerifier(string diagnosticId)
+                : base(diagnosticId)
+            {
+            }
+
             internal override Task VerifyAsync(string[] testSources)
             {
                 var test = new Test.Utilities.CSharpCodeFixVerifier<TAnalyzer, TCodeFix>.Test();
@@ -442,11 +457,16 @@ End Namespace
             }
         }
 
-        protected sealed class BasicVerifier<TAnalyzer, TCodeFix>(string diagnosticId)
-            : VerifierBase(diagnosticId)
+        protected sealed class BasicVerifier<TAnalyzer, TCodeFix>
+            : VerifierBase
             where TAnalyzer : DiagnosticAnalyzer, new()
             where TCodeFix : CodeFixProvider, new()
         {
+            public BasicVerifier(string diagnosticId)
+                : base(diagnosticId)
+            {
+            }
+
             internal override Task VerifyAsync(string[] testSources)
             {
                 var test = new Test.Utilities.VisualBasicCodeFixVerifier<TAnalyzer, TCodeFix>.Test();

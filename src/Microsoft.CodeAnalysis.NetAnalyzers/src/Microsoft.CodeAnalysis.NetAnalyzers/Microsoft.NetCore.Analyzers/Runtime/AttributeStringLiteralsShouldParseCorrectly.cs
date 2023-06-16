@@ -243,15 +243,24 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         }
     }
 
-    internal class ValueValidator(ImmutableArray<string> acceptedTokens, string typeName, Func<string, bool> isValidValue, params string[] ignoredNames)
+    internal class ValueValidator
     {
-        private readonly string[] _ignoredNames = ignoredNames;
+        private readonly string[] _ignoredNames;
 
-        public ImmutableArray<string> AcceptedTokens { get; } = acceptedTokens;
-        public string TypeName { get; } = typeName;
-        public Func<string, bool> IsValidValue { get; } = isValidValue;
+        public ImmutableArray<string> AcceptedTokens { get; }
+        public string TypeName { get; }
+        public Func<string, bool> IsValidValue { get; }
 
         public bool IsIgnoredName(string name)
             => _ignoredNames.Contains(name, StringComparer.OrdinalIgnoreCase);
+
+        public ValueValidator(ImmutableArray<string> acceptedTokens, string typeName, Func<string, bool> isValidValue, params string[] ignoredNames)
+        {
+            _ignoredNames = ignoredNames;
+
+            AcceptedTokens = acceptedTokens;
+            TypeName = typeName;
+            IsValidValue = isValidValue;
+        }
     }
 }

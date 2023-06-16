@@ -9,9 +9,12 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
     /// <summary>
     /// A deferred type entity created by an operation.
     /// </summary>
-    internal class DeferredTypeCreationEntity(IOperation creationOperation) : CacheBasedEquatable<DeferredTypeCreationEntity>, IDeferredTypeEntity
+    internal class DeferredTypeCreationEntity : CacheBasedEquatable<DeferredTypeCreationEntity>, IDeferredTypeEntity
     {
-        public IOperation CreationOperation { get; } = creationOperation;
+        public IOperation CreationOperation { get; }
+
+        public DeferredTypeCreationEntity(IOperation creationOperation)
+            => CreationOperation = creationOperation;
 
         protected override bool ComputeEqualsByHashCodeParts(CacheBasedEquatable<DeferredTypeCreationEntity> obj)
         {

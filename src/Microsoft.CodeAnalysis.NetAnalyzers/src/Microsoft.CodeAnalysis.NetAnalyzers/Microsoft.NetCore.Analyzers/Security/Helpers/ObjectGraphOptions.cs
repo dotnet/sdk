@@ -8,47 +8,56 @@ namespace Microsoft.NetCore.Analyzers.Security.Helpers
     /// <summary>
     /// Options for walking object graphs for <see cref="InsecureDeserializationTypeDecider"/>.
     /// </summary>
-    internal class ObjectGraphOptions(
-        bool recurse = false,
-        bool binarySerialization = false,
-        bool dataContractSerialization = false,
-        bool xmlSerialization = false,
-        bool javaScriptSerializer = false,
-        bool newtonsoftJsonNetSerialization = false)
+    internal class ObjectGraphOptions
     {
+        public ObjectGraphOptions(
+            bool recurse = false,
+            bool binarySerialization = false,
+            bool dataContractSerialization = false,
+            bool xmlSerialization = false,
+            bool javaScriptSerializer = false,
+            bool newtonsoftJsonNetSerialization = false)
+        {
+            Recurse = recurse;
+            BinarySerialization = binarySerialization;
+            DataContractSerialization = dataContractSerialization;
+            XmlSerialization = xmlSerialization;
+            JavaScriptSerializer = javaScriptSerializer;
+            NewtonsoftJsonNetSerialization = newtonsoftJsonNetSerialization;
+        }
 
         /// <summary>
         /// Recurse into the types of fields and properties.
         /// </summary>
-        public bool Recurse { get; private set; } = recurse;
+        public bool Recurse { get; private set; }
 
         /// <summary>
         /// "Binary" serialization, like <see cref="T:System.Runtime.Serialization.Binary.BinaryFormatter"/>.
         /// </summary>
         [SuppressMessage("Documentation", "CA1200:Avoid using cref tags with a prefix", Justification = "Type not referenced by assembly.")]
-        public bool BinarySerialization { get; private set; } = binarySerialization;
+        public bool BinarySerialization { get; private set; }
 
         /// <summary>
         /// DataContract serialization.
         /// </summary>
-        public bool DataContractSerialization { get; private set; } = dataContractSerialization;
+        public bool DataContractSerialization { get; private set; }
 
         /// <summary>
         /// .NET XML serialization with <see cref="T:System.Xml.Serialization.XmlSerializer"/>.
         /// </summary>
         [SuppressMessage("Documentation", "CA1200:Avoid using cref tags with a prefix", Justification = "Type not referenced by assembly.")]
-        public bool XmlSerialization { get; private set; } = xmlSerialization;
+        public bool XmlSerialization { get; private set; }
 
         /// <summary>
         /// Serialization with <see cref="T:System.Web.Script.Serialization.JavaScriptSerializer"/>.
         /// </summary>
         [SuppressMessage("Documentation", "CA1200:Avoid using cref tags with a prefix", Justification = "Type not referenced by assembly.")]
-        public bool JavaScriptSerializer { get; private set; } = javaScriptSerializer;
+        public bool JavaScriptSerializer { get; private set; }
 
         /// <summary>
         /// Serialization with Newtonsoft Json.NET.
         /// </summary>
-        public bool NewtonsoftJsonNetSerialization { get; private set; } = newtonsoftJsonNetSerialization;
+        public bool NewtonsoftJsonNetSerialization { get; private set; }
 
         /// <summary>
         /// Options for BinarySerialization and recursing into member types.

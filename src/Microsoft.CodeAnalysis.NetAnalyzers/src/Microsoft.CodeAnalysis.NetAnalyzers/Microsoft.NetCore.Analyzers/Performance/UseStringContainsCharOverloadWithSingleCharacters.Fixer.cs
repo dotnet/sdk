@@ -41,16 +41,22 @@ namespace Microsoft.NetCore.Analyzers.Performance
             return WellKnownFixAllProviders.BatchFixer;
         }
 
-        private class ReplaceStringLiteralWithCharLiteralCodeAction(Document document, SyntaxNode nodeToBeFixed, char sourceCharLiteral) : CodeAction
+        private class ReplaceStringLiteralWithCharLiteralCodeAction : CodeAction
         {
-            private readonly Document _document = document;
-            private readonly SyntaxNode _nodeToBeFixed = nodeToBeFixed;
-            private readonly char _sourceCharLiteral = sourceCharLiteral;
+            private readonly Document _document;
+            private readonly SyntaxNode _nodeToBeFixed;
+            private readonly char _sourceCharLiteral;
             private readonly string? _argumentName;
 
             public override string Title => MicrosoftNetCoreAnalyzersResources.ReplaceStringLiteralWithCharLiteralCodeActionTitle;
 
             public override string EquivalenceKey => nameof(ReplaceStringLiteralWithCharLiteralCodeAction);
+            public ReplaceStringLiteralWithCharLiteralCodeAction(Document document, SyntaxNode nodeToBeFixed, char sourceCharLiteral)
+            {
+                _document = document;
+                _nodeToBeFixed = nodeToBeFixed;
+                _sourceCharLiteral = sourceCharLiteral;
+            }
 
             public ReplaceStringLiteralWithCharLiteralCodeAction(Document document, SyntaxNode nodeToBeFixed, char sourceCharLiteral, string? argumentName) : this(document, nodeToBeFixed, sourceCharLiteral)
             {

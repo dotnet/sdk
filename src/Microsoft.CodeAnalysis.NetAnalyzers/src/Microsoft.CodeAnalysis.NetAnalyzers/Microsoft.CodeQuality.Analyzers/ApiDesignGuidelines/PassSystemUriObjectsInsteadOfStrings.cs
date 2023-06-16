@@ -57,15 +57,22 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
         protected abstract SyntaxNode? GetInvocationExpression(SyntaxNode invocationNode);
 
-        private sealed class PerCompilationAnalyzer(
-            Compilation compilation,
-            INamedTypeSymbol uri,
-            Func<SyntaxNode, SyntaxNode?> expressionGetter)
+        private sealed class PerCompilationAnalyzer
         {
             // this type will be created per compilation
-            private readonly Compilation _compilation = compilation;
-            private readonly INamedTypeSymbol _uri = uri;
-            private readonly Func<SyntaxNode, SyntaxNode?> _expressionGetter = expressionGetter;
+            private readonly Compilation _compilation;
+            private readonly INamedTypeSymbol _uri;
+            private readonly Func<SyntaxNode, SyntaxNode?> _expressionGetter;
+
+            public PerCompilationAnalyzer(
+                Compilation compilation,
+                INamedTypeSymbol uri,
+                Func<SyntaxNode, SyntaxNode?> expressionGetter)
+            {
+                _compilation = compilation;
+                _uri = uri;
+                _expressionGetter = expressionGetter;
+            }
 
             public void Analyze(OperationAnalysisContext context)
             {

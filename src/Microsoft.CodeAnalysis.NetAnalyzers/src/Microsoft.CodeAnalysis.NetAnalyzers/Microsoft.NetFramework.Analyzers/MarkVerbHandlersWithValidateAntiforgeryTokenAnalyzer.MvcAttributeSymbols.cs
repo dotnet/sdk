@@ -14,18 +14,32 @@ namespace Microsoft.NetFramework.Analyzers
         /// <summary>
         /// Helper for examining System.Web.Mvc attributes on MVC controller methods.
         /// </summary>
-        private sealed class MvcAttributeSymbols(Compilation compilation)
+        private sealed class MvcAttributeSymbols
         {
-            private INamedTypeSymbol? ValidateAntiforgeryTokenAttributeSymbol { get; set; } = compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemWebMvcValidateAntiForgeryTokenAttribute);
-            private INamedTypeSymbol? HttpGetAttributeSymbol { get; set; } = compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemWebMvcHttpGetAttribute);
-            private INamedTypeSymbol? HttpPostAttributeSymbol { get; set; } = compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemWebMvcHttpPostAttribute);
-            private INamedTypeSymbol? HttpPutAttributeSymbol { get; set; } = compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemWebMvcHttpPutAttribute);
-            private INamedTypeSymbol? HttpDeleteAttributeSymbol { get; set; } = compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemWebMvcHttpDeleteAttribute);
-            private INamedTypeSymbol? HttpPatchAttributeSymbol { get; set; } = compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemWebMvcHttpPatchAttribute);
-            private INamedTypeSymbol? AcceptVerbsAttributeSymbol { get; set; } = compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemWebMvcAcceptVerbsAttribute);
-            private INamedTypeSymbol? NonActionAttributeSymbol { get; set; } = compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemWebMvcNonActionAttribute);
-            private INamedTypeSymbol? ChildActionOnlyAttributeSymbol { get; set; } = compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemWebMvcChildActionOnlyAttribute);
-            private INamedTypeSymbol? HttpVerbsSymbol { get; set; } = compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemWebMvcHttpVerbs);
+            private INamedTypeSymbol? ValidateAntiforgeryTokenAttributeSymbol { get; set; }
+            private INamedTypeSymbol? HttpGetAttributeSymbol { get; set; }
+            private INamedTypeSymbol? HttpPostAttributeSymbol { get; set; }
+            private INamedTypeSymbol? HttpPutAttributeSymbol { get; set; }
+            private INamedTypeSymbol? HttpDeleteAttributeSymbol { get; set; }
+            private INamedTypeSymbol? HttpPatchAttributeSymbol { get; set; }
+            private INamedTypeSymbol? AcceptVerbsAttributeSymbol { get; set; }
+            private INamedTypeSymbol? NonActionAttributeSymbol { get; set; }
+            private INamedTypeSymbol? ChildActionOnlyAttributeSymbol { get; set; }
+            private INamedTypeSymbol? HttpVerbsSymbol { get; set; }
+
+            public MvcAttributeSymbols(Compilation compilation)
+            {
+                this.ValidateAntiforgeryTokenAttributeSymbol = compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemWebMvcValidateAntiForgeryTokenAttribute);
+                this.HttpGetAttributeSymbol = compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemWebMvcHttpGetAttribute);
+                this.HttpPostAttributeSymbol = compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemWebMvcHttpPostAttribute);
+                this.HttpPutAttributeSymbol = compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemWebMvcHttpPutAttribute);
+                this.HttpDeleteAttributeSymbol = compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemWebMvcHttpDeleteAttribute);
+                this.HttpPatchAttributeSymbol = compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemWebMvcHttpPatchAttribute);
+                this.AcceptVerbsAttributeSymbol = compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemWebMvcAcceptVerbsAttribute);
+                this.NonActionAttributeSymbol = compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemWebMvcNonActionAttribute);
+                this.ChildActionOnlyAttributeSymbol = compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemWebMvcChildActionOnlyAttribute);
+                this.HttpVerbsSymbol = compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemWebMvcHttpVerbs);
+            }
 
             /// <summary>
             /// Gets relevant info from the attributes on the MVC controller action we're examining.

@@ -430,10 +430,16 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 return -1;
             }
 
-            public class Info(int formatIndex, int expectedArguments)
+            public class Info
             {
-                public int FormatStringIndex { get; } = formatIndex;
-                public int ExpectedStringFormatArgumentCount { get; } = expectedArguments;
+                public Info(int formatIndex, int expectedArguments)
+                {
+                    FormatStringIndex = formatIndex;
+                    ExpectedStringFormatArgumentCount = expectedArguments;
+                }
+
+                public int FormatStringIndex { get; }
+                public int ExpectedStringFormatArgumentCount { get; }
             }
         }
     }

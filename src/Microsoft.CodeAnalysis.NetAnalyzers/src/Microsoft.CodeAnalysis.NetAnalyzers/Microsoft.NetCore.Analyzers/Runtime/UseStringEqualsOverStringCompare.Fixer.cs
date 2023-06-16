@@ -125,8 +125,12 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         /// <summary>
         /// Replaces <see cref="string.Compare(string, string)"/> violations.
         /// </summary>
-        private sealed class StringStringCaseReplacer(RequiredSymbols symbols) : OperationReplacer(symbols)
+        private sealed class StringStringCaseReplacer : OperationReplacer
         {
+            public StringStringCaseReplacer(RequiredSymbols symbols)
+                : base(symbols)
+            { }
+
             public override bool IsMatch(IBinaryOperation violation) => UseStringEqualsOverStringCompare.IsStringStringCase(violation, Symbols);
 
             public override SyntaxNode CreateReplacementExpression(IBinaryOperation violation, SyntaxGenerator generator)
@@ -145,8 +149,12 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         /// <summary>
         /// Replaces <see cref="string.Compare(string, string, bool)"/> violations.
         /// </summary>
-        private sealed class StringStringBoolReplacer(RequiredSymbols symbols) : OperationReplacer(symbols)
+        private sealed class StringStringBoolReplacer : OperationReplacer
         {
+            public StringStringBoolReplacer(RequiredSymbols symbols)
+                : base(symbols)
+            { }
+
             public override bool IsMatch(IBinaryOperation violation) => UseStringEqualsOverStringCompare.IsStringStringBoolCase(violation, Symbols);
 
             public override SyntaxNode CreateReplacementExpression(IBinaryOperation violation, SyntaxGenerator generator)
@@ -183,8 +191,12 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         /// <summary>
         /// Replaces <see cref="string.Compare(string, string, StringComparison)"/> violations.
         /// </summary>
-        private sealed class StringStringStringComparisonReplacer(RequiredSymbols symbols) : OperationReplacer(symbols)
+        private sealed class StringStringStringComparisonReplacer : OperationReplacer
         {
+            public StringStringStringComparisonReplacer(RequiredSymbols symbols)
+                : base(symbols)
+            { }
+
             public override bool IsMatch(IBinaryOperation violation) => UseStringEqualsOverStringCompare.IsStringStringStringComparisonCase(violation, Symbols);
 
             public override SyntaxNode CreateReplacementExpression(IBinaryOperation violation, SyntaxGenerator generator)

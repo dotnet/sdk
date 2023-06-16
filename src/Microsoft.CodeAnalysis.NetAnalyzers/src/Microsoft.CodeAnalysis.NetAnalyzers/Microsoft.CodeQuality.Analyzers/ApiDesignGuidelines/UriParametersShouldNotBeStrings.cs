@@ -54,10 +54,16 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             });
         }
 
-        private class PerCompilationAnalyzer(INamedTypeSymbol uri, INamedTypeSymbol attribute)
+        private class PerCompilationAnalyzer
         {
-            private readonly INamedTypeSymbol _uri = uri;
-            private readonly INamedTypeSymbol _attribute = attribute;
+            private readonly INamedTypeSymbol _uri;
+            private readonly INamedTypeSymbol _attribute;
+
+            public PerCompilationAnalyzer(INamedTypeSymbol uri, INamedTypeSymbol attribute)
+            {
+                _uri = uri;
+                _attribute = attribute;
+            }
 
             public void Analyze(SymbolAnalysisContext context)
             {

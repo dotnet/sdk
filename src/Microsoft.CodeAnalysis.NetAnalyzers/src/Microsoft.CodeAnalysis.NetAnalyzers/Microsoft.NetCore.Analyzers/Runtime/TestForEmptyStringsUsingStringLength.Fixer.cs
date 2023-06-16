@@ -163,11 +163,18 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         protected abstract SyntaxNode GetRightOperand(SyntaxNode binaryExpressionSyntax);
         protected abstract SyntaxNode? GetInvocationTarget(SyntaxNode node);
 
-        private sealed class FixResolution(SyntaxNode expressionSyntax, SyntaxNode target, bool usesEqualsOperator)
+        private sealed class FixResolution
         {
-            public SyntaxNode ExpressionSyntax { get; } = expressionSyntax;
-            public SyntaxNode Target { get; } = target;
-            public bool UsesEqualsOperator { get; } = usesEqualsOperator;
+            public SyntaxNode ExpressionSyntax { get; }
+            public SyntaxNode Target { get; }
+            public bool UsesEqualsOperator { get; }
+
+            public FixResolution(SyntaxNode expressionSyntax, SyntaxNode target, bool usesEqualsOperator)
+            {
+                ExpressionSyntax = expressionSyntax;
+                Target = target;
+                UsesEqualsOperator = usesEqualsOperator;
+            }
         }
     }
 }

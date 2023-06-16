@@ -216,10 +216,14 @@ namespace Microsoft.NetCore.Analyzers.Performance
             }
         }
 
-        protected sealed class ConstantExpectedContext(INamedTypeSymbol attributeSymbol)
+        protected sealed class ConstantExpectedContext
         {
-            public INamedTypeSymbol AttributeSymbol { get; } = attributeSymbol;
+            public INamedTypeSymbol AttributeSymbol { get; }
 
+            public ConstantExpectedContext(INamedTypeSymbol attributeSymbol)
+            {
+                AttributeSymbol = attributeSymbol;
+            }
             /// <summary>
             /// Validates for ConstantExpected attribute in base parameter and returns AttributeExpectedRule if the coresponding implementation parameter does not have it
             /// </summary>
@@ -491,8 +495,10 @@ namespace Microsoft.NetCore.Analyzers.Performance
             protected static Diagnostic CreateConstantOutOfBoundsRuleDiagnostic(IArgumentOperation argument, string minText, string maxText) => argument.CreateDiagnostic(CA1857.ConstantOutOfBoundsRule, minText, maxText);
         }
 
-        private sealed class StringConstantExpectedParameter(IParameterSymbol parameter) : ConstantExpectedParameter(parameter)
+        private sealed class StringConstantExpectedParameter : ConstantExpectedParameter
         {
+            public StringConstantExpectedParameter(IParameterSymbol parameter) : base(parameter) { }
+
             public override bool ValidateParameterIsWithinRange(ConstantExpectedParameter subsetCandidate, IArgumentOperation argument, [NotNullWhen(false)] out Diagnostic? validationDiagnostics)
             {
                 if (subsetCandidate is not StringConstantExpectedParameter)
@@ -537,11 +543,17 @@ namespace Microsoft.NetCore.Analyzers.Performance
         }
 
 #pragma warning disable CA1815 // Override equals and operator equals on value types
-        private readonly struct AttributeConstant(object? min, object? max)
+        private readonly struct AttributeConstant
 #pragma warning restore CA1815 // Override equals and operator equals on value types
         {
-            public object? Min { get; } = min;
-            public object? Max { get; } = max;
+            public object? Min { get; }
+            public object? Max { get; }
+
+            public AttributeConstant(object? min, object? max)
+            {
+                Min = min;
+                Max = max;
+            }
 
             public static AttributeConstant Get(AttributeData attributeData)
             {

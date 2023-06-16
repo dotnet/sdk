@@ -12,10 +12,15 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
 {
     internal sealed partial class DisableRuntimeMarshallingAnalyzer
     {
-        private sealed class AutoLayoutTypeCache(Compilation compilation)
+        private sealed class AutoLayoutTypeCache
         {
-            private readonly INamedTypeSymbol? _structLayoutAttribute = compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeInteropServicesStructLayoutAttribute);
+            private readonly INamedTypeSymbol? _structLayoutAttribute;
             private readonly ConcurrentDictionary<ITypeSymbol, bool> _cache = new();
+
+            public AutoLayoutTypeCache(Compilation compilation)
+            {
+                _structLayoutAttribute = compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeInteropServicesStructLayoutAttribute);
+            }
 
             public bool TypeIsAutoLayoutOrContainsAutoLayout(ITypeSymbol type)
             {
