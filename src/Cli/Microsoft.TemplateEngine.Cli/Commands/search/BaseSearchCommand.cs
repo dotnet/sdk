@@ -22,7 +22,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             FilterOptionDefinition.PackageFilter
         };
 
-        internal static readonly string[] SupportedSearchColumnNames = new string[]
+        internal static readonly string[] SupportedColumnNames = new string[]
         {
             TabularOutputSettings.ColumnNames.Author,
             TabularOutputSettings.ColumnNames.Language,
@@ -46,7 +46,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 
         public virtual Option<bool> ColumnsAllOption { get; } = SharedOptionsFactory.CreateColumnsAllOption();
 
-        public virtual Option<string[]> ColumnsOption { get; } = SharedOptionsFactory.CreateColumnsOption().AcceptOnlyFromAmong(SupportedSearchColumnNames);
+        public virtual Option<string[]> ColumnsOption { get; } = SharedOptionsFactory.CreateColumnsOption().AcceptOnlyFromAmong(SupportedColumnNames);
 
         public IReadOnlyDictionary<FilterOptionDefinition, Option> Filters { get; protected set; }
 

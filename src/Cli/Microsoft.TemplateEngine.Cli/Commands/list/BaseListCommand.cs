@@ -20,7 +20,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             FilterOptionDefinition.TagFilter
         };
 
-        internal static readonly string[] SupportedListColumnNames = new string[]
+        internal static readonly string[] SupportedColumnNames = new string[]
         {
             TabularOutputSettings.ColumnNames.Author,
             TabularOutputSettings.ColumnNames.Language,
@@ -46,7 +46,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 
         public virtual Option<bool> ColumnsAllOption { get; } = SharedOptionsFactory.CreateColumnsAllOption();
 
-        public virtual Option<string[]> ColumnsOption { get; } = SharedOptionsFactory.CreateColumnsOption().AcceptOnlyFromAmong(SupportedListColumnNames);
+        public virtual Option<string[]> ColumnsOption { get; } = SharedOptionsFactory.CreateColumnsOption().AcceptOnlyFromAmong(SupportedColumnNames);
 
         public IReadOnlyDictionary<FilterOptionDefinition, Option> Filters { get; protected set; }
 
