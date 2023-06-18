@@ -25,7 +25,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 
         public override Option<bool> ColumnsAllOption => ParentCommand.ColumnsAllOption;
 
-        public override Option<string[]> ColumnsOption => SharedOptionsFactory.CreateColumnsOption().AcceptOnlyFromAmong(SupportedColumnNames).AsHidden().DisableAllowMultipleArgumentsPerToken();
+        public override Option<string[]> ColumnsOption => base.ColumnsOption.AsHidden().DisableAllowMultipleArgumentsPerToken();
 
         protected override Option GetFilterOption(FilterOptionDefinition def)
         {
