@@ -22,7 +22,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 
         public override Option<bool> ColumnsAllOption => ParentCommand.ColumnsAllOption;
 
-        public override Option<string[]> ColumnsOption => ParentCommand.ColumnsOption;
+        public override Option<string[]> ColumnsOption => ParentCommand.ColumnsOption.AcceptOnlyFromAmong(SupportedSearchColumnNames);
 
         protected override Option GetFilterOption(FilterOptionDefinition def)
         {

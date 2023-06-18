@@ -3,7 +3,6 @@
 
 using System.CommandLine;
 using System.CommandLine.Parsing;
-using Microsoft.TemplateEngine.Cli.TabularOutput;
 
 namespace Microsoft.TemplateEngine.Cli.Commands
 {
@@ -133,12 +132,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
                 Description = SymbolStrings.Option_Columns,
                 AllowMultipleArgumentsPerToken = true,
             };
-            option.AcceptOnlyFromAmong(
-                TabularOutputSettings.ColumnNames.Author,
-                TabularOutputSettings.ColumnNames.Language,
-                TabularOutputSettings.ColumnNames.Type,
-                TabularOutputSettings.ColumnNames.Tags,
-                TabularOutputSettings.ColumnNames.Downloads);
+
             return option;
         }
 

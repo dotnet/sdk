@@ -4,6 +4,7 @@
 using System.CommandLine;
 using System.CommandLine.Invocation;
 using Microsoft.TemplateEngine.Abstractions;
+using Microsoft.TemplateEngine.Cli.TabularOutput;
 using Microsoft.TemplateEngine.Edge.Settings;
 
 namespace Microsoft.TemplateEngine.Cli.Commands
@@ -17,6 +18,14 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             FilterOptionDefinition.LanguageFilter,
             FilterOptionDefinition.TypeFilter,
             FilterOptionDefinition.TagFilter
+        };
+
+        internal static readonly string[] SupportedListColumnNames = new string[]
+        {
+            TabularOutputSettings.ColumnNames.Author,
+            TabularOutputSettings.ColumnNames.Language,
+            TabularOutputSettings.ColumnNames.Type,
+            TabularOutputSettings.ColumnNames.Tags
         };
 
         internal BaseListCommand(
@@ -37,7 +46,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 
         public virtual Option<bool> ColumnsAllOption { get; } = SharedOptionsFactory.CreateColumnsAllOption();
 
-        public virtual Option<string[]> ColumnsOption { get; } = SharedOptionsFactory.CreateColumnsOption();
+        public virtual Option<string[]> ColumnsOption { get; } = SharedOptionsFactory.CreateColumnsOption().AcceptOnlyFromAmong(SupportedListColumnNames);
 
         public IReadOnlyDictionary<FilterOptionDefinition, Option> Filters { get; protected set; }
 
