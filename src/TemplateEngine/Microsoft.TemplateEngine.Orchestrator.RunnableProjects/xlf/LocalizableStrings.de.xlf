@@ -27,7 +27,7 @@ Do not localize: actionId</note>
       </trans-unit>
       <trans-unit id="Authoring_CyclicDependencyInSymbols">
         <source>Parameter conditions contain cyclic dependency: [{0}] that is preventing deterministic evaluation.</source>
-        <target state="new">Parameter conditions contain cyclic dependency: [{0}] that is preventing deterministic evaluation.</target>
+        <target state="translated">Parameterbedingungen enthalten eine zyklische Abhängigkeit [{0}], welche die deterministische Auswertung verhindert.</target>
         <note />
       </trans-unit>
       <trans-unit id="Authoring_InvalidJsonElementInLocalizationFile">

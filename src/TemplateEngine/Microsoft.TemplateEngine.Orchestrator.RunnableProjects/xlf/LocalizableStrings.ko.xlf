@@ -27,7 +27,7 @@ Do not localize: actionId</note>
       </trans-unit>
       <trans-unit id="Authoring_CyclicDependencyInSymbols">
         <source>Parameter conditions contain cyclic dependency: [{0}] that is preventing deterministic evaluation.</source>
-        <target state="new">Parameter conditions contain cyclic dependency: [{0}] that is preventing deterministic evaluation.</target>
+        <target state="translated">매개 변수 조건에 결정적 평가를 방지하는 순환 종속성 [{0}]이(가) 포함되어 있습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="Authoring_InvalidJsonElementInLocalizationFile">
@@ -132,7 +132,7 @@ Details: {1}</source>
       </trans-unit>
       <trans-unit id="CoalesceMacro_Exception_MissedVariables">
         <source>Template authoring error encountered while processing macro '{0}': Variable '{1}'. Neither source nor fallback variable was found.</source>
-        <target state="new">Template authoring error encountered while processing macro '{0}': Variable '{1}'. Neither source nor fallback variable was found.</target>
+        <target state="translated">매크로 '{0}'을(를) 처리하는 동안 템플릿 작성 오류가 발생했습니다: 변수 '{1}'. 원본 변수와 대체 변수를 모두 찾을 수 없습니다.</target>
         <note>{0} - macro type, {1} - macro name</note>
       </trans-unit>
       <trans-unit id="EvaluatorSelector_Exception_UnknownEvaluator">
@@ -172,12 +172,12 @@ Details: {1}</source>
       </trans-unit>
       <trans-unit id="MacroConfig_Exception_AccessToDependencies">
         <source>The method '{0}' must be called prior '{1}' property reading.</source>
-        <target state="new">The method '{0}' must be called prior '{1}' property reading.</target>
+        <target state="translated">메서드 '{0}'은(는) '{1}' 속성 읽기 전에 호출해야 합니다.</target>
         <note>erty name.</note>
       </trans-unit>
       <trans-unit id="MacroProcessing_Warning_DependencyErrors">
         <source>'{0}' was not processed due to the next issues in dependencises: '{1}'.</source>
-        <target state="new">'{0}' was not processed due to the next issues in dependencises: '{1}'.</target>
+        <target state="translated">종속성의 다음 문제인 '{1}'으로 인해 '{0}'이(가) 처리되지 않았습니다.</target>
         <note>{0} - macro name, {1} - dependent macros errors</note>
       </trans-unit>
       <trans-unit id="RunnableProjectConfig_OperationSetup_UnknownForm">
