@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Concurrent;
@@ -124,9 +124,9 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                 startContext.RegisterOperationAction(context =>
                 {
                     var expr = (IObjectCreationOperation)context.Operation;
-                    var constructedClass = (INamedTypeSymbol)expr.Type;
+                    var constructedClass = (INamedTypeSymbol?)expr.Type;
 
-                    if (!constructedClass.IsGenericType || constructedClass.IsUnboundGenericType)
+                    if (constructedClass == null || !constructedClass.IsGenericType || constructedClass.IsUnboundGenericType)
                     {
                         return;
                     }
@@ -176,7 +176,8 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                 {
                     RoslynDebug.Assert(coClassAttributeSymbol != null);
 
-                    if (attribute.AttributeClass.Equals(coClassAttributeSymbol) &&
+                    if (attribute.AttributeClass != null &&
+                        attribute.AttributeClass.Equals(coClassAttributeSymbol) &&
                         attribute.ConstructorArguments.Length == 1 &&
                         attribute.ConstructorArguments[0].Kind == TypedConstantKind.Type &&
                         attribute.ConstructorArguments[0].Value is INamedTypeSymbol typeSymbol &&
@@ -196,6 +197,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                     RoslynDebug.Assert(designerAttributeSymbol != null);
 
                     if (attribute.ConstructorArguments.Length is not (1 or 2) ||
+                        attribute.AttributeClass == null ||
                         !attribute.AttributeClass.Equals(designerAttributeSymbol))
                     {
                         return null;
@@ -227,7 +229,8 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                 {
                     RoslynDebug.Assert(debuggerTypeProxyAttributeSymbol != null);
 
-                    if (!attribute.AttributeClass.Equals(debuggerTypeProxyAttributeSymbol))
+                    if (attribute.AttributeClass == null ||
+                        !attribute.AttributeClass.Equals(debuggerTypeProxyAttributeSymbol))
                     {
                         return null;
                     }

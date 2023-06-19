@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -125,6 +125,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             ImmutableHashSet<INamedTypeSymbol> reservedExceptionSymbols)
         {
             var objectCreation = (IObjectCreationOperation)context.Operation;
+            if (objectCreation.Constructor == null)
+                return;
+
             var typeSymbol = objectCreation.Constructor.ContainingType;
             if (tooGenericExceptionSymbols.Contains(typeSymbol))
             {

@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -165,7 +165,10 @@ namespace Microsoft.NetCore.Analyzers.Security
                         }
 
                         // 4. Base type.
-                        result.Add(type.BaseType);
+                        if (type.BaseType != null)
+                        {
+                            result.Add(type.BaseType);
+                        }
 
                         return result;
                     }

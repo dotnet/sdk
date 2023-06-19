@@ -28,12 +28,12 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         {
             var document = context.Document;
             var token = context.CancellationToken;
-            var semanticModel = await document.GetSemanticModelAsync(token).ConfigureAwait(false);
+            var semanticModel = await document.GetRequiredSemanticModelAsync(token).ConfigureAwait(false);
 
             _ = RequiredSymbols.TryGetSymbols(semanticModel.Compilation, out var symbols);
             RoslynDebug.Assert(symbols is not null);
 
-            var root = await document.GetSyntaxRootAsync(token).ConfigureAwait(false);
+            var root = await document.GetRequiredSyntaxRootAsync(token).ConfigureAwait(false);
             var node = root.FindNode(context.Span, getInnermostNodeForTie: true);
             if (semanticModel.GetOperation(node, token) is not IBinaryOperation violation)
                 return;
@@ -171,7 +171,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 //  replace it with a call to 'string.Equals(x, y, StringComparison.CurrentCultureIgnoreCase)'.
                 //  If the violation contains a call to 'string.Compare(x, y, false)' then we
                 //  replace it with a call to 'string.Equals(x, y, StringComparison.CurrentCulture)'. 
-                var stringComparisonEnumMemberName = (bool)ignoreCaseLiteral.ConstantValue.Value ?
+                var stringComparisonEnumMemberName = ignoreCaseLiteral.ConstantValue.Value is bool value && value ?
                     nameof(StringComparison.CurrentCultureIgnoreCase) :
                     nameof(StringComparison.CurrentCulture);
                 var stringComparisonMemberAccessSyntax = generator.MemberAccessExpression(

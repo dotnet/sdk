@@ -3,6 +3,7 @@
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
+using Analyzer.Utilities;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
@@ -21,7 +22,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
 
         public sealed override async Task RegisterCodeFixesAsync(CodeFixContext context)
         {
-            var root = await context.Document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
+            var root = await context.Document.GetRequiredSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
             var node = root.FindNode(context.Span, getInnermostNodeForTie: true);
 
             if (node is null)
@@ -29,7 +30,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 return;
             }
 
-            var diagnostic = context.Diagnostics.FirstOrDefault();
+            var diagnostic = context.Diagnostics.First();
             var conditionalOperationSpan = diagnostic.AdditionalLocations[0];
             var childLocation = diagnostic.AdditionalLocations[1];
             if (root.FindNode(conditionalOperationSpan.SourceSpan) is not SyntaxNode conditionalSyntax ||

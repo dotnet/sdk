@@ -184,7 +184,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 return operand;
             if (!conversion.IsImplicit || conversion.Conversion.IsUserDefined)
                 return conversion;
-            if (conversion.Type.SpecialType is SpecialType.System_Object)
+            if (conversion.Type?.SpecialType is SpecialType.System_Object)
                 return conversion.Operand;
 
             return conversion;
@@ -196,7 +196,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 return operand;
             if (!conversion.IsImplicit || conversion.Conversion.IsUserDefined)
                 return conversion;
-            if (conversion.Type.SpecialType is SpecialType.System_Object or SpecialType.System_String)
+            if (conversion.Type?.SpecialType is SpecialType.System_Object or SpecialType.System_String)
                 return conversion.Operand;
 
             return conversion;

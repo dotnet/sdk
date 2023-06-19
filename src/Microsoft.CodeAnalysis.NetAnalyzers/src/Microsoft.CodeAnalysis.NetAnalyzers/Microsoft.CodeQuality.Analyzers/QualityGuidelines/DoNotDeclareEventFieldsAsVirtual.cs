@@ -42,8 +42,8 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                 var eventSymbol = (IEventSymbol)context.Symbol;
 
                 if (!eventSymbol.IsVirtual ||
-                    !eventSymbol.AddMethod.IsImplicitlyDeclared ||
-                    !eventSymbol.RemoveMethod.IsImplicitlyDeclared)
+                    eventSymbol.AddMethod?.IsImplicitlyDeclared == false ||
+                    eventSymbol.RemoveMethod?.IsImplicitlyDeclared == false)
                 {
                     return;
                 }

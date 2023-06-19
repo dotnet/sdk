@@ -1,6 +1,7 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
 using Microsoft.CodeAnalysis;
@@ -139,18 +140,21 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
         /// <summary>
         /// Check if the given type or any of its inner element types is a multi dimensional array
         /// </summary>
-        private static bool IsMultiDimensionalArray(ITypeSymbol type)
+        private static bool IsMultiDimensionalArray([NotNullWhen(true)] ITypeSymbol? type)
         {
-            while (type.TypeKind == TypeKind.Array)
+            if (type != null)
             {
-                var arrayType = (IArrayTypeSymbol)type;
-
-                if (arrayType.Rank > 1)
+                while (type.TypeKind == TypeKind.Array)
                 {
-                    return true;
-                }
+                    var arrayType = (IArrayTypeSymbol)type;
 
-                type = arrayType.ElementType;
+                    if (arrayType.Rank > 1)
+                    {
+                        return true;
+                    }
+
+                    type = arrayType.ElementType;
+                }
             }
 
             return false;

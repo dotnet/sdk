@@ -109,7 +109,7 @@ namespace Microsoft.NetFramework.Analyzers
                 _enclosingSymbol = enclosingSymbol;
             }
 
-            public void AnalyzeNodeForXslCompiledTransformLoad<TContext>(IMethodSymbol methodSymbol,
+            public void AnalyzeNodeForXslCompiledTransformLoad<TContext>(IMethodSymbol? methodSymbol,
                 ImmutableArray<IArgumentOperation> arguments, Action<TContext, Diagnostic> reportDiagnostic, TContext context)
             {
                 if (!methodSymbol.IsXslCompiledTransformLoad(_xmlTypes))
@@ -181,7 +181,7 @@ namespace Microsoft.NetFramework.Analyzers
                         SecurityDiagnosticHelpers.GetNonEmptyParentName(_enclosingSymbol)
                     );
 
-                    var invocationOrObjCreation = settingsOperation.Parent.Parent;
+                    var invocationOrObjCreation = settingsOperation.Parent!.Parent!;
                     RoslynDebug.Assert(invocationOrObjCreation.Kind is OperationKind.Invocation
                         or OperationKind.ObjectCreation);
                     reportDiagnostic(

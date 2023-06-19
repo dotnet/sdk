@@ -100,7 +100,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             int substringCalls = 0;
             foreach (var argument in invocation.Arguments)
             {
-                if (symbols.IsAnySubstringInvocation(argument.Value.WalkDownConversion(c => c.IsImplicit)))
+                if (symbols.IsAnySubstringInvocation(argument.Value.WalkDownConversion(c => c.IsImplicit)) &&
+                    argument.Parameter != null)
                 {
                     isSubstringLookup[argument.Parameter.Ordinal] = true;
                     ++substringCalls;
@@ -171,7 +172,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         private static IEnumerable<IMethodSymbol> GetAllAccessibleOverloadsAtInvocationCallSite(IInvocationOperation invocation, CancellationToken cancellationToken)
         {
             var method = invocation.TargetMethod;
-            var model = invocation.SemanticModel;
+            var model = invocation.SemanticModel!;
             int location = invocation.Syntax.SpanStart;
             var instance = invocation.Instance;
 
@@ -200,7 +201,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
             static INamedTypeSymbol GetEnclosingType(SemanticModel model, int location, CancellationToken cancellationToken)
             {
-                ISymbol symbol = model.GetEnclosingSymbol(location, cancellationToken);
+                ISymbol symbol = model.GetEnclosingSymbol(location, cancellationToken)!;
                 if (symbol is not INamedTypeSymbol type)
                     type = symbol.ContainingType;
 

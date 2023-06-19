@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Composition;
 using Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines;
@@ -17,7 +17,7 @@ namespace Microsoft.CodeQuality.CSharp.Analyzers.ApiDesignGuidelines
         protected override SyntaxNode? GetTargetNode(SyntaxNode node)
         {
             var enumDecl = (EnumDeclarationSyntax)node;
-            return (enumDecl.BaseList.Types.FirstOrDefault() as SimpleBaseTypeSyntax)?.Type;
+            return (enumDecl.BaseList?.Types.FirstOrDefault() as SimpleBaseTypeSyntax)?.Type;
         }
     }
 }

@@ -157,16 +157,12 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
             }
         }
 
-        private static void AnalyzeSymbol<TContext>(Action<TContext, Diagnostic> reportDiagnostic, TContext context, ISymbol symbol, INamedTypeSymbol supportedAttrbute,
+        private static void AnalyzeSymbol<TContext>(Action<TContext, Diagnostic> reportDiagnostic, TContext context, ISymbol symbol, INamedTypeSymbol supportedAttribute,
             INamedTypeSymbol unsupportedAttribute, PooledDictionary<string, int> knownPlatforms, CancellationToken token)
         {
-            foreach (var attribute in symbol.GetAttributes())
+            foreach (var attribute in symbol.GetAttributes(supportedAttribute, unsupportedAttribute))
             {
-                if (supportedAttrbute.Equals(attribute.AttributeClass.OriginalDefinition, SymbolEqualityComparer.Default) ||
-                    unsupportedAttribute.Equals(attribute.AttributeClass.OriginalDefinition, SymbolEqualityComparer.Default))
-                {
-                    AnalyzeAttribute(reportDiagnostic, context, attribute, knownPlatforms, token);
-                }
+                AnalyzeAttribute(reportDiagnostic, context, attribute, knownPlatforms, token);
             }
         }
 

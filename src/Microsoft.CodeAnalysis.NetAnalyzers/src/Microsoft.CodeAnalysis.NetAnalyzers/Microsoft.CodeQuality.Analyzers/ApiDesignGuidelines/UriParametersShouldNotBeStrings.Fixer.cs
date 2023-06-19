@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
 using System.Composition;
@@ -37,7 +37,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             var cancellationToken = context.CancellationToken;
             var span = context.Span;
 
-            SemanticModel model = await document.GetSemanticModelAsync(cancellationToken).ConfigureAwait(false);
+            SemanticModel model = await document.GetRequiredSemanticModelAsync(cancellationToken).ConfigureAwait(false);
 
             INamedTypeSymbol? uriType = model.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemUri);
             if (uriType == null)
@@ -47,7 +47,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
             var generator = SyntaxGenerator.GetGenerator(document);
 
-            var root = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
+            var root = await document.GetRequiredSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
             var parameter = root.FindNode(span, getInnermostNodeForTie: true);
             if (parameter == null)
             {
@@ -77,8 +77,8 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             var editor = await DocumentEditor.CreateAsync(document, cancellationToken).ConfigureAwait(false);
             var generator = editor.Generator;
 
-            var model = await document.GetSemanticModelAsync(cancellationToken).ConfigureAwait(false);
-            var methodSymbol = (IMethodSymbol)model.GetDeclaredSymbol(methodNode, cancellationToken);
+            var model = await document.GetRequiredSemanticModelAsync(cancellationToken).ConfigureAwait(false);
+            var methodSymbol = (IMethodSymbol)model.GetDeclaredSymbol(methodNode, cancellationToken)!;
 
             var parameterIndex = GetParameterIndex(methodSymbol, model.SyntaxTree, span);
             if (parameterIndex < 0)

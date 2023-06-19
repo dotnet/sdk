@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
@@ -46,7 +47,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                     // This operation is used as an argument of a deferred execution method.
                     // Check if the invocation of the deferred execution method is used in another deferred execution method.
                     return VisitLinqChainAndCoversionMethod(
-                        operation.Parent.Parent,
+                        operation.Parent.Parent!,
                         enumerateArgument
                             ? InvocationSetHelpers.AddInvocationCount(enumerationCount, EnumerationCount.One)
                             : enumerationCount,
@@ -59,7 +60,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                     // Like in VB,
                     // 'i.Select(Function(a) a)', 'i' is the invocation instance of 'Select'
                     return VisitLinqChainAndCoversionMethod(
-                        operation.Parent,
+                        operation.Parent!,
                         enumerateInstance
                             ? InvocationSetHelpers.AddInvocationCount(enumerationCount, EnumerationCount.One)
                             : enumerationCount,
@@ -70,7 +71,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             }
         }
 
-        public static bool IsValidImplicitConversion(IOperation operation, WellKnownSymbolsInfo wellKnownSymbolsInfo)
+        public static bool IsValidImplicitConversion([NotNullWhen(true)] IOperation? operation, WellKnownSymbolsInfo wellKnownSymbolsInfo)
         {
             // Check if this is an implicit conversion operation convert from one delay type to another delay type.
             // This is used in methods chain like
@@ -179,7 +180,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 return false;
             }
 
-            var originalTargetMethod = invocationOperation.TargetMethod.ReducedFrom.OriginalDefinition;
+            var originalTargetMethod = invocationOperation.TargetMethod.ReducedFrom!.OriginalDefinition;
             // Well-known linq methods, like 'TryGetNonEnumeratedCount'
             if (originalTargetMethod.Parameters.IsEmpty || wellKnownSymbolsInfo.NoEnumerationMethods.Contains(originalTargetMethod))
             {
@@ -219,11 +220,13 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         }
 
         private static bool IsInvokingMethodEnumeratedOverArgument(
-            IMethodSymbol invokingMethod,
+            IMethodSymbol? invokingMethod,
             IArgumentOperation argumentOperation,
             WellKnownSymbolsInfo wellKnownSymbolsInfo)
         {
-            if (!IsDeferredType(argumentOperation.Value.Type?.OriginalDefinition, wellKnownSymbolsInfo.AdditionalDeferredTypes))
+            if (invokingMethod == null ||
+                argumentOperation.Parameter == null ||
+                !IsDeferredType(argumentOperation.Value.Type?.OriginalDefinition, wellKnownSymbolsInfo.AdditionalDeferredTypes))
             {
                 return false;
             }
@@ -263,7 +266,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         /// Check if <param name="operation"/> is an argument that passed into a linq chain. (like Select, Where etc.)
         /// </summary>
         private static bool IsOperationIsArgumentOfLinqChainInvocation(
-            IOperation operation, WellKnownSymbolsInfo wellKnownSymbolsInfo, out bool enumerateArgument)
+            [NotNullWhen(true)] IOperation? operation, WellKnownSymbolsInfo wellKnownSymbolsInfo, out bool enumerateArgument)
         {
             if (operation is IArgumentOperation { Parent: IInvocationOperation invocationOperation } argumentOperation)
             {
@@ -285,7 +288,8 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         {
             enumerateArgument = false;
             RoslynDebug.Assert(invocationOperation.Arguments.Contains(argumentOperationToCheck));
-            if (!IsDeferredType(argumentOperationToCheck.Value.Type?.OriginalDefinition, wellKnownSymbolsInfo.AdditionalDeferredTypes))
+            if (argumentOperationToCheck.Parameter == null ||
+                !IsDeferredType(argumentOperationToCheck.Value.Type?.OriginalDefinition, wellKnownSymbolsInfo.AdditionalDeferredTypes))
             {
                 return false;
             }
@@ -340,7 +344,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 return false;
             }
 
-            var originalMethod = invocationOperation.TargetMethod.ReducedFrom.OriginalDefinition;
+            var originalMethod = invocationOperation.TargetMethod.ReducedFrom!.OriginalDefinition;
             if (wellKnownSymbolsInfo.LinqChainMethods.Contains(originalMethod))
             {
                 return true;

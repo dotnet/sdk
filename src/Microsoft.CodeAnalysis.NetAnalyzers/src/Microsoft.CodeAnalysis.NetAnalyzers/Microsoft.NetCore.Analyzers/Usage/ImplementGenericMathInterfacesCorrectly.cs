@@ -82,8 +82,8 @@ namespace Microsoft.NetCore.Analyzers.Usage
                         FirstTypeParameterNameIsNotTheSymbolName(symbol, anInterface) &&
                         (!symbol.IsGenericType || NotConstrainedToTheInterfaceOrSelf(anInterface, symbol)))
                     {
-                        SyntaxNode? typeParameter = FindTheTypeArgumentOfTheInterfaceFromTypeDeclaration(symbol, symbol.BaseType);
-                        context.ReportDiagnostic(CreateDiagnostic(GMIRule, typeParameter, symbol.BaseType.OriginalDefinition.ToDisplayString(
+                        SyntaxNode? typeParameter = FindTheTypeArgumentOfTheInterfaceFromTypeDeclaration(symbol, symbol.BaseType!);
+                        context.ReportDiagnostic(CreateDiagnostic(GMIRule, typeParameter, symbol.BaseType!.OriginalDefinition.ToDisplayString(
                             SymbolDisplayFormat.MinimallyQualifiedFormat), symbol.BaseType.OriginalDefinition.TypeParameters[0].Name, symbol));
                     }
                 }

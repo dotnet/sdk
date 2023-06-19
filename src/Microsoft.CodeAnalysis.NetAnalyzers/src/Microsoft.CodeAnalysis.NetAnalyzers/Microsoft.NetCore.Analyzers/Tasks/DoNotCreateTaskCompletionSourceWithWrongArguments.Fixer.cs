@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
 using System.Composition;
@@ -27,8 +27,8 @@ namespace Microsoft.NetCore.Analyzers.Tasks
         {
             Document doc = context.Document;
             CancellationToken cancellationToken = context.CancellationToken;
-            SyntaxNode root = await doc.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
-            SemanticModel model = await doc.GetSemanticModelAsync(cancellationToken).ConfigureAwait(false);
+            SyntaxNode root = await doc.GetRequiredSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
+            SemanticModel model = await doc.GetRequiredSemanticModelAsync(cancellationToken).ConfigureAwait(false);
 
             // If we're able to make the desired substitution...
             var (targetNode, replacementField) = GetTaskCreationOptionsField(context, root, model, cancellationToken);
@@ -67,7 +67,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks
                     // and it wraps a conversion from a TaskContinuationOptions member
                     arg.Value is IConversionOperation convert &&
                     convert.Operand is IFieldReferenceOperation field &&
-                    field.Type.Equals(taskContinutationOptionsType) &&
+                    taskContinutationOptionsType.Equals(field.Type) &&
                     taskContinutationOptionsType.Equals(field.Field.ContainingType) &&
 
                     // and that option also exists on TaskCreationOptions,

@@ -89,9 +89,10 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
 
                         // Though null is const we don't fire the diagnostic to be FxCop Compact
                         if (initializerValue != null &&
-                            !constantIncompatibleTypes.Contains(fieldInitializerValue.Type))
+                            fieldInitializerValue.Type is { } fieldInitializerType &&
+                            !constantIncompatibleTypes.Contains(fieldInitializerType))
                         {
-                            if (fieldInitializerValue.Type?.SpecialType == SpecialType.System_String &&
+                            if (fieldInitializerType.SpecialType == SpecialType.System_String &&
                                 ((string)initializerValue).Length == 0)
                             {
                                 context.ReportDiagnostic(lastField.CreateDiagnostic(EmptyStringRule, lastField.Name));

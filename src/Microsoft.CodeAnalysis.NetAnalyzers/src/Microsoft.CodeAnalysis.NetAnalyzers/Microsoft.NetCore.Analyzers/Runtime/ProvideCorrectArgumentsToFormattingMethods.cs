@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
@@ -101,15 +101,14 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     }
 
                     // compiler generating object array for params case
-                    IArrayInitializerOperation intializer = arrayCreation.Initializer;
-                    if (intializer == null)
+                    if (arrayCreation.Initializer is not { } initializer)
                     {
                         // unsupported format
                         return;
                     }
 
                     // REVIEW: "ElementValues" is a bit confusing where I need to double dot those to get number of elements
-                    int actualArgumentCount = intializer.ElementValues.Length;
+                    int actualArgumentCount = initializer.ElementValues.Length;
                     if (actualArgumentCount != expectedStringFormatArgumentCount)
                     {
                         operationContext.ReportDiagnostic(operationContext.Operation.Syntax.CreateDiagnostic(Rule));

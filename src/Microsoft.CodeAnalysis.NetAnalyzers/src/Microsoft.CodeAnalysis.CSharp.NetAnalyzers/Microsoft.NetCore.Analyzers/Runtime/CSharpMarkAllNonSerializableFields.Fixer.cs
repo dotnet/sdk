@@ -13,7 +13,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
     {
         protected override SyntaxNode? GetFieldDeclarationNode(SyntaxNode node)
         {
-            SyntaxNode fieldNode = node;
+            SyntaxNode? fieldNode = node;
             while (fieldNode != null && !fieldNode.IsKind(SyntaxKind.FieldDeclaration))
             {
                 fieldNode = fieldNode.Parent;

@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
@@ -79,10 +79,11 @@ namespace Microsoft.NetCore.Analyzers.Resources
                         return;
                     }
 
-                    if (data != null)
+                    if (data != null &&
+                        data.ApplicationSyntaxReference?.GetSyntax(context.CancellationToken) is { } attributeSyntax)
                     {
                         // we have the attribute but its doing it wrong.
-                        context.ReportDiagnostic(data.ApplicationSyntaxReference.GetSyntax(context.CancellationToken).CreateDiagnostic(Rule));
+                        context.ReportDiagnostic(attributeSyntax.CreateDiagnostic(Rule));
                         return;
                     }
 
@@ -97,9 +98,9 @@ namespace Microsoft.NetCore.Analyzers.Resources
             return tree.FilePath?.IndexOf(Designer, StringComparison.OrdinalIgnoreCase) > 0;
         }
 
-        protected static bool CheckResxGeneratedFile(SemanticModel model, SyntaxNode attribute, SyntaxNode argument, INamedTypeSymbol generatedCode, CancellationToken cancellationToken)
+        protected static bool CheckResxGeneratedFile(SemanticModel model, SyntaxNode attribute, SyntaxNode? argument, INamedTypeSymbol generatedCode, CancellationToken cancellationToken)
         {
-            if (!CheckDesignerFile(model.SyntaxTree))
+            if (!CheckDesignerFile(model.SyntaxTree) || argument == null)
             {
                 return false;
             }
@@ -109,7 +110,7 @@ namespace Microsoft.NetCore.Analyzers.Resources
                 return false;
             }
 
-            Optional<object> constValue = model.GetConstantValue(argument, cancellationToken);
+            Optional<object?> constValue = model.GetConstantValue(argument, cancellationToken);
             if (!constValue.HasValue)
             {
                 return false;
@@ -130,7 +131,7 @@ namespace Microsoft.NetCore.Analyzers.Resources
 
         private static bool TryCheckNeutralResourcesLanguageAttribute(Compilation compilation, INamedTypeSymbol attribute, out AttributeData? attributeData)
         {
-            IEnumerable<AttributeData> attributes = compilation.Assembly.GetAttributes().Where(d => SymbolEqualityComparer.Default.Equals(attribute, d.AttributeClass));
+            IEnumerable<AttributeData> attributes = compilation.Assembly.GetAttributes(attribute);
             foreach (AttributeData data in attributes)
             {
                 if (data.ConstructorArguments.Any(c => c.Value is string constantValue && !string.IsNullOrWhiteSpace(constantValue)))

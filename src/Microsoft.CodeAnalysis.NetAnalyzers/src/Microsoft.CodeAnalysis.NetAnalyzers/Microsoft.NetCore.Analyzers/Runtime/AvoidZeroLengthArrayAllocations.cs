@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Immutable;
@@ -119,7 +119,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
         private static bool IsCompilerGeneratedParamsArray(IArrayCreationOperation arrayCreationExpression, OperationAnalysisContext context)
         {
-            var model = arrayCreationExpression.SemanticModel;
+            var model = arrayCreationExpression.SemanticModel!;
 
             // Compiler generated array creation seems to just use the syntax from the parent.
             var parent = model.GetOperation(arrayCreationExpression.Syntax, context.CancellationToken);
@@ -187,7 +187,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 return false;
             }
 
-            return first.Type.Equals(second.Type);
+            return first.Type?.Equals(second.Type) == true;
         }
 
         protected abstract bool IsAttributeSyntax(SyntaxNode node);

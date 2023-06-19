@@ -7,6 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Analyzer.Utilities;
 using Analyzer.Utilities.PooledObjects;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
@@ -23,7 +24,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
 
         public sealed override async Task RegisterCodeFixesAsync(CodeFixContext context)
         {
-            var root = await context.Document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
+            var root = await context.Document.GetRequiredSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
             var diagnostic = context.Diagnostics[0];
             if (!Helper.TryComputeHashNode(root, diagnostic, out var computeHashSyntaxHolder))
             {
@@ -90,7 +91,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
             }
             public override string EquivalenceKey => nameof(MicrosoftNetCoreAnalyzersResources.PreferHashDataCodefixTitle);
 
-            protected override async Task<Solution> GetChangedSolutionAsync(CancellationToken cancellationToken)
+            protected override async Task<Solution?> GetChangedSolutionAsync(CancellationToken cancellationToken)
             {
                 var newSolution = _solution;
                 foreach (KeyValuePair<Project, ImmutableArray<Diagnostic>> pair in _diagnosticsToFix)
@@ -101,7 +102,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     IEnumerable<IGrouping<SyntaxTree, Diagnostic>> groupedDiagnostics =
                         diagnostics
                             .Where(d => d.Location.IsInSource)
-                            .GroupBy(d => d.Location.SourceTree);
+                            .GroupBy(d => d.Location.SourceTree!);
 
                     foreach (IGrouping<SyntaxTree, Diagnostic> grouping in groupedDiagnostics)
                     {
@@ -112,7 +113,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                             continue;
                         }
 
-                        SyntaxNode root = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
+                        SyntaxNode root = await document.GetRequiredSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
                         var hashInstanceTargets = CollectTargets(root, grouping, cancellationToken);
 
                         if (hashInstanceTargets is null)
@@ -233,7 +234,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 {
                     case FixAllScope.Document:
                         {
-                            ImmutableArray<Diagnostic> diagnostics = await fixAllContext.GetDocumentDiagnosticsAsync(fixAllContext.Document).ConfigureAwait(false);
+                            ImmutableArray<Diagnostic> diagnostics = await fixAllContext.GetDocumentDiagnosticsAsync(fixAllContext.Document!).ConfigureAwait(false);
                             diagnosticsToFix.Add(new KeyValuePair<Project, ImmutableArray<Diagnostic>>(fixAllContext.Project, diagnostics));
                             break;
                         }
@@ -280,7 +281,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     return false;
                 }
 
-                var hashTypeName = diagnostic.Properties[PreferHashDataOverComputeHashAnalyzer.TargetHashTypeDiagnosticPropertyKey];
+                var hashTypeName = diagnostic.Properties[PreferHashDataOverComputeHashAnalyzer.TargetHashTypeDiagnosticPropertyKey]!;
 
                 computeHashHolder = new ComputeHashSyntaxHolder(computeHashNode, computeType, hashTypeName);
                 return true;
@@ -387,7 +388,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 foreach (var c in hashInstanceTarget.ComputeHashNodes)
                 {
                     var namespacePrefix = GetQualifiedPrefixNamespaces(c.ComputeHashNode, hashInstanceTarget.CreateNode);
-                    var tracked = root.GetCurrentNode(c.ComputeHashNode);
+                    var tracked = root.GetCurrentNode(c.ComputeHashNode)!;
                     var hashDataNode = GetHashDataSyntaxNode(c.ComputeType, namespacePrefix, c.HashTypeName, tracked);
                     root = root.ReplaceNode(tracked, hashDataNode);
                 }
@@ -406,7 +407,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
 
                 foreach (var disposeNode in hashInstanceTarget.DisposeNodes)
                 {
-                    var trackedDisposeNode = root.GetCurrentNode(disposeNode);
+                    var trackedDisposeNode = root.GetCurrentNode(disposeNode)!;
                     root = RemoveNodeWithFormatting(root, trackedDisposeNode);
                 }
 
@@ -425,11 +426,11 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     option |= SyntaxRemoveOptions.KeepTrailingTrivia;
                 }
 
-                var parent = nodeToRemove.Parent;
+                var parent = nodeToRemove.Parent!;
                 root = root.TrackNodes(parent);
-                var newParent = parent.RemoveNode(nodeToRemove, option)
+                var newParent = parent.RemoveNode(nodeToRemove, option)!
                     .WithAdditionalAnnotations(Formatter.Annotation);
-                root = root.ReplaceNode(root.GetCurrentNode(parent), newParent);
+                root = root.ReplaceNode(root.GetCurrentNode(parent)!, newParent);
                 return root;
             }
 

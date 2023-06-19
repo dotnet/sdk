@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
 using System.Linq;
@@ -64,6 +64,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     return;
                 }
 
+#pragma warning disable IDE0004 // Remove Unnecessary Cast - Removal of cast leads to CS8714 compiler warning.
                 var methodRuleDictionary = s_methodMetadataNames
                     .SelectMany(m => enumerableType
                         .GetMembers(m.MethodName)
@@ -75,7 +76,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                                             == SpecialType.System_Collections_IEnumerable
                               )
                         .Select(method => (method, m.Rule)))
-                    .ToImmutableDictionary(key => key.method, v => v.Rule, SymbolEqualityComparer.Default);
+                    .ToImmutableDictionary(key => (ISymbol)key.method, v => v.Rule, SymbolEqualityComparer.Default);
+#pragma warning restore IDE0004 // Remove Unnecessary Cast
 
                 if (methodRuleDictionary.IsEmpty)
                 {
@@ -108,7 +110,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
                     static ITypeSymbol? FindElementType(IOperation? operation)
                     {
-                        if (operation is null)
+                        if (operation?.Type is null)
                         {
                             return null;
                         }
@@ -184,9 +186,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             static bool CastWillAlwaysFail(ITypeSymbol castFrom, ITypeSymbol castTo)
             {
                 castFrom = castFrom.GetNullableValueTypeUnderlyingType()
-                    ?? castFrom.GetUnderlyingValueTupleTypeOrThis();
+                    ?? castFrom.GetUnderlyingValueTupleTypeOrThis()!;
                 castTo = castTo.GetNullableValueTypeUnderlyingType()
-                    ?? castTo.GetUnderlyingValueTupleTypeOrThis();
+                    ?? castTo.GetUnderlyingValueTupleTypeOrThis()!;
 
                 if (castFrom.TypeKind == TypeKind.Error
                    || castTo.TypeKind == TypeKind.Error)
@@ -289,12 +291,12 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                         return !castFrom.Equals(toEnum.EnumUnderlyingType);
                     case (TypeKind.Enum, TypeKind.Struct)
                     when castFrom.OriginalDefinition is INamedTypeSymbol fromEnum:
-                        return !fromEnum.EnumUnderlyingType.Equals(castTo);
+                        return !fromEnum.EnumUnderlyingType!.Equals(castTo);
 
                     case (TypeKind.Enum, TypeKind.Enum)
                     when castFrom.OriginalDefinition is INamedTypeSymbol fromEnum
                       && castTo.OriginalDefinition is INamedTypeSymbol toEnum:
-                        return !fromEnum.EnumUnderlyingType.Equals(toEnum.EnumUnderlyingType);
+                        return !fromEnum.EnumUnderlyingType!.Equals(toEnum.EnumUnderlyingType);
 
                     // this is too conservative
                     // array variance is not implemented

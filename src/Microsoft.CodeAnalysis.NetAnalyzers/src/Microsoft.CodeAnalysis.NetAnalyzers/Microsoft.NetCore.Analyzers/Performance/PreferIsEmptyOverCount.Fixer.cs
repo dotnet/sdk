@@ -2,6 +2,7 @@
 
 using System.Collections.Immutable;
 using System.Threading.Tasks;
+using Analyzer.Utilities;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
@@ -20,14 +21,14 @@ namespace Microsoft.NetCore.Analyzers.Performance
 
         public sealed override async Task RegisterCodeFixesAsync(CodeFixContext context)
         {
-            SyntaxNode root = await context.Document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
+            SyntaxNode root = await context.Document.GetRequiredSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
             SyntaxNode node = root.FindNode(context.Span, getInnermostNodeForTie: true);
             if (node == null)
             {
                 return;
             }
 
-            ImmutableDictionary<string, string> properties = context.Diagnostics[0].Properties;
+            ImmutableDictionary<string, string?> properties = context.Diagnostics[0].Properties;
             if (properties == null)
             {
                 return;
@@ -35,7 +36,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
 
             // Indicates whether the Count method or property is on the Right or Left side of a binary expression 
             // OR if it is the argument or the instance of an Equals invocation.
-            string operationKey = properties[UseCountProperlyAnalyzer.OperationKey];
+            string operationKey = properties[UseCountProperlyAnalyzer.OperationKey]!;
 
             // Indicates if the replacing IsEmpty node should be negated. (!IsEmpty). 
             bool shouldNegate = properties.ContainsKey(UseCountProperlyAnalyzer.ShouldNegateKey);

@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
 using System.Diagnostics;
@@ -233,7 +233,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                                 var disposed = false;
                                 foreach (var location in pointsToValue.Locations)
                                 {
-                                    if (disposeDataAtExit.TryGetValue(location, out DisposeAbstractValue disposeValue))
+                                    if (disposeDataAtExit.TryGetValue(location, out var disposeValue))
                                     {
                                         switch (disposeValue.Kind)
                                         {

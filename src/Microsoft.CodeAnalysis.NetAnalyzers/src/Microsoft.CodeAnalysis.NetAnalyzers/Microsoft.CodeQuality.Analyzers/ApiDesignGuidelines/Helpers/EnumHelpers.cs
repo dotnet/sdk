@@ -72,7 +72,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.Helpers
                         return false;
                     }
 
-                    if (!TryConvertToUInt64(field.ConstantValue, enumType.EnumUnderlyingType.SpecialType, out ulong convertedValue))
+                    if (!TryConvertToUInt64(field.ConstantValue, enumType.EnumUnderlyingType!.SpecialType, out ulong convertedValue))
                     {
                         return false;
                     }

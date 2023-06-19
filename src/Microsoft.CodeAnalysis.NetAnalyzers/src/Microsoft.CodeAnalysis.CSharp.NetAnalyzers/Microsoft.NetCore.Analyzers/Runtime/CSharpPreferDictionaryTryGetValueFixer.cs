@@ -1,9 +1,10 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Generic;
 using System.Composition;
 using System.Linq;
 using System.Threading.Tasks;
+using Analyzer.Utilities;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
@@ -28,7 +29,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
                 return;
 
             Document document = context.Document;
-            SyntaxNode root = await document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
+            SyntaxNode root = await document.GetRequiredSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
 
             if (root.FindNode(context.Span) is not InvocationExpressionSyntax
                 {
@@ -73,7 +74,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
             if (diagnostic.AdditionalLocations.Count != dictionaryAccessors.Count + (addStatementNode != null ? 1 : 0))
                 return;
 
-            var model = await context.Document.GetSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
+            var model = await context.Document.GetRequiredSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
             var type = model.GetTypeInfo(dictionaryAccessors[0], context.CancellationToken).Type;
 
             var action = CodeAction.Create(PreferDictionaryTryGetValueCodeFixTitle, async ct =>
@@ -116,7 +117,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
                 {
                     editor.InsertBefore(addStatementNode,
                         generator.ExpressionStatement(generator.AssignmentStatement(identifierName, changedValueNode)));
-                    editor.ReplaceNode(changedValueNode, identifierName);
+                    editor.ReplaceNode(changedValueNode!, identifierName);
                 }
 
                 foreach (var dictionaryAccess in dictionaryAccessors)

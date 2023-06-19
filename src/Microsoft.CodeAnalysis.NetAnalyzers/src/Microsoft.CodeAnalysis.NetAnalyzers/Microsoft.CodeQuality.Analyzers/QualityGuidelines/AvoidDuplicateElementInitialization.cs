@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -84,12 +84,13 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                 var parameter = argument.Parameter;
                 if (parameter == null ||
                     parameter.Ordinal >= result.Length ||
-                    !argument.Value.ConstantValue.HasValue)
+                    !argument.Value.ConstantValue.HasValue ||
+                    argument.Value.ConstantValue.Value is not { } value)
                 {
                     return ImmutableArray<object>.Empty;
                 }
 
-                result[parameter.Ordinal] = argument.Value.ConstantValue.Value;
+                result[parameter.Ordinal] = value;
             }
 
             return result.ToImmutableArray();

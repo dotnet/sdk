@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -139,7 +139,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 return;
             }
 
-            var usageContext = new DictionaryUsageContext(containsOperation.Instance, containsOperation.Arguments[0].Value);
+            var usageContext = new DictionaryUsageContext(containsOperation.Instance!, containsOperation.Arguments[0].Value);
             if (!GetParentConditionalOperation(containsOperation, ref usageContext, out var conditionalOperation, out var guardsTruePath))
                 return;
 
@@ -366,7 +366,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         private static void FindUsageInOperationsAfterConditionBlock(IOperation sourceOperation, ref DictionaryUsageContext context)
         {
             var testOperation = false;
-            foreach (var operation in sourceOperation.Parent.Children)
+            foreach (var operation in sourceOperation.Parent!.Children)
             {
                 if (!testOperation)
                 {
@@ -386,7 +386,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             return IsSameReferenceOperation(sourceReference, targetReference);
         }
 
-        private static bool IsSameReferenceOperation(IOperation sourceReference, IOperation targetReference)
+        private static bool IsSameReferenceOperation(IOperation? sourceReference, IOperation targetReference)
         {
             switch (sourceReference)
             {

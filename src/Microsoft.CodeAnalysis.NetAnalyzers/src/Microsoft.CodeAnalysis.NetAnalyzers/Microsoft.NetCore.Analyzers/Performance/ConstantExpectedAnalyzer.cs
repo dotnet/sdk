@@ -195,8 +195,8 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     continue;
                 }
 
-                var constantValue = v.ConstantValue;
-                if (!argConstantParameter.ValidateValue(argument, constantValue, out var valueDiagnostic))
+                if (v.ConstantValue is { } constantValue &&
+                    !argConstantParameter.ValidateValue(argument, constantValue, out var valueDiagnostic))
                 {
                     context.ReportDiagnostic(valueDiagnostic);
                 }
@@ -283,11 +283,12 @@ namespace Microsoft.NetCore.Analyzers.Performance
             /// <param name="parameterSymbol"></param>
             /// <param name="parameter"></param>
             /// <returns></returns>
-            public bool TryCreateConstantExpectedParameter(IParameterSymbol parameterSymbol, [NotNullWhen(true)] out ConstantExpectedParameter? parameter)
+            public bool TryCreateConstantExpectedParameter([NotNullWhen(true)] IParameterSymbol? parameterSymbol, [NotNullWhen(true)] out ConstantExpectedParameter? parameter)
             {
                 var underlyingType = GetUnderlyingType(parameterSymbol);
 
-                if (!TryGetConstantExpectedAttributeData(parameterSymbol, out var attributeData))
+                if (underlyingType == null ||
+                    !TryGetConstantExpectedAttributeData(parameterSymbol, out var attributeData))
                 {
                     parameter = null;
                     return false;
@@ -338,7 +339,8 @@ namespace Microsoft.NetCore.Analyzers.Performance
             {
                 var underlyingType = GetUnderlyingType(parameterSymbol);
 
-                if (!TryGetConstantExpectedAttributeData(parameterSymbol, out var attributeData))
+                if (underlyingType == null ||
+                    !TryGetConstantExpectedAttributeData(parameterSymbol, out var attributeData))
                 {
                     diagnostics = ImmutableArray<Diagnostic>.Empty;
                     return false;
@@ -375,7 +377,8 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     case SpecialType.None when parameterSymbol.Type.TypeKind == TypeKind.TypeParameter:
                         return ValidateMinMaxIsNull(parameterSymbol, attributeData, helper, out diagnostics);
                     default:
-                        diagnostics = DiagnosticHelper.ParameterIsInvalid(parameterSymbol.Type.ToDisplayString(), attributeData.ApplicationSyntaxReference.GetSyntax());
+                        var syntax = attributeData.ApplicationSyntaxReference?.GetSyntax() ?? parameterSymbol.DeclaringSyntaxReferences[0].GetSyntax();
+                        diagnostics = DiagnosticHelper.ParameterIsInvalid(parameterSymbol.Type.ToDisplayString(), syntax);
                         return false;
                 }
 
@@ -399,7 +402,8 @@ namespace Microsoft.NetCore.Analyzers.Performance
 
                     if (errorFlags is not 0)
                     {
-                        diagnostics = helper.GetError(errorFlags, parameterSymbol, attributeData.ApplicationSyntaxReference.GetSyntax(), "null", "null");
+                        var syntax = attributeData.ApplicationSyntaxReference?.GetSyntax() ?? parameterSymbol.DeclaringSyntaxReferences[0].GetSyntax();
+                        diagnostics = helper.GetError(errorFlags, parameterSymbol, syntax, "null", "null");
                         return false;
                     }
 
@@ -408,38 +412,28 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 }
             }
 
-            private static ITypeSymbol GetUnderlyingType(IParameterSymbol parameterSymbol)
+            private static ITypeSymbol? GetUnderlyingType(IParameterSymbol? parameterSymbol)
             {
-                ITypeSymbol underlyingType;
-                if (parameterSymbol.Type.TypeKind is TypeKind.Enum)
+                if (parameterSymbol?.Type.TypeKind is TypeKind.Enum)
                 {
                     var enumType = (INamedTypeSymbol)parameterSymbol.Type;
-                    underlyingType = enumType.EnumUnderlyingType;
+                    return enumType.EnumUnderlyingType;
                 }
                 else
                 {
-                    underlyingType = parameterSymbol.Type;
+                    return parameterSymbol?.Type;
                 }
-
-                return underlyingType;
             }
 
-            public bool TryGetConstantExpectedAttributeData(IParameterSymbol parameter, [NotNullWhen(true)] out AttributeData? attributeData)
+            public bool TryGetConstantExpectedAttributeData([NotNullWhen(true)] IParameterSymbol? parameter, [NotNullWhen(true)] out AttributeData? attributeData)
             {
-                attributeData = parameter.GetAttributes()
-                    .FirstOrDefault(attrData => IsConstantExpectedAttribute(attrData.AttributeClass));
+                attributeData = parameter?.GetAttribute(AttributeSymbol);
                 return attributeData is not null;
             }
 
             private bool HasConstantExpectedAttributeData(IParameterSymbol parameter)
             {
-                return parameter.GetAttributes()
-                    .Any(attrData => IsConstantExpectedAttribute(attrData.AttributeClass));
-            }
-
-            private bool IsConstantExpectedAttribute(INamedTypeSymbol namedType)
-            {
-                return namedType.Equals(AttributeSymbol, SymbolEqualityComparer.Default);
+                return parameter.HasAttribute(AttributeSymbol);
             }
 
             public static bool TryCreate(Compilation compilation, [NotNullWhen(true)] out ConstantExpectedContext? constantExpectedContext)
@@ -470,15 +464,15 @@ namespace Microsoft.NetCore.Analyzers.Performance
             public IParameterSymbol Parameter { get; }
 
             /// <summary>
-            /// Validates the provided constant value is within the constaints of ConstantExpected attribute set
+            /// Validates the provided constant value is within the constraints of ConstantExpected attribute set
             /// </summary>
             /// <param name="argument"></param>
             /// <param name="constant"></param>
             /// <param name="validationDiagnostics">Non empty when method returns false</param>
             /// <returns></returns>
-            public abstract bool ValidateValue(IArgumentOperation argument, Optional<object> constant, [NotNullWhen(false)] out Diagnostic? validationDiagnostics);
+            public abstract bool ValidateValue(IArgumentOperation argument, Optional<object?> constant, [NotNullWhen(false)] out Diagnostic? validationDiagnostics);
 
-            public static bool ValidateConstant(IArgumentOperation argument, Optional<object> constant, [NotNullWhen(false)] out Diagnostic? validationDiagnostics)
+            public static bool ValidateConstant(IArgumentOperation argument, Optional<object?> constant, [NotNullWhen(false)] out Diagnostic? validationDiagnostics)
             {
                 if (!constant.HasValue)
                 {
@@ -511,7 +505,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 return true;
             }
 
-            public override bool ValidateValue(IArgumentOperation argument, Optional<object> constant, [NotNullWhen(false)] out Diagnostic? validationDiagnostics)
+            public override bool ValidateValue(IArgumentOperation argument, Optional<object?> constant, [NotNullWhen(false)] out Diagnostic? validationDiagnostics)
             {
                 if (!ValidateConstant(argument, constant, out validationDiagnostics))
                 {

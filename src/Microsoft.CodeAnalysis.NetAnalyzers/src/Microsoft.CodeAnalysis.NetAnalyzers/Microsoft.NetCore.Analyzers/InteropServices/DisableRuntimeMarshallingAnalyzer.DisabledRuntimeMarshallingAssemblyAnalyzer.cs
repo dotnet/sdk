@@ -123,7 +123,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                     return;
                 }
 
-                AnalyzeMethodSignature(_autoLayoutCache, context.ReportDiagnostic, type.DelegateInvokeMethod);
+                AnalyzeMethodSignature(_autoLayoutCache, context.ReportDiagnostic, type.DelegateInvokeMethod!);
             }
 
             public void AnalyzeMethod(SymbolAnalysisContext context)

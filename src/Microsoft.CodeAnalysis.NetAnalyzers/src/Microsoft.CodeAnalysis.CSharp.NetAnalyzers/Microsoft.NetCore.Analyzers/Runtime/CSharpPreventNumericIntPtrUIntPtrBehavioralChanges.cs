@@ -19,7 +19,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
 
         protected override bool IsWithinCheckedContext(IOperation operation)
         {
-            var parent = operation.Parent.Syntax;
+            var parent = operation.Parent?.Syntax;
             while (parent != null)
             {
                 switch (parent)
@@ -48,7 +48,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
 
                     while (definition is VariableDeclaratorSyntax)
                     {
-                        definition = definition.Parent;
+                        definition = definition.Parent!;
                     }
 
                     var type = GetType(definition);

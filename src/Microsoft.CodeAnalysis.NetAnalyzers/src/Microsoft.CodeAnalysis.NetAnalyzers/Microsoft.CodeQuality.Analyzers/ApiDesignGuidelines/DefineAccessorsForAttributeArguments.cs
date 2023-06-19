@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
@@ -195,13 +195,13 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         private static Diagnostic GetIncreaseVisibilityDiagnostic(IParameterSymbol parameter, IPropertySymbol property)
         {
             // If '{0}' is the property accessor for positional argument '{1}', make it public.
-            return property.GetMethod.Locations.CreateDiagnostic(IncreaseVisibilityRule, new Dictionary<string, string?> { { "case", MakePublicCase } }.ToImmutableDictionary(), property.Name, parameter.Name);
+            return property.GetMethod!.Locations.CreateDiagnostic(IncreaseVisibilityRule, new Dictionary<string, string?> { { "case", MakePublicCase } }.ToImmutableDictionary(), property.Name, parameter.Name);
         }
 
         private static Diagnostic GetRemoveSetterDiagnostic(IParameterSymbol parameter, IPropertySymbol property)
         {
             // Remove the property setter from '{0}' or reduce its accessibility because it corresponds to positional argument '{1}'.
-            return property.SetMethod.Locations.CreateDiagnostic(RemoveSetterRule, new Dictionary<string, string?> { { "case", RemoveSetterCase } }.ToImmutableDictionary(), property.Name, parameter.Name);
+            return property.SetMethod!.Locations.CreateDiagnostic(RemoveSetterRule, new Dictionary<string, string?> { { "case", RemoveSetterCase } }.ToImmutableDictionary(), property.Name, parameter.Name);
         }
     }
 }

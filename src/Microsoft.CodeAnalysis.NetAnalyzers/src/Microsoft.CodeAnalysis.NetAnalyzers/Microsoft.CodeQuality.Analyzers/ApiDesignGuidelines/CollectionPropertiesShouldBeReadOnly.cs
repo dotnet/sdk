@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
 using System.Diagnostics;
@@ -79,7 +79,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             var property = (IPropertySymbol)context.Symbol;
 
             // check whether it has a public setter
-            IMethodSymbol setter = property.SetMethod;
+            IMethodSymbol? setter = property.SetMethod;
             if (setter == null || !setter.IsExternallyVisible())
             {
                 return;
