@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Linq;
 using System.Collections.Generic;
@@ -103,7 +103,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     }
 
                     // Must be literal array
-                    if (arrayCreationOperation.Initializer.ElementValues.Any(x => x is not ILiteralOperation))
+                    if (arrayCreationOperation.Initializer is { } initializer &&
+                        initializer.ElementValues.Any(x => x is not ILiteralOperation))
                     {
                         return;
                     }
