@@ -4,7 +4,6 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
-using Microsoft.CodeAnalysis.Text;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.IdentifiersShouldNotMatchKeywordsAnalyzer,
@@ -243,7 +242,7 @@ End Class",
             }.RunAsync();
         }
 
-        [Theory(Skip = "https://github.com/dotnet/roslyn-analyzers/issues/3494")]
+        [Theory]
         // Identical
         [InlineData("dotnet_code_quality.analyzed_symbol_kinds = NamedType", "dotnet_code_quality.analyzed_symbol_kinds = NamedType", true)]
         [InlineData("dotnet_code_quality.CA1716.analyzed_symbol_kinds = NamedType, Property", "dotnet_code_quality.CA1716.analyzed_symbol_kinds = NamedType, Property", true)]
@@ -252,9 +251,9 @@ End Class",
         [InlineData("dotnet_code_quality.CA1716.analyzed_symbol_kinds = NamedType, Property", "dotnet_code_quality.CA1716.analyzed_symbol_kinds = NamedType, Method", true)]
         [InlineData("dotnet_code_quality.analyzed_symbol_kinds = NamedType", "", true)] // Default has 'NamedType'
         // Different, intersection does not have 'NamedType'
-        [InlineData("dotnet_code_quality.analyzed_symbol_kinds = NamedType, Property", "dotnet_code_quality.analyzed_symbol_kinds = Property", false)]
-        [InlineData("dotnet_code_quality.CA1716.analyzed_symbol_kinds = NamedType, Method", "dotnet_code_quality.analyzed_symbol_kinds = Property", false)]
-        [InlineData("dotnet_code_quality.analyzed_symbol_kinds = Method", "", false)] // Default has 'NamedType'
+        [InlineData("dotnet_code_quality.analyzed_symbol_kinds = NamedType, Property", "dotnet_code_quality.analyzed_symbol_kinds = Property", false, Skip = "https://github.com/dotnet/roslyn-analyzers/issues/3494")]
+        [InlineData("dotnet_code_quality.CA1716.analyzed_symbol_kinds = NamedType, Method", "dotnet_code_quality.analyzed_symbol_kinds = Property", false, Skip = "https://github.com/dotnet/roslyn-analyzers/issues/3494")]
+        [InlineData("dotnet_code_quality.analyzed_symbol_kinds = Method", "", false, Skip = "https://github.com/dotnet/roslyn-analyzers/issues/3494")] // Default has 'NamedType'
         public async Task TestConflictingAnalyzerOptionsForPartialsAsync(string editorConfigText1, string editorConfigText2, bool expectDiagnostic)
         {
             var csTest = new VerifyCS.Test
@@ -263,11 +262,15 @@ End Class",
                 {
                     Sources =
                     {
-                        @"public partial class @class {}",
-                        @"public partial class @class {}",
-                    }
+                        ("/folder1/Test0.cs", @"public partial class @class {}"),
+                        ("/folder2/Test1.cs", @"public partial class @class {}"),
+                    },
+                    AnalyzerConfigFiles =
+                    {
+                        ("/folder1/.editorconfig", $"[*.cs]" + Environment.NewLine + editorConfigText1),
+                        ("/folder2/.editorconfig", $"[*.cs]" + Environment.NewLine + editorConfigText2),
+                    },
                 },
-                SolutionTransforms = { ApplyTransform }
             };
 
             if (expectDiagnostic)
@@ -283,67 +286,41 @@ End Class",
                 {
                     Sources =
                     {
-                        @"
+                        ("/folder1/Test0.vb", @"
 Public Partial Class [Class]
-End Class",
-                        @"
+End Class"),
+                        ("/folder2/Test1.vb", @"
 Public Partial Class [Class]
-End Class"
+End Class"),
+                    },
+                    AnalyzerConfigFiles =
+                    {
+                        ("/folder1/.editorconfig", $"[*.cs]" + Environment.NewLine + editorConfigText1),
+                        ("/folder2/.editorconfig", $"[*.cs]" + Environment.NewLine + editorConfigText2),
                     },
                 },
-                SolutionTransforms = { ApplyTransform }
             };
 
             if (expectDiagnostic)
             {
-                vbTest.ExpectedDiagnostics.Add(VerifyVB.Diagnostic(IdentifiersShouldNotMatchKeywordsAnalyzer.TypeRule).WithSpan(@"/folder1\Test0.vb", 2, 22, 2, 29).WithSpan(@"/folder2\Test1.vb", 2, 22, 2, 29).WithArguments("Class", "Class"));
+                vbTest.ExpectedDiagnostics.Add(VerifyVB.Diagnostic(IdentifiersShouldNotMatchKeywordsAnalyzer.TypeRule).WithSpan(@"/folder1/Test0.vb", 2, 22, 2, 29).WithSpan(@"/folder2/Test1.vb", 2, 22, 2, 29).WithArguments("Class", "Class"));
             }
 
             await vbTest.RunAsync();
-            return;
-
-            Solution ApplyTransform(Solution solution, ProjectId projectId)
-            {
-                var project = solution.GetProject(projectId)!;
-                var projectFilePath = project.Language == LanguageNames.CSharp ? @"/Test.csproj" : @"/Test.vbproj";
-                solution = solution.WithProjectFilePath(projectId, projectFilePath);
-
-                var documentExtension = project.Language == LanguageNames.CSharp ? "cs" : "vb";
-                var document1EditorConfig = $"[*.{documentExtension}]" + Environment.NewLine + editorConfigText1;
-                var document2EditorConfig = $"[*.{documentExtension}]" + Environment.NewLine + editorConfigText2;
-
-                var document1Folder = $@"/folder1";
-                solution = solution.WithDocumentFilePath(project.DocumentIds[0], $@"{document1Folder}\Test0.{documentExtension}");
-                solution = solution.GetProject(projectId)!
-                    .AddAnalyzerConfigDocument(
-                        ".editorconfig",
-                        SourceText.From(document1EditorConfig),
-                        filePath: $@"{document1Folder}\.editorconfig")
-                    .Project.Solution;
-
-                var document2Folder = $@"/folder2";
-                solution = solution.WithDocumentFilePath(project.DocumentIds[1], $@"{document2Folder}\Test1.{documentExtension}");
-                return solution.GetProject(projectId)!
-                    .AddAnalyzerConfigDocument(
-                        ".editorconfig",
-                        SourceText.From(document2EditorConfig),
-                        filePath: $@"{document2Folder}\.editorconfig")
-                    .Project.Solution;
-            }
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column, DiagnosticDescriptor rule, string arg1, string arg2)
-#pragma warning disable RS0030 // Do not used banned APIs
+#pragma warning disable RS0030 // Do not use banned APIs
             => VerifyCS.Diagnostic(rule)
                 .WithLocation(line, column)
-#pragma warning restore RS0030 // Do not used banned APIs
+#pragma warning restore RS0030 // Do not use banned APIs
                 .WithArguments(arg1, arg2);
 
         private static DiagnosticResult GetBasicResultAt(int line, int column, DiagnosticDescriptor rule, string arg1, string arg2)
-#pragma warning disable RS0030 // Do not used banned APIs
+#pragma warning disable RS0030 // Do not use banned APIs
             => VerifyVB.Diagnostic(rule)
                 .WithLocation(line, column)
-#pragma warning restore RS0030 // Do not used banned APIs
+#pragma warning restore RS0030 // Do not use banned APIs
                 .WithArguments(arg1, arg2);
     }
 }

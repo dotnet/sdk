@@ -104,6 +104,7 @@ Configurable Rules:
 [CA1815](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1815),
 [CA1819](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1819),
 [CA1822](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1822),
+[CA1859](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1859),
 [CA2208](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2208),
 [CA2217](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2217),
 [CA2225](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2225),
@@ -120,7 +121,9 @@ Option Values:
 | `private` | Analyzes private APIs that are only visible within the containing type. |
 | `all` | Analyzes all APIs, regardless of the symbol visibility. |
 
-Default Value: `public`
+Default Value: `public`, except as listed below
+
+  1. CA1859: default value is `private`.
 
 Example: `dotnet_code_quality.api_surface = all`
 
@@ -831,7 +834,7 @@ Option Values: [Fully qualified names](https://github.com/dotnet/csharplang/blob
 
 Default Value: empty
 
-This option is used to include customized methods like [Select](https://learn.microsoft.com/en-us/dotnet/api/system.linq.enumerable.select?view=net-6.0) into the analysis scope.
+This option is used to include customized methods like [Select](https://learn.microsoft.com/dotnet/api/system.linq.enumerable.select?view=net-6.0) into the analysis scope.
 Consider the example:
 
 ```csharp
@@ -871,3 +874,18 @@ If set to true, all IEnumerable type parameters would be assumed enumerated by t
 Default Value: `false`
 
 Example: `dotnet_code_quality.CA1851.assume_method_enumerates_parameters = true`
+
+### Proceed with analysis even if InternalsVisibleTo is present
+
+Option Name: `ignore_internalsvisibleto`
+
+Configurable Rules: [CA1812](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/CA1812), [CA1852](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/CA1852)
+
+Option Values: `true` or `false`
+Certain diagnostics are normally disabled if the assembly being analyzed used the InternalsVisibleTo attribute to
+expose the assembly's internal symbols. This option lets you override this behavior and proceed with analysis
+regardless of whether the attribute is present.
+
+Default Value: `false`
+
+Example: `dotnet_code_quality.CA1852.ignore_internalsvisibleto = false`

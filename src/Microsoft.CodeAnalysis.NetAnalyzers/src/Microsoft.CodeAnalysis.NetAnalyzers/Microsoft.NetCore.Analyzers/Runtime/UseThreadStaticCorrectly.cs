@@ -94,7 +94,6 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                             break;
                         }
                     }
-
                 }, OperationKind.FieldInitializer);
             });
         }

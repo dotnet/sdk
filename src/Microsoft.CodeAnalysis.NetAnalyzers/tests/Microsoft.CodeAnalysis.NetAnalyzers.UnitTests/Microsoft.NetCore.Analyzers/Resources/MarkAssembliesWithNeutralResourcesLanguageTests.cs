@@ -56,33 +56,33 @@ End Class", VerifyVB.Diagnostic());
         [Fact]
         public async Task TestCSharpInvalidAttribute1Async()
         {
-#pragma warning disable RS0030 // Do not used banned APIs
+#pragma warning disable RS0030 // Do not use banned APIs
             await VerifyCSharpWithDependenciesAsync(@"[assembly: System.Resources.NeutralResourcesLanguage("""")]", VerifyCS.Diagnostic().WithLocation(1, 12));
-#pragma warning restore RS0030 // Do not used banned APIs
+#pragma warning restore RS0030 // Do not use banned APIs
         }
 
         [Fact]
         public async Task TestCSharpInvalidAttribute2Async()
         {
-#pragma warning disable RS0030 // Do not used banned APIs
+#pragma warning disable RS0030 // Do not use banned APIs
             await VerifyCSharpWithDependenciesAsync(@"[assembly: System.Resources.NeutralResourcesLanguage(null)]", VerifyCS.Diagnostic().WithLocation(1, 12));
-#pragma warning restore RS0030 // Do not used banned APIs
+#pragma warning restore RS0030 // Do not use banned APIs
         }
 
         [Fact]
         public async Task TestBasicInvalidAttribute1Async()
         {
-#pragma warning disable RS0030 // Do not used banned APIs
+#pragma warning disable RS0030 // Do not use banned APIs
             await VerifyBasicWithDependenciesAsync(@"<Assembly: System.Resources.NeutralResourcesLanguage("""")>", VerifyVB.Diagnostic().WithLocation(1, 2));
-#pragma warning restore RS0030 // Do not used banned APIs
+#pragma warning restore RS0030 // Do not use banned APIs
         }
 
         [Fact]
         public async Task TestBasicInvalidAttribute2Async()
         {
-#pragma warning disable RS0030 // Do not used banned APIs
+#pragma warning disable RS0030 // Do not use banned APIs
             await VerifyBasicWithDependenciesAsync(@"<Assembly: System.Resources.NeutralResourcesLanguage(Nothing)>", VerifyVB.Diagnostic().WithLocation(1, 2));
-#pragma warning restore RS0030 // Do not used banned APIs
+#pragma warning restore RS0030 // Do not use banned APIs
         }
 
         [Fact]

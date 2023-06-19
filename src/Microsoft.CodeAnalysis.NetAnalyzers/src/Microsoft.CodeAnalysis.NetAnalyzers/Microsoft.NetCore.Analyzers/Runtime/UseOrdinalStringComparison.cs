@@ -156,8 +156,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
         private static bool IsOrdinalOrOrdinalIgnoreCase(string name)
         {
-            return string.Compare(name, OrdinalText, StringComparison.Ordinal) == 0 ||
-                string.Compare(name, OrdinalIgnoreCaseText, StringComparison.Ordinal) == 0;
+            return string.Equals(name, OrdinalText, StringComparison.Ordinal) ||
+                string.Equals(name, OrdinalIgnoreCaseText, StringComparison.Ordinal);
         }
     }
 }

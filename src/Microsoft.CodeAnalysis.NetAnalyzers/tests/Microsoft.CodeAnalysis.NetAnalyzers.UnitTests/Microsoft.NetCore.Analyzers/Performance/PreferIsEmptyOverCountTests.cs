@@ -202,9 +202,9 @@ public class Test
     public static void TakeBool(bool isEmpty) {{ }}
     public static void M(System.Collections.Concurrent.ConcurrentQueue<int> queue) => TakeBool({expression});
 }}",
-#pragma warning disable RS0030 // Do not used banned APIs
+#pragma warning disable RS0030 // Do not use banned APIs
                 VerifyCS.Diagnostic(UseCountProperlyAnalyzer.s_rule_CA1836).WithLocation(7, 96),
-#pragma warning restore RS0030 // Do not used banned APIs
+#pragma warning restore RS0030 // Do not use banned APIs
     $@"using System;
 using System.Linq;
 
@@ -222,9 +222,9 @@ public class Test
         public Task CSharpTestCastExpressionAsync(string expression, bool negate)
             => VerifyCS.VerifyCodeFixAsync(
                 string.Format(CultureInfo.InvariantCulture, csSnippet, expression),
-#pragma warning disable RS0030 // Do not used banned APIs
+#pragma warning disable RS0030 // Do not use banned APIs
                 VerifyCS.Diagnostic(UseCountProperlyAnalyzer.s_rule_CA1836).WithLocation(5, 34),
-#pragma warning restore RS0030 // Do not used banned APIs
+#pragma warning restore RS0030 // Do not use banned APIs
                 string.Format(CultureInfo.InvariantCulture, csSnippet, $"{(negate ? "!" : "")}_concurrent.IsEmpty"));
 
         [Theory]
@@ -235,9 +235,9 @@ public class Test
         public Task BasicTestCastExpressionAsync(string expression, bool negate)
             => VerifyVB.VerifyCodeFixAsync(
                 string.Format(CultureInfo.InvariantCulture, vbSnippet, expression),
-#pragma warning disable RS0030 // Do not used banned APIs
+#pragma warning disable RS0030 // Do not use banned APIs
                 VerifyVB.Diagnostic(UseCountProperlyAnalyzer.s_rule_CA1836).WithLocation(6, 20),
-#pragma warning restore RS0030 // Do not used banned APIs
+#pragma warning restore RS0030 // Do not use banned APIs
                 string.Format(CultureInfo.InvariantCulture, vbSnippet, $"{(negate ? "Not " : "")}_concurrent.IsEmpty"));
 
         [Theory]
@@ -264,9 +264,9 @@ Public Class Test
         TakeBool({expression})
     End Sub
 End Class",
-#pragma warning disable RS0030 // Do not used banned APIs
+#pragma warning disable RS0030 // Do not use banned APIs
                 VerifyVB.Diagnostic(UseCountProperlyAnalyzer.s_rule_CA1836).WithLocation(9, 18),
-#pragma warning restore RS0030 // Do not used banned APIs
+#pragma warning restore RS0030 // Do not use banned APIs
     $@"Imports System
 Imports System.Linq
 
@@ -341,9 +341,9 @@ class MyIntList : IEnumerable<int>
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 }",
 // Fallback on CA1827.
-#pragma warning disable RS0030 // Do not used banned APIs
+#pragma warning disable RS0030 // Do not use banned APIs
 VerifyCS.Diagnostic(UseCountProperlyAnalyzer.s_rule_CA1827).WithLocation(7, 28).WithArguments("Count"));
-#pragma warning restore RS0030 // Do not used banned APIs
+#pragma warning restore RS0030 // Do not use banned APIs
 
         [Theory]
         [InlineData(false)]
@@ -371,9 +371,9 @@ Class MyIntList
     End Function
 End Class",
 // Fallback on CA1827.
-#pragma warning disable RS0030 // Do not used banned APIs
+#pragma warning disable RS0030 // Do not use banned APIs
 VerifyVB.Diagnostic(UseCountProperlyAnalyzer.s_rule_CA1827).WithLocation(9, 20).WithArguments("Count"));
-#pragma warning restore RS0030 // Do not used banned APIs
+#pragma warning restore RS0030 // Do not use banned APIs
 
         [Fact]
         public Task CSharpTestIsEmptyGetter_NoThis_FixedAsync()
@@ -384,9 +384,9 @@ VerifyVB.Diagnostic(UseCountProperlyAnalyzer.s_rule_CA1827).WithLocation(9, 20).
 
     public bool IsEmpty => _dictionary.Count == 0;
 }",
-#pragma warning disable RS0030 // Do not used banned APIs
+#pragma warning disable RS0030 // Do not use banned APIs
 VerifyCS.Diagnostic(UseCountProperlyAnalyzer.s_rule_CA1836).WithLocation(5, 28),
-#pragma warning restore RS0030 // Do not used banned APIs
+#pragma warning restore RS0030 // Do not use banned APIs
 @"class MyStringIntDictionary
 {
     private System.Collections.Concurrent.ConcurrentDictionary<string, int> _dictionary;
@@ -405,9 +405,9 @@ VerifyCS.Diagnostic(UseCountProperlyAnalyzer.s_rule_CA1836).WithLocation(5, 28),
         End Get
     End Property
 End Class",
-#pragma warning disable RS0030 // Do not used banned APIs
+#pragma warning disable RS0030 // Do not use banned APIs
 VerifyVB.Diagnostic(UseCountProperlyAnalyzer.s_rule_CA1836).WithLocation(5, 20),
-#pragma warning restore RS0030 // Do not used banned APIs
+#pragma warning restore RS0030 // Do not use banned APIs
 @"Class MyStringIntDictionary
     Private _dictionary As System.Collections.Concurrent.ConcurrentDictionary(Of String, Integer)
     Public ReadOnly Property IsEmpty As Boolean
@@ -427,9 +427,9 @@ $@"class C
         ? 0 :
         _dictionary.Count;
 }}",
-#pragma warning disable RS0030 // Do not used banned APIs
+#pragma warning disable RS0030 // Do not use banned APIs
 VerifyCS.Diagnostic(UseCountProperlyAnalyzer.s_rule_CA1836).WithLocation(4, 31),
-#pragma warning restore RS0030 // Do not used banned APIs
+#pragma warning restore RS0030 // Do not use banned APIs
 @"class C
 {
     private System.Collections.Concurrent.ConcurrentDictionary<string, int> _dictionary;

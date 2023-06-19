@@ -40,7 +40,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
             {
                 var throwOperation = (IThrowOperation)context.Operation;
 
-                if (throwOperation.Exception is not ILocalReferenceOperation localReference)
+                if (throwOperation.GetThrownException() is not ILocalReferenceOperation localReference)
                 {
                     return;
                 }

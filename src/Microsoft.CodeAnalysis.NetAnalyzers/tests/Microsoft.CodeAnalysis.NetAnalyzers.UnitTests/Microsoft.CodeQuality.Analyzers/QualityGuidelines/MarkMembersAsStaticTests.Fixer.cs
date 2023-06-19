@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Test.Utilities;
@@ -1512,6 +1512,127 @@ partial class Class1
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9,
                 TestCode = source,
                 FixedCode = fixedSource,
+            }.RunAsync();
+        }
+
+        [Fact]
+        public async Task TestCSharp_ReadonlyMembers_RemoveReadonlyKeyword()
+        {
+            await new VerifyCS.Test
+            {
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp8,
+                TestCode =
+                    """
+                    public struct MembersTests
+                    {
+                        public readonly int [|Property1|]
+                        {
+                            get
+                            {
+                                return "".Length;
+                            }
+                        }
+
+                        public int [|Property2|]
+                        {
+                            readonly get
+                            {
+                                return "".Length;
+                            }
+
+                            set
+                            {
+                            }
+                        }
+
+                        public int [|Property3|]
+                        {
+                            get
+                            {
+                                return "".Length;
+                            }
+                    
+                            readonly set
+                            {
+                            }
+                        }
+
+                        public readonly int this[string name]
+                        {
+                            get
+                            {
+                                return name.Length;
+                            }
+                        }
+
+                        public readonly event System.EventHandler [|Event1|]
+                        {
+                            add { }
+                            remove { }
+                        }
+
+                        public readonly int [|Method1|](string name)
+                        {
+                            return name.Length;
+                        }
+                    }
+                    """,
+                FixedCode =
+                    """
+                    public struct MembersTests
+                    {
+                        public static int Property1
+                        {
+                            get
+                            {
+                                return "".Length;
+                            }
+                        }
+
+                        public static int Property2
+                        {
+                            get
+                            {
+                                return "".Length;
+                            }
+
+                            set
+                            {
+                            }
+                        }
+
+                        public static int Property3
+                        {
+                            get
+                            {
+                                return "".Length;
+                            }
+
+                            set
+                            {
+                            }
+                        }
+
+                        public readonly int this[string name]
+                        {
+                            get
+                            {
+                                return name.Length;
+                            }
+                        }
+
+                        public static event System.EventHandler Event1
+                        {
+                            add { }
+                            remove { }
+                        }
+
+                        public static int Method1(string name)
+                        {
+                            return name.Length;
+                        }
+                    }
+                    """,
             }.RunAsync();
         }
     }

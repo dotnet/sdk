@@ -66,9 +66,9 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
         private static bool IsAnyProtectedVariant(ISymbol symbol)
         {
-            return symbol.DeclaredAccessibility == Accessibility.Protected ||
-                symbol.DeclaredAccessibility == Accessibility.ProtectedOrInternal ||
-                symbol.DeclaredAccessibility == Accessibility.ProtectedAndInternal;
+            return symbol.DeclaredAccessibility is Accessibility.Protected or
+                Accessibility.ProtectedOrInternal or
+                Accessibility.ProtectedAndInternal;
         }
     }
 }

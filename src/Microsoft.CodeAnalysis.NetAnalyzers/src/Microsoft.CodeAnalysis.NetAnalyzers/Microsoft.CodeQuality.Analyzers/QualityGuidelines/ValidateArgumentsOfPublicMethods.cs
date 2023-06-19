@@ -26,7 +26,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
             CreateLocalizableResourceString(nameof(ValidateArgumentsOfPublicMethodsTitle)),
             CreateLocalizableResourceString(nameof(ValidateArgumentsOfPublicMethodsMessage)),
             DiagnosticCategory.Design,
-            RuleLevel.Disabled,    // After C# 9, the only recommended way to do this would be using the ! Operator and we can switch this to IDE Suggestion.
+            RuleLevel.Disabled,
             description: CreateLocalizableResourceString(nameof(ValidateArgumentsOfPublicMethodsDescription)),
             isPortedFxCopRule: true,
             isDataflowRule: true);

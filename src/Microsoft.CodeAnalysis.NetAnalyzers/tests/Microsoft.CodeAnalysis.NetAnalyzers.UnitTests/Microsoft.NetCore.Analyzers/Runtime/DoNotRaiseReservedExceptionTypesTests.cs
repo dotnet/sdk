@@ -106,31 +106,31 @@ End Namespace",
         }
 
         private DiagnosticResult GetTooGenericCSharpResultAt(int line, int column, string callee)
-#pragma warning disable RS0030 // Do not used banned APIs
+#pragma warning disable RS0030 // Do not use banned APIs
             => VerifyCS.Diagnostic(DoNotRaiseReservedExceptionTypesAnalyzer.TooGenericRule)
                 .WithLocation(line, column)
-#pragma warning restore RS0030 // Do not used banned APIs
+#pragma warning restore RS0030 // Do not use banned APIs
                 .WithArguments(callee);
 
         private DiagnosticResult GetTooGenericBasicResultAt(int line, int column, string callee)
-#pragma warning disable RS0030 // Do not used banned APIs
+#pragma warning disable RS0030 // Do not use banned APIs
             => VerifyVB.Diagnostic(DoNotRaiseReservedExceptionTypesAnalyzer.TooGenericRule)
                 .WithLocation(line, column)
-#pragma warning restore RS0030 // Do not used banned APIs
+#pragma warning restore RS0030 // Do not use banned APIs
                 .WithArguments(callee);
 
         private DiagnosticResult GetReservedCSharpResultAt(int line, int column, string callee)
-#pragma warning disable RS0030 // Do not used banned APIs
+#pragma warning disable RS0030 // Do not use banned APIs
            => VerifyCS.Diagnostic(DoNotRaiseReservedExceptionTypesAnalyzer.ReservedRule)
                .WithLocation(line, column)
-#pragma warning restore RS0030 // Do not used banned APIs
+#pragma warning restore RS0030 // Do not use banned APIs
                .WithArguments(callee);
 
         private DiagnosticResult GetReservedBasicResultAt(int line, int column, string callee)
-#pragma warning disable RS0030 // Do not used banned APIs
+#pragma warning disable RS0030 // Do not use banned APIs
             => VerifyVB.Diagnostic(DoNotRaiseReservedExceptionTypesAnalyzer.ReservedRule)
                 .WithLocation(line, column)
-#pragma warning restore RS0030 // Do not used banned APIs
+#pragma warning restore RS0030 // Do not use banned APIs
                 .WithArguments(callee);
     }
 }

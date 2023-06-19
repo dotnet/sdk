@@ -60,7 +60,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 }
 
                 // This dictionary is populated by this thread and then read concurrently.
-                // https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.dictionary-2?view=net-5.0#thread-safety
+                // https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2?view=net-5.0#thread-safety
                 var membersByValue = PooledDictionary<object, IFieldSymbol>.GetInstance();
                 var duplicates = PooledConcurrentSet<IFieldSymbol>.GetInstance(SymbolEqualityComparer.Default);
                 foreach (var member in enumSymbol.GetMembers())
@@ -126,12 +126,14 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                                 {
                                     context.ReportDiagnostic(fieldOperation.CreateDiagnostic(RuleDuplicatedBitwiseValuePart, referencedField.Name));
                                 }
+
                                 break;
                             default:
                                 foreach (var childOperation in operation.Children)
                                 {
                                     visitInitializerValue(childOperation);
                                 }
+
                                 break;
                         }
                     }
@@ -145,6 +147,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                         var duplicatedField = membersByValue[field.ConstantValue];
                         context.ReportDiagnostic(field.CreateDiagnostic(RuleDuplicatedValue, field.Name, field.ConstantValue, duplicatedField.Name));
                     }
+
                     duplicates.Free(context.CancellationToken);
                     membersByValue.Free(context.CancellationToken);
                 }

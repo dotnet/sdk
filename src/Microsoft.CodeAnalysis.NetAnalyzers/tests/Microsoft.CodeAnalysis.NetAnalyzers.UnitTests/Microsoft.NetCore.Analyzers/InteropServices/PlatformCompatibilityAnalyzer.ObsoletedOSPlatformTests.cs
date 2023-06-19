@@ -44,7 +44,6 @@ public class Test
             await VerifyAnalyzerCSAsync(csSource, VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.ObsoletedCsReachable).WithLocation(0)
                 .WithArguments("Test.ObsoletedOnLinux4()", "'Linux' 4.1 and later", "'Linux'"));
 
-
             var vbSource = @"
 Imports System
 Imports System.Runtime.Versioning

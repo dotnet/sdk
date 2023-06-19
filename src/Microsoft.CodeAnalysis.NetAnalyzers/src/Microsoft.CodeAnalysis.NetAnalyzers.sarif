@@ -5,7 +5,7 @@
     {
       "tool": {
         "name": "Microsoft.CodeAnalysis.CSharp.NetAnalyzers",
-        "version": "7.0.4",
+        "version": "8.0.0",
         "language": "en-US"
       },
       "rules": {
@@ -304,6 +304,44 @@
             ]
           }
         },
+        "CA1856": {
+          "id": "CA1856",
+          "shortDescription": "Incorrect usage of ConstantExpected attribute",
+          "fullDescription": "ConstantExpected attribute is not applied correctly on the parameter.",
+          "defaultLevel": "error",
+          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1856",
+          "properties": {
+            "category": "Performance",
+            "isEnabledByDefault": true,
+            "typeName": "CSharpConstantExpectedAnalyzer",
+            "languages": [
+              "C#"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA1857": {
+          "id": "CA1857",
+          "shortDescription": "A constant is expected for the parameter",
+          "fullDescription": "The parameter expects a constant for optimal performance.",
+          "defaultLevel": "warning",
+          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1857",
+          "properties": {
+            "category": "Performance",
+            "isEnabledByDefault": true,
+            "typeName": "CSharpConstantExpectedAnalyzer",
+            "languages": [
+              "C#"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
         "CA2014": {
           "id": "CA2014",
           "shortDescription": "Do not use stackalloc in loops",
@@ -344,8 +382,8 @@
         },
         "CA2020": {
           "id": "CA2020",
-          "shortDescription": "Prevent from behavioral change",
-          "fullDescription": "Some built in operators added in .NET 7 behave differently than the user defined operatorsi in .NET 6 and below. Some operators that used to throw in unchecked context while overflowing will not throw anymore unless wrapped within checked context, and some operators that not used to throw in checked context now would throw unless wrapped within unchecked context.",
+          "shortDescription": "Prevent behavioral change",
+          "fullDescription": "Some built-in operators added in .NET 7 behave differently when overflowing than did the corresponding user-defined operators in .NET 6 and earlier versions. Some operators that previously threw in an unchecked context now don't throw unless wrapped within a checked context. Also, some operators that did not previously throw in a checked context now throw unless wrapped in an unchecked context.",
           "defaultLevel": "note",
           "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2020",
           "properties": {
@@ -538,7 +576,7 @@
     {
       "tool": {
         "name": "Microsoft.CodeAnalysis.NetAnalyzers",
-        "version": "7.0.4",
+        "version": "8.0.0",
         "language": "en-US"
       },
       "rules": {
@@ -1319,7 +1357,7 @@
         "CA1062": {
           "id": "CA1062",
           "shortDescription": "Validate arguments of public methods",
-          "fullDescription": "An externally visible method dereferences one of its reference arguments without verifying whether that argument is null (Nothing in Visual Basic). All reference arguments that are passed to externally visible methods should be checked against null. If appropriate, throw an ArgumentNullException when the argument is null or add a Code Contract precondition asserting non-null argument. If the method is designed to be called only by known assemblies, you should make the method internal.",
+          "fullDescription": "An externally visible method dereferences one of its reference arguments without verifying whether that argument is 'null' ('Nothing' in Visual Basic). All reference arguments that are passed to externally visible methods should be checked against 'null'. If appropriate, throw an 'ArgumentNullException' when the argument is 'null'. If the method is designed to be called only by known assemblies, you should make the method internal.",
           "defaultLevel": "warning",
           "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1062",
           "properties": {
@@ -1909,6 +1947,86 @@
             "tags": [
               "Telemetry",
               "CompilationEnd"
+            ]
+          }
+        },
+        "CA1510": {
+          "id": "CA1510",
+          "shortDescription": "Use ArgumentNullException throw helper",
+          "fullDescription": "Throw helpers are simpler and more efficient than an if block constructing a new exception instance.",
+          "defaultLevel": "note",
+          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1510",
+          "properties": {
+            "category": "Maintainability",
+            "isEnabledByDefault": true,
+            "typeName": "UseExceptionThrowHelpers",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA1511": {
+          "id": "CA1511",
+          "shortDescription": "Use ArgumentException throw helper",
+          "fullDescription": "Throw helpers are simpler and more efficient than an if block constructing a new exception instance.",
+          "defaultLevel": "note",
+          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1511",
+          "properties": {
+            "category": "Maintainability",
+            "isEnabledByDefault": true,
+            "typeName": "UseExceptionThrowHelpers",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA1512": {
+          "id": "CA1512",
+          "shortDescription": "Use ArgumentOutOfRangeException throw helper",
+          "fullDescription": "Throw helpers are simpler and more efficient than an if block constructing a new exception instance.",
+          "defaultLevel": "note",
+          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1512",
+          "properties": {
+            "category": "Maintainability",
+            "isEnabledByDefault": true,
+            "typeName": "UseExceptionThrowHelpers",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA1513": {
+          "id": "CA1513",
+          "shortDescription": "Use ObjectDisposedException throw helper",
+          "fullDescription": "Throw helpers are simpler and more efficient than an if block constructing a new exception instance.",
+          "defaultLevel": "note",
+          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1513",
+          "properties": {
+            "category": "Maintainability",
+            "isEnabledByDefault": true,
+            "typeName": "UseExceptionThrowHelpers",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
             ]
           }
         },
@@ -2957,6 +3075,86 @@
             ]
           }
         },
+        "CA1858": {
+          "id": "CA1858",
+          "shortDescription": "Use 'StartsWith' instead of 'IndexOf'",
+          "fullDescription": "It is both clearer and faster to use 'StartsWith' instead of comparing the result of 'IndexOf' to zero.",
+          "defaultLevel": "note",
+          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1858",
+          "properties": {
+            "category": "Performance",
+            "isEnabledByDefault": true,
+            "typeName": "UseStartsWithInsteadOfIndexOfComparisonWithZero",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA1859": {
+          "id": "CA1859",
+          "shortDescription": "Use concrete types when possible for improved performance",
+          "fullDescription": "Using concrete types avoids virtual or interface call overhead and enables inlining.",
+          "defaultLevel": "note",
+          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1859",
+          "properties": {
+            "category": "Performance",
+            "isEnabledByDefault": true,
+            "typeName": "UseConcreteTypeAnalyzer",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA1860": {
+          "id": "CA1860",
+          "shortDescription": "Avoid using 'Enumerable.Any()' extension method",
+          "fullDescription": "Prefer using 'IsEmpty', 'Count' or 'Length' properties whichever available, rather than calling 'Enumerable.Any()'. The intent is clearer and it is more performant than using 'Enumerable.Any()' extension method.",
+          "defaultLevel": "note",
+          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1860",
+          "properties": {
+            "category": "Performance",
+            "isEnabledByDefault": true,
+            "typeName": "PreferLengthCountIsEmptyOverAnyAnalyzer",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA1861": {
+          "id": "CA1861",
+          "shortDescription": "Avoid constant arrays as arguments",
+          "fullDescription": "Constant arrays passed as arguments are not reused when called repeatedly, which implies a new array is created each time. Consider extracting them to 'static readonly' fields to improve performance if the passed array is not mutated within the called method.",
+          "defaultLevel": "note",
+          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1861",
+          "properties": {
+            "category": "Performance",
+            "isEnabledByDefault": true,
+            "typeName": "AvoidConstArraysAnalyzer",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
         "CA2000": {
           "id": "CA2000",
           "shortDescription": "Dispose objects before losing scope",
@@ -3103,7 +3301,7 @@
         "CA2013": {
           "id": "CA2013",
           "shortDescription": "Do not use ReferenceEquals with value types",
-          "fullDescription": "Value type typed arguments are uniquely boxed for each call to this method, therefore the result is always false.",
+          "fullDescription": "Value type typed arguments are uniquely boxed for each call to this method, therefore the result can be unexpected.",
           "defaultLevel": "warning",
           "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2013",
           "properties": {
@@ -3200,6 +3398,26 @@
             ]
           }
         },
+        "CA2021": {
+          "id": "CA2021",
+          "shortDescription": "Do not call Enumerable.Cast<T> or Enumerable.OfType<T> with incompatible types",
+          "fullDescription": "Enumerable.Cast<T> and Enumerable.OfType<T> require compatible types to function expectedly.  \u000aThe generic cast (IL 'unbox.any') used by the sequence returned by Enumerable.Cast<T> will throw InvalidCastException at runtime on elements of the types specified.  \u000aThe generic type check (C# 'is' operator/IL 'isinst') used by Enumerable.OfType<T> will never succeed with elements of types specified, resulting in an empty sequence.  \u000aWidening and user defined conversions are not supported with generic types.",
+          "defaultLevel": "warning",
+          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2021",
+          "properties": {
+            "category": "Reliability",
+            "isEnabledByDefault": true,
+            "typeName": "DoNotCallEnumerableCastOrOfTypeWithIncompatibleTypesAnalyzer",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
         "CA2100": {
           "id": "CA2100",
           "shortDescription": "Review SQL queries for security vulnerabilities",
@@ -3232,27 +3450,6 @@
             "category": "Globalization",
             "isEnabledByDefault": true,
             "typeName": "PInvokeDiagnosticAnalyzer",
-            "languages": [
-              "C#",
-              "Visual Basic"
-            ],
-            "tags": [
-              "PortedFromFxCop",
-              "Telemetry",
-              "EnabledRuleInAggressiveMode"
-            ]
-          }
-        },
-        "CA2109": {
-          "id": "CA2109",
-          "shortDescription": "Review visible event handlers",
-          "fullDescription": "A public or protected event-handling method was detected. Event-handling methods should not be exposed unless absolutely necessary.",
-          "defaultLevel": "warning",
-          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2109",
-          "properties": {
-            "category": "Security",
-            "isEnabledByDefault": false,
-            "typeName": "ReviewVisibleEventHandlersAnalyzer",
             "languages": [
               "C#",
               "Visual Basic"
@@ -5815,7 +6012,7 @@
     {
       "tool": {
         "name": "Microsoft.CodeAnalysis.VisualBasic.NetAnalyzers",
-        "version": "7.0.4",
+        "version": "8.0.0",
         "language": "en-US"
       },
       "rules": {

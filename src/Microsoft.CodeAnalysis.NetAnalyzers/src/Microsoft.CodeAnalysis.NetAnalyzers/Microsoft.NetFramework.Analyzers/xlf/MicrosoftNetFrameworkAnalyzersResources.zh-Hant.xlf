@@ -2,21 +2,6 @@
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="zh-Hant" original="../MicrosoftNetFrameworkAnalyzersResources.resx">
     <body>
-      <trans-unit id="SpecifyMessageBoxOptionsTitle">
-        <source>Specify MessageBoxOptions</source>
-        <target state="translated">指定 MessageBoxOptions</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SpecifyMessageBoxOptionsDescription">
-        <source>To correctly display a message box for cultures that use a right-to-left reading order, the RightAlign and RtlReading members of the MessageBoxOptions enumeration must be passed to the Show method.</source>
-        <target state="translated">為正確顯示由右至左閱讀順序文化特性 (Culture) 的訊息方塊，必須將 MessageBoxOptions 列舉的 RightAlign 與 RtlReading 成員傳遞到 Show 方法。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SpecifyMessageBoxOptionsMessage">
-        <source>Specify MessageBoxOptions</source>
-        <target state="translated">指定 MessageBoxOptions</target>
-        <note />
-      </trans-unit>
       <trans-unit id="AvoidDuplicateAcceleratorsTitle">
         <source>Avoid duplicate accelerators</source>
         <target state="translated">避免重複的快速鍵</target>
@@ -62,21 +47,6 @@
         <target state="translated">請勿將 Serviced 元件標記為 WebMethod</target>
         <note />
       </trans-unit>
-      <trans-unit id="MarkWindowsFormsEntryPointsWithStaThreadTitle">
-        <source>Mark Windows Forms entry points with STAThread</source>
-        <target state="translated">將 Windows Forms 進入點標記為 STAThread</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="MarkWindowsFormsEntryPointsWithStaThreadDescription">
-        <source>STAThreadAttribute indicates that the COM threading model for the application is a single-threaded apartment. This attribute must be present on the entry point of any application that uses Windows Forms; if it is omitted, the Windows components might not work correctly.</source>
-        <target state="translated">STAThreadAttribute 表示應用程式的 COM 執行緒模式是單一執行緒 Apartment。所有使用 Windows Forms 的應用程式之進入點上，都必須要有此屬性，如果省略此屬性，Windows 元件可能會無法正確運作。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="MarkWindowsFormsEntryPointsWithStaThreadMessage">
-        <source>Mark Windows Forms entry points with STAThread</source>
-        <target state="translated">將 Windows Forms 進入點標記為 STAThread</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CallBaseClassMethodsOnISerializableTypesTitle">
         <source>Call base class methods on ISerializable types</source>
         <target state="translated">呼叫 ISerializable 類型上的基底類別方法</target>
@@ -90,81 +60,6 @@
       <trans-unit id="CallBaseClassMethodsOnISerializableTypesMessage">
         <source>Call base class methods on ISerializable types</source>
         <target state="translated">呼叫 ISerializable 類型上的基底類別方法</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UseXmlReaderForDataSetReadXmlTitle">
-        <source>Use XmlReader for DataSet ReadXml</source>
-        <target state="translated">為 DataSet ReadXml 使用 XmlReader</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UseXmlReaderForDataSetReadXmlDescription">
-        <source>Do not use unsafe overloads of System.Data.DataSet.ReadXml. This API internally enables DTD processing on the XML reader instance used, and uses UrlResolver for resolving external XML entities. The outcome is information disclosure. Content from file system or network shares for the machine processing the XML can be exposed to attacker. In addition, an attacker can use this as a DoS vector.</source>
-        <target state="translated">請勿使用 System.Data.DataSet.ReadXml 的不安全多載。此 API 會在執行個體使用的 XML 讀取器上，於內部啟用 DTD 處理，並使用 UrlResolver 解析外部 XML 實體。結果會造成資訊外洩。攻擊者有可能會看到為處理 XML 的電腦所提供之檔案系統或網路共用內容。此外，攻擊者還可以使用它作為 DoS 向量。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UseXmlReaderForDataSetReadXmlMessage">
-        <source>Use XmlReader for DataSet ReadXml</source>
-        <target state="translated">為 DataSet ReadXml 使用 XmlReader</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UseXmlReaderForDataSetReadXmlSchemaTitle">
-        <source>Use XmlReader for DataSet ReadXmlSchema</source>
-        <target state="translated">為 DataSet ReadXmlSchema 使用 XmlReader</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UseXmlReaderForDataSetReadXmlSchemaDescription">
-        <source>Do not use unsafe overloads of System.Data.DataSet.ReadXmlSchema. This API internally enables DTD processing on the XML reader instance used, and uses UrlResolver for resolving external XML entities. The outcome is information disclosure. Content from file system or network shares for the machine processing the XML can be exposed to attacker. In addition, an attacker can use this as a DoS vector.</source>
-        <target state="translated">請勿使用 System.Data.DataSet.ReadXmlSchema 的不安全多載。此 API 會在執行個體使用的 XML 讀取器上，於內部啟用 DTD 處理，並使用 UrlResolver 解析外部 XML 實體。結果會造成資訊外洩。攻擊者有可能會看到為處理 XML 的電腦所提供之檔案系統或網路共用內容。此外，攻擊者還可以使用它作為 DoS 向量。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UseXmlReaderForDataSetReadXmlSchemaMessage">
-        <source>Use XmlReader for DataSet ReadXmlSchema</source>
-        <target state="translated">為 DataSet ReadXmlSchema 使用 XmlReader</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ReviewDataViewCollectionStringTitle">
-        <source>Review DataView CollectionString</source>
-        <target state="translated">檢閱 DataView CollectionString</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ReviewDataViewCollectionStringDescription">
-        <source>Review code to insure that usage of System.Data.DataViewManager.DataViewSettingCollectionString input is sanitized to not contain DTD. Enabling DTD processing on the XML reader and using UrlResolver for resolving external XML entities may lead to information disclosure. Content from file system or network shares for the machine processing the XML can be exposed to attacker. In addition, an attacker can use this as a DoS vector.</source>
-        <target state="translated">檢閱程式碼以確保 System.Data.DataViewManager.DataViewSettingCollectionString 輸入的使用經過處理，以排除 DTD。在 XML 讀取器上啟用 DTD 處理，並使用 UrlResolver 解析外部 XML 實體，可能會造成資訊外洩。攻擊者有可能會看到為處理 XML 的電腦所提供之檔案系統或網路共用內容。此外，攻擊者還可以使用它作為 DoS 向量。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ReviewDataViewCollectionStringMessage">
-        <source>Review DataView CollectionString</source>
-        <target state="translated">檢閱 DataView CollectionString</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UseXmlReaderForDataTableReadXmlTitle">
-        <source>Use XmlReader for DataTable ReadXml</source>
-        <target state="translated">為 DataTable ReadXml 使用 XmlReader</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UseXmlReaderForDataTableReadXmlDescription">
-        <source>Do not use unsafe overloads of System.Data.DataTable.ReadXml. This API internally enables DTD processing on the XML reader instance used, and uses UrlResolver for resolving external XML entities. The outcome is information disclosure. Content from file system or network shares for the machine processing the XML can be exposed to attacker. In addition, an attacker can use this as a DoS vector.</source>
-        <target state="translated">請勿使用 System.Data.DataTable.ReadXml 的不安全多載。此 API 會在執行個體使用的 XML 讀取器上，於內部啟用 DTD 處理，並使用 UrlResolver 解析外部 XML 實體。結果會造成資訊外洩。攻擊者有可能會看到為處理 XML 的電腦所提供之檔案系統或網路共用內容。此外，攻擊者還可以使用它作為 DoS 向量。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UseXmlReaderForDataTableReadXmlMessage">
-        <source>Use XmlReader for DataTable ReadXml</source>
-        <target state="translated">為 DataTable ReadXml 使用 XmlReader</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UseXmlReaderForDataTableReadXmlSchemaTitle">
-        <source>Use XmlReader for DataTable ReadXmlSchema</source>
-        <target state="translated">為 DataTable ReadXmlSchema 使用 XmlReader</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UseXmlReaderForDataTableReadXmlSchemaDescription">
-        <source>Checks for usage of an unsafe overload of  System.Data.DataTable.ReadXmlSchema. This API internally enables DTD processing on the XML reader instance used, and uses UrlResolver for resolving external XML entities. The outcome is information disclosure. Content from file system or network shares for the machine processing the XML can be exposed to attacker. In addition, an attacker can use this as a DoS vector.</source>
-        <target state="translated">檢查 System.Data.DataTable.ReadXmlSchema 不安全多載的使用方式。此 API 會在執行個體使用的 XML 讀取器上，於內部啟用 DTD 處理，並使用 UrlResolver 解析外部 XML 實體。結果會造成資訊外洩。攻擊者有可能會看到為處理 XML 的電腦所提供之檔案系統或網路共用內容。此外，攻擊者還可以使用它作為 DoS 向量。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UseXmlReaderForDataTableReadXmlSchemaMessage">
-        <source>Use XmlReader for DataTable ReadXmlSchema</source>
-        <target state="translated">為 DataTable ReadXmlSchema 使用 XmlReader</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCatchCorruptedStateExceptions">
@@ -240,11 +135,6 @@
       <trans-unit id="DoNotUseDtdProcessingOverloadsMessage">
         <source>Unsafe overload of '{0}' method</source>
         <target state="translated">'{0}' 方法的不安全多載</target>
-        <note>CA3075</note>
-      </trans-unit>
-      <trans-unit id="DoNotUseDtdProcessingOverloads">
-        <source>Insecure DTD Processing</source>
-        <target state="translated">不安全的 DTD 處理</target>
         <note>CA3075</note>
       </trans-unit>
       <trans-unit id="DoNotUseSetInnerXmlMessage">

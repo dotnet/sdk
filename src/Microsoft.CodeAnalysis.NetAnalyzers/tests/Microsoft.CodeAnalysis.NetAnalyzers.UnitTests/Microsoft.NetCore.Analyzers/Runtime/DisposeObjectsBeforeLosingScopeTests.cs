@@ -26,17 +26,17 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
     public partial class DisposeObjectsBeforeLosingScopeTests
     {
         private static DiagnosticResult GetCSharpResultAt(int line, int column, DiagnosticDescriptor rule, params string[] arguments)
-#pragma warning disable RS0030 // Do not used banned APIs
+#pragma warning disable RS0030 // Do not use banned APIs
            => VerifyCS.Diagnostic(rule)
                .WithLocation(line, column)
-#pragma warning restore RS0030 // Do not used banned APIs
+#pragma warning restore RS0030 // Do not use banned APIs
                .WithArguments(arguments);
 
         private static DiagnosticResult GetBasicResultAt(int line, int column, DiagnosticDescriptor rule, params string[] arguments)
-#pragma warning disable RS0030 // Do not used banned APIs
+#pragma warning disable RS0030 // Do not use banned APIs
             => VerifyVB.Diagnostic(rule)
                 .WithLocation(line, column)
-#pragma warning restore RS0030 // Do not used banned APIs
+#pragma warning restore RS0030 // Do not use banned APIs
                 .WithArguments(arguments);
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column, string allocationText) =>
@@ -1467,7 +1467,7 @@ End Class
         [InlineData(DisposeAnalysisKind.NonExceptionPathsOnlyNotDisposed)]
         internal async Task DocsMicrosoft_SampleAsync(DisposeAnalysisKind disposeAnalysisKind)
         {
-            // See https://learn.microsoft.com/en-us/visualstudio/code-quality/ca2000
+            // See https://learn.microsoft.com/visualstudio/code-quality/ca2000
 
             var editorConfigFile = GetEditorConfigContent(disposeAnalysisKind);
 

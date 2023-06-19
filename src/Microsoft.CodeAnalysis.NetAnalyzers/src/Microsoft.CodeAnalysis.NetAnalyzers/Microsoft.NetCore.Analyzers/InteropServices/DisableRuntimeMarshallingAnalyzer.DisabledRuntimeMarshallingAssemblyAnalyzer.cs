@@ -34,6 +34,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                     marshalMethods.AddRange(marshalType.GetMembers("PtrToStructure"));
                     _marshalMethods = marshalMethods.ToImmutable();
                 }
+
                 _autoLayoutCache = autoLayoutCache;
             }
 

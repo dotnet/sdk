@@ -74,6 +74,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 {
                     return;
                 }
+
                 var method = invocation.TargetMethod;
                 if (method.Equals(toLowerInvariant) ||
                     (method.Equals(toLowerWithCultureInfo) &&

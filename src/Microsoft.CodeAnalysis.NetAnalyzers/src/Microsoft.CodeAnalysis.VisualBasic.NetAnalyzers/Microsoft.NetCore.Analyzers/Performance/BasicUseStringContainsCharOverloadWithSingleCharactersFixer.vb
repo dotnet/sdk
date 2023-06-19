@@ -16,10 +16,12 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Performance
             If TypeOf violatingNode IsNot SimpleArgumentSyntax Then
                 Return False
             End If
+
             Dim argumentSyntax = CType(violatingNode, SimpleArgumentSyntax)
             If argumentSyntax.NameColonEquals Is Nothing Then
                 Return False
             End If
+
             argumentName = argumentSyntax.NameColonEquals.Name.Identifier.ValueText
             Return True
         End Function
@@ -32,8 +34,10 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Performance
                 If TypeOf argumentSyntaxNode.Expression Is LiteralExpressionSyntax Then
                     Return TryGetCharFromLiteralExpressionSyntax(CType(argumentSyntaxNode.Expression, LiteralExpressionSyntax), charLiteral)
                 End If
+
                 Return False
             End If
+
             Return False
         End Function
 
@@ -41,10 +45,12 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Performance
             If TypeOf sourceLiteralExpressionSyntax.Token.Value IsNot String Then
                 Return False
             End If
+
             Dim sourceLiteralValue = CType(sourceLiteralExpressionSyntax.Token.Value, String)
             If Char.TryParse(sourceLiteralValue, parsedCharLiteral) Then
                 Return True
             End If
+
             Return False
         End Function
 

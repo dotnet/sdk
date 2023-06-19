@@ -7,11 +7,6 @@
         <target state="translated">將 'NonSerialized' 屬性新增至此欄位。</target>
         <note />
       </trans-unit>
-      <trans-unit id="AddPublicParameterlessConstructor">
-        <source>Add a public constructor that takes zero parameters</source>
-        <target state="translated">新增接受零個參數的公用建構函式</target>
-        <note />
-      </trans-unit>
       <trans-unit id="AddSerializableAttributeCodeActionTitle">
         <source>Add Serializable attribute</source>
         <target state="translated">新增可序列化屬性</target>
@@ -50,6 +45,26 @@
       <trans-unit id="AttributeStringLiteralsShouldParseCorrectlyTitle">
         <source>Attribute string literals should parse correctly</source>
         <target state="translated">屬性字串常值應正確剖析</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidConstArraysCodeFixTitle">
+        <source>Extract to static readonly field</source>
+        <target state="translated">解壓縮至靜態唯讀欄位</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidConstArraysDescription">
+        <source>Constant arrays passed as arguments are not reused when called repeatedly, which implies a new array is created each time. Consider extracting them to 'static readonly' fields to improve performance if the passed array is not mutated within the called method.</source>
+        <target state="translated">重複呼叫時不會重複使用以引數傳遞的常數陣列，這表示每次都會建立新的陣列。如果傳遞的陣列在呼叫的方法中未變動，請考慮將它們解壓縮至 'static readonly' 欄位，以提升效能。</target>
+        <note>{Locked="static readonly"}</note>
+      </trans-unit>
+      <trans-unit id="AvoidConstArraysMessage">
+        <source>Prefer 'static readonly' fields over constant array arguments if the called method is called repeatedly and is not mutating the passed array</source>
+        <target state="translated">如果重複以呼叫的方法進行呼叫且未變動傳遞的陣列，則優先使用 'static readonly' 欄位，而不是常數陣列引數</target>
+        <note>{Locked="static readonly"}</note>
+      </trans-unit>
+      <trans-unit id="AvoidConstArraysTitle">
+        <source>Avoid constant arrays as arguments</source>
+        <target state="translated">避免常數陣列作為引數</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidStringBuilderPInvokeParametersDescription">
@@ -172,15 +187,70 @@
         <target state="translated">Dispose 方法應該呼叫 SuppressFinalize</target>
         <note />
       </trans-unit>
-      <trans-unit id="CategoryReliability">
-        <source>Reliability</source>
-        <target state="translated">可靠性</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CommaSeparator">
         <source>, </source>
         <target state="translated">, </target>
         <note>Separator used for separating list of platform names: {API} is only supported on: {‘windows’, ‘browser’, ‘linux’}</note>
+      </trans-unit>
+      <trans-unit id="ConstantExpectedApplicationDescription">
+        <source>ConstantExpected attribute is not applied correctly on the parameter.</source>
+        <target state="translated">未在參數上正確套用 ConstantExpected 屬性。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ConstantExpectedApplicationTitle">
+        <source>Incorrect usage of ConstantExpected attribute</source>
+        <target state="translated">ConstantExpected 屬性的用法不正確</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ConstantExpectedAttributExpectedMessage">
+        <source>The ConstantExpected attribute is required for the parameter due to the parent method annotation</source>
+        <target state="translated">由於父方法註釋，參數需要 ConstantExpected 屬性</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ConstantExpectedIncompatibleConstantTypeMessage">
+        <source>The '{0}' value is not compatible with parameter type of '{1}'</source>
+        <target state="translated">'{0}' 值與 '{1}' 的參數類型不相容</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ConstantExpectedInvalidBoundsMessage">
+        <source>The '{0}' value does not fit within the parameter value bounds of '{1}' to '{2}'</source>
+        <target state="translated">'{0}' 值不符合 '{1}' 到 '{2}' 的參數值範圍</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ConstantExpectedInvalidMessage">
+        <source>The constant is not of the same '{0}' type as the parameter</source>
+        <target state="translated">常數不是與參數相同的 '{0}' 類型</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ConstantExpectedInvertedRangeMessage">
+        <source>The Min and Max values are inverted</source>
+        <target state="translated">最小值和最大值會反轉</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ConstantExpectedNotConstantMessage">
+        <source>The argument should be a constant for optimal performance</source>
+        <target state="translated">引數應為常數，以獲得最佳效能</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ConstantExpectedNotSupportedMessage">
+        <source>The '{0}' type is not supported for ConstantExpected attribute</source>
+        <target state="translated">ConstantExpected 屬性不支援 '{0}' 類型</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ConstantExpectedOutOfBoundsMessage">
+        <source>The constant does not fit within the value bounds of '{0}' to '{1}'</source>
+        <target state="translated">常數不符合 '{0}' 到 '{1}' 的值範圍</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ConstantExpectedUsageDescription">
+        <source>The parameter expects a constant for optimal performance.</source>
+        <target state="translated">參數需要常數，以獲得最佳效能。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ConstantExpectedUsageTitle">
+        <source>A constant is expected for the parameter</source>
+        <target state="translated">預期參數為常數</target>
+        <note />
       </trans-unit>
       <trans-unit id="DataSetDataTableInDeserializableObjectGraphMessage">
         <source>When deserializing untrusted input, deserializing a {0} object is insecure. '{1}' either is or derives from {0}</source>
@@ -487,34 +557,45 @@
         <target state="translated">永遠不要在委派中略過權杖驗證</target>
         <note />
       </trans-unit>
-      <trans-unit id="DoNotCallDangerousMethodsInDeserialization">
-        <source>Do Not Call Dangerous Methods In Deserialization</source>
-        <target state="translated">不要在還原序列化期間呼叫危險的方法</target>
-        <note />
-      </trans-unit>
       <trans-unit id="DoNotCallDangerousMethodsInDeserializationDescription">
         <source>Insecure Deserialization is a vulnerability which occurs when untrusted data is used to abuse the logic of an application, inflict a Denial-of-Service (DoS) attack, or even execute arbitrary code upon it being deserialized. It’s frequently possible for malicious users to abuse these deserialization features when the application is deserializing untrusted data which is under their control. Specifically, invoke dangerous methods in the process of deserialization. Successful insecure deserialization attacks could allow an attacker to carry out attacks such as DoS attacks, authentication bypasses, and remote code execution.</source>
         <target state="translated">不安全的還原序列化是一種弱點，會在有人使用未受信任的資料來不當使用應用程式的邏輯、發動拒絕服務的攻擊 (DoS)，甚至是在任何程式碼的還原序列化期間執行該程式碼時出現。惡意使用者經常會在應用程式將他們控制的未受信任資料還原序列化時，濫用這些還原序列化功能 (基本上就是在還原序列化期間叫用危險的方法)。不安全的還原序列化攻擊一旦成功，攻擊者就有機會發動後續攻擊，例如 DoS 攻擊、驗證略過和遠端程式碼執行。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCallDangerousMethodsInDeserializationMessage">
-        <source>When deserializing an instance of class {0}, method {1} can call dangerous method {2}. The potential method invocations are: {3}.</source>
-        <target state="translated">將類別 {0} 的執行個體還原序列化時，方法 {1} 可以呼叫危險的方法 {2}。潛在的方法引動過程為: {3}。</target>
+        <source>When deserializing an instance of class '{0}', method '{1}' can directly or indirectly call dangerous method '{2}'</source>
+        <target state="translated">將類別 '{0}' 的執行個體還原序列化時，方法 '{1}' 可以直接或間接呼叫危險的方法 '{2}'</target>
         <note />
       </trans-unit>
-      <trans-unit id="DoNotCallOverridableMethodsInConstructorsDescription">
-        <source>When a constructor calls a virtual method, the constructor for the instance that invokes the method may not have executed.</source>
-        <target state="translated">當建構函式呼叫虛擬方法時，可能尚未執行叫用方法之執行個體的建構函式。</target>
+      <trans-unit id="DoNotCallDangerousMethodsInDeserializationTitle">
+        <source>Do Not Call Dangerous Methods In Deserialization</source>
+        <target state="translated">不要在還原序列化期間呼叫危險的方法</target>
         <note />
       </trans-unit>
-      <trans-unit id="DoNotCallOverridableMethodsInConstructorsMessage">
-        <source>Do not call overridable methods in constructors</source>
-        <target state="translated">請勿呼叫建構函式中的可覆寫方法</target>
+      <trans-unit id="DoNotCallEnumerableCastOrOfTypeWithIncompatibleTypesDescription">
+        <source>Enumerable.Cast&lt;T&gt; and Enumerable.OfType&lt;T&gt; require compatible types to function expectedly.  
+The generic cast (IL 'unbox.any') used by the sequence returned by Enumerable.Cast&lt;T&gt; will throw InvalidCastException at runtime on elements of the types specified.  
+The generic type check (C# 'is' operator/IL 'isinst') used by Enumerable.OfType&lt;T&gt; will never succeed with elements of types specified, resulting in an empty sequence.  
+Widening and user defined conversions are not supported with generic types.</source>
+        <target state="translated">Enumerable.Cast&lt;T&gt; 和 Enumerable.OfType&lt;T&gt; 需要相容的型別，以預期運作。  
+Enumerable.Cast&lt;T&gt; 返回序列所使用的一般轉換 (IL 'unbox.any') 將在執行階段的指定型別元素上擲回 InvalidCastException。  
+Enumerable.OfType&lt;T&gt; 使用的一般型別檢查 (C# 'is' operator/IL 'isinst') 永遠不會與指定的型別元素成功，因而產生空的順序。  
+一般型別不支援擴大和使用者定義的轉換。</target>
         <note />
       </trans-unit>
-      <trans-unit id="DoNotCallOverridableMethodsInConstructorsTitle">
-        <source>Do not call overridable methods in constructors</source>
-        <target state="translated">請勿呼叫建構函式中的可覆寫方法</target>
+      <trans-unit id="DoNotCallEnumerableCastOrOfTypeWithIncompatibleTypesMessageCast">
+        <source>Type '{0}' is incompatible with type '{1}' and cast attempts will throw InvalidCastException at runtime</source>
+        <target state="translated">型別 '{0}' 與型別 '{1}' 不相容，轉換嘗試將在執行階段擲出 InvalidCastException</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotCallEnumerableCastOrOfTypeWithIncompatibleTypesMessageOfType">
+        <source>This call will always result in an empty sequence because type '{0}' is incompatible with type '{1}'</source>
+        <target state="translated">因為型別 '{0}' 與型別 '{1}' 不相容，所以此呼叫一定會產生空的順序</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotCallEnumerableCastOrOfTypeWithIncompatibleTypesTitle">
+        <source>Do not call Enumerable.Cast&lt;T&gt; or Enumerable.OfType&lt;T&gt; with incompatible types</source>
+        <target state="translated">請勿呼叫型別不相容的 Enumerable.Cast&lt;T&gt; 或 Enumerable.OfType&lt;T&gt;</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCallToImmutableCollectionOnAnImmutableCollectionValueMessage">
@@ -525,21 +606,6 @@
       <trans-unit id="DoNotCallToImmutableCollectionOnAnImmutableCollectionValueTitle">
         <source>Do not call ToImmutableCollection on an ImmutableCollection value</source>
         <target state="translated">請勿對 ImmutableCollection 值呼叫 TolmmutableCollection</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DoNotCatchCorruptedStateExceptionsInGeneralHandlersDescription">
-        <source>Do not author general catch handlers in code that receives corrupted state exceptions.</source>
-        <target state="translated">請勿在接收損毀狀態例外狀況的程式碼中，撰寫一般的 catch 處理常式。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DoNotCatchCorruptedStateExceptionsInGeneralHandlersMessage">
-        <source>Do not catch corrupted state exceptions in general handlers.</source>
-        <target state="translated">請勿在一般處理常式中擷取損毀狀態例外狀況。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DoNotCatchCorruptedStateExceptionsInGeneralHandlersTitle">
-        <source>Do not catch corrupted state exceptions in general handlers.</source>
-        <target state="translated">請勿在一般處理常式中擷取損毀狀態例外狀況。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCreateTaskCompletionSourceWithWrongArgumentsDescription">
@@ -922,16 +988,6 @@
         <target state="translated">{0} 是不安全的亂數產生器。當安全性需要隨機性時，請使用密碼編譯安全性亂數產生器。</target>
         <note />
       </trans-unit>
-      <trans-unit id="DoNotUseMD5">
-        <source>Do not use insecure cryptographic algorithm MD5.</source>
-        <target state="translated">請勿使用不安全的密碼編譯演算法 MD5。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DoNotUseMD5Description">
-        <source>This type implements MD5, a cryptographically insecure hashing function. Hash collisions are computationally feasible for the MD5 and HMACMD5 algorithms. Replace this usage with a SHA-2 family hash algorithm (SHA512, SHA384, SHA256).</source>
-        <target state="translated">此類型會實作 MD5，此雜湊函數在密碼編譯方面有安全性疑慮。MD5 與 HMACMD5 演算法在運算方面可能會發生雜湊衝突。請以 SHA-2 系列雜湊演算法 (SHA512、SHA384、SHA256) 取代此用法。</target>
-        <note />
-      </trans-unit>
       <trans-unit id="DoNotUseObsoleteKDFAlgorithm">
         <source>Do not use obsolete key derivation function</source>
         <target state="translated">請勿使用已淘汰的金鑰衍生函數</target>
@@ -963,33 +1019,23 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseReferenceEqualsWithValueTypesComparerMessage">
-        <source>Do not pass an argument with value type '{0}' to the 'Equals' method on 'ReferenceEqualityComparer'. Due to value boxing, this call to 'Equals' will always return 'false'.</source>
-        <target state="translated">請勿對 'ReferenceEqualityComparer' 上的 'Equals' 方法，傳遞實值型別為 '{0}' 的引數。因為值會進行 boxing，而造成對 'Equals' 的呼叫一律會傳回 'false'。</target>
+        <source>Do not pass an argument with value type '{0}' to the 'Equals' method on 'ReferenceEqualityComparer'. Due to value boxing, this call to 'Equals' can return an unexpected result. Consider using 'EqualityComparer' instead, or pass reference type arguments if you intend to use 'ReferenceEqualityComparer'.</source>
+        <target state="translated">請勿將數值型別為 '{0}' 的引數傳遞至 'ReferenceEqualityComparer' 上的 'Equals' 方法。由於值 Boxing，這個對 'Equals' 的呼叫可能會返回未預期的結果。如果您想要使用 'ReferenceEqualityComparer'，請考慮改為使用 'EqualityComparer'，或傳遞參考型別引數。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseReferenceEqualsWithValueTypesDescription">
-        <source>Value type typed arguments are uniquely boxed for each call to this method, therefore the result is always false.</source>
-        <target state="translated">每次呼叫此方法時，實值型別所輸入的引數，都是經過 Box 的唯一值，因此其結果一律會是 False。</target>
+        <source>Value type typed arguments are uniquely boxed for each call to this method, therefore the result can be unexpected.</source>
+        <target state="translated">每次呼叫此方法時，實值型別所輸入的引數，都是經過 Box 的唯一值，因此其結果可以是未預期的。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseReferenceEqualsWithValueTypesMethodMessage">
-        <source>Do not pass an argument with value type '{0}' to 'ReferenceEquals'. Due to value boxing, this call to 'ReferenceEquals' will always return 'false'.</source>
-        <target state="translated">請勿將實值型別為 '{0}' 的引數，傳遞至 'ReferenceEquals'。因為值會進行 Boxing，而造成對 'ReferenceEquals' 的呼叫一律會傳回 'false'。</target>
+        <source>Do not pass an argument with value type '{0}' to 'ReferenceEquals'. Due to value boxing, this call to 'ReferenceEquals' can return an unexpected result. Consider using 'Equals' instead, or pass reference type arguments if you intend to use 'ReferenceEquals'.</source>
+        <target state="translated">請勿將數值型別為 '{0}' 的引數傳遞至 'ReferenceEquals'。由於值 Boxing，這個對 'Equals' 的呼叫可能會返回未預期的結果。如果您想要使用 'ReferenceEquals'，請考慮改為使用 'Equals'，或傳遞參考型別引數。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseReferenceEqualsWithValueTypesTitle">
         <source>Do not use ReferenceEquals with value types</source>
         <target state="translated">請勿使用有實值型別的 ReferenceEquals</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DoNotUseSHA1">
-        <source>Do not use insecure cryptographic algorithm SHA1.</source>
-        <target state="translated">請勿使用不安全的密碼編譯演算法 SHA1。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DoNotUseSHA1Description">
-        <source>This type implements SHA1, a cryptographically insecure hashing function. Hash collisions are computationally feasible for the SHA-1 and SHA-0 algorithms. Replace this usage with a SHA-2 family hash algorithm (SHA512, SHA384, SHA256).</source>
-        <target state="translated">此類型會實作 SHA1，此雜湊函數在密碼編譯方面有安全性疑慮。SHA-1 與 SHA-0 演算法在運算方面可能會發生雜湊衝突。請以 SHA-2 系列雜湊演算法 (SHA512、SHA384、SHA256) 取代此用法。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseStackallocInLoopsDescription">
@@ -1185,21 +1231,6 @@
       <trans-unit id="FieldIsPreviewTypeMessageWithCustomMessagePlaceholder">
         <source>{3} '{0}''s type contains the preview type '{1}' and requires opting into preview features. See {2} for more information.</source>
         <target state="translated">{3} '{0}' 的類型包含預覽類型 '{1}'，因此必須加入預覽功能。如需詳細資訊，請參閱 {2}。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="FinalizersShouldCallBaseClassFinalizerDescription">
-        <source>Finalization must be propagated through the inheritance hierarchy. To guarantee this, types must call their base class Finalize method in their own Finalize method.</source>
-        <target state="translated">完成項必須傳播到整個繼承階層。為確保上述作業，類型必須呼叫其本身 Finalize 方法中的基底類別 Finalize 方法。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="FinalizersShouldCallBaseClassFinalizerMessage">
-        <source>Finalizers should call base class finalizer</source>
-        <target state="translated">完成項應呼叫基底類別完成項</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="FinalizersShouldCallBaseClassFinalizerTitle">
-        <source>Finalizers should call base class finalizer</source>
-        <target state="translated">完成項應呼叫基底類別完成項</target>
         <note />
       </trans-unit>
       <trans-unit id="ForwardCancellationTokenToInvocationsDescription">
@@ -1812,26 +1843,6 @@
         <target state="translated">{3} '{0}' 會覆寫預覽方法 '{1}'，因此必須加入預覽功能。如需詳細資訊，請參閱 {2}。</target>
         <note />
       </trans-unit>
-      <trans-unit id="PInvokeDeclarationsShouldBePortableDescription">
-        <source>This rule evaluates the size of each parameter and the return value of a P/Invoke, and verifies that the size of the parameter is correct when marshaled to unmanaged code on 32-bit and 64-bit operating systems.</source>
-        <target state="translated">此規則會評估 P/Invoke 每個參數的大小以及傳回值，並會在參數於 32 位元和 64 位元作業系統上封送處理成非受控程式碼時，驗證其大小是否正確。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PInvokeDeclarationsShouldBePortableMessageParameter">
-        <source>As it is declared in your code, parameter {0} of P/Invoke {1} will be {2} bytes wide on {3} platforms. This is not correct, as the actual native declaration of this API indicates it should be {4} bytes wide on {3} platforms. Consult the MSDN Platform SDK documentation for help determining what data type should be used instead of {5}.</source>
-        <target state="translated">因為其宣告於您的程式碼中，所以 P/Invoke {1} 的參數 {0} 在 {3} 平台上將會是 {2} 個位元組寬。但這是錯誤的，因為此 API 的實際原生宣告指出，其在 {3} 平台上應為 {4} 個位元組寬。請參閱 MSDN Platform SDK 文件中的說明，決定應使用何種資料類型來取代 {5}。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PInvokeDeclarationsShouldBePortableMessageReturn">
-        <source>As it is declared in your code, the return type of P/Invoke {0} will be {1} bytes wide on {2} platforms. This is not correct, as the actual native declaration of this API indicates it should be {3} bytes wide on {2} platforms. Consult the MSDN Platform SDK documentation for help determining what data type should be used instead of {4}.</source>
-        <target state="translated">因為其宣告於您的程式碼中，因此 P/Invoke {0} 的傳回型別在 {2} 平台上將會是 {1} 個位元組寬。但這是錯誤的，因為此 API 的實際原生宣告指出，其在 {2} 平台上應為 {3} 個位元組寬。請參閱 MSDN Platform SDK 文件中的說明，決定應使用何種資料類型來取代 {4}。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PInvokeDeclarationsShouldBePortableTitle">
-        <source>PInvoke declarations should be portable</source>
-        <target state="translated">PInvoke 宣告應可攜</target>
-        <note />
-      </trans-unit>
       <trans-unit id="PInvokesShouldNotBeVisibleDescription">
         <source>A public or protected method in a public type has the System.Runtime.InteropServices.DllImportAttribute attribute (also implemented by the Declare keyword in Visual Basic). Such methods should not be exposed.</source>
         <target state="translated">公用類型中的公用方法或受保護方法，具有 System.Runtime.InteropServices.DllImportAttribute 屬性 (也由 Visual Basic 中的 Declare 關鍵字實作)。這類方法不應公開。</target>
@@ -1967,6 +1978,16 @@
         <target state="translated">建議使用 'AsSpan' 而不是 'Substring'</target>
         <note />
       </trans-unit>
+      <trans-unit id="PreferCountOverAnyCodeFixTitle">
+        <source>Use 'Count' check instead of 'Any()'</source>
+        <target state="translated">使用 'Count' 檢查而非 'Any()'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferCountOverAnyMessage">
+        <source>Prefer comparing 'Count' to 0 rather than using 'Any()', both for clarity and for performance</source>
+        <target state="translated">為了清楚明瞭和為了提升效能，偏好比較 'Count' 與 0，而不是使用 'Any()'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PreferDictionaryContainsKeyCodeFixTitle">
         <source>Use 'ContainsKey'</source>
         <target state="translated">請使用 'ContainsKey'</target>
@@ -2020,6 +2041,36 @@
       <trans-unit id="PreferHashDataOverComputeHashAnalyzerTitle">
         <source>Prefer static 'HashData' method over 'ComputeHash'</source>
         <target state="translated">偏好靜態 'HashData' 方法而非 'ComputeHash'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferIsEmptyOverAnyCodeFixTitle">
+        <source>Use 'IsEmpty' check instead of 'Any()'</source>
+        <target state="translated">使用 'IsEmpty' 檢查，而不是 'Any()'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferIsEmptyOverAnyMessage">
+        <source>Prefer an 'IsEmpty' check rather than using 'Any()', both for clarity and for performance</source>
+        <target state="translated">為了清楚明瞭和為了提升效能，偏好 'IsEmpty' 檢查，而不是使用 'Any()'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferLengthCountIsEmptyOverAnyDescription">
+        <source>Prefer using 'IsEmpty', 'Count' or 'Length' properties whichever available, rather than calling 'Enumerable.Any()'. The intent is clearer and it is more performant than using 'Enumerable.Any()' extension method.</source>
+        <target state="translated">偏好使用 'IsEmpty'、'Count' 或 'Length' 屬性 (以可用者為准)，而不是呼叫 'Enumerable.Any()'。意圖更清楚，而且比使用 'Enumerable.Any()' 擴充方法更具效能。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferLengthCountIsEmptyOverAnyTitle">
+        <source>Avoid using 'Enumerable.Any()' extension method</source>
+        <target state="translated">避免使用 'Enumerable.Any()' 擴充方法</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferLengthOverAnyCodeFixTitle">
+        <source>Use 'Length' check instead of 'Any()'</source>
+        <target state="translated">使用 'Length' 檢查而非 'Any()'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferLengthOverAnyMessage">
+        <source>Prefer comparing 'Length' to 0 rather than using 'Any()', both for clarity and for performance</source>
+        <target state="translated">為了清楚明瞭和為了提升效能，偏好比較 'Length' 與 0，而不是使用 'Any()'</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferStreamAsyncMemoryOverloadsDescription">
@@ -2118,8 +2169,8 @@
         <note />
       </trans-unit>
       <trans-unit id="PreventNumericIntPtrUIntPtrBehavioralChangesDescription">
-        <source>Some built in operators added in .NET 7 behave differently than the user defined operatorsi in .NET 6 and below. Some operators that used to throw in unchecked context while overflowing will not throw anymore unless wrapped within checked context, and some operators that not used to throw in checked context now would throw unless wrapped within unchecked context.</source>
-        <target state="translated">在 .NET 7 中已新增的某些內建運算子，其運作方式與 .NET 6 及以下版本使用者定義的運算子不同。某些在溢位時，用於在未選取內容中擲回的運算子將不再擲回，除非包裝在已選取內容中，而且某些未用於在已選取內容中擲回的運算子現在會在未選取的內容中包裝，除非包裝在未選取的內容中。</target>
+        <source>Some built-in operators added in .NET 7 behave differently when overflowing than did the corresponding user-defined operators in .NET 6 and earlier versions. Some operators that previously threw in an unchecked context now don't throw unless wrapped within a checked context. Also, some operators that did not previously throw in a checked context now throw unless wrapped in an unchecked context.</source>
+        <target state="translated">在 .NET 7 中新增的某些內建運算子在溢位時的行為不同於 .NET 6 和較舊版本中對應的使用者定義運算子。某些先前擲回未核取內容的運算子現在不會擲回，除非包裝在核取的內容中。此外，某些先前未擲回核取內容的運算子現在會擲回，除非包裝在未選取的內容中。</target>
         <note />
       </trans-unit>
       <trans-unit id="PreventNumericIntPtrUIntPtrBehavioralChangesOperatorThrowsMessage">
@@ -2128,7 +2179,7 @@
         <note />
       </trans-unit>
       <trans-unit id="PreventNumericIntPtrUIntPtrBehavioralChangesTitle">
-        <source>Prevent from behavioral change</source>
+        <source>Prevent behavioral change</source>
         <target state="translated">防止行為變更</target>
         <note />
       </trans-unit>
@@ -2225,21 +2276,6 @@
       <trans-unit id="ReplaceStringLiteralWithCharLiteralCodeActionTitle">
         <source>Replace string literal with char literal</source>
         <target state="translated">以字元常值取代字串常值</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="RethrowToPreserveStackDetailsDescription">
-        <source>An exception is rethrown and the exception is explicitly specified in the throw statement. If an exception is rethrown by specifying the exception in the throw statement, the list of method calls between the original method that threw the exception and the current method is lost.</source>
-        <target state="translated">會再次擲回例外狀況，並在 throw 陳述式中明確指定該例外狀況。如果在 throw 陳述式中指定例外狀況，而再次擲回了例外狀況，則方法清單會呼叫之前擲回例外狀況的原始方法，而目前的方法則會遺失。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="RethrowToPreserveStackDetailsMessage">
-        <source>Rethrow to preserve stack details</source>
-        <target state="translated">重新擲回以保存堆疊詳細資料</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="RethrowToPreserveStackDetailsTitle">
-        <source>Rethrow to preserve stack details</source>
-        <target state="translated">重新擲回以保存堆疊詳細資料</target>
         <note />
       </trans-unit>
       <trans-unit id="ReviewCodeForDllInjectionVulnerabilitiesMessage">
@@ -2502,26 +2538,6 @@
         <target state="translated">平台叫用成員允許部分信任的呼叫端、具有字串參數，且不會明確地封送處理字串。如此可能會造成資訊安全漏洞。</target>
         <note />
       </trans-unit>
-      <trans-unit id="SpecifyMarshalingForPInvokeStringArgumentsMessageField">
-        <source>To reduce security risk, marshal field {0} as Unicode, by setting StructLayout.CharSet on {1} to CharSet.Unicode, or by explicitly marshaling the field as UnmanagedType.LPWStr. If you need to marshal this string as ANSI or system-dependent, use the BestFitMapping attribute to turn best-fit mapping off, and for added security, ensure ThrowOnUnmappableChar is on.</source>
-        <target state="translated">為降低安全性風險，請將欄位 {0} 封送處理為 Unicode，方法是將 {1} 上的 StructLayout.CharSet 設為 CharSet.Unicode，或將該欄位明確封送處理為 UnmanagedType.LPWStr。如果需要將此字串封送處理為 ANSI 或與系統相依，請使用 BestFitMapping 屬性關閉自動調整對應，此外為增加安全性，請確認已開啟 ThrowOnUnmappableChar。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SpecifyMarshalingForPInvokeStringArgumentsMessageFieldImplicitAnsi">
-        <source>To reduce security risk, marshal field {0} as Unicode, by setting StructLayout.CharSet on {1} to CharSet.Unicode, or by explicitly marshaling the field as UnmanagedType.LPWStr. If you need to marshal this string as ANSI or system-dependent, specify MarshalAs explicitly, use the BestFitMapping attribute to turn best-fit mapping off, and for added security, to turn ThrowOnUnmappableChar on.</source>
-        <target state="translated">為降低安全性風險，請將欄位 {0} 封送處理為 Unicode，方法是將 {1} 上的 StructLayout.CharSet 設為 CharSet.Unicode，或將該欄位明確封送處理為 UnmanagedType.LPWStr。如果需要將此字串封送處理為 ANSI 或與系統相依，可明確地指定 MarshalAs 並使用 BestFitMapping 屬性關閉自動調整對應，此外為增加安全性，請將 ThrowOnUnmappableChar 開啟。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SpecifyMarshalingForPInvokeStringArgumentsMessageParameter">
-        <source>To reduce security risk, marshal parameter {0} as Unicode, by setting DllImport.CharSet to CharSet.Unicode, or by explicitly marshaling the parameter as UnmanagedType.LPWStr. If you need to marshal this string as ANSI or system-dependent, set BestFitMapping=false; for added security, also set ThrowOnUnmappableChar=true.</source>
-        <target state="translated">為降低安全性風險，請將參數 {0} 封送處理為 Unicode，方法是將 DllImport.CharSet 設為 CharSet.Unicode，或將該參數明確封送處理為 UnmanagedType.LPWStr。如果需要將此字串封送處理為 ANSI 或與系統相依，可以設定 BestFitMapping=false; 此外為增加安全性，也可設定 ThrowOnUnmappableChar=true。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SpecifyMarshalingForPInvokeStringArgumentsMessageParameterImplicitAnsi">
-        <source>To reduce security risk, marshal parameter {0} as Unicode, by setting DllImport.CharSet to CharSet.Unicode, or by explicitly marshaling the parameter as UnmanagedType.LPWStr. If you need to marshal this string as ANSI or system-dependent, specify MarshalAs explicitly, and set BestFitMapping=false; for added security, also set ThrowOnUnmappableChar=true.</source>
-        <target state="translated">為降低安全性風險，請將參數 {0} 封送處理為 Unicode，方法是將 DllImport.CharSet 設為 CharSet.Unicode，或將該參數明確封送處理為 UnmanagedType.LPWStr。如果需要將此字串封送處理為 ANSI 或與系統相依，可明確地指定 MarshalAs 並設定 BestFitMapping=false; 此外為增加安全性，也可設定 ThrowOnUnmappableChar=true。</target>
-        <note />
-      </trans-unit>
       <trans-unit id="SpecifyMarshalingForPInvokeStringArgumentsTitle">
         <source>Specify marshaling for P/Invoke string arguments</source>
         <target state="translated">指定 P/Invoke 字串引數的封送處理</target>
@@ -2622,6 +2638,21 @@
         <target state="translated">'ThreadStatic' 只會影響靜態欄位</target>
         <note />
       </trans-unit>
+      <trans-unit id="UseArgumentExceptionThrowHelperTitle">
+        <source>Use ArgumentException throw helper</source>
+        <target state="translated">使用 ArgumentException 擲回協助程式</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseArgumentNullExceptionThrowHelperTitle">
+        <source>Use ArgumentNullException throw helper</source>
+        <target state="translated">使用 ArgumentNullException 擲回協助程式</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseArgumentOutOfRangeExceptionThrowHelperTitle">
+        <source>Use ArgumentOutOfRangeException throw helper</source>
+        <target state="translated">使用 ArgumentOutOfRangeException 擲回協助程式</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UseArrayEmpty">
         <source>Use Array.Empty</source>
         <target state="translated">使用 Array.Empty</target>
@@ -2715,6 +2746,41 @@
       <trans-unit id="UseCancellationTokenThrowIfCancellationRequestedTitle">
         <source>Use 'ThrowIfCancellationRequested'</source>
         <target state="translated">請使用 'ThrowIfCancellationRequested'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseConcreteTypeDescription">
+        <source>Using concrete types avoids virtual or interface call overhead and enables inlining.</source>
+        <target state="translated">使用具象類型可以避免虛擬或介面呼叫額外負荷，並啟用內嵌。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseConcreteTypeForFieldMessage">
+        <source>Change type of field '{0}' from '{1}' to '{2}' for improved performance</source>
+        <target state="translated">將欄位 '{0}' 的類型從 '{1}' 變更為 '{2}' 以提高效能</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseConcreteTypeForLocalMessage">
+        <source>Change type of variable '{0}' from '{1}' to '{2}' for improved performance</source>
+        <target state="translated">將變數 '{0}' 的類型從 '{1}' 變更為 '{2}' 以提高效能</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseConcreteTypeForMethodReturnMessage">
+        <source>Change return type of method '{0}' from '{1}' to '{2}' for improved performance</source>
+        <target state="translated">將方法 '{0}' 的傳回型別從 '{1}' 變更為 '{2}' 以提高效能</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseConcreteTypeForParameterMessage">
+        <source>Change type of parameter '{0}' from '{1}' to '{2}' for improved performance</source>
+        <target state="translated">將參數 '{0}' 的類型從 '{1}' 變更為 '{2}' 以提高效能</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseConcreteTypeForPropertyMessage">
+        <source>Change type of property '{0}' from '{1}' to '{2}' for improved performance</source>
+        <target state="translated">將屬性 '{0}' 的型別從 '{1}' 變更為 '{2}' 以提高效能</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseConcreteTypeTitle">
+        <source>Use concrete types when possible for improved performance</source>
+        <target state="translated">盡可能使用具象類型以提高效能</target>
         <note />
       </trans-unit>
       <trans-unit id="UseContainerLevelAccessPolicy">
@@ -2837,19 +2903,14 @@
         <target state="translated">使用 Win32 API 的受控對等項</target>
         <note />
       </trans-unit>
+      <trans-unit id="UseObjectDisposedExceptionThrowHelperTitle">
+        <source>Use ObjectDisposedException throw helper</source>
+        <target state="translated">使用 ObjectDisposedException 擲回協助程式</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UseOrdinalStringComparisonDescription">
         <source>A string comparison operation that is nonlinguistic does not set the StringComparison parameter to either Ordinal or OrdinalIgnoreCase. By explicitly setting the parameter to either StringComparison.Ordinal or StringComparison.OrdinalIgnoreCase, your code often gains speed, becomes more correct, and becomes more reliable.</source>
         <target state="translated">非語言的字串比較作業不會將 StringComparison 參數設為 Ordinal 或 OrdinalIgnoreCase。將參數明確設定為 StringComparison.Ordinal 或 StringComparison.OrdinalIgnoreCase 時，程式碼通常會更快速、精確且更可靠。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UseOrdinalStringComparisonMessageStringComparer">
-        <source>{0} passes '{1}' as the 'StringComparer' parameter to {2}. To perform a non-linguistic comparison, specify 'StringComparer.Ordinal' or 'StringComparer.OrdinalIgnoreCase' instead.</source>
-        <target state="translated">{0} 會以 'StringComparison' 參數形式將 '{1}' 傳遞給 {2}。若要執行非語言比較，請改為指定 'StringComparer.Ordinal' 或 'StringComparer.OrdinalIgnoreCase'。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UseOrdinalStringComparisonMessageStringComparison">
-        <source>{0} passes '{1}' as the 'StringComparison' parameter to {2}. To perform a non-linguistic comparison, specify 'StringComparison.Ordinal' or 'StringComparison.OrdinalIgnoreCase' instead.</source>
-        <target state="translated">{0} 會以 'StringComparison' 參數形式將 '{1}' 傳遞給 {2}。若要執行非語言比較，請改為指定 'StringComparison.Ordinal' 或 'StringComparison.OrdinalIgnoreCase'。</target>
         <note />
       </trans-unit>
       <trans-unit id="UseOrdinalStringComparisonTitle">
@@ -2927,6 +2988,26 @@
         <target state="translated">優先使用 'Clear' 而不是 'Fill'</target>
         <note />
       </trans-unit>
+      <trans-unit id="UseStartsWithInsteadOfIndexOfComparisonWithZeroCodeFixTitle">
+        <source>Use 'StartsWith'</source>
+        <target state="translated">使用 'StartsWith'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseStartsWithInsteadOfIndexOfComparisonWithZeroDescription">
+        <source>It is both clearer and faster to use 'StartsWith' instead of comparing the result of 'IndexOf' to zero.</source>
+        <target state="translated">使用 'StartsWith' 更清楚且更快速，而不是將 'IndexOf' 的結果與 0 比較。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseStartsWithInsteadOfIndexOfComparisonWithZeroMessage">
+        <source>Use 'StartsWith' instead of comparing the result of 'IndexOf' to 0</source>
+        <target state="translated">使用 'StartsWith' 而不是將 'IndexOf' 的結果與 0 比較</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseStartsWithInsteadOfIndexOfComparisonWithZeroTitle">
+        <source>Use 'StartsWith' instead of 'IndexOf'</source>
+        <target state="translated">使用 'StartsWith' 代替 'IndexOf'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UseStringEqualsOverStringCompareCodeFixTitle">
         <source>Use 'string.Equals'</source>
         <target state="translated">請使用 'string.Equals'</target>
@@ -2980,6 +3061,21 @@
       <trans-unit id="UseStringContainsCharOverloadWithSingleCharactersTitle">
         <source>Use char literal for a single character lookup</source>
         <target state="translated">請為單一字元查閱使用字元常值</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseThrowHelperDescription">
+        <source>Throw helpers are simpler and more efficient than an if block constructing a new exception instance.</source>
+        <target state="translated">擲回協助程式比建構新例外狀況執行個體的 if 區塊更簡單且更有效率。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseThrowHelperFix">
+        <source>Use '{0}.{1}'</source>
+        <target state="translated">使用 '{0}.{1}'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseThrowHelperMessage">
+        <source>Use '{0}.{1}' instead of explicitly throwing a new exception instance</source>
+        <target state="translated">使用 '{0}.{1}'，而不是明確擲回新的例外狀況執行個體</target>
         <note />
       </trans-unit>
       <trans-unit id="UseValidPlatformStringDescription">

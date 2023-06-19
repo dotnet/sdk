@@ -823,7 +823,7 @@ Assembly: (Lines: 21, ExecutableLines: 5, MntIndex: 93, CycCxty: 5, CoupledTypes
     C4: (Lines: 4, ExecutableLines: 1, MntIndex: 90, CycCxty: 1, DepthInherit: 1)
         C4.MyConst: (Lines: 1, ExecutableLines: 1, MntIndex: 90, CycCxty: 0)
     CAttr: (Lines: 1, ExecutableLines: 0, MntIndex: 100, CycCxty: 1, CoupledTypes: {System.Attribute}, DepthInherit: 2)
-        CAttr.CAttr(string): (Lines: 1, ExecutableLines: 0, MntIndex: 100, CycCxty: 1)
+        CAttr.CAttr(string): (Lines: 1, ExecutableLines: 0, MntIndex: 100, CycCxty: 1, CoupledTypes: {System.Attribute})
 ";
 
             VerifyCSharp(source, expectedMetricsText);

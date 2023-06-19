@@ -46,6 +46,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 builder.AddIfNotNull(compilationContext.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeCompilerServicesCallerFilePathAttribute));
                 builder.AddIfNotNull(compilationContext.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeCompilerServicesCallerLineNumberAttribute));
                 builder.AddIfNotNull(compilationContext.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeCompilerServicesCallerMemberNameAttribute));
+                builder.AddIfNotNull(compilationContext.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeCompilerServicesCallerArgumentExpressionAttribute));
                 var callerInformationAttributes = builder.ToImmutable();
 
                 if (cancellationTokenType == null)

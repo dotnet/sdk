@@ -144,6 +144,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     {
                         return;
                     }
+
                     if (TryGetVariableInitializerOperation(objectCreationOperation.Parent, out var variableInitializerOperation))
                     {
                         CaptureVariableDeclaratorOperation(dataCollector, objectCreationOperation.Type, variableInitializerOperation);
@@ -177,6 +178,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                             context.ReportDiagnostic(diagnostics);
                         }
                     }
+
                     dataResult.Free(cancellationToken);
                 }
             }
@@ -247,7 +249,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 default:
                     variableInitializerOperation = null;
                     return false;
-            };
+            }
         }
 
         private static Diagnostic CreateDiagnostics(IInvocationOperation computeHashMethod,
@@ -311,6 +313,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
             {
                 return value;
             }
+
             return ImmutableArray<IInvocationOperation>.Empty;
         }
 
@@ -403,11 +406,13 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     computeType = ComputeType.ComputeHash;
                     return true;
                 }
+
                 if (IsComputeHashSectionMethod(invocationOperation))
                 {
                     computeType = ComputeType.ComputeHashSection;
                     return true;
                 }
+
                 if (IsTryComputeHashMethod(invocationOperation))
                 {
                     computeType = ComputeType.TryComputeHash;
@@ -508,6 +513,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 {
                     return null;
                 }
+
                 var rosByteType = rosType.Construct(byteType);
                 var spanByteType = spanType.Construct(byteType);
 
@@ -640,6 +646,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     {
                         count = 0;
                     }
+
                     localRefSymbolCountMap[local] = count + 1;
                 }
 
@@ -650,6 +657,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     {
                         count = 0;
                     }
+
                     computeHashSymbolCountMap[local] = count + 1;
                 }
 
@@ -659,6 +667,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     {
                         continue;
                     }
+
                     var disposeArray = GetValueOrEmpty(disposeMap, local);
 
                     var refCountWithoutDispose = refCount - disposeArray.Length;

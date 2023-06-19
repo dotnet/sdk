@@ -1,5 +1,6 @@
 ﻿' Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
+Imports System.Composition
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.CodeFixes
 Imports Microsoft.CodeAnalysis.Editing
@@ -9,7 +10,7 @@ Imports Microsoft.NetCore.Analyzers.Runtime
 
 Namespace Microsoft.NetCore.VisualBasic.Analyzers.Runtime
 
-    <ExportCodeFixProvider(LanguageNames.VisualBasic)>
+    <ExportCodeFixProvider(LanguageNames.VisualBasic), [Shared]>
     Public NotInheritable Class BasicPreferStreamAsyncMemoryOverloadsFixer
 
         Inherits PreferStreamAsyncMemoryOverloadsFixer
@@ -35,25 +36,8 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Runtime
                     End If
                 End If
             End If
-            Return Nothing
-        End Function
 
-        Protected Overrides Function IsSystemNamespaceImported(importList As IReadOnlyList(Of SyntaxNode)) As Boolean
-            For Each import As SyntaxNode In importList
-                Dim importsStatement = TryCast(import, ImportsStatementSyntax)
-                If importsStatement IsNot Nothing Then
-                    For Each clause As ImportsClauseSyntax In importsStatement.ImportsClauses
-                        Dim simpleClause = TryCast(clause, SimpleImportsClauseSyntax)
-                        If simpleClause IsNot Nothing Then
-                            Dim identifier = TryCast(simpleClause.Name, IdentifierNameSyntax)
-                            If identifier IsNot Nothing AndAlso String.Equals(identifier.Identifier.Text, "System", StringComparison.OrdinalIgnoreCase) Then
-                                Return True
-                            End If
-                        End If
-                    Next
-                End If
-            Next
-            Return False
+            Return Nothing
         End Function
 
         Protected Overrides Function IsPassingZeroAndBufferLength(model As SemanticModel, bufferValueNode As SyntaxNode, offsetValueNode As SyntaxNode, countValueNode As SyntaxNode) As Boolean
@@ -62,6 +46,7 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Runtime
             If arg1 Is Nothing Then
                 Return False
             End If
+
             Dim firstArgumentIdentifierName = TryCast(arg1.GetExpression(), IdentifierNameSyntax)
             If firstArgumentIdentifierName Is Nothing Then
                 Return False
@@ -71,6 +56,7 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Runtime
             If arg2 Is Nothing Then
                 Return False
             End If
+
             Dim literal = TryCast(arg2.GetExpression(), LiteralExpressionSyntax)
             If literal Is Nothing Then
                 Return False
@@ -89,6 +75,7 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Runtime
             If arg3 Is Nothing Then
                 Return False
             End If
+
             Dim thirdArgumentMemberAccessExpression = TryCast(arg3.GetExpression(), MemberAccessExpressionSyntax)
             If thirdArgumentMemberAccessExpression Is Nothing Then
                 Return False
@@ -100,6 +87,7 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Runtime
                 String.Equals(thirdArgumentMemberAccessExpression.Name.Identifier.Text, WellKnownMemberNames.LengthPropertyName, StringComparison.OrdinalIgnoreCase) Then
                 Return True
             End If
+
             Return False
         End Function
 
@@ -115,8 +103,10 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Runtime
                 If argument IsNot Nothing Then
                     actualNode = argument.GetExpression()
                 End If
+
                 Return generator.Argument(newName, RefKind.None, actualNode)
             End If
+
             Return node
         End Function
 
@@ -126,6 +116,7 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Runtime
             If argument IsNot Nothing Then
                 actualNode = argument.GetExpression()
             End If
+
             Return generator.MemberAccessExpression(actualNode.WithoutTrivia(), memberName)
         End Function
     End Class

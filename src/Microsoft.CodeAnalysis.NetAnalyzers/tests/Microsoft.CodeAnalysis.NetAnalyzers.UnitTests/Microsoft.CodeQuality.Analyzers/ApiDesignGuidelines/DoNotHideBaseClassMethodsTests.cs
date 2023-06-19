@@ -475,17 +475,17 @@ End Class
         }
 
         private static DiagnosticResult GetCA1061CSharpResultAt(int line, int column, string derivedMethod, string baseMethod)
-#pragma warning disable RS0030 // Do not used banned APIs
+#pragma warning disable RS0030 // Do not use banned APIs
             => VerifyCS.Diagnostic()
                 .WithLocation(line, column)
-#pragma warning restore RS0030 // Do not used banned APIs
+#pragma warning restore RS0030 // Do not use banned APIs
                 .WithArguments(derivedMethod, baseMethod);
 
         private static DiagnosticResult GetCA1061BasicResultAt(int line, int column, string derivedMethod, string baseMethod)
-#pragma warning disable RS0030 // Do not used banned APIs
+#pragma warning disable RS0030 // Do not use banned APIs
             => VerifyVB.Diagnostic()
                 .WithLocation(line, column)
-#pragma warning restore RS0030 // Do not used banned APIs
+#pragma warning restore RS0030 // Do not use banned APIs
                 .WithArguments(derivedMethod, baseMethod);
     }
 }

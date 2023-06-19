@@ -71,6 +71,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 GetSymbolAndAddToList("Result", WellKnownTypeNames.SystemThreadingTasksValueTask, SymbolKind.Property, syncBlockingSymbols, context.Compilation);
                 GetSymbolAndAddToList("GetResult", WellKnownTypeNames.SystemRuntimeCompilerServicesTaskAwaiter, SymbolKind.Method, syncBlockingSymbols, context.Compilation);
                 GetSymbolAndAddToList("GetResult", WellKnownTypeNames.SystemRuntimeCompilerServicesValueTaskAwaiter, SymbolKind.Method, syncBlockingSymbols, context.Compilation);
+                GetSymbolAndAddToList("Sleep", WellKnownTypeNames.SystemThreadingThread, SymbolKind.Method, syncBlockingSymbols, context.Compilation);
 
                 if (!syncBlockingTypes.Any())
                 {
@@ -88,7 +89,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     {
                         if (context.Operation is IInvocationOperation invocationOperation)
                         {
-                            if (InspectAndReportBlockingMemberAccess(context, syncBlockingSymbols, SymbolKind.Method))
+                            var methodSymbol = invocationOperation.TargetMethod;
+                            if (InspectAndReportBlockingMemberAccess(context, methodSymbol, syncBlockingSymbols, SymbolKind.Method))
                             {
                                 // Don't return double-diagnostics.
                                 return;
@@ -96,10 +98,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
                             // Also consider all method calls to check for Async-suffixed alternatives.
                             var semanticModel = context.Operation.SemanticModel;
-                            SymbolInfo symbolInfo = semanticModel.GetSymbolInfo(context.Operation.Syntax, context.CancellationToken);
 
-                            if (symbolInfo.Symbol is IMethodSymbol methodSymbol &&
-                                !methodSymbol.Name.EndsWith(MandatoryAsyncSuffix, StringComparison.Ordinal) &&
+                            if (!methodSymbol.Name.EndsWith(MandatoryAsyncSuffix, StringComparison.Ordinal) &&
                                 !HasAsyncCompatibleReturnType(methodSymbol, syncBlockingTypes))
                             {
                                 IEnumerable<IMethodSymbol> methodSymbols = semanticModel.LookupSymbols(
@@ -136,7 +136,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                         }
                         else
                         {
-                            InspectAndReportBlockingMemberAccess(context, syncBlockingSymbols, SymbolKind.Property);
+                            InspectAndReportBlockingMemberAccess(context, ((IPropertyReferenceOperation)context.Operation).Property, syncBlockingSymbols, SymbolKind.Property);
                         }
                     }
                 }, OperationKind.Invocation, OperationKind.PropertyReference);
@@ -234,6 +234,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 {
                     return method;
                 }
+
                 containingSymbol = containingSymbol.ContainingSymbol;
             }
 
@@ -254,17 +255,12 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             return HasAsyncCompatibleReturnType(parentMethod, syncBlockingTypes);
         }
 
-        private static bool InspectAndReportBlockingMemberAccess(OperationAnalysisContext context, List<SyncBlockingSymbol> syncBlockingSymbols, SymbolKind kind)
+        private static bool InspectAndReportBlockingMemberAccess(OperationAnalysisContext context, ISymbol memberSymbol, List<SyncBlockingSymbol> syncBlockingSymbols, SymbolKind kind)
         {
-            ISymbol? memberSymbol = context.Operation.SemanticModel.GetSymbolInfo(context.Operation.Syntax, context.CancellationToken).Symbol;
-            if (memberSymbol is null)
-            {
-                return false;
-            }
-
             foreach (SyncBlockingSymbol symbol in syncBlockingSymbols)
             {
-                if (symbol.Kind != kind) continue;
+                if (symbol.Kind != kind)
+                    continue;
                 if (symbol.Value.Equals(memberSymbol.OriginalDefinition))
                 {
                     Diagnostic diagnostic = context.Operation.Syntax.CreateDiagnostic(
@@ -276,6 +272,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     return true;
                 }
             }
+
             return false;
         }
     }

@@ -17,31 +17,31 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
     public partial class AvoidDeadConditionalCodeTests
     {
         private static DiagnosticResult GetCSharpResultAt(int line, int column, string condition, string reason)
-#pragma warning disable RS0030 // Do not used banned APIs
+#pragma warning disable RS0030 // Do not use banned APIs
             => VerifyCS.Diagnostic(AvoidDeadConditionalCode.AlwaysTrueFalseOrNullRule)
                 .WithLocation(line, column)
-#pragma warning restore RS0030 // Do not used banned APIs
+#pragma warning restore RS0030 // Do not use banned APIs
                 .WithArguments(condition, reason);
 
         private static DiagnosticResult GetBasicResultAt(int line, int column, string condition, string reason)
-#pragma warning disable RS0030 // Do not used banned APIs
+#pragma warning disable RS0030 // Do not use banned APIs
             => VerifyVB.Diagnostic(AvoidDeadConditionalCode.AlwaysTrueFalseOrNullRule)
                 .WithLocation(line, column)
-#pragma warning restore RS0030 // Do not used banned APIs
+#pragma warning restore RS0030 // Do not use banned APIs
                 .WithArguments(condition, reason);
 
         private static DiagnosticResult GetCSharpNeverNullResultAt(int line, int column, string condition, string reason)
-#pragma warning disable RS0030 // Do not used banned APIs
+#pragma warning disable RS0030 // Do not use banned APIs
             => VerifyCS.Diagnostic(AvoidDeadConditionalCode.NeverNullRule)
                 .WithLocation(line, column)
-#pragma warning restore RS0030 // Do not used banned APIs
+#pragma warning restore RS0030 // Do not use banned APIs
                 .WithArguments(condition, reason);
 
         private static DiagnosticResult GetBasicNeverNullResultAt(int line, int column, string condition, string reason)
-#pragma warning disable RS0030 // Do not used banned APIs
+#pragma warning disable RS0030 // Do not use banned APIs
             => VerifyVB.Diagnostic(AvoidDeadConditionalCode.NeverNullRule)
                 .WithLocation(line, column)
-#pragma warning restore RS0030 // Do not used banned APIs
+#pragma warning restore RS0030 // Do not use banned APIs
                 .WithArguments(condition, reason);
 
         private static async Task VerifyCSharpAnalyzerAsync(string source, params DiagnosticResult[] expected)
@@ -7058,6 +7058,39 @@ public class C
 }",
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp8,
             }.RunAsync();
+        }
+
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
+        [Fact, WorkItem(6453, "https://github.com/dotnet/roslyn-analyzers/issues/6453")]
+        public async Task IndexedNullCompare_NoDiagnosticAsync()
+        {
+            await VerifyCSharpAnalyzerAsync(@"
+using System.Collections.Generic;
+
+sealed class Data
+{
+    public object Value { get; }
+    public Data(object value)
+    {
+        Value = value;
+    }
+}
+
+static class Test
+{
+    static void Filter(List<Data> list, int j)
+    {
+        for (int i = 0; i < list.Count - 1; i++)
+        {
+            if (list[i + 1].Value != null) continue;
+            if (list[i].Value == null) continue; // <-------- CA1508 False positive
+            list.RemoveAt(i);
+        }
+    }
+}
+");
         }
     }
 }

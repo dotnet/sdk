@@ -17,7 +17,7 @@ namespace Microsoft.CodeQuality.Analyzers.UnitTests.QualityGuidelines
         public async Task TestCSharp_RethrowExplicitlyToThrowImplicitlyAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(
-#pragma warning disable RS0030 // Do not used banned APIs
+#pragma warning disable RS0030 // Do not use banned APIs
 @"
 using System;
 
@@ -40,7 +40,7 @@ class Program
         throw new ArithmeticException();
     }
 }", VerifyCS.Diagnostic().WithLocation(14, 13),
-#pragma warning restore RS0030 // Do not used banned APIs
+#pragma warning restore RS0030 // Do not use banned APIs
 @"
 using System;
 
@@ -68,7 +68,7 @@ class Program
         public async Task TestBasic_RethrowExplicitlyToThrowImplicitlyAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(
-#pragma warning disable RS0030 // Do not used banned APIs
+#pragma warning disable RS0030 // Do not use banned APIs
 @"
 Imports System
 Class Program
@@ -81,7 +81,7 @@ Class Program
     End Sub
 End Class
 ", VerifyVB.Diagnostic().WithLocation(8, 13),
-#pragma warning restore RS0030 // Do not used banned APIs
+#pragma warning restore RS0030 // Do not use banned APIs
     @"
 Imports System
 Class Program

@@ -13,13 +13,13 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Performance
     Public NotInheritable Class BasicDoNotGuardDictionaryRemoveByContainsKeyFixer
         Inherits DoNotGuardDictionaryRemoveByContainsKeyFixer
 
-        Protected Overrides Function SyntaxSupportedByFixer(conditionalOperation As SyntaxNode) As Boolean
-            If TypeOf conditionalOperation Is IfStatementSyntax Then
+        Protected Overrides Function SyntaxSupportedByFixer(conditionalSyntax As SyntaxNode) As Boolean
+            If TypeOf conditionalSyntax Is IfStatementSyntax Then
                 Return True
             End If
 
-            If TypeOf conditionalOperation Is MultiLineIfBlockSyntax Then
-                Return CType(conditionalOperation, MultiLineIfBlockSyntax).IfStatement.ChildNodes().Count() = 1
+            If TypeOf conditionalSyntax Is MultiLineIfBlockSyntax Then
+                Return CType(conditionalSyntax, MultiLineIfBlockSyntax).IfStatement.ChildNodes().Count() = 1
             End If
 
             Return False

@@ -3193,6 +3193,7 @@ End Class
                 var expected = diagnosticResults[i];
                 test.ExpectedDiagnostics.Add(expected);
             }
+
             await test.RunAsync();
             await GetTestCS(source, source, ReferenceAssemblies.NetCore.NetCoreApp31).RunAsync();
         }

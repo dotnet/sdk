@@ -153,6 +153,36 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 
         }
 
+        [Fact, WorkItem(6371, "https://github.com/dotnet/roslyn-analyzers/issues/6371")]
+        public async Task CA1054NoWarningsForInterfaceImplementationsAsync()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+    using System;
+
+    public interface IUrlInterface1
+    {
+        void Method(string url);
+    }
+
+    public interface IUrlInterface2
+    {
+        void Method(string url);
+    }
+
+    public class A : IUrlInterface1, IUrlInterface2
+    {
+        public void Method(string url) // Implements IUrlInterface1, implicitly
+        {
+        }
+
+        void IUrlInterface2.Method(string url) // Implements IUrlInterface2, explicitly
+        {
+        }
+    }
+", GetCA1054CSharpResultAt(6, 28, "url", "IUrlInterface1.Method(string)")
+ , GetCA1054CSharpResultAt(11, 28, "url", "IUrlInterface2.Method(string)"));
+        }
+
         [Fact]
         public async Task CA1054NoWarningNotPublicAsync()
         {
@@ -260,17 +290,17 @@ End Module"
         }
 
         private static DiagnosticResult GetCA1054CSharpResultAt(int line, int column, params string[] args)
-#pragma warning disable RS0030 // Do not used banned APIs
+#pragma warning disable RS0030 // Do not use banned APIs
             => VerifyCS.Diagnostic()
                 .WithLocation(line, column)
-#pragma warning restore RS0030 // Do not used banned APIs
+#pragma warning restore RS0030 // Do not use banned APIs
                 .WithArguments(args);
 
         private static DiagnosticResult GetCA1054BasicResultAt(int line, int column, params string[] args)
-#pragma warning disable RS0030 // Do not used banned APIs
+#pragma warning disable RS0030 // Do not use banned APIs
             => VerifyVB.Diagnostic()
                 .WithLocation(line, column)
-#pragma warning restore RS0030 // Do not used banned APIs
+#pragma warning restore RS0030 // Do not use banned APIs
                 .WithArguments(args);
     }
 }

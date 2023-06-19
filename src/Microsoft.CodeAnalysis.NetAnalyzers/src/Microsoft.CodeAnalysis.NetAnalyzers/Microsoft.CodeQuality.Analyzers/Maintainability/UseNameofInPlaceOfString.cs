@@ -70,12 +70,14 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                     {
                         context.ReportDiagnostic(argument.Value.CreateDiagnostic(RuleWithSuggestion, stringText));
                     }
+
                     return;
                 case PropertyName:
                     if (HasAnyPropertyMatchInScope(context, stringText))
                     {
                         context.ReportDiagnostic(argument.Value.CreateDiagnostic(RuleWithSuggestion, stringText));
                     }
+
                     return;
                 default:
                     return;

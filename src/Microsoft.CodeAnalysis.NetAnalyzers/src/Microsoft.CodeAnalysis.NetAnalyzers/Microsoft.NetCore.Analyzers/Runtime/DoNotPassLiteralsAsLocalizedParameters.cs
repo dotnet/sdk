@@ -302,7 +302,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 return localizedState;
             }
 
-            ISymbol containingSymbol = (symbol as IMethodSymbol)?.AssociatedSymbol is IPropertySymbol propertySymbol ? propertySymbol : symbol.ContainingSymbol;
+            ISymbol containingSymbol = symbol is IMethodSymbol { AssociatedSymbol: IPropertySymbol propertySymbol } ? propertySymbol : symbol.ContainingSymbol;
             return GetLocalizableAttributeState(containingSymbol, localizableAttributeTypeSymbol);
         }
 

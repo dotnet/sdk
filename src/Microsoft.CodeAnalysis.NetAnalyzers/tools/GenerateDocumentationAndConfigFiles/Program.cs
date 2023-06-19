@@ -315,12 +315,12 @@ $@"<Project>
                 var allRuleIds = string.Join(';', allRulesById.Keys);
                 return $@"
   <!-- 
-    This property group handles 'CodeAnalysisTreatWarningsAsErrors' for the CA rule ids implemented in this package.
+    This property group handles 'CodeAnalysisTreatWarningsAsErrors = false' for the CA rule ids implemented in this package.
   -->
   <PropertyGroup>
     <CodeAnalysisRuleIds>{allRuleIds}</CodeAnalysisRuleIds>
-    <WarningsNotAsErrors Condition=""'$(CodeAnalysisTreatWarningsAsErrors)' == 'false'"">$(WarningsNotAsErrors);$(CodeAnalysisRuleIds)</WarningsNotAsErrors>
-    <WarningsAsErrors Condition=""'$(CodeAnalysisTreatWarningsAsErrors)' == 'true' and '$(TreatWarningsAsErrors)' != 'true'"">$(WarningsAsErrors);$(CodeAnalysisRuleIds)</WarningsAsErrors>
+    <EffectiveCodeAnalysisTreatWarningsAsErrors Condition=""'$(EffectiveCodeAnalysisTreatWarningsAsErrors)' == ''"">$(CodeAnalysisTreatWarningsAsErrors)</EffectiveCodeAnalysisTreatWarningsAsErrors>
+    <WarningsNotAsErrors Condition=""'$(EffectiveCodeAnalysisTreatWarningsAsErrors)' == 'false' and '$(TreatWarningsAsErrors)' == 'true'"">$(WarningsNotAsErrors);$(CodeAnalysisRuleIds)</WarningsNotAsErrors>
   </PropertyGroup>";
             }
 
@@ -331,6 +331,7 @@ $@"<Project>
                     ResxSourceGeneratorPackageName => @"
   <ItemGroup>
     <CompilerVisibleProperty Include=""RootNamespace"" />
+    <CompilerVisibleItemMetadata Include=""AdditionalFiles"" MetadataName=""WithCulture"" />
     <CompilerVisibleItemMetadata Include=""AdditionalFiles"" MetadataName=""GenerateSource"" />
     <CompilerVisibleItemMetadata Include=""AdditionalFiles"" MetadataName=""RelativeDir"" />
     <CompilerVisibleItemMetadata Include=""AdditionalFiles"" MetadataName=""OmitGetResourceString"" />
@@ -637,6 +638,7 @@ Rule ID | Missing Help Link | Title |
                 {
                     File.WriteAllText(fileWithPath, builder.ToString());
                 }
+
                 return;
 
                 async Task<bool> checkHelpLinkAsync(string helpLink)
@@ -666,7 +668,7 @@ Rule ID | Missing Help Link | Title |
 
             async Task<bool> createGlobalConfigFilesAsync()
             {
-                using var shippedFilesDataBuilder = ArrayBuilder<ReleaseTrackingData>.GetInstance();
+                using var releaseTrackingFilesDataBuilder = ArrayBuilder<ReleaseTrackingData>.GetInstance();
                 using var versionsBuilder = PooledHashSet<Version>.GetInstance();
 
                 // Validate all assemblies exist on disk and can be loaded.
@@ -705,7 +707,19 @@ Rule ID | Missing Help Link | Title |
 
                     var assemblyName = Path.GetFileNameWithoutExtension(assembly);
                     var shippedFile = Path.Combine(assemblyDir, "AnalyzerReleases", assemblyName, ReleaseTrackingHelper.ShippedFileName);
-                    if (File.Exists(shippedFile))
+                    var unshippedFile = Path.Combine(assemblyDir, "AnalyzerReleases", assemblyName, ReleaseTrackingHelper.UnshippedFileName);
+                    var shippedFileExists = File.Exists(shippedFile);
+                    var unshippedFileExists = File.Exists(unshippedFile);
+
+                    if (shippedFileExists ^ unshippedFileExists)
+                    {
+                        var existingFile = shippedFileExists ? shippedFile : unshippedFile;
+                        var nonExistingFile = shippedFileExists ? unshippedFile : shippedFile;
+                        await Console.Error.WriteLineAsync($"Expected both '{shippedFile}' and '{unshippedFile}' to exist or not exist, but '{existingFile}' exists and '{nonExistingFile}' does not exist.").ConfigureAwait(false);
+                        return false;
+                    }
+
+                    if (shippedFileExists)
                     {
                         sawShippedFile = true;
 
@@ -717,14 +731,24 @@ Rule ID | Missing Help Link | Title |
 
                         try
                         {
+                            // Read shipped file
                             using var fileStream = File.OpenRead(shippedFile);
                             var sourceText = SourceText.From(fileStream);
                             var releaseTrackingData = ReleaseTrackingHelper.ReadReleaseTrackingData(shippedFile, sourceText,
-                                onDuplicateEntryInRelease: (_1, _2, _3, _4, line) => throw new Exception($"Duplicate entry in {shippedFile} at {line.LineNumber}: '{line}'"),
-                                onInvalidEntry: (line, _2, _3, _4) => throw new Exception($"Invalid entry in {shippedFile} at {line.LineNumber}: '{line}'"),
+                                onDuplicateEntryInRelease: (_1, _2, _3, _4, line) => throw new InvalidOperationException($"Duplicate entry in {shippedFile} at {line.LineNumber}: '{line}'"),
+                                onInvalidEntry: (line, _2, _3, _4) => throw new InvalidOperationException($"Invalid entry in {shippedFile} at {line.LineNumber}: '{line}'"),
                                 isShippedFile: true);
-                            shippedFilesDataBuilder.Add(releaseTrackingData);
+                            releaseTrackingFilesDataBuilder.Add(releaseTrackingData);
                             versionsBuilder.AddRange(releaseTrackingData.Versions);
+
+                            // Read unshipped file
+                            using var fileStreamUnshipped = File.OpenRead(unshippedFile);
+                            var sourceTextUnshipped = SourceText.From(fileStreamUnshipped);
+                            var releaseTrackingDataUnshipped = ReleaseTrackingHelper.ReadReleaseTrackingData(unshippedFile, sourceTextUnshipped,
+                                onDuplicateEntryInRelease: (_1, _2, _3, _4, line) => throw new InvalidOperationException($"Duplicate entry in {unshippedFile} at {line.LineNumber}: '{line}'"),
+                                onInvalidEntry: (line, _2, _3, _4) => throw new InvalidOperationException($"Invalid entry in {unshippedFile} at {line.LineNumber}: '{line}'"),
+                                isShippedFile: false);
+                            releaseTrackingFilesDataBuilder.Add(releaseTrackingDataUnshipped);
                         }
 #pragma warning disable CA1031 // Do not catch general exception types
                         catch (Exception ex)
@@ -744,38 +768,59 @@ Rule ID | Missing Help Link | Title |
 
                 if (versionsBuilder.Count > 0)
                 {
-                    var shippedFilesData = shippedFilesDataBuilder.ToImmutable();
+                    var releaseTrackingData = releaseTrackingFilesDataBuilder.ToImmutableArray();
 
-                    // Generate global analyzer config files for each shipped version, if required.
+                    // Generate global analyzer config files for each shipped version.
                     foreach (var version in versionsBuilder)
                     {
-                        var analysisLevelVersionString = GetNormalizedVersionStringForEditorconfigFileNameSuffix(version);
-
-                        foreach (var analysisMode in Enum.GetValues(typeof(AnalysisMode)))
-                        {
-                            CreateGlobalConfig(version, analysisLevelVersionString, (AnalysisMode)analysisMode!, shippedFilesData, category: null);
-                            foreach (var category in categories)
-                            {
-                                CreateGlobalConfig(version, analysisLevelVersionString, (AnalysisMode)analysisMode!, shippedFilesData, category);
-                            }
-                        }
+                        CreateGlobalConfigsForVersion(version, isShippedVersion: true, releaseTrackingData);
                     }
+
+                    // Generate global analyzer config files for unshipped version.
+                    // See https://github.com/dotnet/roslyn-analyzers/issues/6247 for details.
+
+                    // Use 'unshippedVersion = maxShippedVersion + 1' for unshipped data.
+                    var maxShippedVersion = versionsBuilder.Max();
+                    var unshippedVersion = new Version(maxShippedVersion!.Major + 1, maxShippedVersion.Minor);
+                    CreateGlobalConfigsForVersion(unshippedVersion, isShippedVersion: false, releaseTrackingData);
                 }
 
                 return true;
 
                 // Local functions.
+                void CreateGlobalConfigsForVersion(
+                    Version version,
+                    bool isShippedVersion,
+                    ImmutableArray<ReleaseTrackingData> releaseTrackingData)
+                {
+                    var analysisLevelVersionString = GetNormalizedVersionStringForEditorconfigFileNameSuffix(version);
+
+                    foreach (var warnAsError in new[] { true, false })
+                    {
+                        foreach (var analysisMode in Enum.GetValues(typeof(AnalysisMode)))
+                        {
+                            CreateGlobalConfig(version, isShippedVersion, analysisLevelVersionString, (AnalysisMode)analysisMode!, warnAsError, releaseTrackingData, category: null);
+                            foreach (var category in categories!)
+                            {
+                                CreateGlobalConfig(version, isShippedVersion, analysisLevelVersionString, (AnalysisMode)analysisMode!, warnAsError, releaseTrackingData, category);
+                            }
+                        }
+                    }
+                }
 
                 void CreateGlobalConfig(
                     Version version,
+                    bool isShippedVersion,
                     string analysisLevelVersionString,
                     AnalysisMode analysisMode,
-                    ImmutableArray<ReleaseTrackingData> shippedFilesData,
+                    bool warnAsError,
+                    ImmutableArray<ReleaseTrackingData> releaseTrackingData,
                     string? category)
                 {
                     var analysisLevelPropName = "AnalysisLevel";
                     var title = $"Rules from '{version}' release with '{analysisMode}' analysis mode";
                     var description = $"Rules with enabled-by-default state from '{version}' release with '{analysisMode}' analysis mode. Rules that are first released in a version later than '{version}' are disabled.";
+
                     if (category != null)
                     {
                         analysisLevelPropName += category;
@@ -783,17 +828,27 @@ Rule ID | Missing Help Link | Title |
                         description = $"'{category}' {description}";
                     }
 
+#pragma warning disable CA1308 // Normalize strings to uppercase
+                    var globalconfigFileName = $"{analysisLevelPropName}_{analysisLevelVersionString}_{analysisMode!.ToString()!.ToLowerInvariant()}";
+#pragma warning restore CA1308 // Normalize strings to uppercase
+
+                    if (warnAsError)
+                    {
+                        globalconfigFileName += "_warnaserror";
+                        title += " escalated to 'error' severity";
+                        description += " Enabled rules with 'warning' severity are escalated to 'error' severity to respect 'CodeAnalysisTreatWarningsAsErrors' MSBuild property.";
+                    }
+
                     CreateGlobalconfig(
                         analyzerGlobalconfigsDir,
-#pragma warning disable CA1308 // Normalize strings to uppercase
-                                $"{analysisLevelPropName}_{analysisLevelVersionString}_{analysisMode!.ToString()!.ToLowerInvariant()}.editorconfig",
-#pragma warning restore CA1308 // Normalize strings to uppercase
-                                    title,
+                        $"{globalconfigFileName}.globalconfig",
+                        title,
                         description,
+                        warnAsError,
                         analysisMode,
                         category,
                         allRulesById,
-                        (shippedFilesData, version));
+                        (releaseTrackingData, version, isShippedVersion));
                 }
 
                 static string GetNormalizedVersionStringForEditorconfigFileNameSuffix(Version version)
@@ -1119,36 +1174,41 @@ Rule ID | Missing Help Link | Title |
 
         private static void CreateGlobalconfig(
             string folder,
-            string editorconfigFileName,
-            string editorconfigTitle,
-            string editorconfigDescription,
+            string fileName,
+            string title,
+            string description,
+            bool warnAsError,
             AnalysisMode analysisMode,
             string? category,
             SortedList<string, DiagnosticDescriptor> sortedRulesById,
-            (ImmutableArray<ReleaseTrackingData> shippedFiles, Version version) shippedReleaseData)
+            (ImmutableArray<ReleaseTrackingData> releaseTrackingData, Version version, bool isShippedVersion) releaseTrackingDataAndVersion)
         {
-            Debug.Assert(editorconfigFileName.EndsWith(".editorconfig", StringComparison.Ordinal));
+            Debug.Assert(fileName.EndsWith(".globalconfig", StringComparison.Ordinal));
 
             var text = GetGlobalconfigText(
-                editorconfigTitle,
-                editorconfigDescription,
+                title,
+                description,
+                warnAsError,
                 analysisMode,
                 category,
                 sortedRulesById,
-                shippedReleaseData);
+                releaseTrackingDataAndVersion);
             var directory = Directory.CreateDirectory(folder);
-            var editorconfigFilePath = Path.Combine(directory.FullName, editorconfigFileName.ToLowerInvariant());
-            File.WriteAllText(editorconfigFilePath, text);
+#pragma warning disable CA1308 // Normalize strings to uppercase - Need to use 'ToLowerInvariant' for file names in non-Windows platforms
+            var configFilePath = Path.Combine(directory.FullName, fileName.ToLowerInvariant());
+#pragma warning restore CA1308 // Normalize strings to uppercase
+            File.WriteAllText(configFilePath, text);
             return;
 
             // Local functions
             static string GetGlobalconfigText(
-                string editorconfigTitle,
-                string editorconfigDescription,
+                string title,
+                string description,
+                bool warnAsError,
                 AnalysisMode analysisMode,
                 string? category,
                 SortedList<string, DiagnosticDescriptor> sortedRulesById,
-                (ImmutableArray<ReleaseTrackingData> shippedFiles, Version version)? shippedReleaseData)
+                (ImmutableArray<ReleaseTrackingData> releaseTrackingData, Version version, bool isShippedVersion)? releaseTrackingDataAndVersion)
             {
                 var result = new StringBuilder();
                 StartGlobalconfig();
@@ -1159,8 +1219,8 @@ Rule ID | Missing Help Link | Title |
                 {
                     result.AppendLine(@"# NOTE: Requires **VS2019 16.7** or later");
                     result.AppendLine();
-                    result.AppendLine($@"# {editorconfigTitle}");
-                    result.AppendLine($@"# Description: {editorconfigDescription}");
+                    result.AppendLine($@"# {title}");
+                    result.AppendLine($@"# Description: {description}");
                     result.AppendLine();
                     result.AppendLine($@"is_global = true");
                     result.AppendLine();
@@ -1199,6 +1259,11 @@ Rule ID | Missing Help Link | Title |
                         }
 
                         var (isEnabledByDefault, severity) = GetEnabledByDefaultAndSeverity(rule, analysisMode);
+                        if (warnAsError && severity == DiagnosticSeverity.Warning && isEnabledByDefault)
+                        {
+                            severity = DiagnosticSeverity.Error;
+                        }
+
                         if (rule.IsEnabledByDefault == isEnabledByDefault &&
                             severity == rule.DefaultSeverity)
                         {
@@ -1257,14 +1322,16 @@ Rule ID | Missing Help Link | Title |
                             effectiveSeverity = DiagnosticSeverity.Warning;
                         }
 
-                        if (shippedReleaseData != null)
+                        if (releaseTrackingDataAndVersion != null)
                         {
                             isEnabledByDefault = isEnabledRuleForNonDefaultAnalysisMode;
-                            var maxVersion = shippedReleaseData.Value.version;
+                            var maxVersion = releaseTrackingDataAndVersion.Value.isShippedVersion ?
+                                releaseTrackingDataAndVersion.Value.version :
+                                ReleaseTrackingHelper.UnshippedVersion;
                             var foundReleaseTrackingEntry = false;
-                            foreach (var shippedFile in shippedReleaseData.Value.shippedFiles)
+                            foreach (var releaseTrackingData in releaseTrackingDataAndVersion.Value.releaseTrackingData)
                             {
-                                if (shippedFile.TryGetLatestReleaseTrackingLine(rule.Id, maxVersion, out _, out var releaseTrackingLine))
+                                if (releaseTrackingData.TryGetLatestReleaseTrackingLine(rule.Id, maxVersion, out _, out var releaseTrackingLine))
                                 {
                                     foundReleaseTrackingEntry = true;
 
@@ -1400,8 +1467,14 @@ $@"<Project>{GetCommonContents(packageName, categories)}{GetPackageSpecificConte
       <_GlobalAnalyzerConfigAnalysisMode_{trimmedPackageName} Condition=""'$(_GlobalAnalyzerConfigAnalysisMode_{trimmedPackageName})' == 'AllDisabledByDefault'"">{nameof(AnalysisMode.None)}</_GlobalAnalyzerConfigAnalysisMode_{trimmedPackageName}>
       <_GlobalAnalyzerConfigAnalysisMode_{trimmedPackageName} Condition=""'$(_GlobalAnalyzerConfigAnalysisMode_{trimmedPackageName})' == ''"">{nameof(AnalysisMode.Default)}</_GlobalAnalyzerConfigAnalysisMode_{trimmedPackageName}>
 
+      <!-- Default 'EffectiveCodeAnalysisTreatWarningsAsErrors' to 'CodeAnalysisTreatWarningsAsErrors' for escalating relevant code analysis warnings to errors. -->
+      <!-- We use a separate property to allow users to override 'CodeAnalysisTreatWarningsAsErrors' implementation from .NET7 or older SDK, which had a known issue: https://github.com/dotnet/roslyn-analyzers/issues/6281 -->
+      <EffectiveCodeAnalysisTreatWarningsAsErrors Condition=""'$(EffectiveCodeAnalysisTreatWarningsAsErrors)' == ''"">$(CodeAnalysisTreatWarningsAsErrors)</EffectiveCodeAnalysisTreatWarningsAsErrors>
+      <!-- Choose GlobalAnalyzerConfig file with '_warnaserror' suffix if 'EffectiveCodeAnalysisTreatWarningsAsErrors' is 'true'. -->
+      <_GlobalAnalyzerConfigFileName_{trimmedPackageName}_WarnAsErrorSuffix Condition=""'$(EffectiveCodeAnalysisTreatWarningsAsErrors)' == 'true'"">_warnaserror</_GlobalAnalyzerConfigFileName_{trimmedPackageName}_WarnAsErrorSuffix>
+
       <!-- GlobalAnalyzerConfig file name based on user specified package version '{packageVersionPropName}', if any. We replace '.' with '_' to map the version string to file name suffix. -->
-      <_GlobalAnalyzerConfigFileName_{trimmedPackageName} Condition=""'$({packageVersionPropName})' != ''"">{analysisLevelPropName}_$({packageVersionPropName}.Replace(""."",""_""))_$(_GlobalAnalyzerConfigAnalysisMode_{trimmedPackageName}).editorconfig</_GlobalAnalyzerConfigFileName_{trimmedPackageName}>
+      <_GlobalAnalyzerConfigFileName_{trimmedPackageName} Condition=""'$({packageVersionPropName})' != ''"">{analysisLevelPropName}_$({packageVersionPropName}.Replace(""."",""_""))_$(_GlobalAnalyzerConfigAnalysisMode_{trimmedPackageName})$(_GlobalAnalyzerConfigFileName_{trimmedPackageName}_WarnAsErrorSuffix).globalconfig</_GlobalAnalyzerConfigFileName_{trimmedPackageName}>
       <_GlobalAnalyzerConfigFileName_{trimmedPackageName}>$(_GlobalAnalyzerConfigFileName_{trimmedPackageName}.ToLowerInvariant())</_GlobalAnalyzerConfigFileName_{trimmedPackageName}>
 
       <_GlobalAnalyzerConfigDir_{trimmedPackageName} Condition=""'$(_GlobalAnalyzerConfigDir_{trimmedPackageName})' == ''"">$(MSBuildThisFileDirectory)config</_GlobalAnalyzerConfigDir_{trimmedPackageName}>
@@ -1450,10 +1523,9 @@ $@"<Project>{GetCommonContents(packageName, categories)}{GetPackageSpecificConte
 
       <!-- {effectiveAnalysisLevelPropName} is used to differentiate from user specified strings (such as 'none')
            and an implied numerical option (such as '4') -->
-      <!-- TODO: Remove hard-coded constants such as 4.0, 5.0 and 6.0 used below once these are exposed as properties from the SDK -->
-      <{effectiveAnalysisLevelPropName} Condition=""'$({analysisLevelPropName})' == 'none' or '$({analysisLevelPrefixPropName})' == 'none'"">4.0</{effectiveAnalysisLevelPropName}>
-      <{effectiveAnalysisLevelPropName} Condition=""'$({analysisLevelPropName})' == 'latest' or '$({analysisLevelPrefixPropName})' == 'latest'"">6.0</{effectiveAnalysisLevelPropName}>
-      <{effectiveAnalysisLevelPropName} Condition=""'$({analysisLevelPropName})' == 'preview' or '$({analysisLevelPrefixPropName})' == 'preview'"">7.0</{effectiveAnalysisLevelPropName}>
+      <{effectiveAnalysisLevelPropName} Condition=""'$({analysisLevelPropName})' == 'none' or '$({analysisLevelPrefixPropName})' == 'none'"">$(_NoneAnalysisLevel)</{effectiveAnalysisLevelPropName}>
+      <{effectiveAnalysisLevelPropName} Condition=""'$({analysisLevelPropName})' == 'latest' or '$({analysisLevelPrefixPropName})' == 'latest'"">$(_LatestAnalysisLevel)</{effectiveAnalysisLevelPropName}>
+      <{effectiveAnalysisLevelPropName} Condition=""'$({analysisLevelPropName})' == 'preview' or '$({analysisLevelPrefixPropName})' == 'preview'"">$(_PreviewAnalysisLevel)</{effectiveAnalysisLevelPropName}>
 
       <!-- Set {effectiveAnalysisLevelPropName} to the value of {analysisLevelPropName} if it is a version number -->
       <{effectiveAnalysisLevelPropName} Condition=""'$({effectiveAnalysisLevelPropName})' == '' And
@@ -1541,30 +1613,31 @@ $@"<Project>{GetCommonContents(packageName, categories)}{GetPackageSpecificConte
             {
                 return $@"
   <!--
-    Design-time target to handle 'CodeAnalysisTreatWarningsAsErrors' for the CA rule ids implemented in this package.
-    Note that similar 'WarningsNotAsErrors' and 'WarningsAsErrors'
-    property groups are present in the generated props file to ensure this functionality on command line builds.
+    Design-time target to handle 'CodeAnalysisTreatWarningsAsErrors = false' for the CA rule ids implemented in this package.
+    Note that a similar 'WarningsNotAsErrors' property group is present in the generated props file to ensure this functionality on command line builds.
   -->
   <Target Name=""_CodeAnalysisTreatWarningsAsErrors"" BeforeTargets=""CoreCompile"" Condition=""'$(DesignTimeBuild)' == 'true' OR '$(BuildingProject)' != 'true'"">
     <PropertyGroup>
-      <WarningsNotAsErrors Condition=""'$(CodeAnalysisTreatWarningsAsErrors)' == 'false'"">$(WarningsNotAsErrors);$(CodeAnalysisRuleIds)</WarningsNotAsErrors>
-	  <WarningsAsErrors Condition=""'$(CodeAnalysisTreatWarningsAsErrors)' == 'true' and '$(TreatWarningsAsErrors)' != 'true'"">$(WarningsAsErrors);$(CodeAnalysisRuleIds)</WarningsAsErrors>
+      <EffectiveCodeAnalysisTreatWarningsAsErrors Condition=""'$(EffectiveCodeAnalysisTreatWarningsAsErrors)' == ''"">$(CodeAnalysisTreatWarningsAsErrors)</EffectiveCodeAnalysisTreatWarningsAsErrors>
+      <WarningsNotAsErrors Condition=""'$(EffectiveCodeAnalysisTreatWarningsAsErrors)' == 'false' and '$(TreatWarningsAsErrors)' == 'true'"">$(WarningsNotAsErrors);$(CodeAnalysisRuleIds)</WarningsNotAsErrors>
     </PropertyGroup>
   </Target>
 ";
             }
 
+            const string AddAllResxFilesAsAdditionalFilesTarget = @"  <!-- Target to add all 'EmbeddedResource' files with '.resx' extension as analyzer additional files -->
+  <Target Name=""AddAllResxFilesAsAdditionalFiles"" BeforeTargets=""GenerateMSBuildEditorConfigFileCore;CoreCompile"" Condition=""'@(EmbeddedResource)' != '' AND '$(SkipAddAllResxFilesAsAdditionalFiles)' != 'true'"">
+    <ItemGroup>
+      <EmbeddedResourceWithResxExtension Include=""@(EmbeddedResource)"" Condition=""'%(Extension)' == '.resx'"" />
+      <AdditionalFiles Include=""@(EmbeddedResourceWithResxExtension)"" />
+    </ItemGroup>
+  </Target>";
+
             static string GetPackageSpecificContents(string packageName)
                 => packageName switch
                 {
-                    CodeAnalysisAnalyzersPackageName => @"
-  <!-- Target to add all 'EmbeddedResource' files with '.resx' extension as analyzer additional files -->
-  <Target Name=""AddAllResxFilesAsAdditionalFiles"" BeforeTargets=""CoreCompile"" Condition=""'@(EmbeddedResource)' != '' AND '$(SkipAddAllResxFilesAsAdditionalFiles)' != 'true'"">
-    <ItemGroup>
-      <EmbeddedResourceWithResxExtension Include=""@(EmbeddedResource)"" Condition=""'%(Extension)' == '.resx'"" />
-      <AdditionalFiles Include=""%(EmbeddedResourceWithResxExtension.Identity)"" />
-    </ItemGroup>
-  </Target>
+                    CodeAnalysisAnalyzersPackageName => $@"
+{AddAllResxFilesAsAdditionalFilesTarget}
 
   <!-- Workaround for https://github.com/dotnet/roslyn/issues/4655 -->
   <ItemGroup Condition=""Exists('$(MSBuildProjectDirectory)\AnalyzerReleases.Shipped.md')"" >
@@ -1597,11 +1670,31 @@ $@"<Project>{GetCommonContents(packageName, categories)}{GetPackageSpecificConte
                     NetAnalyzersPackageName => $@"
   <!-- Target to report a warning when SDK NetAnalyzers version is higher than the referenced NuGet NetAnalyzers version -->
   <Target Name=""_ReportUpgradeNetAnalyzersNuGetWarning"" BeforeTargets=""CoreCompile"" Condition=""'$(_SkipUpgradeNetAnalyzersNuGetWarning)' != 'true' "">
-    <Warning Text =""The .NET SDK has newer analyzers with version '$({NetAnalyzersSDKAssemblyVersionPropertyName})' than what version '$({NetAnalyzersNugetAssemblyVersionPropertyName})' of '{NetAnalyzersPackageName}' package provides. Update or remove this package reference.""
+    <Warning Text =""The .NET SDK has newer analyzers with version '$({NetAnalyzersSDKAssemblyVersionPropertyName})' than what version '$({NetAnalyzersNugetAssemblyVersionPropertyName})' of '{NetAnalyzersPackageName}' package provides. Update or remove this package reference. You can suppress this warning by setting the MSBuild property '_SkipUpgradeNetAnalyzersNuGetWarning' to 'true'.""
              Condition=""'$({NetAnalyzersNugetAssemblyVersionPropertyName})' != '' AND
                          '$({NetAnalyzersSDKAssemblyVersionPropertyName})' != '' AND
                           $({NetAnalyzersNugetAssemblyVersionPropertyName}) &lt; $({NetAnalyzersSDKAssemblyVersionPropertyName})""/>
   </Target>",
+                    ResxSourceGeneratorPackageName => $@"
+  <!-- Special handling for embedded resources to show as nested in Solution Explorer -->
+  <ItemGroup>
+    <!-- Localized embedded resources are just dependent on the parent RESX -->
+    <EmbeddedResource Update=""**\*.??.resx;**\*.??-??.resx;**\*.??-????.resx"" DependentUpon=""$([System.IO.Path]::ChangeExtension($([System.IO.Path]::GetFileNameWithoutExtension(%(Identity))), '.resx'))"" />
+  </ItemGroup>
+
+{AddAllResxFilesAsAdditionalFilesTarget}
+
+  <!-- Target to add 'EmbeddedResource' files with '.resx' extension and explicit- or implicit-GenerateSource as analyzer additional files. This only needs to run when SkipAddAllResxFilesAsAdditionalFiles is set to true.
+         Explicit GenerateSource: The embedded resource has GenerateSource=""true""
+         Implicit GenerateSource: The embedded resource did not set GenerateSource, and also does not have WithCulture set to true
+  -->
+  <Target Name=""AddGenerateSourceResxFilesAsAdditionalFiles"" BeforeTargets=""GenerateMSBuildEditorConfigFileCore;CoreCompile"" Condition=""'@(EmbeddedResource)' != '' AND '$(SkipAddAllResxFilesAsAdditionalFiles)' == 'true' AND '$(SkipAddGenerateSourceResxFilesAsAdditionalFiles)' != 'true'"">
+    <ItemGroup>
+      <EmbeddedResourceWithResxExtensionAndGenerateSource Include=""@(EmbeddedResource)"" Condition=""'%(Extension)' == '.resx' AND ('%(EmbeddedResource.GenerateSource)' == 'true' OR ('%(EmbeddedResource.GenerateSource)' != 'false' AND '%(EmbeddedResource.WithCulture)' != 'true'))"" />
+      <AdditionalFiles Include=""@(EmbeddedResourceWithResxExtensionAndGenerateSource)"" />
+    </ItemGroup>
+  </Target>
+",
                     _ => string.Empty,
                 };
         }

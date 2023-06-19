@@ -393,10 +393,10 @@ namespace N
                 .WithArguments(typeName, objectName);
 
         private static DiagnosticResult GetCA1708CSharpResultAt(int line, int column, string typeName, string objectName)
-#pragma warning disable RS0030 // Do not used banned APIs
+#pragma warning disable RS0030 // Do not use banned APIs
             => VerifyCS.Diagnostic()
                 .WithLocation(line, column)
-#pragma warning restore RS0030 // Do not used banned APIs
+#pragma warning restore RS0030 // Do not use banned APIs
                 .WithArguments(typeName, objectName);
 
         private static DiagnosticResult GetCA1708CSharpResultAt(string typeName, string objectName, params (string file, int line, int column)[] locations)
@@ -405,9 +405,9 @@ namespace N
 
             foreach (var (file, line, column) in locations)
             {
-#pragma warning disable RS0030 // Do not used banned APIs
+#pragma warning disable RS0030 // Do not use banned APIs
                 diagnosticResult = diagnosticResult.WithLocation(file, line, column);
-#pragma warning restore RS0030 // Do not used banned APIs
+#pragma warning restore RS0030 // Do not use banned APIs
             }
 
             return diagnosticResult;

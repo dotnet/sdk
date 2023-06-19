@@ -395,7 +395,8 @@ End Namespace
             {
                 var numberOfLines = 0;
                 var index = -Environment.NewLine.Length;
-                while ((index = source.IndexOf(Environment.NewLine, index + Environment.NewLine.Length, StringComparison.Ordinal)) >= 0) numberOfLines++;
+                while ((index = source.IndexOf(Environment.NewLine, index + Environment.NewLine.Length, StringComparison.Ordinal)) >= 0)
+                    numberOfLines++;
                 return numberOfLines;
             }
         }
@@ -438,10 +439,10 @@ End Namespace
                 }
 
                 test.TestState.ExpectedDiagnostics.Add(
-#pragma warning disable RS0030 // Do not used banned APIs
+#pragma warning disable RS0030 // Do not use banned APIs
                     Test.Utilities.CSharpCodeFixVerifier<TAnalyzer, TCodeFix>.Diagnostic(this.DiagnosticId)
                         .WithLocation(line, column)
-#pragma warning restore RS0030 // Do not used banned APIs
+#pragma warning restore RS0030 // Do not use banned APIs
                         .WithArguments(methodName));
 
                 foreach (var fixedSource in fixedSources)
@@ -494,10 +495,10 @@ End Namespace
                 }
 
                 test.TestState.ExpectedDiagnostics.Add(
-#pragma warning disable RS0030 // Do not used banned APIs
+#pragma warning disable RS0030 // Do not use banned APIs
                     Test.Utilities.VisualBasicCodeFixVerifier<TAnalyzer, TCodeFix>.Diagnostic(this.DiagnosticId)
                         .WithLocation(line, column)
-#pragma warning restore RS0030 // Do not used banned APIs
+#pragma warning restore RS0030 // Do not use banned APIs
                         .WithArguments(methodName));
 
                 foreach (var fixedSource in fixedSources)

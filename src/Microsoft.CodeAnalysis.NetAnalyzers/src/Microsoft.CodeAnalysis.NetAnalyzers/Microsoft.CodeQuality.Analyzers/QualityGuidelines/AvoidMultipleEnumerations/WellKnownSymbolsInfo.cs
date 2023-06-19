@@ -9,7 +9,9 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
     /// <summary>
     /// A helper that contains all methods and types symbols could be involved in the enumeration of IEnumerable.
     /// </summary>
+#pragma warning disable CA1815 // Override equals and operator equals on value types
     internal readonly struct WellKnownSymbolsInfo
+#pragma warning restore CA1815 // Override equals and operator equals on value types
     {
         /// <summary>
         /// Methods defer enumerating IEnumerable types.

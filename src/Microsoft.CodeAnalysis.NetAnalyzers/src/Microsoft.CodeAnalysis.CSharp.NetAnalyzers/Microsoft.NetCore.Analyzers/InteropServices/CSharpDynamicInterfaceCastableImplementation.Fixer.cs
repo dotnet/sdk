@@ -70,6 +70,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.InteropServices
                 {
                     return null;
                 }
+
                 var methodDeclaration = generator.MethodDeclaration(method);
                 methodDeclaration = generator.WithModifiers(methodDeclaration, generator.GetModifiers(methodDeclaration).WithIsAbstract(false));
                 return generator.WithStatements(methodDeclaration, defaultMethodBodyStatements);
@@ -90,6 +91,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.InteropServices
                 {
                     propertyDeclaration = generator.WithGetAccessorStatements(propertyDeclaration, defaultMethodBodyStatements);
                 }
+
                 if (property.SetMethod is not null
                     && model.Compilation.IsSymbolAccessibleWithin(property.SetMethod, type))
                 {
@@ -161,8 +163,8 @@ namespace Microsoft.NetCore.CSharp.Analyzers.InteropServices
                     SyntaxFactory.List(
                 new[]
                 {
-                        generator.WithStatements(generator.GetAccessor(eventDeclaration, DeclarationKind.AddAccessor), defaultMethodBodyStatements),
-                        generator.WithStatements(generator.GetAccessor(eventDeclaration, DeclarationKind.RemoveAccessor), defaultMethodBodyStatements),
+                        (AccessorDeclarationSyntax)generator.WithStatements(generator.GetAccessor(eventDeclaration, DeclarationKind.AddAccessor), defaultMethodBodyStatements),
+                        (AccessorDeclarationSyntax)generator.WithStatements(generator.GetAccessor(eventDeclaration, DeclarationKind.RemoveAccessor), defaultMethodBodyStatements),
                 })));
         }
 
@@ -247,7 +249,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.InteropServices
                         var currentInvocation = (InvocationExpressionSyntax)node;
 
                         var newArgList = currentInvocation.ArgumentList.WithArguments(
-                            SyntaxFactory.SingletonSeparatedList(generator.Argument(invocation.target))
+                            SyntaxFactory.SingletonSeparatedList((ArgumentSyntax)generator.Argument(invocation.target))
                                 .AddRange(currentInvocation.ArgumentList.Arguments));
                         return currentInvocation.WithArgumentList(newArgList).WithExpression(SyntaxFactory.IdentifierName(symbol.Name));
                     });

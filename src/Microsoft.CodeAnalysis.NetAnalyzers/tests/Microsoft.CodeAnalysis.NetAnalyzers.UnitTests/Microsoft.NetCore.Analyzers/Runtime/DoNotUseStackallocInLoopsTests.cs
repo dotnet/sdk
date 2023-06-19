@@ -285,5 +285,26 @@ class TestClass {
                 }"
             }.RunAsync();
         }
+
+        [Fact]
+        public async Task Diagnostics_StackallocAsSourceOfForeachVariableLoop()
+        {
+            await new VerifyCS.Test
+            {
+                LanguageVersion = LanguageVersion.CSharp8,
+                TestCode = @"
+                using System;
+                public class C
+                {
+                    public static void Foo()
+                    {
+                        foreach (var (x, y) in stackalloc (double, double)[] { (0, 0) })
+                        {
+                            Span<byte> span = {|CA2014:stackalloc byte[1024]|};
+                        }
+                    }
+                }"
+            }.RunAsync();
+        }
     }
 }

@@ -1,12 +1,12 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Immutable;
-using Microsoft.CodeAnalysis.Diagnostics;
-using Microsoft.CodeAnalysis;
+using System.Diagnostics;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
-using System.Diagnostics;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 {
@@ -72,11 +72,19 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 switch (context.Symbol.Kind)
                 {
                     case SymbolKind.NamedType:
-                        AnalyzeNamedTypeSymbol((INamedTypeSymbol)context.Symbol, allowSingleLetterTypeParameters, context.ReportDiagnostic);
+                        AnalyzeNamedTypeSymbol(
+                            (INamedTypeSymbol)context.Symbol,
+                            allowSingleLetterTypeParameters,
+                            static (context, diagnostic) => context.ReportDiagnostic(diagnostic),
+                            context);
                         break;
 
                     case SymbolKind.Method:
-                        AnalyzeMethodSymbol((IMethodSymbol)context.Symbol, allowSingleLetterTypeParameters, context.ReportDiagnostic);
+                        AnalyzeMethodSymbol(
+                            (IMethodSymbol)context.Symbol,
+                            allowSingleLetterTypeParameters,
+                            static (context, diagnostic) => context.ReportDiagnostic(diagnostic),
+                            context);
                         break;
                 }
             },
@@ -84,22 +92,22 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 SymbolKind.NamedType);
         }
 
-        private static void AnalyzeNamedTypeSymbol(INamedTypeSymbol symbol, bool allowSingleLetterTypeParameters, Action<Diagnostic> addDiagnostic)
+        private static void AnalyzeNamedTypeSymbol<TContext>(INamedTypeSymbol symbol, bool allowSingleLetterTypeParameters, Action<TContext, Diagnostic> addDiagnostic, TContext context)
         {
-            AnalyzeTypeParameters(symbol.TypeParameters, allowSingleLetterTypeParameters, addDiagnostic);
+            AnalyzeTypeParameters(symbol.TypeParameters, allowSingleLetterTypeParameters, addDiagnostic, context);
 
             if (symbol.TypeKind == TypeKind.Interface &&
                 symbol.IsPublic() &&
                 !HasCorrectPrefix(symbol, 'I'))
             {
-                addDiagnostic(symbol.CreateDiagnostic(InterfaceRule, symbol.Name));
+                addDiagnostic(context, symbol.CreateDiagnostic(InterfaceRule, symbol.Name));
             }
         }
 
-        private static void AnalyzeMethodSymbol(IMethodSymbol symbol, bool allowSingleLetterTypeParameters, Action<Diagnostic> addDiagnostic)
-            => AnalyzeTypeParameters(symbol.TypeParameters, allowSingleLetterTypeParameters, addDiagnostic);
+        private static void AnalyzeMethodSymbol<TContext>(IMethodSymbol symbol, bool allowSingleLetterTypeParameters, Action<TContext, Diagnostic> addDiagnostic, TContext context)
+            => AnalyzeTypeParameters(symbol.TypeParameters, allowSingleLetterTypeParameters, addDiagnostic, context);
 
-        private static void AnalyzeTypeParameters(ImmutableArray<ITypeParameterSymbol> typeParameters, bool allowSingleLetterTypeParameters, Action<Diagnostic> addDiagnostic)
+        private static void AnalyzeTypeParameters<TContext>(ImmutableArray<ITypeParameterSymbol> typeParameters, bool allowSingleLetterTypeParameters, Action<TContext, Diagnostic> addDiagnostic, TContext context)
         {
             foreach (var typeParameter in typeParameters)
             {
@@ -111,7 +119,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                         continue;
                     }
 
-                    addDiagnostic(typeParameter.CreateDiagnostic(TypeParameterRule, typeParameter.Name));
+                    addDiagnostic(context, typeParameter.CreateDiagnostic(TypeParameterRule, typeParameter.Name));
                 }
             }
         }

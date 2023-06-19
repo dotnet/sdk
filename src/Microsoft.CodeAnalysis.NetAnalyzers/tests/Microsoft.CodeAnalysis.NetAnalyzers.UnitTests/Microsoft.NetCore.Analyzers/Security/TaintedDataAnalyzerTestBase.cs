@@ -23,13 +23,13 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 
         protected DiagnosticResult GetCSharpResultAt(int sinkLine, int sinkColumn, int sourceLine, int sourceColumn, string sink, string sinkContainingMethod, string source, string sourceContainingMethod)
         {
-#pragma warning disable RS0030 // Do not used banned APIs
-#pragma warning disable RS0030 // Do not used banned APIs
+#pragma warning disable RS0030 // Do not use banned APIs
+#pragma warning disable RS0030 // Do not use banned APIs
             return new DiagnosticResult(Rule).WithArguments(sink, sinkContainingMethod, source, sourceContainingMethod)
                 .WithLocation(sinkLine, sinkColumn)
-#pragma warning restore RS0030 // Do not used banned APIs
+#pragma warning restore RS0030 // Do not use banned APIs
                 .WithLocation(sourceLine, sourceColumn);
-#pragma warning restore RS0030 // Do not used banned APIs
+#pragma warning restore RS0030 // Do not use banned APIs
         }
 
         protected async Task VerifyCSharpWithDependenciesAsync(string source, params DiagnosticResult[] expected)
@@ -78,13 +78,13 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 
         protected DiagnosticResult GetBasicResultAt(int sinkLine, int sinkColumn, int sourceLine, int sourceColumn, string sink, string sinkContainingMethod, string source, string sourceContainingMethod)
         {
-#pragma warning disable RS0030 // Do not used banned APIs
-#pragma warning disable RS0030 // Do not used banned APIs
+#pragma warning disable RS0030 // Do not use banned APIs
+#pragma warning disable RS0030 // Do not use banned APIs
             return new DiagnosticResult(Rule).WithArguments(sink, sinkContainingMethod, source, sourceContainingMethod)
                 .WithLocation(sinkLine, sinkColumn)
-#pragma warning restore RS0030 // Do not used banned APIs
+#pragma warning restore RS0030 // Do not use banned APIs
                 .WithLocation(sourceLine, sourceColumn);
-#pragma warning restore RS0030 // Do not used banned APIs
+#pragma warning restore RS0030 // Do not use banned APIs
         }
 
         protected async Task VerifyVisualBasicWithDependenciesAsync(string source, params DiagnosticResult[] expected)

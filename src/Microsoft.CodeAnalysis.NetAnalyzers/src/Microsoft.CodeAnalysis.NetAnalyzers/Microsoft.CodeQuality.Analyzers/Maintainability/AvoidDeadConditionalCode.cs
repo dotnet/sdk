@@ -74,7 +74,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                     {
                         static bool ShouldAnalyze(IOperation op) =>
                                 (op as IBinaryOperation)?.IsComparisonOperator() == true ||
-                                (op as IInvocationOperation)?.TargetMethod.ReturnType.SpecialType == SpecialType.System_Boolean ||
+                                op is IInvocationOperation { TargetMethod.ReturnType.SpecialType: SpecialType.System_Boolean } ||
                                 op.Kind == OperationKind.Coalesce ||
                                 op.Kind == OperationKind.ConditionalAccess ||
                                 op.Kind == OperationKind.IsNull ||

@@ -3,6 +3,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
+using Test.Utilities;
 using Xunit;
 
 #pragma warning disable CA1305 // Specify IFormatProvider in string.Format
@@ -566,7 +567,7 @@ class C
                                         "(new byte[]{ 0xBA, 0x5E, 0xBA, 0x11, 0xF0, 0x07, 0xBA, 0x11 }).AsMemory(0, 8), new CancellationToken()" };
         }
 
-        [Fact]
+        [WindowsOnlyFact] // https://github.com/dotnet/roslyn/issues/65081
         public Task CS_Fixer_Diagnostic_EnsureSystemNamespaceAutoAddedAsync()
         {
             string originalCode = @"
@@ -584,10 +585,9 @@ class C
     }
 }";
             string fixedCode = @"
+using System;
 using System.IO;
 using System.Threading;
-using System;
-
 class C
 {
     public async void M()
@@ -850,7 +850,7 @@ End Module
                                         @"(New Byte() {&HBA, &H5E, &HBA, &H11, &HF0, &H07, &HBA, &H11}).AsMemory(0, 8), New CancellationToken()" };
         }
 
-        [Fact]
+        [WindowsOnlyFact] // https://github.com/dotnet/roslyn/issues/65081
         public Task VB_Fixer_Diagnostic_EnsureSystemNamespaceAutoAddedAsync()
         {
             string originalCode = @"
@@ -866,10 +866,9 @@ Class C
 End Class
 ";
             string fixedCode = @"
+Imports System
 Imports System.IO
 Imports System.Threading
-Imports System
-
 Class C
     Public Async Sub M()
         Using s As FileStream = File.Open(""path.txt"", FileMode.Open)

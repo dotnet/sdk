@@ -178,7 +178,11 @@ namespace Microsoft.NetCore.Analyzers.Security
                     // graph: The graph
                     void AddLine(ISymbol from, ISymbol to, ConcurrentDictionary<ISymbol, int> degree, ConcurrentDictionary<ISymbol, ConcurrentDictionary<ISymbol, bool>> graph)
                     {
-                        graph.AddOrUpdate(from, new ConcurrentDictionary<ISymbol, bool> { [to] = true }, (k, v) => { v[to] = true; return v; });
+                        graph.AddOrUpdate(from, new ConcurrentDictionary<ISymbol, bool> { [to] = true }, (k, v) =>
+                        {
+                            v[to] = true;
+                            return v;
+                        });
                         degree.AddOrUpdate(from, 1, (k, v) => v + 1);
                     }
 

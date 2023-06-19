@@ -470,7 +470,7 @@ A method in a base type is hidden by an identically named method in a derived ty
 
 ## [CA1062](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1062): Validate arguments of public methods
 
-An externally visible method dereferences one of its reference arguments without verifying whether that argument is null (Nothing in Visual Basic). All reference arguments that are passed to externally visible methods should be checked against null. If appropriate, throw an ArgumentNullException when the argument is null or add a Code Contract precondition asserting non-null argument. If the method is designed to be called only by known assemblies, you should make the method internal.
+An externally visible method dereferences one of its reference arguments without verifying whether that argument is 'null' ('Nothing' in Visual Basic). All reference arguments that are passed to externally visible methods should be checked against 'null'. If appropriate, throw an 'ArgumentNullException' when the argument is 'null'. If the method is designed to be called only by known assemblies, you should make the method internal.
 
 |Item|Value|
 |-|-|
@@ -862,6 +862,54 @@ Invalid entry in code metrics rule specification file.
 |Enabled|False|
 |Severity|Warning|
 |CodeFix|False|
+---
+
+## [CA1510](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1510): Use ArgumentNullException throw helper
+
+Throw helpers are simpler and more efficient than an if block constructing a new exception instance.
+
+|Item|Value|
+|-|-|
+|Category|Maintainability|
+|Enabled|True|
+|Severity|Info|
+|CodeFix|True|
+---
+
+## [CA1511](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1511): Use ArgumentException throw helper
+
+Throw helpers are simpler and more efficient than an if block constructing a new exception instance.
+
+|Item|Value|
+|-|-|
+|Category|Maintainability|
+|Enabled|True|
+|Severity|Info|
+|CodeFix|True|
+---
+
+## [CA1512](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1512): Use ArgumentOutOfRangeException throw helper
+
+Throw helpers are simpler and more efficient than an if block constructing a new exception instance.
+
+|Item|Value|
+|-|-|
+|Category|Maintainability|
+|Enabled|True|
+|Severity|Info|
+|CodeFix|True|
+---
+
+## [CA1513](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1513): Use ObjectDisposedException throw helper
+
+Throw helpers are simpler and more efficient than an if block constructing a new exception instance.
+
+|Item|Value|
+|-|-|
+|Category|Maintainability|
+|Enabled|True|
+|Severity|Info|
+|CodeFix|True|
 ---
 
 ## [CA1700](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1700): Do not name enum values 'Reserved'
@@ -1584,6 +1632,78 @@ It is more efficient to use 'Clear', instead of 'Fill' with default value.
 |CodeFix|True|
 ---
 
+## [CA1856](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1856): Incorrect usage of ConstantExpected attribute
+
+ConstantExpected attribute is not applied correctly on the parameter.
+
+|Item|Value|
+|-|-|
+|Category|Performance|
+|Enabled|True|
+|Severity|Error|
+|CodeFix|False|
+---
+
+## [CA1857](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1857): A constant is expected for the parameter
+
+The parameter expects a constant for optimal performance.
+
+|Item|Value|
+|-|-|
+|Category|Performance|
+|Enabled|True|
+|Severity|Warning|
+|CodeFix|False|
+---
+
+## [CA1858](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1858): Use 'StartsWith' instead of 'IndexOf'
+
+It is both clearer and faster to use 'StartsWith' instead of comparing the result of 'IndexOf' to zero.
+
+|Item|Value|
+|-|-|
+|Category|Performance|
+|Enabled|True|
+|Severity|Info|
+|CodeFix|True|
+---
+
+## [CA1859](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1859): Use concrete types when possible for improved performance
+
+Using concrete types avoids virtual or interface call overhead and enables inlining.
+
+|Item|Value|
+|-|-|
+|Category|Performance|
+|Enabled|True|
+|Severity|Info|
+|CodeFix|False|
+---
+
+## [CA1860](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1860): Avoid using 'Enumerable.Any()' extension method
+
+Prefer using 'IsEmpty', 'Count' or 'Length' properties whichever available, rather than calling 'Enumerable.Any()'. The intent is clearer and it is more performant than using 'Enumerable.Any()' extension method.
+
+|Item|Value|
+|-|-|
+|Category|Performance|
+|Enabled|True|
+|Severity|Info|
+|CodeFix|True|
+---
+
+## [CA1861](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1861): Avoid constant arrays as arguments
+
+Constant arrays passed as arguments are not reused when called repeatedly, which implies a new array is created each time. Consider extracting them to 'static readonly' fields to improve performance if the passed array is not mutated within the called method.
+
+|Item|Value|
+|-|-|
+|Category|Performance|
+|Enabled|True|
+|Severity|Info|
+|CodeFix|True|
+---
+
 ## [CA2000](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2000): Dispose objects before losing scope
 
 If a disposable object is not explicitly disposed before all references to it are out of scope, the object will be disposed at some indeterminate time when the garbage collector runs the finalizer of the object. Because an exceptional event might occur that will prevent the finalizer of the object from running, the object should be explicitly disposed instead.
@@ -1670,7 +1790,7 @@ ValueTasks returned from member invocations are intended to be directly awaited.
 
 ## [CA2013](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2013): Do not use ReferenceEquals with value types
 
-Value type typed arguments are uniquely boxed for each call to this method, therefore the result is always false.
+Value type typed arguments are uniquely boxed for each call to this method, therefore the result can be unexpected.
 
 |Item|Value|
 |-|-|
@@ -1752,15 +1872,33 @@ Number of parameters supplied in the logging message template do not match the n
 |CodeFix|False|
 ---
 
-## [CA2020](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2020): Prevent from behavioral change
+## [CA2020](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2020): Prevent behavioral change
 
-Some built in operators added in .NET 7 behave differently than the user defined operatorsi in .NET 6 and below. Some operators that used to throw in unchecked context while overflowing will not throw anymore unless wrapped within checked context, and some operators that not used to throw in checked context now would throw unless wrapped within unchecked context.
+Some built-in operators added in .NET 7 behave differently when overflowing than did the corresponding user-defined operators in .NET 6 and earlier versions. Some operators that previously threw in an unchecked context now don't throw unless wrapped within a checked context. Also, some operators that did not previously throw in a checked context now throw unless wrapped in an unchecked context.
 
 |Item|Value|
 |-|-|
 |Category|Reliability|
 |Enabled|True|
 |Severity|Info|
+|CodeFix|False|
+---
+
+## [CA2021](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2021): Do not call Enumerable.Cast\<T> or Enumerable.OfType\<T> with incompatible types
+
+Enumerable.Cast\<T> and Enumerable.OfType\<T> require compatible types to function expectedly.  
+
+The generic cast (IL 'unbox.any') used by the sequence returned by Enumerable.Cast\<T> will throw InvalidCastException at runtime on elements of the types specified.  
+
+The generic type check (C# 'is' operator/IL 'isinst') used by Enumerable.OfType\<T> will never succeed with elements of types specified, resulting in an empty sequence.  
+
+Widening and user defined conversions are not supported with generic types.
+
+|Item|Value|
+|-|-|
+|Category|Reliability|
+|Enabled|True|
+|Severity|Warning|
 |CodeFix|False|
 ---
 
@@ -1786,18 +1924,6 @@ A platform invoke member allows partially trusted callers, has a string paramete
 |Enabled|True|
 |Severity|Info|
 |CodeFix|True|
----
-
-## [CA2109](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2109): Review visible event handlers
-
-A public or protected event-handling method was detected. Event-handling methods should not be exposed unless absolutely necessary.
-
-|Item|Value|
-|-|-|
-|Category|Security|
-|Enabled|False|
-|Severity|Warning|
-|CodeFix|False|
 ---
 
 ## [CA2119](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2119): Seal methods that satisfy private interfaces

@@ -7,11 +7,6 @@
         <target state="translated">Bu alana 'NonSerialized' özniteliğini ekleyin.</target>
         <note />
       </trans-unit>
-      <trans-unit id="AddPublicParameterlessConstructor">
-        <source>Add a public constructor that takes zero parameters</source>
-        <target state="translated">Sıfır parametrelerini alan ortak bir oluşturucu ekleyin</target>
-        <note />
-      </trans-unit>
       <trans-unit id="AddSerializableAttributeCodeActionTitle">
         <source>Add Serializable attribute</source>
         <target state="translated">Serileştirilebilir öznitelik ekle</target>
@@ -50,6 +45,26 @@
       <trans-unit id="AttributeStringLiteralsShouldParseCorrectlyTitle">
         <source>Attribute string literals should parse correctly</source>
         <target state="translated">Öznitelik dizesinin sabit değerleri doğru ayrıştırılmalıdır</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidConstArraysCodeFixTitle">
+        <source>Extract to static readonly field</source>
+        <target state="translated">Statik salt okunur alana ayıklayın</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidConstArraysDescription">
+        <source>Constant arrays passed as arguments are not reused when called repeatedly, which implies a new array is created each time. Consider extracting them to 'static readonly' fields to improve performance if the passed array is not mutated within the called method.</source>
+        <target state="new">Constant arrays passed as arguments are not reused when called repeatedly, which implies a new array is created each time. Consider extracting them to 'static readonly' fields to improve performance if the passed array is not mutated within the called method.</target>
+        <note>{Locked="static readonly"}</note>
+      </trans-unit>
+      <trans-unit id="AvoidConstArraysMessage">
+        <source>Prefer 'static readonly' fields over constant array arguments if the called method is called repeatedly and is not mutating the passed array</source>
+        <target state="new">Prefer 'static readonly' fields over constant array arguments if the called method is called repeatedly and is not mutating the passed array</target>
+        <note>{Locked="static readonly"}</note>
+      </trans-unit>
+      <trans-unit id="AvoidConstArraysTitle">
+        <source>Avoid constant arrays as arguments</source>
+        <target state="translated">Sabit dizileri bağımsız değişkenler olarak kullanmaktan sakının</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidStringBuilderPInvokeParametersDescription">
@@ -172,15 +187,70 @@
         <target state="translated">Dispose yöntemleri tarafından SuppressFinalize çağrılmalıdır</target>
         <note />
       </trans-unit>
-      <trans-unit id="CategoryReliability">
-        <source>Reliability</source>
-        <target state="translated">Güvenilirlik</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CommaSeparator">
         <source>, </source>
         <target state="translated">, </target>
         <note>Separator used for separating list of platform names: {API} is only supported on: {‘windows’, ‘browser’, ‘linux’}</note>
+      </trans-unit>
+      <trans-unit id="ConstantExpectedApplicationDescription">
+        <source>ConstantExpected attribute is not applied correctly on the parameter.</source>
+        <target state="translated">ConstantExpected özniteliği parametreye doğru olarak uygulanmadı.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ConstantExpectedApplicationTitle">
+        <source>Incorrect usage of ConstantExpected attribute</source>
+        <target state="translated">ConstantExpected özniteliğinin yanlış kullanımı</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ConstantExpectedAttributExpectedMessage">
+        <source>The ConstantExpected attribute is required for the parameter due to the parent method annotation</source>
+        <target state="translated">Üst yöntem ek açıklaması nedeniyle parametre için ConstantExpected özniteliği gereklidir</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ConstantExpectedIncompatibleConstantTypeMessage">
+        <source>The '{0}' value is not compatible with parameter type of '{1}'</source>
+        <target state="translated">'{0}' değeri '{1}' parametre türüyle uyumlu değil</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ConstantExpectedInvalidBoundsMessage">
+        <source>The '{0}' value does not fit within the parameter value bounds of '{1}' to '{2}'</source>
+        <target state="translated">'{0}' değeri, '{2}' için '{1}' parametre değeri sınırlarına uymuyor</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ConstantExpectedInvalidMessage">
+        <source>The constant is not of the same '{0}' type as the parameter</source>
+        <target state="translated">Sabit, parametreyle aynı '{0}' türünde değil</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ConstantExpectedInvertedRangeMessage">
+        <source>The Min and Max values are inverted</source>
+        <target state="translated">Min ve Max değerleri ters çevrilmiş</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ConstantExpectedNotConstantMessage">
+        <source>The argument should be a constant for optimal performance</source>
+        <target state="translated">En iyi performans için bağımsız değişken sabit olmalıdır</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ConstantExpectedNotSupportedMessage">
+        <source>The '{0}' type is not supported for ConstantExpected attribute</source>
+        <target state="translated">'{0}' türü ConstantExpected özniteliği için desteklenmiyor</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ConstantExpectedOutOfBoundsMessage">
+        <source>The constant does not fit within the value bounds of '{0}' to '{1}'</source>
+        <target state="translated">Sabit, '{1}' için '{0}' değer sınırlarına uymuyor</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ConstantExpectedUsageDescription">
+        <source>The parameter expects a constant for optimal performance.</source>
+        <target state="translated">Parametre, en iyi performans için bir sabit bekliyor.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ConstantExpectedUsageTitle">
+        <source>A constant is expected for the parameter</source>
+        <target state="translated">Parametre için bir sabit bekleniyor</target>
+        <note />
       </trans-unit>
       <trans-unit id="DataSetDataTableInDeserializableObjectGraphMessage">
         <source>When deserializing untrusted input, deserializing a {0} object is insecure. '{1}' either is or derives from {0}</source>
@@ -487,34 +557,45 @@
         <target state="translated">Temsilcilerde belirteç doğrulamasını her zaman atlamayın</target>
         <note />
       </trans-unit>
-      <trans-unit id="DoNotCallDangerousMethodsInDeserialization">
-        <source>Do Not Call Dangerous Methods In Deserialization</source>
-        <target state="translated">Seri Durumdan Çıkarırken Tehlikeli Metotlar Çağırma</target>
-        <note />
-      </trans-unit>
       <trans-unit id="DoNotCallDangerousMethodsInDeserializationDescription">
         <source>Insecure Deserialization is a vulnerability which occurs when untrusted data is used to abuse the logic of an application, inflict a Denial-of-Service (DoS) attack, or even execute arbitrary code upon it being deserialized. It’s frequently possible for malicious users to abuse these deserialization features when the application is deserializing untrusted data which is under their control. Specifically, invoke dangerous methods in the process of deserialization. Successful insecure deserialization attacks could allow an attacker to carry out attacks such as DoS attacks, authentication bypasses, and remote code execution.</source>
         <target state="translated">Güvenli Olmayan Seri Durumdan Çıkarma, güvenilmeyen verilerin bir uygulamanın mantığını kötüye kullanmak, bir Hizmet Reddi (DoS) saldırısı gerçekleştirmek veya seri durumdan çıkarıldığında rastgele kod yürütmek için kullanılması durumunda oluşan bir güvenlik açığıdır. Kötü amaçlı kullanıcıların uygulama kendi denetimlerindeki güvenilmeyen verileri seri durumdan çıkarırken bu seri durumdan çıkarma özelliklerini kötüye kullanması mümkündür. Özellikle, seri durumdan çıkarma işleminde tehlikeli yöntemler çağrılabilir. Başarılı güvenli olmayan seri durumdan çıkarma salgırıları, saldırganların DoS saldırıları gerçekleştirmesine, kimlik doğrulamasını atlamasına ve uzaktan kod yürütmesine olanak sağlar.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCallDangerousMethodsInDeserializationMessage">
-        <source>When deserializing an instance of class {0}, method {1} can call dangerous method {2}. The potential method invocations are: {3}.</source>
-        <target state="translated">{0} sınıfının bir örneği seri durumdan çıkarılırken, {1} metodu tehlikeli {2} metodunu çağırabilir. Olası metot çağırmaları: {3}.</target>
+        <source>When deserializing an instance of class '{0}', method '{1}' can directly or indirectly call dangerous method '{2}'</source>
+        <target state="translated">'{0}' sınıfının bir örneği seri durumdan getirilirken '{1}' metodu tehlikeli olan '{2}' metodunu doğrudan veya dolaylı olarak çağırabilir</target>
         <note />
       </trans-unit>
-      <trans-unit id="DoNotCallOverridableMethodsInConstructorsDescription">
-        <source>When a constructor calls a virtual method, the constructor for the instance that invokes the method may not have executed.</source>
-        <target state="translated">Bir oluşturucu tarafından sanal bir yöntem çağrıldığında, yöntemi tetikleyen örneğin oluşturucusu yürütülmemiş olabilir.</target>
+      <trans-unit id="DoNotCallDangerousMethodsInDeserializationTitle">
+        <source>Do Not Call Dangerous Methods In Deserialization</source>
+        <target state="translated">Seri Durumdan Çıkarırken Tehlikeli Metotlar Çağırma</target>
         <note />
       </trans-unit>
-      <trans-unit id="DoNotCallOverridableMethodsInConstructorsMessage">
-        <source>Do not call overridable methods in constructors</source>
-        <target state="translated">Oluşturucularda geçersiz kılınabilen yöntemleri çağırmayın</target>
+      <trans-unit id="DoNotCallEnumerableCastOrOfTypeWithIncompatibleTypesDescription">
+        <source>Enumerable.Cast&lt;T&gt; and Enumerable.OfType&lt;T&gt; require compatible types to function expectedly.  
+The generic cast (IL 'unbox.any') used by the sequence returned by Enumerable.Cast&lt;T&gt; will throw InvalidCastException at runtime on elements of the types specified.  
+The generic type check (C# 'is' operator/IL 'isinst') used by Enumerable.OfType&lt;T&gt; will never succeed with elements of types specified, resulting in an empty sequence.  
+Widening and user defined conversions are not supported with generic types.</source>
+        <target state="translated">Enumerable.Cast&lt;T&gt; ve Enumerable.OfType&lt;T&gt; metotları, beklendiği gibi çalışmaları için uyumlu türler gerektirir.  
+Enumerable.Cast&lt;T&gt; tarafından döndürülen dizi tarafından kullanılan genel tür dönüştürme (IL 'unbox.any'), belirtilen türdeki öğelerde çalışma zamanında InvalidCastException oluşturur.  
+Enumerable.OfType&lt;T&gt; tarafından kullanılan genel tür denetimi (C# 'is' işleci/IL 'isinst'), belirtilen türdeki öğelerle hiçbir zaman başarılı olamaz ve bu çağrı boş bir dizi ile sonuçlanır.  
+Genel türlerde genişletme ve kullanıcı tanımlı dönüştürmeler desteklenmez.</target>
         <note />
       </trans-unit>
-      <trans-unit id="DoNotCallOverridableMethodsInConstructorsTitle">
-        <source>Do not call overridable methods in constructors</source>
-        <target state="translated">Oluşturucularda geçersiz kılınabilen yöntemleri çağırmayın</target>
+      <trans-unit id="DoNotCallEnumerableCastOrOfTypeWithIncompatibleTypesMessageCast">
+        <source>Type '{0}' is incompatible with type '{1}' and cast attempts will throw InvalidCastException at runtime</source>
+        <target state="translated">'{0}' türü '{1}' türüyle uyumsuz olduğundan tür dönüştürme girişimleri çalışma zamanında InvalidCastException oluşturur</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotCallEnumerableCastOrOfTypeWithIncompatibleTypesMessageOfType">
+        <source>This call will always result in an empty sequence because type '{0}' is incompatible with type '{1}'</source>
+        <target state="translated">'{0}' türü '{1}' türüyle uyumsuz olduğundan bu çağrı her zaman boş bir dizi ile sonuçlanır</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotCallEnumerableCastOrOfTypeWithIncompatibleTypesTitle">
+        <source>Do not call Enumerable.Cast&lt;T&gt; or Enumerable.OfType&lt;T&gt; with incompatible types</source>
+        <target state="translated">Uyumsuz türlerle Enumerable.Cast&lt;T&gt; veya Enumerable.OfType&lt;T&gt; metotlarını çağırmayın</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCallToImmutableCollectionOnAnImmutableCollectionValueMessage">
@@ -525,21 +606,6 @@
       <trans-unit id="DoNotCallToImmutableCollectionOnAnImmutableCollectionValueTitle">
         <source>Do not call ToImmutableCollection on an ImmutableCollection value</source>
         <target state="translated">Bir ImmutableCollection değeri üzerinde ToImmutableCollection çağırmayın</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DoNotCatchCorruptedStateExceptionsInGeneralHandlersDescription">
-        <source>Do not author general catch handlers in code that receives corrupted state exceptions.</source>
-        <target state="translated">Kodda bozuk durum özel durumlarını alan genel yakalama işleyicileri yazmayın.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DoNotCatchCorruptedStateExceptionsInGeneralHandlersMessage">
-        <source>Do not catch corrupted state exceptions in general handlers.</source>
-        <target state="translated">Genel işleyicilerde bozuk durum özel durumlarını yakalamayın.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DoNotCatchCorruptedStateExceptionsInGeneralHandlersTitle">
-        <source>Do not catch corrupted state exceptions in general handlers.</source>
-        <target state="translated">Genel işleyicilerde bozuk durum özel durumlarını yakalamayın.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCreateTaskCompletionSourceWithWrongArgumentsDescription">
@@ -922,16 +988,6 @@
         <target state="translated">{0}, güvenli olmayan bir rastgele sayı üreticidir. Güvenlik için rastgelelik gerekli olduğunda şifreli olarak güvenli rastgele sayı üreticileri kullanın.</target>
         <note />
       </trans-unit>
-      <trans-unit id="DoNotUseMD5">
-        <source>Do not use insecure cryptographic algorithm MD5.</source>
-        <target state="translated">Güvenli olmayan MD5 kriptografik algoritmasını kullanmayın.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DoNotUseMD5Description">
-        <source>This type implements MD5, a cryptographically insecure hashing function. Hash collisions are computationally feasible for the MD5 and HMACMD5 algorithms. Replace this usage with a SHA-2 family hash algorithm (SHA512, SHA384, SHA256).</source>
-        <target state="translated">Bu tür, kriptografik olarak güvenli olmayan bir karma işlevi olan MD5 uygular. MD5 ve HMACMD5 algoritmaları için karma çakışmaları işlemsel olarak uygundur. Bu kullanımı bir SHA-2 aile karma algoritmasıyla (SHA512, SHA384, SHA256) değiştirin.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="DoNotUseObsoleteKDFAlgorithm">
         <source>Do not use obsolete key derivation function</source>
         <target state="translated">Artık kullanılmayan anahtar türetme işlevini kullanma</target>
@@ -963,33 +1019,23 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseReferenceEqualsWithValueTypesComparerMessage">
-        <source>Do not pass an argument with value type '{0}' to the 'Equals' method on 'ReferenceEqualityComparer'. Due to value boxing, this call to 'Equals' will always return 'false'.</source>
-        <target state="translated">'ReferenceEqualityComparer' üzerindeki 'Equals' metoduna '{0}' değer türüne sahip bir bağımsız değişkeni geçirmeyin. Değer kutulamadan dolayı, bu 'Equals' çağrısı her zaman 'false' değerini döndürür.</target>
+        <source>Do not pass an argument with value type '{0}' to the 'Equals' method on 'ReferenceEqualityComparer'. Due to value boxing, this call to 'Equals' can return an unexpected result. Consider using 'EqualityComparer' instead, or pass reference type arguments if you intend to use 'ReferenceEqualityComparer'.</source>
+        <target state="translated">'ReferenceEqualityComparer' üzerinde 'Equals' metoduna '{0}' değer türünde bir bağımsız değişken geçirmeyin. Değer kutulama nedeniyle bu 'Equals' çağrısı beklenmeyen bir sonuç döndürebilir. Yerine 'EqualityComparer' kullanmayı düşünün veya 'ReferenceEqualityComparer' kullanmayı amaçlıyorsanız başvuru türünde bağımsız değişkenler geçirin.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseReferenceEqualsWithValueTypesDescription">
-        <source>Value type typed arguments are uniquely boxed for each call to this method, therefore the result is always false.</source>
-        <target state="translated">Değer türü kullanan bağımsız değişkenler bu metoda yönelik her çağrı için benzersiz şekilde kutulandığından sonuç her zaman false olur.</target>
+        <source>Value type typed arguments are uniquely boxed for each call to this method, therefore the result can be unexpected.</source>
+        <target state="translated">Değer türü kullanan bağımsız değişkenler bu metoda yönelik her çağrı için benzersiz şekilde kutulandığından beklenmeyen sonuçlar alınabilir.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseReferenceEqualsWithValueTypesMethodMessage">
-        <source>Do not pass an argument with value type '{0}' to 'ReferenceEquals'. Due to value boxing, this call to 'ReferenceEquals' will always return 'false'.</source>
-        <target state="translated">'ReferenceEquals' metoduna '{0}' değer türüne sahip bir bağımsız değişkeni geçirmeyin. Değer kutulamadan dolayı, bu 'ReferenceEquals' çağrısı her zaman 'false' değerini döndürür.</target>
+        <source>Do not pass an argument with value type '{0}' to 'ReferenceEquals'. Due to value boxing, this call to 'ReferenceEquals' can return an unexpected result. Consider using 'Equals' instead, or pass reference type arguments if you intend to use 'ReferenceEquals'.</source>
+        <target state="translated">'ReferenceEqualitys' metoduna '{0}' değer türünde bir bağımsız değişken geçirmeyin. Değer kutulama nedeniyle bu 'ReferenceEquals' çağrısı beklenmeyen bir sonuç döndürebilir. Yerine 'Equals' kullanmayı düşünün veya 'ReferenceEqualitys' kullanmayı amaçlıyorsanız başvuru türünde bağımsız değişkenler geçirin.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseReferenceEqualsWithValueTypesTitle">
         <source>Do not use ReferenceEquals with value types</source>
         <target state="translated">ReferenceEquals metodunu değer türleriyle birlikte kullanmayın</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DoNotUseSHA1">
-        <source>Do not use insecure cryptographic algorithm SHA1.</source>
-        <target state="translated">Güvenli olmayan SHA1 kriptografik algoritmasını kullanmayın.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DoNotUseSHA1Description">
-        <source>This type implements SHA1, a cryptographically insecure hashing function. Hash collisions are computationally feasible for the SHA-1 and SHA-0 algorithms. Replace this usage with a SHA-2 family hash algorithm (SHA512, SHA384, SHA256).</source>
-        <target state="translated">Bu tür, kriptografik olarak güvenli olmayan bir karma işlevi olan SHA1 uygular. SHA-1 ve SHA-0 algoritmaları için karma çakışmaları işlemsel olarak uygundur. Bu kullanımı bir SHA-2 aile karma algoritmasıyla (SHA512, SHA384, SHA256) değiştirin.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseStackallocInLoopsDescription">
@@ -1185,21 +1231,6 @@
       <trans-unit id="FieldIsPreviewTypeMessageWithCustomMessagePlaceholder">
         <source>{3} '{0}''s type contains the preview type '{1}' and requires opting into preview features. See {2} for more information.</source>
         <target state="translated">{3} '{0}' türü, '{1}' önizleme türünü içerdiğinden önizleme özelliklerini kabul etmesi gerekir. Daha fazla bilgi için bkz. {2}.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="FinalizersShouldCallBaseClassFinalizerDescription">
-        <source>Finalization must be propagated through the inheritance hierarchy. To guarantee this, types must call their base class Finalize method in their own Finalize method.</source>
-        <target state="translated">Sonlandırma, devralma hiyerarşisine yayılmalıdır. Bunun sağlanması için, türler kendi Finalize yönteminde temel sınıfının Finalize yöntemini çağırmalıdır.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="FinalizersShouldCallBaseClassFinalizerMessage">
-        <source>Finalizers should call base class finalizer</source>
-        <target state="translated">Sonlandırıcılar temel sınıf sonlandırıcısını çağırmalıdır</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="FinalizersShouldCallBaseClassFinalizerTitle">
-        <source>Finalizers should call base class finalizer</source>
-        <target state="translated">Sonlandırıcılar temel sınıf sonlandırıcısını çağırmalıdır</target>
         <note />
       </trans-unit>
       <trans-unit id="ForwardCancellationTokenToInvocationsDescription">
@@ -1812,26 +1843,6 @@
         <target state="translated">{3} '{0}', '{1}' önizleme yöntemini geçersiz kıldığından önizleme özelliklerini kabul etmesi gerekir. Daha fazla bilgi için bkz. {2}.</target>
         <note />
       </trans-unit>
-      <trans-unit id="PInvokeDeclarationsShouldBePortableDescription">
-        <source>This rule evaluates the size of each parameter and the return value of a P/Invoke, and verifies that the size of the parameter is correct when marshaled to unmanaged code on 32-bit and 64-bit operating systems.</source>
-        <target state="translated">Bu kural her bir parametrenin boyutunu ve bir P/Invoke’un dönüş değerini değerlendirir ve parametre boyutunun 32 bit ve 64 bit işletim sistemlerinde yönetilmeyen kodda sıralandığında doğru olduğunu doğrular.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PInvokeDeclarationsShouldBePortableMessageParameter">
-        <source>As it is declared in your code, parameter {0} of P/Invoke {1} will be {2} bytes wide on {3} platforms. This is not correct, as the actual native declaration of this API indicates it should be {4} bytes wide on {3} platforms. Consult the MSDN Platform SDK documentation for help determining what data type should be used instead of {5}.</source>
-        <target state="translated">Kodunuzda bildirildiği gibi, P/Invoke {1} öğesinin {0} parametresi {3} platformlarında {2} bayt genişliğinde olacaktır. Bu API’nin gerçek yerel bildirimi {3} platformlarında {4} genişliğinde olması gerektiğini bildirdiğinden, bu doğru değildir. {5} yerine hangi veri türünün kullanılması gerektiğini belirleme hakkında yardım için MSDN Platform SDK’sı belgelerine başvurun.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PInvokeDeclarationsShouldBePortableMessageReturn">
-        <source>As it is declared in your code, the return type of P/Invoke {0} will be {1} bytes wide on {2} platforms. This is not correct, as the actual native declaration of this API indicates it should be {3} bytes wide on {2} platforms. Consult the MSDN Platform SDK documentation for help determining what data type should be used instead of {4}.</source>
-        <target state="translated">Kodunuzda bildirildiği gibi, P/Invoke {0} öğesinin dönüş türü {2} platformlarında {1} bayt genişliğinde olacaktır. Bu API’nin gerçek yerel bildirimi {2} platformlarında {3} genişliğinde olması gerektiğini bildirdiğinden, bu doğru değildir. {4} yerine hangi veri türünün kullanılması gerektiğini belirleme hakkında yardım için MSDN Platform SDK’sı belgelerine başvurun.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PInvokeDeclarationsShouldBePortableTitle">
-        <source>PInvoke declarations should be portable</source>
-        <target state="translated">PInvoke bildirimleri taşınabilir olmalıdır</target>
-        <note />
-      </trans-unit>
       <trans-unit id="PInvokesShouldNotBeVisibleDescription">
         <source>A public or protected method in a public type has the System.Runtime.InteropServices.DllImportAttribute attribute (also implemented by the Declare keyword in Visual Basic). Such methods should not be exposed.</source>
         <target state="translated">Ortak bir türdeki ortak veya korumalı bir yöntem System.Runtime.InteropServices.DllImportAttribute özniteliğine sahip (ayrıca Visual Basic içinde Declare anahtar sözcüğü tarafından uygulanır). Bu tür yöntemler açığa çıkarılmamalıdır.</target>
@@ -1967,6 +1978,16 @@
         <target state="translated">'Substring' yerine 'AsSpan' tercih edin</target>
         <note />
       </trans-unit>
+      <trans-unit id="PreferCountOverAnyCodeFixTitle">
+        <source>Use 'Count' check instead of 'Any()'</source>
+        <target state="translated">'Any()' yerine 'Count' denetimi kullanın</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferCountOverAnyMessage">
+        <source>Prefer comparing 'Count' to 0 rather than using 'Any()', both for clarity and for performance</source>
+        <target state="translated">Hem kolay anlaşılırlık hem de performans için 'Count' değerini 'Any()' yerine 0 ile karşılaştırmayı tercih edin</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PreferDictionaryContainsKeyCodeFixTitle">
         <source>Use 'ContainsKey'</source>
         <target state="translated">'ContainsKey' kullanın</target>
@@ -2020,6 +2041,36 @@
       <trans-unit id="PreferHashDataOverComputeHashAnalyzerTitle">
         <source>Prefer static 'HashData' method over 'ComputeHash'</source>
         <target state="translated">'ComputeHash' yerine statik 'HashData' yöntemini tercih edin</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferIsEmptyOverAnyCodeFixTitle">
+        <source>Use 'IsEmpty' check instead of 'Any()'</source>
+        <target state="translated">'Any()' yerine 'IsEmpty' denetimi kullan</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferIsEmptyOverAnyMessage">
+        <source>Prefer an 'IsEmpty' check rather than using 'Any()', both for clarity and for performance</source>
+        <target state="translated">Hem kolay anlaşılırlık hem de performans için 'Any()' kullanmak yerine bir 'IsEmpty' denetimi yapmayı tercih edin</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferLengthCountIsEmptyOverAnyDescription">
+        <source>Prefer using 'IsEmpty', 'Count' or 'Length' properties whichever available, rather than calling 'Enumerable.Any()'. The intent is clearer and it is more performant than using 'Enumerable.Any()' extension method.</source>
+        <target state="translated">'Enumerable.Any()' metodunu çağırmak yerine hangisi mevcutsa 'IsEmpty', 'Count' veya 'Length' özelliklerinden birini kullanmayı tercih edin. Amaç daha kolay anlaşılır ve 'Enumerable.Any()' genişletme metoduna göre daha yüksek performans sunar.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferLengthCountIsEmptyOverAnyTitle">
+        <source>Avoid using 'Enumerable.Any()' extension method</source>
+        <target state="translated">'Enumerable.Any()' genişletme metodunu kullanmayın</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferLengthOverAnyCodeFixTitle">
+        <source>Use 'Length' check instead of 'Any()'</source>
+        <target state="translated">'Any()' yerine 'Length' denetimi kullanın</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferLengthOverAnyMessage">
+        <source>Prefer comparing 'Length' to 0 rather than using 'Any()', both for clarity and for performance</source>
+        <target state="translated">Hem kolay anlaşılırlık hem de performans için 'Length' değerini 'Any()' yerine 0 ile karşılaştırmayı tercih edin</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferStreamAsyncMemoryOverloadsDescription">
@@ -2118,8 +2169,8 @@
         <note />
       </trans-unit>
       <trans-unit id="PreventNumericIntPtrUIntPtrBehavioralChangesDescription">
-        <source>Some built in operators added in .NET 7 behave differently than the user defined operatorsi in .NET 6 and below. Some operators that used to throw in unchecked context while overflowing will not throw anymore unless wrapped within checked context, and some operators that not used to throw in checked context now would throw unless wrapped within unchecked context.</source>
-        <target state="translated">.NET 7'ye eklenen bazı yerleşik operatörler, .NET 6 ve altındaki kullanıcı tanımlı operatörlerden farklı davranır. Eskiden taşma sırasında denetlenmemiş bağlamda özel durum oluşturan bazı operatörler, denetlenmiş bağlam içine sarmalanmadığı sürece artık özel durum oluşturmayacak ve denetlenmiş bağlamda eskiden özel durum oluşturmayan bazı operatörler, denetlenmemiş bağlam içine sarmalanmadığı sürece artık özel durum oluşturacak.</target>
+        <source>Some built-in operators added in .NET 7 behave differently when overflowing than did the corresponding user-defined operators in .NET 6 and earlier versions. Some operators that previously threw in an unchecked context now don't throw unless wrapped within a checked context. Also, some operators that did not previously throw in a checked context now throw unless wrapped in an unchecked context.</source>
+        <target state="translated">.NET 7'ye eklenen bazı yerleşik işleçler, .NET 6 ve önceki sürümlerde karşılık gelen kullanıcı tanımlı işleçlerde taşma olduğunda farklı davranır. Daha önce işaretlenmemiş bir bağlamda oluşturulan bazı işleçler, işaretli bir bağlam içinde kaydırılana kadar artık oluşturmaz. Ayrıca, daha önce denetlenmiş bir bağlamda oluşturulmamış bazı işleçler şimdi işaretsiz bir bağlamda sarmalanmadıysa oluşturulur.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreventNumericIntPtrUIntPtrBehavioralChangesOperatorThrowsMessage">
@@ -2128,8 +2179,8 @@
         <note />
       </trans-unit>
       <trans-unit id="PreventNumericIntPtrUIntPtrBehavioralChangesTitle">
-        <source>Prevent from behavioral change</source>
-        <target state="translated">Davranış değişikliğini önleyin</target>
+        <source>Prevent behavioral change</source>
+        <target state="translated">Davranış değişikliğini önle</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvideCorrectArgumentToEnumHasFlagDescription">
@@ -2225,21 +2276,6 @@
       <trans-unit id="ReplaceStringLiteralWithCharLiteralCodeActionTitle">
         <source>Replace string literal with char literal</source>
         <target state="translated">Sabit değerli dizeyi sabit değerli karakter ile değiştirin</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="RethrowToPreserveStackDetailsDescription">
-        <source>An exception is rethrown and the exception is explicitly specified in the throw statement. If an exception is rethrown by specifying the exception in the throw statement, the list of method calls between the original method that threw the exception and the current method is lost.</source>
-        <target state="translated">Bir özel durum yeniden oluşturulur ve oluşturma bildiriminde özel durum açıkça belirtilir. Bir özel durum oluşturma bildiriminde belirtilerek yeniden oluşturulursa, özel durumu oluşturan özgün yöntem ile geçerli yöntem arasındaki yöntem çağrıları listesi kaybolur.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="RethrowToPreserveStackDetailsMessage">
-        <source>Rethrow to preserve stack details</source>
-        <target state="translated">Yığın ayrıntılarını korumak için yeniden oluşturun</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="RethrowToPreserveStackDetailsTitle">
-        <source>Rethrow to preserve stack details</source>
-        <target state="translated">Yığın ayrıntılarını korumak için yeniden oluşturun</target>
         <note />
       </trans-unit>
       <trans-unit id="ReviewCodeForDllInjectionVulnerabilitiesMessage">
@@ -2502,26 +2538,6 @@
         <target state="translated">Platform çağırma üyeleri kısmen güvenilen çağıranlara izin verir, bir dize parametresine sahiptir ve dizeyi açıkça sıralamaz. Bu olası bir güvenlik açığına neden olabilir.</target>
         <note />
       </trans-unit>
-      <trans-unit id="SpecifyMarshalingForPInvokeStringArgumentsMessageField">
-        <source>To reduce security risk, marshal field {0} as Unicode, by setting StructLayout.CharSet on {1} to CharSet.Unicode, or by explicitly marshaling the field as UnmanagedType.LPWStr. If you need to marshal this string as ANSI or system-dependent, use the BestFitMapping attribute to turn best-fit mapping off, and for added security, ensure ThrowOnUnmappableChar is on.</source>
-        <target state="translated">Güvenlik riskini azaltmak için, {1} üzerinde StructLayout.CharSet değerini CharSet.Unicode olarak ayarlayarak ya da alanı belirgin bir şekilde UnmanagedType.LPWStr olarak hazırlayarak {0} alanını Unicode olarak hazırlayın. Bu dizeyi ANSI veya sistem bağımlı olarak sıralamanız gerekirse, en iyi uyan eşlemeyi kapatmak için BestFitMapping özniteliğini kullanın, ve ek güvenlik için ThrowOnUnmappableChar’ın açık olduğundan emin olun.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SpecifyMarshalingForPInvokeStringArgumentsMessageFieldImplicitAnsi">
-        <source>To reduce security risk, marshal field {0} as Unicode, by setting StructLayout.CharSet on {1} to CharSet.Unicode, or by explicitly marshaling the field as UnmanagedType.LPWStr. If you need to marshal this string as ANSI or system-dependent, specify MarshalAs explicitly, use the BestFitMapping attribute to turn best-fit mapping off, and for added security, to turn ThrowOnUnmappableChar on.</source>
-        <target state="translated">Güvenlik riskini azaltmak için, {1} üzerinde StructLayout.CharSet değerini CharSet.Unicode olarak ayarlayarak ya da alanı belirgin bir şekilde UnmanagedType.LPWStr olarak hazırlayarak {0} alanını Unicode olarak hazırlayın. Bu dizeyi ANSI veya sistem bağımlı olarak sıralamanız gerekirse, MarshalAs’i açıkça belirtin, en iyi uyan eşlemeyi kapatmak için BestFitMapping özniteliğini kullanın, ve ek güvenlik için ThrowOnUnmappableChar’ı açın.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SpecifyMarshalingForPInvokeStringArgumentsMessageParameter">
-        <source>To reduce security risk, marshal parameter {0} as Unicode, by setting DllImport.CharSet to CharSet.Unicode, or by explicitly marshaling the parameter as UnmanagedType.LPWStr. If you need to marshal this string as ANSI or system-dependent, set BestFitMapping=false; for added security, also set ThrowOnUnmappableChar=true.</source>
-        <target state="translated">Güvenlik riskini azaltmak için {0} parametresini Unicode olarak sıralamak için DllImport.CharSet'i CharSet.Unicode olarak ayarlayın ya da parametreyi belirgin bir şekilde UnmanagedType.LPWStr olarak sıralayın. Bu dizeyi ANSI ya da sistem bağımlı olarak sıralamanız gerekirse, BestFitMapping=false olarak ayarlayın; ek güvenlik için de ThrowOnUnmappableChar=true olarak ayarlayın.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SpecifyMarshalingForPInvokeStringArgumentsMessageParameterImplicitAnsi">
-        <source>To reduce security risk, marshal parameter {0} as Unicode, by setting DllImport.CharSet to CharSet.Unicode, or by explicitly marshaling the parameter as UnmanagedType.LPWStr. If you need to marshal this string as ANSI or system-dependent, specify MarshalAs explicitly, and set BestFitMapping=false; for added security, also set ThrowOnUnmappableChar=true.</source>
-        <target state="translated">Güvenlik riskini azaltmak için {0} parametresini Unicode olarak sıralamak için DllImport.CharSet'i CharSet.Unicode olarak ayarlayın ya da parametreyi belirgin bir şekilde UnmanagedType.LPWStr olarak sıralayın. Bu dizeyi ANSI ya da sistem bağımlı olarak sıralamanız gerekirse, MarshalAs’i açıkça belirtin, BestFitMapping=false olarak ayarlayın; ek güvenlik için de ThrowOnUnmappableChar=true olarak ayarlayın.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="SpecifyMarshalingForPInvokeStringArgumentsTitle">
         <source>Specify marshaling for P/Invoke string arguments</source>
         <target state="translated">P/Invoke dize bağımsız değişkenleri için sıralamayı belirtme</target>
@@ -2622,6 +2638,21 @@
         <target state="translated">'ThreadStatic' yalnızca statik alanları etkiler</target>
         <note />
       </trans-unit>
+      <trans-unit id="UseArgumentExceptionThrowHelperTitle">
+        <source>Use ArgumentException throw helper</source>
+        <target state="translated">ArgumentException oluşturma yardımcısı kullan</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseArgumentNullExceptionThrowHelperTitle">
+        <source>Use ArgumentNullException throw helper</source>
+        <target state="translated">ArgumentNullException oluşturma yardımcısını kullan</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseArgumentOutOfRangeExceptionThrowHelperTitle">
+        <source>Use ArgumentOutOfRangeException throw helper</source>
+        <target state="translated">ArgumentOutOfRangeException oluşturma yardımcısı kullan</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UseArrayEmpty">
         <source>Use Array.Empty</source>
         <target state="translated">Array.Empty kullanın</target>
@@ -2715,6 +2746,41 @@
       <trans-unit id="UseCancellationTokenThrowIfCancellationRequestedTitle">
         <source>Use 'ThrowIfCancellationRequested'</source>
         <target state="translated">'ThrowIfCancellationRequested' kullanın</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseConcreteTypeDescription">
+        <source>Using concrete types avoids virtual or interface call overhead and enables inlining.</source>
+        <target state="translated">Somut türlerin kullanımı, sanal veya arabirim çağrısı ek yükünü önler ve satır içine alma sağlar.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseConcreteTypeForFieldMessage">
+        <source>Change type of field '{0}' from '{1}' to '{2}' for improved performance</source>
+        <target state="translated">Daha iyi performans için '{1}' olan '{0}' alan türünü '{2}' olarak değiştirin</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseConcreteTypeForLocalMessage">
+        <source>Change type of variable '{0}' from '{1}' to '{2}' for improved performance</source>
+        <target state="translated">Daha iyi performans için '{1}' olan '{0}' değişken türünü '{2}' olarak değiştirin</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseConcreteTypeForMethodReturnMessage">
+        <source>Change return type of method '{0}' from '{1}' to '{2}' for improved performance</source>
+        <target state="translated">Daha performans için '{1}' olan '{0}' metot türünü '{2}' olarak değiştirin</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseConcreteTypeForParameterMessage">
+        <source>Change type of parameter '{0}' from '{1}' to '{2}' for improved performance</source>
+        <target state="translated">Daha iyi performans için '{1}' olan '{0}' parametre türünü '{2}' olarak değiştirin</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseConcreteTypeForPropertyMessage">
+        <source>Change type of property '{0}' from '{1}' to '{2}' for improved performance</source>
+        <target state="translated">Daha iyi performans için '{0}' özelliğinin '{1}' olan türünü '{2}' olarak değiştirin</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseConcreteTypeTitle">
+        <source>Use concrete types when possible for improved performance</source>
+        <target state="translated">Daha iyi performans için mümkün olduğunda somut türler kullanın</target>
         <note />
       </trans-unit>
       <trans-unit id="UseContainerLevelAccessPolicy">
@@ -2837,19 +2903,14 @@
         <target state="translated">Win32 API’sinin yönetilen eşdeğerlerini kullan</target>
         <note />
       </trans-unit>
+      <trans-unit id="UseObjectDisposedExceptionThrowHelperTitle">
+        <source>Use ObjectDisposedException throw helper</source>
+        <target state="translated">ObjectDisposedException oluşturma yardımcısı kullan</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UseOrdinalStringComparisonDescription">
         <source>A string comparison operation that is nonlinguistic does not set the StringComparison parameter to either Ordinal or OrdinalIgnoreCase. By explicitly setting the parameter to either StringComparison.Ordinal or StringComparison.OrdinalIgnoreCase, your code often gains speed, becomes more correct, and becomes more reliable.</source>
         <target state="translated">Dille ilgili olmayan bir dize karşılaştırma işlemi, StringComparison parametresini Ordinal veya OrdinalIgnoreCase olarak ayarlamaz. Parametreyi açıkça StringComparison.Ordinal veya StringComparison.OrdinalIgnoreCase olarak ayarladığınızda kodunuz genellikle hızlanır, daha doğru ve daha güvenilir hale gelir.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UseOrdinalStringComparisonMessageStringComparer">
-        <source>{0} passes '{1}' as the 'StringComparer' parameter to {2}. To perform a non-linguistic comparison, specify 'StringComparer.Ordinal' or 'StringComparer.OrdinalIgnoreCase' instead.</source>
-        <target state="translated">{0}, {2} öğesine 'StringComparer' parametresi olarak '{1}' değerini geçiriyor. Dille ilgili olmayan bir karşılaştırma gerçekleştirmek için bunun yerine 'StringComparer.Ordinal' veya 'StringComparer.OrdinalIgnoreCase' değerini belirtin.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UseOrdinalStringComparisonMessageStringComparison">
-        <source>{0} passes '{1}' as the 'StringComparison' parameter to {2}. To perform a non-linguistic comparison, specify 'StringComparison.Ordinal' or 'StringComparison.OrdinalIgnoreCase' instead.</source>
-        <target state="translated">{0}, {2} öğesine 'StringComparison' parametresi olarak '{1}' değerini geçiriyor. Dille ilgili olmayan bir karşılaştırma gerçekleştirmek için bunun yerine 'StringComparison.Ordinal' veya 'StringComparison.OrdinalIgnoreCase' değerini belirtin.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseOrdinalStringComparisonTitle">
@@ -2927,6 +2988,26 @@
         <target state="translated">'Fill' yerine 'Clear' tercih et</target>
         <note />
       </trans-unit>
+      <trans-unit id="UseStartsWithInsteadOfIndexOfComparisonWithZeroCodeFixTitle">
+        <source>Use 'StartsWith'</source>
+        <target state="translated">'StartsWith' kullanın</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseStartsWithInsteadOfIndexOfComparisonWithZeroDescription">
+        <source>It is both clearer and faster to use 'StartsWith' instead of comparing the result of 'IndexOf' to zero.</source>
+        <target state="translated">'IndexOf' sonucunu sıfır ile karşılaştırmak yerine 'StartsWith' kullanmak hem daha net hem de daha hızlı.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseStartsWithInsteadOfIndexOfComparisonWithZeroMessage">
+        <source>Use 'StartsWith' instead of comparing the result of 'IndexOf' to 0</source>
+        <target state="translated">'IndexOf' sonucunu 0 ile karşılaştırmak yerine 'StartsWith' kullanın</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseStartsWithInsteadOfIndexOfComparisonWithZeroTitle">
+        <source>Use 'StartsWith' instead of 'IndexOf'</source>
+        <target state="translated">'IndexOf' yerine 'StartsWith' kullanın</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UseStringEqualsOverStringCompareCodeFixTitle">
         <source>Use 'string.Equals'</source>
         <target state="translated">'string.Equals' kullanın</target>
@@ -2980,6 +3061,21 @@
       <trans-unit id="UseStringContainsCharOverloadWithSingleCharactersTitle">
         <source>Use char literal for a single character lookup</source>
         <target state="translated">Tek bir karakter araması için sabit değerli karakter kullanın</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseThrowHelperDescription">
+        <source>Throw helpers are simpler and more efficient than an if block constructing a new exception instance.</source>
+        <target state="translated">Oluşturma yardımcıları, yeni bir özel durum örneği oluşturan bir if bloğundan daha basit ve daha verimlidir.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseThrowHelperFix">
+        <source>Use '{0}.{1}'</source>
+        <target state="translated">'{0}.{1}' kullan</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseThrowHelperMessage">
+        <source>Use '{0}.{1}' instead of explicitly throwing a new exception instance</source>
+        <target state="translated">Açıkça yeni bir özel durum örneği oluşturmak yerine '{0}.{1}' kullanın</target>
         <note />
       </trans-unit>
       <trans-unit id="UseValidPlatformStringDescription">

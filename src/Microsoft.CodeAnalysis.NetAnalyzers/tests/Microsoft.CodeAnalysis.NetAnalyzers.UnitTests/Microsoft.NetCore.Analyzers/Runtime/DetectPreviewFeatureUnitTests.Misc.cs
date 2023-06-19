@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
-using Test.Utilities;
+using Microsoft.CodeAnalysis.Testing;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.CSharp.Analyzers.Runtime.CSharpDetectPreviewFeatureAnalyzer,
@@ -18,7 +18,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         {
             return new VerifyCS.Test
             {
-                ReferenceAssemblies = AdditionalMetadataReferences.Net60,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net60,
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp10,
                 TestState =
                 {
@@ -34,7 +34,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         {
             return new VerifyVB.Test
             {
-                ReferenceAssemblies = AdditionalMetadataReferences.Net60,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net60,
                 LanguageVersion = CodeAnalysis.VisualBasic.LanguageVersion.Latest,
                 TestState =
                 {
@@ -50,7 +50,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         {
             return new VerifyCS.Test
             {
-                ReferenceAssemblies = AdditionalMetadataReferences.Net60,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net60,
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp10,
                 TestState =
                 {
@@ -88,7 +88,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                         csInput
                     }
                 },
-                ReferenceAssemblies = AdditionalMetadataReferences.Net60,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net60,
             };
         }
 

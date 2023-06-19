@@ -32,6 +32,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 // We can't code fix if unsafe code isn't allowed.
                 return;
             }
+
             SyntaxNode root = await context.Document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
 
             SyntaxNode enclosingNode = root.FindNode(context.Span);
@@ -64,6 +65,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                     return i;
                 }
             }
+
             return 0;
         }
 
@@ -102,6 +104,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                     return true;
                 }
             }
+
             if (operation.TargetMethod.Name == "StructureToPtr" && operation.Arguments[0].Value.Type.IsUnmanagedType)
             {
                 editor.ReplaceNode(syntax,
@@ -112,6 +115,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                         operation.Arguments[0].Value.Syntax));
                 return true;
             }
+
             if (operation.TargetMethod.Name == "PtrToStructure")
             {
                 ITypeSymbol type;
@@ -178,6 +182,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                     {
                         return false;
                     }
+
                     editor.ReplaceNode(syntax, replacementNode);
                     return true;
                 }

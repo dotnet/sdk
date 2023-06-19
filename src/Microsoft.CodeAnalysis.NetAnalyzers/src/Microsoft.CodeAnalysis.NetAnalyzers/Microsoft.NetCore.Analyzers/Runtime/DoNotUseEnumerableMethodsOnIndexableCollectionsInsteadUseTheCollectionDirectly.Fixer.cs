@@ -127,7 +127,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             return null;
         }
 
-        [return: NotNullIfNotNull("syntaxNode")]
+        [return: NotNullIfNotNull(nameof(syntaxNode))]
         private protected abstract SyntaxNode? AdjustSyntaxNode(SyntaxNode? syntaxNode);
     }
 }

@@ -63,7 +63,8 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     var symbol = (INamedTypeSymbol)saContext.Symbol;
 
                     // skip public symbols
-                    if (symbol.IsPublic()) return;
+                    if (symbol.IsPublic())
+                        return;
 
                     // only report if base type matches 
                     if (symbol.BaseType != null && exceptionTypes.Contains(symbol.BaseType))

@@ -71,6 +71,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 {
                     newExpression = editor.Generator.Argument(_argumentName, RefKind.None, newExpression);
                 }
+
                 editor.ReplaceNode(_nodeToBeFixed, newExpression);
 
                 return editor.GetChangedDocument();

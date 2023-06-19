@@ -792,6 +792,57 @@ dotnet_code_quality.CA2208.api_surface = public") }
         }
 
         [Fact]
+        public async Task ArgumentNullException_ParameterNameFollowedByPunctuation_DoesNotWarnAsync()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+                public class Class
+                {
+                    public void Test1(string first)
+                    {
+                        throw new System.ArgumentNullException(""first.Length"");
+                    }
+
+                    public void Test2(string first)
+                    {
+                        throw new System.ArgumentNullException(""first[0]"");
+                    }
+                }");
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+               Public Class [MyClass]
+                   Public Sub Test1(first As String)
+                       Throw New System.ArgumentNullException(""first.Length"")
+                   End Sub
+
+                   Public Sub Test2(first As String)
+                       Throw New System.ArgumentNullException(""first(0)"")
+                   End Sub
+               End Class");
+        }
+
+        [Fact]
+        public async Task ArgumentNullException_ParameterNameFollowedByNonPunctuation_WarnsAsync()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+                public class Class
+                {
+                    public void Test(string first)
+                    {
+                        throw new System.ArgumentNullException(""first123"");
+                    }
+                }",
+                GetCSharpIncorrectParameterNameExpectedResult(6, 31, "Test", "first123", "paramName", "ArgumentNullException"));
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+                Public Class [MyClass]
+                    Public Sub Test(first As String)
+                        Throw New System.ArgumentNullException(""first123"")
+                    End Sub
+                End Class",
+                GetBasicIncorrectParameterNameExpectedResult(4, 31, "Test", "first123", "paramName", "ArgumentNullException"));
+        }
+
+        [Fact]
         public async Task ArgumentNullException_VariableUsed_DoesNotWarnAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1043,45 +1094,45 @@ dotnet_code_quality.CA2208.api_surface = public") }
         }
 
         private static DiagnosticResult GetCSharpNoArgumentsExpectedResult(int line, int column, string typeName) =>
-#pragma warning disable RS0030 // Do not used banned APIs
+#pragma warning disable RS0030 // Do not use banned APIs
             VerifyCS.Diagnostic(InstantiateArgumentExceptionsCorrectlyAnalyzer.RuleNoArguments)
                 .WithLocation(line, column)
-#pragma warning restore RS0030 // Do not used banned APIs
+#pragma warning restore RS0030 // Do not use banned APIs
                 .WithArguments(typeName);
 
         private static DiagnosticResult GetBasicNoArgumentsExpectedResult(int line, int column, string typeName) =>
-#pragma warning disable RS0030 // Do not used banned APIs
+#pragma warning disable RS0030 // Do not use banned APIs
             VerifyVB.Diagnostic(InstantiateArgumentExceptionsCorrectlyAnalyzer.RuleNoArguments)
                 .WithLocation(line, column)
-#pragma warning restore RS0030 // Do not used banned APIs
+#pragma warning restore RS0030 // Do not use banned APIs
                 .WithArguments(typeName);
 
         private static DiagnosticResult GetCSharpIncorrectMessageExpectedResult(int line, int column, params string[] args) =>
-#pragma warning disable RS0030 // Do not used banned APIs
+#pragma warning disable RS0030 // Do not use banned APIs
             VerifyCS.Diagnostic(InstantiateArgumentExceptionsCorrectlyAnalyzer.RuleIncorrectMessage)
                 .WithLocation(line, column)
-#pragma warning restore RS0030 // Do not used banned APIs
+#pragma warning restore RS0030 // Do not use banned APIs
                 .WithArguments(args);
 
         private static DiagnosticResult GetBasicIncorrectMessageExpectedResult(int line, int column, params string[] args) =>
-#pragma warning disable RS0030 // Do not used banned APIs
+#pragma warning disable RS0030 // Do not use banned APIs
             VerifyVB.Diagnostic(InstantiateArgumentExceptionsCorrectlyAnalyzer.RuleIncorrectMessage)
                 .WithLocation(line, column)
-#pragma warning restore RS0030 // Do not used banned APIs
+#pragma warning restore RS0030 // Do not use banned APIs
                 .WithArguments(args);
 
         private static DiagnosticResult GetCSharpIncorrectParameterNameExpectedResult(int line, int column, params string[] args) =>
-#pragma warning disable RS0030 // Do not used banned APIs
+#pragma warning disable RS0030 // Do not use banned APIs
             VerifyCS.Diagnostic(InstantiateArgumentExceptionsCorrectlyAnalyzer.RuleIncorrectParameterName)
                 .WithLocation(line, column)
-#pragma warning restore RS0030 // Do not used banned APIs
+#pragma warning restore RS0030 // Do not use banned APIs
                 .WithArguments(args);
 
         private static DiagnosticResult GetBasicIncorrectParameterNameExpectedResult(int line, int column, params string[] args) =>
-#pragma warning disable RS0030 // Do not used banned APIs
+#pragma warning disable RS0030 // Do not use banned APIs
             VerifyVB.Diagnostic(InstantiateArgumentExceptionsCorrectlyAnalyzer.RuleIncorrectParameterName)
                 .WithLocation(line, column)
-#pragma warning restore RS0030 // Do not used banned APIs
+#pragma warning restore RS0030 // Do not use banned APIs
                 .WithArguments(args);
     }
 }

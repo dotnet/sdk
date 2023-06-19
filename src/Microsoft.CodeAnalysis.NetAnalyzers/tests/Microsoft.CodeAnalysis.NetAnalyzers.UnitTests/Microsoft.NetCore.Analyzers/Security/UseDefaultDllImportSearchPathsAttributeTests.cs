@@ -2,6 +2,7 @@
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
 using Xunit;
@@ -543,6 +544,46 @@ class TestClass
 }");
         }
 
+        // Local methods with DllImport and no DllImportSearchPaths should warn
+        [Fact]
+        public async Task Test_LocalMethodWithoutSearchPathsWarns()
+        {
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+using System;
+using System.Runtime.InteropServices;
+
+
+class TestClass
+{
+
+    public void TestMethod()
+    {
+        var x = MessageBox((IntPtr)null, ""asdf"", ""asdf"", 0);
+        return;
+
+        [DllImport(""user32.dll"")]
+        static extern int MessageBox(IntPtr hWnd, String text, String caption, uint type);
+    }
+}"
+                    },
+                    // // Bug - Should warn on the local method
+                    //ExpectedDiagnostics =
+                    //{
+                    //    GetCSharpResultAt(9, 30,
+                    //        UseDefaultDllImportSearchPathsAttribute.DoNotUseUnsafeDllImportSearchPathRule,
+                    //        "UserDirectories"),
+                    //},
+                },
+                LanguageVersion = LanguageVersion.CSharp9,
+            }.RunAsync();
+        }
+
         // [DllImport] is set with an absolute path, which will let the [DefaultDllImportSearchPaths] be ignored.
         [WindowsOnlyFact]
         public async Task Test_DllImportAttributeWithAbsolutePath_DefaultDllImportSearchPaths_NoDiagnosticAsync()
@@ -605,10 +646,10 @@ class TestClass
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column, DiagnosticDescriptor rule, params string[] arguments)
-#pragma warning disable RS0030 // Do not used banned APIs
+#pragma warning disable RS0030 // Do not use banned APIs
             => VerifyCS.Diagnostic(rule)
                 .WithLocation(line, column)
-#pragma warning restore RS0030 // Do not used banned APIs
+#pragma warning restore RS0030 // Do not use banned APIs
                 .WithArguments(arguments);
     }
 }

@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
 using Analyzer.Utilities;
@@ -106,8 +106,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     //      2a. If the local reference is not a type int, bail out.
                     //      2b. If the local reference operation's parent is not a binary operation, add it to "localsToBailOut".
                     // 3. In an operation block end, we check if entries in "variableNameToOperationsMap" exist in "localToBailOut". If an entry is NOT present, we report a diagnostic at that invocation.
-                    PooledConcurrentSet<ILocalSymbol> localsToBailOut = PooledConcurrentSet<ILocalSymbol>.GetInstance();
-                    PooledConcurrentDictionary<ILocalSymbol, IInvocationOperation> variableNameToOperationsMap = PooledConcurrentDictionary<ILocalSymbol, IInvocationOperation>.GetInstance();
+                    TemporarySet<ILocalSymbol> localsToBailOut = TemporarySet<ILocalSymbol>.Empty;
+                    TemporaryDictionary<ILocalSymbol, IInvocationOperation> variableNameToOperationsMap = TemporaryDictionary<ILocalSymbol, IInvocationOperation>.Empty;
 
                     context.RegisterOperationAction(PopulateLocalReferencesSet, OperationKind.LocalReference);
 
@@ -136,7 +136,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                                 return;
                             }
                         }
-                        localsToBailOut.Add(localReference.Local);
+
+                        localsToBailOut.Add(localReference.Local, context.CancellationToken);
                     }
 
                     void AnalyzeInvocationOperation(OperationAnalysisContext context)
@@ -160,11 +161,11 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                         {
                             if (variableInitializer.Parent is IVariableDeclaratorOperation variableDeclaratorOperation)
                             {
-                                variableNameToOperationsMap.TryAdd(variableDeclaratorOperation.Symbol, invocationOperation);
+                                variableNameToOperationsMap.Add(variableDeclaratorOperation.Symbol, invocationOperation, context.CancellationToken);
                             }
                             else if (variableInitializer.Parent is IVariableDeclarationOperation variableDeclarationOperation && variableDeclarationOperation.Declarators.Length == 1)
                             {
-                                variableNameToOperationsMap.TryAdd(variableDeclarationOperation.Declarators[0].Symbol, invocationOperation);
+                                variableNameToOperationsMap.Add(variableDeclarationOperation.Declarators[0].Symbol, invocationOperation, context.CancellationToken);
                             }
                         }
                     }
@@ -181,12 +182,13 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                                 return true;
                             }
                         }
+
                         return false;
                     }
 
                     void OnOperationBlockEnd(OperationBlockAnalysisContext context)
                     {
-                        foreach (var variableNameAndLocation in variableNameToOperationsMap)
+                        foreach (var variableNameAndLocation in variableNameToOperationsMap.NonConcurrentEnumerable)
                         {
                             ILocalSymbol variable = variableNameAndLocation.Key;
                             if (!localsToBailOut.Contains(variable))
@@ -194,6 +196,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                                 context.ReportDiagnostic(variableNameAndLocation.Value.CreateDiagnostic(Rule));
                             }
                         }
+
                         variableNameToOperationsMap.Free(context.CancellationToken);
                         localsToBailOut.Free(context.CancellationToken);
                     }

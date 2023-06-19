@@ -2,9 +2,7 @@
 
 using System;
 using System.Threading.Tasks;
-using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
-using Microsoft.CodeAnalysis.Text;
 using Test.Utilities;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
@@ -283,8 +281,9 @@ End Class"
             }.RunAsync();
         }
 
-        [Theory(Skip = "https://github.com/dotnet/roslyn-analyzers/issues/3494")]
-        [CombinatorialData]
+        [Theory]
+        [InlineData(true, Skip = "https://github.com/dotnet/roslyn-analyzers/issues/3494")]
+        [InlineData(false)]
         public async Task TestConflictingAnalyzerOptionsForPartialsAsync(bool hasConflict)
         {
             var csTest = new VerifyCS.Test
@@ -293,16 +292,20 @@ End Class"
                 {
                     Sources =
                     {
-                        @"public partial interface I { }",
-                        @"public partial interface I { }",
-                    }
+                        { ("/folder1/Test0.cs", @"public partial interface I { }") },
+                        { ("/folder2/Test1.cs", @"public partial interface I { }") },
+                    },
+                    AnalyzerConfigFiles =
+                    {
+                        ("/folder1/.editorconfig", $"[*.cs]" + Environment.NewLine + "dotnet_code_quality.api_surface = public"),
+                        ("/folder2/.editorconfig", $"[*.cs]" + Environment.NewLine + $"dotnet_code_quality.api_surface = {(hasConflict ? "internal" : "public")}"),
+                    },
                 },
-                SolutionTransforms = { ApplyTransform }
             };
 
             if (!hasConflict)
             {
-                csTest.ExpectedDiagnostics.Add(VerifyCS.Diagnostic().WithSpan(@"/folder1/Test0.cs", 1, 26, 1, 27).WithSpan(@"/folder2\Test1.cs", 1, 26, 1, 27));
+                csTest.ExpectedDiagnostics.Add(VerifyCS.Diagnostic().WithSpan(@"/folder1/Test0.cs", 1, 26, 1, 27).WithSpan(@"/folder2/Test1.cs", 1, 26, 1, 27));
             }
 
             await csTest.RunAsync();
@@ -313,15 +316,19 @@ End Class"
                 {
                     Sources =
                     {
-                        @"
+                        ("/folder1/Test0.vb", @"
 Public Partial Interface I
-End Interface",
-                        @"
+End Interface"),
+                        ("/folder2/Test1.vb", @"
 Public Partial Interface I
-End Interface"
+End Interface"),
+                    },
+                    AnalyzerConfigFiles =
+                    {
+                        ("/folder1/.editorconfig", $"[*.vb]" + Environment.NewLine + "dotnet_code_quality.api_surface = public"),
+                        ("/folder2/.editorconfig", $"[*.vb]" + Environment.NewLine + $"dotnet_code_quality.api_surface = {(hasConflict ? "internal" : "public")}"),
                     },
                 },
-                SolutionTransforms = { ApplyTransform }
             };
 
             if (!hasConflict)
@@ -330,49 +337,18 @@ End Interface"
             }
 
             await vbTest.RunAsync();
-            return;
-
-            Solution ApplyTransform(Solution solution, ProjectId projectId)
-            {
-                var project = solution.GetProject(projectId)!;
-                var projectFilePath = project.Language == LanguageNames.CSharp ? @"/Test.csproj" : @"/Test.vbproj";
-                solution = solution.WithProjectFilePath(projectId, projectFilePath);
-
-                var documentExtension = project.Language == LanguageNames.CSharp ? "cs" : "vb";
-                var document1EditorConfig = $"[*.{documentExtension}]" + Environment.NewLine + "dotnet_code_quality.api_surface = public";
-                var document2OptionValue = hasConflict ? "internal" : "public";
-                var document2EditorConfig = $"[*.{documentExtension}]" + Environment.NewLine + $"dotnet_code_quality.api_surface = {document2OptionValue}";
-
-                var document1Folder = $@"/folder1";
-                solution = solution.WithDocumentFilePath(project.DocumentIds[0], $@"{document1Folder}\Test0.{documentExtension}");
-                solution = solution.GetProject(projectId)!
-                    .AddAnalyzerConfigDocument(
-                        ".editorconfig",
-                        SourceText.From(document1EditorConfig),
-                        filePath: $@"{document1Folder}\.editorconfig")
-                    .Project.Solution;
-
-                var document2Folder = $@"/folder2";
-                solution = solution.WithDocumentFilePath(project.DocumentIds[1], $@"{document2Folder}\Test1.{documentExtension}");
-                return solution.GetProject(projectId)!
-                    .AddAnalyzerConfigDocument(
-                        ".editorconfig",
-                        SourceText.From(document2EditorConfig),
-                        filePath: $@"{document2Folder}\.editorconfig")
-                    .Project.Solution;
-            }
         }
 
         private static DiagnosticResult CreateCSharpResult(int line, int col)
-#pragma warning disable RS0030 // Do not used banned APIs
+#pragma warning disable RS0030 // Do not use banned APIs
             => VerifyCS.Diagnostic()
                 .WithLocation(line, col);
-#pragma warning restore RS0030 // Do not used banned APIs
+#pragma warning restore RS0030 // Do not use banned APIs
 
         private static DiagnosticResult CreateBasicResult(int line, int col)
-#pragma warning disable RS0030 // Do not used banned APIs
+#pragma warning disable RS0030 // Do not use banned APIs
             => VerifyVB.Diagnostic()
                 .WithLocation(line, col);
-#pragma warning restore RS0030 // Do not used banned APIs
+#pragma warning restore RS0030 // Do not use banned APIs
     }
 }

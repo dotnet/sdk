@@ -761,6 +761,31 @@ Dim s As String = {expression}";
             };
             return test.RunAsync();
         }
+
+        [Fact]
+        public Task TestSystemImportedFromGlobalUsing()
+        {
+            var test = new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        "global using System;", CSWithBody("var _ = [|foo + bar.Substring(1)|];"),
+                    },
+                },
+                FixedState =
+                {
+                    Sources =
+                    {
+                        "global using System;", CSWithBody("var _ = string.Concat(foo, bar.AsSpan(1));"),
+                    },
+                },
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp10,
+            };
+            return test.RunAsync();
+        }
         #endregion
 
         #region Helpers

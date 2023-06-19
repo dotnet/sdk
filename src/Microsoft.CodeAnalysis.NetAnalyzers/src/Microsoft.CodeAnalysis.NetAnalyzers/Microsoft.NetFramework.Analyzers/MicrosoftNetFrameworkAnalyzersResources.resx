@@ -117,15 +117,6 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="SpecifyMessageBoxOptionsTitle" xml:space="preserve">
-    <value>Specify MessageBoxOptions</value>
-  </data>
-  <data name="SpecifyMessageBoxOptionsDescription" xml:space="preserve">
-    <value>To correctly display a message box for cultures that use a right-to-left reading order, the RightAlign and RtlReading members of the MessageBoxOptions enumeration must be passed to the Show method.</value>
-  </data>
-  <data name="SpecifyMessageBoxOptionsMessage" xml:space="preserve">
-    <value>Specify MessageBoxOptions</value>
-  </data>
   <data name="AvoidDuplicateAcceleratorsTitle" xml:space="preserve">
     <value>Avoid duplicate accelerators</value>
   </data>
@@ -153,15 +144,6 @@
   <data name="DoNotMarkServicedComponentsWithWebMethodMessage" xml:space="preserve">
     <value>Do not mark serviced components with WebMethod</value>
   </data>
-  <data name="MarkWindowsFormsEntryPointsWithStaThreadTitle" xml:space="preserve">
-    <value>Mark Windows Forms entry points with STAThread</value>
-  </data>
-  <data name="MarkWindowsFormsEntryPointsWithStaThreadDescription" xml:space="preserve">
-    <value>STAThreadAttribute indicates that the COM threading model for the application is a single-threaded apartment. This attribute must be present on the entry point of any application that uses Windows Forms; if it is omitted, the Windows components might not work correctly.</value>
-  </data>
-  <data name="MarkWindowsFormsEntryPointsWithStaThreadMessage" xml:space="preserve">
-    <value>Mark Windows Forms entry points with STAThread</value>
-  </data>
   <data name="CallBaseClassMethodsOnISerializableTypesTitle" xml:space="preserve">
     <value>Call base class methods on ISerializable types</value>
   </data>
@@ -170,51 +152,6 @@
   </data>
   <data name="CallBaseClassMethodsOnISerializableTypesMessage" xml:space="preserve">
     <value>Call base class methods on ISerializable types</value>
-  </data>
-  <data name="UseXmlReaderForDataSetReadXmlTitle" xml:space="preserve">
-    <value>Use XmlReader for DataSet ReadXml</value>
-  </data>
-  <data name="UseXmlReaderForDataSetReadXmlDescription" xml:space="preserve">
-    <value>Do not use unsafe overloads of System.Data.DataSet.ReadXml. This API internally enables DTD processing on the XML reader instance used, and uses UrlResolver for resolving external XML entities. The outcome is information disclosure. Content from file system or network shares for the machine processing the XML can be exposed to attacker. In addition, an attacker can use this as a DoS vector.</value>
-  </data>
-  <data name="UseXmlReaderForDataSetReadXmlMessage" xml:space="preserve">
-    <value>Use XmlReader for DataSet ReadXml</value>
-  </data>
-  <data name="UseXmlReaderForDataSetReadXmlSchemaTitle" xml:space="preserve">
-    <value>Use XmlReader for DataSet ReadXmlSchema</value>
-  </data>
-  <data name="UseXmlReaderForDataSetReadXmlSchemaDescription" xml:space="preserve">
-    <value>Do not use unsafe overloads of System.Data.DataSet.ReadXmlSchema. This API internally enables DTD processing on the XML reader instance used, and uses UrlResolver for resolving external XML entities. The outcome is information disclosure. Content from file system or network shares for the machine processing the XML can be exposed to attacker. In addition, an attacker can use this as a DoS vector.</value>
-  </data>
-  <data name="UseXmlReaderForDataSetReadXmlSchemaMessage" xml:space="preserve">
-    <value>Use XmlReader for DataSet ReadXmlSchema</value>
-  </data>
-  <data name="ReviewDataViewCollectionStringTitle" xml:space="preserve">
-    <value>Review DataView CollectionString</value>
-  </data>
-  <data name="ReviewDataViewCollectionStringDescription" xml:space="preserve">
-    <value>Review code to insure that usage of System.Data.DataViewManager.DataViewSettingCollectionString input is sanitized to not contain DTD. Enabling DTD processing on the XML reader and using UrlResolver for resolving external XML entities may lead to information disclosure. Content from file system or network shares for the machine processing the XML can be exposed to attacker. In addition, an attacker can use this as a DoS vector.</value>
-  </data>
-  <data name="ReviewDataViewCollectionStringMessage" xml:space="preserve">
-    <value>Review DataView CollectionString</value>
-  </data>
-  <data name="UseXmlReaderForDataTableReadXmlTitle" xml:space="preserve">
-    <value>Use XmlReader for DataTable ReadXml</value>
-  </data>
-  <data name="UseXmlReaderForDataTableReadXmlDescription" xml:space="preserve">
-    <value>Do not use unsafe overloads of System.Data.DataTable.ReadXml. This API internally enables DTD processing on the XML reader instance used, and uses UrlResolver for resolving external XML entities. The outcome is information disclosure. Content from file system or network shares for the machine processing the XML can be exposed to attacker. In addition, an attacker can use this as a DoS vector.</value>
-  </data>
-  <data name="UseXmlReaderForDataTableReadXmlMessage" xml:space="preserve">
-    <value>Use XmlReader for DataTable ReadXml</value>
-  </data>
-  <data name="UseXmlReaderForDataTableReadXmlSchemaTitle" xml:space="preserve">
-    <value>Use XmlReader for DataTable ReadXmlSchema</value>
-  </data>
-  <data name="UseXmlReaderForDataTableReadXmlSchemaDescription" xml:space="preserve">
-    <value>Checks for usage of an unsafe overload of  System.Data.DataTable.ReadXmlSchema. This API internally enables DTD processing on the XML reader instance used, and uses UrlResolver for resolving external XML entities. The outcome is information disclosure. Content from file system or network shares for the machine processing the XML can be exposed to attacker. In addition, an attacker can use this as a DoS vector.</value>
-  </data>
-  <data name="UseXmlReaderForDataTableReadXmlSchemaMessage" xml:space="preserve">
-    <value>Use XmlReader for DataTable ReadXmlSchema</value>
   </data>
   <data name="DoNotCatchCorruptedStateExceptions" xml:space="preserve">
     <value>Do Not Catch Corrupted State Exceptions</value>
@@ -261,10 +198,6 @@
   </data>
   <data name="DoNotUseDtdProcessingOverloadsMessage" xml:space="preserve">
     <value>Unsafe overload of '{0}' method</value>
-    <comment>CA3075</comment>
-  </data>
-  <data name="DoNotUseDtdProcessingOverloads" xml:space="preserve">
-    <value>Insecure DTD Processing</value>
     <comment>CA3075</comment>
   </data>
   <data name="DoNotUseSetInnerXmlMessage" xml:space="preserve">

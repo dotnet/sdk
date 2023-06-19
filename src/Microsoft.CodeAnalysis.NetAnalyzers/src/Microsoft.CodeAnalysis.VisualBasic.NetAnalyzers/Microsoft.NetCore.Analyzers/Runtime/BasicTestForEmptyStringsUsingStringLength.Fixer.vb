@@ -51,6 +51,7 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Runtime
                     Return memberAccessExpression.Expression
                 End If
             End If
+
             Return Nothing
         End Function
     End Class

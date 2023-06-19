@@ -194,6 +194,21 @@ End Class
 ");
         }
 
+        [Fact]
+        public async Task NoDiagnosticCases_ArrayToImmutableArray()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Collections.Generic;
+using System.Collections.Immutable;
+
+public class C
+{
+    public ImmutableArray<Type> Types = new[] { typeof(int) }.ToImmutableArray();
+}
+");
+        }
+
         #endregion
 
         #region Diagnostic Tests
@@ -338,16 +353,16 @@ End Class
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column, string collectionName)
         {
-#pragma warning disable RS0030 // Do not used banned APIs
+#pragma warning disable RS0030 // Do not use banned APIs
             return VerifyCS.Diagnostic(DoNotCallToImmutableCollectionOnAnImmutableCollectionValueAnalyzer.Rule).WithLocation(line, column).WithArguments($"To{collectionName}", collectionName);
-#pragma warning restore RS0030 // Do not used banned APIs
+#pragma warning restore RS0030 // Do not use banned APIs
         }
 
         private static DiagnosticResult GetBasicResultAt(int line, int column, string collectionName)
         {
-#pragma warning disable RS0030 // Do not used banned APIs
+#pragma warning disable RS0030 // Do not use banned APIs
             return VerifyVB.Diagnostic(DoNotCallToImmutableCollectionOnAnImmutableCollectionValueAnalyzer.Rule).WithLocation(line, column).WithArguments($"To{collectionName}", collectionName);
-#pragma warning restore RS0030 // Do not used banned APIs
+#pragma warning restore RS0030 // Do not use banned APIs
         }
     }
 }

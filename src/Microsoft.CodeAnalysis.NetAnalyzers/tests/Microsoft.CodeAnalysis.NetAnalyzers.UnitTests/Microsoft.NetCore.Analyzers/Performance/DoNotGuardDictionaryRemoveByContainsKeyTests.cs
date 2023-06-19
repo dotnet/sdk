@@ -2,6 +2,7 @@
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
+using Test.Utilities;
 using Xunit;
 
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
@@ -353,6 +354,7 @@ End Namespace";
 
             await VerifyVB.VerifyCodeFixAsync(source, fixedSource);
         }
+
         [Fact]
         public async Task NegatedCondition_ReportsDiagnostic_VB()
         {
@@ -391,6 +393,59 @@ End Namespace";
 
             await VerifyVB.VerifyAnalyzerAsync(source);
         }
+
+        [Fact]
+        [WorkItem(6377, "https://github.com/dotnet/roslyn-analyzers/issues/6377")]
+        public async Task ContainsKeyAndRemoveCalledOnDifferentInstances_NoDiagnostic_CS()
+        {
+            string source = CSUsings + CSNamespaceAndClassStart + @"
+        private readonly Dictionary<string, string> DictionaryField1 = new Dictionary<string, string>();
+        private readonly Dictionary<string, string> DictionaryField2 = new Dictionary<string, string>();
+
+        public Dictionary<string, string> DictionaryProperty1 { get; } = new Dictionary<string, string>();
+
+        public MyClass()
+        {
+            if (DictionaryField2.ContainsKey(""Key""))
+                DictionaryField1.Remove(""Key"");
+
+            if (!DictionaryField1.ContainsKey(""Key""))
+            {
+                DictionaryField2.Remove(""Key"");
+            }
+
+            if (DictionaryProperty1.ContainsKey(""Key""))
+                DictionaryField1.Remove(""Key"");
+
+            if (!DictionaryField1.ContainsKey(""Key""))
+            {
+                DictionaryProperty1.Remove(""Key"");
+            }
+
+            var myDictionaryLocal4 = new Dictionary<string, string>();
+            if (myDictionaryLocal4.ContainsKey(""Key""))
+                DictionaryField1.Remove(""Key"");
+
+            if (!DictionaryField1.ContainsKey(""Key""))
+            {
+                myDictionaryLocal4.Remove(""Key"");
+            }
+        }
+
+        private void RemoveItem(Dictionary<string, string> dictionaryParam)
+        {
+            if (dictionaryParam.ContainsKey(""Key""))
+                DictionaryField1.Remove(""Key"");
+
+            if (!DictionaryField1.ContainsKey(""Key""))
+            {
+                dictionaryParam.Remove(""Key"");
+            }
+        }" + CSNamespaceAndClassEnd;
+
+            await VerifyCS.VerifyAnalyzerAsync(source);
+        }
+
         #endregion
 
         #region Helpers

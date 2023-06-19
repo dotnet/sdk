@@ -26,8 +26,9 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 if (document.Project.CompilationOptions is CSharpCompilationOptions { AllowUnsafe: false })
                 {
                     // We can't code fix if unsafe code isn't allowed.
-                    return await document.GetSyntaxRootAsync(fixAllContext.CancellationToken);
+                    return await document.GetSyntaxRootAsync(fixAllContext.CancellationToken).ConfigureAwait(false);
                 }
+
                 var editor = await DocumentEditor.CreateAsync(document, fixAllContext.CancellationToken).ConfigureAwait(false);
                 SyntaxNode root = await document.GetSyntaxRootAsync(fixAllContext.CancellationToken).ConfigureAwait(false);
 
@@ -47,12 +48,14 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                         {
                             identifierGenerator = scopeMap[block] = new IdentifierGenerator(editor.SemanticModel, block);
                         }
+
                         if (TryRewriteMethodCall(node, editor, identifierGenerator, addRenameAnnotation: false, fixAllContext.CancellationToken))
                         {
                             AddUnsafeModifierToEnclosingMethod(editor, node);
                         }
                     }
                 }
+
                 return editor.GetChangedRoot();
             }
         }

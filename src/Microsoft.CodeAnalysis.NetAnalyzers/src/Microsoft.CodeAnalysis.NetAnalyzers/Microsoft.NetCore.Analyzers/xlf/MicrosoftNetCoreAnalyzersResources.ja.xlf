@@ -7,11 +7,6 @@
         <target state="translated">このフィールドに、'NonSerialized' 属性を追加します。</target>
         <note />
       </trans-unit>
-      <trans-unit id="AddPublicParameterlessConstructor">
-        <source>Add a public constructor that takes zero parameters</source>
-        <target state="translated">0 個のパラメーターを受け取るパブリック コンストラクターを追加する</target>
-        <note />
-      </trans-unit>
       <trans-unit id="AddSerializableAttributeCodeActionTitle">
         <source>Add Serializable attribute</source>
         <target state="translated">Serializable 属性を追加する</target>
@@ -50,6 +45,26 @@
       <trans-unit id="AttributeStringLiteralsShouldParseCorrectlyTitle">
         <source>Attribute string literals should parse correctly</source>
         <target state="translated">属性文字列リテラルは、正しく解析する必要があります</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidConstArraysCodeFixTitle">
+        <source>Extract to static readonly field</source>
+        <target state="translated">静的な読み取り専用フィールドに抽出する</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidConstArraysDescription">
+        <source>Constant arrays passed as arguments are not reused when called repeatedly, which implies a new array is created each time. Consider extracting them to 'static readonly' fields to improve performance if the passed array is not mutated within the called method.</source>
+        <target state="translated">引数として渡された定数配列は、繰り返し呼び出されても再利用されません。これは、毎回新しい配列が作成されることを意味します。渡された配列が呼び出されたメソッド内で変更されていない場合、パフォーマンスを向上させるために、それらを 'static readonly' フィールドに抽出することを検討してください。</target>
+        <note>{Locked="static readonly"}</note>
+      </trans-unit>
+      <trans-unit id="AvoidConstArraysMessage">
+        <source>Prefer 'static readonly' fields over constant array arguments if the called method is called repeatedly and is not mutating the passed array</source>
+        <target state="translated">呼び出されるメソッドが繰り返し呼び出され、渡された配列を変更しない場合は、定数配列引数よりも 'static readonly' フィールドを優先します。</target>
+        <note>{Locked="static readonly"}</note>
+      </trans-unit>
+      <trans-unit id="AvoidConstArraysTitle">
+        <source>Avoid constant arrays as arguments</source>
+        <target state="translated">引数として定数配列を使用しない</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidStringBuilderPInvokeParametersDescription">
@@ -172,15 +187,70 @@
         <target state="translated">Dispose メソッドは、SuppressFinalize を呼び出す必要があります</target>
         <note />
       </trans-unit>
-      <trans-unit id="CategoryReliability">
-        <source>Reliability</source>
-        <target state="translated">信頼性</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CommaSeparator">
         <source>, </source>
         <target state="translated">, </target>
         <note>Separator used for separating list of platform names: {API} is only supported on: {‘windows’, ‘browser’, ‘linux’}</note>
+      </trans-unit>
+      <trans-unit id="ConstantExpectedApplicationDescription">
+        <source>ConstantExpected attribute is not applied correctly on the parameter.</source>
+        <target state="translated">ConstantExpected 属性がパラメーターに正しく適用されていません。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ConstantExpectedApplicationTitle">
+        <source>Incorrect usage of ConstantExpected attribute</source>
+        <target state="translated">ConstantExpected 属性の使用法が正しくありません</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ConstantExpectedAttributExpectedMessage">
+        <source>The ConstantExpected attribute is required for the parameter due to the parent method annotation</source>
+        <target state="translated">親メソッドの注釈により、パラメーターには ConstantExpected 属性が必要です</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ConstantExpectedIncompatibleConstantTypeMessage">
+        <source>The '{0}' value is not compatible with parameter type of '{1}'</source>
+        <target state="translated">'{0}' 値は、'{1}' のパラメーターの型と互換性がありません</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ConstantExpectedInvalidBoundsMessage">
+        <source>The '{0}' value does not fit within the parameter value bounds of '{1}' to '{2}'</source>
+        <target state="translated">'{0}' の値が '{1}' から '{2}' までのパラメーター値の範囲内に収まりません</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ConstantExpectedInvalidMessage">
+        <source>The constant is not of the same '{0}' type as the parameter</source>
+        <target state="translated">定数の '{0}' 型がパラメーターと同じではありません</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ConstantExpectedInvertedRangeMessage">
+        <source>The Min and Max values are inverted</source>
+        <target state="translated">最小値と最大値が反転されます</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ConstantExpectedNotConstantMessage">
+        <source>The argument should be a constant for optimal performance</source>
+        <target state="translated">最適なパフォーマンスを得るには、引数を定数にする必要があります</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ConstantExpectedNotSupportedMessage">
+        <source>The '{0}' type is not supported for ConstantExpected attribute</source>
+        <target state="translated">'{0}' 型は ConstantExpected 属性ではサポートされていません</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ConstantExpectedOutOfBoundsMessage">
+        <source>The constant does not fit within the value bounds of '{0}' to '{1}'</source>
+        <target state="translated">定数は '{0}' から '{1}' までの値の範囲内に収まりません</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ConstantExpectedUsageDescription">
+        <source>The parameter expects a constant for optimal performance.</source>
+        <target state="translated">パラメーターには、最適なパフォーマンスを得るための定数が必要です。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ConstantExpectedUsageTitle">
+        <source>A constant is expected for the parameter</source>
+        <target state="translated">パラメーターには定数が必要です</target>
+        <note />
       </trans-unit>
       <trans-unit id="DataSetDataTableInDeserializableObjectGraphMessage">
         <source>When deserializing untrusted input, deserializing a {0} object is insecure. '{1}' either is or derives from {0}</source>
@@ -487,34 +557,45 @@
         <target state="translated">委任のトークンの検証を常にスキップしない</target>
         <note />
       </trans-unit>
-      <trans-unit id="DoNotCallDangerousMethodsInDeserialization">
-        <source>Do Not Call Dangerous Methods In Deserialization</source>
-        <target state="translated">逆シリアル化で危険なメソッドを呼び出さないでください</target>
-        <note />
-      </trans-unit>
       <trans-unit id="DoNotCallDangerousMethodsInDeserializationDescription">
         <source>Insecure Deserialization is a vulnerability which occurs when untrusted data is used to abuse the logic of an application, inflict a Denial-of-Service (DoS) attack, or even execute arbitrary code upon it being deserialized. It’s frequently possible for malicious users to abuse these deserialization features when the application is deserializing untrusted data which is under their control. Specifically, invoke dangerous methods in the process of deserialization. Successful insecure deserialization attacks could allow an attacker to carry out attacks such as DoS attacks, authentication bypasses, and remote code execution.</source>
         <target state="translated">安全でない逆シリアル化は、アプリケーションのロジックを悪用したり、サービス拒否 (DoS) 攻撃を仕掛けたり、逆シリアル化されたときに任意のコードを実行したりすることさえあるために、信頼できないデータが使用される場合に発生する脆弱性です。 悪意のあるユーザーが、自分の管理下にある信頼できないデータをアプリケーションで逆シリアル化しているときに、これらの逆シリアル化機能を悪用することがよくあります。 具体的には、逆シリアル化の過程で危険なメソッドを呼び出します。 安全でない逆シリアル化攻撃が成功すると、攻撃者は DoS 攻撃、認証回避、リモートでのコード実行などの攻撃を仕掛ける可能性があります。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCallDangerousMethodsInDeserializationMessage">
-        <source>When deserializing an instance of class {0}, method {1} can call dangerous method {2}. The potential method invocations are: {3}.</source>
-        <target state="translated">クラス {0} のインスタンスを逆シリアル化すると、メソッド {1} によって危険なメソッド {2} を呼び出されるおそれがあります。考えられるメソッド呼び出し: {3}。</target>
+        <source>When deserializing an instance of class '{0}', method '{1}' can directly or indirectly call dangerous method '{2}'</source>
+        <target state="translated">クラス '{0}' のインスタンスを逆シリアル化するときに、メソッド '{1}' が危険なメソッド '{2}' を直接的または間接的に呼び出すことができます</target>
         <note />
       </trans-unit>
-      <trans-unit id="DoNotCallOverridableMethodsInConstructorsDescription">
-        <source>When a constructor calls a virtual method, the constructor for the instance that invokes the method may not have executed.</source>
-        <target state="translated">コンストラクターが仮想メソッドを呼び出すときに、メソッドを呼び出すインスタンスのコンストラクターは実行されていない可能性があります。</target>
+      <trans-unit id="DoNotCallDangerousMethodsInDeserializationTitle">
+        <source>Do Not Call Dangerous Methods In Deserialization</source>
+        <target state="translated">逆シリアル化で危険なメソッドを呼び出さないでください</target>
         <note />
       </trans-unit>
-      <trans-unit id="DoNotCallOverridableMethodsInConstructorsMessage">
-        <source>Do not call overridable methods in constructors</source>
-        <target state="translated">コンストラクターのオーバーライド可能なメソッドを呼び出しません</target>
+      <trans-unit id="DoNotCallEnumerableCastOrOfTypeWithIncompatibleTypesDescription">
+        <source>Enumerable.Cast&lt;T&gt; and Enumerable.OfType&lt;T&gt; require compatible types to function expectedly.  
+The generic cast (IL 'unbox.any') used by the sequence returned by Enumerable.Cast&lt;T&gt; will throw InvalidCastException at runtime on elements of the types specified.  
+The generic type check (C# 'is' operator/IL 'isinst') used by Enumerable.OfType&lt;T&gt; will never succeed with elements of types specified, resulting in an empty sequence.  
+Widening and user defined conversions are not supported with generic types.</source>
+        <target state="translated">Enumerable.Cast&lt;T&gt;と Enumerable.OfType&lt;T&gt; が正常に機能するには、互換性のある型が必要です。 
+Enumerable.Cast&lt;T&gt; によって返されるシーケンスによって使用されるジェネリック キャスト (IL 'unbox.any') は、指定された型の要素で実行時に InvalidCastException をスローします。 
+Enumerable.OfType&lt;T&gt; で使用されるジェネリック型チェック (C# 'is' operator/IL 'isinst') は、指定された型の要素では成功しないため、空のシーケンスになります。 
+拡大およびユーザー定義の変換は、ジェネリック型ではサポートされていません。</target>
         <note />
       </trans-unit>
-      <trans-unit id="DoNotCallOverridableMethodsInConstructorsTitle">
-        <source>Do not call overridable methods in constructors</source>
-        <target state="translated">コンストラクターのオーバーライド可能なメソッドを呼び出しません</target>
+      <trans-unit id="DoNotCallEnumerableCastOrOfTypeWithIncompatibleTypesMessageCast">
+        <source>Type '{0}' is incompatible with type '{1}' and cast attempts will throw InvalidCastException at runtime</source>
+        <target state="translated">型 '{0}' は型 '{1}' と互換性がありません。キャストの試行により、実行時に InvalidCastException がスローされます</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotCallEnumerableCastOrOfTypeWithIncompatibleTypesMessageOfType">
+        <source>This call will always result in an empty sequence because type '{0}' is incompatible with type '{1}'</source>
+        <target state="translated">型 '{0}' が型 '{1}' と互換性がないため、この呼び出しの結果は常に空のシーケンスになります</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotCallEnumerableCastOrOfTypeWithIncompatibleTypesTitle">
+        <source>Do not call Enumerable.Cast&lt;T&gt; or Enumerable.OfType&lt;T&gt; with incompatible types</source>
+        <target state="translated">Enumerable.Cast&lt;T&gt; または Enumerable.OfType&lt;T&gt; を互換性のない型を使用して呼び出さないでください</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCallToImmutableCollectionOnAnImmutableCollectionValueMessage">
@@ -525,21 +606,6 @@
       <trans-unit id="DoNotCallToImmutableCollectionOnAnImmutableCollectionValueTitle">
         <source>Do not call ToImmutableCollection on an ImmutableCollection value</source>
         <target state="translated">ImmutableCollection 値で ToImmutableCollection を呼び出さないでください</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DoNotCatchCorruptedStateExceptionsInGeneralHandlersDescription">
-        <source>Do not author general catch handlers in code that receives corrupted state exceptions.</source>
-        <target state="translated">破損状態例外を受け取るコード内に汎用キャッチ ハンドラーを作成しないでください。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DoNotCatchCorruptedStateExceptionsInGeneralHandlersMessage">
-        <source>Do not catch corrupted state exceptions in general handlers.</source>
-        <target state="translated">汎用ハンドラーの破損状態例外をキャッチしません。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DoNotCatchCorruptedStateExceptionsInGeneralHandlersTitle">
-        <source>Do not catch corrupted state exceptions in general handlers.</source>
-        <target state="translated">汎用ハンドラーの破損状態例外をキャッチしません。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCreateTaskCompletionSourceWithWrongArgumentsDescription">
@@ -922,16 +988,6 @@
         <target state="translated">{0} は安全でない乱数ジェネレーターです。セキュリティにランダム度が必要な場合に、暗号化によってセキュリティで保護された乱数ジェネレーターを使用します。</target>
         <note />
       </trans-unit>
-      <trans-unit id="DoNotUseMD5">
-        <source>Do not use insecure cryptographic algorithm MD5.</source>
-        <target state="translated">安全でない暗号アルゴリズム MD5 を使用しない。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DoNotUseMD5Description">
-        <source>This type implements MD5, a cryptographically insecure hashing function. Hash collisions are computationally feasible for the MD5 and HMACMD5 algorithms. Replace this usage with a SHA-2 family hash algorithm (SHA512, SHA384, SHA256).</source>
-        <target state="translated">この型は、暗号として安全でないハッシュ関数である MD5 を実装しています。MD5 と HMACMD5 アルゴリズムでは、計算上、ハッシュの競合が起こる可能性があります。この使用を SHA-2 ファミリのハッシュ アルゴリズム (SHA512、SHA384、SHA256) に置き換えてください。</target>
-        <note />
-      </trans-unit>
       <trans-unit id="DoNotUseObsoleteKDFAlgorithm">
         <source>Do not use obsolete key derivation function</source>
         <target state="translated">非推奨のキー派生関数を使用しないでください</target>
@@ -963,33 +1019,23 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseReferenceEqualsWithValueTypesComparerMessage">
-        <source>Do not pass an argument with value type '{0}' to the 'Equals' method on 'ReferenceEqualityComparer'. Due to value boxing, this call to 'Equals' will always return 'false'.</source>
-        <target state="translated">値の型が '{0}' の引数を 'ReferenceEqualityComparer' の 'Equals' メソッドに渡さないでください。値のボックス化により、'Equals' へのこの呼び出しは、常に 'false' を返します。</target>
+        <source>Do not pass an argument with value type '{0}' to the 'Equals' method on 'ReferenceEqualityComparer'. Due to value boxing, this call to 'Equals' can return an unexpected result. Consider using 'EqualityComparer' instead, or pass reference type arguments if you intend to use 'ReferenceEqualityComparer'.</source>
+        <target state="translated">値型 '{0}' の引数を 'ReferenceEqualityComparer' の 'Equals' メソッドに渡さないでください。値のボックス化が原因で、'Equals' へのこの呼び出しによって予期しない結果が返される可能性があります。代わりに 'EqualityComparer' を使用するか、'ReferenceEqualityComparer' を使用する場合は参照型引数を渡すことを検討してください。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseReferenceEqualsWithValueTypesDescription">
-        <source>Value type typed arguments are uniquely boxed for each call to this method, therefore the result is always false.</source>
-        <target state="translated">値の型に型指定された引数は、このメソッドの呼び出しごとに一意にボックス化されるため、結果は常に false になります。</target>
+        <source>Value type typed arguments are uniquely boxed for each call to this method, therefore the result can be unexpected.</source>
+        <target state="translated">値の型に型指定された引数は、このメソッドの呼び出しごとに一意にボックス化されるため、結果が予期しないものになる可能性があります。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseReferenceEqualsWithValueTypesMethodMessage">
-        <source>Do not pass an argument with value type '{0}' to 'ReferenceEquals'. Due to value boxing, this call to 'ReferenceEquals' will always return 'false'.</source>
-        <target state="translated">値の型が '{0}' の引数を 'ReferenceEquals' に渡さないでください。値のボックス化により、'ReferenceEquals' へのこの呼び出しは、常に 'false' を返します。</target>
+        <source>Do not pass an argument with value type '{0}' to 'ReferenceEquals'. Due to value boxing, this call to 'ReferenceEquals' can return an unexpected result. Consider using 'Equals' instead, or pass reference type arguments if you intend to use 'ReferenceEquals'.</source>
+        <target state="translated">値型 '{0}' の引数を 'ReferenceEquals' に渡さないでください。値のボックス化が原因で、'ReferenceEquals' へのこの呼び出しによって予期しない結果が返される可能性があります。代わりに 'Equals' を使用するか、'ReferenceEquals' を使用する場合は参照型引数を渡すことを検討してください。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseReferenceEqualsWithValueTypesTitle">
         <source>Do not use ReferenceEquals with value types</source>
         <target state="translated">値の型で ReferenceEquals を使用しない</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DoNotUseSHA1">
-        <source>Do not use insecure cryptographic algorithm SHA1.</source>
-        <target state="translated">安全でない暗号アルゴリズム SHA1 を使用しない。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DoNotUseSHA1Description">
-        <source>This type implements SHA1, a cryptographically insecure hashing function. Hash collisions are computationally feasible for the SHA-1 and SHA-0 algorithms. Replace this usage with a SHA-2 family hash algorithm (SHA512, SHA384, SHA256).</source>
-        <target state="translated">この型は、暗号として安全でないハッシュ関数である SHA1 を実装しています。SHA-1 と SHA-0 アルゴリズムでは、計算上、ハッシュの競合が起こる可能性があります。この使用を SHA-2 ファミリのハッシュ アルゴリズム (SHA512、SHA384、SHA256) に置き換えてください。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseStackallocInLoopsDescription">
@@ -1185,21 +1231,6 @@
       <trans-unit id="FieldIsPreviewTypeMessageWithCustomMessagePlaceholder">
         <source>{3} '{0}''s type contains the preview type '{1}' and requires opting into preview features. See {2} for more information.</source>
         <target state="translated">{3} '{0}' の型には、プレビューの種類 '{1}' が含まれており、プレビュー機能を選択する必要があります。詳細については、「{2}」を参照してください。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="FinalizersShouldCallBaseClassFinalizerDescription">
-        <source>Finalization must be propagated through the inheritance hierarchy. To guarantee this, types must call their base class Finalize method in their own Finalize method.</source>
-        <target state="translated">終了処理は、継承階層を通じて伝達される必要があります。これを保証するには、型が独自の Finalize メソッド内で基底クラスの Finalize メソッドを呼び出す必要があります。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="FinalizersShouldCallBaseClassFinalizerMessage">
-        <source>Finalizers should call base class finalizer</source>
-        <target state="translated">ファイナライザーは基底クラスのファイナライザーを呼び出さなければなりません</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="FinalizersShouldCallBaseClassFinalizerTitle">
-        <source>Finalizers should call base class finalizer</source>
-        <target state="translated">ファイナライザーは基底クラスのファイナライザーを呼び出さなければなりません</target>
         <note />
       </trans-unit>
       <trans-unit id="ForwardCancellationTokenToInvocationsDescription">
@@ -1812,26 +1843,6 @@
         <target state="translated">{3} '{0}' はプレビュー メソッド '{1}' を上書きするため、プレビュー機能を選択する必要があります。詳細については、「{2}」を参照してください。</target>
         <note />
       </trans-unit>
-      <trans-unit id="PInvokeDeclarationsShouldBePortableDescription">
-        <source>This rule evaluates the size of each parameter and the return value of a P/Invoke, and verifies that the size of the parameter is correct when marshaled to unmanaged code on 32-bit and 64-bit operating systems.</source>
-        <target state="translated">この規則では、各パラメーターのサイズと P/Invoke の戻り値を評価し、32 ビットおよび 64 ビットのオペレーティング システム上のアンマネージ コードにマーシャリングされた場合にパラメーターのサイズが正しいことを確認します。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PInvokeDeclarationsShouldBePortableMessageParameter">
-        <source>As it is declared in your code, parameter {0} of P/Invoke {1} will be {2} bytes wide on {3} platforms. This is not correct, as the actual native declaration of this API indicates it should be {4} bytes wide on {3} platforms. Consult the MSDN Platform SDK documentation for help determining what data type should be used instead of {5}.</source>
-        <target state="translated">コードで宣言されているとおり、P/Invoke {1} のパラメーター {0} は {3} プラットフォームで {2} バイトになります。この API の実際のネイティブ宣言は {3} プラットフォームで {4} バイトでなければならないことを示しているため、この状態は正しくありません。{5} の代わりにどのデータ型を使用する必要があるかを判断するには、MSDN のプラットフォーム SDK ドキュメントを参照してください。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PInvokeDeclarationsShouldBePortableMessageReturn">
-        <source>As it is declared in your code, the return type of P/Invoke {0} will be {1} bytes wide on {2} platforms. This is not correct, as the actual native declaration of this API indicates it should be {3} bytes wide on {2} platforms. Consult the MSDN Platform SDK documentation for help determining what data type should be used instead of {4}.</source>
-        <target state="translated">コードで宣言されているとおり、P/Invoke {0} の戻り値の型は {2} プラットフォームで {1} バイトになります。この API の実際のネイティブ宣言は {2} プラットフォームで {3} バイトでなければならないことを示しているため、この状態は正しくありません。{4} の代わりにどのデータ型を使用する必要があるかを判断するには、MSDN のプラットフォーム SDK ドキュメントを参照してください。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PInvokeDeclarationsShouldBePortableTitle">
-        <source>PInvoke declarations should be portable</source>
-        <target state="translated">PInvoke 宣言は移植可能なでなければなりません</target>
-        <note />
-      </trans-unit>
       <trans-unit id="PInvokesShouldNotBeVisibleDescription">
         <source>A public or protected method in a public type has the System.Runtime.InteropServices.DllImportAttribute attribute (also implemented by the Declare keyword in Visual Basic). Such methods should not be exposed.</source>
         <target state="translated">パブリック型にあるパブリック メソッドまたは保護されたメソッドには、System.Runtime.InteropServices.DllImportAttribute 属性 (Visual Basic では、Declare キーワードによっても実装されています) があります。このようなメソッドは公開しないでください。</target>
@@ -1967,6 +1978,16 @@
         <target state="translated">'Substring' よりも 'AsSpan' を優先します</target>
         <note />
       </trans-unit>
+      <trans-unit id="PreferCountOverAnyCodeFixTitle">
+        <source>Use 'Count' check instead of 'Any()'</source>
+        <target state="translated">'Any()' の代わりに 'Count' チェックを使用してください</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferCountOverAnyMessage">
+        <source>Prefer comparing 'Count' to 0 rather than using 'Any()', both for clarity and for performance</source>
+        <target state="translated">明確性とパフォーマンスの両方のために、'Any()' を使用するのではなく、'Count' を 0 と比較することを優先してください</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PreferDictionaryContainsKeyCodeFixTitle">
         <source>Use 'ContainsKey'</source>
         <target state="translated">'ContainsKey' を使用する</target>
@@ -2020,6 +2041,36 @@
       <trans-unit id="PreferHashDataOverComputeHashAnalyzerTitle">
         <source>Prefer static 'HashData' method over 'ComputeHash'</source>
         <target state="translated">静的な 'HashData' メソッドは 'ComputeHash' に優先します</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferIsEmptyOverAnyCodeFixTitle">
+        <source>Use 'IsEmpty' check instead of 'Any()'</source>
+        <target state="translated">'Any()' の代わりに 'IsEmpty' チェックを使用してください</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferIsEmptyOverAnyMessage">
+        <source>Prefer an 'IsEmpty' check rather than using 'Any()', both for clarity and for performance</source>
+        <target state="translated">明確性とパフォーマンスの両方のために、'Any()' を使用するのではなく、'IsEmpty' チェックを優先してください</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferLengthCountIsEmptyOverAnyDescription">
+        <source>Prefer using 'IsEmpty', 'Count' or 'Length' properties whichever available, rather than calling 'Enumerable.Any()'. The intent is clearer and it is more performant than using 'Enumerable.Any()' extension method.</source>
+        <target state="translated">'Enumerable.Any()' を呼び出すのではなく、'IsEmpty'、'Count'、または 'Length' のいずれか使用可能なプロパティの使用を優先してください。この方が、'Enumerable.Any()' 拡張メソッドを使用するよりも意図が明確で、パフォーマンスが向上します。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferLengthCountIsEmptyOverAnyTitle">
+        <source>Avoid using 'Enumerable.Any()' extension method</source>
+        <target state="translated">'Enumerable.Any()' 拡張メソッドを使用しないでください</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferLengthOverAnyCodeFixTitle">
+        <source>Use 'Length' check instead of 'Any()'</source>
+        <target state="translated">'Any()' の代わりに 'Length' チェックを使用してください</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferLengthOverAnyMessage">
+        <source>Prefer comparing 'Length' to 0 rather than using 'Any()', both for clarity and for performance</source>
+        <target state="translated">明確性とパフォーマンスの両方のために、'Any()' を使用するのではなく、'Length' を 0 と比較することを優先してください</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferStreamAsyncMemoryOverloadsDescription">
@@ -2118,8 +2169,8 @@
         <note />
       </trans-unit>
       <trans-unit id="PreventNumericIntPtrUIntPtrBehavioralChangesDescription">
-        <source>Some built in operators added in .NET 7 behave differently than the user defined operatorsi in .NET 6 and below. Some operators that used to throw in unchecked context while overflowing will not throw anymore unless wrapped within checked context, and some operators that not used to throw in checked context now would throw unless wrapped within unchecked context.</source>
-        <target state="translated">.NET 7 で追加された組み込み演算子の一部は、.NET 6 以下のユーザー定義演算子とは異なる動作をします。オーバーフロー中に未チェックのコンテキストをスローするために使用した演算子の一部は、チェック済みのコンテキスト内でラップされない限りスローされなくなり、チェック済みのコンテキストでスローするために使用されていない演算子の中には、未チェックのコンテキスト内でラップされない限り、スローされるものもあります。</target>
+        <source>Some built-in operators added in .NET 7 behave differently when overflowing than did the corresponding user-defined operators in .NET 6 and earlier versions. Some operators that previously threw in an unchecked context now don't throw unless wrapped within a checked context. Also, some operators that did not previously throw in a checked context now throw unless wrapped in an unchecked context.</source>
+        <target state="translated">.NET 7 に追加された組み込み演算子の一部は、オーバーフロー時に .NET 6 以前のバージョンの対応するユーザー定義演算子と異なる動作をします。以前にチェックされていないコンテキストでスローした演算子の一部は、チェックされたコンテキスト内でラップされていない限り、スローされません。また、チェックされたコンテキストで以前にスローされなかった演算子の一部は、チェックされていないコンテキストでラップされていない限り、スローされるようになりました。</target>
         <note />
       </trans-unit>
       <trans-unit id="PreventNumericIntPtrUIntPtrBehavioralChangesOperatorThrowsMessage">
@@ -2128,7 +2179,7 @@
         <note />
       </trans-unit>
       <trans-unit id="PreventNumericIntPtrUIntPtrBehavioralChangesTitle">
-        <source>Prevent from behavioral change</source>
+        <source>Prevent behavioral change</source>
         <target state="translated">動作の変更を防ぐ</target>
         <note />
       </trans-unit>
@@ -2225,21 +2276,6 @@
       <trans-unit id="ReplaceStringLiteralWithCharLiteralCodeActionTitle">
         <source>Replace string literal with char literal</source>
         <target state="translated">文字列リテラルを char リテラルに置き換える</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="RethrowToPreserveStackDetailsDescription">
-        <source>An exception is rethrown and the exception is explicitly specified in the throw statement. If an exception is rethrown by specifying the exception in the throw statement, the list of method calls between the original method that threw the exception and the current method is lost.</source>
-        <target state="translated">例外が再スローされ、その例外が throw ステートメント内に明示的に指定されます。throw ステートメント内で例外を指定することによって例外が再スローされる場合、例外をスローした元のメソッドと現在のメソッドの間のメソッド呼び出しのリストは失われます。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="RethrowToPreserveStackDetailsMessage">
-        <source>Rethrow to preserve stack details</source>
-        <target state="translated">スタック詳細を保持するために再度スローします</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="RethrowToPreserveStackDetailsTitle">
-        <source>Rethrow to preserve stack details</source>
-        <target state="translated">スタック詳細を保持するために再度スローします</target>
         <note />
       </trans-unit>
       <trans-unit id="ReviewCodeForDllInjectionVulnerabilitiesMessage">
@@ -2502,26 +2538,6 @@
         <target state="translated">プラットフォーム呼び出しメンバーは、部分的に信頼された呼び出し元を許可し、文字列パラメーターを持ち、文字列を明示的にはマーシャリングしません。このために、セキュリティの脆弱性が生じる場合があります。</target>
         <note />
       </trans-unit>
-      <trans-unit id="SpecifyMarshalingForPInvokeStringArgumentsMessageField">
-        <source>To reduce security risk, marshal field {0} as Unicode, by setting StructLayout.CharSet on {1} to CharSet.Unicode, or by explicitly marshaling the field as UnmanagedType.LPWStr. If you need to marshal this string as ANSI or system-dependent, use the BestFitMapping attribute to turn best-fit mapping off, and for added security, ensure ThrowOnUnmappableChar is on.</source>
-        <target state="translated">セキュリティ上の問題を軽減するには、{1} の StructLayout.CharSet on を CharSet.Unicode に設定するか、またはフィールドを明示的に UnmanagedType.LPWStr としてマーシャリングすることで、フィールド {0} を Unicode としてマーシャリングします。この文字列を ANSI またはシステム依存としてマーシャリングする必要がある場合は、BestFitMapping 属性を使用して最適なマッピングを無効にし、セキュリティ強化のために ThrowOnUnmappableChar が有効に設定されていることを確認します。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SpecifyMarshalingForPInvokeStringArgumentsMessageFieldImplicitAnsi">
-        <source>To reduce security risk, marshal field {0} as Unicode, by setting StructLayout.CharSet on {1} to CharSet.Unicode, or by explicitly marshaling the field as UnmanagedType.LPWStr. If you need to marshal this string as ANSI or system-dependent, specify MarshalAs explicitly, use the BestFitMapping attribute to turn best-fit mapping off, and for added security, to turn ThrowOnUnmappableChar on.</source>
-        <target state="translated">セキュリティ上の問題を軽減するには、{1} の StructLayout.CharSet on を CharSet.Unicode に設定するか、またはフィールドを明示的に UnmanagedType.LPWStr としてマーシャリングすることで、フィールド {0} を Unicode としてマーシャリングします。この文字列を ANSI またはシステム依存としてマーシャリングする必要がある場合は、MarshalAs を明示的に指定し、BestFitMapping 属性を使用して最適なマッピングを無効にし、セキュリティ強化のために ThrowOnUnmappableChar を有効にします。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SpecifyMarshalingForPInvokeStringArgumentsMessageParameter">
-        <source>To reduce security risk, marshal parameter {0} as Unicode, by setting DllImport.CharSet to CharSet.Unicode, or by explicitly marshaling the parameter as UnmanagedType.LPWStr. If you need to marshal this string as ANSI or system-dependent, set BestFitMapping=false; for added security, also set ThrowOnUnmappableChar=true.</source>
-        <target state="translated">セキュリティ上の問題を軽減するには、DllImport.CharSet を CharSet.Unicode に設定するか、またはパラメーターを明示的に UnmanagedType.LPWStr としてマーシャリングすることで、パラメーター {0} を Unicode としてマーシャリングします。この文字列を ANSI またはシステム依存としてマーシャリングする必要がある場合は、セキュリティ強化のために BestFitMapping=false と設定し、さらに ThrowOnUnmappableChar=true と設定します。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SpecifyMarshalingForPInvokeStringArgumentsMessageParameterImplicitAnsi">
-        <source>To reduce security risk, marshal parameter {0} as Unicode, by setting DllImport.CharSet to CharSet.Unicode, or by explicitly marshaling the parameter as UnmanagedType.LPWStr. If you need to marshal this string as ANSI or system-dependent, specify MarshalAs explicitly, and set BestFitMapping=false; for added security, also set ThrowOnUnmappableChar=true.</source>
-        <target state="translated">セキュリティ上の問題を軽減するには、DllImport.CharSet を CharSet.Unicode に設定するか、またはパラメーターを明示的に UnmanagedType.LPWStr としてマーシャリングすることで、パラメーター {0} を Unicode としてマーシャリングします。この文字列を ANSI またはシステム依存としてマーシャリングする必要がある場合は、MarshalAs を明示的に指定し、セキュリティ強化のために BestFitMapping=false と設定し、さらに ThrowOnUnmappableChar=true と設定します。</target>
-        <note />
-      </trans-unit>
       <trans-unit id="SpecifyMarshalingForPInvokeStringArgumentsTitle">
         <source>Specify marshaling for P/Invoke string arguments</source>
         <target state="translated">P/Invoke 文字列引数に対してマーシャリングを指定します</target>
@@ -2622,6 +2638,21 @@
         <target state="translated">'ThreadStatic' は静的フィールドにのみ影響します</target>
         <note />
       </trans-unit>
+      <trans-unit id="UseArgumentExceptionThrowHelperTitle">
+        <source>Use ArgumentException throw helper</source>
+        <target state="translated">ArgumentException スロー ヘルパーを使用する</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseArgumentNullExceptionThrowHelperTitle">
+        <source>Use ArgumentNullException throw helper</source>
+        <target state="translated">ArgumentNullException スロー ヘルパーを使用する</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseArgumentOutOfRangeExceptionThrowHelperTitle">
+        <source>Use ArgumentOutOfRangeException throw helper</source>
+        <target state="translated">ArgumentOutOfRangeException スロー ヘルパーを使用する</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UseArrayEmpty">
         <source>Use Array.Empty</source>
         <target state="translated">Array.Empty を使用します</target>
@@ -2715,6 +2746,41 @@
       <trans-unit id="UseCancellationTokenThrowIfCancellationRequestedTitle">
         <source>Use 'ThrowIfCancellationRequested'</source>
         <target state="translated">'ThrowIfCancellationRequested' を呼び出す</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseConcreteTypeDescription">
+        <source>Using concrete types avoids virtual or interface call overhead and enables inlining.</source>
+        <target state="translated">具象型を使用すると、仮想呼び出しまたはインターフェイス呼び出しのオーバーヘッドが回避され、インライン化が有効になります。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseConcreteTypeForFieldMessage">
+        <source>Change type of field '{0}' from '{1}' to '{2}' for improved performance</source>
+        <target state="translated">パフォーマンスを向上させるために、フィールド '{0}' の型を '{1}' から '{2}' に変更します</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseConcreteTypeForLocalMessage">
+        <source>Change type of variable '{0}' from '{1}' to '{2}' for improved performance</source>
+        <target state="translated">パフォーマンスを向上させるために、変数 '{0}' の型を '{1}' から '{2}' に変更します</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseConcreteTypeForMethodReturnMessage">
+        <source>Change return type of method '{0}' from '{1}' to '{2}' for improved performance</source>
+        <target state="translated">パフォーマンスを向上させるために、メソッド '{0}' の戻り値の型を '{1}' から '{2}' に変更します</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseConcreteTypeForParameterMessage">
+        <source>Change type of parameter '{0}' from '{1}' to '{2}' for improved performance</source>
+        <target state="translated">パフォーマンスを向上させるために、パラメーター '{0}' の型を '{1}' から '{2}' に変更します</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseConcreteTypeForPropertyMessage">
+        <source>Change type of property '{0}' from '{1}' to '{2}' for improved performance</source>
+        <target state="translated">パフォーマンスを向上させるために、プロパティ '{0}' の型を '{1}' から '{2}' に変更してください</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseConcreteTypeTitle">
+        <source>Use concrete types when possible for improved performance</source>
+        <target state="translated">可能な場合は具象型を使用してパフォーマンスを向上させる</target>
         <note />
       </trans-unit>
       <trans-unit id="UseContainerLevelAccessPolicy">
@@ -2837,19 +2903,14 @@
         <target state="translated">Win32 API に相当するマネージ API を使用します</target>
         <note />
       </trans-unit>
+      <trans-unit id="UseObjectDisposedExceptionThrowHelperTitle">
+        <source>Use ObjectDisposedException throw helper</source>
+        <target state="translated">ObjectDisposedException スロー ヘルパーを使用する</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UseOrdinalStringComparisonDescription">
         <source>A string comparison operation that is nonlinguistic does not set the StringComparison parameter to either Ordinal or OrdinalIgnoreCase. By explicitly setting the parameter to either StringComparison.Ordinal or StringComparison.OrdinalIgnoreCase, your code often gains speed, becomes more correct, and becomes more reliable.</source>
         <target state="translated">非言語的な文字列比較操作では、StringComparison パラメーターが Ordinal にも OrdinalIgnoreCase にも設定されません。パラメーターを StringComparison.Ordinal または StringComparison.OrdinalIgnoreCase に明示的に設定することによって、コードは多くの場合、高速で正確になり、信頼性が向上します。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UseOrdinalStringComparisonMessageStringComparer">
-        <source>{0} passes '{1}' as the 'StringComparer' parameter to {2}. To perform a non-linguistic comparison, specify 'StringComparer.Ordinal' or 'StringComparer.OrdinalIgnoreCase' instead.</source>
-        <target state="translated">{0} は '{1}' を 'StringComparer' パラメーターとして {2} に渡します。非言語的な比較を実行するには、代わりに 'StringComparer.Ordinal' または 'StringComparer.OrdinalIgnoreCase' を指定してください。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UseOrdinalStringComparisonMessageStringComparison">
-        <source>{0} passes '{1}' as the 'StringComparison' parameter to {2}. To perform a non-linguistic comparison, specify 'StringComparison.Ordinal' or 'StringComparison.OrdinalIgnoreCase' instead.</source>
-        <target state="translated">{0} は '{1}' を 'StringComparison' パラメーターとして {2} に渡します。非言語的な比較を実行するには、代わりに 'StringComparison.Ordinal' または 'StringComparison.OrdinalIgnoreCase' を指定してください。</target>
         <note />
       </trans-unit>
       <trans-unit id="UseOrdinalStringComparisonTitle">
@@ -2927,6 +2988,26 @@
         <target state="translated">'塗りつぶし' よりも 'クリア' を優先する</target>
         <note />
       </trans-unit>
+      <trans-unit id="UseStartsWithInsteadOfIndexOfComparisonWithZeroCodeFixTitle">
+        <source>Use 'StartsWith'</source>
+        <target state="translated">'StartsWith' を使用する</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseStartsWithInsteadOfIndexOfComparisonWithZeroDescription">
+        <source>It is both clearer and faster to use 'StartsWith' instead of comparing the result of 'IndexOf' to zero.</source>
+        <target state="translated">'IndexOf' の結果を 0 と比較するのではなく、'StartsWith' を使用する方が明確で迅速です。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseStartsWithInsteadOfIndexOfComparisonWithZeroMessage">
+        <source>Use 'StartsWith' instead of comparing the result of 'IndexOf' to 0</source>
+        <target state="translated">'IndexOf' の結果を 0 と比較するのではなく、'StartsWith' を使用します</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseStartsWithInsteadOfIndexOfComparisonWithZeroTitle">
+        <source>Use 'StartsWith' instead of 'IndexOf'</source>
+        <target state="translated">'IndexOf' の代わりに 'StartsWith' を使用する</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UseStringEqualsOverStringCompareCodeFixTitle">
         <source>Use 'string.Equals'</source>
         <target state="translated">'string.Equals' を使用します。</target>
@@ -2980,6 +3061,21 @@
       <trans-unit id="UseStringContainsCharOverloadWithSingleCharactersTitle">
         <source>Use char literal for a single character lookup</source>
         <target state="translated">1 つの文字参照に単一文字検索を使用する</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseThrowHelperDescription">
+        <source>Throw helpers are simpler and more efficient than an if block constructing a new exception instance.</source>
+        <target state="translated">スロー ヘルパーは、if ブロックが新しい例外インスタンスを構築する場合よりもシンプルで効率的です。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseThrowHelperFix">
+        <source>Use '{0}.{1}'</source>
+        <target state="translated">'{0}.{1}' を使用します</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseThrowHelperMessage">
+        <source>Use '{0}.{1}' instead of explicitly throwing a new exception instance</source>
+        <target state="translated">新しい例外インスタンスを明示的にスローするのではなく、'{0}.{1}' を使用してください</target>
         <note />
       </trans-unit>
       <trans-unit id="UseValidPlatformStringDescription">

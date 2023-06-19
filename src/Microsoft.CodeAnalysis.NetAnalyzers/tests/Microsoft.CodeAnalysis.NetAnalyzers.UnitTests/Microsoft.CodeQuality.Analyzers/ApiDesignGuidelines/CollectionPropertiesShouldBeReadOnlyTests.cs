@@ -16,17 +16,17 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
     public class CollectionPropertiesShouldBeReadOnlyTests
     {
         private static DiagnosticResult GetBasicResultAt(int line, int column, string propertyName)
-#pragma warning disable RS0030 // Do not used banned APIs
+#pragma warning disable RS0030 // Do not use banned APIs
             => VerifyVB.Diagnostic()
                 .WithLocation(line, column)
-#pragma warning restore RS0030 // Do not used banned APIs
+#pragma warning restore RS0030 // Do not use banned APIs
                 .WithArguments(propertyName);
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column, string propertyName)
-#pragma warning disable RS0030 // Do not used banned APIs
+#pragma warning disable RS0030 // Do not use banned APIs
             => VerifyCS.Diagnostic()
                 .WithLocation(line, column)
-#pragma warning restore RS0030 // Do not used banned APIs
+#pragma warning restore RS0030 // Do not use banned APIs
                 .WithArguments(propertyName);
 
         [Fact]
@@ -470,6 +470,23 @@ struct S
     public IList<int> L { get; init; }
 }",
             }.RunAsync();
+        }
+
+        [Fact]
+        public Task CA2227_CSharp_InheritedPropertyAsync()
+        {
+            return VerifyCS.VerifyAnalyzerAsync(@"
+using System.Collections.Generic;
+
+public class Test : ITest
+{
+	public ICollection<int> Collection { get; set; }
+}
+
+public interface ITest
+{
+	ICollection<int> {|#0:Collection|} { get; set; }
+}", DiagnosticResult.CompilerWarning(CollectionPropertiesShouldBeReadOnlyAnalyzer.RuleId).WithLocation(0));
         }
     }
 }

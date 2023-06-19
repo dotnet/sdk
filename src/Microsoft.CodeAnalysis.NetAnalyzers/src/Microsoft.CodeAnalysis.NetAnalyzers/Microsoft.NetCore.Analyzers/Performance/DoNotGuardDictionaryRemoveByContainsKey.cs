@@ -57,7 +57,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
 
                 IInvocationOperation? invocationOperation = null;
 
-                switch (conditionalOperation.Condition)
+                switch (conditionalOperation.Condition.WalkDownParentheses())
                 {
                     case IInvocationOperation iOperation:
                         invocationOperation = iOperation;
@@ -65,10 +65,6 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     case IUnaryOperation unaryOperation when unaryOperation.OperatorKind == UnaryOperatorKind.Not:
                         if (unaryOperation.Operand is IInvocationOperation operand)
                             invocationOperation = operand;
-                        break;
-                    case IParenthesizedOperation parenthesizedOperation:
-                        if (parenthesizedOperation.Operand is IInvocationOperation invocation)
-                            invocationOperation = invocation;
                         break;
                     default:
                         return;
@@ -87,8 +83,9 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     switch (conditionalOperation.WhenTrue.Children.First())
                     {
                         case IInvocationOperation childInvocationOperation:
-                            if (childInvocationOperation.TargetMethod.OriginalDefinition.Equals(remove1Param, SymbolEqualityComparer.Default) ||
-                                childInvocationOperation.TargetMethod.OriginalDefinition.Equals(remove2Param, SymbolEqualityComparer.Default))
+                            if ((childInvocationOperation.TargetMethod.OriginalDefinition.Equals(remove1Param, SymbolEqualityComparer.Default) ||
+                                 childInvocationOperation.TargetMethod.OriginalDefinition.Equals(remove2Param, SymbolEqualityComparer.Default)) &&
+                                AreInvocationsOnSameInstance(childInvocationOperation, invocationOperation))
                             {
                                 additionalLocation.Add(childInvocationOperation.Syntax.Parent.GetLocation());
                                 context.ReportDiagnostic(invocationOperation.CreateDiagnostic(Rule, additionalLocations: additionalLocation.ToImmutable(), null));
@@ -105,7 +102,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                                                             .FirstOrDefault(op => op.TargetMethod.OriginalDefinition.Equals(remove1Param, SymbolEqualityComparer.Default) ||
                                                                                   op.TargetMethod.OriginalDefinition.Equals(remove2Param, SymbolEqualityComparer.Default));
 
-                            if (nestedInvocationOperation != null)
+                            if (nestedInvocationOperation != null && AreInvocationsOnSameInstance(nestedInvocationOperation, invocationOperation))
                             {
                                 additionalLocation.Add(nestedInvocationOperation.Syntax.Parent.GetLocation());
                                 context.ReportDiagnostic(invocationOperation.CreateDiagnostic(Rule, additionalLocations: additionalLocation.ToImmutable(), null));
@@ -117,6 +114,19 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     }
                 }
             }
+
+            static bool AreInvocationsOnSameInstance(IInvocationOperation invocationOp1, IInvocationOperation invocationOp2)
+            {
+                return (invocationOp1.Instance, invocationOp2.Instance) switch
+                {
+                    (IFieldReferenceOperation fieldRefOp1, IFieldReferenceOperation fieldRefOp2) => fieldRefOp1.Member == fieldRefOp2.Member,
+                    (IPropertyReferenceOperation propRefOp1, IPropertyReferenceOperation propRefOp2) => propRefOp1.Member == propRefOp2.Member,
+                    (IParameterReferenceOperation paramRefOp1, IParameterReferenceOperation paramRefOp2) => paramRefOp1.Parameter == paramRefOp2.Parameter,
+                    (ILocalReferenceOperation localRefOp1, ILocalReferenceOperation localRefOp2) => localRefOp1.Local == localRefOp2.Local,
+                    _ => false,
+                };
+            }
+
             static bool TryGetDictionaryTypeAndMethods(Compilation compilation, [NotNullWhen(true)] out IMethodSymbol? containsKey,
                             [NotNullWhen(true)] out IMethodSymbol? remove1Param, out IMethodSymbol? remove2Param)
             {
@@ -141,12 +151,14 @@ namespace Microsoft.NetCore.Analyzers.Performance
                                     case ContainsKey: containsKey = m; break;
                                     case Remove: remove1Param = m; break;
                                 }
+
                                 break;
                             case 2:
                                 if (m.Name == Remove)
                                 {
                                     remove2Param = m;
                                 }
+
                                 break;
                         }
                     }
