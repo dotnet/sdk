@@ -33,7 +33,8 @@
                   https://github.com/dotnet/aspnetcore/issues/48052 -->
     <!-- IDE0005 - Using directive is unnecessary: https://github.com/dotnet/aspnetcore/issues/47932 -->
     <!-- IDE0059 - Unnecessary assignment of a value: https://github.com/dotnet/aspnetcore/pull/47931 -->
-    <RepoNoWarns>CA1512;CA1822;CA1854;IDE0005;IDE0059</RepoNoWarns>
+    <!-- NETSDK1206 - Non-portable RID detected: https://github.com/dotnet/aspnetcore/issues/48842 -->
+    <RepoNoWarns>CA1512;CA1822;CA1854;IDE0005;IDE0059;NETSDK1206</RepoNoWarns>
   </PropertyGroup>
 
   <ItemGroup>
