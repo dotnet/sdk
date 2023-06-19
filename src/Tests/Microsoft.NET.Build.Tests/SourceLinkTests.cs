@@ -219,7 +219,7 @@ namespace Microsoft.NET.Build.Tests
                 ValidatePdb(Path.Combine(intermediateDir.FullName, "SourceLinkTestApp.pdb"), expectedEmbeddedSources: true);
             }
 
-            // check that RepositoryUrl and commit sha is included in the package nuspec:
+            // check that commit sha is included in the package nuspec:
             var binDir = buildCommand.GetOutputDirectory(targetFramework: "");
             using var nupkg = ZipFile.OpenRead(Path.Combine(binDir.FullName, "SourceLinkTestApp.1.0.0.nupkg"));
             using var nuspec = nupkg.GetEntry("SourceLinkTestApp.nuspec").Open();
