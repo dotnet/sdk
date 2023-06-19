@@ -21,27 +21,27 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         [Fact]
         public void CanDisplayDetails_RemotePackage()
         {
-            new DotnetNewCommand(_log, "details", "Microsoft.Azure.WebJobs.ItemTemplates")
+            new DotnetNewCommand(_log, "details", "Microsoft.DotNet.Web.ProjectTemplates.5.0")
             .WithCustomHive(CreateTemporaryFolder(folderName: "Home"))
                 .WithWorkingDirectory(CreateTemporaryFolder())
                 .Execute()
                 .Should()
                 .ExitWith(0)
-                .And
-                .NotHaveStdErr();
+                .And.NotHaveStdErr()
+                .And.HaveStdOutContaining($"Microsoft.DotNet.Web.ProjectTemplates.5.0{Environment.NewLine}   Details:");
         }
 
         [Fact]
         public void CanDisplayDetails_RemotePackageWithVersion()
         {
-            new DotnetNewCommand(_log, "details", "Microsoft.Azure.WebJobs.ItemTemplates", "--version", "4.0.2529")
+            new DotnetNewCommand(_log, "details", "Microsoft.DotNet.Web.ItemTemplates", "--version", "2.2.0")
             .WithCustomHive(CreateTemporaryFolder(folderName: "Home"))
                 .WithWorkingDirectory(CreateTemporaryFolder())
                 .Execute()
                 .Should()
                 .ExitWith(0)
-                .And
-                .NotHaveStdErr();
+                .And.NotHaveStdErr()
+                .And.HaveStdOutContaining($"Microsoft.DotNet.Web.ItemTemplates.2.2.0{Environment.NewLine}   Details:  Web File Templates for Microsoft Template Engine");
         }
 
         [Fact]
@@ -55,8 +55,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .Execute()
                 .Should()
                 .ExitWith(0)
-                .And
-                .NotHaveStdErr();
+                .And.NotHaveStdErr();
 
             new DotnetNewCommand(_log, "details", "Microsoft.TemplateEngine.TestTemplates")
                 .WithCustomHive(home).WithoutBuiltInTemplates()
@@ -64,8 +63,8 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .Execute()
                 .Should()
                 .ExitWith(0)
-                .And
-                .NotHaveStdErr();
+                .And.NotHaveStdErr()
+                .And.HaveStdOutMatching($"Microsoft.TemplateEngine.TestTemplates{Environment.NewLine}   Authors:{Environment.NewLine}      Microsoft{Environment.NewLine}   Templates:");
         }
 
         [Fact]
@@ -78,7 +77,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .Should()
                 .ExitWith(103)
                 .And.HaveStdErr()
-                .And.HaveStdOutContaining("No template packages found matching: Some package that does not exist.");
+                .And.HaveStdOutMatching("No template packages found matching: Some package that does not exist.");
         }
     }
 }

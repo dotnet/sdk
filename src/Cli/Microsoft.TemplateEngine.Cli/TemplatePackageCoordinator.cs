@@ -385,19 +385,16 @@ namespace Microsoft.TemplateEngine.Cli
         /// Searches and displays a package metadata.
         /// </summary>
         internal async Task<NewCommandStatus> DisplayTemplatePackageMetadata(
-            DetailsCommandArgs args,
+            string packageIdentity,
+            string? packageVersion,
+            bool interactiveAuth,
+            IReadOnlyList<string>? additionalSources,
             NugetApiManager nugetApiManager,
             CancellationToken cancellationToken = default)
         {
-            string packageIdentity = args.NameCriteria;
-            string? packageVersion = args.VersionCriteria;
-            bool interactiveAuth = args.Interactive;
-            IReadOnlyList<string>? additionalSources = args.AdditionalSources;
-
             NugetPackageMetadata? nuGetPackageMetadata;
             IEnumerable<ITemplateInfo>? packageTemplates;
             IManagedTemplatePackage? localPackage;
-            // PackageSource? packageSource;
 
             InitializeNuGetCredentialService(interactiveAuth);
 
@@ -500,7 +497,6 @@ namespace Microsoft.TemplateEngine.Cli
 
             reporter.WriteLine($"{LocalizableStrings.DetailsCommand_Property_LicenseMetadata}:".Indent(1));
             WriteIfNotNull(LocalizableStrings.DetailsCommand_Property_License, packageMetadata.License, reporter, 2);
-            WriteIfNotNull(LocalizableStrings.DetailsCommand_Property_LicenseExpression, packageMetadata.LicenseExpression, reporter, 2);
 
             if (!string.IsNullOrEmpty(packageMetadata.LicenseExpression))
             {
@@ -514,17 +510,15 @@ namespace Microsoft.TemplateEngine.Cli
             if (!string.IsNullOrEmpty(licenseUrl))
             {
                 reporter.WriteLine(
-                    $"{LocalizableStrings.DetailsCommand_Property_RepoUrl}: ".Indent(2) +
+                    $"{LocalizableStrings.DetailsCommand_Property_LicenseUrl}: ".Indent(2) +
                     $"{AnsiExtensions.Url(licenseUrl, licenseUrl)}");
             }
 
             var projectUrl = packageMetadata.ProjectUrl?.ToString();
             if (!string.IsNullOrEmpty(projectUrl))
             {
-                var repoUrlInfo = packageMetadata.ProjectUrl?.ToString().Split("/");
                 reporter.WriteLine(
-                    $"{LocalizableStrings.DetailsCommand_Property_RepoUrl}: ".Indent(2) +
-                    $"{AnsiExtensions.Url(projectUrl, repoUrlInfo![3] + repoUrlInfo![4])}");
+                    $"{LocalizableStrings.DetailsCommand_Property_RepoUrl}: {projectUrl}".Indent(2));
             }
         }
 
@@ -552,7 +546,6 @@ namespace Microsoft.TemplateEngine.Cli
 
             if (!string.IsNullOrEmpty(nuGetSource))
             {
-                var repoUrlInfo = nuGetSource.Split("/");
                 reporter.WriteLine(
                     $"{LocalizableStrings.DetailsCommand_Property_RepoUrl}: {nuGetSource}".Indent(1));
             }

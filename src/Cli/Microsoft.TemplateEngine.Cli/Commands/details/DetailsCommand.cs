@@ -48,7 +48,10 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             var templatePackageCoordinator = new TemplatePackageCoordinator(environmentSettings, templatePackageManager);
 
             NewCommandStatus status = await templatePackageCoordinator.DisplayTemplatePackageMetadata(
-                args,
+                args.NameCriteria,
+                args.VersionCriteria,
+                args.Interactive,
+                args.AdditionalSources,
                 _nugetApiManager,
                 context.GetCancellationToken()).ConfigureAwait(false);
 
