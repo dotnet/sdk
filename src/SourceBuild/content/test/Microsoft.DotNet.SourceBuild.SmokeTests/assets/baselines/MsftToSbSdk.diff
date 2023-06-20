@@ -428,108 +428,10 @@ index ------------
 -./sdk/x.y.z/Containers/tasks/netx.y/runtimes/win/lib/netx.y/System.Drawing.Common.dll
  ./sdk/x.y.z/Containers/tasks/netx.y/runtimes/win/lib/netx.y/System.Security.Cryptography.Pkcs.dll
 -./sdk/x.y.z/Containers/tasks/netx.y/runtimes/win/lib/netx.y/System.Security.Cryptography.ProtectedData.dll
- ./sdk/x.y.z/Containers/tasks/netx.y/runtimes/win/lib/netx.y/System.Windows.Extensions.dll
+-./sdk/x.y.z/Containers/tasks/netx.y/runtimes/win/lib/netx.y/System.Windows.Extensions.dll
  ./sdk/x.y.z/Containers/tasks/netx.y/System.CommandLine.dll
  ./sdk/x.y.z/Containers/tasks/netx.y/System.Configuration.ConfigurationManager.dll
-@@ ------------ @@
- ./sdk/x.y.z/cs/Microsoft.TemplateEngine.Orchestrator.RunnableProjects.resources.dll
- ./sdk/x.y.z/cs/Microsoft.TemplateEngine.Utils.resources.dll
- ./sdk/x.y.z/cs/Microsoft.TemplateSearch.Common.resources.dll
-+./sdk/x.y.z/cs/Microsoft.TestPlatform.Build.resources.dll
- ./sdk/x.y.z/cs/MSBuild.resources.dll
- ./sdk/x.y.z/cs/System.CommandLine.resources.dll
- ./sdk/x.y.z/Current/
-@@ ------------ @@
- ./sdk/x.y.z/de/Microsoft.TemplateEngine.Orchestrator.RunnableProjects.resources.dll
- ./sdk/x.y.z/de/Microsoft.TemplateEngine.Utils.resources.dll
- ./sdk/x.y.z/de/Microsoft.TemplateSearch.Common.resources.dll
-+./sdk/x.y.z/de/Microsoft.TestPlatform.Build.resources.dll
- ./sdk/x.y.z/de/MSBuild.resources.dll
- ./sdk/x.y.z/de/System.CommandLine.resources.dll
- ./sdk/x.y.z/dotnet.deps.json
-@@ ------------ @@
- ./sdk/x.y.z/es/Microsoft.TemplateEngine.Orchestrator.RunnableProjects.resources.dll
- ./sdk/x.y.z/es/Microsoft.TemplateEngine.Utils.resources.dll
- ./sdk/x.y.z/es/Microsoft.TemplateSearch.Common.resources.dll
-+./sdk/x.y.z/es/Microsoft.TestPlatform.Build.resources.dll
- ./sdk/x.y.z/es/MSBuild.resources.dll
- ./sdk/x.y.z/es/System.CommandLine.resources.dll
- ./sdk/x.y.z/Extensions/
--./sdk/x.y.z/Extensions/cs/
--./sdk/x.y.z/Extensions/de/
--./sdk/x.y.z/Extensions/es/
--./sdk/x.y.z/Extensions/fr/
--./sdk/x.y.z/Extensions/it/
--./sdk/x.y.z/Extensions/ja/
--./sdk/x.y.z/Extensions/ko/
- ./sdk/x.y.z/Extensions/Microsoft.Diagnostics.NETCore.Client.dll
- ./sdk/x.y.z/Extensions/Microsoft.TestPlatform.Extensions.BlameDataCollector.dll
- ./sdk/x.y.z/Extensions/Microsoft.TestPlatform.Extensions.EventLogCollector.dll
- ./sdk/x.y.z/Extensions/Microsoft.TestPlatform.TestHostRuntimeProvider.dll
- ./sdk/x.y.z/Extensions/Microsoft.VisualStudio.TestPlatform.Extensions.Html.TestLogger.dll
- ./sdk/x.y.z/Extensions/Microsoft.VisualStudio.TestPlatform.Extensions.Trx.TestLogger.dll
--./sdk/x.y.z/Extensions/pl/
--./sdk/x.y.z/Extensions/pt-BR/
--./sdk/x.y.z/Extensions/ru/
--./sdk/x.y.z/Extensions/tr/
--./sdk/x.y.z/Extensions/zh-Hans/
--./sdk/x.y.z/Extensions/zh-Hant/
- ./sdk/x.y.z/fr/
- ./sdk/x.y.z/fr/dotnet.resources.dll
- ./sdk/x.y.z/fr/Microsoft.Build.resources.dll
-@@ ------------ @@
- ./sdk/x.y.z/fr/Microsoft.TemplateEngine.Orchestrator.RunnableProjects.resources.dll
- ./sdk/x.y.z/fr/Microsoft.TemplateEngine.Utils.resources.dll
- ./sdk/x.y.z/fr/Microsoft.TemplateSearch.Common.resources.dll
-+./sdk/x.y.z/fr/Microsoft.TestPlatform.Build.resources.dll
- ./sdk/x.y.z/fr/MSBuild.resources.dll
- ./sdk/x.y.z/fr/System.CommandLine.resources.dll
- ./sdk/x.y.z/FSharp/
-@@ ------------ @@
- ./sdk/x.y.z/FSharp/Microsoft.FSharp.Targets
- ./sdk/x.y.z/FSharp/Microsoft.NET.StringTools.dll
- ./sdk/x.y.z/FSharp/Microsoft.Portable.FSharp.Targets
--./sdk/x.y.z/FSharp/Microsoft.VisualStudio.Setup.Configuration.Interop.dll
- ./sdk/x.y.z/FSharp/Microsoft.Win32.SystemEvents.dll
- ./sdk/x.y.z/FSharp/pl/
- ./sdk/x.y.z/FSharp/pl/FSharp.Build.resources.dll
-@@ ------------ @@
- ./sdk/x.y.z/FSharp/runtimes/win/
- ./sdk/x.y.z/FSharp/runtimes/win/lib/
- ./sdk/x.y.z/FSharp/runtimes/win/lib/netx.y/
--./sdk/x.y.z/FSharp/runtimes/win/lib/netx.y/Microsoft.Win32.SystemEvents.dll
- ./sdk/x.y.z/FSharp/runtimes/win/lib/netx.y/System.Diagnostics.EventLog.dll
- ./sdk/x.y.z/FSharp/runtimes/win/lib/netx.y/System.Diagnostics.EventLog.Messages.dll
--./sdk/x.y.z/FSharp/runtimes/win/lib/netx.y/System.Drawing.Common.dll
- ./sdk/x.y.z/FSharp/runtimes/win/lib/netx.y/System.Security.Cryptography.Pkcs.dll
--./sdk/x.y.z/FSharp/runtimes/win/lib/netx.y/System.Security.Cryptography.ProtectedData.dll
- ./sdk/x.y.z/FSharp/runtimes/win/lib/netx.y/System.Windows.Extensions.dll
- ./sdk/x.y.z/FSharp/System.CodeDom.dll
- ./sdk/x.y.z/FSharp/System.Configuration.ConfigurationManager.dll
-@@ ------------ @@
- ./sdk/x.y.z/it/Microsoft.TemplateEngine.Orchestrator.RunnableProjects.resources.dll
- ./sdk/x.y.z/it/Microsoft.TemplateEngine.Utils.resources.dll
- ./sdk/x.y.z/it/Microsoft.TemplateSearch.Common.resources.dll
-+./sdk/x.y.z/it/Microsoft.TestPlatform.Build.resources.dll
- ./sdk/x.y.z/it/MSBuild.resources.dll
- ./sdk/x.y.z/it/System.CommandLine.resources.dll
- ./sdk/x.y.z/ja/
-@@ ------------ @@
- ./sdk/x.y.z/ja/Microsoft.TemplateEngine.Orchestrator.RunnableProjects.resources.dll
- ./sdk/x.y.z/ja/Microsoft.TemplateEngine.Utils.resources.dll
- ./sdk/x.y.z/ja/Microsoft.TemplateSearch.Common.resources.dll
-+./sdk/x.y.z/ja/Microsoft.TestPlatform.Build.resources.dll
- ./sdk/x.y.z/ja/MSBuild.resources.dll
- ./sdk/x.y.z/ja/System.CommandLine.resources.dll
- ./sdk/x.y.z/KnownWorkloadManifests.txt
-@@ ------------ @@
- ./sdk/x.y.z/ko/Microsoft.TemplateEngine.Orchestrator.RunnableProjects.resources.dll
- ./sdk/x.y.z/ko/Microsoft.TemplateEngine.Utils.resources.dll
- ./sdk/x.y.z/ko/Microsoft.TemplateSearch.Common.resources.dll
-+./sdk/x.y.z/ko/Microsoft.TestPlatform.Build.resources.dll
- ./sdk/x.y.z/ko/MSBuild.resources.dll
- ./sdk/x.y.z/ko/System.CommandLine.resources.dll
- ./sdk/x.y.z/Microsoft.ApplicationInsights.dll
+ ./sdk/x.y.z/Containers/tasks/netx.y/System.Diagnostics.EventLog.dll
 @@ ------------ @@
  ./sdk/x.y.z/Microsoft.Build.NuGetSdkResolver.dll
  ./sdk/x.y.z/Microsoft.Build.Tasks.Core.dll
@@ -547,22 +449,6 @@ index ------------
  ./sdk/x.y.z/Microsoft.VisualStudio.TestPlatform.Common.dll
  ./sdk/x.y.z/Microsoft.VisualStudio.TestPlatform.ObjectModel.dll
 @@ ------------ @@
- ./sdk/x.y.z/pl/Microsoft.TemplateEngine.Orchestrator.RunnableProjects.resources.dll
- ./sdk/x.y.z/pl/Microsoft.TemplateEngine.Utils.resources.dll
- ./sdk/x.y.z/pl/Microsoft.TemplateSearch.Common.resources.dll
-+./sdk/x.y.z/pl/Microsoft.TestPlatform.Build.resources.dll
- ./sdk/x.y.z/pl/MSBuild.resources.dll
- ./sdk/x.y.z/pl/System.CommandLine.resources.dll
- ./sdk/x.y.z/pt-BR/
-@@ ------------ @@
- ./sdk/x.y.z/pt-BR/Microsoft.TemplateEngine.Orchestrator.RunnableProjects.resources.dll
- ./sdk/x.y.z/pt-BR/Microsoft.TemplateEngine.Utils.resources.dll
- ./sdk/x.y.z/pt-BR/Microsoft.TemplateSearch.Common.resources.dll
-+./sdk/x.y.z/pt-BR/Microsoft.TestPlatform.Build.resources.dll
- ./sdk/x.y.z/pt-BR/MSBuild.resources.dll
- ./sdk/x.y.z/pt-BR/System.CommandLine.resources.dll
- ./sdk/x.y.z/ref/
-@@ ------------ @@
  ./sdk/x.y.z/Roslyn/bincore/ru/Microsoft.CodeAnalysis.CSharp.resources.dll
  ./sdk/x.y.z/Roslyn/bincore/ru/Microsoft.CodeAnalysis.resources.dll
  ./sdk/x.y.z/Roslyn/bincore/ru/Microsoft.CodeAnalysis.VisualBasic.resources.dll
@@ -572,24 +458,20 @@ index ------------
  ./sdk/x.y.z/Roslyn/bincore/tr/Microsoft.CodeAnalysis.CSharp.resources.dll
  ./sdk/x.y.z/Roslyn/bincore/tr/Microsoft.CodeAnalysis.resources.dll
 @@ ------------ @@
- ./sdk/x.y.z/ru/Microsoft.TemplateEngine.Orchestrator.RunnableProjects.resources.dll
- ./sdk/x.y.z/ru/Microsoft.TemplateEngine.Utils.resources.dll
- ./sdk/x.y.z/ru/Microsoft.TemplateSearch.Common.resources.dll
-+./sdk/x.y.z/ru/Microsoft.TestPlatform.Build.resources.dll
- ./sdk/x.y.z/ru/MSBuild.resources.dll
- ./sdk/x.y.z/ru/System.CommandLine.resources.dll
- ./sdk/x.y.z/RuntimeIdentifierGraph.json
-@@ ------------ @@
  ./sdk/x.y.z/runtimes/win/
  ./sdk/x.y.z/runtimes/win/lib/
  ./sdk/x.y.z/runtimes/win/lib/netx.y/
+-./sdk/x.y.z/runtimes/win/lib/netx.y/
 -./sdk/x.y.z/runtimes/win/lib/netx.y/Microsoft.Win32.SystemEvents.dll
  ./sdk/x.y.z/runtimes/win/lib/netx.y/System.Diagnostics.EventLog.dll
  ./sdk/x.y.z/runtimes/win/lib/netx.y/System.Diagnostics.EventLog.Messages.dll
 -./sdk/x.y.z/runtimes/win/lib/netx.y/System.Drawing.Common.dll
  ./sdk/x.y.z/runtimes/win/lib/netx.y/System.Security.Cryptography.Pkcs.dll
  ./sdk/x.y.z/runtimes/win/lib/netx.y/System.ServiceProcess.ServiceController.dll
- ./sdk/x.y.z/runtimes/win/lib/netx.y/System.Windows.Extensions.dll
+-./sdk/x.y.z/runtimes/win/lib/netx.y/System.Windows.Extensions.dll
+ ./sdk/x.y.z/SDKPrecomputedAssemblyReferences.cache
+ ./sdk/x.y.z/SdkResolvers/
+ ./sdk/x.y.z/SdkResolvers/Microsoft.Build.NuGetSdkResolver/
 @@ ------------ @@
  ./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WebAssembly/tools/
  ./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WebAssembly/tools/netx.y/
@@ -606,27 +488,3 @@ index ------------
  ./sdk/x.y.z/tr/
  ./sdk/x.y.z/tr/dotnet.resources.dll
  ./sdk/x.y.z/tr/Microsoft.Build.resources.dll
-@@ ------------ @@
- ./sdk/x.y.z/tr/Microsoft.TemplateEngine.Orchestrator.RunnableProjects.resources.dll
- ./sdk/x.y.z/tr/Microsoft.TemplateEngine.Utils.resources.dll
- ./sdk/x.y.z/tr/Microsoft.TemplateSearch.Common.resources.dll
-+./sdk/x.y.z/tr/Microsoft.TestPlatform.Build.resources.dll
- ./sdk/x.y.z/tr/MSBuild.resources.dll
- ./sdk/x.y.z/tr/System.CommandLine.resources.dll
- ./sdk/x.y.z/trustedroots/
-@@ ------------ @@
- ./sdk/x.y.z/zh-Hans/Microsoft.TemplateEngine.Orchestrator.RunnableProjects.resources.dll
- ./sdk/x.y.z/zh-Hans/Microsoft.TemplateEngine.Utils.resources.dll
- ./sdk/x.y.z/zh-Hans/Microsoft.TemplateSearch.Common.resources.dll
-+./sdk/x.y.z/zh-Hans/Microsoft.TestPlatform.Build.resources.dll
- ./sdk/x.y.z/zh-Hans/MSBuild.resources.dll
- ./sdk/x.y.z/zh-Hans/System.CommandLine.resources.dll
- ./sdk/x.y.z/zh-Hant/
-@@ ------------ @@
- ./sdk/x.y.z/zh-Hant/Microsoft.TemplateEngine.Orchestrator.RunnableProjects.resources.dll
- ./sdk/x.y.z/zh-Hant/Microsoft.TemplateEngine.Utils.resources.dll
- ./sdk/x.y.z/zh-Hant/Microsoft.TemplateSearch.Common.resources.dll
-+./sdk/x.y.z/zh-Hant/Microsoft.TestPlatform.Build.resources.dll
- ./sdk/x.y.z/zh-Hant/MSBuild.resources.dll
- ./sdk/x.y.z/zh-Hant/System.CommandLine.resources.dll
- ./shared/

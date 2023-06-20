@@ -33,16 +33,11 @@ msft,./sdk/x.y.z/Sdks/Microsoft.SourceLink.GitLab/tools/net472/*
 
 # vstest localization is disabled in Linux builds - https://github.com/dotnet/source-build/issues/3517
 msft,./sdk/x.y.z/*?/Microsoft.CodeCoverage.IO.resources.dll
-msft,./sdk/x.y.z/*?/Microsoft.TestPlatform.*?.resources.dll
-msft,./sdk/x.y.z/*?/Microsoft.VisualStudio.TestPlatform.*?.resources.dll
-msft,./sdk/x.y.z/*?/Test.Utility.resources.dll
-msft,./sdk/x.y.z/*?/vstest.console.resources.dll
-msft,./sdk/x.y.z/Extensions/*?/Microsoft.TestPlatform.*?.resources.dll
-msft,./sdk/x.y.z/Extensions/*?/Microsoft.VisualStudio.TestPlatform.*?.resources.dll
 
 # nuget localization is not available for Linux builds - https://github.com/NuGet/Home/issues/12440
 msft,./sdk/x.y.z/*?/NuGet.*?.resources.dll
 msft,./sdk/x.y.z/*?/Microsoft.Build.NuGetSdkResolver.resources.dll
+msft,./sdk/x.y.z/*?/Test.Utility.resources.dll
 
 # ILMerge is not supported in Linux builds - excluding the whole NuGet.Build.Tasks.Pack directory, to avoid a noisy diff
 msft,./sdk/x.y.z/Sdks/NuGet.Build.Tasks.Pack/*?
@@ -82,3 +77,10 @@ msft,./sdk/x.y.z/DotnetTools/dotnet-format/System.Drawing.Common.dll
 msft,./sdk/x.y.z/DotnetTools/dotnet-format/System.Security.Cryptography.ProtectedData.dll
 msft,./sdk/x.y.z/DotnetTools/dotnet-format/System.Security.Permissions.dll
 msft,./sdk/x.y.z/DotnetTools/dotnet-format/System.Windows.Extensions.dll
+
+# netfx runtimes for fsharp - https://github.com/dotnet/source-build/issues/3290
+msft,./sdk/x.y.z/FSharp/Microsoft.VisualStudio.Setup.Configuration.Interop.dll
+msft,./sdk/x.y.z/FSharp/runtimes/win/lib/netx.y/Microsoft.Win32.SystemEvents.dll
+msft,./sdk/x.y.z/FSharp/runtimes/win/lib/netx.y/System.Drawing.Common.dll
+msft,./sdk/x.y.z/FSharp/runtimes/win/lib/netx.y/System.Security.Cryptography.ProtectedData.dll
+msft,./sdk/x.y.z/FSharp/runtimes/win/lib/netx.y/System.Windows.Extensions.dll
