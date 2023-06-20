@@ -190,7 +190,7 @@ namespace Microsoft.NET.Build.Tests
             string targetFrameworks = ToolsetInfo.CurrentTargetFramework + (multitarget ? ";netstandard2.0" : "");
 
             var testAsset = _testAssetsManager
-                .CopyTestAsset("SourceLinkTestApp", identifier: origin)
+                .CopyTestAsset("SourceLinkTestApp", identifier: origin + expectedLink + multitarget.ToString())
                 .WithSource();
 
             if (multitarget)
