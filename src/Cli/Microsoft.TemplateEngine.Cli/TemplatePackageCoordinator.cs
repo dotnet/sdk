@@ -1142,26 +1142,30 @@ namespace Microsoft.TemplateEngine.Cli
             string? packageVersion = null,
             CancellationToken cancellationToken = default)
         {
-            NugetPackageMetadata? highestVersion = null;
+            IEnumerable<NugetPackageMetadata?> foundPackages =
+            await Task.WhenAll(
+                sources.Select(source => apiManager.GetPackageMetadataAsync(packageIdentifier, packageVersion, source, cancellationToken)))
+                        .ConfigureAwait(false);
 
-            foreach (PackageSource source in sources)
+            var accumulativeSearchResults = foundPackages
+                .Where(result => result is not null);
+
+            if (accumulativeSearchResults == null || !accumulativeSearchResults.Any())
             {
-                NugetPackageMetadata? package = await apiManager.GetPackageMetadataAsync(packageIdentifier, packageVersion, source, cancellationToken).ConfigureAwait(false);
-                if (package != null)
-                {
-                    if (packageVersion != null)
-                    {
-                        return package;
-                    }
-
-                    if (highestVersion == null || package.PackageVersion > highestVersion.PackageVersion)
-                    {
-                        highestVersion = package;
-                    }
-                }
+                return null;
             }
 
-            return highestVersion;
+            var floatRange = new FloatRange(NuGetVersionFloatBehavior.AbsoluteLatest);
+
+            NugetPackageMetadata? latestVersion = accumulativeSearchResults.Aggregate(
+                (NugetPackageMetadata?)null,
+                (max, current) =>
+                    (max == null || current!.Identity.Version > max.Identity.Version)
+                    &&
+                    floatRange.Satisfies(current!.Identity.Version) ?
+                        current : max);
+
+            return latestVersion;
         }
     }
 }

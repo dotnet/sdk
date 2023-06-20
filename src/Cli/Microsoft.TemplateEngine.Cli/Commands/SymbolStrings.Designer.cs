@@ -90,7 +90,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands {
         /// <summary>
         ///   Looks up a localized string similar to 
         ///      Provides the details for specified template package.
-        ///      The command checks if the package is installed locally, if it wasn&apos;t found, then it searches on the https://www.nuget.org/..
+        ///      The command checks if the package is installed locally, if it was not found, then it searches on the https://www.nuget.org/..
         /// </summary>
         internal static string Command_Details_Description {
             get {

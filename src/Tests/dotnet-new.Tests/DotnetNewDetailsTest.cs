@@ -28,7 +28,8 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .Should()
                 .ExitWith(0)
                 .And.NotHaveStdErr()
-                .And.HaveStdOutContaining($"Microsoft.DotNet.Web.ProjectTemplates.5.0{Environment.NewLine}   Details:");
+                .And.HaveStdOutContaining($"Microsoft.DotNet.Web.ProjectTemplates.5.0")
+                .And.HaveStdOutContaining("License Metadata");
         }
 
         [Fact]

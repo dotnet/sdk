@@ -32,7 +32,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
         internal static Option<string> VersionOption { get; } = new Option<string>(new string[] { "-version", "--version" })
         {
             Description = LocalizableStrings.DetailsCommand_Option_Version,
-            Arity = new ArgumentArity(0, 1)
+            Arity = new ArgumentArity(1, 1)
         };
 
         internal virtual Option<bool> InteractiveOption { get; } = SharedOptions.InteractiveOption;
