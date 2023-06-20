@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.CSharp;
@@ -802,6 +802,31 @@ public class Test
     }
 }",
                 LanguageVersion = LanguageVersion.CSharp8
+            }.RunAsync();
+        }
+
+        [Fact, WorkItem(6686, "https://github.com/dotnet/roslyn-analyzers/issues/6686")]
+        public Task ArrayWithoutInitializer_Diagnostic()
+        {
+            var source = @"using System.Collections.Generic;
+
+public class MyClass
+{
+    public List<object> Cases => new() { {|CA1861:new object[0]|} };
+}";
+            var fixedSource = @"using System.Collections.Generic;
+
+public class MyClass
+{
+    public List<object> Cases => new() { item };
+
+    private static readonly object[] item = new object[0];
+}";
+            return new VerifyCS.Test
+            {
+                TestCode = source,
+                FixedCode = fixedSource,
+                LanguageVersion = LanguageVersion.CSharp10
             }.RunAsync();
         }
     }
