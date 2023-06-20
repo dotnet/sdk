@@ -3155,6 +3155,26 @@
             ]
           }
         },
+        "CA1862": {
+          "id": "CA1862",
+          "shortDescription": "Prefer using 'StringComparer' to perform case-insensitive string comparisons",
+          "fullDescription": "Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons when using 'CompareTo', because they lead to an allocation. Instead, use 'StringComparer' to perform case-insensitive comparisons.",
+          "defaultLevel": "note",
+          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1862",
+          "properties": {
+            "category": "Performance",
+            "isEnabledByDefault": true,
+            "typeName": "RecommendCaseInsensitiveStringComparisonAnalyzer",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
         "CA2000": {
           "id": "CA2000",
           "shortDescription": "Dispose objects before losing scope",
