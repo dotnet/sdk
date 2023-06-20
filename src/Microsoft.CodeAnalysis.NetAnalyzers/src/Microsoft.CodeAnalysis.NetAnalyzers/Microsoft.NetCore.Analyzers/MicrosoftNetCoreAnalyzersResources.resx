@@ -2054,4 +2054,25 @@ Widening and user defined conversions are not supported with generic types.</val
   <data name="PreferIsEmptyOverAnyMessage" xml:space="preserve">
     <value>Prefer an 'IsEmpty' check rather than using 'Any()', both for clarity and for performance</value>
   </data>
+  <data name="RecommendCaseInsensitiveStringComparerStringComparisonCodeFixTitle" xml:space="preserve">
+    <value>Use the 'string.{0}(string, StringComparison)' overload</value>
+  </data>
+  <data name="RecommendCaseInsensitiveStringComparerTitle" xml:space="preserve">
+    <value>Prefer using 'StringComparer' to perform case-insensitive string comparisons</value>
+  </data>
+  <data name="RecommendCaseInsensitiveStringComparerDescription" xml:space="preserve">
+    <value>Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons when using 'CompareTo', because they lead to an allocation. Instead, use 'StringComparer' to perform case-insensitive comparisons.</value>
+  </data>
+  <data name="RecommendCaseInsensitiveStringComparerMessage" xml:space="preserve">
+    <value>Prefer using 'StringComparer' to perform a case-insensitive comparison</value>
+  </data>
+  <data name="RecommendCaseInsensitiveStringComparisonTitle" xml:space="preserve">
+    <value>Prefer the 'StringComparison' method overloads to perform case-insensitive string comparisons</value>
+  </data>
+  <data name="RecommendCaseInsensitiveStringComparisonDescription" xml:space="preserve">
+    <value>Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons because they lead to an allocation. Instead, prefer calling the method overloads of 'Contains', 'IndexOf' and 'StartsWith' that take a 'StringComparison' enum value to perform case-insensitive comparisons.</value>
+  </data>
+  <data name="RecommendCaseInsensitiveStringComparisonMessage" xml:space="preserve">
+    <value>Prefer the string comparison method overload of '{0}' that takes a 'StringComparison' enum value to perform a case-insensitive comparison</value>
+  </data>
 </root>
