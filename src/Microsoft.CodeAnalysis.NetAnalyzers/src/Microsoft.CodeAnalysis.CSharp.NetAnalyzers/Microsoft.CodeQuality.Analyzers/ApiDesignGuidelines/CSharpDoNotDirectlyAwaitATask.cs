@@ -14,9 +14,9 @@ namespace Microsoft.CodeQuality.CSharp.Analyzers.ApiDesignGuidelines
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
     public sealed class CSharpDoNotDirectlyAwaitATask : DoNotDirectlyAwaitATaskAnalyzer
     {
-        public override (Action<OperationAnalysisContext> Analysis, OperationKind OperationKind) AnalyzeAwaitForEachLoopOperation(INamedTypeSymbol configuredAsyncEnumerable)
+        protected override void RegisterLanguageSpecificChecks(OperationBlockStartAnalysisContext context, INamedTypeSymbol configuredAsyncEnumerable)
         {
-            return (ctx => AnalyzeAwaitForEachLoopOperation(ctx, configuredAsyncEnumerable), OperationKind.Loop);
+            context.RegisterOperationAction(ctx => AnalyzeAwaitForEachLoopOperation(ctx, configuredAsyncEnumerable), OperationKind.Loop);
         }
 
         private static void AnalyzeAwaitForEachLoopOperation(OperationAnalysisContext context, INamedTypeSymbol configuredAsyncEnumerable)
@@ -24,7 +24,7 @@ namespace Microsoft.CodeQuality.CSharp.Analyzers.ApiDesignGuidelines
             if (context.Operation is IForEachLoopOperation {Syntax: ForEachStatementSyntax {AwaitKeyword.RawKind: not (int)SyntaxKind.None}} forEachOperation
                 && !forEachOperation.Collection.Type.OriginalDefinition.Equals(configuredAsyncEnumerable, SymbolEqualityComparer.Default))
             {
-                context.ReportDiagnostic(forEachOperation.Collection.Syntax.CreateDiagnostic(Rule));
+                context.ReportDiagnostic(forEachOperation.Collection.CreateDiagnostic(Rule));
             }
         }
     }

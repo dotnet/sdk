@@ -5,12 +5,12 @@ using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
 using Xunit;
-using CSharpLanguageVersion = Microsoft.CodeAnalysis.CSharp.LanguageVersion;
+using Microsoft.CodeAnalysis.CSharp;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.CSharp.Analyzers.ApiDesignGuidelines.CSharpDoNotDirectlyAwaitATask,
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.DoNotDirectlyAwaitATaskFixer>;
 using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
-    Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.DoNotDirectlyAwaitATaskAnalyzer,
+    Microsoft.CodeQuality.VisualBasic.Analyzers.ApiDesignGuidelines.BasicDoNotDirectlyAwaitATask,
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.DoNotDirectlyAwaitATaskFixer>;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
@@ -174,7 +174,7 @@ public class C
             {
                 ReferenceAssemblies = ReferenceAssemblies.Default.AddPackages(
                     ImmutableArray.Create(new PackageIdentity("Microsoft.Bcl.AsyncInterfaces", "5.0.0"))),
-                LanguageVersion = CSharpLanguageVersion.CSharp8,
+                LanguageVersion = LanguageVersion.CSharp8,
                 TestCode = code,
                 FixedCode = fixedCode,
             }.RunAsync();
@@ -773,7 +773,7 @@ public class C
 		}
 	}
 }",
-                LanguageVersion = CSharpLanguageVersion.CSharp8
+                LanguageVersion = LanguageVersion.CSharp8
             }.RunAsync();
         }
 
@@ -797,7 +797,7 @@ public class C
 		}}
 	}}
 }}",
-                LanguageVersion = CSharpLanguageVersion.CSharp8
+                LanguageVersion = LanguageVersion.CSharp8
             }.RunAsync();
         }
 
@@ -819,7 +819,7 @@ public class C
 		}
 	}
 }",
-                LanguageVersion = CSharpLanguageVersion.CSharp8
+                LanguageVersion = LanguageVersion.CSharp8
             }.RunAsync();
         }
     }

@@ -17,8 +17,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
     /// <summary>
     /// CA2007: <inheritdoc cref="DoNotDirectlyAwaitATaskTitle"/>
     /// </summary>
-    [DiagnosticAnalyzer(LanguageNames.VisualBasic)]
-    public class DoNotDirectlyAwaitATaskAnalyzer : DiagnosticAnalyzer
+    public abstract class DoNotDirectlyAwaitATaskAnalyzer : DiagnosticAnalyzer
     {
         internal const string RuleId = "CA2007";
 
@@ -48,12 +47,12 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     return;
                 }
 
-                if (!TryGetTaskTypes(context.Compilation, out ImmutableArray<INamedTypeSymbol> taskTypes))
+                var wellKnownTypeProvider = WellKnownTypeProvider.GetOrCreate(context.Compilation);
+                if (!TryGetTaskTypes(wellKnownTypeProvider, out ImmutableArray<INamedTypeSymbol> taskTypes))
                 {
                     return;
                 }
 
-                var wellKnownTypeProvider = WellKnownTypeProvider.GetOrCreate(context.Compilation);
                 var configuredAsyncDisposable = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeCompilerServicesConfiguredAsyncDisposable);
                 var configuredAsyncEnumerable = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeCompilerServicesConfiguredCancelableAsyncEnumerable);
 
@@ -83,17 +82,17 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
                         if (configuredAsyncEnumerable is not null)
                         {
-                            var (analysis, operationKind) = AnalyzeAwaitForEachLoopOperation(configuredAsyncEnumerable);
-                            context.RegisterOperationAction(analysis, operationKind);
+                            RegisterLanguageSpecificChecks(context, configuredAsyncEnumerable);
                         }
                     }
                 });
             });
         }
 
-        public virtual (Action<OperationAnalysisContext> Analysis, OperationKind OperationKind) AnalyzeAwaitForEachLoopOperation(INamedTypeSymbol configuredAsyncEnumerable)
+#pragma warning disable RS1012
+        protected virtual void RegisterLanguageSpecificChecks(OperationBlockStartAnalysisContext context, INamedTypeSymbol configuredAsyncEnumerable)
+#pragma warning restore RS1012
         {
-            return (_ => { }, OperationKind.None);
         }
 
         private static void AnalyzeAwaitOperation(OperationAnalysisContext context, ImmutableArray<INamedTypeSymbol> taskTypes)
@@ -153,10 +152,10 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             }
         }
 
-        private static bool TryGetTaskTypes(Compilation compilation, out ImmutableArray<INamedTypeSymbol> taskTypes)
+        private static bool TryGetTaskTypes(WellKnownTypeProvider typeProvider, out ImmutableArray<INamedTypeSymbol> taskTypes)
         {
-            INamedTypeSymbol? taskType = compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemThreadingTasksTask);
-            INamedTypeSymbol? taskOfTType = compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemThreadingTasksTask1);
+            INamedTypeSymbol? taskType = typeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemThreadingTasksTask);
+            INamedTypeSymbol? taskOfTType = typeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemThreadingTasksTask1);
 
             if (taskType == null || taskOfTType == null)
             {
@@ -164,8 +163,8 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 return false;
             }
 
-            INamedTypeSymbol? valueTaskType = compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemThreadingTasksValueTask);
-            INamedTypeSymbol? valueTaskOfTType = compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemThreadingTasksValueTask1);
+            INamedTypeSymbol? valueTaskType = typeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemThreadingTasksValueTask);
+            INamedTypeSymbol? valueTaskOfTType = typeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemThreadingTasksValueTask1);
 
             taskTypes = valueTaskType != null && valueTaskOfTType != null ?
                 ImmutableArray.Create(taskType, taskOfTType, valueTaskType, valueTaskOfTType) :
