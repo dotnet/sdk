@@ -190,7 +190,7 @@ namespace Microsoft.NET.Build.Tests
             string targetFrameworks = ToolsetInfo.CurrentTargetFramework + (multitarget ? ";netstandard2.0" : "");
 
             var testAsset = _testAssetsManager
-                .CopyTestAsset("SourceLinkTestApp", identifier: origin + expectedLink + multitarget.ToString())
+                .CopyTestAsset("SourceLinkTestApp", identifier: origin + multitarget.ToString())
                 .WithSource();
 
             if (multitarget)
@@ -234,7 +234,7 @@ namespace Microsoft.NET.Build.Tests
         [InlineData(false)]
         public void SuppressImplicitGitSourceLink_SetExplicitly(bool multitarget)
         {
-            string targetFrameworks = ToolsetInfo.CurrentTargetFramework + (multitarget ? "; netstandard2.0" : "");
+            string targetFrameworks = ToolsetInfo.CurrentTargetFramework + (multitarget ? ";netstandard2.0" : "");
 
             var testAsset = _testAssetsManager
                 .CopyTestAsset("SourceLinkTestApp", identifier: multitarget.ToString())
