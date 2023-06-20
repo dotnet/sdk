@@ -267,6 +267,21 @@ public class Class
         }
 
         [Fact, WorkItem(6681, "https://github.com/dotnet/roslyn-analyzers/issues/6681")]
+        public Task CA1802_CSharp_EnumsWithSameNameAsField2_NoDiagnosticAsync()
+        {
+            return new VerifyCS.Test
+            {
+                TestCode = @"
+using System.Reflection;
+
+public class Class
+{
+    private static readonly BindingFlags BindingFlags = (BindingFlags)(BindingFlags.Public | BindingFlags.NonPublic)
+}"
+            }.RunAsync();
+        }
+
+        [Fact, WorkItem(6681, "https://github.com/dotnet/roslyn-analyzers/issues/6681")]
         public Task CA1802_CSharp_EnumsWithDifferentNameAsField_DiagnosticAsync()
         {
             return new VerifyCS.Test
@@ -286,6 +301,29 @@ public class Class
     private const BindingFlags B = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
 }",
                 ExpectedDiagnostics = { new DiagnosticResult(UseLiteralsWhereAppropriateAnalyzer.DefaultRule).WithLocation(0).WithArguments("B") }
+            }.RunAsync();
+        }
+
+        [Fact, WorkItem(6681, "https://github.com/dotnet/roslyn-analyzers/issues/6681")]
+        public Task CA1802_CSharp_EnumsWithSameNameAsField_DiagnosticAsync()
+        {
+            return new VerifyCS.Test
+            {
+                TestCode = @"
+using System.Reflection;
+
+public class Class
+{
+    private static readonly BindingFlags {|#0:BindingFlags|} = (BindingFlags)5;
+}",
+                FixedCode = @"
+using System.Reflection;
+
+public class Class
+{
+    private const BindingFlags BindingFlags = (BindingFlags)5;
+}",
+                ExpectedDiagnostics = { new DiagnosticResult(UseLiteralsWhereAppropriateAnalyzer.DefaultRule).WithLocation(0).WithArguments("BindingFlags") }
             }.RunAsync();
         }
 
