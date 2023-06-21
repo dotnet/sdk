@@ -36,7 +36,7 @@ internal class DotNetHelper
                 }
 
                 Directory.CreateDirectory(Config.DotNetDirectory);
-                Utilities.ExtractTarball(Config.SdkTarballPath, Config.DotNetDirectory);
+                Utilities.ExtractTarball(Config.SdkTarballPath, Config.DotNetDirectory, outputHelper);
             }
             IsMonoRuntime = DetermineIsMonoRuntime(Config.DotNetDirectory);
 
