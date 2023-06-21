@@ -361,6 +361,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 AssetKind = assetKind,
                 AssetMode = assetMode,
                 AssetRole = assetRole,
+                AssetMergeBehavior = StaticWebAsset.MergeBehaviors.PreferTarget,
+                AssetMergeSource = "",
                 RelatedAsset = relatedAsset,
                 AssetTraitName = assetTraitName,
                 AssetTraitValue = assetTraitValue,
