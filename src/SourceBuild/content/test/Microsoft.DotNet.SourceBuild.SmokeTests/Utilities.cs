@@ -16,11 +16,11 @@ namespace Microsoft.DotNet.SourceBuild.SmokeTests;
 
 public static class Utilities
 {
-    public static void ExtractTarball(string tarballPath, string outputDir)
+    public static void ExtractTarball(string tarballPath, string outputDir, ITestOutputHelper outputHelper)
     {
-        using FileStream fileStream = File.OpenRead(tarballPath);
-        using GZipStream decompressorStream = new(fileStream, CompressionMode.Decompress);
-        TarFile.ExtractToDirectory(decompressorStream, outputDir, true);
+        // TarFile doesn't properly handle hard links (https://github.com/dotnet/runtime/pull/85378#discussion_r1221817490),
+        // use 'tar' instead.
+        ExecuteHelper.ExecuteProcessValidateExitCode("tar", $"xzf {tarballPath} -C {outputDir}", outputHelper);
     }
 
     public static void ExtractTarball(string tarballPath, string outputDir, string targetFilePath)

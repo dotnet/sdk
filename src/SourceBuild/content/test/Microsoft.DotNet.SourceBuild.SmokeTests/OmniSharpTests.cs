@@ -65,7 +65,7 @@ public class OmniSharpTests : SmokeTests
             await client.DownloadFileAsync(omniSharpTarballUrl, omniSharpTarballFile, OutputHelper);
 
             Directory.CreateDirectory(OmniSharpDirectory);
-            Utilities.ExtractTarball(omniSharpTarballFile, OmniSharpDirectory);
+            Utilities.ExtractTarball(omniSharpTarballFile, OmniSharpDirectory, OutputHelper);
         }
     }
 }
