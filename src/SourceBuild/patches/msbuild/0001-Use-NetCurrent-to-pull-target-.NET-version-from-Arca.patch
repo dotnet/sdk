@@ -1,0 +1,54 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Rainer Sigwald <raines@microsoft.com>
+Date: Fri, 16 Jun 2023 09:41:18 -0500
+Subject: [PATCH] Use NetCurrent to pull target .NET version from Arcade
+
+This is required for source-build in .NET 8 now, so that we target 8
+in the sourcebuilt builds, even when the product must target 7.
+
+Backport: https://github.com/dotnet/msbuild/pull/8865
+---
+ Directory.Build.props     | 6 +++++-
+ src/Directory.Build.props | 4 ++--
+ 2 files changed, 7 insertions(+), 3 deletions(-)
+
+diff --git a/Directory.Build.props b/Directory.Build.props
+index ea3e227d6..ae75c21fe 100644
+--- a/Directory.Build.props
++++ b/Directory.Build.props
+@@ -24,8 +24,12 @@
+           scripts/Deploy-MSBuild.ps1
+           src/Framework/README.md
+           src/Utilities/README.md
++
++        Special-case while MSBuild uses Arcade 6 to build: 17.7 should
++        continue to target .NET 7, so bump a 6 here to 7.
+      -->
+-    <LatestDotNetCoreForMSBuild>net7.0</LatestDotNetCoreForMSBuild>
++    <LatestDotNetCoreForMSBuild>$(NetCurrent)</LatestDotNetCoreForMSBuild>
++    <LatestDotNetCoreForMSBuild Condition=" '$(NetCurrent)' == 'net6.0' ">net7.0</LatestDotNetCoreForMSBuild>
+   </PropertyGroup>
+ 
+   <PropertyGroup>
+diff --git a/src/Directory.Build.props b/src/Directory.Build.props
+index f6809d2e4..fd9dc2a59 100644
+--- a/src/Directory.Build.props
++++ b/src/Directory.Build.props
+@@ -15,7 +15,7 @@
+     <!-- Ensure that compiler errors emit full paths so that files
+          can be correctly annotated in GitHub. -->
+     <GenerateFullPaths>true</GenerateFullPaths>
+-    
++
+     <!-- https://github.com/NuGet/Home/issues/8684 -->
+     <NoWarn>$(NoWarn);NU5131</NoWarn>
+ 
+@@ -36,7 +36,7 @@
+     <PlatformTarget>AnyCPU</PlatformTarget>
+ 
+     <!-- Target frameworks for Exe and unit test projects (ie projects with runtime output) -->
+-    <RuntimeOutputTargetFrameworks>net7.0</RuntimeOutputTargetFrameworks>
++    <RuntimeOutputTargetFrameworks>$(LatestDotNetCoreForMSBuild)</RuntimeOutputTargetFrameworks>
+     <RuntimeOutputTargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(FullFrameworkTFM);$(RuntimeOutputTargetFrameworks)</RuntimeOutputTargetFrameworks>
+     <RuntimeOutputTargetFrameworks Condition="'$(MonoBuild)' == 'true'">$(FullFrameworkTFM)</RuntimeOutputTargetFrameworks>
+ 
