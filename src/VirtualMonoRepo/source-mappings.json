@@ -106,6 +106,10 @@
             ]
         },
         {
+            "name": "llvm-project",
+            "defaultRemote": "https://github.com/dotnet/llvm-project"
+        },
+        {
             "name": "msbuild",
             "defaultRemote": "https://github.com/dotnet/msbuild"
         },
