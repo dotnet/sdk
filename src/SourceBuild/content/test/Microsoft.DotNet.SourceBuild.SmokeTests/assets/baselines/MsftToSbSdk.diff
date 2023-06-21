@@ -462,16 +462,9 @@ index ------------
  ./sdk/x.y.z/runtimes/win/lib/
  ./sdk/x.y.z/runtimes/win/lib/netx.y/
 -./sdk/x.y.z/runtimes/win/lib/netx.y/
--./sdk/x.y.z/runtimes/win/lib/netx.y/Microsoft.Win32.SystemEvents.dll
  ./sdk/x.y.z/runtimes/win/lib/netx.y/System.Diagnostics.EventLog.dll
  ./sdk/x.y.z/runtimes/win/lib/netx.y/System.Diagnostics.EventLog.Messages.dll
--./sdk/x.y.z/runtimes/win/lib/netx.y/System.Drawing.Common.dll
  ./sdk/x.y.z/runtimes/win/lib/netx.y/System.Security.Cryptography.Pkcs.dll
- ./sdk/x.y.z/runtimes/win/lib/netx.y/System.ServiceProcess.ServiceController.dll
--./sdk/x.y.z/runtimes/win/lib/netx.y/System.Windows.Extensions.dll
- ./sdk/x.y.z/SDKPrecomputedAssemblyReferences.cache
- ./sdk/x.y.z/SdkResolvers/
- ./sdk/x.y.z/SdkResolvers/Microsoft.Build.NuGetSdkResolver/
 @@ ------------ @@
  ./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WebAssembly/tools/
  ./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WebAssembly/tools/netx.y/
