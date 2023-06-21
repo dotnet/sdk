@@ -2,6 +2,7 @@
 
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Linq;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
@@ -92,6 +93,8 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
         private static void AnalyzeMethod(IMethodSymbol methodSymbol, SymbolAnalysisContext symbolContext)
         {
+            Debug.Assert(methodSymbol.MethodKind is MethodKind.UserDefinedOperator or MethodKind.Conversion);
+
             // FxCop compat: only analyze externally visible symbols by default.
             // Note all the descriptors/rules for this analyzer have the same ID and category and hence
             // will always have identical configured visibility.
