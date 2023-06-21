@@ -84,3 +84,8 @@ msft,./sdk/x.y.z/FSharp/runtimes/win/lib/netx.y/Microsoft.Win32.SystemEvents.dll
 msft,./sdk/x.y.z/FSharp/runtimes/win/lib/netx.y/System.Drawing.Common.dll
 msft,./sdk/x.y.z/FSharp/runtimes/win/lib/netx.y/System.Security.Cryptography.ProtectedData.dll
 msft,./sdk/x.y.z/FSharp/runtimes/win/lib/netx.y/System.Windows.Extensions.dll
+
+# windows components - https://github.com/dotnet/source-build/issues/3526
+msft,./sdk/x.y.z/runtimes/win/lib/netx.y/Microsoft.Win32.SystemEvents.dll
+msft,./sdk/x.y.z/runtimes/win/lib/netx.y/System.Drawing.Common.dll
+msft,./sdk/x.y.z/runtimes/win/lib/netx.y/System.Windows.Extensions.dll
