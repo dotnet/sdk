@@ -77,8 +77,7 @@ namespace Microsoft.NetCore.Analyzers.Security
 
                             if (constructorArguments.Length == 1 &&
                                 constructorArguments[0].Kind == TypedConstantKind.Primitive &&
-                                constructorArguments[0].Value is bool value &&
-                                !value)
+                                constructorArguments[0].Value is false)
                             {
                                 symbolAnalysisContext.ReportDiagnostic(
                                     symbol.CreateDiagnostic(

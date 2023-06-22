@@ -171,7 +171,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 //  replace it with a call to 'string.Equals(x, y, StringComparison.CurrentCultureIgnoreCase)'.
                 //  If the violation contains a call to 'string.Compare(x, y, false)' then we
                 //  replace it with a call to 'string.Equals(x, y, StringComparison.CurrentCulture)'. 
-                var stringComparisonEnumMemberName = ignoreCaseLiteral.ConstantValue.Value is bool value && value ?
+                var stringComparisonEnumMemberName = ignoreCaseLiteral.ConstantValue.Value is true ?
                     nameof(StringComparison.CurrentCultureIgnoreCase) :
                     nameof(StringComparison.CurrentCulture);
                 var stringComparisonMemberAccessSyntax = generator.MemberAccessExpression(

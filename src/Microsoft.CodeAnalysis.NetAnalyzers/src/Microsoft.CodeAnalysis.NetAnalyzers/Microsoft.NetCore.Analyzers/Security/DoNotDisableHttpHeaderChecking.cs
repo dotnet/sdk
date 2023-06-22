@@ -59,8 +59,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                         if (property.Name == "EnableHeaderChecking" &&
                             property.ContainingType.Equals(httpRuntimeSectionTypeSymbol) &&
                             simpleAssignmentOperation.Value.ConstantValue.HasValue &&
-                            simpleAssignmentOperation.Value.ConstantValue.Value is bool value &&
-                            !value)
+                            simpleAssignmentOperation.Value.ConstantValue.Value is false)
                         {
                             operationAnalysisContext.ReportDiagnostic(
                                     simpleAssignmentOperation.CreateDiagnostic(

@@ -99,8 +99,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                                         httpCookieSymbol.Equals(propertyReferenceOperation.Property.ContainingType) &&
                                         propertyReferenceOperation.Property.Name == "HttpOnly" &&
                                         simpleAssignmentOperation.Value.ConstantValue.HasValue &&
-                                        simpleAssignmentOperation.Value.ConstantValue.Value is bool value &&
-                                        !value)
+                                        simpleAssignmentOperation.Value.ConstantValue.Value is false)
                                     {
                                         operationAnalysisContext.ReportDiagnostic(
                                             simpleAssignmentOperation.CreateDiagnostic(
