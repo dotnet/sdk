@@ -61,7 +61,6 @@
     <EnvironmentVariables Include="DotNetPackageVersionPropsPath=$(PackageVersionPropsPath)" />
     <EnvironmentVariables Include="DotNetRestorePackagesPath=$(PackagesDir)" />
     <EnvironmentVariables Include="DotNetBuildOffline=true" />
-    <EnvironmentVariables Include="SuppressTfmSupportBuildWarnings=true" />
 
     <!-- Ensure the SDK (Core-SDK/Installer) doesn't add an online source. -->
     <EnvironmentVariables Include="AddDotnetfeedProjectSource=false" />
