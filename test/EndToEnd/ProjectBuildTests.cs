@@ -203,7 +203,6 @@ namespace EndToEnd.Tests
             string expectedOutput =
 @"[\-\s]+
 [\w \.]+webapp,razor\s+\[C#\][\w\ \/]+
-[\w \.]+blazorserver\s+\[C#\][\w\ \/]+
 [\w \.]+classlib\s+\[C#\],F#,VB[\w\ \/]+
 [\w \.]+console\s+\[C#\],F#,VB[\w\ \/]+
 ";
@@ -347,7 +346,6 @@ namespace EndToEnd.Tests
         [InlineData("xunit", "C#")]
         [InlineData("xunit", "VB")]
         [InlineData("xunit", "F#")]
-        [InlineData("blazorserver")]
         [InlineData("blazorwasm")]
         [InlineData("web")]
         [InlineData("web", "C#")]
