@@ -15,7 +15,6 @@ public enum DotNetTemplate
     Mvc,
     Razor,
     BlazorWasm,
-    BlazorServer,
     WebApi,
     WebApp,
     Worker,

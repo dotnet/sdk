@@ -24,7 +24,6 @@ public class OmniSharpTests : SmokeTests
 
     [SkippableTheory(Config.ExcludeOmniSharpEnv, skipOnTrue: true)]
     [InlineData(DotNetTemplate.BlazorWasm)]
-    [InlineData(DotNetTemplate.BlazorServer)]
     [InlineData(DotNetTemplate.ClassLib)]
     [InlineData(DotNetTemplate.Console)]
     [InlineData(DotNetTemplate.MSTest)]
