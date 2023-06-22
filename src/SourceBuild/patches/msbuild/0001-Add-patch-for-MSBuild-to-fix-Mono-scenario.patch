@@ -1,0 +1,39 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Matt Thalman <mthalman@microsoft.com>
+Date: Thu, 22 Jun 2023 09:28:28 -0500
+Subject: [PATCH] Add patch for MSBuild to fix Mono scenario
+
+Backport: https://github.com/dotnet/msbuild/pull/8940
+---
+ eng/Version.Details.xml | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
+
+diff --git a/eng/Version.Details.xml b/eng/Version.Details.xml
+index 724c5623a..f4d1fb921 100644
+--- a/eng/Version.Details.xml
++++ b/eng/Version.Details.xml
+@@ -6,12 +6,24 @@
+       <Sha>525b6c35cc5c5c9b80b47044be2e4e77858d505a</Sha>
+       <SourceBuild RepoName="source-build-reference-packages" ManagedOnly="true" />
+     </Dependency>
++    <Dependency Name="System.Collections.Immutable" Version="7.0.0">
++      <Uri>https://github.com/dotnet/runtime</Uri>
++      <Sha>d099f075e45d2aa6007a22b71b45a08758559f80</Sha>
++    </Dependency>
+     <!-- Necessary for source-build. This allows the packages to be retrieved from previously-source-built artifacts
+       and flow in as dependencies of the packages produced by msbuild. -->
+     <Dependency Name="System.Configuration.ConfigurationManager" Version="7.0.0">
+       <Uri>https://github.com/dotnet/runtime</Uri>
+       <Sha>d099f075e45d2aa6007a22b71b45a08758559f80</Sha>
+     </Dependency>
++    <Dependency Name="System.Reflection.Metadata" Version="7.0.0">
++      <Uri>https://github.com/dotnet/runtime</Uri>
++      <Sha>d099f075e45d2aa6007a22b71b45a08758559f80</Sha>
++    </Dependency>
++    <Dependency Name="System.Reflection.MetadataLoadContext" Version="7.0.0">
++      <Uri>https://github.com/dotnet/runtime</Uri>
++      <Sha>d099f075e45d2aa6007a22b71b45a08758559f80</Sha>
++    </Dependency>
+     <Dependency Name="System.Security.Cryptography.Pkcs" Version="7.0.0">
+       <Uri>https://github.com/dotnet/runtime</Uri>
+       <Sha>d099f075e45d2aa6007a22b71b45a08758559f80</Sha>
