@@ -1,5 +1,6 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Immutable;
 using System.Linq;
 using Analyzer.Utilities;
@@ -57,7 +58,8 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
 
                 var constantIncompatibleTypes = builder.ToImmutable();
 
-                context.RegisterOperationAction(context =>
+#pragma warning disable IDE0039 // Use local function
+                Action<OperationAnalysisContext> operationAction = context =>
                 {
                     var fieldInitializer = context.Operation as IFieldInitializerOperation;
 
@@ -98,8 +100,12 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
 
                         context.ReportDiagnostic(lastField.CreateDiagnostic(DefaultRule, lastField.Name));
                     }
-                },
-                OperationKind.FieldInitializer);
+                };
+
+                context.RegisterSymbolStartAction(context =>
+                {
+                    context.RegisterOperationAction(operationAction, OperationKind.FieldInitializer);
+                }, SymbolKind.Field);
             });
         }
 

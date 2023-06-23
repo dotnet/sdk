@@ -45,13 +45,17 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
                 context.RegisterSymbolAction(context =>
                 {
-                    AnalyzeSymbol((INamedTypeSymbol)context.Symbol, memoryManager1, context.ReportDiagnostic);
+                    AnalyzeSymbol(
+                        (INamedTypeSymbol)context.Symbol,
+                        memoryManager1,
+                        static (context, diagnostic) => context.ReportDiagnostic(diagnostic),
+                        context);
                 }
                 , SymbolKind.NamedType);
             });
         }
 
-        private static void AnalyzeSymbol(INamedTypeSymbol namedTypeSymbol, INamedTypeSymbol memoryManager, Action<Diagnostic> addDiagnostic)
+        private static void AnalyzeSymbol<TContext>(INamedTypeSymbol namedTypeSymbol, INamedTypeSymbol memoryManager, Action<TContext, Diagnostic> addDiagnostic, TContext context)
         {
             if (namedTypeSymbol.DerivesFromOrImplementsAnyConstructionOf(memoryManager))
             {
@@ -59,7 +63,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 {
                     if (symbol is IMethodSymbol method && method.IsFinalizer())
                     {
-                        addDiagnostic(method.CreateDiagnostic(Rule, method.Name));
+                        addDiagnostic(context, method.CreateDiagnostic(Rule, method.Name));
                         break;
                     }
                 }

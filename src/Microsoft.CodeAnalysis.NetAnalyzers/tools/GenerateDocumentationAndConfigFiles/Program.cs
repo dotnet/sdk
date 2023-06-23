@@ -331,6 +331,7 @@ $@"<Project>
                     ResxSourceGeneratorPackageName => @"
   <ItemGroup>
     <CompilerVisibleProperty Include=""RootNamespace"" />
+    <CompilerVisibleItemMetadata Include=""AdditionalFiles"" MetadataName=""WithCulture"" />
     <CompilerVisibleItemMetadata Include=""AdditionalFiles"" MetadataName=""GenerateSource"" />
     <CompilerVisibleItemMetadata Include=""AdditionalFiles"" MetadataName=""RelativeDir"" />
     <CompilerVisibleItemMetadata Include=""AdditionalFiles"" MetadataName=""OmitGetResourceString"" />
@@ -1624,17 +1625,19 @@ $@"<Project>{GetCommonContents(packageName, categories)}{GetPackageSpecificConte
 ";
             }
 
+            const string AddAllResxFilesAsAdditionalFilesTarget = @"  <!-- Target to add all 'EmbeddedResource' files with '.resx' extension as analyzer additional files -->
+  <Target Name=""AddAllResxFilesAsAdditionalFiles"" BeforeTargets=""GenerateMSBuildEditorConfigFileCore;CoreCompile"" Condition=""'@(EmbeddedResource)' != '' AND '$(SkipAddAllResxFilesAsAdditionalFiles)' != 'true'"">
+    <ItemGroup>
+      <EmbeddedResourceWithResxExtension Include=""@(EmbeddedResource)"" Condition=""'%(Extension)' == '.resx'"" />
+      <AdditionalFiles Include=""@(EmbeddedResourceWithResxExtension)"" />
+    </ItemGroup>
+  </Target>";
+
             static string GetPackageSpecificContents(string packageName)
                 => packageName switch
                 {
-                    CodeAnalysisAnalyzersPackageName => @"
-  <!-- Target to add all 'EmbeddedResource' files with '.resx' extension as analyzer additional files -->
-  <Target Name=""AddAllResxFilesAsAdditionalFiles"" BeforeTargets=""CoreCompile"" Condition=""'@(EmbeddedResource)' != '' AND '$(SkipAddAllResxFilesAsAdditionalFiles)' != 'true'"">
-    <ItemGroup>
-      <EmbeddedResourceWithResxExtension Include=""@(EmbeddedResource)"" Condition=""'%(Extension)' == '.resx'"" />
-      <AdditionalFiles Include=""%(EmbeddedResourceWithResxExtension.Identity)"" />
-    </ItemGroup>
-  </Target>
+                    CodeAnalysisAnalyzersPackageName => $@"
+{AddAllResxFilesAsAdditionalFilesTarget}
 
   <!-- Workaround for https://github.com/dotnet/roslyn/issues/4655 -->
   <ItemGroup Condition=""Exists('$(MSBuildProjectDirectory)\AnalyzerReleases.Shipped.md')"" >
@@ -1667,11 +1670,31 @@ $@"<Project>{GetCommonContents(packageName, categories)}{GetPackageSpecificConte
                     NetAnalyzersPackageName => $@"
   <!-- Target to report a warning when SDK NetAnalyzers version is higher than the referenced NuGet NetAnalyzers version -->
   <Target Name=""_ReportUpgradeNetAnalyzersNuGetWarning"" BeforeTargets=""CoreCompile"" Condition=""'$(_SkipUpgradeNetAnalyzersNuGetWarning)' != 'true' "">
-    <Warning Text =""The .NET SDK has newer analyzers with version '$({NetAnalyzersSDKAssemblyVersionPropertyName})' than what version '$({NetAnalyzersNugetAssemblyVersionPropertyName})' of '{NetAnalyzersPackageName}' package provides. Update or remove this package reference.""
+    <Warning Text =""The .NET SDK has newer analyzers with version '$({NetAnalyzersSDKAssemblyVersionPropertyName})' than what version '$({NetAnalyzersNugetAssemblyVersionPropertyName})' of '{NetAnalyzersPackageName}' package provides. Update or remove this package reference. You can suppress this warning by setting the MSBuild property '_SkipUpgradeNetAnalyzersNuGetWarning' to 'true'.""
              Condition=""'$({NetAnalyzersNugetAssemblyVersionPropertyName})' != '' AND
                          '$({NetAnalyzersSDKAssemblyVersionPropertyName})' != '' AND
                           $({NetAnalyzersNugetAssemblyVersionPropertyName}) &lt; $({NetAnalyzersSDKAssemblyVersionPropertyName})""/>
   </Target>",
+                    ResxSourceGeneratorPackageName => $@"
+  <!-- Special handling for embedded resources to show as nested in Solution Explorer -->
+  <ItemGroup>
+    <!-- Localized embedded resources are just dependent on the parent RESX -->
+    <EmbeddedResource Update=""**\*.??.resx;**\*.??-??.resx;**\*.??-????.resx"" DependentUpon=""$([System.IO.Path]::ChangeExtension($([System.IO.Path]::GetFileNameWithoutExtension(%(Identity))), '.resx'))"" />
+  </ItemGroup>
+
+{AddAllResxFilesAsAdditionalFilesTarget}
+
+  <!-- Target to add 'EmbeddedResource' files with '.resx' extension and explicit- or implicit-GenerateSource as analyzer additional files. This only needs to run when SkipAddAllResxFilesAsAdditionalFiles is set to true.
+         Explicit GenerateSource: The embedded resource has GenerateSource=""true""
+         Implicit GenerateSource: The embedded resource did not set GenerateSource, and also does not have WithCulture set to true
+  -->
+  <Target Name=""AddGenerateSourceResxFilesAsAdditionalFiles"" BeforeTargets=""GenerateMSBuildEditorConfigFileCore;CoreCompile"" Condition=""'@(EmbeddedResource)' != '' AND '$(SkipAddAllResxFilesAsAdditionalFiles)' == 'true' AND '$(SkipAddGenerateSourceResxFilesAsAdditionalFiles)' != 'true'"">
+    <ItemGroup>
+      <EmbeddedResourceWithResxExtensionAndGenerateSource Include=""@(EmbeddedResource)"" Condition=""'%(Extension)' == '.resx' AND ('%(EmbeddedResource.GenerateSource)' == 'true' OR ('%(EmbeddedResource.GenerateSource)' != 'false' AND '%(EmbeddedResource.WithCulture)' != 'true'))"" />
+      <AdditionalFiles Include=""@(EmbeddedResourceWithResxExtensionAndGenerateSource)"" />
+    </ItemGroup>
+  </Target>
+",
                     _ => string.Empty,
                 };
         }

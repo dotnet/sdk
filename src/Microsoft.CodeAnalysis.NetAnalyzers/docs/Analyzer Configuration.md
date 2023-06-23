@@ -874,3 +874,18 @@ If set to true, all IEnumerable type parameters would be assumed enumerated by t
 Default Value: `false`
 
 Example: `dotnet_code_quality.CA1851.assume_method_enumerates_parameters = true`
+
+### Proceed with analysis even if InternalsVisibleTo is present
+
+Option Name: `ignore_internalsvisibleto`
+
+Configurable Rules: [CA1812](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/CA1812), [CA1852](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/CA1852)
+
+Option Values: `true` or `false`
+Certain diagnostics are normally disabled if the assembly being analyzed used the InternalsVisibleTo attribute to
+expose the assembly's internal symbols. This option lets you override this behavior and proceed with analysis
+regardless of whether the attribute is present.
+
+Default Value: `false`
+
+Example: `dotnet_code_quality.CA1852.ignore_internalsvisibleto = false`

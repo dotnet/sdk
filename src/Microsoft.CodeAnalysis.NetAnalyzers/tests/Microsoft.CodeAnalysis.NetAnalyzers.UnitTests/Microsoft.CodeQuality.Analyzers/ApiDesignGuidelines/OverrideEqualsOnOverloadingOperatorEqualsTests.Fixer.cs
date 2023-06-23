@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
@@ -137,7 +137,9 @@ class {|CS0659:{|CS0661:C|}|}
         [Fact]
         public async Task CA2224Async()
         {
-            await VerifyVB.VerifyCodeFixAsync(@"
+            await new VerifyVB.Test
+            {
+                TestCode = @"
 Class [|C|]
     Public Shared Operator =(c1 As C, c2 As C) As Boolean
         Return True
@@ -148,7 +150,7 @@ Class [|C|]
     End Operator
 End Class
 ",
-@"
+                FixedCode = @"
 Class C
     Public Shared Operator =(c1 As C, c2 As C) As Boolean
         Return True
@@ -170,13 +172,16 @@ Class C
         Throw New System.NotImplementedException()
     End Function
 End Class
-");
+",
+            }.RunAsync();
         }
 
         [Fact]
         public async Task CA2224_SimplifiedAsync()
         {
-            await VerifyVB.VerifyCodeFixAsync(@"
+            await new VerifyVB.Test
+            {
+                TestCode = @"
 Imports System
 
 Class [|C|]
@@ -189,7 +194,7 @@ Class [|C|]
     End Operator
 End Class
 ",
-@"
+                FixedCode = @"
 Imports System
 
 Class C
@@ -213,7 +218,8 @@ Class C
         Throw New NotImplementedException()
     End Function
 End Class
-");
+",
+            }.RunAsync();
         }
     }
 }

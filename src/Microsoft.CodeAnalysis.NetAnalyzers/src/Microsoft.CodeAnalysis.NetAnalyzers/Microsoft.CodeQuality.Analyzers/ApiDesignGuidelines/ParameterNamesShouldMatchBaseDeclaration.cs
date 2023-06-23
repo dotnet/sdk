@@ -59,7 +59,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 return;
             }
 
-            ImmutableArray<IMethodSymbol> originalDefinitions = GetOriginalDefinitions(methodSymbol);
+            ImmutableArray<IMethodSymbol> originalDefinitions = methodSymbol.GetOriginalDefinitions();
             if (originalDefinitions.IsEmpty)
             {
                 // We did not find any original definitions so we don't have to do anything.
@@ -122,33 +122,6 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     analysisContext.ReportDiagnostic(currentParameter.CreateDiagnostic(Rule, properties, methodSymbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat), currentParameter.Name, bestMatchParameter.Name, bestMatch.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat)));
                 }
             }
-        }
-
-        private static ImmutableArray<IMethodSymbol> GetOriginalDefinitions(IMethodSymbol methodSymbol)
-        {
-            ImmutableArray<IMethodSymbol>.Builder originalDefinitionsBuilder = ImmutableArray.CreateBuilder<IMethodSymbol>();
-
-            if (methodSymbol.IsOverride && (methodSymbol.OverriddenMethod != null))
-            {
-                originalDefinitionsBuilder.Add(methodSymbol.OverriddenMethod);
-            }
-
-            if (!methodSymbol.ExplicitInterfaceImplementations.IsEmpty)
-            {
-                originalDefinitionsBuilder.AddRange(methodSymbol.ExplicitInterfaceImplementations);
-            }
-
-            var typeSymbol = methodSymbol.ContainingType;
-            var methodSymbolName = methodSymbol.Name;
-
-            originalDefinitionsBuilder.AddRange(typeSymbol.AllInterfaces
-                .SelectMany(m => m.GetMembers(methodSymbolName))
-                .OfType<IMethodSymbol>()
-                .Where(m => methodSymbol.Parameters.Length == m.Parameters.Length
-                            && methodSymbol.Arity == m.Arity
-                            && typeSymbol.FindImplementationForInterfaceMember(m) != null));
-
-            return originalDefinitionsBuilder.ToImmutable();
         }
     }
 }

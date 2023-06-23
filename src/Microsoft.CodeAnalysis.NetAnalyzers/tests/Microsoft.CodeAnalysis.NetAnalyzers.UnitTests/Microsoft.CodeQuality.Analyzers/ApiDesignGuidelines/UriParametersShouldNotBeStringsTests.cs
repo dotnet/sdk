@@ -153,6 +153,36 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 
         }
 
+        [Fact, WorkItem(6371, "https://github.com/dotnet/roslyn-analyzers/issues/6371")]
+        public async Task CA1054NoWarningsForInterfaceImplementationsAsync()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+    using System;
+
+    public interface IUrlInterface1
+    {
+        void Method(string url);
+    }
+
+    public interface IUrlInterface2
+    {
+        void Method(string url);
+    }
+
+    public class A : IUrlInterface1, IUrlInterface2
+    {
+        public void Method(string url) // Implements IUrlInterface1, implicitly
+        {
+        }
+
+        void IUrlInterface2.Method(string url) // Implements IUrlInterface2, explicitly
+        {
+        }
+    }
+", GetCA1054CSharpResultAt(6, 28, "url", "IUrlInterface1.Method(string)")
+ , GetCA1054CSharpResultAt(11, 28, "url", "IUrlInterface2.Method(string)"));
+        }
+
         [Fact]
         public async Task CA1054NoWarningNotPublicAsync()
         {

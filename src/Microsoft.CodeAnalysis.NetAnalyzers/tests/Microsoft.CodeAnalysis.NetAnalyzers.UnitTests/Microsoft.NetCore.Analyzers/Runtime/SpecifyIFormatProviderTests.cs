@@ -1542,9 +1542,12 @@ public class C
 }",
                 ExpectedDiagnostics =
                 {
-                    VerifyCS.Diagnostic(SpecifyIFormatProviderAnalyzer.IFormatProviderOptionalRule).WithLocation(0),
-                    VerifyCS.Diagnostic(SpecifyIFormatProviderAnalyzer.IFormatProviderOptionalRule).WithLocation(1),
-                    VerifyCS.Diagnostic(SpecifyIFormatProviderAnalyzer.IFormatProviderOptionalRule).WithLocation(2),
+                    VerifyCS.Diagnostic(SpecifyIFormatProviderAnalyzer.IFormatProviderOptionalRule).WithLocation(0)
+                        .WithArguments("decimal.Parse(ReadOnlySpan<char>, [NumberStyles], [IFormatProvider])"),
+                    VerifyCS.Diagnostic(SpecifyIFormatProviderAnalyzer.IFormatProviderOptionalRule).WithLocation(1)
+                        .WithArguments("DateTime.Parse(ReadOnlySpan<char>, [IFormatProvider], [DateTimeStyles])"),
+                    VerifyCS.Diagnostic(SpecifyIFormatProviderAnalyzer.IFormatProviderOptionalRule).WithLocation(2)
+                        .WithArguments("C.Parse(string, [IFormatProvider])"),
                     VerifyCS.Diagnostic(SpecifyIFormatProviderAnalyzer.IFormatProviderAlternateRule).WithLocation(3)
                         .WithArguments("C.MyMethod(string)", "C.M(ReadOnlySpan<char>)", "C.MyMethod(string, [IFormatProvider])"),
                 },
@@ -1578,7 +1581,8 @@ End Class
 ",
                 ExpectedDiagnostics =
                 {
-                    VerifyVB.Diagnostic(SpecifyIFormatProviderAnalyzer.IFormatProviderOptionalRule).WithLocation(0),
+                    VerifyVB.Diagnostic(SpecifyIFormatProviderAnalyzer.IFormatProviderOptionalRule).WithLocation(0)
+                        .WithArguments("C.Parse(String, [IFormatProvider])"),
                     VerifyVB.Diagnostic(SpecifyIFormatProviderAnalyzer.IFormatProviderAlternateRule).WithLocation(1)
                         .WithArguments("C.MyMethod(String)", "C.M()", "C.MyMethod(String, [IFormatProvider])"),
                 },

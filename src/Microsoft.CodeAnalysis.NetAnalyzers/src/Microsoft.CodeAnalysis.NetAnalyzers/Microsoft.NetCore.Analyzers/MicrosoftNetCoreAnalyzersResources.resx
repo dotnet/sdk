@@ -213,6 +213,20 @@
   <data name="AvoidUnsealedAttributesMessage" xml:space="preserve">
     <value>Avoid unsealed attributes</value>
   </data>
+  <data name="AvoidConstArraysTitle" xml:space="preserve">
+    <value>Avoid constant arrays as arguments</value>
+  </data>
+  <data name="AvoidConstArraysCodeFixTitle" xml:space="preserve">
+    <value>Extract to static readonly field</value>
+  </data>
+  <data name="AvoidConstArraysDescription" xml:space="preserve">
+    <value>Constant arrays passed as arguments are not reused when called repeatedly, which implies a new array is created each time. Consider extracting them to 'static readonly' fields to improve performance if the passed array is not mutated within the called method.</value>
+    <comment>{Locked="static readonly"}</comment>
+  </data>
+  <data name="AvoidConstArraysMessage" xml:space="preserve">
+    <value>Prefer 'static readonly' fields over constant array arguments if the called method is called repeatedly and is not mutating the passed array</value>
+    <comment>{Locked="static readonly"}</comment>
+  </data>
   <data name="TestForEmptyStringsUsingStringLengthTitle" xml:space="preserve">
     <value>Test for empty strings using string length</value>
   </data>
@@ -735,14 +749,14 @@
   <data name="DoNotAddSchemaByURLMessage" xml:space="preserve">
     <value>This overload of the Add method is potentially unsafe because it may resolve dangerous external references</value>
   </data>
-  <data name="DoNotCallDangerousMethodsInDeserialization" xml:space="preserve">
+  <data name="DoNotCallDangerousMethodsInDeserializationTitle" xml:space="preserve">
     <value>Do Not Call Dangerous Methods In Deserialization</value>
   </data>
   <data name="DoNotCallDangerousMethodsInDeserializationDescription" xml:space="preserve">
     <value>Insecure Deserialization is a vulnerability which occurs when untrusted data is used to abuse the logic of an application, inflict a Denial-of-Service (DoS) attack, or even execute arbitrary code upon it being deserialized. It’s frequently possible for malicious users to abuse these deserialization features when the application is deserializing untrusted data which is under their control. Specifically, invoke dangerous methods in the process of deserialization. Successful insecure deserialization attacks could allow an attacker to carry out attacks such as DoS attacks, authentication bypasses, and remote code execution.</value>
   </data>
   <data name="DoNotCallDangerousMethodsInDeserializationMessage" xml:space="preserve">
-    <value>When deserializing an instance of class {0}, method {1} can call dangerous method {2}. The potential method invocations are: {3}.</value>
+    <value>When deserializing an instance of class '{0}', method '{1}' can directly or indirectly call dangerous method '{2}'</value>
   </data>
   <data name="DoNotDisableCertificateValidation" xml:space="preserve">
     <value>Do Not Disable Certificate Validation</value>
@@ -856,13 +870,13 @@
     <value>Call to obsolete key derivation function {0}.{1}</value>
   </data>
   <data name="DoNotUseReferenceEqualsWithValueTypesDescription" xml:space="preserve">
-    <value>Value type typed arguments are uniquely boxed for each call to this method, therefore the result is always false.</value>
+    <value>Value type typed arguments are uniquely boxed for each call to this method, therefore the result can be unexpected.</value>
   </data>
   <data name="DoNotUseReferenceEqualsWithValueTypesComparerMessage" xml:space="preserve">
-    <value>Do not pass an argument with value type '{0}' to the 'Equals' method on 'ReferenceEqualityComparer'. Due to value boxing, this call to 'Equals' will always return 'false'.</value>
+    <value>Do not pass an argument with value type '{0}' to the 'Equals' method on 'ReferenceEqualityComparer'. Due to value boxing, this call to 'Equals' can return an unexpected result. Consider using 'EqualityComparer' instead, or pass reference type arguments if you intend to use 'ReferenceEqualityComparer'.</value>
   </data>
   <data name="DoNotUseReferenceEqualsWithValueTypesMethodMessage" xml:space="preserve">
-    <value>Do not pass an argument with value type '{0}' to 'ReferenceEquals'. Due to value boxing, this call to 'ReferenceEquals' will always return 'false'.</value>
+    <value>Do not pass an argument with value type '{0}' to 'ReferenceEquals'. Due to value boxing, this call to 'ReferenceEquals' can return an unexpected result. Consider using 'Equals' instead, or pass reference type arguments if you intend to use 'ReferenceEquals'.</value>
   </data>
   <data name="DoNotUseReferenceEqualsWithValueTypesTitle" xml:space="preserve">
     <value>Do not use ReferenceEquals with value types</value>
@@ -2039,5 +2053,26 @@ Widening and user defined conversions are not supported with generic types.</val
   </data>
   <data name="PreferIsEmptyOverAnyMessage" xml:space="preserve">
     <value>Prefer an 'IsEmpty' check rather than using 'Any()', both for clarity and for performance</value>
+  </data>
+  <data name="RecommendCaseInsensitiveStringComparerStringComparisonCodeFixTitle" xml:space="preserve">
+    <value>Use the 'string.{0}(string, StringComparison)' overload</value>
+  </data>
+  <data name="RecommendCaseInsensitiveStringComparerTitle" xml:space="preserve">
+    <value>Prefer using 'StringComparer' to perform case-insensitive string comparisons</value>
+  </data>
+  <data name="RecommendCaseInsensitiveStringComparerDescription" xml:space="preserve">
+    <value>Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons when using 'CompareTo', because they lead to an allocation. Instead, use 'StringComparer' to perform case-insensitive comparisons.</value>
+  </data>
+  <data name="RecommendCaseInsensitiveStringComparerMessage" xml:space="preserve">
+    <value>Prefer using 'StringComparer' to perform a case-insensitive comparison</value>
+  </data>
+  <data name="RecommendCaseInsensitiveStringComparisonTitle" xml:space="preserve">
+    <value>Prefer the 'StringComparison' method overloads to perform case-insensitive string comparisons</value>
+  </data>
+  <data name="RecommendCaseInsensitiveStringComparisonDescription" xml:space="preserve">
+    <value>Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons because they lead to an allocation. Instead, prefer calling the method overloads of 'Contains', 'IndexOf' and 'StartsWith' that take a 'StringComparison' enum value to perform case-insensitive comparisons.</value>
+  </data>
+  <data name="RecommendCaseInsensitiveStringComparisonMessage" xml:space="preserve">
+    <value>Prefer the string comparison method overload of '{0}' that takes a 'StringComparison' enum value to perform a case-insensitive comparison</value>
   </data>
 </root>

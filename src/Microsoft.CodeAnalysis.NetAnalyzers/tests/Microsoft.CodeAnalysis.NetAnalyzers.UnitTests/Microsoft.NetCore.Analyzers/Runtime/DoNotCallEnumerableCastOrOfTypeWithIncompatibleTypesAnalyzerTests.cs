@@ -23,6 +23,30 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         private readonly DiagnosticDescriptor ofTypeRule = DoNotCallEnumerableCastOrOfTypeWithIncompatibleTypesAnalyzer.OfTypeRule;
 
         [Fact]
+        public async Task CanCastRoundtripStructToInterface()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+
+interface IInterface {}
+
+readonly struct Implementation : IInterface {}
+
+class C
+{
+    void M()
+    {
+        IEnumerable<Implementation> e = default;
+        var to = e.Cast<IInterface>();
+        _ = to.Cast<Implementation>();
+    }
+}
+");
+        }
+
+        [Fact]
         public async Task OnlyWellKnownIEnumerable()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"

@@ -69,7 +69,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 //  already-reported violation. 
                 //  We also don't report any diagnostic if the concat operation has too many operands for the span-based
                 //  Concat overloads to handle.
-                var topMostConcatOperations = PooledConcurrentSet<IBinaryOperation>.GetInstance();
+                var topMostConcatOperations = TemporarySet<IBinaryOperation>.Empty;
 
                 context.RegisterOperationAction(PopulateTopMostConcatOperations, OperationKind.Binary);
                 context.RegisterOperationBlockEndAction(ReportDiagnosticsOnRootConcatOperationsWithSubstringCalls);
@@ -82,7 +82,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     if (!TryGetTopMostConcatOperation(binary, out var topMostConcatOperation))
                         return;
 
-                    topMostConcatOperations.Add(topMostConcatOperation);
+                    topMostConcatOperations.Add(topMostConcatOperation, context.CancellationToken);
                 }
 
                 void ReportDiagnosticsOnRootConcatOperationsWithSubstringCalls(OperationBlockAnalysisContext context)
@@ -91,7 +91,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     //  direct or conditional substring invocations when there is an applicable span-based overload of
                     //  the string.Concat method.
                     //  We don't report when the concatenation contains anything other than strings or character literals.
-                    foreach (var operation in topMostConcatOperations)
+                    foreach (var operation in topMostConcatOperations.NonConcurrentEnumerable)
                     {
                         if (ShouldBeReported(operation))
                         {

@@ -159,16 +159,13 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                                 return;
                             }
 
-                            //Detect if current argument can be passed directly to args
-                            argsIsArray = argument.ArgumentKind == ArgumentKind.ParamArray && parameterType.TypeKind == TypeKind.Array && ((IArrayTypeSymbol)parameterType).ElementType.SpecialType == SpecialType.System_Object;
-
-                            if (argument.ArgumentKind == ArgumentKind.ParamArray
-                                && argument.Value is IArrayCreationOperation arrayCreation)
+                            if (argument.Value is IArrayCreationOperation arrayCreation)
                             {
                                 paramsCount += arrayCreation.Initializer.ElementValues.Length;
                             }
                             else
                             {
+                                argsIsArray = true;
                                 paramsCount++;
                             }
                         }

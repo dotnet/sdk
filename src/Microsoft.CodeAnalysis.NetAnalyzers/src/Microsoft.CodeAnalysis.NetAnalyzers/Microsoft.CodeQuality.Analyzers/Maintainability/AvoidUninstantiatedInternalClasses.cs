@@ -50,20 +50,8 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                 var compilation = startContext.Compilation;
                 var entryPointContainingType = compilation.GetEntryPoint(startContext.CancellationToken)?.ContainingType;
                 var wellKnownTypeProvider = WellKnownTypeProvider.GetOrCreate(compilation);
-
-                // If the assembly being built by this compilation exposes its internals to
-                // any other assembly, don't report any "uninstantiated internal class" errors.
-                // If we were to report an error for an internal type that is not instantiated
-                // by this assembly, and then it turned out that the friend assembly did
-                // instantiate the type, that would be a false positive. We've decided it's
-                // better to have false negatives (which would happen if the type were *not*
-                // instantiated by any friend assembly, but we didn't report the issue) than
-                // to have false positives.
-                var internalsVisibleToAttributeSymbol = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeCompilerServicesInternalsVisibleToAttribute);
-                if (compilation.Assembly.HasAttribute(internalsVisibleToAttributeSymbol))
-                {
-                    return;
-                }
+                var hasInternalsVisibleTo = startContext.Compilation.Assembly.HasAttribute(
+                    startContext.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeCompilerServicesInternalsVisibleToAttribute));
 
                 var systemAttributeSymbol = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemAttribute);
                 var iConfigurationSectionHandlerSymbol = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemConfigurationIConfigurationSectionHandler);
@@ -170,7 +158,10 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
 
                     foreach (var type in uninstantiatedInternalTypes)
                     {
-                        context.ReportDiagnostic(type.CreateDiagnostic(Rule, type.FormatMemberName()));
+                        if (!hasInternalsVisibleTo || context.Options.GetBoolOptionValue(EditorConfigOptionNames.IgnoreInternalsVisibleTo, Rule, type, context.Compilation, defaultValue: false))
+                        {
+                            context.ReportDiagnostic(type.CreateDiagnostic(Rule, type.FormatMemberName()));
+                        }
                     }
                 });
 

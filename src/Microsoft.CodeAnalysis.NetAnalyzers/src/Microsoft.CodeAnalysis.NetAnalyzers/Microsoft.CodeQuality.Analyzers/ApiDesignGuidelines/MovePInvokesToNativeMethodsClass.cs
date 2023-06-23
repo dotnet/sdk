@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Immutable;
@@ -43,15 +43,18 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
             context.RegisterSymbolAction(symbolContext =>
             {
-                AnalyzeSymbol((INamedTypeSymbol)symbolContext.Symbol, symbolContext.ReportDiagnostic);
+                AnalyzeSymbol(
+                    (INamedTypeSymbol)symbolContext.Symbol,
+                    static (context, diagnostic) => context.ReportDiagnostic(diagnostic),
+                    symbolContext);
             }, SymbolKind.NamedType);
         }
 
-        private static void AnalyzeSymbol(INamedTypeSymbol symbol, Action<Diagnostic> addDiagnostic)
+        private static void AnalyzeSymbol<TContext>(INamedTypeSymbol symbol, Action<TContext, Diagnostic> addDiagnostic, TContext context)
         {
             if (symbol.GetMembers().Any(IsDllImport) && !IsTypeNamedCorrectly(symbol.Name))
             {
-                addDiagnostic(symbol.CreateDiagnostic(Rule));
+                addDiagnostic(context, symbol.CreateDiagnostic(Rule));
             }
         }
 

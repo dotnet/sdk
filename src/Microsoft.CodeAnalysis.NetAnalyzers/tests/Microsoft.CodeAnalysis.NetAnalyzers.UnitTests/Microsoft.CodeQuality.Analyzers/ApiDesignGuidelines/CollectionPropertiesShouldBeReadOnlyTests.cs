@@ -471,5 +471,22 @@ struct S
 }",
             }.RunAsync();
         }
+
+        [Fact]
+        public Task CA2227_CSharp_InheritedPropertyAsync()
+        {
+            return VerifyCS.VerifyAnalyzerAsync(@"
+using System.Collections.Generic;
+
+public class Test : ITest
+{
+	public ICollection<int> Collection { get; set; }
+}
+
+public interface ITest
+{
+	ICollection<int> {|#0:Collection|} { get; set; }
+}", DiagnosticResult.CompilerWarning(CollectionPropertiesShouldBeReadOnlyAnalyzer.RuleId).WithLocation(0));
+        }
     }
 }

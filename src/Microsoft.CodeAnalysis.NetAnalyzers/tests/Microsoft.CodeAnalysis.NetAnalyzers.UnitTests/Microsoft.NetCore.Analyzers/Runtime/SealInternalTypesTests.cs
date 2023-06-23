@@ -2,6 +2,7 @@
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
 using Xunit;
 
@@ -16,23 +17,39 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {
     public class SealInternalTypesTests
     {
+        // NOTE: 'SealInternalTypes' analyzer reports a compilation end diagnostic.
+        //       Code fixes are not yet supported for compilation end diagnostics,
+        //       hence 'SealInternalTypesFixer' is a no-op right now.
+        //       However, we have still implemented this fixer so that if code fix support
+        //       gets added for compilation end diagnostics in future, it should automatically light up.
+        //       All tests in this file are marked with 'CodeFixTestBehaviors.SkipLocalDiagnosticCheck'
+        //       as compilation end diagnostics are non-local diagnostics.
+
         #region Diagnostic
         [Theory]
         [InlineData("internal ")]
         [InlineData("")]
-        public Task TopLevelInternalClass_Diagnostic_CS(string accessModifier)
+        public async Task TopLevelInternalClass_Diagnostic_CS(string accessModifier)
         {
             string source = $"{accessModifier}class {{|#0:C|}} {{ }}";
             string fixedSource = $"{accessModifier}sealed class C {{ }}";
-            var diagnostic = VerifyCS.Diagnostic(Rule).WithArguments("C").WithLocation(0);
 
-            return VerifyCS.VerifyCodeFixAsync(source, diagnostic, fixedSource);
+            await new VerifyCS.Test
+            {
+                CodeFixTestBehaviors = CodeFixTestBehaviors.SkipLocalDiagnosticCheck,
+                TestCode = source,
+                ExpectedDiagnostics =
+                {
+                    VerifyCS.Diagnostic(Rule).WithArguments("C").WithLocation(0),
+                },
+                FixedCode = fixedSource,
+            }.RunAsync();
         }
 
         [Theory]
         [InlineData("Friend ")]
         [InlineData("")]
-        public Task TopLevelInternalClass_Diagnostic_VB(string accessModifier)
+        public async Task TopLevelInternalClass_Diagnostic_VB(string accessModifier)
         {
             string source = $@"
 {accessModifier}Class {{|#0:C|}}
@@ -40,13 +57,21 @@ End Class";
             string fixedSource = $@"
 {accessModifier}NotInheritable Class C
 End Class";
-            var diagnostic = VerifyVB.Diagnostic(Rule).WithArguments("C").WithLocation(0);
 
-            return VerifyVB.VerifyCodeFixAsync(source, diagnostic, fixedSource);
+            await new VerifyVB.Test
+            {
+                CodeFixTestBehaviors = CodeFixTestBehaviors.SkipLocalDiagnosticCheck,
+                TestCode = source,
+                ExpectedDiagnostics =
+                {
+                    VerifyVB.Diagnostic(Rule).WithArguments("C").WithLocation(0),
+                },
+                FixedCode = fixedSource,
+            }.RunAsync();
         }
 
         [Fact]
-        public Task NonEmptyInternalClass_Diagnostic_CS()
+        public async Task NonEmptyInternalClass_Diagnostic_CS()
         {
             string source = @"
 internal class {|#0:C|}
@@ -58,15 +83,23 @@ internal sealed class C
 {
     private int _i;
 }";
-            var diagnostic = VerifyCS.Diagnostic(Rule).WithArguments("C").WithLocation(0);
 
-            return VerifyCS.VerifyCodeFixAsync(source, diagnostic, fixedSource);
+            await new VerifyCS.Test
+            {
+                CodeFixTestBehaviors = CodeFixTestBehaviors.SkipLocalDiagnosticCheck,
+                TestCode = source,
+                ExpectedDiagnostics =
+                {
+                    VerifyCS.Diagnostic(Rule).WithArguments("C").WithLocation(0),
+                },
+                FixedCode = fixedSource,
+            }.RunAsync();
         }
 
         [Theory]
         [InlineData("internal ")]
         [InlineData("")]
-        public Task InternalClassInNamespace_Diagnostic_CS(string accessModifier)
+        public async Task InternalClassInNamespace_Diagnostic_CS(string accessModifier)
         {
             string source = $@"
 namespace N
@@ -78,15 +111,23 @@ namespace N
 {{
     {accessModifier}sealed class C {{ }}
 }}";
-            var diagnostic = VerifyCS.Diagnostic(Rule).WithArguments("C").WithLocation(0);
 
-            return VerifyCS.VerifyCodeFixAsync(source, diagnostic, fixedSource);
+            await new VerifyCS.Test
+            {
+                CodeFixTestBehaviors = CodeFixTestBehaviors.SkipLocalDiagnosticCheck,
+                TestCode = source,
+                ExpectedDiagnostics =
+                {
+                    VerifyCS.Diagnostic(Rule).WithArguments("C").WithLocation(0),
+                },
+                FixedCode = fixedSource,
+            }.RunAsync();
         }
 
         [Theory]
         [InlineData("Friend ")]
         [InlineData("")]
-        public Task InternalClassInNamespace_Diagnostic_VB(string accessModifier)
+        public async Task InternalClassInNamespace_Diagnostic_VB(string accessModifier)
         {
             string source = $@"
 Namespace N
@@ -98,9 +139,17 @@ Namespace N
     {accessModifier}NotInheritable Class C
     End Class
 End Namespace";
-            var diagnostic = VerifyVB.Diagnostic(Rule).WithArguments("C").WithLocation(0);
 
-            return VerifyVB.VerifyCodeFixAsync(source, diagnostic, fixedSource);
+            await new VerifyVB.Test
+            {
+                CodeFixTestBehaviors = CodeFixTestBehaviors.SkipLocalDiagnosticCheck,
+                TestCode = source,
+                ExpectedDiagnostics =
+                {
+                    VerifyVB.Diagnostic(Rule).WithArguments("C").WithLocation(0),
+                },
+                FixedCode = fixedSource,
+            }.RunAsync();
         }
 
         [Theory]
@@ -108,8 +157,8 @@ End Namespace";
         [InlineData("public", "private")]
         [InlineData("public", "private protected")]
         [InlineData("internal", "public")]
-        [InlineData("internal", "internal protected")]
-        public Task NestedOneDeep_NotExternallyVisible_Diagnostic_CS(string outerModifiers, string innerModifiers)
+        [InlineData("internal", "protected internal")]
+        public async Task NestedOneDeep_NotExternallyVisible_Diagnostic_CS(string outerModifiers, string innerModifiers)
         {
             string source = $@"
 {outerModifiers} sealed class Outer
@@ -121,9 +170,17 @@ End Namespace";
 {{
     {innerModifiers} sealed class C {{ }}
 }}";
-            var diagnostic = VerifyCS.Diagnostic(Rule).WithArguments("C").WithLocation(0);
 
-            return VerifyCS.VerifyCodeFixAsync(source, diagnostic, fixedSource);
+            await new VerifyCS.Test
+            {
+                CodeFixTestBehaviors = CodeFixTestBehaviors.SkipLocalDiagnosticCheck,
+                TestCode = source,
+                ExpectedDiagnostics =
+                {
+                    VerifyCS.Diagnostic(Rule).WithArguments("C").WithLocation(0),
+                },
+                FixedCode = fixedSource,
+            }.RunAsync();
         }
 
         [Theory]
@@ -132,7 +189,7 @@ End Namespace";
         [InlineData("Public", "Private Protected")]
         [InlineData("Friend", "Public")]
         [InlineData("Friend", "Friend Protected")]
-        public Task NestedOneDeep_NotExternallyVisible_Diagnostic_VB(string outerModifiers, string innerModifiers)
+        public async Task NestedOneDeep_NotExternallyVisible_Diagnostic_VB(string outerModifiers, string innerModifiers)
         {
             string source = $@"
 {outerModifiers} NotInheritable Class Outer
@@ -144,16 +201,24 @@ End Class";
     {innerModifiers} NotInheritable Class C
     End Class
 End Class";
-            var diagnostic = VerifyVB.Diagnostic(Rule).WithArguments("C").WithLocation(0);
 
-            return VerifyVB.VerifyCodeFixAsync(source, diagnostic, fixedSource);
+            await new VerifyVB.Test
+            {
+                CodeFixTestBehaviors = CodeFixTestBehaviors.SkipLocalDiagnosticCheck,
+                TestCode = source,
+                ExpectedDiagnostics =
+                {
+                    VerifyVB.Diagnostic(Rule).WithArguments("C").WithLocation(0),
+                },
+                FixedCode = fixedSource,
+            }.RunAsync();
         }
 
         [Theory]
         [InlineData("public", "public", "internal")]
         [InlineData("internal", "internal protected", "public")]
         [InlineData("public", "private protected", "public")]
-        public Task NestedTwoDeep_NotExternallyVisible_Diagnostic_CS(string outerModifiers, string middleModifiers, string innerModifiers)
+        public async Task NestedTwoDeep_NotExternallyVisible_Diagnostic_CS(string outerModifiers, string middleModifiers, string innerModifiers)
         {
             string source = $@"
 {outerModifiers} sealed class Outer
@@ -171,16 +236,24 @@ End Class";
         {innerModifiers} sealed class {{|#0:C|}} {{ }}
     }}
 }}";
-            var diagnostic = VerifyCS.Diagnostic(Rule).WithArguments("C").WithLocation(0);
 
-            return VerifyCS.VerifyCodeFixAsync(source, diagnostic, fixedSource);
+            await new VerifyCS.Test
+            {
+                CodeFixTestBehaviors = CodeFixTestBehaviors.SkipLocalDiagnosticCheck,
+                TestCode = source,
+                ExpectedDiagnostics =
+                {
+                    VerifyCS.Diagnostic(Rule).WithArguments("C").WithLocation(0),
+                },
+                FixedCode = fixedSource,
+            }.RunAsync();
         }
 
         [Theory]
         [InlineData("Public", "Public", "Friend")]
         [InlineData("Friend", "Friend Protected", "Public")]
         [InlineData("Public", "Private Protected", "Public")]
-        public Task NestedTwoDeep_NotExternallyVisible_Diagnostic_VB(string outerModifiers, string middleModifiers, string innerModifiers)
+        public async Task NestedTwoDeep_NotExternallyVisible_Diagnostic_VB(string outerModifiers, string middleModifiers, string innerModifiers)
         {
             string source = $@"
 {outerModifiers} NotInheritable Class Outer
@@ -196,10 +269,50 @@ End Class";
         End Class
     End Class
 End Class";
-            var diagnostic = VerifyVB.Diagnostic(Rule).WithArguments("C").WithLocation(0);
 
-            return VerifyVB.VerifyCodeFixAsync(source, diagnostic, fixedSource);
+            await new VerifyVB.Test
+            {
+                CodeFixTestBehaviors = CodeFixTestBehaviors.SkipLocalDiagnosticCheck,
+                TestCode = source,
+                ExpectedDiagnostics =
+                {
+                    VerifyVB.Diagnostic(Rule).WithArguments("C").WithLocation(0),
+                },
+                FixedCode = fixedSource,
+            }.RunAsync();
         }
+
+        [Theory]
+        [CombinatorialData]
+        public async Task InternalsVisibleTo_Diagnostic_WhenOptionsDemandIt(bool ignoreInternalsVisibleTo)
+        {
+            string source = @"[assembly: System.Runtime.CompilerServices.InternalsVisibleTo(""TestProject"")]
+                              internal class {|#0:C|} { }";
+
+            var test = new VerifyCS.Test
+            {
+                TestCode = source,
+                TestState =
+                {
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+dotnet_code_quality.CA1852.ignore_internalsvisibleto = {ignoreInternalsVisibleTo}
+") }
+                }
+            };
+
+            if (ignoreInternalsVisibleTo)
+            {
+                test.ExpectedDiagnostics.Add(
+                    VerifyCS.Diagnostic(Rule)
+                        .WithLocation(0)
+                        .WithArguments("C"));
+            }
+
+            await test.RunAsync();
+        }
+
         #endregion
 
         #region No Diagnostic
@@ -353,6 +466,7 @@ End Class";
         {
             var test = new VerifyCS.Test
             {
+                CodeFixTestBehaviors = CodeFixTestBehaviors.SkipLocalDiagnosticCheck,
                 TestState =
                 {
                     Sources =
@@ -415,6 +529,7 @@ End Class";
         {
             var test = new VerifyVB.Test
             {
+                CodeFixTestBehaviors = CodeFixTestBehaviors.SkipLocalDiagnosticCheck,
                 TestState =
                 {
                     Sources =
