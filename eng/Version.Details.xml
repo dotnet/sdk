@@ -61,13 +61,13 @@
       <Uri>https://github.com/dotnet/msbuild</Uri>
       <Sha>b58ecd263b4ae464412fde58aff2d7498370ce4f</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.FSharp.Compiler" Version="12.8.0-beta.23322.5">
+    <Dependency Name="Microsoft.FSharp.Compiler" Version="12.8.0-beta.23322.7">
       <Uri>https://github.com/dotnet/fsharp</Uri>
-      <Sha>528d287e3464af3c47fc54ba8e92d3c3d023ef3c</Sha>
+      <Sha>5d0a22dcacb3ce1d81fd60c66a6260d0473e9891</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.fsharp" Version="8.0.100-beta.23322.5">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.fsharp" Version="8.0.100-beta.23322.7">
       <Uri>https://github.com/dotnet/fsharp</Uri>
-      <Sha>528d287e3464af3c47fc54ba8e92d3c3d023ef3c</Sha>
+      <Sha>5d0a22dcacb3ce1d81fd60c66a6260d0473e9891</Sha>
       <SourceBuild RepoName="fsharp" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="dotnet-format" Version="8.0.431903">
@@ -209,25 +209,25 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>b7e474b5419471c6989ffe15fc34ed70bfa70778</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.WindowsDesktop.App.Runtime.win-x64" Version="8.0.0-preview.6.23320.4">
+    <Dependency Name="Microsoft.WindowsDesktop.App.Runtime.win-x64" Version="8.0.0-preview.6.23322.2">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
-      <Sha>a220420021ba8a8047ff26b3e86c9fccf6725a5c</Sha>
+      <Sha>cc1ef679f46d5edded150da3ba404e2bbfb102b1</Sha>
     </Dependency>
-    <Dependency Name="VS.Redist.Common.WindowsDesktop.SharedFramework.x64.8.0" Version="8.0.0-preview.6.23320.4">
+    <Dependency Name="VS.Redist.Common.WindowsDesktop.SharedFramework.x64.8.0" Version="8.0.0-preview.6.23322.2">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
-      <Sha>a220420021ba8a8047ff26b3e86c9fccf6725a5c</Sha>
+      <Sha>cc1ef679f46d5edded150da3ba404e2bbfb102b1</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.WindowsDesktop.App.Ref" Version="8.0.0-preview.6.23320.4">
+    <Dependency Name="Microsoft.WindowsDesktop.App.Ref" Version="8.0.0-preview.6.23322.2">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
-      <Sha>a220420021ba8a8047ff26b3e86c9fccf6725a5c</Sha>
+      <Sha>cc1ef679f46d5edded150da3ba404e2bbfb102b1</Sha>
     </Dependency>
-    <Dependency Name="VS.Redist.Common.WindowsDesktop.TargetingPack.x64.8.0" Version="8.0.0-preview.6.23320.4">
+    <Dependency Name="VS.Redist.Common.WindowsDesktop.TargetingPack.x64.8.0" Version="8.0.0-preview.6.23322.2">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
-      <Sha>a220420021ba8a8047ff26b3e86c9fccf6725a5c</Sha>
+      <Sha>cc1ef679f46d5edded150da3ba404e2bbfb102b1</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Sdk.WindowsDesktop" Version="8.0.0-preview.6.23320.1" CoherentParentDependency="Microsoft.WindowsDesktop.App.Ref">
+    <Dependency Name="Microsoft.NET.Sdk.WindowsDesktop" Version="8.0.0-preview.6.23321.10" CoherentParentDependency="Microsoft.WindowsDesktop.App.Ref">
       <Uri>https://github.com/dotnet/wpf</Uri>
-      <Sha>fd8fc8064a119961824319b637a8048ffbb36936</Sha>
+      <Sha>1b06b734cfd8c792c5283522624707637aa4f112</Sha>
     </Dependency>
     <Dependency Name="Microsoft.AspNetCore.App.Ref" Version="8.0.0-preview.6.23320.14">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
@@ -274,18 +274,18 @@
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
       <Sha>53845260d1ffa1a90fe4c499142bc6709dddeacf</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.Razor.Tooling.Internal" Version="7.0.0-preview.23321.2">
+    <Dependency Name="Microsoft.CodeAnalysis.Razor.Tooling.Internal" Version="7.0.0-preview.23322.2">
       <Uri>https://github.com/dotnet/razor</Uri>
-      <Sha>e204f30c93079ae112ceb4bcd536d7852396a8e3</Sha>
+      <Sha>0250104edec8936a8e9c93ea93cfdcf8cb80f99c</Sha>
       <SourceBuild RepoName="razor" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Mvc.Razor.Extensions.Tooling.Internal" Version="7.0.0-preview.23321.2">
+    <Dependency Name="Microsoft.AspNetCore.Mvc.Razor.Extensions.Tooling.Internal" Version="7.0.0-preview.23322.2">
       <Uri>https://github.com/dotnet/razor</Uri>
-      <Sha>e204f30c93079ae112ceb4bcd536d7852396a8e3</Sha>
+      <Sha>0250104edec8936a8e9c93ea93cfdcf8cb80f99c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Sdk.Razor.SourceGenerators.Transport" Version="7.0.0-preview.23321.2">
+    <Dependency Name="Microsoft.NET.Sdk.Razor.SourceGenerators.Transport" Version="7.0.0-preview.23322.2">
       <Uri>https://github.com/dotnet/razor</Uri>
-      <Sha>e204f30c93079ae112ceb4bcd536d7852396a8e3</Sha>
+      <Sha>0250104edec8936a8e9c93ea93cfdcf8cb80f99c</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.FileProviders.Embedded" Version="8.0.0-preview.6.23320.14">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
