@@ -1,7 +1,6 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
-using Microsoft.CodeAnalysis.Testing;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.OperatorOverloadsHaveNamedAlternatesAnalyzer,
@@ -192,7 +191,6 @@ public class C
         {
             await new VerifyCS.Test
             {
-                CodeFixTestBehaviors = CodeFixTestBehaviors.SkipLocalDiagnosticCheck,
                 TestCode = @"
 public class C
 {
@@ -220,7 +218,6 @@ public class C
         {
             await new VerifyCS.Test
             {
-                CodeFixTestBehaviors = CodeFixTestBehaviors.SkipLocalDiagnosticCheck,
                 TestCode = @"
 public class C
 {
@@ -410,7 +407,6 @@ End Structure
         {
             await new VerifyVB.Test
             {
-                CodeFixTestBehaviors = CodeFixTestBehaviors.SkipLocalDiagnosticCheck,
                 TestCode = @"
 Public Class C
     Public Shared Operator +(left As C, right As C) As C
@@ -445,7 +441,6 @@ End Class
         {
             await new VerifyVB.Test
             {
-                CodeFixTestBehaviors = CodeFixTestBehaviors.SkipLocalDiagnosticCheck,
                 TestCode = @"
 Public Class C
     Public Shared Operator IsTrue(item As C) As Boolean
