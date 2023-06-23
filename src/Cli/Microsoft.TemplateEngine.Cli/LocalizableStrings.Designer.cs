@@ -829,6 +829,15 @@ namespace Microsoft.TemplateEngine.Cli {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Prefix Reserved.
+        /// </summary>
+        internal static string DetailsCommand_Property_PrefixReserved {
+            get {
+                return ResourceManager.GetString("DetailsCommand_Property_PrefixReserved", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Repository Url.
         /// </summary>
         internal static string DetailsCommand_Property_RepoUrl {
@@ -847,6 +856,15 @@ namespace Microsoft.TemplateEngine.Cli {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Source Feed.
+        /// </summary>
+        internal static string DetailsCommand_Property_SourceFeed {
+            get {
+                return ResourceManager.GetString("DetailsCommand_Property_SourceFeed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Tags.
         /// </summary>
         internal static string DetailsCommand_Property_Tags {
@@ -861,6 +879,15 @@ namespace Microsoft.TemplateEngine.Cli {
         internal static string DetailsCommand_Property_Templates {
             get {
                 return ResourceManager.GetString("DetailsCommand_Property_Templates", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Package version.
+        /// </summary>
+        internal static string DetailsCommand_Property_Version {
+            get {
+                return ResourceManager.GetString("DetailsCommand_Property_Version", resourceCulture);
             }
         }
         

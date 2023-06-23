@@ -470,9 +470,13 @@ namespace Microsoft.TemplateEngine.Cli
 
         internal void DisplayNuGetPackageMetadata(NugetPackageMetadata packageMetadata, IReporter reporter)
         {
-            reporter.WriteLine($"{packageMetadata.Identity}");
+            reporter.WriteLine($"{packageMetadata.Identity.Id}");
+            WriteIfNotNull(LocalizableStrings.DetailsCommand_Property_Version, packageMetadata.PackageVersion.ToString(), reporter, 1);
 
             WriteIfNotNull(LocalizableStrings.DetailsCommand_Property_Description, packageMetadata.Description, reporter, 1);
+            WriteIfNotNull(LocalizableStrings.DetailsCommand_Property_SourceFeed, packageMetadata.Source.ToString(), reporter, 1);
+            WriteIfNotNull(LocalizableStrings.DetailsCommand_Property_PrefixReserved, packageMetadata.PrefixReserved.ToString(), reporter, 1);
+
             if (!string.IsNullOrEmpty(packageMetadata.Authors))
             {
                 reporter.WriteLine($"{LocalizableStrings.DetailsCommand_Property_Authors}:".Indent(1));

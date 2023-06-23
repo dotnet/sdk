@@ -120,6 +120,7 @@ namespace Microsoft.TemplateEngine.Cli.NuGet
                 LicenseExpression = metadata.LicenseMetadata?.LicenseExpression.ToString();
                 Source = packageSource;
                 PackageVersion = metadata.Identity.Version;
+                PrefixReserved = metadata.PrefixReserved;
             }
 
             public string? Description { get; }
@@ -141,6 +142,8 @@ namespace Microsoft.TemplateEngine.Cli.NuGet
             public PackageSource Source { get; }
 
             public NuGetVersion PackageVersion { get; }
+
+            public bool PrefixReserved { get; }
         }
     }
 }

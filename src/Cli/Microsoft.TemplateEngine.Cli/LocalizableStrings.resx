@@ -875,6 +875,15 @@ The header is followed by the list of parameters and their errors (might be seve
   <data name="DetailsCommand_Property_Description">
     <value>Details</value>
   </data>
+  <data name="DetailsCommand_Property_SourceFeed">
+    <value>Source Feed</value>
+  </data>
+  <data name="DetailsCommand_Property_Version">
+    <value>Package version</value>
+  </data>
+  <data name="DetailsCommand_Property_PrefixReserved">
+    <value>Prefix Reserved</value>
+  </data>
   <data name="DetailsCommand_Property_Languages">
     <value>Languages</value>
     <comment></comment>
