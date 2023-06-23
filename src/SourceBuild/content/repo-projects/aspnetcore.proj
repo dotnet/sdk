@@ -24,18 +24,11 @@
 
     <LogVerbosityOptOut>true</LogVerbosityOptOut>
     <PackageVersionPropsFlowType>DependenciesOnly</PackageVersionPropsFlowType>
-
-    <!-- CA1512 - Use 'ArgumentOutOfRangeException.ThrowIfEqual'
-                  Requires https://github.com/dotnet/aspnetcore/issues/47673 -->
-    <!-- CA1822 - Mark members as static
-                  https://github.com/dotnet/aspnetcore/pull/48551 -->
-    <!-- CA1854 - Prefer the 'IDictionary.TryGetValue(TKey, out TValue)' method
-                  https://github.com/dotnet/aspnetcore/issues/48052 -->
-    <!-- IDE0005 - Using directive is unnecessary: https://github.com/dotnet/aspnetcore/issues/47932 -->
-    <!-- IDE0059 - Unnecessary assignment of a value: https://github.com/dotnet/aspnetcore/pull/47931 -->
-    <!-- NETSDK1206 - Non-portable RID detected: https://github.com/dotnet/aspnetcore/issues/48842 -->
-    <RepoNoWarns>CA1512;CA1822;CA1854;IDE0005;IDE0059;NETSDK1206</RepoNoWarns>
   </PropertyGroup>
+
+  <ItemGroup>
+    <EnvironmentVariables Include="warn_as_error=false" />
+  </ItemGroup>
 
   <ItemGroup>
     <!--
