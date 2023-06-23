@@ -328,7 +328,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.CodeMetrics
             invalidFileDiagnostics = null;
 
             var builder = ImmutableDictionary.CreateBuilder<string, IReadOnlyList<(SymbolKind?, uint)>>(StringComparer.OrdinalIgnoreCase);
-            var lines = additionalText.GetText(cancellationToken)!.Lines;
+            var lines = additionalText.GetTextOrEmpty(cancellationToken).Lines;
             foreach (var line in lines)
             {
                 var contents = line.ToString().Trim();
