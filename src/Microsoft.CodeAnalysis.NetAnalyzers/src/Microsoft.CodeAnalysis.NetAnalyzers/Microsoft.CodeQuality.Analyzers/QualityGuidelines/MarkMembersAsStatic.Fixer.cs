@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
@@ -85,8 +85,19 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
             root = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
             node = root.GetAnnotatedNodes(s_annotationForFixedDeclaration).Single();
             var syntaxGenerator = SyntaxGenerator.GetGenerator(document);
-            var oldModifiersAndStatic = syntaxGenerator.GetModifiers(node).WithIsStatic(true);
+            var oldModifiersAndStatic = syntaxGenerator.GetModifiers(node).WithIsStatic(true).WithIsReadOnly(false);
             var newNode = syntaxGenerator.WithModifiers(node, oldModifiersAndStatic);
+
+            // If the new node has accessors, we also need to remove the 'readonly' modifier from them
+            newNode = newNode.ReplaceNodes(
+                syntaxGenerator.GetAccessors(newNode),
+                (originalNode, rewrittenNode) =>
+                {
+                    // 📝 WithModifiers returns the input node if the modifiers didn't change
+                    var oldModifiers = syntaxGenerator.GetModifiers(rewrittenNode);
+                    return syntaxGenerator.WithModifiers(rewrittenNode, oldModifiers.WithIsReadOnly(false));
+                });
+
             return document.WithSyntaxRoot(root.ReplaceNode(node, newNode)).Project.Solution;
         }
 

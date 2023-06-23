@@ -54,20 +54,20 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
             void OnOperationBlockStart(OperationBlockStartAnalysisContext context)
             {
-                var invocations = PooledConcurrentSet<IInvocationOperation>.GetInstance();
+                var invocations = TemporarySet<IInvocationOperation>.Empty;
 
                 context.RegisterOperationAction(context =>
                 {
                     var argument = (IArgumentOperation)context.Operation;
                     if (symbols.IsAnySubstringInvocation(argument.Value.WalkDownConversion(c => c.IsImplicit)) && argument.Parent is IInvocationOperation invocation)
                     {
-                        invocations.Add(invocation);
+                        invocations.Add(invocation, context.CancellationToken);
                     }
                 }, OperationKind.Argument);
 
                 context.RegisterOperationBlockEndAction(context =>
                 {
-                    foreach (var invocation in invocations)
+                    foreach (var invocation in invocations.NonConcurrentEnumerable)
                     {
                         //  We search for an overload of the invoked member whose signature matches the signature of
                         //  the invoked member, except with ReadOnlySpan<char> substituted in for some of the 

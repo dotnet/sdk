@@ -14,6 +14,7 @@ CA1858 | Performance | Info | UseStartsWithInsteadOfIndexOfComparisonWithZero, [
 CA1859 | Performance | Info | UseConcreteTypeAnalyzer, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1859)
 CA1860 | Performance | Info | PreferLengthCountIsEmptyOverAnyAnalyzer, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1860)
 CA1861 | Performance | Info | AvoidConstArrays, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1861)
+CA1862 | Performance | Info | RecommendCaseInsensitiveStringComparison, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1862)
 CA2021 | Reliability | Warning | DoNotCallEnumerableCastOrOfTypeWithIncompatibleTypesAnalyzer, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2021)
 
 ### Removed Rules

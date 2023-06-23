@@ -1,4 +1,4 @@
-' Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿' Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 Imports System.Collections.Immutable
 Imports Analyzer.Utilities
@@ -38,19 +38,10 @@ Namespace Microsoft.CodeQuality.VisualBasic.Analyzers.ApiDesignGuidelines
 
             context.RegisterSymbolAction(
                 Sub(symbolContext)
-                    Dim method = DirectCast(symbolContext.Symbol, IMethodSymbol)
-                    Debug.Assert(method.IsDefinition)
+                    Dim type = DirectCast(symbolContext.Symbol, INamedTypeSymbol)
 
-                    Dim type = method.ContainingType
                     If type.TypeKind = TypeKind.Interface OrElse type.IsImplicitClass OrElse type.SpecialType = SpecialType.System_Object Then
                         ' Don't apply this rule to interfaces, the implicit class (i.e. error case), or System.Object.
-                        Return
-                    End If
-
-                    ' If there's a = operator...
-                    If method.MethodKind <> MethodKind.UserDefinedOperator OrElse
-                        Not CaseInsensitiveComparison.Equals(method.Name, WellKnownMemberNames.EqualityOperatorName) Then
-
                         Return
                     End If
 
@@ -59,9 +50,27 @@ Namespace Microsoft.CodeQuality.VisualBasic.Analyzers.ApiDesignGuidelines
                         Return
                     End If
 
+                    ' If there's a = operator...
+                    If Not HasEqualityOperator(type) Then
+                        Return
+                    End If
+
                     symbolContext.ReportDiagnostic(type.CreateDiagnostic(Rule))
                 End Sub,
-                SymbolKind.Method)
+                SymbolKind.NamedType)
         End Sub
+
+        Private Shared Function HasEqualityOperator(type As INamedTypeSymbol) As Boolean
+            For Each member In type.GetMembers()
+                Dim method = TryCast(member, IMethodSymbol)
+                If method?.MethodKind = MethodKind.UserDefinedOperator AndAlso
+                    CaseInsensitiveComparison.Equals(method.Name, WellKnownMemberNames.EqualityOperatorName) Then
+
+                    Return True
+                End If
+            Next
+
+            Return False
+        End Function
     End Class
 End Namespace

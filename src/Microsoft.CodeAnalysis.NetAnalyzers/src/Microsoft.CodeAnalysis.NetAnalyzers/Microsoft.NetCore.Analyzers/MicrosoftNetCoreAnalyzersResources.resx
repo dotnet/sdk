@@ -220,11 +220,11 @@
     <value>Extract to static readonly field</value>
   </data>
   <data name="AvoidConstArraysDescription" xml:space="preserve">
-    <value>Constant arrays passed as arguments are not reused which implies a performance overhead. Consider extracting them to 'static readonly' fields to improve performance.</value>
+    <value>Constant arrays passed as arguments are not reused when called repeatedly, which implies a new array is created each time. Consider extracting them to 'static readonly' fields to improve performance if the passed array is not mutated within the called method.</value>
     <comment>{Locked="static readonly"}</comment>
   </data>
   <data name="AvoidConstArraysMessage" xml:space="preserve">
-    <value>Prefer 'static readonly' fields over local constant array arguments</value>
+    <value>Prefer 'static readonly' fields over constant array arguments if the called method is called repeatedly and is not mutating the passed array</value>
     <comment>{Locked="static readonly"}</comment>
   </data>
   <data name="TestForEmptyStringsUsingStringLengthTitle" xml:space="preserve">
@@ -2053,5 +2053,26 @@ Widening and user defined conversions are not supported with generic types.</val
   </data>
   <data name="PreferIsEmptyOverAnyMessage" xml:space="preserve">
     <value>Prefer an 'IsEmpty' check rather than using 'Any()', both for clarity and for performance</value>
+  </data>
+  <data name="RecommendCaseInsensitiveStringComparerStringComparisonCodeFixTitle" xml:space="preserve">
+    <value>Use the 'string.{0}(string, StringComparison)' overload</value>
+  </data>
+  <data name="RecommendCaseInsensitiveStringComparerTitle" xml:space="preserve">
+    <value>Prefer using 'StringComparer' to perform case-insensitive string comparisons</value>
+  </data>
+  <data name="RecommendCaseInsensitiveStringComparerDescription" xml:space="preserve">
+    <value>Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons when using 'CompareTo', because they lead to an allocation. Instead, use 'StringComparer' to perform case-insensitive comparisons.</value>
+  </data>
+  <data name="RecommendCaseInsensitiveStringComparerMessage" xml:space="preserve">
+    <value>Prefer using 'StringComparer' to perform a case-insensitive comparison</value>
+  </data>
+  <data name="RecommendCaseInsensitiveStringComparisonTitle" xml:space="preserve">
+    <value>Prefer the 'StringComparison' method overloads to perform case-insensitive string comparisons</value>
+  </data>
+  <data name="RecommendCaseInsensitiveStringComparisonDescription" xml:space="preserve">
+    <value>Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons because they lead to an allocation. Instead, prefer calling the method overloads of 'Contains', 'IndexOf' and 'StartsWith' that take a 'StringComparison' enum value to perform case-insensitive comparisons.</value>
+  </data>
+  <data name="RecommendCaseInsensitiveStringComparisonMessage" xml:space="preserve">
+    <value>Prefer the string comparison method overload of '{0}' that takes a 'StringComparison' enum value to perform a case-insensitive comparison</value>
   </data>
 </root>

@@ -281,6 +281,8 @@ End Enum
 ";
             await new VerifyVB.Test
             {
+                // TODO: Remove 'CodeFixTestBehaviors.SkipLocalDiagnosticCheck'
+                // Blocked by https://github.com/dotnet/roslyn/issues/68654
                 CodeFixTestBehaviors = CodeFixTestBehaviors.SkipLocalDiagnosticCheck,
                 TestCode = code,
                 ExpectedDiagnostics =
@@ -354,6 +356,8 @@ End Enum
 ";
             await new VerifyVB.Test
             {
+                // TODO: Remove 'CodeFixTestBehaviors.SkipLocalDiagnosticCheck'
+                // Blocked by https://github.com/dotnet/roslyn/issues/68654
                 CodeFixTestBehaviors = CodeFixTestBehaviors.SkipLocalDiagnosticCheck,
                 TestCode = code,
                 ExpectedDiagnostics =

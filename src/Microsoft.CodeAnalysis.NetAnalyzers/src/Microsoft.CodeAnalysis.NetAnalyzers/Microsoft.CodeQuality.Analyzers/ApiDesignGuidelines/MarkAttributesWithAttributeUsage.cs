@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Immutable;
@@ -47,13 +47,18 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
                 compilationContext.RegisterSymbolAction(context =>
                 {
-                    AnalyzeSymbol((INamedTypeSymbol)context.Symbol, attributeType, attributeUsageAttributeType, context.ReportDiagnostic);
+                    AnalyzeSymbol(
+                        (INamedTypeSymbol)context.Symbol,
+                        attributeType,
+                        attributeUsageAttributeType,
+                        static (context, diagnostic) => context.ReportDiagnostic(diagnostic),
+                        context);
                 },
                 SymbolKind.NamedType);
             });
         }
 
-        private static void AnalyzeSymbol(INamedTypeSymbol symbol, INamedTypeSymbol attributeType, INamedTypeSymbol attributeUsageAttributeType, Action<Diagnostic> addDiagnostic)
+        private static void AnalyzeSymbol<TContext>(INamedTypeSymbol symbol, INamedTypeSymbol attributeType, INamedTypeSymbol attributeUsageAttributeType, Action<TContext, Diagnostic> addDiagnostic, TContext context)
         {
             if (symbol.IsAbstract || symbol.BaseType == null || !symbol.BaseType.Equals(attributeType))
             {
@@ -62,7 +67,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
             if (!symbol.HasAttribute(attributeUsageAttributeType))
             {
-                addDiagnostic(symbol.CreateDiagnostic(Rule, symbol.Name));
+                addDiagnostic(context, symbol.CreateDiagnostic(Rule, symbol.Name));
             }
         }
     }

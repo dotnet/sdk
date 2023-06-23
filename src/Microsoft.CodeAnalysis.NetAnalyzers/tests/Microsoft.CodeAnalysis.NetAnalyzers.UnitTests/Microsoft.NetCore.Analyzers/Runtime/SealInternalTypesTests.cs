@@ -17,6 +17,14 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {
     public class SealInternalTypesTests
     {
+        // NOTE: 'SealInternalTypes' analyzer reports a compilation end diagnostic.
+        //       Code fixes are not yet supported for compilation end diagnostics,
+        //       hence 'SealInternalTypesFixer' is a no-op right now.
+        //       However, we have still implemented this fixer so that if code fix support
+        //       gets added for compilation end diagnostics in future, it should automatically light up.
+        //       All tests in this file are marked with 'CodeFixTestBehaviors.SkipLocalDiagnosticCheck'
+        //       as compilation end diagnostics are non-local diagnostics.
+
         #region Diagnostic
         [Theory]
         [InlineData("internal ")]

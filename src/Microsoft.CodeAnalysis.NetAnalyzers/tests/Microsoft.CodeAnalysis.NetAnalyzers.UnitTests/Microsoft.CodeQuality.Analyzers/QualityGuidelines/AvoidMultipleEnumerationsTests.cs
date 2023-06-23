@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
-using Test.Utilities;
+using Microsoft.CodeAnalysis.Testing;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeAnalysis.CSharp.NetAnalyzers.Microsoft.CodeQuality.Analyzers.QualityGuidelines.CSharpAvoidMultipleEnumerationsAnalyzer,
@@ -35,7 +35,7 @@ namespace Microsoft.CodeAnalysis.NetAnalyzers.UnitTests.Microsoft.CodeQuality.An
 
             var test = new VerifyCS.Test()
             {
-                ReferenceAssemblies = AdditionalMetadataReferences.Net60,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net60,
                 LanguageVersion = CSharp.LanguageVersion.Latest,
                 TestState =
                 {
@@ -76,7 +76,7 @@ namespace Microsoft.CodeAnalysis.NetAnalyzers.UnitTests.Microsoft.CodeQuality.An
             };
             var test = new VerifyVB.Test()
             {
-                ReferenceAssemblies = AdditionalMetadataReferences.Net60,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net60,
                 LanguageVersion = VisualBasic.LanguageVersion.Latest,
                 TestState =
                 {
