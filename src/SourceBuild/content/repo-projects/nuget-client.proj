@@ -5,7 +5,7 @@
     <NuGetKeyFilePath>$(KeysDir)NuGet.Client.snk</NuGetKeyFilePath>
     <DeterministicBuildOptOut>true</DeterministicBuildOptOut>
     <!-- SYSLIB0051 - Type or member is obsolete: https://github.com/NuGet/Home/issues/12626 -->
-    <RepoNoWarns>CS9057;SYSLIB0051</RepoNoWarns>
+    <RepoNoWarns>SYSLIB0051</RepoNoWarns>
   </PropertyGroup>
 
   <ItemGroup>
