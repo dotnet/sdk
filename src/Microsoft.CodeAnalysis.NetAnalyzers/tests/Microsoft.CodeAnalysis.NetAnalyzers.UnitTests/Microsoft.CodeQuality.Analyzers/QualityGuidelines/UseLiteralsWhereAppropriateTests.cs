@@ -276,7 +276,7 @@ using System.Reflection;
 
 public class Class
 {
-    private static readonly BindingFlags BindingFlags = (BindingFlags)(BindingFlags.Public | BindingFlags.NonPublic)
+    private static readonly BindingFlags BindingFlags = (BindingFlags)(BindingFlags.Public | BindingFlags.NonPublic);
 }"
             }.RunAsync();
         }
