@@ -7,7 +7,7 @@ using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.Cli.New.IntegrationTests
 {
-    public class DotnetNewDetailsTest : BaseIntegrationTest, IClassFixture<DiagnosticFixture>
+    public partial class DotnetNewDetailsTest : BaseIntegrationTest, IClassFixture<DiagnosticFixture>
     {
         private readonly ITestOutputHelper _log;
         private readonly IMessageSink _messageSink;
@@ -16,33 +16,6 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         {
             _log = log;
             _messageSink = diagnosisFixture.DiagnosticSink;
-        }
-
-        [Fact]
-        public void CanDisplayDetails_RemotePackage()
-        {
-            new DotnetNewCommand(_log, "details", "Microsoft.DotNet.Web.ProjectTemplates.5.0")
-            .WithCustomHive(CreateTemporaryFolder(folderName: "Home"))
-                .WithWorkingDirectory(CreateTemporaryFolder())
-                .Execute()
-                .Should()
-                .ExitWith(0)
-                .And.NotHaveStdErr()
-                .And.HaveStdOutContaining($"Microsoft.DotNet.Web.ProjectTemplates.5.0")
-                .And.HaveStdOutContaining("License Metadata");
-        }
-
-        [Fact]
-        public void CanDisplayDetails_RemotePackageWithVersion()
-        {
-            new DotnetNewCommand(_log, "details", "Microsoft.DotNet.Web.ItemTemplates", "--version", "2.2.0")
-            .WithCustomHive(CreateTemporaryFolder(folderName: "Home"))
-                .WithWorkingDirectory(CreateTemporaryFolder())
-                .Execute()
-                .Should()
-                .ExitWith(0)
-                .And.NotHaveStdErr()
-                .And.HaveStdOutContaining($"Microsoft.DotNet.Web.ItemTemplates.2.2.0{Environment.NewLine}   Details:  Web File Templates for Microsoft Template Engine");
         }
 
         [Fact]

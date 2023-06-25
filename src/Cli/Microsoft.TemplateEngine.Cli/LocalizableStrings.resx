@@ -868,10 +868,6 @@ The header is followed by the list of parameters and their errors (might be seve
   <data name="DetailsCommand_Property_Authors">
     <value>Authors</value>
   </data>
-  <data name="DetailsCommand_Property_Constraints">
-    <value></value>
-    <comment></comment>
-  </data>
   <data name="DetailsCommand_Property_Description">
     <value>Details</value>
   </data>

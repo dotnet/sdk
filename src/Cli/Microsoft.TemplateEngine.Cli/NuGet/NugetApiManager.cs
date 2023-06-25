@@ -143,7 +143,7 @@ namespace Microsoft.TemplateEngine.Cli.NuGet
 
             public NuGetVersion PackageVersion { get; }
 
-            public bool PrefixReserved { get; }
+            public bool? PrefixReserved { get; }
         }
     }
 }
