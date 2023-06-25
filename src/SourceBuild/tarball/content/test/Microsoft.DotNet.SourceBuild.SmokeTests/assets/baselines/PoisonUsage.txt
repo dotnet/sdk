@@ -20,15 +20,6 @@
   <File Path="dotnet-sdk-x.y.z/sdk/x.y.z/Sdks/Microsoft.NET.ILLink.Tasks/tools/net472/System.Reflection.Metadata.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.CodeAnalysis.RulesetToEditorconfigConverter.x.y.z/RulesetToEditorconfigConverter/System.Reflection.Metadata.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.CodeAnalysis.RulesetToEditorconfigConverter.x.y.z/RulesetToEditorconfigConverter/System.Reflection.Metadata.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.CodeAnalysis.RulesetToEditorconfigConverter.x.y.z/RulesetToEditorconfigConverter/System.Reflection.Metadata.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
   <File Path="Microsoft.DotNet.Arcade.Sdk.x.y.z/tools/net472/Microsoft.Bcl.AsyncInterfaces.dll">
     <Type>AssemblyAttribute</Type>
   </File>
