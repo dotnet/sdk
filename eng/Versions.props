@@ -60,18 +60,18 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/nuget/nuget.client -->
-    <NuGetBuildTasksPackageVersion>6.7.0-preview.3.93</NuGetBuildTasksPackageVersion>
-    <NuGetBuildTasksConsolePackageVersion>6.7.0-preview.3.93</NuGetBuildTasksConsolePackageVersion>
+    <NuGetBuildTasksPackageVersion>6.7.0-rc.106</NuGetBuildTasksPackageVersion>
+    <NuGetBuildTasksConsolePackageVersion>6.7.0-rc.106</NuGetBuildTasksConsolePackageVersion>
     <NuGetLocalizationPackageVersion>6.0.0-rc.278</NuGetLocalizationPackageVersion>
-    <NuGetBuildTasksPackPackageVersion>6.7.0-preview.3.93</NuGetBuildTasksPackPackageVersion>
-    <NuGetCommandLineXPlatPackageVersion>6.7.0-preview.3.93</NuGetCommandLineXPlatPackageVersion>
-    <NuGetProjectModelPackageVersion>6.7.0-preview.3.93</NuGetProjectModelPackageVersion>
-    <MicrosoftBuildNuGetSdkResolverPackageVersion>6.7.0-preview.3.93</MicrosoftBuildNuGetSdkResolverPackageVersion>
-    <NuGetCommonPackageVersion>6.7.0-preview.3.93</NuGetCommonPackageVersion>
-    <NuGetConfigurationPackageVersion>6.7.0-preview.3.93</NuGetConfigurationPackageVersion>
-    <NuGetFrameworksPackageVersion>6.7.0-preview.3.93</NuGetFrameworksPackageVersion>
-    <NuGetPackagingPackageVersion>6.7.0-preview.3.93</NuGetPackagingPackageVersion>
-    <NuGetVersioningPackageVersion>6.7.0-preview.3.93</NuGetVersioningPackageVersion>
+    <NuGetBuildTasksPackPackageVersion>6.7.0-rc.106</NuGetBuildTasksPackPackageVersion>
+    <NuGetCommandLineXPlatPackageVersion>6.7.0-rc.106</NuGetCommandLineXPlatPackageVersion>
+    <NuGetProjectModelPackageVersion>6.7.0-rc.106</NuGetProjectModelPackageVersion>
+    <MicrosoftBuildNuGetSdkResolverPackageVersion>6.7.0-rc.106</MicrosoftBuildNuGetSdkResolverPackageVersion>
+    <NuGetCommonPackageVersion>6.7.0-rc.106</NuGetCommonPackageVersion>
+    <NuGetConfigurationPackageVersion>6.7.0-rc.106</NuGetConfigurationPackageVersion>
+    <NuGetFrameworksPackageVersion>6.7.0-rc.106</NuGetFrameworksPackageVersion>
+    <NuGetPackagingPackageVersion>6.7.0-rc.106</NuGetPackagingPackageVersion>
+    <NuGetVersioningPackageVersion>6.7.0-rc.106</NuGetVersioningPackageVersion>
     <NuGetPackagingVersion>$(NuGetPackagingPackageVersion)</NuGetPackagingVersion>
     <NuGetProjectModelVersion>$(NuGetProjectModelPackageVersion)</NuGetProjectModelVersion>
   </PropertyGroup>
