@@ -34,7 +34,8 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
                 .OfType<Assembly>()
                 .ToImmutableArray();
 
-            return AnalyzerFinderHelpers.LoadAnalyzersAndFixers(analyzerAssemblies);
+            var analyzers = project.AnalyzerReferences.SelectMany(reference => reference.GetAnalyzers(project.Language)).ToImmutableArray();
+            return new AnalyzersAndFixers(analyzers, AnalyzerFinderHelpers.LoadFixers(analyzerAssemblies, project.Language));
         }
 
         private static Assembly? TryLoadAssemblyFrom(string? path, AnalyzerReference analyzerReference)

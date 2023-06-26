@@ -1,15 +1,18 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.CodeAnalysis.Tools.Analyzers
 {
     internal class CodeStyleInformationProvider : IAnalyzerInformationProvider
     {
+        private static readonly IAnalyzerAssemblyLoader s_analyzerAssemblyLoader = new DefaultAnalyzerAssemblyLoader();
         private static readonly string s_executingPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? string.Empty;
 
         private readonly string _featuresPath = Path.Combine(s_executingPath, "Microsoft.CodeAnalysis.Features.dll");
@@ -21,16 +24,30 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
             FormatOptions formatOptions,
             ILogger logger)
         {
-            var assemblies = new[]
-            {
-                _featuresPath,
-                _featuresCSharpPath,
-                _featuresVisualBasicPath
-            }.Select(path => Assembly.LoadFrom(path));
+            var references = new[]
+                {
+                    _featuresPath,
+                    _featuresCSharpPath,
+                    _featuresVisualBasicPath,
+                }
+                .Select(path => new AnalyzerFileReference(path, s_analyzerAssemblyLoader));
 
-            var analyzersAndFixers = AnalyzerFinderHelpers.LoadAnalyzersAndFixers(assemblies);
+            var analyzersByLanguage = new Dictionary<string, AnalyzersAndFixers>();
             return solution.Projects
-                .ToImmutableDictionary(project => project.Id, project => analyzersAndFixers);
+                .ToImmutableDictionary(
+                    project => project.Id,
+                    project =>
+                    {
+                        if (!analyzersByLanguage.TryGetValue(project.Language, out var analyzersAndFixers))
+                        {
+                            var analyzers = references.SelectMany(reference => reference.GetAnalyzers(project.Language)).ToImmutableArray();
+                            var codeFixes = AnalyzerFinderHelpers.LoadFixers(references.Select(reference => reference.GetAssembly()), project.Language);
+                            analyzersAndFixers = new AnalyzersAndFixers(analyzers, codeFixes);
+                            analyzersByLanguage.Add(project.Language, analyzersAndFixers);
+                        }
+
+                        return analyzersAndFixers;
+                    });
         }
 
         public DiagnosticSeverity GetSeverity(FormatOptions formatOptions) => formatOptions.CodeStyleSeverity;
