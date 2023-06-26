@@ -89,3 +89,8 @@ msft,./sdk/x.y.z/FSharp/runtimes/win/lib/netx.y/System.Windows.Extensions.dll
 msft,./sdk/x.y.z/runtimes/win/lib/netx.y/Microsoft.Win32.SystemEvents.dll
 msft,./sdk/x.y.z/runtimes/win/lib/netx.y/System.Drawing.Common.dll
 msft,./sdk/x.y.z/runtimes/win/lib/netx.y/System.Windows.Extensions.dll
+
+# runtime components in roslyn layout - https://github.com/dotnet/source-build/issues/3286
+# Expected - build is filtering components present in target platform.
+msft,./sdk/x.y.z/Roslyn/bincore/System.Collections.Immutable.dll
+msft,./sdk/x.y.z/Roslyn/bincore/System.Reflection.Metadata.dll
