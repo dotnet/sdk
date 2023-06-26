@@ -70,8 +70,8 @@ namespace Microsoft.DotNet.Cli.Utils
                 var taskErr = _stdErr?.BeginRead(_process.StandardError);
                 _process.WaitForExit();
 
-                Task.Run(() => taskOut)?.Wait();
-                Task.Run(() => taskErr)?.Wait();
+                Task.Run(() => taskOut?.Wait());
+                Task.Run(() => taskErr?.Wait());
             }
 
             var exitCode = _process.ExitCode;

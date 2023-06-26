@@ -56,8 +56,8 @@ namespace Microsoft.DotNet.Cli.Utils
 
                 process.WaitForExit();
 
-                Task.Run(() => taskOut).Wait();
-                Task.Run(() => taskErr).Wait();
+                Task.Run(() => taskOut.Wait());
+                Task.Run(() => taskErr.Wait());
 
                 stdOut = outStream.CapturedOutput;
                 stdErr = errStream.CapturedOutput;

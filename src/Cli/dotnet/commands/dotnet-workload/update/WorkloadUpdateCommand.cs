@@ -68,7 +68,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
             {
                 try
                 {
-                    Task.Run(() => DownloadToOfflineCacheAsync(new DirectoryPath(_downloadToCacheOption), _includePreviews)).Wait();
+                    Task.Run(() => DownloadToOfflineCacheAsync(new DirectoryPath(_downloadToCacheOption), _includePreviews).Wait());
                 }
                 catch (Exception e)
                 {
@@ -84,7 +84,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
             }
             else if (_adManifestOnlyOption)
             {
-                Task.Run (() => _workloadManifestUpdater.UpdateAdvertisingManifestsAsync(_includePreviews, string.IsNullOrWhiteSpace(_fromCacheOption) ? null : new DirectoryPath(_fromCacheOption))).Wait();
+                Task.Run (() => _workloadManifestUpdater.UpdateAdvertisingManifestsAsync(_includePreviews, string.IsNullOrWhiteSpace(_fromCacheOption) ? null : new DirectoryPath(_fromCacheOption)).Wait());
                 Reporter.WriteLine();
                 Reporter.WriteLine(LocalizableStrings.WorkloadUpdateAdManifestsSucceeded);
             }
@@ -118,7 +118,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
             Reporter.WriteLine();
 
             var workloadIds = GetUpdatableWorkloads();
-            Task.Run(() => _workloadManifestUpdater.UpdateAdvertisingManifestsAsync(includePreviews, offlineCache)).Wait();
+            Task.Run(() => _workloadManifestUpdater.UpdateAdvertisingManifestsAsync(includePreviews, offlineCache).Wait());
 
             var manifestsToUpdate = string.IsNullOrWhiteSpace(_fromRollbackDefinition) ?
                 _workloadManifestUpdater.CalculateManifestUpdates().Select(m => m.manifestUpdate) :

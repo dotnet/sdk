@@ -114,7 +114,7 @@ namespace Microsoft.DotNet.Workloads.Workload.List
         internal UpdateAvailableEntry[] GetUpdateAvailable(IEnumerable<WorkloadId> installedList)
         {
             HashSet<WorkloadId> installedWorkloads = installedList.ToHashSet();
-            Task.Run(() => _workloadManifestUpdater.UpdateAdvertisingManifestsAsync(_includePreviews)).Wait();
+            Task.Run(() => _workloadManifestUpdater.UpdateAdvertisingManifestsAsync(_includePreviews).Wait());
             var manifestsToUpdate =
                 _workloadManifestUpdater.CalculateManifestUpdates();
 
