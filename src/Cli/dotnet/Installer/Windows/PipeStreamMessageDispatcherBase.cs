@@ -65,7 +65,7 @@ namespace Microsoft.DotNet.Installer.Windows
                 if (_pipeStream is NamedPipeServerStream)
                 {
                     Task connectTask = Task.Factory.StartNew(() => ((NamedPipeServerStream)_pipeStream).WaitForConnection());
-                    connectTask.Wait(ConnectionTimeout);
+                    Task.Run(() => connectTask).Wait(ConnectionTimeout);
 
                     if (!connectTask.IsCompleted)
                     {

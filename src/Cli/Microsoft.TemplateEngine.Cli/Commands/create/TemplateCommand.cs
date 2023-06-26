@@ -213,7 +213,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
                 }
             }
 
-            return instantiateTask.Result;
+            return Task.Run(() => instantiateTask).Result;
         }
 
         private void DisplayConstraintResults(IReadOnlyList<TemplateConstraintResult> constraintResults, TemplateCommandArgs templateArgs)

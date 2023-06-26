@@ -29,7 +29,7 @@ namespace Microsoft.DotNet.Tools.Sdk.Check
         {
             try
             {
-                return product.GetReleasesAsync().Result;
+                return Task.Run(() => product.GetReleasesAsync()).Result;
             }
             catch (Exception e)
             {

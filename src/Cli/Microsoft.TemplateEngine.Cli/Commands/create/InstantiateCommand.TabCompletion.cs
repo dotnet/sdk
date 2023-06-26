@@ -159,7 +159,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
                 if (constraintEvaluationTask.IsCompletedSuccessfully)
                 {
                     //return only allowed templates
-                    return constraintEvaluationTask.Result;
+                    return Task.Run(() => constraintEvaluationTask).Result;
                 }
                 //if evaluation task fails, all the templates in a group are considered as allowed.
                 //in case the template may not be run, it will fail during instantiation.

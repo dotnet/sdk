@@ -845,8 +845,8 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             if (offlineCache == null || !offlineCache.HasValue)
             {
                 Reporter.WriteLine($"Downloading {packageId} ({packageVersion})");
-                packagePath = _nugetPackageDownloader.DownloadPackageAsync(new PackageId(packageId), new NuGetVersion(packageVersion),
-                    _packageSourceLocation).Result;
+                packagePath = Task.Run(() => _nugetPackageDownloader.DownloadPackageAsync(new PackageId(packageId), new NuGetVersion(packageVersion),
+                    _packageSourceLocation)).Result;
                 Log?.LogMessage($"Downloaded {packageId} ({packageVersion}) to '{packagePath}");
             }
             else
@@ -865,7 +865,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             string extractionDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
             Directory.CreateDirectory(extractionDirectory);
             Log?.LogMessage($"Extracting '{packageId}' to '{extractionDirectory}'");
-            _ = _nugetPackageDownloader.ExtractPackageAsync(packagePath, new DirectoryPath(extractionDirectory)).Result;
+            _ = Task.Run(() => _nugetPackageDownloader.ExtractPackageAsync(packagePath, new DirectoryPath(extractionDirectory))).Result;
 
             return extractionDirectory;
         }
@@ -987,7 +987,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                 throw installTask.Exception.InnerException;
             }
 
-            error = installTask.Result;
+            error = Task.Run(() => installTask).Result;
 
             if (!Error.Success(error))
             {

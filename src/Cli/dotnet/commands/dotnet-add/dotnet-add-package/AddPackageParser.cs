@@ -10,6 +10,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.DotNet.Tools;
 using Microsoft.DotNet.Tools.Add.PackageReference;
 using LocalizableStrings = Microsoft.DotNet.Tools.Add.PackageReference.LocalizableStrings;
@@ -85,10 +86,10 @@ namespace Microsoft.DotNet.Cli
             try
             {
                 using var cancellation = new CancellationTokenSource(TimeSpan.FromSeconds(10));
-                var response = httpClient.GetAsync($"https://api-v2v3search-0.nuget.org/autocomplete?q={match}&skip=0&take=100", cancellation.Token)
+                var response = Task.Run(() => httpClient.GetAsync($"https://api-v2v3search-0.nuget.org/autocomplete?q={match}&skip=0&take=100", cancellation.Token))
                                          .Result;
 
-                result = response.Content.ReadAsStreamAsync().Result;
+                result = Task.Run(() => response.Content.ReadAsStreamAsync()).Result;
             }
             catch (Exception)
             {

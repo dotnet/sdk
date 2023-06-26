@@ -112,7 +112,7 @@ namespace Microsoft.DotNet.Cli.Telemetry
                 return;
             }
 
-            _trackEventTask.Wait();
+            Task.Run(() => _trackEventTask).Wait();
         }
 
         // Adding dispose on graceful shutdown per https://github.com/microsoft/ApplicationInsights-dotnet/issues/1152#issuecomment-518742922

@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using NuGet.Frameworks;
 
 namespace Microsoft.DotNet.Cli.Utils
@@ -69,8 +70,8 @@ namespace Microsoft.DotNet.Cli.Utils
                 var taskErr = _stdErr?.BeginRead(_process.StandardError);
                 _process.WaitForExit();
 
-                taskOut?.Wait();
-                taskErr?.Wait();
+                Task.Run(() => taskOut)?.Wait();
+                Task.Run(() => taskErr)?.Wait();
             }
 
             var exitCode = _process.ExitCode;

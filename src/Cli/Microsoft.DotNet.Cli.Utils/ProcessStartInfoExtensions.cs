@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Threading.Tasks;
 
 namespace Microsoft.DotNet.Cli.Utils
 {
@@ -55,8 +56,8 @@ namespace Microsoft.DotNet.Cli.Utils
 
                 process.WaitForExit();
 
-                taskOut.Wait();
-                taskErr.Wait();
+                Task.Run(() => taskOut).Wait();
+                Task.Run(() => taskErr).Wait();
 
                 stdOut = outStream.CapturedOutput;
                 stdErr = errStream.CapturedOutput;

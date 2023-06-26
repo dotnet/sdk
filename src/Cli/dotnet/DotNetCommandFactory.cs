@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.CommandLine.Invocation;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.CommandFactory;
 using NuGet.Frameworks;
@@ -43,7 +44,7 @@ namespace Microsoft.DotNet.Cli
             var command = Parser.GetBuiltInCommand(commandName);
             if (command != null && command.Handler != null)
             {
-                commandFunc = (args) => command.Handler.InvokeAsync(new InvocationContext(Parser.Instance.Parse(args))).Result;
+                commandFunc = (args) => Task.Run(() => command.Handler.InvokeAsync(new InvocationContext(Parser.Instance.Parse(args)))).Result;
                 return true;
             }
             commandFunc = null;

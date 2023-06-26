@@ -4,6 +4,7 @@
 using System.Collections.Generic;
 using System.CommandLine;
 using System.CommandLine.Parsing;
+using System.Threading.Tasks;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.NugetSearch;
@@ -30,8 +31,8 @@ namespace Microsoft.DotNet.Tools.Tool.Search
             var isDetailed = _parseResult.GetValue(ToolSearchCommandParser.DetailOption);
             NugetSearchApiParameter nugetSearchApiParameter = new NugetSearchApiParameter(_parseResult);
             IReadOnlyCollection<SearchResultPackage> searchResultPackages =
-                NugetSearchApiResultDeserializer.Deserialize(
-                    _nugetToolSearchApiRequest.GetResult(nugetSearchApiParameter).GetAwaiter().GetResult());
+                NugetSearchApiResultDeserializer.Deserialize(Task.Run(() => 
+                    _nugetToolSearchApiRequest.GetResult(nugetSearchApiParameter)).Result);
 
             _searchResultPrinter.Print(isDetailed, searchResultPackages);
 

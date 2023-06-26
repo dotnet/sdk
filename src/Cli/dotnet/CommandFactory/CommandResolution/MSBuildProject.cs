@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Build.Evaluation;
 using Microsoft.DotNet.Cli.Utils;
 using NuGet.Frameworks;
@@ -159,8 +160,8 @@ namespace Microsoft.DotNet.CommandFactory
             var lockFilePath = GetLockFilePathFromProjectLockFileProperty() ??
                 GetLockFilePathFromIntermediateBaseOutputPath();
 
-            return new LockFileFormat()
-                .ReadWithLock(lockFilePath)
+            return Task.Run(() => new LockFileFormat()
+                .ReadWithLock(lockFilePath))
                 .Result;
         }
 
@@ -181,8 +182,8 @@ namespace Microsoft.DotNet.CommandFactory
                 return false;
             }
 
-            lockFile = new LockFileFormat()
-                .ReadWithLock(lockFilePath)
+            lockFile = Task.Run(() => new LockFileFormat()
+                .ReadWithLock(lockFilePath))
                 .Result;
             return true;
         }

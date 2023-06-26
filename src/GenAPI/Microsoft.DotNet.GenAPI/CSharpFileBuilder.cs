@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Formatting;
@@ -91,8 +92,8 @@ namespace Microsoft.DotNet.GenAPI
             compilationUnit = compilationUnit.NormalizeWhitespace(eol: Environment.NewLine);
 
             Document document = project.AddDocument(assemblySymbol.Name, compilationUnit);
-            document = Simplifier.ReduceAsync(document).Result;
-            document = Formatter.FormatAsync(document, DefineFormattingOptions()).Result;
+            document = Task.Run(() => Simplifier.ReduceAsync(document)).Result;
+            document = Task.Run(() => Formatter.FormatAsync(document, DefineFormattingOptions())).Result;
 
             document.GetSyntaxRootAsync().Result!
                 .Rewrite(new SingleLineStatementCSharpSyntaxRewriter())

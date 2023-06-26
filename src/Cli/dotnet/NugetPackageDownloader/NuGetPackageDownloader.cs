@@ -169,7 +169,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
                 return Path.Combine(repository.PackageSource.Source, $"{packageId}.{resolvedPackageVersion}.nupkg");
             }
 
-            ServiceIndexResourceV3 serviceIndexResource = repository.GetResourceAsync<ServiceIndexResourceV3>().Result;
+            ServiceIndexResourceV3 serviceIndexResource = Task.Run(() => repository.GetResourceAsync<ServiceIndexResourceV3>()).Result;
             IReadOnlyList<Uri> packageBaseAddress =
                 serviceIndexResource?.GetServiceEntryUris(ServiceTypes.PackageBaseAddress);
 

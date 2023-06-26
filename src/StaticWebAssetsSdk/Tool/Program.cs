@@ -69,7 +69,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tool
                 });
             });
 
-            return rootCommand.InvokeAsync(args).Result;
+            return Task.Run(() => rootCommand.InvokeAsync(args)).Result;
         }
     }
 }

@@ -115,7 +115,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                     var existingWorkloads = GetInstalledWorkloads(false);
                     var workloadsToDownload = existingWorkloads.Union(_workloadIds.Select(id => new WorkloadId(id))).ToList();
 
-                    DownloadToOfflineCacheAsync(workloadsToDownload, new DirectoryPath(_downloadToCacheOption), _skipManifestUpdate, _includePreviews).Wait();
+                    Task.Run(() => DownloadToOfflineCacheAsync(workloadsToDownload, new DirectoryPath(_downloadToCacheOption), _skipManifestUpdate, _includePreviews)).Wait();
                 }
                 catch (Exception e)
                 {
@@ -169,7 +169,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                 }
                 workloadIds = workloadIds.Concat(installedWorkloads).Distinct();
 
-                _workloadManifestUpdater.UpdateAdvertisingManifestsAsync(includePreviews, offlineCache).Wait();
+                Task.Run(() => _workloadManifestUpdater.UpdateAdvertisingManifestsAsync(includePreviews, offlineCache)).Wait();
                 manifestsToUpdate = string.IsNullOrWhiteSpace(_fromRollbackDefinition) ?
                     _workloadManifestUpdater.CalculateManifestUpdates().Select(m => m.manifestUpdate) :
                     _workloadManifestUpdater.CalculateManifestRollbacks(_fromRollbackDefinition);

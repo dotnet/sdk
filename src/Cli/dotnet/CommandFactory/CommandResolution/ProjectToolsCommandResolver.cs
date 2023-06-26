@@ -270,8 +270,8 @@ namespace Microsoft.DotNet.CommandFactory
 
             try
             {
-                lockFile = new LockFileFormat()
-                    .ReadWithLock(lockFilePath)
+                lockFile = Task.Run(() => new LockFileFormat()
+                    .ReadWithLock(lockFilePath))
                     .Result;
             }
             catch (FileFormatException)
