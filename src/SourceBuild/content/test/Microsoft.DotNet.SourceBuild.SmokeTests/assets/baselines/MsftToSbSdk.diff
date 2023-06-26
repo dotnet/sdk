@@ -449,15 +449,6 @@ index ------------
  ./sdk/x.y.z/Microsoft.VisualStudio.TestPlatform.Common.dll
  ./sdk/x.y.z/Microsoft.VisualStudio.TestPlatform.ObjectModel.dll
 @@ ------------ @@
- ./sdk/x.y.z/Roslyn/bincore/ru/Microsoft.CodeAnalysis.CSharp.resources.dll
- ./sdk/x.y.z/Roslyn/bincore/ru/Microsoft.CodeAnalysis.resources.dll
- ./sdk/x.y.z/Roslyn/bincore/ru/Microsoft.CodeAnalysis.VisualBasic.resources.dll
--./sdk/x.y.z/Roslyn/bincore/System.Collections.Immutable.dll
--./sdk/x.y.z/Roslyn/bincore/System.Reflection.Metadata.dll
- ./sdk/x.y.z/Roslyn/bincore/tr/
- ./sdk/x.y.z/Roslyn/bincore/tr/Microsoft.CodeAnalysis.CSharp.resources.dll
- ./sdk/x.y.z/Roslyn/bincore/tr/Microsoft.CodeAnalysis.resources.dll
-@@ ------------ @@
  ./sdk/x.y.z/runtimes/win/
  ./sdk/x.y.z/runtimes/win/lib/
  ./sdk/x.y.z/runtimes/win/lib/netx.y/
