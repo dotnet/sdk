@@ -23,7 +23,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Analyzers
         [Fact]
         public async Task TestFilterWarning()
         {
-            var solution = await GetSolutionAsync();
+            var (_, solution) = await GetSolutionAsync();
             var projectAnalyzersAndFixers = await GetProjectAnalyzersAndFixersAsync(solution);
             var project = solution.Projects.First();
             var formattablePaths = ImmutableHashSet.Create(project.Documents.First().FilePath);
@@ -45,7 +45,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Analyzers
         [Fact]
         public async Task TestFilterError()
         {
-            var solution = await GetSolutionAsync();
+            var (_, solution) = await GetSolutionAsync();
             var projectAnalyzersAndFixers = await GetProjectAnalyzersAndFixersAsync(solution);
             var project = solution.Projects.First();
             var formattablePaths = ImmutableHashSet.Create(project.Documents.First().FilePath);
@@ -67,7 +67,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Analyzers
         [Fact]
         public async Task TestFilterDiagnostics_NotInDiagnosticsList()
         {
-            var solution = await GetSolutionAsync();
+            var (_, solution) = await GetSolutionAsync();
             var projectAnalyzersAndFixers = await GetProjectAnalyzersAndFixersAsync(solution);
             var project = solution.Projects.First();
             var formattablePaths = ImmutableHashSet.Create(project.Documents.First().FilePath);
@@ -89,7 +89,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Analyzers
         [Fact]
         public async Task TestFilterDiagnostics_InDiagnosticsList()
         {
-            var solution = await GetSolutionAsync();
+            var (_, solution) = await GetSolutionAsync();
             var projectAnalyzersAndFixers = await GetProjectAnalyzersAndFixersAsync(solution);
             var project = solution.Projects.First();
             var formattablePaths = ImmutableHashSet.Create(project.Documents.First().FilePath);
@@ -111,7 +111,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Analyzers
         [Fact]
         public async Task TestFilterDiagnostics_ExcludedFromDiagnosticsList()
         {
-            var solution = await GetSolutionAsync();
+            var (_, solution) = await GetSolutionAsync();
             var projectAnalyzersAndFixers = await GetProjectAnalyzersAndFixersAsync(solution);
             var project = solution.Projects.First();
             var formattablePaths = ImmutableHashSet.Create(project.Documents.First().FilePath);
@@ -133,7 +133,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Analyzers
         [Fact]
         public async Task TestFilterDiagnostics_ExcludeTrumpsInclude()
         {
-            var solution = await GetSolutionAsync();
+            var (_, solution) = await GetSolutionAsync();
             var projectAnalyzersAndFixers = await GetProjectAnalyzersAndFixersAsync(solution);
             var project = solution.Projects.First();
             var formattablePaths = ImmutableHashSet.Create(project.Documents.First().FilePath);
@@ -173,7 +173,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Analyzers
             return new AnalyzersAndFixers(analyzers, codeFixes);
         }
 
-        private Task<Solution> GetSolutionAsync()
+        private Task<(Workspace workspace, Solution solution)> GetSolutionAsync()
         {
             var text = SourceText.From("");
             TestState.Sources.Add(text);
