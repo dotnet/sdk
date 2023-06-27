@@ -757,15 +757,6 @@ namespace Microsoft.TemplateEngine.Cli {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to .
-        /// </summary>
-        internal static string DetailsCommand_Property_Constraints {
-            get {
-                return ResourceManager.GetString("DetailsCommand_Property_Constraints", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Details.
         /// </summary>
         internal static string DetailsCommand_Property_Description {

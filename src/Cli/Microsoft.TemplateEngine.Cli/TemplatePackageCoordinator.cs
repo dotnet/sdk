@@ -564,10 +564,10 @@ namespace Microsoft.TemplateEngine.Cli
                     .For(
                         new TabularOutputSettings(_engineEnvironmentSettings.Environment),
                         templatesToDisplay)
-                    .DefineColumn(t => t.Name, LocalizableStrings.ColumnNameTemplateName, minWidth: 15, showAlways: true)
+                    .DefineColumn(t => t.Name, LocalizableStrings.ColumnNameTemplateName, minWidth: 15, showAlways: true, shrinkIfNeeded: true)
                     .DefineColumn(t => t.ShortNames, LocalizableStrings.ColumnNameShortName, minWidth: 15, showAlways: true)
                     .DefineColumn(t => t.Type, LocalizableStrings.ColumnNameType, minWidth: 15, showAlways: true)
-                    .DefineColumn(t => t.Classifications, LocalizableStrings.ColumnNameTags, minWidth: 15, showAlways: true)
+                    .DefineColumn(t => t.Classifications, LocalizableStrings.ColumnNameTags, minWidth: 15, showAlways: true, shrinkIfNeeded: true)
                     .DefineColumn(t => t.Languages, LocalizableStrings.ColumnNameLanguage, minWidth: 15, showAlways: true);
 
             reporter.WriteLine(formatter.Layout(2));
@@ -589,7 +589,7 @@ namespace Microsoft.TemplateEngine.Cli
         {
             if (!string.IsNullOrEmpty(metadataEntry))
             {
-                reporter.WriteLine($"{metadataName}:  {metadataEntry}".Indent(indent));
+                reporter.WriteLine($"{metadataName}: {metadataEntry}".Indent(indent));
             }
         }
 
