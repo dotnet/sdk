@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using Microsoft.CodeAnalysis.Diagnostics;
+using Microsoft.CodeAnalysis.Host;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.CodeAnalysis.Tools.Analyzers
@@ -19,25 +20,27 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
         private static readonly object s_guard = new();
 
         public ImmutableDictionary<ProjectId, AnalyzersAndFixers> GetAnalyzersAndFixers(
+            Workspace workspace,
             Solution solution,
             FormatOptions formatOptions,
             ILogger logger)
         {
             return solution.Projects
-                .ToImmutableDictionary(project => project.Id, GetAnalyzersAndFixers);
+                .ToImmutableDictionary(project => project.Id, project => GetAnalyzersAndFixers(workspace, project));
         }
 
-        private AnalyzersAndFixers GetAnalyzersAndFixers(Project project)
+        private static AnalyzersAndFixers GetAnalyzersAndFixers(Workspace workspace, Project project)
         {
             var analyzerAssemblies = project.AnalyzerReferences
-                .Select(reference => TryLoadAssemblyFrom(reference.FullPath, reference))
+                .Select(reference => TryLoadAssemblyFrom(workspace, reference.FullPath, reference))
                 .OfType<Assembly>()
                 .ToImmutableArray();
 
-            return AnalyzerFinderHelpers.LoadAnalyzersAndFixers(analyzerAssemblies);
+            var analyzers = project.AnalyzerReferences.SelectMany(reference => reference.GetAnalyzers(project.Language)).ToImmutableArray();
+            return new AnalyzersAndFixers(analyzers, AnalyzerFinderHelpers.LoadFixers(analyzerAssemblies, project.Language));
         }
 
-        private static Assembly? TryLoadAssemblyFrom(string? path, AnalyzerReference analyzerReference)
+        private static Assembly? TryLoadAssemblyFrom(Workspace workspace, string? path, AnalyzerReference analyzerReference)
         {
             // Since we are not deploying these assemblies we need to ensure the files exist.
             if (path is null || !File.Exists(path))
@@ -64,7 +67,8 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
                     }
                     else
                     {
-                        var loader = new DefaultAnalyzerAssemblyLoader();
+                        var analyzerService = workspace.Services.GetService<IAnalyzerService>() ?? throw new NotSupportedException();
+                        var loader = analyzerService.GetLoader();
                         analyzerAssembly = loader.LoadFromPath(path);
                     }
 
@@ -72,7 +76,9 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
 
                     return analyzerAssembly;
                 }
-                catch { }
+                catch
+                {
+                }
             }
 
             return null;
