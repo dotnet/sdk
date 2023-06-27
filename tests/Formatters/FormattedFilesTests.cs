@@ -70,6 +70,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
                 CodeStyleSeverity: DiagnosticSeverity.Error,
                 AnalyzerSeverity: DiagnosticSeverity.Error,
                 Diagnostics: ImmutableHashSet<string>.Empty,
+                ExcludeDiagnostics: ImmutableHashSet<string>.Empty,
                 SaveFormattedFiles: false,
                 ChangesAreErrors: false,
                 fileMatcher,

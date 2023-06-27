@@ -41,6 +41,10 @@ namespace Microsoft.CodeAnalysis.Tools
         {
             AllowMultipleArgumentsPerToken = true
         };
+        internal static readonly Option<string[]> ExcludeDiagnosticsOption = new(new[] { "--exclude-diagnostics" }, () => Array.Empty<string>(), Resources.A_space_separated_list_of_diagnostic_ids_to_ignore_when_fixing_code_style_or_3rd_party_issues)
+        {
+            AllowMultipleArgumentsPerToken = true
+        };
         internal static readonly Option<string> SeverityOption = new Option<string>("--severity", Resources.The_severity_of_diagnostics_to_fix_Allowed_values_are_info_warn_and_error).FromAmong(SeverityLevels);
         internal static readonly Option<string[]> IncludeOption = new(new[] { "--include" }, () => Array.Empty<string>(), Resources.A_list_of_relative_file_or_folder_paths_to_include_in_formatting_All_files_are_formatted_if_empty)
         {

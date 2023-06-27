@@ -22,6 +22,7 @@ namespace Microsoft.CodeAnalysis.Tools.Commands
                 FormatStyleCommand.GetCommand(),
                 FormatAnalyzersCommand.GetCommand(),
                 DiagnosticsOption,
+                ExcludeDiagnosticsOption,
                 SeverityOption,
             };
             formatCommand.AddCommonOptions();
@@ -50,6 +51,12 @@ namespace Microsoft.CodeAnalysis.Tools.Commands
                     parseResult.ValueForOption(DiagnosticsOption) is string[] { Length: > 0 } diagnostics)
                 {
                     formatOptions = formatOptions with { Diagnostics = diagnostics.ToImmutableHashSet() };
+                }
+
+                if (parseResult.HasOption(ExcludeDiagnosticsOption) &&
+                    parseResult.ValueForOption(ExcludeDiagnosticsOption) is string[] { Length: > 0 } excludeDiagnostics)
+                {
+                    formatOptions = formatOptions with { ExcludeDiagnostics = excludeDiagnostics.ToImmutableHashSet() };
                 }
 
                 formatOptions = formatOptions with { FixCategory = FixCategory.Whitespace | FixCategory.CodeStyle | FixCategory.Analyzers };
