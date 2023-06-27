@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.CommandLine.Parsing;
+using System.Diagnostics;
 using Microsoft.DotNet.ApiSymbolExtensions.Logging;
 
 namespace Microsoft.DotNet.GenAPI.Tool
@@ -62,7 +63,7 @@ namespace Microsoft.DotNet.GenAPI.Tool
             Option<bool> includeAssemblyAttributesOption = new("--include-assembly-attributes",
                 "Includes assembly attributes which are values that provide information about an assembly. Default is false.");
 
-            RootCommand rootCommand = new("Microsoft.DotNet.GenAPI")
+            RootCommand rootCommand = new("Microsoft.DotNet.GenAPI v" + FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location).ProductVersion)
             {
                 TreatUnmatchedTokensAsErrors = true
             };
