@@ -96,8 +96,9 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
 
             packageCoordinator.DisplayNuGetPackageMetadata(nugetPackage, bufferedReporter);
             bufferedReporter.Lines.Should()
-                .Contain("PackageId.1.5.24")
-                .And.Contain($"   {LocalizableStrings.DetailsCommand_Property_Description}:  This is the package description")
+                .Contain("PackageId")
+                .And.Contain("   Package version: 1.5.24")
+                .And.Contain($"   {LocalizableStrings.DetailsCommand_Property_Description}: This is the package description")
                 .And.Contain($"   {LocalizableStrings.DetailsCommand_Property_Authors}:")
                 .And.Contain("      PackageAuthor")
                 .And.Contain($"   {LocalizableStrings.DetailsCommand_Property_Owners}:")
@@ -137,8 +138,9 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
 
             packageCoordinator.DisplayNuGetPackageMetadata(nugetPackage, bufferedReporter);
             bufferedReporter.Lines.Should()
-                .Contain("PackageId.1.5.24")
-                .And.Contain($"   {LocalizableStrings.DetailsCommand_Property_Description}:  This is the package description")
+                .Contain("PackageId")
+                .And.Contain("   Package version: 1.5.24")
+                .And.Contain($"   {LocalizableStrings.DetailsCommand_Property_Description}: This is the package description")
                 .And.Contain($"   {LocalizableStrings.DetailsCommand_Property_Authors}:")
                 .And.Contain("      author1")
                 .And.Contain("      author2")
@@ -175,8 +177,9 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
 
             packageCoordinator.DisplayNuGetPackageMetadata(nugetPackage, bufferedReporter);
             bufferedReporter.Lines.Should()
-                .Contain("PackageId.1.5.24")
-                .And.Contain($"   {LocalizableStrings.DetailsCommand_Property_Description}:  This is the package description")
+                .Contain("PackageId")
+                .And.Contain("   Package version: 1.5.24")
+                .And.Contain($"   {LocalizableStrings.DetailsCommand_Property_Description}: This is the package description")
                 .And.Contain($"   {LocalizableStrings.DetailsCommand_Property_Owners}:")
                 .And.Contain("      https://nuget.org/profiles/owner1")
                 .And.Contain("      https://nuget.org/profiles/owner2");
