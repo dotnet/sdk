@@ -7,8 +7,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-using Microsoft.Build.Evaluation;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
+using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.ToolPackage;
 using Microsoft.DotNet.Tools;
 using Microsoft.Extensions.EnvironmentAbstractions;
@@ -23,8 +23,6 @@ using NuGet.ProjectModel;
 using NuGet.Repositories;
 using NuGet.RuntimeModel;
 using NuGet.Versioning;
-using static Microsoft.ApplicationInsights.MetricDimensionNames.TelemetryContext;
-using static System.Formats.Asn1.AsnWriter;
 
 
 namespace Microsoft.DotNet.Cli.ToolPackage
@@ -33,18 +31,19 @@ namespace Microsoft.DotNet.Cli.ToolPackage
     {
         private readonly INuGetPackageDownloader _nugetPackageDownloader;
         protected readonly DirectoryPath _tempPackagesDir;
-        protected readonly DirectoryPath _storePackagesDir;
+        protected readonly DirectoryPath _tempStageDir;
+        private readonly IToolPackageStore _toolPackageStore;
 
         public ToolPackageDownloader(
+            IToolPackageStore store,
             INuGetPackageDownloader nugetPackageDownloader = null,
-        string tempDirPath = null
-        )
-        {
+            string tempDirPath = null
+        ){
+            _toolPackageStore = store ?? throw new ArgumentNullException(nameof(store));
             _tempPackagesDir = new DirectoryPath(tempDirPath ?? PathUtilities.CreateTempSubdirectory());
-
-            _storePackagesDir = new DirectoryPath ("C:\\Users\\liannie\\.dotnet\\tools\\.store");
+            _tempStageDir = _toolPackageStore.GetRandomStagingDirectory();
             _nugetPackageDownloader = nugetPackageDownloader ??
-                                     new NuGetPackageDownloader.NuGetPackageDownloader(_storePackagesDir);
+                                     new NuGetPackageDownloader.NuGetPackageDownloader(_tempStageDir);
         }
 
         private static void AddToolsAssets(
@@ -111,41 +110,34 @@ namespace Microsoft.DotNet.Cli.ToolPackage
         public async Task<IToolPackage> InstallPackageAsync(PackageLocation packageLocation, PackageId packageId,
             VersionRange versionRange = null,
             string targetFramework = null,
-            string verbosity = null)
+            string verbosity = null
+            )
         { 
-            var tempDirsToDelete = new List<string>();
-            var tempFilesToDelete = new List<string>();
-
-            //var versionFromVersionRange = versionRange?.ToString("N", new VersionRangeFormatter()) ?? "*";
-            Console.WriteLine(versionRange);
-            //Console.WriteLine(versionFromVersionRange);
             var packageSourceLocation = new PackageSourceLocation(packageLocation.NugetConfig, packageLocation.RootConfigDirectory, null, packageLocation.AdditionalFeeds);
             var packagePath = await _nugetPackageDownloader.DownloadPackageAsync(packageId, null, packageSourceLocation);
-            tempFilesToDelete.Add(packagePath);
 
             var tempExtractionDir = Path.GetDirectoryName(packagePath);
-            
+            Directory.CreateDirectory(_tempStageDir.Value);
 
-            // Look fo nuget package on disk and read the version 
-            await using FileStream packageStream = File.OpenRead(packagePath);
-            PackageArchiveReader reader = new PackageArchiveReader(packageStream);
-            var version = new NuspecReader(reader.GetNuspec()).GetVersion();
+            // Look fo nuget package on disk and read the version
+            NuGetVersion version;
 
-            
+            using (FileStream packageStream = File.OpenRead(packagePath))
+            {
+                PackageArchiveReader reader = new PackageArchiveReader(packageStream);
+                version = new NuspecReader(reader.GetNuspec()).GetVersion();
+                
+                var packageHash = Convert.ToBase64String(new CryptoHashProvider("SHA512").CalculateHash(reader.GetNuspec()));
+                var hashPath = new VersionFolderPathResolver(_tempStageDir.Value).GetHashPath(packageId.ToString(), version);
 
-            var tempToolExtractionDir = Path.Combine(tempExtractionDir, packageId.ToString(), version.ToString(), "tools");
+                Directory.CreateDirectory(Path.GetDirectoryName(hashPath));
+                File.WriteAllText(hashPath, packageHash);
+            }
+
+            var packageDirectory = _toolPackageStore.GetPackageDirectory(packageId, version);
+            var tempToolExtractionDir = Path.Combine(tempExtractionDir, packageId.ToString(), version.ToString());
             var nupkgDir = Path.Combine(tempExtractionDir, packageId.ToString(), version.ToString());
-
-            tempDirsToDelete.Add(tempExtractionDir);
-            
-            var filesInPackage = await _nugetPackageDownloader.ExtractPackageAsync(packagePath, new DirectoryPath(tempToolExtractionDir));
-
-            var packageHash = Convert.ToBase64String(new CryptoHashProvider("SHA512").CalculateHash(reader.GetNuspec()));
-            var hashPath = new VersionFolderPathResolver(tempExtractionDir).GetHashPath(packageId.ToString(), version);
-            File.WriteAllText(hashPath, packageHash);
-
-            //Copy nupkg file to hash file folder
-            File.Copy(packagePath, Path.Combine(nupkgDir, Path.GetFileName(packagePath)));
+            var filesInPackage = await _nugetPackageDownloader.ExtractPackageAsync(packagePath, new DirectoryPath(tempExtractionDir));
 
             if (Directory.Exists(packagePath))
             {
@@ -155,8 +147,6 @@ namespace Microsoft.DotNet.Cli.ToolPackage
                         packageId,
                         version.ToNormalizedString()));
             }
-
-            // create asset files
 
             // To get runtimeGraph:
             var runtimeJsonPath = "C:\\Program Files\\dotnet\\sdk\\7.0.200\\RuntimeIdentifierGraph.json";
@@ -175,8 +165,7 @@ namespace Microsoft.DotNet.Cli.ToolPackage
             };
 
             //  Create NuGetv3LocalRepository
-            NuGetv3LocalRepository localRepository = new(tempExtractionDir);
-            Console.WriteLine(tempExtractionDir);
+            NuGetv3LocalRepository localRepository = new(_tempStageDir.Value);
             var package = localRepository.FindPackage(packageId.ToString(), version);
 
             var collection = new ContentItemCollection();
@@ -184,17 +173,14 @@ namespace Microsoft.DotNet.Cli.ToolPackage
 
             //  Create criteria
             var managedCriteria = new List<SelectionCriteria>(1);
-
             var currentTargetFramework = NuGetFramework.Parse("net8.0");
 
-            //  Not supporting FallbackFramework for tools
             var standardCriteria = conventions.Criteria.ForFrameworkAndRuntime(
-                //NuGetFramework.Parse(targetFramework),
                 currentTargetFramework,
                 RuntimeInformation.RuntimeIdentifier);
             managedCriteria.Add(standardCriteria);
 
-            //  To be implemented
+            //  Create asset file
             if (lockFileLib.PackageType.Contains(PackageType.DotnetTool))
             {
                 AddToolsAssets(conventions, lockFileLib, collection, managedCriteria);
@@ -208,21 +194,17 @@ namespace Microsoft.DotNet.Cli.ToolPackage
             };
             lockFileTarget.Libraries.Add(lockFileLib);
             lockFile.Targets.Add(lockFileTarget);
-            new LockFileFormat().Write(Path.Combine(tempExtractionDir, "project.assets.json"), lockFile);
+            new LockFileFormat().Write(Path.Combine(_tempStageDir.Value, "project.assets.json"), lockFile);
+
+            var packageRootDirectory = _toolPackageStore.GetRootPackageDirectory(packageId);
+            Directory.CreateDirectory(packageRootDirectory.Value);
+
+            FileAccessRetrier.RetryOnMoveAccessFailure(() => Directory.Move(_tempStageDir.Value, packageDirectory.Value));
 
             return new ToolPackageInstance(id: packageId,
                             version: version,
-                            packageDirectory: new DirectoryPath(tempExtractionDir),
-                            assetsJsonParentDirectory: new DirectoryPath(tempExtractionDir));
-            //cleanup
-            /*foreach (var dir in tempDirsToDelete)
-            {
-                if (Directory.Exists(dir))
-                {
-                    Directory.Delete(dir, true);
-                }
-            }*/
-
+                            packageDirectory: packageDirectory,
+                            assetsJsonParentDirectory: packageDirectory);
         }
     }
 }
