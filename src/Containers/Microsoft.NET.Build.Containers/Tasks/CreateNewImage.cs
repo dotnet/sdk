@@ -3,7 +3,10 @@
 
 using System.Text.Json;
 using Microsoft.Build.Framework;
+using Microsoft.Extensions.Logging;
+using Microsoft.NET.Build.Containers.Logging;
 using Microsoft.NET.Build.Containers.Resources;
+using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace Microsoft.NET.Build.Containers.Tasks;
 
@@ -35,16 +38,25 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
     internal async Task<bool> ExecuteAsync(CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
+
+        using MSBuildLoggerProvider loggerProvider = new(Log);
+        ILoggerFactory msbuildLoggerFactory = new LoggerFactory(new[] { loggerProvider });
+        ILogger logger = msbuildLoggerFactory.CreateLogger<CreateNewImage>();
+
         if (!Directory.Exists(PublishDirectory))
         {
             Log.LogErrorWithCodeFromResources(nameof(Strings.PublishDirectoryDoesntExist), nameof(PublishDirectory), PublishDirectory);
             return !Log.HasLoggedErrors;
         }
-        ImageReference sourceImageReference = new(SourceRegistry.Value, BaseImageName, BaseImageTag);
-        var destinationImageReferences = ImageTags.Select(t => new ImageReference(DestinationRegistry.Value, Repository, t));
+
+        Registry? sourceRegistry = IsLocalPull ? null : new Registry(ContainerHelpers.TryExpandRegistryToUri(BaseRegistry), logger);
+        ImageReference sourceImageReference = new(sourceRegistry, BaseImageName, BaseImageTag);
+
+        Registry? destinationRegistry = IsLocalPush ? null : new Registry(ContainerHelpers.TryExpandRegistryToUri(OutputRegistry), logger);
+        IEnumerable<ImageReference> destinationImageReferences = ImageTags.Select(t => new ImageReference(destinationRegistry, Repository, t));
 
         ImageBuilder? imageBuilder;
-        if (SourceRegistry.Value is { } registry)
+        if (sourceRegistry is { } registry)
         {
             imageBuilder = await registry.GetImageManifestAsync(
                 BaseImageName,
@@ -69,7 +81,9 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
         Layer newLayer = Layer.FromDirectory(PublishDirectory, WorkingDirectory, imageBuilder.IsWindows);
         imageBuilder.AddLayer(newLayer);
         imageBuilder.SetWorkingDirectory(WorkingDirectory);
-        imageBuilder.SetEntryPoint(Entrypoint.Select(i => i.ItemSpec).ToArray(), EntrypointArgs.Select(i => i.ItemSpec).ToArray());
+
+        (string[] entrypoint, string[] cmd) = DetermineEntrypointAndCmd(baseImageEntrypoint: imageBuilder.BaseImageConfig.GetEntrypoint());
+        imageBuilder.SetEntrypointAndCmd(entrypoint, cmd);
 
         foreach (ITaskItem label in Labels)
         {
@@ -102,7 +116,7 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
         {
             if (IsLocalPush)
             {
-                ILocalRegistry localRegistry = GetLocalRegistry(msg => Log.LogMessage(msg));
+                ILocalRegistry localRegistry = KnownLocalRegistryTypes.CreateLocalRegistry(LocalRegistry, msbuildLoggerFactory);
                 if (!(await localRegistry.IsAvailableAsync(cancellationToken).ConfigureAwait(false)))
                 {
                     Log.LogErrorWithCodeFromResources(nameof(Strings.LocalRegistryNotAvailable));
@@ -191,39 +205,6 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
         }
     }
 
-    private ILocalRegistry GetLocalRegistry(Action<string> logger) {
-        var registry = LocalRegistry switch {
-            KnownLocalRegistryTypes.Docker => new DockerCli(logger),
-            _ => throw new NotSupportedException(
-                Resource.FormatString(
-                    nameof(Strings.UnknownLocalRegistryType),
-                    LocalRegistry,
-                    string.Join(",", KnownLocalRegistryTypes.SupportedLocalRegistryTypes)))
-        };
-        return registry;
-    }
-
-    private Lazy<Registry?> SourceRegistry
-    {
-        get {
-            if(IsLocalPull) {
-                return new Lazy<Registry?>(() => null);
-            } else {
-                return new Lazy<Registry?>(() => new Registry(ContainerHelpers.TryExpandRegistryToUri(BaseRegistry)));
-            }
-        }
-    }
-
-    private Lazy<Registry?> DestinationRegistry {
-        get {
-            if(IsLocalPush) {
-                return new Lazy<Registry?>(() => null);
-            } else {
-                return new Lazy<Registry?>(() => new Registry(ContainerHelpers.TryExpandRegistryToUri(OutputRegistry)));
-            }
-        }
-    }
-
     private static void SetEnvironmentVariables(ImageBuilder img, ITaskItem[] envVars)
     {
         foreach (ITaskItem envVar in envVars)
@@ -239,5 +220,109 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
     public void Dispose()
     {
         _cancellationTokenSource.Dispose();
+    }
+
+    internal (string[] entrypoint, string[] cmd) DetermineEntrypointAndCmd(string[]? baseImageEntrypoint)
+    {
+        string[] entrypoint = Entrypoint.Select(i => i.ItemSpec).ToArray();
+        string[] entrypointArgs = EntrypointArgs.Select(i => i.ItemSpec).ToArray();
+        string[] cmd = DefaultArgs.Select(i => i.ItemSpec).ToArray();
+        string[] appCommand = AppCommand.Select(i => i.ItemSpec).ToArray();
+        string[] appCommandArgs = AppCommandArgs.Select(i => i.ItemSpec).ToArray();
+        string appCommandInstruction = AppCommandInstruction;
+
+        bool setsEntrypoint = entrypoint.Length > 0 || entrypointArgs.Length > 0;
+        bool setsCmd = cmd.Length > 0;
+
+        baseImageEntrypoint ??= Array.Empty<string>();
+        // Some (Microsoft) base images set 'dotnet' as the ENTRYPOINT. We mustn't use it.
+        if (baseImageEntrypoint.Length == 1 && (baseImageEntrypoint[0] == "dotnet" || baseImageEntrypoint[0] == "/usr/bin/dotnet"))
+        {
+            baseImageEntrypoint = Array.Empty<string>();
+        }
+
+        if (string.IsNullOrEmpty(appCommandInstruction))
+        {
+            if (setsEntrypoint)
+            {
+                // Backwards-compatibility: before 'AppCommand'/'Cmd' was added, only 'Entrypoint' was available.
+                if (!setsCmd && appCommandArgs.Length == 0 && entrypoint.Length == 0)
+                {
+                    // Copy over the values for starting the application from AppCommand.
+                    entrypoint = appCommand;
+                    appCommand = Array.Empty<string>();
+
+                    // Use EntrypointArgs as cmd.
+                    cmd = entrypointArgs;
+                    entrypointArgs = Array.Empty<string>();
+
+                    if (entrypointArgs.Length > 0)
+                    {
+                        // Log warning: Instead of ContainerEntrypointArgs, use ContainerAppCommandArgs for arguments that must always be set, or ContainerDefaultArgs for default arguments that the user override when creating the container.
+                        Log.LogWarningWithCodeFromResources(nameof(Strings.EntrypointArgsSetPreferAppCommandArgs));
+                    }
+
+                    appCommandInstruction = KnownAppCommandInstructions.None;
+                }
+                else
+                {
+                    // There's an Entrypoint. Use DefaultArgs for the AppCommand.
+                    appCommandInstruction = KnownAppCommandInstructions.DefaultArgs;
+                }
+            }
+            else
+            {
+                // Default to use an Entrypoint.
+                // If the base image defines an ENTRYPOINT, print a warning.
+                if (baseImageEntrypoint.Length > 0)
+                {
+                    Log.LogWarningWithCodeFromResources(nameof(Strings.BaseEntrypointOverwritten));
+                }
+                appCommandInstruction = KnownAppCommandInstructions.Entrypoint;
+            }
+        }
+
+        if (entrypointArgs.Length > 0 && entrypoint.Length == 0)
+        {
+            Log.LogErrorWithCodeFromResources(nameof(Strings.EntrypointArgsSetNoEntrypoint));
+            return (Array.Empty<string>(), Array.Empty<string>());
+        }
+
+        if (appCommandArgs.Length > 0 && appCommand.Length == 0)
+        {
+            Log.LogErrorWithCodeFromResources(nameof(Strings.AppCommandArgsSetNoAppCommand));
+            return (Array.Empty<string>(), Array.Empty<string>());
+        }
+
+        switch (appCommandInstruction)
+        {
+            case KnownAppCommandInstructions.None:
+                if (appCommand.Length > 0 || appCommandArgs.Length > 0)
+                {
+                    Log.LogErrorWithCodeFromResources(nameof(Strings.AppCommandSetNotUsed), appCommandInstruction);
+                    return (Array.Empty<string>(), Array.Empty<string>());
+                }
+                break;
+            case KnownAppCommandInstructions.DefaultArgs:
+                cmd = appCommand.Concat(appCommandArgs).Concat(cmd).ToArray();
+                break;
+            case KnownAppCommandInstructions.Entrypoint:
+                if (setsEntrypoint)
+                {
+                    Log.LogErrorWithCodeFromResources(nameof(Strings.EntrypointConflictAppCommand), appCommandInstruction);
+                    return (Array.Empty<string>(), Array.Empty<string>());
+                }
+                entrypoint = appCommand;
+                entrypointArgs = appCommandArgs;
+                break;
+            default:
+                throw new NotSupportedException(
+                    Resource.FormatString(
+                        nameof(Strings.UnknownAppCommandInstruction),
+                        appCommandInstruction,
+                        string.Join(",", KnownAppCommandInstructions.SupportedAppCommandInstructions)));
+        }
+
+        return (entrypoint.Length > 0 ? entrypoint.Concat(entrypointArgs).ToArray() : baseImageEntrypoint, cmd);
     }
 }

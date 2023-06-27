@@ -85,6 +85,7 @@ namespace Microsoft.DotNet.Cli
             command.Options.Add(CommonOptions.VerbosityOption);
             command.Options.Add(CommonOptions.ArchitectureOption);
             command.Options.Add(CommonOptions.OperatingSystemOption);
+            command.AddOption(CommonOptions.DisableBuildServersOption);
 
             command.Arguments.Add(ApplicationArguments);
 

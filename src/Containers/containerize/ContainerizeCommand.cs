@@ -4,6 +4,9 @@
 using System.CommandLine;
 using System.CommandLine.Parsing;
 using System.Text;
+using Microsoft.DotNet.Cli.Utils;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Console;
 using Microsoft.NET.Build.Containers;
 
 namespace containerize;
@@ -81,6 +84,12 @@ internal class ContainerizeCommand : CliRootCommand
         CustomParser = result => ParseDictionary(result, errorMessage: "Incorrectly formatted labels: "),
         AllowMultipleArgumentsPerToken = true
     };
+
+    internal CliOption<string[]> CmdOption { get; } = new CliOption<string[]>(new[] {"--entrypointargs", "--cmd"})
+    {
+        description: "The Cmd of the container image.",
+        AllowMultipleArgumentsPerToken = true
+     };
 
     internal CliOption<Port[]> PortsOption { get; } = new("--ports")
     {
@@ -168,6 +177,7 @@ internal class ContainerizeCommand : CliRootCommand
         this.Options.Add(WorkingDirectoryOption);
         this.Options.Add(EntrypointOption);
         this.Options.Add(EntrypointArgsOption);
+        this.Options.Add(CmdOption);
         this.Options.Add(LabelsOption);
         this.Options.Add(PortsOption);
         this.Options.Add(EnvVarsOption);
@@ -196,6 +206,12 @@ internal class ContainerizeCommand : CliRootCommand
             string _ridGraphPath = parseResult.GetValue(RidGraphPathOption)!;
             string _localContainerDaemon = parseResult.GetValue(LocalRegistryOption)!;
             string? _containerUser = parseResult.GetValue(ContainerUserOption);
+
+            //setup basic logging
+            bool traceEnabled = Env.GetEnvironmentVariableAsBool("CONTAINERIZE_TRACE_LOGGING_ENABLED");
+            LogLevel verbosity = traceEnabled ? LogLevel.Trace : LogLevel.Information;
+            using ILoggerFactory loggerFactory = LoggerFactory.Create(builder => builder.AddSimpleConsole(c => c.ColorBehavior = LoggerColorBehavior.Disabled).SetMinimumLevel(verbosity));
+
             await ContainerBuilder.ContainerizeAsync(
                 _publishDir,
                 _workingDir,
@@ -203,7 +219,7 @@ internal class ContainerizeCommand : CliRootCommand
                 _baseName,
                 _baseTag,
                 _entrypoint,
-                _entrypointArgs,
+                _cmdArgs,
                 _name,
                 _tags,
                 _outputReg,
@@ -214,7 +230,8 @@ internal class ContainerizeCommand : CliRootCommand
                 _ridGraphPath,
                 _localContainerDaemon,
                 _containerUser,
-                cancellationToken).ConfigureAwait(false);
+                loggerFactory,
+                context.GetCancellationToken()).ConfigureAwait(false);
         });
     }
 
