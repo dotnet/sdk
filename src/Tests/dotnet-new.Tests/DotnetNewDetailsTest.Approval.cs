@@ -166,7 +166,8 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .Should()
                 .Pass();
 
-            return Verify(commandResult.StdOut);
+            return Verify(commandResult.StdOut)
+                .AddScrubber(output => output.ScrubAndReplace(basicFSharp, "%TEMPLATE FOLDER%"));
         }
     }
 }

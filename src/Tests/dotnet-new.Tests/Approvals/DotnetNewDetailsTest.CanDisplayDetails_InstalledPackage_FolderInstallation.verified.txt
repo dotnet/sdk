@@ -1,4 +1,4 @@
-﻿{SolutionDirectory}src\Assets\TestPackages\dotnet-new\test_templates\TemplateResolution\DifferentLanguagesGroup\BasicFSharp
+﻿%TEMPLATE FOLDER%
    Templates:
       Template Name  Short Name  Type  Tags        Language
       -------------  ----------  ----  ----------  --------
