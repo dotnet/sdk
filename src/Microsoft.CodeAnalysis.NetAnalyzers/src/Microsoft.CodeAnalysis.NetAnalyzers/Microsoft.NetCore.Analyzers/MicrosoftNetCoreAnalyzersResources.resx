@@ -1064,6 +1064,15 @@
   <data name="UseValueTasksCorrectlyMessage_AccessingIncompleteResult" xml:space="preserve">
     <value>ValueTask instances should not have their result directly accessed unless the instance has already completed. Unlike Tasks, calling Result or GetAwaiter().GetResult() on a ValueTask is not guaranteed to block until the operation completes. If you can't simply await the instance, consider first checking its IsCompleted property (or asserting it's true if you know that to be the case).</value>
   </data>
+  <data name="DoNotUseConfigureAwaitWithSuppressThrowingTitle" xml:space="preserve">
+    <value>Do not use ConfigureAwaitOptions.SuppressThrowing with Task&lt;TResult&gt;</value>
+  </data>
+  <data name="DoNotUseConfigureAwaitWithSuppressThrowingMessage" xml:space="preserve">
+    <value>The ConfigureAwaitOptions.SuppressThrowing is only supported with the non-generic Task</value>
+  </data>
+  <data name="DoNotUseConfigureAwaitWithSuppressThrowingDescription" xml:space="preserve">
+    <value>The ConfigureAwaitOptions.SuppressThrowing is only supported with the non-generic Task, not a Task&lt;TResult&gt;.  To use it with a Task&lt;TResult&gt;, first cast to the base Task.</value>
+  </data>
   <data name="DoNotCreateTaskCompletionSourceWithWrongArgumentsTitle" xml:space="preserve">
     <value>Argument passed to TaskCompletionSource constructor should be TaskCreationOptions enum instead of TaskContinuationOptions enum</value>
   </data>

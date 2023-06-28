@@ -893,6 +893,21 @@ Enumerable.OfType&lt;T&gt; 使用的泛型类型检查 (C# 'is' operator/IL 'isi
         <target state="translated">{0} 使用损坏的加密算法 {1}</target>
         <note />
       </trans-unit>
+      <trans-unit id="DoNotUseConfigureAwaitWithSuppressThrowingDescription">
+        <source>The ConfigureAwaitOptions.SuppressThrowing is only supported with the non-generic Task, not a Task&lt;TResult&gt;.  To use it with a Task&lt;TResult&gt;, first cast to the base Task.</source>
+        <target state="new">The ConfigureAwaitOptions.SuppressThrowing is only supported with the non-generic Task, not a Task&lt;TResult&gt;.  To use it with a Task&lt;TResult&gt;, first cast to the base Task.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseConfigureAwaitWithSuppressThrowingMessage">
+        <source>The ConfigureAwaitOptions.SuppressThrowing is only supported with the non-generic Task</source>
+        <target state="new">The ConfigureAwaitOptions.SuppressThrowing is only supported with the non-generic Task</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseConfigureAwaitWithSuppressThrowingTitle">
+        <source>Do not use ConfigureAwaitOptions.SuppressThrowing with Task&lt;TResult&gt;</source>
+        <target state="new">Do not use ConfigureAwaitOptions.SuppressThrowing with Task&lt;TResult&gt;</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DoNotUseCountAsyncWhenAnyAsyncCanBeUsedDescription">
         <source>For non-empty collections, CountAsync() and LongCountAsync() enumerate the entire sequence, while AnyAsync() stops at the first item or the first item that satisfies a condition.</source>
         <target state="translated">对于非空集合，CountAsync() 和 LongCountAsync() 将枚举整个序列，而 AnyAsync() 将在第一项或满足条件的第一项处停止。</target>

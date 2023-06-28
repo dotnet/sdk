@@ -893,6 +893,21 @@ Genel türlerde genişletme ve kullanıcı tanımlı dönüştürmeler desteklen
         <target state="translated">{0} bozuk {1} kriptografik algoritmasını kullanıyor</target>
         <note />
       </trans-unit>
+      <trans-unit id="DoNotUseConfigureAwaitWithSuppressThrowingDescription">
+        <source>The ConfigureAwaitOptions.SuppressThrowing is only supported with the non-generic Task, not a Task&lt;TResult&gt;.  To use it with a Task&lt;TResult&gt;, first cast to the base Task.</source>
+        <target state="new">The ConfigureAwaitOptions.SuppressThrowing is only supported with the non-generic Task, not a Task&lt;TResult&gt;.  To use it with a Task&lt;TResult&gt;, first cast to the base Task.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseConfigureAwaitWithSuppressThrowingMessage">
+        <source>The ConfigureAwaitOptions.SuppressThrowing is only supported with the non-generic Task</source>
+        <target state="new">The ConfigureAwaitOptions.SuppressThrowing is only supported with the non-generic Task</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseConfigureAwaitWithSuppressThrowingTitle">
+        <source>Do not use ConfigureAwaitOptions.SuppressThrowing with Task&lt;TResult&gt;</source>
+        <target state="new">Do not use ConfigureAwaitOptions.SuppressThrowing with Task&lt;TResult&gt;</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DoNotUseCountAsyncWhenAnyAsyncCanBeUsedDescription">
         <source>For non-empty collections, CountAsync() and LongCountAsync() enumerate the entire sequence, while AnyAsync() stops at the first item or the first item that satisfies a condition.</source>
         <target state="translated">Boş olmayan koleksiyonlarda CountAsync() ve LongCountAsync() dizinin tamamını numaralandırır. AnyAsync() ise ilk öğede veya koşulu karşılayan ilk öğede durur.</target>

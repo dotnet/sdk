@@ -893,6 +893,21 @@ Enumerable.OfType&lt;T&gt; で使用されるジェネリック型チェック (
         <target state="translated">{0} が、破られた暗号アルゴリズム {1} を使用します</target>
         <note />
       </trans-unit>
+      <trans-unit id="DoNotUseConfigureAwaitWithSuppressThrowingDescription">
+        <source>The ConfigureAwaitOptions.SuppressThrowing is only supported with the non-generic Task, not a Task&lt;TResult&gt;.  To use it with a Task&lt;TResult&gt;, first cast to the base Task.</source>
+        <target state="new">The ConfigureAwaitOptions.SuppressThrowing is only supported with the non-generic Task, not a Task&lt;TResult&gt;.  To use it with a Task&lt;TResult&gt;, first cast to the base Task.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseConfigureAwaitWithSuppressThrowingMessage">
+        <source>The ConfigureAwaitOptions.SuppressThrowing is only supported with the non-generic Task</source>
+        <target state="new">The ConfigureAwaitOptions.SuppressThrowing is only supported with the non-generic Task</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseConfigureAwaitWithSuppressThrowingTitle">
+        <source>Do not use ConfigureAwaitOptions.SuppressThrowing with Task&lt;TResult&gt;</source>
+        <target state="new">Do not use ConfigureAwaitOptions.SuppressThrowing with Task&lt;TResult&gt;</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DoNotUseCountAsyncWhenAnyAsyncCanBeUsedDescription">
         <source>For non-empty collections, CountAsync() and LongCountAsync() enumerate the entire sequence, while AnyAsync() stops at the first item or the first item that satisfies a condition.</source>
         <target state="translated">空ではないコレクションで、CountAsync() と LongCountAsync() ではシーケンス全体が列挙されますが、AnyAsync() では最初の項目または条件を満たす最初の項目で停止します。</target>

@@ -2454,6 +2454,18 @@ Generic math interfaces require the derived type itself to be used for the self 
 |CodeFix|False|
 ---
 
+## [CA2261](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2261): Do not use ConfigureAwaitOptions.SuppressThrowing with Task\<TResult>
+
+The ConfigureAwaitOptions.SuppressThrowing is only supported with the non-generic Task, not a Task\<TResult>.  To use it with a Task\<TResult>, first cast to the base Task.
+
+|Item|Value|
+|-|-|
+|Category|Usage|
+|Enabled|True|
+|Severity|Warning|
+|CodeFix|False|
+---
+
 ## [CA2300](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2300): Do not use insecure deserializer BinaryFormatter
 
 The method '{0}' is insecure when deserializing untrusted data.  If you need to instead detect BinaryFormatter deserialization without a SerializationBinder set, then disable rule CA2300, and enable rules CA2301 and CA2302.

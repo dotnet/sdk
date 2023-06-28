@@ -10,3 +10,4 @@ CA1856 | <https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-
 CA1857 | <https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1857> | A constant is expected for the parameter |
 CA1862 | <https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1862> | Prefer using 'StringComparer' to perform case-insensitive string comparisons |
 CA2021 | <https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2021> | Do not call Enumerable.Cast\<T> or Enumerable.OfType\<T> with incompatible types |
+CA2261 | <https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2261> | Do not use ConfigureAwaitOptions.SuppressThrowing with Task\<TResult> |
