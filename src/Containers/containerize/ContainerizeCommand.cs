@@ -85,11 +85,11 @@ internal class ContainerizeCommand : CliRootCommand
         AllowMultipleArgumentsPerToken = true
     };
 
-    internal CliOption<string[]> CmdOption { get; } = new CliOption<string[]>(new[] {"--entrypointargs", "--cmd"})
+    internal CliOption<string[]> CmdOption { get; } = new CliOption<string[]>("--cmd",new[] {"--entrypointargs", "--cmd"})
     {
-        description: "The Cmd of the container image.",
+        Description = "The Cmd of the container image.",
         AllowMultipleArgumentsPerToken = true
-     };
+    };
 
     internal CliOption<Port[]> PortsOption { get; } = new("--ports")
     {
@@ -198,6 +198,7 @@ internal class ContainerizeCommand : CliRootCommand
             string[] _tags = parseResult.GetValue(ImageTagsOption)!;
             string _workingDir = parseResult.GetValue(WorkingDirectoryOption)!;
             string[] _entrypoint = parseResult.GetValue(EntrypointOption)!;
+            string[]? _cmdArgs = parseResult.GetValue(CmdOption);
             string[]? _entrypointArgs = parseResult.GetValue(EntrypointArgsOption);
             Dictionary<string, string> _labels = parseResult.GetValue(LabelsOption) ?? new Dictionary<string, string>();
             Port[]? _ports = parseResult.GetValue(PortsOption);
@@ -231,7 +232,7 @@ internal class ContainerizeCommand : CliRootCommand
                 _localContainerDaemon,
                 _containerUser,
                 loggerFactory,
-                context.GetCancellationToken()).ConfigureAwait(false);
+                cancellationToken).ConfigureAwait(false);
         });
     }
 
