@@ -2084,4 +2084,13 @@ Widening and user defined conversions are not supported with generic types.</val
   <data name="RecommendCaseInsensitiveStringComparisonMessage" xml:space="preserve">
     <value>Prefer the string comparison method overload of '{0}' that takes a 'StringComparison' enum value to perform a case-insensitive comparison</value>
   </data>
+  <data name="UseCompositeFormatTitle" xml:space="preserve">
+    <value>Use 'CompositeFormat'</value>
+  </data>
+  <data name="UseCompositeFormatMessage" xml:space="preserve">
+    <value>Cache a 'CompositeFormat' for repeated use in this formatting operation</value>
+  </data>
+  <data name="UseCompositeFormatDescription" xml:space="preserve">
+    <value>Cache and use a 'CompositeFormat' instance as the argument to this formatting operation, rather than passing in the original format string. This reduces the cost of the formatting operation.</value>
+  </data>
 </root>

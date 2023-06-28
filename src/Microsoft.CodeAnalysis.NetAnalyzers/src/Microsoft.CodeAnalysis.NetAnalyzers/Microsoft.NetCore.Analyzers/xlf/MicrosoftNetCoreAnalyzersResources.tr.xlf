@@ -2818,6 +2818,21 @@ Genel türlerde genişletme ve kullanıcı tanımlı dönüştürmeler desteklen
         <target state="translated">'ThrowIfCancellationRequested' kullanın</target>
         <note />
       </trans-unit>
+      <trans-unit id="UseCompositeFormatDescription">
+        <source>Cache and use a 'CompositeFormat' instance as the argument to this formatting operation, rather than passing in the original format string. This reduces the cost of the formatting operation.</source>
+        <target state="new">Cache and use a 'CompositeFormat' instance as the argument to this formatting operation, rather than passing in the original format string. This reduces the cost of the formatting operation.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseCompositeFormatMessage">
+        <source>Cache a 'CompositeFormat' for repeated use in this formatting operation</source>
+        <target state="new">Cache a 'CompositeFormat' for repeated use in this formatting operation</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseCompositeFormatTitle">
+        <source>Use 'CompositeFormat'</source>
+        <target state="new">Use 'CompositeFormat'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UseConcreteTypeDescription">
         <source>Using concrete types avoids virtual or interface call overhead and enables inlining.</source>
         <target state="translated">Somut türlerin kullanımı, sanal veya arabirim çağrısı ek yükünü önler ve satır içine alma sağlar.</target>
