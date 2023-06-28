@@ -26,6 +26,40 @@ Copyright (c) .NET Foundation. All rights reserved.
     <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
   </PropertyGroup>
 
+  <ItemGroup>
+    <_WebTargetFramework Include="$(TargetFrameworks)" />
+    <!-- Make normalization explicit: Trim; Deduplicate by keeping first occurrence, case insensitive -->
+    <_WebTargetFrameworkNormalized Include="@(_WebTargetFramework->Trim()->Distinct())">
+      <Platform>$([MSBuild]::GetTargetPlatformIdentifier('%(Identity)'))</Platform>
+    </_WebTargetFrameworkNormalized>
+  </ItemGroup>
+
+  <!-- If the user has not specified an explicit static web asset base path and there is a browser TFM
+       then set the static web asset base path to the root of the project.
+       This needs to happen before we import the Razor SDK, as that's where the static web assets
+       SDK is imported. Due to the MSBuild evaluation order, we need to do it inside
+       a target, as we can't have properties evaluated based on items in an item group.
+  -->
+  <Target Name="_DefineCommonStaticWebAssetBasePath"
+    BeforeTargets="ResolveStaticWebAssetsConfiguration"
+    Condition="@(_WebTargetFrameworkNormalized->AnyHaveMetadataValue('Platform', 'browser'))"
+    >
+    <PropertyGroup>
+      <StaticWebAssetBasePath Condition="'$(StaticWebAssetBasePath)' == ''">/</StaticWebAssetBasePath>
+    </PropertyGroup>
+  </Target>
+
+  <!-- Enable the rule to embed netx.y-browser assets by default on cross-targeting builds into the
+       web output.
+   -->
+  <ItemGroup Condition="@(_WebTargetFrameworkNormalized->AnyHaveMetadataValue('Platform', 'browser'))">
+    <StaticWebAssetsEmbeddedConfiguration
+      Include="$(TargetFramework)"
+      Condition="'$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == '' And $([MSBuild]::VersionGreaterThanOrEquals(8.0, $([MSBuild]::GetTargetFrameworkVersion($(TargetFramework)))))">
+      <Platform>browser</Platform>
+    </StaticWebAssetsEmbeddedConfiguration>
+  </ItemGroup>
+
   <Import Sdk="Microsoft.NET.Sdk.Razor" Project="Sdk.targets" />
 
   <Import Sdk="Microsoft.NET.Sdk.Web.ProjectSystem" Project="Sdk.targets" />

@@ -235,6 +235,7 @@ Integration with static web assets:
     AssetMode="CurrentProject"
     AssetRole="Primary"
     AssetMergeSource="$(StaticWebAssetMergeTarget)"
+    AssetMergeBehavior="Exclude"
     RelatedAsset=""
     AssetTraitName="ScopedCss"
     AssetTraitValue="ApplicationBundle"

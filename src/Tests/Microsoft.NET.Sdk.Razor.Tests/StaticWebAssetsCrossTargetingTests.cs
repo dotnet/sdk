@@ -27,23 +27,6 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var testAsset = "RazorComponentAppMultitarget";
             ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
 
-            ProjectDirectory.WithProjectChanges(d =>
-            {
-                d.Root.Element("PropertyGroup").Add(
-                    XElement.Parse("""<StaticWebAssetBasePath>/</StaticWebAssetBasePath>"""));
-
-                d.Root.LastNode.AddBeforeSelf(
-                    XElement.Parse("""
-                        <ItemGroup>
-                          <StaticWebAssetsEmbeddedConfiguration
-                            Include="$(TargetFramework)"
-                            Condition="'$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == '' And $([MSBuild]::VersionGreaterThanOrEquals(8.0, $([MSBuild]::GetTargetFrameworkVersion($(TargetFramework)))))">
-                            <Platform>browser</Platform>
-                          </StaticWebAssetsEmbeddedConfiguration>
-                        </ItemGroup>
-                        """));
-            });
-
             var wwwroot = Directory.CreateDirectory(Path.Combine(ProjectDirectory.TestRoot, "wwwroot"));
             File.WriteAllText(Path.Combine(wwwroot.FullName, "test.js"), "console.log('hello')");
 
@@ -71,23 +54,6 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         {
             var testAsset = "RazorComponentAppMultitarget";
             ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
-
-            ProjectDirectory.WithProjectChanges(d =>
-            {
-                d.Root.Element("PropertyGroup").Add(
-                    XElement.Parse("""<StaticWebAssetBasePath>/</StaticWebAssetBasePath>"""));
-
-                d.Root.LastNode.AddBeforeSelf(
-                    XElement.Parse("""
-                        <ItemGroup>
-                          <StaticWebAssetsEmbeddedConfiguration
-                            Include="$(TargetFramework)"
-                            Condition="'$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == '' And $([MSBuild]::VersionGreaterThanOrEquals(8.0, $([MSBuild]::GetTargetFrameworkVersion($(TargetFramework)))))">
-                            <Platform>browser</Platform>
-                          </StaticWebAssetsEmbeddedConfiguration>
-                        </ItemGroup>
-                        """));
-            });
 
             var wwwroot = Directory.CreateDirectory(Path.Combine(ProjectDirectory.TestRoot, "wwwroot"));
             File.WriteAllText(Path.Combine(wwwroot.FullName, "test.js"), "console.log('hello')");
