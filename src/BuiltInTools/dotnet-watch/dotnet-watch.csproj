@@ -28,7 +28,7 @@
       Explicit System.Text.Json package reference is required for source-build to pick up the live package.
       Avoids picking up an old version via transitive dependency from Microsoft.Build or Microsoft.CodeAnalysis.Workspaces.MSBuild.
     -->
-    <PackageReference Include="System.Text.Json" Version="$(SystemTextJsonVersion)" Condition="'$(DotnetBuildFromSource)' == 'true'" />
+    <PackageReference Include="System.Text.Json" Version="$(SystemTextJsonVersion)" />
 
     <Compile Include="$(RepoRoot)src\Common\PathUtilities.cs" LinkBase="Common" />
   </ItemGroup>
