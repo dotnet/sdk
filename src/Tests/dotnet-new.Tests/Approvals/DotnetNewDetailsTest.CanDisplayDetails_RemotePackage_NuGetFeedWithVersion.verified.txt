@@ -1,8 +1,8 @@
 ﻿Uno.ProjectTemplates.Dotnet
    Package version: 4.8.0-dev.604
-   Details: Package Description
-   Source Feed: https://api.nuget.org/v3/index.json [https://api.nuget.org/v3/index.json]
    Prefix Reserved: False
+   Details: Package Description
+   Source Feed: NuGet.org [https://api.nuget.org/v3/index.json]
    Authors:
       nventive
    Owners:

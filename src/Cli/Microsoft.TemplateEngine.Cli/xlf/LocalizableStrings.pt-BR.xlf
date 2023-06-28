@@ -385,6 +385,11 @@ Execute 'dotnet {1} --mostrar- aliases' sem nenhum args para mostrar todos os al
         <target state="new">Package identifier</target>
         <note />
       </trans-unit>
+      <trans-unit id="DetailsCommand_NoNuGetSources">
+        <source>No NuGet sources are defined or enabled</source>
+        <target state="new">No NuGet sources are defined or enabled</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DetailsCommand_Option_Version">
         <source>Specifies a concrete version for displaying details. If not specified the last is taken.</source>
         <target state="new">Specifies a concrete version for displaying details. If not specified the last is taken.</target>
@@ -463,6 +468,11 @@ Execute 'dotnet {1} --mostrar- aliases' sem nenhum args para mostrar todos os al
       <trans-unit id="DetailsCommand_Property_Version">
         <source>Package version</source>
         <target state="new">Package version</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DetailsCommand_UnableToLoadResorce">
+        <source>Failed to load NuGet sources configured for the folder {0}</source>
+        <target state="new">Failed to load NuGet sources configured for the folder {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="DisplaysHelp">

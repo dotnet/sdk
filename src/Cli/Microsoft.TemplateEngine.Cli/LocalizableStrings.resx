@@ -913,6 +913,12 @@ The header is followed by the list of parameters and their errors (might be seve
   <data name="DetailsCommand_Property_Templates">
     <value>Templates</value>
   </data>
+  <data name="DetailsCommand_NoNuGetSources">
+    <value>No NuGet sources are defined or enabled</value>
+  </data>
+  <data name="DetailsCommand_UnableToLoadResorce">
+    <value>Failed to load NuGet sources configured for the folder {0}</value>
+  </data>
   <data name="OperationCancelled" xml:space="preserve">
     <value>The operation was cancelled.</value>
   </data>

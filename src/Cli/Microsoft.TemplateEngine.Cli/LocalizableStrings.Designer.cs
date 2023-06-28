@@ -739,6 +739,15 @@ namespace Microsoft.TemplateEngine.Cli {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to No NuGet sources are defined or enabled.
+        /// </summary>
+        internal static string DetailsCommand_NoNuGetSources {
+            get {
+                return ResourceManager.GetString("DetailsCommand_NoNuGetSources", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Specifies a concrete version for displaying details. If not specified the last is taken..
         /// </summary>
         internal static string DetailsCommand_Option_Version {
@@ -879,6 +888,15 @@ namespace Microsoft.TemplateEngine.Cli {
         internal static string DetailsCommand_Property_Version {
             get {
                 return ResourceManager.GetString("DetailsCommand_Property_Version", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to load NuGet sources configured for the folder {0}.
+        /// </summary>
+        internal static string DetailsCommand_UnableToLoadResorce {
+            get {
+                return ResourceManager.GetString("DetailsCommand_UnableToLoadResorce", resourceCulture);
             }
         }
         

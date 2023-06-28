@@ -472,10 +472,11 @@ namespace Microsoft.TemplateEngine.Cli
         {
             reporter.WriteLine($"{packageMetadata.Identity.Id}");
             WriteIfNotNull(LocalizableStrings.DetailsCommand_Property_Version, packageMetadata.PackageVersion.ToString(), reporter, 1);
-
-            WriteIfNotNull(LocalizableStrings.DetailsCommand_Property_Description, packageMetadata.Description, reporter, 1);
-            WriteIfNotNull(LocalizableStrings.DetailsCommand_Property_SourceFeed, packageMetadata.Source.ToString(), reporter, 1);
             WriteIfNotNull(LocalizableStrings.DetailsCommand_Property_PrefixReserved, packageMetadata.PrefixReserved.ToString(), reporter, 1);
+            WriteIfNotNull(LocalizableStrings.DetailsCommand_Property_Description, packageMetadata.Description, reporter, 1);
+
+            string sourceFeed = packageMetadata.Source.Source == packageMetadata.Source.Name ? packageMetadata.Source.Source : $"{packageMetadata.Source.Name} [{packageMetadata.Source.Source}]";
+            reporter.WriteLine($"{LocalizableStrings.DetailsCommand_Property_SourceFeed}: {sourceFeed}".Indent(1));
 
             if (!string.IsNullOrEmpty(packageMetadata.Authors))
             {
@@ -1092,20 +1093,20 @@ namespace Microsoft.TemplateEngine.Cli
                 defaultSources = packageSourceProvider.LoadPackageSources().Where(source => source.IsEnabled);
                 if (includeNuGetFeed)
                 {
-                    var nuGetFeed = new PackageSource(NugetOrgFeed);
+                    var nuGetFeed = new PackageSource(NugetOrgFeed, "NuGet.org");
                     defaultSources = defaultSources.Append(nuGetFeed);
                 }
             }
             catch (Exception ex)
             {
-                throw new Exception($"Failed to load NuGet sources configured for the folder {currentDirectory}", ex);
+                throw new Exception(string.Format(LocalizableStrings.DetailsCommand_UnableToLoadResorce, currentDirectory), ex);
             }
 
             if (additionalSources == null || !additionalSources.Any())
             {
                 if (!defaultSources.Any())
                 {
-                    throw new Exception("No NuGet sources are defined or enabled");
+                    throw new Exception(LocalizableStrings.DetailsCommand_NoNuGetSources);
                 }
                 return defaultSources;
             }
@@ -1119,13 +1120,13 @@ namespace Microsoft.TemplateEngine.Cli
                 }
                 if (defaultSources.Any(s => s.Source.Equals(source, StringComparison.OrdinalIgnoreCase)))
                 {
-                    Reporter.Output.WriteLine($"Custom source {source} is already loaded from default configuration.");
+                    Reporter.Verbose.WriteLine($"Custom source {source} is already loaded from default configuration.");
                     continue;
                 }
                 PackageSource packageSource = new PackageSource(source);
                 if (packageSource.TrySourceAsUri == null)
                 {
-                    Reporter.Output.WriteLine(string.Format("Failed to load resource {0} message", source));
+                    Reporter.Output.WriteLine(string.Format("Could not parse NuGet source {0}, so it was discarded", source));
                     continue;
                 }
                 customSources.Add(packageSource);
