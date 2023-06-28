@@ -1099,7 +1099,7 @@ namespace Microsoft.TemplateEngine.Cli
             }
             catch (Exception ex)
             {
-                throw new Exception(string.Format(LocalizableStrings.DetailsCommand_UnableToLoadResorce, currentDirectory), ex);
+                throw new Exception(string.Format(LocalizableStrings.DetailsCommand_UnableToLoadResorces, currentDirectory), ex);
             }
 
             if (additionalSources == null || !additionalSources.Any())
@@ -1126,7 +1126,7 @@ namespace Microsoft.TemplateEngine.Cli
                 PackageSource packageSource = new PackageSource(source);
                 if (packageSource.TrySourceAsUri == null)
                 {
-                    Reporter.Output.WriteLine(string.Format("Could not parse NuGet source {0}, so it was discarded", source));
+                    Reporter.Output.WriteLine(string.Format(LocalizableStrings.DetailsCommand_UnableToLoadResorce, source));
                     continue;
                 }
                 customSources.Add(packageSource);
@@ -1135,7 +1135,7 @@ namespace Microsoft.TemplateEngine.Cli
             IEnumerable<PackageSource> retrievedSources = customSources.Concat(defaultSources);
             if (!retrievedSources.Any())
             {
-                throw new Exception("No NuGet sources are defined or enabled");
+                throw new Exception(LocalizableStrings.DetailsCommand_NoNuGetSources);
             }
             return retrievedSources;
         }

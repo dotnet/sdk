@@ -892,11 +892,20 @@ namespace Microsoft.TemplateEngine.Cli {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Failed to load NuGet sources configured for the folder {0}.
+        ///   Looks up a localized string similar to Could not parse NuGet source &apos;{0}&apos;, so it was discarded.
         /// </summary>
         internal static string DetailsCommand_UnableToLoadResorce {
             get {
                 return ResourceManager.GetString("DetailsCommand_UnableToLoadResorce", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to load NuGet sources configured for the folder {0}.
+        /// </summary>
+        internal static string DetailsCommand_UnableToLoadResorces {
+            get {
+                return ResourceManager.GetString("DetailsCommand_UnableToLoadResorces", resourceCulture);
             }
         }
         

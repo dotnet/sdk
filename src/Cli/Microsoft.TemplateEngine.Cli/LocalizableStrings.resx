@@ -916,8 +916,11 @@ The header is followed by the list of parameters and their errors (might be seve
   <data name="DetailsCommand_NoNuGetSources">
     <value>No NuGet sources are defined or enabled</value>
   </data>
-  <data name="DetailsCommand_UnableToLoadResorce">
+  <data name="DetailsCommand_UnableToLoadResorces">
     <value>Failed to load NuGet sources configured for the folder {0}</value>
+  </data>
+  <data name="DetailsCommand_UnableToLoadResorce">
+    <value>Could not parse NuGet source '{0}', so it was discarded</value>
   </data>
   <data name="OperationCancelled" xml:space="preserve">
     <value>The operation was cancelled.</value>
