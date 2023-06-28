@@ -25,12 +25,14 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Analyzers
             var formattablePaths = ImmutableHashSet.Create(project.Documents.First().FilePath);
             var minimumSeverity = DiagnosticSeverity.Warning;
             var diagnostics = ImmutableHashSet<string>.Empty;
+            var excludeDiagnostics = ImmutableHashSet<string>.Empty;
             var result = await AnalyzerFormatter.FilterAnalyzersAsync(
                 solution,
                 projectAnalyzersAndFixers,
                 formattablePaths,
                 minimumSeverity,
                 diagnostics,
+                excludeDiagnostics,
                 CancellationToken.None);
             var (_, analyzers) = Assert.Single(result);
             Assert.Single(analyzers);
@@ -45,12 +47,14 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Analyzers
             var formattablePaths = ImmutableHashSet.Create(project.Documents.First().FilePath);
             var minimumSeverity = DiagnosticSeverity.Error;
             var diagnostics = ImmutableHashSet<string>.Empty;
+            var excludeDiagnostics = ImmutableHashSet<string>.Empty;
             var result = await AnalyzerFormatter.FilterAnalyzersAsync(
                 solution,
                 projectAnalyzersAndFixers,
                 formattablePaths,
                 minimumSeverity,
                 diagnostics,
+                excludeDiagnostics,
                 CancellationToken.None);
             var (_, analyzers) = Assert.Single(result);
             Assert.Empty(analyzers);
@@ -65,12 +69,14 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Analyzers
             var formattablePaths = ImmutableHashSet.Create(project.Documents.First().FilePath);
             var minimumSeverity = DiagnosticSeverity.Warning;
             var diagnostics = ImmutableHashSet.Create("IDE0005");
+            var excludeDiagnostics = ImmutableHashSet<string>.Empty;
             var result = await AnalyzerFormatter.FilterAnalyzersAsync(
                 solution,
                 projectAnalyzersAndFixers,
                 formattablePaths,
                 minimumSeverity,
                 diagnostics,
+                excludeDiagnostics,
                 CancellationToken.None);
             var (_, analyzers) = Assert.Single(result);
             Assert.Empty(analyzers);
@@ -85,15 +91,61 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Analyzers
             var formattablePaths = ImmutableHashSet.Create(project.Documents.First().FilePath);
             var minimumSeverity = DiagnosticSeverity.Warning;
             var diagnostics = ImmutableHashSet.Create("DiagnosticAnalyzerId");
+            var excludeDiagnostics = ImmutableHashSet<string>.Empty;
             var result = await AnalyzerFormatter.FilterAnalyzersAsync(
                 solution,
                 projectAnalyzersAndFixers,
                 formattablePaths,
                 minimumSeverity,
                 diagnostics,
+                excludeDiagnostics,
                 CancellationToken.None);
             var (_, analyzers) = Assert.Single(result);
             Assert.Single(analyzers);
+        }
+
+        [Fact]
+        public async Task TestFilterDiagnostics_ExcludedFromDiagnosticsList()
+        {
+            var solution = await GetSolutionAsync();
+            var projectAnalyzersAndFixers = await GetProjectAnalyzersAndFixersAsync(solution);
+            var project = solution.Projects.First();
+            var formattablePaths = ImmutableHashSet.Create(project.Documents.First().FilePath);
+            var minimumSeverity = DiagnosticSeverity.Warning;
+            var diagnostics = ImmutableHashSet<string>.Empty;
+            var excludeDiagnostics = ImmutableHashSet.Create("DiagnosticAnalyzerId");
+            var result = await AnalyzerFormatter.FilterAnalyzersAsync(
+                solution,
+                projectAnalyzersAndFixers,
+                formattablePaths,
+                minimumSeverity,
+                diagnostics,
+                excludeDiagnostics,
+                CancellationToken.None);
+            var (_, analyzers) = Assert.Single(result);
+            Assert.Empty(analyzers);
+        }
+
+        [Fact]
+        public async Task TestFilterDiagnostics_ExcludeTrumpsInclude()
+        {
+            var solution = await GetSolutionAsync();
+            var projectAnalyzersAndFixers = await GetProjectAnalyzersAndFixersAsync(solution);
+            var project = solution.Projects.First();
+            var formattablePaths = ImmutableHashSet.Create(project.Documents.First().FilePath);
+            var minimumSeverity = DiagnosticSeverity.Warning;
+            var diagnostics = ImmutableHashSet.Create("DiagnosticAnalyzerId");
+            var excludeDiagnostics = ImmutableHashSet.Create("DiagnosticAnalyzerId");
+            var result = await AnalyzerFormatter.FilterAnalyzersAsync(
+                solution,
+                projectAnalyzersAndFixers,
+                formattablePaths,
+                minimumSeverity,
+                diagnostics,
+                excludeDiagnostics,
+                CancellationToken.None);
+            var (_, analyzers) = Assert.Single(result);
+            Assert.Empty(analyzers);
         }
 
         private static async Task<AnalyzersAndFixers> GetAnalyzersAndFixersAsync()

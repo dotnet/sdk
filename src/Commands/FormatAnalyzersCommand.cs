@@ -19,6 +19,7 @@ namespace Microsoft.CodeAnalysis.Tools.Commands
             var command = new Command("analyzers", Resources.Run_3rd_party_analyzers__and_apply_fixes)
             {
                 DiagnosticsOption,
+                ExcludeDiagnosticsOption,
                 SeverityOption,
             };
             command.AddCommonOptions();
@@ -46,6 +47,12 @@ namespace Microsoft.CodeAnalysis.Tools.Commands
                     parseResult.ValueForOption(DiagnosticsOption) is string[] { Length: > 0 } diagnostics)
                 {
                     formatOptions = formatOptions with { Diagnostics = diagnostics.ToImmutableHashSet() };
+                }
+
+                if (parseResult.HasOption(ExcludeDiagnosticsOption) &&
+                    parseResult.ValueForOption(ExcludeDiagnosticsOption) is string[] { Length: > 0 } excludeDiagnostics)
+                {
+                    formatOptions = formatOptions with { ExcludeDiagnostics = excludeDiagnostics.ToImmutableHashSet() };
                 }
 
                 formatOptions = formatOptions with { FixCategory = FixCategory.Analyzers };
