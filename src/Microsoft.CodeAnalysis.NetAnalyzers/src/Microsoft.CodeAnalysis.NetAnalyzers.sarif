@@ -3064,7 +3064,7 @@
           "properties": {
             "category": "Performance",
             "isEnabledByDefault": true,
-            "typeName": "PreferDictionaryTryGetValueAnalyzer",
+            "typeName": "PreferDictionaryTryMethodsOverContainsKeyGuardAnalyzer",
             "languages": [
               "C#",
               "Visual Basic"
@@ -3185,6 +3185,26 @@
             "category": "Performance",
             "isEnabledByDefault": true,
             "typeName": "UseCompositeFormatAnalyzer",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA1864": {
+          "id": "CA1864",
+          "shortDescription": "Prefer the 'IDictionary.TryAdd(TKey, TValue)' method",
+          "fullDescription": "Prefer a 'TryAdd' call over an 'Add' call guarded by a 'ContainsKey' check. 'TryAdd' behaves the same as 'Add', except that when the specified key already exists, it returns 'false' instead of throwing an exception.",
+          "defaultLevel": "note",
+          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1864",
+          "properties": {
+            "category": "Performance",
+            "isEnabledByDefault": true,
+            "typeName": "PreferDictionaryTryMethodsOverContainsKeyGuardAnalyzer",
             "languages": [
               "C#",
               "Visual Basic"

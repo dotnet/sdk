@@ -2053,6 +2053,26 @@ Genel türlerde genişletme ve kullanıcı tanımlı dönüştürmeler desteklen
         <target state="translated">Sözlük türü '{0}' için 'Values.Contains' yerine 'ContainsValue' tercih edin</target>
         <note />
       </trans-unit>
+      <trans-unit id="PreferDictionaryTryAddDescription">
+        <source>Prefer a 'TryAdd' call over an 'Add' call guarded by a 'ContainsKey' check. 'TryAdd' behaves the same as 'Add', except that when the specified key already exists, it returns 'false' instead of throwing an exception.</source>
+        <target state="new">Prefer a 'TryAdd' call over an 'Add' call guarded by a 'ContainsKey' check. 'TryAdd' behaves the same as 'Add', except that when the specified key already exists, it returns 'false' instead of throwing an exception.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferDictionaryTryAddMessage">
+        <source>To avoid double lookup, call 'TryAdd' instead of calling 'Add' with a 'ContainsKey' guard</source>
+        <target state="new">To avoid double lookup, call 'TryAdd' instead of calling 'Add' with a 'ContainsKey' guard</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferDictionaryTryAddTitle">
+        <source>Prefer the 'IDictionary.TryAdd(TKey, TValue)' method</source>
+        <target state="new">Prefer the 'IDictionary.TryAdd(TKey, TValue)' method</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferDictionaryTryAddValueCodeFixTitle">
+        <source>Use 'TryAdd(TKey, TValue)'</source>
+        <target state="new">Use 'TryAdd(TKey, TValue)'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PreferDictionaryTryGetValueCodeFixTitle">
         <source>Use 'TryGetValue(TKey, out TValue)'</source>
         <target state="translated">'TryGetValue(TKey, out TValue)' kullanın</target>
