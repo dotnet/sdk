@@ -78,15 +78,17 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             string packageLocation = PackTestNuGetPackage(_log);
             string home = CreateTemporaryFolder(folderName: "Home");
             new DotnetNewCommand(_log, "install", packageLocation)
-                .WithoutBuiltInTemplates().WithCustomHive(home)
+                .WithoutBuiltInTemplates()
+                .WithCustomHive(home)
                 .WithWorkingDirectory(CreateTemporaryFolder())
                 .Execute()
                 .Should()
                 .ExitWith(0)
                 .And.NotHaveStdErr();
 
-            CommandResult commandResult = new DotnetNewCommand(_log, "details", "Microsoft.TemplateEngine.TestTemplates")
-                .WithCustomHive(home).WithoutBuiltInTemplates()
+            CommandResult commandResult = new DotnetNewCommand(_log, "details", "Microsoft.TemplateEngine.TestTemplates", "-version", "1.0.0")
+                .WithCustomHive(home)
+                .WithoutBuiltInTemplates()
                 .WithWorkingDirectory(CreateTemporaryFolder())
                 .Execute();
 
@@ -94,7 +96,8 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .Should()
                 .Pass();
 
-            return Verify(commandResult.StdOut);
+            return Verify(commandResult.StdOut)
+                .UniqueForOSPlatform();
         }
 
         [Fact]
