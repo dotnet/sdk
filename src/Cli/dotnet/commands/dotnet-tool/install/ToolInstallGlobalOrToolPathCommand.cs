@@ -107,7 +107,6 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                 toolPath = new DirectoryPath(_toolPath);
             }
 
-            //same class for IToolpackagestore, storequery and installer
             (IToolPackageStore toolPackageStore, IToolPackageStoreQuery toolPackageStoreQuery, IToolPackageInstaller toolPackageInstaller) =
                 _createToolPackageStoresAndInstaller(toolPath, _forwardRestoreArguments);
 
@@ -126,14 +125,13 @@ namespace Microsoft.DotNet.Tools.Tool.Install
 
             try
             {
-                //ToolPackageStoreAndQuery downloaderStore = ToolPackageFactory.CreateConcreteToolPackageStore(toolPath);
                 IToolPackage package = null;
                 // transaction scope: if something fails in the middle undo the process
                 using (var scope = new TransactionScope(
                     TransactionScopeOption.Required,
                     TimeSpan.Zero))
                 {
-                    var toolPackageDownloader = new ToolPackageDownloader();
+                    var toolPackageDownloader = new ToolPackageDownloader(toolPackageStore);
                     package = toolPackageDownloader.InstallPackageAsync(
                     new PackageLocation(nugetConfig: configFile, additionalFeeds: _source),
                         packageId: _packageId,
@@ -168,48 +166,6 @@ namespace Microsoft.DotNet.Tools.Tool.Install
 
                     scope.Complete();
                 }
-
-
-
-                // Original Code Below
-                /*IToolPackage package = null;
-                // transaction scope: if something fails in the middle undo the process
-                using (var scope = new TransactionScope(
-                    TransactionScopeOption.Required,
-                    TimeSpan.Zero))
-                {
-                    package = toolPackageInstaller.InstallPackage(
-                        new PackageLocation(nugetConfig: configFile, additionalFeeds: _source),
-                        packageId: _packageId,
-                        versionRange: versionRange,
-                        targetFramework: _framework, verbosity: _verbosity);
-
-                    NuGetFramework framework;
-                    if (string.IsNullOrEmpty(_framework) && package.Frameworks.Count() > 0)
-                    {
-                        framework = package.Frameworks
-                            .Where(f => f.Version < (new NuGetVersion(Product.Version)).Version)
-                            .MaxBy(f => f.Version);
-                    }
-                    else
-                    {
-                        framework = string.IsNullOrEmpty(_framework) ?
-                            null :
-                            NuGetFramework.Parse(_framework);
-                    }
-
-                    string appHostSourceDirectory = _shellShimTemplateFinder.ResolveAppHostSourceDirectoryAsync(_architectureOption, framework, RuntimeInformation.ProcessArchitecture).Result;
-                    IShellShimRepository shellShimRepository = _createShellShimRepository(appHostSourceDirectory, toolPath);
-
-                    // actual executable that runs
-                    foreach (var command in package.Commands)
-                    {
-                        shellShimRepository.CreateShim(command.Executable, command.Name, package.PackagedShims);
-                    }
-
-                    scope.Complete();
-                }*/
-
 
                 foreach (string w in package.Warnings)
                 {
