@@ -8,7 +8,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.Helpers
 {
     internal static class EnumHelpers
     {
-        internal static bool TryConvertToUInt64(object value, SpecialType specialType, out ulong convertedValue)
+        internal static bool TryConvertToUInt64(object? value, SpecialType specialType, out ulong convertedValue)
         {
             bool success = false;
             convertedValue = 0;

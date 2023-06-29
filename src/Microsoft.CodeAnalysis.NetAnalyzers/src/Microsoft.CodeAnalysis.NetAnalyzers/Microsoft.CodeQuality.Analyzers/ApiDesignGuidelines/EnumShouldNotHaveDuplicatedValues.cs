@@ -65,7 +65,8 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 var duplicates = PooledConcurrentSet<IFieldSymbol>.GetInstance(SymbolEqualityComparer.Default);
                 foreach (var member in enumSymbol.GetMembers())
                 {
-                    if (member is not IFieldSymbol { IsImplicitlyDeclared: false, HasConstantValue: true } field)
+                    if (member is not IFieldSymbol { IsImplicitlyDeclared: false, HasConstantValue: true } field ||
+                        field.ConstantValue is null)
                     {
                         continue;
                     }

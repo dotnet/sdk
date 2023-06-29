@@ -185,7 +185,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             }
         }
 
-        private static bool IsZeroValueConstant(object value, SpecialType specialType)
+        private static bool IsZeroValueConstant(object? value, SpecialType specialType)
         {
             return DiagnosticHelpers.TryConvertToUInt64(value, specialType, out ulong convertedValue) && convertedValue == 0;
         }
