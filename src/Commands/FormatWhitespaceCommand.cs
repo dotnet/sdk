@@ -28,7 +28,7 @@ namespace Microsoft.CodeAnalysis.Tools.Commands
 
         private static readonly FormatWhitespaceHandler s_formattingHandler = new();
 
-        internal static Symbol GetCommand()
+        internal static Command GetCommand()
         {
             var command = new Command("whitespace", Resources.Run_whitespace_formatting)
             {
@@ -41,26 +41,28 @@ namespace Microsoft.CodeAnalysis.Tools.Commands
             return command;
         }
 
-        internal static string? EnsureFolderNotSpecifiedWithNoRestore(CommandResult symbolResult)
+        internal static void EnsureFolderNotSpecifiedWithNoRestore(CommandResult symbolResult)
         {
             var folder = symbolResult.GetValueForOption<bool>("--folder");
             var noRestore = symbolResult.GetOptionResult("--no-restore");
-            return folder && noRestore != null
+            symbolResult.ErrorMessage = folder && noRestore != null
                 ? Resources.Cannot_specify_the_folder_option_with_no_restore
                 : null;
         }
 
-        internal static string? EnsureFolderNotSpecifiedWhenLoggingBinlog(CommandResult symbolResult)
+        internal static void EnsureFolderNotSpecifiedWhenLoggingBinlog(CommandResult symbolResult)
         {
             var folder = symbolResult.GetValueForOption<bool>("--folder");
             var binarylog = symbolResult.GetOptionResult("--binarylog");
-            return folder && binarylog is not null && !binarylog.IsImplicit
+            symbolResult.ErrorMessage = folder && binarylog is not null && !binarylog.IsImplicit
                 ? Resources.Cannot_specify_the_folder_option_when_writing_a_binary_log
                 : null;
         }
 
         private class FormatWhitespaceHandler : ICommandHandler
         {
+            public int Invoke(InvocationContext context) => InvokeAsync(context).GetAwaiter().GetResult();
+
             public async Task<int> InvokeAsync(InvocationContext context)
             {
                 var parseResult = context.ParseResult;
