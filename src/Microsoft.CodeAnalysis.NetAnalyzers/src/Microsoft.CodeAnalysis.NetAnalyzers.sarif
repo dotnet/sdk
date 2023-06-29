@@ -3064,7 +3064,7 @@
           "properties": {
             "category": "Performance",
             "isEnabledByDefault": true,
-            "typeName": "PreferDictionaryTryGetValueAnalyzer",
+            "typeName": "PreferDictionaryTryMethodsOverContainsKeyGuardAnalyzer",
             "languages": [
               "C#",
               "Visual Basic"
@@ -3165,6 +3165,46 @@
             "category": "Performance",
             "isEnabledByDefault": true,
             "typeName": "RecommendCaseInsensitiveStringComparisonAnalyzer",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA1863": {
+          "id": "CA1863",
+          "shortDescription": "Use 'CompositeFormat'",
+          "fullDescription": "Cache and use a 'CompositeFormat' instance as the argument to this formatting operation, rather than passing in the original format string. This reduces the cost of the formatting operation.",
+          "defaultLevel": "hidden",
+          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1863",
+          "properties": {
+            "category": "Performance",
+            "isEnabledByDefault": true,
+            "typeName": "UseCompositeFormatAnalyzer",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA1864": {
+          "id": "CA1864",
+          "shortDescription": "Prefer the 'IDictionary.TryAdd(TKey, TValue)' method",
+          "fullDescription": "Prefer a 'TryAdd' call over an 'Add' call guarded by a 'ContainsKey' check. 'TryAdd' behaves the same as 'Add', except that when the specified key already exists, it returns 'false' instead of throwing an exception.",
+          "defaultLevel": "note",
+          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1864",
+          "properties": {
+            "category": "Performance",
+            "isEnabledByDefault": true,
+            "typeName": "PreferDictionaryTryMethodsOverContainsKeyGuardAnalyzer",
             "languages": [
               "C#",
               "Visual Basic"
@@ -4251,6 +4291,26 @@
             "category": "Usage",
             "isEnabledByDefault": true,
             "typeName": "UseThreadStaticCorrectly",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA2261": {
+          "id": "CA2261",
+          "shortDescription": "Do not use ConfigureAwaitOptions.SuppressThrowing with Task<TResult>",
+          "fullDescription": "The ConfigureAwaitOptions.SuppressThrowing is only supported with the non-generic Task, not a Task<TResult>.  To use it with a Task<TResult>, first cast to the base Task.",
+          "defaultLevel": "warning",
+          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2261",
+          "properties": {
+            "category": "Usage",
+            "isEnabledByDefault": true,
+            "typeName": "DoNotUseConfigureAwaitWithSuppressThrowing",
             "languages": [
               "C#",
               "Visual Basic"

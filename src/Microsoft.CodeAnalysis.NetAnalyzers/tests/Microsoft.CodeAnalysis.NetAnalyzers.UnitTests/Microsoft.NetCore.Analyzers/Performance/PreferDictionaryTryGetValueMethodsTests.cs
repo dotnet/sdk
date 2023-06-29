@@ -9,13 +9,13 @@ using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
-    Microsoft.NetCore.Analyzers.Runtime.PreferDictionaryTryGetValueAnalyzer,
-    Microsoft.NetCore.CSharp.Analyzers.Runtime.CSharpPreferDictionaryTryGetValueFixer>;
+    Microsoft.NetCore.Analyzers.Performance.PreferDictionaryTryMethodsOverContainsKeyGuardAnalyzer,
+    Microsoft.NetCore.CSharp.Analyzers.Performance.CSharpPreferDictionaryTryMethodsOverContainsKeyGuardFixer>;
 using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
-    Microsoft.NetCore.Analyzers.Runtime.PreferDictionaryTryGetValueAnalyzer,
-    Microsoft.NetCore.VisualBasic.Analyzers.Runtime.BasicPreferDictionaryTryGetValueFixer>;
+    Microsoft.NetCore.Analyzers.Performance.PreferDictionaryTryMethodsOverContainsKeyGuardAnalyzer,
+    Microsoft.NetCore.VisualBasic.Analyzers.Performance.BasicPreferDictionaryTryMethodsOverContainsKeyGuardFixer>;
 
-namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
+namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 {
     public class PreferDictionaryTryGetValueMethodsTests
     {
@@ -1229,7 +1229,7 @@ End Namespace";
         {
             string testCode = CreateCSharpCode(codeSnippet);
             string fixedCode = CreateCSharpCode(fixedCodeSnippet);
-            var diagnostic = VerifyCS.Diagnostic(PreferDictionaryTryGetValueAnalyzer.ContainsKeyRule);
+            var diagnostic = VerifyCS.Diagnostic(PreferDictionaryTryMethodsOverContainsKeyGuardAnalyzer.PreferTryGetValueDiagnostic);
             for (int i = 0; i < additionalLocations + 1; i++)
             {
                 diagnostic = diagnostic.WithLocation(i);
@@ -1240,7 +1240,8 @@ End Namespace";
                 TestCode = testCode,
                 FixedCode = fixedCode,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60,
-                ExpectedDiagnostics = { diagnostic }
+                ExpectedDiagnostics = { diagnostic },
+                DisabledDiagnostics = { PreferDictionaryTryMethodsOverContainsKeyGuardAnalyzer.PreferTryAddRuleId }
             }.RunAsync();
         }
 
@@ -1271,6 +1272,7 @@ End Namespace";
             {
                 TestCode = testCode,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60,
+                DisabledDiagnostics = { PreferDictionaryTryMethodsOverContainsKeyGuardAnalyzer.PreferTryAddRuleId }
             };
             if (version != default)
                 test.LanguageVersion = version;
@@ -1298,7 +1300,7 @@ End Namespace";
         {
             string testCode = CreateVbCode(codeSnippet);
             string fixedCode = CreateVbCode(fixedCodeSnippet);
-            var diagnostic = VerifyVB.Diagnostic(PreferDictionaryTryGetValueAnalyzer.ContainsKeyRule);
+            var diagnostic = VerifyVB.Diagnostic(PreferDictionaryTryMethodsOverContainsKeyGuardAnalyzer.PreferTryGetValueDiagnostic);
             for (int i = 0; i < additionalLocations + 1; i++)
             {
                 diagnostic = diagnostic.WithLocation(i);
@@ -1309,7 +1311,8 @@ End Namespace";
                 TestCode = testCode,
                 FixedCode = fixedCode,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60,
-                ExpectedDiagnostics = { diagnostic }
+                ExpectedDiagnostics = { diagnostic },
+                DisabledDiagnostics = { PreferDictionaryTryMethodsOverContainsKeyGuardAnalyzer.PreferTryAddRuleId }
             }.RunAsync();
         }
 
@@ -1333,7 +1336,8 @@ End Namespace";
             return new VerifyVB.Test
             {
                 TestCode = testCode,
-                ReferenceAssemblies = ReferenceAssemblies.Net.Net60
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net60,
+                DisabledDiagnostics = { PreferDictionaryTryMethodsOverContainsKeyGuardAnalyzer.PreferTryAddRuleId }
             }.RunAsync();
         }
 
@@ -1388,7 +1392,7 @@ End Namespace";
             return 0;
 """);
 
-            var diagnostic = VerifyCS.Diagnostic(PreferDictionaryTryGetValueAnalyzer.ContainsKeyRule).WithLocation(0).WithLocation(1);
+            var diagnostic = VerifyCS.Diagnostic(PreferDictionaryTryMethodsOverContainsKeyGuardAnalyzer.PreferTryGetValueDiagnostic).WithLocation(0).WithLocation(1);
             return new VerifyCS.Test
             {
                 TestCode = testCode,
@@ -1437,7 +1441,7 @@ End Namespace";
             Return 0
 """);
 
-            var diagnostic = VerifyVB.Diagnostic(PreferDictionaryTryGetValueAnalyzer.ContainsKeyRule).WithLocation(0).WithLocation(1);
+            var diagnostic = VerifyVB.Diagnostic(PreferDictionaryTryMethodsOverContainsKeyGuardAnalyzer.PreferTryGetValueDiagnostic).WithLocation(0).WithLocation(1);
             return new VerifyVB.Test
             {
                 TestCode = testCode,
@@ -1453,6 +1457,7 @@ End Namespace";
         {
             await new VerifyCS.Test
             {
+                MarkupOptions = MarkupOptions.UseFirstDescriptor,
                 TestState =
                 {
                     Sources =
@@ -1509,6 +1514,7 @@ class C
             var useNullable = nullableMode is "enable" or "enable annotations";
             await new VerifyCS.Test
             {
+                MarkupOptions = MarkupOptions.UseFirstDescriptor,
                 TestState =
                 {
                     Sources =
@@ -1559,6 +1565,44 @@ class C
 }}",
                 LanguageVersion = LanguageVersion.CSharp8,
             }.RunAsync();
+        }
+
+        [Fact]
+        [WorkItem(6589, "https://github.com/dotnet/roslyn-analyzers/issues/6589")]
+        public Task MultipleConditionsInIfStatement()
+        {
+            const string code = @"
+using System.Collections.Generic;
+
+namespace UnitTests {
+    class Program {
+        public void Test(int key, string text) {
+            var dictionary = new Dictionary<int, string>();
+            if({|#0:dictionary.ContainsKey(key)|} && !string.IsNullOrEmpty(text)) {
+                text = {|#1:dictionary[key]|};
+            }          
+        } 
+    }
+}";
+            const string fixedCode = @"
+using System.Collections.Generic;
+
+namespace UnitTests {
+    class Program {
+        public void Test(int key, string text) {
+            var dictionary = new Dictionary<int, string>();
+            if(dictionary.TryGetValue(key, out string value) && !string.IsNullOrEmpty(text)) {
+                text = value;
+            }          
+        } 
+    }
+}";
+            var diagnostic = VerifyCS
+                .Diagnostic(PreferDictionaryTryMethodsOverContainsKeyGuardAnalyzer.PreferTryGetValueDiagnostic)
+                .WithLocation(0)
+                .WithLocation(1);
+
+            return VerifyCS.VerifyCodeFixAsync(code, diagnostic, fixedCode);
         }
 
         private static string CreateCSharpCode(string content)
