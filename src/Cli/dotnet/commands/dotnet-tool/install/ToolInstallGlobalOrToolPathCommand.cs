@@ -98,8 +98,6 @@ namespace Microsoft.DotNet.Tools.Tool.Install
             }
 
             VersionRange versionRange = _parseResult.GetVersionRange();
-            Console.WriteLine("The versionRange at execute is: ");
-            Console.WriteLine(versionRange);
 
             DirectoryPath? toolPath = null;
             if (!string.IsNullOrEmpty(_toolPath))
