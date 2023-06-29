@@ -7,12 +7,12 @@ Imports Microsoft.CodeAnalysis.CodeFixes
 Imports Microsoft.CodeAnalysis.Editing
 Imports Microsoft.CodeAnalysis.VisualBasic
 Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
-Imports Microsoft.NetCore.Analyzers.Runtime
+Imports Microsoft.NetCore.Analyzers.Performance
 
-Namespace Microsoft.NetCore.VisualBasic.Analyzers.Runtime
+Namespace Microsoft.NetCore.VisualBasic.Analyzers.Performance
     <ExportCodeFixProvider(LanguageNames.VisualBasic)>
-    Public NotInheritable Class BasicPreferDictionaryTryGetValueFixer
-        Inherits PreferDictionaryTryGetValueFixer
+    Public NotInheritable Class BasicPreferDictionaryTryMethodsOverContainsKeyGuardFixer
+        Inherits PreferDictionaryTryMethodsOverContainsKeyGuardFixer
 
         Public Overrides Async Function RegisterCodeFixesAsync(context As CodeFixContext) As Task
             Dim diagnostic = context.Diagnostics.FirstOrDefault()
@@ -29,6 +29,17 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Runtime
                 Return
             End If
 
+            Dim action = If(diagnostic.Id = PreferDictionaryTryMethodsOverContainsKeyGuardAnalyzer.PreferTryGetValueRuleId,
+                            Await GetTryGetValueActionAsync(root, diagnostic, document, containsKeyAccess, containsKeyInvocation, context.CancellationToken).ConfigureAwait(False),
+                            GetTryAddAction(root, diagnostic, document, containsKeyAccess, containsKeyInvocation))
+            If action Is Nothing Then
+                Return
+            End If
+
+            context.RegisterCodeFix(action, context.Diagnostics)
+        End Function
+
+        Private Shared Async Function GetTryGetValueActionAsync(root As SyntaxNode, diagnostic As Diagnostic, document As Document, containsKeyAccess As MemberAccessExpressionSyntax, containsKeyInvocation As InvocationExpressionSyntax, cancellationToken As CancellationToken) As Task(Of CodeAction)
             Dim dictionaryAccessors As New List(Of SyntaxNode)
             Dim addStatementNode As ExecutableStatementSyntax = Nothing
             Dim changedValueNode As SyntaxNode = Nothing
@@ -41,8 +52,8 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Runtime
                             Dim add = TryCast(invocation.Expression, MemberAccessExpressionSyntax)
                             If addStatementNode IsNot Nothing OrElse
                                add Is Nothing OrElse
-                               add.Name.Identifier.Text <> PreferDictionaryTryGetValueAnalyzer.AddMethodeName Then
-                                Return
+                               add.Name.Identifier.Text <> PreferDictionaryTryMethodsOverContainsKeyGuardAnalyzer.Add Then
+                                Return Nothing
                             End If
 
                             changedValueNode = invocation.ArgumentList.Arguments(1).GetExpression()
@@ -53,20 +64,20 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Runtime
                     Case GetType(MemberAccessExpressionSyntax)
                         Dim memberAccess = DirectCast(node, MemberAccessExpressionSyntax)
                         If memberAccess.Kind() <> SyntaxKind.DictionaryAccessExpression Then
-                            Return
+                            Return Nothing
                         End If
 
                         dictionaryAccessors.Add(node)
                     Case GetType(AssignmentStatementSyntax)
                         If addStatementNode IsNot Nothing Then
-                            Return
+                            Return Nothing
                         End If
 
                         Dim assignment = DirectCast(node, AssignmentStatementSyntax)
                         changedValueNode = assignment.Right
                         addStatementNode = assignment
                     Case Else
-                        Return
+                        Return Nothing
                 End Select
             Next
 
@@ -76,10 +87,10 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Runtime
             End If
 
             If targetAmount <> dictionaryAccessors.Count Then
-                Return
+                Return Nothing
             End If
 
-            Dim semanticModel = Await context.Document.GetSemanticModelAsync(context.CancellationToken).
+            Dim semanticModel = Await document.GetSemanticModelAsync(cancellationToken).
                     ConfigureAwait(False)
             Dim dictionaryValueType = GetDictionaryValueType(semanticModel, containsKeyAccess.Expression)
 
@@ -138,9 +149,55 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Runtime
                         Return editor.GetChangedDocument()
                     End Function
 
-            Dim action = CodeAction.Create(PreferDictionaryTryGetValueCodeFixTitle, replaceFunction,
-                                           PreferDictionaryTryGetValueCodeFixTitle)
-            context.RegisterCodeFix(action, context.Diagnostics)
+            Return CodeAction.Create(PreferDictionaryTryGetValueCodeFixTitle, replaceFunction, PreferDictionaryTryGetValueCodeFixTitle)
+        End Function
+
+        Private Shared Function GetTryAddAction(root As SyntaxNode, diagnostic As Diagnostic, document As Document, containsKeyAccess As MemberAccessExpressionSyntax, containsKeyInvocation As InvocationExpressionSyntax) As CodeAction
+            Dim dictionaryAddLocation = diagnostic.AdditionalLocations(0)
+            Dim dictionaryAddInvocation = TryCast(root.FindNode(dictionaryAddLocation.SourceSpan, getInnermostNodeForTie:=True), InvocationExpressionSyntax)
+            Dim replaceFunction = Async Function(ct as CancellationToken) As Task(Of Document)
+                                      Dim editor = Await DocumentEditor.CreateAsync(document, ct).ConfigureAwait(False)
+                                      Dim generator = editor.Generator
+
+                                      Dim tryAddValueAccess = generator.MemberAccessExpression(containsKeyAccess.Expression, TryAdd)
+                                      Dim dictionaryAddArguments = dictionaryAddInvocation.ArgumentList.Arguments
+                                      Dim tryAddInvocation = generator.InvocationExpression(tryAddValueAccess, dictionaryAddArguments(0), dictionaryAddArguments(1))
+
+                                      Dim ifStatement = containsKeyInvocation.AncestorsAndSelf().OfType(Of MultiLineIfBlockSyntax).FirstOrDefault()
+                                      If ifStatement Is Nothing Then
+                                          Return editor.OriginalDocument
+                                      End If
+
+                                      Dim unary = TryCast(ifStatement.IfStatement.Condition, UnaryExpressionSyntax)
+                                      If unary IsNot Nothing And unary.IsKind(SyntaxKind.NotExpression)
+                                          If ifStatement.Statements.Count = 1 Then
+                                              If ifStatement.ElseBlock Is Nothing Then
+                                                  Dim invocationWithTrivia = tryAddInvocation.WithTriviaFrom(ifStatement)
+                                                  editor.ReplaceNode(ifStatement, generator.ExpressionStatement(invocationWithTrivia))
+                                              Else
+                                                  Dim newIf = ifStatement.WithStatements(ifStatement.ElseBlock.Statements).
+                                                          WithElseBlock(Nothing).
+                                                          WithIfStatement(ifStatement.IfStatement.ReplaceNode(containsKeyInvocation, tryAddInvocation))
+                                                  editor.ReplaceNode(ifStatement, newIf)
+                                              End If
+                                          Else
+                                              editor.RemoveNode(dictionaryAddInvocation.Parent, SyntaxRemoveOptions.KeepNoTrivia)
+                                              editor.ReplaceNode(unary, tryAddInvocation)
+                                          End If
+                                      Else If ifStatement.IfStatement.Condition.IsKind(SyntaxKind.InvocationExpression) And ifStatement.ElseBlock IsNot Nothing
+                                          Dim negatedTryAddInvocation = generator.LogicalNotExpression(tryAddInvocation)
+                                          editor.ReplaceNode(containsKeyInvocation, negatedTryAddInvocation)
+                                          if ifStatement.ElseBlock.Statements.Count = 1 Then
+                                              editor.RemoveNode(ifStatement.ElseBlock, SyntaxRemoveOptions.KeepNoTrivia)
+                                          Else
+                                              editor.RemoveNode(dictionaryAddInvocation.Parent, SyntaxRemoveOptions.KeepNoTrivia)
+                                          End If
+                                      End If
+
+                                      Return editor.GetChangedDocument()
+                                  End Function
+
+            Return CodeAction.Create(PreferDictionaryTryAddValueCodeFixTitle, replaceFunction, PreferDictionaryTryAddValueCodeFixTitle)
         End Function
 
         Private Shared Function GetDictionaryValueType(semanticModel As SemanticModel, dictionary As SyntaxNode) As ITypeSymbol

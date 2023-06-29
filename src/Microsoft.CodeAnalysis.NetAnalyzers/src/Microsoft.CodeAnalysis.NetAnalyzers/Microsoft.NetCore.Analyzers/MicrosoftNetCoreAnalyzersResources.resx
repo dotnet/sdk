@@ -1064,6 +1064,15 @@
   <data name="UseValueTasksCorrectlyMessage_AccessingIncompleteResult" xml:space="preserve">
     <value>ValueTask instances should not have their result directly accessed unless the instance has already completed. Unlike Tasks, calling Result or GetAwaiter().GetResult() on a ValueTask is not guaranteed to block until the operation completes. If you can't simply await the instance, consider first checking its IsCompleted property (or asserting it's true if you know that to be the case).</value>
   </data>
+  <data name="DoNotUseConfigureAwaitWithSuppressThrowingTitle" xml:space="preserve">
+    <value>Do not use ConfigureAwaitOptions.SuppressThrowing with Task&lt;TResult&gt;</value>
+  </data>
+  <data name="DoNotUseConfigureAwaitWithSuppressThrowingMessage" xml:space="preserve">
+    <value>The ConfigureAwaitOptions.SuppressThrowing is only supported with the non-generic Task</value>
+  </data>
+  <data name="DoNotUseConfigureAwaitWithSuppressThrowingDescription" xml:space="preserve">
+    <value>The ConfigureAwaitOptions.SuppressThrowing is only supported with the non-generic Task, not a Task&lt;TResult&gt;.  To use it with a Task&lt;TResult&gt;, first cast to the base Task.</value>
+  </data>
   <data name="DoNotCreateTaskCompletionSourceWithWrongArgumentsTitle" xml:space="preserve">
     <value>Argument passed to TaskCompletionSource constructor should be TaskCreationOptions enum instead of TaskContinuationOptions enum</value>
   </data>
@@ -2074,5 +2083,26 @@ Widening and user defined conversions are not supported with generic types.</val
   </data>
   <data name="RecommendCaseInsensitiveStringComparisonMessage" xml:space="preserve">
     <value>Prefer the string comparison method overload of '{0}' that takes a 'StringComparison' enum value to perform a case-insensitive comparison</value>
+  </data>
+  <data name="PreferDictionaryTryAddValueCodeFixTitle" xml:space="preserve">
+    <value>Use 'TryAdd(TKey, TValue)'</value>
+  </data>
+  <data name="PreferDictionaryTryAddTitle" xml:space="preserve">
+    <value>Prefer the 'IDictionary.TryAdd(TKey, TValue)' method</value>
+  </data>
+  <data name="PreferDictionaryTryAddMessage" xml:space="preserve">
+    <value>To avoid double lookup, call 'TryAdd' instead of calling 'Add' with a 'ContainsKey' guard</value>
+  </data>
+  <data name="PreferDictionaryTryAddDescription" xml:space="preserve">
+    <value>Prefer a 'TryAdd' call over an 'Add' call guarded by a 'ContainsKey' check. 'TryAdd' behaves the same as 'Add', except that when the specified key already exists, it returns 'false' instead of throwing an exception.</value>
+  </data>
+  <data name="UseCompositeFormatTitle" xml:space="preserve">
+    <value>Use 'CompositeFormat'</value>
+  </data>
+  <data name="UseCompositeFormatMessage" xml:space="preserve">
+    <value>Cache a 'CompositeFormat' for repeated use in this formatting operation</value>
+  </data>
+  <data name="UseCompositeFormatDescription" xml:space="preserve">
+    <value>Cache and use a 'CompositeFormat' instance as the argument to this formatting operation, rather than passing in the original format string. This reduces the cost of the formatting operation.</value>
   </data>
 </root>
