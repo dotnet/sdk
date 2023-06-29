@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
@@ -506,6 +506,69 @@ End Class"
                     // Test0.vb(8,17): warning CA2241: Provide correct arguments to formatting methods
                     GetBasicResultAt(8, 17));
             }
+
+            await basicTest.RunAsync();
+        }
+
+        [Fact]
+        [WorkItem(6012, "https://github.com/dotnet/roslyn-analyzers/issues/6012")]
+        public async Task EditorConfigConfiguration_StringSyntaxAnnotatedMethodsAsync()
+        {
+            var csharpTest = new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+using System.Diagnostics.CodeAnalysis;
+
+class Test
+{
+    public static string MyFormat([StringSyntax(StringSyntaxAttribute.CompositeFormat)] string specification, params object[] args) => specification;
+
+    void M1(string param)
+    {
+        var a = MyFormat("""", 1);
+    }
+}"
+                    },
+                    ReferenceAssemblies = ReferenceAssemblies.Net.Net70,
+                }
+            };
+
+            csharpTest.ExpectedDiagnostics.Add(
+                // Test0.cs(10,17): warning CA2241: Provide correct arguments to formatting methods
+                GetCSharpResultAt(10, 17));
+
+            await csharpTest.RunAsync();
+
+            var basicTest = new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+Imports System.Diagnostics.CodeAnalysis
+
+Class Test
+    Public Shared Function MyFormat(<StringSyntax(StringSyntaxAttribute.CompositeFormat)> specification As String, ParamArray args As Object()) As String
+        Return specification
+    End Function
+
+    Private Sub M1(ByVal param As String)
+        Dim a = MyFormat("""", 1)
+    End Sub
+End Class"
+                    },
+                    ReferenceAssemblies = ReferenceAssemblies.Net.Net70,
+                }
+            };
+
+            basicTest.ExpectedDiagnostics.Add(
+                // Test0.vb(10,17): warning CA2241: Provide correct arguments to formatting methods
+                GetBasicResultAt(10, 17));
 
             await basicTest.RunAsync();
         }
