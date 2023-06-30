@@ -2,35 +2,21 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using System.CommandLine.Invocation;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Console;
 
 namespace Microsoft.TemplateEngine.Authoring.CLI.Commands
 {
     /// <summary>
-    /// Represents a <see cref="Command"/> together with its handler.
+    /// Represents a <see cref="CliCommand"/> together with its action.
     /// </summary>
-    internal abstract class ExecutableCommand<TModel> : Command, ICommandHandler where TModel : class
+    internal abstract class ExecutableCommand<TModel> : CliCommand where TModel : class
     {
         internal ExecutableCommand(string name, string? description = null)
             : base(name, description)
         {
-            Handler = this;
+            Action = new CommandAction(this);
         }
-
-        /// <inheritdoc/>
-        public async Task<int> InvokeAsync(InvocationContext context, CancellationToken cancellationToken = default)
-        {
-            using ILoggerFactory loggerFactory = LoggerFactory.Create(builder => builder.AddSimpleConsole(c => c.ColorBehavior = LoggerColorBehavior.Disabled));
-            TModel arguments = ParseContext(context.ParseResult);
-
-            //exceptions are handled by parser itself
-            return await ExecuteAsync(arguments, loggerFactory, cancellationToken).ConfigureAwait(false);
-        }
-
-        /// <inheritdoc/>
-        public int Invoke(InvocationContext context) => InvokeAsync(context).GetAwaiter().GetResult();
 
         /// <summary>
         /// Parses the context from <see cref="ParseResult"/>.
@@ -42,5 +28,22 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.Commands
         /// </summary>
         protected abstract Task<int> ExecuteAsync(TModel args, ILoggerFactory loggerFactory, CancellationToken cancellationToken);
 
+        private sealed class CommandAction : CliAction
+        {
+            private readonly ExecutableCommand<TModel> _command;
+
+            public CommandAction(ExecutableCommand<TModel> command) => _command = command;
+
+            public override int Invoke(ParseResult parseResult) => InvokeAsync(parseResult).GetAwaiter().GetResult();
+
+            public override async Task<int> InvokeAsync(ParseResult parseResult, CancellationToken cancellationToken = default)
+            {
+                using ILoggerFactory loggerFactory = LoggerFactory.Create(builder => builder.AddSimpleConsole(c => c.ColorBehavior = LoggerColorBehavior.Disabled));
+                TModel arguments = _command.ParseContext(parseResult);
+
+                //exceptions are handled by parser itself
+                return await _command.ExecuteAsync(arguments, loggerFactory, cancellationToken).ConfigureAwait(false);
+            }
+        }
     }
 }

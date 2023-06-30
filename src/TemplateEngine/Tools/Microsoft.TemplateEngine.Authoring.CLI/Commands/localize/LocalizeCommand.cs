@@ -5,12 +5,12 @@ using System.CommandLine;
 
 namespace Microsoft.TemplateEngine.Authoring.CLI.Commands
 {
-    internal class LocalizeCommand : Command
+    internal class LocalizeCommand : CliCommand
     {
         internal LocalizeCommand()
             : base("localize")
         {
-            this.Subcommands.Add(new ExportCommand());
+            Subcommands.Add(new ExportCommand());
         }
     }
 }

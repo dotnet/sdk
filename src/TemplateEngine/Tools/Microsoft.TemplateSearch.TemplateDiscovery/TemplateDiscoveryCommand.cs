@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using System.CommandLine.Invocation;
 using Microsoft.TemplateSearch.TemplateDiscovery.NuGet;
 using Microsoft.TemplateSearch.TemplateDiscovery.PackChecking;
 using Microsoft.TemplateSearch.TemplateDiscovery.Results;
@@ -10,79 +9,79 @@ using Microsoft.TemplateSearch.TemplateDiscovery.Test;
 
 namespace Microsoft.TemplateSearch.TemplateDiscovery
 {
-    internal class TemplateDiscoveryCommand : Command
+    internal class TemplateDiscoveryCommand : CliCommand
     {
         private const int DefaultPageSize = 100;
 
-        private readonly Option<DirectoryInfo> _basePathOption = new Option<DirectoryInfo>("basePath", new[] { "--basePath" })
+        private readonly CliOption<DirectoryInfo> _basePathOption = new("--basePath")
         {
             Arity = ArgumentArity.ExactlyOne,
             Description = "The root dir for output for this run.",
-            IsRequired = true
+            Required = true
         };
 
-        private readonly Option<bool> _allowPreviewPacksOption = new Option<bool>("allowPreviewPacks", new[] { "--allowPreviewPacks" })
+        private readonly CliOption<bool> _allowPreviewPacksOption = new("--allowPreviewPacks")
         {
             Description = "Include preview packs in the results (by default, preview packs are ignored and the latest stable pack is used.",
         };
 
-        private readonly Option<int> _pageSizeOption = new Option<int>("pageSize", new[] { "--pageSize" })
+        private readonly CliOption<int> _pageSizeOption = new("--pageSize")
         {
             Description = "(debugging) The chunk size for interactions with the source.",
             DefaultValueFactory = (r) => DefaultPageSize,
         };
 
-        private readonly Option<bool> _onePageOption = new Option<bool>("onePage", new[] { "--onePage" })
+        private readonly CliOption<bool> _onePageOption = new("--onePage")
         {
             Description = "(debugging) Only process one page of template packs.",
         };
 
-        private readonly Option<bool> _savePacksOption = new Option<bool>("savePacks", new[] { "--savePacks" })
+        private readonly CliOption<bool> _savePacksOption = new("--savePacks")
         {
             Description = "Don't delete downloaded candidate packs (by default, they're deleted at the end of a run).",
         };
 
-        private readonly Option<bool> _noTemplateJsonFilterOption = new Option<bool>("noTemplateJsonFilter", new[] { "--noTemplateJsonFilter" })
+        private readonly CliOption<bool> _noTemplateJsonFilterOption = new("--noTemplateJsonFilter")
         {
             Description = "Don't prefilter packs that don't contain any template.json files (this filter is applied by default).",
         };
 
-        private readonly Option<bool> _verboseOption = new Option<bool>("verbose", new[] { "-v", "--verbose" })
+        private readonly CliOption<bool> _verboseOption = new("--verbose", "-v")
         {
             Description = "Verbose output for template processing.",
         };
 
-        private readonly Option<bool> _testOption = new Option<bool>("test", new[] { "-t", "--test" })
+        private readonly CliOption<bool> _testOption = new("--test", "-t")
         {
             Description = "Run tests on generated metadata files.",
         };
 
-        private readonly Option<SupportedQueries[]> _queriesOption = new Option<SupportedQueries[]>("queries", new[] { "--queries" })
+        private readonly CliOption<SupportedQueries[]> _queriesOption = new("--queries")
         {
             Arity = ArgumentArity.OneOrMore,
             Description = $"The list of providers to run. Supported providers: {string.Join(",", Enum.GetValues<SupportedQueries>())}.",
             AllowMultipleArgumentsPerToken = true,
         };
 
-        private readonly Option<DirectoryInfo> _packagesPathOption = new Option<DirectoryInfo>("packagesPath", new[] { "--packagesPath" })
+        private readonly CliOption<DirectoryInfo> _packagesPathOption = new CliOption<DirectoryInfo>("--packagesPath")
         {
-            Description = $"Path to pre-downloaded packages. If specified, the packages won't be downloaded from NuGet.org.",
+            Description = "Path to pre-downloaded packages. If specified, the packages won't be downloaded from NuGet.org."
         }.AcceptExistingOnly();
 
-        private readonly Option<bool> _diffOption = new Option<bool>("diff", new[] { "--diff" })
+        private readonly CliOption<bool> _diffOption = new("--diff")
         {
-            Description = $"The list of packages will be compared with previous run, and if package version is not changed, the package won't be rescanned.",
+            Description = "The list of packages will be compared with previous run, and if package version is not changed, the package won't be rescanned.",
             DefaultValueFactory = (r) => true,
         };
 
-        private readonly Option<FileInfo> _diffOverrideCacheOption = new Option<FileInfo>("diff-override-cache", new[] { "--diff-override-cache" })
+        private readonly CliOption<FileInfo> _diffOverrideCacheOption = new CliOption<FileInfo>("--diff-override-cache")
         {
-            Description = $"Location of current search cache (local path only).",
+            Description = "Location of current search cache (local path only).",
         }.AcceptExistingOnly();
 
-        private readonly Option<FileInfo> _diffOverrideNonPackagesOption = new Option<FileInfo>("diff-override-non-packages", new[] { "--diff-override-non-packages" })
+        private readonly CliOption<FileInfo> _diffOverrideNonPackagesOption = new CliOption<FileInfo>("--diff-override-non-packages")
         {
-            Description = $"Location of the list of packages known not to be a valid package (local path only).",
+            Description = "Location of the list of packages known not to be a valid package (local path only).",
         }.AcceptExistingOnly();
 
         public TemplateDiscoveryCommand() : base("template-discovery", "Generates the template package search cache file based on the packages available on NuGet.org.")
@@ -105,22 +104,22 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery
             Options.Add(_diffOverrideNonPackagesOption);
 
             TreatUnmatchedTokensAsErrors = true;
-            SetHandler(async (InvocationContext ctx, CancellationToken cancellationToken) =>
+            SetAction(async (ParseResult parseResult, CancellationToken cancellationToken) =>
             {
-                var config = new CommandArgs(ctx.ParseResult.GetValue(_basePathOption) ?? throw new Exception("Output path is not set"))
+                var config = new CommandArgs(parseResult.GetValue(_basePathOption) ?? throw new Exception("Output path is not set"))
                 {
-                    LocalPackagePath = ctx.ParseResult.GetValue(_packagesPathOption),
-                    PageSize = ctx.ParseResult.GetValue(_pageSizeOption),
-                    SaveCandidatePacks = ctx.ParseResult.GetValue(_savePacksOption),
-                    RunOnlyOnePage = ctx.ParseResult.GetValue(_onePageOption),
-                    IncludePreviewPacks = ctx.ParseResult.GetValue(_allowPreviewPacksOption),
-                    DontFilterOnTemplateJson = ctx.ParseResult.GetValue(_noTemplateJsonFilterOption),
-                    Verbose = ctx.ParseResult.GetValue(_verboseOption),
-                    TestEnabled = ctx.ParseResult.GetValue(_testOption),
-                    Queries = ctx.ParseResult.GetValue(_queriesOption) ?? Array.Empty<SupportedQueries>(),
-                    DiffMode = ctx.ParseResult.GetValue(_diffOption),
-                    DiffOverrideSearchCacheLocation = ctx.ParseResult.GetValue(_diffOverrideCacheOption),
-                    DiffOverrideKnownPackagesLocation = ctx.ParseResult.GetValue(_diffOverrideNonPackagesOption),
+                    LocalPackagePath = parseResult.GetValue(_packagesPathOption),
+                    PageSize = parseResult.GetValue(_pageSizeOption),
+                    SaveCandidatePacks = parseResult.GetValue(_savePacksOption),
+                    RunOnlyOnePage = parseResult.GetValue(_onePageOption),
+                    IncludePreviewPacks = parseResult.GetValue(_allowPreviewPacksOption),
+                    DontFilterOnTemplateJson = parseResult.GetValue(_noTemplateJsonFilterOption),
+                    Verbose = parseResult.GetValue(_verboseOption),
+                    TestEnabled = parseResult.GetValue(_testOption),
+                    Queries = parseResult.GetValue(_queriesOption) ?? Array.Empty<SupportedQueries>(),
+                    DiffMode = parseResult.GetValue(_diffOption),
+                    DiffOverrideSearchCacheLocation = parseResult.GetValue(_diffOverrideCacheOption),
+                    DiffOverrideKnownPackagesLocation = parseResult.GetValue(_diffOverrideNonPackagesOption),
                 };
 
                 await ExecuteAsync(config, cancellationToken).ConfigureAwait(false);
