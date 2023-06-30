@@ -62,6 +62,11 @@
         <target state="translated">Geçersiz sürüm: {0}</target>
         <note />
       </trans-unit>
+      <trans-unit id="InvalidVersionForWorkload">
+        <source>Error parsing version '{1}' for workload manifest ID '{0}'</source>
+        <target state="translated">İş yükü bildirim kimliği '{0}' için hata ayrıştırma sürümü '{1}'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ManifestDependencyMissing">
         <source>Did not find workload manifest dependency '{0}' required by manifest '{1}' [{2}]</source>
         <target state="translated">{1}' [{2}] bildirimi için gereken '{0}' iş yükü bildirimi bağımlılığı bulunamadı</target>
@@ -97,6 +102,11 @@
         <target state="translated">'{0}' yeniden yönlendirme iş yükünde 'redirect-to' dışında anahtarlar var</target>
         <note />
       </trans-unit>
+      <trans-unit id="SpecifiedManifestNotFound">
+        <source>Specified workload manifest was not found: {0}</source>
+        <target state="translated">Belirtilen iş yükü bildirimi bulunamadı: {0}</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UnexpectedTokenAtOffset">
         <source>Unexpected token '{0}' at offset {1}</source>
         <target state="translated">{1} uzaklığında beklenmeyen '{0}' belirteci</target>
@@ -120,6 +130,11 @@
       <trans-unit id="UnresolvedWorkloadRedirect">
         <source>Unresolved target '{0}' for workload redirect '{1}' in manifest '{2}' [{3}]</source>
         <target state="translated">'{2}' [{3}] bildirimindeki '{1}' iş akışı yeniden yönlendirmesi için '{0}' hedefi çözümlenemedi</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadVersionFromGlobalJsonNotFound">
+        <source>Workload version {0}, which was specified in {1}, was not found. Run "dotnet workload restore" to install this workload version.</source>
+        <target state="new">Workload version {0}, which was specified in {1}, was not found. Run "dotnet workload restore" to install this workload version.</target>
         <note />
       </trans-unit>
     </body>

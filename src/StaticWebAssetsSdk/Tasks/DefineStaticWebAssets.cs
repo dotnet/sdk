@@ -1,6 +1,5 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
-//
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -48,6 +47,10 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
         public string AssetMode { get; set; } = StaticWebAsset.AssetModes.All;
 
         public string AssetRole { get; set; } = StaticWebAsset.AssetRoles.Primary;
+
+        public string AssetMergeSource { get; set; } = "";
+
+        public string AssetMergeBehavior { get; set; } = StaticWebAsset.MergeBehaviors.None;
 
         public string RelatedAsset { get; set; }
 
@@ -114,6 +117,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                     var assetKind = ComputePropertyValue(candidate, nameof(StaticWebAsset.AssetKind), AssetKind, isRequired: false);
                     var assetMode = ComputePropertyValue(candidate, nameof(StaticWebAsset.AssetMode), AssetMode);
                     var assetRole = ComputePropertyValue(candidate, nameof(StaticWebAsset.AssetRole), AssetRole);
+                    var assetMergeSource = ComputePropertyValue(candidate, nameof(StaticWebAsset.AssetMergeSource), AssetMergeSource);
                     var relatedAsset = ComputePropertyValue(candidate, nameof(StaticWebAsset.RelatedAsset), RelatedAsset, !StaticWebAsset.AssetRoles.IsPrimary(assetRole));
                     var assetTraitName = ComputePropertyValue(candidate, nameof(StaticWebAsset.AssetTraitName), AssetTraitName, !StaticWebAsset.AssetRoles.IsPrimary(assetRole));
                     var assetTraitValue = ComputePropertyValue(candidate, nameof(StaticWebAsset.AssetTraitValue), AssetTraitValue, !StaticWebAsset.AssetRoles.IsPrimary(assetRole));
@@ -152,6 +156,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                         assetKind,
                         assetMode,
                         assetRole,
+                        assetMergeSource,
                         relatedAsset,
                         assetTraitName,
                         assetTraitValue,

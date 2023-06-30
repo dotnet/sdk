@@ -111,10 +111,15 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <PropertyGroup>
       <TargetPlatformSupported Condition="'$(TargetPlatformIdentifier)' == 'Windows'">true</TargetPlatformSupported>
+      <UseWorkloadsSpecificError Condition="($(TargetPlatformIdentifier) == 'ios' or $(TargetPlatformIdentifier) == 'tvos' or $(TargetPlatformIdentifier) == 'maccatalyst' or $(TargetPlatformIdentifier) == 'android' or $(TargetPlatformIdentifier.StartsWith('browser'))) and '$(MSBuildEnableWorkloadResolver)' != 'true'">true</UseWorkloadsSpecificError>
     </PropertyGroup>
 
-    <NETSdkError Condition="'$(TargetPlatformSupported)' != 'true'"
+    <NETSdkError Condition="'$(TargetPlatformSupported)' != 'true' and '$(UseWorkloadsSpecificError)' != 'true'"
                  ResourceName="UnsupportedTargetPlatformIdentifier"
+                 FormatArguments="$(TargetPlatformIdentifier)" />
+
+    <NETSdkError Condition="'$(TargetPlatformSupported)' != 'true' and '$(UseWorkloadsSpecificError)' == 'true'"
+                 ResourceName="UnsupportedTargetPlatformIdentifierWithWorkloadsDisabled"
                  FormatArguments="$(TargetPlatformIdentifier)" />
   </Target>
 
@@ -230,13 +235,13 @@ Copyright (c) .NET Foundation. All rights reserved.
                  ResourceName="InvalidTargetPlatformVersion"
                  FormatArguments="$(TargetPlatformVersion);$(TargetPlatformIdentifier);$(_ValidTargetPlatformVersions)" />
   </Target>
-  
+
+  <!-- Hook for processing after target framework parsing (for example to customize output paths) -->
+  <Import Project="$(AfterTargetFrameworkInferenceTargets)" Condition="$(AfterTargetFrameworkInferenceTargets) != ''" />
+
   <PropertyGroup>
     <ProduceReferenceAssembly Condition="'$(ProduceReferenceAssembly)' == '' and '$(TargetFrameworkIdentifier)' == '.NETCoreApp' and $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), 5.0)) and ('$(ProduceOnlyReferenceAssembly)' != 'true') and '$(MSBuildProjectExtension)' != '.fsproj'" >true</ProduceReferenceAssembly>
     <ProduceReferenceAssembly Condition="'$(ProduceReferenceAssembly)' == '' and '$(TargetFrameworkIdentifier)' == '.NETCoreApp' and $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), 7.0)) and ('$(ProduceOnlyReferenceAssembly)' != 'true') and '$(MSBuildProjectExtension)' == '.fsproj'" >true</ProduceReferenceAssembly>
   </PropertyGroup>
-
-  <!-- Hook for processing after target framework parsing (for example to customize output paths) -->
-  <Import Project="$(AfterTargetFrameworkInferenceTargets)" Condition="$(AfterTargetFrameworkInferenceTargets) != ''" />
 
 </Project>

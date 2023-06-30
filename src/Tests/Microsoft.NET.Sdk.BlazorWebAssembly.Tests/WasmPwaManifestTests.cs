@@ -1,6 +1,5 @@
-// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
-//
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.IO;
 using System.Linq;
@@ -21,26 +20,26 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 {
     public class WasmPwaManifestTests : AspNetSdkTest
     {
-        public WasmPwaManifestTests(ITestOutputHelper log) : base(log) {}
+        public WasmPwaManifestTests(ITestOutputHelper log) : base(log) { }
 
         [Fact]
         public void Build_ServiceWorkerAssetsManifest_Works()
         {
             // Arrange
-            var expectedExtensions = new[] { ".dll", ".pdb", ".js", ".wasm" };
+            var expectedExtensions = new[] { ".pdb", ".js", ".wasm" };
             var testAppName = "BlazorWasmWithLibrary";
             var testInstance = CreateAspNetSdkTestAsset(testAppName);
 
             var buildCommand = new BuildCommand(testInstance, "blazorwasm");
             buildCommand.WithWorkingDirectory(testInstance.TestRoot);
-            buildCommand.Execute("/p:ServiceWorkerAssetsManifest=service-worker-assets.js", "/bl")
+            buildCommand.Execute("/p:ServiceWorkerAssetsManifest=service-worker-assets.js")
                 .Should().Pass();
 
             var buildOutputDirectory = buildCommand.GetOutputDirectory(DefaultTfm).ToString();
 
             new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "blazor.boot.json")).Should().Exist();
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "dotnet.wasm")).Should().Exist();
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "blazorwasm.dll")).Should().Exist();
+            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "dotnet.native.wasm")).Should().Exist();
+            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "blazorwasm.wasm")).Should().Exist();
 
             var serviceWorkerAssetsManifest = Path.Combine(buildOutputDirectory, "wwwroot", "service-worker-assets.js");
             // Trim prefix 'self.assetsManifest = ' and suffix ';'
@@ -64,7 +63,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         public void Build_HostedAppWithServiceWorker_Works()
         {
             // Arrange
-            var expectedExtensions = new[] { ".dll", ".pdb", ".js", ".wasm" };
+            var expectedExtensions = new[] { ".pdb", ".js", ".wasm" };
             var testAppName = "BlazorHosted";
             var testInstance = CreateAspNetSdkTestAsset(testAppName);
 
@@ -90,7 +89,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         public void PublishWithPWA_ProducesAssets()
         {
             // Arrange
-            var expectedExtensions = new[] { ".dll", ".pdb", ".js", ".wasm" };
+            var expectedExtensions = new[] { ".pdb", ".js", ".wasm" };
             var testAppName = "BlazorWasmWithLibrary";
             var testInstance = CreateAspNetSdkTestAsset(testAppName);
 
@@ -118,7 +117,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         public void PublishHostedWithPWA_ProducesAssets()
         {
             // Arrange
-            var expectedExtensions = new[] { ".dll", ".pdb", ".js", ".wasm" };
+            var expectedExtensions = new[] { ".pdb", ".js", ".wasm" };
             var testAppName = "BlazorHosted";
             var testInstance = CreateAspNetSdkTestAsset(testAppName);
 

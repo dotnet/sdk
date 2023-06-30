@@ -57,6 +57,11 @@
         <target state="translated">“{0}”中找不到任何项目。</target>
         <note />
       </trans-unit>
+      <trans-unit id="DidYouMean">
+        <source>Did you mean the following command?</source>
+        <target state="new">Did you mean the following command?</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DisableBuildServersOptionDescription">
         <source>Force the command to ignore any persistent build servers.</source>
         <target state="translated">强制命令忽略任何永久性生成服务器。</target>
@@ -207,19 +212,24 @@ EOF
       </trans-unit>
       <trans-unit id="SelfContainAndNoSelfContainedConflict">
         <source>The '--self-contained' and '--no-self-contained' options cannot be used together.</source>
-        <target state="translated">“--自包含”和“--非自包含”选项不能一起使用。</target>
-        <note />
+        <target state="translated">"--self-contained"和 "--no-self-contained" 选项不能一起使用。</target>
+        <note>{Locked="--self-contained"}{Locked="--no-self-contained"}</note>
       </trans-unit>
       <trans-unit id="SelfContainedOptionDescription">
         <source>Publish the .NET runtime with your application so the runtime doesn't need to be installed on the target machine.
-The default is 'true' if a runtime identifier is specified.</source>
-        <target state="translated">随应用程序一起发布 .NET 运行时，这样就不需要在目标计算机上安装运行时。
+The default is 'false.' However, when targeting .NET 7 or lower, the default is 'true' if a runtime identifier is specified.</source>
+        <target state="needs-review-translation">随应用程序一起发布 .NET 运行时，这样就不需要在目标计算机上安装运行时。
 如果指定了运行时标识符，则默认值为 "true"。</target>
         <note />
       </trans-unit>
       <trans-unit id="Solution">
         <source>Solution</source>
         <target state="translated">解决方案</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SolutionArgumentMisplaced">
+        <source>Solution argument '{0}' is misplaced.</source>
+        <target state="new">Solution argument '{0}' is misplaced.</target>
         <note />
       </trans-unit>
       <trans-unit id="SolutionFile">
@@ -265,6 +275,11 @@ The default is 'true' if a runtime identifier is specified.</source>
       <trans-unit id="Delete">
         <source>Delete</source>
         <target state="translated">删除</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SolutionFolderAlreadyContainsProject">
+        <source>Solution {0} already contains project {1} in solution folder {2}.</source>
+        <target state="new">Solution {0} already contains project {1} in solution folder {2}.</target>
         <note />
       </trans-unit>
       <trans-unit id="Update">

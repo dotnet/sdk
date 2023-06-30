@@ -1,5 +1,5 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -21,7 +21,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         {
         }
 
-        [Fact]
+        [WindowsOnlyFact]
         public void ItShouldIgnoreAllDependenciesWithTypeNotEqualToPackageOrUnresolved()
         {
             var testRoot = _testAssetsManager.CreateTestDirectory().Path;
@@ -54,7 +54,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             Assert.Equal("top.package2/1.0.0", item2.ItemSpec);
         }
 
-        [Fact]
+        [WindowsOnlyFact]
         public void ItShouldIdentifyDefaultImplicitPackages()
         {
             var testRoot = _testAssetsManager.CreateTestDirectory().Path;
@@ -89,7 +89,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             Assert.Equal("True", item3.GetMetadata(MetadataKeys.IsImplicitlyDefined));
         }
 
-        [Fact]
+        [WindowsOnlyFact]
         public void ItShouldOnlyReturnPackagesInTheSpecifiedTarget()
         {
             var testRoot = _testAssetsManager.CreateTestDirectory().Path;
@@ -356,7 +356,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             Assert.Equal("top.package1/1.0.0", item1.ItemSpec);
         }
 
-        [Fact]
+        [WindowsOnlyFact]
         public void ItShouldOnlyReturnTopLevelPackages()
         {
             var testRoot = _testAssetsManager.CreateTestDirectory().Path;

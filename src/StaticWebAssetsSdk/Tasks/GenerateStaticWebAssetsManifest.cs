@@ -1,6 +1,5 @@
-// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
-//
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.IO;
@@ -56,7 +55,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                 var assetsByTargetPath = assets.GroupBy(a => a.ComputeTargetPath("", '/'), StringComparer.OrdinalIgnoreCase);
                 foreach (var group in assetsByTargetPath)
                 {
-                    if (!StaticWebAsset.ValidateAssetGroup(group.Key, group.ToArray(), ManifestType, out var reason))
+                    if (!StaticWebAsset.ValidateAssetGroup(group.Key, group.ToArray(), out var reason))
                     {
                         Log.LogError(reason);
                         return false;
@@ -65,7 +64,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
 
                 var discoveryPatterns = DiscoveryPatterns
                     .OrderBy(a => a.ItemSpec)
-                    .Select(StaticWebAssetsManifest.DiscoveryPattern.FromTaskItem)
+                    .Select(StaticWebAssetsDiscoveryPattern.FromTaskItem)
                     .ToArray();
 
                 var referencedProjectsConfiguration = ReferencedProjectsConfigurations.OrderBy(a => a.ItemSpec)

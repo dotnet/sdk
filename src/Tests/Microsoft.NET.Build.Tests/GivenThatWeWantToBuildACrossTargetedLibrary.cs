@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.IO;
 using System.Runtime.InteropServices;
@@ -11,6 +11,7 @@ using System.Xml.Linq;
 using System.Linq;
 using FluentAssertions;
 using Xunit.Abstractions;
+using Microsoft.NET.TestFramework.ProjectConstruction;
 
 namespace Microsoft.NET.Build.Tests
 {
@@ -118,6 +119,38 @@ namespace Microsoft.NET.Build.Tests
             command.DependsOnTargets = "GetAllRuntimeIdentifiers";
             command.ExecuteWithoutRestore().Should().Pass();
             command.GetValues().Should().BeEquivalentTo(expectedCombination.Split(';'));
+        }
+
+        [Fact]
+        public void OutputPathDoesNotHaveDuplicatedBackslashesInOuterBuild()
+        {
+            var testProject = new TestProject()
+            {
+                TargetFrameworks = $"{ToolsetInfo.CurrentTargetFramework};net7.0"
+            };
+
+            testProject.ProjectChanges.Add(xml =>
+            {
+                var target = """
+                <Target Name="GetOutputPath">
+                    <WriteLinesToFile File="$(MSBuildProjectDirectory)\OutputPathValue.txt"
+                                      Lines="$(OutputPath)"
+                                      Overwrite="true" />
+                </Target>
+                """;
+
+                xml.Root.Add(XElement.Parse(target));
+            });
+
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+
+            new MSBuildCommand(testAsset, "GetOutputPath")
+                .Execute()
+                .Should()
+                .Pass();
+
+            string outputPathValue = File.ReadAllText(Path.Combine(testAsset.TestRoot, testProject.Name, "OutputPathValue.txt"));
+            outputPathValue.Trim().Should().NotContain("\\\\");
         }
     }
 }

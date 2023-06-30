@@ -1,5 +1,5 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using FluentAssertions;
 using Microsoft.Build.Framework;
@@ -40,11 +40,11 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 {
                     new object[] {
                         "dotnet.new",
-                        new int[] { 110, 2536, 1, 845, 75 },
+                        new int[] { 110, 2536, 1, 846, 73 },
                     },
                     new object[] {
                         "simple.dependencies",
-                        new int[] { 113, 2613, 1, 877, 96 },
+                        new int[] { 113, 2613, 1, 878, 94 },
                     },
                 };
             }
