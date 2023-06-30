@@ -3,9 +3,15 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Net.Sockets;
+using System.Threading.Tasks;
+using Xunit;
 using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.SourceBuild.SmokeTests;
@@ -98,13 +104,14 @@ internal class DotNetHelper
         }
     }
 
-    public void ExecuteCmd(string args, string? workingDirectory = null, Action<Process>? additionalProcessConfigCallback = null, int? expectedExitCode = 0, int millisecondTimeout = -1)
+    public void ExecuteCmd(string args, string? workingDirectory = null, Action<Process>? processConfigCallback = null,
+        int? expectedExitCode = 0, int millisecondTimeout = -1)
     {
         (Process Process, string StdOut, string StdErr) executeResult = ExecuteHelper.ExecuteProcess(
             DotNetPath,
             args,
             OutputHelper,
-            configure: (process) => configureProcess(process, workingDirectory),
+            configureCallback: (process) => configureProcess(process, workingDirectory),
             millisecondTimeout: millisecondTimeout);
         
         if (expectedExitCode != null) {
@@ -115,7 +122,7 @@ internal class DotNetHelper
         {
             ConfigureProcess(process, workingDirectory);
 
-            additionalProcessConfigCallback?.Invoke(process);
+            processConfigCallback?.Invoke(process);
         }
     }
 
@@ -161,7 +168,7 @@ internal class DotNetHelper
         return projectDirectory;
     }
 
-    public void ExecutePublish(string projectName, bool? selfContained = null, string? rid = null, bool trimmed = false, bool readyToRun = false)
+    public void ExecutePublish(string projectName, DotNetTemplate template, bool? selfContained = null, string? rid = null, bool trimmed = false, bool readyToRun = false)
     {
         string options = string.Empty;
         string binlogDifferentiator = string.Empty;
@@ -190,39 +197,65 @@ internal class DotNetHelper
             }
         }
 
+        string projDir = GetProjectDirectory(projectName);
+        string publishDir = Path.Combine(projDir, "bin", "publish");
+
         ExecuteCmd(
-            $"publish {options} {GetBinLogOption(projectName, "publish", binlogDifferentiator)}",
-            GetProjectDirectory(projectName));
+            $"publish {options} {GetBinLogOption(projectName, "publish", binlogDifferentiator)} -o {publishDir}",
+            projDir);
+
+        if (template == DotNetTemplate.Console)
+        {
+            ExecuteCmd($"{projectName}.dll", publishDir, expectedExitCode: 0);
+        }
+        else if (template == DotNetTemplate.ClassLib || template == DotNetTemplate.BlazorWasm)
+        {
+            // Can't run the published output of classlib (no entrypoint) or WASM (needs a server)
+        }
+        // Assume it is a web-based template
+        else
+        {
+            ExecuteWebDll(projectName, publishDir, template);
+        }
     }
 
     public void ExecuteRun(string projectName) =>
         ExecuteCmd($"run {GetBinLogOption(projectName, "run")}", GetProjectDirectory(projectName));
 
-    public void ExecuteRunWeb(string projectName)
+    public void ExecuteRunWeb(string projectName, DotNetTemplate template)
     {
         // 'dotnet run' exit code differs between CoreCLR and Mono (https://github.com/dotnet/sdk/issues/30095).
         int expectedExitCode = IsMonoRuntime ? 143 : 0;
-        ExecuteCmd(
-            $"run {GetBinLogOption(projectName, "run")}",
-            GetProjectDirectory(projectName),
-            additionalProcessConfigCallback: processConfigCallback,
-            expectedExitCode,
-            millisecondTimeout: 30000);
 
-        void processConfigCallback(Process process)
-        {
-            process.OutputDataReceived += new DataReceivedEventHandler((sender, e) =>
-            {
-                if (e.Data?.Contains("Application started. Press Ctrl+C to shut down.") ?? false)
-                {
-                    ExecuteHelper.ExecuteProcessValidateExitCode("kill", $"-s TERM {process.Id}", OutputHelper);
-                }
-            });
-        }
+        ExecuteWeb(
+            projectName,
+            $"run --no-launch-profile {GetBinLogOption(projectName, "run")}",
+            GetProjectDirectory(projectName),
+            template,
+            expectedExitCode);
     }
+
+    public void ExecuteWebDll(string projectName, string workingDirectory, DotNetTemplate template) =>
+        ExecuteWeb(projectName, $"{projectName}.dll", workingDirectory, template, expectedExitCode: 0);
 
     public void ExecuteTest(string projectName) =>
         ExecuteCmd($"test {GetBinLogOption(projectName, "test")}", GetProjectDirectory(projectName));
+
+    private void ExecuteWeb(string projectName, string args, string workingDirectory, DotNetTemplate template, int expectedExitCode)
+    {
+        WebAppValidator validator = new(OutputHelper, template);
+        ExecuteCmd(
+            args,
+            workingDirectory,
+            processConfigCallback: validator.Validate,
+            expectedExitCode: expectedExitCode,
+            millisecondTimeout: 30000);
+        Assert.True(validator.IsValidated);
+        if (validator.ValidationException is not null)
+        {
+            throw validator.ValidationException;
+        }
+    }    
 
     private static string GetBinLogOption(string projectName, string command, string? differentiator = null)
     {
@@ -256,4 +289,62 @@ internal class DotNetHelper
     }
 
     private static string GetProjectDirectory(string projectName) => Path.Combine(ProjectsDirectory, projectName);
+
+    private class WebAppValidator
+    {
+        private readonly ITestOutputHelper _outputHelper;
+        private readonly DotNetTemplate _template;
+
+        public WebAppValidator(ITestOutputHelper outputHelper, DotNetTemplate template)
+        {
+            _outputHelper = outputHelper;
+            _template = template;
+        }
+
+        public bool IsValidated { get; set; }
+        public Exception? ValidationException { get; set; }
+
+        private static int GetAvailablePort()
+        {
+            TcpListener listener = new(IPAddress.Loopback, 0);
+            listener.Start();
+            int port = ((IPEndPoint)listener.LocalEndpoint).Port;
+            listener.Stop();
+            return port;
+        }
+
+        public void Validate(Process process)
+        {
+            int port = GetAvailablePort();
+            process.StartInfo.EnvironmentVariables.Add("ASPNETCORE_HTTP_PORTS", port.ToString());
+            process.OutputDataReceived += new DataReceivedEventHandler((sender, e) =>
+            {
+                try
+                {
+                    if (e.Data?.Contains("Application started. Press Ctrl+C to shut down.") ?? false)
+                    {
+                        _outputHelper.WriteLine("Detected app has started. Sending web request to validate...");
+
+                        using HttpClient httpClient = new();
+                        string url = $"http://localhost:{port}";
+                        if (_template == DotNetTemplate.WebApi)
+                        {
+                            url += "/WeatherForecast";
+                        }
+
+                        using HttpResponseMessage resultMsg = httpClient.GetAsync(new Uri(url)).Result;
+                        _outputHelper.WriteLine($"Status code returned: {resultMsg.StatusCode}");
+                        resultMsg.EnsureSuccessStatusCode();
+                        IsValidated = true;
+
+                        ExecuteHelper.ExecuteProcessValidateExitCode("kill", $"-s TERM {process.Id}", _outputHelper);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    ValidationException = ex;
+                }
+            });
+        }
+    }
 }
