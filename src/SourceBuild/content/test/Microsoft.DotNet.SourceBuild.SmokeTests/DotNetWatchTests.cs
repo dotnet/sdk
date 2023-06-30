@@ -22,7 +22,7 @@ public class DotNetWatchTests : SmokeTests
         DotNetHelper.ExecuteCmd(
             "watch run",
             workingDirectory: projectDirectory,
-            additionalProcessConfigCallback: processConfigCallback,
+            processConfigCallback: processConfigCallback,
             expectedExitCode: null, // The exit code does not reflect whether or not dotnet watch is working properly
             millisecondTimeout: 60000);
 

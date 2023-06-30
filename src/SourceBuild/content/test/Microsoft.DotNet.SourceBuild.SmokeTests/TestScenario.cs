@@ -35,7 +35,7 @@ public class TestScenario
         {
             if (Template.IsAspNetCore())
             {
-                dotNetHelper.ExecuteRunWeb(projectName);
+                dotNetHelper.ExecuteRunWeb(projectName, Template);
             }
             else
             {
@@ -44,17 +44,17 @@ public class TestScenario
         }
         if (Commands.HasFlag(DotNetActions.Publish))
         {
-            dotNetHelper.ExecutePublish(projectName);
+            dotNetHelper.ExecutePublish(projectName, Template);
         }
         if (Commands.HasFlag(DotNetActions.PublishComplex))
         {
-            dotNetHelper.ExecutePublish(projectName, selfContained: false);
-            dotNetHelper.ExecutePublish(projectName, selfContained: true, Config.TargetRid);
-            dotNetHelper.ExecutePublish(projectName, selfContained: true, $"linux-{Config.TargetArchitecture}");
+            dotNetHelper.ExecutePublish(projectName, Template, selfContained: false);
+            dotNetHelper.ExecutePublish(projectName, Template, selfContained: true, rid: Config.TargetRid);
+            dotNetHelper.ExecutePublish(projectName, Template, selfContained: true, rid: $"linux-{Config.TargetArchitecture}");
         }
         if (Commands.HasFlag(DotNetActions.PublishR2R))
         {
-            dotNetHelper.ExecutePublish(projectName, selfContained: true, $"linux-{Config.TargetArchitecture}", trimmed: true, readyToRun: true);
+            dotNetHelper.ExecutePublish(projectName, Template, selfContained: true, rid: $"linux-{Config.TargetArchitecture}", trimmed: true, readyToRun: true);
         }
         if (Commands.HasFlag(DotNetActions.Test))
         {
