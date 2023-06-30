@@ -72,6 +72,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                         lastField == null ||
                         lastField.IsConst ||
                         !lastField.IsReadOnly ||
+                        (lastField.Type?.Name == lastField.Name && fieldInitializerValue.DescendantsAndSelf().Any(d => d is IFieldReferenceOperation field && lastField.Type.Equals(field.Field.Type, SymbolEqualityComparer.Default))) ||
                         !fieldInitializerValue.ConstantValue.HasValue ||
                         !context.Options.MatchesConfiguredVisibility(DefaultRule, lastField, context.Compilation, defaultRequiredVisibility: SymbolVisibilityGroup.Internal | SymbolVisibilityGroup.Private) ||
                         !context.Options.MatchesConfiguredModifiers(DefaultRule, lastField, context.Compilation, defaultRequiredModifiers: SymbolModifiers.Static))
