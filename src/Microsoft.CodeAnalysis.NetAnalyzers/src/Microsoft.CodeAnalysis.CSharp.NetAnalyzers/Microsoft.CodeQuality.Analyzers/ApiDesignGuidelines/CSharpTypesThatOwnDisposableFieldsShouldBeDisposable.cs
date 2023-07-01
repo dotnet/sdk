@@ -7,7 +7,6 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
-using Analyzer.CSharp.Utilities.Lightup;
 
 namespace Microsoft.CodeQuality.CSharp.Analyzers.ApiDesignGuidelines
 {
@@ -30,7 +29,7 @@ namespace Microsoft.CodeQuality.CSharp.Analyzers.ApiDesignGuidelines
             {
                 if (node is AssignmentExpressionSyntax assignment)
                 {
-                    if (assignment.Right.Kind() is SyntaxKind.ObjectCreationExpression or SyntaxKindEx.ImplicitObjectCreationExpression &&
+                    if (assignment.Right.Kind() is SyntaxKind.ObjectCreationExpression or SyntaxKind.ImplicitObjectCreationExpression &&
                         model.GetSymbolInfo(assignment.Left, cancellationToken).Symbol is IFieldSymbol field &&
                         disposableFields.Contains(field))
                     {
@@ -41,7 +40,7 @@ namespace Microsoft.CodeQuality.CSharp.Analyzers.ApiDesignGuidelines
                 {
                     foreach (VariableDeclaratorSyntax fieldInit in fieldDeclarationSyntax.Declaration.Variables)
                     {
-                        if (fieldInit.Initializer?.Value.Kind() is SyntaxKind.ObjectCreationExpression or SyntaxKindEx.ImplicitObjectCreationExpression &&
+                        if (fieldInit.Initializer?.Value.Kind() is SyntaxKind.ObjectCreationExpression or SyntaxKind.ImplicitObjectCreationExpression &&
                             model.GetDeclaredSymbol(fieldInit, cancellationToken) is IFieldSymbol field &&
                             disposableFields.Contains(field))
                         {

@@ -5,7 +5,6 @@ using System.Collections.Immutable;
 using System.Linq;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
-using Analyzer.Utilities.Lightup;
 using Analyzer.Utilities.PooledObjects;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
@@ -257,9 +256,9 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 }
 
                 var toType = types.Single();
-                if (assignedNull || fromType.NullableAnnotation() == Analyzer.Utilities.Lightup.NullableAnnotation.Annotated)
+                if (assignedNull || fromType.NullableAnnotation == NullableAnnotation.Annotated)
                 {
-                    toType = toType.WithNullableAnnotation(Analyzer.Utilities.Lightup.NullableAnnotation.Annotated);
+                    toType = toType.WithNullableAnnotation(NullableAnnotation.Annotated);
                 }
 
                 if (!toType.DerivesFrom(fromType.OriginalDefinition))
