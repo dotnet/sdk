@@ -895,17 +895,17 @@ Enumerable.OfType&lt;T&gt;에서 사용하는 제네릭 형식 검사(C# 'is' �
       </trans-unit>
       <trans-unit id="DoNotUseConfigureAwaitWithSuppressThrowingDescription">
         <source>The ConfigureAwaitOptions.SuppressThrowing is only supported with the non-generic Task, not a Task&lt;TResult&gt;.  To use it with a Task&lt;TResult&gt;, first cast to the base Task.</source>
-        <target state="new">The ConfigureAwaitOptions.SuppressThrowing is only supported with the non-generic Task, not a Task&lt;TResult&gt;.  To use it with a Task&lt;TResult&gt;, first cast to the base Task.</target>
+        <target state="translated">ConfigureAwaitOptions.SuppressThrowing은 일반적이지 않은 작업에서만 지원되며 작업&lt;TResult&gt;은 지원되지 않습니다.  작업&lt;TResult&gt;과 함께 사용하려면 먼저 기본 작업에 캐스트합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseConfigureAwaitWithSuppressThrowingMessage">
         <source>The ConfigureAwaitOptions.SuppressThrowing is only supported with the non-generic Task</source>
-        <target state="new">The ConfigureAwaitOptions.SuppressThrowing is only supported with the non-generic Task</target>
+        <target state="translated">ConfigureAwaitOptions.SuppressThrowing은 일반적이지 않은 작업에서만 지원됩니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseConfigureAwaitWithSuppressThrowingTitle">
         <source>Do not use ConfigureAwaitOptions.SuppressThrowing with Task&lt;TResult&gt;</source>
-        <target state="new">Do not use ConfigureAwaitOptions.SuppressThrowing with Task&lt;TResult&gt;</target>
+        <target state="translated">작업&lt;TResult&gt;과 함께 ConfigureAwaitOptions.SuppressThrowing 사용 안 함</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseCountAsyncWhenAnyAsyncCanBeUsedDescription">
@@ -2055,22 +2055,22 @@ Enumerable.OfType&lt;T&gt;에서 사용하는 제네릭 형식 검사(C# 'is' �
       </trans-unit>
       <trans-unit id="PreferDictionaryTryAddDescription">
         <source>Prefer a 'TryAdd' call over an 'Add' call guarded by a 'ContainsKey' check. 'TryAdd' behaves the same as 'Add', except that when the specified key already exists, it returns 'false' instead of throwing an exception.</source>
-        <target state="new">Prefer a 'TryAdd' call over an 'Add' call guarded by a 'ContainsKey' check. 'TryAdd' behaves the same as 'Add', except that when the specified key already exists, it returns 'false' instead of throwing an exception.</target>
+        <target state="translated">'ContainsKey' 확인으로 보호되는 'Add' 호출보다 'TryAdd' 호출을 선호합니다. 'TryAdd'는 'Add'와 동일하게 동작하지만 지정한 키가 이미 존재하는 경우 예외를 던지는 대신 'false'를 반환합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferDictionaryTryAddMessage">
         <source>To avoid double lookup, call 'TryAdd' instead of calling 'Add' with a 'ContainsKey' guard</source>
-        <target state="new">To avoid double lookup, call 'TryAdd' instead of calling 'Add' with a 'ContainsKey' guard</target>
+        <target state="translated">이중 조회를 방지하려면 'ContainsKey' 가드를 사용하여 'Add'를 호출하는 대신 'TryAdd'를 호출하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferDictionaryTryAddTitle">
         <source>Prefer the 'IDictionary.TryAdd(TKey, TValue)' method</source>
-        <target state="new">Prefer the 'IDictionary.TryAdd(TKey, TValue)' method</target>
+        <target state="translated">'IDictionary.TryAdd(TKey, TValue)' 메서드 선호</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferDictionaryTryAddValueCodeFixTitle">
         <source>Use 'TryAdd(TKey, TValue)'</source>
-        <target state="new">Use 'TryAdd(TKey, TValue)'</target>
+        <target state="translated">'TryAdd(TKey, TValue)' 사용</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferDictionaryTryGetValueCodeFixTitle">
@@ -2840,17 +2840,17 @@ Enumerable.OfType&lt;T&gt;에서 사용하는 제네릭 형식 검사(C# 'is' �
       </trans-unit>
       <trans-unit id="UseCompositeFormatDescription">
         <source>Cache and use a 'CompositeFormat' instance as the argument to this formatting operation, rather than passing in the original format string. This reduces the cost of the formatting operation.</source>
-        <target state="new">Cache and use a 'CompositeFormat' instance as the argument to this formatting operation, rather than passing in the original format string. This reduces the cost of the formatting operation.</target>
+        <target state="translated">원래 형식 문자열을 전달하는 대신 이 서식 작업에 대한 인수로 'CompositeFormat' 인스턴스를 캐시하고 사용합니다. 이렇게 하면 서식 작업 비용이 절감됩니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseCompositeFormatMessage">
         <source>Cache a 'CompositeFormat' for repeated use in this formatting operation</source>
-        <target state="new">Cache a 'CompositeFormat' for repeated use in this formatting operation</target>
+        <target state="translated">이 서식 지정 작업에서 반복적으로 사용할 수 있도록 'CompositeFormat'을 캐시합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseCompositeFormatTitle">
         <source>Use 'CompositeFormat'</source>
-        <target state="new">Use 'CompositeFormat'</target>
+        <target state="translated">'CompositeFormat' 사용</target>
         <note />
       </trans-unit>
       <trans-unit id="UseConcreteTypeDescription">
