@@ -26,7 +26,14 @@ namespace Microsoft.TemplateEngine.Cli.Commands
         internal static CliOption<string> NameOption { get; } = new("--name", "-n")
         {
             Description = SymbolStrings.TemplateCommand_Option_Name,
-            Arity = new ArgumentArity(1, 1)
+            Arity = new ArgumentArity(1, 1),
+            Hidden = true
+        };
+
+        internal static CliArgument<string> NameArgument { get; } = new CliArgument<string>("name")
+        {
+            Description = SymbolStrings.TemplateCommand_Option_Name,
+            Arity = new ArgumentArity(0, 1)
         };
 
         internal static CliOption<bool> DryRunOption { get; } = new("--dry-run")

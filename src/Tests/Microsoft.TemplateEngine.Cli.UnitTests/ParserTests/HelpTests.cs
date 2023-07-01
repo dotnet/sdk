@@ -73,7 +73,7 @@ Author: Me
             HelpContext helpContext = new(new HelpBuilder(), myCommand, sw);
 
             InstantiateCommand.ShowUsage(myCommand, new[] { "short-name" }, helpContext);
-            Assert.Equal($"Usage:{Environment.NewLine}  new short-name [options] [template options]{Environment.NewLine}{Environment.NewLine}", sw.ToString());
+            Assert.Equal($"Usage:{Environment.NewLine}  new short-name [name] [options] [template options]{Environment.NewLine}{Environment.NewLine}", sw.ToString());
         }
 
         [Fact]
@@ -86,7 +86,7 @@ Author: Me
             HelpContext helpContext = new(new HelpBuilder(), myCommand, sw);
 
             InstantiateCommand.ShowUsage(myCommand, new[] { "short-name1", "short-name2" }, helpContext);
-            Assert.Equal($"Usage:{Environment.NewLine}  new short-name1 [options] [template options]{Environment.NewLine}  new short-name2 [options] [template options]{Environment.NewLine}{Environment.NewLine}", sw.ToString());
+            Assert.Equal($"Usage:{Environment.NewLine}  new short-name1 [name] [options] [template options]{Environment.NewLine}  new short-name2 [name] [options] [template options]{Environment.NewLine}{Environment.NewLine}", sw.ToString());
         }
 
         [Fact]

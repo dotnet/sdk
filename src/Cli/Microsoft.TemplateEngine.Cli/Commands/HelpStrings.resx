@@ -187,8 +187,12 @@
     <value>Required if: {0}</value>
     <comment>{0} is the condition expression</comment>
   </data>
+  <data name="Text_UsageNamePart" xml:space="preserve">
+    <value>[name]</value>
+    <comment>this text will be used as part of command usage: dotnet new console [name] [options] [template options]</comment>
+  </data>
   <data name="Text_UsageTemplateOptionsPart" xml:space="preserve">
     <value>[template options]</value>
-    <comment>this text will be used as part of command usage: dotnet new console [options] [template options]</comment>
+    <comment>this text will be used as part of command usage: dotnet new console [name] [options] [template options]</comment>
   </data>
 </root>

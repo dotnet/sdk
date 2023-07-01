@@ -289,7 +289,6 @@ namespace Microsoft.TemplateEngine.Cli.Commands
         {
             List<CliOption> optionsToShow = new()
             {
-                SharedOptions.NameOption,
                 SharedOptions.OutputOption,
                 SharedOptions.DryRunOption,
                 SharedOptions.ForceOption,
@@ -387,6 +386,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
                     new[]
                     {
                         shortName,
+                        HelpStrings.Text_UsageNamePart,
                         HelpUsageOptions(),
                         HelpStrings.Text_UsageTemplateOptionsPart
                     });

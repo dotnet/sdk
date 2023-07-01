@@ -49,6 +49,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
                 Aliases.Add(item);
             }
 
+            this.Arguments.Add(SharedOptions.NameArgument);
             this.Options.Add(SharedOptions.OutputOption);
             this.Options.Add(SharedOptions.NameOption);
             this.Options.Add(SharedOptions.DryRunOption);

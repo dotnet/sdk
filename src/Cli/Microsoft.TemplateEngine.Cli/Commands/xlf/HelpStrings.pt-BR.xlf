@@ -97,10 +97,15 @@
         <target state="translated">Obrigatório se: {0}</target>
         <note>{0} is the condition expression</note>
       </trans-unit>
+      <trans-unit id="Text_UsageNamePart">
+        <source>[name]</source>
+        <target state="new">[name]</target>
+        <note>this text will be used as part of command usage: dotnet new console [name] [options] [template options]</note>
+      </trans-unit>
       <trans-unit id="Text_UsageTemplateOptionsPart">
         <source>[template options]</source>
-        <target state="translated">[opções de modelo]</target>
-        <note>this text will be used as part of command usage: dotnet new console [options] [template options]</note>
+        <target state="needs-review-translation">[opções de modelo]</target>
+        <note>this text will be used as part of command usage: dotnet new console [name] [options] [template options]</note>
       </trans-unit>
     </body>
   </file>

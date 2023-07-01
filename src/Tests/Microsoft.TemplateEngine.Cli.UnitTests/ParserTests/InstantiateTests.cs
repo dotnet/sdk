@@ -258,7 +258,12 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             InstantiateCommandArgs args = InstantiateCommandArgs.FromNewCommandArgs(new NewCommandArgs(myCommand, parseResult));
             TemplateCommand templateCommand = new(myCommand, settings, packageManager, templateGroup, templateGroup.Templates.Single());
             CliConfiguration parser = ParserFactory.CreateParser(templateCommand);
-            ParseResult templateParseResult = parser.Parse(args.TokensToInvoke ?? Array.Empty<string>());
+            var tokensToInvoke = args.TokensToInvoke ?? Array.Empty<string>();
+            if (tokensToInvoke.Last() == "foo")
+            {
+                tokensToInvoke = tokensToInvoke.SkipLast(1).ToArray();
+            }
+            ParseResult templateParseResult = parser.Parse(tokensToInvoke);
             var templateArgs = new TemplateCommandArgs(templateCommand, myCommand, templateParseResult);
 
             Assert.Equal(expectedValue, templateArgs.Name);

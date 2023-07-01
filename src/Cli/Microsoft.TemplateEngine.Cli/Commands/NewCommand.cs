@@ -92,6 +92,16 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             Hidden = true
         };
 
+        // This is only used to let the help generation know there is a name argument.
+        // It doesn't contribute to parsing the arguments because the arity is set to 0.
+        // InstantiateCommand reparses the arguments in the context of TemplateCommand to properly parse the name.
+        internal static CliArgument<string> NameArgument { get; } = new CliArgument<string>("name")
+        {
+            Description = SymbolStrings.TemplateCommand_Option_Name,
+            Arity = new ArgumentArity(0, 0),
+            Hidden = true
+        };
+
         internal static CliArgument<string[]> RemainingArguments { get; } = new("template-args")
         {
             Description = SymbolStrings.Command_Instantiate_Argument_TemplateOptions,

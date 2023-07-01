@@ -232,6 +232,15 @@ namespace Microsoft.TemplateEngine.Cli.Commands {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to [name].
+        /// </summary>
+        internal static string Text_UsageNamePart {
+            get {
+                return ResourceManager.GetString("Text_UsageNamePart", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to [template options].
         /// </summary>
         internal static string Text_UsageTemplateOptionsPart {

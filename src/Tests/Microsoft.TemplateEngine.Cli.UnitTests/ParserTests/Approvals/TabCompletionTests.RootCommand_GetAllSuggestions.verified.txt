@@ -98,13 +98,6 @@
     Detail: Show help and usage information
   },
   {
-    Label: --name,
-    Kind: Keyword,
-    SortText: --name,
-    InsertText: --name,
-    Detail: The name for the output being created. If no name is specified, the name of the output directory is used.
-  },
-  {
     Label: --no-update-check,
     Kind: Keyword,
     SortText: --no-update-check,
@@ -138,13 +131,6 @@
     SortText: -h,
     InsertText: -h,
     Detail: Show help and usage information
-  },
-  {
-    Label: -n,
-    Kind: Keyword,
-    SortText: -n,
-    InsertText: -n,
-    Detail: The name for the output being created. If no name is specified, the name of the output directory is used.
   },
   {
     Label: -o,

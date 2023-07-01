@@ -61,13 +61,6 @@ Type: text
 
   },
   {
-    Label: --name,
-    Kind: Keyword,
-    SortText: --name,
-    InsertText: --name,
-    Detail: The name for the output being created. If no name is specified, the name of the output directory is used.
-  },
-  {
     Label: --no-restore,
     Kind: Keyword,
     SortText: --no-restore,
@@ -142,13 +135,6 @@ Default: net8.0
     SortText: -lang,
     InsertText: -lang,
     Detail: Specifies the template language to instantiate.
-  },
-  {
-    Label: -n,
-    Kind: Keyword,
-    SortText: -n,
-    InsertText: -n,
-    Detail: The name for the output being created. If no name is specified, the name of the output directory is used.
   },
   {
     Label: -o,

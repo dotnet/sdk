@@ -91,13 +91,6 @@
     Detail: Forces content to be generated even if it would change existing files.
   },
   {
-    Label: --name,
-    Kind: Keyword,
-    SortText: --name,
-    InsertText: --name,
-    Detail: The name for the output being created. If no name is specified, the name of the output directory is used.
-  },
-  {
     Label: --no-update-check,
     Kind: Keyword,
     SortText: --no-update-check,
@@ -117,13 +110,6 @@
     SortText: --project,
     InsertText: --project,
     Detail: The project that should be used for context evaluation.
-  },
-  {
-    Label: -n,
-    Kind: Keyword,
-    SortText: -n,
-    InsertText: -n,
-    Detail: The name for the output being created. If no name is specified, the name of the output directory is used.
   },
   {
     Label: -o,
