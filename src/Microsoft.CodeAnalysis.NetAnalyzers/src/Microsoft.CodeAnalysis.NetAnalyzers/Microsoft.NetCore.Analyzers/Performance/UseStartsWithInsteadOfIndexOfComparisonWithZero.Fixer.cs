@@ -3,6 +3,7 @@
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using Analyzer.Utilities;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
@@ -21,7 +22,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
         {
             var document = context.Document;
             var diagnostic = context.Diagnostics[0];
-            var root = await document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
+            var root = await document.GetRequiredSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
             var node = root.FindNode(context.Span, getInnermostNodeForTie: true);
 
             context.RegisterCodeFix(

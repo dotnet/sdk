@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Immutable;
@@ -138,22 +138,22 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     var arg = invocation.Arguments.FirstOrDefault(argument =>
                     {
                         var parameter = argument.Parameter;
-                        return parameter.Equals(messageArgument, SymbolEqualityComparer.Default);
+                        return SymbolEqualityComparer.Default.Equals(parameter, messageArgument);
                     });
-                    formatExpression = arg.Value;
+                    formatExpression = arg?.Value;
                 }
                 else
                 {
                     foreach (var argument in invocation.Arguments)
                     {
                         var parameter = argument.Parameter;
-                        if (parameter.Equals(messageArgument, SymbolEqualityComparer.Default))
+                        if (SymbolEqualityComparer.Default.Equals(parameter, messageArgument))
                         {
                             formatExpression = argument.Value;
                         }
-                        else if (parameter.Equals(paramsArgument, SymbolEqualityComparer.Default))
+                        else if (SymbolEqualityComparer.Default.Equals(parameter, paramsArgument))
                         {
-                            var parameterType = argument.Parameter.Type;
+                            var parameterType = parameter!.Type;
                             if (parameterType == null)
                             {
                                 return;
@@ -161,7 +161,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
                             if (argument.Value is IArrayCreationOperation arrayCreation)
                             {
-                                paramsCount += arrayCreation.Initializer.ElementValues.Length;
+                                paramsCount += arrayCreation.Initializer!.ElementValues.Length;
                             }
                             else
                             {

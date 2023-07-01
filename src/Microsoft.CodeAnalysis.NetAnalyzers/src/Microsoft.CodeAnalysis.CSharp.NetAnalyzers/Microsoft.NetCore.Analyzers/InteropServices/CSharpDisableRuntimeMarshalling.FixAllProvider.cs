@@ -19,18 +19,19 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
         {
             public static readonly CustomFixAllProvider Instance = new();
 
-            protected override string CodeActionTitle => MicrosoftNetCoreAnalyzersResources.UseDisabledMarshallingEquivalentCodeFix;
+            protected override string GetFixAllTitle(FixAllContext fixAllContext)
+                => MicrosoftNetCoreAnalyzersResources.UseDisabledMarshallingEquivalentCodeFix;
 
-            protected override async Task<SyntaxNode> FixAllInDocumentAsync(FixAllContext fixAllContext, Document document, ImmutableArray<Diagnostic> diagnostics)
+            protected override async Task<Document?> FixAllAsync(FixAllContext fixAllContext, Document document, ImmutableArray<Diagnostic> diagnostics)
             {
                 if (document.Project.CompilationOptions is CSharpCompilationOptions { AllowUnsafe: false })
                 {
                     // We can't code fix if unsafe code isn't allowed.
-                    return await document.GetSyntaxRootAsync(fixAllContext.CancellationToken).ConfigureAwait(false);
+                    return document;
                 }
 
                 var editor = await DocumentEditor.CreateAsync(document, fixAllContext.CancellationToken).ConfigureAwait(false);
-                SyntaxNode root = await document.GetSyntaxRootAsync(fixAllContext.CancellationToken).ConfigureAwait(false);
+                SyntaxNode root = await document.GetRequiredSyntaxRootAsync(fixAllContext.CancellationToken).ConfigureAwait(false);
 
                 Dictionary<IBlockOperation, IdentifierGenerator> scopeMap = new();
                 foreach (var diagnostic in diagnostics)
@@ -56,7 +57,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                     }
                 }
 
-                return editor.GetChangedRoot();
+                return editor.GetChangedDocument();
             }
         }
     }

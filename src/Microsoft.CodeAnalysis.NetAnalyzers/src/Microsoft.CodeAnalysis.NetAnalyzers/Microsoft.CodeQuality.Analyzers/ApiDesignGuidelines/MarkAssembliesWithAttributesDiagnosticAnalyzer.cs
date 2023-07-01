@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
 using Analyzer.Utilities;
@@ -70,6 +70,11 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             // Check all assembly level attributes for the target attribute
             foreach (AttributeData attribute in context.Compilation.Assembly.GetAttributes())
             {
+                if (attribute.AttributeClass == null)
+                {
+                    continue;
+                }
+
                 if (attribute.AttributeClass.Equals(assemblyVersionAttributeSymbol))
                 {
                     // Mark the version attribute as found

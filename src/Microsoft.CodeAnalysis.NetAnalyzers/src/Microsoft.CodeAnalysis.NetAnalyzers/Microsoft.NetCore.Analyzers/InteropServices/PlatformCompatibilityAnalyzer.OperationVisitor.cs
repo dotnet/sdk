@@ -79,6 +79,9 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
 
                 foreach (var attribute in attributes)
                 {
+                    if (attribute.AttributeClass == null)
+                        continue;
+
                     if (attribute.AttributeClass.Name is SupportedOSPlatformGuardAttribute or UnsupportedOSPlatformGuardAttribute &&
                         TryParsePlatformNameAndVersion(attribute, out var platformName, out var version))
                     {
@@ -224,6 +227,9 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
 
                 foreach (var attribute in attributes)
                 {
+                    if (attribute.AttributeClass == null)
+                        continue;
+
                     if (attribute.AttributeClass.Name is SupportedOSPlatformGuardAttribute or UnsupportedOSPlatformGuardAttribute &&
                         TryParsePlatformNameAndVersion(attribute, out var platformName, out var _))
                     {

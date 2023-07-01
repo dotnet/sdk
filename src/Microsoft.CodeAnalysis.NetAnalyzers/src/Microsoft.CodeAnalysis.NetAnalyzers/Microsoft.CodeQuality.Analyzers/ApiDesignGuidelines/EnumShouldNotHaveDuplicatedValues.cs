@@ -65,7 +65,8 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 var duplicates = PooledConcurrentSet<IFieldSymbol>.GetInstance(SymbolEqualityComparer.Default);
                 foreach (var member in enumSymbol.GetMembers())
                 {
-                    if (member is not IFieldSymbol { IsImplicitlyDeclared: false, HasConstantValue: true } field)
+                    if (member is not IFieldSymbol { IsImplicitlyDeclared: false, HasConstantValue: true } field ||
+                        field.ConstantValue is null)
                     {
                         continue;
                     }
@@ -99,11 +100,11 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     var field = initializer.InitializedFields[0];
                     if (duplicates.Remove(field))
                     {
-                        var duplicatedField = membersByValue[field.ConstantValue];
+                        var duplicatedField = membersByValue[field.ConstantValue!];
                         if (initializer.Value is not IConversionOperation { Operand: IFieldReferenceOperation { Field: IFieldSymbol referencedField } }
                             || !SymbolEqualityComparer.Default.Equals(referencedField, duplicatedField))
                         {
-                            context.ReportDiagnostic(field.CreateDiagnostic(RuleDuplicatedValue, field.Name, field.ConstantValue, duplicatedField.Name));
+                            context.ReportDiagnostic(field.CreateDiagnostic(RuleDuplicatedValue, field.Name, field.ConstantValue!, duplicatedField.Name));
                         }
                     }
 
@@ -144,8 +145,8 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     // visit any duplicates which didn't have an initializer
                     foreach (var field in duplicates)
                     {
-                        var duplicatedField = membersByValue[field.ConstantValue];
-                        context.ReportDiagnostic(field.CreateDiagnostic(RuleDuplicatedValue, field.Name, field.ConstantValue, duplicatedField.Name));
+                        var duplicatedField = membersByValue[field.ConstantValue!];
+                        context.ReportDiagnostic(field.CreateDiagnostic(RuleDuplicatedValue, field.Name, field.ConstantValue!, duplicatedField.Name));
                     }
 
                     duplicates.Free(context.CancellationToken);

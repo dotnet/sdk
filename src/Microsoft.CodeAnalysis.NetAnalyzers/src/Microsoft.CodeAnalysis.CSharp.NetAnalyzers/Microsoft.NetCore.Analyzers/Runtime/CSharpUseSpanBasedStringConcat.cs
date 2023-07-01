@@ -29,7 +29,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
             static bool IsConcatOperation(IBinaryOperation operation)
             {
                 return operation.OperatorKind == BinaryOperatorKind.Add &&
-                    operation.Type.SpecialType == SpecialType.System_String;
+                    operation.Type?.SpecialType == SpecialType.System_String;
             }
         }
 

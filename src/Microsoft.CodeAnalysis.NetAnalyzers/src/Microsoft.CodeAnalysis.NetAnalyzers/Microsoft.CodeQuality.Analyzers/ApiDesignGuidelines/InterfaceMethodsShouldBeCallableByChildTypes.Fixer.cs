@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -7,6 +7,7 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
@@ -30,8 +31,8 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
         public override async Task RegisterCodeFixesAsync(CodeFixContext context)
         {
-            SemanticModel semanticModel = await context.Document.GetSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
-            SyntaxNode root = await context.Document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
+            SemanticModel semanticModel = await context.Document.GetRequiredSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
+            SyntaxNode root = await context.Document.GetRequiredSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
             SyntaxNode nodeToFix = root.FindNode(context.Span);
             if (nodeToFix == null)
             {
@@ -53,12 +54,12 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             IMethodSymbol? candidateToIncreaseVisibility = GetExistingNonVisibleAlternate(methodSymbol);
             if (candidateToIncreaseVisibility != null)
             {
-                ISymbol symbolToChange;
+                ISymbol? symbolToChange;
                 bool checkSetter = false;
                 if (candidateToIncreaseVisibility.IsAccessorMethod())
                 {
                     symbolToChange = candidateToIncreaseVisibility.AssociatedSymbol;
-                    if (methodSymbol.AssociatedSymbol.Kind == SymbolKind.Property)
+                    if (methodSymbol.AssociatedSymbol?.Kind == SymbolKind.Property)
                     {
                         var originalProperty = (IPropertySymbol)methodSymbol.AssociatedSymbol;
                         checkSetter = originalProperty.SetMethod != null;
@@ -81,7 +82,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             }
             else
             {
-                ISymbol symbolToChange = methodSymbol.IsAccessorMethod() ? methodSymbol.AssociatedSymbol : methodSymbol;
+                ISymbol? symbolToChange = methodSymbol.IsAccessorMethod() ? methodSymbol.AssociatedSymbol : methodSymbol;
                 if (symbolToChange != null)
                 {
                     string title = string.Format(CultureInfo.CurrentCulture, MicrosoftCodeQualityAnalyzersResources.InterfaceMethodsShouldBeCallableByChildTypesFix2, symbolToChange.Name);

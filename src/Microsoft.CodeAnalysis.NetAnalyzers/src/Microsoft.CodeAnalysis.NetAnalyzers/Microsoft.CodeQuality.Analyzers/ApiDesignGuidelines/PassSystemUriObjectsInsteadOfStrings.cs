@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
@@ -116,7 +116,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 }
 
                 // now we make sure we actually have overloads that contains uri type parameter
-                var overloads = context.Operation.SemanticModel.GetMemberGroup(node, context.CancellationToken).OfType<IMethodSymbol>();
+                var overloads = context.Operation.SemanticModel!.GetMemberGroup(node, context.CancellationToken).OfType<IMethodSymbol>();
                 if (!overloads.HasOverloadWithParameterOfType(method, _uri, context.CancellationToken))
                 {
                     // no overload that contains uri as parameter

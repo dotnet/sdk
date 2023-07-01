@@ -19,7 +19,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
         {
             public static TypeSyntax GetTypeSyntaxForSymbol(INamespaceOrTypeSymbol symbol)
             {
-                return symbol.Accept(new TypeNameVisitor()).WithAdditionalAnnotations(Simplifier.Annotation);
+                return symbol.Accept(new TypeNameVisitor())!.WithAdditionalAnnotations(Simplifier.Annotation);
             }
 
             public override TypeSyntax DefaultVisit(ISymbol symbol)

@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -150,7 +150,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                             }
 
                             var allowedSuffixes = symbolAnalysisContext.Options.GetStringOptionValue(EditorConfigOptionNames.AllowedSuffixes, TypeNoAlternateRule,
-                                    namedTypeSymbol.Locations[0].SourceTree, symbolAnalysisContext.Compilation)
+                                    namedTypeSymbol.Locations[0].SourceTree!, symbolAnalysisContext.Compilation)
                                 .Split('|')
                                 .ToImmutableHashSet();
 
@@ -249,7 +249,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     string name = memberSymbol.Name;
 
                     var allowedSuffixes = context.Options.GetStringOptionValue(EditorConfigOptionNames.AllowedSuffixes, TypeNoAlternateRule,
-                            memberSymbol.Locations[0].SourceTree, context.Compilation)
+                            memberSymbol.Locations[0].SourceTree!, context.Compilation)
                         .Split('|')
                         .ToImmutableHashSet();
 
@@ -287,7 +287,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
         private static bool MemberNameExistsInHierarchy(string memberName, INamedTypeSymbol containingType, SymbolKind kind)
         {
-            for (INamedTypeSymbol baseType = containingType; baseType != null; baseType = baseType.BaseType)
+            for (INamedTypeSymbol? baseType = containingType; baseType != null; baseType = baseType.BaseType)
             {
                 if (baseType.GetMembers(memberName).Any(member => member.Kind == kind))
                 {

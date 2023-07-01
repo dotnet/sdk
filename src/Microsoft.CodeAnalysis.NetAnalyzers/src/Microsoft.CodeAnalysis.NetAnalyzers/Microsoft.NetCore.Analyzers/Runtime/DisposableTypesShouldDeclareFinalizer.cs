@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
 using System.Linq;
@@ -47,7 +47,11 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                         compilation.GetSpecialType(SpecialType.System_UIntPtr),
                         compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeInteropServicesHandleRef)
                     );
-                    var disposableType = compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemIDisposable);
+
+                    if (!compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemIDisposable, out var disposableType))
+                    {
+                        return;
+                    }
 
                     compilationStartAnalysisContext.RegisterOperationAction(
                         operationAnalysisContext =>

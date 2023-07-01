@@ -7,6 +7,7 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
@@ -39,7 +40,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
 
         public sealed override async Task RegisterCodeFixesAsync(CodeFixContext context)
         {
-            var root = await context.Document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
+            var root = await context.Document.GetRequiredSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
             var node = root.FindNode(context.Span);
             if (node == null)
             {
@@ -63,9 +64,9 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
             var solution = document.Project.Solution;
 
             // Update references, if any.
-            root = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
+            root = await document.GetRequiredSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
             node = root.GetAnnotatedNodes(s_annotationForFixedDeclaration).Single();
-            var semanticModel = await document.GetSemanticModelAsync(cancellationToken).ConfigureAwait(false);
+            var semanticModel = await document.GetRequiredSemanticModelAsync(cancellationToken).ConfigureAwait(false);
             var symbol = semanticModel.GetDeclaredSymbol(node, cancellationToken);
             if (symbol != null)
             {
@@ -82,7 +83,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
 
             // Update definition to add static modifier.
             document = solution.GetDocument(document.Id)!;
-            root = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
+            root = await document.GetRequiredSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
             node = root.GetAnnotatedNodes(s_annotationForFixedDeclaration).Single();
             var syntaxGenerator = SyntaxGenerator.GetGenerator(document);
             var oldModifiersAndStatic = syntaxGenerator.GetModifiers(node).WithIsStatic(true).WithIsReadOnly(false);
@@ -135,8 +136,8 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                     continue;
                 }
 
-                var root = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
-                var semanticModel = await document.GetSemanticModelAsync(cancellationToken).ConfigureAwait(false);
+                var root = await document.GetRequiredSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
+                var semanticModel = await document.GetRequiredSemanticModelAsync(cancellationToken).ConfigureAwait(false);
 
                 // Compute replacements
                 var editor = new SyntaxEditor(root, solution.Workspace);
@@ -210,7 +211,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
             return (solution, allReferencesFixed);
 
             // Local functions.
-            static bool IsReplacableOperation(IOperation operation)
+            static bool IsReplacableOperation(IOperation? operation)
             {
                 if (operation == null)
                 {
@@ -253,7 +254,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
 
         private static async Task<Document> AddWarningAnnotationAsync(Document document, ISymbol symbolFromEarlierSnapshot, CancellationToken cancellationToken)
         {
-            var root = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
+            var root = await document.GetRequiredSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
             var fixedDeclaration = root.GetAnnotatedNodes(s_annotationForFixedDeclaration).Single();
             var annotation = WarningAnnotation.Create(string.Format(CultureInfo.CurrentCulture, MicrosoftCodeQualityAnalyzersResources.MarkMembersAsStaticCodeFix_WarningAnnotation, symbolFromEarlierSnapshot.Name));
             return document.WithSyntaxRoot(root.ReplaceNode(fixedDeclaration, fixedDeclaration.WithAdditionalAnnotations(annotation)));

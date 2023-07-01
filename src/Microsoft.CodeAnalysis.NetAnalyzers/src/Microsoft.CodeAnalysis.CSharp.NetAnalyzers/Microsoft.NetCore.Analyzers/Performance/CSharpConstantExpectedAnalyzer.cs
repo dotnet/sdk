@@ -32,9 +32,9 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Performance
                 return;
             }
 
-            if (attributeSyntax.Parent.Parent is ParameterSyntax parameter)
+            if (attributeSyntax.Parent?.Parent is ParameterSyntax parameter)
             {
-                var parameterSymbol = context.SemanticModel.GetDeclaredSymbol(parameter);
+                var parameterSymbol = context.SemanticModel.GetDeclaredSymbol(parameter)!;
                 OnParameterWithConstantExpectedAttribute(parameterSymbol, constantExpectedContext, context.ReportDiagnostic);
             }
         }
@@ -56,7 +56,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Performance
                     return null;
                 }
 
-                var targetArg = attributeSyntax.ArgumentList.Arguments.FirstOrDefault(arg => arg.NameEquals.Name.IsEquivalentTo(targetNameSyntax, true));
+                var targetArg = attributeSyntax.ArgumentList.Arguments.FirstOrDefault(arg => arg.NameEquals?.Name.IsEquivalentTo(targetNameSyntax, true) == true);
                 return targetArg?.GetLocation();
             }
         }

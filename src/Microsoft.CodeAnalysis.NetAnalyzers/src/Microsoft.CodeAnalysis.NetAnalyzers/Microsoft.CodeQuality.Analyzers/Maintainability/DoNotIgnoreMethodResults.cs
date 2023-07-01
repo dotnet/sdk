@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Immutable;
@@ -167,7 +167,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                         switch (expression.Kind)
                         {
                             case OperationKind.ObjectCreation:
-                                IMethodSymbol ctor = ((IObjectCreationOperation)expression).Constructor;
+                                IMethodSymbol? ctor = ((IObjectCreationOperation)expression).Constructor;
                                 if (ctor != null)
                                 {
                                     rule = ObjectCreationRule;
@@ -313,7 +313,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
             {
                 IArgumentOperation? argumentOperation = enclosingBlock.GetAncestor<IArgumentOperation>(OperationKind.Argument);
 
-                if (argumentOperation == null)
+                if (argumentOperation?.Parameter == null)
                 {
                     return false;
                 }

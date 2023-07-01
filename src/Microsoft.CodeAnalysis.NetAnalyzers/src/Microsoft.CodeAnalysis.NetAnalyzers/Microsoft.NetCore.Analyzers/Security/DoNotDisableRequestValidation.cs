@@ -1,7 +1,6 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
-using System.Linq;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
 using Microsoft.CodeAnalysis;
@@ -59,13 +58,13 @@ namespace Microsoft.NetCore.Analyzers.Security
                                 return;
                             }
 
-                            var attr = symbol.GetAttributes().FirstOrDefault(s => s.AttributeClass.Equals(validateInputAttributeTypeSymbol));
+                            var attr = symbol.GetAttribute(validateInputAttributeTypeSymbol);
 
                             // If the method doesn't have the ValidateInput attribute, check its type.
                             if (attr == null)
                             {
                                 symbol = typeSymbol;
-                                attr = symbol.GetAttributes().FirstOrDefault(s => s.AttributeClass.Equals(validateInputAttributeTypeSymbol));
+                                attr = symbol.GetAttribute(validateInputAttributeTypeSymbol);
                             }
 
                             // By default, request validation is enabled.
@@ -78,7 +77,7 @@ namespace Microsoft.NetCore.Analyzers.Security
 
                             if (constructorArguments.Length == 1 &&
                                 constructorArguments[0].Kind == TypedConstantKind.Primitive &&
-                                constructorArguments[0].Value.Equals(false))
+                                constructorArguments[0].Value is false)
                             {
                                 symbolAnalysisContext.ReportDiagnostic(
                                     symbol.CreateDiagnostic(

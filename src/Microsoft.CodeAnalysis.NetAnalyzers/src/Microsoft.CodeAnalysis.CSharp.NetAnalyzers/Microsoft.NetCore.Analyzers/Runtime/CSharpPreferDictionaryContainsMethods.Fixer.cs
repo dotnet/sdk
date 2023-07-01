@@ -10,6 +10,7 @@ using Microsoft.CodeAnalysis.Editing;
 using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.NetCore.Analyzers;
 using Analyzer.Utilities.Extensions;
+using Analyzer.Utilities;
 
 namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
 {
@@ -19,7 +20,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
         public override async Task RegisterCodeFixesAsync(CodeFixContext context)
         {
             Document doc = context.Document;
-            SyntaxNode root = await doc.GetSyntaxRootAsync().ConfigureAwait(false);
+            SyntaxNode root = await doc.GetRequiredSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
 
             if (root.FindNode(context.Span) is not InvocationExpressionSyntax invocation)
                 return;

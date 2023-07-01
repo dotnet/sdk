@@ -1,10 +1,11 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
 using System.Composition;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
+using Analyzer.Utilities;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
@@ -30,20 +31,20 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
         public sealed override async Task RegisterCodeFixesAsync(CodeFixContext context)
         {
-            SyntaxNode syntaxRoot = await context.Document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
-            SemanticModel semanticModel = await context.Document.GetSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
+            SyntaxNode syntaxRoot = await context.Document.GetRequiredSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
+            SemanticModel semanticModel = await context.Document.GetRequiredSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
 
             foreach (Diagnostic diagnostic in context.Diagnostics)
             {
                 SyntaxNode node = syntaxRoot.FindNode(context.Span);
-                ISymbol declaredSymbol = semanticModel.GetDeclaredSymbol(node, context.CancellationToken);
+                ISymbol? declaredSymbol = semanticModel.GetDeclaredSymbol(node, context.CancellationToken);
 
-                if (declaredSymbol.Kind != SymbolKind.Parameter)
+                if (declaredSymbol?.Kind != SymbolKind.Parameter)
                 {
                     continue;
                 }
 
-                string newName = diagnostic.Properties[ParameterNamesShouldMatchBaseDeclarationAnalyzer.NewNamePropertyName];
+                string newName = diagnostic.Properties[ParameterNamesShouldMatchBaseDeclarationAnalyzer.NewNamePropertyName]!;
                 context.RegisterCodeFix(
                     CodeAction.Create(
                         string.Format(CultureInfo.CurrentCulture, MicrosoftCodeQualityAnalyzersResources.RenameToTitle, newName),
@@ -55,7 +56,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
         private static async Task<Document> GetUpdatedDocumentForParameterRenameAsync(Document document, ISymbol parameter, string newName, CancellationToken cancellationToken)
         {
-            Solution newSolution = await Renamer.RenameSymbolAsync(document.Project.Solution, parameter, newName, null, cancellationToken).ConfigureAwait(false);
+            Solution newSolution = await Renamer.RenameSymbolAsync(document.Project.Solution, parameter, newName, document.Project.Solution.Options, cancellationToken).ConfigureAwait(false);
             return newSolution.GetDocument(document.Id)!;
         }
     }

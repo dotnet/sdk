@@ -60,7 +60,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                             && argument.Type is not null)
                         {
                             SpecialType specialType = argument.Type.TypeKind == TypeKind.Enum ?
-                                ((INamedTypeSymbol)argument.Type).EnumUnderlyingType.SpecialType :
+                                ((INamedTypeSymbol)argument.Type).EnumUnderlyingType!.SpecialType :
                                 argument.Type.SpecialType;
 
                             if (DiagnosticHelpers.TryConvertToUInt64(argument.Value, specialType, out ulong convertedLayoutKindValue) &&

@@ -1,9 +1,10 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
 using System.Composition;
 using System.Linq;
 using System.Threading.Tasks;
+using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
@@ -36,14 +37,14 @@ namespace Microsoft.NetCore.Analyzers.ImmutableCollections
 
             var document = context.Document;
             var span = context.Span;
-            var root = await document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
+            var root = await document.GetRequiredSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
             var invocationNode = root.FindNode(span, getInnermostNodeForTie: true);
             if (invocationNode == null)
             {
                 return;
             }
 
-            var semanticModel = await document.GetSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
+            var semanticModel = await document.GetRequiredSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
             if (semanticModel.GetOperation(invocationNode, context.CancellationToken) is not IInvocationOperation invocationOperation ||
                 !DoNotCallToImmutableCollectionOnAnImmutableCollectionValueAnalyzer.ToImmutableMethodNames.Contains(invocationOperation.TargetMethod.Name))
             {
@@ -60,7 +61,7 @@ namespace Microsoft.NetCore.Analyzers.ImmutableCollections
 
         private static Task<Document> RemoveRedundantCallAsync(Document document, SyntaxNode root, SyntaxNode invocationNode, IInvocationOperation invocationOperation)
         {
-            var instance = invocationOperation.GetInstanceSyntax().WithTriviaFrom(invocationNode);
+            var instance = invocationOperation.GetInstanceSyntax()!.WithTriviaFrom(invocationNode);
             var newRoot = root.ReplaceNode(invocationNode, instance);
             var newDocument = document.WithSyntaxRoot(newRoot);
             return Task.FromResult(newDocument);

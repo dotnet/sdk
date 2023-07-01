@@ -175,13 +175,13 @@ namespace Microsoft.NetCore.Analyzers.Security.Helpers
         /// <returns>True if are any insecure symbols, false otherwise.</returns>
         [SuppressMessage("Style", "IDE0047:Remove unnecessary parentheses", Justification = "Group related conditions together.")]
         public bool IsObjectGraphInsecure(
-            ITypeSymbol rootType,
+            ITypeSymbol? rootType,
             ObjectGraphOptions options,
             out ImmutableArray<InsecureObjectGraphResult> results)
         {
             options.ThrowIfInvalid(nameof(options));
 
-            if (this.InsecureTypeSymbols.Count == 0)
+            if (this.InsecureTypeSymbols.Count == 0 || rootType == null)
             {
                 results = ImmutableArray<InsecureObjectGraphResult>.Empty;
                 return false;
@@ -333,7 +333,7 @@ namespace Microsoft.NetCore.Analyzers.Security.Helpers
                     // Look through [KnownType(typeof(Whatev))] attributes.
                     foreach (AttributeData knownTypeAttributeData in typeSymbol.GetAttributes(this.KnownTypeAttributeTypeSymbol))
                     {
-                        if (knownTypeAttributeData.AttributeConstructor.Parameters.Length != 1
+                        if (knownTypeAttributeData.AttributeConstructor?.Parameters.Length != 1
                             || knownTypeAttributeData.ConstructorArguments.Length != 1)
                         {
                             continue;
@@ -368,7 +368,7 @@ namespace Microsoft.NetCore.Analyzers.Security.Helpers
                     foreach (AttributeData xmlIncludeAttributeData
                         in typeSymbol.GetAttributes(this.XmlSerializationAttributeTypes.XmlIncludeAttribute))
                     {
-                        if (xmlIncludeAttributeData.AttributeConstructor.Parameters.Length != 1
+                        if (xmlIncludeAttributeData.AttributeConstructor?.Parameters.Length != 1
                           || xmlIncludeAttributeData.ConstructorArguments.Length != 1)
                         {
                             continue;
@@ -413,7 +413,7 @@ namespace Microsoft.NetCore.Analyzers.Security.Helpers
         /// <param name="type">Type to get associated types for.</param>
         /// <param name="results">Set to populate with associated types.</param>
         private static void GetAssociatedTypes(
-            ITypeSymbol type,
+            ITypeSymbol? type,
             SortedSet<ITypeSymbol> results)
         {
             if (type == null || !results.Add(type))

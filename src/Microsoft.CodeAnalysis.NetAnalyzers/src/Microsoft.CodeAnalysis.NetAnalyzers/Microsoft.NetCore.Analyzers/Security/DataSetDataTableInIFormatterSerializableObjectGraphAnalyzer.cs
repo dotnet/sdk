@@ -103,7 +103,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                                 return;
                             }
 
-                            ITypeSymbol deserializedType = conversionOperation.Type;
+                            ITypeSymbol? deserializedType = conversionOperation.Type;
 
                             ObjectGraphOptions options;
                             if (invocationOperation.Instance?.Type?.DerivesFrom(netDataContractSerializerTypeSymbol) == true)

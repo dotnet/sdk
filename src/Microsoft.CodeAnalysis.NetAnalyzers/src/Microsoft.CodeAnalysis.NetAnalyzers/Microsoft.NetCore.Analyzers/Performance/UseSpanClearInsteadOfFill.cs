@@ -77,7 +77,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
         private static bool IsDefaultValue(IArgumentOperation argumentOperation)
         {
             var value = argumentOperation.Value;
-            var type = argumentOperation.Parameter.Type;
+            var type = argumentOperation.Parameter?.Type;
             var constantOpt = value.ConstantValue;
 
             if (constantOpt.HasValue)
@@ -133,8 +133,8 @@ namespace Microsoft.NetCore.Analyzers.Performance
 
             if (value is IObjectCreationOperation objectCreation)
             {
-                return objectCreation.Type.IsValueType
-                    && objectCreation.Constructor.IsImplicitlyDeclared
+                return objectCreation.Type?.IsValueType == true
+                    && objectCreation.Constructor?.IsImplicitlyDeclared == true
                     && objectCreation.Arguments.IsEmpty
                     && (objectCreation.Initializer?.Initializers.IsEmpty ?? true)
                     && SymbolEqualityComparer.Default.Equals(value.Type, type);

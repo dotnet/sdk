@@ -8,7 +8,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.Helpers
 {
     internal static class EnumHelpers
     {
-        internal static bool TryConvertToUInt64(object value, SpecialType specialType, out ulong convertedValue)
+        internal static bool TryConvertToUInt64(object? value, SpecialType specialType, out ulong convertedValue)
         {
             bool success = false;
             convertedValue = 0;
@@ -72,7 +72,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.Helpers
                         return false;
                     }
 
-                    if (!TryConvertToUInt64(field.ConstantValue, enumType.EnumUnderlyingType.SpecialType, out ulong convertedValue))
+                    if (!TryConvertToUInt64(field.ConstantValue, enumType.EnumUnderlyingType!.SpecialType, out ulong convertedValue))
                     {
                         return false;
                     }

@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
 using System.Threading;
@@ -58,14 +58,14 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         {
             Document doc = context.Document;
             CancellationToken ct = context.CancellationToken;
-            SyntaxNode root = await doc.GetSyntaxRootAsync(ct).ConfigureAwait(false);
+            SyntaxNode root = await doc.GetRequiredSyntaxRootAsync(ct).ConfigureAwait(false);
 
             if (root.FindNode(context.Span, getInnermostNodeForTie: true) is not SyntaxNode node)
             {
                 return;
             }
 
-            SemanticModel model = await doc.GetSemanticModelAsync(ct).ConfigureAwait(false);
+            SemanticModel model = await doc.GetRequiredSemanticModelAsync(ct).ConfigureAwait(false);
 
             if (model.GetOperation(node, ct) is not IInvocationOperation invocation)
             {

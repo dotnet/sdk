@@ -3,6 +3,7 @@
 using System.Composition;
 using System.Threading;
 using System.Threading.Tasks;
+using Analyzer.Utilities;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
@@ -26,7 +27,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
         {
             if (node.IsKind(SyntaxKind.IdentifierName) && node.Parent?.FirstAncestorOrSelf<InvocationExpressionSyntax>() is InvocationExpressionSyntax invocation)
             {
-                var model = await document.GetSemanticModelAsync(cancellationToken).ConfigureAwait(false);
+                var model = await document.GetRequiredSemanticModelAsync(cancellationToken).ConfigureAwait(false);
                 if (model.GetSymbolInfo((IdentifierNameSyntax)node, cancellationToken).Symbol is IMethodSymbol methodSymbol && methodSymbol.Parameters.Length == 0)
                 {
                     var newArg = generator.Argument(CreateCurrentCultureMemberAccess(generator, model)).WithAdditionalAnnotations(Formatter.Annotation);

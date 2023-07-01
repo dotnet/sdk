@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
@@ -145,21 +145,23 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
             foreach (var attribute in attributes)
             {
-                Analyze(reportDiagnostic, attribute, cancellationToken);
+                Analyze(reportDiagnostic, attribute, symbol, cancellationToken);
             }
         }
 
-        private static void Analyze(Action<Diagnostic> reportDiagnostic, AttributeData attributeData, CancellationToken cancellationToken)
+        private static void Analyze(Action<Diagnostic> reportDiagnostic, AttributeData attributeData, ISymbol symbol, CancellationToken cancellationToken)
         {
             var attributeConstructor = attributeData.AttributeConstructor;
             var constructorArguments = attributeData.ConstructorArguments;
 
-            if (attributeConstructor == null || !attributeConstructor.Parameters.HasExactly(constructorArguments.Count()))
+            if (attributeData.AttributeClass == null ||
+                attributeConstructor == null ||
+                !attributeConstructor.Parameters.HasExactly(constructorArguments.Count()))
             {
                 return;
             }
 
-            var syntax = attributeData.ApplicationSyntaxReference.GetSyntax(cancellationToken);
+            var syntax = attributeData.ApplicationSyntaxReference?.GetSyntax(cancellationToken) ?? symbol.DeclaringSyntaxReferences[0].GetSyntax(cancellationToken);
 
             for (int i = 0; i < attributeConstructor.Parameters.Count(); i++)
             {
@@ -174,9 +176,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 var valueValidator = GetValueValidator(parameter.Name);
                 if (valueValidator != null && !valueValidator.IsIgnoredName(parameter.Name))
                 {
-                    if (constructorArguments[i].Value != null)
+                    if (constructorArguments[i].Value is string value)
                     {
-                        var value = (string)constructorArguments[i].Value;
                         string classDisplayString = attributeData.AttributeClass.ToDisplayString(SymbolDisplayFormats.ShortSymbolDisplayFormat);
                         if (value.Length == 0)
                         {
@@ -200,15 +201,16 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             foreach (var namedArgument in attributeData.NamedArguments)
             {
                 if (namedArgument.Value.IsNull ||
-                    namedArgument.Value.Type.SpecialType != SpecialType.System_String)
+                    namedArgument.Value.Type?.SpecialType != SpecialType.System_String)
                 {
                     return;
                 }
 
                 var valueValidator = GetValueValidator(namedArgument.Key);
-                if (valueValidator != null && !valueValidator.IsIgnoredName(namedArgument.Key))
+                if (valueValidator != null &&
+                    !valueValidator.IsIgnoredName(namedArgument.Key) &&
+                    namedArgument.Value.Value is string value)
                 {
-                    var value = (string)namedArgument.Value.Value;
                     string classDisplayString = attributeData.AttributeClass.ToDisplayString(SymbolDisplayFormats.ShortSymbolDisplayFormat);
                     if (value.Length == 0)
                     {

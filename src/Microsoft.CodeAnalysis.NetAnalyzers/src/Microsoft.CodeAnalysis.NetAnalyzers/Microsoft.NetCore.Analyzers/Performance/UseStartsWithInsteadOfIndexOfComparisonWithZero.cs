@@ -135,7 +135,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     if (indexOfMethod.Equals(invocation.TargetMethod, SymbolEqualityComparer.Default))
                     {
                         var locationsBuilder = ImmutableArray.CreateBuilder<Location>();
-                        locationsBuilder.Add(invocation.Instance.Syntax.GetLocation());
+                        locationsBuilder.Add(invocation.Instance!.Syntax.GetLocation());
                         locationsBuilder.AddRange(invocation.Arguments.Select(arg => arg.Syntax.GetLocation()));
                         additionalLocations = locationsBuilder.ToImmutable();
 

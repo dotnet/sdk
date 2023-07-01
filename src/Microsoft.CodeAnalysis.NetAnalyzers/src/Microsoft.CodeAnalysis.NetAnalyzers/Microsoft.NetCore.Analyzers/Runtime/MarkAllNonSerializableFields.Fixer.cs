@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
 using System.Linq;
@@ -24,7 +24,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
         public override async Task RegisterCodeFixesAsync(CodeFixContext context)
         {
-            SyntaxNode root = await context.Document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
+            SyntaxNode root = await context.Document.GetRequiredSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
             SyntaxNode node = root.FindNode(context.Span);
             SyntaxNode? fieldNode = GetFieldDeclarationNode(node);
             if (fieldNode == null)
@@ -39,7 +39,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                                     context.Diagnostics);
 
             // Fix 2: If the type of the field is defined in source, then add the serializable attribute to the type.
-            SemanticModel model = await context.Document.GetSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
+            SemanticModel model = await context.Document.GetRequiredSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
             var fieldSymbol = model.GetDeclaredSymbol(node, context.CancellationToken) as IFieldSymbol;
             ITypeSymbol? type = fieldSymbol?.Type;
             if (type != null && type.Locations.Any(l => l.IsInSource))

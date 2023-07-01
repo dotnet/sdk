@@ -1,9 +1,10 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
 using System.Globalization;
 using System.Text;
 using System.Threading.Tasks;
+using Analyzer.Utilities;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
@@ -29,8 +30,8 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
         public sealed override async Task RegisterCodeFixesAsync(CodeFixContext context)
         {
-            var root = await context.Document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
-            var model = await context.Document.GetSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
+            var root = await context.Document.GetRequiredSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
+            var model = await context.Document.GetRequiredSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
 
             var node = root.FindNode(context.Span);
             if (node == null)
@@ -58,7 +59,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
             string title = MicrosoftCodeQualityAnalyzersResources.IdentifiersShouldNotContainUnderscoresCodeFixTitle;
             context.RegisterCodeFix(CodeAction.Create(title,
-                                        ct => Renamer.RenameSymbolAsync(context.Document.Project.Solution, symbol, newName, null, ct),
+                                        ct => Renamer.RenameSymbolAsync(context.Document.Project.Solution, symbol, newName, context.Document.Project.Solution.Options, ct),
                                         equivalenceKey: title),
                                     context.Diagnostics);
         }

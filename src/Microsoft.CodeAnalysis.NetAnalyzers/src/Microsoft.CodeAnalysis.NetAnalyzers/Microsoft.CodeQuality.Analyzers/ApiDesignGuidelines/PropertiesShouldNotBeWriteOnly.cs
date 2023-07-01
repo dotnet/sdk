@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
@@ -86,7 +86,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 context.ReportDiagnostic(property.CreateDiagnostic(AddGetterRule, property.Name));
             }
             // Otherwise if there is a setter, check for its relative accessibility
-            else if (!property.IsReadOnly && (property.GetMethod.DeclaredAccessibility < property.SetMethod.DeclaredAccessibility))
+            else if (!property.IsReadOnly && (property.GetMethod!.DeclaredAccessibility < property.SetMethod!.DeclaredAccessibility))
             {
                 context.ReportDiagnostic(property.CreateDiagnostic(MakeMoreAccessibleRule, property.Name));
             }
