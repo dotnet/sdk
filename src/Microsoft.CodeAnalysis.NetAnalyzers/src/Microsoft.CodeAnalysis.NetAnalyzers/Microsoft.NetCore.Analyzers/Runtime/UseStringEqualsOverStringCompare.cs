@@ -261,7 +261,10 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 invocation.TargetMethod.Equals(symbols.CompareStringStringStringComparison, SymbolEqualityComparer.Default);
         }
 
+        //  No IOperation instances are being stored here.
+#pragma warning disable RS1008 // Avoid storing per-compilation data into the fields of a diagnostic analyzer
         private static readonly ImmutableArray<Func<IBinaryOperation, RequiredSymbols, bool>> CaseSelectors =
+#pragma warning restore RS1008 // Avoid storing per-compilation data into the fields of a diagnostic analyzer
             ImmutableArray.Create<Func<IBinaryOperation, RequiredSymbols, bool>>(
                 IsStringStringCase,
                 IsStringStringBoolCase,
