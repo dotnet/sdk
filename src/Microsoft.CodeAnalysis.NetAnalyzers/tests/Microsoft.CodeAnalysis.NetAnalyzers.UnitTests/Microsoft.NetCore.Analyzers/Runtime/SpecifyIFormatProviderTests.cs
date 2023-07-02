@@ -1589,6 +1589,28 @@ End Class
             }.RunAsync();
         }
 
+        [Theory, WorkItem(6586, "https://github.com/dotnet/roslyn-analyzers/issues/6586")]
+        [InlineData("int")]
+        [InlineData("uint")]
+        [InlineData("long")]
+        [InlineData("ulong")]
+        [InlineData("short")]
+        [InlineData("ushort")]
+        [InlineData("double")]
+        [InlineData("float")]
+        [InlineData("decimal")]
+        public Task FormatProviderForNullableValueTypes(string valueType)
+        {
+            var code = $@"
+public class Test {{
+    public void M({valueType}? x) {{
+        var y = {{|#0:x.ToString()|}};
+    }}
+}}";
+
+            return VerifyCS.VerifyAnalyzerAsync(code, new DiagnosticResult(SpecifyIFormatProviderAnalyzer.IFormatProviderOptionalRule).WithLocation(0).WithArguments($"{valueType}?.ToString()"));
+        }
+
         private DiagnosticResult GetIFormatProviderAlternateStringRuleCSharpResultAt(int line, int column, string arg1, string arg2, string arg3) =>
 #pragma warning disable RS0030 // Do not use banned APIs
             VerifyCS.Diagnostic(SpecifyIFormatProviderAnalyzer.IFormatProviderAlternateStringRule)
