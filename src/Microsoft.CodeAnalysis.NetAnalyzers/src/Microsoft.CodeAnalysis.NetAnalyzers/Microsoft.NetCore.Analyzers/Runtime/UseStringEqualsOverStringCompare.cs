@@ -125,7 +125,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     ?.GetMembers(nameof(int.Equals))
                     .OfType<IMethodSymbol>()
                     .FirstOrDefault(m => m.GetParameters() is [var param] && param.Type.Equals(intType, SymbolEqualityComparer.Default));
-                if(intEquals is null)
+                if (intEquals is null)
                 {
                     return false;
                 }
@@ -187,7 +187,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 return operation is ILiteralOperation literal && literal.ConstantValue.Value is 0;
             }
         }
-        
+
         internal static IInvocationOperation? GetInvocationFromEqualsCheckWithLiteralZero(IInvocationOperation? invocation, IMethodSymbol int32Equals)
         {
             if (!int32Equals.Equals(invocation?.TargetMethod.OriginalDefinition, SymbolEqualityComparer.Default))
@@ -240,13 +240,13 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         /// <item>The <c>ignoreCase</c> argument is a boolean literal</item>
         /// </list>
         /// </summary>
-        /// <param name="binaryOperation"></param>
+        /// <param name="operation"></param>
         /// <param name="symbols"></param>
         /// <returns></returns>
         internal static bool IsStringStringBoolCase(IOperation operation, RequiredSymbols symbols)
         {
             //  Don't report a diagnostic if either the string.Compare overload or the
-            //  corrasponding string.Equals overload is missing.
+            //  corresponding string.Equals overload is missing.
             if (symbols.CompareStringStringBool is null ||
                 symbols.EqualsStringStringStringComparison is null)
             {

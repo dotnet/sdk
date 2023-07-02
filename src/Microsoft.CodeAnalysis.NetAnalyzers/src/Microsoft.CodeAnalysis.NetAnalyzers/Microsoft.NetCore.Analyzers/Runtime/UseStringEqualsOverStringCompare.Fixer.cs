@@ -128,10 +128,10 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                         ? generator.LogicalNotExpression(stringEqualsInvocationExpression)
                         : stringEqualsInvocationExpression;
                 }
-                
+
                 if (equalsOrNotEqualsOperation is IInvocationOperation i)
                 {
-                    return i.Instance.Parent is IUnaryOperation { OperatorKind: UnaryOperatorKind.Not } 
+                    return i.Instance.Parent is IUnaryOperation { OperatorKind: UnaryOperatorKind.Not }
                         ? generator.LogicalNotExpression(stringEqualsInvocationExpression)
                         : stringEqualsInvocationExpression;
                 }
