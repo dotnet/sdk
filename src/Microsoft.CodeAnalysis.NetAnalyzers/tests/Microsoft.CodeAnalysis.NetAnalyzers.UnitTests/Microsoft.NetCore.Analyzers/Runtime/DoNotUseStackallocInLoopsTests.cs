@@ -311,10 +311,7 @@ class TestClass {
         [Fact, WorkItem(6723, "https://github.com/dotnet/roslyn-analyzers/issues/6723")]
         public Task NoDiagnostics_StackallocInLoopInitializer()
         {
-            return new VerifyCS.Test
-            {
-                LanguageVersion = LanguageVersion.CSharp8,
-                TestCode = @"
+            return VerifyCS.VerifyAnalyzerAsync(@"
                 using System;
                 public class C
                 {
@@ -322,8 +319,23 @@ class TestClass {
                     {
                         for (Span<int> sp1 = stackalloc int[2]; false;) { }
                     }
-                }"
-            }.RunAsync();
+                }");
+        }
+
+        [Fact, WorkItem(6723, "https://github.com/dotnet/roslyn-analyzers/issues/6723")]
+        public Task Diagnostics_StackallocInLoopInitializer()
+        {
+            return VerifyCS.VerifyAnalyzerAsync(@"
+                using System;
+                public class C
+                {
+                    public static void Foo()
+                    {
+                        for(;;) {
+                            for (Span<int> sp1 = [|stackalloc int[2]|]; false;) { }
+                        }
+                    }
+                }");
         }
     }
 }
