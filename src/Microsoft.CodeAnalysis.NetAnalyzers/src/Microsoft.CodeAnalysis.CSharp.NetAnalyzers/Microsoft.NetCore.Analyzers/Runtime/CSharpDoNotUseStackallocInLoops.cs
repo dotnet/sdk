@@ -23,6 +23,12 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
             context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
             context.RegisterSyntaxNodeAction(ctx =>
             {
+                // stackalloc is in the for loop initializer and thus not part of the actual loop.
+                if (ctx.Node.Parent is EqualsValueClauseSyntax { Parent: VariableDeclaratorSyntax { Parent: VariableDeclarationSyntax { Parent: ForStatementSyntax } } })
+                {
+                    return;
+                }
+
                 // We found a stackalloc.  Walk up from it to see if it's in a loop at any level.
                 for (SyntaxNode? node = ctx.Node; node != null; node = node.Parent)
                 {

@@ -2,6 +2,7 @@
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.CSharp;
+using Test.Utilities;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetCore.CSharp.Analyzers.Runtime.CSharpDoNotUseStackallocInLoopsAnalyzer,
@@ -302,6 +303,24 @@ class TestClass {
                         {
                             Span<byte> span = {|CA2014:stackalloc byte[1024]|};
                         }
+                    }
+                }"
+            }.RunAsync();
+        }
+
+        [Fact, WorkItem(6723, "https://github.com/dotnet/roslyn-analyzers/issues/6723")]
+        public Task NoDiagnostics_StackallocInLoopInitializer()
+        {
+            return new VerifyCS.Test
+            {
+                LanguageVersion = LanguageVersion.CSharp8,
+                TestCode = @"
+                using System;
+                public class C
+                {
+                    public static void Foo()
+                    {
+                        for (Span<int> sp1 = stackalloc int[2]; false;) { }
                     }
                 }"
             }.RunAsync();
