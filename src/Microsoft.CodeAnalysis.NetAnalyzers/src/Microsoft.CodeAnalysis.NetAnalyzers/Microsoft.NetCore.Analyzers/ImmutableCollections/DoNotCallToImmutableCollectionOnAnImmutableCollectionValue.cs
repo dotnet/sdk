@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -68,7 +68,7 @@ namespace Microsoft.NetCore.Analyzers.ImmutableCollections
                 {
                     var invocation = (IInvocationOperation)operationContext.Operation;
                     var targetMethod = invocation.TargetMethod;
-                    if (targetMethod == null || !ImmutableCollectionMetadataNames.TryGetValue(targetMethod.Name, out string metadataName))
+                    if (targetMethod == null || !ImmutableCollectionMetadataNames.TryGetValue(targetMethod.Name, out var metadataName))
                     {
                         return;
                     }

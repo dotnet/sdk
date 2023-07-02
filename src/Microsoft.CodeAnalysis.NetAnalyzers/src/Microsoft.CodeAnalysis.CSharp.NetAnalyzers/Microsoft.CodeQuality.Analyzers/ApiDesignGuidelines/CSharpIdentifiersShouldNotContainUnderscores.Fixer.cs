@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Composition;
 using Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines;
@@ -32,7 +32,7 @@ namespace Microsoft.CodeQuality.CSharp.Analyzers.ApiDesignGuidelines
 
         protected override SyntaxNode GetDeclarationNode(SyntaxNode node)
             => node.IsKind(SyntaxKind.IdentifierName)
-                ? node.Parent
+                ? node.Parent!
                 : node;
     }
 }

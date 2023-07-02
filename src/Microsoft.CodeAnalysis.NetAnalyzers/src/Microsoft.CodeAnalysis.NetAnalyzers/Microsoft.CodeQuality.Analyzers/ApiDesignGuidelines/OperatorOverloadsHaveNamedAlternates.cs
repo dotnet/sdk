@@ -185,7 +185,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
         private static Diagnostic CreateDiagnostic(DiagnosticDescriptor descriptor, Location location, string kind, params string[] messageArgs)
         {
-            return Diagnostic.Create(descriptor, location, ImmutableDictionary.Create<string, string>().Add(DiagnosticKindText, kind), messageArgs);
+            return Diagnostic.Create(descriptor, location, ImmutableDictionary.Create<string, string?>().Add(DiagnosticKindText, kind), messageArgs);
         }
 
         internal static bool IsPropertyExpected(string operatorName)

@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
 using System.Linq;
@@ -111,7 +111,8 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                         // Get the type of the expression being awaited and check it's a task type.
                         if (declarator.Symbol.Type != configuredAsyncDisposable)
                         {
-                            context.ReportDiagnostic(declarator.Initializer.Value.Syntax.CreateDiagnostic(Rule));
+                            var reportingOperation = declarator.Initializer?.Value ?? declarator;
+                            context.ReportDiagnostic(reportingOperation.CreateDiagnostic(Rule));
                         }
                     }
                 }
@@ -133,7 +134,8 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     // Get the type of the expression being awaited and check it's a task type.
                     if (declarator.Symbol.Type != configuredAsyncDisposable)
                     {
-                        context.ReportDiagnostic(declarator.Initializer.Value.Syntax.CreateDiagnostic(Rule));
+                        var reportingOperation = declarator.Initializer?.Value ?? declarator;
+                        context.ReportDiagnostic(reportingOperation.CreateDiagnostic(Rule));
                     }
                 }
             }

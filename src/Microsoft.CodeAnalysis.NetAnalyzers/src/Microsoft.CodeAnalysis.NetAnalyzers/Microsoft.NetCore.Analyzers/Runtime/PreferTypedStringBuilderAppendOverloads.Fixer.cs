@@ -1,9 +1,10 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
 using System.Composition;
 using System.Threading;
 using System.Threading.Tasks;
+using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
@@ -25,7 +26,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         {
             Document doc = context.Document;
             CancellationToken cancellationToken = context.CancellationToken;
-            SyntaxNode root = await doc.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
+            SyntaxNode root = await doc.GetRequiredSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
             if (root.FindNode(context.Span) is SyntaxNode expression)
             {
                 string title = MicrosoftNetCoreAnalyzersResources.PreferTypedStringBuilderAppendOverloadsRemoveToString;
@@ -33,7 +34,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     CodeAction.Create(title,
                         async ct =>
                         {
-                            SemanticModel model = await doc.GetSemanticModelAsync(cancellationToken).ConfigureAwait(false);
+                            SemanticModel model = await doc.GetRequiredSemanticModelAsync(cancellationToken).ConfigureAwait(false);
                             if (model.GetOperationWalkingUpParentChain(expression, cancellationToken) is IArgumentOperation arg &&
                                 arg.Value is IInvocationOperation invoke &&
                                 invoke.Instance?.Syntax is SyntaxNode replacement)

@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
 using Analyzer.Utilities;
@@ -53,7 +53,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                         return;
                     }
 
-                    var isMethodSurroundedWithDirective = blockOperation.Syntax.Parent.ContainsDirectives;
+                    var isMethodSurroundedWithDirective = blockOperation.Syntax.Parent?.ContainsDirectives ?? false;
 
                     if (!blockOperation.HasAnyExplicitDescendant(op => CanDescendIntoOperation(op, conditionalAttributeType, isMethodSurroundedWithDirective)))
                     {

@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
 using Analyzer.Utilities;
@@ -51,7 +51,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                 {
                     var objectCreationOperation = (IObjectCreationOperation)operationAnalysisContext.Operation;
 
-                    if (xslTransformTypeSymbol.Equals(objectCreationOperation.Constructor.ContainingType))
+                    if (xslTransformTypeSymbol.Equals(objectCreationOperation.Constructor?.ContainingType))
                     {
                         operationAnalysisContext.ReportDiagnostic(
                             objectCreationOperation.CreateDiagnostic(

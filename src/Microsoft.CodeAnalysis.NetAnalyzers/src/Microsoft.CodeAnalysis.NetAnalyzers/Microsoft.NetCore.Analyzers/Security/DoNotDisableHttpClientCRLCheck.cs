@@ -163,7 +163,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                                     var objectCreationOperation =
                                         (IObjectCreationOperation)operationAnalysisContext.Operation;
 
-                                    if (objectCreationOperation.Type.GetBaseTypesAndThis().Contains(httpClientTypeSymbol))
+                                    if (objectCreationOperation.Type?.GetBaseTypesAndThis().Contains(httpClientTypeSymbol) == true)
                                     {
                                         if (!objectCreationOperation.Arguments.IsEmpty)
                                         {

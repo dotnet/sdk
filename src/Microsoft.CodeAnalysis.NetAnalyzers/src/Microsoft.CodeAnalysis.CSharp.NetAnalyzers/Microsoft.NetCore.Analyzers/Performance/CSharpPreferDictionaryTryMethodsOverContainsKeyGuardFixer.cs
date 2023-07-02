@@ -1,10 +1,11 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Generic;
 using System.Composition;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Analyzer.Utilities;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
@@ -31,7 +32,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Performance
             }
 
             Document document = context.Document;
-            SyntaxNode root = await document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
+            SyntaxNode root = await document.GetRequiredSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
 
             if (root.FindNode(context.Span) is not InvocationExpressionSyntax
                 {
@@ -89,7 +90,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Performance
             if (diagnostic.AdditionalLocations.Count != dictionaryAccessors.Count + (addStatementNode != null ? 1 : 0))
                 return null;
 
-            var model = await document.GetSemanticModelAsync(cancellationToken).ConfigureAwait(false);
+            var model = await document.GetRequiredSemanticModelAsync(cancellationToken).ConfigureAwait(false);
             var type = model.GetTypeInfo(dictionaryAccessors[0], cancellationToken).Type;
 
             return CodeAction.Create(PreferDictionaryTryGetValueCodeFixTitle, async ct =>
@@ -132,7 +133,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Performance
                 {
                     editor.InsertBefore(addStatementNode,
                         generator.ExpressionStatement(generator.AssignmentStatement(identifierName, changedValueNode)));
-                    editor.ReplaceNode(changedValueNode, identifierName);
+                    editor.ReplaceNode(changedValueNode!, identifierName);
                 }
 
                 foreach (var dictionaryAccess in dictionaryAccessors)
@@ -210,7 +211,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Performance
                     {
                         // d.Add() is one of many statements in the if and is guarded with a !d.ContainsKey().
                         // In this case, we switch out the !d.ContainsKey() call for a d.TryAdd() call.
-                        editor.RemoveNode(dictionaryAddInvocation.Parent, SyntaxRemoveOptions.KeepNoTrivia);
+                        editor.RemoveNode(dictionaryAddInvocation.Parent!, SyntaxRemoveOptions.KeepNoTrivia);
                         editor.ReplaceNode(unary, tryAddInvocation);
                     }
                 }
@@ -228,7 +229,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Performance
                     {
                         // d.Add() is one of many statements in the else-branch and guarded by a d.ContainsKey() call in the if.
                         // In this case we replace the d.ContainsKey() call with a !d.TryAdd() call and remove the d.Add() call in the else-branch.
-                        editor.RemoveNode(dictionaryAddInvocation.Parent, SyntaxRemoveOptions.KeepNoTrivia);
+                        editor.RemoveNode(dictionaryAddInvocation.Parent!, SyntaxRemoveOptions.KeepNoTrivia);
                     }
                 }
 

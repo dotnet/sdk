@@ -8,6 +8,7 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Analyzer.Utilities;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
@@ -33,7 +34,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
 
         public sealed override async Task RegisterCodeFixesAsync(CodeFixContext context)
         {
-            var root = await context.Document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
+            var root = await context.Document.GetRequiredSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
             var node = root.FindNode(context.Span);
 
             if (node is null)
@@ -42,7 +43,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
             }
 
             // The rules are mutually exclusive, so there can't be more than one for the same span:
-            var diagnostic = context.Diagnostics.FirstOrDefault();
+            var diagnostic = context.Diagnostics.First();
             var targetMethod = diagnostic.Properties.GetValueOrDefault(UseAsSpanInsteadOfRangeIndexerAnalyzer.TargetMethodName);
 
             if (targetMethod == null)

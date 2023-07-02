@@ -230,7 +230,7 @@ namespace Microsoft.NetFramework.Analyzers.Helpers
             while (current.Parent != null)
             {
                 SyntaxNode parent = current.Parent;
-                ISymbol sym = model.GetDeclaredSymbol(current, cancellationToken);
+                ISymbol? sym = model.GetDeclaredSymbol(current, cancellationToken);
 
                 switch (sym)
                 {
@@ -301,8 +301,8 @@ namespace Microsoft.NetFramework.Analyzers.Helpers
                 return new Version(4, 6);
             }
 
-            INamedTypeSymbol typeSymbol = mscorlibAssembly.GetTypeByMetadataName(WellKnownTypeNames.SystemIOUnmanagedMemoryStream);
-            if (!typeSymbol.GetMembers("FlushAsync").IsEmpty)
+            INamedTypeSymbol? typeSymbol = mscorlibAssembly.GetTypeByMetadataName(WellKnownTypeNames.SystemIOUnmanagedMemoryStream);
+            if (typeSymbol != null && !typeSymbol.GetMembers("FlushAsync").IsEmpty)
             {
                 return new Version(4, 5, 2);
             }

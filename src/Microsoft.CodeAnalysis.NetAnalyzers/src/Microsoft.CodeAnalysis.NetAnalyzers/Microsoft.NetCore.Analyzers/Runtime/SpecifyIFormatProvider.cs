@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -228,7 +228,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     if (!diagnosticReported)
                     {
                         var currentCallHasNullFormatProvider = invocationExpression.Arguments.Any(x =>
-                            SymbolEqualityComparer.Default.Equals(x.Parameter.Type, iformatProviderType)
+                            SymbolEqualityComparer.Default.Equals(x.Parameter?.Type, iformatProviderType)
                             && x.ArgumentKind == ArgumentKind.DefaultValue);
 
                         if (currentCallHasNullFormatProvider)
@@ -256,7 +256,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                         if (argument != null && currentUICultureProperty != null &&
                             installedUICultureProperty != null && currentThreadCurrentUICultureProperty != null)
                         {
-                            var semanticModel = argument.SemanticModel;
+                            var semanticModel = argument.SemanticModel!;
 
                             var symbol = semanticModel.GetSymbolInfo(argument.Value.Syntax, oaContext.CancellationToken).Symbol;
 

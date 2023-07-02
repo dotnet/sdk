@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
 using System.Composition;
@@ -8,6 +8,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.Editing;
 using Microsoft.CodeAnalysis.CodeActions;
+using Analyzer.Utilities;
 
 namespace Microsoft.CodeQuality.Analyzers.Maintainability
 {
@@ -27,7 +28,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
 
         public sealed override async Task RegisterCodeFixesAsync(CodeFixContext context)
         {
-            SyntaxNode root = await context.Document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
+            SyntaxNode root = await context.Document.GetRequiredSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
             SyntaxNode node = root.FindNode(context.Span);
 
             if (node == null)

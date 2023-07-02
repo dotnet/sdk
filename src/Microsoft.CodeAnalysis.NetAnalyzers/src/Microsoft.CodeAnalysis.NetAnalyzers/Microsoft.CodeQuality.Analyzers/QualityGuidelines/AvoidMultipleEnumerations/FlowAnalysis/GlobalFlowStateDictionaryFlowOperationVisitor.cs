@@ -23,7 +23,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         protected override bool Equals(GlobalFlowStateDictionaryAnalysisData value1, GlobalFlowStateDictionaryAnalysisData value2)
             => GlobalFlowStateDictionaryAnalysis.Domain.Equals(value1, value2);
 
-        protected override GlobalFlowStateDictionaryAnalysisValue GetAbstractDefaultValue(ITypeSymbol type)
+        protected override GlobalFlowStateDictionaryAnalysisValue GetAbstractDefaultValue(ITypeSymbol? type)
             => GlobalFlowStateDictionaryAnalysisValue.Empty;
 
         protected override GlobalFlowStateDictionaryAnalysisData GetExitBlockOutputData(GlobalFlowStateDictionaryAnalysisResult analysisResult)

@@ -25,7 +25,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
         {
             var cast = (InvocationExpressionSyntax)invocation;
             var oldNameSyntax = cast.ArgumentList.Arguments
-                .FirstOrDefault(x => x.NameColon is not null && x.NameColon.Name.Identifier.ValueText == oldArgumentName)?.NameColon.Name;
+                .FirstOrDefault(x => x.NameColon is not null && x.NameColon.Name.Identifier.ValueText == oldArgumentName)?.NameColon!.Name;
             if (oldNameSyntax is null)
                 return;
             var newNameSyntax = SyntaxFactory.IdentifierName(newArgumentName);

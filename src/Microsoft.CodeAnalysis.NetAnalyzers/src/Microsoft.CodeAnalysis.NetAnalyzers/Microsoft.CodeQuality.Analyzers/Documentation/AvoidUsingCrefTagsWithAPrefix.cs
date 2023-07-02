@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
 using Analyzer.Utilities;
@@ -43,7 +43,7 @@ namespace Microsoft.CodeQuality.Analyzers.Documentation
 
                 if (text[1] == ':')
                 {
-                    var location = Location.Create(token.SyntaxTree, textTokens.Span);
+                    var location = Location.Create(token.SyntaxTree!, textTokens.Span);
                     context.ReportDiagnostic(Diagnostic.Create(Rule, location, text[..2]));
                 }
             }

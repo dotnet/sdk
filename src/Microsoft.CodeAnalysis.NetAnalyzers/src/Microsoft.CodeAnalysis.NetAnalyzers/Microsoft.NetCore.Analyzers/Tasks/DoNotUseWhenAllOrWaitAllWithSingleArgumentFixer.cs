@@ -3,6 +3,7 @@
 using System.Collections.Immutable;
 using System.Composition;
 using System.Threading.Tasks;
+using Analyzer.Utilities;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
@@ -21,14 +22,14 @@ namespace Microsoft.NetCore.Analyzers.Tasks
         public override async Task RegisterCodeFixesAsync(CodeFixContext context)
         {
             var cancellationToken = context.CancellationToken;
-            var root = await context.Document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
+            var root = await context.Document.GetRequiredSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
             var nodeToFix = root.FindNode(context.Span, getInnermostNodeForTie: true);
             if (nodeToFix is null)
             {
                 return;
             }
 
-            var semanticModel = await context.Document.GetSemanticModelAsync(cancellationToken).ConfigureAwait(false);
+            var semanticModel = await context.Document.GetRequiredSemanticModelAsync(cancellationToken).ConfigureAwait(false);
             if (semanticModel.GetOperation(nodeToFix, cancellationToken) is not IInvocationOperation operation)
             {
                 return;
@@ -95,7 +96,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks
         }
 
         private static SyntaxNode GetSingleArgumentSyntax(IInvocationOperation operation)
-            => ((IArrayCreationOperation)operation.Arguments[0].Value).Initializer.ElementValues[0].Syntax;
+            => ((IArrayCreationOperation)operation.Arguments[0].Value).Initializer?.ElementValues[0].Syntax!;
 
         public sealed override FixAllProvider GetFixAllProvider() => WellKnownFixAllProviders.BatchFixer;
     }

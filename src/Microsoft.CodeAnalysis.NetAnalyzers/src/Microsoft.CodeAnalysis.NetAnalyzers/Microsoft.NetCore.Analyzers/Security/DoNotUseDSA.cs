@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Immutable;
@@ -70,7 +70,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                 compilationStartAnalysisContext.RegisterOperationAction(operationAnalysisContext =>
                 {
                     var objectCreationOperation = (IObjectCreationOperation)operationAnalysisContext.Operation;
-                    var typeSymbol = objectCreationOperation.Constructor.ContainingType;
+                    var typeSymbol = objectCreationOperation.Constructor?.ContainingType;
 
                     if (typeSymbol == null)
                     {
@@ -126,11 +126,11 @@ namespace Microsoft.NetCore.Analyzers.Security
                     if (methodName == "Create" &&
                         typeSymbol.Equals(asymmetricAlgorithmTypeSymbol) &&
                         !arguments.IsEmpty &&
-                        arguments[0].Parameter.Type.SpecialType == SpecialType.System_String &&
-                        arguments[0].Value.ConstantValue.HasValue)
+                        arguments[0].Parameter is { } parameter &&
+                        parameter.Type.SpecialType == SpecialType.System_String &&
+                        arguments[0].Value.ConstantValue.HasValue &&
+                        arguments[0].Value.ConstantValue.Value is { } argValue)
                     {
-                        var argValue = arguments[0].Value.ConstantValue.Value;
-
                         if (s_DSAAlgorithmNames.Contains(argValue.ToString()))
                         {
                             operationAnalysisContext.ReportDiagnostic(
@@ -142,17 +142,17 @@ namespace Microsoft.NetCore.Analyzers.Security
                     else if (methodName == "CreateFromName" &&
                             typeSymbol.Equals(cryptoConfigTypeSymbol) &&
                             !arguments.IsEmpty &&
-                            arguments[0].Parameter.Type.SpecialType == SpecialType.System_String &&
-                            arguments[0].Value.ConstantValue.HasValue)
+                            arguments[0].Parameter is { } firstParameter &&
+                            firstParameter.Type.SpecialType == SpecialType.System_String &&
+                            arguments[0].Value.ConstantValue.HasValue &&
+                            arguments[0].Value.ConstantValue.Value is { } argValueForFirstParameter)
                     {
-                        var argValue = arguments[0].Value.ConstantValue.Value;
-
-                        if (s_DSAAlgorithmNames.Contains(argValue.ToString()))
+                        if (s_DSAAlgorithmNames.Contains(argValueForFirstParameter.ToString()))
                         {
                             operationAnalysisContext.ReportDiagnostic(
                                 invocationOperation.CreateDiagnostic(
                                     Rule,
-                                    argValue));
+                                    argValueForFirstParameter));
                         }
                     }
                 }, OperationKind.Invocation);

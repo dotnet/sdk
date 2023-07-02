@@ -282,7 +282,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             {
                 if (implementsDisposableInBaseType)
                 {
-                    context.ReportDiagnostic(type.CreateDiagnostic(IDisposableReimplementationRule, type.Name, type.BaseType.Name));
+                    context.ReportDiagnostic(type.CreateDiagnostic(IDisposableReimplementationRule, type.Name, type.BaseType!.Name));
                 }
             }
 
@@ -317,7 +317,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 if (method.MethodKind == MethodKind.Ordinary && method.IsOverride && method.ReturnsVoid && method.Parameters.IsEmpty)
                 {
                     bool isDisposeOverride = false;
-                    for (IMethodSymbol m = method.OverriddenMethod; m != null; m = m.OverriddenMethod)
+                    for (IMethodSymbol? m = method.OverriddenMethod; m != null; m = m.OverriddenMethod)
                     {
                         if (Equals(m, FindDisposeMethod(m.ContainingType)))
                         {
@@ -444,13 +444,13 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             /// <summary>
             /// Returns method defined in the nearest ancestor: void Dispose(bool)
             /// </summary>
-            private IMethodSymbol? FindInheritedDisposeBoolMethod(INamedTypeSymbol type)
+            private IMethodSymbol? FindInheritedDisposeBoolMethod(INamedTypeSymbol? type)
             {
                 IMethodSymbol? method = null;
 
                 while (type != null && method == null && ImplementsDisposableInBaseType(type))
                 {
-                    type = type.BaseType;
+                    type = type.BaseType!;
                     method = FindDisposeBoolMethod(type);
                 }
 
@@ -708,7 +708,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     IMethodSymbol methodSymbol = invocation.TargetMethod;
                     IInstanceReferenceOperation receiver = (IInstanceReferenceOperation)invocation.Instance;
 
-                    return methodSymbol.IsFinalizer() && Equals(receiver.Type.OriginalDefinition, _type.BaseType.OriginalDefinition);
+                    return methodSymbol.IsFinalizer() && Equals(receiver.Type?.OriginalDefinition, _type.BaseType.OriginalDefinition);
                 }
 
                 return false;

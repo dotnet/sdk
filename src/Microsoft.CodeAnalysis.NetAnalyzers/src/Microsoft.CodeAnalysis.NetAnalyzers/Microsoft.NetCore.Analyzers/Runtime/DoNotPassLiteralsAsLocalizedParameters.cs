@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
@@ -67,6 +67,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 operationBlockStartContext.RegisterOperationAction(operationContext =>
                 {
                     var argument = (IArgumentOperation)operationContext.Operation;
+                    if (argument.Parameter == null)
+                        return;
+
                     IMethodSymbol? targetMethod = null;
                     switch (argument.Parent)
                     {
@@ -310,7 +313,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         {
             var localizableAttribute = attributeList.FirstOrDefault(attr => localizableAttributeTypeSymbol.Equals(attr.AttributeClass));
             if (localizableAttribute != null &&
-                localizableAttribute.AttributeConstructor.Parameters.Length == 1 &&
+                localizableAttribute.AttributeConstructor?.Parameters.Length == 1 &&
                 localizableAttribute.AttributeConstructor.Parameters[0].Type.SpecialType == SpecialType.System_Boolean &&
                 localizableAttribute.ConstructorArguments.Length == 1 &&
                 localizableAttribute.ConstructorArguments[0].Kind == TypedConstantKind.Primitive &&

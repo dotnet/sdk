@@ -87,7 +87,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                                  childInvocationOperation.TargetMethod.OriginalDefinition.Equals(remove2Param, SymbolEqualityComparer.Default)) &&
                                 AreInvocationsOnSameInstance(childInvocationOperation, invocationOperation))
                             {
-                                additionalLocation.Add(childInvocationOperation.Syntax.Parent.GetLocation());
+                                additionalLocation.Add(childInvocationOperation.Syntax.Parent!.GetLocation());
                                 context.ReportDiagnostic(invocationOperation.CreateDiagnostic(Rule, additionalLocations: additionalLocation.ToImmutable(), null));
                             }
 
@@ -104,7 +104,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
 
                             if (nestedInvocationOperation != null && AreInvocationsOnSameInstance(nestedInvocationOperation, invocationOperation))
                             {
-                                additionalLocation.Add(nestedInvocationOperation.Syntax.Parent.GetLocation());
+                                additionalLocation.Add(nestedInvocationOperation.Syntax.Parent!.GetLocation());
                                 context.ReportDiagnostic(invocationOperation.CreateDiagnostic(Rule, additionalLocations: additionalLocation.ToImmutable(), null));
                             }
 

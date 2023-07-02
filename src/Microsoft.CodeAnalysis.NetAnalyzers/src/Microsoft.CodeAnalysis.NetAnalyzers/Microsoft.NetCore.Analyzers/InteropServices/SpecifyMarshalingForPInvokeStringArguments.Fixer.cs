@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -23,14 +23,14 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
 
         public override async Task RegisterCodeFixesAsync(CodeFixContext context)
         {
-            SyntaxNode root = await context.Document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
+            SyntaxNode root = await context.Document.GetRequiredSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
             SyntaxNode node = root.FindNode(context.Span);
             if (node == null)
             {
                 return;
             }
 
-            SemanticModel model = await context.Document.GetSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
+            SemanticModel model = await context.Document.GetRequiredSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
             INamedTypeSymbol? charSetType = model.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeInteropServicesCharSet);
             INamedTypeSymbol? dllImportType = model.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeInteropServicesDllImportAttribute);
             INamedTypeSymbol? marshalAsType = model.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeInteropServicesMarshalAsAttribute);
@@ -68,13 +68,13 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
         {
             DocumentEditor editor = await DocumentEditor.CreateAsync(document, cancellationToken).ConfigureAwait(false);
             SyntaxGenerator generator = editor.Generator;
-            SemanticModel model = await document.GetSemanticModelAsync(cancellationToken).ConfigureAwait(false);
+            SemanticModel model = await document.GetRequiredSemanticModelAsync(cancellationToken).ConfigureAwait(false);
 
             // could be either a [DllImport] or [MarshalAs] attribute
-            ISymbol attributeType = model.GetSymbolInfo(attributeDeclaration, cancellationToken).Symbol;
+            ISymbol? attributeType = model.GetSymbolInfo(attributeDeclaration, cancellationToken).Symbol;
             IReadOnlyList<SyntaxNode> arguments = generator.GetAttributeArguments(attributeDeclaration);
 
-            if (dllImportType.Equals(attributeType.ContainingType))
+            if (dllImportType.Equals(attributeType?.ContainingType))
             {
                 // [DllImport] attribute, add or replace CharSet named parameter
                 SyntaxNode argumentValue = generator.MemberAccessExpression(
@@ -94,7 +94,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                     editor.ReplaceNode(charSetArgument, newCharSetArgument);
                 }
             }
-            else if (marshalAsType.Equals(attributeType.ContainingType) && arguments.Count == 1)
+            else if (marshalAsType.Equals(attributeType?.ContainingType) && arguments.Count == 1)
             {
                 // [MarshalAs] attribute, replace the only argument
                 SyntaxNode newArgument = generator.AttributeArgument(

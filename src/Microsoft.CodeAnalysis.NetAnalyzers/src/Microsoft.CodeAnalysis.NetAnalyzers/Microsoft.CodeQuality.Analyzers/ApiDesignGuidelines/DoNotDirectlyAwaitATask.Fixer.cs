@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
 using System.Composition;
@@ -26,7 +26,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
         public sealed override async Task RegisterCodeFixesAsync(CodeFixContext context)
         {
-            SyntaxNode root = await context.Document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
+            SyntaxNode root = await context.Document.GetRequiredSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
             SyntaxNode expression = root.FindNode(context.Span);
 
             if (expression != null)
@@ -78,9 +78,10 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         {
             public static readonly CustomFixAllProvider Instance = new();
 
-            protected override string CodeActionTitle => MicrosoftCodeQualityAnalyzersResources.AppendConfigureAwaitFalse;
+            protected override string GetFixAllTitle(FixAllContext fixAllContext)
+                => MicrosoftCodeQualityAnalyzersResources.AppendConfigureAwaitFalse;
 
-            protected override async Task<SyntaxNode> FixAllInDocumentAsync(FixAllContext fixAllContext, Document document, ImmutableArray<Diagnostic> diagnostics)
+            protected override async Task<Document?> FixAllAsync(FixAllContext fixAllContext, Document document, ImmutableArray<Diagnostic> diagnostics)
             {
                 var useConfigureAwaitTrue = fixAllContext.CodeActionEquivalenceKey == nameof(AppendConfigureAwaitTrue);
                 var editor = await DocumentEditor.CreateAsync(document, fixAllContext.CancellationToken).ConfigureAwait(false);
@@ -90,7 +91,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     FixDiagnostic(editor, expression, argument: useConfigureAwaitTrue);
                 }
 
-                return editor.GetChangedRoot();
+                return editor.GetChangedDocument();
             }
         }
     }

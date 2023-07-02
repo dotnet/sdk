@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using Microsoft.CodeAnalysis.CodeFixes;
 using System.Collections.Immutable;
@@ -8,6 +8,7 @@ using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.Editing;
 using Microsoft.CodeAnalysis.Formatting;
 using System.Threading;
+using Analyzer.Utilities;
 
 namespace Microsoft.NetCore.Analyzers.Runtime
 {
@@ -26,7 +27,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
         public sealed override async Task RegisterCodeFixesAsync(CodeFixContext context)
         {
-            SyntaxNode root = await context.Document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
+            SyntaxNode root = await context.Document.GetRequiredSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
             SyntaxNode node = root.FindNode(context.Span);
 
             SyntaxNode binaryExpressionSyntax = GetBinaryExpression(node);
@@ -36,7 +37,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 return;
             }
 
-            SemanticModel model = await context.Document.GetSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
+            SemanticModel model = await context.Document.GetRequiredSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
             FixResolution? resolution = TryGetFixResolution(binaryExpressionSyntax, model, context.CancellationToken);
 
             if (resolution != null)

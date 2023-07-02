@@ -71,11 +71,12 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                     if (arguments.GetArgumentForParameterAtIndex(0).Value is ILiteralOperation literal)
                     {
                         if (literal.Type?.SpecialType == SpecialType.System_String &&
-                            literal.ConstantValue.HasValue)
+                            literal.ConstantValue.HasValue &&
+                            literal.ConstantValue.Value is { } value)
                         {
                             // OperatingSystem.IsOSPlatform(string platform)
                             if (invokedPlatformCheckMethod.Name == IsOSPlatform &&
-                                TryParsePlatformNameAndVersion(literal.ConstantValue.Value.ToString(), out string platformName, out Version? version))
+                                TryParsePlatformNameAndVersion(value.ToString(), out string platformName, out Version? version))
                             {
                                 var info = new PlatformMethodValue(platformName, version, negated: false);
                                 infosBuilder.Add(info);
@@ -113,7 +114,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 ValueContentAnalysisResult? valueContentAnalysisResult,
                 ArrayBuilder<string> decodedOsPlatformNamesBuilder)
             {
-                if (!argumentValue.Type.Equals(osPlatformType))
+                if (argumentValue.Type?.Equals(osPlatformType) != true)
                 {
                     return false;
                 }

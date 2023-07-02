@@ -41,7 +41,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Performance
                 SyntaxNode newConditionalOperationNode = conditionalExpressionSyntax
                     .WithCondition((ExpressionSyntax)negatedExpression)
                     .WithWhenTrue(conditionalExpressionSyntax.WhenFalse)
-                    .WithWhenFalse(null)
+                    .WithWhenFalse(null!)
                     .WithAdditionalAnnotations(Formatter.Annotation).WithTriviaFrom(conditionalOperationNode);
 
                 newRoot = root.ReplaceNode(conditionalOperationNode, newConditionalOperationNode);

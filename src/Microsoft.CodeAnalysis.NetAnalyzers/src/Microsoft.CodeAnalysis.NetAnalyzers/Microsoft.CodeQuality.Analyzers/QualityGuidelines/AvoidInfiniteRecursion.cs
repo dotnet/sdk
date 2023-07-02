@@ -64,7 +64,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                         return;
                     }
 
-                    IOperation ancestor = assignmentOperation;
+                    IOperation? ancestor = assignmentOperation;
                     do
                     {
                         ancestor = ancestor.Parent;

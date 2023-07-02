@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
 using System.Composition;
@@ -27,8 +27,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         public sealed override async Task RegisterCodeFixesAsync(CodeFixContext context)
         {
             Document doc = context.Document;
-            SemanticModel model = await doc.GetSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
-            SyntaxNode root = await doc.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
+            SemanticModel model = await doc.GetRequiredSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
+            SyntaxNode root = await doc.GetRequiredSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
 
             if (root.FindNode(context.Span, getInnermostNodeForTie: true) is SyntaxNode node &&
                 model.Compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemEnvironment, out var environmentType) &&

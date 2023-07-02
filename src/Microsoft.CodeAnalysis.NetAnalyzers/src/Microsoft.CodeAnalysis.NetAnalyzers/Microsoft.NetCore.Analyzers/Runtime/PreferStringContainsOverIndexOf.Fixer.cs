@@ -1,10 +1,11 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Immutable;
 using System.Composition;
 using System.Threading;
 using System.Threading.Tasks;
+using Analyzer.Utilities;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
@@ -24,13 +25,13 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         {
             Document doc = context.Document;
             CancellationToken cancellationToken = context.CancellationToken;
-            SyntaxNode root = await doc.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
+            SyntaxNode root = await doc.GetRequiredSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
             if (root.FindNode(context.Span) is not SyntaxNode expression)
             {
                 return;
             }
 
-            SemanticModel semanticModel = await doc.GetSemanticModelAsync(cancellationToken).ConfigureAwait(false);
+            SemanticModel semanticModel = await doc.GetRequiredSemanticModelAsync(cancellationToken).ConfigureAwait(false);
             var operation = semanticModel.GetOperation(expression, cancellationToken);
 
             // Not offering a code-fix for the variable declaration case
@@ -61,7 +62,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     return;
             }
 
-            var instanceOperation = invocationOperation.Instance;
+            var instanceOperation = invocationOperation.Instance!;
 
             context.RegisterCodeFix(
                 CodeAction.Create(
@@ -71,7 +72,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 context.Diagnostics);
             return;
 
-            async Task<Document?> ReplaceBinaryOperationWithContains(Document document, SyntaxNode syntaxNode, ImmutableArray<IArgumentOperation> indexOfMethodArguments, IBinaryOperation binaryOperation, CancellationToken cancellationToken)
+            async Task<Document> ReplaceBinaryOperationWithContains(Document document, SyntaxNode syntaxNode, ImmutableArray<IArgumentOperation> indexOfMethodArguments, IBinaryOperation binaryOperation, CancellationToken cancellationToken)
             {
                 DocumentEditor editor = await DocumentEditor.CreateAsync(document, cancellationToken).ConfigureAwait(false);
                 SyntaxGenerator generator = editor.Generator;
@@ -81,7 +82,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 if (numberOfArguments == 1)
                 {
                     var firstArgument = indexOfMethodArguments[0];
-                    if (firstArgument.Parameter.Type.SpecialType == SpecialType.System_Char)
+                    if (firstArgument.Parameter?.Type.SpecialType == SpecialType.System_Char)
                     {
                         containsInvocation = generator.InvocationExpression(containsExpression, firstArgument.Syntax);
                     }
@@ -95,7 +96,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 else
                 {
                     int stringOrCharArgumentIndex, ordinalArgumentIndex;
-                    if (indexOfMethodArguments[0].Value.Type.SpecialType is SpecialType.System_String or SpecialType.System_Char)
+                    if (indexOfMethodArguments[0].Value.Type?.SpecialType is SpecialType.System_String or SpecialType.System_Char)
                     {
                         stringOrCharArgumentIndex = 0;
                         ordinalArgumentIndex = 1;
@@ -119,7 +120,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     }
                 }
 
-                SyntaxNode newIfCondition = (int)otherOperation.ConstantValue.Value != -1 ?
+                SyntaxNode newIfCondition = (int)otherOperation.ConstantValue.Value! != -1 ?
                                             containsInvocation :
                                             generator.LogicalNotExpression(containsInvocation);
                 newIfCondition = newIfCondition.WithTriviaFrom(binaryOperation.Syntax);

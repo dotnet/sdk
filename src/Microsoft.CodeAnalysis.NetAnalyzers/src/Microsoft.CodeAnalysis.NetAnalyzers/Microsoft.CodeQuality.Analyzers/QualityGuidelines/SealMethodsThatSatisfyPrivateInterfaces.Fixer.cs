@@ -1,10 +1,11 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Immutable;
 using System.Composition;
 using System.Threading;
 using System.Threading.Tasks;
+using Analyzer.Utilities;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
@@ -27,7 +28,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
 
         public sealed override async Task RegisterCodeFixesAsync(CodeFixContext context)
         {
-            var model = await context.Document.GetSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
+            var model = await context.Document.GetRequiredSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
             var gen = SyntaxGenerator.GetGenerator(context.Document);
 
             foreach (var dx in context.Diagnostics)
@@ -105,7 +106,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                 _newModifiers = newModifiers;
             }
 
-            protected override async Task<Solution> GetChangedSolutionAsync(CancellationToken cancellationToken)
+            protected override async Task<Solution?> GetChangedSolutionAsync(CancellationToken cancellationToken)
             {
                 var editor = SymbolEditor.Create(this.Solution);
                 await editor.EditAllDeclarationsAsync(this.Symbol, (e, d) =>
@@ -132,7 +133,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                 _newAccessibility = newAccessibilty;
             }
 
-            protected override async Task<Solution> GetChangedSolutionAsync(CancellationToken cancellationToken)
+            protected override async Task<Solution?> GetChangedSolutionAsync(CancellationToken cancellationToken)
             {
                 var editor = SymbolEditor.Create(this.Solution);
                 await editor.EditAllDeclarationsAsync(this.Symbol, (e, d) => e.SetAccessibility(d, _newAccessibility), cancellationToken).ConfigureAwait(false);

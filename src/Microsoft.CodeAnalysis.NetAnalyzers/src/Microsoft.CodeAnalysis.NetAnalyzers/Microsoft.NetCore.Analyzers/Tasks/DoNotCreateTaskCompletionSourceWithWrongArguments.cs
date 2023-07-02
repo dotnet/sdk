@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
 using Analyzer.Utilities;
@@ -67,7 +67,8 @@ namespace Microsoft.NetCore.Analyzers.Tasks
                         }
                     }, OperationKind.ObjectCreation, OperationKind.Invocation);
 
-                    IConversionOperation? MatchInvalidContinuationOptions(IMethodSymbol targetMethod, ImmutableArray<IArgumentOperation> arguments) =>
+                    IConversionOperation? MatchInvalidContinuationOptions(IMethodSymbol? targetMethod, ImmutableArray<IArgumentOperation> arguments) =>
+                        targetMethod != null &&
                         (targetMethod.ContainingType.OriginalDefinition.Equals(tcsGenericType) || (tcsType != null && targetMethod.ContainingType.OriginalDefinition.Equals(tcsType))) &&
                         targetMethod.Parameters.Length == 1 &&
                         targetMethod.Parameters[0].Type.SpecialType == SpecialType.System_Object &&

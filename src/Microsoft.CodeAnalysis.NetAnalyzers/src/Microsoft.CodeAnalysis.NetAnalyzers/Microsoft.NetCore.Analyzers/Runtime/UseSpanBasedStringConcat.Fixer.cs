@@ -37,9 +37,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             var document = context.Document;
             var diagnostic = context.Diagnostics.First();
             var cancellationToken = context.CancellationToken;
-            var model = await document.GetSemanticModelAsync(cancellationToken).ConfigureAwait(false);
+            var model = await document.GetRequiredSemanticModelAsync(cancellationToken).ConfigureAwait(false);
             var compilation = model.Compilation;
-            SyntaxNode root = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
+            SyntaxNode root = await document.GetRequiredSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
 
             if (!RequiredSymbols.TryGetSymbols(compilation, out var symbols))
                 return;
@@ -135,9 +135,12 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 return generator.Argument(asSpanInvocationSyntax);
             }
             //  Character literals become string literals.
-            else if (value.Type.SpecialType == SpecialType.System_Char && value is ILiteralOperation literalOperation && literalOperation.ConstantValue.HasValue)
+            else if (value.Type?.SpecialType == SpecialType.System_Char &&
+                     value is ILiteralOperation literalOperation &&
+                     literalOperation.ConstantValue.HasValue &&
+                     literalOperation.ConstantValue.Value is { } literalValue)
             {
-                var stringLiteral = generator.LiteralExpression(literalOperation.ConstantValue.Value.ToString()).WithTriviaFrom(literalOperation.Syntax);
+                var stringLiteral = generator.LiteralExpression(literalValue.ToString()).WithTriviaFrom(literalOperation.Syntax);
                 return generator.Argument(stringLiteral);
             }
             else

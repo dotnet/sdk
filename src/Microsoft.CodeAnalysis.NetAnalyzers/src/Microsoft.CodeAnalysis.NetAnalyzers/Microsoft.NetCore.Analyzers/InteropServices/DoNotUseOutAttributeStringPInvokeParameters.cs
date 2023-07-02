@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
 using Analyzer.Utilities;
@@ -49,7 +49,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
             var methodSymbol = (IMethodSymbol)context.Symbol;
 
             // Only check P/Invokes
-            DllImportData dllImportData = methodSymbol.GetDllImportData();
+            DllImportData? dllImportData = methodSymbol.GetDllImportData();
             if (dllImportData == null)
             {
                 return;

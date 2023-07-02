@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -170,7 +170,9 @@ namespace Microsoft.NetCore.Analyzers.Security
                     hasReturnStatement = true;
 
                     // Check if the value being returned is a compile time constant 'true'
-                    if (!constantValue.HasValue || constantValue.Value.Equals(false))
+                    if (!constantValue.HasValue ||
+                        constantValue.Value is not bool value ||
+                        !value)
                     {
                         return false;
                     }
