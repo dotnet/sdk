@@ -5,9 +5,7 @@ using System.Composition;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Analyzer.CSharp.Utilities.Lightup;
 using Analyzer.Utilities;
-using Analyzer.Utilities.Lightup;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
@@ -109,7 +107,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.InteropServices
             SyntaxNode[] defaultMethodBodyStatements,
             bool includeAccessibility)
         {
-            if (!property.SetMethod!.IsInitOnly())
+            if (!property.SetMethod!.IsInitOnly)
             {
                 return generator.WithSetAccessorStatements(declaration, defaultMethodBodyStatements);
             }
@@ -126,7 +124,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.InteropServices
 
             foreach (var accessor in propertyDeclaration.AccessorList!.Accessors)
             {
-                if (accessor.IsKind(SyntaxKindEx.InitAccessorDeclaration))
+                if (accessor.IsKind(SyntaxKind.InitAccessorDeclaration))
                 {
                     oldInitAccessor = accessor;
                     break;
@@ -140,10 +138,10 @@ namespace Microsoft.NetCore.CSharp.Analyzers.InteropServices
 
             return propertyDeclaration.WithAccessorList(propertyDeclaration.AccessorList!.AddAccessors(
                 SyntaxFactory.AccessorDeclaration(
-                        SyntaxKindEx.InitAccessorDeclaration,
+                        SyntaxKind.InitAccessorDeclaration,
                         setAccessor.AttributeLists,
                         setAccessor.Modifiers,
-                        SyntaxFactory.Token(SyntaxKindEx.InitKeyword),
+                        SyntaxFactory.Token(SyntaxKind.InitKeyword),
                         setAccessor.Body,
                         setAccessor.ExpressionBody,
                         setAccessor.SemicolonToken)));
