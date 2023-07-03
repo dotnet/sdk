@@ -4,6 +4,7 @@ using System;
 using System.Composition;
 using System.Threading;
 using System.Threading.Tasks;
+using Analyzer.Utilities;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
@@ -49,7 +50,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
         {
             if (identifier?.Parent?.FirstAncestorOrSelf<InvocationExpressionSyntax>() is InvocationExpressionSyntax invokeParent)
             {
-                SemanticModel model = await document.GetSemanticModelAsync(cancellationToken).ConfigureAwait(false);
+                SemanticModel model = await document.GetRequiredSemanticModelAsync(cancellationToken).ConfigureAwait(false);
                 if (model.GetSymbolInfo((IdentifierNameSyntax)identifier!, cancellationToken).Symbol is IMethodSymbol methodSymbol && CanAddStringComparison(methodSymbol, model))
                 {
                     // append a new StringComparison.Ordinal argument

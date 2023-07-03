@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
 using System.Linq;
@@ -105,7 +105,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
 
             // If this is default(T) or new ValueType(), it's the default.
             if (value is IDefaultValueOperation ||
-                (type.IsValueType && value is IObjectCreationOperation oco && oco.Arguments.IsEmpty && oco.Initializer is null && oco.Constructor.IsImplicitlyDeclared))
+                (type.IsValueType && value is IObjectCreationOperation oco && oco.Arguments.IsEmpty && oco.Initializer is null && oco.Constructor?.IsImplicitlyDeclared == true))
             {
                 return !IsNullSuppressed(value);
             }

@@ -59,7 +59,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
                         // If no argument, return
                         // If argument is passed as a params array but isn't itself an array, return
-                        if (argumentOperation is null || (argumentOperation.Parameter.IsParams && arrayCreationOperation.IsImplicit))
+                        if (argumentOperation?.Parameter is null || (argumentOperation.Parameter.IsParams && arrayCreationOperation.IsImplicit))
                         {
                             return;
                         }
@@ -103,24 +103,25 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     }
 
                     // Must be literal array
-                    if (arrayCreationOperation.Initializer is { } initializer &&
+                    if (arrayCreationOperation.Initializer is not { } initializer ||
                         initializer.ElementValues.Any(x => x is not ILiteralOperation))
                     {
                         return;
                     }
 
                     string? paramName = null;
-                    if (argumentOperation is not null)
+                    if (argumentOperation?.Parameter is not null)
                     {
                         if (IsInitializingStaticOrReadOnlyFieldOrProperty(argumentOperation))
                         {
                             return;
                         }
 
-                        ITypeSymbol originalDefinition = argumentOperation.Parameter.Type.OriginalDefinition;
+                        ITypeSymbol? originalDefinition = argumentOperation.Parameter?.Type.OriginalDefinition;
 
                         // Can't be a ReadOnlySpan, as those are already optimized
-                        if (SymbolEqualityComparer.Default.Equals(readonlySpanType, originalDefinition))
+                        if (originalDefinition == null ||
+                            SymbolEqualityComparer.Default.Equals(readonlySpanType, originalDefinition))
                         {
                             return;
                         }
@@ -131,7 +132,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
                         // Parameter shouldn't have same containing type as the context, to prevent naming ambiguity
                         // Ignore parameter name if we're inside a lambda function
-                        if (!isDirectlyInsideLambda && !argumentOperation.Parameter.ContainingType.Equals(context.ContainingSymbol.ContainingType))
+                        if (!isDirectlyInsideLambda && !argumentOperation.Parameter!.ContainingType.Equals(context.ContainingSymbol.ContainingType))
                         {
                             paramName = argumentOperation.Parameter.Name;
                         }

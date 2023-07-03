@@ -123,7 +123,7 @@ public class Test
     [{|#3:SupportedOSPlatform(""watchOs7.1.0.2"")|}] // Version '7.1.0.2' is not valid for platform 'watchOs'. Use a version with 2-3 parts for this platform.
     public static void InvalidVersion2() { }
 
-    [{|#4:UnsupportedOSPlatform(""browser1.0."")|}] // Version '1.0.' is not valid for platform 'browser'. Do not use versions for this platform.
+    [{|#4:UnsupportedOSPlatform(""linux1.0."")|}] // Version '1.0.' is not valid for platform 'linux'. Do not use versions for this platform.
     public static void InvalidVersion3() { }
 }";
             await VerifyAnalyzerCsAsync(csSource,
@@ -131,7 +131,7 @@ public class Test
                 VerifyCS.Diagnostic(UseValidPlatformString.UnknownPlatform).WithLocation(1).WithArguments("watch"),
                 VerifyCS.Diagnostic(UseValidPlatformString.InvalidVersion).WithLocation(2).WithArguments("7", "windows", "-4"),
                 VerifyCS.Diagnostic(UseValidPlatformString.InvalidVersion).WithLocation(3).WithArguments("7.1.0.2", "watchOs", "-3"),
-                VerifyCS.Diagnostic(UseValidPlatformString.NoVersion).WithLocation(4).WithArguments("1.0.", "browser"));
+                VerifyCS.Diagnostic(UseValidPlatformString.NoVersion).WithLocation(4).WithArguments("1.0.", "linux"));
         }
 
         [Fact]
@@ -157,7 +157,7 @@ Public Class Test
     Public Shared Sub InvalidVersion2()
     End Sub
 
-    <[|UnsupportedOSPlatform(""browser1.0."")|]>
+    <[|UnsupportedOSPlatform(""linux1.0."")|]>
     Public Shared Sub InvalidVersion3()
     End Sub
 End Class";
@@ -413,7 +413,7 @@ public class Test
     [{|#0:SupportedOSPlatform(""MacOS1.2.3.4"")|}] // Version '1.2.3.4' is not valid for platform 'MacOS'. Use a version with 2-3 parts for this platform.
     [SupportedOSPlatform(""Osx2.3"")]
     [SupportedOSPlatform(""Linux"")]
-    [[|SupportedOSPlatform(""Browser4.3"")|]] // Browser should not have a version
+    [[|SupportedOSPlatform(""Linux4.3"")|]] // Linux should not have a version
     public void SupportedOSPlatformMac4PartsInvalid() { }
 
     [SupportedOSPlatform(""MacOS1.2"")]

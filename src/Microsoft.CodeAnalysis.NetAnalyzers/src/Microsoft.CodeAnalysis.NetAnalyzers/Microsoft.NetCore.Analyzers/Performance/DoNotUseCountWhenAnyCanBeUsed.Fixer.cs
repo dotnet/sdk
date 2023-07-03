@@ -5,6 +5,7 @@ using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
+using Analyzer.Utilities;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
@@ -52,7 +53,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
         /// <returns>A <see cref="Task" /> that represents the asynchronous operation.</returns>
         public sealed override async Task RegisterCodeFixesAsync(CodeFixContext context)
         {
-            var root = await context.Document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
+            var root = await context.Document.GetRequiredSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
             var node = root.FindNode(context.Span);
             var properties = context.Diagnostics[0].Properties;
             var shouldNegateKey = properties.ContainsKey(UseCountProperlyAnalyzer.ShouldNegateKey);
@@ -61,7 +62,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
 
             if (node is object &&
                 properties.TryGetValue(UseCountProperlyAnalyzer.OperationKey, out var operation) &&
-                this.TryGetFixer(node, operation, isAsync, out var expression, out var arguments))
+                this.TryGetFixer(node, operation!, isAsync, out var expression, out var arguments))
             {
                 context.RegisterCodeFix(
                     new DoNotUseCountWhenAnyCanBeUsedCodeAction(isAsync, context.Document, node, expression, arguments, shouldNegateKey),

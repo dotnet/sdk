@@ -86,7 +86,7 @@ namespace Microsoft.NetFramework.Analyzers
                     }
                     else if (IsAttributeClass(a, this.AcceptVerbsAttributeSymbol))
                     {
-                        if (a.AttributeConstructor.Parameters.Length == 1)
+                        if (a.AttributeConstructor?.Parameters.Length == 1)
                         {
                             ITypeSymbol parameterType = a.AttributeConstructor.Parameters[0].Type;
                             if (a.AttributeConstructor.Parameters[0].IsParams
@@ -114,7 +114,7 @@ namespace Microsoft.NetFramework.Analyzers
                             {
                                 // The [AcceptVerbs(HttpVerbs.Delete)] case.
 
-                                int i = (int)a.ConstructorArguments[0].Value;
+                                int i = (int)a.ConstructorArguments[0].Value!;
                                 verbs |= (MvcHttpVerbs)i;
 
                                 continue;

@@ -5,7 +5,6 @@ using System.Collections.Immutable;
 using System.Linq;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
-using Analyzer.Utilities.Lightup;
 using Analyzer.Utilities.PooledObjects;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
@@ -154,7 +153,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                         publicOrInternalColl.ExtractNonPrivate(coll);
 
                         // based on what we've collected, spit out relevant diagnostics for private symbols
-                        Report(context.ReportDiagnostic, coll);
+                        Report(context.ReportDiagnostic, coll, context.Compilation);
                         Collector.ReturnInstance(coll, context.CancellationToken);
                     });
                 }, SymbolKind.NamedType);
@@ -162,7 +161,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 context.RegisterCompilationEndAction(context =>
                 {
                     // based on what we've collected, spit out relevant diagnostics for public or internal symbols
-                    Report(context.ReportDiagnostic, publicOrInternalColl);
+                    Report(context.ReportDiagnostic, publicOrInternalColl, context.Compilation);
                     Collector.ReturnInstance(publicOrInternalColl, context.CancellationToken);
                 });
             });
@@ -171,7 +170,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
         /// <summary>
         /// Given all the accumulated analysis state, generate the diagnostics.
         /// </summary>
-        private static void Report(Action<Diagnostic> reportDiag, Collector coll)
+        private static void Report(Action<Diagnostic> reportDiag, Collector coll, Compilation compilation)
         {
             // for all eligible fields that are used as the receiver for a virtual call
             foreach (var pair in coll.VirtualDispatchFields)
@@ -257,9 +256,9 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 }
 
                 var toType = types.Single();
-                if (assignedNull || fromType.NullableAnnotation() == Analyzer.Utilities.Lightup.NullableAnnotation.Annotated)
+                if (assignedNull || fromType.NullableAnnotation == NullableAnnotation.Annotated)
                 {
-                    toType = toType.WithNullableAnnotation(Analyzer.Utilities.Lightup.NullableAnnotation.Annotated);
+                    toType = toType.WithNullableAnnotation(NullableAnnotation.Annotated);
                 }
 
                 if (!toType.DerivesFrom(fromType.OriginalDefinition))
@@ -274,22 +273,59 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 {
                     foreach (var t in targets)
                     {
-                        foreach (var m in toType.GetMembers())
+                        var check = toType;
+                        while (check != null)
                         {
-                            if (m.IsImplementationOfAnyExplicitInterfaceMember())
+                            foreach (var m in check.GetMembers())
                             {
-                                if (m.IsImplementationOfInterfaceMember(t))
+                                if (m.IsImplementationOfAnyExplicitInterfaceMember())
                                 {
-                                    return;
+                                    if (m.IsImplementationOfInterfaceMember(t))
+                                    {
+                                        return;
+                                    }
                                 }
                             }
+
+                            check = check.BaseType;
                         }
                     }
                 }
 
-                if (toType.TypeKind != TypeKind.Class)
+                // if the toType or any of its base types introduce methods with the same name as any of the target methods,
+                // we shouldn't recommend to upgrade the type. This is because these new overloads can lead to binding to the
+                // wrong methods in the case of an upgrade from a base type to a derived type.
+                if (targets != null && fromType.TypeKind != TypeKind.Interface)
                 {
-                    // we only deal with classes
+                    using var targetNames = PooledHashSet<string>.GetInstance(targets.Select(t => t.Name));
+                    var check = toType;
+                    while (check != null && check != fromType)
+                    {
+                        foreach (var m in check.GetMembers())
+                        {
+                            if (m is IMethodSymbol ms)
+                            {
+                                if (!ms.IsDefinition || ms.IsOverride)
+                                {
+                                    // those are OK, they won't cause trouble
+                                    continue;
+                                }
+
+                                if (targetNames.Contains(ms.Name))
+                                {
+                                    // OK, we found a match, so we're giving up on this potential upgrade
+                                    return;
+                                }
+                            }
+                        }
+
+                        check = check.BaseType;
+                    }
+                }
+
+                if (toType.TypeKind is not TypeKind.Class and not TypeKind.Array)
+                {
+                    // we only deal with classes or arrays
                     return;
                 }
 
@@ -311,7 +347,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     return;
                 }
 
-                if (!toType.GetResultantVisibility().IsAtLeastAsVisibleAs(affectedSymbol.GetResultantVisibility()))
+                if (!HasEquivalentOrGreaterVisibilityToSymbol(compilation, toType, affectedSymbol))
                 {
                     // the suggested type must have equal or greater visibility than the affected symbol.
                     return;
@@ -321,6 +357,37 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 var toTypeName = GetTypeName(toType);
                 var diagnostic = affectedSymbol.CreateDiagnostic(desc, affectedSymbol.Name, fromTypeName, toTypeName);
                 reportDiag(diagnostic);
+            }
+
+            // ensures that the type can be referenced from any code that can also reference the symbol
+            static bool HasEquivalentOrGreaterVisibilityToSymbol(Compilation compilation, ITypeSymbol type, ISymbol affectedSymbol)
+            {
+                var container = affectedSymbol.ContainingType;
+                while (container != null)
+                {
+                    if (!compilation.IsSymbolAccessibleWithin(affectedSymbol, container))
+                    {
+                        // the affected symbol is no longer visible, so we've passed the gauntlet
+                        return true;
+                    }
+
+                    if (!compilation.IsSymbolAccessibleWithin(type, container))
+                    {
+                        // if the type can't be reached here, we can't proceed
+                        return false;
+                    }
+
+                    container = container.ContainingType;
+                }
+
+                if (!compilation.IsSymbolAccessibleWithin(affectedSymbol, affectedSymbol.ContainingAssembly))
+                {
+                    // if the affected symbol is not visible at the assembly level, we're done
+                    return true;
+                }
+
+                // final check
+                return compilation.IsSymbolAccessibleWithin(type, affectedSymbol.ContainingAssembly);
             }
 
             bool CanUpgrade(IMethodSymbol methodSym) => !coll.MethodsAssignedToDelegate.ContainsKey(methodSym);

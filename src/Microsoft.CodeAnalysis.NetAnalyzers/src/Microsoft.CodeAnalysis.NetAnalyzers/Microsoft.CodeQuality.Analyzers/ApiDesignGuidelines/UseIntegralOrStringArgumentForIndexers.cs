@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
@@ -92,7 +92,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
             if (paramType.TypeKind == TypeKind.Enum)
             {
-                paramType = ((INamedTypeSymbol)paramType).EnumUnderlyingType;
+                paramType = ((INamedTypeSymbol)paramType).EnumUnderlyingType!;
             }
 
             if (s_allowedSpecialTypes.Contains(paramType.SpecialType) || allowedTypes.Contains(paramType))

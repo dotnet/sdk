@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -150,7 +150,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                                 {
                                     var argumentOperation = (IArgumentOperation)operationAnalysisContext.Operation;
 
-                                    if (argumentOperation.Parameter.Type.Equals(cookieOptionsTypeSymbol))
+                                    if (argumentOperation.Parameter?.Type.Equals(cookieOptionsTypeSymbol) == true)
                                     {
                                         lock (rootOperationsNeedingAnalysis)
                                         {

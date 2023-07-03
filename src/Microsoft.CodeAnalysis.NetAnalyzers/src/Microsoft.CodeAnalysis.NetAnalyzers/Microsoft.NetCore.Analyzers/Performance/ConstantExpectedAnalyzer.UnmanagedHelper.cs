@@ -109,7 +109,8 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 {
                     if (!IsValidMinMax(attributeData, typeMin, typeMax, out _, out _, out ErrorKind errorFlags))
                     {
-                        diagnostics = diagnosticHelper.GetError(errorFlags, parameterSymbol, attributeData.ApplicationSyntaxReference.GetSyntax(), typeMin.ToString(), typeMax.ToString());
+                        var syntax = attributeData.ApplicationSyntaxReference?.GetSyntax() ?? parameterSymbol.DeclaringSyntaxReferences[0].GetSyntax();
+                        diagnostics = diagnosticHelper.GetError(errorFlags, parameterSymbol, syntax, typeMin.ToString(), typeMax.ToString());
                         return false;
                     }
 
@@ -199,7 +200,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     return false;
                 }
 
-                public override bool ValidateValue(IArgumentOperation argument, Optional<object> constant, [NotNullWhen(false)] out Diagnostic? validationDiagnostics)
+                public override bool ValidateValue(IArgumentOperation argument, Optional<object?> constant, [NotNullWhen(false)] out Diagnostic? validationDiagnostics)
                 {
                     if (!ValidateConstant(argument, constant, out validationDiagnostics))
                     {

@@ -97,7 +97,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                             }
 
                             // Also consider all method calls to check for Async-suffixed alternatives.
-                            var semanticModel = context.Operation.SemanticModel;
+                            var semanticModel = context.Operation.SemanticModel!;
 
                             if (!methodSymbol.Name.EndsWith(MandatoryAsyncSuffix, StringComparison.Ordinal) &&
                                 !HasAsyncCompatibleReturnType(methodSymbol, syncBlockingTypes))

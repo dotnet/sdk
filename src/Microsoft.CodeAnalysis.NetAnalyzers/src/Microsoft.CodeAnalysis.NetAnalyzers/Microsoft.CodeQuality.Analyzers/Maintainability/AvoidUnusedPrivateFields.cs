@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Concurrent;
 using System.Collections.Immutable;
@@ -57,16 +57,15 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                             // Fields of types marked with StructLayoutAttribute with LayoutKind.Sequential should never be flagged as unused as their removal can change the runtime behavior.
                             if (structLayoutAttribute != null && field.ContainingType != null)
                             {
-                                foreach (var attribute in field.ContainingType.GetAttributes())
+                                foreach (var attribute in field.ContainingType.GetAttributes(structLayoutAttribute))
                                 {
-                                    if (structLayoutAttribute.Equals(attribute.AttributeClass.OriginalDefinition) &&
-                                        attribute.ConstructorArguments.Length == 1)
+                                    if (attribute.ConstructorArguments.Length == 1)
                                     {
                                         var argument = attribute.ConstructorArguments[0];
                                         if (argument.Type != null)
                                         {
                                             SpecialType specialType = argument.Type.TypeKind == TypeKind.Enum ?
-                                                ((INamedTypeSymbol)argument.Type).EnumUnderlyingType.SpecialType :
+                                                ((INamedTypeSymbol)argument.Type).EnumUnderlyingType!.SpecialType :
                                                 argument.Type.SpecialType;
 
                                             if (DiagnosticHelpers.TryConvertToUInt64(argument.Value, specialType, out ulong convertedLayoutKindValue) &&
@@ -82,15 +81,10 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                             if (field.DeclaredAccessibility == Accessibility.Private && !referencedPrivateFields.ContainsKey(field))
                             {
                                 // Fields with certain special attributes should never be considered unused.
-                                if (!specialAttributes.IsEmpty)
+                                if (!specialAttributes.IsEmpty &&
+                                    field.HasAnyAttribute(specialAttributes))
                                 {
-                                    foreach (var attribute in field.GetAttributes())
-                                    {
-                                        if (specialAttributes.Contains(attribute.AttributeClass.OriginalDefinition))
-                                        {
-                                            return;
-                                        }
-                                    }
+                                    return;
                                 }
 
                                 maybeUnreferencedPrivateFields.TryAdd(field, default);

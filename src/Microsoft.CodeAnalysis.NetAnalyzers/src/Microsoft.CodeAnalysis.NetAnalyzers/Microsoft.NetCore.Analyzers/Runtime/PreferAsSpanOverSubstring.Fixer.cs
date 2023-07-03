@@ -5,6 +5,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
@@ -30,8 +31,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         {
             var document = context.Document;
             var token = context.CancellationToken;
-            SyntaxNode root = await document.GetSyntaxRootAsync(token).ConfigureAwait(false);
-            SemanticModel model = await document.GetSemanticModelAsync(token).ConfigureAwait(false);
+            SyntaxNode root = await document.GetRequiredSyntaxRootAsync(token).ConfigureAwait(false);
+            SemanticModel model = await document.GetRequiredSemanticModelAsync(token).ConfigureAwait(false);
             var compilation = model.Compilation;
 
             if (!RequiredSymbols.TryGetSymbols(compilation, out RequiredSymbols symbols) ||
@@ -60,7 +61,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 foreach (var argument in reportedInvocation.Arguments)
                 {
                     IOperation value = argument.Value.WalkDownConversion(c => c.IsImplicit);
-                    IParameterSymbol newParameter = spanBasedOverload.Parameters[argument.Parameter.Ordinal];
+                    IParameterSymbol newParameter = spanBasedOverload.Parameters[argument.Parameter!.Ordinal];
 
                     //  Convert Substring invocations to equivalent AsSpan invocations.
                     if (symbols.IsAnySubstringInvocation(value) && SymbolEqualityComparer.Default.Equals(newParameter.Type, symbols.ReadOnlySpanOfCharType))
@@ -94,7 +95,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
         private static bool IsMemoryExtensionsInScope(in RequiredSymbols symbols, IInvocationOperation invocation)
         {
-            var model = invocation.SemanticModel;
+            var model = invocation.SemanticModel!;
             int position = invocation.Syntax.SpanStart;
             const string name = nameof(MemoryExtensions);
 

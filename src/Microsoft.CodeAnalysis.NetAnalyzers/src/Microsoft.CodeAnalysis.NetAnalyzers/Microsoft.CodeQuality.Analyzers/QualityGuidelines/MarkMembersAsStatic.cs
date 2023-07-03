@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using Analyzer.Utilities;
@@ -138,7 +137,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                             if (methodSymbol.IsAccessorMethod())
                             {
                                 accessorCandidates.Add(methodSymbol, context.CancellationToken);
-                                propertyOrEventCandidates.Add(methodSymbol.AssociatedSymbol, context.CancellationToken);
+                                propertyOrEventCandidates.Add(methodSymbol.AssociatedSymbol!, context.CancellationToken);
                             }
                             else if (methodSymbol.IsExternallyVisible())
                             {
@@ -370,17 +369,17 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                 return false;
             }
 
-            var allAttributes = new List<AttributeData>();
-
             while (symbol != null)
             {
-                allAttributes.AddRange(symbol.GetAttributes());
+                if (symbol.HasAttribute(obsoleteAttributeType))
+                    return true;
+
                 symbol = symbol is IMethodSymbol method && method.AssociatedSymbol != null
                     ? method.AssociatedSymbol :
                     symbol.ContainingSymbol;
             }
 
-            return allAttributes.Any(attribute => attribute.AttributeClass.Equals(obsoleteAttributeType));
+            return false;
         }
     }
 }

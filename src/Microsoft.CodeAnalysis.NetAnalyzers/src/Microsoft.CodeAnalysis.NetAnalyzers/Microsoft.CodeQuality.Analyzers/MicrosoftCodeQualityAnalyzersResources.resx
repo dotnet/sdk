@@ -1018,7 +1018,7 @@
     <value>Use literals where appropriate</value>
   </data>
   <data name="UseLiteralsWhereAppropriateDescription" xml:space="preserve">
-    <value>A field is declared static and read-only (Shared and ReadOnly in Visual Basic), and is initialized by using a value that is computable at compile time. Because the value that is assigned to the targeted field is computable at compile time, change the declaration to a const (Const in Visual Basic) field so that the value is computed at compile time instead of at run?time.</value>
+    <value>A field is declared static and read-only (Shared and ReadOnly in Visual Basic), and is initialized by using a value that is computable at compile time. Because the value that is assigned to the targeted field is computable at compile time, change the declaration to a const (Const in Visual Basic) field so that the value is computed at compile time instead of at runtime.</value>
   </data>
   <data name="UseLiteralsWhereAppropriateMessageDefault" xml:space="preserve">
     <value>Field '{0}' is declared as 'readonly' but is initialized with a constant value. Mark this field as 'const' instead.</value>

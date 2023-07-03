@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
 using System.Linq;
@@ -153,7 +153,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                         return;
                     }
 
-                    if (invocationExpression.SemanticModel.GetSymbolInfo(invocationExpression.Arguments.Single().Value.Syntax, analysisContext.CancellationToken).Symbol is not IParameterSymbol parameterSymbol || !parameterSymbol.IsThis)
+                    if (invocationExpression.SemanticModel!.GetSymbolInfo(invocationExpression.Arguments.Single().Value.Syntax, analysisContext.CancellationToken).Symbol is not IParameterSymbol parameterSymbol || !parameterSymbol.IsThis)
                     {
                         analysisContext.ReportDiagnostic(invocationExpression.Syntax.CreateDiagnostic(
                             NotPassedThisRule,

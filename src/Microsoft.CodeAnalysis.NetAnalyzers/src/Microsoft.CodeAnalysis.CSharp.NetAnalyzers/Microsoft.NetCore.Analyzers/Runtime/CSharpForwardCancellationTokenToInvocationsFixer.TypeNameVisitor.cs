@@ -3,13 +3,11 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using Analyzer.Utilities.Lightup;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Simplification;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
-using NullableAnnotation = Analyzer.Utilities.Lightup.NullableAnnotation;
 
 namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
 {
@@ -19,7 +17,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
         {
             public static TypeSyntax GetTypeSyntaxForSymbol(INamespaceOrTypeSymbol symbol)
             {
-                return symbol.Accept(new TypeNameVisitor()).WithAdditionalAnnotations(Simplifier.Annotation);
+                return symbol.Accept(new TypeNameVisitor())!.WithAdditionalAnnotations(Simplifier.Annotation);
             }
 
             public override TypeSyntax DefaultVisit(ISymbol symbol)
@@ -78,7 +76,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
                     }
                 }
 
-                if (symbol.NullableAnnotation() == NullableAnnotation.Annotated &&
+                if (symbol.NullableAnnotation == NullableAnnotation.Annotated &&
                     !symbol.IsValueType)
                 {
                     typeSyntax = AddInformationTo(NullableType(typeSyntax));
@@ -111,7 +109,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
             public override TypeSyntax VisitTypeParameter(ITypeParameterSymbol symbol)
             {
                 TypeSyntax typeSyntax = AddInformationTo(ToIdentifierName(symbol.Name));
-                if (symbol.NullableAnnotation() == NullableAnnotation.Annotated)
+                if (symbol.NullableAnnotation == NullableAnnotation.Annotated)
                     typeSyntax = AddInformationTo(NullableType(typeSyntax));
 
                 return typeSyntax;
@@ -181,7 +179,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
 
             private static bool TryCreateNativeIntegerType(INamedTypeSymbol symbol, [NotNullWhen(true)] out TypeSyntax? syntax)
             {
-                if (symbol.IsNativeIntegerType())
+                if (symbol.IsNativeIntegerType)
                 {
                     syntax = IdentifierName(symbol.SpecialType == SpecialType.System_IntPtr ? "nint" : "nuint");
                     return true;

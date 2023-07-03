@@ -1753,8 +1753,8 @@
         <note />
       </trans-unit>
       <trans-unit id="UseLiteralsWhereAppropriateDescription">
-        <source>A field is declared static and read-only (Shared and ReadOnly in Visual Basic), and is initialized by using a value that is computable at compile time. Because the value that is assigned to the targeted field is computable at compile time, change the declaration to a const (Const in Visual Basic) field so that the value is computed at compile time instead of at run?time.</source>
-        <target state="translated">フィールドが static および read-only (Visual Basic では Shared および ReadOnly) として宣言され、コンパイル時に計算できる値によって初期化されています。対象フィールドに代入された値はコンパイル時に計算できるため、宣言を const (Visual Basic では Const) フィールドに変更して、値が実行時ではなくコンパイル時にコンピューティングされるようにします。</target>
+        <source>A field is declared static and read-only (Shared and ReadOnly in Visual Basic), and is initialized by using a value that is computable at compile time. Because the value that is assigned to the targeted field is computable at compile time, change the declaration to a const (Const in Visual Basic) field so that the value is computed at compile time instead of at runtime.</source>
+        <target state="new">A field is declared static and read-only (Shared and ReadOnly in Visual Basic), and is initialized by using a value that is computable at compile time. Because the value that is assigned to the targeted field is computable at compile time, change the declaration to a const (Const in Visual Basic) field so that the value is computed at compile time instead of at runtime.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseLiteralsWhereAppropriateMessageDefault">

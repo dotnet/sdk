@@ -92,7 +92,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 {
                     if (delegateType.ContainingAssembly.HasAttribute(_disableRuntimeMarshallingAttribute))
                     {
-                        AnalyzeMethodSignature(_autoLayoutCache, context.ReportDiagnostic, delegateType.DelegateInvokeMethod, ImmutableArray.Create(operation.Syntax.GetLocation()), FeatureUnsupportedWhenRuntimeMarshallingDisabledDelegateUsage);
+                        AnalyzeMethodSignature(_autoLayoutCache, context.ReportDiagnostic, delegateType.DelegateInvokeMethod!, ImmutableArray.Create(operation.Syntax.GetLocation()), FeatureUnsupportedWhenRuntimeMarshallingDisabledDelegateUsage);
                     }
                 }
             }
@@ -139,7 +139,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 {
                     if (delegateType.ContainingAssembly.HasAttribute(_disableRuntimeMarshallingAttribute))
                     {
-                        AnalyzeMethodSignature(_autoLayoutCache, reportDiagnostic, delegateType.DelegateInvokeMethod, signatureSymbol.Locations, FeatureUnsupportedWhenRuntimeMarshallingDisabledDelegateUsage);
+                        AnalyzeMethodSignature(_autoLayoutCache, reportDiagnostic, delegateType.DelegateInvokeMethod!, signatureSymbol.Locations, FeatureUnsupportedWhenRuntimeMarshallingDisabledDelegateUsage);
                     }
                 }
             }

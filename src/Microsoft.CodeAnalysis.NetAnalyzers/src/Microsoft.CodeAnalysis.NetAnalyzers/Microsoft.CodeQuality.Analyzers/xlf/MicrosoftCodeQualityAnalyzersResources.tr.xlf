@@ -1753,8 +1753,8 @@
         <note />
       </trans-unit>
       <trans-unit id="UseLiteralsWhereAppropriateDescription">
-        <source>A field is declared static and read-only (Shared and ReadOnly in Visual Basic), and is initialized by using a value that is computable at compile time. Because the value that is assigned to the targeted field is computable at compile time, change the declaration to a const (Const in Visual Basic) field so that the value is computed at compile time instead of at run?time.</source>
-        <target state="translated">Alanlar statik ve salt okunur (Visual Basic’te Shared ve ReadOnly) olarak bildirilir ve derleme zamanında hesaplanabilen bir değer kullanılarak başlatılır. Hedeflenen alana atanmış değer derleme zamanında hesaplanabildiğinden, bir sabit (Visual Basic’te Const) alanına yönelik bildirimi, değerin çalışma zamanı yerine derleme zamanında hesaplanacağı şekilde değiştirin.</target>
+        <source>A field is declared static and read-only (Shared and ReadOnly in Visual Basic), and is initialized by using a value that is computable at compile time. Because the value that is assigned to the targeted field is computable at compile time, change the declaration to a const (Const in Visual Basic) field so that the value is computed at compile time instead of at runtime.</source>
+        <target state="new">A field is declared static and read-only (Shared and ReadOnly in Visual Basic), and is initialized by using a value that is computable at compile time. Because the value that is assigned to the targeted field is computable at compile time, change the declaration to a const (Const in Visual Basic) field so that the value is computed at compile time instead of at runtime.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseLiteralsWhereAppropriateMessageDefault">

@@ -147,7 +147,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
 
                     if (TryGetVariableInitializerOperation(objectCreationOperation.Parent, out var variableInitializerOperation))
                     {
-                        CaptureVariableDeclaratorOperation(dataCollector, objectCreationOperation.Type, variableInitializerOperation);
+                        CaptureVariableDeclaratorOperation(dataCollector, objectCreationOperation.Type!, variableInitializerOperation);
                     }
                 }
 
@@ -164,7 +164,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     foreach (var (computeHash, type) in dataResult.ComputeHashMap)
                     {
                         ImmutableArray<Location> codefixerLocations;
-                        var localSymbol = ((ILocalReferenceOperation)computeHash.Instance).Local;
+                        var localSymbol = ((ILocalReferenceOperation)computeHash.Instance!).Local;
                         var isToDeleteHashCreation = false;
 
                         if (dataResult.TryGetDeclarationTuple(localSymbol, out var declarationTuple) &&
@@ -223,7 +223,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                         break;
                 }
 
-                void ReportChainedComputeHashInvocationOperation(ITypeSymbol originalHashType)
+                void ReportChainedComputeHashInvocationOperation(ITypeSymbol? originalHashType)
                 {
                     if (!methodHelper.TryGetHashDataMethod(originalHashType, computeType, out var staticHashMethod))
                     {
@@ -236,7 +236,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
             }
         }
 
-        private static bool TryGetVariableInitializerOperation(IOperation symbol, [NotNullWhen(true)] out IVariableInitializerOperation? variableInitializerOperation)
+        private static bool TryGetVariableInitializerOperation([NotNullWhen(true)] IOperation? symbol, [NotNullWhen(true)] out IVariableInitializerOperation? variableInitializerOperation)
         {
             switch (symbol)
             {
@@ -294,13 +294,13 @@ namespace Microsoft.NetCore.Analyzers.Performance
             out int hashCreationLocationIndex)
         {
             ImmutableArray<Location>.Builder builder = ImmutableArray.CreateBuilder<Location>(1 + disposeArray.Length);
-            Location hashCreation = variableInitializerOperation.Syntax.Parent.GetLocation();
+            Location hashCreation = variableInitializerOperation.Syntax.Parent!.GetLocation();
             hashCreationLocationIndex = builder.Count;
             builder.Add(hashCreation);
 
             foreach (var disposeInvocation in disposeArray)
             {
-                var disposeLocation = disposeInvocation.Syntax.Parent.GetLocation();
+                var disposeLocation = disposeInvocation.Syntax.Parent!.GetLocation();
                 builder.Add(disposeLocation);
             }
 
@@ -431,7 +431,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
 
             public bool IsDisposeMethod(IInvocationOperation invocationOperation) => invocationOperation.TargetMethod.Equals(_disposeMethodSymbol, SymbolEqualityComparer.Default);
 
-            public bool TryGetHashDataMethod(ITypeSymbol originalHashType, ComputeType computeType, [NotNullWhen(true)] out IMethodSymbol? staticHashMethod)
+            public bool TryGetHashDataMethod(ITypeSymbol? originalHashType, ComputeType computeType, [NotNullWhen(true)] out IMethodSymbol? staticHashMethod)
             {
                 staticHashMethod = null;
                 return computeType switch
@@ -443,17 +443,23 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 };
             }
 
-            public bool TryGetHashDataMethodByteArg(ITypeSymbol originalHashType, [NotNullWhen(true)] out IMethodSymbol? staticHashMethod) => TryGetHashDataMethodOneArg(originalHashType, _byteArrayParameter, out staticHashMethod);
+            public bool TryGetHashDataMethodByteArg(ITypeSymbol? originalHashType, [NotNullWhen(true)] out IMethodSymbol? staticHashMethod) => TryGetHashDataMethodOneArg(originalHashType, _byteArrayParameter, out staticHashMethod);
 
-            public bool TryGetHashDataMethodSpanArg(ITypeSymbol originalHashType, [NotNullWhen(true)] out IMethodSymbol? staticHashMethod) => TryGetHashDataMethodOneArg(originalHashType, _rosByteParameter, out staticHashMethod);
+            public bool TryGetHashDataMethodSpanArg(ITypeSymbol? originalHashType, [NotNullWhen(true)] out IMethodSymbol? staticHashMethod) => TryGetHashDataMethodOneArg(originalHashType, _rosByteParameter, out staticHashMethod);
 
-            public bool TryGetTryHashDataMethod(ITypeSymbol originalHashType, [NotNullWhen(true)] out IMethodSymbol? staticHashMethod) => TryGetTryHashDataMethod(originalHashType, _rosByteParameter, _spanByteParameter, _intParameter, out staticHashMethod);
+            public bool TryGetTryHashDataMethod(ITypeSymbol? originalHashType, [NotNullWhen(true)] out IMethodSymbol? staticHashMethod) => TryGetTryHashDataMethod(originalHashType, _rosByteParameter, _spanByteParameter, _intParameter, out staticHashMethod);
 
-            private static bool TryGetHashDataMethodOneArg(ITypeSymbol originalHashType, ParameterInfo argOne, [NotNullWhen(true)] out IMethodSymbol? staticHashMethod)
+            private static bool TryGetHashDataMethodOneArg(ITypeSymbol? originalHashType, ParameterInfo argOne, [NotNullWhen(true)] out IMethodSymbol? staticHashMethod)
             {
+                if (originalHashType == null)
+                {
+                    staticHashMethod = null;
+                    return false;
+                }
+
                 if (IsSpecialManagedHashAlgorithms(originalHashType))
                 {
-                    originalHashType = originalHashType.BaseType;
+                    originalHashType = originalHashType.BaseType!;
                 }
 
                 staticHashMethod = originalHashType.GetMembers(HashDataMethodName).OfType<IMethodSymbol>()
@@ -462,15 +468,22 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 return staticHashMethod is not null;
             }
 
-            private static bool TryGetTryHashDataMethod(ITypeSymbol originalHashType,
+            private static bool TryGetTryHashDataMethod(
+                [NotNullWhen(true)] ITypeSymbol? originalHashType,
                 ParameterInfo sourceArgument,
                 ParameterInfo destArgument,
                 ParameterInfo intArgument,
                 [NotNullWhen(true)] out IMethodSymbol? staticHashMethod)
             {
+                if (originalHashType == null)
+                {
+                    staticHashMethod = null;
+                    return false;
+                }
+
                 if (IsSpecialManagedHashAlgorithms(originalHashType))
                 {
-                    originalHashType = originalHashType.BaseType;
+                    originalHashType = originalHashType.BaseType!;
                 }
 
                 staticHashMethod = originalHashType.GetMembers(TryHashDataMethodName).OfType<IMethodSymbol>()
@@ -604,7 +617,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
 
                 foreach (var dispose in _disposeHashSet)
                 {
-                    var local = ((ILocalReferenceOperation)dispose.Instance).Local;
+                    var local = ((ILocalReferenceOperation)dispose.Instance!).Local;
                     if (!workingMap.TryGetValue(local, out var arrayBuilder))
                     {
                         arrayBuilder = ArrayBuilder<IInvocationOperation>.GetInstance();
@@ -652,7 +665,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
 
                 foreach (var (computeHash, _) in _computeHashMap)
                 {
-                    var local = ((ILocalReferenceOperation)computeHash.Instance).Local;
+                    var local = ((ILocalReferenceOperation)computeHash.Instance!).Local;
                     if (!computeHashSymbolCountMap.TryGetValue(local, out var count))
                     {
                         count = 0;

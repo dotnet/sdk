@@ -52,19 +52,18 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         {
             if (!RequiredSymbols.TryGetSymbols(context.Compilation, out var symbols))
                 return;
-            context.RegisterOperationAction(AnalyzeOperation, OperationKind.Binary);
+            context.RegisterOperationAction(AnalyzeOperation, OperationKind.Binary, OperationKind.Invocation);
             return;
 
             //  Local functions
 
             void AnalyzeOperation(OperationAnalysisContext context)
             {
-                var operation = (IBinaryOperation)context.Operation;
                 foreach (var selector in CaseSelectors)
                 {
-                    if (selector(operation, symbols))
+                    if (selector(context.Operation, symbols))
                     {
-                        context.ReportDiagnostic(operation.CreateDiagnostic(Rule));
+                        context.ReportDiagnostic(context.Operation.CreateDiagnostic(Rule));
                         return;
                     }
                 }
@@ -81,7 +80,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 IMethodSymbol? compareStringStringBool,
                 IMethodSymbol? compareStringStringStringComparison,
                 IMethodSymbol? equalsStringString,
-                IMethodSymbol? equalsStringStringStringComparison)
+                IMethodSymbol? equalsStringStringStringComparison,
+                IMethodSymbol intEquals)
             {
                 StringType = stringType;
                 BoolType = boolType;
@@ -91,6 +91,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 CompareStringStringStringComparison = compareStringStringStringComparison;
                 EqualsStringString = equalsStringString;
                 EqualsStringStringStringComparison = equalsStringStringStringComparison;
+                IntEquals = intEquals;
             }
 
             public static bool TryGetSymbols(Compilation compilation, [NotNullWhen(true)] out RequiredSymbols? symbols)
@@ -103,7 +104,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 if (stringType is null || boolType is null)
                     return false;
 
-                if (!compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemStringComparison, out var stringComparisonType))
+                var typeProvider = WellKnownTypeProvider.GetOrCreate(compilation);
+                if (!typeProvider.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemStringComparison, out var stringComparisonType))
                     return false;
 
                 var compareMethods = stringType.GetMembers(nameof(string.Compare))
@@ -118,6 +120,15 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     .Where(x => x.IsStatic);
                 var equalsStringString = equalsMethods.GetFirstOrDefaultMemberWithParameterTypes(stringType, stringType);
                 var equalsStringStringStringComparison = equalsMethods.GetFirstOrDefaultMemberWithParameterTypes(stringType, stringType, stringComparisonType);
+                var intType = typeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemInt32);
+                var intEquals = intType
+                    ?.GetMembers(nameof(int.Equals))
+                    .OfType<IMethodSymbol>()
+                    .FirstOrDefault(m => m.GetParameters() is [var param] && param.Type.Equals(intType, SymbolEqualityComparer.Default));
+                if (intEquals is null)
+                {
+                    return false;
+                }
 
                 // Bail if we do not have at least one complete pair of Compare-Equals methods in the compilation.
                 if ((compareStringString is null || equalsStringString is null) &&
@@ -130,7 +141,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 symbols = new RequiredSymbols(
                     stringType, boolType, stringComparisonType,
                     compareStringString, compareStringStringBool, compareStringStringStringComparison,
-                    equalsStringString, equalsStringStringStringComparison);
+                    equalsStringString, equalsStringStringStringComparison, intEquals);
                 return true;
             }
 
@@ -142,6 +153,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             public IMethodSymbol? CompareStringStringStringComparison { get; }
             public IMethodSymbol? EqualsStringString { get; }
             public IMethodSymbol? EqualsStringStringStringComparison { get; }
+            public IMethodSymbol IntEquals { get; }
         }
 
         /// <summary>
@@ -156,9 +168,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         /// </summary>
         /// <param name="binaryOperation"></param>
         /// <returns></returns>
-        internal static IInvocationOperation? GetInvocationFromEqualityCheckWithLiteralZero(IBinaryOperation binaryOperation)
+        internal static IInvocationOperation? GetInvocationFromEqualityCheckWithLiteralZero(IBinaryOperation? binaryOperation)
         {
-            if (binaryOperation.OperatorKind is not (BinaryOperatorKind.Equals or BinaryOperatorKind.NotEquals))
+            if (binaryOperation?.OperatorKind is not (BinaryOperatorKind.Equals or BinaryOperatorKind.NotEquals))
                 return default;
 
             if (IsLiteralZero(binaryOperation.LeftOperand))
@@ -176,6 +188,21 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             }
         }
 
+        internal static IInvocationOperation? GetInvocationFromEqualsCheckWithLiteralZero(IInvocationOperation? invocation, IMethodSymbol int32Equals)
+        {
+            if (!int32Equals.Equals(invocation?.TargetMethod.OriginalDefinition, SymbolEqualityComparer.Default))
+            {
+                return default;
+            }
+
+            if (invocation!.Arguments.FirstOrDefault()?.Value is ILiteralOperation { ConstantValue.Value: 0 })
+            {
+                return invocation.Instance as IInvocationOperation;
+            }
+
+            return default;
+        }
+
         /// <summary>
         /// Returns true if the specified <see cref="IBinaryOperation"/>:
         /// <list type="bullet">
@@ -184,20 +211,21 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         /// <item>The other operand is any invocation of <see cref="string.Compare(string, string)"/></item>
         /// </list>
         /// </summary>
-        /// <param name="binaryOperation"></param>
+        /// <param name="operation"></param>
         /// <param name="symbols"></param>
         /// <returns></returns>
-        internal static bool IsStringStringCase(IBinaryOperation binaryOperation, RequiredSymbols symbols)
+        internal static bool IsStringStringCase(IOperation operation, RequiredSymbols symbols)
         {
             //  Don't report a diagnostic if either the string.Compare overload or the
-            //  corrasponding string.Equals overload is missing.
+            //  corresponding string.Equals overload is missing.
             if (symbols.CompareStringString is null ||
                 symbols.EqualsStringString is null)
             {
                 return false;
             }
 
-            var invocation = GetInvocationFromEqualityCheckWithLiteralZero(binaryOperation);
+            var invocation = GetInvocationFromEqualityCheckWithLiteralZero(operation as IBinaryOperation)
+                ?? GetInvocationFromEqualsCheckWithLiteralZero(operation as IInvocationOperation, symbols.IntEquals);
 
             return invocation is not null &&
                 invocation.TargetMethod.Equals(symbols.CompareStringString, SymbolEqualityComparer.Default);
@@ -212,20 +240,21 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         /// <item>The <c>ignoreCase</c> argument is a boolean literal</item>
         /// </list>
         /// </summary>
-        /// <param name="binaryOperation"></param>
+        /// <param name="operation"></param>
         /// <param name="symbols"></param>
         /// <returns></returns>
-        internal static bool IsStringStringBoolCase(IBinaryOperation binaryOperation, RequiredSymbols symbols)
+        internal static bool IsStringStringBoolCase(IOperation operation, RequiredSymbols symbols)
         {
             //  Don't report a diagnostic if either the string.Compare overload or the
-            //  corrasponding string.Equals overload is missing.
+            //  corresponding string.Equals overload is missing.
             if (symbols.CompareStringStringBool is null ||
                 symbols.EqualsStringStringStringComparison is null)
             {
                 return false;
             }
 
-            var invocation = GetInvocationFromEqualityCheckWithLiteralZero(binaryOperation);
+            var invocation = GetInvocationFromEqualityCheckWithLiteralZero(operation as IBinaryOperation)
+                ?? GetInvocationFromEqualsCheckWithLiteralZero(operation as IInvocationOperation, symbols.IntEquals);
 
             //  Only report a diagnostic if the 'ignoreCase' argument is a boolean literal.
             return invocation is not null &&
@@ -242,10 +271,10 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         /// <item>The other operand is any invocation of <see cref="string.Compare(string, string, StringComparison)"/></item>
         /// </list>
         /// </summary>
-        /// <param name="binaryOperation"></param>
+        /// <param name="operation"></param>
         /// <param name="symbols"></param>
         /// <returns></returns>
-        internal static bool IsStringStringStringComparisonCase(IBinaryOperation binaryOperation, RequiredSymbols symbols)
+        internal static bool IsStringStringStringComparisonCase(IOperation operation, RequiredSymbols symbols)
         {
             //  Don't report a diagnostic if either the string.Compare overload or the
             //  corrasponding string.Equals overload is missing.
@@ -255,7 +284,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 return false;
             }
 
-            var invocation = GetInvocationFromEqualityCheckWithLiteralZero(binaryOperation);
+            var invocation = GetInvocationFromEqualityCheckWithLiteralZero(operation as IBinaryOperation)
+                ?? GetInvocationFromEqualsCheckWithLiteralZero(operation as IInvocationOperation, symbols.IntEquals);
 
             return invocation is not null &&
                 invocation.TargetMethod.Equals(symbols.CompareStringStringStringComparison, SymbolEqualityComparer.Default);
@@ -263,9 +293,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
         //  No IOperation instances are being stored here.
 #pragma warning disable RS1008 // Avoid storing per-compilation data into the fields of a diagnostic analyzer
-        private static readonly ImmutableArray<Func<IBinaryOperation, RequiredSymbols, bool>> CaseSelectors =
+        private static readonly ImmutableArray<Func<IOperation, RequiredSymbols, bool>> CaseSelectors =
 #pragma warning restore RS1008 // Avoid storing per-compilation data into the fields of a diagnostic analyzer
-            ImmutableArray.Create<Func<IBinaryOperation, RequiredSymbols, bool>>(
+            ImmutableArray.Create<Func<IOperation, RequiredSymbols, bool>>(
                 IsStringStringCase,
                 IsStringStringBoolCase,
                 IsStringStringStringComparisonCase);

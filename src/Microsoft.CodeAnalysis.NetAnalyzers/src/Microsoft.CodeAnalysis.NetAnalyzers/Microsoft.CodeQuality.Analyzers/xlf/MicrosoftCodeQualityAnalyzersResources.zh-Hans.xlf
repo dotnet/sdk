@@ -1753,8 +1753,8 @@
         <note />
       </trans-unit>
       <trans-unit id="UseLiteralsWhereAppropriateDescription">
-        <source>A field is declared static and read-only (Shared and ReadOnly in Visual Basic), and is initialized by using a value that is computable at compile time. Because the value that is assigned to the targeted field is computable at compile time, change the declaration to a const (Const in Visual Basic) field so that the value is computed at compile time instead of at run?time.</source>
-        <target state="translated">字段声明为 static 和 read-only (在 Visual Basic 中为 Shared 和 ReadOnly)，并且使用编译时可计算的值进行初始化。由于分配给目标字段的值在编译时是可计算的，因此将声明更改为常量(在 Visual Basic 中为 Const)，以便在编译时而非运行时计算值。</target>
+        <source>A field is declared static and read-only (Shared and ReadOnly in Visual Basic), and is initialized by using a value that is computable at compile time. Because the value that is assigned to the targeted field is computable at compile time, change the declaration to a const (Const in Visual Basic) field so that the value is computed at compile time instead of at runtime.</source>
+        <target state="translated">字段声明为静态和只读(在 Visual Basic 中为“共享”和“只读”)，并且使用编译时可计算的值进行初始化。由于分配给目标字段的值在编译时是可计算的，因此将声明更改为“常量”(在 Visual Basic 中为“常量”)，以便在编译时而非运行时计算值。</target>
         <note />
       </trans-unit>
       <trans-unit id="UseLiteralsWhereAppropriateMessageDefault">

@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Immutable;
@@ -126,7 +126,7 @@ namespace Microsoft.NetCore.Analyzers.Data
         }
 
         private static void AnalyzeMethodCall(OperationAnalysisContext operationContext,
-                                       IMethodSymbol constructorSymbol,
+                                       IMethodSymbol? constructorSymbol,
                                        ISymbol containingSymbol,
                                        ImmutableArray<IArgumentOperation> arguments,
                                        SyntaxNode invocationSyntax,
@@ -135,6 +135,11 @@ namespace Microsoft.NetCore.Analyzers.Data
                                        INamedTypeSymbol iDbCommandType,
                                        INamedTypeSymbol iDataAdapterType)
         {
+            if (constructorSymbol == null)
+            {
+                return;
+            }
+
             CheckForDbCommandAndDataAdapterImplementation(constructorSymbol.ContainingType, iDbCommandType, iDataAdapterType,
                                                           out var callingDbCommandConstructor,
                                                           out var callingDataAdapterConstructor);
@@ -145,7 +150,7 @@ namespace Microsoft.NetCore.Analyzers.Data
             }
 
             // All parameters the function takes that are explicit strings are potential vulnerabilities
-            var potentials = arguments.WhereAsArray(arg => arg.Parameter.Type.SpecialType == SpecialType.System_String && !arg.Parameter.IsImplicitlyDeclared);
+            var potentials = arguments.WhereAsArray(arg => arg.Parameter?.Type.SpecialType == SpecialType.System_String && !arg.Parameter.IsImplicitlyDeclared);
             if (potentials.IsEmpty)
             {
                 return;
@@ -162,7 +167,7 @@ namespace Microsoft.NetCore.Analyzers.Data
                 // string.
                 if (callingDataAdapterConstructor || potentials.Length > 1)
                 {
-                    if (!IsParameterSymbolVulnerable(argument.Parameter))
+                    if (!IsParameterSymbolVulnerable(argument.Parameter!))
                     {
                         continue;
                     }
@@ -175,7 +180,7 @@ namespace Microsoft.NetCore.Analyzers.Data
 
             foreach (var argument in vulnerableArguments)
             {
-                if (IsParameterSymbolVulnerable(argument.Parameter) && (isInDbCommandConstructor || isInDataAdapterConstructor))
+                if (IsParameterSymbolVulnerable(argument.Parameter!) && (isInDbCommandConstructor || isInDataAdapterConstructor))
                 {
                     //No warnings, as Constructor parameters in derived classes are assumed to be safe since this rule will check the constructor arguments at their call sites.
                     return;
@@ -203,7 +208,8 @@ namespace Microsoft.NetCore.Analyzers.Data
                                                  ISymbol invokedSymbol,
                                                  ISymbol containingMethod)
         {
-            if (operationContext.Options.IsConfiguredToSkipAnalysis(Rule, containingMethod, operationContext.Compilation))
+            if (operationContext.Options.IsConfiguredToSkipAnalysis(Rule, containingMethod, operationContext.Compilation) ||
+                argumentValue.Type == null)
             {
                 return false;
             }

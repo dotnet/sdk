@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
@@ -7,6 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Analyzer.Utilities;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
@@ -51,14 +52,14 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         {
             Document doc = context.Document;
             CancellationToken ct = context.CancellationToken;
-            SyntaxNode root = await doc.GetSyntaxRootAsync(ct).ConfigureAwait(false);
+            SyntaxNode root = await doc.GetRequiredSyntaxRootAsync(ct).ConfigureAwait(false);
 
             if (root.FindNode(context.Span, getInnermostNodeForTie: true) is not SyntaxNode node)
             {
                 return;
             }
 
-            SemanticModel model = await doc.GetSemanticModelAsync(ct).ConfigureAwait(false);
+            SemanticModel model = await doc.GetRequiredSemanticModelAsync(ct).ConfigureAwait(false);
 
             // The analyzer created the diagnostic on the IdentifierNameSyntax, and the parent is the actual invocation
             if (!TryGetInvocation(model, node, ct, out IInvocationOperation? invocation))
@@ -66,24 +67,24 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 return;
             }
 
-            ImmutableDictionary<string, string>? properties = context.Diagnostics[0].Properties;
+            ImmutableDictionary<string, string?>? properties = context.Diagnostics[0].Properties;
 
-            if (!properties.TryGetValue(ForwardCancellationTokenToInvocationsAnalyzer.ShouldFix, out string shouldFix) ||
+            if (!properties.TryGetValue(ForwardCancellationTokenToInvocationsAnalyzer.ShouldFix, out var shouldFix) ||
                 string.IsNullOrEmpty(shouldFix) ||
-                shouldFix.Equals("0", StringComparison.InvariantCultureIgnoreCase))
+                shouldFix!.Equals("0", StringComparison.InvariantCultureIgnoreCase))
             {
                 return;
             }
 
             // The name that identifies the object that is to be passed
-            if (!properties.TryGetValue(ForwardCancellationTokenToInvocationsAnalyzer.ArgumentName, out string argumentName) ||
+            if (!properties.TryGetValue(ForwardCancellationTokenToInvocationsAnalyzer.ArgumentName, out var argumentName) ||
                 string.IsNullOrEmpty(argumentName))
             {
                 return;
             }
 
             // If the invocation requires the token to be passed with a name, use this
-            if (!properties.TryGetValue(ForwardCancellationTokenToInvocationsAnalyzer.ParameterName, out string parameterName))
+            if (!properties.TryGetValue(ForwardCancellationTokenToInvocationsAnalyzer.ParameterName, out var parameterName))
             {
                 return;
             }
@@ -98,7 +99,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             var paramsArrayType = invocation.Arguments.SingleOrDefault(a => a.ArgumentKind == ArgumentKind.ParamArray)?.Value.Type as IArrayTypeSymbol;
             Task<Document> CreateChangedDocumentAsync(CancellationToken _)
             {
-                SyntaxNode newRoot = TryGenerateNewDocumentRoot(doc, root, invocation, argumentName, parameterName, expression, newArguments, paramsArrayType);
+                SyntaxNode newRoot = TryGenerateNewDocumentRoot(doc, root, invocation, argumentName!, parameterName!, expression, newArguments, paramsArrayType);
                 Document newDocument = doc.WithSyntaxRoot(newRoot);
                 return Task.FromResult(newDocument);
             }

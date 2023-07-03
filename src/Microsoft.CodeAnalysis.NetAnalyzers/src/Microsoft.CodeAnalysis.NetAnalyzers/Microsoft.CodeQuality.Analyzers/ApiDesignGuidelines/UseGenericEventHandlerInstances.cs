@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
 using Analyzer.Utilities;
@@ -89,7 +89,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                         var namedType = (INamedTypeSymbol)symbolContext.Symbol;
                         if (symbolContext.Options.MatchesConfiguredVisibility(RuleForDelegates, namedType, symbolContext.Compilation) &&
                             IsDelegateTypeWithInvokeMethod(namedType) &&
-                            namedType.DelegateInvokeMethod.HasEventHandlerSignature(eventArgs))
+                            namedType.DelegateInvokeMethod!.HasEventHandlerSignature(eventArgs))
                         {
                             // CA1003: Remove '{0}' and replace its usage with a generic EventHandler, for e.g. EventHandler&lt;T&gt;, where T is a valid EventArgs
                             symbolContext.ReportDiagnostic(namedType.CreateDiagnostic(RuleForDelegates, namedType.Name));
@@ -121,7 +121,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                                 // CA1003: Change the event '{0}' to use a generic EventHandler by defining the event type explicitly, for e.g. Event MyEvent As EventHandler(Of MyEventArgs).
                                 symbolContext.ReportDiagnostic(eventSymbol.CreateDiagnostic(RuleForEvents2, eventSymbol.Name));
                             }
-                            else if (!eventType.DelegateInvokeMethod.HasEventHandlerSignature(eventArgs))
+                            else if (!eventType.DelegateInvokeMethod!.HasEventHandlerSignature(eventArgs))
                             {
                                 // CA1003: Change the event '{0}' to replace the type '{1}' with a generic EventHandler, for e.g. EventHandler&lt;T&gt;, where T is a valid EventArgs
                                 symbolContext.ReportDiagnostic(eventSymbol.CreateDiagnostic(RuleForEvents, eventSymbol.Name, eventType.ToDisplayString()));

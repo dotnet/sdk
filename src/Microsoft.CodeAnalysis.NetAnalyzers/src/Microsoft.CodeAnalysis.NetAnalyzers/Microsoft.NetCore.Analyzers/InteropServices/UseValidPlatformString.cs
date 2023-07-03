@@ -27,6 +27,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
         private const string IsPrefix = "Is";
         private const string VersionSuffix = "VersionAtLeast";
         private const string macOS = nameof(macOS);
+        private const string Browser = nameof(Browser);
 
         private static readonly LocalizableString s_localizableTitle = CreateLocalizableResourceString(nameof(UseValidPlatformStringTitle));
         private static readonly LocalizableString s_localizableDescription = CreateLocalizableResourceString(nameof(UseValidPlatformStringDescription));
@@ -82,6 +83,12 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 if (knownPlatforms.TryGetValue(macOS, out var versions))
                 {
                     knownPlatforms.Add("OSX", versions);
+                }
+
+                if (knownPlatforms.TryGetValue(Browser, out versions) && versions == 0)
+                {
+                    // Browser is a special case, we don't have a version guard method for it but we need to support a browser1.0 target platform
+                    knownPlatforms[Browser] = 2;
                 }
 
                 context.RegisterOperationAction(context => AnalyzeOperation(context.Operation, context, knownPlatforms), OperationKind.Invocation);
@@ -157,16 +164,12 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
             }
         }
 
-        private static void AnalyzeSymbol<TContext>(Action<TContext, Diagnostic> reportDiagnostic, TContext context, ISymbol symbol, INamedTypeSymbol supportedAttrbute,
+        private static void AnalyzeSymbol<TContext>(Action<TContext, Diagnostic> reportDiagnostic, TContext context, ISymbol symbol, INamedTypeSymbol supportedAttribute,
             INamedTypeSymbol unsupportedAttribute, PooledDictionary<string, int> knownPlatforms, CancellationToken token)
         {
-            foreach (var attribute in symbol.GetAttributes())
+            foreach (var attribute in symbol.GetAttributes(supportedAttribute, unsupportedAttribute))
             {
-                if (supportedAttrbute.Equals(attribute.AttributeClass.OriginalDefinition, SymbolEqualityComparer.Default) ||
-                    unsupportedAttribute.Equals(attribute.AttributeClass.OriginalDefinition, SymbolEqualityComparer.Default))
-                {
-                    AnalyzeAttribute(reportDiagnostic, context, attribute, knownPlatforms, token);
-                }
+                AnalyzeAttribute(reportDiagnostic, context, attribute, knownPlatforms, token);
             }
         }
 

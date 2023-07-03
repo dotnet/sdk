@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using Analyzer.Utilities.Extensions;
-using Analyzer.Utilities.Lightup;
 using Analyzer.Utilities.PooledObjects;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Operations;
@@ -365,9 +364,9 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 return values;
             }
 
-            private void GetValueTypes(List<ITypeSymbol> values, IOperation op)
+            private void GetValueTypes(List<ITypeSymbol> values, IOperation? op)
             {
-                switch (op.Kind)
+                switch (op?.Kind)
                 {
                     case OperationKind.Literal:
                         {
@@ -416,7 +415,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                             if (values.Count > oldCount)
                             {
                                 // erase any potential nullable annotations of the left-hand value since when the value is null, it doesn't get used
-                                values[^1] = values[^1].WithNullableAnnotation(Analyzer.Utilities.Lightup.NullableAnnotation.NotAnnotated);
+                                values[^1] = values[^1].WithNullableAnnotation(CodeAnalysis.NullableAnnotation.NotAnnotated);
                             }
 
                             GetValueTypes(values, colOp.WhenNull);
@@ -643,7 +642,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
             /// </summary>
             private bool CanUpgrade(IPropertySymbol propSym, bool setter)
             {
-                var m = setter ? propSym.SetMethod : propSym.GetMethod;
+                var m = setter ? propSym.SetMethod! : propSym.GetMethod!;
 
                 return _checkVisibility!(m)
                     && !m.IsImplementationOfAnyInterfaceMember()

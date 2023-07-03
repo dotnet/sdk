@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
 using System.Composition;
@@ -27,7 +27,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
         public sealed override async Task RegisterCodeFixesAsync(CodeFixContext context)
         {
-            SyntaxNode root = await context.Document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
+            SyntaxNode root = await context.Document.GetRequiredSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
             // In case the ArrayCreationExpressionSyntax is wrapped in an ArgumentSyntax or some other node with the same span,
             // get the innermost node for ties.
             SyntaxNode nodeToFix = root.FindNode(context.Span, getInnermostNodeForTie: true);
@@ -47,7 +47,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         {
             DocumentEditor editor = await DocumentEditor.CreateAsync(document, cancellationToken).ConfigureAwait(false);
 
-            SemanticModel semanticModel = await document.GetSemanticModelAsync(cancellationToken).ConfigureAwait(false);
+            SemanticModel semanticModel = await document.GetRequiredSemanticModelAsync(cancellationToken).ConfigureAwait(false);
             SyntaxGenerator generator = editor.Generator;
 
             INamedTypeSymbol? arrayTypeSymbol = semanticModel.Compilation.GetSpecialType(SpecialType.System_Array);
@@ -73,7 +73,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             // When Type is null in cases like 'T[] goo = { }', use ConvertedType instead (https://github.com/dotnet/roslyn/issues/23545).
             // When Type isn't null, do not use ConvertedType. For cases like `object[] goo = new string[0]`,
             // we want to return the string type symbol, not the object one.
-            var arrayType = (IArrayTypeSymbol)(typeInfo.Type ?? typeInfo.ConvertedType);
+            var arrayType = (IArrayTypeSymbol?)(typeInfo.Type ?? typeInfo.ConvertedType);
             return arrayType?.ElementType;
         }
 

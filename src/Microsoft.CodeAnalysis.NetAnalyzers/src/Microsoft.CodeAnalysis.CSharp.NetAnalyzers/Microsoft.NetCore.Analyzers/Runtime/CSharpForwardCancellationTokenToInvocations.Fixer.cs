@@ -28,8 +28,8 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
             // then the node.Parent.Parent is the actual invocation (and it will contain the dot as well)
 
             var operation = node.Parent.IsKind(SyntaxKind.MemberBindingExpression)
-                ? model.GetOperation(node.Parent.Parent, ct)
-                : model.GetOperation(node.Parent, ct);
+                ? model.GetOperation(node.Parent.Parent!, ct)
+                : model.GetOperation(node.Parent!, ct);
 
             invocation = operation as IInvocationOperation;
 

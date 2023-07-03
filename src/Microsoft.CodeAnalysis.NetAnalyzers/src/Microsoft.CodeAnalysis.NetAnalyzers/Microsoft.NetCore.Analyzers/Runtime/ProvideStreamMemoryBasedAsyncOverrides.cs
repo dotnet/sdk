@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
 using System.Linq;
@@ -181,7 +181,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         /// <paramref name="overriddenMethod"/> is not overridden.</returns>
         private static ImmutableArray<IMethodSymbol> GetOverridingMethodSymbols(ITypeSymbol derivedType, IMethodSymbol overriddenMethod)
         {
-            RoslynDebug.Assert(derivedType.BaseType.Equals(overriddenMethod.ContainingType, SymbolEqualityComparer.Default));
+            RoslynDebug.Assert(derivedType.BaseType!.Equals(overriddenMethod.ContainingType, SymbolEqualityComparer.Default));
 
             return derivedType.GetMembers(overriddenMethod.Name)
                 .OfType<IMethodSymbol>()

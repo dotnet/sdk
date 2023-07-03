@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Immutable;
@@ -45,7 +45,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             string title = MicrosoftCodeQualityAnalyzersResources.ImplementStandardExceptionConstructorsTitle;
 
             // Get syntax root node
-            SyntaxNode root = await context.Document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
+            SyntaxNode root = await context.Document.GetRequiredSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
 
             // Register fixer - pass in the collection of diagnostics, since there could be more than one for this diagnostic due to more than one of the required constructors missing
             context.RegisterCodeFix(CodeAction.Create(title, c => AddConstructorsAsync(context.Document, context.Diagnostics, root, c), equivalenceKey: title), context.Diagnostics.First());
@@ -55,7 +55,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         {
             DocumentEditor editor = await DocumentEditor.CreateAsync(document, cancellationToken).ConfigureAwait(false);
             SyntaxGenerator generator = editor.Generator;
-            SemanticModel model = await document.GetSemanticModelAsync(cancellationToken).ConfigureAwait(false);
+            SemanticModel model = await document.GetRequiredSemanticModelAsync(cancellationToken).ConfigureAwait(false);
 
             CodeAnalysis.Text.TextSpan diagnosticSpan = diagnostics.First().Location.SourceSpan; // All the diagnostics are reported at the same location -- the name of the declared class -- so it doesn't matter which one we pick
             SyntaxNode node = root.FindNode(diagnosticSpan);

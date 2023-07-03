@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
@@ -61,21 +61,18 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 return;
             }
 
-            ImmutableArray<AttributeData> attributes = context.Symbol.GetAttributes();
-            foreach (AttributeData attribute in attributes)
+            foreach (AttributeData attribute in context.Symbol.GetAttributes(obsoleteAttributeType))
             {
-                if (attribute.AttributeClass.Equals(obsoleteAttributeType))
+                // ObsoleteAttribute has a constructor that takes no params and two
+                // other constructors that take a message as the first param.
+                // If there are no arguments specified or if the message argument is empty
+                // then report a diagnostic.
+                if (attribute.ApplicationSyntaxReference != null &&
+                    (attribute.ConstructorArguments.IsEmpty ||
+                    string.IsNullOrEmpty(attribute.ConstructorArguments.First().Value as string)))
                 {
-                    // ObsoleteAttribute has a constructor that takes no params and two
-                    // other constructors that take a message as the first param.
-                    // If there are no arguments specified or if the message argument is empty
-                    // then report a diagnostic.
-                    if (attribute.ConstructorArguments.IsEmpty ||
-                        string.IsNullOrEmpty(attribute.ConstructorArguments.First().Value as string))
-                    {
-                        SyntaxNode node = attribute.ApplicationSyntaxReference.GetSyntax(context.CancellationToken);
-                        context.ReportDiagnostic(node.CreateDiagnostic(Rule, context.Symbol.Name));
-                    }
+                    SyntaxNode node = attribute.ApplicationSyntaxReference.GetSyntax(context.CancellationToken);
+                    context.ReportDiagnostic(node.CreateDiagnostic(Rule, context.Symbol.Name));
                 }
             }
         }

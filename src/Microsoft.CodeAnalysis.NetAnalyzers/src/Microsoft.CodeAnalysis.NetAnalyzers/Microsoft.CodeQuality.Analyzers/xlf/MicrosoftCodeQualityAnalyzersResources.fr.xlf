@@ -1753,8 +1753,8 @@
         <note />
       </trans-unit>
       <trans-unit id="UseLiteralsWhereAppropriateDescription">
-        <source>A field is declared static and read-only (Shared and ReadOnly in Visual Basic), and is initialized by using a value that is computable at compile time. Because the value that is assigned to the targeted field is computable at compile time, change the declaration to a const (Const in Visual Basic) field so that the value is computed at compile time instead of at run?time.</source>
-        <target state="translated">Un champ est déclaré comme étant static et en lecture seule (Shared et ReadOnly en Visual Basic), et est initialisé à l'aide d'une valeur calculable au moment de la compilation. Dans la mesure où la valeur assignée au champ ciblé est calculable au moment de la compilation, changez la déclaration en la remplaçant par un champ const (Const en Visual Basic) pour que la valeur soit calculée au moment de la compilation et non au moment de l'exécution.</target>
+        <source>A field is declared static and read-only (Shared and ReadOnly in Visual Basic), and is initialized by using a value that is computable at compile time. Because the value that is assigned to the targeted field is computable at compile time, change the declaration to a const (Const in Visual Basic) field so that the value is computed at compile time instead of at runtime.</source>
+        <target state="translated">Un champ est déclaré comme étant static et en lecture seule (Shared et ReadOnly en Visual Basic), et est initialisé à l’aide d’une valeur calculable au moment de la compilation. Dans la mesure où la valeur assignée au champ ciblé est calculable au moment de la compilation, changez la déclaration en la remplaçant par un champ const (Const en Visual Basic) pour que la valeur soit calculée au moment de la compilation et non au moment de l’exécution.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseLiteralsWhereAppropriateMessageDefault">

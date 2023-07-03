@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
 using System.Linq;
@@ -59,12 +59,12 @@ namespace Microsoft.NetCore.Analyzers.Security
                 compilationStartAnalysisContext.RegisterOperationAction(operationAnalysisContext =>
                 {
                     var objectCreationOperation = (IObjectCreationOperation)operationAnalysisContext.Operation;
-                    var typeSymbol = objectCreationOperation.Constructor.ContainingType;
+                    var typeSymbol = objectCreationOperation.Constructor?.ContainingType;
                     var baseTypeSymbol = typeSymbol;
 
                     while (!rfc2898DeriveBytesTypeSymbol.Equals(baseTypeSymbol))
                     {
-                        baseTypeSymbol = baseTypeSymbol.BaseType;
+                        baseTypeSymbol = baseTypeSymbol?.BaseType;
 
                         if (baseTypeSymbol == null)
                         {
@@ -72,7 +72,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                         }
                     }
 
-                    var hashAlgorithmNameArgumentOperation = objectCreationOperation.Arguments.FirstOrDefault(s => s.Parameter.Name == "hashAlgorithm");
+                    var hashAlgorithmNameArgumentOperation = objectCreationOperation.Arguments.FirstOrDefault(s => s.Parameter?.Name == "hashAlgorithm");
 
                     if (hashAlgorithmNameArgumentOperation != null)
                     {
@@ -88,7 +88,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                     operationAnalysisContext.ReportDiagnostic(
                                 objectCreationOperation.CreateDiagnostic(
                                     Rule,
-                                    typeSymbol.Name));
+                                    typeSymbol!.Name));
                 }, OperationKind.ObjectCreation);
             });
         }
