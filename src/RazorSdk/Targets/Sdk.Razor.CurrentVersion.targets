@@ -50,6 +50,7 @@ Copyright (c) .NET Foundation. All rights reserved.
           <_TargetingNET50OrLater>true</_TargetingNET50OrLater>
           <_TargetingNET60OrLater>true</_TargetingNET60OrLater>
           <_TargetingNET70OrLater>true</_TargetingNET70OrLater>
+          <_TargetingNET80OrLater>true</_TargetingNET70OrLater>
           <UseRazorSourceGenerator Condition="'$(Language)' == 'C#' AND '$(UseRazorSourceGenerator)' == '' ">true</UseRazorSourceGenerator>
           <RazorLangVersion Condition="'$(RazorLangVersion)' == '' ">8.0</RazorLangVersion>
         </PropertyGroup>
