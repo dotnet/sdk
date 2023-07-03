@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
+using Test.Utilities;
 using Xunit;
 
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
@@ -43,6 +44,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         public static IEnumerable<object[]> CS_ComparisonLeftOfLiteralTestData { get; } = CS_ComparisonEqualityMethodCallPairs
             .Select(pair => new object[] { $"{pair.CompareCall} == 0", pair.EqualsCall });
 
+        public static IEnumerable<object[]> CS_EqualsComparisonLeftOfLiteralTestData { get; } = CS_ComparisonEqualityMethodCallPairs
+            .Select(pair => new object[] { $"[|{pair.CompareCall}.Equals(0)|]", pair.EqualsCall });
+
         public static IEnumerable<object[]> VB_ComparisonLeftOfLiteralTestData { get; } = VB_ComparisonEqualityMethodPairs
             .Select(pair => new object[] { $"{pair.CompareCall} = 0", pair.EqualsCall });
 
@@ -54,6 +58,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 
         public static IEnumerable<object[]> CS_InvertedComparisonLeftOfLiteralTestData { get; } = CS_ComparisonEqualityMethodCallPairs
             .Select(pair => new object[] { $"{pair.CompareCall} != 0", $"!{pair.EqualsCall}" });
+
+        public static IEnumerable<object[]> CS_InvertedEqualsComparisonLeftOfLiteralTestData { get; } = CS_ComparisonEqualityMethodCallPairs
+            .Select(pair => new object[] { $"![|{pair.CompareCall}.Equals(0)|]", $"!{pair.EqualsCall}" });
 
         public static IEnumerable<object[]> VB_InvertedComparisonLeftOfLiteralTestData { get; } = VB_ComparisonEqualityMethodPairs
             .Select(pair => new object[] { $"{pair.CompareCall} <> 0", $"Not {pair.EqualsCall}" });
@@ -119,6 +126,35 @@ public class Testopolis
 }}";
 
             return VerifyCS.VerifyCodeFixAsync(testCode, VerifyCS.Diagnostic(Rule).WithLocation(0), fixedCode);
+        }
+
+        [Theory, WorkItem(6609, "https://github.com/dotnet/roslyn-analyzers/issues/6609")]
+        [MemberData(nameof(CS_InvertedEqualsComparisonLeftOfLiteralTestData))]
+        [MemberData(nameof(CS_EqualsComparisonLeftOfLiteralTestData))]
+        public Task ComparisonWithEquals(string testExpression, string fixedExpression)
+        {
+            string testCode = $@"
+using System;
+
+public class Testopolis
+{{
+    public bool Huh(string x, string y)
+    {{
+        return {testExpression};
+    }}
+}}";
+            string fixedCode = $@"
+using System;
+
+public class Testopolis
+{{
+    public bool Huh(string x, string y)
+    {{
+        return {fixedExpression};
+    }}
+}}";
+
+            return VerifyCS.VerifyCodeFixAsync(testCode, fixedCode);
         }
 
         [Theory]
