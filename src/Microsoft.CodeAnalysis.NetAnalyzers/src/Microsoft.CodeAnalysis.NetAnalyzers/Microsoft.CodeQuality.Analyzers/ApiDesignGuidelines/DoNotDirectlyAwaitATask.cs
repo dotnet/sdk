@@ -4,7 +4,6 @@ using System.Collections.Immutable;
 using System.Linq;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
-using Analyzer.Utilities.Lightup;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Operations;
@@ -75,7 +74,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                         if (configuredAsyncDisposable is not null)
                         {
                             context.RegisterOperationAction(context => AnalyzeUsingOperation(context, configuredAsyncDisposable), OperationKind.Using);
-                            context.RegisterOperationAction(context => AnalyzeUsingDeclarationOperation(context, configuredAsyncDisposable), OperationKindEx.UsingDeclaration);
+                            context.RegisterOperationAction(context => AnalyzeUsingDeclarationOperation(context, configuredAsyncDisposable), OperationKind.UsingDeclaration);
                         }
                     }
                 });
@@ -97,7 +96,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         private static void AnalyzeUsingOperation(OperationAnalysisContext context, INamedTypeSymbol configuredAsyncDisposable)
         {
             var usingExpression = (IUsingOperation)context.Operation;
-            if (!usingExpression.IsAsynchronous())
+            if (!usingExpression.IsAsynchronous)
             {
                 return;
             }
@@ -121,7 +120,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
         private static void AnalyzeUsingDeclarationOperation(OperationAnalysisContext context, INamedTypeSymbol configuredAsyncDisposable)
         {
-            var usingExpression = IUsingDeclarationOperationWrapper.FromOperation(context.Operation);
+            var usingExpression = (IUsingDeclarationOperation)context.Operation;
             if (!usingExpression.IsAsynchronous)
             {
                 return;
