@@ -48,7 +48,6 @@ partial class CreateNewImage
     /// <summary>
     /// The kind of local registry to use, if any.
     /// </summary>
-    [Required]
     public string LocalRegistry { get; set; }
 
     /// <summary>
@@ -86,6 +85,26 @@ partial class CreateNewImage
     /// Arguments to pass alongside Entrypoint.
     /// </summary>
     public ITaskItem[] EntrypointArgs { get; set; }
+
+    /// <summary>
+    /// Default arguments passed. These can be overridden by the user when the container is created.
+    /// </summary>
+    public ITaskItem[] DefaultArgs { get; set; }
+
+    /// <summary>
+    /// The file name and arguments that launch the application. For example: ['dotnet', 'app.dll'].
+    /// </summary>
+    public ITaskItem[] AppCommand { get; set; }
+
+    /// <summary>
+    /// Arguments always passed to the application.
+    /// </summary>
+    public ITaskItem[] AppCommandArgs { get; set; }
+
+    /// <summary>
+    /// The Dockerfile instruction used for AppCommand. Can be set to 'DefaultArgs', 'Entrypoint', 'None', '' (default).
+    /// </summary>
+    public string AppCommandInstruction { get; set; }
 
     /// <summary>
     /// Ports that the application declares that it will use.
@@ -146,6 +165,10 @@ partial class CreateNewImage
         WorkingDirectory = "";
         Entrypoint = Array.Empty<ITaskItem>();
         EntrypointArgs = Array.Empty<ITaskItem>();
+        DefaultArgs = Array.Empty<ITaskItem>();
+        AppCommand = Array.Empty<ITaskItem>();
+        AppCommandArgs = Array.Empty<ITaskItem>();
+        AppCommandInstruction = "";
         Labels = Array.Empty<ITaskItem>();
         ExposedPorts = Array.Empty<ITaskItem>();
         ContainerEnvironmentVariables = Array.Empty<ITaskItem>();
