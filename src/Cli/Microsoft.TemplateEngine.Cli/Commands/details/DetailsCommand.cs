@@ -17,7 +17,6 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             : base(hostBuilder, "details", SymbolStrings.Command_Details_Description)
         {
             Arguments.Add(NameArgument);
-            // Options.Add(VersionOption);
             Options.Add(InteractiveOption);
             Options.Add(AddSourceOption);
         }
@@ -28,7 +27,8 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             Arity = new ArgumentArity(1, 1)
         };
 
-        //internal static CliOption<string> VersionOption { get; } = new Option<string>(new string[] { "-version", "--version" })
+        // Option disabled until https://github.com/dotnet/templating/issues/6811 is solved
+        //internal static CliOption<string> VersionOption { get; } = new("-version", "--version")
         //{
         //    Description = LocalizableStrings.DetailsCommand_Option_Version,
         //    Arity = new ArgumentArity(1, 1)
