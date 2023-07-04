@@ -205,7 +205,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 isAsync = true;
             }
 
-            IOperation parentOperation = invocationOperation.WalkUpParentheses().WalkUpConversion().Parent;
+            IOperation? parentOperation = invocationOperation.WalkUpParentheses().WalkUpConversion().Parent;
 
             if (isAsync)
             {
@@ -241,18 +241,18 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 return;
             }
 
-            IOperation parentOperation = propertyReferenceOperation.WalkUpParentheses().WalkUpConversion().Parent;
+            IOperation? parentOperation = propertyReferenceOperation.WalkUpParentheses().WalkUpConversion().Parent;
 
             bool shouldReplaceParent = ShouldReplaceParent(ref parentOperation, out string? operationKey, out bool shouldNegateIsEmpty);
 
             if (shouldReplaceParent)
             {
-                DetermineReportForPropertyReference(context, propertyReferenceOperation, parentOperation,
+                DetermineReportForPropertyReference(context, propertyReferenceOperation, parentOperation!,
                     operationKey, shouldNegateIsEmpty, allowedTypesForCA1836);
             }
         }
 
-        private static bool ShouldReplaceParent(ref IOperation parentOperation, out string? operationKey, out bool shouldNegateIsEmpty)
+        private static bool ShouldReplaceParent(ref IOperation? parentOperation, out string? operationKey, out bool shouldNegateIsEmpty)
         {
             bool shouldReplace = false;
             shouldNegateIsEmpty = false;
@@ -305,7 +305,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 return false;
             }
 
-            IOperation constantOperation = isInstance ? parent.Arguments[0].Value : parent.Instance;
+            IOperation? constantOperation = isInstance ? parent.Arguments[0].Value : parent.Instance;
             if (!TryGetZeroOrOneConstant(constantOperation, out int constant) || constant != 0)
             {
                 return false;
@@ -396,7 +396,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
 
         private static void DetermineReportForInvocationAnalysis(
             OperationAnalysisContext context,
-            IInvocationOperation invocationOperation, IOperation parent,
+            IInvocationOperation invocationOperation, IOperation? parent,
             bool shouldReplaceParent, bool isAsync, bool shouldNegateIsEmpty, bool hasPredicate, bool isWithinExpressionTree,
             string methodName, string? operationKey,
             ImmutableHashSet<ITypeSymbol> allowedTypesForCA1836)
@@ -408,8 +408,13 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 {
                     AnalyzeCountInvocationOperation(context, invocationOperation);
                 }
+
+                return;
             }
-            else if (isAsync)
+
+            RoslynDebug.Assert(parent != null);
+
+            if (isAsync)
             {
                 bool shouldNegateAny = !shouldNegateIsEmpty;
                 ReportCA1828(context, shouldNegateAny, operationKey!, methodName, parent);
@@ -452,11 +457,11 @@ namespace Microsoft.NetCore.Analyzers.Performance
         }
 
         private static void DetermineReportForPropertyReference(
-            OperationAnalysisContext context, IOperation operation, IOperation parent,
+            OperationAnalysisContext context, IOperation? operation, IOperation parent,
             string? operationKey, bool shouldNegateIsEmpty,
             ImmutableHashSet<ITypeSymbol> allowedTypesForCA1836)
         {
-            ITypeSymbol? type = operation.GetInstanceType();
+            ITypeSymbol? type = operation?.GetInstanceType();
             if (type != null)
             {
                 if (allowedTypesForCA1836.Contains(type.OriginalDefinition) &&
@@ -646,7 +651,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
             }
         }
 
-        private static bool TryGetZeroOrOneConstant(IOperation operation, out int constant)
+        private static bool TryGetZeroOrOneConstant(IOperation? operation, out int constant)
         {
             constant = default;
 
@@ -684,7 +689,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
             return constant is 0 or 1;
         }
 
-        private static bool IsPropertyGetOfIsEmptyUsingThisInstance(OperationAnalysisContext context, IOperation operation, ISymbol isEmptyPropertySymbol)
+        private static bool IsPropertyGetOfIsEmptyUsingThisInstance(OperationAnalysisContext context, IOperation? operation, ISymbol isEmptyPropertySymbol)
         {
             ISymbol containingSymbol = context.ContainingSymbol;
 
@@ -694,7 +699,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 // Is the getter of the IsEmpty property.
                 methodSymbol.AssociatedSymbol == isEmptyPropertySymbol &&
                 // Is 'this' instance?
-                operation.GetInstanceType() == containingSymbol.ContainingType;
+                operation?.GetInstanceType() == containingSymbol.ContainingType;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Immutable;
@@ -67,6 +67,8 @@ namespace Microsoft.NetCore.Analyzers.Security
 
                         case OperationKind.ObjectCreation:
                             methodSymbol = ((IObjectCreationOperation)operation).Constructor;
+                            if (methodSymbol == null)
+                                return;
                             methodName = methodSymbol.ContainingType.Name;
                             break;
 

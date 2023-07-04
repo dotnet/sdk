@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
 using System.Linq;
@@ -170,8 +170,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     if (!isSerializable)
                     {
                         // CA2237 : Mark serializable types with the SerializableAttribute
-                        if (namedTypeSymbol.BaseType.SpecialType == SpecialType.System_Object ||
-                            IsSerializable(namedTypeSymbol.BaseType))
+                        if (namedTypeSymbol.BaseType is { } baseType &&
+                            (baseType.SpecialType == SpecialType.System_Object ||
+                             IsSerializable(baseType)))
                         {
                             context.ReportDiagnostic(namedTypeSymbol.CreateDiagnostic(RuleCA2237, namedTypeSymbol.Name));
                         }
@@ -180,7 +181,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     {
                         // Look for a serialization constructor.
                         // A serialization constructor takes two params of type SerializationInfo and StreamingContext.
-                        IMethodSymbol serializationCtor = namedTypeSymbol.Constructors
+                        IMethodSymbol? serializationCtor = namedTypeSymbol.Constructors
                             .FirstOrDefault(c => c.IsSerializationConstructor(_serializationInfoTypeSymbol, _streamingContextTypeSymbol));
 
                         // There is no serialization ctor - issue a diagnostic.
@@ -269,7 +270,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 return type.TypeKind switch
                 {
                     TypeKind.Array => IsSerializable(((IArrayTypeSymbol)type).ElementType),
-                    TypeKind.Enum => IsSerializable(((INamedTypeSymbol)type).EnumUnderlyingType),
+                    TypeKind.Enum => IsSerializable(((INamedTypeSymbol)type).EnumUnderlyingType!),
                     TypeKind.TypeParameter or TypeKind.Interface => true,// The concrete type can't be determined statically,
                                                                          // so we assume true to cut down on noise.
                     TypeKind.Class or TypeKind.Struct => ((INamedTypeSymbol)type).IsSerializable,// Check SerializableAttribute or Serializable flag from metadata.

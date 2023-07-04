@@ -65,7 +65,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     return;
                 }
 
-                ISymbol arrayLengthProperty = arrayType
+                ISymbol? arrayLengthProperty = arrayType
                     .GetMembers("Length")
                     .FirstOrDefault(p => p is IPropertySymbol);
 
@@ -90,7 +90,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                         {
                             if (lengthPropertyArgument.Instance.GetReferencedMemberOrLocalOrParameter() == targetArgumentValue.Operand.GetReferencedMemberOrLocalOrParameter())
                             {
-                                IArrayTypeSymbol countArgumentArrayTypeSymbol = (IArrayTypeSymbol)lengthPropertyArgument.Instance.Type;
+                                IArrayTypeSymbol countArgumentArrayTypeSymbol = (IArrayTypeSymbol)lengthPropertyArgument.Instance!.Type!;
                                 if (countArgumentArrayTypeSymbol.ElementType.SpecialType is not SpecialType.System_Byte and
                                 not SpecialType.System_SByte and
                                 not SpecialType.System_Boolean)
@@ -124,12 +124,12 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                             return;
                         }
 
-                        SemanticModel semanticModel = countArgument.SemanticModel;
+                        SemanticModel semanticModel = countArgument.SemanticModel!;
                         CancellationToken cancellationToken = context.CancellationToken;
 
                         ILocalSymbol localArgumentDeclaration = localReferenceOperation.Local;
 
-                        SyntaxReference declaringSyntaxReference = localArgumentDeclaration.DeclaringSyntaxReferences.FirstOrDefault();
+                        SyntaxReference? declaringSyntaxReference = localArgumentDeclaration.DeclaringSyntaxReferences.FirstOrDefault();
                         if (declaringSyntaxReference is null)
                         {
                             return;
@@ -140,7 +140,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                             return;
                         }
 
-                        IVariableInitializerOperation variableInitializer = variableDeclaratorOperation.Initializer;
+                        IVariableInitializerOperation? variableInitializer = variableDeclaratorOperation.Initializer;
 
                         if (variableInitializer is not null && variableInitializer.Value is IPropertyReferenceOperation variableInitializerPropertyReference &&
                         CheckLengthProperty(variableInitializerPropertyReference))

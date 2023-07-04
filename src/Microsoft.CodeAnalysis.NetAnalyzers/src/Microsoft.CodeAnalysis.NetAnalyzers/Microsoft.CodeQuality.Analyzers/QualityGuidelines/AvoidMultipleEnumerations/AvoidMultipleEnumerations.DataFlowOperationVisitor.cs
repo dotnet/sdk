@@ -290,7 +290,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 // We need enqueue the invocation instance (which is 'b') if the target method is a reduced extension method
                 if (IsLinqChainInvocation(invocationOperation, wellKnownSymbolsInfo, out _))
                 {
-                    queue.Enqueue(invocationOperation.Instance);
+                    queue.Enqueue(invocationOperation.Instance!);
                 }
             }
 

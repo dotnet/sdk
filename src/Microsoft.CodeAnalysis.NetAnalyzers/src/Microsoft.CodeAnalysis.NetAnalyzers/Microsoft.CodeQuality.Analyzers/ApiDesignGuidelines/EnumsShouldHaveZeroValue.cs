@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
@@ -141,7 +141,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                         var additionalEnumNoneNames =
                             context.Options.GetStringOptionValue(
                                 EditorConfigOptionNames.AdditionalEnumNoneNames, RuleRename,
-                                namedType.Locations[0].SourceTree, context.Compilation)
+                                namedType.Locations[0].SourceTree!, context.Compilation)
                             .Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries)
                             .ToImmutableArray();
 
@@ -175,7 +175,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
         internal static IEnumerable<IFieldSymbol> GetZeroValuedFields(INamedTypeSymbol enumType)
         {
-            SpecialType specialType = enumType.EnumUnderlyingType.SpecialType;
+            SpecialType specialType = enumType.EnumUnderlyingType!.SpecialType;
             foreach (IFieldSymbol field in enumType.GetMembers().Where(m => m.Kind == SymbolKind.Field).Cast<IFieldSymbol>())
             {
                 if (field.HasConstantValue && IsZeroValueConstant(field.ConstantValue, specialType))
@@ -185,7 +185,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             }
         }
 
-        private static bool IsZeroValueConstant(object value, SpecialType specialType)
+        private static bool IsZeroValueConstant(object? value, SpecialType specialType)
         {
             return DiagnosticHelpers.TryConvertToUInt64(value, specialType, out ulong convertedValue) && convertedValue == 0;
         }

@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
 using System.Linq;
@@ -109,14 +109,14 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                     return;
                 }
 
-                DllImportData dllImportData = methodSymbol.GetDllImportData();
+                DllImportData? dllImportData = methodSymbol.GetDllImportData();
                 if (dllImportData == null)
                 {
                     return;
                 }
 
-                AttributeData dllAttribute = methodSymbol.GetAttributes().FirstOrDefault(attr => attr.AttributeClass.Equals(_dllImportType));
-                Location defaultLocation = dllAttribute == null ? methodSymbol.Locations.FirstOrDefault() : GetAttributeLocation(dllAttribute);
+                AttributeData? dllAttribute = methodSymbol.GetAttribute(_dllImportType);
+                Location? defaultLocation = dllAttribute == null ? methodSymbol.Locations.FirstOrDefault() : GetAttributeLocation(dllAttribute);
 
                 // CA1401 - PInvoke methods should not be visible
                 if (methodSymbol.IsExternallyVisible())
@@ -133,7 +133,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                     {
                         if (parameter.Type.SpecialType == SpecialType.System_String || parameter.Type.Equals(_stringBuilderType))
                         {
-                            AttributeData marshalAsAttribute = parameter.GetAttributes().FirstOrDefault(attr => attr.AttributeClass.Equals(_marshalAsType));
+                            AttributeData? marshalAsAttribute = parameter.GetAttribute(_marshalAsType);
                             CharSet? charSet = marshalAsAttribute == null
                                 ? dllImportData.CharacterSet
                                 : MarshalingToCharSet(GetParameterMarshaling(marshalAsAttribute));
@@ -144,7 +144,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                                 if (marshalAsAttribute != null)
                                 {
                                     // track the diagnostic on the [MarshalAs] attribute
-                                    Location marshalAsLocation = GetAttributeLocation(marshalAsAttribute);
+                                    Location? marshalAsLocation = GetAttributeLocation(marshalAsAttribute);
                                     context.ReportDiagnostic(Diagnostic.Create(RuleCA2101, marshalAsLocation));
                                 }
                                 else if (!appliedCA2101ToMethod)
@@ -171,13 +171,13 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 if (!attributeData.ConstructorArguments.IsEmpty)
                 {
                     TypedConstant argument = attributeData.ConstructorArguments.First();
-                    if (argument.Type.Equals(_unmanagedType))
+                    if (SymbolEqualityComparer.Default.Equals(argument.Type, _unmanagedType))
                     {
-                        return (UnmanagedType)argument.Value;
+                        return (UnmanagedType)argument.Value!;
                     }
-                    else if (argument.Type.SpecialType == SpecialType.System_Int16)
+                    else if (argument.Type?.SpecialType == SpecialType.System_Int16)
                     {
-                        return (UnmanagedType)(short)argument.Value;
+                        return (UnmanagedType)(short)argument.Value!;
                     }
                 }
 
@@ -213,9 +213,9 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
 #pragma warning restore CS0618 // Type or member is obsolete
             }
 
-            private static Location GetAttributeLocation(AttributeData attributeData)
+            private static Location? GetAttributeLocation(AttributeData attributeData)
             {
-                return attributeData.ApplicationSyntaxReference.SyntaxTree.GetLocation(attributeData.ApplicationSyntaxReference.Span);
+                return attributeData.ApplicationSyntaxReference?.SyntaxTree.GetLocation(attributeData.ApplicationSyntaxReference.Span);
             }
         }
     }

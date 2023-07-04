@@ -28,14 +28,15 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         {
             var document = context.Document;
             var token = context.CancellationToken;
-            var semanticModel = await document.GetSemanticModelAsync(token).ConfigureAwait(false);
+            var semanticModel = await document.GetRequiredSemanticModelAsync(token).ConfigureAwait(false);
 
             _ = RequiredSymbols.TryGetSymbols(semanticModel.Compilation, out var symbols);
             RoslynDebug.Assert(symbols is not null);
 
-            var root = await document.GetSyntaxRootAsync(token).ConfigureAwait(false);
+            var root = await document.GetRequiredSyntaxRootAsync(token).ConfigureAwait(false);
             var node = root.FindNode(context.Span, getInnermostNodeForTie: true);
-            if (semanticModel.GetOperation(node, token) is not IBinaryOperation violation)
+            var violation = semanticModel.GetOperation(node, token);
+            if (violation is not (IBinaryOperation or IInvocationOperation))
                 return;
 
             //  Get the replacer that applies to the reported violation.
@@ -50,9 +51,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
             //  Local functions
 
-            async Task<Document> CreateChangedDocument(CancellationToken token)
+            async Task<Document> CreateChangedDocument(CancellationToken cancellationToken)
             {
-                var editor = await DocumentEditor.CreateAsync(document, token).ConfigureAwait(false);
+                var editor = await DocumentEditor.CreateAsync(document, cancellationToken).ConfigureAwait(false);
                 var replacementNode = replacer.CreateReplacementExpression(violation, editor.Generator);
                 editor.ReplaceNode(violation.Syntax, replacementNode);
 
@@ -87,17 +88,17 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             /// </summary>
             /// <param name="violation">The <see cref="IBinaryOperation"/> at the location reported by the analyzer.</param>
             /// <returns>True if the current <see cref="OperationReplacer"/> applies to the specified violation.</returns>
-            public abstract bool IsMatch(IBinaryOperation violation);
+            public abstract bool IsMatch(IOperation violation);
 
             /// <summary>
             /// Creates a replacement node for a violation that the current <see cref="OperationReplacer"/> applies to.
             /// Asserts if the current <see cref="OperationReplacer"/> does not apply to the specified violation.
             /// </summary>
             /// <param name="violation">The <see cref="IBinaryOperation"/> obtained at the location reported by the analyzer.
-            /// <see cref="IsMatch(IBinaryOperation)"/> must return <see langword="true"/> for this operation.</param>
+            /// <see cref="IsMatch(IOperation)"/> must return <see langword="true"/> for this operation.</param>
             /// <param name="generator"></param>
             /// <returns></returns>
-            public abstract SyntaxNode CreateReplacementExpression(IBinaryOperation violation, SyntaxGenerator generator);
+            public abstract SyntaxNode CreateReplacementExpression(IOperation violation, SyntaxGenerator generator);
 
             protected SyntaxNode CreateEqualsMemberAccess(SyntaxGenerator generator)
             {
@@ -105,20 +106,37 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 return generator.MemberAccessExpression(stringTypeExpression, nameof(string.Equals));
             }
 
-            protected static IInvocationOperation GetInvocation(IBinaryOperation violation)
+            protected IInvocationOperation GetInvocation(IOperation violation)
             {
-                var result = UseStringEqualsOverStringCompare.GetInvocationFromEqualityCheckWithLiteralZero(violation);
+                var result = violation switch
+                {
+                    IBinaryOperation b => UseStringEqualsOverStringCompare.GetInvocationFromEqualityCheckWithLiteralZero(b),
+                    IInvocationOperation i => UseStringEqualsOverStringCompare.GetInvocationFromEqualsCheckWithLiteralZero(i, Symbols.IntEquals),
+                    _ => throw new NotSupportedException()
+                };
 
                 RoslynDebug.Assert(result is not null);
 
                 return result;
             }
 
-            protected static SyntaxNode InvertIfNotEquals(SyntaxNode stringEqualsInvocationExpression, IBinaryOperation equalsOrNotEqualsOperation, SyntaxGenerator generator)
+            protected static SyntaxNode InvertIfNotEquals(SyntaxNode stringEqualsInvocationExpression, IOperation equalsOrNotEqualsOperation, SyntaxGenerator generator)
             {
-                return equalsOrNotEqualsOperation.OperatorKind is BinaryOperatorKind.NotEquals ?
-                    generator.LogicalNotExpression(stringEqualsInvocationExpression) :
-                    stringEqualsInvocationExpression;
+                if (equalsOrNotEqualsOperation is IBinaryOperation b)
+                {
+                    return b.OperatorKind is BinaryOperatorKind.NotEquals
+                        ? generator.LogicalNotExpression(stringEqualsInvocationExpression)
+                        : stringEqualsInvocationExpression;
+                }
+
+                if (equalsOrNotEqualsOperation is IInvocationOperation i)
+                {
+                    return i.Instance?.Parent is IUnaryOperation { OperatorKind: UnaryOperatorKind.Not }
+                        ? generator.LogicalNotExpression(stringEqualsInvocationExpression)
+                        : stringEqualsInvocationExpression;
+                }
+
+                throw new NotSupportedException();
             }
         }
 
@@ -131,9 +149,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 : base(symbols)
             { }
 
-            public override bool IsMatch(IBinaryOperation violation) => UseStringEqualsOverStringCompare.IsStringStringCase(violation, Symbols);
+            public override bool IsMatch(IOperation violation) => UseStringEqualsOverStringCompare.IsStringStringCase(violation, Symbols);
 
-            public override SyntaxNode CreateReplacementExpression(IBinaryOperation violation, SyntaxGenerator generator)
+            public override SyntaxNode CreateReplacementExpression(IOperation violation, SyntaxGenerator generator)
             {
                 RoslynDebug.Assert(IsMatch(violation));
 
@@ -155,9 +173,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 : base(symbols)
             { }
 
-            public override bool IsMatch(IBinaryOperation violation) => UseStringEqualsOverStringCompare.IsStringStringBoolCase(violation, Symbols);
+            public override bool IsMatch(IOperation violation) => UseStringEqualsOverStringCompare.IsStringStringBoolCase(violation, Symbols);
 
-            public override SyntaxNode CreateReplacementExpression(IBinaryOperation violation, SyntaxGenerator generator)
+            public override SyntaxNode CreateReplacementExpression(IOperation violation, SyntaxGenerator generator)
             {
                 RoslynDebug.Assert(IsMatch(violation));
 
@@ -171,7 +189,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 //  replace it with a call to 'string.Equals(x, y, StringComparison.CurrentCultureIgnoreCase)'.
                 //  If the violation contains a call to 'string.Compare(x, y, false)' then we
                 //  replace it with a call to 'string.Equals(x, y, StringComparison.CurrentCulture)'. 
-                var stringComparisonEnumMemberName = (bool)ignoreCaseLiteral.ConstantValue.Value ?
+                var stringComparisonEnumMemberName = ignoreCaseLiteral.ConstantValue.Value is true ?
                     nameof(StringComparison.CurrentCultureIgnoreCase) :
                     nameof(StringComparison.CurrentCulture);
                 var stringComparisonMemberAccessSyntax = generator.MemberAccessExpression(
@@ -197,9 +215,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 : base(symbols)
             { }
 
-            public override bool IsMatch(IBinaryOperation violation) => UseStringEqualsOverStringCompare.IsStringStringStringComparisonCase(violation, Symbols);
+            public override bool IsMatch(IOperation violation) => UseStringEqualsOverStringCompare.IsStringStringStringComparisonCase(violation, Symbols);
 
-            public override SyntaxNode CreateReplacementExpression(IBinaryOperation violation, SyntaxGenerator generator)
+            public override SyntaxNode CreateReplacementExpression(IOperation violation, SyntaxGenerator generator)
             {
                 RoslynDebug.Assert(IsMatch(violation));
 

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
@@ -160,27 +161,27 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
             static bool IsConversionFromInt32(IOperation operation) =>
                 operation is IConversionOperation conversion &&
-                conversion.Operand.Type.SpecialType == SpecialType.System_Int32;
+                conversion.Operand.Type?.SpecialType == SpecialType.System_Int32;
 
-            static bool IsIntPtrToOrFromPtrConversion(ITypeSymbol pointerType, ITypeSymbol intPtrType) =>
-                intPtrType.SpecialType == SpecialType.System_IntPtr &&
+            static bool IsIntPtrToOrFromPtrConversion([NotNullWhen(true)] ITypeSymbol? pointerType, [NotNullWhen(true)] ITypeSymbol? intPtrType) =>
+                intPtrType?.SpecialType == SpecialType.System_IntPtr &&
                 pointerType is IPointerTypeSymbol pointer;
 
-            static bool IsLongToIntPtrConversion(ITypeSymbol convertingType, ITypeSymbol operandType) =>
-                convertingType.SpecialType == SpecialType.System_IntPtr &&
-                operandType.SpecialType == SpecialType.System_Int64;
+            static bool IsLongToIntPtrConversion([NotNullWhen(true)] ITypeSymbol? convertingType, [NotNullWhen(true)] ITypeSymbol? operandType) =>
+                convertingType?.SpecialType == SpecialType.System_IntPtr &&
+                operandType?.SpecialType == SpecialType.System_Int64;
 
-            static bool IsIntPtrToIntConversion(ITypeSymbol convertingType, ITypeSymbol operandType) =>
-                convertingType.SpecialType == SpecialType.System_Int32 &&
-                operandType.SpecialType == SpecialType.System_IntPtr;
+            static bool IsIntPtrToIntConversion([NotNullWhen(true)] ITypeSymbol? convertingType, [NotNullWhen(true)] ITypeSymbol? operandType) =>
+                convertingType?.SpecialType == SpecialType.System_Int32 &&
+                operandType?.SpecialType == SpecialType.System_IntPtr;
 
-            static bool IsULongToUIntPtrConversion(ITypeSymbol convertingType, ITypeSymbol operandType) =>
-                convertingType.SpecialType == SpecialType.System_UIntPtr &&
-                operandType.SpecialType == SpecialType.System_UInt64;
+            static bool IsULongToUIntPtrConversion([NotNullWhen(true)] ITypeSymbol? convertingType, [NotNullWhen(true)] ITypeSymbol? operandType) =>
+                convertingType?.SpecialType == SpecialType.System_UIntPtr &&
+                operandType?.SpecialType == SpecialType.System_UInt64;
 
-            static bool IsUIntPtrToUIntConversion(ITypeSymbol convertingType, ITypeSymbol operandType) =>
-                convertingType.SpecialType == SpecialType.System_UInt32 &&
-                operandType.SpecialType == SpecialType.System_UIntPtr;
+            static bool IsUIntPtrToUIntConversion([NotNullWhen(true)] ITypeSymbol? convertingType, [NotNullWhen(true)] ITypeSymbol? operandType) =>
+                convertingType?.SpecialType == SpecialType.System_UInt32 &&
+                operandType?.SpecialType == SpecialType.System_UIntPtr;
         }
     }
 }

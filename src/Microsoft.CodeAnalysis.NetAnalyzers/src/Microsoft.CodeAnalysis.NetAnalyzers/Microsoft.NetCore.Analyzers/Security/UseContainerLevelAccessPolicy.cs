@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
@@ -123,7 +123,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                             if (namespaceSymbol.Equals(nspaceTypeSymbol))
                             {
                                 var argumentOperation = invocationOperation.Arguments.FirstOrDefault(
-                                                            s => s.Parameter.Name == policyIdentifierName &&
+                                                            s => s.Parameter?.Name == policyIdentifierName &&
                                                             s.Parameter.Type.SpecialType == SpecialType.System_String);
 
                                 if (argumentOperation != null)

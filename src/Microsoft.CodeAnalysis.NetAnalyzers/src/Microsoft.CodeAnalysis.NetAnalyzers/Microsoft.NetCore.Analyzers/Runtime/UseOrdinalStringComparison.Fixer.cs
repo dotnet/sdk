@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
 using System.Threading;
@@ -19,7 +19,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         public override async Task RegisterCodeFixesAsync(CodeFixContext context)
         {
             SyntaxGenerator syntaxGenerator = SyntaxGenerator.GetGenerator(context.Document);
-            SyntaxNode root = await context.Document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
+            SyntaxNode root = await context.Document.GetRequiredSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
             SyntaxNode node = root.FindNode(context.Span);
 
             string title = MicrosoftNetCoreAnalyzersResources.UseOrdinalStringComparisonTitle;

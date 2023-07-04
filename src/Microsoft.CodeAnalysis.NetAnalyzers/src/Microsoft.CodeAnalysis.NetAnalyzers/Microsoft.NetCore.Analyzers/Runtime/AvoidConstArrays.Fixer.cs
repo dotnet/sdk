@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Linq;
@@ -34,7 +34,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         public override async Task RegisterCodeFixesAsync(CodeFixContext context)
         {
             Document document = context.Document;
-            SyntaxNode root = await document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
+            SyntaxNode root = await document.GetRequiredSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
             SyntaxNode node = root.FindNode(context.Span);
 
             context.RegisterCodeFix(CodeAction.Create(
@@ -47,11 +47,11 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         private static async Task<Document> ExtractConstArrayAsync(Document document, SyntaxNode root, SyntaxNode node,
             ImmutableDictionary<string, string?> properties, CancellationToken cancellationToken)
         {
-            SemanticModel model = await document.GetSemanticModelAsync(cancellationToken).ConfigureAwait(false);
+            SemanticModel model = await document.GetRequiredSemanticModelAsync(cancellationToken).ConfigureAwait(false);
             DocumentEditor editor = await DocumentEditor.CreateAsync(document, cancellationToken).ConfigureAwait(false);
             SyntaxGenerator generator = editor.Generator;
             IArrayCreationOperation arrayArgument = GetArrayCreationOperation(node, model, cancellationToken, out bool isInvoked);
-            INamedTypeSymbol containingType = model.GetEnclosingSymbol(node.SpanStart, cancellationToken).ContainingType;
+            INamedTypeSymbol containingType = model.GetEnclosingSymbol(node.SpanStart, cancellationToken)!.ContainingType;
 
             // Get a valid member name for the extracted constant
             string newMemberName = GetExtractedMemberName(containingType.MemberNames, properties["paramName"] ?? GetMemberNameFromType(arrayArgument));
@@ -75,7 +75,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 newMember = newMember.FormatForExtraction(methodContext.Syntax);
             }
 
-            ISymbol lastFieldOrPropertySymbol = containingType.GetMembers().LastOrDefault(x => x is IFieldSymbol or IPropertySymbol);
+            ISymbol? lastFieldOrPropertySymbol = containingType.GetMembers().LastOrDefault(x => x is IFieldSymbol or IPropertySymbol);
             if (lastFieldOrPropertySymbol is not null)
             {
                 var span = lastFieldOrPropertySymbol.Locations.First().SourceSpan;
@@ -85,16 +85,16 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     SyntaxNode lastFieldOrPropertyNode = root.FindNode(span);
                     editor.InsertAfter(generator.GetDeclaration(lastFieldOrPropertyNode), newMember);
                 }
-                else
+                else if (methodContext != null)
                 {
                     // Span not found
-                    editor.InsertBefore(methodContext?.Syntax, newMember);
+                    editor.InsertBefore(methodContext.Syntax, newMember);
                 }
             }
-            else
+            else if (methodContext != null)
             {
                 // No fields or properties, insert right before the containing method for simplicity
-                editor.InsertBefore(methodContext?.Syntax, newMember);
+                editor.InsertBefore(methodContext.Syntax, newMember);
             }
 
             // Replace argument with a reference to our new member
@@ -128,7 +128,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             }
             // Otherwise, we'll get the IArrayCreationOperation from the argument node's child
             isInvoked = false;
-            return (IArrayCreationOperation)model.GetOperation(node.ChildNodes().First(), cancellationToken);
+            return (IArrayCreationOperation)model.GetOperation(node.ChildNodes().First(), cancellationToken)!;
         }
 
         private static string GetExtractedMemberName(IEnumerable<string> memberNames, string parameterName)
@@ -158,7 +158,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         private static string GetMemberNameFromType(IArrayCreationOperation arrayCreationOperation)
         {
 #pragma warning disable CA1308 // Normalize strings to uppercase
-            return ((IArrayTypeSymbol)arrayCreationOperation.Type).ElementType.OriginalDefinition.Name.ToLowerInvariant() + "Array";
+            return ((IArrayTypeSymbol)arrayCreationOperation.Type!).ElementType.OriginalDefinition.Name.ToLowerInvariant() + "Array";
 #pragma warning restore CA1308 // Normalize strings to uppercase
         }
 

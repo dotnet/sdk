@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
@@ -215,7 +215,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.CodeMetrics
                 {
                     // Check if we have custom threshold value for the given ruleId and symbolKind.
                     if (ruleIdToThresholdMap != null &&
-                        ruleIdToThresholdMap.TryGetValue(ruleId, out IReadOnlyList<(SymbolKind? symbolKindOpt, uint threshold)> values))
+                        ruleIdToThresholdMap.TryGetValue(ruleId, out IReadOnlyList<(SymbolKind? symbolKindOpt, uint threshold)>? values))
                     {
                         foreach ((SymbolKind? symbolKindOpt, uint threshold) in values)
                         {
@@ -328,7 +328,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.CodeMetrics
             invalidFileDiagnostics = null;
 
             var builder = ImmutableDictionary.CreateBuilder<string, IReadOnlyList<(SymbolKind?, uint)>>(StringComparer.OrdinalIgnoreCase);
-            var lines = additionalText.GetText(cancellationToken).Lines;
+            var lines = additionalText.GetTextOrEmpty(cancellationToken).Lines;
             foreach (var line in lines)
             {
                 var contents = line.ToString().Trim();

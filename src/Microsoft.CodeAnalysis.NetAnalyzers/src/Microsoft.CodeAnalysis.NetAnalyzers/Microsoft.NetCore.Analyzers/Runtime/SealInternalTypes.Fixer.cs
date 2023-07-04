@@ -4,6 +4,7 @@ using System.Collections.Immutable;
 using System.Composition;
 using System.Threading;
 using System.Threading.Tasks;
+using Analyzer.Utilities;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
@@ -45,7 +46,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     return;
 
                 var documentEditor = await solutionEditor.GetDocumentEditorAsync(document.Id, token).ConfigureAwait(false);
-                var root = await document.GetSyntaxRootAsync(token).ConfigureAwait(false);
+                var root = await document.GetRequiredSyntaxRootAsync(token).ConfigureAwait(false);
                 var declaration = root.FindNode(location.SourceSpan);
                 var newModifiers = documentEditor.Generator.GetModifiers(declaration).WithIsSealed(true);
                 var newDeclaration = documentEditor.Generator.WithModifiers(declaration, newModifiers);

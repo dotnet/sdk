@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -63,7 +63,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             }
         }
 
-        private static IEnumerable<IMethodSymbol> GetMethodsHiddenByMethod(IMethodSymbol method, INamedTypeSymbol baseType)
+        private static IEnumerable<IMethodSymbol> GetMethodsHiddenByMethod(IMethodSymbol method, INamedTypeSymbol? baseType)
         {
             while (true)
             {

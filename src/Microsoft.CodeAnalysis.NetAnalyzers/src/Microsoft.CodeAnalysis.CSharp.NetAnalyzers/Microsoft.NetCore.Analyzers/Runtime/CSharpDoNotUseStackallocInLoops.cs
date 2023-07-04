@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
 using Analyzer.Utilities.Extensions;
@@ -24,7 +24,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
             context.RegisterSyntaxNodeAction(ctx =>
             {
                 // We found a stackalloc.  Walk up from it to see if it's in a loop at any level.
-                for (SyntaxNode node = ctx.Node; node != null; node = node.Parent)
+                for (SyntaxNode? node = ctx.Node; node != null; node = node.Parent)
                 {
                     switch (node.Kind())
                     {

@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
 using Analyzer.Utilities;
@@ -59,7 +59,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                         if (property.Name == "EnableHeaderChecking" &&
                             property.ContainingType.Equals(httpRuntimeSectionTypeSymbol) &&
                             simpleAssignmentOperation.Value.ConstantValue.HasValue &&
-                            simpleAssignmentOperation.Value.ConstantValue.Value.Equals(false))
+                            simpleAssignmentOperation.Value.ConstantValue.Value is false)
                         {
                             operationAnalysisContext.ReportDiagnostic(
                                     simpleAssignmentOperation.CreateDiagnostic(

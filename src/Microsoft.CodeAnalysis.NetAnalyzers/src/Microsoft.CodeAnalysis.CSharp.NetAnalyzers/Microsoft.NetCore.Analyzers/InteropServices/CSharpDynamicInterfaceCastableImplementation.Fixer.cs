@@ -5,9 +5,7 @@ using System.Composition;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Analyzer.CSharp.Utilities.Lightup;
 using Analyzer.Utilities;
-using Analyzer.Utilities.Lightup;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
@@ -28,8 +26,8 @@ namespace Microsoft.NetCore.CSharp.Analyzers.InteropServices
             SyntaxGenerator generator,
             CancellationToken cancellationToken)
         {
-            var model = await document.GetSemanticModelAsync(cancellationToken).ConfigureAwait(false);
-            var type = (INamedTypeSymbol)model.GetDeclaredSymbol(declaration, cancellationToken);
+            var model = await document.GetRequiredSemanticModelAsync(cancellationToken).ConfigureAwait(false);
+            var type = (INamedTypeSymbol)model.GetDeclaredSymbol(declaration, cancellationToken)!;
 
             var defaultMethodBodyStatements = generator.DefaultMethodBody(model.Compilation).ToArray();
             var generatedMembers = new List<SyntaxNode>();
@@ -109,12 +107,12 @@ namespace Microsoft.NetCore.CSharp.Analyzers.InteropServices
             SyntaxNode[] defaultMethodBodyStatements,
             bool includeAccessibility)
         {
-            if (!property.SetMethod.IsInitOnly())
+            if (!property.SetMethod!.IsInitOnly)
             {
                 return generator.WithSetAccessorStatements(declaration, defaultMethodBodyStatements);
             }
 
-            var setAccessorAccessibility = includeAccessibility && property.DeclaredAccessibility != property.SetMethod.DeclaredAccessibility
+            var setAccessorAccessibility = includeAccessibility && property.DeclaredAccessibility != property.SetMethod!.DeclaredAccessibility
                 ? property.SetMethod.DeclaredAccessibility
                 : Accessibility.NotApplicable;
 
@@ -124,9 +122,9 @@ namespace Microsoft.NetCore.CSharp.Analyzers.InteropServices
 
             SyntaxNode? oldInitAccessor = null;
 
-            foreach (var accessor in propertyDeclaration.AccessorList.Accessors)
+            foreach (var accessor in propertyDeclaration.AccessorList!.Accessors)
             {
-                if (accessor.IsKind(SyntaxKindEx.InitAccessorDeclaration))
+                if (accessor.IsKind(SyntaxKind.InitAccessorDeclaration))
                 {
                     oldInitAccessor = accessor;
                     break;
@@ -138,12 +136,12 @@ namespace Microsoft.NetCore.CSharp.Analyzers.InteropServices
                 propertyDeclaration = propertyDeclaration.WithAccessorList(propertyDeclaration.AccessorList.RemoveNode(oldInitAccessor, SyntaxRemoveOptions.KeepNoTrivia));
             }
 
-            return propertyDeclaration.WithAccessorList(propertyDeclaration.AccessorList.AddAccessors(
+            return propertyDeclaration.WithAccessorList(propertyDeclaration.AccessorList!.AddAccessors(
                 SyntaxFactory.AccessorDeclaration(
-                        SyntaxKindEx.InitAccessorDeclaration,
+                        SyntaxKind.InitAccessorDeclaration,
                         setAccessor.AttributeLists,
                         setAccessor.Modifiers,
-                        SyntaxFactory.Token(SyntaxKindEx.InitKeyword),
+                        SyntaxFactory.Token(SyntaxKind.InitKeyword),
                         setAccessor.Body,
                         setAccessor.ExpressionBody,
                         setAccessor.SemicolonToken)));

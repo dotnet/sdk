@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Composition;
 using Microsoft.CodeAnalysis;
@@ -17,12 +17,13 @@ namespace Microsoft.CodeQuality.CSharp.Analyzers.QualityGuidelines
     {
         protected override SyntaxNode? GetFieldDeclaration(SyntaxNode syntaxNode)
         {
-            while (syntaxNode is not null and not FieldDeclarationSyntax)
+            SyntaxNode? currentNode = syntaxNode;
+            while (currentNode is not null and not FieldDeclarationSyntax)
             {
-                syntaxNode = syntaxNode.Parent;
+                currentNode = currentNode.Parent;
             }
 
-            var field = (FieldDeclarationSyntax?)syntaxNode;
+            var field = (FieldDeclarationSyntax?)currentNode;
 
             // Multiple declarators are not supported, as one of them may not be constant.
             return field?.Declaration.Variables.Count > 1 ? null : field;

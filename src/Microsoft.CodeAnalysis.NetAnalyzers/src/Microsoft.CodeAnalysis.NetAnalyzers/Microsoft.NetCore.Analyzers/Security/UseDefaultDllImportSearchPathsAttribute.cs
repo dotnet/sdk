@@ -88,7 +88,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                     tree,
                     compilationStartAnalysisContext.Compilation,
                     defaultValue: UnsafeBits);
-                var defaultDllImportSearchPathsAttributeOnAssembly = compilation.Assembly.GetAttributes().FirstOrDefault(o => o.AttributeClass.Equals(defaultDllImportSearchPathsAttributeTypeSymbol));
+                var defaultDllImportSearchPathsAttributeOnAssembly = compilation.Assembly.GetAttribute(defaultDllImportSearchPathsAttributeTypeSymbol);
 
                 // Does not analyze local functions. To analyze local functions, we'll need to use RegisterSyntaxAction.
                 compilationStartAnalysisContext.RegisterSymbolAction(symbolAnalysisContext =>
@@ -104,21 +104,18 @@ namespace Microsoft.NetCore.Analyzers.Security
                         return;
                     }
 
-                    var dllImportAttribute = symbol.GetAttributes().FirstOrDefault(s => s.AttributeClass.Equals(dllImportAttributeTypeSymbol));
-                    var libraryImportAttribute = symbol.GetAttributes().FirstOrDefault(s => s.AttributeClass.Equals(libraryImportAttributeTypeSymbol));
-                    var defaultDllImportSearchPathsAttribute = symbol.GetAttributes().FirstOrDefault(s => s.AttributeClass.Equals(defaultDllImportSearchPathsAttributeTypeSymbol));
+                    var dllImportAttribute = symbol.GetAttribute(dllImportAttributeTypeSymbol);
+                    var libraryImportAttribute = symbol.GetAttribute(libraryImportAttributeTypeSymbol);
+                    var defaultDllImportSearchPathsAttribute = symbol.GetAttribute(defaultDllImportSearchPathsAttributeTypeSymbol);
 
                     if (dllImportAttribute != null || libraryImportAttribute != null)
                     {
                         AttributeData primaryAttribute = libraryImportAttribute ?? dllImportAttribute!;
                         var constructorArguments = primaryAttribute.ConstructorArguments;
 
-                        if (constructorArguments.IsEmpty)
-                        {
-                            return;
-                        }
-
-                        if (Path.IsPathRooted(constructorArguments[0].Value.ToString()))
+                        if (constructorArguments.IsEmpty ||
+                            constructorArguments[0].Value is not { } value ||
+                            Path.IsPathRooted(value.ToString()))
                         {
                             return;
                         }
@@ -127,9 +124,9 @@ namespace Microsoft.NetCore.Analyzers.Security
                         var ruleArgument = symbol.Name;
                         var validatedDefaultDllImportSearchPathsAttribute = defaultDllImportSearchPathsAttribute ?? defaultDllImportSearchPathsAttributeOnAssembly;
 
-                        if (validatedDefaultDllImportSearchPathsAttribute != null)
+                        if (validatedDefaultDllImportSearchPathsAttribute != null &&
+                            validatedDefaultDllImportSearchPathsAttribute.ConstructorArguments.FirstOrDefault().Value is int dllImportSearchPath)
                         {
-                            var dllImportSearchPath = (int)validatedDefaultDllImportSearchPathsAttribute.ConstructorArguments.FirstOrDefault().Value;
                             var validBits = dllImportSearchPath & unsafeDllImportSearchPathBits;
 
                             if (dllImportSearchPath != LegacyBehavior &&

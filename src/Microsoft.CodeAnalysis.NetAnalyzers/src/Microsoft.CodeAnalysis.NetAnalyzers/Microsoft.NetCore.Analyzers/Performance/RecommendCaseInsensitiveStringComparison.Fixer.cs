@@ -35,14 +35,14 @@ namespace Microsoft.NetCore.Analyzers.Performance
 
             Document doc = context.Document;
 
-            SyntaxNode root = await doc.GetSyntaxRootAsync(ct).ConfigureAwait(false);
+            SyntaxNode root = await doc.GetRequiredSyntaxRootAsync(ct).ConfigureAwait(false);
 
             if (root.FindNode(context.Span, getInnermostNodeForTie: true) is not SyntaxNode node)
             {
                 return;
             }
 
-            SemanticModel model = await doc.GetSemanticModelAsync(ct).ConfigureAwait(false);
+            SemanticModel model = await doc.GetRequiredSemanticModelAsync(ct).ConfigureAwait(false);
 
             if (model.GetOperation(node, ct) is not IInvocationOperation invocation)
             {
