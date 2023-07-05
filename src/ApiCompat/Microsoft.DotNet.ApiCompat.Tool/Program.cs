@@ -20,8 +20,7 @@ namespace Microsoft.DotNet.ApiCompat.Tool
             // Important: Keep parameters exposed in sync with the msbuild task frontend.
 
             // Global options
-            CliOption<bool> generateSuppressionFileOption = new("--generate-suppression-file",
-                "If true, generates a compatibility suppression file.");
+            CliOption<bool> generateSuppressionFileOption = new("--generate-suppression-file")
             {
                 Description = "If true, generates a compatibility suppression file.",
                 Recursive = true
