@@ -2,6 +2,7 @@
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.CSharp;
+using Test.Utilities;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetCore.CSharp.Analyzers.Runtime.CSharpDoNotUseStackallocInLoopsAnalyzer,
@@ -302,6 +303,127 @@ class TestClass {
                         {
                             Span<byte> span = {|CA2014:stackalloc byte[1024]|};
                         }
+                    }
+                }"
+            }.RunAsync();
+        }
+
+        [Fact, WorkItem(6723, "https://github.com/dotnet/roslyn-analyzers/issues/6723")]
+        public Task NoDiagnostics_StackallocInLoopInitializer()
+        {
+            return VerifyCS.VerifyAnalyzerAsync(@"
+                using System;
+                public class C
+                {
+                    public static void Foo()
+                    {
+                        for (Span<int> sp1 = stackalloc int[2]; false;) { }
+                    }
+                }");
+        }
+
+        [Fact, WorkItem(6723, "https://github.com/dotnet/roslyn-analyzers/issues/6723")]
+        public Task NoDiagnostics_StackallocInNonFirstVariableOfLoopInitializer()
+        {
+            return VerifyCS.VerifyAnalyzerAsync(@"
+                using System;
+                public class C
+                {
+                    public static void Foo()
+                    {
+                        for (Span<int> span1 = GetSpan(), span2 = stackalloc int[2]; false;) { }
+                    }
+
+                    public static Span<int> GetSpan() => throw null;
+                }");
+        }
+
+        [Fact, WorkItem(6723, "https://github.com/dotnet/roslyn-analyzers/issues/6723")]
+        public Task NoDiagnostics_WrappedStackallocInLoopInitializer()
+        {
+            return new VerifyCS.Test
+            {
+                LanguageVersion = LanguageVersion.CSharp8,
+                TestCode = @"
+                using System;
+                public class C
+                {
+                    public static void Foo()
+                    {
+                        for (Span<int> span = Helper(stackalloc int[2]) ;;) { }
+                    }
+
+                    public static Span<int> Helper(Span<int> span) => throw null;
+                }"
+            }.RunAsync();
+        }
+
+        [Fact, WorkItem(6723, "https://github.com/dotnet/roslyn-analyzers/issues/6723")]
+        public Task Diagnostics_NestedStackallocInLoopInitializer()
+        {
+            return VerifyCS.VerifyAnalyzerAsync(@"
+                using System;
+                public class C
+                {
+                    public static void Foo()
+                    {
+                        for(;;) {
+                            for (Span<int> sp1 = [|stackalloc int[2]|]; false;) { }
+                        }
+                    }
+                }");
+        }
+
+        [Fact, WorkItem(6723, "https://github.com/dotnet/roslyn-analyzers/issues/6723")]
+        public Task Diagnostics_NestedStackallocInNonFirstVariableOfLoopInitializer()
+        {
+            return VerifyCS.VerifyAnalyzerAsync(@"
+                using System;
+                public class C
+                {
+                    public static void Foo()
+                    {
+                        for(;;) {
+                            for (Span<int> span1 = GetSpan(), span2 = [|stackalloc int[2]|]; false;) { }
+                        }
+                    }
+
+                    public static Span<int> GetSpan() => throw null;
+                }");
+        }
+
+        [Fact, WorkItem(6723, "https://github.com/dotnet/roslyn-analyzers/issues/6723")]
+        public Task Diagnostics_StackallocInConditionExpression()
+        {
+            return new VerifyCS.Test
+            {
+                LanguageVersion = LanguageVersion.CSharp8,
+                TestCode = @"
+                using System;
+                public class C
+                {
+                    public static void Foo()
+                    {
+                        for (; [|stackalloc int[2]|].Length == 2;) { }
+                    }
+                }"
+            }.RunAsync();
+        }
+
+        [Fact, WorkItem(6723, "https://github.com/dotnet/roslyn-analyzers/issues/6723")]
+        public Task Diagnostics_StackallocInUpdateExpression()
+        {
+            return new VerifyCS.Test
+            {
+                LanguageVersion = LanguageVersion.CSharp8,
+                TestCode = @"
+                using System;
+                public class C
+                {
+                    public static void Foo()
+                    {
+                        Span<int> span = default;
+		                for (;; [|stackalloc int[2]|].CopyTo(span)) { }
                     }
                 }"
             }.RunAsync();

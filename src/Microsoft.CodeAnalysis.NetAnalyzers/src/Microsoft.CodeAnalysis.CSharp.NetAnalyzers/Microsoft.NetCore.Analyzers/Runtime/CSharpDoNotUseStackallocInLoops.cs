@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
+using System.Linq;
 using Analyzer.Utilities.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -49,7 +50,16 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
 
                         // Look for loops.  We don't bother with ad-hoc loops via gotos as we're
                         // too likely to incur false positives.
+                        // If a stackalloc is in the for loop initializer it is also ok.
                         case SyntaxKind.ForStatement:
+                            var forStatement = (ForStatementSyntax)node;
+                            if (forStatement.Declaration?.Variables.Any(v => v.Initializer?.Value.Contains(ctx.Node) == true) == true)
+                            {
+                                continue;
+                            }
+
+                            goto case SyntaxKind.WhileStatement; // fall through
+
                         case SyntaxKind.WhileStatement:
                         case SyntaxKind.DoStatement:
 
