@@ -56,6 +56,8 @@
       "AssetKind": "Publish",
       "AssetMode": "CurrentProject",
       "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "",
       "AssetTraitName": "JSModule",
       "AssetTraitValue": "JSModuleManifest",
@@ -73,6 +75,8 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
       "RelatedAsset": "",
       "AssetTraitName": "",
       "AssetTraitValue": "",
@@ -90,6 +94,8 @@
       "AssetKind": "All",
       "AssetMode": "All",
       "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "boot",
@@ -107,6 +113,8 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "native",
@@ -124,6 +132,8 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "native",
@@ -141,6 +151,8 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "native",
@@ -158,6 +170,8 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "native",
@@ -175,6 +189,8 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "native",
@@ -192,6 +208,8 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "native",
@@ -209,12 +227,33 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "native",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\icudt_EFIGS.dat"
+    },
+    {
+      "Identity": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\icudt_hybrid.dat",
+      "SourceId": "blazorwasm",
+      "SourceType": "Project",
+      "ContentRoot": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\publish\\wwwroot\\",
+      "BasePath": "/",
+      "RelativePath": "_framework/icudt_hybrid.dat",
+      "AssetKind": "Publish",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "WasmResource",
+      "AssetTraitValue": "native",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\icudt_hybrid.dat"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\icudt_no_CJK.dat",
@@ -226,6 +265,8 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "native",
@@ -243,6 +284,8 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "manifest",
@@ -260,6 +303,8 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\RazorClassLibrary.pdb",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
@@ -277,6 +322,8 @@
       "AssetKind": "All",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\blazor.webassembly.js",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
@@ -294,6 +341,8 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\blazorwasm.pdb",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
@@ -311,6 +360,8 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\dotnet.js",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
@@ -328,6 +379,8 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\dotnet.js",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
@@ -345,6 +398,8 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\dotnet.js",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
@@ -362,6 +417,8 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\dotnet.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
@@ -379,6 +436,8 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\publish.extension.txt",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "br",
@@ -396,6 +455,8 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\publish.extension.txt",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
@@ -413,12 +474,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.AspNetCore.Authorization.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "br",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.AspNetCore.Authorization.wasm.br"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.AspNetCore.Authorization.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.AspNetCore.Authorization.wasm.gz",
@@ -430,12 +493,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.AspNetCore.Authorization.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.AspNetCore.Authorization.wasm.gz"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.AspNetCore.Authorization.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.AspNetCore.Components.Forms.wasm.br",
@@ -447,12 +512,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.AspNetCore.Components.Forms.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "br",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.AspNetCore.Components.Forms.wasm.br"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.AspNetCore.Components.Forms.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.AspNetCore.Components.Forms.wasm.gz",
@@ -464,12 +531,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.AspNetCore.Components.Forms.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.AspNetCore.Components.Forms.wasm.gz"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.AspNetCore.Components.Forms.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.AspNetCore.Components.Web.wasm.br",
@@ -481,12 +550,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.AspNetCore.Components.Web.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "br",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.AspNetCore.Components.Web.wasm.br"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.AspNetCore.Components.Web.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.AspNetCore.Components.Web.wasm.gz",
@@ -498,12 +569,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.AspNetCore.Components.Web.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.AspNetCore.Components.Web.wasm.gz"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.AspNetCore.Components.Web.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.AspNetCore.Components.WebAssembly.wasm.br",
@@ -515,12 +588,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.AspNetCore.Components.WebAssembly.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "br",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.AspNetCore.Components.WebAssembly.wasm.br"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.AspNetCore.Components.WebAssembly.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.AspNetCore.Components.WebAssembly.wasm.gz",
@@ -532,12 +607,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.AspNetCore.Components.WebAssembly.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.AspNetCore.Components.WebAssembly.wasm.gz"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.AspNetCore.Components.WebAssembly.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.AspNetCore.Components.wasm.br",
@@ -549,12 +626,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.AspNetCore.Components.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "br",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.AspNetCore.Components.wasm.br"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.AspNetCore.Components.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.AspNetCore.Components.wasm.gz",
@@ -566,12 +645,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.AspNetCore.Components.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.AspNetCore.Components.wasm.gz"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.AspNetCore.Components.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.AspNetCore.Metadata.wasm.br",
@@ -583,12 +664,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.AspNetCore.Metadata.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "br",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.AspNetCore.Metadata.wasm.br"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.AspNetCore.Metadata.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.AspNetCore.Metadata.wasm.gz",
@@ -600,12 +683,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.AspNetCore.Metadata.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.AspNetCore.Metadata.wasm.gz"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.AspNetCore.Metadata.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Configuration.Abstractions.wasm.br",
@@ -617,12 +702,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.Configuration.Abstractions.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "br",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.Extensions.Configuration.Abstractions.wasm.br"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.Extensions.Configuration.Abstractions.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Configuration.Abstractions.wasm.gz",
@@ -634,12 +721,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.Configuration.Abstractions.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.Extensions.Configuration.Abstractions.wasm.gz"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.Extensions.Configuration.Abstractions.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Configuration.Binder.wasm.br",
@@ -651,12 +740,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.Configuration.Binder.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "br",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.Extensions.Configuration.Binder.wasm.br"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.Extensions.Configuration.Binder.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Configuration.Binder.wasm.gz",
@@ -668,12 +759,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.Configuration.Binder.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.Extensions.Configuration.Binder.wasm.gz"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.Extensions.Configuration.Binder.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Configuration.FileExtensions.wasm.br",
@@ -685,12 +778,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.Configuration.FileExtensions.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "br",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.Extensions.Configuration.FileExtensions.wasm.br"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.Extensions.Configuration.FileExtensions.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Configuration.FileExtensions.wasm.gz",
@@ -702,12 +797,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.Configuration.FileExtensions.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.Extensions.Configuration.FileExtensions.wasm.gz"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.Extensions.Configuration.FileExtensions.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Configuration.Json.wasm.br",
@@ -719,12 +816,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.Configuration.Json.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "br",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.Extensions.Configuration.Json.wasm.br"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.Extensions.Configuration.Json.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Configuration.Json.wasm.gz",
@@ -736,12 +835,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.Configuration.Json.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.Extensions.Configuration.Json.wasm.gz"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.Extensions.Configuration.Json.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Configuration.wasm.br",
@@ -753,12 +854,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.Configuration.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "br",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.Extensions.Configuration.wasm.br"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.Extensions.Configuration.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Configuration.wasm.gz",
@@ -770,12 +873,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.Configuration.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.Extensions.Configuration.wasm.gz"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.Extensions.Configuration.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.DependencyInjection.Abstractions.wasm.br",
@@ -787,12 +892,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.DependencyInjection.Abstractions.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "br",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.Extensions.DependencyInjection.Abstractions.wasm.br"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.Extensions.DependencyInjection.Abstractions.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.DependencyInjection.Abstractions.wasm.gz",
@@ -804,12 +911,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.DependencyInjection.Abstractions.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.Extensions.DependencyInjection.Abstractions.wasm.gz"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.Extensions.DependencyInjection.Abstractions.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.DependencyInjection.wasm.br",
@@ -821,12 +930,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.DependencyInjection.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "br",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.Extensions.DependencyInjection.wasm.br"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.Extensions.DependencyInjection.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.DependencyInjection.wasm.gz",
@@ -838,12 +949,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.DependencyInjection.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.Extensions.DependencyInjection.wasm.gz"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.Extensions.DependencyInjection.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.FileProviders.Abstractions.wasm.br",
@@ -855,12 +968,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.FileProviders.Abstractions.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "br",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.Extensions.FileProviders.Abstractions.wasm.br"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.Extensions.FileProviders.Abstractions.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.FileProviders.Abstractions.wasm.gz",
@@ -872,12 +987,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.FileProviders.Abstractions.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.Extensions.FileProviders.Abstractions.wasm.gz"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.Extensions.FileProviders.Abstractions.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.FileProviders.Physical.wasm.br",
@@ -889,12 +1006,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.FileProviders.Physical.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "br",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.Extensions.FileProviders.Physical.wasm.br"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.Extensions.FileProviders.Physical.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.FileProviders.Physical.wasm.gz",
@@ -906,12 +1025,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.FileProviders.Physical.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.Extensions.FileProviders.Physical.wasm.gz"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.Extensions.FileProviders.Physical.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.FileSystemGlobbing.wasm.br",
@@ -923,12 +1044,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.FileSystemGlobbing.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "br",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.Extensions.FileSystemGlobbing.wasm.br"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.Extensions.FileSystemGlobbing.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.FileSystemGlobbing.wasm.gz",
@@ -940,12 +1063,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.FileSystemGlobbing.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.Extensions.FileSystemGlobbing.wasm.gz"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.Extensions.FileSystemGlobbing.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Logging.Abstractions.wasm.br",
@@ -957,12 +1082,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.Logging.Abstractions.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "br",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.Extensions.Logging.Abstractions.wasm.br"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.Extensions.Logging.Abstractions.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Logging.Abstractions.wasm.gz",
@@ -974,12 +1101,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.Logging.Abstractions.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.Extensions.Logging.Abstractions.wasm.gz"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.Extensions.Logging.Abstractions.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Logging.wasm.br",
@@ -991,12 +1120,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.Logging.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "br",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.Extensions.Logging.wasm.br"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.Extensions.Logging.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Logging.wasm.gz",
@@ -1008,12 +1139,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.Logging.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.Extensions.Logging.wasm.gz"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.Extensions.Logging.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Options.wasm.br",
@@ -1025,12 +1158,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.Options.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "br",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.Extensions.Options.wasm.br"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.Extensions.Options.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Options.wasm.gz",
@@ -1042,12 +1177,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.Options.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.Extensions.Options.wasm.gz"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.Extensions.Options.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Primitives.wasm.br",
@@ -1059,12 +1196,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.Primitives.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "br",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.Extensions.Primitives.wasm.br"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.Extensions.Primitives.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Primitives.wasm.gz",
@@ -1076,12 +1215,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.Primitives.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.Extensions.Primitives.wasm.gz"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.Extensions.Primitives.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.JSInterop.WebAssembly.wasm.br",
@@ -1093,12 +1234,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.JSInterop.WebAssembly.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "br",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.JSInterop.WebAssembly.wasm.br"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.JSInterop.WebAssembly.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.JSInterop.WebAssembly.wasm.gz",
@@ -1110,12 +1253,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.JSInterop.WebAssembly.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.JSInterop.WebAssembly.wasm.gz"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.JSInterop.WebAssembly.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.JSInterop.wasm.br",
@@ -1127,12 +1272,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.JSInterop.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "br",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.JSInterop.wasm.br"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.JSInterop.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.JSInterop.wasm.gz",
@@ -1144,12 +1291,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.JSInterop.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.JSInterop.wasm.gz"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.JSInterop.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\RazorClassLibrary.wasm.br",
@@ -1161,12 +1310,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\RazorClassLibrary.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "br",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\RazorClassLibrary.wasm.br"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\RazorClassLibrary.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\RazorClassLibrary.wasm.gz",
@@ -1178,12 +1329,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\RazorClassLibrary.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\RazorClassLibrary.wasm.gz"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\RazorClassLibrary.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Buffers.wasm.br",
@@ -1195,12 +1348,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Buffers.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "br",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Buffers.wasm.br"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Buffers.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Buffers.wasm.gz",
@@ -1212,12 +1367,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Buffers.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Buffers.wasm.gz"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Buffers.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Collections.Concurrent.wasm.br",
@@ -1229,12 +1386,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Collections.Concurrent.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "br",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Collections.Concurrent.wasm.br"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Collections.Concurrent.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Collections.Concurrent.wasm.gz",
@@ -1246,12 +1405,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Collections.Concurrent.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Collections.Concurrent.wasm.gz"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Collections.Concurrent.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Collections.NonGeneric.wasm.br",
@@ -1263,12 +1424,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Collections.NonGeneric.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "br",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Collections.NonGeneric.wasm.br"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Collections.NonGeneric.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Collections.NonGeneric.wasm.gz",
@@ -1280,12 +1443,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Collections.NonGeneric.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Collections.NonGeneric.wasm.gz"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Collections.NonGeneric.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Collections.Specialized.wasm.br",
@@ -1297,12 +1462,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Collections.Specialized.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "br",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Collections.Specialized.wasm.br"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Collections.Specialized.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Collections.Specialized.wasm.gz",
@@ -1314,12 +1481,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Collections.Specialized.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Collections.Specialized.wasm.gz"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Collections.Specialized.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Collections.wasm.br",
@@ -1331,12 +1500,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Collections.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "br",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Collections.wasm.br"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Collections.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Collections.wasm.gz",
@@ -1348,12 +1519,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Collections.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Collections.wasm.gz"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Collections.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.ComponentModel.Annotations.wasm.br",
@@ -1365,12 +1538,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.ComponentModel.Annotations.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "br",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.ComponentModel.Annotations.wasm.br"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.ComponentModel.Annotations.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.ComponentModel.Annotations.wasm.gz",
@@ -1382,12 +1557,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.ComponentModel.Annotations.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.ComponentModel.Annotations.wasm.gz"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.ComponentModel.Annotations.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.ComponentModel.Primitives.wasm.br",
@@ -1399,12 +1576,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.ComponentModel.Primitives.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "br",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.ComponentModel.Primitives.wasm.br"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.ComponentModel.Primitives.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.ComponentModel.Primitives.wasm.gz",
@@ -1416,12 +1595,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.ComponentModel.Primitives.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.ComponentModel.Primitives.wasm.gz"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.ComponentModel.Primitives.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.ComponentModel.TypeConverter.wasm.br",
@@ -1433,12 +1614,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.ComponentModel.TypeConverter.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "br",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.ComponentModel.TypeConverter.wasm.br"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.ComponentModel.TypeConverter.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.ComponentModel.TypeConverter.wasm.gz",
@@ -1450,12 +1633,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.ComponentModel.TypeConverter.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.ComponentModel.TypeConverter.wasm.gz"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.ComponentModel.TypeConverter.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.ComponentModel.wasm.br",
@@ -1467,12 +1652,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.ComponentModel.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "br",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.ComponentModel.wasm.br"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.ComponentModel.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.ComponentModel.wasm.gz",
@@ -1484,12 +1671,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.ComponentModel.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.ComponentModel.wasm.gz"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.ComponentModel.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Console.wasm.br",
@@ -1501,12 +1690,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Console.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "br",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Console.wasm.br"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Console.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Console.wasm.gz",
@@ -1518,12 +1709,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Console.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Console.wasm.gz"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Console.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Diagnostics.Debug.wasm.br",
@@ -1535,12 +1728,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Diagnostics.Debug.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "br",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Diagnostics.Debug.wasm.br"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Diagnostics.Debug.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Diagnostics.Debug.wasm.gz",
@@ -1552,12 +1747,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Diagnostics.Debug.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Diagnostics.Debug.wasm.gz"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Diagnostics.Debug.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Diagnostics.DiagnosticSource.wasm.br",
@@ -1569,12 +1766,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Diagnostics.DiagnosticSource.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "br",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Diagnostics.DiagnosticSource.wasm.br"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Diagnostics.DiagnosticSource.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Diagnostics.DiagnosticSource.wasm.gz",
@@ -1586,12 +1785,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Diagnostics.DiagnosticSource.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Diagnostics.DiagnosticSource.wasm.gz"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Diagnostics.DiagnosticSource.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Diagnostics.Tracing.wasm.br",
@@ -1603,12 +1804,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Diagnostics.Tracing.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "br",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Diagnostics.Tracing.wasm.br"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Diagnostics.Tracing.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Diagnostics.Tracing.wasm.gz",
@@ -1620,12 +1823,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Diagnostics.Tracing.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Diagnostics.Tracing.wasm.gz"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Diagnostics.Tracing.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.IO.FileSystem.Watcher.wasm.br",
@@ -1637,12 +1842,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.IO.FileSystem.Watcher.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "br",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.IO.FileSystem.Watcher.wasm.br"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.IO.FileSystem.Watcher.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.IO.FileSystem.Watcher.wasm.gz",
@@ -1654,12 +1861,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.IO.FileSystem.Watcher.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.IO.FileSystem.Watcher.wasm.gz"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.IO.FileSystem.Watcher.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.IO.Pipelines.wasm.br",
@@ -1671,12 +1880,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.IO.Pipelines.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "br",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.IO.Pipelines.wasm.br"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.IO.Pipelines.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.IO.Pipelines.wasm.gz",
@@ -1688,12 +1899,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.IO.Pipelines.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.IO.Pipelines.wasm.gz"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.IO.Pipelines.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Linq.Expressions.wasm.br",
@@ -1705,12 +1918,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Linq.Expressions.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "br",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Linq.Expressions.wasm.br"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Linq.Expressions.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Linq.Expressions.wasm.gz",
@@ -1722,12 +1937,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Linq.Expressions.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Linq.Expressions.wasm.gz"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Linq.Expressions.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Linq.wasm.br",
@@ -1739,12 +1956,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Linq.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "br",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Linq.wasm.br"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Linq.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Linq.wasm.gz",
@@ -1756,12 +1975,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Linq.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Linq.wasm.gz"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Linq.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Memory.wasm.br",
@@ -1773,12 +1994,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Memory.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "br",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Memory.wasm.br"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Memory.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Memory.wasm.gz",
@@ -1790,12 +2013,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Memory.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Memory.wasm.gz"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Memory.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Net.Http.wasm.br",
@@ -1807,12 +2032,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Net.Http.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "br",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Net.Http.wasm.br"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Net.Http.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Net.Http.wasm.gz",
@@ -1824,12 +2051,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Net.Http.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Net.Http.wasm.gz"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Net.Http.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.ObjectModel.wasm.br",
@@ -1841,12 +2070,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.ObjectModel.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "br",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.ObjectModel.wasm.br"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.ObjectModel.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.ObjectModel.wasm.gz",
@@ -1858,12 +2089,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.ObjectModel.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.ObjectModel.wasm.gz"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.ObjectModel.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Private.CoreLib.wasm.br",
@@ -1875,12 +2108,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Private.CoreLib.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "br",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Private.CoreLib.wasm.br"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Private.CoreLib.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Private.CoreLib.wasm.gz",
@@ -1892,12 +2127,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Private.CoreLib.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Private.CoreLib.wasm.gz"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Private.CoreLib.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Private.Uri.wasm.br",
@@ -1909,12 +2146,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Private.Uri.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "br",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Private.Uri.wasm.br"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Private.Uri.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Private.Uri.wasm.gz",
@@ -1926,12 +2165,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Private.Uri.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Private.Uri.wasm.gz"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Private.Uri.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Reflection.Emit.ILGeneration.wasm.br",
@@ -1943,12 +2184,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Reflection.Emit.ILGeneration.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "br",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Reflection.Emit.ILGeneration.wasm.br"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Reflection.Emit.ILGeneration.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Reflection.Emit.ILGeneration.wasm.gz",
@@ -1960,12 +2203,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Reflection.Emit.ILGeneration.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Reflection.Emit.ILGeneration.wasm.gz"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Reflection.Emit.ILGeneration.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Reflection.Emit.Lightweight.wasm.br",
@@ -1977,12 +2222,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Reflection.Emit.Lightweight.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "br",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Reflection.Emit.Lightweight.wasm.br"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Reflection.Emit.Lightweight.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Reflection.Emit.Lightweight.wasm.gz",
@@ -1994,12 +2241,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Reflection.Emit.Lightweight.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Reflection.Emit.Lightweight.wasm.gz"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Reflection.Emit.Lightweight.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Reflection.Primitives.wasm.br",
@@ -2011,12 +2260,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Reflection.Primitives.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "br",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Reflection.Primitives.wasm.br"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Reflection.Primitives.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Reflection.Primitives.wasm.gz",
@@ -2028,12 +2279,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Reflection.Primitives.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Reflection.Primitives.wasm.gz"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Reflection.Primitives.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Resources.ResourceManager.wasm.br",
@@ -2045,12 +2298,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Resources.ResourceManager.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "br",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Resources.ResourceManager.wasm.br"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Resources.ResourceManager.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Resources.ResourceManager.wasm.gz",
@@ -2062,12 +2317,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Resources.ResourceManager.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Resources.ResourceManager.wasm.gz"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Resources.ResourceManager.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Runtime.CompilerServices.Unsafe.wasm.br",
@@ -2079,12 +2336,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Runtime.CompilerServices.Unsafe.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "br",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Runtime.CompilerServices.Unsafe.wasm.br"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Runtime.CompilerServices.Unsafe.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Runtime.CompilerServices.Unsafe.wasm.gz",
@@ -2096,12 +2355,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Runtime.CompilerServices.Unsafe.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Runtime.CompilerServices.Unsafe.wasm.gz"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Runtime.CompilerServices.Unsafe.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Runtime.Extensions.wasm.br",
@@ -2113,12 +2374,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Runtime.Extensions.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "br",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Runtime.Extensions.wasm.br"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Runtime.Extensions.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Runtime.Extensions.wasm.gz",
@@ -2130,12 +2393,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Runtime.Extensions.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Runtime.Extensions.wasm.gz"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Runtime.Extensions.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Runtime.InteropServices.JavaScript.wasm.br",
@@ -2147,12 +2412,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Runtime.InteropServices.JavaScript.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "br",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Runtime.InteropServices.JavaScript.wasm.br"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Runtime.InteropServices.JavaScript.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Runtime.InteropServices.JavaScript.wasm.gz",
@@ -2164,12 +2431,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Runtime.InteropServices.JavaScript.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Runtime.InteropServices.JavaScript.wasm.gz"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Runtime.InteropServices.JavaScript.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Runtime.InteropServices.RuntimeInformation.wasm.br",
@@ -2181,12 +2450,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Runtime.InteropServices.RuntimeInformation.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "br",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Runtime.InteropServices.RuntimeInformation.wasm.br"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Runtime.InteropServices.RuntimeInformation.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Runtime.InteropServices.RuntimeInformation.wasm.gz",
@@ -2198,12 +2469,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Runtime.InteropServices.RuntimeInformation.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Runtime.InteropServices.RuntimeInformation.wasm.gz"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Runtime.InteropServices.RuntimeInformation.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Runtime.Loader.wasm.br",
@@ -2215,12 +2488,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Runtime.Loader.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "br",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Runtime.Loader.wasm.br"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Runtime.Loader.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Runtime.Loader.wasm.gz",
@@ -2232,12 +2507,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Runtime.Loader.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Runtime.Loader.wasm.gz"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Runtime.Loader.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Runtime.wasm.br",
@@ -2249,12 +2526,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Runtime.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "br",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Runtime.wasm.br"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Runtime.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Runtime.wasm.gz",
@@ -2266,12 +2545,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Runtime.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Runtime.wasm.gz"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Runtime.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Security.Claims.wasm.br",
@@ -2283,12 +2564,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Security.Claims.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "br",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Security.Claims.wasm.br"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Security.Claims.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Security.Claims.wasm.gz",
@@ -2300,12 +2583,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Security.Claims.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Security.Claims.wasm.gz"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Security.Claims.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Security.Cryptography.wasm.br",
@@ -2317,12 +2602,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Security.Cryptography.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "br",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Security.Cryptography.wasm.br"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Security.Cryptography.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Security.Cryptography.wasm.gz",
@@ -2334,12 +2621,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Security.Cryptography.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Security.Cryptography.wasm.gz"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Security.Cryptography.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Text.Encodings.Web.wasm.br",
@@ -2351,12 +2640,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Text.Encodings.Web.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "br",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Text.Encodings.Web.wasm.br"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Text.Encodings.Web.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Text.Encodings.Web.wasm.gz",
@@ -2368,12 +2659,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Text.Encodings.Web.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Text.Encodings.Web.wasm.gz"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Text.Encodings.Web.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Text.Json.wasm.br",
@@ -2385,12 +2678,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Text.Json.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "br",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Text.Json.wasm.br"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Text.Json.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Text.Json.wasm.gz",
@@ -2402,12 +2697,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Text.Json.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Text.Json.wasm.gz"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Text.Json.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Threading.Tasks.wasm.br",
@@ -2419,12 +2716,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Threading.Tasks.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "br",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Threading.Tasks.wasm.br"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Threading.Tasks.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Threading.Tasks.wasm.gz",
@@ -2436,12 +2735,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Threading.Tasks.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Threading.Tasks.wasm.gz"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Threading.Tasks.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Threading.ThreadPool.wasm.br",
@@ -2453,12 +2754,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Threading.ThreadPool.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "br",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Threading.ThreadPool.wasm.br"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Threading.ThreadPool.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Threading.ThreadPool.wasm.gz",
@@ -2470,12 +2773,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Threading.ThreadPool.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Threading.ThreadPool.wasm.gz"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Threading.ThreadPool.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Threading.wasm.br",
@@ -2487,12 +2792,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Threading.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "br",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Threading.wasm.br"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Threading.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Threading.wasm.gz",
@@ -2504,12 +2811,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Threading.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Threading.wasm.gz"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Threading.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.wasm.br",
@@ -2521,12 +2830,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "br",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.wasm.br"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.wasm.gz",
@@ -2538,12 +2849,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.wasm.gz"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\blazor.boot.json.br",
@@ -2555,6 +2868,8 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\blazor.publish.boot.json",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "br",
@@ -2572,6 +2887,8 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\blazor.publish.boot.json",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
@@ -2589,6 +2906,8 @@
       "AssetKind": "All",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\blazor.webassembly.js",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "br",
@@ -2606,12 +2925,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\blazorwasm.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "br",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\blazorwasm.wasm.br"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\blazorwasm.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\blazorwasm.wasm.gz",
@@ -2623,12 +2944,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\blazorwasm.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\blazorwasm.wasm.gz"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\blazorwasm.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\dotnet.js.br",
@@ -2640,6 +2963,8 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\dotnet.js",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "br",
@@ -2657,6 +2982,8 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\dotnet.js",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "br",
@@ -2674,6 +3001,8 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\dotnet.js",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "br",
@@ -2691,6 +3020,8 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\dotnet.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "br",
@@ -2708,6 +3039,8 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\icudt.dat",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "br",
@@ -2725,6 +3058,8 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\icudt.dat",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
@@ -2742,6 +3077,8 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\icudt_CJK.dat",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "br",
@@ -2759,6 +3096,8 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\icudt_CJK.dat",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
@@ -2776,6 +3115,8 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\icudt_EFIGS.dat",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "br",
@@ -2793,12 +3134,52 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\icudt_EFIGS.dat",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\_framework\\icudt_EFIGS.dat.gz"
+    },
+    {
+      "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\icudt_hybrid.dat.br",
+      "SourceId": "blazorwasm",
+      "SourceType": "Project",
+      "ContentRoot": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\publish\\wwwroot\\",
+      "BasePath": "/",
+      "RelativePath": "_framework/icudt_hybrid.dat.br",
+      "AssetKind": "Publish",
+      "AssetMode": "All",
+      "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\icudt_hybrid.dat",
+      "AssetTraitName": "Content-Encoding",
+      "AssetTraitValue": "br",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\_framework\\icudt_hybrid.dat.br"
+    },
+    {
+      "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\icudt_hybrid.dat.gz",
+      "SourceId": "blazorwasm",
+      "SourceType": "Project",
+      "ContentRoot": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\publish\\wwwroot\\",
+      "BasePath": "/",
+      "RelativePath": "_framework/icudt_hybrid.dat.gz",
+      "AssetKind": "Publish",
+      "AssetMode": "All",
+      "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\icudt_hybrid.dat",
+      "AssetTraitName": "Content-Encoding",
+      "AssetTraitValue": "gzip",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\_framework\\icudt_hybrid.dat.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\icudt_no_CJK.dat.br",
@@ -2810,6 +3191,8 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\icudt_no_CJK.dat",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "br",
@@ -2827,6 +3210,8 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\icudt_no_CJK.dat",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
@@ -2844,12 +3229,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\netstandard.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "br",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\netstandard.wasm.br"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\netstandard.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\netstandard.wasm.gz",
@@ -2861,12 +3248,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\netstandard.wasm",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\netstandard.wasm.gz"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\netstandard.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\custom-service-worker-assets.js",
@@ -2878,6 +3267,8 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "",
       "AssetTraitName": "BlazorServiceWorker",
       "AssetTraitValue": "ServiceWorkerManifest",
@@ -2895,6 +3286,8 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "extension:my-custom-extension",
@@ -2912,6 +3305,8 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "",
       "AssetTraitName": "BlazorServiceWorker",
       "AssetTraitValue": "ServiceWorkerJs",
@@ -2929,12 +3324,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.AspNetCore.Authorization.wasm"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.AspNetCore.Authorization.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.AspNetCore.Components.Forms.wasm",
@@ -2946,12 +3343,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.AspNetCore.Components.Forms.wasm"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.AspNetCore.Components.Forms.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.AspNetCore.Components.Web.wasm",
@@ -2963,12 +3362,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.AspNetCore.Components.Web.wasm"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.AspNetCore.Components.Web.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.AspNetCore.Components.WebAssembly.wasm",
@@ -2980,12 +3381,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.AspNetCore.Components.WebAssembly.wasm"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.AspNetCore.Components.WebAssembly.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.AspNetCore.Components.wasm",
@@ -2997,12 +3400,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.AspNetCore.Components.wasm"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.AspNetCore.Components.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.AspNetCore.Metadata.wasm",
@@ -3014,12 +3419,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.AspNetCore.Metadata.wasm"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.AspNetCore.Metadata.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.Configuration.Abstractions.wasm",
@@ -3031,12 +3438,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.Configuration.Abstractions.wasm"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.Configuration.Abstractions.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.Configuration.Binder.wasm",
@@ -3048,12 +3457,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.Configuration.Binder.wasm"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.Configuration.Binder.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.Configuration.FileExtensions.wasm",
@@ -3065,12 +3476,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.Configuration.FileExtensions.wasm"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.Configuration.FileExtensions.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.Configuration.Json.wasm",
@@ -3082,12 +3495,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.Configuration.Json.wasm"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.Configuration.Json.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.Configuration.wasm",
@@ -3099,12 +3514,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.Configuration.wasm"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.Configuration.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.DependencyInjection.Abstractions.wasm",
@@ -3116,12 +3533,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.DependencyInjection.Abstractions.wasm"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.DependencyInjection.Abstractions.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.DependencyInjection.wasm",
@@ -3133,12 +3552,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.DependencyInjection.wasm"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.DependencyInjection.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.FileProviders.Abstractions.wasm",
@@ -3150,12 +3571,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.FileProviders.Abstractions.wasm"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.FileProviders.Abstractions.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.FileProviders.Physical.wasm",
@@ -3167,12 +3590,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.FileProviders.Physical.wasm"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.FileProviders.Physical.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.FileSystemGlobbing.wasm",
@@ -3184,12 +3609,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.FileSystemGlobbing.wasm"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.FileSystemGlobbing.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.Logging.Abstractions.wasm",
@@ -3201,12 +3628,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.Logging.Abstractions.wasm"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.Logging.Abstractions.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.Logging.wasm",
@@ -3218,12 +3647,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.Logging.wasm"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.Logging.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.Options.wasm",
@@ -3235,12 +3666,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.Options.wasm"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.Options.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.Primitives.wasm",
@@ -3252,12 +3685,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.Primitives.wasm"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.Primitives.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.JSInterop.WebAssembly.wasm",
@@ -3269,12 +3704,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.JSInterop.WebAssembly.wasm"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.JSInterop.WebAssembly.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.JSInterop.wasm",
@@ -3286,12 +3723,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.JSInterop.wasm"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.JSInterop.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\RazorClassLibrary.wasm",
@@ -3303,12 +3742,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\RazorClassLibrary.wasm"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\RazorClassLibrary.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Buffers.wasm",
@@ -3320,12 +3761,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\System.Buffers.wasm"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Buffers.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Collections.Concurrent.wasm",
@@ -3337,12 +3780,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\System.Collections.Concurrent.wasm"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Collections.Concurrent.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Collections.NonGeneric.wasm",
@@ -3354,12 +3799,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\System.Collections.NonGeneric.wasm"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Collections.NonGeneric.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Collections.Specialized.wasm",
@@ -3371,12 +3818,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\System.Collections.Specialized.wasm"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Collections.Specialized.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Collections.wasm",
@@ -3388,12 +3837,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\System.Collections.wasm"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Collections.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.ComponentModel.Annotations.wasm",
@@ -3405,12 +3856,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\System.ComponentModel.Annotations.wasm"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.ComponentModel.Annotations.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.ComponentModel.Primitives.wasm",
@@ -3422,12 +3875,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\System.ComponentModel.Primitives.wasm"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.ComponentModel.Primitives.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.ComponentModel.TypeConverter.wasm",
@@ -3439,12 +3894,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\System.ComponentModel.TypeConverter.wasm"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.ComponentModel.TypeConverter.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.ComponentModel.wasm",
@@ -3456,12 +3913,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\System.ComponentModel.wasm"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.ComponentModel.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Console.wasm",
@@ -3473,12 +3932,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\System.Console.wasm"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Console.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Diagnostics.Debug.wasm",
@@ -3490,12 +3951,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\System.Diagnostics.Debug.wasm"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Diagnostics.Debug.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Diagnostics.DiagnosticSource.wasm",
@@ -3507,12 +3970,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\System.Diagnostics.DiagnosticSource.wasm"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Diagnostics.DiagnosticSource.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Diagnostics.Tracing.wasm",
@@ -3524,12 +3989,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\System.Diagnostics.Tracing.wasm"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Diagnostics.Tracing.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.IO.FileSystem.Watcher.wasm",
@@ -3541,12 +4008,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\System.IO.FileSystem.Watcher.wasm"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.IO.FileSystem.Watcher.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.IO.Pipelines.wasm",
@@ -3558,12 +4027,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\System.IO.Pipelines.wasm"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.IO.Pipelines.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Linq.Expressions.wasm",
@@ -3575,12 +4046,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\System.Linq.Expressions.wasm"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Linq.Expressions.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Linq.wasm",
@@ -3592,12 +4065,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\System.Linq.wasm"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Linq.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Memory.wasm",
@@ -3609,12 +4084,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\System.Memory.wasm"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Memory.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Net.Http.wasm",
@@ -3626,12 +4103,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\System.Net.Http.wasm"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Net.Http.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.ObjectModel.wasm",
@@ -3643,12 +4122,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\System.ObjectModel.wasm"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.ObjectModel.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Private.CoreLib.wasm",
@@ -3660,12 +4141,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\System.Private.CoreLib.wasm"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Private.CoreLib.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Private.Uri.wasm",
@@ -3677,12 +4160,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\System.Private.Uri.wasm"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Private.Uri.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Reflection.Emit.ILGeneration.wasm",
@@ -3694,12 +4179,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\System.Reflection.Emit.ILGeneration.wasm"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Reflection.Emit.ILGeneration.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Reflection.Emit.Lightweight.wasm",
@@ -3711,12 +4198,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\System.Reflection.Emit.Lightweight.wasm"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Reflection.Emit.Lightweight.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Reflection.Primitives.wasm",
@@ -3728,12 +4217,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\System.Reflection.Primitives.wasm"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Reflection.Primitives.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Resources.ResourceManager.wasm",
@@ -3745,12 +4236,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\System.Resources.ResourceManager.wasm"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Resources.ResourceManager.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Runtime.CompilerServices.Unsafe.wasm",
@@ -3762,12 +4255,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\System.Runtime.CompilerServices.Unsafe.wasm"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Runtime.CompilerServices.Unsafe.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Runtime.Extensions.wasm",
@@ -3779,12 +4274,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\System.Runtime.Extensions.wasm"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Runtime.Extensions.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Runtime.InteropServices.JavaScript.wasm",
@@ -3796,12 +4293,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\System.Runtime.InteropServices.JavaScript.wasm"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Runtime.InteropServices.JavaScript.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Runtime.InteropServices.RuntimeInformation.wasm",
@@ -3813,12 +4312,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\System.Runtime.InteropServices.RuntimeInformation.wasm"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Runtime.InteropServices.RuntimeInformation.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Runtime.Loader.wasm",
@@ -3830,12 +4331,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\System.Runtime.Loader.wasm"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Runtime.Loader.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Runtime.wasm",
@@ -3847,12 +4350,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\System.Runtime.wasm"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Runtime.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Security.Claims.wasm",
@@ -3864,12 +4369,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\System.Security.Claims.wasm"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Security.Claims.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Security.Cryptography.wasm",
@@ -3881,12 +4388,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\System.Security.Cryptography.wasm"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Security.Cryptography.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Text.Encodings.Web.wasm",
@@ -3898,12 +4407,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\System.Text.Encodings.Web.wasm"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Text.Encodings.Web.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Text.Json.wasm",
@@ -3915,12 +4426,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\System.Text.Json.wasm"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Text.Json.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Threading.Tasks.wasm",
@@ -3932,12 +4445,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\System.Threading.Tasks.wasm"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Threading.Tasks.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Threading.ThreadPool.wasm",
@@ -3949,12 +4464,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\System.Threading.ThreadPool.wasm"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Threading.ThreadPool.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Threading.wasm",
@@ -3966,12 +4483,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\System.Threading.wasm"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Threading.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.wasm",
@@ -3983,12 +4502,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\System.wasm"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\blazorwasm.wasm",
@@ -4000,12 +4521,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\blazorwasm.wasm"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\blazorwasm.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\netstandard.wasm",
@@ -4017,12 +4540,14 @@
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "",
       "AssetTraitName": "WasmResource",
       "AssetTraitValue": "runtime",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\webcil\\publish\\netstandard.wasm"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\netstandard.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\wwwroot\\Fake-License.txt",
@@ -4034,6 +4559,8 @@
       "AssetKind": "All",
       "AssetMode": "All",
       "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
       "RelatedAsset": "",
       "AssetTraitName": "",
       "AssetTraitValue": "",
@@ -4051,6 +4578,8 @@
       "AssetKind": "All",
       "AssetMode": "All",
       "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
       "RelatedAsset": "",
       "AssetTraitName": "JSModule",
       "AssetTraitValue": "JSLibraryModule",
@@ -4068,6 +4597,8 @@
       "AssetKind": "All",
       "AssetMode": "All",
       "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
       "RelatedAsset": "",
       "AssetTraitName": "",
       "AssetTraitValue": "",
@@ -4085,6 +4616,8 @@
       "AssetKind": "All",
       "AssetMode": "All",
       "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
       "RelatedAsset": "",
       "AssetTraitName": "",
       "AssetTraitValue": "",
@@ -4102,6 +4635,8 @@
       "AssetKind": "All",
       "AssetMode": "All",
       "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
       "RelatedAsset": "",
       "AssetTraitName": "",
       "AssetTraitValue": "",

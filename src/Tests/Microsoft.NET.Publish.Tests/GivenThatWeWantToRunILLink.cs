@@ -162,6 +162,26 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
+        // TODO: enable netstandard2.0 once ProcessFrameworkReferences is fixed to run
+        // when tool packs are referenced. See https://github.com/dotnet/sdk/pull/33062.
+        // Currently netstandard2.0 skips ProcessFrameworkReference because FrameworkReference
+        // is empty.
+        // [InlineData("netstandard2.0")]
+        [InlineData("netstandard2.1")]
+        public void ILLink_can_use_latest_with_unsupported_target_framework(string targetFramework)
+        {
+            var projectName = "TrimmableNetstandardLibrary";
+            var testAsset = _testAssetsManager.CopyTestAsset(projectName)
+                .WithSource()
+                .WithTargetFramework(targetFramework);
+
+            var buildCommand = new BuildCommand(testAsset);
+            buildCommand.Execute("/p:IsTrimmable=true")
+                .Should().Pass()
+                .And.HaveStdOutContaining("warning IL2026");
+        }
+
+        [RequiresMSBuildVersionTheory("17.0.0.32901")]
         [MemberData(nameof(SupportedTfms), MemberType = typeof(PublishTestUtils))]
         public void PrepareForILLink_can_set_IsTrimmable(string targetFramework)
         {
@@ -767,6 +787,20 @@ namespace Microsoft.NET.Publish.Tests
                 });
                     break;
                 case "net7.0":
+                    expectedWarnings.AddRange(new string[] {
+                    "ILLink : Trim analysis warning IL2026: Internal.Runtime.InteropServices.ComActivator.GetClassFactoryForTypeInternal(ComActivationContextInternal*",
+                    "ILLink : Trim analysis warning IL2026: Internal.Runtime.InteropServices.InMemoryAssemblyLoader.LoadInMemoryAssembly(IntPtr, IntPtr",
+                    "ILLink : Trim analysis warning IL2026: Internal.Runtime.InteropServices.InMemoryAssemblyLoader.LoadInMemoryAssemblyInContextWhenSupported(IntPtr, IntPtr",
+                    "ILLink : Trim analysis warning IL2026: System.Linq.Queryable: Using member 'System.Linq.EnumerableRewriter.s_seqMethods' which has 'RequiresUnreferencedCodeAttribute'",
+                    "ILLink : Trim analysis warning IL2026: System.Transactions.DtcProxyShim.DtcProxyShimFactory.ConnectToProxyCore(String, Guid, Object, Boolean&, Byte[]&, ResourceManagerShim&",
+                    "ILLink : Trim analysis warning IL2045: System.Runtime.InteropServices.Marshal.GenerateProgIdForType(Type",
+                    "ILLink : Trim analysis warning IL2045: System.Runtime.InteropServices.Marshal.GenerateProgIdForType(Type",
+                    "ILLink : Trim analysis warning IL2045: System.Runtime.InteropServices.ComAwareEventInfo.GetDataForComInvocation(EventInfo, Guid&, Int32&",
+                    "ILLink : Trim analysis warning IL2045: System.Runtime.InteropServices.ComAwareEventInfo.GetDataForComInvocation(EventInfo, Guid&, Int32&",
+                    "ILLink : Trim analysis warning IL2045: System.Runtime.InteropServices.ComAwareEventInfo.GetDataForComInvocation(EventInfo, Guid&, Int32&",
+                    "ILLink : Trim analysis warning IL2045: System.Runtime.InteropServices.ComAwareEventInfo.GetDataForComInvocation(EventInfo, Guid&, Int32&"
+                });
+                    break;
                 case "net8.0":
                     expectedWarnings.AddRange(new string[] {
                     "ILLink : Trim analysis warning IL2026: Internal.Runtime.InteropServices.ComActivator.GetClassFactoryForTypeInternal(ComActivationContextInternal*",
@@ -780,7 +814,14 @@ namespace Microsoft.NET.Publish.Tests
                     "ILLink : Trim analysis warning IL2045: System.Runtime.InteropServices.ComAwareEventInfo.GetDataForComInvocation(EventInfo, Guid&, Int32&",
                     "ILLink : Trim analysis warning IL2045: System.Runtime.InteropServices.ComAwareEventInfo.GetDataForComInvocation(EventInfo, Guid&, Int32&",
                     "ILLink : Trim analysis warning IL2045: System.Runtime.InteropServices.ComAwareEventInfo.GetDataForComInvocation(EventInfo, Guid&, Int32&",
-                    "ILLink : Trim analysis warning IL2045: System.Runtime.InteropServices.ComAwareEventInfo.GetDataForComInvocation(EventInfo, Guid&, Int32&"
+                    "ILLink : Trim analysis warning IL2045: System.Runtime.InteropServices.ComAwareEventInfo.GetDataForComInvocation(EventInfo, Guid&, Int32&",
+                    "ILLink : Trim analysis warning IL2112: System.Data.Common.DbConnectionStringBuilder.System.ComponentModel.ICustomTypeDescriptor.GetConverter(",
+                    "ILLink : Trim analysis warning IL2112: System.Data.Common.DbConnectionStringBuilder.System.ComponentModel.ICustomTypeDescriptor.GetDefaultEvent(",
+                    "ILLink : Trim analysis warning IL2112: System.Data.Common.DbConnectionStringBuilder.System.ComponentModel.ICustomTypeDescriptor.GetDefaultProperty(",
+                    "ILLink : Trim analysis warning IL2112: System.Data.Common.DbConnectionStringBuilder.System.ComponentModel.ICustomTypeDescriptor.GetEditor(Type",
+                    "ILLink : Trim analysis warning IL2112: System.Data.Common.DbConnectionStringBuilder.System.ComponentModel.ICustomTypeDescriptor.GetEvents(Attribute[]",
+                    "ILLink : Trim analysis warning IL2112: System.Data.Common.DbConnectionStringBuilder.System.ComponentModel.ICustomTypeDescriptor.GetProperties(Attribute[]",
+                    "ILLink : Trim analysis warning IL2112: System.Data.Common.DbConnectionStringBuilder.System.ComponentModel.ICustomTypeDescriptor.GetProperties("
                 });
                     break;
                 default:

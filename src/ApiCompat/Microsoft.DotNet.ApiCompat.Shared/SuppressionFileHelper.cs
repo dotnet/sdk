@@ -42,7 +42,7 @@ namespace Microsoft.DotNet.ApiCompat
         /// </summary>
         public static void LogApiCompatSuccessOrFailure(bool generateSuppressionFile, ISuppressableLog log)
         {
-            if (log.HasLoggedSuppressions)
+            if (log.HasLoggedErrorSuppressions)
             {
                 if (!generateSuppressionFile)
                 {

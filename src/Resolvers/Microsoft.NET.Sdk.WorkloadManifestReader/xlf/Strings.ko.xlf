@@ -62,6 +62,11 @@
         <target state="translated">잘못된 버전: {0}</target>
         <note />
       </trans-unit>
+      <trans-unit id="InvalidVersionForWorkload">
+        <source>Error parsing version '{1}' for workload manifest ID '{0}'</source>
+        <target state="translated">작업 매니페스트 ID '{1}'의 버전 '{0}'을(를) 구문 분석하는 동안 오류가 발생했습니다.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ManifestDependencyMissing">
         <source>Did not find workload manifest dependency '{0}' required by manifest '{1}' [{2}]</source>
         <target state="translated">매니페스트 '{1}' [{2}]에 필요한 워크로드 매니페스트 종속성 '{0}'을(를) 찾지 못했습니다</target>
@@ -125,6 +130,11 @@
       <trans-unit id="UnresolvedWorkloadRedirect">
         <source>Unresolved target '{0}' for workload redirect '{1}' in manifest '{2}' [{3}]</source>
         <target state="translated">매니페스트 '{2}' [{3}]의 워크로드 리디렉션 '{1}'에 대한 확인되지 않는 대상 '{0}'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadVersionFromGlobalJsonNotFound">
+        <source>Workload version {0}, which was specified in {1}, was not found. Run "dotnet workload restore" to install this workload version.</source>
+        <target state="translated">{1}에 지정된 워크로드 버전 {0}을(를) 찾을 수 없습니다. "dotnet 워크로드 복원"을 실행하여 이 워크로드 버전을 설치합니다.</target>
         <note />
       </trans-unit>
     </body>

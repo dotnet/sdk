@@ -1,8 +1,9 @@
 ﻿const Microsoft.NET.Build.Containers.KnownLocalRegistryTypes.Docker = "Docker" -> string!
+const Microsoft.NET.Build.Containers.KnownLocalRegistryTypes.Podman = "Podman" -> string!
 Microsoft.NET.Build.Containers.BaseImageNotFoundException
 Microsoft.NET.Build.Containers.Constants
 Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageTag.ComputeDotnetBaseImageTag() -> void
-static Microsoft.NET.Build.Containers.ContainerBuilder.ContainerizeAsync(System.IO.DirectoryInfo! publishDirectory, string! workingDir, string! baseRegistry, string! baseImageName, string! baseImageTag, string![]! entrypoint, string![]? entrypointArgs, string! imageName, string![]! imageTags, string? outputRegistry, System.Collections.Generic.Dictionary<string!, string!>! labels, Microsoft.NET.Build.Containers.Port[]? exposedPorts, System.Collections.Generic.Dictionary<string!, string!>! envVars, string! containerRuntimeIdentifier, string! ridGraphPath, string! localRegistry, string? containerUser, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<int>!
+static Microsoft.NET.Build.Containers.ContainerBuilder.ContainerizeAsync(System.IO.DirectoryInfo! publishDirectory, string! workingDir, string! baseRegistry, string! baseImageName, string! baseImageTag, string![]! entrypoint, string![]? cmd, string! imageName, string![]! imageTags, string? outputRegistry, System.Collections.Generic.Dictionary<string!, string!>! labels, Microsoft.NET.Build.Containers.Port[]? exposedPorts, System.Collections.Generic.Dictionary<string!, string!>! envVars, string! containerRuntimeIdentifier, string! ridGraphPath, string! localRegistry, string? containerUser, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<int>!
 static readonly Microsoft.NET.Build.Containers.Constants.Version -> string!
 Microsoft.NET.Build.Containers.ContainerBuilder
 Microsoft.NET.Build.Containers.ContainerHelpers
@@ -131,14 +132,22 @@ Microsoft.NET.Build.Containers.Tasks.CreateNewImage.Entrypoint.get -> Microsoft.
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.Entrypoint.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.EntrypointArgs.get -> Microsoft.Build.Framework.ITaskItem![]!
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.EntrypointArgs.set -> void
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.DefaultArgs.get -> Microsoft.Build.Framework.ITaskItem![]!
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.DefaultArgs.set -> void
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.AppCommand.get -> Microsoft.Build.Framework.ITaskItem![]!
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.AppCommand.set -> void
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.AppCommandArgs.get -> Microsoft.Build.Framework.ITaskItem![]!
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.AppCommandArgs.set -> void
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.AppCommandInstruction.get -> string!
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.AppCommandInstruction.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.ExposedPorts.get -> Microsoft.Build.Framework.ITaskItem![]!
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.ExposedPorts.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GeneratedContainerConfiguration.get -> string!
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GeneratedContainerConfiguration.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GeneratedContainerManifest.get -> string!
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GeneratedContainerManifest.set -> void
-Microsoft.NET.Build.Containers.Tasks.CreateNewImage.ImageName.get -> string!
-Microsoft.NET.Build.Containers.Tasks.CreateNewImage.ImageName.set -> void
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.Repository.get -> string!
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.Repository.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.ImageTags.get -> string![]!
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.ImageTags.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.Labels.get -> Microsoft.Build.Framework.ITaskItem![]!
@@ -160,8 +169,8 @@ Microsoft.NET.Build.Containers.Tasks.CreateNewImage.WorkingDirectory.set -> void
 Microsoft.NET.Build.Containers.Tasks.ParseContainerProperties
 Microsoft.NET.Build.Containers.Tasks.ParseContainerProperties.ContainerEnvironmentVariables.get -> Microsoft.Build.Framework.ITaskItem![]!
 Microsoft.NET.Build.Containers.Tasks.ParseContainerProperties.ContainerEnvironmentVariables.set -> void
-Microsoft.NET.Build.Containers.Tasks.ParseContainerProperties.ContainerImageName.get -> string!
-Microsoft.NET.Build.Containers.Tasks.ParseContainerProperties.ContainerImageName.set -> void
+Microsoft.NET.Build.Containers.Tasks.ParseContainerProperties.ContainerRepository.get -> string!
+Microsoft.NET.Build.Containers.Tasks.ParseContainerProperties.ContainerRepository.set -> void
 Microsoft.NET.Build.Containers.Tasks.ParseContainerProperties.ContainerImageTag.get -> string!
 Microsoft.NET.Build.Containers.Tasks.ParseContainerProperties.ContainerImageTag.set -> void
 Microsoft.NET.Build.Containers.Tasks.ParseContainerProperties.ContainerImageTags.get -> string![]!
@@ -171,7 +180,7 @@ Microsoft.NET.Build.Containers.Tasks.ParseContainerProperties.ContainerRegistry.
 Microsoft.NET.Build.Containers.Tasks.ParseContainerProperties.FullyQualifiedBaseImageName.get -> string!
 Microsoft.NET.Build.Containers.Tasks.ParseContainerProperties.FullyQualifiedBaseImageName.set -> void
 Microsoft.NET.Build.Containers.Tasks.ParseContainerProperties.NewContainerEnvironmentVariables.get -> Microsoft.Build.Framework.ITaskItem![]!
-Microsoft.NET.Build.Containers.Tasks.ParseContainerProperties.NewContainerImageName.get -> string!
+Microsoft.NET.Build.Containers.Tasks.ParseContainerProperties.NewContainerRepository.get -> string!
 Microsoft.NET.Build.Containers.Tasks.ParseContainerProperties.NewContainerRegistry.get -> string!
 Microsoft.NET.Build.Containers.Tasks.ParseContainerProperties.NewContainerTags.get -> string![]!
 Microsoft.NET.Build.Containers.Tasks.ParseContainerProperties.ParseContainerProperties() -> void
