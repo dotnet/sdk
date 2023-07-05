@@ -22,16 +22,14 @@ namespace Microsoft.DotNet.ApiCompat.Tool
             // Global options
             CliOption<bool> generateSuppressionFileOption = new("--generate-suppression-file",
                 "If true, generates a compatibility suppression file.");
-            CliOption<bool> preserveUnnecessarySuppressionsOption = new("--preserve-unnecessary-suppressions",
-                "If true, preserves unnecessary suppressions when re-generating the suppression file.");
-            CliOption<bool> permitUnnecessarySuppressionsOption = new("--permit-unnecessary-suppressions",
-                "If true, permits unnecessary suppressions in the suppression file.");
-            CliOption<string[]> suppressionFilesOption = new("--suppression-file",
-                "The path to one or more suppression files to read from.")
             {
                 Description = "If true, generates a compatibility suppression file.",
                 Recursive = true
             };
+            CliOption<bool> preserveUnnecessarySuppressionsOption = new("--preserve-unnecessary-suppressions",
+                "If true, preserves unnecessary suppressions when re-generating the suppression file.");
+            CliOption<bool> permitUnnecessarySuppressionsOption = new("--permit-unnecessary-suppressions",
+                "If true, permits unnecessary suppressions in the suppression file.");
             CliOption<string[]> suppressionFilesOption = new("--suppression-file")
             {
                 Description = "The path to one or more suppression files to read from.",
