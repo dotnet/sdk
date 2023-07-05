@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines;
 using Microsoft.CodeAnalysis;
@@ -33,21 +34,26 @@ namespace Microsoft.CodeQuality.CSharp.Analyzers.ApiDesignGuidelines
                         model.GetSymbolInfo(assignment.Left, cancellationToken).Symbol is IFieldSymbol field &&
                         disposableFields.Contains(field))
                     {
-                        yield return field;
+                        return new[] { field };
                     }
                 }
                 else if (node is FieldDeclarationSyntax fieldDeclarationSyntax)
                 {
+                    var fields = new List<IFieldSymbol>();
                     foreach (VariableDeclaratorSyntax fieldInit in fieldDeclarationSyntax.Declaration.Variables)
                     {
                         if (fieldInit.Initializer?.Value.Kind() is SyntaxKind.ObjectCreationExpression or SyntaxKind.ImplicitObjectCreationExpression &&
                             model.GetDeclaredSymbol(fieldInit, cancellationToken) is IFieldSymbol field &&
                             disposableFields.Contains(field))
                         {
-                            yield return field;
+                            fields.Add(field);
                         }
                     }
+
+                    return fields;
                 }
+
+                return Enumerable.Empty<IFieldSymbol>();
             }
         }
     }

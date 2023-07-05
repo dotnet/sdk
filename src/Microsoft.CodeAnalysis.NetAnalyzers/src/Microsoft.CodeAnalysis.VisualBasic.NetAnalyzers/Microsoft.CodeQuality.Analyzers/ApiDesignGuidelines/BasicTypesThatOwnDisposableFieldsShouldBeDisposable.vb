@@ -21,7 +21,7 @@ Namespace Microsoft.CodeQuality.VisualBasic.Analyzers.ApiDesignGuidelines
                 MyBase.New(compilation)
             End Sub
 
-            Protected Overrides Iterator Function GetDisposableFieldCreations(node As SyntaxNode, model As SemanticModel,
+            Protected Overrides Function GetDisposableFieldCreations(node As SyntaxNode, model As SemanticModel,
                                                                               disposableFields As HashSet(Of ISymbol),
                                                                               cancellationToken As CancellationToken) As IEnumerable(Of IFieldSymbol)
                 If TypeOf node Is AssignmentStatementSyntax Then
@@ -29,11 +29,12 @@ Namespace Microsoft.CodeQuality.VisualBasic.Analyzers.ApiDesignGuidelines
                     If TypeOf assignment.Right Is ObjectCreationExpressionSyntax Then
                         Dim field = TryCast(model.GetSymbolInfo(assignment.Left, cancellationToken).Symbol, IFieldSymbol)
                         If disposableFields.Contains(field) Then
-                            Yield field
+                            Return New IFieldSymbol() {field}
                         End If
                     End If
                 ElseIf TypeOf node Is FieldDeclarationSyntax Then
                     Dim fieldDecls = DirectCast(node, FieldDeclarationSyntax).Declarators
+                    Dim fields = new List(Of IFieldSymbol)
                     For Each declarator As VariableDeclaratorSyntax In fieldDecls
                         'Explicit initialization is not permitted with multiple variables declared with a single type specifier
                         If declarator.Names.Count > 1 Then
@@ -44,19 +45,23 @@ Namespace Microsoft.CodeQuality.VisualBasic.Analyzers.ApiDesignGuidelines
                         If TypeOf declarator?.Initializer?.Value Is ObjectCreationExpressionSyntax Then
                             Dim field = TryCast(model.GetDeclaredSymbol(firstFieldName, cancellationToken), IFieldSymbol)
                             If disposableFields.Contains(field) Then
-                                Yield field
+                                fields.Add(field)
                             End If
                         End If
                     Next
+
+                    Return fields
                 ElseIf TypeOf node Is NamedFieldInitializerSyntax Then
                     Dim fieldInit = DirectCast(node, NamedFieldInitializerSyntax)
                     If TypeOf fieldInit.Expression Is ObjectCreationExpressionSyntax Then
                         Dim field = TryCast(model.GetSymbolInfo(fieldInit.Name, cancellationToken).Symbol, IFieldSymbol)
                         If disposableFields.Contains(field) Then
-                            Yield field
+                            Return New IFieldSymbol() {field}
                         End If
                     End If
                 End If
+
+                Return Enumerable.Empty(Of IFieldSymbol)
             End Function
         End Class
     End Class

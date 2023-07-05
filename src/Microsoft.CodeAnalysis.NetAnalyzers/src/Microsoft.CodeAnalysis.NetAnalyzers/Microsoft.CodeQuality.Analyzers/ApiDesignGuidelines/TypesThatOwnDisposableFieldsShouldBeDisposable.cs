@@ -87,16 +87,18 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 foreach (TTypeDeclarationSyntax classDecl in classDecls)
                 {
                     SemanticModel model = symbolContext.Compilation.GetSemanticModel(classDecl.SyntaxTree);
-                    IEnumerable<string> disposableFieldNames = classDecl.DescendantNodes(n => !(n is TTypeDeclarationSyntax) || ReferenceEquals(n, classDecl))
+                    List<string> disposableFieldNames = classDecl.DescendantNodes(n => n is not TTypeDeclarationSyntax || ReferenceEquals(n, classDecl))
                         .SelectMany(n => GetDisposableFieldCreations(n, model, disposableFieldsHashSet, symbolContext.CancellationToken))
                         .Where(field => !symbolContext.Options.IsConfiguredToSkipAnalysis(Rule, field.Type, namedType, symbolContext.Compilation))
-                        .Select(field => field.Name);
+                        .Select(field => field.Name)
+                        .ToList();
 
-                    if (disposableFieldNames.Any())
+                    if (disposableFieldNames.Count > 0)
                     {
+                        disposableFieldNames.Sort();
                         // Type '{0}' owns disposable field(s) '{1}' but is not disposable
                         symbolContext.ReportDiagnostic(
-                            namedType.CreateDiagnostic(Rule, namedType.Name, string.Join("', '", disposableFieldNames.Order())));
+                            namedType.CreateDiagnostic(Rule, namedType.Name, string.Join("', '", disposableFieldNames)));
                         return;
                     }
                 }
