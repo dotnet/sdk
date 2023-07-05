@@ -284,8 +284,8 @@ namespace Microsoft.DotNet.ApiCompat.Tool
 
                 MessageImportance verbosity = parseResult.GetValue(verbosityOption);
                 bool generateSuppressionFile = parseResult.GetValue(generateSuppressionFileOption);
-                bool preserveUnnecessarySuppressions = context.ParseResult.GetValue(preserveUnnecessarySuppressionsOption);
-                bool permitUnnecessarySuppressions = context.ParseResult.GetValue(permitUnnecessarySuppressionsOption);
+                bool preserveUnnecessarySuppressions = parseResult.GetValue(preserveUnnecessarySuppressionsOption);
+                bool permitUnnecessarySuppressions = parseResult.GetValue(permitUnnecessarySuppressionsOption);
                 string[]? suppressionFiles = parseResult.GetValue(suppressionFilesOption);
                 string? suppressionOutputFile = parseResult.GetValue(suppressionOutputFileOption);
                 string? noWarn = parseResult.GetValue(noWarnOption);
