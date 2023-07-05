@@ -8,6 +8,8 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 {
     internal class TemplateCommandArgs : ICommandArgs
     {
+        // When detecting template arguments, we need to reparse the command so it isn't use a template argument as a name.
+        // To do this, we inject this sentinel name so it is handled the same as if the user didn't put in a name argument.
         public const string NameDefaultSentinel = "~~DefaultName~~";
 
         private readonly TemplateCommand _command;
@@ -20,6 +22,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             ParentCommand = parentCommand ?? throw new ArgumentNullException(nameof(parentCommand));
             RootCommand = GetRootCommand(parentCommand);
 
+            // Prefer the name argument over the hidden name option (which is kept for backward compatibility).
             var nameArgument = parseResult.GetValue(SharedOptions.NameArgument);
             if (nameArgument == NameDefaultSentinel)
             {

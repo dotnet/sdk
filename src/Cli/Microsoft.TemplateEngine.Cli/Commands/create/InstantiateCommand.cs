@@ -173,6 +173,8 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             }
         }
 
+        // Reparses the CLI parameters in the context of the provided command (usually TemplateCommand).
+        // If the first token after reparsing starts with a dash, we reparse again and inject a name sentinel to allow it to be handled properly (using empty name logic).
         internal static ParseResult Reparse(CliCommand command, IReadOnlyList<string> args, CliConfiguration? configuration = null)
         {
             var argsList = args.ToList();
