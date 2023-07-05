@@ -292,18 +292,6 @@ namespace Microsoft.TemplateEngine.Cli.Commands
                 TemplateCommand templateCommandToRun = candidates.Single();
                 args.Command.Subcommands.Add(templateCommandToRun);
 
-//                var newCommandTokens = args.ParseResult.Tokens.Select(t => t.Value).ToList();
-//                ParseResult updatedParseResult = args.ParseResult.RootCommandResult.Command.Parse(newCommandTokens, args.ParseResult.Configuration);
-
-//#pragma warning disable CA1826
-//                var firstTemplateCommandToken = updatedParseResult.CommandResult.Tokens.FirstOrDefault()?.Value ?? string.Empty;
-//#pragma warning restore CA1826
-//                var tokenIndex = -1;
-//                if (firstTemplateCommandToken.StartsWith('-') && (tokenIndex = newCommandTokens.IndexOf(firstTemplateCommandToken)) >= 0)
-//                {
-//                    newCommandTokens.Insert(tokenIndex, TemplateCommandArgs.NameDefaultSentinel);
-//                    updatedParseResult = args.ParseResult.RootCommandResult.Command.Parse(newCommandTokens, args.ParseResult.Configuration);
-//                }
                 ParseResult updatedParseResult = Reparse(args.ParseResult.RootCommandResult.Command, args.ParseResult.Tokens.Select(t => t.Value).ToArray(), args.ParseResult.Configuration);
                 return await candidates.Single().InvokeAsync(updatedParseResult, cancellationToken).ConfigureAwait(false);
             }
@@ -463,18 +451,6 @@ namespace Microsoft.TemplateEngine.Cli.Commands
                     template,
                     validateDefaultLanguage);
 
-//                CliConfiguration parser = ParserFactory.CreateParser(command);
-//                var remainingArguments = args.RemainingArguments?.ToList() ?? new List<string>();
-//                ParseResult parseResult = parser.Parse(remainingArguments);
-//#pragma warning disable CA1826
-//                var firstTemplateCommandToken = parseResult.CommandResult.Tokens.FirstOrDefault()?.Value ?? string.Empty;
-//#pragma warning restore CA1826
-//                var argumentIndex = -1;
-//                if (firstTemplateCommandToken.StartsWith('-') && (argumentIndex = remainingArguments.IndexOf(firstTemplateCommandToken)) >= 0)
-//                {
-//                    remainingArguments.Insert(argumentIndex, TemplateCommandArgs.NameDefaultSentinel);
-//                    parseResult = parser.Parse(remainingArguments);
-//                }
                 ParseResult parseResult = Reparse(command, args.RemainingArguments ?? Array.Empty<string>());
                 return (command, parseResult);
             }

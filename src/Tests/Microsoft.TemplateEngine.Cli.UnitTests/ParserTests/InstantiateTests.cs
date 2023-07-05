@@ -441,8 +441,8 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             {
                 //bool
                 //new object?[] { "foo", "bool", "bool", true, null, null, "Option '--bool' is required." },
-                new object?[] { "foo -b text", "bool", "bool", true, null, null, "Unrecognized command or argument 'text'." },
-                new object?[] { "foo --bool 0", "bool", "bool", true, null, null, "Unrecognized command or argument '0'." },
+                new object?[] { "foo bar -b text", "bool", "bool", true, null, null, "Unrecognized command or argument 'text'." },
+                new object?[] { "foo bar --bool 0", "bool", "bool", true, null, null, "Unrecognized command or argument '0'." },
                 //text
                 new object?[] { "foo --text", "text", "string", false, null, null, "Required argument missing for option: '--text'." },
                 //new object?[] { "foo", "text", "string", true, null, null, "Option '--text' is required." },
@@ -503,12 +503,12 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
         public static IEnumerable<object?[]> CanDetectParseErrorsChoiceTemplateOptionsData =>
             new object?[][]
             {
-                new object?[] { "foo --framework netcoreapp3.1", "framework", "net5.0|net6.0", false, null, null, "Argument(s) 'netcoreapp3.1' are not recognized. Must be one of: 'net5.0', 'net6.0'." },
+                new object?[] { "foo bar --framework netcoreapp3.1", "framework", "net5.0|net6.0", false, null, null, "Argument(s) 'netcoreapp3.1' are not recognized. Must be one of: 'net5.0', 'net6.0'." },
                 //https://github.com/dotnet/command-line-api/issues/1609
                 //new object?[] { "foo --framework", "framework", "net5.0|net6.0", false, null, null, "Required argument missing for option: '--framework'." },
                 //requireness is no longer set on parser level
                 //new object?[] { "foo", "framework", "net5.0|net6.0", true, null, null, "Option '--framework' is required." },
-                new object?[] { "foo --framework", "framework", "net5.0|net6.0", true, null, "netcoreapp2.1", $"Cannot parse default if option without value 'netcoreapp2.1' for option '--framework' as expected type 'choice': value 'netcoreapp2.1' is not allowed, allowed values are: 'net5.0','net6.0'." }
+                new object?[] { "foo bar --framework", "framework", "net5.0|net6.0", true, null, "netcoreapp2.1", $"Cannot parse default if option without value 'netcoreapp2.1' for option '--framework' as expected type 'choice': value 'netcoreapp2.1' is not allowed, allowed values are: 'net5.0','net6.0'." }
             };
 
         [Theory]
