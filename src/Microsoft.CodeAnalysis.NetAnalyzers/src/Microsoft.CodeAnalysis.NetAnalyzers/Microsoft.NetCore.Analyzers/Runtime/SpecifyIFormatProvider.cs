@@ -246,9 +246,10 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                             && x.ArgumentKind == ArgumentKind.DefaultValue);
 
                         var nullableType = invocationExpression.Instance?.Type.GetNullableValueTypeUnderlyingType();
-                        var isNullableNumberInvocation = numberTypes.Contains(nullableType, SymbolEqualityComparer.Default);
+                        var isDefaultToStringInvocation = invocationExpression.TargetMethod is { Name: nameof(object.ToString), Parameters.Length: 0 };
+                        var isNullableNumberToStringInvocation = isDefaultToStringInvocation && numberTypes.Contains(nullableType, SymbolEqualityComparer.Default);
 
-                        if (currentCallHasNullFormatProvider || isNullableNumberInvocation)
+                        if (currentCallHasNullFormatProvider || isNullableNumberToStringInvocation)
                         {
                             oaContext.ReportDiagnostic(invocationExpression.CreateDiagnostic(IFormatProviderOptionalRule,
                                 targetMethod.ToDisplayString(SymbolDisplayFormats.ShortSymbolDisplayFormat)));
