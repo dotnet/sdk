@@ -7092,5 +7092,96 @@ static class Test
 }
 ");
         }
+
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
+        [Fact, WorkItem(6695, "https://github.com/dotnet/roslyn-analyzers/issues/6695")]
+        public async Task NullCoalesceAndNullConditional_NoDiagnosticAsync()
+        {
+            await new VerifyCS.Test
+            {
+                TestCode = @"
+#nullable enable
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+class C
+{
+    private void Method(IEnumerable<int>? items = null)
+    {
+        var itemsToTest = items as IReadOnlyList<int> ??
+                          items?.ToList();
+    }
+
+    private void Method2(IEnumerable<int>? items2 = null)
+    {
+	    var itemsToTest = items2 as IReadOnlyList<int> ??
+					      items2?.ToList() ??
+					      (IReadOnlyList<int>)Array.Empty<int>();
+    }
+
+    private void Method3(IEnumerable<int>? items3 = null)
+    {
+        var itemsToTest = (IReadOnlyList<int>?)items3 ??
+                          items3?.ToList();
+    }
+}",
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp8,
+            }.RunAsync();
+        }
+
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
+        [Fact, WorkItem(6695, "https://github.com/dotnet/roslyn-analyzers/issues/6695")]
+        public async Task NullCoalesceAndNullConditional_DiagnosticAsync()
+        {
+            await new VerifyCS.Test
+            {
+                TestCode = @"
+#nullable enable
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+class C
+{
+    private void Method(IReadOnlyList<int>? items = null)
+    {
+        var itemsToTest = items as IEnumerable<int> ??
+                          items?.ToList();
+    }
+
+    private void Method2(IReadOnlyList<int>? items2 = null)
+    {
+	    var itemsToTest = items2 as IEnumerable<int> ??
+					      items2?.ToList() ??
+					      (IReadOnlyList<int>)Array.Empty<int>();
+    }
+
+    private void Method3(IReadOnlyList<int>? items3 = null)
+    {
+        var itemsToTest = (IEnumerable<int>?)items3 ??
+                          items3?.ToList();
+    }
+}",
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp8,
+                ExpectedDiagnostics =
+                {
+                    // /0/Test0.cs(13,27): warning CA1508: 'items' is always 'null'. Remove or refactor the condition(s) to avoid dead code.
+                    GetCSharpResultAt(13, 27, "items", "null"),
+                    // /0/Test0.cs(19,12): warning CA1508: 'items2' is always 'null'. Remove or refactor the condition(s) to avoid dead code.
+                    GetCSharpResultAt(19, 12, "items2", "null"),
+                    // /0/Test0.cs(19,12): warning CA1508: 'items2?.ToList()' is always 'null'. Remove or refactor the condition(s) to avoid dead code.
+                    GetCSharpResultAt(19, 12, "items2?.ToList()", "null"),
+                    // /0/Test0.cs(26,27): warning CA1508: 'items3' is always 'null'. Remove or refactor the condition(s) to avoid dead code.
+                    GetCSharpResultAt(26, 27, "items3", "null")
+                },
+            }.RunAsync();
+        }
     }
 }
