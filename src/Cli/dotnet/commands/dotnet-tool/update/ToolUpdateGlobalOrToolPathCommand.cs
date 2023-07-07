@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Transactions;
 using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.ShellShim;
 using Microsoft.DotNet.ToolPackage;
@@ -110,12 +111,13 @@ namespace Microsoft.DotNet.Tools.Tool.Update
 
                 RunWithHandlingInstallError(() =>
                 {
-                    IToolPackage newInstalledPackage = toolPackageInstaller.InstallPackage(
-                        new PackageLocation(nugetConfig: GetConfigFile(), additionalFeeds: _additionalFeeds),
+                    var toolPackageDownloader = new ToolPackageDownloader(toolPackageStore);
+                    IToolPackage newInstalledPackage = toolPackageDownloader.InstallPackageAsync(
+                    new PackageLocation(nugetConfig: GetConfigFile(), additionalFeeds: _additionalFeeds),
                         packageId: _packageId,
-                        targetFramework: _framework,
                         versionRange: versionRange,
-                        verbosity: _verbosity);
+                        targetFramework: _framework, verbosity: _verbosity
+                    ).GetAwaiter().GetResult();
 
                     EnsureVersionIsHigher(oldPackageNullable, newInstalledPackage);
 
