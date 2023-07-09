@@ -41,7 +41,7 @@ public class EndToEndTests : IDisposable
     {
         _loggerFactory.Dispose();
     }
-    
+
     [DockerAvailableFact]
     public async Task ApiEndToEndWithRegistryPushAndPull()
     {
@@ -510,7 +510,7 @@ public class EndToEndTests : IDisposable
             .Should().Pass();
 
         // Add package to the project
-        new DotnetCommand(_testOutput, "add", "package", "Microsoft.NET.Build.Containers", "-f", ToolsetInfo.CurrentTargetFramework, "-v", TestContext.Current.ToolsetUnderTest.SdkVersion)
+        new DotnetCommand(_testOutput, "add", "package", "Microsoft.NET.Build.Containers", "-v", TestContext.Current.ToolsetUnderTest.SdkVersion)
             .WithEnvironmentVariable("NUGET_PACKAGES", privateNuGetAssets.FullName)
             .WithWorkingDirectory(newProjectDir.FullName)
             .Execute()
@@ -529,7 +529,7 @@ public class EndToEndTests : IDisposable
             .Should().Pass();
 
         // we should have two images
-        new RunExeCommand(_testOutput, "docker", "image", "list", nameof(CanPublishForMultipleRids).ToLowerInvariant(), "--format", "\"{{.Tag}}\"")
+        ListImageTag(nameof(CanPublishForMultipleRids))
             .WithWorkingDirectory(newProjectDir.FullName)
             .Execute()
             .Should().Pass()
@@ -541,15 +541,15 @@ public class EndToEndTests : IDisposable
     [DockerAvailableFact]
     public void CanPublishSolution()
     {
-        DirectoryInfo newProjectDir = new DirectoryInfo(Path.Combine(TestSettings.TestArtifactsDirectory, nameof(CanPublishSolution)));
+        DirectoryInfo solutiondir = new DirectoryInfo(Path.Combine(TestSettings.TestArtifactsDirectory, nameof(CanPublishSolution)));
         DirectoryInfo privateNuGetAssets = new DirectoryInfo(Path.Combine(TestSettings.TestArtifactsDirectory, "ContainerNuGet"));
 
         string project1 = nameof(project1);
         string project2 = nameof(project2);
 
-        if (newProjectDir.Exists)
+        if (solutiondir.Exists)
         {
-            newProjectDir.Delete(recursive: true);
+            solutiondir.Delete(recursive: true);
         }
 
         if (privateNuGetAssets.Exists)
@@ -557,7 +557,7 @@ public class EndToEndTests : IDisposable
             privateNuGetAssets.Delete(recursive: true);
         }
 
-        newProjectDir.Create();
+        solutiondir.Create();
         privateNuGetAssets.Create();
 
         var packageDirPath = Path.Combine(TestContext.Current.TestExecutionDirectory, "Container", "package");
@@ -565,7 +565,7 @@ public class EndToEndTests : IDisposable
 
         foreach (var rid in new[]{project1, project2}) {
             new RunExeCommand(_testOutput, "docker", "image", "rm", project1.ToLowerInvariant()+$":1.0.0")
-                .WithWorkingDirectory(newProjectDir.FullName)
+                .WithWorkingDirectory(solutiondir.FullName)
                 .Execute();
         }
 
@@ -579,7 +579,7 @@ public class EndToEndTests : IDisposable
 
         new DotnetNewCommand(_testOutput, "sln")
             .WithVirtualHive()
-            .WithWorkingDirectory(newProjectDir.FullName)
+            .WithWorkingDirectory(solutiondir.FullName)
             // do not pollute the primary/global NuGet package store with the private package(s)
             .WithEnvironmentVariable("NUGET_PACKAGES", privateNuGetAssets.FullName)
             .Execute()
@@ -587,7 +587,7 @@ public class EndToEndTests : IDisposable
 
         new DotnetNewCommand(_testOutput, "webapi", "-o", project1)
             .WithVirtualHive()
-            .WithWorkingDirectory(newProjectDir.FullName)
+            .WithWorkingDirectory(solutiondir.FullName)
             // do not pollute the primary/global NuGet package store with the private package(s)
             .WithEnvironmentVariable("NUGET_PACKAGES", privateNuGetAssets.FullName)
             .Execute()
@@ -595,63 +595,65 @@ public class EndToEndTests : IDisposable
 
         new DotnetNewCommand(_testOutput, "webapi", "-o", project2)
             .WithVirtualHive()
-            .WithWorkingDirectory(newProjectDir.FullName)
+            .WithWorkingDirectory(solutiondir.FullName)
             // do not pollute the primary/global NuGet package store with the private package(s)
             .WithEnvironmentVariable("NUGET_PACKAGES", privateNuGetAssets.FullName)
             .Execute()
             .Should().Pass();
 
         new DotnetCommand(_testOutput, "sln", "add", project1)
-            .WithWorkingDirectory(newProjectDir.FullName)
+            .WithWorkingDirectory(solutiondir.FullName)
             // do not pollute the primary/global NuGet package store with the private package(s)
             .WithEnvironmentVariable("NUGET_PACKAGES", privateNuGetAssets.FullName)
             .Execute()
             .Should().Pass();
 
         new DotnetCommand(_testOutput, "sln", "add", project2)
-            .WithWorkingDirectory(newProjectDir.FullName)
+            .WithWorkingDirectory(solutiondir.FullName)
             // do not pollute the primary/global NuGet package store with the private package(s)
             .WithEnvironmentVariable("NUGET_PACKAGES", privateNuGetAssets.FullName)
             .Execute()
             .Should().Pass();
 
-        File.Copy(Path.Combine(TestContext.Current.TestExecutionDirectory, "NuGet.config"), Path.Combine(newProjectDir.FullName, "NuGet.config"));
+        File.Copy(Path.Combine(TestContext.Current.TestExecutionDirectory, "NuGet.config"), Path.Combine(solutiondir.FullName, "NuGet.config"));
 
         new DotnetCommand(_testOutput, "nuget", "add", "source", packagedir.FullName, "--name", "local-temp")
             .WithEnvironmentVariable("NUGET_PACKAGES", privateNuGetAssets.FullName)
-            .WithWorkingDirectory(newProjectDir.FullName)
+            .WithWorkingDirectory(solutiondir.FullName)
             .Execute()
             .Should().Pass();
 
         // Add package to the projects
-        new DotnetCommand(_testOutput, "add", "package", "Microsoft.NET.Build.Containers", "-f", ToolsetInfo.CurrentTargetFramework, "-v", TestContext.Current.ToolsetUnderTest.SdkVersion)
+        new DotnetCommand(_testOutput, "add", "package", "Microsoft.NET.Build.Containers", "-v", TestContext.Current.ToolsetUnderTest.SdkVersion)
             .WithEnvironmentVariable("NUGET_PACKAGES", privateNuGetAssets.FullName)
-            .WithWorkingDirectory(Path.Combine(newProjectDir.FullName, project1))
+            .WithWorkingDirectory(Path.Combine(solutiondir.FullName, project1))
             .Execute()
             .Should().Pass();
 
-        new DotnetCommand(_testOutput, "add", "package", "Microsoft.NET.Build.Containers", "-f", ToolsetInfo.CurrentTargetFramework, "-v", TestContext.Current.ToolsetUnderTest.SdkVersion)
+        new DotnetCommand(_testOutput, "add", "package", "Microsoft.NET.Build.Containers", "-v", TestContext.Current.ToolsetUnderTest.SdkVersion)
             .WithEnvironmentVariable("NUGET_PACKAGES", privateNuGetAssets.FullName)
-            .WithWorkingDirectory(Path.Combine(newProjectDir.FullName, project2))
+            .WithWorkingDirectory(Path.Combine(solutiondir.FullName, project2))
             .Execute()
             .Should().Pass();
 
-        new DotnetCommand(_testOutput, "build", "-bl", "/t:Containerize", "-p", "Version=1.0.0", "--self-contained", "false")
-            .WithWorkingDirectory(newProjectDir.FullName)
+        new DotnetCommand(_testOutput, "build", "-bl", "/t:Containerize", "--self-contained", "false")
+            .WithWorkingDirectory(solutiondir.FullName)
             .Execute()
             .Should().Pass();
 
         // we should have two images
-        new RunExeCommand(_testOutput, "docker", "image", "list", nameof(project1).ToLowerInvariant(), "--format", "\"{{.Tag}}\"")
-            .WithWorkingDirectory(newProjectDir.FullName)
+        ListImageTag(nameof(project1))
+            .WithWorkingDirectory(solutiondir.FullName)
             .Execute()
             .Should().Pass()
-            .And.HaveStdOutContaining($"1.0.0");
+            .And.HaveStdOutContaining("latest");
 
-        new RunExeCommand(_testOutput, "docker", "image", "list", nameof(project2).ToLowerInvariant(), "--format", "\"{{.Tag}}\"")
-            .WithWorkingDirectory(newProjectDir.FullName)
+        ListImageTag(nameof(project2))
+            .WithWorkingDirectory(solutiondir.FullName)
             .Execute()
             .Should().Pass()
-            .And.HaveStdOutContaining($"1.0.0");
+            .And.HaveStdOutContaining("latest");
     }
+
+    RunExeCommand ListImageTag(string imageName) => new(_testOutput, "docker", "image", "list", imageName.ToLowerInvariant(), "--format", "\"{{.Tag}}\"");
 }
