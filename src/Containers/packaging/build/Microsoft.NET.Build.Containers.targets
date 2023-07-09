@@ -235,6 +235,9 @@
       <!-- We have to build Publish AND PublishContainer because PublishContainer (and other
           PublishProfile-delivered targets) don't have an explicit Publish dependency. -->
       <_RequiredContainerPublishTargets>Publish;PublishContainer</_RequiredContainerPublishTargets>
+      <_IsMultiTargetTfm Condition="'$(TargetFrameworks)' != ''and '$(TargetFramework)' == ''">true</_IsMultiTargetTfm>
+      <_IsSingleTargetTfmNoRids Condition="'$(TargetFramework)' != '' and '$(RuntimeIdentifiers)' == ''">true</_IsSingleTargetTfmNoRids>
+      <_IsSingleTargetAndMultiRid Condition="'$(TargetFramework)' != '' and '$(RuntimeIdentifiers)' != ''">true</_IsSingleTargetAndMultiRid>
     </PropertyGroup>
 
     <!-- Strategy here is that we will figure out what project(s) to build the containerization targets(s) for
@@ -253,8 +256,7 @@
      -->
 
     <!-- TFMs but no TF -> multitarget, making image for each TFM -->
-    <ItemGroup Condition="'$(TargetFrameworks)' != ''
-                          and '$(TargetFramework)' == ''" >
+    <ItemGroup Condition="'$(_IsMultiTargetTfm)' == 'true'" >
       <_TFMItems Include="$(TargetFrameworks)" />
       <_SingleContainerPublish Include="$(MSBuildProjectFullPath)"
         AdditionalProperties="TargetFramework=%(_TFMItems.Identity);
@@ -262,23 +264,25 @@
     </ItemGroup>
 
     <!-- TF but no TFMs -> single image (aka the default pathway) up until now -->
-    <ItemGroup Condition="'$(TargetFramework)' != ''
-                          and '$(RuntimeIdentifiers)' == ''">
+    <ItemGroup Condition="'$(_IsSingleTargetTfm)' == 'true'">
         <_SingleContainerPublish Include="$(MSBuildProjectFullPath)" />
     </ItemGroup>
 
     <!-- TF with RIDs -> multi-arch, single image per arch -->
-    <ItemGroup Condition="'$(TargetFramework)' != ''
-                          and '$(RuntimeIdentifiers)' != ''">
+    <ItemGroup Condition="'$(_IsSingleTargetAndMultiRid)' == 'true'">
       <_RIDItems Include="$(RuntimeIdentifiers)" />
     </ItemGroup>
-    <MapRidToDockerPlatform Condition="'$(TargetFramework)' != ''
-                                      and '$(RuntimeIdentifiers)' != ''"
-                            RuntimeIdentifiers="@(_RIDItems)">
+    <!-- The tag is defaulted to 'Version' and would overwrite itself for each different architecture, so we need to differentiate them.
+         It's convention to do so by appending platform information to the tag - e.g. bookworm-amd64
+
+         We map from .NET RIDs to container platforms here so we can adhere to that convention. -->
+    <MapRidToDockerPlatform Condition="'$(_IsSingleTargetAndMultiRid)' == 'true'" RuntimeIdentifiers="@(_RIDItems)">
       <Output TaskParameter="ModifiedRuntimeIdentifiers" ItemName="_RIDItemsWithDockerPlatformTag" />
     </MapRidToDockerPlatform>
-    <ItemGroup Condition="'$(TargetFramework)' != ''
-                          and '$(RuntimeIdentifiers)' != ''">
+
+    <!-- Right now we're using Version - but this will very likely not be set for single-targeted builds yet (this generally happens via PrepareForBuild).
+         We need to figure out a way to ask what the 'root' of the image tag should be and use that. -->
+    <ItemGroup Condition="'$(_IsSingleTargetAndMultiRid)' == 'true'">
       <_SingleContainerPublish Include="$(MSBuildProjectFullPath)"
           AdditionalProperties="ContainerRuntimeIdentifier=%(_RIDItemsWithDockerPlatformTag.Identity);
                                 RuntimeIdentifier=%(_RIDItemsWithDockerPlatformTag.Identity);
