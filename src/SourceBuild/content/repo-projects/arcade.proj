@@ -30,9 +30,5 @@
     <ExtraPackageVersionPropsPackageInfo Include="NuGetVersion" Version="%24(NuGetPackagingVersion)" />
   </ItemGroup>
 
-  <ItemGroup>
-    <RepositoryReference Include="sourcelink" />
-  </ItemGroup>
-
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 </Project>

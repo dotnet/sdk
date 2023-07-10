@@ -13,11 +13,11 @@
   <ItemGroup>
     <!-- Toolsets -->
     <RepositoryReference Include="source-build-reference-packages" />
-    <RepositoryReference Include="sourcelink" />
     <RepositoryReference Include="arcade" />
 
     <!-- Product Repos -->
     <RepositoryReference Include="command-line-api" />
+    <RepositoryReference Include="sourcelink" />
     <RepositoryReference Include="diagnostics" />
     <RepositoryReference Include="emsdk" />
     <RepositoryReference Include="xliff-tasks" />
