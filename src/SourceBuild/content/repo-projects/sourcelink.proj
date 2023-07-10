@@ -5,13 +5,14 @@
     <BuildCommand>$(StandardSourceBuildCommand) $(StandardSourceBuildArgs)</BuildCommand>
 
     <LogVerbosityOptOut>true</LogVerbosityOptOut>
-
-    <!-- SourceLink builds before Arcade so it also needs the bootstrap Arcade version -->
-    <UseBootstrapArcade>true</UseBootstrapArcade>
   </PropertyGroup>
 
   <ItemGroup>
     <ExtraPackageVersionPropsPackageInfo Include="MicrosoftSourceLinkVersion" Version="$(SOURCE_LINK_BOOTSTRAP_VERSION)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <RepositoryReference Include="command-line-api" />
   </ItemGroup>
 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
