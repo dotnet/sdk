@@ -26,7 +26,7 @@ internal class DotNetHelper
     public static string ProjectsDirectory { get; } = Path.Combine(Directory.GetCurrentDirectory(), $"projects-{DateTime.Now:yyyyMMddHHmmssffff}");
 
     private ITestOutputHelper OutputHelper { get; }
-    private bool IsMonoRuntime { get; }
+    public bool IsMonoRuntime { get; }
 
     public DotNetHelper(ITestOutputHelper outputHelper)
     {
