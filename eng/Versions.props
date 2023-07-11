@@ -21,6 +21,8 @@
     <!-- Dependencies from https://github.com/dotnet/command-line-api -->
     <SystemCommandLineVersion>2.0.0-beta1.21473.1</SystemCommandLineVersion>
     <SystemCommandLineRenderingVersion>0.3.0-alpha.21473.1</SystemCommandLineRenderingVersion>
+    <!-- Dependencies from https://github.com/dotnet/runtime -->
+    <SystemTextJsonVersion>6.0.8</SystemTextJsonVersion>
   </PropertyGroup>
   <!--
     Other Dependency versions

@@ -13,6 +13,10 @@
       <Uri>https://github.com/dotnet/command-line-api</Uri>
       <Sha>82273cb56c83b589e8e5b63da0ac9745ffc6e105</Sha>
     </Dependency>
+    <Dependency Name="System.Text.Json" Version="6.0.8">
+      <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha>3241df7f2b0f3e2dada8d07229723c79fdbe4991</Sha>
+    </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
     <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="6.0.0-beta.22122.7">
