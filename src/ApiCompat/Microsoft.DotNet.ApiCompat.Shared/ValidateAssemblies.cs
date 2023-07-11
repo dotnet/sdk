@@ -35,7 +35,7 @@ namespace Microsoft.DotNet.ApiCompat
         {
             // Initialize the service provider
             ApiCompatServiceProvider serviceProvider = new(logFactory,
-                () => new SuppressionEngine(suppressionFiles, noWarn, generateSuppressionFile),
+                () => SuppressionFileHelper.CreateSuppressionEngine(suppressionFiles, noWarn, generateSuppressionFile),
                 (log) => new RuleFactory(log,
                     enableRuleAttributesMustMatch,
                     enableRuleCannotChangeParameterName),

@@ -27,13 +27,6 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging
         IReadOnlyCollection<Suppression> Suppressions { get; }
 
         /// <summary>
-        /// Checks if the passed in error is suppressed.
-        /// </summary>
-        /// <param name="error">The <see cref="Suppression"/> error to check.</param>
-        /// <returns><see langword="true"/> if the error is already suppressed. <see langword="false"/> otherwise.</returns>
-        bool IsErrorSuppressed(Suppression error);
-
-        /// <summary>
         /// Adds a suppression to the collection.
         /// </summary>
         /// <param name="suppression">The <see cref="Suppression"/> to be added.</param>
@@ -46,11 +39,24 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging
         IReadOnlyCollection<Suppression> GetUnnecessarySuppressions();
 
         /// <summary>
+        /// Checks if the passed in error is suppressed.
+        /// </summary>
+        /// <param name="error">The <see cref="Suppression"/> error to check.</param>
+        /// <returns><see langword="true"/> if the error is already suppressed. <see langword="false"/> otherwise.</returns>
+        bool IsErrorSuppressed(Suppression error);
+
+        /// <summary>
+        /// Load suppressions from suppression files.
+        /// </summary>
+        /// <param name="suppressionFiles">Suppression files to read from.</param>
+        void LoadSuppressions(params string[] suppressionFiles);
+
+        /// <summary>
         /// Writes the suppressions into the provided suppression file path and if empty, skips the operation.
         /// </summary>
         /// <param name="suppressionOutputFile">The path to the file to be written.</param>
         /// <param name="preserveUnnecessarySuppressions">If <see langword="true"/>, preserves unnecessary suppressions.</param>
-        /// <returns><see langword="true" /> if the suppression file is written.</returns>
-        bool WriteSuppressionsToFile(string suppressionOutputFile, bool preserveUnnecessarySuppressions);
+        /// <returns>Returns the set of suppressions written.</returns>
+        IReadOnlyCollection<Suppression> WriteSuppressionsToFile(string suppressionOutputFile, bool preserveUnnecessarySuppressions = false);
     }
 }

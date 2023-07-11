@@ -9,9 +9,19 @@ namespace Microsoft.DotNet.ApiCompat
 {
     internal static class SuppressionFileHelper
     {
-        /// <summary>
-        /// Write the suppression file to disk and throw if a path isn't provided.
-        /// </summary>
+        public static ISuppressionEngine CreateSuppressionEngine(string[]? suppressionFiles, string? noWarn, bool generateSuppressionFile)
+        {
+            SuppressionEngine suppressionEngine = new(noWarn, generateSuppressionFile);
+
+            if (suppressionFiles is not null)
+            {
+                suppressionEngine.LoadSuppressions(suppressionFiles);
+            }
+
+            return suppressionEngine;
+        }
+
+        // Write the suppression file to disk and throw if a path isn't provided.
         public static void GenerateSuppressionFile(ISuppressionEngine suppressionEngine,
             ISuppressableLog log,
             bool preserveUnnecessarySuppressions,
@@ -30,16 +40,14 @@ namespace Microsoft.DotNet.ApiCompat
                 return;
             }
 
-            if (suppressionEngine.WriteSuppressionsToFile(suppressionOutputFile, preserveUnnecessarySuppressions))
+            if (suppressionEngine.WriteSuppressionsToFile(suppressionOutputFile, preserveUnnecessarySuppressions).Count > 0)
             {
                 log.LogMessage(MessageImportance.High,
                     string.Format(CommonResources.WroteSuppressions, suppressionOutputFile));
             }
         }
 
-        /// <summary>
-        /// Log whether or not we found breaking changes. If we are writing to a suppression file, no need to log anything.
-        /// </summary>
+        // Log whether or not we found breaking changes. If we are writing to a suppression file, no need to log anything.
         public static void LogApiCompatSuccessOrFailure(bool generateSuppressionFile, ISuppressableLog log)
         {
             if (log.HasLoggedErrorSuppressions)
@@ -55,9 +63,7 @@ namespace Microsoft.DotNet.ApiCompat
             }
         }
 
-        /// <summary>
-        /// Validate whether unnecessary suppressions exist and log those.
-        /// </summary>
+        // Validate whether unnecessary suppressions exist and log those.
         public static void ValidateUnnecessarySuppressions(ISuppressionEngine suppressionEngine, ISuppressableLog log)
         {
             IReadOnlyCollection<Suppression> unnecessarySuppressions = suppressionEngine.GetUnnecessarySuppressions();

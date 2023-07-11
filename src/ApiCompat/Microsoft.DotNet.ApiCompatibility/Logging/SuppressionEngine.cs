@@ -18,7 +18,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging
     public class SuppressionEngine : ISuppressionEngine
     {
         protected const string DiagnosticIdDocumentationComment = " https://learn.microsoft.com/en-us/dotnet/fundamentals/package-validation/diagnostic-ids ";
-        private readonly HashSet<Suppression> _baselineSuppressions;
+        private readonly HashSet<Suppression> _baselineSuppressions = new();
         private readonly HashSet<Suppression> _suppressions = new();
         private readonly HashSet<string> _noWarn;
 
@@ -31,14 +31,36 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging
         /// <inheritdoc/>
         public IReadOnlyCollection<Suppression> Suppressions => _suppressions;
 
-        /// <inheritdoc/>
-        public SuppressionEngine(string[]? suppressionFiles = null,
-            string? noWarn = null,
-            bool baselineAllErrors = false)
+        /// <summary>
+        /// Creates a SuppressionEngine instance with the provided NoWarn string and a boolean that determines if errors should be baselined.
+        /// </summary>
+        /// <param name="noWarn">A string that contains warning and error codes to ignore suppressions with the corresponding diagnostic id.</param>
+        /// <param name="baselineAllErrors">If true, baselines all errors.</param>
+        public SuppressionEngine(string? noWarn = null, bool baselineAllErrors = false)
         {
             BaselineAllErrors = baselineAllErrors;
             _noWarn = string.IsNullOrEmpty(noWarn) ? new HashSet<string>() : new HashSet<string>(noWarn!.Split(';'));
-            _baselineSuppressions = ParseSuppressionFiles(suppressionFiles);
+        }
+
+        /// <inheritdoc/>
+        public void LoadSuppressions(params string[] suppressionFiles)
+        {
+            XmlSerializer serializer = CreateXmlSerializer();
+            foreach (string suppressionFile in suppressionFiles)
+            {
+                try
+                {
+                    using Stream reader = GetReadableStream(suppressionFile);
+                    if (serializer.Deserialize(reader) is Suppression[] deserializedSuppressions)
+                    {
+                        _baselineSuppressions.UnionWith(deserializedSuppressions);
+                    }
+                }
+                catch (FileNotFoundException) when (BaselineAllErrors)
+                {
+                    // Throw if the passed in suppression file doesn't exist and errors aren't baselined.
+                }
+            }
         }
 
         /// <inheritdoc/>
@@ -91,11 +113,11 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging
         public void AddSuppression(Suppression suppression) => _suppressions.Add(suppression);
 
         /// <inheritdoc/>
-        public bool WriteSuppressionsToFile(string suppressionOutputFile, bool preserveUnnecessarySuppressions)
+        public IReadOnlyCollection<Suppression> WriteSuppressionsToFile(string suppressionOutputFile, bool preserveUnnecessarySuppressions = false)
         {
             // If unnecessary suppressions should be preserved in the suppression file, union the
             // baseline suppressions with the set of actual suppressions. Duplicates are ignored.
-            HashSet<Suppression> suppressionsToSerialize = _suppressions;
+            HashSet<Suppression> suppressionsToSerialize = new(_suppressions);
             if (preserveUnnecessarySuppressions)
             {
                 suppressionsToSerialize.UnionWith(_baselineSuppressions);
@@ -103,7 +125,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging
 
             if (suppressionsToSerialize.Count == 0)
             {
-                return false;
+                return Array.Empty<Suppression>();
             }
 
             Suppression[] orderedSuppressions = suppressionsToSerialize
@@ -125,7 +147,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging
             CreateXmlSerializer().Serialize(xmlWriter, orderedSuppressions);
             AfterWritingSuppressionsCallback(stream);
 
-            return true;
+            return orderedSuppressions;
         }
 
         /// <inheritdoc/>
@@ -137,33 +159,6 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging
         protected virtual Stream GetReadableStream(string suppressionFile) => new FileStream(suppressionFile, FileMode.Open, FileAccess.Read, FileShare.Read);
 
         protected virtual Stream GetWritableStream(string suppressionFile) => new FileStream(suppressionFile, FileMode.Create);
-
-        private HashSet<Suppression> ParseSuppressionFiles(string[]? suppressionFiles)
-        {
-            HashSet<Suppression> suppressions = new();
-
-            if (suppressionFiles != null)
-            {
-                XmlSerializer serializer = CreateXmlSerializer();
-                foreach (string suppressionFile in suppressionFiles)
-                {
-                    try
-                    {
-                        using Stream reader = GetReadableStream(suppressionFile);
-                        if (serializer.Deserialize(reader) is Suppression[] deserializedSuppressions)
-                        {
-                            suppressions.UnionWith(deserializedSuppressions);
-                        }
-                    }
-                    catch (FileNotFoundException) when (BaselineAllErrors)
-                    {
-                        // Throw if the passed in suppression file doesn't exist and errors aren't baselined.
-                    }
-                }
-            }
-
-            return suppressions;
-        }
 
         private static XmlSerializer CreateXmlSerializer() => new(typeof(Suppression[]), new XmlRootAttribute("Suppressions"));
     }
