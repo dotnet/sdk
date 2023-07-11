@@ -68,7 +68,10 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging.Tests
             IReadOnlyCollection<Suppression> writtenSuppressions = suppressionEngine.WriteSuppressionsToFile(filePath, preserveUnnecessarySuppressions: true);
 
             Assert.NotEmpty(writtenSuppressions);
-            Assert.Equal(suppressionEngine.SuppressionFileWithoutComment.Trim(), output.Trim(), ignoreCase: true);
+
+            // Trimming away the comment as the serializer doesn't preserve them.
+            string expectedSuppressionFile = TestSuppressionEngine.DefaultSuppressionFile.Replace(TestSuppressionEngine.SuppressionFileComment, string.Empty);
+            Assert.Equal(expectedSuppressionFile.Trim(), output.Trim(), ignoreCase: true);
         }
 
         [Fact]

@@ -23,68 +23,16 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging.Tests
 
         public static readonly string SuppressionFileFooter = "</Suppressions>";
 
-        private static readonly string s_defaultSuppressionFile = SuppressionFileHeader + @"
-  <Suppression>
-    <DiagnosticId>CP0001</DiagnosticId>
-    <Target>T:A</Target>
-    <Left>lib/netstandard1.3/tempValidation.dll</Left>
-    <Right>lib/netstandard1.3/tempValidation.dll</Right>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0001</DiagnosticId>
-    <Target>T:tempValidation.Class1</Target>
-    <Left>lib/netstandard1.3/tempValidation.dll</Left>
-    <Right>lib/netstandard1.3/tempValidation.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0001</DiagnosticId>
-    <Target>T:A.B</Target>
-    <Left>ref/netstandard2.0/tempValidation.dll</Left>
-    <Right>lib/net6.0/tempValidation.dll</Right>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0001</DiagnosticId>
-    <Target>T:tempValidation.SomeGenericType`1</Target>
-    <Left>ref/netstandard2.0/tempValidation.dll</Left>
-    <Right>lib/net6.0/tempValidation.dll</Right>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:tempValidation.Class1.Bar(System.Int32)</Target>
-    <Left>ref/netstandard2.0/tempValidation.dll</Left>
-    <Right>lib/net6.0/tempValidation.dll</Right>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:tempValidation.Class1.SomeNewBreakingChange</Target>
-    <Left>ref/netstandard2.0/tempValidation.dll</Left>
-    <Right>lib/net6.0/tempValidation.dll</Right>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:tempValidation.Class1.SomeOtherGenericMethod``1(``0)</Target>
-    <Left>ref/netstandard2.0/tempValidation.dll</Left>
-    <Right>lib/net6.0/tempValidation.dll</Right>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP123</DiagnosticId>
-    <Target>T:myValidation.Class1</Target>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>PKV004</DiagnosticId>
-    <Target>.NETFramework,Version=v4.8</Target>
-  </Suppression>
-" + SuppressionFileFooter;
+        public static readonly string SuppressionFileComment = @"
+  <!-- Test comment -->";
 
-        public readonly string SuppressionFileWithoutComment = SuppressionFileHeader + @"
+        public static readonly string DefaultSuppressionFile = SuppressionFileHeader + @$"
   <Suppression>
     <DiagnosticId>CP0001</DiagnosticId>
     <Target>T:A</Target>
     <Left>lib/netstandard1.3/tempValidation.dll</Left>
     <Right>lib/netstandard1.3/tempValidation.dll</Right>
-  </Suppression>
+  </Suppression>{SuppressionFileComment}
   <Suppression>
     <DiagnosticId>CP0001</DiagnosticId>
     <Target>T:tempValidation.Class1</Target>
@@ -141,7 +89,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging.Tests
         {
             callback ??= (s) => { };
             _callback = callback;
-            _suppressionFileContent = suppressionFileContent ?? s_defaultSuppressionFile;
+            _suppressionFileContent = suppressionFileContent ?? DefaultSuppressionFile;
         }
 
         protected override Stream GetReadableStream(string suppressionFile)
