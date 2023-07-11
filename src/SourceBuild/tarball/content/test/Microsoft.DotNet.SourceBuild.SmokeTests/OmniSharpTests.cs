@@ -66,6 +66,7 @@ public class OmniSharpTests : SmokeTests
 
             Directory.CreateDirectory(OmniSharpDirectory);
             ExecuteHelper.ExecuteProcessValidateExitCode("tar", $"xzf {omniSharpTarballFile} -C {OmniSharpDirectory}", OutputHelper);
+			ExecuteHelper.ExecuteProcessValidateExitCode("chmod", $"+x {OmniSharpDirectory}/run", OutputHelper);
         }
     }
 }
