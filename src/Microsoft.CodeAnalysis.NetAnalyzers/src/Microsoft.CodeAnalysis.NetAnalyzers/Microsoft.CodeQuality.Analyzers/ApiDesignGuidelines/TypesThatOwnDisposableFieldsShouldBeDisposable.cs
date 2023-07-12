@@ -32,8 +32,6 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             isPortedFxCopRule: true,
             isDataflowRule: false);
 
-        private readonly List<string> _disposableFieldNames = new();
-
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(Rule);
 
         public override void Initialize(AnalysisContext context)
@@ -54,7 +52,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             });
         }
 
-        private void AnalyzeSymbolStart(SymbolStartAnalysisContext ctx, DisposeAnalysisHelper disposeAnalysisHelper)
+        private static void AnalyzeSymbolStart(SymbolStartAnalysisContext ctx, DisposeAnalysisHelper disposeAnalysisHelper)
         {
             INamedTypeSymbol namedType = (INamedTypeSymbol)ctx.Symbol;
             if (disposeAnalysisHelper.IsDisposable(namedType))
@@ -72,18 +70,20 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 return;
             }
 
-            ctx.RegisterOperationAction(context => AnalyzeOperation(context, namedType, disposableFields), OperationKind.SimpleAssignment, OperationKind.FieldInitializer);
-            ctx.RegisterSymbolEndAction(AnalyzeSymbolEnd);
+            var disposableFieldNamesBuilder = ImmutableArray.CreateBuilder<string>();
+
+            ctx.RegisterOperationAction(context => AnalyzeOperation(context, namedType, disposableFields, disposableFieldNamesBuilder), OperationKind.SimpleAssignment, OperationKind.FieldInitializer);
+            ctx.RegisterSymbolEndAction(context => AnalyzeSymbolEnd(context, disposableFieldNamesBuilder.ToImmutable()));
         }
 
-        private void AnalyzeOperation(OperationAnalysisContext ctx, INamedTypeSymbol parent, ISet<IFieldSymbol> disposableFields)
+        private static void AnalyzeOperation(OperationAnalysisContext ctx, INamedTypeSymbol parent, ISet<IFieldSymbol> disposableFields, ImmutableArray<string>.Builder disposableFieldNamesBuilder)
         {
             if (ctx.Operation is IAssignmentOperation { Target: IFieldReferenceOperation field } assignment
                 && IsObjectCreation(assignment.Value)
                 && !ctx.Options.IsConfiguredToSkipAnalysis(Rule, field.Field.Type, parent, ctx.Compilation)
                 && disposableFields.Contains(field.Field))
             {
-                _disposableFieldNames.Add(field.Field.Name);
+                disposableFieldNamesBuilder.Add(field.Field.Name);
             }
             else if (ctx.Operation is IFieldInitializerOperation initializer && IsObjectCreation(initializer.Value))
             {
@@ -92,7 +92,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     .Intersect(disposableFields);
                 foreach (var f in candidateFields)
                 {
-                    _disposableFieldNames.Add(f.Name);
+                    disposableFieldNamesBuilder.Add(f.Name);
                 }
             }
         }
@@ -107,13 +107,12 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             return op.Kind == OperationKind.ObjectCreation;
         }
 
-        private void AnalyzeSymbolEnd(SymbolAnalysisContext ctx)
+        private static void AnalyzeSymbolEnd(SymbolAnalysisContext ctx, ImmutableArray<string> disposableFieldNames)
         {
-            if (_disposableFieldNames.Count > 0)
+            if (disposableFieldNames.Length > 0)
             {
-                _disposableFieldNames.Sort();
                 // Type '{0}' owns disposable field(s) '{1}' but is not disposable
-                ctx.ReportDiagnostic(ctx.Symbol.CreateDiagnostic(Rule, ctx.Symbol.Name, string.Join("', '", _disposableFieldNames)));
+                ctx.ReportDiagnostic(ctx.Symbol.CreateDiagnostic(Rule, ctx.Symbol.Name, string.Join("', '", disposableFieldNames.Sort())));
             }
         }
     }
