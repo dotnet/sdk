@@ -3,10 +3,8 @@
 
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
 using Xunit.Abstractions;
 
 namespace Microsoft.NET.Build.Containers.IntegrationTests;
@@ -29,29 +27,69 @@ public class DockerRegistryManager
     {
         using TestLoggerFactory loggerFactory = new(testOutput);
 
-        testOutput.WriteLine("Spawning local registry");
         if (!new DockerCli(loggerFactory).IsAvailable()) {
             throw new InvalidOperationException("Docker is not available, tests cannot run");
         }
-        CommandResult processResult = ContainerCli.RunCommand(testOutput, "--rm", "--publish", "5010:5000", "--detach", "docker.io/library/registry:2").Execute();
-        processResult.Should().Pass().And.HaveStdOut();
-        using var reader = new StringReader(processResult.StdOut!);
-        s_registryContainerId = reader.ReadLine();
 
-        foreach (var tag in new[] { Net6ImageTag, Net7ImageTag, Net8PreviewImageTag })
+        ILogger logger = loggerFactory.CreateLogger("Docker Registry Init");
+
+        const int spawnRegistryMaxRetry = 5;
+        int spawnRegistryDelay = 1000;
+
+        for (int spawnRegistryAttempt = 1; spawnRegistryAttempt <= spawnRegistryMaxRetry; spawnRegistryAttempt++)
         {
-            ContainerCli.PullCommand(testOutput, $"{BaseImageSource}{RuntimeBaseImage}:{tag}")
-                .Execute()
-                .Should().Pass();
+            try
+            {
+                logger.LogInformation($"Spawning local registry at '{LocalRegistry}, attempt #{spawnRegistryAttempt}.");
 
-            ContainerCli.TagCommand(testOutput, $"{BaseImageSource}{RuntimeBaseImage}:{tag}", $"{LocalRegistry}/{RuntimeBaseImage}:{tag}")
-                .Execute()
-                .Should().Pass();
+                CommandResult processResult = ContainerCli.RunCommand(testOutput, "--rm", "--publish", "5010:5000", "--detach", "docker.io/library/registry:2").Execute();
 
-            ContainerCli.PushCommand(testOutput, $"{LocalRegistry}/{RuntimeBaseImage}:{tag}")
-                .Execute()
-                .Should().Pass();
+                processResult.Should().Pass().And.HaveStdOut();
+
+                logger.LogInformation($"StdOut: {processResult.StdOut}");
+                logger.LogInformation($"StdErr: {processResult.StdErr}");
+
+                using var reader = new StringReader(processResult.StdOut!);
+                s_registryContainerId = reader.ReadLine();
+
+                EnsureRegistryLoaded(LocalRegistry, logger);
+
+                foreach (string? tag in new[] { Net6ImageTag, Net7ImageTag, Net8PreviewImageTag })
+                {
+                    logger.LogInformation($"Pulling image '{BaseImageSource}{RuntimeBaseImage}:{tag}'.");
+                    ContainerCli.PullCommand(testOutput, $"{BaseImageSource}{RuntimeBaseImage}:{tag}")
+                        .Execute()
+                        .Should().Pass();
+
+                    logger.LogInformation($"Tagging image '{BaseImageSource}{RuntimeBaseImage}:{tag}' as '{LocalRegistry}/{RuntimeBaseImage}:{tag}'.");
+                    ContainerCli.TagCommand(testOutput, $"{BaseImageSource}{RuntimeBaseImage}:{tag}", $"{LocalRegistry}/{RuntimeBaseImage}:{tag}")
+                        .Execute()
+                        .Should().Pass();
+
+                    logger.LogInformation($"Pushing image '{LocalRegistry}/{RuntimeBaseImage}:{tag}'.");
+                    ContainerCli.PushCommand(testOutput, $"{LocalRegistry}/{RuntimeBaseImage}:{tag}")
+                        .Execute()
+                        .Should().Pass();
+                }
+                return;
+            }
+            catch (Exception ex)
+            {
+                logger.LogError($"Spawn registry attempt #{spawnRegistryAttempt} failed, {ex.Message}");
+                if (!string.IsNullOrWhiteSpace(s_registryContainerId))
+                {
+                    try
+                    {
+                        ContainerCli.StopCommand(testOutput, s_registryContainerId).Execute();
+                    }
+                    catch { }
+                }
+                logger.LogInformation($"Retrying after {spawnRegistryDelay} ms.");
+                Thread.Sleep(spawnRegistryDelay);
+                spawnRegistryDelay *= 2;
+            }
         }
+        throw new InvalidOperationException($"The registry was not loaded after {spawnRegistryMaxRetry} retries.");
     }
 
     public static void ShutdownDockerRegistry(ITestOutputHelper testOutput)
@@ -63,4 +101,35 @@ public class DockerRegistryManager
                 .Should().Pass();
         }
     }
+
+    private static void EnsureRegistryLoaded(string registryBaseUri, ILogger logger)
+    {
+        const int registryLoadMaxRetry = 10;
+        const int registryLoadTimeout = 1000; //ms
+
+        using HttpClient client = new();
+        using HttpRequestMessage request = new(HttpMethod.Get, new Uri(ContainerHelpers.TryExpandRegistryToUri(registryBaseUri), "/v2/"));
+
+        logger.LogInformation($"Checking if the registry '{registryBaseUri}' is available.");
+
+        int attempt = 1;
+        while (attempt <= registryLoadMaxRetry)
+        {
+            //added an additional delay to allow registry to load
+            Thread.Sleep(registryLoadTimeout);
+            HttpResponseMessage response = client.Send(request);
+            if (response.IsSuccessStatusCode)
+            {
+                break;
+            }
+            logger.LogWarning($"The registry '{registryBaseUri} is not loaded after {attempt * registryLoadTimeout} ms. Returned status code: {response.StatusCode}.");
+            attempt++;
+        }
+        if (attempt > registryLoadMaxRetry)
+        {
+            throw new Exception($"The registry was not loaded after {registryLoadMaxRetry * registryLoadTimeout} ms.");
+        }
+        logger.LogInformation($"The registry '{registryBaseUri}' is available after {attempt * registryLoadTimeout} ms.");
+    }
+
 }
