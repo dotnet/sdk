@@ -225,7 +225,8 @@ namespace Microsoft.DotNet.ApiCompat.Tool
             };
             CliOption<bool> enableStrictModeForCompatibleTfmsOption = new("--enable-strict-mode-for-compatible-tfms")
             {
-                Description = "Validates api compatibility in strict mode for contract and implementation assemblies for all compatible target frameworks."
+                Description = "Validates api compatibility in strict mode for contract and implementation assemblies for all compatible target frameworks.",
+                DefaultValueFactory = _ => true
             };
             CliOption<bool> enableStrictModeForCompatibleFrameworksInPackageOption = new("--enable-strict-mode-for-compatible-frameworks-in-package")
             {
@@ -368,7 +369,7 @@ namespace Microsoft.DotNet.ApiCompat.Tool
             Dictionary<NuGetFramework, IEnumerable<string>> packageAssemblyReferencesDict = new(argumentResult.Tokens.Count);
             foreach (var token in argumentResult.Tokens)
             {
-                string[] parts = token.Value.Split('=');
+                string[] parts = token.Value.Split(';');
                 if (parts.Length != 2)
                 {
                     argumentResult.AddError(invalidPackageAssemblyReferenceFormatMessage);
