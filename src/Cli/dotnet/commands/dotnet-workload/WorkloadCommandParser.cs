@@ -40,17 +40,17 @@ namespace Microsoft.DotNet.Cli
             return Command;
         }
 
-        internal static void ShowWorkloadsVersion(ParseResult parseResult)
+        internal static string GetWorkloadsVersion()
         {
             var workloadManifestProvider =
                 new SdkDirectoryWorkloadManifestProvider(Path.GetDirectoryName(Environment.ProcessPath),
                 Cli.Utils.Product.Version,
                 CliFolderPathCalculator.DotnetUserProfileFolderPath, SdkDirectoryWorkloadManifestProvider.GetGlobalJsonPath(Environment.CurrentDirectory));
 
-            Cli.Utils.Reporter.Output.WriteLine(workloadManifestProvider.GetWorkloadVersion());
+            return workloadManifestProvider.GetWorkloadVersion();
         }
 
-        internal static void ShowWorkloadsInfo(ParseResult parseResult = null, IWorkloadInfoHelper workloadInfoHelper = null, IReporter reporter = null, string dotnetDir = null)
+        internal static void ShowWorkloadsInfo(ParseResult parseResult = null, WorkloadInfoHelper workloadInfoHelper = null, IReporter reporter = null, string dotnetDir = null)
         {
             workloadInfoHelper ??= new WorkloadInfoHelper(parseResult != null ? parseResult.HasOption(SharedOptions.InteractiveOption) : false);
             IEnumerable<WorkloadId> installedList = workloadInfoHelper.InstalledSdkWorkloadIds;
@@ -74,7 +74,7 @@ namespace Microsoft.DotNet.Cli
                 const int align = 10;
                 const string separator = "   ";
 
-                reporter.WriteLine($" {'[' + workload.Key + ']'}");
+                reporter.WriteLine($" [{workload.Key}]");
 
                 reporter.Write($"{separator}{CommonStrings.WorkloadSourceColumn}:");
                 reporter.WriteLine($" {workload.Value,align}");
@@ -96,14 +96,24 @@ namespace Microsoft.DotNet.Cli
         {
             if (parseResult.HasOption(InfoOption) && parseResult.RootSubCommandResult() == "workload")
             {
-                ShowWorkloadsInfo(parseResult);
-                Cli.Utils.Reporter.Output.WriteLine(string.Empty);
+                WorkloadInfoHelper workloadInfoHelper = new(parseResult.HasOption(SharedOptions.InteractiveOption));
+                if (!workloadInfoHelper.InstalledSdkWorkloadIds.Any())
+                {
+                    Reporter.Output.WriteLine(CommonStrings.NoWorkloadsInstalledInfoWarning);
+                    Reporter.Output.WriteLine(string.Empty);
+                    return 0;
+                }
+
+                Reporter.Output.WriteLine($" Workload version: {workloadInfoHelper.ManifestProvider.GetWorkloadVersion()}");
+
+                ShowWorkloadsInfo(parseResult, workloadInfoHelper: workloadInfoHelper);
+                Reporter.Output.WriteLine(string.Empty);
                 return 0;
             }
             else if (parseResult.HasOption(VersionOption) && parseResult.RootSubCommandResult() == "workload")
             {
-                ShowWorkloadsVersion(parseResult);
-                Cli.Utils.Reporter.Output.WriteLine(string.Empty);
+                Reporter.Output.WriteLine(GetWorkloadsVersion());
+                Reporter.Output.WriteLine(string.Empty);
                 return 0;
             }
             return parseResult.HandleMissingCommand();
