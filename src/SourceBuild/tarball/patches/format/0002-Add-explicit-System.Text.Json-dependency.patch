@@ -40,7 +40,7 @@ index cdfa5f5e..86f02b44 100644
 +    </Dependency>
    </ProductDependencies>
    <ToolsetDependencies>
-     <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="7.0.0-beta.23254.2">
+     <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="7.0.0-beta.23313.4">
 diff --git a/eng/Versions.props b/eng/Versions.props
 index 27582078..bccaf176 100644
 --- a/eng/Versions.props
