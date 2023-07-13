@@ -5,6 +5,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
+using Analyzer.Utilities.PooledObjects;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Operations;
@@ -70,41 +71,32 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 return;
             }
 
-            var disposableFieldNamesBuilder = ImmutableArray.CreateBuilder<string>();
+            var disposableFieldNamesBuilder = ArrayBuilder<string>.GetInstance();
 
             ctx.RegisterOperationAction(context => AnalyzeOperation(context, namedType, disposableFields, disposableFieldNamesBuilder), OperationKind.SimpleAssignment, OperationKind.FieldInitializer);
-            ctx.RegisterSymbolEndAction(context => AnalyzeSymbolEnd(context, disposableFieldNamesBuilder.ToImmutable()));
+            ctx.RegisterSymbolEndAction(context => AnalyzeSymbolEnd(context, disposableFieldNamesBuilder.ToImmutableAndFree()));
         }
 
-        private static void AnalyzeOperation(OperationAnalysisContext ctx, INamedTypeSymbol parent, ISet<IFieldSymbol> disposableFields, ImmutableArray<string>.Builder disposableFieldNamesBuilder)
+        private static void AnalyzeOperation(OperationAnalysisContext ctx, INamedTypeSymbol parent, ISet<IFieldSymbol> disposableFields, ArrayBuilder<string> disposableFieldNamesBuilder)
         {
             if (ctx.Operation is IAssignmentOperation { Target: IFieldReferenceOperation field } assignment
-                && IsObjectCreation(assignment.Value)
-                && !ctx.Options.IsConfiguredToSkipAnalysis(Rule, field.Field.Type, parent, ctx.Compilation)
-                && disposableFields.Contains(field.Field))
+                && assignment.Value.WalkDownConversion().Kind == OperationKind.ObjectCreation
+                && disposableFields.Contains(field.Field)
+                && !ctx.Options.IsConfiguredToSkipAnalysis(Rule, field.Field.Type, parent, ctx.Compilation))
             {
                 disposableFieldNamesBuilder.Add(field.Field.Name);
             }
-            else if (ctx.Operation is IFieldInitializerOperation initializer && IsObjectCreation(initializer.Value))
+            else if (ctx.Operation is IFieldInitializerOperation initializer && initializer.Value.WalkDownConversion().Kind == OperationKind.ObjectCreation)
             {
-                var candidateFields = initializer.InitializedFields
-                    .Where(f => !ctx.Options.IsConfiguredToSkipAnalysis(Rule, f.Type, parent, ctx.Compilation))
-                    .Intersect(disposableFields);
+                var candidateFields = initializer.InitializedFields.Intersect(disposableFields);
                 foreach (var f in candidateFields)
                 {
-                    disposableFieldNamesBuilder.Add(f.Name);
+                    if (!ctx.Options.IsConfiguredToSkipAnalysis(Rule, f.Type, parent, ctx.Compilation))
+                    {
+                        disposableFieldNamesBuilder.Add(f.Name);
+                    }
                 }
             }
-        }
-
-        private static bool IsObjectCreation(IOperation op)
-        {
-            if (op is IConversionOperation conversion)
-            {
-                return conversion.Operand.Kind == OperationKind.ObjectCreation;
-            }
-
-            return op.Kind == OperationKind.ObjectCreation;
         }
 
         private static void AnalyzeSymbolEnd(SymbolAnalysisContext ctx, ImmutableArray<string> disposableFieldNames)
