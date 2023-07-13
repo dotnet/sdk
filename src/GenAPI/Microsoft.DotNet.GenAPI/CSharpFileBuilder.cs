@@ -80,8 +80,7 @@ namespace Microsoft.DotNet.GenAPI
             SyntaxNode compilationUnit = _syntaxGenerator.CompilationUnit(namespaceSyntaxNodes)
                 .WithAdditionalAnnotations(Formatter.Annotation, Simplifier.Annotation)
                 .Rewrite(new TypeDeclarationCSharpSyntaxRewriter())
-                .Rewrite(new BodyBlockCSharpSyntaxRewriter(_exceptionMessage))
-                .NormalizeWhitespace();
+                .Rewrite(new BodyBlockCSharpSyntaxRewriter(_exceptionMessage));
 
             if (_includeAssemblyAttributes)
             {
@@ -89,6 +88,7 @@ namespace Microsoft.DotNet.GenAPI
             }
 
             compilationUnit = GenerateForwardedTypeAssemblyAttributes(assemblySymbol, compilationUnit);
+            compilationUnit = compilationUnit.NormalizeWhitespace(eol: Environment.NewLine);
 
             Document document = project.AddDocument(assemblySymbol.Name, compilationUnit);
             document = Simplifier.ReduceAsync(document).Result;
@@ -242,7 +242,9 @@ namespace Microsoft.DotNet.GenAPI
             ImmutableArray<AttributeData> attributes = assembly.GetAttributes().ExcludeNonVisibleOutsideOfAssembly(_symbolFilter);
 
             // Emit assembly attributes from the IAssemblySymbol
-            List<SyntaxNode> attributeSyntaxNodes = attributes.Select(attribute => _syntaxGenerator.Attribute(attribute)
+            List<SyntaxNode> attributeSyntaxNodes = attributes
+                .Where(attribute => !attribute.IsReserved())
+                .Select(attribute => _syntaxGenerator.Attribute(attribute)
                 .WithTrailingTrivia(SyntaxFactory.LineFeed))
                 .ToList();
 

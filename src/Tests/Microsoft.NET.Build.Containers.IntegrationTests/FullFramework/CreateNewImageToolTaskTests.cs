@@ -46,24 +46,14 @@ public class CreateNewImageToolTaskTests
         task.BaseImageName = "MyBaseImageName";
 
         e = Assert.Throws<InvalidOperationException>(() => task.GenerateCommandLineCommandsInt());
-        Assert.Equal("CONTAINER4001: Required property 'ImageName' was not set or empty.", e.Message);
+        Assert.Equal("CONTAINER4001: Required property 'Repository' was not set or empty.", e.Message);
 
-        task.ImageName = "MyImageName";
+        task.Repository = "MyImageName";
 
         e = Assert.Throws<InvalidOperationException>(() => task.GenerateCommandLineCommandsInt());
         Assert.Equal("CONTAINER4001: Required property 'WorkingDirectory' was not set or empty.", e.Message);
 
         task.WorkingDirectory = "MyWorkingDirectory";
-
-        e = Assert.Throws<InvalidOperationException>(() => task.GenerateCommandLineCommandsInt());
-        Assert.Equal("CONTAINER4002: Required 'Entrypoint' items were not set.", e.Message);
-
-        task.Entrypoint = new[] { new TaskItem("") }; 
-
-        e = Assert.Throws<InvalidOperationException>(() => task.GenerateCommandLineCommandsInt());
-        Assert.Equal("CONTAINER4003: Required 'Entrypoint' items contain empty items.", e.Message);
-
-        task.Entrypoint = new[] { new TaskItem("MyEntryPoint") };
 
         string args = task.GenerateCommandLineCommandsInt();
         string workDir = GetPathToContainerize();
@@ -88,7 +78,7 @@ public class CreateNewImageToolTaskTests
         task.PublishDirectory = publishDir.FullName;
         task.BaseRegistry = "MyBaseRegistry";
         task.BaseImageName = "MyBaseImageName";
-        task.ImageName = "MyImageName";
+        task.Repository = "MyImageName";
         task.WorkingDirectory = "MyWorkingDirectory";
         task.Entrypoint = new[] { new TaskItem("MyEntryPoint") };
 
@@ -103,7 +93,7 @@ public class CreateNewImageToolTaskTests
         else
         {
             Assert.DoesNotContain("--baseimagetag", args);
-        }      
+        }
     }
 
 
@@ -119,7 +109,7 @@ public class CreateNewImageToolTaskTests
         task.PublishDirectory = publishDir.FullName;
         task.BaseRegistry = "MyBaseRegistry";
         task.BaseImageName = "MyBaseImageName";
-        task.ImageName = "MyImageName";
+        task.Repository = "MyImageName";
         task.WorkingDirectory = "MyWorkingDirectory";
         task.Entrypoint = new[] { new TaskItem("MyEntryPoint") };
 
@@ -149,7 +139,7 @@ public class CreateNewImageToolTaskTests
         task.PublishDirectory = publishDir.FullName;
         task.BaseRegistry = "MyBaseRegistry";
         task.BaseImageName = "MyBaseImageName";
-        task.ImageName = "MyImageName";
+        task.Repository = "MyImageName";
         task.WorkingDirectory = "MyWorkingDirectory";
         task.Entrypoint = new[] { new TaskItem("MyEntryPoint") };
 
@@ -178,7 +168,7 @@ public class CreateNewImageToolTaskTests
         task.PublishDirectory = publishDir.FullName;
         task.BaseRegistry = "MyBaseRegistry";
         task.BaseImageName = "MyBaseImageName";
-        task.ImageName = "MyImageName";
+        task.Repository = "MyImageName";
         task.WorkingDirectory = "MyWorkingDirectory";
         task.Entrypoint = new[] { new TaskItem("MyEntryPoint") };
 
@@ -211,7 +201,7 @@ public class CreateNewImageToolTaskTests
         task.PublishDirectory = publishDir.FullName;
         task.BaseRegistry = "MyBaseRegistry";
         task.BaseImageName = "MyBaseImageName";
-        task.ImageName = "MyImageName";
+        task.Repository = "MyImageName";
         task.WorkingDirectory = "MyWorkingDirectory";
         task.Entrypoint = new[] { new TaskItem("MyEntryPoint") };
 
@@ -257,7 +247,7 @@ public class CreateNewImageToolTaskTests
         task.PublishDirectory = publishDir.FullName;
         task.BaseRegistry = "MyBaseRegistry";
         task.BaseImageName = "MyBaseImageName";
-        task.ImageName = "MyImageName";
+        task.Repository = "MyImageName";
         task.WorkingDirectory = "MyWorkingDirectory";
         task.Entrypoint = new[] { new TaskItem("MyEntryPoint") };
 
@@ -288,9 +278,13 @@ public class CreateNewImageToolTaskTests
             .And.NotHaveStdOutContaining("Description:"); //standard help output for parse error
     }
 
-
-    [Fact]
-    public void GenerateCommandLineCommands_EntryPointArgs()
+    [InlineData(nameof(CreateNewImage.Entrypoint), "entrypoint")]
+    [InlineData(nameof(CreateNewImage.EntrypointArgs), "entrypointargs")]
+    [InlineData(nameof(CreateNewImage.DefaultArgs), "defaultargs")]
+    [InlineData(nameof(CreateNewImage.AppCommand), "appcommand")]
+    [InlineData(nameof(CreateNewImage.AppCommandArgs), "appcommandargs")]
+    [Theory]
+    public void GenerateCommandLineCommands_EntryPointAndCommand(string propertyName, string commandArgName)
     {
         CreateNewImage task = new();
 
@@ -304,25 +298,70 @@ public class CreateNewImageToolTaskTests
         task.PublishDirectory = publishDir.FullName;
         task.BaseRegistry = "MyBaseRegistry";
         task.BaseImageName = "MyBaseImageName";
-        task.ImageName = "MyImageName";
+        task.Repository = "MyImageName";
         task.WorkingDirectory = "MyWorkingDirectory";
         task.Entrypoint = new[] { new TaskItem("MyEntryPoint") };
 
-        task.EntrypointArgs = new[]
+        switch (propertyName)
         {
-            new TaskItem(""),
-            new TaskItem(" "),
-            new TaskItem("Valid1"),
-            new TaskItem("Valid2"),
-            new TaskItem("Quoted item")
-        };
+            case nameof(CreateNewImage.Entrypoint):
+                task.Entrypoint = new[]
+                {
+                    new TaskItem(""),
+                    new TaskItem(" "),
+                    new TaskItem("Valid1"),
+                    new TaskItem("Valid2"),
+                    new TaskItem("Quoted item")
+                };
+                break;
+            case nameof(CreateNewImage.EntrypointArgs):
+                task.EntrypointArgs = new[]
+                {
+                    new TaskItem(""),
+                    new TaskItem(" "),
+                    new TaskItem("Valid1"),
+                    new TaskItem("Valid2"),
+                    new TaskItem("Quoted item")
+                };
+                break;
+            case nameof(CreateNewImage.DefaultArgs):
+                task.DefaultArgs = new[]
+                {
+                    new TaskItem(""),
+                    new TaskItem(" "),
+                    new TaskItem("Valid1"),
+                    new TaskItem("Valid2"),
+                    new TaskItem("Quoted item")
+                };
+                break;
+            case nameof(CreateNewImage.AppCommand):
+                task.AppCommand = new[]
+                {
+                    new TaskItem(""),
+                    new TaskItem(" "),
+                    new TaskItem("Valid1"),
+                    new TaskItem("Valid2"),
+                    new TaskItem("Quoted item")
+                };
+                break;
+            case nameof(CreateNewImage.AppCommandArgs):
+                task.AppCommandArgs = new[]
+                {
+                    new TaskItem(""),
+                    new TaskItem(" "),
+                    new TaskItem("Valid1"),
+                    new TaskItem("Valid2"),
+                    new TaskItem("Quoted item")
+                };
+                break;
+        }
 
         string args = task.GenerateCommandLineCommandsInt();
 
-        Assert.Contains("""
-                                      --entrypointargs Valid1 Valid2 "Quoted item"
+        Assert.Contains($"""
+                                      --{commandArgName} Valid1 Valid2 "Quoted item"
                                       """, args);
-        Assert.Equal("Items 'EntrypointArgs' contain empty item(s) which will be ignored.", Assert.Single(warnings));
+        Assert.Equal($"Items '{propertyName}' contain empty item(s) which will be ignored.", Assert.Single(warnings));
 
         string workDir = GetPathToContainerize();
 
@@ -331,6 +370,36 @@ public class CreateNewImageToolTaskTests
             .WithWorkingDirectory(workDir)
             .Execute().Should().Fail()
             .And.NotHaveStdOutContaining("Description:"); //standard help output for parse error
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    [InlineData("Valid", true)]
+    public void GenerateCommandLineCommands_AppCommandInstruction(string value, bool optionExpected = false)
+    {
+        CreateNewImage task = new();
+        DirectoryInfo publishDir = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), DateTime.Now.ToString("yyyyMMddHHmmssfff")));
+        task.PublishDirectory = publishDir.FullName;
+        task.BaseRegistry = "MyBaseRegistry";
+        task.BaseImageName = "MyBaseImageName";
+        task.Repository = "MyImageName";
+        task.WorkingDirectory = "MyWorkingDirectory";
+        task.Entrypoint = new[] { new TaskItem("MyEntryPoint") };
+
+        task.AppCommandInstruction = value;
+
+        string args = task.GenerateCommandLineCommandsInt();
+
+        if (optionExpected)
+        {
+            Assert.Contains($"--appcommandinstruction {value}", args);
+        }
+        else
+        {
+            Assert.DoesNotContain("--appcommandinstruction", args);
+        }
     }
 
     [Fact]
@@ -348,7 +417,7 @@ public class CreateNewImageToolTaskTests
         task.PublishDirectory = publishDir.FullName;
         task.BaseRegistry = "MyBaseRegistry";
         task.BaseImageName = "MyBaseImageName";
-        task.ImageName = "MyImageName";
+        task.Repository = "MyImageName";
         task.WorkingDirectory = "MyWorkingDirectory";
         task.Entrypoint = new[] { new TaskItem("MyEntryPoint") };
 
@@ -385,7 +454,7 @@ public class CreateNewImageToolTaskTests
         task.PublishDirectory = publishDir.FullName;
         task.BaseRegistry = "MyBaseRegistry";
         task.BaseImageName = "MyBaseImageName";
-        task.ImageName = "MyImageName";
+        task.Repository = "MyImageName";
         task.WorkingDirectory = "MyWorkingDirectory";
         task.Entrypoint = new[] { new TaskItem("MyEntryPoint") };
 
@@ -413,6 +482,57 @@ public class CreateNewImageToolTaskTests
             .WithWorkingDirectory(workDir)
             .Execute().Should().Fail()
             .And.NotHaveStdOutContaining("Description:"); //standard help output for parse error
+    }
+
+    [Fact]
+    public void Logging_CanEnableTraceLogging()
+    {
+        CreateNewImage task = new();
+        DirectoryInfo publishDir = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), DateTime.Now.ToString("yyyyMMddHHmmssfff")));
+
+        task.PublishDirectory = publishDir.FullName;
+        task.BaseRegistry = "MyBaseRegistry";
+        task.BaseImageName = "MyBaseImageName";
+        task.Repository = "MyImageName";
+        task.WorkingDirectory = "MyWorkingDirectory";
+        task.Entrypoint = new[] { new TaskItem("") };
+        task.Entrypoint = new[] { new TaskItem("MyEntryPoint") };
+
+        string args = task.GenerateCommandLineCommandsInt();
+        string workDir = GetPathToContainerize();
+
+        new DotnetCommand(_testOutput, args)
+            .WithRawArguments()
+            .WithWorkingDirectory(workDir)
+            .WithEnvironmentVariable("CONTAINERIZE_TRACE_LOGGING_ENABLED", "1")
+            .Execute().Should().Fail()
+            .And.NotHaveStdOutContaining("Description:") //standard help output for parse error
+            .And.HaveStdOutContaining("Trace logging: enabled.");
+    }
+
+    [Fact]
+    public void Logging_TraceLoggingIsDisabledByDefault()
+    {
+        CreateNewImage task = new();
+        DirectoryInfo publishDir = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), DateTime.Now.ToString("yyyyMMddHHmmssfff")));
+
+        task.PublishDirectory = publishDir.FullName;
+        task.BaseRegistry = "MyBaseRegistry";
+        task.BaseImageName = "MyBaseImageName";
+        task.Repository = "MyImageName";
+        task.WorkingDirectory = "MyWorkingDirectory";
+        task.Entrypoint = new[] { new TaskItem("") };
+        task.Entrypoint = new[] { new TaskItem("MyEntryPoint") };
+
+        string args = task.GenerateCommandLineCommandsInt();
+        string workDir = GetPathToContainerize();
+
+        new DotnetCommand(_testOutput, args)
+            .WithRawArguments()
+            .WithWorkingDirectory(workDir)
+            .Execute().Should().Fail()
+            .And.NotHaveStdOutContaining("Description:") //standard help output for parse error
+            .And.NotHaveStdOutContaining("Trace logging: enabled.");
     }
 
     private static string GetPathToContainerize()

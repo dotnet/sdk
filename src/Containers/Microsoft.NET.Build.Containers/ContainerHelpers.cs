@@ -17,13 +17,8 @@ public static class ContainerHelpers
 
     internal const string HostObjectPass = "SDK_CONTAINER_REGISTRY_PWORD";
 
-    internal const string ChunkedUploadEnabled = "SDK_CONTAINER_REGISTRY_CHUNKED_UPLOAD";
-    internal const string ChunkedUploadSizeBytes = "SDK_CONTAINER_REGISTRY_CHUNKED_UPLOAD_SIZE_BYTES";
-
-    internal const string ParallelUploadEnabled = "SDK_CONTAINER_REGISTRY_PARALLEL_UPLOAD";
-
     internal const string DockerRegistryAlias = "docker.io";
-
+    
     /// <summary>
     /// Matches an environment variable name - must start with a letter or underscore, and can only contain letters, numbers, and underscores.
     /// </summary>
@@ -267,21 +262,21 @@ public static class ContainerHelpers
     /// <summary>
     /// Checks if a given container image name adheres to the image name spec. If not, and recoverable, then normalizes invalid characters.
     /// </summary>
-    internal static bool NormalizeImageName(string containerImageName,
+    internal static bool NormalizeRepository(string containerRepository,
                                          [NotNullWhen(false)] out string? normalizedImageName)
     {
-        if (IsValidImageName(containerImageName))
+        if (IsValidImageName(containerRepository))
         {
             normalizedImageName = null;
             return true;
         }
         else
         {
-            if (!Char.IsLetterOrDigit(containerImageName, 0))
+            if (!Char.IsLetterOrDigit(containerRepository, 0))
             {
                 throw new ArgumentException(Resources.Resource.GetString(nameof(Strings.InvalidImageName)));
             }
-            var loweredImageName = containerImageName.ToLowerInvariant();
+            var loweredImageName = containerRepository.ToLowerInvariant();
             normalizedImageName = imageNameCharacters.Replace(loweredImageName, "-");
             return false;
         }

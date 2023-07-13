@@ -69,19 +69,24 @@
       <ContainerImageTag Condition="'$(AutoGenerateImageTag)' == 'true'">$([System.DateTime]::UtcNow.ToString('yyyyMMddhhmmss'))</ContainerImageTag>
     </PropertyGroup>
 
+    <!-- Compatibility: previous versions used ImageName, but the proper term is Repository. Keep using that if explicitly set. -->
+    <Warning Condition="'$(ContainerImageName)' != ''" Code="CONTAINER003" Text="The property 'ContainerImageName' was set but is obsolete - please use 'ContainerRepository' instead." />
+
     <!-- Container Defaults -->
     <PropertyGroup>
       <!-- An empty ContainerRegistry implies pushing to the local registry, putting this here for documentation purposes -->
       <!-- <ContainerRegistry></ContainerRegistry> -->
 
-      <!-- Set which local container registry to use. We only explicitly support Docker (or things that mimic Docker APIs and binary names) at the moment. -->
-      <LocalRegistry Condition="'$(LocalRegistry)' == ''">Docker</LocalRegistry>
+      <!-- An empty LocalRegistry implies detecting the local registry. LocalRegistry can be set explicity to Docker/Podman. -->
+      <!-- <LocalRegistry></LocalRegistry> -->
 
-      <!-- Note: spaces will be replaced with '-' in ContainerImageName and ContainerImageTag -->
-      <ContainerImageName Condition="'$(ContainerImageName)' == ''">$(AssemblyName)</ContainerImageName>
+      <!-- Compatibility: previous versions used ImageName, but the proper term is Repository. Keep using that if explicitly set. -->
+      <ContainerRepository Condition="'$(ContainerImageName)' != ''">$(ContainerImageName)</ContainerRepository>
+      <!-- Note: spaces will be replaced with '-' in ContainerRepository and ContainerImageTag -->
+      <ContainerRepository Condition="'$(ContainerRepository)' == ''">$(AssemblyName)</ContainerRepository>
 
       <!-- Only default a tag name if no tag names at all are provided -->
-      <ContainerImageTag Condition="'$(ContainerImageTag)' == '' and '$(ContainerImageTags)' == ''">$(Version)</ContainerImageTag>
+      <ContainerImageTag Condition="'$(ContainerImageTag)' == '' and '$(ContainerImageTags)' == ''">latest</ContainerImageTag>
       <ContainerImageTag Condition="'$(AutoGenerateImageTag)' == 'true' and '$(ContainerImageTags)' == ''">$([System.DateTime]::UtcNow.ToString('yyyyMMddhhmmss'))</ContainerImageTag>
 
       <!-- The Container RID should default to the RID used for the entire build (to ensure things run on the platform they are built for), but the user knows best and so should be able to set it explicitly.
@@ -96,12 +101,12 @@
       <ContainerWorkingDirectory Condition="'$(ContainerWorkingDirectory)' == '' and $(_ContainerIsTargetingWindows) ">C:\app</ContainerWorkingDirectory>
     </PropertyGroup>
 
-    <ItemGroup Label="Entrypoint Assignment">
+    <ItemGroup Label="AppCommand Assignment" Condition="'$(ContainerAppCommandInstruction)' != 'None'">
       <!-- For non-apphosts, we need to invoke `dotnet` `app` as separate args -->
-      <ContainerEntrypoint Condition="'$(ContainerEntrypoint)' == '' and '$(UseAppHost)' != 'true'" Include="dotnet;$(TargetFileName)" />
+      <ContainerAppCommand Condition="'$(ContainerAppCommand)' == '' and '$(UseAppHost)' != 'true'" Include="dotnet;$(TargetFileName)" />
       <!-- For apphosts, we need to invoke `app` as a single arg -->
-      <ContainerEntrypoint Condition="'$(ContainerEntrypoint)' == '' and '$(UseAppHost)' == 'true' and !$(_ContainerIsTargetingWindows)" Include="$(ContainerWorkingDirectory)/$(AssemblyName)$(_NativeExecutableExtension)" />
-      <ContainerEntrypoint Condition="'$(ContainerEntrypoint)' == '' and '$(UseAppHost)' == 'true' and $(_ContainerIsTargetingWindows)" Include="$(AssemblyName)$(_NativeExecutableExtension)" />
+      <ContainerAppCommand Condition="'$(ContainerAppCommand)' == '' and '$(UseAppHost)' == 'true' and !$(_ContainerIsTargetingWindows)" Include="$(ContainerWorkingDirectory)/$(AssemblyName)$(_NativeExecutableExtension)" />
+      <ContainerAppCommand Condition="'$(ContainerAppCommand)' == '' and '$(UseAppHost)' == 'true' and $(_ContainerIsTargetingWindows)" Include="$(AssemblyName)$(_NativeExecutableExtension)" />
     </ItemGroup>
 
     <!-- We only set a default user when the base image is Microsoft-authored, and we're targeting a version of those images that supports a nonroot user -->
@@ -113,7 +118,7 @@
 
     <ParseContainerProperties FullyQualifiedBaseImageName="$(ContainerBaseImage)"
                               ContainerRegistry="$(ContainerRegistry)"
-                              ContainerImageName="$(ContainerImageName)"
+                              ContainerRepository="$(ContainerRepository)"
                               ContainerImageTag="$(ContainerImageTag)"
                               ContainerImageTags="$(ContainerImageTags)"
                               ContainerEnvironmentVariables="@(ContainerEnvironmentVariable)">
@@ -122,7 +127,7 @@
       <Output TaskParameter="ParsedContainerImage" PropertyName="ContainerBaseName" />
       <Output TaskParameter="ParsedContainerTag" PropertyName="ContainerBaseTag" />
       <Output TaskParameter="NewContainerRegistry" PropertyName="ContainerRegistry" />
-      <Output TaskParameter="NewContainerImageName" PropertyName="ContainerImageName" />
+      <Output TaskParameter="NewContainerRepository" PropertyName="ContainerRepository" />
       <Output TaskParameter="NewContainerTags" ItemName="ContainerImageTags" />
       <Output TaskParameter="NewContainerEnvironmentVariables" ItemName="ContainerEnvironmentVariables" />
     </ParseContainerProperties>
@@ -201,12 +206,16 @@
                     BaseImageTag="$(ContainerBaseTag)"
                     LocalRegistry="$(LocalRegistry)"
                     OutputRegistry="$(ContainerRegistry)"
-                    ImageName="$(ContainerImageName)"
+                    Repository="$(ContainerRepository)"
                     ImageTags="@(ContainerImageTags)"
                     PublishDirectory="$(PublishDir)"
                     WorkingDirectory="$(ContainerWorkingDirectory)"
                     Entrypoint="@(ContainerEntrypoint)"
                     EntrypointArgs="@(ContainerEntrypointArgs)"
+                    AppCommand="@(ContainerAppCommand)"
+                    AppCommandArgs="@(ContainerAppCommandArgs)"
+                    AppCommandInstruction="$(ContainerAppCommandInstruction)"
+                    DefaultArgs="@(ContainerDefaultArgs)"
                     Labels="@(ContainerLabel)"
                     ExposedPorts="@(ContainerPort)"
                     ContainerEnvironmentVariables="@(ContainerEnvironmentVariables)"

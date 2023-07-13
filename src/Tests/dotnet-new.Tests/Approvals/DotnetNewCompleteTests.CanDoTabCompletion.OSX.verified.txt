@@ -1,6 +1,7 @@
 ﻿angular
 api
 apicontroller
+blazor
 blazorserver
 blazorserver-empty
 blazorwasm
@@ -55,6 +56,7 @@ xunit
 /?
 /h
 create
+details
 install
 list
 search

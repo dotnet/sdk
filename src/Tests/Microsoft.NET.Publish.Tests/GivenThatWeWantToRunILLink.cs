@@ -188,6 +188,22 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
+        [InlineData("netstandard2.0")]
+        [InlineData("netstandard2.1")]
+        public void ILLink_can_use_latest_with_unsupported_target_framework(string targetFramework)
+        {
+            var projectName = "TrimmableNetstandardLibrary";
+            var testAsset = _testAssetsManager.CopyTestAsset(projectName)
+                .WithSource()
+                .WithTargetFramework(targetFramework);
+
+            var buildCommand = new BuildCommand(testAsset);
+            buildCommand.Execute("/p:IsTrimmable=true")
+                .Should().Pass()
+                .And.HaveStdOutContaining("warning IL2026");
+        }
+
+        [RequiresMSBuildVersionTheory("17.0.0.32901")]
         [MemberData(nameof(SupportedTfms), MemberType = typeof(PublishTestUtils))]
         public void PrepareForILLink_can_set_IsTrimmable(string targetFramework)
         {
@@ -976,6 +992,12 @@ namespace Microsoft.NET.Publish.Tests
                     .Should().BeFalse();
                 configProperties["System.Threading.Thread.EnableAutoreleasePool"].Value<bool>()
                     .Should().BeFalse();
+
+                if (parsedVersion.Major >= 8)
+                {
+                    configProperties["System.Text.Json.JsonSerializer.IsReflectionEnabledByDefault"].Value<bool>()
+                        .Should().BeFalse();
+                }
             }
             else
             {
@@ -1704,8 +1726,12 @@ namespace Microsoft.NET.Publish.Tests
 
             // runtimeconfig has trim settings
             JObject runtimeConfig = JObject.Parse(File.ReadAllText(runtimeConfigPath));
-            JToken startupHookSupport = runtimeConfig["runtimeOptions"]["configProperties"]["System.StartupHookProvider.IsSupported"];
-            startupHookSupport.Value<bool>().Should().BeFalse();
+            JToken configProperties = runtimeConfig["runtimeOptions"]["configProperties"];
+
+            configProperties["System.StartupHookProvider.IsSupported"].Value<bool>().Should().BeFalse();
+
+            // Build with PublishTrimmed enabled should disable System.Text.Json reflection
+            configProperties["System.Text.Json.JsonSerializer.IsReflectionEnabledByDefault"].Value<bool>().Should().BeFalse();
 
             // just setting PublishTrimmed doesn't inject the IsTrimmable attribute
             AssemblyInfo.Get(assemblyPath).ContainsKey("AssemblyMetadataAttribute").Should().BeFalse();

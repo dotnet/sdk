@@ -86,9 +86,9 @@ public partial class CreateNewImage : ToolTask, ICancelableTask
         {
             throw new InvalidOperationException(Resource.FormatString(nameof(Strings.RequiredPropertyNotSetOrEmpty), nameof(BaseImageName)));
         }
-        if (string.IsNullOrWhiteSpace(ImageName))
+        if (string.IsNullOrWhiteSpace(Repository))
         {
-            throw new InvalidOperationException(Resource.FormatString(nameof(Strings.RequiredPropertyNotSetOrEmpty), nameof(ImageName)));
+            throw new InvalidOperationException(Resource.FormatString(nameof(Strings.RequiredPropertyNotSetOrEmpty), nameof(Repository)));
         }
         if (string.IsNullOrWhiteSpace(WorkingDirectory))
         {
@@ -110,10 +110,8 @@ public partial class CreateNewImage : ToolTask, ICancelableTask
         builder.AppendFileNameIfNotNull(PublishDirectory.TrimEnd(new char[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar }));
         builder.AppendSwitchIfNotNull("--baseregistry ", BaseRegistry);
         builder.AppendSwitchIfNotNull("--baseimagename ", BaseImageName);
-        builder.AppendSwitchIfNotNull("--imagename ", ImageName);
+        builder.AppendSwitchIfNotNull("--repository ", Repository);
         builder.AppendSwitchIfNotNull("--workingdirectory ", WorkingDirectory);
-        ITaskItem[] sanitizedEntryPoints = Entrypoint.Where(e => !string.IsNullOrWhiteSpace(e.ItemSpec)).ToArray();
-        builder.AppendSwitchIfNotNull("--entrypoint ", sanitizedEntryPoints, delimiter: " ");
 
         //optional options
         if (!string.IsNullOrWhiteSpace(BaseImageTag))
@@ -128,13 +126,16 @@ public partial class CreateNewImage : ToolTask, ICancelableTask
         {
             builder.AppendSwitchIfNotNull("--localregistry ", LocalRegistry);
         }
-
-        if (EntrypointArgs.Any(e => string.IsNullOrWhiteSpace(e.ItemSpec)))
+        if (!string.IsNullOrWhiteSpace(AppCommandInstruction))
         {
-            Log.LogWarningWithCodeFromResources(nameof(Strings.EmptyValuesIgnored), nameof(EntrypointArgs));
+            builder.AppendSwitchIfNotNull("--appcommandinstruction ", AppCommandInstruction);
         }
-        ITaskItem[] sanitizedEntryPointArgs = EntrypointArgs.Where(e => !string.IsNullOrWhiteSpace(e.ItemSpec)).ToArray();
-        builder.AppendSwitchIfNotNull("--entrypointargs ", sanitizedEntryPointArgs, delimiter: " ");
+
+        AppendSwitchIfNotNullSantized(builder, "--entrypoint ", nameof(Entrypoint), Entrypoint);
+        AppendSwitchIfNotNullSantized(builder, "--entrypointargs ", nameof(EntrypointArgs), EntrypointArgs);
+        AppendSwitchIfNotNullSantized(builder, "--defaultargs ", nameof(DefaultArgs), DefaultArgs);
+        AppendSwitchIfNotNullSantized(builder, "--appcommand ", nameof(AppCommand), AppCommand);
+        AppendSwitchIfNotNullSantized(builder, "--appcommandargs ", nameof(AppCommandArgs), AppCommandArgs);
 
         if (Labels.Any(e => string.IsNullOrWhiteSpace(e.ItemSpec)))
         {
@@ -198,6 +199,16 @@ public partial class CreateNewImage : ToolTask, ICancelableTask
         }
 
         return builder.ToString();
+
+        void AppendSwitchIfNotNullSantized(CommandLineBuilder builder, string commandArgName, string propertyName, ITaskItem[] value)
+        {
+            ITaskItem[] santized = value.Where(e => !string.IsNullOrWhiteSpace(e.ItemSpec)).ToArray();
+            if (santized.Length != value.Length)
+            {
+                Log.LogWarningWithCodeFromResources(nameof(Strings.EmptyValuesIgnored), propertyName);
+            }
+            builder.AppendSwitchIfNotNull(commandArgName, santized, delimiter: " ");
+        }
     }
 }
 

@@ -12,8 +12,10 @@ using Microsoft.NET.Sdk.Localization;
 
 namespace Microsoft.NET.Sdk.WorkloadManifestReader
 {
-    public class SdkDirectoryWorkloadManifestProvider : IWorkloadManifestProvider
+    public partial class SdkDirectoryWorkloadManifestProvider : IWorkloadManifestProvider
     {
+        private const string WorkloadSetsFolderName = "workloadsets";
+
         private readonly string _sdkRootPath;
         private readonly SdkFeatureBand _sdkVersionBand;
         private readonly string[] _manifestRoots;
@@ -21,15 +23,16 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             "microsoft.net.workload.maccatalyst", "microsoft.net.workload.macos", "microsoft.net.workload.tvos", "microsoft.net.workload.mono.toolchain" };
         private readonly Dictionary<string, int>? _knownManifestIdsAndOrder;
 
-        private readonly Dictionary<string, ManifestSpecifier> _requestedManifestVersions;
+        private readonly WorkloadSet? _workloadSet;
+        private readonly WorkloadSet? _manifestsFromInstallState;
+        private readonly string? _installStateFilePath;
 
-        public SdkDirectoryWorkloadManifestProvider(string sdkRootPath, string sdkVersion, string? userProfileDir, IEnumerable<ManifestSpecifier>? requestedManifestVersions = null)
-            : this(sdkRootPath, sdkVersion, Environment.GetEnvironmentVariable, userProfileDir, requestedManifestVersions)
+        public SdkDirectoryWorkloadManifestProvider(string sdkRootPath, string sdkVersion, string? userProfileDir, string? globalJsonPath)
+            : this(sdkRootPath, sdkVersion, Environment.GetEnvironmentVariable, userProfileDir, globalJsonPath)
         {
-
         }
 
-        internal SdkDirectoryWorkloadManifestProvider(string sdkRootPath, string sdkVersion, Func<string, string?> getEnvironmentVariable, string? userProfileDir, IEnumerable<ManifestSpecifier>? requestedManifestVersions = null)
+        internal SdkDirectoryWorkloadManifestProvider(string sdkRootPath, string sdkVersion, Func<string, string?> getEnvironmentVariable, string? userProfileDir, string? globalJsonPath = null)
         {
             if (string.IsNullOrWhiteSpace(sdkVersion))
             {
@@ -87,44 +90,67 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 
             _manifestRoots = _manifestRoots ?? Array.Empty<string>();
 
-            _requestedManifestVersions = new Dictionary<string, ManifestSpecifier>(StringComparer.OrdinalIgnoreCase);
+            var availableWorkloadSets = GetAvailableWorkloadSets();
 
-            if (requestedManifestVersions != null)
+            string? globalJsonWorkloadSetVersion = GlobalJsonReader.GetWorkloadVersionFromGlobalJson(globalJsonPath);
+            if (globalJsonWorkloadSetVersion != null)
             {
-                foreach (var manifestVersion in requestedManifestVersions)
+                if (!availableWorkloadSets.TryGetValue(globalJsonWorkloadSetVersion, out _workloadSet))
                 {
-                    _requestedManifestVersions[manifestVersion.Id.ToString()] = manifestVersion;
+                    throw new FileNotFoundException(string.Format(Strings.WorkloadVersionFromGlobalJsonNotFound, globalJsonWorkloadSetVersion, globalJsonPath));
                 }
+            }
+            else
+            {
+                var installStateFilePath = Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkVersionBand, _sdkRootPath), "default.json");
+                if (File.Exists(installStateFilePath))
+                {
+                    var installState = InstallStateReader.ReadInstallState(installStateFilePath);
+                    if (!string.IsNullOrEmpty(installState.WorkloadSetVersion))
+                    {
+                        if (!availableWorkloadSets.TryGetValue(installState.WorkloadSetVersion!, out _workloadSet))
+                        {
+                            throw new FileNotFoundException(string.Format(Strings.WorkloadVersionFromInstallStateNotFound, installState.WorkloadSetVersion, installStateFilePath));
+                        }
+                    }
+                    _manifestsFromInstallState = installState.Manifests;
+                    _installStateFilePath = installStateFilePath;
+                }
+            }
+
+            if (_workloadSet == null && availableWorkloadSets.Any())
+            {
+                var maxWorkloadSetVersion = availableWorkloadSets.Keys.Select(k => new ReleaseVersion(k)).Max()!;
+                _workloadSet = availableWorkloadSets[maxWorkloadSetVersion.ToString()];
             }
         }
 
         public IEnumerable<ReadableWorkloadManifest> GetManifests()
         {
-            foreach (var workloadManifestDirectory in GetManifestDirectories())
-            {
-                var workloadManifestPath = Path.Combine(workloadManifestDirectory, "WorkloadManifest.json");
-                var id = Path.GetFileName(workloadManifestDirectory);
-
-                yield return new(
-                    id,
-                    workloadManifestPath,
-                    () => File.OpenRead(workloadManifestPath),
-                    () => WorkloadManifestReader.TryOpenLocalizationCatalogForManifest(workloadManifestPath)
-                );
-            }
-        }
-
-        public IEnumerable<string> GetManifestDirectories()
-        {
             //  Scan manifest directories
-            var manifestIdsToDirectories = new Dictionary<string, string>();
+            var manifestIdsToManifests = new Dictionary<string, ReadableWorkloadManifest>(StringComparer.OrdinalIgnoreCase);
 
-            void ProbeDirectory(string manifestDirectory)
+            void AddManifest(string manifestId, string manifestDirectory, string featureBand)
+            {
+                var workloadManifestPath = Path.Combine(manifestDirectory, "WorkloadManifest.json");
+
+                var readableManifest = new ReadableWorkloadManifest(
+                    manifestId,
+                    manifestDirectory,
+                    workloadManifestPath,
+                    featureBand,
+                    () => File.OpenRead(workloadManifestPath),
+                    () => WorkloadManifestReader.TryOpenLocalizationCatalogForManifest(workloadManifestPath));
+
+                manifestIdsToManifests[manifestId] = readableManifest;
+            }
+
+            void ProbeDirectory(string manifestDirectory, string featureBand)
             {
                 (string? id, string? finalManifestDirectory) = ResolveManifestDirectory(manifestDirectory);
                 if (id != null && finalManifestDirectory != null)
                 {
-                    manifestIdsToDirectories.Add(id, finalManifestDirectory);
+                    AddManifest(id, finalManifestDirectory, featureBand);
                 }
             }
 
@@ -136,7 +162,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                 {
                     foreach (var workloadManifestDirectory in Directory.EnumerateDirectories(manifestVersionBandDirectory))
                     {
-                        ProbeDirectory(workloadManifestDirectory);
+                        ProbeDirectory(workloadManifestDirectory, _sdkVersionBand.ToString());
                     }
                 }
             }
@@ -158,32 +184,57 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 
                 foreach (var workloadManifestDirectory in directoriesWithManifests.Values)
                 {
-                    ProbeDirectory(workloadManifestDirectory);
+                    ProbeDirectory(workloadManifestDirectory, _sdkVersionBand.ToString());
                 }
             }
 
-            //  Load manifests that were explicitly specified
-            foreach (var kvp in _requestedManifestVersions)
+            //  Load manifests from workload set, if any
+            if (_workloadSet != null)
             {
-                manifestIdsToDirectories.Add(kvp.Key, GetManifestDirectoryFromSpecifier(kvp.Value));
+                foreach (var kvp in _workloadSet.ManifestVersions)
+                {
+                    var manifestSpecifier = new ManifestSpecifier(kvp.Key, kvp.Value.Version, kvp.Value.FeatureBand);
+                    var manifestDirectory = GetManifestDirectoryFromSpecifier(manifestSpecifier);
+                    if (manifestDirectory == null)
+                    {
+                        throw new FileNotFoundException(string.Format(Strings.ManifestFromWorkloadSetNotFound, manifestSpecifier.ToString(), _workloadSet.Version));
+                    }
+                    AddManifest(manifestSpecifier.Id.ToString(), manifestDirectory, manifestSpecifier.FeatureBand.ToString());
+                    
+                }
             }
 
-            if (_knownManifestIdsAndOrder != null && _knownManifestIdsAndOrder.Keys.Any(id => !manifestIdsToDirectories.ContainsKey(id)))
+            //  Load manifests from install state
+            if (_manifestsFromInstallState != null)
             {
-                var missingManifestIds = _knownManifestIdsAndOrder.Keys.Where(id => !manifestIdsToDirectories.ContainsKey(id));
+                foreach (var kvp in _manifestsFromInstallState.ManifestVersions)
+                {
+                    var manifestSpecifier = new ManifestSpecifier(kvp.Key, kvp.Value.Version, kvp.Value.FeatureBand);
+                    var manifestDirectory = GetManifestDirectoryFromSpecifier(manifestSpecifier);
+                    if (manifestDirectory == null)
+                    {
+                        throw new FileNotFoundException(string.Format(Strings.ManifestFromInstallStateNotFound, manifestSpecifier.ToString(), _installStateFilePath));
+                    }
+                    AddManifest(manifestSpecifier.Id.ToString(), manifestDirectory, manifestSpecifier.FeatureBand.ToString());
+                }
+            }
+
+            if (_knownManifestIdsAndOrder != null && _knownManifestIdsAndOrder.Keys.Any(id => !manifestIdsToManifests.ContainsKey(id)))
+            {
+                var missingManifestIds = _knownManifestIdsAndOrder.Keys.Where(id => !manifestIdsToManifests.ContainsKey(id));
                 foreach (var missingManifestId in missingManifestIds)
                 {
-                    var manifestDir = FallbackForMissingManifest(missingManifestId);
+                    var (manifestDir, featureBand) = FallbackForMissingManifest(missingManifestId);
                     if (!string.IsNullOrEmpty(manifestDir))
                     {
-                        manifestIdsToDirectories.Add(missingManifestId, manifestDir);
+                        AddManifest(missingManifestId, manifestDir, featureBand);
                     }
                 }
             }
 
             //  Return manifests in a stable order.  Manifests in the KnownWorkloadManifests.txt file will be first, and in the same order they appear in that file.
             //  Then the rest of the manifests (if any) will be returned in (ordinal case-insensitive) alphabetical order.
-            return manifestIdsToDirectories
+            return manifestIdsToManifests
                 .OrderBy(kvp =>
                 {
                     if (_knownManifestIdsAndOrder != null &&
@@ -205,7 +256,8 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
         private (string? id, string? manifestDirectory) ResolveManifestDirectory(string manifestDirectory)
         {
             string manifestId = Path.GetFileName(manifestDirectory);
-            if (_outdatedManifestIds.Contains(manifestId))
+            if (_outdatedManifestIds.Contains(manifestId) ||
+                manifestId.Equals(WorkloadSetsFolderName, StringComparison.OrdinalIgnoreCase))
             {
                 return (null, null);
             }
@@ -234,13 +286,13 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             return (null, null);
         }
 
-        private string FallbackForMissingManifest(string manifestId)
+        private (string manifestDirectory, string manifestFeatureBand) FallbackForMissingManifest(string manifestId)
         {
             //  Only use the last manifest root (usually the dotnet folder itself) for fallback
             var sdkManifestPath = _manifestRoots.Last();
             if (!Directory.Exists(sdkManifestPath))
             {
-                return string.Empty;
+                return (string.Empty, string.Empty);
             }
 
             var candidateFeatureBands = Directory.GetDirectories(sdkManifestPath)
@@ -248,7 +300,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                 .Select(featureBand => new SdkFeatureBand(featureBand))
                 .Where(featureBand => featureBand < _sdkVersionBand || _sdkVersionBand.ToStringWithoutPrerelease().Equals(featureBand.ToString(), StringComparison.Ordinal));
 
-            var matchingManifestFatureBandsAndResolvedManifestDirectories = candidateFeatureBands
+            var matchingManifestFeatureBandsAndResolvedManifestDirectories = candidateFeatureBands
                 //  Calculate path to <FeatureBand>\<ManifestID>
                 .Select(featureBand => (featureBand, manifestDirectory: Path.Combine(sdkManifestPath, featureBand.ToString(), manifestId)))
                 //  Filter out directories that don't exist
@@ -259,18 +311,19 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                 .Where(t => t.res.id != null && t.res.manifestDirectory != null)
                 .ToList();
 
-            if (matchingManifestFatureBandsAndResolvedManifestDirectories.Any())
+            if (matchingManifestFeatureBandsAndResolvedManifestDirectories.Any())
             {
-                return matchingManifestFatureBandsAndResolvedManifestDirectories.OrderByDescending(t => t.featureBand).First().res.manifestDirectory!;
+                var selectedFeatureBandAndManifestDirectory = matchingManifestFeatureBandsAndResolvedManifestDirectories.OrderByDescending(t => t.featureBand).First();
+                return (selectedFeatureBandAndManifestDirectory.res.manifestDirectory!, selectedFeatureBandAndManifestDirectory.featureBand.ToString());
             }
             else
             {
                 // Manifest does not exist
-                return string.Empty;
+                return (string.Empty, string.Empty);
             }
         }
 
-        private string GetManifestDirectoryFromSpecifier(ManifestSpecifier manifestSpecifier)
+        private string? GetManifestDirectoryFromSpecifier(ManifestSpecifier manifestSpecifier)
         {
             foreach (var manifestDirectory in _manifestRoots)
             {
@@ -281,19 +334,71 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                     return specifiedManifestDirectory;
                 }
             }
-
-            throw new FileNotFoundException(string.Format(Strings.SpecifiedManifestNotFound, manifestSpecifier.ToString()));
+            return null;
         }
 
-        private bool IsManifestIdOutdated(string workloadManifestDir)
+        /// <summary>
+        /// Returns installed workload sets that are available for this SDK (ie are in the same feature band)
+        /// </summary>
+        private Dictionary<string, WorkloadSet> GetAvailableWorkloadSets()
         {
-            var manifestId = Path.GetFileName(workloadManifestDir);
-            return _outdatedManifestIds.Contains(manifestId);
+            Dictionary<string, WorkloadSet> availableWorkloadSets = new Dictionary<string, WorkloadSet>();
+
+            foreach (var manifestRoot in _manifestRoots.Reverse())
+            {
+                //  Workload sets must match the SDK feature band, we don't support any fallback to a previous band
+                var workloadSetsRoot = Path.Combine(manifestRoot, _sdkVersionBand.ToString(), WorkloadSetsFolderName);
+                if (Directory.Exists(workloadSetsRoot))
+                {
+                    foreach (var workloadSetDirectory in Directory.GetDirectories(workloadSetsRoot))
+                    {
+                        WorkloadSet? workloadSet = null;
+                        foreach (var jsonFile in Directory.GetFiles(workloadSetDirectory, "*.workloadset.json"))
+                        {
+                            var newWorkloadSet = WorkloadSet.FromJson(File.ReadAllText(jsonFile), _sdkVersionBand);
+                            if (workloadSet == null)
+                            {
+                                workloadSet = newWorkloadSet;
+                            }
+                            else
+                            {
+                                //  If there are multiple workloadset.json files, merge them
+                                foreach (var kvp in newWorkloadSet.ManifestVersions)
+                                {
+                                    workloadSet.ManifestVersions.Add(kvp.Key, kvp.Value);
+                                }
+                            }
+                        }
+                        if (workloadSet != null)
+                        {
+                            workloadSet.Version = Path.GetFileName(workloadSetDirectory);
+                            availableWorkloadSets[workloadSet.Version] = workloadSet;
+                        }
+                    }
+                }
+            }
+
+            return availableWorkloadSets;
         }
 
         public string GetSdkFeatureBand()
         {
             return _sdkVersionBand.ToString();
+        }
+
+        public static string? GetGlobalJsonPath(string? globalJsonStartDir)
+        {
+            string? directory = globalJsonStartDir;
+            while (directory != null)
+            {
+                string globalJsonPath = Path.Combine(directory, "global.json");
+                if (File.Exists(globalJsonPath))
+                {
+                    return globalJsonPath;
+                }
+                directory = Path.GetDirectoryName(directory);
+            }
+            return null;
         }
     }
 }

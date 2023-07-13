@@ -124,11 +124,38 @@ namespace Microsoft.NET.Build.Containers.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to CONTAINER1001: Failed to upload blob to {0}; received {1} with detail {2}..
+        ///   Looks up a localized string similar to CONTAINER1001: Failed to upload blob using {0}; received status code &apos;{1}&apos;..
         /// </summary>
         internal static string BlobUploadFailed {
             get {
                 return ResourceManager.GetString("BlobUploadFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Pushed container &apos;{0}&apos; to Docker daemon..
+        /// </summary>
+        internal static string ContainerBuilder_ImageUploadedToLocalDaemon {
+            get {
+                return ResourceManager.GetString("ContainerBuilder_ImageUploadedToLocalDaemon", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Pushed container &apos;{0}&apos; to registry &apos;{1}&apos;..
+        /// </summary>
+        internal static string ContainerBuilder_ImageUploadedToRegistry {
+            get {
+                return ResourceManager.GetString("ContainerBuilder_ImageUploadedToRegistry", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Building image &apos;{0}&apos; with tags &apos;{1}&apos; on top of base image &apos;{2}&apos;..
+        /// </summary>
+        internal static string ContainerBuilder_StartBuildingImage {
+            get {
+                return ResourceManager.GetString("ContainerBuilder_StartBuildingImage", resourceCulture);
             }
         }
         
@@ -234,9 +261,9 @@ namespace Microsoft.NET.Build.Containers.Resources {
         /// <summary>
         ///   Looks up a localized string similar to CONTAINER2014: Invalid {0}: {1}..
         /// </summary>
-        internal static string InvalidContainerImageName {
+        internal static string InvalidContainerRepository {
             get {
-                return ResourceManager.GetString("InvalidContainerImageName", resourceCulture);
+                return ResourceManager.GetString("InvalidContainerRepository", resourceCulture);
             }
         }
         
@@ -349,6 +376,24 @@ namespace Microsoft.NET.Build.Containers.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Error while reading daemon config: {0}.
+        /// </summary>
+        internal static string LocalDocker_FailedToGetConfig {
+            get {
+                return ResourceManager.GetString("LocalDocker_FailedToGetConfig", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The daemon server reported errors: {0}.
+        /// </summary>
+        internal static string LocalDocker_LocalDaemonErrors {
+            get {
+                return ResourceManager.GetString("LocalDocker_LocalDaemonErrors", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to CONTAINER2004: Unable to download layer with descriptor &apos;{0}&apos; from registry &apos;{1}&apos; because it does not exist..
         /// </summary>
         internal static string MissingLinkToRegistry {
@@ -390,6 +435,87 @@ namespace Microsoft.NET.Build.Containers.Resources {
         internal static string PublishDirectoryDoesntExist {
             get {
                 return ResourceManager.GetString("PublishDirectoryDoesntExist", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Uploaded config to registry..
+        /// </summary>
+        internal static string Registry_ConfigUploaded {
+            get {
+                return ResourceManager.GetString("Registry_ConfigUploaded", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Uploading config to registry at blob &apos;{0}&apos;,.
+        /// </summary>
+        internal static string Registry_ConfigUploadStarted {
+            get {
+                return ResourceManager.GetString("Registry_ConfigUploadStarted", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Layer &apos;{0}&apos; already exists..
+        /// </summary>
+        internal static string Registry_LayerExists {
+            get {
+                return ResourceManager.GetString("Registry_LayerExists", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Finished uploading layer &apos;{0}&apos; to &apos;{1}&apos;..
+        /// </summary>
+        internal static string Registry_LayerUploaded {
+            get {
+                return ResourceManager.GetString("Registry_LayerUploaded", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Uploading layer &apos;{0}&apos; to &apos;{1}&apos;..
+        /// </summary>
+        internal static string Registry_LayerUploadStarted {
+            get {
+                return ResourceManager.GetString("Registry_LayerUploadStarted", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Uploaded manifest to &apos;{0}&apos;..
+        /// </summary>
+        internal static string Registry_ManifestUploaded {
+            get {
+                return ResourceManager.GetString("Registry_ManifestUploaded", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Uploading manifest to registry &apos;{0}&apos; as blob &apos;{1}&apos;..
+        /// </summary>
+        internal static string Registry_ManifestUploadStarted {
+            get {
+                return ResourceManager.GetString("Registry_ManifestUploadStarted", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Uploaded tag &apos;{0}&apos; to &apos;{1}&apos;..
+        /// </summary>
+        internal static string Registry_TagUploaded {
+            get {
+                return ResourceManager.GetString("Registry_TagUploaded", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Uploading tag &apos;{0}&apos; to &apos;{1}&apos;..
+        /// </summary>
+        internal static string Registry_TagUploadStarted {
+            get {
+                return ResourceManager.GetString("Registry_TagUploadStarted", resourceCulture);
             }
         }
         
@@ -471,6 +597,60 @@ namespace Microsoft.NET.Build.Containers.Resources {
         internal static string UnrecognizedMediaType {
             get {
                 return ResourceManager.GetString("UnrecognizedMediaType", resourceCulture);
+            }
+        }
+
+        internal static string UnknownAppCommandInstruction {
+            get {
+                return ResourceManager.GetString("UnknownAppCommandInstruction", resourceCulture);
+            }
+        }
+
+        internal static string BaseEntrypointOverwritten {
+            get {
+                return ResourceManager.GetString("BaseEntrypointOverwritten", resourceCulture);
+            }
+        }
+
+        internal static string EntrypointAndAppCommandArgsSetNoAppCommandInstruction {
+            get {
+                return ResourceManager.GetString("EntrypointAndAppCommandArgsSetNoAppCommandInstruction", resourceCulture);
+            }
+        }
+
+        internal static string EntrypointArgsSetNoEntrypoint {
+            get {
+                return ResourceManager.GetString("EntrypointArgsSetNoEntrypoint", resourceCulture);
+            }
+        }
+
+        internal static string AppCommandArgsSetNoAppCommand {
+            get {
+                return ResourceManager.GetString("AppCommandArgsSetNoAppCommand", resourceCulture);
+            }
+        }
+
+        internal static string AppCommandSetNotUsed {
+            get {
+                return ResourceManager.GetString("AppCommandSetNotUsed", resourceCulture);
+            }
+        }
+
+        internal static string EntrypointSetNoAppCommandInstruction {
+            get {
+                return ResourceManager.GetString("EntrypointSetNoAppCommandInstruction", resourceCulture);
+            }
+        }
+
+        internal static string EntrypointConflictAppCommand {
+            get {
+                return ResourceManager.GetString("EntrypointConflictAppCommand", resourceCulture);
+            }
+        }
+
+        internal static string EntrypointArgsSetPreferAppCommandArgs {
+            get {
+                return ResourceManager.GetString("EntrypointArgsSetPreferAppCommandArgs", resourceCulture);
             }
         }
     }
