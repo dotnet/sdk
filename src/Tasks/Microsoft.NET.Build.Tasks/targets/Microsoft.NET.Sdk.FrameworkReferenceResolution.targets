@@ -1,4 +1,4 @@
-﻿<!--
+<!--
 ***********************************************************************************************
 Microsoft.NET.Sdk.FrameworkReferenceResolution.targets
 
@@ -60,11 +60,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Target Name="ProcessFrameworkReferences" BeforeTargets="_CheckForInvalidConfigurationAndPlatform;CollectPackageReferences;CollectPackageDownloads"
           DependsOnTargets="AddWindowsSdkKnownFrameworkReferences"
-          Condition="'@(FrameworkReference)' != '' Or
-            '$(_RequiresILLinkPack)' == 'true' Or
-            '$(PublishReadyToRun)' == 'true' Or
-            '$(PublishAot)' == 'true' Or
-            '$(UsingMicrosoftNETSdkWebAssembly)' == 'true'">
+          Condition="'@(FrameworkReference)' != '' Or '$(_RequiresILLinkPack)' == 'true'">
 
     <CheckForDuplicateFrameworkReferences
         FrameworkReferences="@(FrameworkReference)"
