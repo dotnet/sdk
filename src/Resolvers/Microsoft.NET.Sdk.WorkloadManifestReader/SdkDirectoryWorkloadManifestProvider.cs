@@ -140,7 +140,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                             GetManifests().OrderBy(m => m.ManifestId).Select(m => $"{m.ManifestId}.{m.ManifestFeatureBand}").ToArray()
                         )));
                 StringBuilder sb = new();
-                for (int b = 0; b < 8 && b < bytes.Length; b++)
+                for (int b = 0; b < 4 && b < bytes.Length; b++)
                 {
                     sb.Append(bytes[b].ToString("x2"));
                 }
