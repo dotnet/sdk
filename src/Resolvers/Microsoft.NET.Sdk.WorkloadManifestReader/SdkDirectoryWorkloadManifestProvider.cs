@@ -1,6 +1,12 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Workloads.Workload;
@@ -84,7 +90,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 
             }
 
-            _manifestRoots = _manifestRoots ?? Array.Empty<string>();
+            _manifestRoots ??= Array.Empty<string>();
 
             var availableWorkloadSets = GetAvailableWorkloadSets();
 
@@ -118,6 +124,28 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             {
                 var maxWorkloadSetVersion = availableWorkloadSets.Keys.Select(k => new ReleaseVersion(k)).Max()!;
                 _workloadSet = availableWorkloadSets[maxWorkloadSetVersion.ToString()];
+            }
+        }
+
+        public string GetWorkloadVersion()
+        {
+            if (_workloadSet?.Version is not null)
+            {
+                return _workloadSet?.Version!;
+            }
+
+            using (SHA256 sha256Hash = SHA256.Create())
+            {
+                byte[] bytes = sha256Hash.ComputeHash(Encoding.UTF8.GetBytes(string.Join(";",
+                            GetManifests().OrderBy(m => m.ManifestId).Select(m => $"{m.ManifestId}.{m.ManifestFeatureBand}").ToArray()
+                        )));
+                StringBuilder sb = new();
+                for (int b = 0; b < 8 && b < bytes.Length; b++)
+                {
+                    sb.Append(bytes[b].ToString("x2"));
+                }
+
+                return $"{_sdkVersionBand.ToStringWithoutPrerelease()}-manifests.{sb}";
             }
         }
 

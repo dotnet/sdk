@@ -72,6 +72,11 @@
         <target state="translated">Источник установки</target>
         <note />
       </trans-unit>
+      <trans-unit id="WorkloadVersionDescription">
+        <source>Display version information about installed workloads.</source>
+        <target state="new">Display version information about installed workloads.</target>
+        <note />
+      </trans-unit>
     </body>
   </file>
 </xliff>
