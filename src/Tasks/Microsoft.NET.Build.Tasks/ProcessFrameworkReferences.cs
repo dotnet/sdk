@@ -132,7 +132,8 @@ namespace Microsoft.NET.Build.Tasks
             List<ITaskItem> runtimeFrameworks,
             List<ITaskItem> targetingPacks,
             List<ITaskItem> runtimePacks,
-            List<ITaskItem> unavailableRuntimePacks
+            List<ITaskItem> unavailableRuntimePacks,
+            out List<KnownRuntimePack> knownRuntimePacksForTargetFramework
         )
         {
             var knownFrameworkReferencesForTargetFramework =
@@ -144,7 +145,7 @@ namespace Microsoft.NET.Build.Tasks
             //  Get known runtime packs from known framework references.
             //  Only use items where the framework reference name matches the RuntimeFrameworkName.
             //  This will filter out known framework references for "profiles", ie WindowsForms and WPF
-            var knownRuntimePacksForTargetFramework =
+            knownRuntimePacksForTargetFramework =
                 knownFrameworkReferencesForTargetFramework
                     .Where(kfr => kfr.Name.Equals(kfr.RuntimeFrameworkName, StringComparison.OrdinalIgnoreCase))
                     .Select(kfr => kfr.ToKnownRuntimePack())
@@ -367,6 +368,7 @@ namespace Microsoft.NET.Build.Tasks
             List<ITaskItem> targetingPacks = null;
             List<ITaskItem> runtimePacks = null;
             List<ITaskItem> unavailableRuntimePacks = null;
+            List<KnownRuntimePack> knownRuntimePacksForTargetFramework = null;
 
             //  Perf optimization: If there are no FrameworkReference items, then don't do anything
             //  (This means that if you don't have any direct framework references, you won't get any transitive ones either
@@ -379,7 +381,13 @@ namespace Microsoft.NET.Build.Tasks
                 targetingPacks = new List<ITaskItem>();
                 runtimePacks = new List<ITaskItem>();
                 unavailableRuntimePacks = new List<ITaskItem>();
-                AddPacksForFrameworkReferences(packagesToDownload, runtimeFrameworks, targetingPacks, runtimePacks, unavailableRuntimePacks);
+                AddPacksForFrameworkReferences(
+                    packagesToDownload,
+                    runtimeFrameworks,
+                    targetingPacks,
+                    runtimePacks,
+                    unavailableRuntimePacks,
+                    out knownRuntimePacksForTargetFramework);
             }
 
             _normalizedTargetFrameworkVersion ??= NormalizeVersion(new Version(TargetFrameworkVersion));
@@ -459,22 +467,25 @@ namespace Microsoft.NET.Build.Tasks
                 ImplicitPackageReferences = implicitPackageReferences.ToArray();
             }
 
-            // Determine the known runtime identifier platforms based on all available Microsoft.NETCore.App packs
-            HashSet<string> knownRuntimeIdentifierPlatforms = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            var netCoreAppPacks = knownRuntimePacksForTargetFramework.Where(krp => krp.Name.Equals("Microsoft.NETCore.App", StringComparison.OrdinalIgnoreCase));
-            foreach (KnownRuntimePack netCoreAppPack in netCoreAppPacks)
+            if (knownRuntimePacksForTargetFramework?.Any() == true)
             {
-                foreach (var runtimeIdentifier in netCoreAppPack.RuntimePackRuntimeIdentifiers.Split(';'))
+                // Determine the known runtime identifier platforms based on all available Microsoft.NETCore.App packs
+                HashSet<string> knownRuntimeIdentifierPlatforms = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                var netCoreAppPacks = knownRuntimePacksForTargetFramework!.Where(krp => krp.Name.Equals("Microsoft.NETCore.App", StringComparison.OrdinalIgnoreCase));
+                foreach (KnownRuntimePack netCoreAppPack in netCoreAppPacks)
                 {
-                    int separator = runtimeIdentifier.LastIndexOf('-');
-                    string platform = separator < 0 ? runtimeIdentifier : runtimeIdentifier.Substring(0, separator);
-                    knownRuntimeIdentifierPlatforms.Add(platform);
+                    foreach (var runtimeIdentifier in netCoreAppPack.RuntimePackRuntimeIdentifiers.Split(';'))
+                    {
+                        int separator = runtimeIdentifier.LastIndexOf('-');
+                        string platform = separator < 0 ? runtimeIdentifier : runtimeIdentifier.Substring(0, separator);
+                        knownRuntimeIdentifierPlatforms.Add(platform);
+                    }
                 }
-            }
 
-            if (knownRuntimeIdentifierPlatforms.Count > 0)
-            {
-                KnownRuntimeIdentifierPlatforms = knownRuntimeIdentifierPlatforms.ToArray();
+                if (knownRuntimeIdentifierPlatforms.Count > 0)
+                {
+                    KnownRuntimeIdentifierPlatforms = knownRuntimeIdentifierPlatforms.ToArray();
+                }
             }
         }
 
