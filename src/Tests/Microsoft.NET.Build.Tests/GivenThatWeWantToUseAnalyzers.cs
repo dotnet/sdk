@@ -61,6 +61,22 @@ namespace Microsoft.NET.Build.Tests
             VerifyInterceptorsFeatureEnabled(asset, expectEnabled: true);
         }
 
+        [Fact]
+        public void It_enables_requestdelegategenerator_for_PublishTrimmed()
+        {
+            var asset = _testAssetsManager
+                .CopyTestAsset("WebApp")
+                .WithSource()
+                .WithProjectChanges(project =>
+                {
+                    var ns = project.Root.Name.Namespace;
+                    project.Root.Add(new XElement(ns + "PropertyGroup", new XElement("PublishTrimmed", "true")));
+                });
+
+            VerifyRequestDelegateGeneratorIsUsed(asset, expectEnabled: true);
+            VerifyInterceptorsFeatureEnabled(asset, expectEnabled: true);
+        }
+
         private void VerifyRequestDelegateGeneratorIsUsed(TestAsset asset, bool? expectEnabled)
         {
             var command = new GetValuesCommand(
