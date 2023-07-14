@@ -39,7 +39,7 @@ namespace Microsoft.NET.Sdk.Web.Tests
             publishCommand.Execute($"/p:RuntimeIdentifier={rid}").Should().Pass();
 
             var buildProperties = testProject.GetPropertyValues(testAsset.TestRoot, targetFramework);
-            buildProperties["TrimMode"].Should().Be("full");
+            buildProperties["TrimMode"].Should().Be("");
 
             string outputDirectory = publishCommand.GetOutputDirectory(targetFramework: targetFramework, runtimeIdentifier: rid).FullName;
             string runtimeConfigFile = Path.Combine(outputDirectory, $"{projectName}.runtimeconfig.json");
@@ -73,7 +73,7 @@ namespace Microsoft.NET.Sdk.Web.Tests
 
             var buildProperties = testProject.GetPropertyValues(testAsset.TestRoot, targetFramework);
             buildProperties["PublishTrimmed"].Should().Be("true");
-            buildProperties["TrimMode"].Should().Be("full");
+            buildProperties["TrimMode"].Should().Be("");
             buildProperties["PublishIISAssets"].Should().Be("false");
             var ucrRid = buildProperties["NETCoreSdkPortableRuntimeIdentifier"];
 
