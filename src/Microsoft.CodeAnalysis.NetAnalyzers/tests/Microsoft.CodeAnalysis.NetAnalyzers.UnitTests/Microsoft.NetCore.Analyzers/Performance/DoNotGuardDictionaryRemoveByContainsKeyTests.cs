@@ -299,6 +299,36 @@ Namespace Testopolis
         Public MyDictionary As New Dictionary(Of String, String)()
 
         Public Sub New()
+            If ([|MyDictionary.ContainsKey(""Key"")|]) Then MyDictionary.Remove(""Key"")
+        End Sub
+    End Class
+End Namespace";
+
+            string fixedSource = @"
+" + VBUsings + @"
+Namespace Testopolis
+    Public Class SomeClass
+        Public MyDictionary As New Dictionary(Of String, String)()
+
+        Public Sub New()
+            MyDictionary.Remove(""Key"")
+        End Sub
+    End Class
+End Namespace";
+
+            await VerifyVB.VerifyCodeFixAsync(source, fixedSource);
+        }
+
+        [Fact]
+        public async Task RemoveIsTheOnlyStatementInABlock_OffersFixer_VB()
+        {
+            string source = @"
+" + VBUsings + @"
+Namespace Testopolis
+    Public Class SomeClass
+        Public MyDictionary As New Dictionary(Of String, String)()
+
+        Public Sub New()
             If ([|MyDictionary.ContainsKey(""Key"")|]) Then
                 MyDictionary.Remove(""Key"")
             End If
@@ -358,6 +388,36 @@ End Namespace";
         }
 
         [Fact]
+        public async Task HasElseStatement_OffersFixer_VB()
+        {
+            string source = @"
+" + VBUsings + @"
+Namespace Testopolis
+    Public Class SomeClass
+        Public MyDictionary As New Dictionary(Of String, String)()
+
+        Public Sub New()
+            If [|MyDictionary.ContainsKey(""Key"")|] Then MyDictionary.Remove(""Key"") Else Throw new Exception(""Key doesn't exist"")
+        End Sub
+    End Class
+End Namespace";
+
+            string fixedSource = @"
+" + VBUsings + @"
+Namespace Testopolis
+    Public Class SomeClass
+        Public MyDictionary As New Dictionary(Of String, String)()
+
+        Public Sub New()
+            If Not MyDictionary.Remove(""Key"") Then Throw new Exception(""Key doesn't exist"")
+        End Sub
+    End Class
+End Namespace";
+
+            await VerifyVB.VerifyCodeFixAsync(source, fixedSource);
+        }
+
+        [Fact]
         public async Task NegatedCondition_ReportsDiagnostic_VB()
         {
             string source = @"
@@ -367,15 +427,18 @@ Namespace Testopolis
         Public MyDictionary As New Dictionary(Of String, String)()
 
         Public Sub New()
-            If Not [|MyDictionary.ContainsKey(""Key"")|] Then MyDictionary.Remove(""Key"")
+            If Not [|MyDictionary.ContainsKey(""Key"")|] Then
+                MyDictionary.Remove(""Key"")
+            End If
         End Sub
     End Class
 End Namespace";
 
-            await VerifyVB.VerifyAnalyzerAsync(source);
+            await VerifyVB.VerifyCodeFixAsync(source, source);
         }
 
         [Fact]
+        [WorkItem(6274, "https://github.com/dotnet/roslyn-analyzers/issues/6274")]
         public async Task AdditionalStatements_ReportsDiagnostic_VB()
         {
             string source = @"
@@ -393,7 +456,41 @@ Namespace Testopolis
     End Class
 End Namespace";
 
-            await VerifyVB.VerifyAnalyzerAsync(source);
+            await VerifyVB.VerifyCodeFixAsync(source, source);
+        }
+
+        [Fact]
+        public async Task TriviaIsPreserved_VB()
+        {
+            string source = @"
+" + VBUsings + @"
+Namespace Testopolis
+    Public Class SomeClass
+        Public MyDictionary As New Dictionary(Of String, String)()
+
+        Public Sub New()
+            ' reticulates the splines
+            If ([|MyDictionary.ContainsKey(""Key"")|]) Then
+                MyDictionary.Remove(""Key"")
+            End If
+        End Sub
+    End Class
+End Namespace";
+
+            string fixedSource = @"
+" + VBUsings + @"
+Namespace Testopolis
+    Public Class SomeClass
+        Public MyDictionary As New Dictionary(Of String, String)()
+
+        Public Sub New()
+            ' reticulates the splines
+            MyDictionary.Remove(""Key"")
+        End Sub
+    End Class
+End Namespace";
+
+            await VerifyVB.VerifyCodeFixAsync(source, fixedSource);
         }
 
         [Fact]
