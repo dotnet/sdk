@@ -20,7 +20,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
     [ExportCodeFixProvider(LanguageNames.CSharp, LanguageNames.VisualBasic), Shared]
     public sealed class TypesThatOwnDisposableFieldsShouldBeDisposableFixer : CodeFixProvider
     {
-        public sealed override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray.Create(TypesThatOwnDisposableFieldsShouldBeDisposableAnalyzer<SyntaxNode>.RuleId);
+        public sealed override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray.Create(TypesThatOwnDisposableFieldsShouldBeDisposableAnalyzer.RuleId);
 
         public override async Task RegisterCodeFixesAsync(CodeFixContext context)
         {
@@ -64,7 +64,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             else
             {
                 SyntaxNode throwStatement = generator.ThrowStatement(generator.ObjectCreationExpression(model.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemNotImplementedException)));
-                SyntaxNode member = generator.MethodDeclaration(TypesThatOwnDisposableFieldsShouldBeDisposableAnalyzer<SyntaxNode>.Dispose, statements: new[] { throwStatement });
+                SyntaxNode member = generator.MethodDeclaration(TypesThatOwnDisposableFieldsShouldBeDisposableAnalyzer.Dispose, statements: new[] { throwStatement });
                 member = generator.AsPublicInterfaceImplementation(member, interfaceType);
                 editor.AddMember(declaration, member);
             }
