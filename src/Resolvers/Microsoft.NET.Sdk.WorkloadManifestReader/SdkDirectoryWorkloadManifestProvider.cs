@@ -137,7 +137,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             using (SHA256 sha256Hash = SHA256.Create())
             {
                 byte[] bytes = sha256Hash.ComputeHash(Encoding.UTF8.GetBytes(string.Join(";",
-                            GetManifests().OrderBy(m => m.ManifestId).Select(m => $"{m.ManifestId}.{m.ManifestFeatureBand}").ToArray()
+                            GetManifests().OrderBy(m => m.ManifestId).Select(m => $"{m.ManifestId}.{m.ManifestFeatureBand}.{m.ManifestVersion}").ToArray()
                         )));
                 StringBuilder sb = new();
                 for (int b = 0; b < 4 && b < bytes.Length; b++)
@@ -154,7 +154,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             //  Scan manifest directories
             var manifestIdsToManifests = new Dictionary<string, ReadableWorkloadManifest>(StringComparer.OrdinalIgnoreCase);
 
-            void AddManifest(string manifestId, string manifestDirectory, string featureBand)
+            void AddManifest(string manifestId, string manifestDirectory, string featureBand, string manifestVersion)
             {
                 var workloadManifestPath = Path.Combine(manifestDirectory, "WorkloadManifest.json");
 
@@ -163,6 +163,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                     manifestDirectory,
                     workloadManifestPath,
                     featureBand,
+                    manifestVersion,
                     () => File.OpenRead(workloadManifestPath),
                     () => WorkloadManifestReader.TryOpenLocalizationCatalogForManifest(workloadManifestPath));
 
@@ -174,7 +175,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                 (string? id, string? finalManifestDirectory) = ResolveManifestDirectory(manifestDirectory);
                 if (id != null && finalManifestDirectory != null)
                 {
-                    AddManifest(id, finalManifestDirectory, featureBand);
+                    AddManifest(id, finalManifestDirectory, featureBand, Path.GetFileName(manifestDirectory));
                 }
             }
 
@@ -223,7 +224,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                     {
                         throw new FileNotFoundException(string.Format(Strings.ManifestFromWorkloadSetNotFound, manifestSpecifier.ToString(), _workloadSet.Version));
                     }
-                    AddManifest(manifestSpecifier.Id.ToString(), manifestDirectory, manifestSpecifier.FeatureBand.ToString());
+                    AddManifest(manifestSpecifier.Id.ToString(), manifestDirectory, manifestSpecifier.FeatureBand.ToString(), kvp.Value.Version.ToString());
                     
                 }
             }
@@ -239,7 +240,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                     {
                         throw new FileNotFoundException(string.Format(Strings.ManifestFromInstallStateNotFound, manifestSpecifier.ToString(), _installStateFilePath));
                     }
-                    AddManifest(manifestSpecifier.Id.ToString(), manifestDirectory, manifestSpecifier.FeatureBand.ToString());
+                    AddManifest(manifestSpecifier.Id.ToString(), manifestDirectory, manifestSpecifier.FeatureBand.ToString(), kvp.Value.Version.ToString());
                 }
             }
 
@@ -251,7 +252,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                     var (manifestDir, featureBand) = FallbackForMissingManifest(missingManifestId);
                     if (!string.IsNullOrEmpty(manifestDir))
                     {
-                        AddManifest(missingManifestId, manifestDir, featureBand);
+                        AddManifest(missingManifestId, manifestDir, featureBand, Path.GetFileName(manifestDir));
                     }
                 }
             }
