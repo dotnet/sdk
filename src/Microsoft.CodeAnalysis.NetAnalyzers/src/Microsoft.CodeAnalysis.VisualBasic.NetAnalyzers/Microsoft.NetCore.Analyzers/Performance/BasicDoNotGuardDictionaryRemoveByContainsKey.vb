@@ -43,7 +43,21 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Performance
                     .WithElseBlock(Nothing) _
                     .WithAdditionalAnnotations(Formatter.Annotation).WithTriviaFrom(conditionalOperationNode)
             Else
-                newConditionNode = newConditionNode.WithAdditionalAnnotations(Formatter.Annotation).WithTriviaFrom(conditionalOperationNode)
+                ' if there's an else statement, negate the condition and replace the single true statement with it
+                Dim singleLineIfBlockSyntax = TryCast(conditionalOperationNode, SingleLineIfStatementSyntax)
+                If singleLineIfBlockSyntax?.ElseClause?.ChildNodes().Any() Then
+                    Dim generator = SyntaxGenerator.GetGenerator(document)
+                    Dim negatedExpression = generator.LogicalNotExpression(CType(childOperationNode, ExpressionStatementSyntax).Expression.WithoutTrivia())
+
+                    Dim oldElseBlock = singleLineIfBlockSyntax.ElseClause.Statements
+
+                    newConditionNode = singleLineIfBlockSyntax.WithCondition(CType(negatedExpression, ExpressionSyntax)) _
+                        .WithStatements(oldElseBlock) _
+                        .WithElseClause(Nothing) _
+                        .WithAdditionalAnnotations(Formatter.Annotation).WithTriviaFrom(conditionalOperationNode)
+                Else
+                    newConditionNode = newConditionNode.WithAdditionalAnnotations(Formatter.Annotation).WithTriviaFrom(conditionalOperationNode)
+                End If
             End If
 
             Dim newRoot = root.ReplaceNode(conditionalOperationNode, newConditionNode)
