@@ -6,6 +6,7 @@ using System.CommandLine;
 using System.CommandLine.Parsing;
 using System.IO;
 using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.ToolPackage;
 using Microsoft.Extensions.EnvironmentAbstractions;
@@ -73,17 +74,17 @@ namespace Microsoft.DotNet.Tools.Tool.Install
 
             try
             {
+                var toolPackageDownloader = new ToolPackageDownloader();
                 IToolPackage toolDownloadedPackage =
-                    _toolPackageInstaller.InstallPackageToExternalManagedLocation(
-                        new PackageLocation(
-                            nugetConfig: configFile,
-                            additionalFeeds: _sources,
-                            // Fix https://github.com/dotnet/sdk/issues/23135
-                            rootConfigDirectory: manifestFile.GetDirectoryPath().GetParentPath()),
-                        _packageId,
-                        versionRange,
-                        TargetFrameworkToInstall,
-                        verbosity: _verbosity);
+                   toolPackageDownloader.InstallPackageAsyncToExternalManagedLocation(
+                       new PackageLocation(
+                           nugetConfig: configFile,
+                           additionalFeeds: _sources,
+                           rootConfigDirectory: manifestFile.GetDirectoryPath()),
+                       _packageId,
+                       versionRange,
+                       TargetFrameworkToInstall,
+                       verbosity: _verbosity).GetAwaiter().GetResult(); ;
 
                 return toolDownloadedPackage;
             }
