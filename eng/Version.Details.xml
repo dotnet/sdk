@@ -166,21 +166,21 @@
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
       <Sha>70ae3df4a6f3c92fb6b315afc405edd10ff38579</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.WindowsDesktop.App.Runtime.win-x64" Version="6.0.20">
+    <Dependency Name="Microsoft.WindowsDesktop.App.Runtime.win-x64" Version="6.0.21">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-windowsdesktop</Uri>
-      <Sha>198e1c4771fc6a8a19625159c5730c26ef00f3cf</Sha>
+      <Sha>62f4861a3d2fd65e22cc93a462cdc4bc5f06c6dd</Sha>
     </Dependency>
-    <Dependency Name="VS.Redist.Common.WindowsDesktop.SharedFramework.x64.6.0" Version="6.0.20-servicing.23321.10">
+    <Dependency Name="VS.Redist.Common.WindowsDesktop.SharedFramework.x64.6.0" Version="6.0.21-servicing.23362.8">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-windowsdesktop</Uri>
-      <Sha>198e1c4771fc6a8a19625159c5730c26ef00f3cf</Sha>
+      <Sha>62f4861a3d2fd65e22cc93a462cdc4bc5f06c6dd</Sha>
     </Dependency>
-    <Dependency Name="VS.Redist.Common.WindowsDesktop.TargetingPack.x64.6.0" Version="6.0.20-servicing.23321.10">
+    <Dependency Name="VS.Redist.Common.WindowsDesktop.TargetingPack.x64.6.0" Version="6.0.21-servicing.23362.8">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-windowsdesktop</Uri>
-      <Sha>198e1c4771fc6a8a19625159c5730c26ef00f3cf</Sha>
+      <Sha>62f4861a3d2fd65e22cc93a462cdc4bc5f06c6dd</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.WindowsDesktop.App.Ref" Version="6.0.20">
+    <Dependency Name="Microsoft.WindowsDesktop.App.Ref" Version="6.0.21">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-windowsdesktop</Uri>
-      <Sha>198e1c4771fc6a8a19625159c5730c26ef00f3cf</Sha>
+      <Sha>62f4861a3d2fd65e22cc93a462cdc4bc5f06c6dd</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NET.Sdk.WindowsDesktop" Version="6.0.20-servicing.23321.8" CoherentParentDependency="Microsoft.WindowsDesktop.App.Runtime.win-x64">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-wpf</Uri>
