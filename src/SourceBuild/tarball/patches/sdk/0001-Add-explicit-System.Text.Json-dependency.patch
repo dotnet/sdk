@@ -1,0 +1,31 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nikola Milosavljevic <nikolam@microsoft.com>
+Date: Mon, 26 Jun 2023 23:02:20 +0000
+Subject: [PATCH] Add explicit System.Text.Json dependency
+
+Adding an excplicit System.Text.Json dependency to prevent transitive dependency to be picked up
+from PSB, via Microsoft.Build package.
+
+Backport: https://github.com/dotnet/sdk/pull/33618
+---
+ src/BuiltInTools/dotnet-watch/dotnet-watch.csproj | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/src/BuiltInTools/dotnet-watch/dotnet-watch.csproj b/src/BuiltInTools/dotnet-watch/dotnet-watch.csproj
+index 065f750f72..13d2c1ed99 100644
+--- a/src/BuiltInTools/dotnet-watch/dotnet-watch.csproj
++++ b/src/BuiltInTools/dotnet-watch/dotnet-watch.csproj
+@@ -23,6 +23,13 @@
+     <PackageReference Include="Microsoft.Build.Locator" Version="$(MicrosoftBuildLocatorPackageVersion)" />
+     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Features" Version="$(MicrosoftCodeAnalysisCSharpFeaturesPackageVersion)" />
+     <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="$(MicrosoftCodeAnalysisWorkspacesMSBuildPackageVersion)" />
++
++    <!--
++      Explicit System.Text.Json package reference is required for source-build to pick up the live package.
++      Avoids picking up an old version via transitive dependency from Microsoft.Build or Microsoft.CodeAnalysis.Workspaces.MSBuild.
++    -->
++    <PackageReference Include="System.Text.Json" Version="$(SystemTextJsonVersion)" Condition="'$(DotnetBuildFromSource)' == 'true'" />
++
+     <Compile Include="$(RepoRoot)src\Common\PathUtilities.cs" LinkBase="Common" />
+   </ItemGroup>
+ 
