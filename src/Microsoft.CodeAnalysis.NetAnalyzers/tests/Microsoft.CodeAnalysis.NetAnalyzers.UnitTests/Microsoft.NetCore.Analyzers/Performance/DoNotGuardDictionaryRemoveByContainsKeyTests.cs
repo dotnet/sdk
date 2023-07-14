@@ -164,6 +164,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
         }
 
         [Fact]
+        [WorkItem(6274, "https://github.com/dotnet/roslyn-analyzers/issues/6274")]
         public async Task NegatedCondition_ReportsDiagnostic_CS()
         {
             string source = CSUsings + CSNamespaceAndClassStart + @"
@@ -175,7 +176,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 MyDictionary.Remove(""Key"");
         }" + CSNamespaceAndClassEnd;
 
-            await VerifyCS.VerifyAnalyzerAsync(source);
+            await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
         [Fact]
@@ -242,6 +243,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
         }
 
         [Fact]
+        [WorkItem(6274, "https://github.com/dotnet/roslyn-analyzers/issues/6274")]
         public async Task AdditionalStatements_ReportsDiagnostic_CS()
         {
             string source = CSUsings + CSNamespaceAndClassStart + @"
@@ -257,7 +259,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
         }
         " + CSNamespaceAndClassEnd;
 
-            await VerifyCS.VerifyAnalyzerAsync(source);
+            await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
         [Fact]
