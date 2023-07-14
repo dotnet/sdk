@@ -5,6 +5,7 @@ Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.CodeFixes
 Imports Microsoft.CodeAnalysis.Editing
 Imports Microsoft.CodeAnalysis.Formatting
+Imports Microsoft.CodeAnalysis.VisualBasic
 Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
 Imports Microsoft.NetCore.Analyzers.Performance
 
@@ -14,12 +15,13 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Performance
         Inherits DoNotGuardDictionaryRemoveByContainsKeyFixer
 
         Protected Overrides Function SyntaxSupportedByFixer(conditionalSyntax As SyntaxNode) As Boolean
-            If TypeOf conditionalSyntax Is IfStatementSyntax Then
-                Return True
+            If TypeOf conditionalSyntax Is SingleLineIfStatementSyntax Then
+                Return CType(conditionalSyntax, SingleLineIfStatementSyntax).Condition.RawKind <> SyntaxKind.NotExpression
             End If
 
             If TypeOf conditionalSyntax Is MultiLineIfBlockSyntax Then
-                Return CType(conditionalSyntax, MultiLineIfBlockSyntax).IfStatement.ChildNodes().Count() = 1
+                Return CType(conditionalSyntax, MultiLineIfBlockSyntax).IfStatement.Condition.RawKind <> SyntaxKind.NotExpression And
+                    CType(conditionalSyntax, MultiLineIfBlockSyntax).Statements.Count() = 1
             End If
 
             Return False
