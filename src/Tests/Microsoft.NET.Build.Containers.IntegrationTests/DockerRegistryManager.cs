@@ -14,14 +14,14 @@ public class DockerRegistryManager
 {
     public const string RuntimeBaseImage = "dotnet/runtime";
     public const string AspNetBaseImage = "dotnet/aspnet";
-    public const string BaseImageSource = "mcr.microsoft.com/";
+    public const string BaseImageSource = "mcr.microsoft.com";
     public const string Net6ImageTag = "6.0";
     public const string Net7ImageTag = "7.0";
     public const string Net8PreviewImageTag = "8.0-preview";
     public const string Net8PreviewWindowsSpecificImageTag = $"{Net8PreviewImageTag}-nanoserver-ltsc2022";
     public const string LocalRegistry = "localhost:5010";
-    public const string FullyQualifiedBaseImageDefault = $"{BaseImageSource}{RuntimeBaseImage}:{Net8PreviewImageTag}";
-    public const string FullyQualifiedBaseImageAspNet = $"{BaseImageSource}{AspNetBaseImage}:{Net8PreviewImageTag}";
+    public const string FullyQualifiedBaseImageDefault = $"{BaseImageSource}/{RuntimeBaseImage}:{Net8PreviewImageTag}";
+    public const string FullyQualifiedBaseImageAspNet = $"{BaseImageSource}/{AspNetBaseImage}:{Net8PreviewImageTag}";
     private static string? s_registryContainerId;
 
     public static void StartAndPopulateDockerRegistry(ITestOutputHelper testOutput)
@@ -42,14 +42,14 @@ public class DockerRegistryManager
         {
             try
             {
-                logger.LogInformation($"Spawning local registry at '{LocalRegistry}', attempt #{spawnRegistryAttempt}.");
+                logger.LogInformation("Spawning local registry at '{registry}', attempt #{attempt}.", LocalRegistry, spawnRegistryAttempt);
 
                 CommandResult processResult = ContainerCli.RunCommand(testOutput, "--rm", "--publish", "5010:5000", "--detach", "docker.io/library/registry:2").Execute();
 
                 processResult.Should().Pass().And.HaveStdOut();
 
-                logger.LogInformation($"StdOut: {processResult.StdOut}");
-                logger.LogInformation($"StdErr: {processResult.StdErr}");
+                logger.LogInformation("StdOut: {stream}", processResult.StdOut);
+                logger.LogInformation("StdErr: {stream}", processResult.StdErr);
 
                 using var reader = new StringReader(processResult.StdOut!);
                 s_registryContainerId = reader.ReadLine();
@@ -58,17 +58,17 @@ public class DockerRegistryManager
 
                 foreach (string? tag in new[] { Net6ImageTag, Net7ImageTag, Net8PreviewImageTag })
                 {
-                    logger.LogInformation($"Pulling image '{BaseImageSource}{RuntimeBaseImage}:{tag}'.");
-                    ContainerCli.PullCommand(testOutput, $"{BaseImageSource}{RuntimeBaseImage}:{tag}")
+                    logger.LogInformation("Pulling image '{repo}/{image}:{tag}'.", BaseImageSource, RuntimeBaseImage, tag);
+                    ContainerCli.PullCommand(testOutput, $"{BaseImageSource}/{RuntimeBaseImage}:{tag}")
                         .Execute()
                         .Should().Pass();
 
-                    logger.LogInformation($"Tagging image '{BaseImageSource}{RuntimeBaseImage}:{tag}' as '{LocalRegistry}/{RuntimeBaseImage}:{tag}'.");
-                    ContainerCli.TagCommand(testOutput, $"{BaseImageSource}{RuntimeBaseImage}:{tag}", $"{LocalRegistry}/{RuntimeBaseImage}:{tag}")
+                    logger.LogInformation("Tagging image '{sourceRepo}/{sourceImage}:{sourceTag}' as '{targetRepo}/{targetImage}:{targetTag}'.",BaseImageSource, RuntimeBaseImage, tag, LocalRegistry, RuntimeBaseImage, tag);
+                    ContainerCli.TagCommand(testOutput, $"{BaseImageSource}/{RuntimeBaseImage}:{tag}", $"{LocalRegistry}/{RuntimeBaseImage}:{tag}")
                         .Execute()
                         .Should().Pass();
 
-                    logger.LogInformation($"Pushing image '{LocalRegistry}/{RuntimeBaseImage}:{tag}'.");
+                    logger.LogInformation("Pushing image '{repo}/{image}:{tag}'.", LocalRegistry, RuntimeBaseImage, tag);
                     ContainerCli.PushCommand(testOutput, $"{LocalRegistry}/{RuntimeBaseImage}:{tag}")
                         .Execute()
                         .Should().Pass();
@@ -77,7 +77,7 @@ public class DockerRegistryManager
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, $"Spawn registry attempt #{spawnRegistryAttempt} failed.");
+                logger.LogError(ex, "Spawn registry attempt #{attempt} failed.", spawnRegistryAttempt);
                 // logging is not easily available, so collect error messages to throw in final exception if needed.
                 failureReasons.AppendLine($"Spawn registry attempt #{spawnRegistryAttempt} failed, {ex}");
 
@@ -90,11 +90,11 @@ public class DockerRegistryManager
                     }
                     catch(Exception ex2)
                     {
-                        logger.LogError(ex2, $"Failed to stop the registry {s_registryContainerId}.");
+                        logger.LogError(ex2, "Failed to stop the registry {id}.", s_registryContainerId);
                     }
                 }
 
-                logger.LogInformation($"Retrying after {spawnRegistryDelay} ms.");
+                logger.LogInformation("Retrying after {delay} ms.", spawnRegistryDelay);
                 Thread.Sleep(spawnRegistryDelay);
                 spawnRegistryDelay *= 2;
             }
@@ -120,41 +120,46 @@ public class DockerRegistryManager
         using HttpClient client = new();
         using HttpRequestMessage request = new(HttpMethod.Get, new Uri(ContainerHelpers.TryExpandRegistryToUri(registryBaseUri), "/v2/"));
 
-        logger.LogInformation($"Checking if the registry '{registryBaseUri}' is available.");
+        logger.LogInformation("Checking if the registry '{registry}' is available.", registryBaseUri);
 
         int attempt = 1;
         while (attempt <= registryLoadMaxRetry)
         {
             //added an additional delay to allow registry to load
             Thread.Sleep(registryLoadTimeout);
-            HttpResponseMessage response = client.Send(request);
-            if (response.IsSuccessStatusCode)
+
+            try
             {
-                break;
+                HttpResponseMessage response = client.Send(request);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    logger.LogInformation("The registry '{registry}' is available after {timeout} ms.", registryBaseUri, attempt * registryLoadTimeout);
+                    return;
+                }
+                logger.LogWarning("The registry '{registry} is not loaded after {timeout} ms. Returned status code: {statusCode}.", registryBaseUri, attempt * registryLoadTimeout, response.StatusCode);
             }
-            logger.LogWarning($"The registry '{registryBaseUri} is not loaded after {attempt * registryLoadTimeout} ms. Returned status code: {response.StatusCode}.");
+            catch (Exception ex)
+            {
+                logger.LogWarning(ex, "The registry '{registry} is not loaded after {timeout} ms.", registryBaseUri, attempt * registryLoadTimeout);
+            }
             attempt++;
         }
-        if (attempt > registryLoadMaxRetry)
+        logger.LogError("The registry was not loaded after {timeout} ms.", registryLoadMaxRetry * registryLoadTimeout);
+        if (string.IsNullOrWhiteSpace(containerRegistryId))
         {
-            logger.LogError($"The registry was not loaded after {registryLoadMaxRetry * registryLoadTimeout} ms.");
-            string? registryLogs = null;
-            if (!string.IsNullOrWhiteSpace(containerRegistryId))
-            {
-                try
-                {
-                    CommandResult logsResult = ContainerCli.LogsCommand(testOutput, containerRegistryId).Execute();
-                    registryLogs = logsResult.StdOut + logsResult.StdErr;
-                    logger.LogInformation($"Registry logs: {registryLogs}");
-                }
-                catch (Exception ex)
-                {
-                    logger.LogError(ex, $"Failed to gather logs from container {containerRegistryId}.");
-                }
-            }
-            throw new Exception($"The registry was not loaded after {registryLoadMaxRetry * registryLoadTimeout} ms. Registry logs: {registryLogs}");
+            return;
         }
-        logger.LogInformation($"The registry '{registryBaseUri}' is available after {attempt * registryLoadTimeout} ms.");
-    }
 
+        //try to collect the logs from started registry for more info
+        try
+        {
+            CommandResult logsResult = ContainerCli.LogsCommand(testOutput, containerRegistryId).Execute();
+            logger.LogInformation("Registry logs: {stdout} {stderr}", logsResult.StdOut, logsResult.StdErr);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to gather logs from container {id}.", containerRegistryId);
+        }
+    }
 }
