@@ -44,15 +44,6 @@
        <Output TaskParameter="DependencyCommit" PropertyName="DepDotNetSdkCommit" />
     </GetDependencyInfo>
 
-    <!-- Format for productCommits-%rid%.json:
-        {
-          "installer": { "commit": "%commit%", "version": "%version%" },
-          "runtime": { "commit": "%commit%", "version": "%version%" },
-          "aspnetcore": { "commit": "%commit%", "version": "%version%" },
-          "windowsdesktop": { "commit": "%commit%", "version": "%version%" },
-          "sdk": { "commit": "%commit%", "version": "%version%" }
-        }
-    -->
     <ItemGroup>
       <Line Include="installer" Version="$(PackageVersion)" Commit="$(BUILD_SOURCEVERSION)" />
       <Line Include="runtime" Version="$(DepRuntimeVersion)" Commit="$(DepRuntimeCommit)" />
@@ -60,6 +51,29 @@
       <Line Include="windowsdesktop" Version="$(DepWindowsDesktopVersion)" Commit="$(DepWindowsDesktopCommit)" />
       <Line Include="sdk" Version="$(DepDotNetSdkVersion)" Commit="$(DepDotNetSdkCommit)" />
     </ItemGroup>
+
+    <!-- Format for productCommits-%rid%.txt:
+       installer_commit="%commit%" installer_version="%version%"
+       runtime_commit="%commit%" runtime_version="%version%"
+       aspnetcore_commit="%commit%" aspnetcore_version="%version%"
+       windowsdesktop_commit="%commit%" windowsdesktop_version="%version%"
+       sdk_commit="%commit%" sdk_version="%version%"
+    -->
+    <WriteLinesToFile
+      File="$(ArtifactsShippingPackagesDir)productCommit-$(Rid).txt"
+      Lines="@(Line->'%(Identity)_commit=&quot;%(Commit)&quot; %(Identity)_version=&quot;%(Version)&quot;', '%0A')"
+      Overwrite="true"
+      Encoding="ASCII"/>
+
+    <!-- Format for productCommits-%rid%.json:
+      {
+        "installer": { "commit": "%commit%", "version": "%version%" },
+        "runtime": { "commit": "%commit%", "version": "%version%" },
+        "aspnetcore": { "commit": "%commit%", "version": "%version%" },
+        "windowsdesktop": { "commit": "%commit%", "version": "%version%" },
+        "sdk": { "commit": "%commit%", "version": "%version%" }
+      }
+    -->
     <PropertyGroup>
       <JsonContents>{%0A@(Line->'  &quot;%(Identity)&quot;: { &quot;commit&quot;: &quot;%(Commit)&quot;, &quot;version&quot;: &quot;%(Version)&quot; }', ',%0A')%0A}</JsonContents>
     </PropertyGroup>
