@@ -20,6 +20,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [InlineData("a", true, " == ", " -1")]
         [InlineData("This", false, " >= ", " 0")]
         [InlineData("a", true, " >= ", " 0")]
+        [InlineData("This", false, " != ", " -1")]
+        [InlineData("a", true, " != ", " -1")]
         public async Task TestStringAndCharAsync(string input, bool isCharTest, string operatorKind, string value)
         {
             string startQuote = isCharTest ? "'" : "\"";
@@ -50,7 +52,7 @@ namespace TestNamespace
             startQuote = "\"";
             string vbCharLiteral = isCharTest ? "c" : "";
             string stringComparison = isCharTest ? "" : ", System.StringComparison.Ordinal";
-            operatorKind = operatorKind == " == " ? " = " : operatorKind;
+            operatorKind = ToBasicOperator(operatorKind);
 
             string vbInput = @"
 Public Class StringOf
@@ -77,6 +79,7 @@ End Class
         [Theory]
         [InlineData(" == ", " -1")]
         [InlineData(" >= ", " 0")]
+        [InlineData(" != ", " -1")]
         public async Task TestStringNoComparisonArgumentAsync(string operatorKind, string value)
         {
             string csInput = @"
@@ -102,7 +105,7 @@ namespace TestNamespace
             };
             await testOrdinal.RunAsync();
 
-            operatorKind = operatorKind == " == " ? " = " : operatorKind;
+            operatorKind = ToBasicOperator(operatorKind);
             string vbInput = @"
 Public Class StringOf
     Class TestClass
@@ -128,6 +131,7 @@ End Class
         [Theory]
         [InlineData(" == ", " -1")]
         [InlineData(" >= ", " 0")]
+        [InlineData(" != ", " -1")]
         public async Task TestCharAndOrdinalAsync(string operatorKind, string value)
         {
             string csInput = @"
@@ -153,7 +157,7 @@ namespace TestNamespace
             };
             await testOrdinal.RunAsync();
 
-            operatorKind = operatorKind == " == " ? " = " : operatorKind;
+            operatorKind = ToBasicOperator(operatorKind);
             string vbInput = @"
 Public Class StringOf
     Class TestClass
@@ -895,7 +899,6 @@ namespace TestNamespace
         }
 
         [Theory]
-        [InlineData(" != ", "-1")]
         [InlineData(" != ", "3")]
         [InlineData(" > ", "2")]
         [InlineData(" >= ", "2")]
@@ -981,6 +984,7 @@ namespace TestNamespace
         [Theory]
         [InlineData(" == ", " -1", "!")]
         [InlineData(" >= ", " 0", "")]
+        [InlineData(" != ", " -1", "")]
         public async Task TestFunctionParameterAsync(string operatorKind, string value, string notString)
         {
             string csInput = @"
@@ -1017,7 +1021,7 @@ namespace TestNamespace
             };
             await testCulture.RunAsync();
 
-            operatorKind = operatorKind == " == " ? " = " : operatorKind;
+            operatorKind = ToBasicOperator(operatorKind);
             notString = notString == "!" ? " Not" : notString;
             string vbInput = @"
 Public Class StringOf
@@ -1053,6 +1057,7 @@ End Class
         [Theory]
         [InlineData(" == ", " -1", "!")]
         [InlineData(" >= ", " 0", "")]
+        [InlineData(" != ", " -1", "")]
         public async Task TestFunctionParameterWithStringComparisonArgumentAsync(string operatorKind, string value, string notString)
         {
             string csInput = @"
@@ -1089,7 +1094,7 @@ namespace TestNamespace
             };
             await testCulture.RunAsync();
 
-            operatorKind = operatorKind == " == " ? " = " : operatorKind;
+            operatorKind = ToBasicOperator(operatorKind);
             notString = notString == "!" ? " Not" : notString;
             string vbInput = @"
 Public Class StringOf
@@ -1125,6 +1130,7 @@ End Class
         [Theory]
         [InlineData(" == ", " -1")]
         [InlineData(" >= ", " 0")]
+        [InlineData(" != ", " -1")]
         public async Task TestReversedMultipleDeclarationsAsync(string operatorKind, string value)
         {
             string csInput = @"
@@ -1150,7 +1156,7 @@ namespace TestNamespace
             };
             await testOrdinal.RunAsync();
 
-            operatorKind = operatorKind == " == " ? " = " : operatorKind;
+            operatorKind = ToBasicOperator(operatorKind);
             string vbInput = @"
 Public Class StringOf
     Class TestClass
@@ -1176,6 +1182,7 @@ End Class
         [Theory]
         [InlineData(" == ", " -1")]
         [InlineData(" >= ", " 0")]
+        [InlineData(" != ", " -1")]
         public async Task TestMultipleDeclarationsAsync(string operatorKind, string value)
         {
             string csInput = @"
@@ -1201,7 +1208,7 @@ namespace TestNamespace
             };
             await testOrdinal.RunAsync();
 
-            operatorKind = operatorKind == " == " ? " = " : operatorKind;
+            operatorKind = ToBasicOperator(operatorKind);
             string vbInput = @"
 Public Class StringOf
     Class TestClass
@@ -1223,5 +1230,19 @@ End Class
             };
             await testOrdinal_vb.RunAsync();
         }
+
+        #region Helpers
+
+        private string ToBasicOperator(string op)
+        {
+            return op switch
+            {
+                " == " => " = ",
+                " != " => " <> ",
+                _ => op
+            };
+        }
+
+        #endregion
     }
 }
