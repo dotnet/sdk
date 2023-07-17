@@ -19,8 +19,11 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <!-- Trimming/AOT/publish* property configuration -->
   <PropertyGroup>
+    <!-- we're consolidating on PublishAot for all AOT scenarios, but we still need to support RunAOTCompilation in the meantime -->
+    <PublishAot Condition="'$(PublishAot)' == '' and '$(RunAOTCompilation)' == 'true' and '$(_TargetFrameworkVersionWithoutV)' >= '8.0'">true</PublishAot>
+    <PublishAotUsingMonoRuntime Condition="'$(PublishAotUsingMonoRuntime)' == '' and '$(PublishAot)' == 'true' and '$(RunAOTCompilation)' == 'true' and '$(_TargetFrameworkVersionWithoutV)' >= '8.0'">true</PublishAotUsingMonoRuntime>
     <!-- PublishAot depends on PublishTrimmed. This must be set early enough for the KnownILLinkPack to be restored. -->
-    <PublishTrimmed Condition="'$(PublishTrimmed)' == '' And '$(PublishAot)' == 'true'">true</PublishTrimmed>
+    <PublishTrimmed Condition="'$(PublishTrimmed)' == '' And ('$(PublishAot)' == 'true' and '$(PublishAotUsingMonoRuntime)' != 'true')">true</PublishTrimmed>
     <IsTrimmable Condition="'$(IsTrimmable)' == '' and '$(IsAotCompatible)' == 'true'">true</IsTrimmable>
     <_RequiresILLinkPack Condition="'$(_RequiresILLinkPack)' == '' And (
         '$(PublishTrimmed)' == 'true' Or
@@ -435,7 +438,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
       <!-- Copy the runtime config file. -->
       <ResolvedFileToPublish Include="$(ProjectRuntimeConfigFilePath)"
-                             Condition="'$(GenerateRuntimeConfigurationFiles)' == 'true'  and '$(PublishAot)' != 'true'">
+                             Condition="'$(GenerateRuntimeConfigurationFiles)' == 'true'  and ('$(PublishAot)' != 'true' or '$(PublishAotUsingMonoRuntime)' == 'true')">
         <RelativePath>$(ProjectRuntimeConfigFileName)</RelativePath>
         <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       </ResolvedFileToPublish>
@@ -1049,7 +1052,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                             ResolveRuntimePackAssets;
                             _ComputePackageReferencePublish;
                             _GeneratePublishDependencyFileInputCache"
-          Condition="'$(GenerateDependencyFile)' == 'true' and '$(_UseBuildDependencyFile)' != 'true' and '$(PublishAot)' != 'true'"
+          Condition="'$(GenerateDependencyFile)' == 'true' and '$(_UseBuildDependencyFile)' != 'true' and ('$(PublishAot)' != 'true' or '$(PublishAotUsingMonoRuntime)' == 'true')"
           Inputs="$(ProjectAssetsFile);$(ProjectAssetsCacheFile);$(MSBuildAllProjects);$(_GeneratePublishDependencyFilePropertyInputsCache)"
           Outputs="$(IntermediateDepsFilePath)">
 

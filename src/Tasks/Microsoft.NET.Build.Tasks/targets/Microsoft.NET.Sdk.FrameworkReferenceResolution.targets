@@ -83,6 +83,10 @@ Copyright (c) .NET Foundation. All rights reserved.
       <_NuGetRestoreSupported Condition="('$(Language)' == 'C++' and '$(_EnablePackageReferencesInVCProjects)' != 'true')">false</_NuGetRestoreSupported>
     </PropertyGroup>
 
+    <PropertyGroup>
+      <_AotEnabledAndNotMono Condition="'$(PublishAot)' == 'true' and '$(PublishAotUsingMonoRuntime)' != 'true'">true</_AotEnabledAndNotMono>
+    </PropertyGroup>
+
     <ItemGroup>
       <_PackAsToolShimRuntimeIdentifiers Condition="@(_PackAsToolShimRuntimeIdentifiers) ==''" Include="$(PackAsToolShimRuntimeIdentifiers)"/>
     </ItemGroup>
@@ -100,7 +104,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                                 ReadyToRunEnabled="$(PublishReadyToRun)"
                                 ReadyToRunUseCrossgen2="$(PublishReadyToRunUseCrossgen2)"
                                 RequiresILLinkPack="$(_RequiresILLinkPack)"
-                                AotEnabled="$(PublishAot)"
+                                AotEnabled="$(_AotEnabledAndNotMono)"
                                 AotUseKnownRuntimePackForTarget="$(PublishAotUsingRuntimePack)"
                                 RuntimeIdentifier="$(RuntimeIdentifier)"
                                 RuntimeIdentifiers="$(RuntimeIdentifiers)"
