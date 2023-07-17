@@ -6763,6 +6763,103 @@ public class C
         }
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
+        [Fact, WorkItem(6616, "https://github.com/dotnet/roslyn-analyzers/issues/6616")]
+        public async Task IndexedArrayAccessWithConstantsAndNonConstants_NoDiagnosticsAsync()
+        {
+            await new VerifyCS.Test
+            {
+                TestCode = @"
+#nullable enable
+
+using System;
+
+namespace Test
+{
+    public static class Test
+    {
+        public static void Method1()
+        {
+            // default
+            var objPlayers = new object?[] { null };
+
+            for (var idx = 0; idx < 1; idx++)
+            {
+                objPlayers[idx] = $""{idx}"";
+            }
+
+            // validate
+            if (objPlayers[0] is null)    // CA1508: Always true (should probably be unknown)
+            {
+            }
+        }
+
+        public static void Method2(object?[] objPlayers, int idx)
+        {
+            objPlayers[0] = null;
+            objPlayers[idx] = 0;
+            if (objPlayers[0] is null)    // CA1508: Always true (should probably be unknown)
+            {
+            }
+        }
+    }
+}",
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp8,
+            }.RunAsync();
+        }
+
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
+        [Fact, WorkItem(6616, "https://github.com/dotnet/roslyn-analyzers/issues/6616")]
+        public async Task IndexedArrayAccessWithConstantsAndNonConstants_DiagnosticsAsync()
+        {
+            await new VerifyCS.Test
+            {
+                TestCode = @"
+#nullable enable
+
+using System;
+
+namespace Test
+{
+    public static class Test
+    {
+        public static void Method1(object?[][] objPlayers, int idx)
+        {
+            objPlayers[0][0] = null;
+
+            for (idx = 0; idx < 1; idx++)
+            {
+                objPlayers[1][idx] = 0;
+            }
+
+            if (objPlayers[0][0] is null)    // CA1508: Always true
+            {
+            }
+        }
+
+        public static void Method2(object?[][] objPlayers, int idx)
+        {
+            objPlayers[0][0] = null;
+            objPlayers[1][idx] = 0;
+            if (objPlayers[0][0] is null)    // CA1508: Always true
+            {
+            }
+        }
+    }
+}",
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp8,
+                ExpectedDiagnostics =
+                {
+                    // /0/Test0.cs(19,17): warning CA1508: 'objPlayers[0][0] is null' is always 'true'. Remove or refactor the condition(s) to avoid dead code.
+                    GetCSharpResultAt(19, 17, "objPlayers[0][0] is null", "true"),
+                    // /0/Test0.cs(28,17): warning CA1508: 'objPlayers[0][0] is null' is always 'true'. Remove or refactor the condition(s) to avoid dead code.
+                    GetCSharpResultAt(28, 17, "objPlayers[0][0] is null", "true"),
+                },
+            }.RunAsync();
+        }
+
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
         public async Task ArrayInitializerNotParentedByArrayCreationAsync()
         {
