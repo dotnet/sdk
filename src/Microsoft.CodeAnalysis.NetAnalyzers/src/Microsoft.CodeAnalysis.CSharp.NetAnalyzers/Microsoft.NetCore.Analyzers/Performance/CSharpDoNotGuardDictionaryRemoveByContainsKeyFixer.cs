@@ -19,6 +19,8 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Performance
         {
             if (conditionalSyntax is IfStatementSyntax ifStatementSyntax)
             {
+                // The analyzer also reports a diagnostic when the condition is negated.
+                // Applying the fix in this case would lead to wrong code.
                 return ifStatementSyntax.Condition.RawKind != (int)SyntaxKind.LogicalNotExpression &&
                     ifStatementSyntax.Statement.ChildNodes().Count() == 1;
             }

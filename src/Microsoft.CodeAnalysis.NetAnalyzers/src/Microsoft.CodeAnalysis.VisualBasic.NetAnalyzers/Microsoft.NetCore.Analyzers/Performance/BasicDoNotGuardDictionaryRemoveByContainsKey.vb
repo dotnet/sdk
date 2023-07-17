@@ -15,6 +15,9 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Performance
         Inherits DoNotGuardDictionaryRemoveByContainsKeyFixer
 
         Protected Overrides Function SyntaxSupportedByFixer(conditionalSyntax As SyntaxNode) As Boolean
+            ' The analyzer also reports a diagnostic when the condition is negated.
+            ' Applying the fix in this case would lead to wrong code.
+
             If TypeOf conditionalSyntax Is SingleLineIfStatementSyntax Then
                 Return CType(conditionalSyntax, SingleLineIfStatementSyntax).Condition.RawKind <> SyntaxKind.NotExpression
             End If
