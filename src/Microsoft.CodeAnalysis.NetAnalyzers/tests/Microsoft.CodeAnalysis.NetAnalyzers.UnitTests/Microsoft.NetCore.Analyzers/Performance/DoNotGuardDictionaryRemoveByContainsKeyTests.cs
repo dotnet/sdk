@@ -106,6 +106,21 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
         }
 
         [Fact]
+        [WorkItem(6274, "https://github.com/dotnet/roslyn-analyzers/issues/6274")]
+        public async Task RemoveIsTheOnlyStatementInTernaryOperator_NoDiagnostic_CS()
+        {
+            string source = CSUsings + CSNamespaceAndClassStart + @"
+        private readonly Dictionary<string, string> MyDictionary = new Dictionary<string, string>();
+
+        public MyClass()
+        {
+            bool test = MyDictionary.ContainsKey(""Key"") ? MyDictionary.Remove(""Key"") : false;
+        }" + CSNamespaceAndClassEnd;
+
+            await VerifyCS.VerifyCodeFixAsync(source, source);
+        }
+
+        [Fact]
         public async Task HasElseBlock_OffersFixer_CS()
         {
             string source = CSUsings + CSNamespaceAndClassStart + @"
@@ -349,6 +364,25 @@ Namespace Testopolis
 End Namespace";
 
             await VerifyVB.VerifyCodeFixAsync(source, fixedSource);
+        }
+
+        [Fact]
+        [WorkItem(6274, "https://github.com/dotnet/roslyn-analyzers/issues/6274")]
+        public async Task RemoveIsTheOnlyStatementInTernaryOperator_NoDiagnostic_VB()
+        {
+            string source = @"
+" + VBUsings + @"
+Namespace Testopolis
+    Public Class SomeClass
+        Public MyDictionary As New Dictionary(Of String, String)()
+
+        Public Sub New()
+            Dim test As Boolean = If(MyDictionary.ContainsKey(""Key""), MyDictionary.Remove(""Key""), False)
+        End Sub
+    End Class
+End Namespace";
+
+            await VerifyVB.VerifyCodeFixAsync(source, source);
         }
 
         [Fact]
