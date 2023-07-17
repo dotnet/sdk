@@ -15,7 +15,6 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             //.UseParseDirective()
             //.UseSuggestDirective()
             {
-                EnableParseErrorReporting = true,
                 EnablePosixBundling = false
             };
 

@@ -18,7 +18,6 @@ namespace Dotnet_new3
             //.UseParseDirective()
             //.UseSuggestDirective()
             {
-                EnableParseErrorReporting = true, //TODO: discuss with SDK if it is possible to use it.
                 EnablePosixBundling = false
             };
 

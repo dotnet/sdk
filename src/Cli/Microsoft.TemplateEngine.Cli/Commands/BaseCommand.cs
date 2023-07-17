@@ -220,7 +220,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             Reporter.Output.WriteLine();
         }
 
-        private sealed class CommandAction : CliAction
+        private sealed class CommandAction : AsynchronousCliAction
         {
             private readonly BaseCommand<TArgs> _command;
 
@@ -283,8 +283,6 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 
                 return (int)returnCode;
             }
-
-            public override int Invoke(ParseResult parseResult) => InvokeAsync(parseResult, CancellationToken.None).GetAwaiter().GetResult();
         }
     }
 }
