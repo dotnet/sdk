@@ -454,6 +454,17 @@ namespace Microsoft.NetCore.Analyzers.Performance
 
                             return;
                         }
+
+                    case OperationKind.ArrayCreation:
+                        {
+                            var arrayOp = (IArrayCreationOperation)op;
+                            if (arrayOp.Type != null)
+                            {
+                                values.Add(arrayOp.Type);
+                            }
+
+                            break;
+                        }
                 }
             }
 
