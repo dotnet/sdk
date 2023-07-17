@@ -24,7 +24,7 @@
 
         <Text Name="WelcomeText" X="155" Y="80" Width="-11" Height="-70" FontId="2" HexStyle="0x800000" DisablePrefix="yes" />
         <Text Name="WelcomeHeaderMessage" X="160" Y="80" Width="300" Height="30" FontId="2">#(loc.WelcomeHeaderMessage)</Text>
-        <Text Name="WelcomeDescription" X="160" Y="125" Width="460" Height="65" FontId="3">#(loc.WelcomeDescription)</Text>
+        <Text Name="WelcomeDescription" X="160" Y="125" Width="460" Height="75" FontId="3">#(loc.WelcomeDescription)</Text>
         <Hypertext Name="VisualStudioWarning" X="160" Y="209" Width="460" Height="30" TabStop="yes" FontId="3" HideWhenDisabled="yes" DisablePrefix="yes">#(loc.VisualStudioWarning)</Hypertext>
         <Text Name="LicenseAssent" X="160" Y="264" Width="460" Height="30" FontId="3">#(loc.LicenseAssent)</Text>
         <Hypertext Name="PrivacyStatementLink" X="185" Y="301" Width="400" Height="22" FontId="3" TabStop="yes" HideWhenDisabled="yes" DisablePrefix="yes">#(loc.PrivacyStatementLink)</Hypertext>
@@ -75,7 +75,7 @@
         <Text Name="SuccessRepairHeader" X="160" Y="80" Width="-11" Height="30" FontId="2" HideWhenDisabled="yes" DisablePrefix="yes">#(loc.SuccessRepairHeader)</Text>
         <Text Name="SuccessUninstallHeader" X="160" Y="80" Width="-11" Height="30" FontId="2" HideWhenDisabled="yes" DisablePrefix="yes">#(loc.SuccessUninstallHeader)</Text>
         <Button Name="LaunchButton" X="-133" Y="-11" Width="99" Height="23" TabStop="yes" FontId="0" HideWhenDisabled="yes">#(loc.SuccessLaunchButton)</Button>
-        <Text Name="SuccessRestartText" X="-11" Y="-40" Width="400" Height="23" FontId="3" HideWhenDisabled="yes" DisablePrefix="yes">#(loc.SuccessRestartText)</Text>
+        <Text Name="SuccessRestartText" X="-11" Y="-40" Width="425" Height="23" FontId="3" HideWhenDisabled="yes" DisablePrefix="yes">#(loc.SuccessRestartText)</Text>
         <Button Name="SuccessRestartButton" X="-133" Y="-11" Width="99" Height="23" TabStop="yes" FontId="0" HideWhenDisabled="yes">#(loc.SuccessRestartButton)</Button>
         <Button Name="SuccessCancelButton" X="-32" Y="-11" Width="99" Height="23" TabStop="yes" FontId="0">#(loc.SuccessCloseButton)</Button>
     </Page>

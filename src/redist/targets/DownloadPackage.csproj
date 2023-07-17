@@ -5,6 +5,7 @@
     <OutputType>Library</OutputType>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
+    <ResolveAssemblyReferencesSilent>true</ResolveAssemblyReferencesSilent>
   </PropertyGroup>
 
   <ItemGroup>

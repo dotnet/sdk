@@ -13,7 +13,6 @@ param(
     [Parameter(Mandatory=$true)][string]$NetStandardTargetingPackMSIFile,
     [Parameter(Mandatory=$true)][string]$NetCoreAppHostPackMSIFile,
     [Parameter(Mandatory=$true)][string]$AlternateNetCoreAppHostPackMSIFile,
-    [Parameter(Mandatory=$true)][string]$ArmNetCoreAppHostPackMSIFile,
     [Parameter(Mandatory=$true)][string]$Arm64NetCoreAppHostPackMSIFile,
     [Parameter(Mandatory=$true)][string]$AspNetTargetingPackMSIFile,
     [Parameter(Mandatory=$true)][string]$WindowsDesktopTargetingPackMSIFile,
@@ -24,7 +23,10 @@ param(
     [Parameter(Mandatory=$true)][string]$ProductMoniker,
     [Parameter(Mandatory=$true)][string]$DotnetMSIVersion,
     [Parameter(Mandatory=$true)][string]$SDKBundleVersion,
+    [Parameter(Mandatory=$true)][string]$MinimumVSVersion,
     [Parameter(Mandatory=$true)][string]$DotnetCLINugetVersion,
+    [Parameter(Mandatory=$true)][string]$VersionMajor,
+    [Parameter(Mandatory=$true)][string]$VersionMinor,
     [Parameter(Mandatory=$true)][string]$WindowsDesktopVersion,
     [Parameter(Mandatory=$true)][string]$UpgradeCode,
     [Parameter(Mandatory=$true)][string]$DependencyKeyName,
@@ -47,8 +49,11 @@ function RunCandleForBundle
         -dProductMoniker="$ProductMoniker" `
         -dBuildVersion="$DotnetMSIVersion" `
         -dSDKBundleVersion="$SDKBundleVersion" `
+        -dMinimumVSVersion="$MinimumVSVersion" `
         -dSDKProductBandVersion="$SDKProductBandVersion" `
         -dNugetVersion="$DotnetCLINugetVersion" `
+        -dVersionMajor="$VersionMajor" `
+        -dVersionMinor="$VersionMinor" `
         -dCLISDKMsiSourcePath="$CLISDKMSIFile" `
         -dDependencyKeyName="$DependencyKeyName" `
         -dUpgradeCode="$UpgradeCode" `
@@ -59,7 +64,6 @@ function RunCandleForBundle
         -dNetCoreAppTargetingPackMsiSourcePath="$NetCoreAppTargetingPackMSIFile" `
         -dNetCoreAppHostPackMsiSourcePath="$NetCoreAppHostPackMSIFile" `
         -dAlternateNetCoreAppHostPackMsiSourcePath="$AlternateNetCoreAppHostPackMSIFile" `
-        -dArmNetCoreAppHostPackMsiSourcePath="$ArmNetCoreAppHostPackMSIFile" `
         -dArm64NetCoreAppHostPackMsiSourcePath="$Arm64NetCoreAppHostPackMSIFile" `
         -dNetStandardTargetingPackMsiSourcePath="$NetStandardTargetingPackMSIFile" `
         -dAspNetTargetingPackMsiSourcePath="$AspNetTargetingPackMSIFile" `

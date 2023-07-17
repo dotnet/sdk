@@ -1,0 +1,16 @@
+<Project>
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+
+  <PropertyGroup>
+    <BuildCommand>$(ProjectDirectory)eng\common\build$(ShellExtension) $(StandardSourceBuildArgs)</BuildCommand>
+    <PackageVersionPropsFlowType>DependenciesOnly</PackageVersionPropsFlowType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <RepositoryReference Include="roslyn" />
+    <RepositoryReference Include="roslyn-analyzers" />
+    <RepositoryReference Include="source-build-externals" />
+  </ItemGroup>
+
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+</Project>

@@ -1,0 +1,52 @@
+<Project>
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+
+  <PropertyGroup>
+    <SkipEnsurePackagesCreated>true</SkipEnsurePackagesCreated>
+  </PropertyGroup>
+
+  <!-- This project file serves a couple of purpose.
+       - We conditionally include repos based on what works on different platforms/configurations.
+       - We need an "empty" build after the last real repo for prebuilt detection to work - this is that file.
+       - If we have a repo that is not in sdk's dependency tree, we can still build it by including it here.  -->
+
+  <ItemGroup>
+    <!-- Toolsets -->
+    <RepositoryReference Include="source-build-reference-packages" />
+    <RepositoryReference Include="arcade" />
+
+    <!-- Product Repos -->
+    <RepositoryReference Include="command-line-api" />
+    <RepositoryReference Include="sourcelink" />
+    <RepositoryReference Include="diagnostics" />
+    <RepositoryReference Include="emsdk" />
+    <RepositoryReference Include="xliff-tasks" />
+    <RepositoryReference Include="cecil" />
+    <RepositoryReference Include="symreader" />
+    <RepositoryReference Include="source-build-externals" />
+    <RepositoryReference Include="runtime" />
+    <RepositoryReference Include="roslyn" />
+    <RepositoryReference Include="xdt" />
+    <RepositoryReference Include="msbuild" />
+    <RepositoryReference Include="roslyn-analyzers" />
+    <RepositoryReference Include="aspnetcore" />
+    <RepositoryReference Include="razor" />
+    <RepositoryReference Include="deployment-tools" />
+    <RepositoryReference Include="format" />
+    <RepositoryReference Include="nuget-client" />
+    <RepositoryReference Include="templating" />
+    <RepositoryReference Include="test-templates" />
+    <RepositoryReference Include="fsharp" />
+    <RepositoryReference Include="vstest" />
+    <RepositoryReference Include="sdk" />
+    <RepositoryReference Include="installer" />
+
+    <!-- Package source-build artifacts -->
+    <RepositoryReference Include="package-source-build" />
+  </ItemGroup>
+
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+
+  <Target Name="RepoBuild" />
+
+</Project>

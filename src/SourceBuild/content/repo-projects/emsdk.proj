@@ -1,0 +1,25 @@
+<Project>
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+
+  <PropertyGroup>
+    <OverrideTargetRid>$(TargetRid)</OverrideTargetRid>
+    <OverrideTargetRid Condition="'$(TargetOS)' == 'OSX'">osx-$(Platform)</OverrideTargetRid>
+    <OverrideTargetRid Condition="'$(TargetOS)' == 'FreeBSD'">freebsd-$(Platform)</OverrideTargetRid>
+    <OverrideTargetRid Condition="'$(TargetOS)' == 'Windows_NT'">win-$(Platform)</OverrideTargetRid>
+
+    <_platformIndex>$(OverrideTargetRid.LastIndexOf('-'))</_platformIndex>
+    <TargetOS>$(OverrideTargetRid.Substring(0, $(_platformIndex)))</TargetOS>
+    <TargetArch>$(OverrideTargetRid.Substring($(_platformIndex)))</TargetArch>
+
+    <BuildCommandArgs>$(StandardSourceBuildArgs)</BuildCommandArgs>
+    <BuildCommandArgs>$(BuildCommandArgs) /p:PackageRid=$(OverrideTargetRid)</BuildCommandArgs>
+    <BuildCommandArgs>$(BuildCommandArgs) /p:AssetManifestOS=$(TargetOS)</BuildCommandArgs>
+    <BuildCommandArgs>$(BuildCommandArgs) /p:PlatformName=$(TargetArch)</BuildCommandArgs>
+    <BuildCommandArgs>$(BuildCommandArgs) /p:ForceBuildManifestOnly=true</BuildCommandArgs>
+    <BuildCommand>$(StandardSourceBuildCommand) $(BuildCommandArgs)</BuildCommand>
+
+    <PackageVersionPropsFlowType>DependenciesOnly</PackageVersionPropsFlowType>
+  </PropertyGroup>
+
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+</Project>

@@ -1,0 +1,96 @@
+# This list is processed using FileSystemName.MatchesSimpleExpression
+#
+# Format
+# {msft|sb},<path> [# comment]
+# msft = Microsoft built SDK
+# sb   = source-built SDK
+#
+# Examples
+# 'folder/*' matches 'folder/' and 'folder/abc'
+# 'folder/?*' matches 'folder/abc' but not 'folder/'
+#
+# We do not want to filter-out folder entries, therefore, we should use: '?*' and not just '*'
+
+msft,./sdk/x.y.z/TestHostNetFramework/?*   # Intentional - MSFT build includes test-host that targets netcoreapp3.1
+msft,./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WindowsDesktop/?*   # Intentional - explicitly excluded from source-build
+
+# netfx tooling and tasks, not building in source-build - https://github.com/dotnet/source-build/issues/3514
+msft,./sdk/x.y.z/Sdks/Microsoft.Build.Tasks.Git/tools/net472/*
+msft,./sdk/x.y.z/Sdks/Microsoft.NET.Sdk/tools/net472/*
+msft,./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.BlazorWebAssembly/tools/net472/*
+msft,./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/net472/*
+msft,./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/tasks/net472/*
+msft,./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.StaticWebAssets/tasks/net472/*
+msft,./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Web/tools/net472/*
+msft,./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Web.ProjectSystem/tools/net472/*
+msft,./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WebAssembly/tools/net472/*
+msft,./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Worker/tools/net472/*
+msft,./sdk/x.y.z/Sdks/Microsoft.SourceLink.AzureRepos.Git/tools/net472/*
+msft,./sdk/x.y.z/Sdks/Microsoft.SourceLink.Bitbucket.Git/tools/net472/*
+msft,./sdk/x.y.z/Sdks/Microsoft.SourceLink.Common/tools/net472/*
+msft,./sdk/x.y.z/Sdks/Microsoft.SourceLink.GitHub/tools/net472/*
+msft,./sdk/x.y.z/Sdks/Microsoft.SourceLink.GitLab/tools/net472/*
+
+# vstest localization is disabled in Linux builds - https://github.com/dotnet/source-build/issues/3517
+msft,./sdk/x.y.z/*?/Microsoft.CodeCoverage.IO.resources.dll
+
+# nuget localization is not available for Linux builds - https://github.com/NuGet/Home/issues/12440
+msft,./sdk/x.y.z/*?/NuGet.*?.resources.dll
+msft,./sdk/x.y.z/*?/Microsoft.Build.NuGetSdkResolver.resources.dll
+msft,./sdk/x.y.z/*?/Test.Utility.resources.dll
+
+# ILMerge is not supported in Linux builds - excluding the whole NuGet.Build.Tasks.Pack directory, to avoid a noisy diff
+msft,./sdk/x.y.z/Sdks/NuGet.Build.Tasks.Pack/*?
+sb,./sdk/x.y.z/Sdks/NuGet.Build.Tasks.Pack/*?
+
+# missing workload manifests - https://github.com/dotnet/source-build/issues/3242
+msft,./sdk-manifests/x.y.z/microsoft.net.sdk.android/*
+msft,./sdk-manifests/x.y.z/microsoft.net.sdk.ios/*
+msft,./sdk-manifests/x.y.z/microsoft.net.sdk.maccatalyst/*
+msft,./sdk-manifests/x.y.z/microsoft.net.sdk.macos/*
+msft,./sdk-manifests/x.y.z/microsoft.net.sdk.maui/*
+msft,./sdk-manifests/x.y.z/microsoft.net.sdk.tvos/*
+
+# linux runtimes are included in source-build for self-contained apps - https://github.com/dotnet/source-build/issues/3507
+sb,./packs/Microsoft.AspNetCore.App.Runtime.*/*
+sb,./packs/Microsoft.NETCore.App.Runtime.*/*
+
+# netfx tooling - dumpminitool - https://github.com/dotnet/source-build/issues/3289
+msft,./sdk/x.y.z/Extensions/dump/*
+
+# netfx runtimes for dotnet-watch - https://github.com/dotnet/source-build/issues/3285
+msft,./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/Microsoft.CodeAnalysis.Elfie.dll
+msft,./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/Microsoft.Win32.SystemEvents.dll
+msft,./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/runtimes/*
+msft,./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/System.Configuration.ConfigurationManager.dll
+msft,./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/System.Drawing.Common.dll
+msft,./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/System.Security.Cryptography.ProtectedData.dll
+msft,./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/System.Security.Permissions.dll
+msft,./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/System.Windows.Extensions.dll
+
+# netfx runtimes for dotnet-format - https://github.com/dotnet/source-build/issues/3509
+msft,./sdk/x.y.z/DotnetTools/dotnet-format/Microsoft.CodeAnalysis.Elfie.dll
+msft,./sdk/x.y.z/DotnetTools/dotnet-format/Microsoft.Win32.SystemEvents.dll
+msft,./sdk/x.y.z/DotnetTools/dotnet-format/runtimes/*
+msft,./sdk/x.y.z/DotnetTools/dotnet-format/System.Configuration.ConfigurationManager.dll
+msft,./sdk/x.y.z/DotnetTools/dotnet-format/System.Drawing.Common.dll
+msft,./sdk/x.y.z/DotnetTools/dotnet-format/System.Security.Cryptography.ProtectedData.dll
+msft,./sdk/x.y.z/DotnetTools/dotnet-format/System.Security.Permissions.dll
+msft,./sdk/x.y.z/DotnetTools/dotnet-format/System.Windows.Extensions.dll
+
+# netfx runtimes for fsharp - https://github.com/dotnet/source-build/issues/3290
+msft,./sdk/x.y.z/FSharp/Microsoft.VisualStudio.Setup.Configuration.Interop.dll
+msft,./sdk/x.y.z/FSharp/runtimes/win/lib/netx.y/Microsoft.Win32.SystemEvents.dll
+msft,./sdk/x.y.z/FSharp/runtimes/win/lib/netx.y/System.Drawing.Common.dll
+msft,./sdk/x.y.z/FSharp/runtimes/win/lib/netx.y/System.Security.Cryptography.ProtectedData.dll
+msft,./sdk/x.y.z/FSharp/runtimes/win/lib/netx.y/System.Windows.Extensions.dll
+
+# windows components - https://github.com/dotnet/source-build/issues/3526
+msft,./sdk/x.y.z/runtimes/win/lib/netx.y/Microsoft.Win32.SystemEvents.dll
+msft,./sdk/x.y.z/runtimes/win/lib/netx.y/System.Drawing.Common.dll
+msft,./sdk/x.y.z/runtimes/win/lib/netx.y/System.Windows.Extensions.dll
+
+# runtime components in roslyn layout - https://github.com/dotnet/source-build/issues/3286
+# Expected - build is filtering components present in target platform.
+msft,./sdk/x.y.z/Roslyn/bincore/System.Collections.Immutable.dll
+msft,./sdk/x.y.z/Roslyn/bincore/System.Reflection.Metadata.dll

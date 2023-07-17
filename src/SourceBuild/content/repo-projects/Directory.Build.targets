@@ -1,0 +1,704 @@
+<Project InitialTargets="SetNuGetPackagesEnvironment">
+
+  <ItemGroup>
+    <EnvironmentVariables Include="LatestCommit=$(GitCommitHash)" />
+    <EnvironmentVariables Include="OfficialBuildId=$(OfficialBuildId)" />
+  </ItemGroup>
+
+  <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="AddSourceToNuGetConfig" />
+  <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="ReadNuGetPackageInfos" />
+  <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="RemoveInternetSourcesFromNuGetConfig" />
+  <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="UpdateJson" />
+  <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="UpdateNuGetConfigPackageSourcesMappings" />
+  <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="ValidateUsageAgainstBaseline" />
+  <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="WritePackageVersionsProps" />
+  <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="WritePackageUsageData" />
+  <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="WriteUsageReports" />
+  <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="ZipFileExtractToDirectory" />
+  <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="ReplaceTextInFile" />
+
+  <Target Name="BuildRepoReferences" Condition="'@(RepositoryReference)' != '' and '$(SkipRepoReferences)' != 'true'">
+    <Message Importance="High" Text="Building dependencies [@(RepositoryReference)] needed by '$(RepositoryName)'." />
+    <ItemGroup>
+      <_DependentProject Include="@(RepositoryReference -> '%(Identity).proj')" />
+    </ItemGroup>
+
+    <MSBuild Projects="@(_DependentProject)" Targets="Build" BuildInParallel="$(BuildInParallel)" StopOnFirstFailure="true" />
+  </Target>
+
+  <Target Name="AddNoWarns"
+          BeforeTargets="Build"
+          Condition=" EXISTS('$(ProjectDirectory)Directory.Build.props') OR EXISTS('$(ProjectDirectory)src/Directory.Build.props') "
+          Inputs="$(MSBuildProjectFullPath)"
+          Outputs="$(RepoCompletedSemaphorePath)AddNoWarns.complete" >
+
+    <!-- Don't warn on warnings that can be generated in source-build
+         but not necessarily in repo builds. 
+
+         NU1603 - See https://github.com/dotnet/source-build/issues/2766.
+
+         NU5104 - During preview builds, some packages have pre-release versions.
+                  Some repos with stable versions may need to uptake these packages 
+                  with pre-release versions because of PVP when building with 
+                  source-build.  -->
+    <PropertyGroup>
+      <OldText><![CDATA[</Project>]]></OldText>
+      <NewText>
+        <![CDATA[  <PropertyGroup>
+    <NoWarn>%24(NoWarn);NU5104;NU1603;$(RepoNoWarns)</NoWarn>
+  </PropertyGroup>
+</Project>]]>
+      </NewText>
+
+      <DirectoryBuildPropsFile Condition=" EXISTS('$(ProjectDirectory)Directory.Build.props') ">$(ProjectDirectory)Directory.Build.props</DirectoryBuildPropsFile>
+      <DirectoryBuildPropsFile Condition=" '$(DirectoryBuildPropsFile)' == '' AND EXISTS('$(ProjectDirectory)src/Directory.Build.props') ">$(ProjectDirectory)src/Directory.Build.props</DirectoryBuildPropsFile>
+    </PropertyGroup>
+    <ReplaceTextInFile InputFile="$(DirectoryBuildPropsFile)"
+      OldText="$(OldText)"
+      NewText="$(NewText)" />
+  </Target>
+
+  <Target Name="UpdateBuildToolFramework"
+          BeforeTargets="Build"
+          Condition="'$(EngCommonToolsShFile)' != ''"
+          Inputs="$(MSBuildProjectFullPath)"
+          Outputs="$(RepoCompletedSemaphorePath)UpdateBuildToolFramework.complete" >
+
+    <!-- Update the BuildToolFramework for repos that have not adopted the current version of Arcade-->
+    <ReplaceTextInFile InputFile="$(EngCommonToolsShFile)"
+                       OldText="_InitializeBuildToolFramework=&quot;netcoreapp3.1&quot;"
+                       NewText="_InitializeBuildToolFramework=&quot;$(NetCurrent)&quot;" />
+    <ReplaceTextInFile InputFile="$(EngCommonToolsShFile)"
+                       OldText="_InitializeBuildToolFramework=&quot;net7.0&quot;"
+                       NewText="_InitializeBuildToolFramework=&quot;$(NetCurrent)&quot;" />
+
+    <!-- Temporary workaround for when the ci option is specified, non-zero exit are swallowed which prevents builds from failing within 
+         the build process.  https://github.com/dotnet/source-build/issues/2307 -->
+    <ReplaceTextInFile InputFile="$(EngCommonToolsShFile)"
+                       OldText="ExitWithExitCode 0"
+                       NewText="ExitWithExitCode $exit_code" />
+
+    <WriteLinesToFile File="$(RepoCompletedSemaphorePath)UpdateBuildToolFramework.complete" Overwrite="true" />
+  </Target>
+
+  <Target Name="UpdateNuGetConfig"
+          BeforeTargets="Build"
+          Condition="'$(NuGetConfigFile)' != '' OR '@(NuGetConfigFiles)' != ''"
+          Inputs="$(MSBuildProjectFullPath)"
+          Outputs="$(RepoCompletedSemaphorePath)UpdateNuGetConfig.complete">
+
+    <PropertyGroup>
+      <PrebuiltNuGetSourceName>prebuilt</PrebuiltNuGetSourceName>
+      <PreviouslySourceBuiltNuGetSourceName>previously-source-built</PreviouslySourceBuiltNuGetSourceName>
+      <ReferencePackagesNuGetSourceName>reference-packages</ReferencePackagesNuGetSourceName>
+      <SourceBuiltNuGetSourceName>source-built</SourceBuiltNuGetSourceName>
+      <ExtraSourcesNuGetSourceName>ExtraSources</ExtraSourcesNuGetSourceName>
+      <SourceBuildSources>$(PrebuiltNuGetSourceName);$(PreviouslySourceBuiltNuGetSourceName);$(ReferencePackagesNuGetSourceName);$(SourceBuiltNuGetSourceName)</SourceBuildSources>
+      <SourceBuildSources Condition="'$(ExtraRestoreSourcePath)' != ''">$(SourceBuildSources);$(ExtraSourcesNuGetSourceName)</SourceBuildSources>
+    </PropertyGroup>
+
+    <!-- Update the detected or manually specified NuGetConfigFile, but also allow multiple. -->
+    <ItemGroup>
+      <NuGetConfigFiles Include="$(NuGetConfigFile)" />
+    </ItemGroup>
+
+    <RemoveInternetSourcesFromNuGetConfig
+      NuGetConfigFile="%(NuGetConfigFiles.Identity)"
+      BuildWithOnlineSources="$(BuildWithOnlineSources)"
+      KeepFeedPrefixes="@(KeepFeedPrefixes)" />
+
+    <AddSourceToNuGetConfig NuGetConfigFile="%(NuGetConfigFiles.Identity)"
+                            SourceName="$(PrebuiltNuGetSourceName)"
+                            SourcePath="$(PrebuiltPackagesPath)"
+                            />
+
+    <AddSourceToNuGetConfig NuGetConfigFile="%(NuGetConfigFiles.Identity)"
+                            SourceName="$(PreviouslySourceBuiltNuGetSourceName)"
+                            SourcePath="$(PrebuiltSourceBuiltPackagesPath)"
+                            />
+
+    <AddSourceToNuGetConfig NuGetConfigFile="%(NuGetConfigFiles.Identity)"
+                            SourceName="$(ReferencePackagesNuGetSourceName)"
+                            SourcePath="$(ReferencePackagesDir)"
+                            />
+
+    <AddSourceToNuGetConfig NuGetConfigFile="%(NuGetConfigFiles.Identity)"
+                            SourceName="$(SourceBuiltNuGetSourceName)"
+                            SourcePath="$(SourceBuiltPackagesPath)" />
+
+    <AddSourceToNuGetConfig NuGetConfigFile="%(NuGetConfigFiles.Identity)"
+                            SourceName="$(ExtraSourcesNuGetSourceName)"
+                            SourcePath="$(ExtraRestoreSourcePath)"
+                            Condition="'$(ExtraRestoreSourcePath)' != ''" />
+
+    <UpdateNuGetConfigPackageSourcesMappings
+      NuGetConfigFile="%(NuGetConfigFiles.Identity)"
+      BuildWithOnlineSources="$(BuildWithOnlineSources)"
+      SourceBuildSources="$(SourceBuildSources)" />
+
+    <WriteLinesToFile File="$(RepoCompletedSemaphorePath)UpdateNuGetConfig.complete" Overwrite="true" />
+  </Target>
+
+  <Target Name="UpdateGlobalJsonVersions"
+          BeforeTargets="Build"
+          Condition="'$(GlobalJsonFile)' != ''"
+          Inputs="$(MSBuildProjectFullPath)"
+          Outputs="$(RepoCompletedSemaphorePath)UpdateGlobalJsonVersions.complete">
+    <ItemGroup>
+      <_PossibleCliVersionJsonPath Include="sdk.version" />
+      <_PossibleCliVersionJsonPath Include="tools.dotnet" />
+    </ItemGroup>
+
+    <UpdateJson JsonFilePath="$(GlobalJsonFile)"
+                PathToAttribute="%(_PossibleCliVersionJsonPath.Identity)"
+                NewAttributeValue="$(SDK_VERSION)"
+                SkipUpdateIfMissingKey="true" />
+
+    <WriteLinesToFile File="$(RepoCompletedSemaphorePath)UpdateGlobalJsonVersions.complete" Overwrite="true" />
+  </Target>
+
+  <!-- Before a repository builds, set up the version property files that override the repo's defaults.
+       There are 3 files generated -->
+  <Target Name="CreateBuildInputProps"
+          BeforeTargets="Build"
+          Inputs="$(MSBuildProjectFullPath)"
+          Outputs="$(RepoCompletedSemaphorePath)CreateBuildInputProps.complete">
+
+    <ItemGroup>
+      <_CurrentSourceBuiltPackages Include="$(SourceBuiltPackagesPath)*.nupkg"
+                                   Exclude="$(SourceBuiltPackagesPath)*.symbols.nupkg" />
+
+      <!-- TODO: Remove Remove System.Drawing.Common exclusion once previous source-build artifacts have been updated to no longer include it.
+           System.Drawing.Common is excluded in response to https://github.com/dotnet/runtime/pull/83356 in order to avoid rebuilts and 
+           bootstrap issues as a result.  This wouldn't be an in the future once Runtime onboards to the per repo pvp feature
+           (https://github.com/dotnet/source-build/issues/3043). -->
+      <_PreviouslyBuiltSourceBuiltPackages Include="$(PrebuiltSourceBuiltPackagesPath)*.nupkg" 
+                                           Exclude="$(PrebuiltSourceBuiltPackagesPath)System.Drawing.Common*.nupkg" />
+                                      
+      <_CurrentAdditionalAssetDirs Include="$(SourceBuiltToolsetDir)" Condition="Exists('$(SourceBuiltToolsetDir)')" />
+    </ItemGroup>
+
+    <Error Condition="'$(PackageVersionPropsFlowType)' != 'AllPackages' and '$(PackageVersionPropsFlowType)' != 'DependenciesOnly'"
+      Text="Invalid PackageVersionPropsFlowType '$(PackageVersionPropsFlowType)'. Must be 'AllPackages' or 'DependenciesOnly'." />
+
+    <PropertyGroup>
+      <_VersionDetailsXml Condition="'$(PackageVersionPropsFlowType)' == 'DependenciesOnly'">$(ProjectDirectory)/eng/Version.Details.xml</_VersionDetailsXml>
+    </PropertyGroup>
+
+    <!-- Write the build input properties, then save off a copy that will be used for generating usage reports later -->
+    <WritePackageVersionsProps NuGetPackages="@(_CurrentSourceBuiltPackages)"
+                               ExtraProperties="@(ExtraPackageVersionPropsPackageInfo)"
+                               VersionPropsFlowType="$(PackageVersionPropsFlowType)"
+                               VersionDetails="$(_VersionDetailsXml)"
+                               AdditionalAssetDirs="@(_CurrentAdditionalAssetDirs)"
+                               OutputPath="$(CurrentSourceBuiltPackageVersionPropsPath)" />
+
+    <!-- Create previously source-built inputs info -->
+    <WritePackageVersionsProps NuGetPackages="@(_PreviouslyBuiltSourceBuiltPackages)"
+                               VersionPropsFlowType="$(PackageVersionPropsFlowType)"
+                               VersionDetails="$(_VersionDetailsXml)"
+                               OutputPath="$(PreviouslySourceBuiltPackageVersionPropsPath)" />
+
+    <!-- Write a full package version props (unfiltered) that will be used to track which repo creates a package.
+         Because not all repos implement the repo API (e.g. some are external), it's difficult to consistently gather
+         a list of packages from the output of each repo. This may be an area for improvement later.
+
+         Instead, we rely on the package version props file that is built up
+         before each build. If the full list of packages grows by package A, B and C between repo Y and Z, then Y produced
+         A B and C.
+
+         A key element of this algorith is that we must write the full package version props and not the filtered version. -->
+    <WritePackageVersionsProps NuGetPackages="@(_CurrentSourceBuiltPackages)"
+                               VersionPropsFlowType="AllPackages"
+                               OutputPath="$(SnapshotPackageVersionPropsPath)" />
+
+    <!-- Write a single file that contains imports for both the current and previously built packages -->
+    <PropertyGroup>
+      <PackageVersionsPropsContents>
+        <![CDATA[<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(PreviouslySourceBuiltPackageVersionPropsPath)" />
+  <Import Project="$(CurrentSourceBuiltPackageVersionPropsPath)" />
+</Project>
+]]>
+      </PackageVersionsPropsContents>
+    </PropertyGroup>
+
+    <WriteLinesToFile File="$(PackageVersionPropsPath)"
+                      Lines="$(PackageVersionsPropsContents)"
+                      Overwrite="true" />
+
+    <Message Importance="High" Text="$(RepositoryName) using package version properties saved at $(CurrentSourceBuiltPackageVersionPropsPath) and $(PreviouslySourceBuiltPackageVersionPropsPath)" />
+
+    <WriteLinesToFile File="$(RepoCompletedSemaphorePath)CreateBuildInputProps.complete" Overwrite="true" />
+  </Target>
+
+  <Target Name="Build"
+          DependsOnTargets="BuildRepoReferences"
+          Inputs="$(MSBuildProjectFullPath)"
+          Outputs="$(RepoCompletedSemaphorePath)Build.complete">
+
+    <Exec Command="$(DotnetToolCommand) build-server shutdown" />
+
+    <Message Importance="High" Text="[$([System.DateTime]::Now.ToString('HH:mm:ss.ff'))] Building $(ProjectBuildReason)" />
+    <Message Importance="High" Text="Running command:" />
+    <Message Importance="High" Text="  $(BuildCommand)" Condition="'$(BuildCommand)' != ''" />
+    <Message Importance="High" Text="  Using custom build target" Condition="'$(BuildCommand)' == ''" />
+    <Message Importance="High" Text="  Log: $(RepoConsoleLogFile)" />
+    <Message Importance="High" Text="  With Environment Variables:" />
+    <Message Importance="High" Text="    %(EnvironmentVariables.Identity)" />
+    <CallTarget Targets="RepoBuild" />
+    <Message Importance="High" Text="[$([System.DateTime]::Now.ToString('HH:mm:ss.ff'))] Building $(ProjectBuildReason)...done" />
+
+    <WriteLinesToFile File="$(RepoCompletedSemaphorePath)Build.complete" Overwrite="true" />
+    <OnError ExecuteTargets="ReportRepoError" />
+  </Target>
+
+  <Target Name="RepoBuild">
+    <ItemGroup>
+      <EnvironmentVariables Condition="'$(NUGET_PACKAGES)'!=''" Include="NUGET_PACKAGES=$(NUGET_PACKAGES)" />
+    </ItemGroup>
+    <PropertyGroup>
+      <FullCommand Condition="'$(LogVerbosityOptOut)' != 'true'">$(BuildCommand) /v:$(LogVerbosity) $(RedirectRepoOutputToLog)</FullCommand>
+      <FullCommand Condition="'$(LogVerbosityOptOut)' == 'true'">$(BuildCommand) $(RedirectRepoOutputToLog)</FullCommand>
+    </PropertyGroup>
+    <Exec Command="$(FullCommand)"
+          WorkingDirectory="$(ProjectDirectory)"
+          EnvironmentVariables="@(EnvironmentVariables)"
+          IgnoreStandardErrorWarningFormat="true" />
+  </Target>
+
+  <Target Name="ReportRepoError">
+    <Message Importance="High" Text="$([System.IO.File]::ReadAllText('$(RepoConsoleLogFile)'))" Condition="Exists('$(RepoConsoleLogFile)')" />
+    <Message Importance="High" Text="'$(RepositoryName)' failed during build." />
+    <Message Importance="High" Text="See '$(RepoConsoleLogFile)' for more information." Condition="Exists('$(RepoConsoleLogFile)')" />
+  </Target>
+
+  <Target Name="Package" AfterTargets="Build"
+          Condition="'$(BuildPackagesCommand)' != ''"
+          Inputs="$(MSBuildProjectFullPath)"
+          Outputs="$(RepoCompletedSemaphorePath)Package.complete">
+    <Message Importance="High" Text="[$([System.DateTime]::Now.ToString('HH:mm:ss.ff'))] Packaging $(ProjectBuildReason)" />
+    <Message Importance="High" Text="Running command:" />
+    <Message Importance="High" Text="  $(BuildPackagesCommand)" />
+    <Message Importance="High" Text="  Log: $(RepoConsoleLogFile)" />
+    <Message Importance="High" Text="  With Environment Variables:" />
+    <Message Importance="High" Text="    %(EnvironmentVariables.Identity)" />
+    <Exec Command="$(BuildPackagesCommand) /v:$(LogVerbosity) $(RedirectRepoOutputToLog)"
+          WorkingDirectory="$(ProjectDirectory)"
+          EnvironmentVariables="@(EnvironmentVariables)"
+          IgnoreStandardErrorWarningFormat="true" />
+    <Message Importance="High" Text="[$([System.DateTime]::Now.ToString('HH:mm:ss.ff'))] Packaging $(ProjectBuildReason)...done" />
+
+    <WriteLinesToFile File="$(RepoCompletedSemaphorePath)Package.complete" Overwrite="true" />
+    <OnError ExecuteTargets="ReportRepoError" />
+  </Target>
+
+  <Target Name="GatherBuiltPackages">
+    <ItemGroup>
+      <!-- Filter out packages for WriteVersions -->
+      <_BuiltPackages Condition="'$(PackagesOutput)' != ''" Include="$(PackagesOutput)/*.nupkg" Exclude="$(PackagesOutput)/*.symbols.nupkg"/>
+      <_BuiltPackages Condition="'@(PackagesOutputList)' != ''" Include="%(PackagesOutputList.Identity)/*.nupkg" Exclude="%(PackagesOutputList.Identity)/*.symbols.nupkg"/>
+    </ItemGroup>
+  </Target>
+
+  <Target Name="ExtractIntermediatePackages"
+          AfterTargets="Package">
+    <ItemGroup>
+      <_BuiltIntermediatePackages Condition="'$(PackagesOutput)' != ''" Include="$(PackagesOutput)/Microsoft.SourceBuild.Intermediate.*.nupkg" Exclude="$(PackagesOutput)/*.symbols.nupkg"/>
+      <_BuiltIntermediatePackages Condition="'@(PackagesOutputList)' != ''" Include="%(PackagesOutputList.Identity)/Microsoft.SourceBuild.Intermediate.*.nupkg" Exclude="%(PackagesOutputList.Identity)/*.symbols.nupkg"/>
+    </ItemGroup>
+
+
+    <PropertyGroup Condition="'@(_BuiltIntermediatePackages)' != ''">
+        <_NupkgDestinationPath>$(SourceBuiltPackagesPath)</_NupkgDestinationPath>
+        <!-- SBRP packages unpack into the Reference packages directory instead of into blob-feed packages -->
+        <_NupkgDestinationPath Condition="$([System.String]::Copy(%(_BuiltIntermediatePackages.Identity)).Contains('source-build-reference-packages'))">$(ReferencePackagesDir)</_NupkgDestinationPath>
+    </PropertyGroup>
+
+    <ZipFileExtractToDirectory Condition="'@(_BuiltIntermediatePackages)' != ''"
+                            SourceArchive="%(_BuiltIntermediatePackages.Identity)"
+                            DestinationDirectory="$(SourceBuiltPackagesPath)extractArtifacts/%(_BuiltIntermediatePackages.FileName)/"
+                            OverwriteDestination="true" />
+
+    <ItemGroup Condition="'@(_BuiltIntermediatePackages)' != ''">
+      <SourceBuiltNupkgFiles Include="$(SourceBuiltPackagesPath)extractArtifacts/**/artifacts/*.nupkg" />
+    </ItemGroup>
+
+    <ItemGroup Condition="'@(_BuiltIntermediatePackages)' != ''">
+      <NonShippingPackageLists Include="$(SourceBuiltPackagesPath)extractArtifacts/**/$(NonShippingPackagesListPrefix)*" />
+    </ItemGroup>
+
+    <!-- Copy lists of NonShipping packages to prebuilt-report dir -->
+    <Copy SourceFiles="@(NonShippingPackageLists)" DestinationFolder="$(PackageReportDir)packagelists/" />
+
+    <!-- Building SBRP: At this point the References directory contains the previously-source-built SBRPs,
+         clear it before moving the current SBRPs.  This ensures n-1 SBRPs aren't required to build the product repos. -->
+    <RemoveDir
+      Condition="'$(_NupkgDestinationPath)' == '$(ReferencePackagesDir)'"
+      Directories="$(ReferencePackagesDir)" />
+
+    <Move
+      Condition="'@(SourceBuiltNupkgFiles)' != ''"
+      SourceFiles="@(SourceBuiltNupkgFiles)"
+      DestinationFiles="@(SourceBuiltNupkgFiles -> '$(_NupkgDestinationPath)%(Filename)%(Extension)')" />
+
+    <ItemGroup Condition="'@(_BuiltIntermediatePackages)' != ''">
+      <SourceBuiltAssetFiles Include="$(SourceBuiltPackagesPath)extractArtifacts/**/artifacts/*.*" />
+      <SourceBuiltAssetFiles Remove="$(SourceBuiltPackagesPath)extractArtifacts/**/artifacts/*.nupkg" />
+    </ItemGroup>
+
+    <Move
+      Condition="'@(SourceBuiltAssetFiles)' != ''"
+      SourceFiles="@(SourceBuiltAssetFiles)"
+      DestinationFiles="@(SourceBuiltAssetFiles -> '$(SourceBuiltAssetsDir)%(Filename)%(Extension)')" />
+
+    <RemoveDir
+      Condition="Exists('$(SourceBuiltPackagesPath)extractArtifacts/')"
+      Directories="$(SourceBuiltPackagesPath)extractArtifacts/" />
+
+  </Target>
+
+  <!-- Copy restored packages from inner build to ensure they're included in the
+       main build prebuilt check -->
+  <Target Name="CopyInnerBuildRestoredPackages"
+          AfterTargets="Package">
+    <ItemGroup>
+      <_InnerPackageCacheFiles Include="$(ProjectDirectory)artifacts/source-build/self/package-cache/**/*" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(_InnerPackageCacheFiles)"
+          DestinationFiles="$(PackagesDir)%(RecursiveDir)%(Filename)%(Extension)"
+          Condition=" '@(_InnerPackageCacheFiles)' != '' " />
+  </Target>
+
+  <Target Name="CopyPackage"
+          AfterTargets="Package"
+          Condition="'$(PackagesOutput)' != '' OR '@(PackagesOutputList)' != ''"
+          DependsOnTargets="GatherBuiltPackages"
+          Inputs="$(MSBuildProjectFullPath)"
+          Outputs="$(RepoCompletedSemaphorePath)CopyPackage.complete">
+    <Copy SourceFiles="@(_BuiltPackages)"
+          DestinationFolder="$(SourceBuiltPackagesPath)"
+          Condition="'@(_BuiltPackages)'!=''" />
+
+    <WriteLinesToFile File="$(RepoCompletedSemaphorePath)CopyPackage.complete" Overwrite="true" />
+  </Target>
+
+  <Target Name="RemoveBuiltPackagesFromCache"
+          AfterTargets="Package"
+          Condition="'@(_BuiltPackages)'!=''"
+          DependsOnTargets="GatherBuiltPackages"
+          Inputs="$(MSBuildProjectFullPath)"
+          Outputs="$(RepoCompletedSemaphorePath)RemoveBuiltPackagesFromCache.complete">
+
+    <ItemGroup>
+        <!-- Excluding Arcade here will keep it in the cache, because that's where we're running from.
+             Subsequent projects will get Arcade from eng/source-built-sdks. -->
+        <PackagePaths Include="@(_BuiltPackages)" Exclude="$(PackagesOutput)/Microsoft.DotNet.Arcade.Sdk.*.nupkg" />
+    </ItemGroup>
+
+    <ReadNuGetPackageInfos PackagePaths="@(PackagePaths)">
+      <Output TaskParameter="PackageInfoItems" ItemName="_BuiltPackageInfos" />
+    </ReadNuGetPackageInfos>
+
+    <!-- Copy built nupkgs from nuget packages cache directory to the previouslyRestored directory
+         and then delete all expanded files and the nupkg from the package cache so the next time
+         the package is used, it will reload the source-built version -->
+    <ItemGroup>
+      <_FilesToCopy Include="$(PackagesDir)$([System.String]::copy('%(_BuiltPackageInfos.PackageId)').ToLower())/%(_BuiltPackageInfos.PackageVersion)/**/*.nupkg" />
+      <_FilesToDelete Include="$(PackagesDir)$([System.String]::copy('%(_BuiltPackageInfos.PackageId)').ToLower())/%(_BuiltPackageInfos.PackageVersion)/**/*.*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(_FilesToCopy)" DestinationFolder="$(PreviouslyRestoredPackagesPath)$(RepositoryName)/" />
+    <Delete Files="@(_FilesToDelete)" />
+
+    <WriteLinesToFile File="$(RepoCompletedSemaphorePath)RemoveBuiltPackagesFromCache.complete" Overwrite="true" />
+  </Target>
+
+  <Target Name="DisplayDirSizeBeforeBuild"
+          BeforeTargets="Build"
+          Condition=" '$(CleanWhileBuilding)' == 'true' ">
+    <Message Text="DirSize Before Building $(RepositoryName)" Importance="High" />
+    <Exec Command="df -h $(ProjectDir)" />
+  </Target>
+  <Target Name="DisplayDirSizeAfterBuild"
+          AfterTargets="Build"
+          BeforeTargets="CleanupRepo"
+          Condition=" '$(CleanWhileBuilding)' == 'true' ">
+    <Message Text="DirSize After Building $(RepositoryName)" Importance="High" />
+    <Exec Command="df -h $(ProjectDir)" />
+  </Target>
+  <Target Name="DisplayDirSizeAfterClean"
+          AfterTargets="CleanupRepo"
+          Condition=" '$(CleanWhileBuilding)' == 'true' ">
+    <Message Text="DirSize After CleanupRepo $(RepositoryName)" Importance="High" />
+    <Exec Command="df -h $(ProjectDir)" />
+  </Target>
+
+  <Target Name="CleanupRepo" 
+          AfterTargets="RemoveBuiltPackagesFromCache"
+          Condition=" '$(CleanWhileBuilding)' == 'true' ">
+
+    <!-- Make a copy of the build logs & project.assets.json files -->
+    <PropertyGroup>
+      <BuildLogsDir>$(ProjectDirectory)artifacts/buildLogs</BuildLogsDir>
+      <BuildObjDir>$(ProjectDirectory)artifacts/buildObj</BuildObjDir>
+    </PropertyGroup>
+    <ItemGroup>
+      <LogFilesToCopy Include="$(ProjectDirectory)artifacts/**/*.log" />
+      <LogFilesToCopy Include="$(ProjectDirectory)artifacts/**/*.binlog" />
+      <ObjFilesToCopy Include="$(ProjectDirectory)artifacts/**/project.assets.json" />
+    </ItemGroup>
+    <MakeDir Directories="$(BuildLogsDir)" Condition="Exists('$(ProjectDirectory)artifacts')"/>
+    <MakeDir Directories="$(BuildObjDir)" Condition="Exists('$(ProjectDirectory)artifacts')"/>
+    <Copy SourceFiles="@(LogFilesToCopy)" DestinationFolder="$(BuildLogsDir)/%(RecursiveDir)" Condition="Exists('$(BuildLogsDir)') AND '@(LogFilesToCopy)' != '' " />
+    <Copy SourceFiles="@(ObjFilesToCopy)" DestinationFolder="$(BuildObjDir)/%(RecursiveDir)" Condition="Exists('$(BuildObjDir)') AND '@(ObjFilesToCopy)' != '' " />
+
+    <!-- Cleanup everything else -->
+    <ItemGroup>
+      <DirsToDelete Include="$([System.IO.Directory]::GetDirectories(&quot;$(ProjectDirectory)artifacts/&quot;))" Condition="Exists('$(ProjectDirectory)artifacts')" />
+      <DirsToDelete Remove="$(BuildLogsDir)" />
+      <DirsToDelete Remove="$(BuildObjDir)" />
+    </ItemGroup>
+
+    <RemoveDir Directories="@(DirsToDelete)" />
+  </Target>
+
+  <Target Name="ExtractToolPackage"
+          DependsOnTargets="GatherBuiltPackages"
+          AfterTargets="Build"
+          Condition="'@(BuiltSdkPackageOverride)' != ''"
+          Inputs="$(MSBuildProjectFullPath)"
+          Outputs="$(RepoCompletedSemaphorePath)ExtractToolPackage.complete">
+    <ItemGroup>
+      <_ToolPackage
+        Condition="'%(BuiltSdkPackageOverride.Version)' == ''"
+        Include="$(SourceBuiltPackagesPath)%(BuiltSdkPackageOverride.Identity)*.nupkg"
+        Exclude="$(SourceBuiltPackagesPath)%(BuiltSdkPackageOverride.Identity)*.symbols.nupkg"
+        Id="%(BuiltSdkPackageOverride.Identity)" />
+      <_ToolPackage
+        Condition="'%(BuiltSdkPackageOverride.Version)' != ''"
+        Include="$(SourceBuiltPackagesPath)%(BuiltSdkPackageOverride.Identity).%(BuiltSdkPackageOverride.Version).nupkg"
+        Exclude="$(SourceBuiltPackagesPath)%(BuiltSdkPackageOverride.Identity).%(BuiltSdkPackageOverride.Version).symbols.nupkg"
+        Id="%(BuiltSdkPackageOverride.Identity)" />
+    </ItemGroup>
+
+    <ZipFileExtractToDirectory SourceArchive="%(_ToolPackage.Identity)"
+                               DestinationDirectory="$(SourceBuiltSdksDir)%(_ToolPackage.Id)\"
+                               OverwriteDestination="true" />
+    <ItemGroup>
+      <ExtractedToolFiles Include="$(SourceBuiltSdksDir)%(_ToolPackage.Id)/**/*netcore*/*.dll" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(ExtractedToolFiles)" DestinationFolder="$(SourceBuiltSdksDir)/" />
+
+    <!-- TODO: When unpacking using ZipFileExtractToDirectory, this executable file has the wrong
+         permissions.  See https://github.com/dotnet/source-build/issues/2259 -->
+    <Exec Command="chmod 755 git-clone-to-dir.sh"
+      Condition=" '%(_ToolPackage.Id)' == 'Microsoft.DotNet.Arcade.Sdk' "
+      WorkingDirectory="$(SourceBuiltSdksDir)%(_ToolPackage.Id)/tools/SourceBuild/" />
+
+    <!-- Allow overriding of Arcade targets for SourceBuild to enable quicker
+         dev turnaround for Preview 6 -->
+    <PropertyGroup>
+      <ArcadeSDKToolPackagePath></ArcadeSDKToolPackagePath>
+      <ArcadeSDKToolPackagePath Condition=" '%(_ToolPackage.Id)' == 'Microsoft.DotNet.Arcade.Sdk' ">$(SourceBuiltSdksDir)%(_ToolPackage.Id)/</ArcadeSDKToolPackagePath>
+    </PropertyGroup>
+    <ItemGroup>
+      <OverrideArcadeFiles Include="$(ArcadeOverridesDir)**/*" />
+    </ItemGroup>
+
+    <Copy
+      Condition=" '$(ArcadeSDKToolPackagePath))' != '' "
+      SourceFiles="@(OverrideArcadeFiles)"
+      DestinationFiles="$(ArcadeSDKToolPackagePath)tools/SourceBuild/%(RecursiveDir)%(Filename)%(Extension)" />
+
+    <WriteLinesToFile File="$(RepoCompletedSemaphorePath)ExtractToolPackage.complete" Overwrite="true" />
+  </Target>
+
+  <Target Name="EnsurePackagesCreated"
+          AfterTargets="CopyPackage"
+          Condition="'$(SkipEnsurePackagesCreated)' != 'true'"
+          Inputs="$(MSBuildProjectFullPath)"
+          Outputs="$(RepoCompletedSemaphorePath)EnsurePackagesCreated.complete">
+    <ItemGroup>
+      <JustSourceBuiltPackages
+        Include="$(SourceBuiltPackagesPath)*.nupkg"
+        Exclude="
+          $(SourceBuiltPackagesPath)*.symbols.nupkg;
+          @(PreviouslySourceBuiltPackages)" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <_PackagesNotCreatedReason Include="^ There may have been a silent failure in the submodule build. To confirm, check the build log file for undetected errors that may have prevented package creation: $(RepoConsoleLogFile)" />
+      <_PackagesNotCreatedReason Include="^ This error might be a false positive if $(RepositoryName) intentionally builds no nuget packages. If so, set the SkipEnsurePackagesCreated property to true in $(MSBuildProjectFullPath)" />
+      <_PackagesNotCreatedReason Include="^ The 'bin' directory might be dirty from a previous build and the package files already existed. If so, perform a clean build, or check which packages were already in 'bin' by opening $(CurrentSourceBuiltPackageVersionPropsPath)" />
+      <_PackagesNotCreatedReason Include="^ The packages may have been written to an unexpected directory. For example, some repos used bin/ and changed to artifacts/ to match Arcade. Check PackagesOutput in $(MSBuildProjectFullPath) (currently '$(PackagesOutput)')" />
+    </ItemGroup>
+
+    <Error Condition="'@(JustSourceBuiltPackages)' == ''"
+           Text="$(RepositoryName) produced no new source-built package identities. Known possible causes:%0A@(_PackagesNotCreatedReason, '%0A')" />
+
+    <ReadNuGetPackageInfos PackagePaths="@(JustSourceBuiltPackages)">
+      <Output TaskParameter="PackageInfoItems" ItemName="_JustSourceBuiltPackageInfos" />
+    </ReadNuGetPackageInfos>
+
+    <Message Importance="High" Text="New NuGet package(s) after building $(RepositoryName):" />
+    <Message Importance="High" Text="  -> %(_JustSourceBuiltPackageInfos.PackageId) %(_JustSourceBuiltPackageInfos.PackageVersion)" />
+
+    <WriteLinesToFile File="$(RepoCompletedSemaphorePath)EnsurePackagesCreated.complete" Overwrite="true" />
+  </Target>
+
+  <Target Name="Clean" Condition="'$(CleanCommand)' != ''" >
+    <Exec Command="$(CleanCommand) /v:$(LogVerbosity) $(RedirectRepoOutputToLog)"
+          WorkingDirectory="$(ProjectDirectory)"
+          EnvironmentVariables="@(EnvironmentVariables)"
+          IgnoreStandardErrorWarningFormat="true" />
+  </Target>
+
+  <Target Name="SetNuGetPackagesEnvironment" Condition="'$(ArchiveDownloadedPackages)' == 'true'">
+    <PropertyGroup>
+      <LocalNuGetPackagesRootForRepository>$(LocalNuGetPackagesRoot)$(RepositoryName)/</LocalNuGetPackagesRootForRepository>
+    </PropertyGroup>
+
+    <MakeDir Directories="$(LocalNuGetPackagesRootForRepository)" />
+
+    <ItemGroup>
+      <EnvironmentVariables Include="NUGET_PACKAGES=$(LocalNuGetPackagesRootForRepository)" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="SetSourceBuiltSdkOverrides"
+          BeforeTargets="Build"
+          Condition="'@(UseSourceBuiltSdkOverride)' != ''">
+    <ItemGroup>
+      <EnvironmentVariables Include="SOURCE_BUILT_SDK_ID_%(UseSourceBuiltSdkOverride.Group)=%(UseSourceBuiltSdkOverride.Identity)" />
+      <EnvironmentVariables Include="SOURCE_BUILT_SDK_VERSION_%(UseSourceBuiltSdkOverride.Group)=%(UseSourceBuiltSdkOverride.Version)" />
+      <EnvironmentVariables Condition="'%(UseSourceBuiltSdkOverride.Location)' != ''" Include="SOURCE_BUILT_SDK_DIR_%(UseSourceBuiltSdkOverride.Group)=%(UseSourceBuiltSdkOverride.Location)/" />
+      <EnvironmentVariables Condition="'%(UseSourceBuiltSdkOverride.Location)' == ''" Include="SOURCE_BUILT_SDK_DIR_%(UseSourceBuiltSdkOverride.Group)=$(SourceBuiltSdksDir)%(UseSourceBuiltSdkOverride.Identity)/" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="WritePrebuiltUsageData"
+          DependsOnTargets="GetAllProjectDirectories"
+          Inputs="$(MSBuildProjectFullPath)"
+          Outputs="$(RepoCompletedSemaphorePath)WritePrebuiltUsageData.complete">
+    <!-- Save the PVP snapshot of each build step to be evaluated while building the report. -->
+    <ItemGroup>
+      <PackageVersionPropsSnapshotFiles Include="$(IntermediatePath)PackageVersions.*.Snapshot.props" />
+    </ItemGroup>
+    <Copy SourceFiles="@(PackageVersionPropsSnapshotFiles)" DestinationFolder="$(PackageReportDir)snapshots/" />
+
+    <ItemGroup>
+      <AllRestoredPackageFiles Include="$(LocalNuGetPackagesRoot)**/*.nupkg" />
+      <AllRestoredPackageFiles Include="$(PackagesDir)**/*.nupkg" />
+
+      <!-- Only contains packages when building. -->
+      <TarballPrebuiltPackageFiles Include="$(PrebuiltPackagesPath)*.nupkg" />
+
+      <SourceBuiltPackageFiles Include="$(SourceBuiltBlobFeedDir)**/*.nupkg" />
+      <SourceBuiltPackageFiles Include="$(PrebuiltSourceBuiltPackagesPath)*.nupkg" />
+      <ReferencePackageFiles Include="$(ReferencePackagesDir)**/*.nupkg" />
+
+      <!-- Check all RIDs from all restored Microsoft.NETCore.Platforms packages. -->
+      <PlatformsRuntimeJsonFiles Include="$(LocalNuGetPackagesRoot)*/microsoft.netcore.platforms/*/runtime.json" />
+      <PlatformsRuntimeJsonFiles Include="$(PackagesDir)microsoft.netcore.platforms/*/runtime.json" />
+
+      <!-- Add some other potential top-level project directories for a more specific report. -->
+      <ProjectDirectories Include="$(SourceBuiltSdksDir);$(TaskDirectory);$(BaseIntermediatePath)" />
+      <!-- Finally, scan entire source-build, in case project.assets.json ends up in an unexpected place. -->
+      <ProjectDirectories Include="$(ProjectDir)" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <!-- This file is a resource tracked by Git, not generated by restore. Ignore false positive. -->
+      <IgnoredProjectAssetsJsonFiles Include="$(SubmoduleDirectory)*nuget-client*/**/test/NuGet.Core.Tests/NuGet.Build.Tasks.Pack.Test/compiler/resources/project.assets.json"/>
+    </ItemGroup>
+
+    <WritePackageUsageData
+      RestoredPackageFiles="@(AllRestoredPackageFiles)"
+      TarballPrebuiltPackageFiles="@(TarballPrebuiltPackageFiles)"
+      SourceBuiltPackageFiles="@(SourceBuiltPackageFiles)"
+      ReferencePackageFiles="@(ReferencePackageFiles)"
+      PlatformsRuntimeJsonFiles="@(PlatformsRuntimeJsonFiles)"
+      TargetRid="$(TargetRid)"
+      ProjectDirectories="@(ProjectDirectories)"
+      RootDir="$(ProjectDir)"
+      IgnoredProjectAssetsJsonFiles="@(IgnoredProjectAssetsJsonFiles)"
+      DataFile="$(PackageReportDataFile)"
+      ProjectAssetsJsonArchiveFile="$(ProjectAssetsJsonArchiveFile)" />
+
+    <!-- Copy all restored packages to resulting prebuilt folder -->
+    <ItemGroup>
+      <UsedPrebuiltPackageFiles Include="@(AllRestoredPackageFiles)" />
+    </ItemGroup>
+    <Copy
+      SourceFiles="@(UsedPrebuiltPackageFiles)"
+      DestinationFolder="$(ResultingPrebuiltPackagesDir)" />
+
+    <!-- Remove packages that are known to be built -->
+    <ItemGroup>
+      <BuiltPackageFiles Include="@(TarballPrebuiltPackageFile)" />
+      <BuiltPackageFiles Include="@(SourceBuiltPackageFiles)" />
+      <BuiltPackageFiles Include="@(ReferencePackageFiles)" />
+      <BuiltPackageFiles>
+        <LCFilename>$([System.String]::Copy(%(Filename)).ToLower())</LCFilename>
+      </BuiltPackageFiles>
+    </ItemGroup>
+    <Delete Files="@(BuiltPackageFiles->'$(ResultingPrebuiltPackagesDir)%(LCFilename)%(Extension)')" />
+
+    <WriteLinesToFile File="$(RepoCompletedSemaphorePath)WritePrebuiltUsageData.complete" Overwrite="true" />
+  </Target>
+
+  <Target Name="GetAllProjectDirectories">
+    <ItemGroup>
+      <AllRepoProjects Include="$(RepoProjectsDir)*.proj" />
+    </ItemGroup>
+
+    <Message Importance="High" Text="Finding project directories..." />
+
+    <MSBuild Projects="@(AllRepoProjects)"
+             Targets="GetProjectDirectory">
+      <Output TaskParameter="TargetOutputs" ItemName="ProjectDirectories" />
+    </MSBuild>
+  </Target>
+
+  <Target Name="ReportPrebuiltUsage"
+          Inputs="$(MSBuildProjectFullPath)"
+          Outputs="$(RepoCompletedSemaphorePath)ReportPrebuiltUsage.complete">
+    <PropertyGroup>
+      <FailOnPrebuiltBaselineError Condition="'$(FailOnPrebuiltBaselineError)' == ''">false</FailOnPrebuiltBaselineError>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageVersionPropsSavedSnapshotFiles Include="$(PackageReportDir)snapshots/PackageVersions.*.Snapshot.props" />
+    </ItemGroup>
+
+    <WriteUsageReports DataFile="$(PackageReportDataFile)"
+                       PackageVersionPropsSnapshots="@(PackageVersionPropsSavedSnapshotFiles)"
+                       ProdConBuildManifestFile="$(ProdConManifestFile)"
+                       PoisonedReportFile="$(PoisonedReportFile)"
+                       OutputDirectory="$(PackageReportDir)" />
+
+    <PropertyGroup Condition="'$(ContinueOnPrebuiltBaselineError)' == ''">
+      <ContinueOnPrebuiltBaselineError>false</ContinueOnPrebuiltBaselineError>
+      <ContinueOnPrebuiltBaselineError Condition="'$(FailOnPrebuiltBaselineError)' != 'true'">true</ContinueOnPrebuiltBaselineError>
+    </PropertyGroup>
+
+    <ValidateUsageAgainstBaseline
+      DataFile="$(PackageReportDataFile)"
+      BaselineDataFile="$(BaselineDataFile)"
+      OutputBaselineFile="$(PackageReportDir)generated-new-baseline.xml"
+      OutputReportFile="$(PackageReportDir)baseline-comparison.xml"
+      AllowTestProjectUsage="$(AllowTestProjectUsage)"
+      ContinueOnError="$(ContinueOnPrebuiltBaselineError)" />
+
+    <WriteLinesToFile File="$(RepoCompletedSemaphorePath)ReportPrebuiltUsage.complete" Overwrite="true" />
+  </Target>
+
+  <Target Name="GetProjectDirectory" Outputs="$(ProjectDirectory)" />
+  <Target Name="GetOfficialBuildId" Outputs="$(OfficialBuildId)" />
+  <Target Name="GetRepositoryReferences" Outputs="@(RepositoryReference)" />
+
+  <Import Project="$([MSBuild]::GetPathOfFileAbove(Directory.Build.targets, $(MSBuildThisFileDirectory)..))" />
+</Project>

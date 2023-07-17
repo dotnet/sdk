@@ -1,0 +1,10 @@
+/.dotnet
+/artifacts
+/eng/tools/**/bin
+/eng/tools/**/obj
+/prereqs/packages
+/src/linker/src/ILLink.Tasks/ILLink.Tasks.nuspec
+/src/nuget-client/NuGet.config
+/test/Microsoft.DotNet.SourceBuild.SmokeTests/bin
+/test/Microsoft.DotNet.SourceBuild.SmokeTests/obj
+/test/Microsoft.DotNet.SourceBuild.SmokeTests/TestResults

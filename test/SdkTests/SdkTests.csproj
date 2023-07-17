@@ -1,4 +1,4 @@
-﻿<Project>
+<Project>
 
   <PropertyGroup>
     <CopyBuildOutputToOutputDirectory>false</CopyBuildOutputToOutputDirectory>
@@ -63,6 +63,7 @@
       <RuntimeVersionToInstall Include="3.1.0" />
       <RuntimeVersionToInstall Include="5.0.0" />
       <RuntimeVersionToInstall Include="6.0.0" />
+      <RuntimeVersionToInstall Include="7.0.0" />
     </ItemGroup>
     
   </Target>
@@ -225,8 +226,8 @@
       <TestArgs>$(TestArgs) -testConfigFile "$(MSBuildThisFileDirectory)TestsToSkipPortableLinux.xml"</TestArgs>
     </PropertyGroup>
 
-    <PropertyGroup Condition=" $([MSBuild]::IsOSPlatform('Linux')) ">
-      <!-- Add list of tests to skip on Linux -->
+    <PropertyGroup Condition=" $([MSBuild]::IsOSPlatform('LINUX')) ">
+      <!-- Add list of tests to skip on Linux Portable -->
       <TestArgs>$(TestArgs) -testConfigFile "$(MSBuildThisFileDirectory)TestsToSkipLinux.xml"</TestArgs>
     </PropertyGroup>
 

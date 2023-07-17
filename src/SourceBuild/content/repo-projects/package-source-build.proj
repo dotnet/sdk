@@ -1,0 +1,70 @@
+<Project>
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+
+  <PropertyGroup>
+    <ProjectDirectory>$(SubmoduleDirectory)$(RepositoryName)/</ProjectDirectory>
+    <SkipEnsurePackagesCreated>true</SkipEnsurePackagesCreated>
+    <IncludedPackageVersionPropsFile>$(CurrentSourceBuiltPackageVersionPropsPath)</IncludedPackageVersionPropsFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <RepositoryReference Include="arcade" />
+  </ItemGroup>
+
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+
+  <Target Name="RepoBuild"
+          DependsOnTargets="DetermineMicrosoftSourceBuildIntermediateInstallerVersion">
+    <!-- Copy PVP to packages dir in order to package them together -->
+    <Copy SourceFiles="$(IncludedPackageVersionPropsFile)" DestinationFiles="$(SourceBuiltPackagesPath)PackageVersions.props" />
+
+    <!-- Expand SBRP intermediate package into separate folder and remove intermediate package -->
+    <PropertyGroup>
+      <SourceBuildReferencePackagesDestination>$(SourceBuiltPackagesPath)SourceBuildReferencePackages/</SourceBuildReferencePackagesDestination>
+      <SBRPIntermediateWildcard>Microsoft.SourceBuild.Intermediate.source-build-reference-packages*.nupkg</SBRPIntermediateWildcard>
+    </PropertyGroup>
+    <ItemGroup>
+      <SourceBuildReferencePackagesIntermediatePackage Include="$(SourceBuiltPackagesPath)$(SBRPIntermediateWildcard)"/>
+    </ItemGroup>
+
+    <MakeDir Directories="$(SourceBuildReferencePackagesDestination)" />
+    <ZipFileExtractToDirectory Condition="'@(SourceBuildReferencePackagesIntermediatePackage)' != ''"
+                            SourceArchive="%(SourceBuildReferencePackagesIntermediatePackage.Identity)"
+                            DestinationDirectory="$(SourceBuildReferencePackagesDestination)extractArtifacts/"
+                            OverwriteDestination="true" />
+
+    <ItemGroup>
+      <SourceBuildReferencePackagesNupkgFiles Include="$(SourceBuildReferencePackagesDestination)extractArtifacts/**/*.nupkg" />
+    </ItemGroup>
+
+    <Copy
+      Condition="'@(SourceBuildReferencePackagesNupkgFiles)' != ''"
+      SourceFiles="@(SourceBuildReferencePackagesNupkgFiles)"
+      DestinationFiles="@(SourceBuildReferencePackagesNupkgFiles -> '$(SourceBuildReferencePackagesDestination)%(Filename)%(Extension)')" />
+
+    <RemoveDir
+      Condition="Exists('$(SourceBuildReferencePackagesDestination)extractArtifacts/')"
+      Directories="$(SourceBuildReferencePackagesDestination)extractArtifacts/" />
+
+    <PropertyGroup>
+      <SourceBuiltTarballName>$(OutputPath)$(SourceBuiltArtifactsTarballName).$(MicrosoftSourceBuildIntermediateInstallerVersion).$(TargetRid).tar.gz</SourceBuiltTarballName>
+      <SourceBuiltVersionFileName>.version</SourceBuiltVersionFileName>
+    </PropertyGroup>
+
+    <!-- Content of the .version file to include in the tarball -->
+    <ItemGroup>
+      <VersionFileContent Include="$(RepositoryCommit);$(MicrosoftSourceBuildIntermediateInstallerVersion)" />
+    </ItemGroup>
+
+    <WriteLinesToFile
+      File="$(SourceBuiltPackagesPath)$(SourceBuiltVersionFileName)"
+      Lines="@(VersionFileContent)"
+      Overwrite="true" />
+
+    <Exec Command="tar --numeric-owner --exclude='Microsoft.SourceBuild.Intermediate.*.nupkg' -czf $(SourceBuiltTarballName) $(SourceBuiltVersionFileName) *.nupkg *.props SourceBuildReferencePackages/"
+          WorkingDirectory="$(SourceBuiltPackagesPath)" />
+
+    <Message Importance="High" Text="Packaged source-built artifacts to $(SourceBuiltTarballName)" />
+  </Target>
+
+</Project>

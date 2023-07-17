@@ -1,0 +1,19 @@
+<Project>
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+
+  <PropertyGroup>
+    <BuildCommand>$(StandardSourceBuildCommand) $(StandardSourceBuildArgs)</BuildCommand>
+
+    <LogVerbosityOptOut>true</LogVerbosityOptOut>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ExtraPackageVersionPropsPackageInfo Include="MicrosoftSourceLinkVersion" Version="$(SOURCE_LINK_BOOTSTRAP_VERSION)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <RepositoryReference Include="command-line-api" />
+  </ItemGroup>
+
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+</Project>

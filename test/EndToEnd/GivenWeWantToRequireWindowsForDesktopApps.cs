@@ -18,7 +18,7 @@ namespace Microsoft.DotNet.Tests.EndToEnd
         {
             var testProjectCreator = new TestProjectCreator()
             {
-                MinorVersion = "7.0"
+                MinorVersion = "8.0"
             };
 
             testProjectCreator.AdditionalProperties["RestorePackagesPath"] = @"$(MSBuildProjectDirectory)\packages";
