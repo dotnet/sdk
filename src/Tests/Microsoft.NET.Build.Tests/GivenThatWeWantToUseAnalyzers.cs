@@ -46,7 +46,7 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [Fact]
-        public void It_enables_requestdelegategenerator_for_PublishAot()
+        public void It_enables_requestdelegategenerator_and_configbindinggenerator_for_PublishAot()
         {
             var asset = _testAssetsManager
                 .CopyTestAsset("WebApp")
@@ -58,6 +58,7 @@ namespace Microsoft.NET.Build.Tests
                 });
 
             VerifyRequestDelegateGeneratorIsUsed(asset, expectEnabled: true);
+            VerifyConfigBindingGeneratorIsUsed(asset, expectEnabled: true);
             VerifyInterceptorsFeatureEnabled(asset, expectEnabled: true);
         }
 
