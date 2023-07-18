@@ -91,7 +91,7 @@ public class ContainerHelpersTests
     [InlineData("welp/unknowntype", false, null, null, (ContainerHelpers.ParsePortError)3)]
     [InlineData("a/b/c", false, null, null, ContainerHelpers.ParsePortError.UnknownPortFormat)]
     [InlineData("/tcp", false, null, null, ContainerHelpers.ParsePortError.MissingPortNumber)]
-    internal void CanParsePort(string input, bool shouldParse, int? expectedPortNumber, PortType? expectedType, ContainerHelpers.ParsePortError? expectedError) {
+    public void CanParsePort(string input, bool shouldParse, int? expectedPortNumber, PortType? expectedType, ContainerHelpers.ParsePortError? expectedError) {
         var parseSuccess = ContainerHelpers.TryParsePort(input, out var port, out var errors);
         Assert.Equal(shouldParse, parseSuccess);
 

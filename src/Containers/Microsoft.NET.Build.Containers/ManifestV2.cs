@@ -12,7 +12,7 @@ namespace Microsoft.NET.Build.Containers;
 /// <remarks>
 /// https://github.com/opencontainers/image-spec/blob/main/manifest.md
 /// </remarks>
-internal readonly record struct ManifestV2
+public readonly record struct ManifestV2
 {
     /// <summary>
     /// This REQUIRED property specifies the image manifest schema version.
@@ -50,6 +50,6 @@ internal readonly record struct ManifestV2
     public string GetDigest() => DigestUtils.GetDigest(JsonSerializer.SerializeToNode(this)?.ToJsonString() ?? string.Empty);
 }
 
-internal record struct ManifestConfig(string mediaType, long size, string digest);
+public record struct ManifestConfig(string mediaType, long size, string digest);
 
-internal record struct ManifestLayer(string mediaType, long size, string digest, string[]? urls);
+public record struct ManifestLayer(string mediaType, long size, string digest, string[]? urls);
