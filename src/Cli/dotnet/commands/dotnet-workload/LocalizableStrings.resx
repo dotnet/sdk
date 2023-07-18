@@ -161,6 +161,6 @@
     <comment>{Locked="dotnet workload update"}</comment>
   </data>
   <data name="WorkloadVersionDescription" xml:space="preserve">
-    <value>Display version information about installed workloads.</value>
+    <value>Display the currently installed workload version.</value>
   </data>
 </root>

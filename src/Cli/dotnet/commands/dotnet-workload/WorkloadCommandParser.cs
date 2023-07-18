@@ -40,14 +40,11 @@ namespace Microsoft.DotNet.Cli
             return Command;
         }
 
-        internal static string GetWorkloadsVersion()
+        internal static string GetWorkloadsVersion(WorkloadInfoHelper workloadInfoHelper = null)
         {
-            var workloadManifestProvider =
-                new SdkDirectoryWorkloadManifestProvider(Path.GetDirectoryName(Environment.ProcessPath),
-                Cli.Utils.Product.Version,
-                CliFolderPathCalculator.DotnetUserProfileFolderPath, SdkDirectoryWorkloadManifestProvider.GetGlobalJsonPath(Environment.CurrentDirectory));
+            workloadInfoHelper ??= new WorkloadInfoHelper(false);
 
-            return workloadManifestProvider.GetWorkloadVersion();
+            return workloadInfoHelper.ManifestProvider.GetWorkloadVersion();
         }
 
         internal static void ShowWorkloadsInfo(ParseResult parseResult = null, WorkloadInfoHelper workloadInfoHelper = null, IReporter reporter = null, string dotnetDir = null)
@@ -57,6 +54,8 @@ namespace Microsoft.DotNet.Cli
             InstalledWorkloadsCollection installedWorkloads = workloadInfoHelper.AddInstalledVsWorkloads(installedList);
             reporter ??= Cli.Utils.Reporter.Output;
             string dotnetPath = dotnetDir ?? Path.GetDirectoryName(Environment.ProcessPath);
+
+            reporter.WriteLine($" Workload version: {workloadInfoHelper.ManifestProvider.GetWorkloadVersion()}");
 
             if (installedWorkloads.Count == 0)
             {
@@ -96,17 +95,7 @@ namespace Microsoft.DotNet.Cli
         {
             if (parseResult.HasOption(InfoOption) && parseResult.RootSubCommandResult() == "workload")
             {
-                WorkloadInfoHelper workloadInfoHelper = new(parseResult.HasOption(SharedOptions.InteractiveOption));
-                if (!workloadInfoHelper.InstalledSdkWorkloadIds.Any())
-                {
-                    Reporter.Output.WriteLine(CommonStrings.NoWorkloadsInstalledInfoWarning);
-                    Reporter.Output.WriteLine(string.Empty);
-                    return 0;
-                }
-
-                Reporter.Output.WriteLine($" Workload version: {workloadInfoHelper.ManifestProvider.GetWorkloadVersion()}");
-
-                ShowWorkloadsInfo(parseResult, workloadInfoHelper: workloadInfoHelper);
+                ShowWorkloadsInfo(parseResult);
                 Reporter.Output.WriteLine(string.Empty);
                 return 0;
             }
