@@ -66,7 +66,8 @@ public class OmniSharpTests : SmokeTests
 
             Directory.CreateDirectory(OmniSharpDirectory);
             Utilities.ExtractTarball(omniSharpTarballFile, OmniSharpDirectory, OutputHelper);
-
+            ExecuteHelper.ExecuteProcessValidateExitCode("chmod", $"+x {OmniSharpDirectory}/run", OutputHelper);
+            
             // Ensure the run script is executable (see https://github.com/OmniSharp/omnisharp-roslyn/issues/2547)
             File.SetUnixFileMode($"{OmniSharpDirectory}/run", UnixFileMode.UserRead | UnixFileMode.UserExecute);
         }
