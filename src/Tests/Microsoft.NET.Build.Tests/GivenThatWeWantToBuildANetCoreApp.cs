@@ -26,6 +26,7 @@ using Microsoft.NET.Build.Tasks;
 using NuGet.Versioning;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
+using Xunit.Sdk;
 
 namespace Microsoft.NET.Build.Tests
 {
@@ -801,6 +802,30 @@ class Program
         }
 
         [WindowsOnlyFact]
+        public void ItResolvesPackageAssetsMultiTargetingNetStandard()
+        {
+            var testProject = new TestProject()
+            {
+                Name = "MultiTargetedPackageReference",
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework +";netstandard2.1",
+                RuntimeIdentifier = "win-x64",
+                IsExe = true
+            };
+            testProject.PackageReferences.Add(new TestPackageReference("Nuget.Common","6.5.7"));
+
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, testProject.Name);
+
+            var buildCommand = new BuildCommand(testAsset);
+
+            buildCommand
+                .Execute()
+                .Should()
+                .Pass()
+                .And
+                .HaveStdOutContaining("NU1603");
+        }
+
+        [WindowsOnlyFact]
         public void It_builds_with_unicode_characters_in_path()
         {
             var testProject = new TestProject()
@@ -935,7 +960,7 @@ class Program
         // Non-portable and portable RIDs should warn
         [InlineData(ToolsetInfo.CurrentTargetFramework, new[] { "ubuntu.22.04-x64", "win7-x86", "unix" }, true, true, null, true)]
         // Portable RIDs only should not warn
-        [InlineData(ToolsetInfo.CurrentTargetFramework, new[] { "win-x86", "linux", "linux-musl-x64", "osx-arm64", "unix" }, true, true, null, false)]
+        [InlineData(ToolsetInfo.CurrentTargetFramework, new[] { "win-x86", "win", "linux", "linux-musl-x64", "osx", "osx-arm64", "unix", "browser", "browser-wasm", "ios-arm64" }, true, true, null, false)]
         // No RID assets should not warn
         [InlineData(ToolsetInfo.CurrentTargetFramework, new string[] { }, false, false, null, false)]
         // Below .NET 8 should not warn
@@ -1027,6 +1052,50 @@ class Program
             {
                 result.Should().NotHaveStdOutContaining("NETSDK1206");
             }
+        }
+
+        [Theory]
+        [InlineData(true, "TRACE DISABLED")]
+        [InlineData(false, "TRACE ENABLED")]
+        public void It_can_use_implicitly_defined_compilation_constants(bool disableTracing, string expectedOutput)
+        {
+            var testProj = new TestProject()
+            {
+                Name = "DisableTracing_" + disableTracing.ToString(),
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
+                IsExe = true,
+            };
+            if (disableTracing == true)
+            {
+                testProj.AdditionalProperties["DisableDiagnosticTracing"] = "true";
+            }
+
+            testProj.SourceFiles[$"{testProj.Name}.cs"] = @"
+using System;
+class Program
+{
+    static void Main(string[] args)
+    {
+        #if TRACE
+            Console.WriteLine(""TRACE ENABLED"");
+        #endif
+        #if !TRACE
+            Console.WriteLine(""TRACE DISABLED"");
+        #endif
+    }
+}";
+            var testAsset = _testAssetsManager.CreateTestProject(testProj, identifier: disableTracing.ToString());
+
+            var buildCommand = new BuildCommand(Log, Path.Combine(testAsset.Path, testProj.Name));
+            buildCommand
+                .Execute()
+                .Should()
+                .Pass();
+
+            var runCommand = new RunExeCommand(Log, Path.Combine(buildCommand.GetOutputDirectory(ToolsetInfo.CurrentTargetFramework).FullName, $"{testProj.Name}{EnvironmentInfo.ExecutableExtension}"));
+            runCommand
+                .Execute()
+                .Should().HaveStdOut(expectedOutput);
         }
     }
 }

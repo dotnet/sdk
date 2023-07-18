@@ -2,8 +2,6 @@
 api
 apicontroller
 blazor
-blazorserver
-blazorserver-empty
 blazorwasm
 blazorwasm-empty
 buildprops
@@ -63,6 +61,7 @@ xunit
 /?
 /h
 create
+details
 install
 list
 search

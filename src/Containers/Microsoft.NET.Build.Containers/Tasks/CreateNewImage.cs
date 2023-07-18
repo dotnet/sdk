@@ -3,7 +3,10 @@
 
 using System.Text.Json;
 using Microsoft.Build.Framework;
+using Microsoft.Extensions.Logging;
+using Microsoft.NET.Build.Containers.Logging;
 using Microsoft.NET.Build.Containers.Resources;
+using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace Microsoft.NET.Build.Containers.Tasks;
 
@@ -35,16 +38,25 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
     internal async Task<bool> ExecuteAsync(CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
+
+        using MSBuildLoggerProvider loggerProvider = new(Log);
+        ILoggerFactory msbuildLoggerFactory = new LoggerFactory(new[] { loggerProvider });
+        ILogger logger = msbuildLoggerFactory.CreateLogger<CreateNewImage>();
+
         if (!Directory.Exists(PublishDirectory))
         {
             Log.LogErrorWithCodeFromResources(nameof(Strings.PublishDirectoryDoesntExist), nameof(PublishDirectory), PublishDirectory);
             return !Log.HasLoggedErrors;
         }
-        ImageReference sourceImageReference = new(SourceRegistry.Value, BaseImageName, BaseImageTag);
-        var destinationImageReferences = ImageTags.Select(t => new ImageReference(DestinationRegistry.Value, Repository, t));
+
+        Registry? sourceRegistry = IsLocalPull ? null : new Registry(ContainerHelpers.TryExpandRegistryToUri(BaseRegistry), logger);
+        ImageReference sourceImageReference = new(sourceRegistry, BaseImageName, BaseImageTag);
+
+        Registry? destinationRegistry = IsLocalPush ? null : new Registry(ContainerHelpers.TryExpandRegistryToUri(OutputRegistry), logger);
+        IEnumerable<ImageReference> destinationImageReferences = ImageTags.Select(t => new ImageReference(destinationRegistry, Repository, t));
 
         ImageBuilder? imageBuilder;
-        if (SourceRegistry.Value is { } registry)
+        if (sourceRegistry is { } registry)
         {
             imageBuilder = await registry.GetImageManifestAsync(
                 BaseImageName,
@@ -69,7 +81,9 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
         Layer newLayer = Layer.FromDirectory(PublishDirectory, WorkingDirectory, imageBuilder.IsWindows);
         imageBuilder.AddLayer(newLayer);
         imageBuilder.SetWorkingDirectory(WorkingDirectory);
-        imageBuilder.SetEntryPoint(Entrypoint.Select(i => i.ItemSpec).ToArray(), EntrypointArgs.Select(i => i.ItemSpec).ToArray());
+
+        (string[] entrypoint, string[] cmd) = DetermineEntrypointAndCmd(baseImageEntrypoint: imageBuilder.BaseImageConfig.GetEntrypoint());
+        imageBuilder.SetEntrypointAndCmd(entrypoint, cmd);
 
         foreach (ITaskItem label in Labels)
         {
@@ -102,7 +116,7 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
         {
             if (IsLocalPush)
             {
-                ILocalRegistry localRegistry = KnownLocalRegistryTypes.CreateLocalRegistry(LocalRegistry, msg => Log.LogMessage(msg));
+                ILocalRegistry localRegistry = KnownLocalRegistryTypes.CreateLocalRegistry(LocalRegistry, msbuildLoggerFactory);
                 if (!(await localRegistry.IsAvailableAsync(cancellationToken).ConfigureAwait(false)))
                 {
                     Log.LogErrorWithCodeFromResources(nameof(Strings.LocalRegistryNotAvailable));
@@ -128,7 +142,6 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
                             builtImage,
                             sourceImageReference,
                             destinationImageReference,
-                            message => SafeLog(message),
                             cancellationToken).ConfigureAwait(false);
                         SafeLog("Pushed image '{0}' to registry '{1}'", destinationImageReference, OutputRegistry);
                     }
@@ -191,27 +204,6 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
         }
     }
 
-    private Lazy<Registry?> SourceRegistry
-    {
-        get {
-            if(IsLocalPull) {
-                return new Lazy<Registry?>(() => null);
-            } else {
-                return new Lazy<Registry?>(() => new Registry(ContainerHelpers.TryExpandRegistryToUri(BaseRegistry)));
-            }
-        }
-    }
-
-    private Lazy<Registry?> DestinationRegistry {
-        get {
-            if(IsLocalPush) {
-                return new Lazy<Registry?>(() => null);
-            } else {
-                return new Lazy<Registry?>(() => new Registry(ContainerHelpers.TryExpandRegistryToUri(OutputRegistry)));
-            }
-        }
-    }
-
     private static void SetEnvironmentVariables(ImageBuilder img, ITaskItem[] envVars)
     {
         foreach (ITaskItem envVar in envVars)
@@ -227,5 +219,19 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
     public void Dispose()
     {
         _cancellationTokenSource.Dispose();
+    }
+
+    internal (string[] entrypoint, string[] cmd) DetermineEntrypointAndCmd(string[]? baseImageEntrypoint)
+    {
+        string[] entrypoint = Entrypoint.Select(i => i.ItemSpec).ToArray();
+        string[] entrypointArgs = EntrypointArgs.Select(i => i.ItemSpec).ToArray();
+        string[] cmd = DefaultArgs.Select(i => i.ItemSpec).ToArray();
+        string[] appCommand = AppCommand.Select(i => i.ItemSpec).ToArray();
+        string[] appCommandArgs = AppCommandArgs.Select(i => i.ItemSpec).ToArray();
+        string appCommandInstruction = AppCommandInstruction;
+
+        return ImageBuilder.DetermineEntrypointAndCmd(entrypoint, entrypointArgs, cmd, appCommand, appCommandArgs, appCommandInstruction, baseImageEntrypoint,
+            logWarning: s => Log.LogWarningWithCodeFromResources(s),
+            logError: (s, a) => { if (a is null) Log.LogErrorWithCodeFromResources(s); else Log.LogErrorWithCodeFromResources(s, a); });
     }
 }

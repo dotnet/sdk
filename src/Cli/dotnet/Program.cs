@@ -6,18 +6,16 @@ using System.IO;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
-using System.CommandLine;
-using System.CommandLine.Parsing;
 using Microsoft.DotNet.Cli.Telemetry;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Configurer;
 using Microsoft.DotNet.ShellShim;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using LocalizableStrings = Microsoft.DotNet.Cli.Utils.LocalizableStrings;
-using NuGet.Frameworks;
-using System.Linq;
-using Microsoft.DotNet.Tools.Help;
 using Microsoft.DotNet.CommandFactory;
+using NuGet.Frameworks;
+using CommandResult = System.CommandLine.Parsing.CommandResult;
+using System.CommandLine;
 
 namespace Microsoft.DotNet.Cli
 {
@@ -121,18 +119,19 @@ namespace Microsoft.DotNet.Cli
 
         internal static int ProcessArgs(string[] args, TimeSpan startupTime, ITelemetry telemetryClient = null)
         {
-            Dictionary<string, double> performanceData = new Dictionary<string, double>();
+            Dictionary<string, double> performanceData = new();
 
             PerformanceLogEventSource.Log.BuiltInCommandParserStart();
-            Stopwatch parseStartTime = Stopwatch.StartNew();
-            var parseResult = Parser.Instance.Parse(args);
+            ParseResult parseResult;
+            using (new PerformanceMeasurement(performanceData, "Parse Time"))
+            {
+                parseResult = Parser.Instance.Parse(args);
 
-            // Avoid create temp directory with root permission and later prevent access in non sudo
-            // This method need to be run very early before temp folder get created
-            // https://github.com/dotnet/sdk/issues/20195
-            SudoEnvironmentDirectoryOverride.OverrideEnvironmentVariableToTmp(parseResult);
-
-            performanceData.Add("Parse Time", parseStartTime.Elapsed.TotalMilliseconds);
+                // Avoid create temp directory with root permission and later prevent access in non sudo
+                // This method need to be run very early before temp folder get created
+                // https://github.com/dotnet/sdk/issues/20195
+                SudoEnvironmentDirectoryOverride.OverrideEnvironmentVariableToTmp(parseResult);
+            }
             PerformanceLogEventSource.Log.BuiltInCommandParserStop();
 
             using (IFirstTimeUseNoticeSentinel disposableFirstTimeUseNoticeSentinel =
@@ -206,10 +205,7 @@ namespace Microsoft.DotNet.Cli
 
                 PerformanceLogEventSource.Log.TelemetryRegistrationStart();
 
-                if (telemetryClient == null)
-                {
-                    telemetryClient = new Telemetry.Telemetry(firstTimeUseNoticeSentinel);
-                }
+                telemetryClient ??= new Telemetry.Telemetry(firstTimeUseNoticeSentinel);
                 TelemetryEventEntry.Subscribe(telemetryClient.TrackEvent);
                 TelemetryEventEntry.TelemetryFilter = new TelemetryFilter(Sha256Hasher.HashWithNormalizedCasing);
 
@@ -229,7 +225,17 @@ namespace Microsoft.DotNet.Cli
             if (parseResult.CanBeInvoked())
             {
                 PerformanceLogEventSource.Log.BuiltInCommandStart();
-                exitCode = parseResult.Invoke();
+
+                try
+                {
+                    exitCode = parseResult.Invoke();
+                    exitCode = AdjustExitCode(parseResult, exitCode);
+                }
+                catch (Exception exception)
+                {
+                    exitCode = Parser.ExceptionHandler(exception, parseResult);
+                }
+
                 PerformanceLogEventSource.Log.BuiltInCommandStop();
             }
             else
@@ -253,6 +259,28 @@ namespace Microsoft.DotNet.Cli
             PerformanceLogEventSource.Log.TelemetryClientFlushStop();
 
             telemetryClient.Dispose();
+
+            return exitCode;
+        }
+
+        private static int AdjustExitCode(ParseResult parseResult, int exitCode)
+        {
+            if (parseResult.Errors.Count > 0)
+            {
+                var commandResult = parseResult.CommandResult;
+
+                while (commandResult is not null)
+                {
+                    if (commandResult.Command.Name == "new")
+                    {
+                        // default parse error exit code is 1
+                        // for the "new" command and its subcommands it needs to be 127
+                        return 127;
+                    }
+
+                    commandResult = commandResult.Parent as CommandResult;
+                }
+            }
 
             return exitCode;
         }
@@ -291,7 +319,6 @@ namespace Microsoft.DotNet.Cli
                 toolPathSentinel,
                 dotnetFirstRunConfiguration,
                 Reporter.Output,
-                CliFolderPathCalculator.CliFallbackFolderPath,
                 environmentPath,
                 performanceMeasurements);
 
