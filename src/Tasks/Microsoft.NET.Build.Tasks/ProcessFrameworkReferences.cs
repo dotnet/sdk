@@ -45,9 +45,21 @@ namespace Microsoft.NET.Build.Tasks
 
         public bool ReadyToRunUseCrossgen2 { get; set; }
 
-        public bool RequiresILLinkPack { get; set; }
+        public bool PublishAot { get; set; }
 
-        public bool AotEnabled { get; set; }
+        public bool IsAotCompatible { get; set; }
+
+        public bool EnableAotAnalyzer { get; set; }
+
+        public bool PublishTrimmed { get; set; }
+
+        public bool IsTrimmable { get; set; }
+
+        public bool EnableTrimAnalyzer { get; set; }
+
+        public bool PublishSingleFile { get; set; }
+
+        public bool EnableSingleFileAnalyzer { get; set; }
 
         public bool AotUseKnownRuntimePackForTarget { get; set; }
 
@@ -379,7 +391,7 @@ namespace Microsoft.NET.Build.Tasks
                 }
             }
 
-            if (AotEnabled)
+            if (PublishAot)
             {
                 switch (AddToolPack(ToolPackType.ILCompiler, _normalizedTargetFrameworkVersion, packagesToDownload, implicitPackageReferences))
                 {
@@ -397,12 +409,23 @@ namespace Microsoft.NET.Build.Tasks
                 }
             }
 
-            if (RequiresILLinkPack)
+            bool requiresILLinkPack = PublishAot || IsAotCompatible || EnableAotAnalyzer
+                || PublishTrimmed || IsTrimmable || EnableTrimAnalyzer
+                || PublishSingleFile || EnableSingleFileAnalyzer;
+
+            if (requiresILLinkPack)
             {
                 if (AddToolPack(ToolPackType.ILLink, _normalizedTargetFrameworkVersion, packagesToDownload, implicitPackageReferences) is not ToolPackSupport.Supported)
                 {
-                    Log.LogError(Strings.ILLinkNoValidRuntimePackageError);
-                    return;
+                    if (PublishAot || IsAotCompatible || EnableAotAnalyzer) {
+                        Log.LogError(Strings.AotUnsupportedTargetFramework);
+                    } else if (PublishTrimmed) {
+                        Log.LogWarning(Strings.PublishTrimmedRequiresVersion30);
+                    } else if (IsTrimmable || EnableTrimAnalyzer) {
+                        Log.LogWarning(Strings.ILLinkNoValidRuntimePackageError);
+                    } else if (PublishSingleFile || EnableSingleFileAnalyzer) {
+                        Log.LogWarning(Strings.PublishSingleFileRequiresVersion30);
+                    }
                 }
             }
 
@@ -682,6 +705,8 @@ namespace Microsoft.NET.Build.Tasks
                 packVersion = RuntimeFrameworkVersion;
             }
 
+            TaskItem? runtimePackToDownload = null;
+
             // Crossgen and ILCompiler have RID-specific bits.
             if (toolPackType is ToolPackType.Crossgen2 or ToolPackType.ILCompiler)
             {
@@ -701,9 +726,8 @@ namespace Microsoft.NET.Build.Tasks
                 if (EnableRuntimePackDownload)
                 {
                     // We need to download the runtime pack
-                    TaskItem runtimePackToDownload = new TaskItem(runtimePackName);
+                    runtimePackToDownload = new TaskItem(runtimePackName);
                     runtimePackToDownload.SetMetadata(MetadataKeys.Version, packVersion);
-                    packagesToDownload.Add(runtimePackToDownload);
                 }
 
                 var runtimePackItem = new TaskItem(runtimePackName);
@@ -716,8 +740,6 @@ namespace Microsoft.NET.Build.Tasks
                         Crossgen2Packs = new[] { runtimePackItem };
                         break;
                     case ToolPackType.ILCompiler:
-                        HostILCompilerPacks = new[] { runtimePackItem };
-
                         // ILCompiler supports cross target compilation. If there is a cross-target request,
                         // we need to download that package as well unless we use KnownRuntimePack entries for the target.
                         // We expect RuntimeIdentifier to be defined during publish but can allow during build
@@ -737,8 +759,15 @@ namespace Microsoft.NET.Build.Tasks
                                 TargetILCompilerPacks = new[] { targetIlcPack };
                             }
                         }
+
+                        HostILCompilerPacks = new[] { runtimePackItem };
                         break;
                 }
+            }
+
+            if (runtimePackToDownload != null)
+            {
+                packagesToDownload.Add(runtimePackToDownload);
             }
 
             // Packs with RID-agnostic build packages that contain MSBuild targets.
