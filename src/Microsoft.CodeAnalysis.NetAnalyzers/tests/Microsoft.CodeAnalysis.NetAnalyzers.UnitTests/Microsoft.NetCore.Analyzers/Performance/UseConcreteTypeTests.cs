@@ -13,6 +13,39 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
     public static partial class UseConcreteTypeTests
     {
         [Fact]
+        [WorkItem(6751, "https://github.com/dotnet/roslyn-analyzers/issues/6751")]
+        public static async Task MultipleReturns()
+        {
+            await TestCSAsync(@"
+                using System;
+                using System.Collections.Generic;
+
+                public abstract class Base { }
+                public sealed class Derived1 : Base { }
+                public sealed class Derived2 : Base { }
+
+                internal sealed class Test
+                {
+                    private static IEnumerable<Base> M(int i)
+                    {
+                        try
+                        {
+                            switch (i)
+                            {
+                                case 0: return new Derived1[1];
+                                case 1: return new Derived2[1];
+                                default: throw new ArgumentException();
+                            }
+                        }
+                        finally
+                        {
+                        }
+                    }
+                }
+            ");
+        }
+
+        [Fact]
         [WorkItem(6565, "https://github.com/dotnet/roslyn-analyzers/issues/6565")]
         public static async Task DiscoverArrayUpgrades()
         {
