@@ -68,7 +68,7 @@ namespace Microsoft.NET.Sdk.Web.Tests
             var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: projectName + targetFramework);
 
             var publishCommand = new PublishCommand(testAsset);
-            publishCommand.Execute($"/p:RuntimeIdentifier={rid}").Should().Pass();
+            publishCommand.Execute().Should().Pass();
 
             var buildProperties = testProject.GetPropertyValues(testAsset.TestRoot, targetFramework);
             buildProperties["TrimMode"].Should().Be("partial");
