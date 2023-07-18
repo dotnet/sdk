@@ -1,0 +1,11 @@
+<PrebuiltLeakReport>
+  <File Path="dotnet-format.x.y.z/tools/netx.y/any/Microsoft.CodeAnalysis.AnalyzerUtilities.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="dotnet-sdk-x.y.z-banana-rid.tar/sdk/x.y.z/DotnetTools/dotnet-format/Microsoft.CodeAnalysis.AnalyzerUtilities.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="dotnet-sdk-x.y.z-banana-rid.tar/sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/Microsoft.CodeAnalysis.AnalyzerUtilities.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+</PrebuiltLeakReport>
