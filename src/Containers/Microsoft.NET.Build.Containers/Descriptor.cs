@@ -11,7 +11,7 @@ namespace Microsoft.NET.Build.Containers;
 /// <remarks>
 /// <see href="https://github.com/opencontainers/image-spec/blob/7b36cea86235157d78528944cb94c3323ee0905c/descriptor.md"/>.
 /// </remarks>
-public readonly record struct Descriptor
+internal readonly record struct Descriptor
 {
     /// <summary>
     /// Media type of the referenced content.

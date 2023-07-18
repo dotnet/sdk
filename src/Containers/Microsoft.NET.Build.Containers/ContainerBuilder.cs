@@ -8,7 +8,7 @@ namespace Microsoft.NET.Build.Containers;
 
 public static class ContainerBuilder
 {
-    public static async Task<int> ContainerizeAsync(
+    internal static async Task<int> ContainerizeAsync(
         DirectoryInfo publishDirectory,
         string workingDir,
         string baseRegistry,

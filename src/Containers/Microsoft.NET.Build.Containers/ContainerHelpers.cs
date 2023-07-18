@@ -51,7 +51,7 @@ public static class ContainerHelpers
     /// <param name="port">Parsed port.</param>
     /// <param name="error">The error occurred during parsing. Only returned when method returns <see langword=""="false"/>.</param>
     /// <returns><see langword=""="true"/> when port was successfully parsed, <see langword=""="false"/> otherwise.</returns>
-    public static bool TryParsePort(string? portNumber, string? portType, [NotNullWhen(true)] out Port? port, [NotNullWhen(false)] out ParsePortError? error)
+    internal static bool TryParsePort(string? portNumber, string? portType, [NotNullWhen(true)] out Port? port, [NotNullWhen(false)] out ParsePortError? error)
     {
         var portNo = 0;
         error = null;
@@ -97,7 +97,7 @@ public static class ContainerHelpers
     /// <param name="port">Parsed port.</param>
     /// <param name="error">The error occurred during parsing. Only returned when method returns <see langword="false"/>.</param>
     /// <returns><see langword="true"/> when port was successfully parsed, <see langword="false"/> otherwise.</returns>
-    public static bool TryParsePort(string input, [NotNullWhen(true)] out Port? port, [NotNullWhen(false)] out ParsePortError? error)
+    internal static bool TryParsePort(string input, [NotNullWhen(true)] out Port? port, [NotNullWhen(false)] out ParsePortError? error)
     {
         var parts = input.Split('/');
         if (parts.Length == 2)

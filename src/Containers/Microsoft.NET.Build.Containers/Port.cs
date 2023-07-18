@@ -5,10 +5,10 @@ namespace Microsoft.NET.Build.Containers;
 
 // Explicitly lowercase to ease parsing - the incoming values are
 // lowercased by spec
-public enum PortType
+internal enum PortType
 {
     tcp,
     udp
 }
 
-public record struct Port(int Number, PortType Type);
+internal record struct Port(int Number, PortType Type);

@@ -5,8 +5,8 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.NET.Build.Containers;
 
-public record struct ManifestListV2(int schemaVersion, string mediaType, PlatformSpecificManifest[] manifests);
+internal record struct ManifestListV2(int schemaVersion, string mediaType, PlatformSpecificManifest[] manifests);
 
-public record struct PlatformInformation(string architecture, string os, string? variant, string[] features, [property: JsonPropertyName("os.version")][field: JsonPropertyName("os.version")] string? version);
+internal record struct PlatformInformation(string architecture, string os, string? variant, string[] features, [property: JsonPropertyName("os.version")][field: JsonPropertyName("os.version")] string? version);
 
-public record struct PlatformSpecificManifest(string mediaType, long size, string digest, PlatformInformation platform);
+internal record struct PlatformSpecificManifest(string mediaType, long size, string digest, PlatformInformation platform);
