@@ -3,7 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Text.Json.Nodes;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -37,11 +39,26 @@ public class WebScenarioTests : SmokeTests
 
         // TODO: Remove once https://github.com/dotnet/runtime/pull/87518 flows to the public feeds.  Note, the smoke-tests pull Microsoft.Extensions.DependencyModel
         // from a public feed - not a source build feed.
-        yield return new(nameof(WebScenarioTests), DotNetLanguage.CSharp, DotNetTemplate.Mvc, DotNetActions.Build | DotNetActions.Run | DotNetActions.Publish) { NoHttps = true };
+        yield return new(nameof(WebScenarioTests), DotNetLanguage.CSharp, DotNetTemplate.Mvc,           DotNetActions.Build | DotNetActions.Run | DotNetActions.Publish) { NoHttps = true };
 
         yield return new(nameof(WebScenarioTests), DotNetLanguage.CSharp, DotNetTemplate.Razor,         DotNetActions.Build | DotNetActions.Run | DotNetActions.Publish);
         yield return new(nameof(WebScenarioTests), DotNetLanguage.CSharp, DotNetTemplate.BlazorWasm,    DotNetActions.Build | DotNetActions.Run | DotNetActions.Publish);
+        yield return new(nameof(WebScenarioTests), DotNetLanguage.CSharp, DotNetTemplate.WebApp,        DotNetActions.PublishSelfContained, VerifyRuntimePacksForSelfContained);
         yield return new(nameof(WebScenarioTests), DotNetLanguage.CSharp, DotNetTemplate.Worker);
         yield return new(nameof(WebScenarioTests), DotNetLanguage.CSharp, DotNetTemplate.Angular);
+    }
+
+    private static void VerifyRuntimePacksForSelfContained(string projectPath)
+    {
+        // 'expectedPackageFiles' key in project.nuget.cache' will contain paths to restored packages
+        // Since we are publishing an emtpy template, the only packages that could end up there are the ref packs we are after
+
+        string projNugetCachePath = Path.Combine(projectPath, "obj", "project.nuget.cache");
+
+        JsonNode? projNugetCache = JsonNode.Parse(File.ReadAllText(projNugetCachePath));
+        string? restoredPackageFiles = projNugetCache?["expectedPackageFiles"]?.ToString();
+
+        Assert.True(restoredPackageFiles is not null, "Failed to parse project.nuget.cache");
+        Assert.True("[]" == restoredPackageFiles, "Runtime packs were retrieved from NuGet instead of the SDK");
     }
 }

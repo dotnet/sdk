@@ -14,7 +14,8 @@ public enum DotNetActions
     Run = 2,
     RunWeb = 4,
     Publish = 8,
-    PublishComplex = 16,
-    PublishR2R = 32,
-    Test = 64,
+    PublishSelfContained = 16,
+    PublishComplex = 32,
+    PublishR2R = 64,
+    Test = 128,
 }
