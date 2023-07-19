@@ -479,7 +479,7 @@
         <target state="translated">NETSDK1144: 어셈블리의 크기를 최적화하지 못했습니다. PublishTrimmed 속성을 false로 설정하여 최적화를 사용하지 않도록 설정할 수 있습니다.</target>
         <note>{StrBegin="NETSDK1144: "}</note>
       </trans-unit>
-      <trans-unit id="ILLinkNoValidRuntimePackageError">
+      <trans-unit id="ILLinkNoValidRuntimePackage">
         <source>NETSDK1195: IsTrimmable is not supported for the target framework. Consider multi-targeting to a supported framework to enable trimming, and set IsTrimmable only for the supported frameworks. For example:
 &lt;IsTrimmable Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net6.0'))"&gt;true&lt;/IsTrimmable&gt;
 For more information, see https://aka.ms/netsdk1195</source>

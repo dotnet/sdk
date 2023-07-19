@@ -422,7 +422,7 @@ namespace Microsoft.NET.Build.Tasks
                     } else if (PublishTrimmed) {
                         Log.LogWarning(Strings.PublishTrimmedRequiresVersion30);
                     } else if (IsTrimmable || EnableTrimAnalyzer) {
-                        Log.LogWarning(Strings.ILLinkNoValidRuntimePackageError);
+                        Log.LogWarning(Strings.ILLinkNoValidRuntimePackage);
                     } else if (PublishSingleFile || EnableSingleFileAnalyzer) {
                         Log.LogWarning(Strings.PublishSingleFileRequiresVersion30);
                     }
