@@ -187,9 +187,7 @@ namespace Microsoft.NET.Publish.Tests
                 .Should()
                 .Fail()
                 .And
-                // Single-file depends on ILLink analyzers, so fails early when trying
-                // to add the analyzer reference for an unsupported TFM.
-                .HaveStdOutContaining(Strings.ILLinkNoValidRuntimePackageError)
+                .HaveStdOutContaining(Strings.PublishSingleFileRequiresVersion30)
                 .And
                 .NotHaveStdOutContaining(Strings.CannotHaveSingleFileWithoutExecutable);
         }
@@ -212,9 +210,7 @@ namespace Microsoft.NET.Publish.Tests
                 .Should()
                 .Fail()
                 .And
-                // Single-file depends on ILLink analyzers, so fails early when trying
-                // to add the analyzer reference for an unsupported TFM.
-                .HaveStdOutContaining(Strings.ILLinkNoValidRuntimePackageError);
+                .HaveStdOutContaining(Strings.PublishSingleFileRequiresVersion30);
         }
 
         [RequiresMSBuildVersionFact("16.8.0")]

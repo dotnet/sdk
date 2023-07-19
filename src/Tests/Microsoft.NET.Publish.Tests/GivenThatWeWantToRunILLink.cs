@@ -1843,9 +1843,7 @@ namespace Microsoft.NET.Publish.Tests
                 .Should()
                 .Fail()
                 .And
-                // Fails early when trying to add the illink pack for an
-                // unsupported TFM.
-                .HaveStdOutContaining(Strings.ILLinkNoValidRuntimePackageError);
+                .HaveStdOutContaining(Strings.PublishTrimmedRequiresVersion30);
         }
 
         private void SetMetadata(XDocument project, string assemblyName, string key, string value)
