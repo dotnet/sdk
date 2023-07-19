@@ -12,8 +12,6 @@
 
     <!-- SBRP builds before Arcade so it also needs the bootstrap Arcade version -->
     <UseBootstrapArcade>true</UseBootstrapArcade>
-
-    <PackageVersionPropsFlowType>DependenciesOnly</PackageVersionPropsFlowType>
   </PropertyGroup>
 
   <Target Name="AddLocalNuGetPackageCacheDirectory" BeforeTargets="Build">

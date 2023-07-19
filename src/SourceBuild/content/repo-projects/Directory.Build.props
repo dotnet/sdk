@@ -28,7 +28,7 @@
     <PreviouslySourceBuiltPackageVersionPropsPath>$(IntermediatePath)PackageVersions.$(RepositoryName).Previous.props</PreviouslySourceBuiltPackageVersionPropsPath>
     <SnapshotPackageVersionPropsPath>$(IntermediatePath)PackageVersions.$(RepositoryName).Snapshot.props</SnapshotPackageVersionPropsPath>
     <PackageVersionPropsPath>$(IntermediatePath)PackageVersions.$(RepositoryName).props</PackageVersionPropsPath>
-    <PackageVersionPropsFlowType>AllPackages</PackageVersionPropsFlowType>
+    <PackageVersionPropsFlowType>DependenciesOnly</PackageVersionPropsFlowType>
 
     <EngCommonToolsShFile Condition="Exists('$(ProjectDirectory)eng/common/tools.sh')">$(ProjectDirectory)eng/common/tools.sh</EngCommonToolsShFile>
     <EngCommonBuildShFile Condition="Exists('$(ProjectDirectory)eng/common/build.sh')">$(ProjectDirectory)eng/common/build.sh</EngCommonBuildShFile>

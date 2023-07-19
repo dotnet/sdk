@@ -17,8 +17,6 @@
     <BuildCommandArgs>$(BuildCommandArgs) /p:PlatformName=$(TargetArch)</BuildCommandArgs>
     <BuildCommandArgs>$(BuildCommandArgs) /p:ForceBuildManifestOnly=true</BuildCommandArgs>
     <BuildCommand>$(StandardSourceBuildCommand) $(BuildCommandArgs)</BuildCommand>
-
-    <PackageVersionPropsFlowType>DependenciesOnly</PackageVersionPropsFlowType>
   </PropertyGroup>
 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
