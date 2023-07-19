@@ -23,7 +23,6 @@
     <BuildCommand>$(ProjectDirectory)\eng\build$(ShellExtension) $(BuildCommandArgs)</BuildCommand>
 
     <LogVerbosityOptOut>true</LogVerbosityOptOut>
-    <PackageVersionPropsFlowType>DependenciesOnly</PackageVersionPropsFlowType>
   </PropertyGroup>
 
   <ItemGroup>

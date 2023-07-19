@@ -2,7 +2,6 @@
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
   <PropertyGroup>
-    <PackageVersionPropsFlowType>DependenciesOnly</PackageVersionPropsFlowType>
     <BuildCommand>$(StandardSourceBuildCommand) $(StandardSourceBuildArgs)</BuildCommand>
   </PropertyGroup>
 

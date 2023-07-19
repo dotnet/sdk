@@ -7,7 +7,6 @@
 
     <DeterministicBuildOptOut>true</DeterministicBuildOptOut>
     <IsToolingProject>true</IsToolingProject>
-    <PackageVersionPropsFlowType>DependenciesOnly</PackageVersionPropsFlowType>
   </PropertyGroup>
 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />

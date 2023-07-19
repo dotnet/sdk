@@ -3,6 +3,12 @@
 
   <PropertyGroup>
     <SkipEnsurePackagesCreated>true</SkipEnsurePackagesCreated>
+
+    <!--
+      The default PackageVersionPropsFlowType behavior (DependenciesOnly) triggers logic that looks for a Version.Details.xml file.
+      Setting the type to AllPackages will skip that logic.
+    -->
+    <PackageVersionPropsFlowType>AllPackages</PackageVersionPropsFlowType>
   </PropertyGroup>
 
   <!-- This project file serves a couple of purpose.

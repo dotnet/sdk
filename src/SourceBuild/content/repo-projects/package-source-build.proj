@@ -5,6 +5,12 @@
     <ProjectDirectory>$(SubmoduleDirectory)$(RepositoryName)/</ProjectDirectory>
     <SkipEnsurePackagesCreated>true</SkipEnsurePackagesCreated>
     <IncludedPackageVersionPropsFile>$(CurrentSourceBuiltPackageVersionPropsPath)</IncludedPackageVersionPropsFile>
+
+    <!--
+      The default PackageVersionPropsFlowType behavior (DependenciesOnly) triggers logic that looks for a Version.Details.xml file.
+      Setting the type to AllPackages will skip that logic.
+    -->
+    <PackageVersionPropsFlowType>AllPackages</PackageVersionPropsFlowType>
   </PropertyGroup>
 
   <ItemGroup>
