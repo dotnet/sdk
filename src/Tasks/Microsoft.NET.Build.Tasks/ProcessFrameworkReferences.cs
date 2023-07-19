@@ -417,14 +417,18 @@ namespace Microsoft.NET.Build.Tasks
             {
                 if (AddToolPack(ToolPackType.ILLink, _normalizedTargetFrameworkVersion, packagesToDownload, implicitPackageReferences) is not ToolPackSupport.Supported)
                 {
-                    if (PublishAot || IsAotCompatible || EnableAotAnalyzer) {
+                    if (PublishAot) {
                         Log.LogError(Strings.AotUnsupportedTargetFramework);
+                    } else if (IsAotCompatible || EnableAotAnalyzer) {
+                        Log.LogWarning(Strings.IsAotCompatibleUnsupported);
                     } else if (PublishTrimmed) {
-                        Log.LogWarning(Strings.PublishTrimmedRequiresVersion30);
+                        Log.LogError(Strings.PublishTrimmedRequiresVersion30);
                     } else if (IsTrimmable || EnableTrimAnalyzer) {
-                        Log.LogWarning(Strings.ILLinkNoValidRuntimePackage);
-                    } else if (PublishSingleFile || EnableSingleFileAnalyzer) {
-                        Log.LogWarning(Strings.PublishSingleFileRequiresVersion30);
+                        Log.LogWarning(Strings.IsTrimmableUnsupported);
+                    } else if (PublishSingleFile) {
+                        Log.LogError(Strings.PublishSingleFileRequiresVersion30);
+                    } else if (EnableSingleFileAnalyzer) {
+                        Log.LogWarning(Strings.EnableSingleFileAnalyzerUnsupported);
                     }
                 }
             }
