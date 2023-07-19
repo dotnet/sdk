@@ -237,17 +237,11 @@ Copyright (c) .NET Foundation. All rights reserved.
     <NETSdkError Condition="'$(SelfContained)' != 'true' and '$(UseAppHost)' == 'true' and '$(_TargetFrameworkVersionWithoutV)' &lt; '2.1'"
                  ResourceName="FrameworkDependentAppHostRequiresVersion21" />
 
-    <NETSdkError Condition="'$(PublishSingleFile)' == 'true' and '$(_TargetFrameworkVersionWithoutV)' &lt; '3.0'"
-                 ResourceName="PublishSingleFileRequiresVersion30" />
-
     <!-- The TFM version checks for PublishReadyToRun PublishTrimmed only generate warnings in .Net core 3.1
          because we do not want the behavior to be a breaking change compared to version 3.0 -->
 
     <NETSdkWarning Condition="'$(PublishReadyToRun)' == 'true' and '$(_TargetFrameworkVersionWithoutV)' &lt; '3.0'"
                  ResourceName="PublishReadyToRunRequiresVersion30" />
-
-    <NETSdkWarning Condition="'$(PublishTrimmed)' == 'true' and '$(_TargetFrameworkVersionWithoutV)' &lt; '3.0'"
-                 ResourceName="PublishTrimmedRequiresVersion30" />
 
     <!-- Previously, RuntimeIdentifier (RID) implied SelfContained (SC). A breaking change in 8.0 made it so RID did not activate SC by default.
          So we warn older TFM users before they upgrade to TFM 8.0 or above that they need to add <SelfContained>true</SelfContained> now to keep the same behavior.-->
