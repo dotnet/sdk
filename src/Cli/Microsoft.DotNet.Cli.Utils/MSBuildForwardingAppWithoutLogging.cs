@@ -45,7 +45,7 @@ namespace Microsoft.DotNet.Cli.Utils
             };
 
         private readonly IEnumerable<string> _msbuildRequiredParameters =
-            new List<string> { "-maxcpucount", "-verbosity:m" };
+            new List<string> { "-maxcpucount", "-verbosity:m", "-terminallogger:auto" };
 
         public MSBuildForwardingAppWithoutLogging(IEnumerable<string> argsToForward, string msbuildPath = null)
         {
