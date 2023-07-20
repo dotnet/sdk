@@ -1,7 +1,8 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
+using Test.Utilities;
 using Xunit;
 using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
     Microsoft.CodeQuality.VisualBasic.Analyzers.ApiDesignGuidelines.BasicOverrideEqualsOnOverloadingOperatorEqualsAnalyzer,
@@ -165,6 +166,25 @@ Class Derived : Inherits Base
 End Class",
             // Test0.vb(8,7): warning CA2224: Override Equals on overloading operator equals
             GetBasicResultAt(8, 7));
+        }
+
+        [Fact, WorkItem(6778, "https://github.com/dotnet/roslyn-analyzers/issues/6778")]
+        public async Task Bad_Structure_WithNonMethodMember_Async()
+        {
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Structure C
+    Public Field As Integer
+
+    Public Shared Operator =(a As C, b As C)
+        Return True
+    End Operator
+    
+    Public Shared Operator <>(a As C, b As C)
+        Return True
+    End Operator
+End Structure",
+            // Test0.vb(2,11): warning CA2224: Override Equals on overloading operator equals
+            GetBasicResultAt(2, 11));
         }
 
         private static DiagnosticResult GetBasicResultAt(int line, int column)
