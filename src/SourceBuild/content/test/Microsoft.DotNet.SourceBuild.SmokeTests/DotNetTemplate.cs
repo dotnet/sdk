@@ -18,5 +18,4 @@ public enum DotNetTemplate
     WebApi,
     WebApp,
     Worker,
-    Angular,
 }

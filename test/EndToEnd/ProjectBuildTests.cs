@@ -365,20 +365,6 @@ namespace EndToEnd.Tests
         }
 
         /// <summary>
-        /// The test checks if the template creates the template for correct framework by default.
-        /// For .NET 6 the templates should create the projects targeting net6.0.
-        /// These templates require node.js to be built, so we just check if TargetFramework is present in csproj files
-        /// </summary>
-        [Theory]
-        [InlineData("angular")]
-        [InlineData("react")]
-        public void ItCanCreateTemplateWithDefaultFramework(string templateName)
-        {
-            string framework = DetectExpectedDefaultFramework(templateName);
-            TestTemplateCreateAndBuild(templateName, build: false, framework: framework, deleteTestDirectory: true);
-        }
-
-        /// <summary>
         /// [Windows only tests]
         /// The test checks if the template creates the template for correct framework by default.
         /// For .NET 6 the templates should create the projects targeting net6.0.
