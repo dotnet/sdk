@@ -157,8 +157,8 @@ namespace Microsoft.NET.Publish.Tests
 
             var publishCommand = new PublishCommand(testAsset);
             publishCommand.Execute($"/p:RuntimeIdentifier={rid}", "/p:PublishTrimmed=true")
-                .Should().Pass()
-                .And.HaveStdOutContaining("warning NETSDK1124");
+                .Should().Fail()
+                .And.HaveStdOutContaining($"error {Strings.PublishTrimmedRequiresVersion30}");
         }
 
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
@@ -175,7 +175,7 @@ namespace Microsoft.NET.Publish.Tests
             var publishCommand = new PublishCommand(testAsset);
             publishCommand.Execute($"/p:RuntimeIdentifier={rid}", "/p:PublishTrimmed=true")
                 .Should().Fail()
-                .And.HaveStdOutContaining("error NETSDK1124");
+                .And.HaveStdOutContaining($"error {Strings.PublishTrimmedRequiresVersion30}");
         }
 
         [RequiresMSBuildVersionFact("17.0.0.32901")]
@@ -192,7 +192,9 @@ namespace Microsoft.NET.Publish.Tests
             var buildCommand = new BuildCommand(testAsset);
             buildCommand.Execute("/p:IsTrimmable=true")
                 .Should().Pass()
-                .And.HaveStdOutContaining("warning NETSDK1195");
+                // Note: can't check for Strings.IsTrimmableUnsupported because each line of
+                // the message gets prefixed with a file path by MSBuild.
+                .And.HaveStdOutContaining($"warning NETSDK1195");
         }
 
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
