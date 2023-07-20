@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
@@ -71,13 +72,13 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 return;
             }
 
-            var disposableFieldNamesBuilder = ArrayBuilder<string>.GetInstance();
+            var disposableFieldNamesBuilder = new ConcurrentBag<string>();
 
             ctx.RegisterOperationAction(context => AnalyzeOperation(context, namedType, disposableFields, disposableFieldNamesBuilder), OperationKind.SimpleAssignment, OperationKind.FieldInitializer);
-            ctx.RegisterSymbolEndAction(context => AnalyzeSymbolEnd(context, disposableFieldNamesBuilder.ToImmutableAndFree()));
+            ctx.RegisterSymbolEndAction(context => AnalyzeSymbolEnd(context, disposableFieldNamesBuilder.ToImmutableArray()));
         }
 
-        private static void AnalyzeOperation(OperationAnalysisContext ctx, INamedTypeSymbol parent, ISet<IFieldSymbol> disposableFields, ArrayBuilder<string> disposableFieldNamesBuilder)
+        private static void AnalyzeOperation(OperationAnalysisContext ctx, INamedTypeSymbol parent, ISet<IFieldSymbol> disposableFields, ConcurrentBag<string> disposableFieldNamesBuilder)
         {
             if (ctx.Operation is IAssignmentOperation { Target: IFieldReferenceOperation field } assignment
                 && assignment.Value.WalkDownConversion().Kind == OperationKind.ObjectCreation
