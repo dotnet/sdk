@@ -1,0 +1,25 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nikola Milosavljevic <nikolam@microsoft.com>
+Date: Thu, 20 Jul 2023 21:02:57 +0000
+Subject: [PATCH] Remove sourcelink dependencies
+
+Backport: https://github.com/dotnet/deployment-tools/issues/282
+---
+ eng/Tools.props | 6 ------
+ 1 file changed, 6 deletions(-)
+
+diff --git a/eng/Tools.props b/eng/Tools.props
+index e0c3314..c0569e2 100644
+--- a/eng/Tools.props
++++ b/eng/Tools.props
+@@ -5,10 +5,4 @@
+     <_RepoToolManifest Condition="'$(ContinuousIntegrationBuild)' == 'true'" />
+   </PropertyGroup>
+ 
+-  <ItemGroup>
+-    <!-- enable source link in pkgproj -->
+-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="$(MicrosoftSourceLinkGitHubVersion)" PrivateAssets="all" IsImplicitlyDefined="true" />
+-    <PackageReference Include="Microsoft.SourceLink.AzureRepos.Git" Version="$(MicrosoftSourceLinkAzureReposGitVersion)" PrivateAssets="all" IsImplicitlyDefined="true" />
+-  </ItemGroup>
+-
+ </Project>

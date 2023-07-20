@@ -1,6 +1,6 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Nikola Milosavljevic <nikolam@microsoft.com>
-Date: Mon, 17 Jul 2023 18:27:44 +0000
+Date: Mon, 17 Jul 2023 15:10:02 +0000
 Subject: [PATCH] New command-line APIs
 
 Backport: https://github.com/dotnet/sourcelink/pull/1068
@@ -26,7 +26,7 @@ index ed5441c..1873d27 100644
      <add key="dotnet-libraries-transport" value="https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-libraries-transport/nuget/v3/index.json" />
    </packageSources>
 diff --git a/eng/Version.Details.xml b/eng/Version.Details.xml
-index 0c3e675..fad95bd 100644
+index 44c9e21..d86dff5 100644
 --- a/eng/Version.Details.xml
 +++ b/eng/Version.Details.xml
 @@ -1,21 +1,21 @@
@@ -58,7 +58,7 @@ index 0c3e675..fad95bd 100644
 +      <Sha>02fe27cd6a9b001c8feb7938e6ef4b3799745759</Sha>
        <SourceBuild RepoName="command-line-api" ManagedOnly="true" />
      </Dependency>
-     <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-reference-packages" Version="8.0.0-alpha.1.23356.4">
+     <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-reference-packages" Version="8.0.0-alpha.1.23360.2">
 diff --git a/eng/Versions.props b/eng/Versions.props
 index 994e10a..65ed6ee 100644
 --- a/eng/Versions.props
