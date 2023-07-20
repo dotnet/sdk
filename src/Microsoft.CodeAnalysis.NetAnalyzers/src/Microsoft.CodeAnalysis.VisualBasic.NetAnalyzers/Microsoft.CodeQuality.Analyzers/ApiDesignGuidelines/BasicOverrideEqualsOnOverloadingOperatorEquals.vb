@@ -63,8 +63,9 @@ Namespace Microsoft.CodeQuality.VisualBasic.Analyzers.ApiDesignGuidelines
         Private Shared Function HasEqualityOperator(type As INamedTypeSymbol) As Boolean
             For Each member In type.GetMembers()
                 Dim method = TryCast(member, IMethodSymbol)
-                If method?.MethodKind = MethodKind.UserDefinedOperator AndAlso
-                    CaseInsensitiveComparison.Equals(method.Name, WellKnownMemberNames.EqualityOperatorName) Then
+                If method IsNot Nothing AndAlso
+                   method.MethodKind = MethodKind.UserDefinedOperator AndAlso
+                   CaseInsensitiveComparison.Equals(method.Name, WellKnownMemberNames.EqualityOperatorName) Then
 
                     Return True
                 End If
