@@ -131,54 +131,53 @@ namespace Microsoft.NET.Publish.Tests
         {
             // NativeAOT application publish directory should not contain any <App>.deps.json or <App>.runtimeconfig.json
             // The test writes a key-value pair to the runtimeconfig file and checks that the app can access it
-                var projectName = "NativeAotAppForConfigTestDbg";
-                var projectConfiguration = "Debug";
+            var projectName = "NativeAotAppForConfigTestDbg";
+            var projectConfiguration = "Debug";
 
-                var testProject = CreateAppForConfigCheck(targetFramework, projectName, true);
-                testProject.RecordProperties("NETCoreSdkPortableRuntimeIdentifier");
-                testProject.AdditionalProperties["PublishAot"] = "true";
-                testProject.AdditionalProperties["Configuration"] = projectConfiguration;
-                // Linux symbol files are embedded and require additional steps to be stripped to a separate file
-                // assumes /bin (or /usr/bin) are in the PATH
-                if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                {
-                    testProject.AdditionalProperties["StripSymbols"] = "true";
-                }
-
-                var testAsset = _testAssetsManager.CreateTestProject(testProject)
-                    // populate a runtime config file with a key value pair
-                    // <RuntimeHostConfigurationOption Include="key1" Value="value1" />
-                    .WithProjectChanges(project => AddRuntimeConfigOption(project));
-
-                var publishCommand = new PublishCommand(testAsset);
-                publishCommand
-                    .Execute($"/p:UseCurrentRuntimeIdentifier=true")
-                    .Should().Pass();
-
-                var buildProperties = testProject.GetPropertyValues(testAsset.TestRoot, targetFramework, projectConfiguration);
-                var rid = buildProperties["NETCoreSdkPortableRuntimeIdentifier"];
-                var publishDirectory = publishCommand.GetOutputDirectory(targetFramework: targetFramework, configuration: projectConfiguration, runtimeIdentifier: rid).FullName;
-                var sharedLibSuffix = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ".dll" : ".so";
-                var publishedExe = Path.Combine(publishDirectory, $"{testProject.Name}{Constants.ExeSuffix}");
-                var symbolSuffix = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ".pdb" : ".dbg";
-                var publishedDebugFile = Path.Combine(publishDirectory, $"{testProject.Name}{symbolSuffix}");
-                var publishedRuntimeConfig = Path.Combine(publishDirectory, $"{testProject.Name}.runtimeconfig.json");
-                var publishedDeps = Path.Combine(publishDirectory, $"{testProject.Name}.deps.json");
-
-                // NativeAOT published dir should not contain a runtime configuration file
-                File.Exists(publishedRuntimeConfig).Should().BeFalse();
-                // NativeAOT published dir should not contain a dependency file
-                File.Exists(publishedDeps).Should().BeFalse();
-                // The exe exist and should be native
-                File.Exists(publishedExe).Should().BeTrue();
-                // There should be a debug file
-                File.Exists(publishedDebugFile).Should().BeTrue();
-                IsNativeImage(publishedExe).Should().BeTrue();
-
-                // The app accesses the runtime config file key-value pair
-                var command = new RunExeCommand(Log, publishedExe)
-                    .Execute().Should().Pass();
+            var testProject = CreateAppForConfigCheck(targetFramework, projectName, true);
+            testProject.RecordProperties("NETCoreSdkPortableRuntimeIdentifier");
+            testProject.AdditionalProperties["PublishAot"] = "true";
+            testProject.AdditionalProperties["Configuration"] = projectConfiguration;
+            // Linux symbol files are embedded and require additional steps to be stripped to a separate file
+            // assumes /bin (or /usr/bin) are in the PATH
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                testProject.AdditionalProperties["StripSymbols"] = "true";
             }
+
+            var testAsset = _testAssetsManager.CreateTestProject(testProject)
+                // populate a runtime config file with a key value pair
+                // <RuntimeHostConfigurationOption Include="key1" Value="value1" />
+                .WithProjectChanges(project => AddRuntimeConfigOption(project));
+
+            var publishCommand = new PublishCommand(testAsset);
+            publishCommand
+                .Execute($"/p:UseCurrentRuntimeIdentifier=true")
+                .Should().Pass();
+
+            var buildProperties = testProject.GetPropertyValues(testAsset.TestRoot, targetFramework, projectConfiguration);
+            var rid = buildProperties["NETCoreSdkPortableRuntimeIdentifier"];
+            var publishDirectory = publishCommand.GetOutputDirectory(targetFramework: targetFramework, configuration: projectConfiguration, runtimeIdentifier: rid).FullName;
+            var sharedLibSuffix = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ".dll" : ".so";
+            var publishedExe = Path.Combine(publishDirectory, $"{testProject.Name}{Constants.ExeSuffix}");
+            var symbolSuffix = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ".pdb" : ".dbg";
+            var publishedDebugFile = Path.Combine(publishDirectory, $"{testProject.Name}{symbolSuffix}");
+            var publishedRuntimeConfig = Path.Combine(publishDirectory, $"{testProject.Name}.runtimeconfig.json");
+            var publishedDeps = Path.Combine(publishDirectory, $"{testProject.Name}.deps.json");
+
+            // NativeAOT published dir should not contain a runtime configuration file
+            File.Exists(publishedRuntimeConfig).Should().BeFalse();
+            // NativeAOT published dir should not contain a dependency file
+            File.Exists(publishedDeps).Should().BeFalse();
+            // The exe exist and should be native
+            File.Exists(publishedExe).Should().BeTrue();
+            // There should be a debug file
+            File.Exists(publishedDebugFile).Should().BeTrue();
+            IsNativeImage(publishedExe).Should().BeTrue();
+
+            // The app accesses the runtime config file key-value pair
+            var command = new RunExeCommand(Log, publishedExe)
+                .Execute().Should().Pass();
         }
 
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
