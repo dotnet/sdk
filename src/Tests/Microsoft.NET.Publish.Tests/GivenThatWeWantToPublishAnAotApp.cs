@@ -185,10 +185,6 @@ namespace Microsoft.NET.Publish.Tests
         [InlineData(ToolsetInfo.CurrentTargetFramework)]
         public void NativeAot_app_runs_in_release_with_no_config_when_PublishAot_is_enabled(string targetFramework)
         {
-            // NativeAOT application publish directory should not contain any <App>.deps.json or <App>.runtimeconfig.json
-            // The test writes a key-value pair to the runtimeconfig file and checks that the app can access it
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-        {
             var projectName = "NativeAotAppForConfigTestRel";
             var projectConfiguration = "Release";
 
