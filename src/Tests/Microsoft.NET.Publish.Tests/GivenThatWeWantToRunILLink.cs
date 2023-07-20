@@ -140,7 +140,7 @@ namespace Microsoft.NET.Publish.Tests
 
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
         [InlineData(ToolsetInfo.CurrentTargetFramework)]
-        public void PublishTrimmed_warns_when_no_matching_pack_is_found(string targetFramework)
+        public void PublishTrimmed_fails_when_no_matching_pack_is_found(string targetFramework)
         {
             var projectName = "HelloWorld";
             var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
@@ -178,13 +178,12 @@ namespace Microsoft.NET.Publish.Tests
                 .And.HaveStdOutContaining($"error {Strings.PublishTrimmedRequiresVersion30}");
         }
 
-        [RequiresMSBuildVersionFact("17.0.0.32901")]
+        [RequiresMSBuildVersionTheory("17.0.0.32901")]
         [InlineData("netstandard2.0")]
         [InlineData("netstandard2.1")]
-        public void IsTrimmable_warns_for_unsupported_target_framework()
+        public void IsTrimmable_warns_for_unsupported_target_framework(string targetFramework)
         {
             var projectName = "HelloWorld";
-            var targetFramework = "netstandard2.1";
             var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
 
             var testProject = CreateTestProjectForILLinkTesting(targetFramework, projectName);
@@ -1803,27 +1802,6 @@ namespace Microsoft.NET.Publish.Tests
             project.Root.Elements(ns + "ItemGroup")
                 .Where(ig => ig.Elements(ns + "TrimmerRootDescriptor").Any())
                 .First().Remove();
-        }
-
-        [Fact]
-        public void It_warns_when_targeting_netcoreapp_2_x_illink()
-        {
-            var testProject = new TestProject()
-            {
-                Name = "ConsoleApp",
-                TargetFrameworks = "netcoreapp2.2",
-                IsExe = true,
-            };
-
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: "GivenThatWeWantToRunILLink");
-
-            var publishCommand = new PublishCommand(testAsset);
-
-            publishCommand.Execute($"/p:PublishTrimmed=true")
-                .Should()
-                .Fail()
-                .And
-                .HaveStdOutContaining(Strings.PublishTrimmedRequiresVersion30);
         }
 
         private void SetMetadata(XDocument project, string assemblyName, string key, string value)

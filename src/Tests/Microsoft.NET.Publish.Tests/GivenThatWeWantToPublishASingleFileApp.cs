@@ -629,6 +629,25 @@ namespace Microsoft.NET.Publish.Tests
                 .And.HaveStdOutContaining("(10,13): warning IL3001");
         }
 
+        [RequiresMSBuildVersionTheory("17.0.0.32901")]
+        [InlineData("netstandard2.0")]
+        public void EnableSingleFileAnalyzer_warns_for_unsupported_target_framework(string targetFramework)
+        {
+            var testProject = new TestProject()
+            {
+                Name = "ClassLibTest",
+                TargetFrameworks = targetFramework
+            };
+            testProject.AdditionalProperties["EnableSingleFileAnalyzer"] = "true";
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+
+            var buildCommand = new BuildCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
+            buildCommand
+                .Execute()
+                .Should().Pass()
+                .And.HaveStdOutContaining($"warning {Strings.EnableSingleFileAnalyzerUnsupported}");
+        }
+
         private TestProject CreateTestProjectWithAnalyzerWarnings(string targetFramework, string projectName, bool isExecutable)
         {
             var testProject = new TestProject()

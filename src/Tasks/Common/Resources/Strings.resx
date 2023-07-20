@@ -948,5 +948,5 @@ For more information, see https://aka.ms/netsdk1195</value>
     <value>NETSDK1211: EnableSingleFileAnalyzer is not supported for the target framework.</value>
     <comment>{StrBegin="NETSDK1211: "}</comment>
   </data>
-  <!-- The latest message added is IsAotCompatibleUnsupported. Please update this value with each PR to catch parallel PRs both adding a new message -->
+  <!-- The latest message added is EnableSingleFileAnalyzerUnsupported. Please update this value with each PR to catch parallel PRs both adding a new message -->
 </root>
