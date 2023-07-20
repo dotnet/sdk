@@ -161,22 +161,26 @@ namespace Microsoft.NET.Publish.Tests
                 .And.HaveStdOutContaining("warning NETSDK1124");
         }
 
-        [RequiresMSBuildVersionFact("17.0.0.32901")]
-        public void PublishTrimmed_warns_for_unsupported_target_framework()
+        [RequiresMSBuildVersionTheory("17.0.0.32901")]
+        [InlineData("netcoreapp2.0")]
+        [InlineData("netcoreapp2.1")]
+        [InlineData("netstandard2.1")]
+        public void PublishTrimmed_fails_for_unsupported_target_framework(string targetFramework)
         {
             var projectName = "HelloWorld";
-            var targetFramework = "netcoreapp2.1";
             var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
 
             var testProject = CreateTestProjectForILLinkTesting(targetFramework, projectName);
             var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
             var publishCommand = new PublishCommand(testAsset);
             publishCommand.Execute($"/p:RuntimeIdentifier={rid}", "/p:PublishTrimmed=true")
-                .Should().Pass()
-                .And.HaveStdOutContaining("warning NETSDK1124");
+                .Should().Fail()
+                .And.HaveStdOutContaining("error NETSDK1124");
         }
 
         [RequiresMSBuildVersionFact("17.0.0.32901")]
+        [InlineData("netstandard2.0")]
+        [InlineData("netstandard2.1")]
         public void IsTrimmable_warns_for_unsupported_target_framework()
         {
             var projectName = "HelloWorld";
@@ -189,32 +193,6 @@ namespace Microsoft.NET.Publish.Tests
             buildCommand.Execute("/p:IsTrimmable=true")
                 .Should().Pass()
                 .And.HaveStdOutContaining("warning NETSDK1195");
-        }
-
-        [RequiresMSBuildVersionTheory("17.0.0.32901")]
-        [InlineData("netstandard2.0")]
-        [InlineData("netstandard2.1")]
-        public void ILLink_fails_on_unsupported_target_framework(string targetFramework)
-        {
-            var projectName = "HelloWorld";
-            var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
-
-            var testProject = CreateTestProjectForILLinkTesting(targetFramework, projectName);
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
-
-            var buildCommand = new BuildCommand(testAsset);
-
-            buildCommand.Execute($"/p:RuntimeIdentifier={rid}", "/p:PublishTrimmed=true")
-                .Should().Fail()
-                .And.HaveStdOutContaining("error NETSDK1195");
-
-            buildCommand.Execute($"/p:RuntimeIdentifier={rid}", "/p:IsTrimmable=true")
-                .Should().Fail()
-                .And.HaveStdOutContaining("error NETSDK1195");
-
-            buildCommand.Execute($"/p:RuntimeIdentifier={rid}", "/p:EnableTrimAnalyzer=true")
-                .Should().Fail()
-                .And.HaveStdOutContaining("error NETSDK1195");
         }
 
         [RequiresMSBuildVersionTheory("17.0.0.32901")]

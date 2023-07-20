@@ -23,12 +23,9 @@ Copyright (c) .NET Foundation. All rights reserved.
     <PublishTrimmed Condition="'$(PublishTrimmed)' == '' And '$(PublishAot)' == 'true'">true</PublishTrimmed>
     <IsTrimmable Condition="'$(IsTrimmable)' == '' and '$(IsAotCompatible)' == 'true'">true</IsTrimmable>
     <_RequiresILLinkPack Condition="'$(_RequiresILLinkPack)' == '' And (
-        '$(PublishTrimmed)' == 'true' Or
-        '$(PublishSingleFile)' == 'true' Or
-        '$(IsTrimmable)' == 'true' Or
-        '$(EnableAotAnalyzer)' == 'true' Or
-        '$(EnableTrimAnalyzer)' == 'true' Or
-        '$(EnableSingleFileAnalyzer)' == 'true')">true</_RequiresILLinkPack>
+        '$(PublishTrimmed)' == 'true' Or '$(IsTrimmable)' == 'true' Or '$(EnableTrimAnalyzer)' == 'true' Or
+        '$(PublishSingleFile)' == 'true' Or '$(EnableSingleFileAnalyzer)' == 'true' Or
+        '$(EnableAotAnalyzer)' == 'true')">true</_RequiresILLinkPack>
     <_RequiresILLinkPack Condition="'$(_RequiresILLinkPack)' == ''">false</_RequiresILLinkPack>
   </PropertyGroup>
 
