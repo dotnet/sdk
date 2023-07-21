@@ -72,7 +72,7 @@ namespace Microsoft.NET.Publish.Tests
             var sharedLibSuffix = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ".dll" : ".so";
             var publishedDll = Path.Combine(publishDirectory, $"{projectName}{sharedLibSuffix}");
             var publishedExe = Path.Combine(publishDirectory, $"{testProject.Name}{Constants.ExeSuffix}");
-            var symbolSuffix = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ".pdb" : ".dbg";
+            var symbolSuffix = GetSymbolSuffix();
             var publishedDebugFile = Path.Combine(publishDirectory, $"{testProject.Name}{symbolSuffix}");
 
             // NativeAOT published dir should not contain a non-host stand alone package
@@ -160,7 +160,7 @@ namespace Microsoft.NET.Publish.Tests
             var publishDirectory = publishCommand.GetOutputDirectory(targetFramework: targetFramework, configuration: projectConfiguration, runtimeIdentifier: rid).FullName;
             var sharedLibSuffix = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ".dll" : ".so";
             var publishedExe = Path.Combine(publishDirectory, $"{testProject.Name}{Constants.ExeSuffix}");
-            var symbolSuffix = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ".pdb" : ".dbg";
+            var symbolSuffix = GetSymbolSuffix();
             var publishedDebugFile = Path.Combine(publishDirectory, $"{testProject.Name}{symbolSuffix}");
             var publishedRuntimeConfig = Path.Combine(publishDirectory, $"{testProject.Name}.runtimeconfig.json");
             var publishedDeps = Path.Combine(publishDirectory, $"{testProject.Name}.deps.json");
@@ -214,7 +214,7 @@ namespace Microsoft.NET.Publish.Tests
             var publishDirectory = publishCommand.GetOutputDirectory(targetFramework: targetFramework, configuration: projectConfiguration, runtimeIdentifier: rid).FullName;
             var sharedLibSuffix = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ".dll" : ".so";
             var publishedExe = Path.Combine(publishDirectory, $"{testProject.Name}{Constants.ExeSuffix}");
-            var symbolSuffix = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ".pdb" : ".dbg";
+            var symbolSuffix = GetSymbolSuffix();
             var publishedDebugFile = Path.Combine(publishDirectory, $"{testProject.Name}{symbolSuffix}");
             var publishedRuntimeConfig = Path.Combine(publishDirectory, $"{testProject.Name}.runtimeconfig.json");
             var publishedDeps = Path.Combine(publishDirectory, $"{testProject.Name}.deps.json");
@@ -303,7 +303,7 @@ namespace Microsoft.NET.Publish.Tests
             var sharedLibSuffix = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ".dll" : ".so";
             var publishedDll = Path.Combine(publishDirectory, $"{projectName}{sharedLibSuffix}");
             var publishedExe = Path.Combine(publishDirectory, $"{testProject.Name}{Constants.ExeSuffix}");
-            var symbolSuffix = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ".pdb" : ".dbg";
+            var symbolSuffix = GetSymbolSuffix();
             var publishedDebugFile = Path.Combine(publishDirectory, $"{testProject.Name}{symbolSuffix}");
 
             // NativeAOT published dir should not contain a non-host stand alone package
@@ -945,6 +945,26 @@ class C
 }";
 
             return testProject;
+        }
+
+        private string GetSymbolSuffix()
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                return ".pdb";
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                return ".dbg";
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                return ".dwarf";
+            }
+            else
+            {
+                throw new PlatformNotSupportedException();
+            }
         }
 
         private TestProject CreateTestProjectWithAotLibrary(string targetFramework, string projectName)
