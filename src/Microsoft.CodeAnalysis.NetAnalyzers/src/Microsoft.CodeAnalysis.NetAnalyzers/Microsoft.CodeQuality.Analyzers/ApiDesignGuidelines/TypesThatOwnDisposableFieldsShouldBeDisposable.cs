@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
@@ -72,20 +71,20 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 return;
             }
 
-            var disposableFieldNamesBuilder = new ConcurrentBag<string>();
+            var disposableFieldNamesBuilder = TemporarySet<string>.Empty;
 
-            ctx.RegisterOperationAction(context => AnalyzeOperation(context, namedType, disposableFields, disposableFieldNamesBuilder), OperationKind.SimpleAssignment, OperationKind.FieldInitializer);
-            ctx.RegisterSymbolEndAction(context => AnalyzeSymbolEnd(context, disposableFieldNamesBuilder.ToImmutableArray()));
+            ctx.RegisterOperationAction(context => AnalyzeOperation(context, namedType, disposableFields, ref disposableFieldNamesBuilder), OperationKind.SimpleAssignment, OperationKind.FieldInitializer);
+            ctx.RegisterSymbolEndAction(context => AnalyzeSymbolEnd(context, ref disposableFieldNamesBuilder));
         }
 
-        private static void AnalyzeOperation(OperationAnalysisContext ctx, INamedTypeSymbol parent, ISet<IFieldSymbol> disposableFields, ConcurrentBag<string> disposableFieldNamesBuilder)
+        private static void AnalyzeOperation(OperationAnalysisContext ctx, INamedTypeSymbol parent, ISet<IFieldSymbol> disposableFields, ref TemporarySet<string> disposableFieldNamesBuilder)
         {
             if (ctx.Operation is IAssignmentOperation { Target: IFieldReferenceOperation field } assignment
                 && assignment.Value.WalkDownConversion().Kind == OperationKind.ObjectCreation
                 && disposableFields.Contains(field.Field)
                 && !ctx.Options.IsConfiguredToSkipAnalysis(Rule, field.Field.Type, parent, ctx.Compilation))
             {
-                disposableFieldNamesBuilder.Add(field.Field.Name);
+                disposableFieldNamesBuilder.Add(field.Field.Name, ctx.CancellationToken);
             }
             else if (ctx.Operation is IFieldInitializerOperation initializer && initializer.Value.WalkDownConversion().Kind == OperationKind.ObjectCreation)
             {
@@ -94,18 +93,25 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 {
                     if (!ctx.Options.IsConfiguredToSkipAnalysis(Rule, f.Type, parent, ctx.Compilation))
                     {
-                        disposableFieldNamesBuilder.Add(f.Name);
+                        disposableFieldNamesBuilder.Add(f.Name, ctx.CancellationToken);
                     }
                 }
             }
         }
 
-        private static void AnalyzeSymbolEnd(SymbolAnalysisContext ctx, ImmutableArray<string> disposableFieldNames)
+        private static void AnalyzeSymbolEnd(SymbolAnalysisContext ctx, ref TemporarySet<string> disposableFieldNamesBuilder)
         {
-            if (disposableFieldNames.Length > 0)
+            try
             {
-                // Type '{0}' owns disposable field(s) '{1}' but is not disposable
-                ctx.ReportDiagnostic(ctx.Symbol.CreateDiagnostic(Rule, ctx.Symbol.Name, string.Join("', '", disposableFieldNames.Sort())));
+                if (disposableFieldNamesBuilder.Any_NonConcurrent())
+                {
+                    // Type '{0}' owns disposable field(s) '{1}' but is not disposable
+                    ctx.ReportDiagnostic(ctx.Symbol.CreateDiagnostic(Rule, ctx.Symbol.Name, string.Join("', '", disposableFieldNamesBuilder.AsEunumerable_NonConcurrent().Order())));
+                }
+            }
+            finally
+            {
+                disposableFieldNamesBuilder.Free(ctx.CancellationToken);
             }
         }
     }
