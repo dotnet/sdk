@@ -38,9 +38,9 @@ namespace ManifestReaderTests
         {
             Initialize();
 
-            CreateMockManifest(_manifestRoot, "8.0.101", "ios", "11.0.2", true);
-            CreateMockManifest(_manifestRoot, "8.0.201", "android", "33.0.2-rc.1", true);
-            CreateMockManifest(_manifestRoot, "8.0.201-rc.2", "maui", "15.0.1-rc.456", true);
+            CreateMockManifest(_manifestRoot, "8.0.100", "ios", "11.0.2", true);
+            CreateMockManifest(_manifestRoot, "8.0.200", "android", "33.0.2-rc.1", true);
+            CreateMockManifest(_manifestRoot, "8.0.200-rc.2", "maui", "15.0.1-rc.456", true);
 
             if (useWorkloadSet)
             {
@@ -62,12 +62,15 @@ namespace ManifestReaderTests
             }
             else
             {
-                sdkDirectoryWorkloadManifestProvider.GetWorkloadVersion().Should().Be("8.0.200-manifests.072c430a");
+                string[] manifests = sdkDirectoryWorkloadManifestProvider.GetManifests().OrderBy(m => m.ManifestId).Select(m => $"{m.ManifestId}.{m.ManifestFeatureBand}.{m.ManifestVersion}").ToArray();
+                manifests.Length.Should().Be(1);
+                manifests.Should().Contain("android.8.0.200.33.0.2-rc.1");
+                sdkDirectoryWorkloadManifestProvider.GetWorkloadVersion().Should().Be("8.0.200-manifests.4ba11739");
             }
 
-            Directory.Delete(Path.Combine(_manifestRoot, "8.0.101"), recursive: true);
-            Directory.Delete(Path.Combine(_manifestRoot, "8.0.201"), recursive: true);
-            Directory.Delete(Path.Combine(_manifestRoot, "8.0.201-rc.2"), recursive: true);
+            Directory.Delete(Path.Combine(_manifestRoot, "8.0.100"), recursive: true);
+            Directory.Delete(Path.Combine(_manifestRoot, "8.0.200"), recursive: true);
+            Directory.Delete(Path.Combine(_manifestRoot, "8.0.200-rc.2"), recursive: true);
         }
 
         [Fact]
