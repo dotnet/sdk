@@ -272,6 +272,12 @@ namespace Microsoft.NET.Publish.Tests
         [InlineData(ToolsetInfo.CurrentTargetFramework)]
         public void NativeAot_hw_runs_with_PackageReference_PublishAot_is_enabled(string targetFramework)
         {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                // Test uses net7 package of Native AOT, which didn't exist in .NET 7
+                return;
+            }
+
             var projectName = "HellowWorldNativeAotApp";
 
             var testProject = CreateHelloWorldTestProject(targetFramework, projectName, true);
