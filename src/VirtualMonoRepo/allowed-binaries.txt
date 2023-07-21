@@ -20,7 +20,7 @@
 **/TestCert*.pfx
 **/tests/*
 
-src/*/eng/common/loc/*.lss # UTF16-LE text files
+**/eng/common/loc/*.lss # UTF16-LE text files
 
 src/aspnetcore/**/samples/*
 src/aspnetcore/**/TestCertificates/*
