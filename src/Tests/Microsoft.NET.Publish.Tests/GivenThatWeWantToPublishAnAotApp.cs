@@ -69,7 +69,7 @@ namespace Microsoft.NET.Publish.Tests
             var buildProperties = testProject.GetPropertyValues(testAsset.TestRoot, targetFramework);
             var rid = buildProperties["NETCoreSdkPortableRuntimeIdentifier"];
             var publishDirectory = publishCommand.GetOutputDirectory(targetFramework: targetFramework, runtimeIdentifier: rid).FullName;
-            var sharedLibSuffix = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ".dll" : ".so";
+            var sharedLibSuffix = GetSharedLibSuffix();
             var publishedDll = Path.Combine(publishDirectory, $"{projectName}{sharedLibSuffix}");
             var publishedExe = Path.Combine(publishDirectory, $"{testProject.Name}{Constants.ExeSuffix}");
             var symbolSuffix = GetSymbolSuffix();
@@ -158,7 +158,7 @@ namespace Microsoft.NET.Publish.Tests
             var buildProperties = testProject.GetPropertyValues(testAsset.TestRoot, targetFramework, projectConfiguration);
             var rid = buildProperties["NETCoreSdkPortableRuntimeIdentifier"];
             var publishDirectory = publishCommand.GetOutputDirectory(targetFramework: targetFramework, configuration: projectConfiguration, runtimeIdentifier: rid).FullName;
-            var sharedLibSuffix = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ".dll" : ".so";
+            var sharedLibSuffix = GetSharedLibSuffix();
             var publishedExe = Path.Combine(publishDirectory, $"{testProject.Name}{Constants.ExeSuffix}");
             var symbolSuffix = GetSymbolSuffix();
             var publishedDebugFile = Path.Combine(publishDirectory, $"{testProject.Name}{symbolSuffix}");
@@ -212,7 +212,7 @@ namespace Microsoft.NET.Publish.Tests
             var rid = buildProperties["NETCoreSdkPortableRuntimeIdentifier"];
 
             var publishDirectory = publishCommand.GetOutputDirectory(targetFramework: targetFramework, configuration: projectConfiguration, runtimeIdentifier: rid).FullName;
-            var sharedLibSuffix = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ".dll" : ".so";
+            var sharedLibSuffix = GetSharedLibSuffix();
             var publishedExe = Path.Combine(publishDirectory, $"{testProject.Name}{Constants.ExeSuffix}");
             var symbolSuffix = GetSymbolSuffix();
             var publishedDebugFile = Path.Combine(publishDirectory, $"{testProject.Name}{symbolSuffix}");
@@ -300,7 +300,7 @@ namespace Microsoft.NET.Publish.Tests
             var buildProperties = testProject.GetPropertyValues(testAsset.TestRoot, targetFramework);
             var rid = buildProperties["NETCoreSdkPortableRuntimeIdentifier"];
             var publishDirectory = publishCommand.GetOutputDirectory(targetFramework: targetFramework, runtimeIdentifier: rid).FullName;
-            var sharedLibSuffix = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ".dll" : ".so";
+            var sharedLibSuffix = GetSharedLibSuffix();
             var publishedDll = Path.Combine(publishDirectory, $"{projectName}{sharedLibSuffix}");
             var publishedExe = Path.Combine(publishDirectory, $"{testProject.Name}{Constants.ExeSuffix}");
             var symbolSuffix = GetSymbolSuffix();
@@ -638,6 +638,12 @@ namespace Microsoft.NET.Publish.Tests
         [MemberData(nameof(Net7Plus), MemberType = typeof(PublishTestUtils))]
         public void NativeAot_compiler_runs_when_PublishAot_is_enabled(string targetFramework)
         {
+            if (targetFramework == "net7.0" && RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                // OSX wasn't supported before net8
+                return;
+            }
+
             var projectName = "WarningAppWithPublishAot";
 
             // PublishAot should enable the EnableAotAnalyzer, EnableTrimAnalyzer and EnableSingleFileAnalyzer
@@ -765,7 +771,7 @@ namespace Microsoft.NET.Publish.Tests
             var buildProperties = testProject.GetPropertyValues(testAsset.TestRoot, targetFramework);
             var rid = buildProperties["NETCoreSdkPortableRuntimeIdentifier"];
             var publishDirectory = publishCommand.GetOutputDirectory(targetFramework: targetFramework, runtimeIdentifier: rid).FullName;
-            var sharedLibSuffix = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ".dll" : ".so";
+            var sharedLibSuffix = GetSharedLibSuffix();
             var publishedDll = Path.Combine(publishDirectory, $"{projectName}{sharedLibSuffix}");
 
             // The lib exist and should be native
@@ -947,7 +953,24 @@ class C
             return testProject;
         }
 
-        private string GetSymbolSuffix()
+        private static string GetSharedLibSuffix()
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                return ".dll";
+            }
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                return ".so";
+            }
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                return ".dylib";
+            }
+            throw new PlatformNotSupportedException();
+        }
+
+        private static string GetSymbolSuffix()
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
