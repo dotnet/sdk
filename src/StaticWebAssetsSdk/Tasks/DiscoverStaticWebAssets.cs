@@ -119,7 +119,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
         private void UpdateAssetKindIfNecessary(Dictionary<string, List<ITaskItem>> assetsByRelativePath, string candidateRelativePath, ITaskItem asset)
         {
             // We want to support content items in the form of
-            // <Content Include="service-worker.development.js CopyToPublishDirectory="Never" TargetPath="wwwroot\service-worker.js" />
+            // <Content Include="service-worker.development.js CopyToPublishDirectory="Never" TargetPath="$(StaticWebAssetsPath)\service-worker.js" />
             // <Content Include="service-worker.js />
             // where the first item is used during development and the second item is used when the app is published.
             // To that matter, we keep track of the assets relative paths and make sure that when two assets target the same relative paths, at least one

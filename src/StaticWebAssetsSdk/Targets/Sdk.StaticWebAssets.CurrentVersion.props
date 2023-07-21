@@ -19,7 +19,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <UsingMicrosoftNETSdkStaticWebAssets>true</UsingMicrosoftNETSdkStaticWebAssets>
     <!--
     Set to true to automatically include certain file types, such as .cshtml files, as content in the project.
-    When referenced via Microsoft.NET.Sdk.Web, this additionally includes all files under wwwroot, and any config files.
+    When referenced via Microsoft.NET.Sdk.Web, this additionally includes all files under $(StaticWebAssetsPath), and any config files.
     -->
     <EnableDefaultContentItems Condition="'$(EnableDefaultContentItems)'==''">true</EnableDefaultContentItems>
 

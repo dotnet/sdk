@@ -118,8 +118,8 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Target Name="_SplitPublishStaticWebAssetsByCopyOptions" AfterTargets="CopyStaticWebAssetsToPublishDirectory">
 
     <PropertyGroup>
-      <_StaticWebAssetsPublishPathPrefix>wwwroot</_StaticWebAssetsPublishPathPrefix>
-      <_StaticWebAssetsPublishPathPrefix Condition="'$(StaticWebAssetProjectMode)' == 'Root'">wwwroot/$(StaticWebAssetBasePath)</_StaticWebAssetsPublishPathPrefix>
+      <_StaticWebAssetsPublishPathPrefix>$(StaticWebAssetsPath)</_StaticWebAssetsPublishPathPrefix>
+      <_StaticWebAssetsPublishPathPrefix Condition="'$(StaticWebAssetProjectMode)' == 'Root'">$(StaticWebAssetsPath)/$(StaticWebAssetBasePath)</_StaticWebAssetsPublishPathPrefix>
     </PropertyGroup>
 
     <ComputeStaticWebAssetsForCurrentProject
