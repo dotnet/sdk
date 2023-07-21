@@ -2208,6 +2208,11 @@ class Test
 
         // https://github.com/dotnet/roslyn-analyzers/issues/6512
         await using var e3 = new AsyncDisposableAndDisposable().ConfigureAwait(false);
+
+        foreach (var x in new[] { 1, 2 })
+        {
+            await using var e4 = new AsyncDisposableAndDisposable().ConfigureAwait(false);
+        }
     }
 }
 "
