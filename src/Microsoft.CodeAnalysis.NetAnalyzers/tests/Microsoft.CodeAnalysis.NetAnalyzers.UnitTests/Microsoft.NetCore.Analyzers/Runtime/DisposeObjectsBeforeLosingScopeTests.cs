@@ -2169,6 +2169,99 @@ End Class",
             }.RunAsync();
         }
 
+        [Fact, WorkItem(6765, "https://github.com/dotnet/roslyn-analyzers/issues/6765")]
+        public async Task LocalWithAsyncDisposableAndAwaitUsingStatement_Disposed_NoDiagnosticAsync()
+        {
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithAsyncInterfaces,
+                LanguageVersion = CSharpLanguageVersion.CSharp10,
+                TestCode = @"
+using System;
+using System.Threading.Tasks;
+
+class AsyncDisposableAndDisposable : IAsyncDisposable, IDisposable
+{
+    public ValueTask DisposeAsync()
+    {
+        return default(ValueTask);
+    }
+
+    public void Dispose()
+    {
+    }
+}
+
+class Test
+{
+    public static async Task M1()
+    {
+        // https://github.com/dotnet/roslyn-analyzers/issues/6765
+        var e1 = new AsyncDisposableAndDisposable();
+        await using (e1.ConfigureAwait(false))
+        {
+        }
+
+        var e2 = new AsyncDisposableAndDisposable();
+        var x2 = e2.ConfigureAwait(false);
+        await x2.DisposeAsync();
+
+        // https://github.com/dotnet/roslyn-analyzers/issues/6512
+        await using var e3 = new AsyncDisposableAndDisposable().ConfigureAwait(false);
+    }
+}
+"
+            }.RunAsync();
+        }
+
+        [Fact, WorkItem(6765, "https://github.com/dotnet/roslyn-analyzers/issues/6765")]
+        public async Task LocalWithAsyncDisposableAndAwaitUsingStatement_NotDisposed_DiagnosticAsync()
+        {
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithAsyncInterfaces,
+                LanguageVersion = CSharpLanguageVersion.CSharp10,
+                TestCode = @"
+using System;
+using System.Threading.Tasks;
+
+class AsyncDisposableAndDisposable : IAsyncDisposable, IDisposable
+{
+    public ValueTask DisposeAsync()
+    {
+        return default(ValueTask);
+    }
+
+    public void Dispose()
+    {
+    }
+}
+
+class Test
+{
+    public static async Task M1()
+    {
+        var e1 = new AsyncDisposableAndDisposable();
+        
+        var e2 = new AsyncDisposableAndDisposable();
+        var x2 = e2.ConfigureAwait(false);
+
+        var e3 = new AsyncDisposableAndDisposable().ConfigureAwait(false);
+    }
+}
+",
+                ExpectedDiagnostics =
+                {
+                    // /0/Test0.cs(21,18): warning CA2000: Call System.IDisposable.Dispose on object created by 'new AsyncDisposableAndDisposable()' before all references to it are out of scope
+                    GetCSharpResultAt(21, 18, "new AsyncDisposableAndDisposable()"),
+                    // /0/Test0.cs(23,18): warning CA2000: Call System.IDisposable.Dispose on object created by 'new AsyncDisposableAndDisposable()' before all references to it are out of scope
+                    GetCSharpResultAt(23, 18, "new AsyncDisposableAndDisposable()"),
+                    // /0/Test0.cs(26,18): warning CA2000: Call System.IDisposable.Dispose on object created by 'new AsyncDisposableAndDisposable()' before all references to it are out of scope
+                    GetCSharpResultAt(26, 18, "new AsyncDisposableAndDisposable()")
+                }
+            }.RunAsync();
+        }
+
         [Fact, WorkItem(3305, "https://github.com/dotnet/roslyn-analyzers/issues/3305")]
         public async Task LocalWithRefStructDisposableAssignment_NotDisposed_DiagnosticAsync()
         {
