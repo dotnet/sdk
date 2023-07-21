@@ -171,12 +171,7 @@
         },
         {
             "name": "vstest",
-            "defaultRemote": "https://github.com/microsoft/vstest",
-            "exclude": [
-                // These license files are for the nuget packages that vstest produces which include additional files built in
-                // different repositories and have different licensing. See https://github.com/microsoft/vstest/issues/4574
-                "src/package/licenses/**/*"
-            ]
+            "defaultRemote": "https://github.com/microsoft/vstest"
         },
         {
             "name": "xdt",
