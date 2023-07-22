@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -37,15 +37,13 @@ public class StaticWebAssetsBaselineFactory
         StaticWebAssetsManifest manifest,
         string projectRoot,
         string restorePath,
-        string runtimeVersion,
-        string defaultTfm,
-        string defaultPackageVersion)
+        string runtimeIdentifier)
     {
         manifest.Hash = "__hash__";
         var assetsByIdentity = manifest.Assets.ToDictionary(a => a.Identity);
         foreach (var asset in manifest.Assets)
         {
-            TemplatizeAsset(projectRoot, restorePath, asset);
+            TemplatizeAsset(projectRoot, restorePath, runtimeIdentifier, asset);
             if (asset.AssetTraitName == "Content-Encoding")
             {
                 var relativePath = asset.RelativePath.Replace('/', Path.DirectorySeparatorChar);
@@ -89,7 +87,7 @@ public class StaticWebAssetsBaselineFactory
         Array.Sort(manifest.ReferencedProjectsConfiguration, (l, r) => StringComparer.Ordinal.Compare(l.Identity, r.Identity));
     }
 
-    private void TemplatizeAsset(string projectRoot, string restorePath, StaticWebAsset asset)
+    private void TemplatizeAsset(string projectRoot, string restorePath, string runtimeIdentifier, StaticWebAsset asset)
     {
         asset.Identity = TemplatizeFilePath(
             asset.Identity,
@@ -103,6 +101,7 @@ public class StaticWebAssetsBaselineFactory
             null,
             null,
             null,
+            null,
             null).Replace('\\', '/');
 
         asset.ContentRoot = TemplatizeFilePath(
@@ -110,12 +109,14 @@ public class StaticWebAssetsBaselineFactory
             restorePath,
             projectRoot,
             null,
-            null);
+            null,
+            runtimeIdentifier);
 
         asset.RelatedAsset = TemplatizeFilePath(
             asset.RelatedAsset,
             restorePath,
             projectRoot,
+            null,
             null,
             null);
 
@@ -123,6 +124,7 @@ public class StaticWebAssetsBaselineFactory
             asset.OriginalItemSpec,
             restorePath,
             projectRoot,
+            null,
             null,
             null);
     }
@@ -141,7 +143,8 @@ public class StaticWebAssetsBaselineFactory
                 restorePath,
                 projectPath,
                 intermediateOutputPath,
-                buildOrPublishFolder);
+                buildOrPublishFolder,
+                null);
 
             yield return updated;
         }
@@ -152,7 +155,8 @@ public class StaticWebAssetsBaselineFactory
         string restorePath,
         string projectPath,
         string intermediateOutputPath,
-        string buildOrPublishFolder)
+        string buildOrPublishFolder,
+        string runtimeIdentifier)
     {
         var updated = file switch
         {
@@ -164,7 +168,7 @@ public class StaticWebAssetsBaselineFactory
             var fromPackage when restorePath is not null && file.StartsWith(restorePath) =>
                 TemplatizeNugetPath(restorePath, fromPackage),
             var fromProject when projectPath is not null && file.StartsWith(projectPath) =>
-                TemplatizeProjectPath(projectPath, fromProject),
+                TemplatizeProjectPath(projectPath, fromProject, runtimeIdentifier),
             _ =>
                 ReplaceSegments(file, (i, segments) => i switch
                 {
@@ -206,7 +210,7 @@ public class StaticWebAssetsBaselineFactory
         return file;
     }
 
-    private string TemplatizeProjectPath(string projectPath, string file)
+    private string TemplatizeProjectPath(string projectPath, string file, string runtimeIdentifier)
     {
         file = file.Replace(projectPath, "${ProjectPath}")
             .Replace('\\', '/');
@@ -215,6 +219,8 @@ public class StaticWebAssetsBaselineFactory
         {
             3 when segments[1] is "obj" or "bin" => "${Tfm}",
             4 when segments[2] is "obj" or "bin" => "${Tfm}",
+            4 when segments[1] is "obj" or "bin" && segments[4] == runtimeIdentifier => "${Rid}",
+            5 when segments[2] is "obj" or "bin" && segments[5] == runtimeIdentifier => "${Rid}",
             _ when i == segments.Length - 1 => RemovePossibleHash(segments[i]),
             _ => segments[i]
         });
