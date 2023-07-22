@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -233,8 +233,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         internal void AssertManifest(
             StaticWebAssetsManifest manifest,
             StaticWebAssetsManifest expected,
-            string runtimeIdentifier = null,
             string suffix = "",
+            string runtimeIdentifier = null,
             [CallerMemberName] string name = "")
         {
             if (!_generateBaselines)

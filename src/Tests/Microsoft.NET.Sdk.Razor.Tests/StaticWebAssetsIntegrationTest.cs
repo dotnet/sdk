@@ -485,7 +485,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var path = Path.Combine(intermediateOutputPath, "staticwebassets.build.json");
             new FileInfo(path).Should().Exist();
             var manifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(path));
-            AssertManifest(manifest, expectedManifest, RuntimeInformation.RuntimeIdentifier);
+            AssertManifest(manifest, expectedManifest, runtimeIdentifier: RuntimeInformation.RuntimeIdentifier);
 
             // GenerateStaticWebAssetsManifest should not copy the file to the output folder.
             var finalPath = Path.Combine(publishPath, "ComponentApp.staticwebassets.runtime.json");
@@ -498,7 +498,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             AssertManifest(
                 publishManifest,
                 LoadPublishManifest(),
-                RuntimeInformation.RuntimeIdentifier);
+                runtimeIdentifier: RuntimeInformation.RuntimeIdentifier);
 
             AssertPublishAssets(
                 publishManifest,
@@ -667,7 +667,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             AssertManifest(
                 StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(path)),
                 LoadBuildManifest(),
-                RuntimeInformation.RuntimeIdentifier);
+                runtimeIdentifier: RuntimeInformation.RuntimeIdentifier);
 
             // GenerateStaticWebAssetsManifest should not copy the file to the output folder.
             var finalPath = Path.Combine(publishPath, "AppWithPackageAndP2PReference.staticwebassets.runtime.json");
@@ -677,7 +677,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var intermediatePublishManifestPath = Path.Combine(intermediateOutputPath, "staticwebassets.publish.json");
             new FileInfo(path).Should().Exist();
             var publishManifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(intermediatePublishManifestPath));
-            AssertManifest(publishManifest, LoadPublishManifest(), RuntimeInformation.RuntimeIdentifier);
+            AssertManifest(publishManifest, LoadPublishManifest(), runtimeIdentifier: RuntimeInformation.RuntimeIdentifier);
 
             AssertPublishAssets(
                 publishManifest,
