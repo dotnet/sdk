@@ -94,7 +94,8 @@ public class StaticWebAssetsBaselineFactory
             restorePath,
             projectRoot,
             null,
-            null);
+            null,
+            runtimeIdentifier);
 
         asset.RelativePath = TemplatizeFilePath(
             asset.RelativePath,
