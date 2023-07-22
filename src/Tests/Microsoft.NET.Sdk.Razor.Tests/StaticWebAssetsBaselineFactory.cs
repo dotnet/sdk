@@ -127,7 +127,7 @@ public class StaticWebAssetsBaselineFactory
             projectRoot,
             null,
             null,
-            null);
+            runtimeIdentifier);
     }
 
     internal IEnumerable<string> TemplatizeExpectedFiles(
