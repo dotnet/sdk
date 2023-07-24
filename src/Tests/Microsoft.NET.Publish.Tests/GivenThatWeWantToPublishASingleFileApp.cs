@@ -152,7 +152,7 @@ namespace Microsoft.NET.Publish.Tests
             var testProject = new TestProject()
             {
                 Name = "ClassLib",
-                TargetFrameworks = "netcoreapp3.0",
+                TargetFrameworks = "netstandard2.0",
                 IsExe = false,
             };
 
@@ -187,7 +187,7 @@ namespace Microsoft.NET.Publish.Tests
                 .Should()
                 .Fail()
                 .And
-                .HaveStdOutContaining(Strings.PublishSingleFileRequiresVersion30)
+                .HaveStdOutContaining(Strings.CanOnlyHaveSingleFileWithNetCoreApp)
                 .And
                 .NotHaveStdOutContaining(Strings.CannotHaveSingleFileWithoutExecutable);
         }
