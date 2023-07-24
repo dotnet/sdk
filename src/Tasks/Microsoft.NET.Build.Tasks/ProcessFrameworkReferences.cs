@@ -57,8 +57,6 @@ namespace Microsoft.NET.Build.Tasks
 
         public bool EnableTrimAnalyzer { get; set; }
 
-        public bool PublishSingleFile { get; set; }
-
         public bool EnableSingleFileAnalyzer { get; set; }
 
         public bool AotUseKnownRuntimePackForTarget { get; set; }
@@ -434,25 +432,36 @@ namespace Microsoft.NET.Build.Tasks
                 }
             }
 
-            bool requiresILLinkPack = PublishAot || IsAotCompatible || EnableAotAnalyzer
-                || PublishTrimmed || IsTrimmable || EnableTrimAnalyzer
-                || PublishSingleFile || EnableSingleFileAnalyzer;
-
+            // Keep this in sync with _RequiresILLinkPack in Microsoft.NET.Publish.targets.
+            bool requiresILLinkPack = PublishAot
+                || IsAotCompatible || EnableAotAnalyzer
+                || PublishTrimmed
+                || IsTrimmable || EnableTrimAnalyzer
+                || EnableSingleFileAnalyzer;
             if (requiresILLinkPack)
             {
                 if (AddToolPack(ToolPackType.ILLink, _normalizedTargetFrameworkVersion, packagesToDownload, implicitPackageReferences) is not ToolPackSupport.Supported)
                 {
                     if (PublishAot) {
+                        // If PublishAot is set, this should produce a specific error above already.
+                        // Also produce one here just in case there are custom KnownILCompilerPack/KnownILLinkPack
+                        // items that bypass the error above.
                         Log.LogError(Strings.AotUnsupportedTargetFramework);
                     } else if (IsAotCompatible || EnableAotAnalyzer) {
+                        // Technically this is reachable by setting EnableAotAnalyzer without IsAotCompatible,
+                        // but the recommended way to enable AOT analysis is to set IsAotCompatible,
+                        // so the warning points to the common case.
                         Log.LogWarning(Strings.IsAotCompatibleUnsupported);
                     } else if (PublishTrimmed) {
                         Log.LogError(Strings.PublishTrimmedRequiresVersion30);
                     } else if (IsTrimmable || EnableTrimAnalyzer) {
+                        // Technically this is reachable by setting EnableTrimAnalyzer without IsTrimmable,
+                        // but the recommended way to enable trim analysis is to set IsTrimmable,
+                        // so the warning points to the common case.
                         Log.LogWarning(Strings.IsTrimmableUnsupported);
-                    } else if (PublishSingleFile) {
-                        Log.LogError(Strings.PublishSingleFileRequiresVersion30);
                     } else if (EnableSingleFileAnalyzer) {
+                        // There's no IsSingleFileCompatible setting. EnableSingleFileAnalyzer is the
+                        // recommended way to ensure single-file compatibility for libraries.
                         Log.LogWarning(Strings.EnableSingleFileAnalyzerUnsupported);
                     }
                 }
