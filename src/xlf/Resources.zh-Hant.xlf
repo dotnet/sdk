@@ -48,7 +48,7 @@
         <note />
       </trans-unit>
       <trans-unit id="Both_a_MSBuild_project_file_and_solution_file_found_in_0_Specify_which_to_use_with_the_workspace_argument">
-        <source>Both a MSBuild project file and solution file found in '{0}'. Specify which to use with the &lt;workspace&gt; agrument.</source>
+        <source>Both a MSBuild project file and solution file found in '{0}'. Specify which to use with the &lt;workspace&gt; argument.</source>
         <target state="translated">在 '{0}' 中同時找到 MSBuild 專案檔與解決方案檔。請指定要用於 &lt;workspace&gt; 引數的檔案。</target>
         <note />
       </trans-unit>

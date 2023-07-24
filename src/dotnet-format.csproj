@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net7.0</TargetFramework>
     <OutputType>Exe</OutputType>
     <LangVersion>10.0</LangVersion>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -19,7 +19,7 @@
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
 
     <!-- Always run on the latest runtime installed. -->
-    <RuntimeFrameworkVersion Condition=" '$(DotnetBuildFromSource)' != 'true' ">6.0.0-preview.7.21317.1</RuntimeFrameworkVersion>
+    <RuntimeFrameworkVersion Condition=" '$(DotnetBuildFromSource)' != 'true' ">7.0.0-preview.2.22114.1</RuntimeFrameworkVersion>
     <RollForward>LatestMajor</RollForward>
 
     <IsPackable>true</IsPackable>

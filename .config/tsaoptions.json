@@ -1,0 +1,10 @@
+{  
+    "instanceUrl": "https://devdiv.visualstudio.com/",
+    "template": "TFSDEVDIV",
+    "projectName": "DEVDIV",
+    "areaPath": "DevDiv\\NET Developer Experience\\Productivity",
+    "iterationPath": "DevDiv",
+    "notificationAliases": [ "mlinfraswat@microsoft.com" ],
+    "repositoryName":"format",
+    "codebaseName": "dotnet-format"
+}
