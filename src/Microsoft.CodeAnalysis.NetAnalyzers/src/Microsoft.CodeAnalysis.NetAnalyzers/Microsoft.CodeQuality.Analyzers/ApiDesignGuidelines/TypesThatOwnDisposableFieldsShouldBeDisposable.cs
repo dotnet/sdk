@@ -106,7 +106,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 if (disposableFieldNamesBuilder.Any_NonConcurrent())
                 {
                     // Type '{0}' owns disposable field(s) '{1}' but is not disposable
-                    ctx.ReportDiagnostic(ctx.Symbol.CreateDiagnostic(Rule, ctx.Symbol.Name, string.Join("', '", disposableFieldNamesBuilder.AsEunumerable_NonConcurrent().Order())));
+                    ctx.ReportDiagnostic(ctx.Symbol.CreateDiagnostic(Rule, ctx.Symbol.Name, string.Join("', '", disposableFieldNamesBuilder.AsEnumerable_NonConcurrent().Order())));
                 }
             }
             finally
