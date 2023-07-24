@@ -7280,5 +7280,124 @@ class C
                 },
             }.RunAsync();
         }
+
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
+        [Fact, WorkItem(6520, "https://github.com/dotnet/roslyn-analyzers/issues/6520")]
+        public async Task CompareTwoUnrelatedEnumVariables_NoDiagnosticsAsync()
+        {
+            await new VerifyCS.Test
+            {
+                TestCode = @"
+public class Parser
+{
+    private static ParsedPredicate ParsePredicate(ParsedPredicate predicate, PredicateOperand identifier, PredicateOperand literal)
+    {
+        if (predicate.Left.TypePrimitive == PredicateTypePrimitive.F1)
+        {
+            identifier = predicate.Left;
+            literal = predicate.Right;
+        }
+        else
+        {
+            identifier = predicate.Right;
+            literal = predicate.Left;
+        }
+
+        if (identifier.TypePrimitive != PredicateTypePrimitive.F1)
+        {
+            return predicate;
+        }
+
+        if (literal.TypePrimitive == PredicateTypePrimitive.F2)
+        {
+        }
+
+        return predicate;
+    }
+}
+
+public class PredicateOperand
+{
+    public PredicateTypePrimitive TypePrimitive { get; set; }
+}
+
+public enum PredicateTypePrimitive
+{
+    F1,
+    F2,
+}
+
+public class ParsedPredicate
+{
+    public PredicateOperand Left { get; }
+    public PredicateOperand Right { get; }
+}",
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp8,
+            }.RunAsync();
+        }
+
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
+        [Fact, WorkItem(6520, "https://github.com/dotnet/roslyn-analyzers/issues/6520")]
+        public async Task CompareTwoRelatedEnumVariables_DiagnosticsAsync()
+        {
+            await new VerifyCS.Test
+            {
+                TestCode = @"
+public class Parser
+{
+    private static ParsedPredicate ParsePredicate(ParsedPredicate predicate, PredicateOperand identifier, PredicateOperand literal)
+    {
+        if (predicate.Left.TypePrimitive == PredicateTypePrimitive.F1)
+        {
+            identifier = predicate.Left;
+            literal = predicate.Right;
+        }
+        else
+        {
+            identifier = predicate.Right;
+            literal = predicate.Left;
+        }
+
+        if (identifier.TypePrimitive != PredicateTypePrimitive.F1)
+        {
+            return predicate;
+        }
+
+        if (identifier.TypePrimitive == PredicateTypePrimitive.F2)
+        {
+        }
+
+        return predicate;
+    }
+}
+
+public class PredicateOperand
+{
+    public PredicateTypePrimitive TypePrimitive { get; set; }
+}
+
+public enum PredicateTypePrimitive
+{
+    F1,
+    F2,
+}
+
+public class ParsedPredicate
+{
+    public PredicateOperand Left { get; }
+    public PredicateOperand Right { get; }
+}",
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp8,
+                ExpectedDiagnostics =
+                {
+                    // /0/Test0.cs(22,13): warning CA1508: 'identifier.TypePrimitive == PredicateTypePrimitive.F2' is always 'false'. Remove or refactor the condition(s) to avoid dead code.
+                    GetCSharpResultAt(22, 13, "identifier.TypePrimitive == PredicateTypePrimitive.F2", "false")
+                }
+            }.RunAsync();
+        }
     }
 }
