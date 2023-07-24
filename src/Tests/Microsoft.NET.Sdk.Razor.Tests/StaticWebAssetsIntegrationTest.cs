@@ -827,6 +827,43 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 intermediateOutputPath);
         }
 
+        [Fact]
+        public void CustomStaticWebAssetsPath()
+        {
+            var testAsset = "RazorAppWithP2PReferenceWithPublic";
+            ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
+
+            var build = new BuildCommand(ProjectDirectory, "AppWithP2PReference");
+            build.Execute("/p:DeployOnBuild=true", "/p:StaticWebAssetsPath=public").Should().Pass();
+
+            var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
+            var outputPath = build.GetOutputDirectory(DefaultTfm, "Debug").ToString();
+
+            // GenerateStaticWebAssetsManifest should generate the manifest file.
+            var path = Path.Combine(intermediateOutputPath, "staticwebassets.build.json");
+            new FileInfo(path).Should().Exist();
+
+            AssertManifest(
+                StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(path)),
+                LoadBuildManifest());
+
+            // GenerateStaticWebAssetsManifest should copy the file to the output folder.
+            var finalPath = Path.Combine(outputPath, "AppWithP2PReference.staticwebassets.runtime.json");
+            new FileInfo(finalPath).Should().Exist();
+
+            // GenerateStaticWebAssetsManifest should generate the publish manifest file.
+            var intermediatePublishManifestPath = Path.Combine(intermediateOutputPath, "staticwebassets.publish.json");
+            new FileInfo(path).Should().Exist();
+            var publishManifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(intermediatePublishManifestPath));
+            AssertManifest(publishManifest, LoadPublishManifest());
+
+            AssertPublishAssets(
+                publishManifest,
+                Path.Combine(outputPath, "publish"),
+                intermediateOutputPath,
+                staticWebAssetsPath: "public");
+        }
+
         // Pack
 
         // Clean
@@ -973,7 +1010,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             {
                 var tfm = project.Root.Descendants("TargetFramework").Single();
                 tfm.Name = "TargetFrameworks";
-                tfm.Value="net6.0;" + DefaultTfm;
+                tfm.Value = "net6.0;" + DefaultTfm;
             });
 
             var pack = new MSBuildCommand(Log, "Pack", projectDirectory.Path);
