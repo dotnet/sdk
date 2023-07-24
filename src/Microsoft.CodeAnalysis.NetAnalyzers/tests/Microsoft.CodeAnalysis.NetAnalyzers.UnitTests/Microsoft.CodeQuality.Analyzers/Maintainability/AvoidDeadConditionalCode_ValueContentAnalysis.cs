@@ -3226,5 +3226,33 @@ class Test
     bool M2() => true;
 }");
         }
+
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
+        [Fact, WorkItem(6164, "https://github.com/dotnet/roslyn-analyzers/issues/6164")]
+        public async Task DefaultNullableStringValue_NoDiagnosticAsync()
+        {
+            await new VerifyCS.Test
+            {
+                TestCode = @"
+#nullable enable
+
+using System;
+
+class C
+{
+    public static void Bar(ConsoleColor c)
+    {
+        string? color = default;
+        if (c == ConsoleColor.Green)
+            color = ""green"";
+
+        if (color != null)
+        {
+        }
+    }
+}",
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp8
+            }.RunAsync();
+        }
     }
 }
