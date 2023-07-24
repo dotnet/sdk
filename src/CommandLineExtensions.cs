@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.CommandLine;
 using System.CommandLine.Parsing;
 using System.Diagnostics.CodeAnalysis;
@@ -28,6 +29,11 @@ namespace Microsoft.CodeAnalysis.Tools
         internal static ArgumentResult? GetArgumentResult(this CommandResult result, string alias)
         {
             return result.Children.GetByAlias(alias) as ArgumentResult;
+        }
+
+        internal static SymbolResult? GetByAlias(this IReadOnlyList<SymbolResult> results, string alias)
+        {
+            return results.SingleOrDefault(result => result.Symbol.Name.Equals(alias) || result.Symbol is IdentifierSymbol id && id.HasAlias(alias));
         }
 
         [return: MaybeNull]

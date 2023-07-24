@@ -57,7 +57,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             // Assert
             Assert.Equal(0, result.Errors.Count);
             Assert.Equal(0, result.UnmatchedTokens.Count);
-            Assert.Equal(0, result.UnparsedTokens.Count);
+            Assert.Equal(0, result.UnmatchedTokens.Count);
             result.GetValueForOption<bool>("--no-restore");
             Assert.Collection(result.GetValueForOption<IEnumerable<string>>("--include"),
                 i0 => Assert.Equal("include1", i0),
