@@ -23,56 +23,56 @@ jobs:
         _repoName: "dotnet/format"
         _targetSolution: "format.sln"
         _branchName: "main"
-        _sha: "c4dcd04da63379e0c4e7c0bd2fa3ef0fcf44a6c1"
-#      roslyn:
-#        _repo: "https://github.com/dotnet/roslyn"
-#        _repoName: "dotnet/roslyn"
-#        _targetSolution: "Compilers.sln"
-#        _branchName: "main"
-#        _sha: "e9ed046c159bfc5caf33b875ab6928a73c5601f3"
+        _sha: "1ec992c6038af9d42499d3ac88c3fd65d0c2f6ed"
+      roslyn:
+        _repo: "https://github.com/dotnet/roslyn"
+        _repoName: "dotnet/roslyn"
+        _targetSolution: "Compilers.sln"
+        _branchName: "main"
+        _sha: "b670821b5150bc7ddb01f415d91c17dd55c752a2"
       sdk:
         _repo: "https://github.com/dotnet/sdk"
         _repoName: "dotnet/sdk"
         _targetSolution: "sdk.sln"
-        _branchName: "master"
-        _sha: "1404c8ebdfb5d7590fb7335e5cb5a2267de125c5"
-#      project-system:
-#        _repo: "https://github.com/dotnet/project-system"
-#        _repoName: "dotnet/project-system"
-#        _targetSolution: "ProjectSystem.sln"
-#        _branchName: "main"
-#        _sha: "33c2c7d21f18e06731b59e9b2b5788d535768e59"
-#      msbuild:
-#        _repo: "https://github.com/dotnet/msbuild"
-#        _repoName: "dotnet/msbuild"
-#        _targetSolution: "MSBuild.sln"
-#        _branchName: "main"
-#        _sha: "0be0490bd1261ff4a6ad64267879b36a63a33faf"
+        _branchName: "main"
+        _sha: "d32c8e7d19f3fc13190ff14cd960370a5d148995"
+      project-system:
+        _repo: "https://github.com/dotnet/project-system"
+        _repoName: "dotnet/project-system"
+        _targetSolution: "ProjectSystem.sln"
+        _branchName: "main"
+        _sha: "5896b880c19071eb34c0e9966295c41d2bb44142"
+      # msbuild:
+      #   _repo: "https://github.com/dotnet/msbuild"
+      #   _repoName: "dotnet/msbuild"
+      #   _targetSolution: "MSBuild.sln"
+      #   _branchName: "main"
+      #   _sha: "14c24b2d38abe2662bd5e3bcc88c91a13655b073"
       aspnetcore:
         _repo: "https://github.com/dotnet/aspnetcore"
         _repoName: "dotnet/aspnetcore"
         _targetSolution: "AspNetCore.sln"
         _branchName: "main"
-        _sha: "67f3befad2180b766ba3a1ad0eb1f37232a29b16"
+        _sha: "e832fef051ab1256d6d50fc79d1582451f908453"
       efcore:
         _repo: "https://github.com/dotnet/efcore"
         _repoName: "dotnet/efcore"
         _targetSolution: "All.sln"
         _branchName: "main"
-        _sha: "717ee2c6e6a2bfc40a200e2adb66c6ed4180962b"
-#      ef6:
-#        _repo: "https://github.com/dotnet/ef6"
-#        _repoName: "dotnet/ef6"
-#        _targetSolution: "EntityFramework.sln"
-#        _branchName: "main"
-#        _sha: "df31fde50966a117180459313024d95c0a004162"
+        _sha: "929cab1e250e50751551d628c4d7208de1155af6"
+      razor-tooling:
+        _repo: "https://github.com/dotnet/razor-tooling"
+        _repoName: "dotnet/razor-tooling"
+        _targetSolution: "Razor.sln"
+        _branchName: "main"
+        _sha: "da152bfa9c519efd4e0038fbd7804af3fd27056d"
   timeoutInMinutes: 60
   steps:
-    - script: eng\integration-test.cmd -repo '$(_repo)' -branchName '$(_branchName)' -sha '$(_sha)' -targetSolution '$(_targetSolution)' -testPath '$(Build.SourcesDirectory)\temp' -stage 'prepare'
+    - script: eng\integration-test.cmd -repo '$(_repo)' -branchName '$(_branchName)' -sha '$(_sha)' -targetSolution '$(_targetSolution)' -testPath '$(Agent.TempDirectory)\temp' -stage 'prepare'
       displayName: Prepare $(_repoName) for formatting
 
-    - script: eng\integration-test.cmd -repo '$(_repo)' -branchName '$(_branchName)' -sha '$(_sha)' -targetSolution '$(_targetSolution)' -testPath '$(Build.SourcesDirectory)\temp' -stage 'format-workspace'
+    - script: eng\integration-test.cmd -repo '$(_repo)' -branchName '$(_branchName)' -sha '$(_sha)' -targetSolution '$(_targetSolution)' -testPath '$(Agent.TempDirectory)\temp' -stage 'format-workspace'
       displayName: Run dotnet-format on $(_repoName) $(_targetSolution)
 
-    - script: eng\integration-test.cmd -repo '$(_repo)' -branchName '$(_branchName)' -sha '$(_sha)' -targetSolution '$(_targetSolution)' -testPath '$(Build.SourcesDirectory)\temp' -stage 'format-folder'
+    - script: eng\integration-test.cmd -repo '$(_repo)' -branchName '$(_branchName)' -sha '$(_sha)' -targetSolution '$(_targetSolution)' -testPath '$(Agent.TempDirectory)\temp' -stage 'format-folder'
       displayName: Run dotnet-format on $(_repoName) repo folder

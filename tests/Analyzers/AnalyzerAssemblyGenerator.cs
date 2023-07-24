@@ -19,8 +19,15 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Analyzers
 {
     public static class AnalyzerAssemblyGenerator
     {
+        private static IEnumerable<MetadataReference> s_references;
+
         private static async Task<IEnumerable<MetadataReference>> GetReferencesAsync()
         {
+            if (s_references is not null)
+            {
+                return s_references;
+            }
+
             var references = new List<MetadataReference>()
             {
                 MetadataReference.CreateFromFile(typeof(ImmutableArray).Assembly.Location),
@@ -30,9 +37,19 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Analyzers
                 MetadataReference.CreateFromFile(typeof(CodeFixProvider).Assembly.Location),
             };
 
-            var netcoreMetadataReferences = await ReferenceAssemblies.Net.Net70.ResolveAsync(LanguageNames.CSharp, CancellationToken.None);
+            // Resolve the targeting pack and the target framework used to compile the test assembly.
+            var netCurrentTargetingPackVersion = (string)AppContext.GetData("ReferenceAssemblies.NetCurrent.TargetingPackVersion")!;
+            var netCurrentTargetFramework = (string)AppContext.GetData("ReferenceAssemblies.NetCurrent.TargetFramework")!;
+            var nugetConfigPath = (string)AppContext.GetData("ReferenceAssemblies.NetCurrent.NuGetConfigPath")!;
+            ReferenceAssemblies netCurrentReferenceAssemblies = new(netCurrentTargetFramework,
+                new PackageIdentity("Microsoft.NETCore.App.Ref", netCurrentTargetingPackVersion),
+                Path.Combine("ref", netCurrentTargetFramework));
+            netCurrentReferenceAssemblies = netCurrentReferenceAssemblies.WithNuGetConfigFilePath(nugetConfigPath);
+
+            var netcoreMetadataReferences = await netCurrentReferenceAssemblies.ResolveAsync(LanguageNames.CSharp, CancellationToken.None);
             references.AddRange(netcoreMetadataReferences.Where(reference => Path.GetFileName(reference.Display) != "System.Collections.Immutable.dll"));
 
+            s_references = references;
             return references;
         }
 
