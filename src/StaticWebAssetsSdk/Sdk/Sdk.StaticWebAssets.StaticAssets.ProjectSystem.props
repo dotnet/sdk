@@ -11,9 +11,16 @@ Copyright (c) .NET Foundation. All rights reserved.
 -->
 <Project ToolsVersion="14.0">
 
+  <!-- Input and output configuration -->
+  <PropertyGroup>
+    <StaticWebAssetRootPath Condition="'$(StaticWebAssetRootPath)' == ''">wwwroot</StaticWebAssetRootPath>
+  </PropertyGroup>
+  <ItemGroup Condition="@(StaticWebAssetSourcePath->Count()) == 0">
+    <StaticWebAssetSourcePath Include="wwwroot" />
+  </ItemGroup>
+
   <!-- Properties for supporting static content -->
   <PropertyGroup>
-    <StaticWebAssetsPath Condition="'$(StaticWebAssetsPath)' == ''">wwwroot</StaticWebAssetsPath>
 
     <!-- This is a contract we have with the Web SDK to allow them in the future to import this file
          instead of the whole SDK if needed.
@@ -23,15 +30,15 @@ Copyright (c) .NET Foundation. All rights reserved.
     <DefaultItemExcludes>$(DefaultItemExcludes);**\node_modules\**;node_modules\**</DefaultItemExcludes>
     <DefaultItemExcludes>$(DefaultItemExcludes);**\jspm_packages\**;jspm_packages\**</DefaultItemExcludes>
     <DefaultItemExcludes>$(DefaultItemExcludes);**\bower_components\**;bower_components\**</DefaultItemExcludes>
-    <DefaultWebContentItemExcludes>$(DefaultWebContentItemExcludes);$(StaticWebAssetsPath)\**</DefaultWebContentItemExcludes>
+    <DefaultWebContentItemExcludes>$(DefaultWebContentItemExcludes);@(StaticWebAssetSourcePath->'%(Identity)\**')</DefaultWebContentItemExcludes>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(EnableDefaultItems)' == 'true' And '$(EnableDefaultContentItems)' == 'true' ">
-    <!-- Publish everything under StaticWebAssetsPath, all JSON files, all config files and all Razor files -->
-    <Content Include="$(StaticWebAssetsPath)\**" ExcludeFromSingleFile="true" CopyToPublishDirectory="PreserveNewest" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
+    <!-- Publish everything under @(StaticWebAssetSourcePath), all JSON files, all config files and all Razor files -->
+    <Content Include="%(StaticWebAssetSourcePath->Identity)\**" ExcludeFromSingleFile="true" CopyToPublishDirectory="PreserveNewest" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
 
     <!-- Specifically support the ~/.well-known directory as per IETF RFC5785 -->
-    <Content Include="$(StaticWebAssetsPath)\.well-known\**" ExcludeFromSingleFile="true" CopyToPublishDirectory="PreserveNewest" Exclude="$(DefaultItemExcludes)" />
+    <Content Include="%(StaticWebAssetSourcePath->Identity)\.well-known\**" ExcludeFromSingleFile="true" CopyToPublishDirectory="PreserveNewest" Exclude="$(DefaultItemExcludes)" />
 
     <Content Include="**\*.config" ExcludeFromSingleFile="true" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder);$(DefaultWebContentItemExcludes)" Condition="'$(ExcludeConfigFilesFromBuildOutput)'!='true'" />
     <Content Include="**\*.json" ExcludeFromSingleFile="true" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder);$(DefaultWebContentItemExcludes)" Condition="'$(ExcludeConfigFilesFromBuildOutput)'!='true'" />
@@ -44,9 +51,9 @@ Copyright (c) .NET Foundation. All rights reserved.
     <Content Update="$(AppDesignerFolder)\**" CopyToPublishDirectory="Never" Condition="'$(AppDesignerFolder)' != ''"/>
 
     <!-- Remove Content items from other item types (in a way that CPS understands) -->
-    <None Remove="$(StaticWebAssetsPath)\**;**\*.json;**\*.config" />
-    <Compile Remove="$(StaticWebAssetsPath)\**" />
-    <EmbeddedResource Remove="$(StaticWebAssetsPath)\**" />
+    <None Remove="%(StaticWebAssetSourcePath->Identity)\**;**\*.json;**\*.config" />
+    <Compile Remove="%(StaticWebAssetSourcePath->Identity)\**" />
+    <EmbeddedResource Remove="%(StaticWebAssetSourcePath->Identity)\**" />
 
     <!-- Keep track of the default content items for later to distinguish them from newly generated content items -->
     <!-- It's important to keep this here so that it works well with the Web SDK -->

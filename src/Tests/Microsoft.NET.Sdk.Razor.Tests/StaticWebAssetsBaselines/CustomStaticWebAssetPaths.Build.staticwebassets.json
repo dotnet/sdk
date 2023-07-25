@@ -4,8 +4,19 @@
   "Source": "AppWithP2PReference",
   "BasePath": "_content/AppWithP2PReference",
   "Mode": "Default",
-  "ManifestType": "Publish",
+  "ManifestType": "Build",
   "ReferencedProjectsConfiguration": [
+    {
+      "Identity": "${ProjectPath}\\AnotherClassLib\\AnotherClassLib.csproj",
+      "Version": 2,
+      "Source": "AnotherClassLib",
+      "GetPublishAssetsTargets": "ComputeReferencedStaticWebAssetsPublishManifest;GetCurrentProjectPublishStaticWebAssetItems",
+      "AdditionalPublishProperties": "",
+      "AdditionalPublishPropertiesToRemove": "WebPublishProfileFile;TargetFramework;RuntimeIdentifier;SelfContained",
+      "GetBuildAssetsTargets": "GetCurrentProjectBuildStaticWebAssetItems",
+      "AdditionalBuildProperties": "",
+      "AdditionalBuildPropertiesToRemove": "WebPublishProfileFile;TargetFramework;RuntimeIdentifier;SelfContained"
+    },
     {
       "Identity": "${ProjectPath}\\ClassLibrary\\ClassLibrary.csproj",
       "Version": 2,
@@ -18,15 +29,7 @@
       "AdditionalBuildPropertiesToRemove": "WebPublishProfileFile;TargetFramework;RuntimeIdentifier;SelfContained"
     }
   ],
-  "DiscoveryPatterns": [
-    {
-      "Name": "ClassLibrary\\public",
-      "Source": "ClassLibrary",
-      "ContentRoot": "${ProjectPath}\\ClassLibrary\\public\\",
-      "BasePath": "_content/ClassLibrary",
-      "Pattern": "**"
-    }
-  ],
+  "DiscoveryPatterns": [],
   "Assets": [
     {
       "Identity": "${ProjectPath}\\AppWithP2PReference\\obj\\Debug\\${Tfm}\\scopedcss\\bundle\\AppWithP2PReference.styles.css",
@@ -65,44 +68,6 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "${ProjectPath}\\ClassLibrary\\obj\\Debug\\${Tfm}\\scopedcss\\projectbundle\\ClassLibrary.bundle.scp.css"
-    },
-    {
-      "Identity": "${ProjectPath}\\ClassLibrary\\public\\js\\project-transitive-dep.js",
-      "SourceId": "ClassLibrary",
-      "SourceType": "Project",
-      "ContentRoot": "${ProjectPath}\\ClassLibrary\\public\\",
-      "BasePath": "_content/ClassLibrary",
-      "RelativePath": "js/project-transitive-dep.js",
-      "AssetKind": "All",
-      "AssetMode": "All",
-      "AssetRole": "Primary",
-      "AssetMergeBehavior": "PreferTarget",
-      "AssetMergeSource": "",
-      "RelatedAsset": "",
-      "AssetTraitName": "",
-      "AssetTraitValue": "",
-      "CopyToOutputDirectory": "Never",
-      "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "public\\js\\project-transitive-dep.js"
-    },
-    {
-      "Identity": "${ProjectPath}\\ClassLibrary\\public\\js\\project-transitive-dep.v4.js",
-      "SourceId": "ClassLibrary",
-      "SourceType": "Project",
-      "ContentRoot": "${ProjectPath}\\ClassLibrary\\public\\",
-      "BasePath": "_content/ClassLibrary",
-      "RelativePath": "js/project-transitive-dep.v4.js",
-      "AssetKind": "All",
-      "AssetMode": "All",
-      "AssetRole": "Primary",
-      "AssetMergeBehavior": "PreferTarget",
-      "AssetMergeSource": "",
-      "RelatedAsset": "",
-      "AssetTraitName": "",
-      "AssetTraitValue": "",
-      "CopyToOutputDirectory": "Never",
-      "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "public\\js\\project-transitive-dep.v4.js"
     }
   ]
 }

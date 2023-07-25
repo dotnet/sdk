@@ -76,7 +76,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       <_JSFileModuleCandidates Include="@(_JSFileModuleNoneCandidates)" />
     </ItemGroup>
 
-    <!-- This runs after we've discovered the original set of files, we already found the assets in the $(StaticWebAssetsPath), and here we just need
+    <!-- This runs after we've discovered the original set of files, we already found the assets in the @(StaticWebAssetSourcePath), and here we just need
          to identify them and correctly clasify them. Modules from other projects or packages will already be correctly tagged when we
          retrieve them.
     -->
@@ -95,7 +95,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <!-- **/*.razor.js -->
     <DiscoverStaticWebAssets Candidates="@(_JSFileModuleCandidates)"
       SourceId="$(PackageId)"
-      Pattern="**/*.razor.js"
+      Patterns="**/*.razor.js"
       ContentRoot="$(MSBuildProjectDirectory)"
       BasePath="$(StaticWebAssetBasePath)"
       AssetMergeSource="$(StaticWebAssetMergeTarget)"
@@ -106,7 +106,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <!-- **/*.cshtml.js -->
     <DiscoverStaticWebAssets Candidates="@(_JSFileModuleCandidates)"
       SourceId="$(PackageId)"
-      Pattern="**/*.cshtml.js"
+      Patterns="**/*.cshtml.js"
       ContentRoot="$(MSBuildProjectDirectory)"
       BasePath="$(StaticWebAssetBasePath)"
       AssetMergeSource="$(StaticWebAssetMergeTarget)"

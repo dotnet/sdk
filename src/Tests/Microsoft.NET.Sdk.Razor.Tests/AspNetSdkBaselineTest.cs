@@ -108,11 +108,11 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             string outputFolder,
             string intermediateOutputPath,
             string suffix = "",
-            string staticWebAssetsPath = "wwwroot",
+            string staticWebAssetRootPath = "wwwroot",
             [CallerMemberName] string name = "")
         {
             var fileEnumerationOptions = new EnumerationOptions { RecurseSubdirectories = true };
-            var wwwRootFolder = Path.Combine(outputFolder, staticWebAssetsPath);
+            var wwwRootFolder = Path.Combine(outputFolder, staticWebAssetRootPath);
             var wwwRootFiles = Directory.Exists(wwwRootFolder) ?
                 Directory.GetFiles(wwwRootFolder, "*", fileEnumerationOptions) :
                 Array.Empty<string>();
@@ -128,9 +128,9 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             // build process if they are later on going to be transformed.
             var copyToOutputDirectoryFiles = manifest.Assets
                 .Where(a => a.ShouldCopyToOutputDirectory())
-                .Select(a => Path.GetFullPath(Path.Combine(outputFolder, staticWebAssetsPath, a.RelativePath)))
+                .Select(a => Path.GetFullPath(Path.Combine(outputFolder, staticWebAssetRootPath, a.RelativePath)))
                 .Concat(manifest.Assets
-                    .Where(a => !a.HasContentRoot(Path.Combine(outputFolder, staticWebAssetsPath)) && File.Exists(a.Identity) && !File.Exists(Path.Combine(a.ContentRoot, a.RelativePath)))
+                    .Where(a => !a.HasContentRoot(Path.Combine(outputFolder, staticWebAssetRootPath)) && File.Exists(a.Identity) && !File.Exists(Path.Combine(a.ContentRoot, a.RelativePath)))
                     .Select(a => Path.GetFullPath(Path.Combine(a.ContentRoot, a.RelativePath))))
                 .ToArray();
 
@@ -167,11 +167,11 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             string publishFolder,
             string intermediateOutputPath,
             string suffix = "",
-            string staticWebAssetsPath = "wwwroot",
+            string staticWebAssetRootPath = "wwwroot",
             [CallerMemberName] string name = "")
         {
             var fileEnumerationOptions = new EnumerationOptions { RecurseSubdirectories = true };
-            string wwwRootFolder = Path.Combine(publishFolder, staticWebAssetsPath);
+            string wwwRootFolder = Path.Combine(publishFolder, staticWebAssetRootPath);
             var wwwRootFiles = Directory.Exists(wwwRootFolder) ?
                 Directory.GetFiles(wwwRootFolder, "*", fileEnumerationOptions)
                     .Select(f => _baselineFactory.TemplatizeFilePath(f, null, null, intermediateOutputPath, publishFolder)) :

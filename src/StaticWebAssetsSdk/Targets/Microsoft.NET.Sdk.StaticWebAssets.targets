@@ -97,10 +97,10 @@ Copyright (c) .NET Foundation. All rights reserved.
 
        Static web assets deal with two concerns:
        * How to map URLs for resources to files during development to serve files from disk as if they were part of the
-         $(StaticWebAssetsPath) folder of the app.
+         $(StaticWebAssetRootPath) folder of the app.
        * What files to copy to the publish output folder during the publish folder.
 
-       Static web assets will take over content items within the $(StaticWebAssetsPath) folder of the application and handle all aspects of them.
+       Static web assets will take over content items within the @(StaticWebAssetSourcePath) folder of the application and handle all aspects of them.
        During development they will define a JSON manifest that includes the following information:
        * A version number.
        * A hash for the contents of the manifest.
@@ -391,7 +391,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Target Name="_SplitStaticWebAssetsByCopyOptions" AfterTargets="CopyStaticWebAssetsToOutputDirectory">
 
-    <CollectStaticWebAssetsToCopy Assets="@(StaticWebAsset)" OutputPath="$(OutputPath)\$(StaticWebAssetsPath)\">
+    <CollectStaticWebAssetsToCopy Assets="@(StaticWebAsset)" OutputPath="$(OutputPath)\$(StaticWebAssetRootPath)\">
       <Output TaskParameter="AssetsToCopy" ItemName="_BuildStaticWebAssetsTargetPath" />
     </CollectStaticWebAssetsToCopy>
 
@@ -507,8 +507,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     <DiscoverStaticWebAssets
       Candidates="@(Content)"
       SourceId="$(PackageId)"
-      Pattern="$(StaticWebAssetsPath)/**"
-      ContentRoot="$(MSBuildProjectDirectory)\$(StaticWebAssetsPath)\"
+      Patterns="@(StaticWebAssetSourcePath->'%(Identity)/**')"
+      ContentRoot="$(MSBuildProjectDirectory)\$(StaticWebAssetRootPath)\"
       BasePath="$(StaticWebAssetBasePath)"
       AssetMergeSource="$(StaticWebAssetMergeTarget)"
     >
@@ -517,10 +517,10 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <ItemGroup>
 
-      <StaticWebAssetDiscoveryPattern Include="$(PackageId)\$(StaticWebAssetsPath)" Condition="Exists('$(MSBuildProjectDirectory)\$(StaticWebAssetsPath)')">
+      <StaticWebAssetDiscoveryPattern Include="$(PackageId)\%(StaticWebAssetSourcePath->Identity)" Condition="Exists('$(MSBuildProjectDirectory)\%(StaticWebAssetSourcePath->Identity)')">
         <Source>$(PackageId)</Source>
         <BasePath>$(StaticWebAssetBasePath)</BasePath>
-        <ContentRoot>$(MSBuildProjectDirectory)\$(StaticWebAssetsPath)\</ContentRoot>
+        <ContentRoot>$(MSBuildProjectDirectory)\%(StaticWebAssetSourcePath->Identity)\</ContentRoot>
         <Pattern>**</Pattern>
       </StaticWebAssetDiscoveryPattern>
 

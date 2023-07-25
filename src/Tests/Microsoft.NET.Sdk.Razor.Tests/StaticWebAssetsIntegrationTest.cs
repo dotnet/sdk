@@ -828,13 +828,13 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         }
 
         [Fact]
-        public void CustomStaticWebAssetsPath()
+        public void CustomStaticWebAssetPaths()
         {
-            var testAsset = "RazorAppWithP2PReferenceWithPublic";
+            var testAsset = "RazorAppWithP2PReferenceWithSwaPaths";
             ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
 
             var build = new BuildCommand(ProjectDirectory, "AppWithP2PReference");
-            build.Execute("/p:DeployOnBuild=true", "/p:StaticWebAssetsPath=public").Should().Pass();
+            build.Execute("/p:DeployOnBuild=true").Should().Pass();
 
             var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
             var outputPath = build.GetOutputDirectory(DefaultTfm, "Debug").ToString();
@@ -861,7 +861,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 publishManifest,
                 Path.Combine(outputPath, "publish"),
                 intermediateOutputPath,
-                staticWebAssetsPath: "public");
+                staticWebAssetRootPath: "client");
         }
 
         // Pack

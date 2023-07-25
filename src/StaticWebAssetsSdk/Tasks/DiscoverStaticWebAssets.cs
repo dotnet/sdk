@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
         public ITaskItem[] Candidates { get; set; }
 
         [Required]
-        public string Pattern { get; set; }
+        public ITaskItem[] Patterns { get; set; }
 
         [Required]
         public string SourceId { get; set; }
@@ -37,7 +37,12 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
         {
             try
             {
-                var matcher = new Matcher().AddInclude(Pattern);
+                string[] patterns = Patterns.Select(p => p.ItemSpec).ToArray();
+
+                var matcher = new Matcher();
+                for (int i = 0; i < patterns.Length; i++)
+                    matcher.AddInclude(patterns[i]);
+
                 var assets = new List<ITaskItem>();
                 var assetsByRelativePath = new Dictionary<string, List<ITaskItem>>();
 
@@ -51,11 +56,11 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                         var match = matcher.Match(candidateMatchPath);
                         if (!match.HasMatches)
                         {
-                            Log.LogMessage(MessageImportance.Low, "Rejected asset '{0}' for pattern '{1}'", candidateMatchPath, Pattern);
+                            Log.LogMessage(MessageImportance.Low, "Rejected asset '{0}' for pattern '{1}'", candidateMatchPath, string.Join(",", patterns));
                             continue;
                         }
 
-                        Log.LogMessage(MessageImportance.Low, "Accepted asset '{0}' for pattern '{1}' with relative path '{2}'", candidateMatchPath, Pattern, match.Files.Single().Stem);
+                        Log.LogMessage(MessageImportance.Low, "Accepted asset '{0}' for pattern '{1}' with relative path '{2}'", candidateMatchPath, string.Join(",", patterns), match.Files.Single().Stem);
 
                         candidateRelativePath = StaticWebAsset.Normalize(match.Files.Single().Stem);
                     }
@@ -119,7 +124,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
         private void UpdateAssetKindIfNecessary(Dictionary<string, List<ITaskItem>> assetsByRelativePath, string candidateRelativePath, ITaskItem asset)
         {
             // We want to support content items in the form of
-            // <Content Include="service-worker.development.js CopyToPublishDirectory="Never" TargetPath="$(StaticWebAssetsPath)\service-worker.js" />
+            // <Content Include="service-worker.development.js CopyToPublishDirectory="Never" TargetPath="$(StaticWebAssetRootPath)\service-worker.js" />
             // <Content Include="service-worker.js />
             // where the first item is used during development and the second item is used when the app is published.
             // To that matter, we keep track of the assets relative paths and make sure that when two assets target the same relative paths, at least one

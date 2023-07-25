@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
     // which allows for applying a different set of values to a subset of the candidates without having to previously
     // filter them. The asset pattern filter is applied after we've determined the RelativePath for the candidate asset.
     // There is also a RelativePathPattern that is used to automatically transform the relative path of the candidates to match
-    // the expected path of the final asset. This is typically use to remove a common path prefix, like `$(StaticWebAssetsPath)` from the target
+    // the expected path of the final asset. This is typically use to remove a common path prefix, like `$(StaticWebAssetRootPath)` from the target
     // path of the assets and so on.
     public class DefineStaticWebAssets : Task
     {
@@ -199,7 +199,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
             {
                 // We want to support assets that are part of the source codebase but that might get transformed during the build or
                 // publish processes, so we want to allow defining these assets by setting up a different content root path from their
-                // original location in the project. For example the asset can be $(StaticWebAssetsPath)\my-prod-asset.js, the content root can be
+                // original location in the project. For example the asset can be @(StaticWebAssetSourcePath)\my-prod-asset.js, the content root can be
                 // obj\transform and the final asset identity can be <<FullPathTo>>\obj\transform\my-prod-asset.js
                 var matchResult = matcher?.Match(candidate.ItemSpec);
                 if (matcher == null)

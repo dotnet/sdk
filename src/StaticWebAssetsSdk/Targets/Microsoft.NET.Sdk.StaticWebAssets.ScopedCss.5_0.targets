@@ -368,7 +368,7 @@ Integration with static web assets:
       <ContentRoot>$(_ScopedCssBundleContentRoot)</ContentRoot>
       <BasePath>$(_ScopedCssBundleBasePath)</BasePath>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-      <RelativePath>$([MSBuild]::MakeRelative('$(MSBuildProjectDirectory)',$([MSBuild]::NormalizePath('$(StaticWebAssetsPath)/$(_ScopedCssBundleBasePath)/$(PackageId).styles.css'))))</RelativePath>
+      <RelativePath>$([MSBuild]::MakeRelative('$(MSBuildProjectDirectory)',$([MSBuild]::NormalizePath('$(StaticWebAssetRootPath)/$(_ScopedCssBundleBasePath)/$(PackageId).styles.css'))))</RelativePath>
     </_ExternalPublishStaticWebAsset>
   </ItemGroup>
 </Target>
@@ -379,7 +379,7 @@ Integration with static web assets:
     <_ExternalPublishStaticWebAsset Include="@(_ScopedCssStaticWebAsset)" ExcludeFromSingleFile="true">
       <SourceType>generated</SourceType>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-      <RelativePath>$([MSBuild]::MakeRelative('$(MSBuildProjectDirectory)','$([MSBuild]::NormalizePath('$(StaticWebAssetsPath)\%(BasePath)\%(RelativePath)'))'))</RelativePath>
+      <RelativePath>$([MSBuild]::MakeRelative('$(MSBuildProjectDirectory)','$([MSBuild]::NormalizePath('$(StaticWebAssetRootPath)\%(BasePath)\%(RelativePath)'))'))</RelativePath>
     </_ExternalPublishStaticWebAsset>
   </ItemGroup>
 </Target>
