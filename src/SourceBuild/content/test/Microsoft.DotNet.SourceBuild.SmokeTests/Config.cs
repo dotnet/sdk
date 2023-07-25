@@ -19,7 +19,6 @@ internal static class Config
     public const string SdkTarballPathEnv = "SMOKE_TESTS_SDK_TARBALL_PATH";
     public const string SourceBuiltArtifactsPathEnv = "SMOKE_TESTS_SOURCEBUILT_ARTIFACTS_PATH";
     public const string TargetRidEnv = "SMOKE_TESTS_TARGET_RID";
-    public const string WarnPoisonDiffsEnv = "SMOKE_TESTS_WARN_POISON_DIFFS";
     public const string WarnSdkContentDiffsEnv = "SMOKE_TESTS_WARN_SDK_CONTENT_DIFFS";
     public const string RunningInCIEnv = "SMOKE_TESTS_RUNNING_IN_CI";
 
@@ -37,10 +36,8 @@ internal static class Config
     public static string TargetRid { get; } = Environment.GetEnvironmentVariable(TargetRidEnv) ??
         throw new InvalidOperationException($"'{Config.TargetRidEnv}' must be specified");
     public static string TargetArchitecture { get; } = TargetRid.Split('-')[1];
-    public static bool WarnOnPoisonDiffs { get; } =
-        bool.TryParse(Environment.GetEnvironmentVariable(WarnPoisonDiffsEnv), out bool excludeOnlineTests) && excludeOnlineTests;
     public static bool WarnOnSdkContentDiffs { get; } =
-        bool.TryParse(Environment.GetEnvironmentVariable(WarnSdkContentDiffsEnv), out bool excludeOnlineTests) && excludeOnlineTests;
+        bool.TryParse(Environment.GetEnvironmentVariable(WarnSdkContentDiffsEnv), out bool warnOnSdkContentDiffs) && warnOnSdkContentDiffs;
 
     // Indicates whether the tests are being run in the context of a CI pipeline
     public static bool RunningInCI { get; } =
