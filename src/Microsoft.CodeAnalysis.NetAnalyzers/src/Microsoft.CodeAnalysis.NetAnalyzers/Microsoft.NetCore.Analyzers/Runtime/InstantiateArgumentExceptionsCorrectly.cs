@@ -103,7 +103,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             }
             else
             {
-                Diagnostic? diagnostic = null;
+                Diagnostic? diagnosticFound = null;
                 foreach (IArgumentOperation argument in creation.Arguments)
                 {
                     if (argument.Parameter?.Type.SpecialType != SpecialType.System_String)
@@ -117,18 +117,22 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                         continue;
                     }
 
-                    diagnostic = CheckArgument(owningSymbol, creation, argument.Parameter, value, context);
+                    Diagnostic? diagnostic = CheckArgument(owningSymbol, creation, argument.Parameter, value, context);
 
-                    // RuleIncorrectMessage is the highest priority rule, no need to check other rules
-                    if (diagnostic != null && diagnostic.Descriptor.Equals(RuleIncorrectMessage))
+                    if (diagnostic != null)
                     {
-                        break;
+                        diagnosticFound = diagnostic;
+                        // RuleIncorrectMessage is the highest priority rule, no need to check other rules
+                        if (diagnostic.Descriptor.Equals(RuleIncorrectMessage))
+                        {
+                            break;
+                        }
                     }
                 }
 
-                if (diagnostic != null)
+                if (diagnosticFound != null)
                 {
-                    context.ReportDiagnostic(diagnostic);
+                    context.ReportDiagnostic(diagnosticFound);
                 }
             }
         }

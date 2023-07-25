@@ -4,6 +4,7 @@ using System.Composition;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeFixes;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Editing;
 using Microsoft.CodeAnalysis.Formatting;
@@ -16,11 +17,13 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Performance
     {
         protected override bool SyntaxSupportedByFixer(SyntaxNode conditionalSyntax)
         {
-            if (conditionalSyntax is ConditionalExpressionSyntax conditionalExpressionSyntax)
-                return conditionalExpressionSyntax.WhenTrue.ChildNodes().Count() == 1;
-
-            if (conditionalSyntax is IfStatementSyntax)
-                return true;
+            if (conditionalSyntax is IfStatementSyntax ifStatementSyntax)
+            {
+                // The analyzer also reports a diagnostic when the condition is negated.
+                // Applying the fix in this case would lead to wrong code.
+                return ifStatementSyntax.Condition.RawKind != (int)SyntaxKind.LogicalNotExpression &&
+                    ifStatementSyntax.Statement.ChildNodes().Count() == 1;
+            }
 
             return false;
         }

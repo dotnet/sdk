@@ -120,9 +120,10 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     }
                 }
 
-                SyntaxNode newIfCondition = (int)otherOperation.ConstantValue.Value! != -1 ?
-                                            containsInvocation :
-                                            generator.LogicalNotExpression(containsInvocation);
+                // We first check for "IndexOf() == -1" which translates to "!Contains()". All other covered cases do not need negation.
+                SyntaxNode newIfCondition = binaryOperation.OperatorKind == BinaryOperatorKind.Equals && (int)otherOperation.ConstantValue.Value! == -1 ?
+                                            generator.LogicalNotExpression(containsInvocation) :
+                                            containsInvocation;
                 newIfCondition = newIfCondition.WithTriviaFrom(binaryOperation.Syntax);
                 editor.ReplaceNode(binaryOperation.Syntax, newIfCondition);
                 var newRoot = editor.GetChangedRoot();

@@ -51,7 +51,7 @@ Namespace Microsoft.CodeQuality.VisualBasic.Analyzers.ApiDesignGuidelines
                     End If
 
                     ' If there's a = operator...
-                    If Not HasEqualityOperator(type) Then
+                    If Not type.GetMembers(WellKnownMemberNames.EqualityOperatorName).OfType(Of IMethodSymbol).Any(Function(m) m.MethodKind = MethodKind.UserDefinedOperator) Then
                         Return
                     End If
 
@@ -59,18 +59,5 @@ Namespace Microsoft.CodeQuality.VisualBasic.Analyzers.ApiDesignGuidelines
                 End Sub,
                 SymbolKind.NamedType)
         End Sub
-
-        Private Shared Function HasEqualityOperator(type As INamedTypeSymbol) As Boolean
-            For Each member In type.GetMembers()
-                Dim method = TryCast(member, IMethodSymbol)
-                If method?.MethodKind = MethodKind.UserDefinedOperator AndAlso
-                    CaseInsensitiveComparison.Equals(method.Name, WellKnownMemberNames.EqualityOperatorName) Then
-
-                    Return True
-                End If
-            Next
-
-            Return False
-        End Function
     End Class
 End Namespace
