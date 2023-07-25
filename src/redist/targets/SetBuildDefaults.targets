@@ -20,9 +20,6 @@
         AND '$(Rid)' != 'ubuntu.18.04-x64'">true</IncludeSharedFrameworksForBackwardsCompatibilityTests>-->
       <HighEntropyVA>true</HighEntropyVA>
 
-      <!-- There is no asp.net runtime available for freebsd at the moment. Once there is one, we can remove the line below -->
-      <IncludeAspNetCoreRuntime Condition=" '$(IncludeAspNetCoreRuntime)' == '' AND $(Rid.StartsWith('freebsd'))">false</IncludeAspNetCoreRuntime>
-
       <!-- Only use asset target fallback that we set (not implicit one to net461). -->
       <!--<DisableImplicitAssetTargetFallback>true</DisableImplicitAssetTargetFallback>-->
 
