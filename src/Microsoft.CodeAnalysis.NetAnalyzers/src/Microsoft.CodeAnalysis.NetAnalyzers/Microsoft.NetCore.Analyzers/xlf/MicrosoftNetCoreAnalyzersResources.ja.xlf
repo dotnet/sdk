@@ -2333,11 +2333,6 @@ Enumerable.OfType&lt;T&gt; で使用されるジェネリック型チェック (
         <target state="translated">'string.{0}(string, StringComparison)' オーバーロードを使用してください</target>
         <note />
       </trans-unit>
-      <trans-unit id="RecommendCaseInsensitiveStringComparerTitle">
-        <source>Prefer using 'StringComparer' to perform case-insensitive string comparisons</source>
-        <target state="translated">大文字と小文字を区別しない文字列比較を実行するには、'StringComparer' を使用することをお勧めします</target>
-        <note />
-      </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringComparisonDescription">
         <source>Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons because they lead to an allocation. Instead, prefer calling the method overloads of 'Contains', 'IndexOf' and 'StartsWith' that take a 'StringComparison' enum value to perform case-insensitive comparisons.</source>
         <target state="translated">大文字と小文字を区別しない文字列比較を実行するために、'ToLower'、'ToUpper'、'ToLowerInvariant'、および 'ToUpperInvariant' を呼び出さないようにしてください。これは、割り当てにつながるためです。代わりに、'StringComparison' 列挙型の値を取る 'Contains'、'IndexOf'、'StartsWith' のメソッド オーバーロードを呼び出して、大文字と小文字を区別しない比較を実行することをお勧めします。</target>
@@ -2351,6 +2346,21 @@ Enumerable.OfType&lt;T&gt; で使用されるジェネリック型チェック (
       <trans-unit id="RecommendCaseInsensitiveStringComparisonTitle">
         <source>Prefer the 'StringComparison' method overloads to perform case-insensitive string comparisons</source>
         <target state="translated">大文字と小文字を区別しない文字列比較を実行するには、'StringComparison' メソッド オーバーロードをお勧めします</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RecommendCaseInsensitiveStringEqualsCodeFixTitle">
+        <source>Use 'string.Equals(string, StringComparison)'</source>
+        <target state="new">Use 'string.Equals(string, StringComparison)'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RecommendCaseInsensitiveStringEqualsDescription">
+        <source>Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons, as in 'string.ToLower() == string.ToLower()', because they lead to an allocation. Instead, use 'string.Equals(string, StringComparison)' to perform case-insensitive comparisons.</source>
+        <target state="new">Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons, as in 'string.ToLower() == string.ToLower()', because they lead to an allocation. Instead, use 'string.Equals(string, StringComparison)' to perform case-insensitive comparisons.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RecommendCaseInsensitiveStringEqualsMessage">
+        <source>Prefer using 'string.Equals(string, StringComparison)' to perform a case-insensitive comparison</source>
+        <target state="new">Prefer using 'string.Equals(string, StringComparison)' to perform a case-insensitive comparison</target>
         <note />
       </trans-unit>
       <trans-unit id="RemoveRedundantCall">

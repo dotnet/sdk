@@ -2066,14 +2066,20 @@ Widening and user defined conversions are not supported with generic types.</val
   <data name="RecommendCaseInsensitiveStringComparerStringComparisonCodeFixTitle" xml:space="preserve">
     <value>Use the 'string.{0}(string, StringComparison)' overload</value>
   </data>
-  <data name="RecommendCaseInsensitiveStringComparerTitle" xml:space="preserve">
-    <value>Prefer using 'StringComparer' to perform case-insensitive string comparisons</value>
+  <data name="RecommendCaseInsensitiveStringEqualsCodeFixTitle" xml:space="preserve">
+    <value>Use 'string.Equals(string, StringComparison)'</value>
   </data>
   <data name="RecommendCaseInsensitiveStringComparerDescription" xml:space="preserve">
     <value>Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons when using 'CompareTo', because they lead to an allocation. Instead, use 'StringComparer' to perform case-insensitive comparisons.</value>
   </data>
   <data name="RecommendCaseInsensitiveStringComparerMessage" xml:space="preserve">
     <value>Prefer using 'StringComparer' to perform a case-insensitive comparison</value>
+  </data>
+    <data name="RecommendCaseInsensitiveStringEqualsDescription" xml:space="preserve">
+    <value>Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons, as in 'string.ToLower() == string.ToLower()', because they lead to an allocation. Instead, use 'string.Equals(string, StringComparison)' to perform case-insensitive comparisons.</value>
+  </data>
+    <data name="RecommendCaseInsensitiveStringEqualsMessage" xml:space="preserve">
+    <value>Prefer using 'string.Equals(string, StringComparison)' to perform a case-insensitive comparison</value>
   </data>
   <data name="RecommendCaseInsensitiveStringComparisonTitle" xml:space="preserve">
     <value>Prefer the 'StringComparison' method overloads to perform case-insensitive string comparisons</value>

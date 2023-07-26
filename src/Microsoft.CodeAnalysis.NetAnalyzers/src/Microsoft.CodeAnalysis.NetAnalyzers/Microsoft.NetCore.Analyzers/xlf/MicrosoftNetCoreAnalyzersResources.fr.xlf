@@ -2333,11 +2333,6 @@ Les conversions étendues et définies par l’utilisateur ne sont pas prises en
         <target state="translated">Utiliser la surcharge « string.{0}(string, StringComparison) »</target>
         <note />
       </trans-unit>
-      <trans-unit id="RecommendCaseInsensitiveStringComparerTitle">
-        <source>Prefer using 'StringComparer' to perform case-insensitive string comparisons</source>
-        <target state="translated">Préférer l’utilisation de « StringComparer » pour effectuer des comparaisons de chaînes qui ne respectent pas la casse</target>
-        <note />
-      </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringComparisonDescription">
         <source>Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons because they lead to an allocation. Instead, prefer calling the method overloads of 'Contains', 'IndexOf' and 'StartsWith' that take a 'StringComparison' enum value to perform case-insensitive comparisons.</source>
         <target state="translated">Évitez d’appeler 'ToLower', 'ToUpper', 'ToLowerInvariant' et 'ToUpperInvariant' pour effectuer des comparaisons de chaînes qui ne respectent pas la casse, car elles entraînent une allocation. Préférez plutôt appeler les surcharges de méthode de 'Contains', 'IndexOf' et 'StartsWith' qui acceptent une valeur enum 'StringComparison' pour effectuer des comparaisons qui ne respectent pas la casse.</target>
@@ -2351,6 +2346,21 @@ Les conversions étendues et définies par l’utilisateur ne sont pas prises en
       <trans-unit id="RecommendCaseInsensitiveStringComparisonTitle">
         <source>Prefer the 'StringComparison' method overloads to perform case-insensitive string comparisons</source>
         <target state="translated">Préférer les surcharges de méthode 'StringComparison' pour effectuer des comparaisons de chaînes qui ne respectent pas la casse</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RecommendCaseInsensitiveStringEqualsCodeFixTitle">
+        <source>Use 'string.Equals(string, StringComparison)'</source>
+        <target state="new">Use 'string.Equals(string, StringComparison)'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RecommendCaseInsensitiveStringEqualsDescription">
+        <source>Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons, as in 'string.ToLower() == string.ToLower()', because they lead to an allocation. Instead, use 'string.Equals(string, StringComparison)' to perform case-insensitive comparisons.</source>
+        <target state="new">Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons, as in 'string.ToLower() == string.ToLower()', because they lead to an allocation. Instead, use 'string.Equals(string, StringComparison)' to perform case-insensitive comparisons.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RecommendCaseInsensitiveStringEqualsMessage">
+        <source>Prefer using 'string.Equals(string, StringComparison)' to perform a case-insensitive comparison</source>
+        <target state="new">Prefer using 'string.Equals(string, StringComparison)' to perform a case-insensitive comparison</target>
         <note />
       </trans-unit>
       <trans-unit id="RemoveRedundantCall">
