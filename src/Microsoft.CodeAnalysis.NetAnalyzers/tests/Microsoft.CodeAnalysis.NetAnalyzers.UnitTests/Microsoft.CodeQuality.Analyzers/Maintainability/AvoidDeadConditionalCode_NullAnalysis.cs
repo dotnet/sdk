@@ -7433,5 +7433,46 @@ internal static class C
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp8,
             }.RunAsync();
         }
+
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
+        [Fact, WorkItem(6249, "https://github.com/dotnet/roslyn-analyzers/issues/6249")]
+        public async Task TupleElementExchange_NoDiagnosticsAsync()
+        {
+            await new VerifyCS.Test
+            {
+                TestCode = @"
+using System.Collections.Generic;
+using System.Diagnostics;
+
+class Test
+{
+    public static List<T> Test1<T>(IEnumerable<T> source)
+    {
+        var current = new Queue<T>(source);
+        var next = new Queue<T>();
+        var result = new List<T>(current.Count);
+
+        while (true)
+        {
+            while (current.TryDequeue(out var item))
+            {
+                next.Enqueue(item);
+            }
+
+            // swap with tuple
+            (next, current) = (current, next);
+
+            Debug.Assert(next.Count == 0);
+
+            // the following line is marked by CA1508
+            if (current.Count == 0)
+                return result;
+        }
+    }
+}",
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp8,
+            }.RunAsync();
+        }
     }
 }
