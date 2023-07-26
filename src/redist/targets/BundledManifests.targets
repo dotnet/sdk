@@ -104,6 +104,21 @@
     
     <Copy SourceFiles="@(ManifestContent)"
           DestinationFolder="$(RedistLayoutPath)sdk-manifests/%(DestinationPath)"/>
-  
+
+    <ItemGroup>
+      <FormattedManifestPaths Include="$(RedistLayoutPath)sdk-manifests\**\%(BundledManifests.Identity)\WorkloadManifest.json" />
+    </ItemGroup>
+
+    <JsonPropertyParser JFileNames="@(FormattedManifestPaths)" JPaths="version" Value="empty">
+      <Output TaskParameter="Value" ItemName="BaselineManifestsWithVersion" />
+    </JsonPropertyParser>
+
+    <ItemGroup>
+      <FormattedBaselineManifest Include="{" />
+      <FormattedBaselineManifest Include="&quot;$([System.IO.Path]::GetFileName(%(BaselineManifestsWithVersion.Identity)))&quot;: &quot;%(BaselineManifestsWithVersion.Version)&quot;,"/>
+      <FormattedBaselineManifest Include="}" />
+    </ItemGroup>
+
+    <WriteLinestoFile File="$(RedistLayoutPath)sdk-manifests\BaselineManifest.json" Lines="@(FormattedBaselineManifest)" />
   </Target>
 </Project>
