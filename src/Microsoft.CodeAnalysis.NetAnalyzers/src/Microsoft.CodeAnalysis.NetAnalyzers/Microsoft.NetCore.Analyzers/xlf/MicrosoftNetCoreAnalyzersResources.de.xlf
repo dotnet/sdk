@@ -3178,6 +3178,21 @@ Erweiterungen und benutzerdefinierte Konvertierungen werden bei generischen Type
         <target state="translated">"string.Equals" verwenden</target>
         <note />
       </trans-unit>
+      <trans-unit id="UseStringMethodCharOverloadWithSingleCharactersDescription">
+        <source>The char overload is a better performing overload than a string with a single char.</source>
+        <target state="new">The char overload is a better performing overload than a string with a single char.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseStringMethodCharOverloadWithSingleCharactersMessage">
+        <source>Use 'string.{0}(char)' instead of 'string.{0}(string)' when you have a string with a single char</source>
+        <target state="new">Use 'string.{0}(char)' instead of 'string.{0}(string)' when you have a string with a single char</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseStringMethodCharOverloadWithSingleCharactersTitle">
+        <source>Use char overload</source>
+        <target state="new">Use char overload</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UseThrowHelperDescription">
         <source>Throw helpers are simpler and more efficient than an if block constructing a new exception instance.</source>
         <target state="translated">Throw-Hilfsprogramme sind einfacher und effizienter als If-Blöcke, die eine neue Ausnahmeinstanz erstellen.</target>

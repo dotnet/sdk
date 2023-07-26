@@ -3178,6 +3178,21 @@ Enumerable.OfType&lt;T&gt; 使用的泛型类型检查 (C# 'is' operator/IL 'isi
         <target state="translated">使用 “string.Equals”</target>
         <note />
       </trans-unit>
+      <trans-unit id="UseStringMethodCharOverloadWithSingleCharactersDescription">
+        <source>The char overload is a better performing overload than a string with a single char.</source>
+        <target state="new">The char overload is a better performing overload than a string with a single char.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseStringMethodCharOverloadWithSingleCharactersMessage">
+        <source>Use 'string.{0}(char)' instead of 'string.{0}(string)' when you have a string with a single char</source>
+        <target state="new">Use 'string.{0}(char)' instead of 'string.{0}(string)' when you have a string with a single char</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseStringMethodCharOverloadWithSingleCharactersTitle">
+        <source>Use char overload</source>
+        <target state="new">Use char overload</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UseThrowHelperDescription">
         <source>Throw helpers are simpler and more efficient than an if block constructing a new exception instance.</source>
         <target state="translated">在构造新的异常实例方面，引发帮助程序比 if 块更简单、更高效。</target>
