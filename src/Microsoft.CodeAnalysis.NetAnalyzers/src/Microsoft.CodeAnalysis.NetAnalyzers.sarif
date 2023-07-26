@@ -322,6 +322,63 @@
             ]
           }
         },
+        "CA1865": {
+          "id": "CA1865",
+          "shortDescription": "Use char overload",
+          "fullDescription": "The char overload is a better performing overload than a string with a single char.",
+          "defaultLevel": "note",
+          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1865",
+          "properties": {
+            "category": "Performance",
+            "isEnabledByDefault": true,
+            "typeName": "CSharpUseStringMethodCharOverloadWithSingleCharacters",
+            "languages": [
+              "C#"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA1866": {
+          "id": "CA1866",
+          "shortDescription": "Use char overload",
+          "fullDescription": "The char overload is a better performing overload than a string with a single char.",
+          "defaultLevel": "note",
+          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1866",
+          "properties": {
+            "category": "Performance",
+            "isEnabledByDefault": true,
+            "typeName": "CSharpUseStringMethodCharOverloadWithSingleCharacters",
+            "languages": [
+              "C#"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA1867": {
+          "id": "CA1867",
+          "shortDescription": "Use char overload",
+          "fullDescription": "The char overload is a better performing overload than a string with a single char.",
+          "defaultLevel": "warning",
+          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1867",
+          "properties": {
+            "category": "Performance",
+            "isEnabledByDefault": false,
+            "typeName": "CSharpUseStringMethodCharOverloadWithSingleCharacters",
+            "languages": [
+              "C#"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
         "CA2014": {
           "id": "CA2014",
           "shortDescription": "Do not use stackalloc in loops",
@@ -6348,6 +6405,63 @@
             ],
             "tags": [
               "Dataflow",
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA1865": {
+          "id": "CA1865",
+          "shortDescription": "Use char overload",
+          "fullDescription": "The char overload is a better performing overload than a string with a single char.",
+          "defaultLevel": "note",
+          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1865",
+          "properties": {
+            "category": "Performance",
+            "isEnabledByDefault": true,
+            "typeName": "BasicUseStringMethodCharOverloadWithSingleCharacters",
+            "languages": [
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA1866": {
+          "id": "CA1866",
+          "shortDescription": "Use char overload",
+          "fullDescription": "The char overload is a better performing overload than a string with a single char.",
+          "defaultLevel": "note",
+          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1866",
+          "properties": {
+            "category": "Performance",
+            "isEnabledByDefault": true,
+            "typeName": "BasicUseStringMethodCharOverloadWithSingleCharacters",
+            "languages": [
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA1867": {
+          "id": "CA1867",
+          "shortDescription": "Use char overload",
+          "fullDescription": "The char overload is a better performing overload than a string with a single char.",
+          "defaultLevel": "warning",
+          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1867",
+          "properties": {
+            "category": "Performance",
+            "isEnabledByDefault": false,
+            "typeName": "BasicUseStringMethodCharOverloadWithSingleCharacters",
+            "languages": [
+              "Visual Basic"
+            ],
+            "tags": [
               "Telemetry",
               "EnabledRuleInAggressiveMode"
             ]

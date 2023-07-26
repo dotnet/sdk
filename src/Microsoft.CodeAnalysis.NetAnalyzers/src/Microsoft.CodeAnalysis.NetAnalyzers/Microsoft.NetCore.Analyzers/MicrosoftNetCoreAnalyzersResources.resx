@@ -2111,4 +2111,13 @@ Widening and user defined conversions are not supported with generic types.</val
   <data name="UseCompositeFormatDescription" xml:space="preserve">
     <value>Cache and use a 'CompositeFormat' instance as the argument to this formatting operation, rather than passing in the original format string. This reduces the cost of the formatting operation.</value>
   </data>
+  <data name="UseStringMethodCharOverloadWithSingleCharactersDescription" xml:space="preserve">
+    <value>The char overload is a better performing overload than a string with a single char.</value>
+  </data>
+  <data name="UseStringMethodCharOverloadWithSingleCharactersMessage" xml:space="preserve">
+    <value>Use 'string.{0}(char)' instead of 'string.{0}(string)' when you have a string with a single char</value>
+  </data>
+  <data name="UseStringMethodCharOverloadWithSingleCharactersTitle" xml:space="preserve">
+    <value>Use char overload</value>
+  </data>
 </root>
