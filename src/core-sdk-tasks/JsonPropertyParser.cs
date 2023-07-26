@@ -1,8 +1,5 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Newtonsoft.Json.Linq;
@@ -12,21 +9,21 @@ namespace Microsoft.DotNet.Cli.Build
     public class JsonPropertyParser : Task
     {
         [Required]
-        public string Filename
+        public string[] JFilenames
         {
             get;
             set;
         }
 
         [Required]
-        public string Path
+        public string[] JPaths
         {
             get;
             set;
         }
 
         [Output]
-        public string Value
+        public ITaskItem[] Value
         {
             get;
             private set;
@@ -34,18 +31,28 @@ namespace Microsoft.DotNet.Cli.Build
 
         public override bool Execute()
         {
-            try
+            Value = new TaskItem[JFilenames.Length];
+            for (var i = 0; i < JFilenames.Length; i++)
             {
-                using (var sr = new StreamReader(Filename))
+                Value[i] = new TaskItem(JFilenames[i]);
+                try
                 {
-                    var json = sr.ReadToEnd();
-                    var o = JObject.Parse(json);
-                    Value = o.SelectToken(Path).Value<string>();
+                    using (var sr = new StreamReader(JFilenames[i]))
+                    {
+                        var json = sr.ReadToEnd();
+                        var o = JObject.Parse(json);
+                        foreach (var path in JPaths)
+                        {
+                            var lastDot = path.LastIndexOf('.');
+                            var name = lastDot == -1 ? path : path.Substring(lastDot + 1);
+                            Value[i].SetMetadata(name, o.SelectToken(path).Value<string>());
+                        }
+                    }
                 }
-            }
-            catch (Exception e)
-            {
-                Log.LogErrorFromException(e);
+                catch (Exception e)
+                {
+                    Log.LogErrorFromException(e);
+                }
             }
 
             return !Log.HasLoggedErrors;
