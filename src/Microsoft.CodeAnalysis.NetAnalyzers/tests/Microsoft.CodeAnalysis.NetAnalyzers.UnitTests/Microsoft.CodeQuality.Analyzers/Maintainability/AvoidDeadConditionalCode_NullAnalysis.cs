@@ -7474,5 +7474,51 @@ class Test
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp8,
             }.RunAsync();
         }
+
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
+        [Fact, WorkItem(6048, "https://github.com/dotnet/roslyn-analyzers/issues/6048")]
+        public async Task RethrowInCatchClause_NoDiagnosticsAsync()
+        {
+            await new VerifyCS.Test
+            {
+                TestCode = @"
+using System;
+
+class Test
+{
+    public static void M()
+    {
+        try
+        {
+            throw new Random().NextDouble() > 0.5 ? new Exception() : new ArgumentException();
+        }
+        catch (Exception e)
+        {
+            if (e is ArgumentException ae) // can be both true or false depending on the Exception thrown from the try-block, yet is flagged with CA1508 
+                Console.Out.WriteLine(""ArgumentException"");
+
+            throw;
+        }
+    }
+
+    public static void M2()
+    {
+        try
+        {
+            throw new Exception();
+        }
+        catch (Exception e)
+        {
+            if (e is ArgumentException ae)
+            {
+            }
+
+            throw;
+        }
+    }
+}",
+            }.RunAsync();
+        }
     }
 }
