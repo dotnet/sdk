@@ -895,17 +895,17 @@ Genel türlerde genişletme ve kullanıcı tanımlı dönüştürmeler desteklen
       </trans-unit>
       <trans-unit id="DoNotUseConfigureAwaitWithSuppressThrowingDescription">
         <source>The ConfigureAwaitOptions.SuppressThrowing is only supported with the non-generic Task, not a Task&lt;TResult&gt;.  To use it with a Task&lt;TResult&gt;, first cast to the base Task.</source>
-        <target state="new">The ConfigureAwaitOptions.SuppressThrowing is only supported with the non-generic Task, not a Task&lt;TResult&gt;.  To use it with a Task&lt;TResult&gt;, first cast to the base Task.</target>
+        <target state="translated">ConfigureAwaitOptions.SuppressThrowing, Task&lt;TResult&gt; ile değil, yalnızca genel olmayan Task ile desteklenir. Bu işlevi Task&lt;TResult&gt; ile kullanmak için öncelikle türü temel Task olarak değiştirin.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseConfigureAwaitWithSuppressThrowingMessage">
         <source>The ConfigureAwaitOptions.SuppressThrowing is only supported with the non-generic Task</source>
-        <target state="new">The ConfigureAwaitOptions.SuppressThrowing is only supported with the non-generic Task</target>
+        <target state="translated">ConfigureAwaitOptions.SuppressThrowing yalnızca genel olmayan Task ile desteklenir</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseConfigureAwaitWithSuppressThrowingTitle">
         <source>Do not use ConfigureAwaitOptions.SuppressThrowing with Task&lt;TResult&gt;</source>
-        <target state="new">Do not use ConfigureAwaitOptions.SuppressThrowing with Task&lt;TResult&gt;</target>
+        <target state="translated">ConfigureAwaitOptions.SuppressThrowing işlevini Task&lt;TResult&gt; ile birlikte kullanmayın</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseCountAsyncWhenAnyAsyncCanBeUsedDescription">
@@ -2055,22 +2055,22 @@ Genel türlerde genişletme ve kullanıcı tanımlı dönüştürmeler desteklen
       </trans-unit>
       <trans-unit id="PreferDictionaryTryAddDescription">
         <source>Prefer a 'TryAdd' call over an 'Add' call guarded by a 'ContainsKey' check. 'TryAdd' behaves the same as 'Add', except that when the specified key already exists, it returns 'false' instead of throwing an exception.</source>
-        <target state="new">Prefer a 'TryAdd' call over an 'Add' call guarded by a 'ContainsKey' check. 'TryAdd' behaves the same as 'Add', except that when the specified key already exists, it returns 'false' instead of throwing an exception.</target>
+        <target state="translated">'TryAdd' çağrısını 'ContainsKey' denetimiyle korunan 'Add' çağrısına tercih edin. 'TryAdd' çağrısı, belirtilen anahtarın zaten mevcut olduğu durumlar dışında 'Add' çağrısıyla aynı şekilde davranır; bir özel durum oluşturmak yerine 'false' değerini döndürür.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferDictionaryTryAddMessage">
         <source>To avoid double lookup, call 'TryAdd' instead of calling 'Add' with a 'ContainsKey' guard</source>
-        <target state="new">To avoid double lookup, call 'TryAdd' instead of calling 'Add' with a 'ContainsKey' guard</target>
+        <target state="translated">Çift aramayı önlemek için 'ContainsKey' korumasıyla 'Add' yerine 'TryAdd' işlevini çağırın</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferDictionaryTryAddTitle">
         <source>Prefer the 'IDictionary.TryAdd(TKey, TValue)' method</source>
-        <target state="new">Prefer the 'IDictionary.TryAdd(TKey, TValue)' method</target>
+        <target state="translated">'IDictionary.TryAdd(TKey, TValue)' yöntemini tercih edin</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferDictionaryTryAddValueCodeFixTitle">
         <source>Use 'TryAdd(TKey, TValue)'</source>
-        <target state="new">Use 'TryAdd(TKey, TValue)'</target>
+        <target state="translated">'TryAdd(TKey, TValue)' yöntemini kullanın</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferDictionaryTryGetValueCodeFixTitle">
@@ -2850,17 +2850,17 @@ Genel türlerde genişletme ve kullanıcı tanımlı dönüştürmeler desteklen
       </trans-unit>
       <trans-unit id="UseCompositeFormatDescription">
         <source>Cache and use a 'CompositeFormat' instance as the argument to this formatting operation, rather than passing in the original format string. This reduces the cost of the formatting operation.</source>
-        <target state="new">Cache and use a 'CompositeFormat' instance as the argument to this formatting operation, rather than passing in the original format string. This reduces the cost of the formatting operation.</target>
+        <target state="translated">Orijinal biçim dizesini geçirmek yerine, bir 'CompositeFormat' örneğini önbelleğe alın ve bu biçimlendirme işleminde bağımsız değişken olarak kullanın. Bu, biçimlendirme işleminin maliyetini azaltır.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseCompositeFormatMessage">
         <source>Cache a 'CompositeFormat' for repeated use in this formatting operation</source>
-        <target state="new">Cache a 'CompositeFormat' for repeated use in this formatting operation</target>
+        <target state="translated">Bu biçimlendirme işleminde tekrarlanan kullanım için bir 'CompositeFormat' örneğini önbelleğe alın</target>
         <note />
       </trans-unit>
       <trans-unit id="UseCompositeFormatTitle">
         <source>Use 'CompositeFormat'</source>
-        <target state="new">Use 'CompositeFormat'</target>
+        <target state="translated">'CompositeFormat' örneğini kullanın</target>
         <note />
       </trans-unit>
       <trans-unit id="UseConcreteTypeDescription">
