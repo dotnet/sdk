@@ -7399,5 +7399,39 @@ public class ParsedPredicate
                 }
             }.RunAsync();
         }
+
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
+        [Fact, WorkItem(6435, "https://github.com/dotnet/roslyn-analyzers/issues/6435")]
+        public async Task UserDefinedConversion_NoDiagnosticsAsync()
+        {
+            await new VerifyCS.Test
+            {
+                TestCode = @"
+#nullable enable
+
+internal struct S
+{
+    public bool Flag;
+    public static explicit operator byte[]?(S s)
+    {
+        if (s.Flag)
+            return null;
+        return new byte[10];
+    }
+}
+
+internal static class C
+{
+    public static bool M(S s)
+    {
+        byte[]? a = (byte[]?)s;
+        bool b = a == null;      // incorrect CA1508; this b could be true or false
+        return b;
+    }
+}",
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp8,
+            }.RunAsync();
+        }
     }
 }
