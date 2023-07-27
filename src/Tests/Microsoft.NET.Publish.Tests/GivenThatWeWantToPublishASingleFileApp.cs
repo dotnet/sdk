@@ -645,7 +645,9 @@ namespace Microsoft.NET.Publish.Tests
             buildCommand
                 .Execute()
                 .Should().Pass()
-                .And.HaveStdOutContaining($"warning {Strings.EnableSingleFileAnalyzerUnsupported}");
+                // Note: can't check for Strings.EnableSingleFileAnalyzerUnsupported because each line of
+                // the message gets prefixed with a file path by MSBuild.
+                .And.HaveStdOutContaining($"warning NETSDK1211");
         }
 
         private TestProject CreateTestProjectWithAnalyzerWarnings(string targetFramework, string projectName, bool isExecutable)
