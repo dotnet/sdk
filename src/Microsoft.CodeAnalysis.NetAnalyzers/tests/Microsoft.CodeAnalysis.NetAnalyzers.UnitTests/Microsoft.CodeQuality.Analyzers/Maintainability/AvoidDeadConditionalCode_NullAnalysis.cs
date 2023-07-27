@@ -7550,5 +7550,34 @@ class C1
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp8,
             }.RunAsync();
         }
+
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
+        [Fact, WorkItem(5720, "https://github.com/dotnet/roslyn-analyzers/issues/5720")]
+        public async Task AsExpression_WithNullCoalescingOperator_NoDiagnosticsAsync()
+        {
+            await new VerifyCS.Test
+            {
+                TestCode = @"
+class A
+{
+    public object FieldA;
+}
+
+class B : A
+{
+    public object FieldB;
+}
+
+class C
+{
+    void M(A a)
+    {
+        var x = a.FieldA as C ?? (a.FieldA as B)?.FieldA; // CA1508 false positive on 'a.FieldA as B'
+    }
+}",
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp8,
+            }.RunAsync();
+        }
     }
 }
