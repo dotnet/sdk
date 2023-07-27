@@ -7579,5 +7579,122 @@ class C
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp8,
             }.RunAsync();
         }
+
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
+        [Theory, CombinatorialData, WorkItem(5684, "https://github.com/dotnet/roslyn-analyzers/issues/5684")]
+        public async Task EscapedLambdaWithMethodCall_AssignsCapturedVariable_NoDiagnosticsAsync(bool enableInterproceduralAnalysis)
+        {
+            var interproceduralValue = enableInterproceduralAnalysis ? "ContextSensitive" : "None";
+            var editorConfigText = $"dotnet_code_quality.interprocedural_analysis_kind = {interproceduralValue}";
+
+            var test = new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+#nullable enable
+
+using System;
+
+internal class C
+{
+    static void M1(Action a)
+    {
+        a();
+    }
+
+    static void M2()
+    {
+        Exception? exception = null;
+
+        M1(() =>
+        {
+            exception = new Exception();
+        });
+
+        if (exception != null)
+        {
+        }
+    }
+}"
+                    },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+"),
+
+                    },
+                },
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp8
+            };
+
+            if (enableInterproceduralAnalysis)
+            {
+                test.ExpectedDiagnostics.Add(
+                    // /0/Test0.cs(22,13): warning CA1508: 'exception != null' is always 'true'. Remove or refactor the condition(s) to avoid dead code.
+                    GetCSharpResultAt(22, 13, "exception != null", "true"));
+            }
+
+            await test.RunAsync();
+        }
+
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
+        [Theory, CombinatorialData, WorkItem(5684, "https://github.com/dotnet/roslyn-analyzers/issues/5684")]
+        public async Task EscapedLambdaInTaskRun_AssignsCapturedVariable_NoDiagnosticsAsync(bool enableInterproceduralAnalysis)
+        {
+            var interproceduralValue = enableInterproceduralAnalysis ? "ContextSensitive" : "None";
+            var editorConfigText = $"dotnet_code_quality.interprocedural_analysis_kind = {interproceduralValue}";
+
+            var test = new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+#nullable enable
+
+using System;
+using System.Threading.Tasks;
+
+internal class C
+{
+    static async Task M()
+    {
+        Exception? exception = null;
+
+        await Task.Run(() =>
+        {
+            exception = new Exception();
+        }).ConfigureAwait(false);
+
+        if (exception != null)
+        {
+        }
+    }
+}"
+                    },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+"),
+
+                    },
+                },
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp8
+            };
+
+            // NOTE: Even with interprocedural analysis enabled, we do not have flow analysis logic
+            // to perform interprocedural analysis for a delegate passed to Task.Run.
+            // Hence the results are identical with interprocedural analysis enabled and disabled.
+
+            await test.RunAsync();
+        }
     }
 }
