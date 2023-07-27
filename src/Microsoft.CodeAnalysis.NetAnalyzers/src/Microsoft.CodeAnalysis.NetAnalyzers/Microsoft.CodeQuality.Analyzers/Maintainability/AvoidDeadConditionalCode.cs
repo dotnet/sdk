@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -22,8 +22,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
     /// 
     /// Flags conditional expressions which are always true/false and null checks for operations that are always null/non-null based on predicate analysis.
     /// </summary>
-    [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
-    public sealed class AvoidDeadConditionalCode : DiagnosticAnalyzer
+    public abstract class AvoidDeadConditionalCode : DiagnosticAnalyzer
     {
         internal const string RuleId = "CA1508";
 
@@ -52,6 +51,8 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
             isDataflowRule: true);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(AlwaysTrueFalseOrNullRule, NeverNullRule);
+
+        protected abstract bool IsSwitchArmExpressionWithWhenClause(SyntaxNode node);
 
         public override void Initialize(AnalysisContext context)
         {
@@ -129,9 +130,23 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                                             break;
 
                                         case OperationKind.Invocation:
-                                        case OperationKind.IsPattern:
                                             predicateKind = GetPredicateKind(operation);
                                             if (predicateKind != PredicateValueKind.Unknown)
+                                            {
+                                                ReportAlwaysTrueFalseOrNullDiagnostic(operation, predicateKind);
+                                            }
+
+                                            break;
+
+                                        case OperationKind.IsPattern:
+                                            predicateKind = GetPredicateKind(operation);
+
+                                            // We bail out for lowered IsPatternOperation generated for a switch arm expression with a when clause.
+                                            // We currently perform syntactic checks as the switch arm and when clause are split into
+                                            // multiple basic blocks and control flow branches during CFG generation.
+                                            // TODO: Consider if we can harden this validation without relying on syntactic checks.
+                                            if (predicateKind != PredicateValueKind.Unknown &&
+                                                !IsSwitchArmExpressionWithWhenClause(operation.Syntax))
                                             {
                                                 ReportAlwaysTrueFalseOrNullDiagnostic(operation, predicateKind);
                                             }

@@ -106,6 +106,26 @@
             ]
           }
         },
+        "CA1508": {
+          "id": "CA1508",
+          "shortDescription": "Avoid dead conditional code",
+          "fullDescription": "'{0}' is never '{1}'. Remove or refactor the condition(s) to avoid dead code.",
+          "defaultLevel": "warning",
+          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1508",
+          "properties": {
+            "category": "Maintainability",
+            "isEnabledByDefault": false,
+            "typeName": "CSharpAvoidDeadConditionalCode",
+            "languages": [
+              "C#"
+            ],
+            "tags": [
+              "Dataflow",
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
         "CA1802": {
           "id": "CA1802",
           "shortDescription": "Use literals where appropriate",
@@ -1964,27 +1984,6 @@
               "PortedFromFxCop",
               "Telemetry",
               "CompilationEnd"
-            ]
-          }
-        },
-        "CA1508": {
-          "id": "CA1508",
-          "shortDescription": "Avoid dead conditional code",
-          "fullDescription": "'{0}' is never '{1}'. Remove or refactor the condition(s) to avoid dead code.",
-          "defaultLevel": "warning",
-          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1508",
-          "properties": {
-            "category": "Maintainability",
-            "isEnabledByDefault": false,
-            "typeName": "AvoidDeadConditionalCode",
-            "languages": [
-              "C#",
-              "Visual Basic"
-            ],
-            "tags": [
-              "Dataflow",
-              "Telemetry",
-              "EnabledRuleInAggressiveMode"
             ]
           }
         },
@@ -6246,6 +6245,26 @@
               "Visual Basic"
             ],
             "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA1508": {
+          "id": "CA1508",
+          "shortDescription": "Avoid dead conditional code",
+          "fullDescription": "'{0}' is never '{1}'. Remove or refactor the condition(s) to avoid dead code.",
+          "defaultLevel": "warning",
+          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1508",
+          "properties": {
+            "category": "Maintainability",
+            "isEnabledByDefault": false,
+            "typeName": "BasicAvoidDeadConditionalCode",
+            "languages": [
+              "Visual Basic"
+            ],
+            "tags": [
+              "Dataflow",
               "Telemetry",
               "EnabledRuleInAggressiveMode"
             ]
