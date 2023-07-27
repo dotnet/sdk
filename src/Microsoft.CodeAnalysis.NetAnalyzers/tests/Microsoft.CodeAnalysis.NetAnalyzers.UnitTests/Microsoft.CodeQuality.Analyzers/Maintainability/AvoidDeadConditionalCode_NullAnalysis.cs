@@ -5,10 +5,10 @@ using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
-    Microsoft.CodeQuality.Analyzers.Maintainability.AvoidDeadConditionalCode,
+    Microsoft.CodeQuality.CSharp.Analyzers.Maintainability.CSharpAvoidDeadConditionalCode,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
-    Microsoft.CodeQuality.Analyzers.Maintainability.AvoidDeadConditionalCode,
+    Microsoft.CodeQuality.VisualBasic.Analyzers.Maintainability.BasicAvoidDeadConditionalCode,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
@@ -7518,6 +7518,36 @@ class Test
         }
     }
 }",
+            }.RunAsync();
+        }
+
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
+        [Fact, WorkItem(5929, "https://github.com/dotnet/roslyn-analyzers/issues/5929")]
+        public async Task IsPatternExpression_SwitchExpressionArmWithWhenClause_NoDiagnosticsAsync()
+        {
+            await new VerifyCS.Test
+            {
+                TestCode = @"
+using System;
+
+class C1
+{
+    static bool Predicate(string s, bool flag) => flag;
+
+    static void WarningTest(string input, bool flag)
+    {
+        var result = input switch
+        {
+            null => ""null"",
+            string s when Predicate(s, flag) => ""Predicate"", // CA1508 false positive with any 'when' clause
+            _ => ""default""
+        };
+
+        Console.WriteLine(result);
+    }
+}",
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp8,
             }.RunAsync();
         }
     }
