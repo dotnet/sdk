@@ -1509,6 +1509,15 @@
   <data name="DoNotGuardDictionaryRemoveByContainsKeyTitle" xml:space="preserve">
     <value>Unnecessary call to 'Dictionary.ContainsKey(key)'</value>
   </data>
+  <data name="DoNotGuardSetAddOrRemoveByContainsDescription" xml:space="preserve">
+    <value>Do not guard 'Add(item)' or 'Remove(item)' with 'Contains(item)' for the set. The former two already check whether the item exists and will return if it was added or removed.</value>
+  </data>
+  <data name="DoNotGuardSetAddOrRemoveByContainsMessage" xml:space="preserve">
+    <value>Do not guard '{0}' with '{1}'</value>
+  </data>
+  <data name="DoNotGuardSetAddOrRemoveByContainsTitle" xml:space="preserve">
+    <value>Unnecessary call to 'Contains(item)'</value>
+  </data>
   <data name="RemoveRedundantGuardCallCodeFixTitle" xml:space="preserve">
     <value>Remove unnecessary call</value>
   </data>
@@ -2066,14 +2075,20 @@ Widening and user defined conversions are not supported with generic types.</val
   <data name="RecommendCaseInsensitiveStringComparerStringComparisonCodeFixTitle" xml:space="preserve">
     <value>Use the 'string.{0}(string, StringComparison)' overload</value>
   </data>
-  <data name="RecommendCaseInsensitiveStringComparerTitle" xml:space="preserve">
-    <value>Prefer using 'StringComparer' to perform case-insensitive string comparisons</value>
+  <data name="RecommendCaseInsensitiveStringEqualsCodeFixTitle" xml:space="preserve">
+    <value>Use 'string.Equals(string, StringComparison)'</value>
   </data>
   <data name="RecommendCaseInsensitiveStringComparerDescription" xml:space="preserve">
     <value>Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons when using 'CompareTo', because they lead to an allocation. Instead, use 'StringComparer' to perform case-insensitive comparisons.</value>
   </data>
   <data name="RecommendCaseInsensitiveStringComparerMessage" xml:space="preserve">
     <value>Prefer using 'StringComparer' to perform a case-insensitive comparison</value>
+  </data>
+    <data name="RecommendCaseInsensitiveStringEqualsDescription" xml:space="preserve">
+    <value>Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons, as in 'string.ToLower() == string.ToLower()', because they lead to an allocation. Instead, use 'string.Equals(string, StringComparison)' to perform case-insensitive comparisons.</value>
+  </data>
+    <data name="RecommendCaseInsensitiveStringEqualsMessage" xml:space="preserve">
+    <value>Prefer using 'string.Equals(string, StringComparison)' to perform a case-insensitive comparison</value>
   </data>
   <data name="RecommendCaseInsensitiveStringComparisonTitle" xml:space="preserve">
     <value>Prefer the 'StringComparison' method overloads to perform case-insensitive string comparisons</value>
@@ -2104,5 +2119,14 @@ Widening and user defined conversions are not supported with generic types.</val
   </data>
   <data name="UseCompositeFormatDescription" xml:space="preserve">
     <value>Cache and use a 'CompositeFormat' instance as the argument to this formatting operation, rather than passing in the original format string. This reduces the cost of the formatting operation.</value>
+  </data>
+  <data name="UseStringMethodCharOverloadWithSingleCharactersDescription" xml:space="preserve">
+    <value>The char overload is a better performing overload than a string with a single char.</value>
+  </data>
+  <data name="UseStringMethodCharOverloadWithSingleCharactersMessage" xml:space="preserve">
+    <value>Use 'string.{0}(char)' instead of 'string.{0}(string)' when you have a string with a single char</value>
+  </data>
+  <data name="UseStringMethodCharOverloadWithSingleCharactersTitle" xml:space="preserve">
+    <value>Use char overload</value>
   </data>
 </root>

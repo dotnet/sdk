@@ -5,7 +5,7 @@ using Test.Utilities;
 using Xunit;
 using CSharpLanguageVersion = Microsoft.CodeAnalysis.CSharp.LanguageVersion;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
-    Microsoft.CodeQuality.Analyzers.Maintainability.AvoidDeadConditionalCode,
+    Microsoft.CodeQuality.CSharp.Analyzers.Maintainability.CSharpAvoidDeadConditionalCode,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
@@ -3273,6 +3273,37 @@ class C
     }
 }",
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp8
+            }.RunAsync();
+        }
+
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
+        [Fact, WorkItem(6483, "https://github.com/dotnet/roslyn-analyzers/issues/6483")]
+        public async Task IsPatternExpression_Unboxing_NoDiagnosticsAsync()
+        {
+            await new VerifyCS.Test
+            {
+                TestCode = @"
+class C
+{
+    public void Run(object value)
+    {
+        if (value is null)
+        {
+            return;
+        }
+
+        var x = value is double num1;
+        if (x)
+        {
+            return;
+        }
+
+        if (!(value is int num2))
+        {
+            return;
+        }
+    }
+}",
             }.RunAsync();
         }
     }

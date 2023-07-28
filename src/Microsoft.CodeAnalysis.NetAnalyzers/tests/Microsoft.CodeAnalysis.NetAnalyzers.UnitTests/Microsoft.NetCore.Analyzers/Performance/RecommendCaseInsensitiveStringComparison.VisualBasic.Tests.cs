@@ -219,6 +219,77 @@ End Class";
         }
 
         [Theory]
+        [MemberData(nameof(VisualBasicDiagnosedAndFixedEqualityToEqualsData))]
+        public async Task Diagnostic_Equality_To_Equals(string diagnosedLine, string fixedLine)
+        {
+            string originalCode = $@"Imports System
+Class C
+    Function GetString() As String
+        Return ""cde""
+    End Function
+    Function M(a As String, b As String) As Boolean
+        Dim result As Boolean = [|{diagnosedLine}|]
+        If [|{diagnosedLine}|] Then
+            Return result
+        End If
+        Return [|{diagnosedLine}|]
+    End Function
+End Class";
+            string fixedCode = $@"Imports System
+Class C
+    Function GetString() As String
+        Return ""cde""
+    End Function
+    Function M(a As String, b As String) As Boolean
+        Dim result As Boolean = {fixedLine}
+        If {fixedLine} Then
+            Return result
+        End If
+        Return {fixedLine}
+    End Function
+End Class";
+            await VerifyFixVisualBasicAsync(originalCode, fixedCode);
+        }
+
+        [Fact]
+        public async Task Diagnostic_Equality_To_Equals_Trivia()
+        {
+            string originalCode = $@"Imports System
+Class C
+    Function M(a As String, b As String) As Boolean
+        ' Trivia1
+        Dim result As Boolean = [|a.ToLower() = b.ToLowerInvariant()|] ' Trivia2
+        ' Trivia3
+        If [|a.ToLowerInvariant() <> b.ToLower()|] Then ' Trivia4
+            ' Trivia5
+            Return [|b <> a.ToLowerInvariant()|] ' Trivia6
+            ' Trivia7
+        End If
+        ' Trivia8
+        Return [|""abc"" = a.ToUpperInvariant()|] ' Trivia9
+        ' Trivia10
+    End Function
+End Class";
+            string fixedCode = $@"Imports System
+Class C
+    Function M(a As String, b As String) As Boolean
+        ' Trivia1
+        Dim result As Boolean = a.Equals(b, StringComparison.CurrentCultureIgnoreCase) ' Trivia2
+        ' Trivia3
+        If Not a.Equals(b, StringComparison.CurrentCultureIgnoreCase) Then ' Trivia4
+            ' Trivia5
+            Return Not b.Equals(a, StringComparison.InvariantCultureIgnoreCase) ' Trivia6
+            ' Trivia7
+        End If
+        ' Trivia8
+        Return ""abc"".Equals(a, StringComparison.InvariantCultureIgnoreCase) ' Trivia9
+        ' Trivia10
+    End Function
+End Class";
+            await VerifyFixVisualBasicAsync(originalCode, fixedCode);
+        }
+
+        [Theory]
         [MemberData(nameof(NoDiagnosticData))]
         [InlineData("\"aBc\".CompareTo(Nothing)")]
         [InlineData("\"aBc\".ToUpperInvariant().CompareTo(CObj(Nothing))")]
@@ -258,6 +329,20 @@ Class C
         Return [|{diagnosedLine}|]
     End Function
 End Class";
+            await VerifyDiagnosticOnlyVisualBasicAsync(originalCode);
+        }
+
+        [Theory]
+        [MemberData(nameof(VisualBasicDiagnosticNoFixEqualsData))]
+        public async Task Diagnostic_NoFix_Equals(string diagnosedLine)
+        {
+            string originalCode = $@"Imports System
+Class C
+    Public Function M() As Boolean
+        Return [|{diagnosedLine}|]
+    End Function
+End Class";
+
             await VerifyDiagnosticOnlyVisualBasicAsync(originalCode);
         }
 

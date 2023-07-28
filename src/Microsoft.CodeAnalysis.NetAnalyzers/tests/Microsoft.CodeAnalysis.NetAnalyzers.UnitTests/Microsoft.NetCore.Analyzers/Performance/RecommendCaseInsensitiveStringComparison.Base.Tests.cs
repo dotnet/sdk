@@ -7,15 +7,25 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 {
     public abstract class RecommendCaseInsensitiveStringComparison_Base_Tests
     {
-        private static readonly Tuple<string, string>[] Cultures = new[] {
-            Tuple.Create("ToLower", "CurrentCultureIgnoreCase"),
-            Tuple.Create("ToUpper", "CurrentCultureIgnoreCase"),
-            Tuple.Create("ToLowerInvariant", "InvariantCultureIgnoreCase"),
-            Tuple.Create("ToUpperInvariant", "InvariantCultureIgnoreCase")
+        private static readonly (string, string)[] Cultures = new[] {
+            ("ToLower", "CurrentCultureIgnoreCase"),
+            ("ToUpper", "CurrentCultureIgnoreCase"),
+            ("ToLowerInvariant", "InvariantCultureIgnoreCase"),
+            ("ToUpperInvariant", "InvariantCultureIgnoreCase")
         };
 
         private static readonly string[] ContainsStartsWith = new[] { "Contains", "StartsWith" };
         private static readonly string[] UnnamedArgs = new[] { "", ", 1", ", 1, 1" };
+
+        private static readonly (string, string)[] CSharpComparisonOperators = new[] {
+            ("==", ""),
+            ("!=", "!")
+        };
+        private static readonly (string, string)[] VisualBasicComparisonOperators = new[] {
+            ("=", ""),
+            ("<>", "Not ")
+        };
+
         private const string CSharpSeparator = ": ";
         private const string VisualBasicSeparator = ":=";
 
@@ -319,6 +329,47 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             }
         }
 
+        public static IEnumerable<object[]> CSharpDiagnosedAndFixedEqualityToEqualsData() =>
+            DiagnosedAndFixedEqualityToEqualsData(CSharpComparisonOperators);
+        public static IEnumerable<object[]> VisualBasicDiagnosedAndFixedEqualityToEqualsData() =>
+            DiagnosedAndFixedEqualityToEqualsData(VisualBasicComparisonOperators);
+        private static IEnumerable<object[]> DiagnosedAndFixedEqualityToEqualsData(ValueTuple<string, string>[] comparisonOperators)
+        {
+#pragma warning disable format
+            foreach (string casing in new[]{ "Lower", "Upper" })
+            {
+                foreach ((string before, string after) in comparisonOperators)
+                {
+                    yield return new object[] { $"a.To{casing}() {before} b.To{casing}()",          $"{after}a.Equals(b, StringComparison.CurrentCultureIgnoreCase)" };
+                    yield return new object[] { $"a.To{casing}() {before} b.To{casing}Invariant()", $"{after}a.Equals(b, StringComparison.CurrentCultureIgnoreCase)" };
+                    yield return new object[] { $"a.To{casing}() {before} \"abc\"",              $"{after}a.Equals(\"abc\", StringComparison.CurrentCultureIgnoreCase)" };
+                    yield return new object[] { $"a.To{casing}() {before} b",                    $"{after}a.Equals(b, StringComparison.CurrentCultureIgnoreCase)" };
+
+                    yield return new object[] { $"a.To{casing}Invariant() {before} b.To{casing}Invariant()", $"{after}a.Equals(b, StringComparison.InvariantCultureIgnoreCase)" };
+                    yield return new object[] { $"a.To{casing}Invariant() {before} b.To{casing}()",          $"{after}a.Equals(b, StringComparison.CurrentCultureIgnoreCase)" };
+                    yield return new object[] { $"a.To{casing}Invariant() {before} \"abc\"",              $"{after}a.Equals(\"abc\", StringComparison.InvariantCultureIgnoreCase)" };
+                    yield return new object[] { $"a.To{casing}Invariant() {before} b",                    $"{after}a.Equals(b, StringComparison.InvariantCultureIgnoreCase)" };
+
+                    yield return new object[] { $"a {before} b.To{casing}()",          $"{after}a.Equals(b, StringComparison.CurrentCultureIgnoreCase)" };
+                    yield return new object[] { $"a {before} b.To{casing}Invariant()", $"{after}a.Equals(b, StringComparison.InvariantCultureIgnoreCase)" };
+
+                    yield return new object[] { $"\"abc\" {before} b.To{casing}()",                                $"{after}\"abc\".Equals(b, StringComparison.CurrentCultureIgnoreCase)" };
+                    yield return new object[] { $"\"abc\" {before} b.To{casing}Invariant()",                       $"{after}\"abc\".Equals(b, StringComparison.InvariantCultureIgnoreCase)" };
+                    yield return new object[] { $"\"abc\".To{casing}() {before} b.To{casing}()",                   $"{after}\"abc\".Equals(b, StringComparison.CurrentCultureIgnoreCase)" };
+                    yield return new object[] { $"\"abc\".To{casing}() {before} b.To{casing}Invariant()",          $"{after}\"abc\".Equals(b, StringComparison.CurrentCultureIgnoreCase)" };
+                    yield return new object[] { $"\"abc\".To{casing}Invariant() {before} b.To{casing}Invariant()", $"{after}\"abc\".Equals(b, StringComparison.InvariantCultureIgnoreCase)" };
+
+                    yield return new object[] { $"GetString().To{casing}() {before} a.To{casing}()",          $"{after}GetString().Equals(a, StringComparison.CurrentCultureIgnoreCase)" };
+                    yield return new object[] { $"GetString().To{casing}() {before} a.To{casing}Invariant()", $"{after}GetString().Equals(a, StringComparison.CurrentCultureIgnoreCase)" };
+                    yield return new object[] { $"GetString().To{casing}Invariant() {before} a.To{casing}()", $"{after}GetString().Equals(a, StringComparison.CurrentCultureIgnoreCase)" };
+                    yield return new object[] { $"GetString().To{casing}() {before} a",                       $"{after}GetString().Equals(a, StringComparison.CurrentCultureIgnoreCase)" };
+                    yield return new object[] { $"GetString().To{casing}Invariant() {before} a",              $"{after}GetString().Equals(a, StringComparison.InvariantCultureIgnoreCase)" };
+                    yield return new object[] { $"GetString().To{casing}Invariant() {before} \"abc\"",        $"{after}GetString().Equals(\"abc\", StringComparison.InvariantCultureIgnoreCase)" };
+                }
+            }
+#pragma warning restore format
+        }
+
         public static IEnumerable<object[]> NoDiagnosticData()
         {
             // Test needs to define a char ch and an object obj
@@ -340,6 +391,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 yield return new object[] { $"\"aBc\".ToLowerInvariant().{method}(ch, StringComparison.CurrentCulture)" };
             }
 
+            // CompareTo
             yield return new object[] { "\"aBc\".CompareTo(obj)" };
             yield return new object[] { "\"aBc\".ToLower().CompareTo(obj)" };
             yield return new object[] { "\"aBc\".CompareTo(\"cDe\")" };
@@ -354,6 +406,25 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 yield return new object[] { $"\"aBc\".{caseChanging}().CompareTo(\"CdE\")" };
                 yield return new object[] { $"GetStringA().{caseChanging}().CompareTo(GetStringB())" };
                 yield return new object[] { $"(\"aBc\".{caseChanging}()).CompareTo(\"CdE\")" };
+            }
+        }
+
+        public static IEnumerable<object[]> CSharpDiagnosticNoFixEqualsData() => DiagnosticNoFixEqualsData(CSharpComparisonOperators);
+        public static IEnumerable<object[]> VisualBasicDiagnosticNoFixEqualsData() => DiagnosticNoFixEqualsData(VisualBasicComparisonOperators);
+
+        private static IEnumerable<object[]> DiagnosticNoFixEqualsData(ValueTuple<string, string>[] ops)
+        {
+            foreach ((string op, _) in ops)
+            {
+                yield return new object[] { $"\"aBc\".ToLower() {op} \"cDe\".ToLowerInvariant()" };
+                yield return new object[] { $"\"aBc\".ToLower() {op} \"cDe\".ToUpperInvariant()" };
+                yield return new object[] { $"\"aBc\".ToUpper() {op} \"cDe\".ToLowerInvariant()" };
+                yield return new object[] { $"\"aBc\".ToUpper() {op} \"cDe\".ToUpperInvariant()" };
+
+                yield return new object[] { $"\"aBc\".ToLowerInvariant() {op} \"cDe\".ToLower()" };
+                yield return new object[] { $"\"aBc\".ToLowerInvariant() {op} \"cDe\".ToUpper()" };
+                yield return new object[] { $"\"aBc\".ToUpperInvariant() {op} \"cDe\".ToLower()" };
+                yield return new object[] { $"\"aBc\".ToUpperInvariant() {op} \"cDe\".ToUpper()" };
             }
         }
 

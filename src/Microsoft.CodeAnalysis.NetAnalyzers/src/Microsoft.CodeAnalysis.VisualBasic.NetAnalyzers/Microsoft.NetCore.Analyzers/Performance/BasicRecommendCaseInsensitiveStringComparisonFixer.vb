@@ -14,8 +14,9 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Performance
     Public NotInheritable Class BasicRecommendCaseInsensitiveStringComparisonFixer
         Inherits RecommendCaseInsensitiveStringComparisonFixer
 
-        Protected Overrides Function GetNewArguments(generator As SyntaxGenerator, mainInvocationOperation As IInvocationOperation,
-            stringComparisonType As INamedTypeSymbol, ByRef mainInvocationInstance As SyntaxNode) As List(Of SyntaxNode)
+        Protected Overrides Function GetNewArgumentsForInvocation(generator As SyntaxGenerator, caseChangingApproachValue As String,
+                mainInvocationOperation As IInvocationOperation, stringComparisonType As INamedTypeSymbol,
+                ByRef mainInvocationInstance As SyntaxNode) As IEnumerable(Of SyntaxNode)
 
             Dim paramName As String = RecommendCaseInsensitiveStringComparisonAnalyzer.StringParameterName
 
@@ -24,8 +25,8 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Performance
 
             Dim invocationExpression As InvocationExpressionSyntax = DirectCast(mainInvocationOperation.Syntax, InvocationExpressionSyntax)
 
-            Dim caseChangingApproachName As String = ""
             Dim isChangingCaseInArgument As Boolean = False
+            mainInvocationInstance = Nothing
 
             Dim memberAccessExpression As MemberAccessExpressionSyntax = TryCast(invocationExpression.Expression, MemberAccessExpressionSyntax)
 
@@ -48,7 +49,6 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Performance
 
                 If internalMemberAccessExpression IsNot Nothing Then
                     mainInvocationInstance = internalMemberAccessExpression.Expression
-                    caseChangingApproachName = GetCaseChangingApproach(internalMemberAccessExpression.Name.Identifier.ValueText)
                 Else
                     mainInvocationInstance = memberAccessExpression.Expression
                     isChangingCaseInArgument = True
@@ -72,9 +72,6 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Performance
 
                 If argumentInvocationExpression IsNot Nothing Then
                     argumentMemberAccessExpression = TryCast(argumentInvocationExpression.Expression, MemberAccessExpressionSyntax)
-                    If argumentMemberAccessExpression IsNot Nothing Then
-                        caseChangingApproachName = GetCaseChangingApproach(argumentMemberAccessExpression.Name.Identifier.ValueText)
-                    End If
                 End If
 
                 Dim newArgumentNode As SyntaxNode
@@ -96,14 +93,13 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Performance
 
                 End If
 
-                arguments.Add(newArgumentNode)
+                arguments.Add(newArgumentNode.WithTriviaFrom(node))
 
             Next
 
-            Debug.Assert(caseChangingApproachName IsNot Nothing)
             Debug.Assert(mainInvocationInstance IsNot Nothing)
 
-            Dim stringComparisonArgument As SyntaxNode = GetNewStringComparisonArgument(generator, stringComparisonType, caseChangingApproachName, isAnyArgumentNamed)
+            Dim stringComparisonArgument As SyntaxNode = GetNewStringComparisonArgument(generator, stringComparisonType, caseChangingApproachValue, isAnyArgumentNamed)
 
             arguments.Add(stringComparisonArgument)
 
@@ -111,6 +107,15 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Performance
 
         End Function
 
+        Protected Overrides Function GetNewArgumentsForBinary(generator As SyntaxGenerator, rightNode As SyntaxNode, typeMemberAccess As SyntaxNode) As IEnumerable(Of SyntaxNode)
+
+            Return New List(Of SyntaxNode) From
+            {
+                generator.Argument(rightNode.WithoutTrivia()),' Need To remove any trivia because otherwise an unexpected newline is added
+                generator.Argument(typeMemberAccess)
+            }
+
+        End Function
     End Class
 
 End Namespace

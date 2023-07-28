@@ -17,7 +17,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Performance
     [ExportCodeFixProvider(LanguageNames.CSharp), Shared]
     public sealed class CSharpRecommendCaseInsensitiveStringComparisonFixer : RecommendCaseInsensitiveStringComparisonFixer
     {
-        protected override List<SyntaxNode> GetNewArguments(SyntaxGenerator generator, IInvocationOperation mainInvocationOperation,
+        protected override IEnumerable<SyntaxNode> GetNewArgumentsForInvocation(SyntaxGenerator generator, string caseChangingApproachValue, IInvocationOperation mainInvocationOperation,
             INamedTypeSymbol stringComparisonType, out SyntaxNode? mainInvocationInstance)
         {
             List<SyntaxNode> arguments = new();
@@ -25,14 +25,12 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Performance
 
             InvocationExpressionSyntax invocationExpression = (InvocationExpressionSyntax)mainInvocationOperation.Syntax;
 
-            string? caseChangingApproachName = null;
             bool isChangingCaseInArgument = false;
-
             mainInvocationInstance = null;
 
             if (invocationExpression.Expression is MemberAccessExpressionSyntax memberAccessExpression)
             {
-                var internalExpression = memberAccessExpression.Expression is ParenthesizedExpressionSyntax parenthesizedExpression ?
+                ExpressionSyntax internalExpression = memberAccessExpression.Expression is ParenthesizedExpressionSyntax parenthesizedExpression ?
                     parenthesizedExpression.Expression :
                     memberAccessExpression.Expression;
 
@@ -40,7 +38,6 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Performance
                     internalInvocationExpression.Expression is MemberAccessExpressionSyntax internalMemberAccessExpression)
                 {
                     mainInvocationInstance = internalMemberAccessExpression.Expression;
-                    caseChangingApproachName = GetCaseChangingApproach(internalMemberAccessExpression.Name.Identifier.ValueText);
                 }
                 else
                 {
@@ -59,10 +56,9 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Performance
                     node.Expression;
 
                 MemberAccessExpressionSyntax? argumentMemberAccessExpression = null;
-                if (argumentExpression is InvocationExpressionSyntax argumentInvocationExpression &&
-                    (argumentMemberAccessExpression = argumentInvocationExpression.Expression as MemberAccessExpressionSyntax) != null)
+                if (argumentExpression is InvocationExpressionSyntax argumentInvocationExpression)
                 {
-                    caseChangingApproachName = GetCaseChangingApproach(argumentMemberAccessExpression.Name.Identifier.ValueText);
+                    argumentMemberAccessExpression = argumentInvocationExpression.Expression as MemberAccessExpressionSyntax;
                 }
 
                 SyntaxNode newArgumentNode;
@@ -84,18 +80,23 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Performance
                     newArgumentNode = node;
                 }
 
-                arguments.Add(newArgumentNode);
+                arguments.Add(newArgumentNode.WithTriviaFrom(node));
             }
 
-            Debug.Assert(caseChangingApproachName != null);
             Debug.Assert(mainInvocationInstance != null);
 
-            SyntaxNode stringComparisonArgument = GetNewStringComparisonArgument(generator,
-                stringComparisonType, caseChangingApproachName!, isAnyArgumentNamed);
+            SyntaxNode stringComparisonArgument = GetNewStringComparisonArgument(generator, stringComparisonType, caseChangingApproachValue, isAnyArgumentNamed);
 
             arguments.Add(stringComparisonArgument);
 
             return arguments;
         }
+
+        protected override IEnumerable<SyntaxNode> GetNewArgumentsForBinary(SyntaxGenerator generator, SyntaxNode rightNode, SyntaxNode typeMemberAccess) =>
+            new List<SyntaxNode>()
+            {
+                generator.Argument(rightNode),
+                generator.Argument(typeMemberAccess)
+            };
     }
 }
