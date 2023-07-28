@@ -119,6 +119,15 @@
       <FormattedBaselineManifest Include="}" />
     </ItemGroup>
 
+<<<<<<< Updated upstream
     <WriteLinestoFile File="$(RedistLayoutPath)sdk-manifests\BaselineManifest.json" Lines="@(FormattedBaselineManifest)" />
+=======
+    <PropertyGroup>
+      <BaselineManifestFileName Condition="''$(DotNetFinalVersionKind)' == 'release'">BaselineManifest</BaselineManifestFileName>
+      <BaselineManifestFileName Condition="''$(DotNetFinalVersionKind)' != 'release'">BaselineManifest</BaselineManifestFileName>
+    </PropertyGroup>
+
+    <WriteLinestoFile File="$(RedistLayoutPath)sdk-manifests\$(BaselineManifestFileName).json" Lines="@(FormattedBaselineManifest)" />
+>>>>>>> Stashed changes
   </Target>
 </Project>
