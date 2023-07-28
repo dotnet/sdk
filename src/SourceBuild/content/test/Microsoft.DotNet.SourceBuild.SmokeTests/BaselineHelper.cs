@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Microsoft.Extensions.FileSystemGlobbing;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -15,6 +16,11 @@ namespace Microsoft.DotNet.SourceBuild.SmokeTests
 {
     internal class BaselineHelper
     {
+        private const string VersionPlaceholder = "x.y.z";
+        private const string VersionPlaceholderMatchingPattern = "*.*.*"; // wildcard pattern used to match on the version represented by the placeholder
+        private const string NetTfmPlaceholder = "netx.y";
+        private const string NetTfmPlaceholderMatchingPattern = "net*.*"; // wildcard pattern used to match on the version represented by the placeholder
+
         public static void CompareEntries(string baselineFileName, IOrderedEnumerable<string> actualEntries)
         {
             IEnumerable<string> baseline = File.ReadAllLines(GetBaselineFilePath(baselineFileName));
@@ -35,18 +41,17 @@ namespace Microsoft.DotNet.SourceBuild.SmokeTests
             Assert.Null(message);
         }
 
-        public static void CompareContents(string baselineFileName, string actualContents, ITestOutputHelper outputHelper, bool warnOnDiffs = false)
+        public static void CompareBaselineContents(string baselineFileName, string actualContents, ITestOutputHelper outputHelper, bool warnOnDiffs = false)
         {
             string actualFilePath = Path.Combine(DotNetHelper.LogsDirectory, $"Updated{baselineFileName}");
             File.WriteAllText(actualFilePath, actualContents);
 
-            CompareFiles(baselineFileName, actualFilePath, outputHelper, warnOnDiffs);
+            CompareFiles(GetBaselineFilePath(baselineFileName), actualFilePath, outputHelper, warnOnDiffs);
         }
 
-        public static void CompareFiles(string baselineFileName, string actualFilePath, ITestOutputHelper outputHelper, bool warnOnDiffs = false)
+        public static void CompareFiles(string expectedFilePath, string actualFilePath, ITestOutputHelper outputHelper, bool warnOnDiffs = false)
         {
-            string baselineFilePath = GetBaselineFilePath(baselineFileName);
-            string baselineFileText = File.ReadAllText(baselineFilePath).Trim();
+            string baselineFileText = File.ReadAllText(expectedFilePath).Trim();
             string actualFileText = File.ReadAllText(actualFilePath).Trim();
 
             string? message = null;
@@ -54,9 +59,9 @@ namespace Microsoft.DotNet.SourceBuild.SmokeTests
             if (baselineFileText != actualFileText)
             {
                 // Retrieve a diff in order to provide a UX which calls out the diffs.
-                string diff = DiffFiles(baselineFilePath, actualFilePath, outputHelper);
+                string diff = DiffFiles(expectedFilePath, actualFilePath, outputHelper);
                 string prefix = warnOnDiffs ? "##vso[task.logissue type=warning;]" : string.Empty;
-                message = $"{Environment.NewLine}{prefix}Baseline '{baselineFilePath}' does not match actual '{actualFilePath}`.  {Environment.NewLine}"
+                message = $"{Environment.NewLine}{prefix}Expected file '{expectedFilePath}' does not match actual file '{actualFilePath}`.  {Environment.NewLine}"
                     + $"{diff}{Environment.NewLine}";
 
                 if (warnOnDiffs)
@@ -83,13 +88,13 @@ namespace Microsoft.DotNet.SourceBuild.SmokeTests
 
         public static string GetAssetsDirectory() => Path.Combine(Directory.GetCurrentDirectory(), "assets");
 
-        private static string GetBaselineFilePath(string baselineFileName) => Path.Combine(GetAssetsDirectory(), "baselines", baselineFileName);
+        public static string GetBaselineFilePath(string baselineFileName) => Path.Combine(GetAssetsDirectory(), "baselines", baselineFileName);
 
         public static string RemoveNetTfmPaths(string source)
         {
             string pathSeparator = Regex.Escape(Path.DirectorySeparatorChar.ToString());
             Regex netTfmRegex = new($"{pathSeparator}net[1-9]+\\.[0-9]+{pathSeparator}");
-            return netTfmRegex.Replace(source, $"{Path.DirectorySeparatorChar}netx.y{Path.DirectorySeparatorChar}");
+            return netTfmRegex.Replace(source, $"{Path.DirectorySeparatorChar}{NetTfmPlaceholder}{Path.DirectorySeparatorChar}");
         }
 
         public static string RemoveRids(string diff, bool isPortable = false) =>
@@ -103,9 +108,23 @@ namespace Microsoft.DotNet.SourceBuild.SmokeTests
                 $"(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)"
                 + $"(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))"
                 + $"?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?");
-            string result = semanticVersionRegex.Replace(source, $"x.y.z");
+            string result = semanticVersionRegex.Replace(source, VersionPlaceholder);
 
             return RemoveNetTfmPaths(result);
+        }
+
+        /// <summary>
+        /// This returns a <see cref="Matcher"/> that can be used to match on a path whose versions have been removed via
+        /// <see cref="RemoveVersions(string)"/>.
+        /// </summary>
+        public static Matcher GetFileMatcherFromPath(string path)
+        {
+            path = path
+                .Replace(VersionPlaceholder, VersionPlaceholderMatchingPattern)
+                .Replace(NetTfmPlaceholder, NetTfmPlaceholderMatchingPattern);
+            Matcher matcher = new();
+            matcher.AddInclude(path);
+            return matcher;
         }
     }
 }

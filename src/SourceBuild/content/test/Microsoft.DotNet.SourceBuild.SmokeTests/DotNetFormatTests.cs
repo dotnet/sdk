@@ -33,6 +33,6 @@ public class DotNetFormatTests : SmokeTests
 
         DotNetHelper.ExecuteCmd($"format {projectFilePath}");
 
-        BaselineHelper.CompareFiles(ExpectedFormattedFileName, testFilePath, OutputHelper);
+        BaselineHelper.CompareFiles(BaselineHelper.GetBaselineFilePath(ExpectedFormattedFileName), testFilePath, OutputHelper);
     }
 }
