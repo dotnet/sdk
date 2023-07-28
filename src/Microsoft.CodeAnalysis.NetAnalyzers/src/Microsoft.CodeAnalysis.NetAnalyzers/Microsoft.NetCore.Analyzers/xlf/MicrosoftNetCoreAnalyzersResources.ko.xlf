@@ -763,6 +763,21 @@ Enumerable.OfType&lt;T&gt;에서 사용하는 제네릭 형식 검사(C# 'is' �
         <target state="translated">'Dictionary.ContainsKey(key)'에 대한 불필요한 호출</target>
         <note />
       </trans-unit>
+      <trans-unit id="DoNotGuardSetAddOrRemoveByContainsDescription">
+        <source>Do not guard 'Add(item)' or 'Remove(item)' with 'Contains(item)' for the set. The former two already check whether the item exists and will return if it was added or removed.</source>
+        <target state="new">Do not guard 'Add(item)' or 'Remove(item)' with 'Contains(item)' for the set. The former two already check whether the item exists and will return if it was added or removed.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotGuardSetAddOrRemoveByContainsMessage">
+        <source>Do not guard '{0}' with '{1}'</source>
+        <target state="new">Do not guard '{0}' with '{1}'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotGuardSetAddOrRemoveByContainsTitle">
+        <source>Unnecessary call to 'Contains(item)'</source>
+        <target state="new">Unnecessary call to 'Contains(item)'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DoNotHardCodeCertificate">
         <source>Do not hard-code certificate</source>
         <target state="translated">인증서 하드 코딩 안 함</target>

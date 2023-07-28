@@ -1509,6 +1509,15 @@
   <data name="DoNotGuardDictionaryRemoveByContainsKeyTitle" xml:space="preserve">
     <value>Unnecessary call to 'Dictionary.ContainsKey(key)'</value>
   </data>
+  <data name="DoNotGuardSetAddOrRemoveByContainsDescription" xml:space="preserve">
+    <value>Do not guard 'Add(item)' or 'Remove(item)' with 'Contains(item)' for the set. The former two already check whether the item exists and will return if it was added or removed.</value>
+  </data>
+  <data name="DoNotGuardSetAddOrRemoveByContainsMessage" xml:space="preserve">
+    <value>Do not guard '{0}' with '{1}'</value>
+  </data>
+  <data name="DoNotGuardSetAddOrRemoveByContainsTitle" xml:space="preserve">
+    <value>Unnecessary call to 'Contains(item)'</value>
+  </data>
   <data name="RemoveRedundantGuardCallCodeFixTitle" xml:space="preserve">
     <value>Remove unnecessary call</value>
   </data>

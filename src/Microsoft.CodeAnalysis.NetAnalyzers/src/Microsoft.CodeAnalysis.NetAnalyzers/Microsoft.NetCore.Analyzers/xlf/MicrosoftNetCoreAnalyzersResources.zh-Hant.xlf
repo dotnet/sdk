@@ -763,6 +763,21 @@ Enumerable.OfType&lt;T&gt; 使用的一般型別檢查 (C# 'is' operator/IL 'isi
         <target state="translated">不需要呼叫 'Dictionary.ContainsKey(key)'</target>
         <note />
       </trans-unit>
+      <trans-unit id="DoNotGuardSetAddOrRemoveByContainsDescription">
+        <source>Do not guard 'Add(item)' or 'Remove(item)' with 'Contains(item)' for the set. The former two already check whether the item exists and will return if it was added or removed.</source>
+        <target state="new">Do not guard 'Add(item)' or 'Remove(item)' with 'Contains(item)' for the set. The former two already check whether the item exists and will return if it was added or removed.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotGuardSetAddOrRemoveByContainsMessage">
+        <source>Do not guard '{0}' with '{1}'</source>
+        <target state="new">Do not guard '{0}' with '{1}'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotGuardSetAddOrRemoveByContainsTitle">
+        <source>Unnecessary call to 'Contains(item)'</source>
+        <target state="new">Unnecessary call to 'Contains(item)'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DoNotHardCodeCertificate">
         <source>Do not hard-code certificate</source>
         <target state="translated">不要硬式編碼憑證</target>
