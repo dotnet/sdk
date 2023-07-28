@@ -1,0 +1,21 @@
+diff --git a/msft_assemblyversions.txt b/sb_assemblyversions.txt
+index ------------
+--- a/msft_assemblyversions.txt
++++ b/sb_assemblyversions.txt
+@@ ------------ @@ sdk/x.y.z/DotnetTools/dotnet-user-jwts/x.y.z/tools/netx.y/any/Microsoft.Extensio
+ sdk/x.y.z/DotnetTools/dotnet-user-jwts/x.y.z/tools/netx.y/any/Microsoft.Extensions.FileProviders.Physical.dll - 8.0.0
+ sdk/x.y.z/DotnetTools/dotnet-user-jwts/x.y.z/tools/netx.y/any/Microsoft.Extensions.FileSystemGlobbing.dll - 8.0.0
+ sdk/x.y.z/DotnetTools/dotnet-user-jwts/x.y.z/tools/netx.y/any/Microsoft.Extensions.Primitives.dll - 8.0.0
+-sdk/x.y.z/DotnetTools/dotnet-user-jwts/x.y.z/tools/netx.y/any/Microsoft.IdentityModel.Abstractions.dll - 7.0.0
+-sdk/x.y.z/DotnetTools/dotnet-user-jwts/x.y.z/tools/netx.y/any/Microsoft.IdentityModel.JsonWebTokens.dll - 7.0.0
+-sdk/x.y.z/DotnetTools/dotnet-user-jwts/x.y.z/tools/netx.y/any/Microsoft.IdentityModel.Logging.dll - 7.0.0
+-sdk/x.y.z/DotnetTools/dotnet-user-jwts/x.y.z/tools/netx.y/any/Microsoft.IdentityModel.Tokens.dll - 7.0.0
+-sdk/x.y.z/DotnetTools/dotnet-user-jwts/x.y.z/tools/netx.y/any/System.IdentityModel.Tokens.Jwt.dll - 7.0.0
++sdk/x.y.z/DotnetTools/dotnet-user-jwts/x.y.z/tools/netx.y/any/Microsoft.IdentityModel.Abstractions.dll - 0.0.1
++sdk/x.y.z/DotnetTools/dotnet-user-jwts/x.y.z/tools/netx.y/any/Microsoft.IdentityModel.JsonWebTokens.dll - 0.0.1
++sdk/x.y.z/DotnetTools/dotnet-user-jwts/x.y.z/tools/netx.y/any/Microsoft.IdentityModel.Logging.dll - 0.0.1
++sdk/x.y.z/DotnetTools/dotnet-user-jwts/x.y.z/tools/netx.y/any/Microsoft.IdentityModel.Tokens.dll - 0.0.1
++sdk/x.y.z/DotnetTools/dotnet-user-jwts/x.y.z/tools/netx.y/any/System.IdentityModel.Tokens.Jwt.dll - 0.0.1
+ sdk/x.y.z/DotnetTools/dotnet-user-secrets/x.y.z/tools/netx.y/any/dotnet-user-secrets.dll - 8.0.0
+ sdk/x.y.z/DotnetTools/dotnet-user-secrets/x.y.z/tools/netx.y/any/Microsoft.Extensions.Configuration.Abstractions.dll - 8.0.0
+ sdk/x.y.z/DotnetTools/dotnet-user-secrets/x.y.z/tools/netx.y/any/Microsoft.Extensions.Configuration.dll - 8.0.0
