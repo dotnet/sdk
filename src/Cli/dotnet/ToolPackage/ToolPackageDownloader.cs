@@ -74,7 +74,6 @@ namespace Microsoft.DotNet.Cli.ToolPackage
            Action<LockFileItem> additionalAction,
            params PatternSet[] patterns)
         {
-            // Loop through each criteria taking the first one that matches one or more items.
             foreach (var managedCriteria in criteria)
             {
                 var group = items.FindBestItemGroup(
