@@ -330,6 +330,8 @@
           maccatalyst-x64;
           linux-bionic-arm64;
           linux-bionic-x64;
+          osx-arm64;
+          osx-x64;
           "
           />
 
