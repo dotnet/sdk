@@ -278,8 +278,6 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             bootJsonData.resources.wasmNative.Should().ContainKey("dotnet.native.wasm");
 
             bootJsonData.resources.icu.Should().BeNull();
-            //bootJsonData.resources.icu.Should().NotContainKey("icudt.dat");
-            //bootJsonData.resources.icu.Should().NotContainKey("icudt_EFIGS.dat");
 
             new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "dotnet.native.wasm")).Should().Exist();
             new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "icudt.dat")).Should().NotExist();
