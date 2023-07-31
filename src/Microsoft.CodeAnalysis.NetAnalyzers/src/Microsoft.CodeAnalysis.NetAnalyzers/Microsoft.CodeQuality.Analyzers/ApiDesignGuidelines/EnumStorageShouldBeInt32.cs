@@ -72,7 +72,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             }
 
             // If enum is Int64 and has Flags attributes then exit
-            if (underlyingType == SpecialType.System_Int64 && symbol.HasAttribute(flagsAttribute))
+            if (underlyingType == SpecialType.System_Int64 && symbol.HasAnyAttribute(flagsAttribute))
             {
                 return;
             }

@@ -73,7 +73,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
             if (operation.Kind == OperationKind.Invocation)
             {
                 return isMethodSurroundedWithDirective
-                    || !((IInvocationOperation)operation).TargetMethod.HasAttribute(conditionalAttributeType);
+                    || !((IInvocationOperation)operation).TargetMethod.HasAnyAttribute(conditionalAttributeType);
             }
 
             return true;

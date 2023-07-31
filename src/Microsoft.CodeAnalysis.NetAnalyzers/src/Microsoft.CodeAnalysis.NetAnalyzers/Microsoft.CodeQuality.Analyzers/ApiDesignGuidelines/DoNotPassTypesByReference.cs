@@ -60,7 +60,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     {
                         // VB.NET out is a ref parameter with the OutAttribute
                         if (parameterSymbol.RefKind == RefKind.Ref &&
-                            !parameterSymbol.HasAttribute(outAttributeType))
+                            !parameterSymbol.HasAnyAttribute(outAttributeType))
                         {
                             context.ReportDiagnostic(parameterSymbol.CreateDiagnostic(Rule, parameterSymbol.Name));
                         }
