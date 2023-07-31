@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -77,14 +77,27 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
         private static readonly ImmutableArray<string> s_dateInvariantFormats = ImmutableArray.Create("o", "O", "r", "R", "s", "u");
 
+        private static readonly ImmutableArray<SpecialType> s_numberTypes = ImmutableArray.Create(
+            SpecialType.System_Int32,
+            SpecialType.System_UInt32,
+            SpecialType.System_Int64,
+            SpecialType.System_UInt64,
+            SpecialType.System_Int16,
+            SpecialType.System_UInt16,
+            SpecialType.System_Double,
+            SpecialType.System_Single,
+            SpecialType.System_Decimal);
+
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(IFormatProviderAlternateStringRule, IFormatProviderAlternateRule, IFormatProviderOptionalRule, UICultureStringRule, UICultureRule);
 
         protected override void InitializeWorker(CompilationStartAnalysisContext context)
         {
 
             #region "Get All the WellKnown Types and Members"
-            var iformatProviderType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemIFormatProvider);
-            var cultureInfoType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemGlobalizationCultureInfo);
+
+            var typeProvider = WellKnownTypeProvider.GetOrCreate(context.Compilation);
+            var iformatProviderType = typeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemIFormatProvider);
+            var cultureInfoType = typeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemGlobalizationCultureInfo);
             if (iformatProviderType == null || cultureInfoType == null)
             {
                 return;
@@ -95,7 +108,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
             var charType = context.Compilation.GetSpecialType(SpecialType.System_Char);
             var boolType = context.Compilation.GetSpecialType(SpecialType.System_Boolean);
-            var guidType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemGuid);
+            var guidType = typeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemGuid);
+            var numberTypes = s_numberTypes.Select(context.Compilation.GetSpecialType).ToImmutableArray();
 
             var nullableT = context.Compilation.GetSpecialType(SpecialType.System_Nullable_T);
             var invariantToStringMethodsBuilder = ImmutableHashSet.CreateBuilder<IMethodSymbol>();
@@ -105,11 +119,11 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             AddValidToStringMethods(invariantToStringMethodsBuilder, nullableT, guidType);
             var invariantToStringMethods = invariantToStringMethodsBuilder.ToImmutable();
 
-            var dateTimeToStringFormatMethod = GetToStringWithFormatStringParameter(context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemDateTime));
+            var dateTimeToStringFormatMethod = GetToStringWithFormatStringParameter(typeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemDateTime));
 
-            var dateTimeOffsetToStringFormatMethod = GetToStringWithFormatStringParameter(context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemDateTimeOffset));
+            var dateTimeOffsetToStringFormatMethod = GetToStringWithFormatStringParameter(typeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemDateTimeOffset));
 
-            var timeSpanToStringFormatMethod = GetToStringWithFormatStringParameter(context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemTimeSpan));
+            var timeSpanToStringFormatMethod = GetToStringWithFormatStringParameter(typeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemTimeSpan));
 
             var stringFormatMembers = stringType.GetMembers("Format").OfType<IMethodSymbol>();
 
@@ -138,16 +152,16 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             var currentUICultureProperty = cultureInfoType.GetMembers("CurrentUICulture").OfType<IPropertySymbol>().FirstOrDefault();
             var installedUICultureProperty = cultureInfoType.GetMembers("InstalledUICulture").OfType<IPropertySymbol>().FirstOrDefault();
 
-            var threadType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemThreadingThread);
+            var threadType = typeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemThreadingThread);
             var currentThreadCurrentUICultureProperty = threadType?.GetMembers("CurrentUICulture").OfType<IPropertySymbol>().FirstOrDefault();
 
-            var activatorType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemActivator);
-            var resourceManagerType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemResourcesResourceManager);
+            var activatorType = typeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemActivator);
+            var resourceManagerType = typeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemResourcesResourceManager);
 
-            var computerInfoType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.MicrosoftVisualBasicDevicesComputerInfo);
+            var computerInfoType = typeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.MicrosoftVisualBasicDevicesComputerInfo);
             var installedUICulturePropertyOfComputerInfoType = computerInfoType?.GetMembers("InstalledUICulture").OfType<IPropertySymbol>().FirstOrDefault();
 
-            var obsoleteAttributeType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemObsoleteAttribute);
+            var obsoleteAttributeType = typeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemObsoleteAttribute);
 
             var guidParseMethods = guidType?.GetMembers("Parse") ?? ImmutableArray<ISymbol>.Empty;
 
@@ -228,10 +242,14 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     if (!diagnosticReported)
                     {
                         var currentCallHasNullFormatProvider = invocationExpression.Arguments.Any(x =>
-                            SymbolEqualityComparer.Default.Equals(x.Parameter.Type, iformatProviderType)
+                            SymbolEqualityComparer.Default.Equals(x.Parameter?.Type, iformatProviderType)
                             && x.ArgumentKind == ArgumentKind.DefaultValue);
 
-                        if (currentCallHasNullFormatProvider)
+                        var nullableType = invocationExpression.Instance?.Type.GetNullableValueTypeUnderlyingType();
+                        var isDefaultToStringInvocation = invocationExpression.TargetMethod is { Name: nameof(object.ToString), Parameters.Length: 0 };
+                        var isNullableNumberToStringInvocation = isDefaultToStringInvocation && numberTypes.Contains(nullableType, SymbolEqualityComparer.Default);
+
+                        if (currentCallHasNullFormatProvider || isNullableNumberToStringInvocation)
                         {
                             oaContext.ReportDiagnostic(invocationExpression.CreateDiagnostic(IFormatProviderOptionalRule,
                                 targetMethod.ToDisplayString(SymbolDisplayFormats.ShortSymbolDisplayFormat)));
@@ -256,7 +274,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                         if (argument != null && currentUICultureProperty != null &&
                             installedUICultureProperty != null && currentThreadCurrentUICultureProperty != null)
                         {
-                            var semanticModel = argument.SemanticModel;
+                            var semanticModel = argument.SemanticModel!;
 
                             var symbol = semanticModel.GetSymbolInfo(argument.Value.Syntax, oaContext.CancellationToken).Symbol;
 

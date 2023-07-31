@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
 using System.Linq;
@@ -73,7 +73,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 return false;
             }
 
-            object value = expr.ConstantValue.Value;
+            object? value = expr.ConstantValue.Value;
             if (value is float single)
             {
                 return float.IsNaN(single);

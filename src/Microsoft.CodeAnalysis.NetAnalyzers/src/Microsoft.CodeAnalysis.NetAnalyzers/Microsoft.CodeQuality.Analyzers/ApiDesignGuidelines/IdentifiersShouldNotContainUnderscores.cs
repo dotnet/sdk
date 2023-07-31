@@ -1,7 +1,8 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
 using Microsoft.CodeAnalysis;
@@ -226,7 +227,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
             context.RegisterCompilationAction(compilationAnalysisContext =>
             {
-                var compilation = compilationAnalysisContext.Compilation;
+                var compilation = compilationAnalysisContext.Compilation!;
                 if (ContainsUnderScore(compilation.AssemblyName))
                 {
                     compilationAnalysisContext.ReportDiagnostic(compilation.Assembly.CreateDiagnostic(AssemblyRule, compilation.AssemblyName));
@@ -290,9 +291,9 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             }
         }
 
-        private static bool ContainsUnderScore(string identifier)
+        private static bool ContainsUnderScore([NotNullWhen(true)] string? identifier)
         {
-            return identifier.IndexOf('_') != -1;
+            return identifier != null && identifier.IndexOf('_') != -1;
         }
     }
 }

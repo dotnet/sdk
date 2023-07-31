@@ -1589,6 +1589,69 @@ End Class
             }.RunAsync();
         }
 
+        [Theory, WorkItem(6586, "https://github.com/dotnet/roslyn-analyzers/issues/6586")]
+        [InlineData("int")]
+        [InlineData("uint")]
+        [InlineData("long")]
+        [InlineData("ulong")]
+        [InlineData("short")]
+        [InlineData("ushort")]
+        [InlineData("double")]
+        [InlineData("float")]
+        [InlineData("decimal")]
+        public Task FormatProviderForNullableValueTypes(string valueType)
+        {
+            var code = $@"
+public class Test {{
+    public void M({valueType}? x) {{
+        var y = {{|#0:x.ToString()|}};
+    }}
+}}";
+
+            return VerifyCS.VerifyAnalyzerAsync(code, new DiagnosticResult(SpecifyIFormatProviderAnalyzer.IFormatProviderOptionalRule).WithLocation(0).WithArguments($"{valueType}?.ToString()"));
+        }
+
+        [Theory, WorkItem(6746, "https://github.com/dotnet/roslyn-analyzers/issues/6586")]
+        [InlineData("int")]
+        [InlineData("uint")]
+        [InlineData("long")]
+        [InlineData("ulong")]
+        [InlineData("short")]
+        [InlineData("ushort")]
+        [InlineData("double")]
+        [InlineData("float")]
+        [InlineData("decimal")]
+        public Task FormatProviderForNullableValueTypesAlreadyProvided_NoDiagnostic(string valueType)
+        {
+            var code = $@"
+using System.Globalization;
+
+public class Test {{
+    public void M({valueType}? x) {{
+        var y = x?.ToString(CultureInfo.CurrentCulture);
+    }}
+}}";
+
+            return VerifyCS.VerifyAnalyzerAsync(code);
+        }
+
+        [Theory, WorkItem(6746, "https://github.com/dotnet/roslyn-analyzers/issues/6746")]
+        [CombinatorialData]
+        public Task FormatProviderForNullableValueTypes_NoDiagnostic(
+            [CombinatorialValues("int", "uint", "long", "ulong", "short", "ushort", "double", "float", "decimal")] string valueType,
+            [CombinatorialValues("GetHashCode", "GetValueOrDefault")] string methodName
+        )
+        {
+            var code = $@"
+public class Test {{
+    public void M({valueType}? x) {{
+        var y = x.{methodName}();
+    }}
+}}";
+
+            return VerifyCS.VerifyAnalyzerAsync(code);
+        }
+
         private DiagnosticResult GetIFormatProviderAlternateStringRuleCSharpResultAt(int line, int column, string arg1, string arg2, string arg3) =>
 #pragma warning disable RS0030 // Do not use banned APIs
             VerifyCS.Diagnostic(SpecifyIFormatProviderAnalyzer.IFormatProviderAlternateStringRule)

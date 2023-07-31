@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
 using Microsoft.CodeAnalysis.Diagnostics;
@@ -45,7 +45,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                     return;
                 }
 
-                IOperation ancestor = throwOperation;
+                IOperation? ancestor = throwOperation;
                 while (ancestor != null &&
                     ancestor.Kind != OperationKind.AnonymousFunction &&
                     ancestor.Kind != OperationKind.LocalFunction)
@@ -71,8 +71,8 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
         private static bool IsReassignedInCatch(ICatchClauseOperation catchClause, ILocalReferenceOperation localReference)
         {
             var dataflow = catchClause.Language == LanguageNames.CSharp
-                ? catchClause.SemanticModel.AnalyzeDataFlow(catchClause.Handler.Syntax)
-                : catchClause.SemanticModel.AnalyzeDataFlow(catchClause.Handler.Operations[0].Syntax, catchClause.Handler.Operations[^1].Syntax);
+                ? catchClause.SemanticModel!.AnalyzeDataFlow(catchClause.Handler.Syntax)
+                : catchClause.SemanticModel!.AnalyzeDataFlow(catchClause.Handler.Operations[0].Syntax, catchClause.Handler.Operations[^1].Syntax);
 
             return dataflow.WrittenInside.Contains(localReference.Local);
         }

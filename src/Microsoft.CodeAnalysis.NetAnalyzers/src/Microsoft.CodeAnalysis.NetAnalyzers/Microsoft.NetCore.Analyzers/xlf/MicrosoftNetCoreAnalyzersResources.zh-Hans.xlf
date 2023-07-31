@@ -763,6 +763,21 @@ Enumerable.OfType&lt;T&gt; 使用的泛型类型检查 (C# 'is' operator/IL 'isi
         <target state="translated">对 “Dictionary.ContainsKey(key)” 的不必要调用</target>
         <note />
       </trans-unit>
+      <trans-unit id="DoNotGuardSetAddOrRemoveByContainsDescription">
+        <source>Do not guard 'Add(item)' or 'Remove(item)' with 'Contains(item)' for the set. The former two already check whether the item exists and will return if it was added or removed.</source>
+        <target state="translated">对于集，不要使用 "Contains(item)" 来保护 "Add(item)" 或 "Remove(item)"。前两者已检查是否存在项，并将在添加或移除项时返回。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotGuardSetAddOrRemoveByContainsMessage">
+        <source>Do not guard '{0}' with '{1}'</source>
+        <target state="translated">不使用“{1}”保护“{0}”</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotGuardSetAddOrRemoveByContainsTitle">
+        <source>Unnecessary call to 'Contains(item)'</source>
+        <target state="translated">对 "Contains(item)" 的不必要调用</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DoNotHardCodeCertificate">
         <source>Do not hard-code certificate</source>
         <target state="translated">请勿硬编码证书</target>
@@ -895,17 +910,17 @@ Enumerable.OfType&lt;T&gt; 使用的泛型类型检查 (C# 'is' operator/IL 'isi
       </trans-unit>
       <trans-unit id="DoNotUseConfigureAwaitWithSuppressThrowingDescription">
         <source>The ConfigureAwaitOptions.SuppressThrowing is only supported with the non-generic Task, not a Task&lt;TResult&gt;.  To use it with a Task&lt;TResult&gt;, first cast to the base Task.</source>
-        <target state="new">The ConfigureAwaitOptions.SuppressThrowing is only supported with the non-generic Task, not a Task&lt;TResult&gt;.  To use it with a Task&lt;TResult&gt;, first cast to the base Task.</target>
+        <target state="translated">ConfigureAwaitOptions.SuppressThrowing 仅支持用于非泛型任务，不可用于 Task&lt;TResult&gt;。若要将它用于 Task&lt;TResult&gt;，请先强制转换为基本任务。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseConfigureAwaitWithSuppressThrowingMessage">
         <source>The ConfigureAwaitOptions.SuppressThrowing is only supported with the non-generic Task</source>
-        <target state="new">The ConfigureAwaitOptions.SuppressThrowing is only supported with the non-generic Task</target>
+        <target state="translated">只有非泛型任务才支持 ConfigureAwaitOptions.SuppressThrowing</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseConfigureAwaitWithSuppressThrowingTitle">
         <source>Do not use ConfigureAwaitOptions.SuppressThrowing with Task&lt;TResult&gt;</source>
-        <target state="new">Do not use ConfigureAwaitOptions.SuppressThrowing with Task&lt;TResult&gt;</target>
+        <target state="translated">不要对 Task&lt;TResult&gt; 使用 ConfigureAwaitOptions.SuppressThrowing</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseCountAsyncWhenAnyAsyncCanBeUsedDescription">
@@ -2055,22 +2070,22 @@ Enumerable.OfType&lt;T&gt; 使用的泛型类型检查 (C# 'is' operator/IL 'isi
       </trans-unit>
       <trans-unit id="PreferDictionaryTryAddDescription">
         <source>Prefer a 'TryAdd' call over an 'Add' call guarded by a 'ContainsKey' check. 'TryAdd' behaves the same as 'Add', except that when the specified key already exists, it returns 'false' instead of throwing an exception.</source>
-        <target state="new">Prefer a 'TryAdd' call over an 'Add' call guarded by a 'ContainsKey' check. 'TryAdd' behaves the same as 'Add', except that when the specified key already exists, it returns 'false' instead of throwing an exception.</target>
+        <target state="translated">首选 "TryAdd" 调用而不是由 "ContainsKey" 检查保护的 "Add" 调用。"TryAdd" 的行为与 "Add" 相同，但当指定的密钥已存在时，它返回 "false" 而不是引发异常。</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferDictionaryTryAddMessage">
         <source>To avoid double lookup, call 'TryAdd' instead of calling 'Add' with a 'ContainsKey' guard</source>
-        <target state="new">To avoid double lookup, call 'TryAdd' instead of calling 'Add' with a 'ContainsKey' guard</target>
+        <target state="translated">为了避免重复查找，请调用 "TryAdd"，而不是调用带有 "ContainsKey" 保护的 "Add"</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferDictionaryTryAddTitle">
         <source>Prefer the 'IDictionary.TryAdd(TKey, TValue)' method</source>
-        <target state="new">Prefer the 'IDictionary.TryAdd(TKey, TValue)' method</target>
+        <target state="translated">首选 "IDictionary.TryAdd(TKey, TValue)" 方法</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferDictionaryTryAddValueCodeFixTitle">
         <source>Use 'TryAdd(TKey, TValue)'</source>
-        <target state="new">Use 'TryAdd(TKey, TValue)'</target>
+        <target state="translated">使用 "TryAdd(TKey, TValue)"</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferDictionaryTryGetValueCodeFixTitle">
@@ -2333,11 +2348,6 @@ Enumerable.OfType&lt;T&gt; 使用的泛型类型检查 (C# 'is' operator/IL 'isi
         <target state="translated">使用 "string.{0}(string, StringComparison)" 重载</target>
         <note />
       </trans-unit>
-      <trans-unit id="RecommendCaseInsensitiveStringComparerTitle">
-        <source>Prefer using 'StringComparer' to perform case-insensitive string comparisons</source>
-        <target state="translated">首选使用 "StringComparer" 执行不区分大小写的字符串比较</target>
-        <note />
-      </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringComparisonDescription">
         <source>Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons because they lead to an allocation. Instead, prefer calling the method overloads of 'Contains', 'IndexOf' and 'StartsWith' that take a 'StringComparison' enum value to perform case-insensitive comparisons.</source>
         <target state="translated">避免调用 "ToLower"、"ToUpper"、"ToLowerInvariant" 和 "ToUpperInvariant" 来执行不区分大小写的字符串比较，因为它们会导致分配。相反，首选调用采用 "StringComparison" 枚举值的 "Contains"、"IndexOf" 和 "StartsWith" 的方法重载来执行不区分大小写的比较。</target>
@@ -2351,6 +2361,21 @@ Enumerable.OfType&lt;T&gt; 使用的泛型类型检查 (C# 'is' operator/IL 'isi
       <trans-unit id="RecommendCaseInsensitiveStringComparisonTitle">
         <source>Prefer the 'StringComparison' method overloads to perform case-insensitive string comparisons</source>
         <target state="translated">首选 "StringComparison" 方法重载来执行不区分大小写的字符串比较</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RecommendCaseInsensitiveStringEqualsCodeFixTitle">
+        <source>Use 'string.Equals(string, StringComparison)'</source>
+        <target state="translated">使用 "string.Equals(string, StringComparison)"</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RecommendCaseInsensitiveStringEqualsDescription">
+        <source>Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons, as in 'string.ToLower() == string.ToLower()', because they lead to an allocation. Instead, use 'string.Equals(string, StringComparison)' to perform case-insensitive comparisons.</source>
+        <target state="translated">就像在 "string.ToLower() == string.ToLower()" 中那样，避免调用 "ToLower"、"ToUpper"、"ToLowerInvariant" 和 "ToUpperInvariant" 来执行不区分大小写的字符串比较，因为它们会导致分配。请使用 "string.Equals(string, StringComparison)" 执行不区分大小写的比较。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RecommendCaseInsensitiveStringEqualsMessage">
+        <source>Prefer using 'string.Equals(string, StringComparison)' to perform a case-insensitive comparison</source>
+        <target state="translated">首选使用 "string.Equals(string, StringComparison)" 来执行不区分大小写的比较</target>
         <note />
       </trans-unit>
       <trans-unit id="RemoveRedundantCall">
@@ -2840,17 +2865,17 @@ Enumerable.OfType&lt;T&gt; 使用的泛型类型检查 (C# 'is' operator/IL 'isi
       </trans-unit>
       <trans-unit id="UseCompositeFormatDescription">
         <source>Cache and use a 'CompositeFormat' instance as the argument to this formatting operation, rather than passing in the original format string. This reduces the cost of the formatting operation.</source>
-        <target state="new">Cache and use a 'CompositeFormat' instance as the argument to this formatting operation, rather than passing in the original format string. This reduces the cost of the formatting operation.</target>
+        <target state="translated">缓存并使用 "CompositeFormat" 实例作为此格式化操作的参数，而不是传入原始格式字符串。这会降低格式化操作的成本。</target>
         <note />
       </trans-unit>
       <trans-unit id="UseCompositeFormatMessage">
         <source>Cache a 'CompositeFormat' for repeated use in this formatting operation</source>
-        <target state="new">Cache a 'CompositeFormat' for repeated use in this formatting operation</target>
+        <target state="translated">缓存 "CompositeFormat" 以在此格式化操作中重复使用</target>
         <note />
       </trans-unit>
       <trans-unit id="UseCompositeFormatTitle">
         <source>Use 'CompositeFormat'</source>
-        <target state="new">Use 'CompositeFormat'</target>
+        <target state="translated">使用 "CompositeFormat"</target>
         <note />
       </trans-unit>
       <trans-unit id="UseConcreteTypeDescription">
@@ -3166,6 +3191,21 @@ Enumerable.OfType&lt;T&gt; 使用的泛型类型检查 (C# 'is' operator/IL 'isi
       <trans-unit id="UseStringEqualsOverStringCompareTitle">
         <source>Use 'string.Equals'</source>
         <target state="translated">使用 “string.Equals”</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseStringMethodCharOverloadWithSingleCharactersDescription">
+        <source>The char overload is a better performing overload than a string with a single char.</source>
+        <target state="translated">与具有单个字符的字符串相比，字符重载的性能更好。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseStringMethodCharOverloadWithSingleCharactersMessage">
+        <source>Use 'string.{0}(char)' instead of 'string.{0}(string)' when you have a string with a single char</source>
+        <target state="translated">当字符串具有单个字符时，请使用 "string.{0}(char)" 而不是 "string.{0}(string)"。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseStringMethodCharOverloadWithSingleCharactersTitle">
+        <source>Use char overload</source>
+        <target state="translated">使用字符重载</target>
         <note />
       </trans-unit>
       <trans-unit id="UseThrowHelperDescription">

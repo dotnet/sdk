@@ -16,7 +16,8 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Usage
             {
                 SyntaxNode typeDefinition = syntaxReference.GetSyntax();
                 if (typeDefinition is BaseTypeDeclarationSyntax baseType &&
-                    FindTypeArgumentFromBaseInterfaceList(baseType.BaseList.Types, theInterfaceSymbol) is { } node)
+                    baseType.BaseList is { } baseList &&
+                    FindTypeArgumentFromBaseInterfaceList(baseList.Types, theInterfaceSymbol) is { } node)
                 {
                     return node;
                 }

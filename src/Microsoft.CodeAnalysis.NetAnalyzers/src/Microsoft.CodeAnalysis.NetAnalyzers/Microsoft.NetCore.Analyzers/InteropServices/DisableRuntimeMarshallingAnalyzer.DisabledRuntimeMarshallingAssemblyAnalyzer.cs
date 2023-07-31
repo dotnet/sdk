@@ -100,7 +100,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
             {
                 var functionPointerInvocation = IFunctionPointerInvocationOperationWrapper.FromOperation(context.Operation);
 
-                if (functionPointerInvocation.GetFunctionPointerSignature().CallingConvention() == System.Reflection.Metadata.SignatureCallingConvention.Default)
+                if (functionPointerInvocation.GetFunctionPointerSignature().CallingConvention == System.Reflection.Metadata.SignatureCallingConvention.Default)
                 {
                     return;
                 }
@@ -123,7 +123,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                     return;
                 }
 
-                AnalyzeMethodSignature(_autoLayoutCache, context.ReportDiagnostic, type.DelegateInvokeMethod);
+                AnalyzeMethodSignature(_autoLayoutCache, context.ReportDiagnostic, type.DelegateInvokeMethod!);
             }
 
             public void AnalyzeMethod(SymbolAnalysisContext context)
@@ -147,7 +147,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                     reportDiagnostic(method.CreateDiagnostic(FeatureUnsupportedWhenRuntimeMarshallingDisabledSetLastErrorTrue));
                 }
 
-                if (!method.MethodImplementationFlags().HasFlag(System.Reflection.MethodImplAttributes.PreserveSig))
+                if (!method.MethodImplementationFlags.HasFlag(System.Reflection.MethodImplAttributes.PreserveSig))
                 {
                     reportDiagnostic(method.CreateDiagnostic(FeatureUnsupportedWhenRuntimeMarshallingDisabledHResultSwapping));
                 }

@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
 using System.Composition;
@@ -28,8 +28,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         public sealed override async Task RegisterCodeFixesAsync(CodeFixContext context)
         {
             Document doc = context.Document;
-            SemanticModel model = await doc.GetSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
-            SyntaxNode root = await doc.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
+            SemanticModel model = await doc.GetRequiredSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
+            SyntaxNode root = await doc.GetRequiredSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
 
             if (TryGetFixInfo(doc, root, model, context.Diagnostics[0], out INamedTypeSymbol? typeSymbol, out string? methodName, out SyntaxNode? node, out SyntaxNode? arg, out SyntaxNode? other))
             {
@@ -125,9 +125,10 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         {
             public static readonly CustomFixAllProvider Instance = new();
 
-            protected override string CodeActionTitle => MicrosoftNetCoreAnalyzersResources.UseThrowHelperFix;
+            protected override string GetFixAllTitle(FixAllContext fixAllContext)
+                => MicrosoftNetCoreAnalyzersResources.UseThrowHelperFix;
 
-            protected override async Task<SyntaxNode> FixAllInDocumentAsync(FixAllContext fixAllContext, Document document, ImmutableArray<Diagnostic> diagnostics)
+            protected override async Task<Document?> FixAllAsync(FixAllContext fixAllContext, Document document, ImmutableArray<Diagnostic> diagnostics)
             {
                 DocumentEditor editor = await DocumentEditor.CreateAsync(document, fixAllContext.CancellationToken).ConfigureAwait(false);
                 SyntaxNode root = editor.OriginalRoot;
@@ -141,7 +142,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     }
                 }
 
-                return editor.GetChangedRoot();
+                return editor.GetChangedDocument();
             }
         }
     }

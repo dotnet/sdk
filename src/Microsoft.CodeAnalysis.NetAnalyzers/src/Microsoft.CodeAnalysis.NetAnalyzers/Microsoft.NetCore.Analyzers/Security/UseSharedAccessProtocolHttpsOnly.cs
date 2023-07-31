@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
 using System.Linq;
@@ -118,7 +118,7 @@ namespace Microsoft.NetCore.Analyzers.Security
 
                         if (!typeSymbol.Equals(cloudStorageAccountTypeSymbol))
                         {
-                            var protocolsArgumentOperation = invocationOperation.Arguments.FirstOrDefault(s => s.Parameter.Name == "protocols" &&
+                            var protocolsArgumentOperation = invocationOperation.Arguments.FirstOrDefault(s => s.Parameter?.Name == "protocols" &&
                                                                                                                 s.Parameter.Type is INamedTypeSymbol namedTypeSymbol &&
                                                                                                                 namedTypeSymbol.IsGenericType &&
                                                                                                                 namedTypeSymbol.ConstructedFrom.Equals(nullableTypeSymbol) &&

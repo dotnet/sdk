@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
+using System.Collections.Immutable;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
@@ -15,6 +16,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {
     public class UseAsyncMethodInAsyncContextTests
     {
+        private static readonly ImmutableArray<PackageIdentity> EntityFrameworkPackages = ImmutableArray.Create(new PackageIdentity("Microsoft.EntityFrameworkCore", "7.0.8"));
+
         [Fact]
         public async Task TaskWaitInTaskReturningMethodGeneratesWarning()
         {
@@ -1241,6 +1244,64 @@ Module Program
 End Module
 ";
             await CreateVBTestAndRunAsync(testVB);
+        }
+
+        [Fact]
+        [WorkItem(6684, "https://github.com/dotnet/roslyn-analyzers/issues/6684")]
+        public Task DbContextAdd_NoDiagnostic()
+        {
+            return new VerifyCS.Test
+            {
+                TestCode = @"
+using Microsoft.EntityFrameworkCore;
+using System.Threading.Tasks;
+
+class Test {
+    public async Task RunAsync(DbContext ctx) {
+        ctx.Add(1);
+    }
+}",
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net70.WithPackages(EntityFrameworkPackages)
+            }.RunAsync();
+        }
+
+        [Fact]
+        [WorkItem(6684, "https://github.com/dotnet/roslyn-analyzers/issues/6684")]
+        public Task DbContextAddRange_NoDiagnostic()
+        {
+            return new VerifyCS.Test
+            {
+                TestCode = @"
+using Microsoft.EntityFrameworkCore;
+using System.Threading.Tasks;
+
+class Test {
+    public async Task RunAsync(DbContext ctx) {
+        ctx.AddRange(1, 2);
+    }
+}",
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net70.WithPackages(EntityFrameworkPackages)
+            }.RunAsync();
+        }
+
+        [Fact]
+        [WorkItem(6684, "https://github.com/dotnet/roslyn-analyzers/issues/6684")]
+        public Task DbContextFactoryCreateDbContext_Diagnostic()
+        {
+            return new VerifyCS.Test
+            {
+                TestCode = @"
+using Microsoft.EntityFrameworkCore;
+using System.Threading.Tasks;
+
+class Test {
+    public async Task RunAsync(IDbContextFactory<DbContext> factory) {
+        var context = {|#0:factory.CreateDbContext()|};
+    }
+}",
+                ExpectedDiagnostics = { new DiagnosticResult(UseAsyncMethodInAsyncContext.Descriptor).WithLocation(0).WithArguments("IDbContextFactory<DbContext>.CreateDbContext()", "IDbContextFactory<DbContext>.CreateDbContextAsync(CancellationToken)") },
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net70.WithPackages(EntityFrameworkPackages)
+            }.RunAsync();
         }
 
         private static async Task CreateCSTestAndRunAsync(string testCS)

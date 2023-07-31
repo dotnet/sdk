@@ -156,7 +156,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     return;
                 }
 
-                var usageContext = new DictionaryUsageContext(containsOperation.Instance, containsOperation.Arguments[0].Value, addSymbol);
+                var usageContext = new DictionaryUsageContext(containsOperation.Instance!, containsOperation.Arguments[0].Value, addSymbol);
                 if (!GetParentConditionalOperation(containsOperation, ref usageContext, searchContext, out var conditionalOperation, out var guardsTruePath))
                 {
                     return;
@@ -493,7 +493,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
         private static void FindUsageInOperationsAfterConditionBlock(IOperation sourceOperation, ref DictionaryUsageContext context, SearchContext searchContext)
         {
             var testOperation = false;
-            foreach (var operation in sourceOperation.Parent.Children)
+            foreach (var operation in sourceOperation.Parent!.Children)
             {
                 if (!testOperation)
                 {
@@ -519,7 +519,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
             return IsSameReferenceOperation(sourceReference, targetReference);
         }
 
-        private static bool IsSameReferenceOperation(IOperation sourceReference, IOperation targetReference)
+        private static bool IsSameReferenceOperation(IOperation? sourceReference, IOperation targetReference)
         {
             switch (sourceReference)
             {

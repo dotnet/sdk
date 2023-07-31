@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
 using System.Linq;
@@ -72,7 +72,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             bool overridesObjectEquals = namedType.OverridesEquals();
 
             INamedTypeSymbol constructedEquatable = equatableType.Construct(namedType);
-            INamedTypeSymbol implementation = namedType
+            INamedTypeSymbol? implementation = namedType
                 .AllInterfaces
                 .FirstOrDefault(x => x.Equals(constructedEquatable));
             bool implementsEquatable = implementation != null;

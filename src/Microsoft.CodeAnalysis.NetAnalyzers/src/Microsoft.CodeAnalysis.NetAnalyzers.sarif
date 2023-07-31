@@ -9,26 +9,6 @@
         "language": "en-US"
       },
       "rules": {
-        "CA1001": {
-          "id": "CA1001",
-          "shortDescription": "Types that own disposable fields should be disposable",
-          "fullDescription": "A class declares and implements an instance field that is a System.IDisposable type, and the class does not implement IDisposable. A class that declares an IDisposable field indirectly owns an unmanaged resource and should implement the IDisposable interface.",
-          "defaultLevel": "hidden",
-          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1001",
-          "properties": {
-            "category": "Design",
-            "isEnabledByDefault": true,
-            "typeName": "CSharpTypesThatOwnDisposableFieldsShouldBeDisposableAnalyzer",
-            "languages": [
-              "C#"
-            ],
-            "tags": [
-              "PortedFromFxCop",
-              "Telemetry",
-              "EnabledRuleInAggressiveMode"
-            ]
-          }
-        },
         "CA1032": {
           "id": "CA1032",
           "shortDescription": "Implement standard exception constructors",
@@ -126,10 +106,30 @@
             ]
           }
         },
+        "CA1508": {
+          "id": "CA1508",
+          "shortDescription": "Avoid dead conditional code",
+          "fullDescription": "'{0}' is never '{1}'. Remove or refactor the condition(s) to avoid dead code.",
+          "defaultLevel": "warning",
+          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1508",
+          "properties": {
+            "category": "Maintainability",
+            "isEnabledByDefault": false,
+            "typeName": "CSharpAvoidDeadConditionalCode",
+            "languages": [
+              "C#"
+            ],
+            "tags": [
+              "Dataflow",
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
         "CA1802": {
           "id": "CA1802",
           "shortDescription": "Use literals where appropriate",
-          "fullDescription": "A field is declared static and read-only (Shared and ReadOnly in Visual Basic), and is initialized by using a value that is computable at compile time. Because the value that is assigned to the targeted field is computable at compile time, change the declaration to a const (Const in Visual Basic) field so that the value is computed at compile time instead of at run?time.",
+          "fullDescription": "A field is declared static and read-only (Shared and ReadOnly in Visual Basic), and is initialized by using a value that is computable at compile time. Because the value that is assigned to the targeted field is computable at compile time, change the declaration to a const (Const in Visual Basic) field so that the value is computed at compile time instead of at runtime.",
           "defaultLevel": "warning",
           "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1802",
           "properties": {
@@ -333,6 +333,63 @@
             "category": "Performance",
             "isEnabledByDefault": true,
             "typeName": "CSharpConstantExpectedAnalyzer",
+            "languages": [
+              "C#"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA1865": {
+          "id": "CA1865",
+          "shortDescription": "Use char overload",
+          "fullDescription": "The char overload is a better performing overload than a string with a single char.",
+          "defaultLevel": "note",
+          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1865",
+          "properties": {
+            "category": "Performance",
+            "isEnabledByDefault": true,
+            "typeName": "CSharpUseStringMethodCharOverloadWithSingleCharacters",
+            "languages": [
+              "C#"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA1866": {
+          "id": "CA1866",
+          "shortDescription": "Use char overload",
+          "fullDescription": "The char overload is a better performing overload than a string with a single char.",
+          "defaultLevel": "note",
+          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1866",
+          "properties": {
+            "category": "Performance",
+            "isEnabledByDefault": true,
+            "typeName": "CSharpUseStringMethodCharOverloadWithSingleCharacters",
+            "languages": [
+              "C#"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA1867": {
+          "id": "CA1867",
+          "shortDescription": "Use char overload",
+          "fullDescription": "The char overload is a better performing overload than a string with a single char.",
+          "defaultLevel": "warning",
+          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1867",
+          "properties": {
+            "category": "Performance",
+            "isEnabledByDefault": false,
+            "typeName": "CSharpUseStringMethodCharOverloadWithSingleCharacters",
             "languages": [
               "C#"
             ],
@@ -609,6 +666,27 @@
             "category": "Design",
             "isEnabledByDefault": true,
             "typeName": "DoNotDeclareStaticMembersOnGenericTypesAnalyzer",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "PortedFromFxCop",
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA1001": {
+          "id": "CA1001",
+          "shortDescription": "Types that own disposable fields should be disposable",
+          "fullDescription": "A class declares and implements an instance field that is a System.IDisposable type, and the class does not implement IDisposable. A class that declares an IDisposable field indirectly owns an unmanaged resource and should implement the IDisposable interface.",
+          "defaultLevel": "hidden",
+          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1001",
+          "properties": {
+            "category": "Design",
+            "isEnabledByDefault": true,
+            "typeName": "TypesThatOwnDisposableFieldsShouldBeDisposableAnalyzer",
             "languages": [
               "C#",
               "Visual Basic"
@@ -1928,27 +2006,6 @@
             ]
           }
         },
-        "CA1508": {
-          "id": "CA1508",
-          "shortDescription": "Avoid dead conditional code",
-          "fullDescription": "'{0}' is never '{1}'. Remove or refactor the condition(s) to avoid dead code.",
-          "defaultLevel": "warning",
-          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1508",
-          "properties": {
-            "category": "Maintainability",
-            "isEnabledByDefault": false,
-            "typeName": "AvoidDeadConditionalCode",
-            "languages": [
-              "C#",
-              "Visual Basic"
-            ],
-            "tags": [
-              "Dataflow",
-              "Telemetry",
-              "EnabledRuleInAggressiveMode"
-            ]
-          }
-        },
         "CA1509": {
           "id": "CA1509",
           "shortDescription": "Invalid entry in code metrics rule specification file",
@@ -3176,8 +3233,8 @@
         },
         "CA1862": {
           "id": "CA1862",
-          "shortDescription": "Prefer using 'StringComparer' to perform case-insensitive string comparisons",
-          "fullDescription": "Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons when using 'CompareTo', because they lead to an allocation. Instead, use 'StringComparer' to perform case-insensitive comparisons.",
+          "shortDescription": "Prefer the 'StringComparison' method overloads to perform case-insensitive string comparisons",
+          "fullDescription": "Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons, as in 'string.ToLower() == string.ToLower()', because they lead to an allocation. Instead, use 'string.Equals(string, StringComparison)' to perform case-insensitive comparisons.",
           "defaultLevel": "note",
           "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1862",
           "properties": {
@@ -3224,6 +3281,26 @@
             "category": "Performance",
             "isEnabledByDefault": true,
             "typeName": "PreferDictionaryTryMethodsOverContainsKeyGuardAnalyzer",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA1868": {
+          "id": "CA1868",
+          "shortDescription": "Unnecessary call to 'Contains(item)'",
+          "fullDescription": "Do not guard 'Add(item)' or 'Remove(item)' with 'Contains(item)' for the set. The former two already check whether the item exists and will return if it was added or removed.",
+          "defaultLevel": "note",
+          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1868",
+          "properties": {
+            "category": "Performance",
+            "isEnabledByDefault": true,
+            "typeName": "DoNotGuardSetAddOrRemoveByContains",
             "languages": [
               "C#",
               "Visual Basic"
@@ -6095,26 +6172,6 @@
         "language": "en-US"
       },
       "rules": {
-        "CA1001": {
-          "id": "CA1001",
-          "shortDescription": "Types that own disposable fields should be disposable",
-          "fullDescription": "A class declares and implements an instance field that is a System.IDisposable type, and the class does not implement IDisposable. A class that declares an IDisposable field indirectly owns an unmanaged resource and should implement the IDisposable interface.",
-          "defaultLevel": "hidden",
-          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1001",
-          "properties": {
-            "category": "Design",
-            "isEnabledByDefault": true,
-            "typeName": "BasicTypesThatOwnDisposableFieldsShouldBeDisposableAnalyzer",
-            "languages": [
-              "Visual Basic"
-            ],
-            "tags": [
-              "PortedFromFxCop",
-              "Telemetry",
-              "EnabledRuleInAggressiveMode"
-            ]
-          }
-        },
         "CA1032": {
           "id": "CA1032",
           "shortDescription": "Implement standard exception constructors",
@@ -6212,10 +6269,30 @@
             ]
           }
         },
+        "CA1508": {
+          "id": "CA1508",
+          "shortDescription": "Avoid dead conditional code",
+          "fullDescription": "'{0}' is never '{1}'. Remove or refactor the condition(s) to avoid dead code.",
+          "defaultLevel": "warning",
+          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1508",
+          "properties": {
+            "category": "Maintainability",
+            "isEnabledByDefault": false,
+            "typeName": "BasicAvoidDeadConditionalCode",
+            "languages": [
+              "Visual Basic"
+            ],
+            "tags": [
+              "Dataflow",
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
         "CA1802": {
           "id": "CA1802",
           "shortDescription": "Use literals where appropriate",
-          "fullDescription": "A field is declared static and read-only (Shared and ReadOnly in Visual Basic), and is initialized by using a value that is computable at compile time. Because the value that is assigned to the targeted field is computable at compile time, change the declaration to a const (Const in Visual Basic) field so that the value is computed at compile time instead of at run?time.",
+          "fullDescription": "A field is declared static and read-only (Shared and ReadOnly in Visual Basic), and is initialized by using a value that is computable at compile time. Because the value that is assigned to the targeted field is computable at compile time, change the declaration to a const (Const in Visual Basic) field so that the value is computed at compile time instead of at runtime.",
           "defaultLevel": "warning",
           "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1802",
           "properties": {
@@ -6366,6 +6443,63 @@
             ],
             "tags": [
               "Dataflow",
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA1865": {
+          "id": "CA1865",
+          "shortDescription": "Use char overload",
+          "fullDescription": "The char overload is a better performing overload than a string with a single char.",
+          "defaultLevel": "note",
+          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1865",
+          "properties": {
+            "category": "Performance",
+            "isEnabledByDefault": true,
+            "typeName": "BasicUseStringMethodCharOverloadWithSingleCharacters",
+            "languages": [
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA1866": {
+          "id": "CA1866",
+          "shortDescription": "Use char overload",
+          "fullDescription": "The char overload is a better performing overload than a string with a single char.",
+          "defaultLevel": "note",
+          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1866",
+          "properties": {
+            "category": "Performance",
+            "isEnabledByDefault": true,
+            "typeName": "BasicUseStringMethodCharOverloadWithSingleCharacters",
+            "languages": [
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA1867": {
+          "id": "CA1867",
+          "shortDescription": "Use char overload",
+          "fullDescription": "The char overload is a better performing overload than a string with a single char.",
+          "defaultLevel": "warning",
+          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1867",
+          "properties": {
+            "category": "Performance",
+            "isEnabledByDefault": false,
+            "typeName": "BasicUseStringMethodCharOverloadWithSingleCharacters",
+            "languages": [
+              "Visual Basic"
+            ],
+            "tags": [
               "Telemetry",
               "EnabledRuleInAggressiveMode"
             ]

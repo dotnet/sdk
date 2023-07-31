@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
@@ -70,25 +70,26 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 return;
             }
 
-            // Only analyze externally visible properties by default
-            if (!context.Options.MatchesConfiguredVisibility(AddGetterRule, property, context.Compilation))
-            {
-                Debug.Assert(!context.Options.MatchesConfiguredVisibility(MakeMoreAccessibleRule, property, context.Compilation));
-                return;
-            }
-
-            Debug.Assert(context.Options.MatchesConfiguredVisibility(MakeMoreAccessibleRule, property, context.Compilation));
+            Debug.Assert(context.Options.MatchesConfiguredVisibility(MakeMoreAccessibleRule, property, context.Compilation) == context.Options.MatchesConfiguredVisibility(AddGetterRule, property, context.Compilation));
 
             // We handled the non-CA1044 cases earlier.  Now, we handle CA1044 cases
             // If there is no getter then it is not accessible
             if (property.IsWriteOnly)
             {
-                context.ReportDiagnostic(property.CreateDiagnostic(AddGetterRule, property.Name));
+                // Only analyze externally visible properties by default
+                if (context.Options.MatchesConfiguredVisibility(AddGetterRule, property, context.Compilation))
+                {
+                    context.ReportDiagnostic(property.CreateDiagnostic(AddGetterRule, property.Name));
+                }
             }
             // Otherwise if there is a setter, check for its relative accessibility
-            else if (!property.IsReadOnly && (property.GetMethod.DeclaredAccessibility < property.SetMethod.DeclaredAccessibility))
+            else if (!property.IsReadOnly && (property.GetMethod!.DeclaredAccessibility < property.SetMethod!.DeclaredAccessibility))
             {
-                context.ReportDiagnostic(property.CreateDiagnostic(MakeMoreAccessibleRule, property.Name));
+                // Only analyze externally visible properties by default
+                if (context.Options.MatchesConfiguredVisibility(MakeMoreAccessibleRule, property, context.Compilation))
+                {
+                    context.ReportDiagnostic(property.CreateDiagnostic(MakeMoreAccessibleRule, property.Name));
+                }
             }
         }
     }

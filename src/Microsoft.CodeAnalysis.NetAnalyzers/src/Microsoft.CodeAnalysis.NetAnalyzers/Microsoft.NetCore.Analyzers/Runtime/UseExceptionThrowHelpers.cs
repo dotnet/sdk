@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Immutable;
@@ -187,7 +187,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     {
                         if (aneThrowIfNull is not null &&
                             IsParameterNullCheck(condition.Condition, out IParameterReferenceOperation? nullCheckParameter) &&
-                            nullCheckParameter.Type.IsReferenceType &&
+                            nullCheckParameter.Type!.IsReferenceType &&
                             HasReplaceableArgumentName(objectCreationOperation, 0))
                         {
                             context.ReportDiagnostic(condition.CreateDiagnostic(
@@ -266,7 +266,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
                             static bool AvoidComparing(IParameterReferenceOperation p) =>
                                 p.Type.IsNullableValueType() ||
-                                p.Type.TypeKind == TypeKind.Enum;
+                                p.Type?.TypeKind == TypeKind.Enum;
                         }
 
                         return;
@@ -297,7 +297,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                                 additionalLocations = additionalLocations.Add(
                                     getTypeCall.Instance is IInstanceReferenceOperation { IsImplicit: true } ?
                                         Location.None :
-                                        getTypeCall.Instance.Syntax.GetLocation());
+                                        getTypeCall.Instance!.Syntax.GetLocation());
                             }
 
                             context.ReportDiagnostic(condition.CreateDiagnostic(
@@ -434,7 +434,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         private static bool IsArgEqualStringEmpty(ISymbol stringEmpty, IParameterSymbol arg, IOperation left, IOperation right) =>
             left is IParameterReferenceOperation parameterReferenceOperation &&
             SymbolEqualityComparer.Default.Equals(parameterReferenceOperation.Parameter, arg) &&
-            parameterReferenceOperation.Type.SpecialType == SpecialType.System_String &&
+            parameterReferenceOperation.Type?.SpecialType == SpecialType.System_String &&
             right is IFieldReferenceOperation fieldReferenceOperation &&
             SymbolEqualityComparer.Default.Equals(stringEmpty, fieldReferenceOperation.Member);
 

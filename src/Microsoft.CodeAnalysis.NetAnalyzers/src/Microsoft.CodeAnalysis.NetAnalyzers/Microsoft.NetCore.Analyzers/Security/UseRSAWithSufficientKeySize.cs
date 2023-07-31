@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Immutable;
@@ -72,7 +72,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                 compilationStartAnalysisContext.RegisterOperationAction(operationAnalysisContext =>
                 {
                     var objectCreationOperation = (IObjectCreationOperation)operationAnalysisContext.Operation;
-                    var typeSymbol = objectCreationOperation.Constructor.ContainingType;
+                    var typeSymbol = objectCreationOperation.Constructor?.ContainingType;
 
                     if (typeSymbol == null)
                     {
@@ -86,7 +86,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                         var arguments = objectCreationOperation.Arguments;
 
                         if (arguments.Length == 1 &&
-                            arguments[0].Parameter.Type.SpecialType == SpecialType.System_Int32 &&
+                            arguments[0].Parameter?.Type.SpecialType == SpecialType.System_Int32 &&
                             arguments[0].Value.ConstantValue.HasValue &&
                             Convert.ToInt32(arguments[0].Value.ConstantValue.Value, CultureInfo.InvariantCulture) < 2048)
                         {
@@ -125,12 +125,11 @@ namespace Microsoft.NetCore.Analyzers.Security
                     else if (methodName == "Create" &&
                             typeSymbol.Equals(asymmetricAlgorithmTypeSymbol) &&
                             !arguments.IsEmpty &&
-                            arguments[0].Parameter.Type.SpecialType == SpecialType.System_String &&
+                            arguments[0].Parameter?.Type.SpecialType == SpecialType.System_String &&
                             arguments[0].Value.ConstantValue.HasValue)
                     {
-                        var argValue = arguments[0].Value.ConstantValue.Value;
-
-                        if (s_RSAAlgorithmNames.Contains(argValue.ToString()))
+                        if (arguments[0].Value.ConstantValue.Value is { } argValue &&
+                            s_RSAAlgorithmNames.Contains(argValue.ToString()))
                         {
                             // Use AsymmetricAlgorithm.Create(string) to create RSA and the default key size is 1024.
                             operationAnalysisContext.ReportDiagnostic(
@@ -142,19 +141,20 @@ namespace Microsoft.NetCore.Analyzers.Security
                     else if (methodName == "CreateFromName" &&
                             typeSymbol.Equals(cryptoConfigTypeSymbol) &&
                             !arguments.IsEmpty &&
-                            arguments[0].Parameter.Type.SpecialType == SpecialType.System_String &&
+                            arguments[0].Parameter?.Type.SpecialType == SpecialType.System_String &&
                             arguments[0].Value.ConstantValue.HasValue)
                     {
                         // Use CryptoConfig.CreateFromName(string, ...).
-                        var argValue = arguments[0].Value.ConstantValue.Value;
-
-                        if (s_RSAAlgorithmNames.Contains(argValue.ToString()))
+                        if (arguments[0].Value.ConstantValue.Value is { } argValue &&
+                            s_RSAAlgorithmNames.Contains(argValue.ToString()))
                         {
                             // Create RSA.
                             if (arguments.Length == 1 /* The default key size is 1024 */ ||
                                 arguments[1].Value is IArrayCreationOperation arrayCreationOperation /* Use CryptoConfig.CreateFromName(string, object[]) to create RSA */&&
-                                arrayCreationOperation.DimensionSizes[0].ConstantValue.Value.Equals(1) &&
-                                arrayCreationOperation.Initializer.ElementValues.Any(
+                                arrayCreationOperation.DimensionSizes[0].ConstantValue.Value is { } dimensionSize &&
+                                dimensionSize.Equals(1) &&
+                                arrayCreationOperation.Initializer is { } initializer &&
+                                initializer.ElementValues.Any(
                                     s => s is IConversionOperation conversionOperation &&
                                         conversionOperation.Operand.ConstantValue.HasValue &&
                                         Convert.ToInt32(conversionOperation.Operand.ConstantValue.Value, CultureInfo.InvariantCulture) < 2048) /* Specify the key size is smaller than 2048 explicitly */ )

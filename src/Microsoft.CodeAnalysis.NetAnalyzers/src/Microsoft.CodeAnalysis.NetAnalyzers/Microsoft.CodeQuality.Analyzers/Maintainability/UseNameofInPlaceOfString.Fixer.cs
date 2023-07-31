@@ -1,9 +1,10 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
 using System.Composition;
 using System.Threading;
 using System.Threading.Tasks;
+using Analyzer.Utilities;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
@@ -27,7 +28,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
 
         public sealed override async Task RegisterCodeFixesAsync(CodeFixContext context)
         {
-            var root = await context.Document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
+            var root = await context.Document.GetRequiredSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
             var diagnostics = context.Diagnostics;
             var diagnosticSpan = context.Span;
 
@@ -58,7 +59,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                 .WithTrailingTrivia(trailingTrivia)
                 .WithLeadingTrivia(leadingTrivia);
 
-            var root = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
+            var root = await document.GetRequiredSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
             var newRoot = root.ReplaceNode(nodeToReplace, nameOfExpression);
 
             return document.WithSyntaxRoot(newRoot);

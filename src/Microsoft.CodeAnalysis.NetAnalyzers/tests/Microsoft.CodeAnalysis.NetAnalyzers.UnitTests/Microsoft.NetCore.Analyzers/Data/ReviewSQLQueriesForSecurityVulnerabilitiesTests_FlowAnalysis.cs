@@ -3349,7 +3349,9 @@ End Class",
         [Fact]
         public async Task FlowAnalysis_PointsTo_ReferenceType_BaseDerived_IfStatement_NoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync($@"
+            await new VerifyCS.Test
+            {
+                TestCode = $@"
 {SetupCodeCSharp}
 
 class Command1 : Command
@@ -3389,12 +3391,22 @@ class Test
         }}
 
         string str = t.B.Field;         // t.B now points to either b or d, both of which have .Field = """"
+                                        // However, we are forced to be conservative in our analysis due to
+                                        // potential false positives from multiple variables pointing to the same set, i.e. b or d.
+                                        // See https://github.com/dotnet/roslyn-analyzers/issues/6520 for an example.
         Command c = new Command1(str, str);
     }}
-}}
-");
+}}",
+                ExpectedDiagnostics =
+                {
+                    // /0/Test0.cs(126,21): warning CA2100: Review if the query string passed to 'Command1.Command1(string cmd, string parameter2)' in 'M1', accepts any user input
+                    GetCSharpResultAt(126, 21, "Command1.Command1(string cmd, string parameter2)", "M1"),
+                }
+            }.RunAsync();
 
-            await VerifyVB.VerifyAnalyzerAsync($@"
+            await new VerifyVB.Test
+            {
+                TestCode = $@"
 {SetupCodeBasic}
 
 Class Command1
@@ -3429,9 +3441,18 @@ Class Test
             t.B = b                             ' t.B now points to b
         End If
         Dim str As String = t.B.Field           ' t.B now points to either b or d, both of which have .Field = """"
+                                                ' However, we are forced to be conservative in our analysis due to
+                                                ' potential false positives from multiple variables pointing to the same set, i.e. b or d.
+                                                ' See https://github.com/dotnet/roslyn-analyzers/issues/6520 for an example.
         Dim c As Command = New Command1(str, str)
     End Sub
-End Class");
+End Class",
+                ExpectedDiagnostics =
+                {
+                    // /0/Test0.vb(159,28): warning CA2100: Review if the query string passed to 'Sub Command1.New(cmd As String, parameter2 As String)' in 'M1', accepts any user input
+                    GetBasicResultAt(159, 28, "Sub Command1.New(cmd As String, parameter2 As String)", "M1")
+                }
+            }.RunAsync();
         }
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]

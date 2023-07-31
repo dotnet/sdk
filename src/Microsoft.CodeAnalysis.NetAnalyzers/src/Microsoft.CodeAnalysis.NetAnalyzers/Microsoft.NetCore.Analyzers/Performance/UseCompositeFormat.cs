@@ -143,7 +143,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
         /// <summary>Determines whether the expression is something trivially lifted out of the member body.</summary>
         private static bool IsStringLiteralOrStaticReference(IOperation operation, bool allowLiteral = false)
         {
-            if (operation.Type.SpecialType != SpecialType.System_String)
+            if (operation.Type?.SpecialType != SpecialType.System_String)
             {
                 return false;
             }

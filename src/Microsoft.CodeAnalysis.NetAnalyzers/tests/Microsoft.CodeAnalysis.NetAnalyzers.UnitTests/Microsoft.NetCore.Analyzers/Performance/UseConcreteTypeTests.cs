@@ -2,6 +2,7 @@
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
+using Test.Utilities;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Performance.UseConcreteTypeAnalyzer,
@@ -12,6 +13,120 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
     public static partial class UseConcreteTypeTests
     {
         [Fact]
+        [WorkItem(6751, "https://github.com/dotnet/roslyn-analyzers/issues/6751")]
+        public static async Task MultipleReturns()
+        {
+            await TestCSAsync(@"
+                using System;
+                using System.Collections.Generic;
+
+                public abstract class Base { }
+                public sealed class Derived1 : Base { }
+                public sealed class Derived2 : Base { }
+
+                internal sealed class Test
+                {
+                    private static IEnumerable<Base> M(int i)
+                    {
+                        try
+                        {
+                            switch (i)
+                            {
+                                case 0: return new Derived1[1];
+                                case 1: return new Derived2[1];
+                                default: throw new ArgumentException();
+                            }
+                        }
+                        finally
+                        {
+                        }
+                    }
+                }
+            ");
+        }
+
+        [Fact]
+        [WorkItem(6565, "https://github.com/dotnet/roslyn-analyzers/issues/6565")]
+        public static async Task DiscoverArrayUpgrades()
+        {
+            await TestCSAsync(@"
+                using System;
+                using System.Collections.Generic;
+
+                public class X
+                {
+                    private static IList<string> {|#0:GetListPrivate|}()
+                    {
+                        return Array.Empty<string>();
+                    }
+                }
+            ", VerifyCS.Diagnostic(UseConcreteTypeAnalyzer.UseConcreteTypeForMethodReturn)
+                .WithLocation(0)
+                .WithArguments("GetListPrivate", "System.Collections.Generic.IList<string>", "string[]"));
+        }
+
+        [Fact]
+        [WorkItem(6687, "https://github.com/dotnet/roslyn-analyzers/issues/6687")]
+        public static async Task ShouldNotTrigger_ConflictingOverloads()
+        {
+            await TestCSAsync(@"
+                abstract class Base
+                {
+                    public virtual string M(object o) => ""M(object)"";
+                }
+
+                sealed class Derived : Base
+                {
+                    public void M(string s) {}
+                }
+
+                internal class C
+                {
+
+                    private readonly Base _a = new Derived();
+
+                    public void Trigger()
+                    {
+                        var s = _a.M("""");
+                    }
+                }
+            ", $"dotnet_code_quality.CA1859.api_surface = private,internal");
+        }
+
+        [Fact]
+        [WorkItem(6704, "https://github.com/dotnet/roslyn-analyzers/issues/6704")]
+        public static async Task ShouldNotTrigger_ExplicitInterfaceImplementation()
+        {
+            await TestCSAsync(@"
+                class Class1
+                {
+                    public void FalseWarning()
+                    {
+                        I obj = new Derived();
+                        obj.M();
+                    }
+                }
+
+                interface I
+                {
+                    void M();
+                }
+
+                class Base : I
+                {
+                    void I.M()
+                    {
+                    }
+                }
+
+                class Derived : Base
+                {
+                }
+            ", $"dotnet_code_quality.CA1859.api_surface = private,internal");
+        }
+
+        [Fact]
+        [WorkItem(6659, "https://github.com/dotnet/roslyn-analyzers/issues/6659")]
         public static async Task ShouldNotTrigger_Visibility()
         {
             await TestCSAsync(@"
@@ -32,6 +147,32 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                         Obj.ToString();
                         Test(new Nested());
                     }
+                }
+            ", $"dotnet_code_quality.CA1859.api_surface = private,internal");
+        }
+
+        [Fact]
+        public static async Task ShouldNotTrigger_VisibilityNestedTypes()
+        {
+            await TestCSAsync(@"
+                using System;
+
+                public class Program
+                {
+	                private static class NestedClass1
+	                {
+		                public static IDisposable Method()
+		                {
+			                return new NestedClass2();
+		                }
+
+		                private sealed class NestedClass2 : IDisposable
+		                {
+			                public void Dispose()
+			                {
+			                }
+		                }
+	                }
                 }
             ", $"dotnet_code_quality.CA1859.api_surface = private,internal");
         }

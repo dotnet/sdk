@@ -763,6 +763,21 @@ Konwersje poszerzane i zdefiniowane przez użytkownika nie są obsługiwane w pr
         <target state="translated">Niepotrzebne wywołanie metody \"Dictionary.ContainsKey(key)\"</target>
         <note />
       </trans-unit>
+      <trans-unit id="DoNotGuardSetAddOrRemoveByContainsDescription">
+        <source>Do not guard 'Add(item)' or 'Remove(item)' with 'Contains(item)' for the set. The former two already check whether the item exists and will return if it was added or removed.</source>
+        <target state="new">Do not guard 'Add(item)' or 'Remove(item)' with 'Contains(item)' for the set. The former two already check whether the item exists and will return if it was added or removed.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotGuardSetAddOrRemoveByContainsMessage">
+        <source>Do not guard '{0}' with '{1}'</source>
+        <target state="new">Do not guard '{0}' with '{1}'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotGuardSetAddOrRemoveByContainsTitle">
+        <source>Unnecessary call to 'Contains(item)'</source>
+        <target state="new">Unnecessary call to 'Contains(item)'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DoNotHardCodeCertificate">
         <source>Do not hard-code certificate</source>
         <target state="translated">Nie zapisuj certyfikatu na stałe w kodzie</target>
@@ -895,17 +910,17 @@ Konwersje poszerzane i zdefiniowane przez użytkownika nie są obsługiwane w pr
       </trans-unit>
       <trans-unit id="DoNotUseConfigureAwaitWithSuppressThrowingDescription">
         <source>The ConfigureAwaitOptions.SuppressThrowing is only supported with the non-generic Task, not a Task&lt;TResult&gt;.  To use it with a Task&lt;TResult&gt;, first cast to the base Task.</source>
-        <target state="new">The ConfigureAwaitOptions.SuppressThrowing is only supported with the non-generic Task, not a Task&lt;TResult&gt;.  To use it with a Task&lt;TResult&gt;, first cast to the base Task.</target>
+        <target state="translated">Metoda ConfigureAwaitOptions.SuppressThrowing jest obsługiwana tylko z zadaniem niegenerycznym, a nie zadaniem &lt;TResult&gt;.  Aby użyć ją z zadaniem &lt;TResult&gt;, najpierw rzutuj na zadanie podstawowe.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseConfigureAwaitWithSuppressThrowingMessage">
         <source>The ConfigureAwaitOptions.SuppressThrowing is only supported with the non-generic Task</source>
-        <target state="new">The ConfigureAwaitOptions.SuppressThrowing is only supported with the non-generic Task</target>
+        <target state="translated">Metoda ConfigureAwaitOptions.SuppressThrowing jest obsługiwana tylko z zadaniem niegenerycznym</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseConfigureAwaitWithSuppressThrowingTitle">
         <source>Do not use ConfigureAwaitOptions.SuppressThrowing with Task&lt;TResult&gt;</source>
-        <target state="new">Do not use ConfigureAwaitOptions.SuppressThrowing with Task&lt;TResult&gt;</target>
+        <target state="translated">Nie używaj metody ConfigureAwaitOptions.SuppressThrowing z zadaniem&lt;TResult&gt;</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseCountAsyncWhenAnyAsyncCanBeUsedDescription">
@@ -2055,22 +2070,22 @@ Konwersje poszerzane i zdefiniowane przez użytkownika nie są obsługiwane w pr
       </trans-unit>
       <trans-unit id="PreferDictionaryTryAddDescription">
         <source>Prefer a 'TryAdd' call over an 'Add' call guarded by a 'ContainsKey' check. 'TryAdd' behaves the same as 'Add', except that when the specified key already exists, it returns 'false' instead of throwing an exception.</source>
-        <target state="new">Prefer a 'TryAdd' call over an 'Add' call guarded by a 'ContainsKey' check. 'TryAdd' behaves the same as 'Add', except that when the specified key already exists, it returns 'false' instead of throwing an exception.</target>
+        <target state="translated">Preferuj wywołanie „TryAdd” zamiast wywołania „Add” chronionego przez sprawdzenie „ContainsKey”. Element „TryAdd” zachowuje się tak samo jak element „Add”, ale jeśli określony klucz już istnieje, zwraca wartość „false” zamiast zgłaszania wyjątku.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferDictionaryTryAddMessage">
         <source>To avoid double lookup, call 'TryAdd' instead of calling 'Add' with a 'ContainsKey' guard</source>
-        <target state="new">To avoid double lookup, call 'TryAdd' instead of calling 'Add' with a 'ContainsKey' guard</target>
+        <target state="translated">Aby uniknąć podwójnego wyszukiwania, wywołaj metodę „TryAdd” zamiast wywoływać metodę „Add” z funkcją „ContainsKey”</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferDictionaryTryAddTitle">
         <source>Prefer the 'IDictionary.TryAdd(TKey, TValue)' method</source>
-        <target state="new">Prefer the 'IDictionary.TryAdd(TKey, TValue)' method</target>
+        <target state="translated">Preferuj metodę „IDictionary.TryAdd(TKey, TValue)”</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferDictionaryTryAddValueCodeFixTitle">
         <source>Use 'TryAdd(TKey, TValue)'</source>
-        <target state="new">Use 'TryAdd(TKey, TValue)'</target>
+        <target state="translated">Użyj polecenia „TryAdd(TKey, TValue)”</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferDictionaryTryGetValueCodeFixTitle">
@@ -2333,11 +2348,6 @@ Konwersje poszerzane i zdefiniowane przez użytkownika nie są obsługiwane w pr
         <target state="translated">Użyj obciążenia „string.{0}(string, StringComparison)”</target>
         <note />
       </trans-unit>
-      <trans-unit id="RecommendCaseInsensitiveStringComparerTitle">
-        <source>Prefer using 'StringComparer' to perform case-insensitive string comparisons</source>
-        <target state="translated">Preferuj używanie elementu „StringComparer” do wykonywania porównań ciągów bez uwzględniania wielkości liter</target>
-        <note />
-      </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringComparisonDescription">
         <source>Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons because they lead to an allocation. Instead, prefer calling the method overloads of 'Contains', 'IndexOf' and 'StartsWith' that take a 'StringComparison' enum value to perform case-insensitive comparisons.</source>
         <target state="translated">Unikaj wywoływania elementów „ToLower”, „ToUpper”, „ToLowerInvariant” i „ToUpperInvariant”, aby przeprowadzać porównania ciągów bez uwzględniania wielkości liter, ponieważ prowadzą do alokacji. Zamiast tego preferuj wywoływanie przeciążeń metod „Contains”, „IndexOf” i „StartsWith”, które przyjmują wartość wyliczenia „StringComparison”, aby wykonać porównania bez uwzględniania wielkości liter.</target>
@@ -2351,6 +2361,21 @@ Konwersje poszerzane i zdefiniowane przez użytkownika nie są obsługiwane w pr
       <trans-unit id="RecommendCaseInsensitiveStringComparisonTitle">
         <source>Prefer the 'StringComparison' method overloads to perform case-insensitive string comparisons</source>
         <target state="translated">Preferuj przeciążenia metody „StringComparison”, aby wykonywać porównania ciągów bez uwzględniania wielkości liter</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RecommendCaseInsensitiveStringEqualsCodeFixTitle">
+        <source>Use 'string.Equals(string, StringComparison)'</source>
+        <target state="new">Use 'string.Equals(string, StringComparison)'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RecommendCaseInsensitiveStringEqualsDescription">
+        <source>Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons, as in 'string.ToLower() == string.ToLower()', because they lead to an allocation. Instead, use 'string.Equals(string, StringComparison)' to perform case-insensitive comparisons.</source>
+        <target state="new">Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons, as in 'string.ToLower() == string.ToLower()', because they lead to an allocation. Instead, use 'string.Equals(string, StringComparison)' to perform case-insensitive comparisons.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RecommendCaseInsensitiveStringEqualsMessage">
+        <source>Prefer using 'string.Equals(string, StringComparison)' to perform a case-insensitive comparison</source>
+        <target state="new">Prefer using 'string.Equals(string, StringComparison)' to perform a case-insensitive comparison</target>
         <note />
       </trans-unit>
       <trans-unit id="RemoveRedundantCall">
@@ -2840,17 +2865,17 @@ Konwersje poszerzane i zdefiniowane przez użytkownika nie są obsługiwane w pr
       </trans-unit>
       <trans-unit id="UseCompositeFormatDescription">
         <source>Cache and use a 'CompositeFormat' instance as the argument to this formatting operation, rather than passing in the original format string. This reduces the cost of the formatting operation.</source>
-        <target state="new">Cache and use a 'CompositeFormat' instance as the argument to this formatting operation, rather than passing in the original format string. This reduces the cost of the formatting operation.</target>
+        <target state="translated">Umieść wystąpienie „CompositeFormat” w pamięci podręcznej i użyj go jako argumentu tej operacji formatowania zamiast przekazywania oryginalnego ciągu formatu. Zmniejsza to koszt operacji formatowania.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseCompositeFormatMessage">
         <source>Cache a 'CompositeFormat' for repeated use in this formatting operation</source>
-        <target state="new">Cache a 'CompositeFormat' for repeated use in this formatting operation</target>
+        <target state="translated">Buforuj element „CompositeFormat” w celu wielokrotnego użycia w tej operacji formatowania</target>
         <note />
       </trans-unit>
       <trans-unit id="UseCompositeFormatTitle">
         <source>Use 'CompositeFormat'</source>
-        <target state="new">Use 'CompositeFormat'</target>
+        <target state="translated">Użyj elementu „CompositeFormat”</target>
         <note />
       </trans-unit>
       <trans-unit id="UseConcreteTypeDescription">
@@ -3166,6 +3191,21 @@ Konwersje poszerzane i zdefiniowane przez użytkownika nie są obsługiwane w pr
       <trans-unit id="UseStringEqualsOverStringCompareTitle">
         <source>Use 'string.Equals'</source>
         <target state="translated">Użyj ciągu „string. Equals”</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseStringMethodCharOverloadWithSingleCharactersDescription">
+        <source>The char overload is a better performing overload than a string with a single char.</source>
+        <target state="new">The char overload is a better performing overload than a string with a single char.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseStringMethodCharOverloadWithSingleCharactersMessage">
+        <source>Use 'string.{0}(char)' instead of 'string.{0}(string)' when you have a string with a single char</source>
+        <target state="new">Use 'string.{0}(char)' instead of 'string.{0}(string)' when you have a string with a single char</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseStringMethodCharOverloadWithSingleCharactersTitle">
+        <source>Use char overload</source>
+        <target state="new">Use char overload</target>
         <note />
       </trans-unit>
       <trans-unit id="UseThrowHelperDescription">

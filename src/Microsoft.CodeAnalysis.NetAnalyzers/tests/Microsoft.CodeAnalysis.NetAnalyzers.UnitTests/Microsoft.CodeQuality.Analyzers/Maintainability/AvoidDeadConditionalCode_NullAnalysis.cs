@@ -5,10 +5,10 @@ using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
-    Microsoft.CodeQuality.Analyzers.Maintainability.AvoidDeadConditionalCode,
+    Microsoft.CodeQuality.CSharp.Analyzers.Maintainability.CSharpAvoidDeadConditionalCode,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
-    Microsoft.CodeQuality.Analyzers.Maintainability.AvoidDeadConditionalCode,
+    Microsoft.CodeQuality.VisualBasic.Analyzers.Maintainability.BasicAvoidDeadConditionalCode,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
@@ -6763,6 +6763,103 @@ public class C
         }
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
+        [Fact, WorkItem(6616, "https://github.com/dotnet/roslyn-analyzers/issues/6616")]
+        public async Task IndexedArrayAccessWithConstantsAndNonConstants_NoDiagnosticsAsync()
+        {
+            await new VerifyCS.Test
+            {
+                TestCode = @"
+#nullable enable
+
+using System;
+
+namespace Test
+{
+    public static class Test
+    {
+        public static void Method1()
+        {
+            // default
+            var objPlayers = new object?[] { null };
+
+            for (var idx = 0; idx < 1; idx++)
+            {
+                objPlayers[idx] = $""{idx}"";
+            }
+
+            // validate
+            if (objPlayers[0] is null)    // CA1508: Always true (should probably be unknown)
+            {
+            }
+        }
+
+        public static void Method2(object?[] objPlayers, int idx)
+        {
+            objPlayers[0] = null;
+            objPlayers[idx] = 0;
+            if (objPlayers[0] is null)    // CA1508: Always true (should probably be unknown)
+            {
+            }
+        }
+    }
+}",
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp8,
+            }.RunAsync();
+        }
+
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
+        [Fact, WorkItem(6616, "https://github.com/dotnet/roslyn-analyzers/issues/6616")]
+        public async Task IndexedArrayAccessWithConstantsAndNonConstants_DiagnosticsAsync()
+        {
+            await new VerifyCS.Test
+            {
+                TestCode = @"
+#nullable enable
+
+using System;
+
+namespace Test
+{
+    public static class Test
+    {
+        public static void Method1(object?[][] objPlayers, int idx)
+        {
+            objPlayers[0][0] = null;
+
+            for (idx = 0; idx < 1; idx++)
+            {
+                objPlayers[1][idx] = 0;
+            }
+
+            if (objPlayers[0][0] is null)    // CA1508: Always true
+            {
+            }
+        }
+
+        public static void Method2(object?[][] objPlayers, int idx)
+        {
+            objPlayers[0][0] = null;
+            objPlayers[1][idx] = 0;
+            if (objPlayers[0][0] is null)    // CA1508: Always true
+            {
+            }
+        }
+    }
+}",
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp8,
+                ExpectedDiagnostics =
+                {
+                    // /0/Test0.cs(19,17): warning CA1508: 'objPlayers[0][0] is null' is always 'true'. Remove or refactor the condition(s) to avoid dead code.
+                    GetCSharpResultAt(19, 17, "objPlayers[0][0] is null", "true"),
+                    // /0/Test0.cs(28,17): warning CA1508: 'objPlayers[0][0] is null' is always 'true'. Remove or refactor the condition(s) to avoid dead code.
+                    GetCSharpResultAt(28, 17, "objPlayers[0][0] is null", "true"),
+                },
+            }.RunAsync();
+        }
+
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
         public async Task ArrayInitializerNotParentedByArrayCreationAsync()
         {
@@ -7091,6 +7188,513 @@ static class Test
     }
 }
 ");
+        }
+
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
+        [Fact, WorkItem(6695, "https://github.com/dotnet/roslyn-analyzers/issues/6695")]
+        public async Task NullCoalesceAndNullConditional_NoDiagnosticAsync()
+        {
+            await new VerifyCS.Test
+            {
+                TestCode = @"
+#nullable enable
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+class C
+{
+    private void Method(IEnumerable<int>? items = null)
+    {
+        var itemsToTest = items as IReadOnlyList<int> ??
+                          items?.ToList();
+    }
+
+    private void Method2(IEnumerable<int>? items2 = null)
+    {
+	    var itemsToTest = items2 as IReadOnlyList<int> ??
+					      items2?.ToList() ??
+					      (IReadOnlyList<int>)Array.Empty<int>();
+    }
+
+    private void Method3(IEnumerable<int>? items3 = null)
+    {
+        var itemsToTest = (IReadOnlyList<int>?)items3 ??
+                          items3?.ToList();
+    }
+}",
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp8,
+            }.RunAsync();
+        }
+
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
+        [Fact, WorkItem(6695, "https://github.com/dotnet/roslyn-analyzers/issues/6695")]
+        public async Task NullCoalesceAndNullConditional_DiagnosticAsync()
+        {
+            await new VerifyCS.Test
+            {
+                TestCode = @"
+#nullable enable
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+class C
+{
+    private void Method(IReadOnlyList<int>? items = null)
+    {
+        var itemsToTest = items as IEnumerable<int> ??
+                          items?.ToList();
+    }
+
+    private void Method2(IReadOnlyList<int>? items2 = null)
+    {
+	    var itemsToTest = items2 as IEnumerable<int> ??
+					      items2?.ToList() ??
+					      (IReadOnlyList<int>)Array.Empty<int>();
+    }
+
+    private void Method3(IReadOnlyList<int>? items3 = null)
+    {
+        var itemsToTest = (IEnumerable<int>?)items3 ??
+                          items3?.ToList();
+    }
+}",
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp8,
+                ExpectedDiagnostics =
+                {
+                    // /0/Test0.cs(13,27): warning CA1508: 'items' is always 'null'. Remove or refactor the condition(s) to avoid dead code.
+                    GetCSharpResultAt(13, 27, "items", "null"),
+                    // /0/Test0.cs(19,12): warning CA1508: 'items2' is always 'null'. Remove or refactor the condition(s) to avoid dead code.
+                    GetCSharpResultAt(19, 12, "items2", "null"),
+                    // /0/Test0.cs(19,12): warning CA1508: 'items2?.ToList()' is always 'null'. Remove or refactor the condition(s) to avoid dead code.
+                    GetCSharpResultAt(19, 12, "items2?.ToList()", "null"),
+                    // /0/Test0.cs(26,27): warning CA1508: 'items3' is always 'null'. Remove or refactor the condition(s) to avoid dead code.
+                    GetCSharpResultAt(26, 27, "items3", "null")
+                },
+            }.RunAsync();
+        }
+
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
+        [Fact, WorkItem(6520, "https://github.com/dotnet/roslyn-analyzers/issues/6520")]
+        public async Task CompareTwoUnrelatedEnumVariables_NoDiagnosticsAsync()
+        {
+            await new VerifyCS.Test
+            {
+                TestCode = @"
+public class Parser
+{
+    private static ParsedPredicate ParsePredicate(ParsedPredicate predicate, PredicateOperand identifier, PredicateOperand literal)
+    {
+        if (predicate.Left.TypePrimitive == PredicateTypePrimitive.F1)
+        {
+            identifier = predicate.Left;
+            literal = predicate.Right;
+        }
+        else
+        {
+            identifier = predicate.Right;
+            literal = predicate.Left;
+        }
+
+        if (identifier.TypePrimitive != PredicateTypePrimitive.F1)
+        {
+            return predicate;
+        }
+
+        if (literal.TypePrimitive == PredicateTypePrimitive.F2)
+        {
+        }
+
+        return predicate;
+    }
+}
+
+public class PredicateOperand
+{
+    public PredicateTypePrimitive TypePrimitive { get; set; }
+}
+
+public enum PredicateTypePrimitive
+{
+    F1,
+    F2,
+}
+
+public class ParsedPredicate
+{
+    public PredicateOperand Left { get; }
+    public PredicateOperand Right { get; }
+}",
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp8,
+            }.RunAsync();
+        }
+
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
+        [Fact, WorkItem(6520, "https://github.com/dotnet/roslyn-analyzers/issues/6520")]
+        public async Task CompareTwoRelatedEnumVariables_DiagnosticsAsync()
+        {
+            await new VerifyCS.Test
+            {
+                TestCode = @"
+public class Parser
+{
+    private static ParsedPredicate ParsePredicate(ParsedPredicate predicate, PredicateOperand identifier, PredicateOperand literal)
+    {
+        if (predicate.Left.TypePrimitive == PredicateTypePrimitive.F1)
+        {
+            identifier = predicate.Left;
+            literal = predicate.Right;
+        }
+        else
+        {
+            identifier = predicate.Right;
+            literal = predicate.Left;
+        }
+
+        if (identifier.TypePrimitive != PredicateTypePrimitive.F1)
+        {
+            return predicate;
+        }
+
+        if (identifier.TypePrimitive == PredicateTypePrimitive.F2)
+        {
+        }
+
+        return predicate;
+    }
+}
+
+public class PredicateOperand
+{
+    public PredicateTypePrimitive TypePrimitive { get; set; }
+}
+
+public enum PredicateTypePrimitive
+{
+    F1,
+    F2,
+}
+
+public class ParsedPredicate
+{
+    public PredicateOperand Left { get; }
+    public PredicateOperand Right { get; }
+}",
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp8,
+                ExpectedDiagnostics =
+                {
+                    // /0/Test0.cs(22,13): warning CA1508: 'identifier.TypePrimitive == PredicateTypePrimitive.F2' is always 'false'. Remove or refactor the condition(s) to avoid dead code.
+                    GetCSharpResultAt(22, 13, "identifier.TypePrimitive == PredicateTypePrimitive.F2", "false")
+                }
+            }.RunAsync();
+        }
+
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
+        [Fact, WorkItem(6435, "https://github.com/dotnet/roslyn-analyzers/issues/6435")]
+        public async Task UserDefinedConversion_NoDiagnosticsAsync()
+        {
+            await new VerifyCS.Test
+            {
+                TestCode = @"
+#nullable enable
+
+internal struct S
+{
+    public bool Flag;
+    public static explicit operator byte[]?(S s)
+    {
+        if (s.Flag)
+            return null;
+        return new byte[10];
+    }
+}
+
+internal static class C
+{
+    public static bool M(S s)
+    {
+        byte[]? a = (byte[]?)s;
+        bool b = a == null;      // incorrect CA1508; this b could be true or false
+        return b;
+    }
+}",
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp8,
+            }.RunAsync();
+        }
+
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
+        [Fact, WorkItem(6249, "https://github.com/dotnet/roslyn-analyzers/issues/6249")]
+        public async Task TupleElementExchange_NoDiagnosticsAsync()
+        {
+            await new VerifyCS.Test
+            {
+                TestCode = @"
+using System.Collections.Generic;
+using System.Diagnostics;
+
+class Test
+{
+    public static List<T> Test1<T>(IEnumerable<T> source)
+    {
+        var current = new Queue<T>(source);
+        var next = new Queue<T>();
+        var result = new List<T>(current.Count);
+
+        while (true)
+        {
+            while (current.TryDequeue(out var item))
+            {
+                next.Enqueue(item);
+            }
+
+            // swap with tuple
+            (next, current) = (current, next);
+
+            Debug.Assert(next.Count == 0);
+
+            // the following line is marked by CA1508
+            if (current.Count == 0)
+                return result;
+        }
+    }
+}",
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp8,
+            }.RunAsync();
+        }
+
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
+        [Fact, WorkItem(6048, "https://github.com/dotnet/roslyn-analyzers/issues/6048")]
+        public async Task RethrowInCatchClause_NoDiagnosticsAsync()
+        {
+            await new VerifyCS.Test
+            {
+                TestCode = @"
+using System;
+
+class Test
+{
+    public static void M()
+    {
+        try
+        {
+            throw new Random().NextDouble() > 0.5 ? new Exception() : new ArgumentException();
+        }
+        catch (Exception e)
+        {
+            if (e is ArgumentException ae) // can be both true or false depending on the Exception thrown from the try-block, yet is flagged with CA1508 
+                Console.Out.WriteLine(""ArgumentException"");
+
+            throw;
+        }
+    }
+
+    public static void M2()
+    {
+        try
+        {
+            throw new Exception();
+        }
+        catch (Exception e)
+        {
+            if (e is ArgumentException ae)
+            {
+            }
+
+            throw;
+        }
+    }
+}",
+            }.RunAsync();
+        }
+
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
+        [Fact, WorkItem(5929, "https://github.com/dotnet/roslyn-analyzers/issues/5929")]
+        public async Task IsPatternExpression_SwitchExpressionArmWithWhenClause_NoDiagnosticsAsync()
+        {
+            await new VerifyCS.Test
+            {
+                TestCode = @"
+using System;
+
+class C1
+{
+    static bool Predicate(string s, bool flag) => flag;
+
+    static void WarningTest(string input, bool flag)
+    {
+        var result = input switch
+        {
+            null => ""null"",
+            string s when Predicate(s, flag) => ""Predicate"", // CA1508 false positive with any 'when' clause
+            _ => ""default""
+        };
+
+        Console.WriteLine(result);
+    }
+}",
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp8,
+            }.RunAsync();
+        }
+
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
+        [Fact, WorkItem(5720, "https://github.com/dotnet/roslyn-analyzers/issues/5720")]
+        public async Task AsExpression_WithNullCoalescingOperator_NoDiagnosticsAsync()
+        {
+            await new VerifyCS.Test
+            {
+                TestCode = @"
+class A
+{
+    public object FieldA;
+}
+
+class B : A
+{
+    public object FieldB;
+}
+
+class C
+{
+    void M(A a)
+    {
+        var x = a.FieldA as C ?? (a.FieldA as B)?.FieldA; // CA1508 false positive on 'a.FieldA as B'
+    }
+}",
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp8,
+            }.RunAsync();
+        }
+
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
+        [Theory, CombinatorialData, WorkItem(5684, "https://github.com/dotnet/roslyn-analyzers/issues/5684")]
+        public async Task EscapedLambdaWithMethodCall_AssignsCapturedVariable_NoDiagnosticsAsync(bool enableInterproceduralAnalysis)
+        {
+            var interproceduralValue = enableInterproceduralAnalysis ? "ContextSensitive" : "None";
+            var editorConfigText = $"dotnet_code_quality.interprocedural_analysis_kind = {interproceduralValue}";
+
+            var test = new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+#nullable enable
+
+using System;
+
+internal class C
+{
+    static void M1(Action a)
+    {
+        a();
+    }
+
+    static void M2()
+    {
+        Exception? exception = null;
+
+        M1(() =>
+        {
+            exception = new Exception();
+        });
+
+        if (exception != null)
+        {
+        }
+    }
+}"
+                    },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+"),
+
+                    },
+                },
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp8
+            };
+
+            if (enableInterproceduralAnalysis)
+            {
+                test.ExpectedDiagnostics.Add(
+                    // /0/Test0.cs(22,13): warning CA1508: 'exception != null' is always 'true'. Remove or refactor the condition(s) to avoid dead code.
+                    GetCSharpResultAt(22, 13, "exception != null", "true"));
+            }
+
+            await test.RunAsync();
+        }
+
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
+        [Theory, CombinatorialData, WorkItem(5684, "https://github.com/dotnet/roslyn-analyzers/issues/5684")]
+        public async Task EscapedLambdaInTaskRun_AssignsCapturedVariable_NoDiagnosticsAsync(bool enableInterproceduralAnalysis)
+        {
+            var interproceduralValue = enableInterproceduralAnalysis ? "ContextSensitive" : "None";
+            var editorConfigText = $"dotnet_code_quality.interprocedural_analysis_kind = {interproceduralValue}";
+
+            var test = new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+#nullable enable
+
+using System;
+using System.Threading.Tasks;
+
+internal class C
+{
+    static async Task M()
+    {
+        Exception? exception = null;
+
+        await Task.Run(() =>
+        {
+            exception = new Exception();
+        }).ConfigureAwait(false);
+
+        if (exception != null)
+        {
+        }
+    }
+}"
+                    },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+"),
+
+                    },
+                },
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp8
+            };
+
+            // NOTE: Even with interprocedural analysis enabled, we do not have flow analysis logic
+            // to perform interprocedural analysis for a delegate passed to Task.Run.
+            // Hence the results are identical with interprocedural analysis enabled and disabled.
+
+            await test.RunAsync();
         }
     }
 }

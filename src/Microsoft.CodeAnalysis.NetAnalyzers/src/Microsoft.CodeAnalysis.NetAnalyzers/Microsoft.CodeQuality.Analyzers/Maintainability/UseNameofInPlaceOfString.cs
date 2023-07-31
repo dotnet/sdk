@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
 using System.Linq;
@@ -52,14 +52,15 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
             }
 
             var argument = (IArgumentOperation)context.Operation;
-            if (argument.Value.Kind != OperationKind.Literal
+            if (argument.Parameter == null
+                || argument.Value.Kind != OperationKind.Literal
                 || argument.ArgumentKind != ArgumentKind.Explicit
-                || argument.Value.Type.SpecialType != SpecialType.System_String)
+                || argument.Value.Type?.SpecialType != SpecialType.System_String
+                || !argument.Value.ConstantValue.HasValue
+                || argument.Value.ConstantValue.Value is not string stringText)
             {
                 return;
             }
-
-            var stringText = (string)argument.Value.ConstantValue.Value;
 
             // argument.Parameter will not be null here. The only case for it to be null is an __arglist argument, for which
             // the argument type will not be of SpecialType.System_String.

@@ -90,9 +90,10 @@ namespace Microsoft.NetCore.Analyzers.Security
                 }
 
                 var httpVerbAttributeTypeSymbolsAbleToModify = HttpVerbAttributesMarkingOnActionModifyingMethods.Select(
-                    s => wellKnownTypeProvider.TryGetOrCreateTypeByMetadataName(s, out var attributeTypeSymbol) ? attributeTypeSymbol : null);
+                    s => wellKnownTypeProvider.TryGetOrCreateTypeByMetadataName(s, out var attributeTypeSymbol) ? attributeTypeSymbol : null)
+                    .WhereNotNull().ToImmutableArray();
 
-                if (httpVerbAttributeTypeSymbolsAbleToModify.Any(s => s == null))
+                if (httpVerbAttributeTypeSymbolsAbleToModify.Length != HttpVerbAttributesMarkingOnActionModifyingMethods.Count)
                 {
                     return;
                 }
@@ -180,7 +181,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                     {
                         var potentialAntiForgeryFilters = invocationOperation
                             .Arguments
-                            .Where(s => s.Parameter.Name == "filterType")
+                            .Where(s => s.Parameter?.Name == "filterType")
                             .Select(s => s.Value)
                             .OfType<ITypeOfOperation>()
                             .Select(s => s.TypeOperand)
@@ -302,9 +303,9 @@ namespace Microsoft.NetCore.Analyzers.Security
                                     // The method is not protected by a validate anti forgery token attribute.
                                     if (!IsUsingAntiFogeryAttribute(actionMethodSymbol))
                                     {
-                                        var httpVerbAttributeTypeSymbolAbleToModify = actionMethodSymbol.GetAttributes().FirstOrDefault(s => httpVerbAttributeTypeSymbolsAbleToModify.Contains(s.AttributeClass));
+                                        var httpVerbAttributeTypeSymbolAbleToModify = actionMethodSymbol.GetAttributes(httpVerbAttributeTypeSymbolsAbleToModify).FirstOrDefault();
 
-                                        if (httpVerbAttributeTypeSymbolAbleToModify != null)
+                                        if (httpVerbAttributeTypeSymbolAbleToModify?.AttributeClass != null)
                                         {
                                             var attributeName = httpVerbAttributeTypeSymbolAbleToModify.AttributeClass.Name;
                                             actionMethodSymbols.TryAdd(
@@ -312,7 +313,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                                                     attributeName.EndsWith("Attribute", StringComparison.Ordinal) ? attributeName.Remove(attributeName.Length - "Attribute".Length) : attributeName),
                                                 placeholder);
                                         }
-                                        else if (!actionMethodSymbol.GetAttributes().Any(s => s.AttributeClass.GetBaseTypes().Contains(httpMethodAttributeTypeSymbol)))
+                                        else if (!actionMethodSymbol.GetAttributes().Any(s => s.AttributeClass?.GetBaseTypes().Contains(httpMethodAttributeTypeSymbol) == true))
                                         {
                                             actionMethodNeedAddingHttpVerbAttributeSymbols.TryAdd(actionMethodSymbol, placeholder);
                                         }
@@ -413,7 +414,7 @@ namespace Microsoft.NetCore.Analyzers.Security
 
                 bool IsUsingAntiFogeryAttribute(ISymbol symbol)
                 {
-                    if (symbol.GetAttributes().Any(s => s_AntiForgeryAttributeRegex.IsMatch(s.AttributeClass.Name)))
+                    if (symbol.GetAttributes().Any(s => s.AttributeClass != null && s_AntiForgeryAttributeRegex.IsMatch(s.AttributeClass.Name)))
                     {
                         usingValidateAntiForgeryAttribute = true;
 

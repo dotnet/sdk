@@ -6,6 +6,7 @@ using System.Composition;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Analyzer.Utilities;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
@@ -28,10 +29,10 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
         public override async Task RegisterCodeFixesAsync(CodeFixContext context)
         {
-            SemanticModel model = await context.Document.GetSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
+            SemanticModel model = await context.Document.GetRequiredSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
             if (!RequiredSymbols.TryGetSymbols(model.Compilation, out RequiredSymbols symbols))
                 return;
-            SyntaxNode root = await context.Document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
+            SyntaxNode root = await context.Document.GetRequiredSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
             SyntaxNode node = root.FindNode(context.Span);
             if (model.GetOperation(node, context.CancellationToken) is not IConditionalOperation conditional)
                 return;
@@ -120,7 +121,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             IPropertyReferenceOperation isCancellationRequestedPropertyReference)
         {
             SyntaxNode memberAccess = editor.Generator.MemberAccessExpression(
-                isCancellationRequestedPropertyReference.Instance.Syntax,
+                isCancellationRequestedPropertyReference.Instance!.Syntax,
                 nameof(CancellationToken.ThrowIfCancellationRequested));
             SyntaxNode invocation = editor.Generator.InvocationExpression(memberAccess, Array.Empty<SyntaxNode>());
             var firstWhenTrueStatement = conditional.WhenTrue is IBlockOperation block ? block.Operations.FirstOrDefault() : conditional.WhenTrue;

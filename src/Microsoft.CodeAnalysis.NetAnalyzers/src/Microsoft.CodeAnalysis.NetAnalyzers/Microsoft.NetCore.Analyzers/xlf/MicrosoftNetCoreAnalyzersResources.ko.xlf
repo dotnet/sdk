@@ -763,6 +763,21 @@ Enumerable.OfType&lt;T&gt;에서 사용하는 제네릭 형식 검사(C# 'is' �
         <target state="translated">'Dictionary.ContainsKey(key)'에 대한 불필요한 호출</target>
         <note />
       </trans-unit>
+      <trans-unit id="DoNotGuardSetAddOrRemoveByContainsDescription">
+        <source>Do not guard 'Add(item)' or 'Remove(item)' with 'Contains(item)' for the set. The former two already check whether the item exists and will return if it was added or removed.</source>
+        <target state="translated">세트에 대해 '포함(항목)'으로 '추가(항목)' 또는 '제거(항목)'을 보호하지 마세요. 앞의 두 개는 이미 항목이 존재하는지 확인하고 추가 또는 제거된 경우 반환합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotGuardSetAddOrRemoveByContainsMessage">
+        <source>Do not guard '{0}' with '{1}'</source>
+        <target state="translated">'{1}'(으)로 '{0}'을(를) 보호하지 마세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotGuardSetAddOrRemoveByContainsTitle">
+        <source>Unnecessary call to 'Contains(item)'</source>
+        <target state="translated">'Contains(item)'에 대한 불필요한 호출</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DoNotHardCodeCertificate">
         <source>Do not hard-code certificate</source>
         <target state="translated">인증서 하드 코딩 안 함</target>
@@ -895,17 +910,17 @@ Enumerable.OfType&lt;T&gt;에서 사용하는 제네릭 형식 검사(C# 'is' �
       </trans-unit>
       <trans-unit id="DoNotUseConfigureAwaitWithSuppressThrowingDescription">
         <source>The ConfigureAwaitOptions.SuppressThrowing is only supported with the non-generic Task, not a Task&lt;TResult&gt;.  To use it with a Task&lt;TResult&gt;, first cast to the base Task.</source>
-        <target state="new">The ConfigureAwaitOptions.SuppressThrowing is only supported with the non-generic Task, not a Task&lt;TResult&gt;.  To use it with a Task&lt;TResult&gt;, first cast to the base Task.</target>
+        <target state="translated">ConfigureAwaitOptions.SuppressThrowing은 일반적이지 않은 작업에서만 지원되며 작업&lt;TResult&gt;은 지원되지 않습니다.  작업&lt;TResult&gt;과 함께 사용하려면 먼저 기본 작업에 캐스트합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseConfigureAwaitWithSuppressThrowingMessage">
         <source>The ConfigureAwaitOptions.SuppressThrowing is only supported with the non-generic Task</source>
-        <target state="new">The ConfigureAwaitOptions.SuppressThrowing is only supported with the non-generic Task</target>
+        <target state="translated">ConfigureAwaitOptions.SuppressThrowing은 일반적이지 않은 작업에서만 지원됩니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseConfigureAwaitWithSuppressThrowingTitle">
         <source>Do not use ConfigureAwaitOptions.SuppressThrowing with Task&lt;TResult&gt;</source>
-        <target state="new">Do not use ConfigureAwaitOptions.SuppressThrowing with Task&lt;TResult&gt;</target>
+        <target state="translated">작업&lt;TResult&gt;과 함께 ConfigureAwaitOptions.SuppressThrowing 사용 안 함</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseCountAsyncWhenAnyAsyncCanBeUsedDescription">
@@ -2055,22 +2070,22 @@ Enumerable.OfType&lt;T&gt;에서 사용하는 제네릭 형식 검사(C# 'is' �
       </trans-unit>
       <trans-unit id="PreferDictionaryTryAddDescription">
         <source>Prefer a 'TryAdd' call over an 'Add' call guarded by a 'ContainsKey' check. 'TryAdd' behaves the same as 'Add', except that when the specified key already exists, it returns 'false' instead of throwing an exception.</source>
-        <target state="new">Prefer a 'TryAdd' call over an 'Add' call guarded by a 'ContainsKey' check. 'TryAdd' behaves the same as 'Add', except that when the specified key already exists, it returns 'false' instead of throwing an exception.</target>
+        <target state="translated">'ContainsKey' 확인으로 보호되는 'Add' 호출보다 'TryAdd' 호출을 선호합니다. 'TryAdd'는 'Add'와 동일하게 동작하지만 지정한 키가 이미 존재하는 경우 예외를 던지는 대신 'false'를 반환합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferDictionaryTryAddMessage">
         <source>To avoid double lookup, call 'TryAdd' instead of calling 'Add' with a 'ContainsKey' guard</source>
-        <target state="new">To avoid double lookup, call 'TryAdd' instead of calling 'Add' with a 'ContainsKey' guard</target>
+        <target state="translated">이중 조회를 방지하려면 'ContainsKey' 가드를 사용하여 'Add'를 호출하는 대신 'TryAdd'를 호출하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferDictionaryTryAddTitle">
         <source>Prefer the 'IDictionary.TryAdd(TKey, TValue)' method</source>
-        <target state="new">Prefer the 'IDictionary.TryAdd(TKey, TValue)' method</target>
+        <target state="translated">'IDictionary.TryAdd(TKey, TValue)' 메서드 선호</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferDictionaryTryAddValueCodeFixTitle">
         <source>Use 'TryAdd(TKey, TValue)'</source>
-        <target state="new">Use 'TryAdd(TKey, TValue)'</target>
+        <target state="translated">'TryAdd(TKey, TValue)' 사용</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferDictionaryTryGetValueCodeFixTitle">
@@ -2333,11 +2348,6 @@ Enumerable.OfType&lt;T&gt;에서 사용하는 제네릭 형식 검사(C# 'is' �
         <target state="translated">'string.{0}(string, StringComparison)' 오버로드 사용</target>
         <note />
       </trans-unit>
-      <trans-unit id="RecommendCaseInsensitiveStringComparerTitle">
-        <source>Prefer using 'StringComparer' to perform case-insensitive string comparisons</source>
-        <target state="translated">대소문자를 구분하지 않는 문자열 비교를 수행하려면 'StringComparer' 사용을 선호합니다.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringComparisonDescription">
         <source>Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons because they lead to an allocation. Instead, prefer calling the method overloads of 'Contains', 'IndexOf' and 'StartsWith' that take a 'StringComparison' enum value to perform case-insensitive comparisons.</source>
         <target state="translated">대/소문자를 구분하지 않는 문자열 비교를 수행하기 위해 'ToLower', 'ToUpper', 'ToLowerInvariant' 및 'ToUpperInvariant'를 호출하지 마세요. 대신 대/소문자를 구분하지 않는 비교를 수행하기 위해 'StringComparison' 열거형 값을 사용하는 'Contains', 'IndexOf' 및 'StartsWith'의 메서드 오버로드를 호출하는 것이 좋습니다.</target>
@@ -2351,6 +2361,21 @@ Enumerable.OfType&lt;T&gt;에서 사용하는 제네릭 형식 검사(C# 'is' �
       <trans-unit id="RecommendCaseInsensitiveStringComparisonTitle">
         <source>Prefer the 'StringComparison' method overloads to perform case-insensitive string comparisons</source>
         <target state="translated">대소문자를 구분하지 않는 문자열 비교를 수행하려면 'StringComparison' 메서드 오버로드를 선호합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RecommendCaseInsensitiveStringEqualsCodeFixTitle">
+        <source>Use 'string.Equals(string, StringComparison)'</source>
+        <target state="translated">'string.Equals(문자열, StringComparison)' 사용</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RecommendCaseInsensitiveStringEqualsDescription">
+        <source>Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons, as in 'string.ToLower() == string.ToLower()', because they lead to an allocation. Instead, use 'string.Equals(string, StringComparison)' to perform case-insensitive comparisons.</source>
+        <target state="translated">'ToLower', 'ToUpper', 'ToLowerInvariant' 및 'ToUpperInvariant'를 호출하여 'string.ToLower() == string.ToLower()'에서와 같이 대/소문자를 구분하지 않는 문자열 비교를 수행하지 마세요. 할당으로 이어지기 때문입니다. 대신 대소문자를 구분하지 않는 비교를 수행하려면 'string.Equals(string, StringComparison)'을 사용하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RecommendCaseInsensitiveStringEqualsMessage">
+        <source>Prefer using 'string.Equals(string, StringComparison)' to perform a case-insensitive comparison</source>
+        <target state="translated">대소문자를 구분하지 않는 비교를 수행하려면 'string.Equals(string, StringComparison)' 사용을 선호하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="RemoveRedundantCall">
@@ -2840,17 +2865,17 @@ Enumerable.OfType&lt;T&gt;에서 사용하는 제네릭 형식 검사(C# 'is' �
       </trans-unit>
       <trans-unit id="UseCompositeFormatDescription">
         <source>Cache and use a 'CompositeFormat' instance as the argument to this formatting operation, rather than passing in the original format string. This reduces the cost of the formatting operation.</source>
-        <target state="new">Cache and use a 'CompositeFormat' instance as the argument to this formatting operation, rather than passing in the original format string. This reduces the cost of the formatting operation.</target>
+        <target state="translated">원래 형식 문자열을 전달하는 대신 이 서식 작업에 대한 인수로 'CompositeFormat' 인스턴스를 캐시하고 사용합니다. 이렇게 하면 서식 작업 비용이 절감됩니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseCompositeFormatMessage">
         <source>Cache a 'CompositeFormat' for repeated use in this formatting operation</source>
-        <target state="new">Cache a 'CompositeFormat' for repeated use in this formatting operation</target>
+        <target state="translated">이 서식 지정 작업에서 반복적으로 사용할 수 있도록 'CompositeFormat'을 캐시합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseCompositeFormatTitle">
         <source>Use 'CompositeFormat'</source>
-        <target state="new">Use 'CompositeFormat'</target>
+        <target state="translated">'CompositeFormat' 사용</target>
         <note />
       </trans-unit>
       <trans-unit id="UseConcreteTypeDescription">
@@ -3166,6 +3191,21 @@ Enumerable.OfType&lt;T&gt;에서 사용하는 제네릭 형식 검사(C# 'is' �
       <trans-unit id="UseStringEqualsOverStringCompareTitle">
         <source>Use 'string.Equals'</source>
         <target state="translated">'string.Equals' 사용</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseStringMethodCharOverloadWithSingleCharactersDescription">
+        <source>The char overload is a better performing overload than a string with a single char.</source>
+        <target state="translated">문자 오버로드는 단일 문자가 포함된 문자열보다 성능이 뛰어난 오버로드입니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseStringMethodCharOverloadWithSingleCharactersMessage">
+        <source>Use 'string.{0}(char)' instead of 'string.{0}(string)' when you have a string with a single char</source>
+        <target state="translated">단일 문자가 포함된 문자열이 있는 경우 'string.{0}(string)' 대신 'string.{0}(char)'를 사용하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseStringMethodCharOverloadWithSingleCharactersTitle">
+        <source>Use char overload</source>
+        <target state="translated">char 오버로드 사용</target>
         <note />
       </trans-unit>
       <trans-unit id="UseThrowHelperDescription">

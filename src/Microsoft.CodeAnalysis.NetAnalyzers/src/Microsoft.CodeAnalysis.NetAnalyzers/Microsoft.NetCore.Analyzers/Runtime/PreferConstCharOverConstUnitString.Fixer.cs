@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
 using System.Composition;
@@ -26,10 +26,10 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         {
             Document doc = context.Document;
             CancellationToken cancellationToken = context.CancellationToken;
-            SyntaxNode root = await doc.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
+            SyntaxNode root = await doc.GetRequiredSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
             if (root.FindNode(context.Span) is SyntaxNode expression)
             {
-                SemanticModel semanticModel = await doc.GetSemanticModelAsync(cancellationToken).ConfigureAwait(false);
+                SemanticModel semanticModel = await doc.GetRequiredSemanticModelAsync(cancellationToken).ConfigureAwait(false);
                 var operation = semanticModel.GetOperation(expression, cancellationToken);
                 if (operation is IArgumentOperation argumentOperation)
                 {
@@ -44,7 +44,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     if (localReferenceOperation != null)
                     {
                         ILocalSymbol localArgumentDeclaration = localReferenceOperation.Local;
-                        SyntaxReference declaringSyntaxReference = localArgumentDeclaration.DeclaringSyntaxReferences.FirstOrDefault();
+                        SyntaxReference? declaringSyntaxReference = localArgumentDeclaration.DeclaringSyntaxReferences.FirstOrDefault();
                         if (declaringSyntaxReference is null)
                         {
                             return;
@@ -63,14 +63,14 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                             return;
                         }
 
-                        IVariableDeclarationOperation variableDeclarationOperation = (IVariableDeclarationOperation)variableDeclaratorOperation.Parent;
+                        var variableDeclarationOperation = (IVariableDeclarationOperation?)variableDeclaratorOperation.Parent;
                         if (variableDeclarationOperation == null)
                         {
                             return;
                         }
 
-                        IVariableDeclarationGroupOperation variableGroupDeclarationOperation = (IVariableDeclarationGroupOperation)variableDeclarationOperation.Parent;
-                        if (variableGroupDeclarationOperation.Declarations.Length != 1)
+                        var variableGroupDeclarationOperation = (IVariableDeclarationGroupOperation?)variableDeclarationOperation.Parent;
+                        if (variableGroupDeclarationOperation?.Declarations.Length != 1)
                         {
                             return;
                         }
@@ -99,9 +99,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                             equivalenceKey: MicrosoftNetCoreAnalyzersResources.PreferConstCharOverConstUnitStringInStringBuilderMessage),
                         context.Diagnostics);
 
-                    static async Task<Document?> HandleStringLiteral(ILiteralOperation argumentLiteral, Document doc, SyntaxNode root, CancellationToken cancellationToken)
+                    static async Task<Document> HandleStringLiteral(ILiteralOperation argumentLiteral, Document doc, SyntaxNode root, CancellationToken cancellationToken)
                     {
-                        var unitString = (string)argumentLiteral.ConstantValue.Value;
+                        var unitString = (string)argumentLiteral.ConstantValue.Value!;
                         DocumentEditor editor = await DocumentEditor.CreateAsync(doc, cancellationToken).ConfigureAwait(false);
                         SyntaxGenerator generator = editor.Generator;
                         char charValue = unitString[0];
@@ -110,17 +110,17 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                         return doc.WithSyntaxRoot(newRoot);
                     }
 
-                    static async Task<Document?> HandleVariableDeclarator(IVariableDeclaratorOperation variableDeclaratorOperation, Document doc, SyntaxNode root, CancellationToken cancellationToken)
+                    static async Task<Document> HandleVariableDeclarator(IVariableDeclaratorOperation variableDeclaratorOperation, Document doc, SyntaxNode root, CancellationToken cancellationToken)
                     {
-                        IVariableDeclarationOperation variableDeclarationOperation = (IVariableDeclarationOperation)variableDeclaratorOperation.Parent;
-                        IVariableDeclarationGroupOperation variableGroupDeclarationOperation = (IVariableDeclarationGroupOperation)variableDeclarationOperation.Parent;
+                        IVariableDeclarationOperation variableDeclarationOperation = (IVariableDeclarationOperation)variableDeclaratorOperation.Parent!;
+                        IVariableDeclarationGroupOperation variableGroupDeclarationOperation = (IVariableDeclarationGroupOperation)variableDeclarationOperation.Parent!;
 
                         DocumentEditor editor = await DocumentEditor.CreateAsync(doc, cancellationToken).ConfigureAwait(false);
                         SyntaxGenerator generator = editor.Generator;
                         ILocalSymbol currentSymbol = variableDeclaratorOperation.Symbol;
 
-                        var variableInitializerOperation = variableDeclaratorOperation.GetVariableInitializer();
-                        string unitString = (string)variableInitializerOperation.Value.ConstantValue.Value;
+                        var variableInitializerOperation = variableDeclaratorOperation.GetVariableInitializer()!;
+                        string unitString = (string)variableInitializerOperation.Value.ConstantValue.Value!;
                         char charValue = unitString[0];
                         SyntaxNode charLiteralExpressionNode = generator.LiteralExpression(charValue);
                         var charTypeNode = generator.TypeExpression(SpecialType.System_Char);

@@ -5,7 +5,7 @@ using Test.Utilities;
 using Xunit;
 using CSharpLanguageVersion = Microsoft.CodeAnalysis.CSharp.LanguageVersion;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
-    Microsoft.CodeQuality.Analyzers.Maintainability.AvoidDeadConditionalCode,
+    Microsoft.CodeQuality.CSharp.Analyzers.Maintainability.CSharpAvoidDeadConditionalCode,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
@@ -2733,7 +2733,9 @@ public class C
         [InlineData("class", "class")]
         public async Task DataflowAcrossBranchesAsync(string typeTest, string typeA)
         {
-            await VerifyCS.VerifyAnalyzerAsync($@"
+            var test = new VerifyCS.Test
+            {
+                TestCode = $@"
 using System;
 
 namespace TestNamespace
@@ -2752,27 +2754,46 @@ namespace TestNamespace
             Test t = new Test();
             t.A = new A();
             t.A.IntProperty = param;
+            A a = new A();
+            a.IntProperty = param;
+            A a1 = new A();
+            a1.IntProperty = param;
+            A a2 = new A();
+            a2.IntProperty = param;
             if (param >= 0)
             {{
-                A a1 = new A();
                 a1.IntProperty = 1;
                 t.A = a1;                    // t.A now contains/points to a1
+                a = a2;
             }}
             else
             {{
-                A a2 = new A();
                 a2.IntProperty = 1;
-                t.A = a2;                    // t.A now contains/points to a2     
+                t.A = a2;                    // t.A now contains/points to a2   
+                a = a1;
             }}
         
             if (t.A.IntProperty == 1)        // t.A now contains/points either a1 or a2, both of which have .IntProperty = """"
+                                             // However, we conservatively don't report it when 'A' is a class
+            {{
+            }}
+
+            if (a.IntProperty == 1)          // a points to a1 or a2, and a.IntProperty = param for both cases.
             {{
             }}
         }}
     }}
-}}",
-            // Test0.cs(33,17): warning CA1508: 't.A.IntProperty == 1' is always 'true'. Remove or refactor the condition(s) to avoid dead code.
-            GetCSharpResultAt(33, 17, "t.A.IntProperty == 1", "true"));
+}}"
+            };
+
+            if (typeA != "class")
+            {
+                test.ExpectedDiagnostics.Add(
+                    // Test0.cs(33,17): warning CA1508: 't.A.IntProperty == 1' is always 'true'. Remove or refactor the condition(s) to avoid dead code.
+                    GetCSharpResultAt(39, 17, "t.A.IntProperty == 1", "true"));
+            }
+
+            await test.RunAsync();
         }
 
         [Fact, WorkItem(4056, "https://github.com/dotnet/roslyn-analyzers/issues/4056")]
@@ -3183,6 +3204,107 @@ static class Test
     }
 }
 ");
+        }
+
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
+        [Fact, WorkItem(6532, "https://github.com/dotnet/roslyn-analyzers/issues/6532")]
+        public Task TestTernaryOperator_NoDiagnosticAsync()
+        {
+            return VerifyCSharpAnalyzerAsync(@"
+using System.Collections.Generic;
+
+class Test
+{
+    void M()
+    {
+        var i = 0;
+        i += M2() ? 1 : 0;
+        _ = i != 0;
+    }
+
+    bool M2() => true;
+}");
+        }
+
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
+        [Fact, WorkItem(6532, "https://github.com/dotnet/roslyn-analyzers/issues/6532")]
+        public Task TestTernaryOperator2_NoDiagnosticAsync()
+        {
+            return VerifyCSharpAnalyzerAsync(@"
+using System.Collections.Generic;
+
+class Test
+{
+    void M()
+    {
+        var i = 1;
+        i += M2() ? 1 : 0;
+        _ = i != 2;
+    }
+
+    bool M2() => true;
+}");
+        }
+
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
+        [Fact, WorkItem(6164, "https://github.com/dotnet/roslyn-analyzers/issues/6164")]
+        public async Task DefaultNullableStringValue_NoDiagnosticAsync()
+        {
+            await new VerifyCS.Test
+            {
+                TestCode = @"
+#nullable enable
+
+using System;
+
+class C
+{
+    public static void Bar(ConsoleColor c)
+    {
+        string? color = default;
+        if (c == ConsoleColor.Green)
+            color = ""green"";
+
+        if (color != null)
+        {
+        }
+    }
+}",
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp8
+            }.RunAsync();
+        }
+
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
+        [Fact, WorkItem(6483, "https://github.com/dotnet/roslyn-analyzers/issues/6483")]
+        public async Task IsPatternExpression_Unboxing_NoDiagnosticsAsync()
+        {
+            await new VerifyCS.Test
+            {
+                TestCode = @"
+class C
+{
+    public void Run(object value)
+    {
+        if (value is null)
+        {
+            return;
+        }
+
+        var x = value is double num1;
+        if (x)
+        {
+            return;
+        }
+
+        if (!(value is int num2))
+        {
+            return;
+        }
+    }
+}",
+            }.RunAsync();
         }
     }
 }

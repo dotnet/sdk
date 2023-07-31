@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
 using System.Composition;
@@ -22,12 +22,12 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         public override async Task RegisterCodeFixesAsync(CodeFixContext context)
         {
             SyntaxGenerator generator = SyntaxGenerator.GetGenerator(context.Document);
-            SyntaxNode root = await context.Document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
+            SyntaxNode root = await context.Document.GetRequiredSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
             SyntaxNode node = root.FindNode(context.Span);
 
             foreach (var diagnostic in context.Diagnostics)
             {
-                if (diagnostic.Properties.TryGetValue("case", out string fixCase))
+                if (diagnostic.Properties.TryGetValue("case", out var fixCase))
                 {
                     string title;
                     switch (fixCase)
@@ -76,7 +76,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         private static async Task<Document> AddAccessorAsync(Document document, SyntaxNode parameter, CancellationToken cancellationToken)
         {
             SymbolEditor symbolEditor = SymbolEditor.Create(document);
-            SemanticModel model = await document.GetSemanticModelAsync(cancellationToken).ConfigureAwait(false);
+            SemanticModel model = await document.GetRequiredSemanticModelAsync(cancellationToken).ConfigureAwait(false);
 
             if (model.GetDeclaredSymbol(parameter, cancellationToken) is not IParameterSymbol parameterSymbol)
             {
@@ -87,7 +87,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             string propName = char.ToUpper(parameterSymbol.Name[0], CultureInfo.InvariantCulture).ToString() + parameterSymbol.Name[1..];
 
             INamedTypeSymbol typeSymbol = parameterSymbol.ContainingType;
-            ISymbol propertySymbol = typeSymbol.GetMembers(propName).FirstOrDefault(m => m.Kind == SymbolKind.Property);
+            ISymbol? propertySymbol = typeSymbol.GetMembers(propName).FirstOrDefault(m => m.Kind == SymbolKind.Property);
 
             // Add a new property
             if (propertySymbol == null)

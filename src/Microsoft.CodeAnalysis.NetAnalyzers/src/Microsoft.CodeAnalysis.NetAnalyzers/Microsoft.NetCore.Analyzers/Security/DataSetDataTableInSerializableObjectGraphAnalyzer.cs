@@ -160,7 +160,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                                 optionsToUse = ObjectGraphOptions.JavaScriptSerializerOptions;
                                 deserializedTypes = new[]
                                 {
-                                    (javaScriptConversionOperation.Type, (IOperation)javaScriptConversionOperation)
+                                    (javaScriptConversionOperation.Type!, (IOperation)javaScriptConversionOperation)
                                 };
                             }
                             else if (targetMethod.MetadataName == "Deserialize")
@@ -232,7 +232,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                                 optionsToUse = ObjectGraphOptions.NewtonsoftJsonNetOptions;
                                 deserializedTypes = new[]
                                 {
-                                    (conversionOperation.Type, (IOperation)conversionOperation)
+                                    (conversionOperation.Type!, (IOperation)conversionOperation)
                                 };
                             }
                         }
@@ -249,9 +249,9 @@ namespace Microsoft.NetCore.Analyzers.Security
                         optionsToUse = null;
                         deserializedTypes = null;
 
-                        IMethodSymbol constructor = objectCreationOperation.Constructor;
-                        if (objectCreationOperation.Type?.Equals(dataContractSerializerTypeSymbol) == true
-                            || objectCreationOperation.Type?.Equals(dataContractJsonSerializerTypeSymbol) == true)
+                        IMethodSymbol? constructor = objectCreationOperation.Constructor;
+                        if (objectCreationOperation?.Type?.Equals(dataContractSerializerTypeSymbol) == true
+                            || objectCreationOperation?.Type?.Equals(dataContractJsonSerializerTypeSymbol) == true)
                         {
                             optionsToUse = ObjectGraphOptions.DataContractOptions;
                             deserializedTypes =
@@ -261,7 +261,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                                     .OfType<ITypeOfOperation>()
                                     .Select(t => (t.TypeOperand!, (IOperation)t));
                         }
-                        else if (objectCreationOperation.Type?.Equals(xmlSerializerTypeSymbol) == true)
+                        else if (objectCreationOperation?.Type?.Equals(xmlSerializerTypeSymbol) == true)
                         {
                             optionsToUse = ObjectGraphOptions.XmlSerializerOptions;
                             deserializedTypes =

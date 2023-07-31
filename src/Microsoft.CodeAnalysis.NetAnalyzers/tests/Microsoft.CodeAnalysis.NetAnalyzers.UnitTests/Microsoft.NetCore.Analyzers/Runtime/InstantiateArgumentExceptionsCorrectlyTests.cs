@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
@@ -1091,6 +1091,20 @@ dotnet_code_quality.CA2208.api_surface = public") }
                         }
                     }
                 }");
+        }
+
+        [Fact, WorkItem(6580, "https://github.com/dotnet/roslyn-analyzers/issues/6580")]
+        public async Task ArgumentNullException_Test()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+                public class Class
+                {
+                    public void Test(string name)
+                    {
+                        if (name is null) throw new System.ArgumentNullException(""not name"", ""Must not be null."");
+                    }
+                }",
+                GetCSharpIncorrectParameterNameExpectedResult(6, 49, "Test", "not name", "paramName", "ArgumentNullException"));
         }
 
         private static DiagnosticResult GetCSharpNoArgumentsExpectedResult(int line, int column, string typeName) =>

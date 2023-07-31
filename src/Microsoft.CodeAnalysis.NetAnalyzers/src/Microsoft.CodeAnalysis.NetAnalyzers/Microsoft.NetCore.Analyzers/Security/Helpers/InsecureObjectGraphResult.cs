@@ -65,7 +65,7 @@ namespace Microsoft.NetCore.Analyzers.Security.Helpers
             }
             else if (this.InsecureAttribute != null)
             {
-                return this.InsecureAttribute.ApplicationSyntaxReference.GetSyntax().GetLocation();
+                return this.InsecureAttribute.ApplicationSyntaxReference?.GetSyntax().GetLocation() ?? Location.None;
             }
             else
             {

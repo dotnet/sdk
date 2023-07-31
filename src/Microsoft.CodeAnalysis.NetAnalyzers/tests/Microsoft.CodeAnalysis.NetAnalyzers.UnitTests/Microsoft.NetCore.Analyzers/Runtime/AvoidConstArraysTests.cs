@@ -806,28 +806,34 @@ public class Test
         }
 
         [Fact, WorkItem(6686, "https://github.com/dotnet/roslyn-analyzers/issues/6686")]
-        public Task ArrayWithoutInitializer_Diagnostic()
+        public Task ArrayWithoutInitializer_NoDiagnostic()
         {
-            var source = @"using System.Collections.Generic;
-
-public class MyClass
-{
-    public List<object> Cases => new() { {|CA1861:new object[0]|} };
-}";
-            var fixedSource = @"using System.Collections.Generic;
-
-public class MyClass
-{
-    public List<object> Cases => new() { item };
-
-    private static readonly object[] item = new object[0];
-}";
             return new VerifyCS.Test
             {
-                TestCode = source,
-                FixedCode = fixedSource,
+                TestCode = @"using System.Collections.Generic;
+
+public class MyClass
+{
+    public List<object> Cases => new() { new object[0] };
+}",
                 LanguageVersion = LanguageVersion.CSharp10
             }.RunAsync();
+        }
+
+        [Fact, WorkItem(6686, "https://github.com/dotnet/roslyn-analyzers/issues/6697")]
+        public async Task ArrayWithoutInitializer_NoDiagnostic2()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+
+public class MyClass
+{
+    public void M1(Type[] types) { }
+    public void M2(int length)
+    {
+         M1(new Type[length]);
+    }
+}");
         }
     }
 }

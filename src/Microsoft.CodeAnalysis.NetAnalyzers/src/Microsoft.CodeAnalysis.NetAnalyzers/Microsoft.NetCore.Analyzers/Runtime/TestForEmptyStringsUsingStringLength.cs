@@ -144,7 +144,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 return false;
             }
 
-            Optional<object> constantValueOpt = expression.ConstantValue;
+            Optional<object?> constantValueOpt = expression.ConstantValue;
             if (constantValueOpt.HasValue)
             {
                 return constantValueOpt.Value is string { Length: 0 };

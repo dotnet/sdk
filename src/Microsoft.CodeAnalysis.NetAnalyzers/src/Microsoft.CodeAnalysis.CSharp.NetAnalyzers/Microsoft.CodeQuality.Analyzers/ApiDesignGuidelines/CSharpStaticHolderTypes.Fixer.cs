@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
 using System.Composition;
@@ -13,6 +13,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Editing;
 using Microsoft.CodeQuality.Analyzers;
 using Microsoft.CodeAnalysis.CodeActions;
+using Analyzer.Utilities;
 
 namespace Microsoft.CodeQuality.CSharp.Analyzers.ApiDesignGuidelines
 {
@@ -32,7 +33,7 @@ namespace Microsoft.CodeQuality.CSharp.Analyzers.ApiDesignGuidelines
             CancellationToken cancellationToken = context.CancellationToken;
 
             cancellationToken.ThrowIfCancellationRequested();
-            SyntaxNode root = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
+            SyntaxNode root = await document.GetRequiredSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
             ClassDeclarationSyntax? classDeclaration = root.FindToken(span.Start).Parent?.FirstAncestorOrSelf<ClassDeclarationSyntax>();
             if (classDeclaration != null)
             {

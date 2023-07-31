@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
 using System.Composition;
@@ -20,12 +20,12 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
     [ExportCodeFixProvider(LanguageNames.CSharp, LanguageNames.VisualBasic), Shared]
     public sealed class TypesThatOwnDisposableFieldsShouldBeDisposableFixer : CodeFixProvider
     {
-        public sealed override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray.Create(TypesThatOwnDisposableFieldsShouldBeDisposableAnalyzer<SyntaxNode>.RuleId);
+        public sealed override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray.Create(TypesThatOwnDisposableFieldsShouldBeDisposableAnalyzer.RuleId);
 
         public override async Task RegisterCodeFixesAsync(CodeFixContext context)
         {
             SyntaxGenerator generator = SyntaxGenerator.GetGenerator(context.Document);
-            SyntaxNode root = await context.Document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
+            SyntaxNode root = await context.Document.GetRequiredSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
 
             SyntaxNode declaration = root.FindNode(context.Span);
             declaration = generator.GetDeclaration(declaration);
@@ -64,7 +64,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             else
             {
                 SyntaxNode throwStatement = generator.ThrowStatement(generator.ObjectCreationExpression(model.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemNotImplementedException)));
-                SyntaxNode member = generator.MethodDeclaration(TypesThatOwnDisposableFieldsShouldBeDisposableAnalyzer<SyntaxNode>.Dispose, statements: new[] { throwStatement });
+                SyntaxNode member = generator.MethodDeclaration(TypesThatOwnDisposableFieldsShouldBeDisposableAnalyzer.Dispose, statements: new[] { throwStatement });
                 member = generator.AsPublicInterfaceImplementation(member, interfaceType);
                 editor.AddMember(declaration, member);
             }

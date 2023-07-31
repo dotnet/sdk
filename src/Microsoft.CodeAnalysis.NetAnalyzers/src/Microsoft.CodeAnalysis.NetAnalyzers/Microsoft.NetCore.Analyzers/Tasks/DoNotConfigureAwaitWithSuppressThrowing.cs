@@ -47,7 +47,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks
                         .Where(m => SymbolEqualityComparer.Default.Equals(m.ContainingType, genericTask) && m.Parameters.Length == 1 && SymbolEqualityComparer.Default.Equals(m.Parameters[0].Type, configureAwaitOptionsType))
                         .FirstOrDefault() is not IMethodSymbol configureAwait ||
                     configureAwaitOptionsType.GetMembers("SuppressThrowing").FirstOrDefault() is not IFieldSymbol suppressThrowing ||
-                    !DiagnosticHelpers.TryConvertToUInt64(suppressThrowing.ConstantValue, configureAwaitOptionsType.EnumUnderlyingType.SpecialType, out ulong suppressThrowingValue))
+                    !DiagnosticHelpers.TryConvertToUInt64(suppressThrowing.ConstantValue, configureAwaitOptionsType.EnumUnderlyingType!.SpecialType, out ulong suppressThrowingValue))
                 {
                     return;
                 }

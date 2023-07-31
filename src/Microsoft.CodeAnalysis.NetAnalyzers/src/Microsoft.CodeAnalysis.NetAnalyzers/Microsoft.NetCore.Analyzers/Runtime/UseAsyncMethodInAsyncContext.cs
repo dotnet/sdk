@@ -24,7 +24,6 @@ namespace Microsoft.NetCore.Analyzers.Runtime
     public sealed class UseAsyncMethodInAsyncContext : DiagnosticAnalyzer
     {
         internal const string RuleId = "CA1849";
-        internal const string AsyncMethodKeyName = "AsyncMethodName";
         internal const string MandatoryAsyncSuffix = "Async";
 
         private static readonly LocalizableString s_localizableTitle = CreateLocalizableResourceString(nameof(UseAsyncMethodInAsyncContextTitle));
@@ -56,33 +55,35 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
             context.RegisterCompilationStartAction(context =>
             {
+                var wellKnownTypeProvider = WellKnownTypeProvider.GetOrCreate(context.Compilation);
                 ConcurrentDictionary<string, INamedTypeSymbol> syncBlockingTypes = new();
-                GetTypeAndAddToDictionary("Task", WellKnownTypeNames.SystemThreadingTasksTask, syncBlockingTypes, context.Compilation);
-                GetTypeAndAddToDictionary("TaskGeneric", WellKnownTypeNames.SystemThreadingTasksTask1, syncBlockingTypes, context.Compilation);
-                GetTypeAndAddToDictionary("ValueTask", WellKnownTypeNames.SystemThreadingTasksValueTask, syncBlockingTypes, context.Compilation);
-                GetTypeAndAddToDictionary("IAsyncEnumerableGeneric", WellKnownTypeNames.SystemCollectionsGenericIAsyncEnumerable1, syncBlockingTypes, context.Compilation);
-                GetTypeAndAddToDictionary("AsyncMethodBuilderAttribute", WellKnownTypeNames.SystemRuntimeCompilerServicesAsyncMethodBuilderAttribute, syncBlockingTypes, context.Compilation);
+                GetTypeAndAddToDictionary("Task", WellKnownTypeNames.SystemThreadingTasksTask, syncBlockingTypes, wellKnownTypeProvider);
+                GetTypeAndAddToDictionary("TaskGeneric", WellKnownTypeNames.SystemThreadingTasksTask1, syncBlockingTypes, wellKnownTypeProvider);
+                GetTypeAndAddToDictionary("ValueTask", WellKnownTypeNames.SystemThreadingTasksValueTask, syncBlockingTypes, wellKnownTypeProvider);
+                GetTypeAndAddToDictionary("IAsyncEnumerableGeneric", WellKnownTypeNames.SystemCollectionsGenericIAsyncEnumerable1, syncBlockingTypes, wellKnownTypeProvider);
+                GetTypeAndAddToDictionary("AsyncMethodBuilderAttribute", WellKnownTypeNames.SystemRuntimeCompilerServicesAsyncMethodBuilderAttribute, syncBlockingTypes, wellKnownTypeProvider);
 
                 List<SyncBlockingSymbol> syncBlockingSymbols = new();
-                GetSymbolAndAddToList("Wait", WellKnownTypeNames.SystemThreadingTasksTask, SymbolKind.Method, syncBlockingSymbols, context.Compilation);
-                GetSymbolAndAddToList("WaitAll", WellKnownTypeNames.SystemThreadingTasksTask, SymbolKind.Method, syncBlockingSymbols, context.Compilation);
-                GetSymbolAndAddToList("WaitAny", WellKnownTypeNames.SystemThreadingTasksTask, SymbolKind.Method, syncBlockingSymbols, context.Compilation);
-                GetSymbolAndAddToList("Result", WellKnownTypeNames.SystemThreadingTasksTask1, SymbolKind.Property, syncBlockingSymbols, context.Compilation);
-                GetSymbolAndAddToList("Result", WellKnownTypeNames.SystemThreadingTasksValueTask, SymbolKind.Property, syncBlockingSymbols, context.Compilation);
-                GetSymbolAndAddToList("GetResult", WellKnownTypeNames.SystemRuntimeCompilerServicesTaskAwaiter, SymbolKind.Method, syncBlockingSymbols, context.Compilation);
-                GetSymbolAndAddToList("GetResult", WellKnownTypeNames.SystemRuntimeCompilerServicesValueTaskAwaiter, SymbolKind.Method, syncBlockingSymbols, context.Compilation);
-                GetSymbolAndAddToList("Sleep", WellKnownTypeNames.SystemThreadingThread, SymbolKind.Method, syncBlockingSymbols, context.Compilation);
+                GetSymbolAndAddToList("Wait", WellKnownTypeNames.SystemThreadingTasksTask, SymbolKind.Method, syncBlockingSymbols, wellKnownTypeProvider);
+                GetSymbolAndAddToList("WaitAll", WellKnownTypeNames.SystemThreadingTasksTask, SymbolKind.Method, syncBlockingSymbols, wellKnownTypeProvider);
+                GetSymbolAndAddToList("WaitAny", WellKnownTypeNames.SystemThreadingTasksTask, SymbolKind.Method, syncBlockingSymbols, wellKnownTypeProvider);
+                GetSymbolAndAddToList("Result", WellKnownTypeNames.SystemThreadingTasksTask1, SymbolKind.Property, syncBlockingSymbols, wellKnownTypeProvider);
+                GetSymbolAndAddToList("Result", WellKnownTypeNames.SystemThreadingTasksValueTask, SymbolKind.Property, syncBlockingSymbols, wellKnownTypeProvider);
+                GetSymbolAndAddToList("GetResult", WellKnownTypeNames.SystemRuntimeCompilerServicesTaskAwaiter, SymbolKind.Method, syncBlockingSymbols, wellKnownTypeProvider);
+                GetSymbolAndAddToList("GetResult", WellKnownTypeNames.SystemRuntimeCompilerServicesValueTaskAwaiter, SymbolKind.Method, syncBlockingSymbols, wellKnownTypeProvider);
+                GetSymbolAndAddToList("Sleep", WellKnownTypeNames.SystemThreadingThread, SymbolKind.Method, syncBlockingSymbols, wellKnownTypeProvider);
 
-                if (!syncBlockingTypes.Any())
+                if (syncBlockingTypes.IsEmpty)
                 {
                     return;
                 }
 
-                if (!context.Compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemObsoleteAttribute, out INamedTypeSymbol? systemObsoleteAttribute))
+                if (!wellKnownTypeProvider.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemObsoleteAttribute, out INamedTypeSymbol? systemObsoleteAttribute))
                 {
                     return;
                 }
 
+                ImmutableArray<IMethodSymbol> excludedMethods = GetExcludedMethods(wellKnownTypeProvider);
                 context.RegisterOperationAction(context =>
                 {
                     if (IsInTaskReturningMethodOrDelegate(context, syncBlockingTypes))
@@ -90,14 +91,14 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                         if (context.Operation is IInvocationOperation invocationOperation)
                         {
                             var methodSymbol = invocationOperation.TargetMethod;
-                            if (InspectAndReportBlockingMemberAccess(context, methodSymbol, syncBlockingSymbols, SymbolKind.Method))
+                            if (excludedMethods.Contains(methodSymbol.OriginalDefinition, SymbolEqualityComparer.Default) || InspectAndReportBlockingMemberAccess(context, methodSymbol, syncBlockingSymbols, SymbolKind.Method))
                             {
                                 // Don't return double-diagnostics.
                                 return;
                             }
 
                             // Also consider all method calls to check for Async-suffixed alternatives.
-                            var semanticModel = context.Operation.SemanticModel;
+                            var semanticModel = context.Operation.SemanticModel!;
 
                             if (!methodSymbol.Name.EndsWith(MandatoryAsyncSuffix, StringComparison.Ordinal) &&
                                 !HasAsyncCompatibleReturnType(methodSymbol, syncBlockingTypes))
@@ -162,17 +163,17 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             public ISymbol Value { get; set; }
         }
 
-        private static void GetTypeAndAddToDictionary(string key, string typeName, ConcurrentDictionary<string, INamedTypeSymbol> syncBlockingTypes, Compilation compilation)
+        private static void GetTypeAndAddToDictionary(string key, string typeName, ConcurrentDictionary<string, INamedTypeSymbol> syncBlockingTypes, WellKnownTypeProvider wellKnownTypeProvider)
         {
-            if (compilation.TryGetOrCreateTypeByMetadataName(typeName, out INamedTypeSymbol? typeValue))
+            if (wellKnownTypeProvider.TryGetOrCreateTypeByMetadataName(typeName, out INamedTypeSymbol? typeValue))
             {
                 syncBlockingTypes.AddOrUpdate(key, typeValue, (k, v) => v);
             }
         }
 
-        private static void GetSymbolAndAddToList(string symbolName, string Namespace, SymbolKind kind, List<SyncBlockingSymbol> syncBlockingSymbols, Compilation compilation)
+        private static void GetSymbolAndAddToList(string symbolName, string metadataName, SymbolKind kind, List<SyncBlockingSymbol> syncBlockingSymbols, WellKnownTypeProvider wellKnownTypeProvider)
         {
-            if (compilation.TryGetOrCreateTypeByMetadataName(Namespace, out INamedTypeSymbol? typeValue))
+            if (wellKnownTypeProvider.TryGetOrCreateTypeByMetadataName(metadataName, out INamedTypeSymbol? typeValue))
             {
                 ISymbol? symbolValue = typeValue
                     .GetMembers(symbolName)
@@ -180,9 +181,26 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
                 if (symbolValue is not null)
                 {
-                    syncBlockingSymbols.Add(new SyncBlockingSymbol(symbolName, Namespace, kind, symbolValue));
+                    syncBlockingSymbols.Add(new SyncBlockingSymbol(symbolName, metadataName, kind, symbolValue));
                 }
             }
+        }
+
+        private static ImmutableArray<IMethodSymbol> GetExcludedMethods(WellKnownTypeProvider wellKnownTypeProvider)
+        {
+            var methodsBuilder = ImmutableArray.CreateBuilder<IMethodSymbol>();
+            if (wellKnownTypeProvider.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.MicrosoftEntityFrameworkCoreDbContext, out INamedTypeSymbol? dbContextType))
+            {
+                foreach (var method in dbContextType.GetMembers().OfType<IMethodSymbol>())
+                {
+                    if (method.Name is "Add" or "AddRange")
+                    {
+                        methodsBuilder.Add(method);
+                    }
+                }
+            }
+
+            return methodsBuilder.ToImmutable();
         }
 
         /// <summary>
@@ -195,7 +213,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         /// </returns>
         private static bool HasSupersetOfParameterTypes(IMethodSymbol candidateMethod, IMethodSymbol baselineMethod)
         {
-            return candidateMethod.Parameters.All(candidateParameter => baselineMethod.Parameters.Any(baselineParameter => baselineParameter.Type?.Equals(candidateParameter.Type) ?? false));
+            return candidateMethod.Parameters.All(candidateParameter => candidateParameter.HasExplicitDefaultValue || baselineMethod.Parameters.Any(baselineParameter => baselineParameter.Type?.Equals(candidateParameter.Type) ?? false));
         }
 
         private static bool HasAsyncCompatibleReturnType(IMethodSymbol methodSymbol, ConcurrentDictionary<string, INamedTypeSymbol> syncBlockingTypes)

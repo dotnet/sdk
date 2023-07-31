@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -156,16 +156,19 @@ namespace Microsoft.NetCore.Analyzers.Tasks
                                 // holding on to the awaitable, and it could await it twice... but the caller is still correct,
                                 // and this analyzer does not perform inter-method analysis.
                                 var arg = (IArgumentOperation)operation.Parent;
-                                var originalType = arg.Parameter.Type.OriginalDefinition;
-                                if (originalType.Equals(valueTaskType) || originalType.Equals(valueTaskOfTType))
+                                if (arg.Parameter != null)
                                 {
-                                    // However, it's really only expected when the parameter type is explicitly a ValueTask{<T>};
-                                    // if it's just, say, a TValue, we're likely on a bad path, such as storing the instance into
-                                    // a collection of some kind, e.g. Dictionary<string, ValueTask>.Add(..., vt).
-                                    var originalParameter = arg.Parameter.OriginalDefinition;
-                                    if (originalParameter.Type.Kind != SymbolKind.TypeParameter)
+                                    var originalType = arg.Parameter.Type.OriginalDefinition;
+                                    if (originalType.Equals(valueTaskType) || originalType.Equals(valueTaskOfTType))
                                     {
-                                        return;
+                                        // However, it's really only expected when the parameter type is explicitly a ValueTask{<T>};
+                                        // if it's just, say, a TValue, we're likely on a bad path, such as storing the instance into
+                                        // a collection of some kind, e.g. Dictionary<string, ValueTask>.Add(..., vt).
+                                        var originalParameter = arg.Parameter.OriginalDefinition;
+                                        if (originalParameter.Type.Kind != SymbolKind.TypeParameter)
+                                        {
+                                            return;
+                                        }
                                     }
                                 }
 
@@ -545,7 +548,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks
             return null;
 
             bool IsCompletedReference(IPropertyReferenceOperation? prop) =>
-                prop != null &&
+                prop?.Instance != null &&
                 IsLocalOrParameterSymbolReference(prop.Instance, valueTaskSymbol) &&
                 prop.Property.Name switch
                 {

@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
 using System.Linq;
@@ -90,7 +90,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     // Ignore parameters that have any of these attributes.
                     // C# reserved attributes: https://learn.microsoft.com/dotnet/csharp/language-reference/attributes/caller-information
                     while (last >= 0
-                        && HasCallerInformationAttribute(methodSymbol.Parameters[last], callerInformationAttributes))
+                        && methodSymbol.Parameters[last].HasAnyAttribute(callerInformationAttributes))
                     {
                         last--;
                     }
@@ -154,10 +154,5 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 SymbolKind.Method);
             });
         }
-
-        private static bool HasCallerInformationAttribute(IParameterSymbol parameter, ImmutableHashSet<INamedTypeSymbol> callerAttributes)
-            => parameter.GetAttributes().Any(
-                attribute => callerAttributes.Any(
-                    callerAttribute => SymbolEqualityComparer.Default.Equals(callerAttribute, attribute.AttributeClass)));
     }
 }

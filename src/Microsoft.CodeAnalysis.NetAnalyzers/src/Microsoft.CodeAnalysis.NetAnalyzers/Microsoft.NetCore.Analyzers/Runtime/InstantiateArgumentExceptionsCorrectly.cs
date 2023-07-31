@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Immutable;
@@ -103,10 +103,10 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             }
             else
             {
-                Diagnostic? diagnostic = null;
+                Diagnostic? diagnosticFound = null;
                 foreach (IArgumentOperation argument in creation.Arguments)
                 {
-                    if (argument.Parameter.Type.SpecialType != SpecialType.System_String)
+                    if (argument.Parameter?.Type.SpecialType != SpecialType.System_String)
                     {
                         continue;
                     }
@@ -117,18 +117,22 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                         continue;
                     }
 
-                    diagnostic = CheckArgument(owningSymbol, creation, argument.Parameter, value, context);
+                    Diagnostic? diagnostic = CheckArgument(owningSymbol, creation, argument.Parameter, value, context);
 
-                    // RuleIncorrectMessage is the highest priority rule, no need to check other rules
-                    if (diagnostic != null && diagnostic.Descriptor.Equals(RuleIncorrectMessage))
+                    if (diagnostic != null)
                     {
-                        break;
+                        diagnosticFound = diagnostic;
+                        // RuleIncorrectMessage is the highest priority rule, no need to check other rules
+                        if (diagnostic.Descriptor.Equals(RuleIncorrectMessage))
+                        {
+                            break;
+                        }
                     }
                 }
 
-                if (diagnostic != null)
+                if (diagnosticFound != null)
                 {
-                    context.ReportDiagnostic(diagnostic);
+                    context.ReportDiagnostic(diagnosticFound);
                 }
             }
         }
@@ -152,14 +156,14 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             {
                 var dictBuilder = ImmutableDictionary.CreateBuilder<string, string?>();
                 dictBuilder.Add(MessagePosition, parameter.Ordinal.ToString(CultureInfo.InvariantCulture));
-                return context.Operation.CreateDiagnostic(RuleIncorrectMessage, dictBuilder.ToImmutable(), targetSymbol.Name, stringArgument, parameter.Name, creation.Type.Name);
+                return context.Operation.CreateDiagnostic(RuleIncorrectMessage, dictBuilder.ToImmutable(), targetSymbol.Name, stringArgument, parameter.Name, creation.Type!.Name);
             }
             else if (HasParameters(targetSymbol) && IsParameterName(parameter) && !matchesParameter)
             {
                 // Allow argument exceptions in accessors to use the associated property symbol name.
                 if (!MatchesAssociatedSymbol(targetSymbol, stringArgument))
                 {
-                    return context.Operation.CreateDiagnostic(RuleIncorrectParameterName, targetSymbol.Name, stringArgument, parameter.Name, creation.Type.Name);
+                    return context.Operation.CreateDiagnostic(RuleIncorrectParameterName, targetSymbol.Name, stringArgument, parameter.Name, creation.Type!.Name);
                 }
             }
 

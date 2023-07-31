@@ -176,7 +176,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                         if (otherOperand.ConstantValue.HasValue && otherOperand.ConstantValue.Value is int intValue)
                         {
                             if ((operatorKind == BinaryOperatorKind.Equals && intValue < 0) ||
-                                (operatorKind == BinaryOperatorKind.GreaterThanOrEqual && intValue == 0))
+                                (operatorKind == BinaryOperatorKind.GreaterThanOrEqual && intValue == 0) ||
+                                (operatorKind == BinaryOperatorKind.NotEquals && intValue < 0))
                             {
                                 // This is the only case we are targeting in this analyzer
                                 return true;
