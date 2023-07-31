@@ -48,6 +48,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
 
                     ImmutableHashSet<INamedTypeSymbol> specialAttributes = GetSpecialAttributes(compilationContext.Compilation);
                     var structLayoutAttribute = compilationContext.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeInteropServicesStructLayoutAttribute);
+                    var inlineArrayAttribute = compilationContext.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeCompilerServicesInlineArrayAttribute);
 
                     compilationContext.RegisterSymbolAction(
                         (symbolContext) =>
@@ -76,6 +77,12 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                                         }
                                     }
                                 }
+                            }
+
+                            // Fields of types marked with InlineArrayAttribute should never be flagged as unused
+                            if (field.ContainingType?.HasAnyAttribute(inlineArrayAttribute) ?? false)
+                            {
+                                return;
                             }
 
                             if (field.DeclaredAccessibility == Accessibility.Private && !referencedPrivateFields.ContainsKey(field))
