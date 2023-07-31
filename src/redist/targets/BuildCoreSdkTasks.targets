@@ -35,7 +35,6 @@
   <UsingTask TaskName="GetDependencyInfo" AssemblyFile="$(CoreSdkTaskDll)"/>
   <UsingTask TaskName="GetLinuxNativeInstallerDependencyVersions" AssemblyFile="$(CoreSdkTaskDll)"/>
   <UsingTask TaskName="GetRuntimePackRids" AssemblyFile="$(CoreSdkTaskDll)"/>
-  <UsingTask TaskName="JsonPropertyParser" AssemblyFile="$(CoreSdkTaskDll)"/>
   <UsingTask TaskName="ReplaceDuplicateFilesWithHardLinks" AssemblyFile="$(CoreSdkTaskDll)"/>
   <UsingTask TaskName="ReplaceFileContents" AssemblyFile="$(CoreSdkTaskDll)" />
   <UsingTask TaskName="TarGzFileCreateFromDirectory" AssemblyFile="$(CoreSdkTaskDll)" />
