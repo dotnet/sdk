@@ -2,8 +2,6 @@
 
 using Analyzer.Utilities.Extensions;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Operations;
 using Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines;
@@ -20,7 +18,7 @@ namespace Microsoft.CodeQuality.CSharp.Analyzers.ApiDesignGuidelines
 
         private static void AnalyzeAwaitForEachLoopOperation(OperationAnalysisContext context, INamedTypeSymbol configuredAsyncEnumerable)
         {
-            if (context.Operation is IForEachLoopOperation { Syntax: ForEachStatementSyntax { AwaitKeyword.RawKind: not (int)SyntaxKind.None }, Collection.Type: not null } forEachOperation
+            if (context.Operation is IForEachLoopOperation { IsAsynchronous: true, Collection.Type: not null } forEachOperation
                 && !forEachOperation.Collection.Type.OriginalDefinition.Equals(configuredAsyncEnumerable, SymbolEqualityComparer.Default))
             {
                 context.ReportDiagnostic(forEachOperation.Collection.CreateDiagnostic(Rule));
