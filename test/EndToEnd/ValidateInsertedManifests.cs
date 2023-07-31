@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.DotNet.Tools.Test.Utilities;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
@@ -26,16 +23,19 @@ namespace EndToEnd.Tests
         {
             var sdkManifestDir = Path.Combine(Path.GetDirectoryName(RepoDirectoriesProvider.DotnetUnderTest), "sdk-manifests");
             var sdkversionDir = new DirectoryInfo(sdkManifestDir).EnumerateDirectories().First();
-            foreach (var manifestDir in sdkversionDir.EnumerateDirectories())
+            foreach (var manifestVersionDir in sdkversionDir.EnumerateDirectories())
             {
-                var manifestId = manifestDir.Name;
+                foreach (var manifestDir in manifestVersionDir.EnumerateDirectories())
+                {
+                    var manifestId = manifestDir.Name;
 
-                string manifestFile = manifestDir.GetFile("WorkloadManifest.json").FullName;
+                    string manifestFile = manifestDir.GetFile("WorkloadManifest.json").FullName;
 
-                File.Exists(manifestFile).Should().BeTrue();
-                using var fileStream = new FileStream(manifestFile, FileMode.Open, FileAccess.Read);
-                Action readManifest = () => WorkloadManifestReader.ReadWorkloadManifest(manifestId, fileStream, manifestFile);
-                readManifest.ShouldNotThrow("manifestId:" + manifestId + " manifestFile:" + manifestFile + "is invalid");
+                    File.Exists(manifestFile).Should().BeTrue();
+                    using var fileStream = new FileStream(manifestFile, FileMode.Open, FileAccess.Read);
+                    Action readManifest = () => WorkloadManifestReader.ReadWorkloadManifest(manifestId, fileStream, manifestFile);
+                    readManifest.ShouldNotThrow("manifestId:" + manifestId + " manifestFile:" + manifestFile + "is invalid");
+                }
             }
             
         }
