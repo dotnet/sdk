@@ -20,7 +20,7 @@ namespace Microsoft.CodeQuality.CSharp.Analyzers.ApiDesignGuidelines
 
         private static void AnalyzeAwaitForEachLoopOperation(OperationAnalysisContext context, INamedTypeSymbol configuredAsyncEnumerable)
         {
-            if (context.Operation is IForEachLoopOperation { Syntax: ForEachStatementSyntax { AwaitKeyword.RawKind: not (int)SyntaxKind.None } } forEachOperation
+            if (context.Operation is IForEachLoopOperation { Syntax: ForEachStatementSyntax { AwaitKeyword.RawKind: not (int)SyntaxKind.None }, Collection.Type: not null } forEachOperation
                 && !forEachOperation.Collection.Type.OriginalDefinition.Equals(configuredAsyncEnumerable, SymbolEqualityComparer.Default))
             {
                 context.ReportDiagnostic(forEachOperation.Collection.CreateDiagnostic(Rule));
