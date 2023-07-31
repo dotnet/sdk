@@ -1373,9 +1373,8 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
             {
                 foreach (var typeArgument in typeArguments)
                 {
-                    if (!workingSet.Contains(typeArgument))
+                    if (workingSet.Add(typeArgument))
                     {
-                        workingSet.Add(typeArgument);
                         if (typeArgument.SpecialType == SpecialType.None)
                         {
                             CheckOperationAttributes(typeArgument, checkParents: true);
