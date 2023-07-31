@@ -50,7 +50,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                 var compilation = startContext.Compilation;
                 var entryPointContainingType = compilation.GetEntryPoint(startContext.CancellationToken)?.ContainingType;
                 var wellKnownTypeProvider = WellKnownTypeProvider.GetOrCreate(compilation);
-                var hasInternalsVisibleTo = startContext.Compilation.Assembly.HasAttribute(
+                var hasInternalsVisibleTo = startContext.Compilation.Assembly.HasAnyAttribute(
                     startContext.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeCompilerServicesInternalsVisibleToAttribute));
 
                 var systemAttributeSymbol = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemAttribute);
@@ -349,8 +349,8 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
             INamedTypeSymbol? mef1ExportAttributeSymbol,
             INamedTypeSymbol? mef2ExportAttributeSymbol)
         {
-            return (mef1ExportAttributeSymbol != null && type.HasAttribute(mef1ExportAttributeSymbol))
-                || (mef2ExportAttributeSymbol != null && type.HasAttribute(mef2ExportAttributeSymbol));
+            return (mef1ExportAttributeSymbol != null && type.HasAnyAttribute(mef1ExportAttributeSymbol))
+                || (mef2ExportAttributeSymbol != null && type.HasAnyAttribute(mef2ExportAttributeSymbol));
         }
 
         /// <summary>

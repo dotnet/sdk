@@ -125,7 +125,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             }
 
             // Special case: the DataContractSerializer requires that a public setter exists.
-            if (property.HasAttribute(knownTypes.DataMemberAttribute))
+            if (property.HasAnyAttribute(knownTypes.DataMemberAttribute))
             {
                 return;
             }

@@ -179,8 +179,8 @@ namespace Microsoft.NetCore.Analyzers.Security.Helpers
                 && methodSymbol.ReturnsVoid
                 && methodSymbol.Parameters.Length == 1
                 && methodSymbol.Parameters[0].Type.Equals(xmlReaderTypeSymbol)
-                && methodSymbol.ContainingType?.HasAttribute(designerCategoryAttributeTypeSymbol) == true
-                && methodSymbol.HasAttribute(debuggerNonUserCodeAttributeTypeSymbol);
+                && methodSymbol.ContainingType?.HasAnyAttribute(designerCategoryAttributeTypeSymbol) == true
+                && methodSymbol.HasAnyAttribute(debuggerNonUserCodeAttributeTypeSymbol);
         }
     }
 }
