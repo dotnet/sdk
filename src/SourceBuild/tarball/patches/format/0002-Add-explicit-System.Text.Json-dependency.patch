@@ -32,7 +32,7 @@ index cdfa5f5e..86f02b44 100644
 +++ b/eng/Version.Details.xml
 @@ -13,6 +13,10 @@
        <Uri>https://github.com/dotnet/command-line-api</Uri>
-       <Sha>82273cb56c83b589e8e5b63da0ac9745ffc6e105</Sha>
+       <Sha>c776cd4e906b669b9cce1017fee7d0ba9845d163</Sha>
      </Dependency>
 +    <Dependency Name="System.Text.Json" Version="6.0.8">
 +      <Uri>https://github.com/dotnet/runtime</Uri>
@@ -40,15 +40,15 @@ index cdfa5f5e..86f02b44 100644
 +    </Dependency>
    </ProductDependencies>
    <ToolsetDependencies>
-     <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="6.0.0-beta.22207.2">
+     <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="6.0.0-beta.22517.1">
 diff --git a/eng/Versions.props b/eng/Versions.props
 index 27582078..bccaf176 100644
 --- a/eng/Versions.props
 +++ b/eng/Versions.props
 @@ -20,6 +20,8 @@
      <!-- Dependencies from https://github.com/dotnet/command-line-api -->
-     <SystemCommandLineVersion>2.0.0-beta1.21473.1</SystemCommandLineVersion>
-     <SystemCommandLineRenderingVersion>0.3.0-alpha.21473.1</SystemCommandLineRenderingVersion>
+     <SystemCommandLineVersion>2.0.0-beta4.22504.1</SystemCommandLineVersion>
+     <SystemCommandLineRenderingVersion>0.4.0-alpha.22504.1</SystemCommandLineRenderingVersion>
 +    <!-- Dependencies from https://github.com/dotnet/runtime -->
 +    <SystemTextJsonVersion>6.0.8</SystemTextJsonVersion>
    </PropertyGroup>

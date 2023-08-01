@@ -41,8 +41,10 @@
       
       <RemainingFiles Include="$(SdkOutputDirectory)**\*" Exclude="$(SdkOutputDirectory)FSharp\FSharp.Build.dll;@(RoslynFiles);@(FSharpFiles)" />
 
-      <!-- Removing Full CLR built TestHost assemblies from getting Crossgen as it is throwing error -->
+      <!-- Removing Full CLR built TestHost assemblies from getting Crossgen as it is throwing error, and they need to stay their original architecture. -->
       <RemainingFiles Remove="$(SdkOutputDirectory)TestHost*\**\*" />
+      <!-- Removing Full CLR built DumpMiniTool executables from Crossgen, because they need to stay their original architecture to allow creating dumps with a given bitness. -->
+      <RemainingFiles Remove="$(SdkOutputDirectory)Extensions\dump*\**\*" />
       <RemainingFiles Remove="$(SdkOutputDirectory)Sdks\**\*" />
       <RemainingFiles Remove="$(SdkOutputDirectory)**\Microsoft.TestPlatform.Extensions.EventLogCollector.dll" />
 

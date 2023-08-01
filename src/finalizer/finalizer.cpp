@@ -38,6 +38,39 @@ LExit:
     return hr;
 }
 
+extern "C" HRESULT StrTrimBackslash(LPWSTR* ppwz, LPCWSTR wzSource)
+{
+    HRESULT hr = S_OK;
+    LPWSTR sczResult = NULL;
+
+    int i = lstrlenW(wzSource);
+
+    if (0 < i)
+    {
+        for (i = i - 1; i > 0; --i)
+        {
+            if (L'\\' != wzSource[i])
+            {
+                break;
+            }
+        }
+
+        ++i;
+    }
+
+    hr = StrAllocString(&sczResult, wzSource, i);
+    ExitOnFailure(hr, "Failed to copy result string");
+
+    // Output result
+    *ppwz = sczResult;
+    sczResult = NULL;
+
+LExit:
+    ReleaseStr(sczResult);
+
+    return hr;
+}
+
 extern "C" HRESULT DeleteWorkloadRecords(LPWSTR sczSdkFeatureBandVersion, LPWSTR sczArchitecture)
 {
     HRESULT hr = S_OK;
@@ -112,7 +145,7 @@ extern "C" HRESULT DeleteWorkloadRecords(LPWSTR sczSdkFeatureBandVersion, LPWSTR
         ExitOnFailure(hr, "Failed to get size of key name.");
 
         // Need to remove trailing backslash otherwise PathFile returns an empty string.
-        hr = PathCchRemoveBackslash(sczKeyName, cbKeyName);
+        hr = StrTrimBackslash(&sczKeyName, sczKeyName);
         ExitOnFailure(hr, "Failed to remove backslash.");
 
         hr = StrAllocString(&sczSubKey, PathFile(sczKeyName), 0);
@@ -363,7 +396,17 @@ extern "C" HRESULT DetectSdk(LPWSTR sczSdkFeatureBandVersion, LPWSTR sczArchitec
     LogStringLine(REPORT_STANDARD, "Scanning %ls", sczInstalledSdkVersionsKeyName);
 
     hr = RegOpen(HKEY_LOCAL_MACHINE, sczInstalledSdkVersionsKeyName, KEY_READ, &hkInstalledSdkVersionsKey);
-    ExitOnFailure(hr, "Failed to read installed versions key.");
+
+    // When the last SDK is removed the registry key should no longer exist so we can just exit
+    if (E_FILENOTFOUND == hr)
+    {
+        LogStringLine(REPORT_STANDARD, "Registry key not found: %ls.", sczInstalledSdkVersionsKeyName);
+        hr = S_OK;
+        *pbInstalled = FALSE;
+        goto LExit;
+    }
+
+    ExitOnFailure(hr, "Failed to open registry key: %ls.", sczInstalledSdkVersionsKeyName);
 
     for (DWORD dwSdkVersionsValueIndex = 0;; ++dwSdkVersionsValueIndex)
     {
@@ -427,9 +470,10 @@ int wmain(int argc, wchar_t* argv[])
     hr = ::DetectSdk(sczFeatureBandVersion, argv[3], &bSdkFeatureBandInstalled);
     ExitOnFailure(hr, "Failed to detect installed SDKs.");
 
-    if (!bSdkFeatureBandInstalled)
+    // If the feature band is still present, do not remove workloads.
+    if (bSdkFeatureBandInstalled)
     {
-        LogStringLine(REPORT_STANDARD, "SDK with feature band %ls could not be found.", sczFeatureBandVersion);
+        LogStringLine(REPORT_STANDARD, "Detected SDK with feature band %ls.", sczFeatureBandVersion);
         goto LExit;
     }
 
