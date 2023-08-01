@@ -344,7 +344,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             overload = method.ContainingType
                 .GetMembers(method.Name)
                 .OfType<IMethodSymbol>()
-                .FirstOrDefault(methodToCompare => !methodToCompare.HasAttribute(obsoleteAttribute)
+                .FirstOrDefault(methodToCompare => !methodToCompare.HasAnyAttribute(obsoleteAttribute)
                                                    && HasSameParametersPlusCancellationToken(compilation, cancellationTokenType, genericTask, genericValueTask, method, methodToCompare));
 
             return overload != null;

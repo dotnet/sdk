@@ -13,6 +13,5 @@ CA1863 | <https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-
 CA1865 | <https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1865> | Use char overload |
 CA1866 | <https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1866> | Use char overload |
 CA1867 | <https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1867> | Use char overload |
-CA1868 | <https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1868> | Unnecessary call to 'Contains(item)' |
 CA2021 | <https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2021> | Do not call Enumerable.Cast\<T> or Enumerable.OfType\<T> with incompatible types |
 CA2261 | <https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2261> | Do not use ConfigureAwaitOptions.SuppressThrowing with Task\<TResult> |
