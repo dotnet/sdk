@@ -50,8 +50,8 @@ index ------------
  ./sdk-manifests/x.y.z/
 -./sdk-manifests/x.y.z/
  ./sdk-manifests/x.y.z/microsoft.net.workload.emscripten.current/
- ./sdk-manifests/x.y.z/microsoft.net.workload.emscripten.current/WorkloadManifest.json
- ./sdk-manifests/x.y.z/microsoft.net.workload.emscripten.current/WorkloadManifest.targets
+ ./sdk-manifests/x.y.z/microsoft.net.workload.emscripten.current/x.y.z/
+ ./sdk-manifests/x.y.z/microsoft.net.workload.emscripten.current/x.y.z/WorkloadManifest.json
 @@ ------------ @@
  ./sdk/x.y.z/.version
  ./sdk/x.y.z/AppHostTemplate/
