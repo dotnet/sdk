@@ -338,6 +338,7 @@ $@"<Project>
     <CompilerVisibleItemMetadata Include=""AdditionalFiles"" MetadataName=""AsConstants"" />
     <CompilerVisibleItemMetadata Include=""AdditionalFiles"" MetadataName=""IncludeDefaultValues"" />
     <CompilerVisibleItemMetadata Include=""AdditionalFiles"" MetadataName=""EmitFormatMethods"" />
+    <CompilerVisibleItemMetadata Include=""AdditionalFiles"" MetadataName=""Public"" />
   </ItemGroup>
 ",
                     _ => "",
