@@ -46,30 +46,30 @@
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
       <Sha>a6dbb800a47735bde43187350fd3aff4071c7f9c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Build" Version="17.7.1">
+    <Dependency Name="Microsoft.Build" Version="17.7.2">
       <Uri>https://github.com/dotnet/msbuild</Uri>
-      <Sha>971bf70db73ebd5d5e1dde5eb27b8265be9f3169</Sha>
+      <Sha>d6990bcfaf520c0d215a194fad0617f7efad68b4</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Build.Localization" Version="17.7.1-preview-23362-02">
+    <Dependency Name="Microsoft.Build.Localization" Version="17.7.2-preview-23376-05">
       <Uri>https://github.com/dotnet/msbuild</Uri>
-      <Sha>971bf70db73ebd5d5e1dde5eb27b8265be9f3169</Sha>
+      <Sha>d6990bcfaf520c0d215a194fad0617f7efad68b4</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.msbuild" Version="17.7.1-preview-23362-02">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.msbuild" Version="17.7.2-preview-23376-05">
       <Uri>https://github.com/dotnet/msbuild</Uri>
-      <Sha>971bf70db73ebd5d5e1dde5eb27b8265be9f3169</Sha>
+      <Sha>d6990bcfaf520c0d215a194fad0617f7efad68b4</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.FSharp.Compiler" Version="12.7.0-beta.23364.5">
+    <Dependency Name="Microsoft.FSharp.Compiler" Version="12.7.0-beta.23374.3">
       <Uri>https://github.com/dotnet/fsharp</Uri>
-      <Sha>159a701477f5ca1e2d960e9bf79ce05769b3c671</Sha>
+      <Sha>30bbce677c36d8b190c5400dd909ee45bef8ed48</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.fsharp" Version="7.0.400-beta.23364.5">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.fsharp" Version="7.0.400-beta.23374.3">
       <Uri>https://github.com/dotnet/fsharp</Uri>
-      <Sha>159a701477f5ca1e2d960e9bf79ce05769b3c671</Sha>
+      <Sha>30bbce677c36d8b190c5400dd909ee45bef8ed48</Sha>
       <SourceBuild RepoName="fsharp" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="dotnet-format" Version="7.4.431902">
+    <Dependency Name="dotnet-format" Version="7.4.437506">
       <Uri>https://github.com/dotnet/format</Uri>
-      <Sha>3c30490bb2ecae8967a3b5e79c97ab98de334676</Sha>
+      <Sha>270bbfa0b86b9158575ba986dff9244ed4561192</Sha>
       <SourceBuildTarball RepoName="format" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="4.7.0-3.23366.1">
@@ -283,22 +283,22 @@
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
-    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="7.0.0-beta.23361.2">
+    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="7.0.0-beta.23370.3">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>cae11bc40b691f546d788f7ab37f7eaf0e24ded8</Sha>
+      <Sha>c9c125ccc43361cd94433c2d7f7069d465ad11a5</Sha>
       <SourceBuild RepoName="arcade" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="7.0.0-beta.23361.2">
+    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="7.0.0-beta.23370.3">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>cae11bc40b691f546d788f7ab37f7eaf0e24ded8</Sha>
+      <Sha>c9c125ccc43361cd94433c2d7f7069d465ad11a5</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.SignTool" Version="7.0.0-beta.23361.2">
+    <Dependency Name="Microsoft.DotNet.SignTool" Version="7.0.0-beta.23370.3">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>cae11bc40b691f546d788f7ab37f7eaf0e24ded8</Sha>
+      <Sha>c9c125ccc43361cd94433c2d7f7069d465ad11a5</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.XUnitExtensions" Version="7.0.0-beta.23361.2">
+    <Dependency Name="Microsoft.DotNet.XUnitExtensions" Version="7.0.0-beta.23370.3">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>cae11bc40b691f546d788f7ab37f7eaf0e24ded8</Sha>
+      <Sha>c9c125ccc43361cd94433c2d7f7069d465ad11a5</Sha>
     </Dependency>
     <Dependency Name="System.Reflection.MetadataLoadContext" Version="7.0.0">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
