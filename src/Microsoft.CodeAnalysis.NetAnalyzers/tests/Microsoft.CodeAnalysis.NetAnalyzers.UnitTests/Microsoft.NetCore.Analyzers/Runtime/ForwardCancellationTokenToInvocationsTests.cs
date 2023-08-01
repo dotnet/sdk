@@ -478,6 +478,28 @@ class P
             await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
+        [Fact]
+        [WorkItem(6819, "https://github.com/dotnet/roslyn-analyzers/issues/6819")]
+        public Task ObsoleteOverload()
+        {
+            return VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Threading;
+
+class Test
+{
+    public void Main(CancellationToken token)
+    {
+        Run();
+    }
+
+    public void Run() {}
+
+    [Obsolete]
+    public void Run(CancellationToken token) {}
+}");
+        }
+
         #endregion
 
         #region Diagnostics with no fix = C#
