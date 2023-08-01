@@ -3,6 +3,7 @@
 using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.CSharp;
+using Test.Utilities;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Performance.PreferDictionaryTryMethodsOverContainsKeyGuardAnalyzer,
@@ -486,6 +487,61 @@ namespace UnitTests {
             {
                 TestCode = testCode,
                 DisabledDiagnostics = { PreferDictionaryTryMethodsOverContainsKeyGuardAnalyzer.PreferTryGetValueRuleId }
+            }.RunAsync();
+        }
+
+        [Fact, WorkItem(6824, "https://github.com/dotnet/roslyn-analyzers/issues/6824")]
+        public Task WhenArgumentIsAParameter()
+        {
+            return new VerifyCS.Test
+            {
+                TestCode = @"
+using System.Collections.Generic;
+
+public class Test
+{
+    private readonly Dictionary<string, int> _data;
+
+    public void Diagnostic1(string key)
+    {
+        int value = 42;
+        if (!{|#0:_data.ContainsKey(key)|})
+        {
+            {|#1:_data.Add(key, value)|};
+        }
+    }
+
+    public void Diagnostic2(string key, int value)
+    {
+        if (!{|#2:_data.ContainsKey(key)|})
+        {
+            {|#3:_data.Add(key, value)|};
+        }
+    }
+}",
+                FixedCode = @"
+using System.Collections.Generic;
+
+public class Test
+{
+    private readonly Dictionary<string, int> _data;
+
+    public void Diagnostic1(string key)
+    {
+        int value = 42;
+        _data.TryAdd(key, value);
+    }
+
+    public void Diagnostic2(string key, int value)
+    {
+        _data.TryAdd(key, value);
+    }
+}",
+                ExpectedDiagnostics =
+                {
+                    VerifyCS.Diagnostic(PreferDictionaryTryMethodsOverContainsKeyGuardAnalyzer.PreferTryAddRuleId).WithLocation(0).WithLocation(1),
+                    VerifyCS.Diagnostic(PreferDictionaryTryMethodsOverContainsKeyGuardAnalyzer.PreferTryAddRuleId).WithLocation(2).WithLocation(3)
+                }
             }.RunAsync();
         }
 
