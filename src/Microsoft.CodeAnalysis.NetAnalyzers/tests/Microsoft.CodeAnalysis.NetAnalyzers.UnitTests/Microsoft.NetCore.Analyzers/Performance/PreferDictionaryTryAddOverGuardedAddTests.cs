@@ -542,8 +542,7 @@ public class Test
                 {
                     VerifyCS.Diagnostic(PreferDictionaryTryMethodsOverContainsKeyGuardAnalyzer.PreferTryAddRuleId).WithLocation(0).WithLocation(1),
                     VerifyCS.Diagnostic(PreferDictionaryTryMethodsOverContainsKeyGuardAnalyzer.PreferTryAddRuleId).WithLocation(2).WithLocation(3)
-                },
-                DisabledDiagnostics = { PreferDictionaryTryMethodsOverContainsKeyGuardAnalyzer.PreferTryGetValueRuleId }
+                }
             }.RunAsync();
         }
 
