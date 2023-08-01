@@ -92,11 +92,11 @@ namespace Microsoft.NetCore.Analyzers.Security
                                 }
 
                                 ObjectGraphOptions optionsToUse;
-                                if (methodSymbol.HasAttribute(webMethodAttributeTypeSymbol))
+                                if (methodSymbol.HasAnyAttribute(webMethodAttributeTypeSymbol))
                                 {
                                     optionsToUse = ObjectGraphOptions.XmlSerializerOptions;
                                 }
-                                else if (methodSymbol.HasAttribute(operationContractAttributeTypeSymbol))
+                                else if (methodSymbol.HasAnyAttribute(operationContractAttributeTypeSymbol))
                                 {
                                     optionsToUse = ObjectGraphOptions.DataContractOptions;
                                 }

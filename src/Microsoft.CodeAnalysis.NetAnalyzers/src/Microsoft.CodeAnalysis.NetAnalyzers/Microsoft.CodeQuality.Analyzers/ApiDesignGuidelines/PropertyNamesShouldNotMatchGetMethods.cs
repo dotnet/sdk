@@ -72,7 +72,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
             // If either the property or method is marked as obsolete, bail out
             // see https://github.com/dotnet/roslyn-analyzers/issues/2956
-            if (symbol.HasAttribute(obsoleteAttributeType))
+            if (symbol.HasAnyAttribute(obsoleteAttributeType))
             {
                 return;
             }
@@ -116,7 +116,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
                     // If either the property or method is marked as obsolete, bail out
                     // see https://github.com/dotnet/roslyn-analyzers/issues/2956
-                    if (member.HasAttribute(obsoleteAttributeType))
+                    if (member.HasAnyAttribute(obsoleteAttributeType))
                     {
                         continue;
                     }

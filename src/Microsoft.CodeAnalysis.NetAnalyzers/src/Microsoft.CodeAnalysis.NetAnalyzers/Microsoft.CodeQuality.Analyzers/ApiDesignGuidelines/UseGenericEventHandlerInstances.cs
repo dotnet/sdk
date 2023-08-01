@@ -99,7 +99,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     INamedTypeSymbol? comSourceInterfacesAttribute = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeInteropServicesComSourceInterfacesAttribute);
                     bool ContainingTypeHasComSourceInterfacesAttribute(IEventSymbol eventSymbol) =>
                         comSourceInterfacesAttribute != null &&
-                        eventSymbol.ContainingType.HasAttribute(comSourceInterfacesAttribute);
+                        eventSymbol.ContainingType.HasAnyAttribute(comSourceInterfacesAttribute);
 
                     context.RegisterSymbolAction(symbolContext =>
                     {

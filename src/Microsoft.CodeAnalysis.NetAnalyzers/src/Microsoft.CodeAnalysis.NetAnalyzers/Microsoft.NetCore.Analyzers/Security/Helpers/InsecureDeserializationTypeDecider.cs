@@ -229,7 +229,7 @@ namespace Microsoft.NetCore.Analyzers.Security.Helpers
                 bool hasKnownTypeAttribute = hasAttributes[index++];
 
                 bool hasAnyIgnoreDataMemberAttribute =
-                    typeSymbol.GetMembers().Any(m => m.HasAttribute(this.IgnoreDataMemberTypeSymbol));
+                    typeSymbol.GetMembers().Any(m => m.HasAnyAttribute(this.IgnoreDataMemberTypeSymbol));
 
                 bool hasAnyXmlSerializationAttributes =
                     this.XmlSerializationAttributeTypes.HasAnyAttribute(typeSymbol)
@@ -249,20 +249,20 @@ namespace Microsoft.NetCore.Analyzers.Security.Helpers
                                 && !fieldSymbol.IsBackingFieldForProperty(out _) // Handle properties below.
                                 && ((options.BinarySerialization
                                         && hasSerializableAttribute
-                                        && !fieldSymbol.HasAttribute(this.NonSerializedAttributeTypeSymbol))
+                                        && !fieldSymbol.HasAnyAttribute(this.NonSerializedAttributeTypeSymbol))
                                     || (options.DataContractSerialization
-                                         && ((hasDataContractAttribute && fieldSymbol.HasAttribute(this.DataMemberAttributeTypeSymbol))
-                                            || (!hasDataContractAttribute && !fieldSymbol.HasAttribute(this.IgnoreDataMemberTypeSymbol))))
+                                         && ((hasDataContractAttribute && fieldSymbol.HasAnyAttribute(this.DataMemberAttributeTypeSymbol))
+                                            || (!hasDataContractAttribute && !fieldSymbol.HasAnyAttribute(this.IgnoreDataMemberTypeSymbol))))
                                     || (options.XmlSerialization
-                                            && !fieldSymbol.HasAttribute(
+                                            && !fieldSymbol.HasAnyAttribute(
                                                     this.XmlSerializationAttributeTypes.XmlIgnoreAttribute)
                                             && fieldSymbol.DeclaredAccessibility == Accessibility.Public)
                                     || (options.JavaScriptSerializer
                                             && fieldSymbol.DeclaredAccessibility == Accessibility.Public)
                                     || (options.NewtonsoftJsonNetSerialization
                                             && fieldSymbol.DeclaredAccessibility == Accessibility.Public
-                                            && !fieldSymbol.HasAttribute(this.JsonIgnoreAttributeTypeSymbol)
-                                            && !fieldSymbol.HasAttribute(this.NonSerializedAttributeTypeSymbol))))
+                                            && !fieldSymbol.HasAnyAttribute(this.JsonIgnoreAttributeTypeSymbol)
+                                            && !fieldSymbol.HasAnyAttribute(this.NonSerializedAttributeTypeSymbol))))
                             {
                                 if (this.IsTypeInsecure(fieldSymbol.Type, out ITypeSymbol? fieldInsecureTypeSymbol))
                                 {
@@ -285,16 +285,16 @@ namespace Microsoft.NetCore.Analyzers.Security.Helpers
                             if (!propertySymbol.IsStatic
                                 && ((options.BinarySerialization
                                         && hasSerializableAttribute
-                                        && !propertySymbol.HasAttribute(this.NonSerializedAttributeTypeSymbol)
+                                        && !propertySymbol.HasAnyAttribute(this.NonSerializedAttributeTypeSymbol)
                                         && propertySymbol.IsPropertyWithBackingField(out _)
                                         )
                                     || (options.DataContractSerialization
-                                        && ((hasDataContractAttribute && propertySymbol.HasAttribute(this.DataMemberAttributeTypeSymbol))
-                                            || (!hasDataContractAttribute && !propertySymbol.HasAttribute(this.IgnoreDataMemberTypeSymbol)))
+                                        && ((hasDataContractAttribute && propertySymbol.HasAnyAttribute(this.DataMemberAttributeTypeSymbol))
+                                            || (!hasDataContractAttribute && !propertySymbol.HasAnyAttribute(this.IgnoreDataMemberTypeSymbol)))
                                         && propertySymbol.GetMethod != null
                                         && propertySymbol.SetMethod != null)
                                     || (options.XmlSerialization
-                                        && !propertySymbol.HasAttribute(this.XmlSerializationAttributeTypes.XmlIgnoreAttribute)
+                                        && !propertySymbol.HasAnyAttribute(this.XmlSerializationAttributeTypes.XmlIgnoreAttribute)
                                         && propertySymbol.DeclaredAccessibility == Accessibility.Public
                                         && propertySymbol.GetMethod != null
                                         && propertySymbol.GetMethod.DeclaredAccessibility == Accessibility.Public
@@ -306,8 +306,8 @@ namespace Microsoft.NetCore.Analyzers.Security.Helpers
                                         && propertySymbol.SetMethod.DeclaredAccessibility == Accessibility.Public)
                                     || (options.NewtonsoftJsonNetSerialization
                                         && propertySymbol.DeclaredAccessibility == Accessibility.Public
-                                        && !propertySymbol.HasAttribute(this.JsonIgnoreAttributeTypeSymbol)
-                                        && !propertySymbol.HasAttribute(this.NonSerializedAttributeTypeSymbol))))
+                                        && !propertySymbol.HasAnyAttribute(this.JsonIgnoreAttributeTypeSymbol)
+                                        && !propertySymbol.HasAnyAttribute(this.NonSerializedAttributeTypeSymbol))))
                             {
                                 if (this.IsTypeInsecure(propertySymbol.Type, out ITypeSymbol? propertyInsecureTypeSymbol))
                                 {
