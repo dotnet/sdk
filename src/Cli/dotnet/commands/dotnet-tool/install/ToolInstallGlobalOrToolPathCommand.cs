@@ -124,7 +124,6 @@ namespace Microsoft.DotNet.Tools.Tool.Install
             try
             {
                 IToolPackage package = null;
-                // transaction scope: if something fails in the middle undo the process
                 using (var scope = new TransactionScope(
                     TransactionScopeOption.Required,
                     TimeSpan.Zero))
@@ -155,8 +154,6 @@ namespace Microsoft.DotNet.Tools.Tool.Install
 
                     string appHostSourceDirectory = _shellShimTemplateFinder.ResolveAppHostSourceDirectoryAsync(_architectureOption, framework, RuntimeInformation.ProcessArchitecture).Result;
                     IShellShimRepository shellShimRepository = _createShellShimRepository(appHostSourceDirectory, toolPath);
-
-                    Console.WriteLine(package.Commands);
 
                     // actual executable that runs
                     foreach (var command in package.Commands)
