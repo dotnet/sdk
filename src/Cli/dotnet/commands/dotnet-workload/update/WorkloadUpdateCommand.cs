@@ -110,11 +110,13 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
             var workloadIds = GetUpdatableWorkloads();
             _workloadManifestUpdater.UpdateAdvertisingManifestsAsync(includePreviews, offlineCache).Wait();
 
-            var manifestsToUpdate = string.IsNullOrWhiteSpace(_fromRollbackDefinition) ?
-                _workloadManifestUpdater.CalculateManifestUpdates().Select(m => m.manifestUpdate) :
-                _workloadManifestUpdater.CalculateManifestRollbacks(_fromRollbackDefinition);
+            var useRollback = !string.IsNullOrWhiteSpace(_fromRollbackDefinition);
 
-            UpdateWorkloadsWithInstallRecord(workloadIds, _sdkFeatureBand, manifestsToUpdate, offlineCache);
+            var manifestsToUpdate = useRollback ?
+                _workloadManifestUpdater.CalculateManifestRollbacks(_fromRollbackDefinition) :
+                _workloadManifestUpdater.CalculateManifestUpdates().Select(m => m.manifestUpdate);
+
+            UpdateWorkloadsWithInstallRecord(_sdkFeatureBand, manifestsToUpdate, useRollback, offlineCache);
 
             WorkloadInstallCommand.TryRunGarbageCollection(_workloadInstaller, Reporter, Verbosity, offlineCache);
 
@@ -126,9 +128,9 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
         }
 
         private void UpdateWorkloadsWithInstallRecord(
-            IEnumerable<WorkloadId> workloadIds,
             SdkFeatureBand sdkFeatureBand,
             IEnumerable<ManifestVersionUpdate> manifestsToUpdate,
+            bool useRollback,
             DirectoryPath? offlineCache = null)
         {
 
@@ -159,6 +161,8 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
                     var workloads = GetUpdatableWorkloads();
 
                     _workloadInstaller.InstallWorkloads(workloads, sdkFeatureBand, context, offlineCache);
+
+                    CreateDefaultJsonFromRollback(useRollback, manifestsToUpdate);
                 },
                 rollback: () =>
                 {
