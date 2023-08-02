@@ -3306,5 +3306,77 @@ class C
 }",
             }.RunAsync();
         }
+
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
+        [Fact, WorkItem(5160, "https://github.com/dotnet/roslyn-analyzers/issues/5160")]
+        public async Task CatchBlock_WithinForLoop_NoDiagnosticsAsync()
+        {
+            await new VerifyCS.Test
+            {
+                TestCode = @"
+using System;
+
+class C
+{
+    void M1()
+    {
+        const int attempts = 5;
+
+        for (int i = 0; i < attempts; i++)
+        {
+            try
+            {
+                Console.WriteLine($""Hello world: {i}"");
+
+                if (i == attempts - 1) // Last iteration.
+                {
+                    throw new InvalidOperationException(""Oops, something went wrong!"");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($""Exception caught: {ex.Message}"");
+
+                if (i == attempts - 1)
+                {
+                    Console.WriteLine(""This should never happen, according to CA1508."");
+                }
+            }
+        }
+    }
+
+    void M2()
+    {
+        for (int i = 0; i <= 5; i++)
+        {
+            try
+            {
+                MayThrowException(i);
+                if (i == 0)
+                {
+                    throw new Exception();
+                }
+            }
+            catch (Exception)
+            {
+                if (i == 1)
+                {
+                    Console.WriteLine();
+                }
+            }
+        }
+    }
+
+    private void MayThrowException(int i)
+    {
+        if (i % 2 == 1)
+        {
+            throw new Exception();
+        }
+    }
+}",
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp8,
+            }.RunAsync();
+        }
     }
 }

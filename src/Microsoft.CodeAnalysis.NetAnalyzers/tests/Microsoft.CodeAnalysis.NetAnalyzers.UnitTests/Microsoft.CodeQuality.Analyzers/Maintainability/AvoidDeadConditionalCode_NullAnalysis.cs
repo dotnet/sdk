@@ -7696,5 +7696,71 @@ internal class C
 
             await test.RunAsync();
         }
+
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
+        [Fact, WorkItem(5199, "https://github.com/dotnet/roslyn-analyzers/issues/5199")]
+        public async Task InvocationToExceptionThrowingMethod_InsideTryBlock_NoDiagnosticsAsync()
+        {
+            await new VerifyCS.Test
+            {
+                TestCode = @"
+#nullable enable
+
+using System;
+
+class C
+{
+    public SerialPort? OpenPort2(string portName)
+    {
+        SerialPort? tempPort = null;
+        SerialPort? port = null;
+        try
+        {
+            tempPort = new SerialPort(portName);
+            tempPort.Open();
+            SomeMethod();
+            port = tempPort;
+            tempPort = null;
+
+        }
+        finally
+        {
+            if (tempPort != null) // BOOM
+            {
+                tempPort.Close();
+            }
+        }
+        return port;
+    }
+
+    private void SomeMethod()
+    {
+        throw new NotImplementedException();
+    }
+}
+
+internal class SerialPort
+{
+    private string portName;
+
+    public SerialPort(string portName)
+    {
+        this.portName = portName;
+    }
+
+    internal void Close()
+    {
+        throw new NotImplementedException();
+    }
+
+    internal void Open()
+    {
+        throw new NotImplementedException();
+    }
+}",
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp8,
+            }.RunAsync();
+        }
     }
 }
