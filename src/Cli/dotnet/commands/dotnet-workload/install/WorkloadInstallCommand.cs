@@ -129,6 +129,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             Reporter.WriteLine();
 
             var manifestsToUpdate = Enumerable.Empty<ManifestVersionUpdate> ();
+            var useRollback = !string.IsNullOrWhiteSpace(_fromRollbackDefinition);
             if (!skipManifestUpdate)
             {
                 if (Verbosity != VerbosityOptions.quiet && Verbosity != VerbosityOptions.q)
@@ -145,12 +146,12 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                 workloadIds = workloadIds.Concat(installedWorkloads).Distinct();
 
                 _workloadManifestUpdater.UpdateAdvertisingManifestsAsync(includePreviews, offlineCache).Wait();
-                manifestsToUpdate = string.IsNullOrWhiteSpace(_fromRollbackDefinition) ?
-                    _workloadManifestUpdater.CalculateManifestUpdates().Select(m => m.manifestUpdate) :
-                    _workloadManifestUpdater.CalculateManifestRollbacks(_fromRollbackDefinition);
+                manifestsToUpdate = useRollback ?
+                    _workloadManifestUpdater.CalculateManifestRollbacks(_fromRollbackDefinition) :
+                    _workloadManifestUpdater.CalculateManifestUpdates().Select(m => m.manifestUpdate);
             }
 
-            InstallWorkloadsWithInstallRecord(_workloadInstaller, workloadIds, _sdkFeatureBand, manifestsToUpdate, offlineCache);
+            InstallWorkloadsWithInstallRecord(_workloadInstaller, workloadIds, _sdkFeatureBand, manifestsToUpdate, offlineCache, useRollback);
 
             TryRunGarbageCollection(_workloadInstaller, Reporter, Verbosity, workloadSetVersion => _workloadResolverFactory.CreateForWorkloadSet(_dotnetPath, _sdkVersion.ToString(), _userProfileDir, workloadSetVersion), offlineCache);
 
@@ -178,7 +179,8 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             IEnumerable<WorkloadId> workloadIds,
             SdkFeatureBand sdkFeatureBand,
             IEnumerable<ManifestVersionUpdate> manifestsToUpdate,
-            DirectoryPath? offlineCache)
+            DirectoryPath? offlineCache,
+            bool useRollback)
         {
             IEnumerable<PackInfo> workloadPackToInstall = new List<PackInfo>();
             IEnumerable<WorkloadId> newWorkloadInstallRecords = new List<WorkloadId>();
@@ -210,6 +212,8 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                     {
                         recordRepo.WriteWorkloadInstallationRecord(workloadId, sdkFeatureBand);
                     }
+
+                    CreateDefaultJsonFromRollback(useRollback, manifestsToUpdate);
                 },
                 rollback: () =>
                 {
