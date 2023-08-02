@@ -41,6 +41,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <GenerateRequiresPreviewFeaturesAttribute Condition="'$(GenerateRequiresPreviewFeaturesAttribute)' == '' and '$(IsNetCoreAppTargetingLatestTFM)' == 'true'">true</GenerateRequiresPreviewFeaturesAttribute>
     <GenerateTargetPlatformAttribute Condition="'$(GenerateTargetPlatformAttribute)' == ''">true</GenerateTargetPlatformAttribute>
     <GenerateSupportedOSPlatformAttribute Condition="'$(GenerateSupportedOSPlatformAttribute)' == ''">true</GenerateSupportedOSPlatformAttribute>
+    <GenerateDisableRuntimeMarshallingAttribute Condition="'$(GenerateDisableRuntimeMarshallingAttribute)' == ''">true</GenerateDisableRuntimeMarshallingAttribute>
   </PropertyGroup>
 
   <!--
@@ -125,6 +126,8 @@ Copyright (c) .NET Foundation. All rights reserved.
         <_Parameter2>%(AssemblyMetadata.Value)</_Parameter2>
       </AssemblyAttribute>
       <AssemblyAttribute Include="System.Runtime.Versioning.RequiresPreviewFeaturesAttribute" Condition="'$(EnablePreviewFeatures)' == 'true' and '$(GenerateRequiresPreviewFeaturesAttribute)' == 'true'">
+      </AssemblyAttribute>
+      <AssemblyAttribute Include="System.Runtime.CompilerServices.DisableRuntimeMarshallingAttribute" Condition="'$(DisableRuntimeMarshalling)' == 'true' and '$(GenerateDisableRuntimeMarshallingAttribute)' == 'true'">
       </AssemblyAttribute>
     </ItemGroup>
 
