@@ -27,7 +27,7 @@ using NuGet.Versioning;
 
 namespace Microsoft.DotNet.Cli.ToolPackage
 {
-    internal class ToolPackageDownloader
+    internal class ToolPackageDownloader:IToolPackageDownloader
     {
         private INuGetPackageDownloader _nugetPackageDownloader;
         private readonly IToolPackageStore _toolPackageStore;
