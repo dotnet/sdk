@@ -765,17 +765,17 @@ Enumerable.OfType&lt;T&gt; で使用されるジェネリック型チェック (
       </trans-unit>
       <trans-unit id="DoNotGuardSetAddOrRemoveByContainsDescription">
         <source>Do not guard 'Add(item)' or 'Remove(item)' with 'Contains(item)' for the set. The former two already check whether the item exists and will return if it was added or removed.</source>
-        <target state="new">Do not guard 'Add(item)' or 'Remove(item)' with 'Contains(item)' for the set. The former two already check whether the item exists and will return if it was added or removed.</target>
+        <target state="translated">一連の 'Contains(item)' を含む 'Add(item)' または 'Remove(item)' を保護しないでください。前の 2 つは、アイテムが存在するかどうかを既に確認しており、アイテムが追加または削除された場合に返されます。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotGuardSetAddOrRemoveByContainsMessage">
         <source>Do not guard '{0}' with '{1}'</source>
-        <target state="new">Do not guard '{0}' with '{1}'</target>
+        <target state="translated">'{1}' を含む '{0}' を保護しない</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotGuardSetAddOrRemoveByContainsTitle">
         <source>Unnecessary call to 'Contains(item)'</source>
-        <target state="new">Unnecessary call to 'Contains(item)'</target>
+        <target state="translated">'Contains(item)' に対する不要な呼び出し</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotHardCodeCertificate">
@@ -2365,17 +2365,17 @@ Enumerable.OfType&lt;T&gt; で使用されるジェネリック型チェック (
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringEqualsCodeFixTitle">
         <source>Use 'string.Equals(string, StringComparison)'</source>
-        <target state="new">Use 'string.Equals(string, StringComparison)'</target>
+        <target state="translated">'string.Equals(string, StringComparison)' を使用する</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringEqualsDescription">
         <source>Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons, as in 'string.ToLower() == string.ToLower()', because they lead to an allocation. Instead, use 'string.Equals(string, StringComparison)' to perform case-insensitive comparisons.</source>
-        <target state="new">Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons, as in 'string.ToLower() == string.ToLower()', because they lead to an allocation. Instead, use 'string.Equals(string, StringComparison)' to perform case-insensitive comparisons.</target>
+        <target state="translated">'string.ToLower() == string.ToLower()' で大文字と小文字を区別しない文字列比較を実行するために、'ToLower'、'ToUpper'、'ToLowerInvariant'、および 'ToUpperInvariant' を呼び出さないようにしてください。これは、割り当てにつながるためです。代わりに、string.Equals(string, StringComparison)' を使用して、大文字と小文字を区別しない比較を実行してください。</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringEqualsMessage">
         <source>Prefer using 'string.Equals(string, StringComparison)' to perform a case-insensitive comparison</source>
-        <target state="new">Prefer using 'string.Equals(string, StringComparison)' to perform a case-insensitive comparison</target>
+        <target state="translated">大文字と小文字を区別しない比較を実行するには、'string.Equals(string, StringComparison)' の使用を優先します。</target>
         <note />
       </trans-unit>
       <trans-unit id="RemoveRedundantCall">
@@ -3195,17 +3195,17 @@ Enumerable.OfType&lt;T&gt; で使用されるジェネリック型チェック (
       </trans-unit>
       <trans-unit id="UseStringMethodCharOverloadWithSingleCharactersDescription">
         <source>The char overload is a better performing overload than a string with a single char.</source>
-        <target state="new">The char overload is a better performing overload than a string with a single char.</target>
+        <target state="translated">char オーバーロードは、1 文字の文字列よりもパフォーマンスの高いオーバーロードです。</target>
         <note />
       </trans-unit>
       <trans-unit id="UseStringMethodCharOverloadWithSingleCharactersMessage">
         <source>Use 'string.{0}(char)' instead of 'string.{0}(string)' when you have a string with a single char</source>
-        <target state="new">Use 'string.{0}(char)' instead of 'string.{0}(string)' when you have a string with a single char</target>
+        <target state="translated">1 文字の文字列がある場合は、'string.{0}(string)' ではなく 'string.{0}(char)' を使用します</target>
         <note />
       </trans-unit>
       <trans-unit id="UseStringMethodCharOverloadWithSingleCharactersTitle">
         <source>Use char overload</source>
-        <target state="new">Use char overload</target>
+        <target state="translated">char オーバーロードを使用する</target>
         <note />
       </trans-unit>
       <trans-unit id="UseThrowHelperDescription">

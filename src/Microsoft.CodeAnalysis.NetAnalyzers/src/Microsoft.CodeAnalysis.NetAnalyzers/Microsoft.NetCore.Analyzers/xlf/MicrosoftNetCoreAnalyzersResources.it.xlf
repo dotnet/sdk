@@ -765,17 +765,17 @@ L'ampliamento e le conversioni definite dall'utente non sono supportate con tipi
       </trans-unit>
       <trans-unit id="DoNotGuardSetAddOrRemoveByContainsDescription">
         <source>Do not guard 'Add(item)' or 'Remove(item)' with 'Contains(item)' for the set. The former two already check whether the item exists and will return if it was added or removed.</source>
-        <target state="new">Do not guard 'Add(item)' or 'Remove(item)' with 'Contains(item)' for the set. The former two already check whether the item exists and will return if it was added or removed.</target>
+        <target state="translated">Non proteggere 'Add(item)' o 'Remove(item)' con 'Contains(item)' per il set. I due elementi precedenti verificano già se l'elemento esiste e verranno restituiti se sono stati aggiunti o rimossi.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotGuardSetAddOrRemoveByContainsMessage">
         <source>Do not guard '{0}' with '{1}'</source>
-        <target state="new">Do not guard '{0}' with '{1}'</target>
+        <target state="translated">Non proteggere '{0}' con '{1}'</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotGuardSetAddOrRemoveByContainsTitle">
         <source>Unnecessary call to 'Contains(item)'</source>
-        <target state="new">Unnecessary call to 'Contains(item)'</target>
+        <target state="translated">Chiamata non necessaria a 'Contains(item)'</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotHardCodeCertificate">
@@ -2365,17 +2365,17 @@ L'ampliamento e le conversioni definite dall'utente non sono supportate con tipi
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringEqualsCodeFixTitle">
         <source>Use 'string.Equals(string, StringComparison)'</source>
-        <target state="new">Use 'string.Equals(string, StringComparison)'</target>
+        <target state="translated">Usare 'string. Equals(string, StringComparison)'</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringEqualsDescription">
         <source>Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons, as in 'string.ToLower() == string.ToLower()', because they lead to an allocation. Instead, use 'string.Equals(string, StringComparison)' to perform case-insensitive comparisons.</source>
-        <target state="new">Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons, as in 'string.ToLower() == string.ToLower()', because they lead to an allocation. Instead, use 'string.Equals(string, StringComparison)' to perform case-insensitive comparisons.</target>
+        <target state="translated">Evitare di chiamare i metodi “ToLower”, “ToUpper”, “ToLowerInvariant” e “ToUpperInvariant” per eseguire confronti di stringhe senza distinzione tra maiuscole e minuscole come in 'string' ToLower() == stringa. ToLower()', perché comportano un'allocazione. Utilizzare invece 'string. Equals(string, StringComparison)' per eseguire confronti senza distinzione tra maiuscole e minuscole.</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringEqualsMessage">
         <source>Prefer using 'string.Equals(string, StringComparison)' to perform a case-insensitive comparison</source>
-        <target state="new">Prefer using 'string.Equals(string, StringComparison)' to perform a case-insensitive comparison</target>
+        <target state="translated">Usare preferibilmente 'string. Equals(string, StringComparison)' per eseguire un confronto senza distinzione tra maiuscole e minuscole</target>
         <note />
       </trans-unit>
       <trans-unit id="RemoveRedundantCall">
@@ -3195,17 +3195,17 @@ L'ampliamento e le conversioni definite dall'utente non sono supportate con tipi
       </trans-unit>
       <trans-unit id="UseStringMethodCharOverloadWithSingleCharactersDescription">
         <source>The char overload is a better performing overload than a string with a single char.</source>
-        <target state="new">The char overload is a better performing overload than a string with a single char.</target>
+        <target state="translated">L'overload char è un overload con prestazioni migliori rispetto a una stringa con un singolo char.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseStringMethodCharOverloadWithSingleCharactersMessage">
         <source>Use 'string.{0}(char)' instead of 'string.{0}(string)' when you have a string with a single char</source>
-        <target state="new">Use 'string.{0}(char)' instead of 'string.{0}(string)' when you have a string with a single char</target>
+        <target state="translated">Usare 'string.{0}(char)' invece di 'string.{0}(string)' quando è disponibile una stringa con un singolo carattere</target>
         <note />
       </trans-unit>
       <trans-unit id="UseStringMethodCharOverloadWithSingleCharactersTitle">
         <source>Use char overload</source>
-        <target state="new">Use char overload</target>
+        <target state="translated">Usa overload char</target>
         <note />
       </trans-unit>
       <trans-unit id="UseThrowHelperDescription">
