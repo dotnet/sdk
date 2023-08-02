@@ -26,6 +26,7 @@
     <BootstrapperApplicationRef Id="WixStandardBootstrapperApplication.Foundation">
       <bal:WixStandardBootstrapperApplication
         LicenseFile="dummyeula.rtf"
+        SuppressDowngradeFailure="yes"
         ShowFilesInUse="yes"
         ShowVersion="yes" />
 
