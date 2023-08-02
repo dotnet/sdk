@@ -19,6 +19,7 @@ namespace Microsoft.NET.Build.Tests
         [InlineData("AssemblyDescriptionAttribute")]
         [InlineData("AssemblyTitleAttribute")]
         [InlineData("AssemblyTrademarkAttribute")]
+        [InlineData("DisableRuntimeMarshallingAttribute")]
         [InlineData("NeutralResourcesLanguageAttribute")]
         [InlineData("All")]
         public void It_respects_opt_outs(string attributeToOptOut)
@@ -60,6 +61,7 @@ namespace Microsoft.NET.Build.Tests
                 { "AssemblyProductAttribute", "TestProduct" },
                 { "AssemblyTitleAttribute", "TestTitle" },
                 { "AssemblyTrademarkAttribute", "TestTrademark" },
+                { "DisableRuntimeMarshallingAttribute", "" },                
                 { "NeutralResourcesLanguageAttribute", "fr" },
             };
 
