@@ -106,7 +106,7 @@
           DestinationFolder="$(RedistLayoutPath)sdk-manifests/%(DestinationPath)"/>
 
     <PropertyGroup>
-      <WorkloadSetVersion Condition="'$(DotNetFinalVersionKind)' == 'release'">$(Version)-baseline.$(_PatchNumber)</WorkloadSetVersion>
+      <WorkloadSetVersion Condition="'$(DotNetFinalVersionKind)' == 'release'">$(VersionPrefix)-baseline$(_BuildNumberLabels)</WorkloadSetVersion>
       <WorkloadSetVersion Condition="'$(DotNetFinalVersionKind)' != 'release'">$(Version)</WorkloadSetVersion>
       <RealFormattedManifestPaths>$(RedistLayoutPath)sdk-manifests\$(NetFeatureBand)\workloadsets\$(WorkloadSetVersion)</RealFormattedManifestPaths>
     </PropertyGroup>
