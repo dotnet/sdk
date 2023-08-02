@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
@@ -192,7 +193,7 @@ namespace Microsoft.DotNet.Cli.ToolPackage
             DirectoryPath assetFileDirectory)
         {
             // To get runtimeGraph:
-            var runtimeJsonPath = "C:\\Program Files\\dotnet\\sdk\\7.0.200\\RuntimeIdentifierGraph.json";
+            var runtimeJsonPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "runtimeIdentifierGraph.json");
             var runtimeGraph = JsonRuntimeFormat.ReadRuntimeGraph(runtimeJsonPath);
 
             // Create ManagedCodeConventions:
