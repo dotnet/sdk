@@ -74,14 +74,19 @@ namespace Microsoft.NET.TestFramework
                 return true;
             }
 
-            Version osVersion = Environment.OSVersion.Version;
             if (OperatingSystem.IsLinux())
             {
-                string osId = File.ReadAllLines("/etc/os-release")
+                var osRelease = File.ReadAllLines("/etc/os-release");
+                string osId = osRelease
                     .First(line => line.StartsWith("ID=", StringComparison.OrdinalIgnoreCase))
                     .Substring("ID=".Length)
                     .Trim('\"', '\'');
-
+                
+                string versionString = osRelease
+                    .First(line => line.StartsWith("VERSION_ID=", StringComparison.OrdinalIgnoreCase))
+                    .Substring("VERSION_ID=".Length)
+                    .Trim('\"', '\'');
+                Version osVersion = Version.Parse(versionString);
                 if (osId.Equals("alpine", StringComparison.OrdinalIgnoreCase))
                 {
                     if (nugetFramework.Version < new Version(2, 1, 0, 0))
@@ -154,6 +159,7 @@ namespace Microsoft.NET.TestFramework
                 //  .NET 5 <= 11.0
                 //  .NET 6 <= 12
                 //  .NET 7 <= 13
+                Version osVersion = Environment.OSVersion.Version;
                 if (osVersion <= new Version(10, 11))
                 {
                     if (nugetFramework.Version >= new Version(2, 0, 0, 0))
