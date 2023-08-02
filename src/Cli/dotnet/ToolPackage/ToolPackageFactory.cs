@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Configurer;
 using Microsoft.DotNet.Tools.Tool.Install;
 using Microsoft.Extensions.EnvironmentAbstractions;
@@ -20,6 +21,15 @@ namespace Microsoft.DotNet.ToolPackage
                  new ProjectRestorer(additionalRestoreArguments: additionalRestoreArguments));
 
             return (toolPackageStore, toolPackageStore, toolPackageInstaller);
+        }
+
+        public static (IToolPackageStore, IToolPackageStoreQuery, IToolPackageDownloader) CreateToolPackageStoresAndDownloader(
+            DirectoryPath? nonGlobalLocation = null, IEnumerable<string> additionalRestoreArguments = null)
+        {
+            ToolPackageStoreAndQuery toolPackageStore = CreateConcreteToolPackageStore(nonGlobalLocation);
+            var toolPackageDownloader = new ToolPackageDownloader(toolPackageStore);
+
+            return (toolPackageStore, toolPackageStore, toolPackageDownloader);
         }
 
         public static (IToolPackageStore, IToolPackageStoreQuery, IToolPackageUninstaller) CreateToolPackageStoresAndUninstaller(
