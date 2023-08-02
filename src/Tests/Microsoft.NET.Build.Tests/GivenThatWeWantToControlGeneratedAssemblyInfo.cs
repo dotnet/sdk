@@ -41,6 +41,7 @@ namespace Microsoft.NET.Build.Tests
                     "/p:Product=TestProduct",
                     "/p:AssemblyTitle=TestTitle",
                     "/p:Trademark=TestTrademark",
+                    "/p:DisableRuntimeMarshalling=true",
                     "/p:NeutralLanguage=fr",
                     attributeToOptOut == "All" ?
                         "/p:GenerateAssemblyInfo=false" :
