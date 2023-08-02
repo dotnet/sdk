@@ -45,6 +45,14 @@ namespace Microsoft.NET.TestFramework
                     }
                 }
             }
+            else if (string.Equals(targetFramework, "netcoreapp1.1", StringComparison.OrdinalIgnoreCase))
+            {
+                if (OperatingSystem.IsWindows())
+                {
+                    // netcoreapp1.1 used version-specific RIDs to find host binaries, so use win10 here
+                    rid = "win10-x64";
+                }
+            }
 
             return rid;
         }
