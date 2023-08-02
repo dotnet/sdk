@@ -185,7 +185,7 @@ namespace Microsoft.NET.Build.Tasks
             string portablePlatform = NuGetUtils.GetBestMatchingRid(
                     runtimeGraph,
                     _targetPlatform,
-                    new[] { "linux", "linux-musl", "osx", "win" },
+                    new[] { "linux", "linux-musl", "osx", "win", "freebsd" },
                     out _);
 
             // For source-build, allow the bootstrap SDK rid to be unknown to the runtime repo graph.
@@ -203,6 +203,10 @@ namespace Microsoft.NET.Build.Tasks
                 {
                     portablePlatform = "osx";
                 }
+                else if (RuntimeInformation.IsOSPlatform(OSPlatform.FreeBSD))
+                {
+                    portablePlatform = "freebsd";
+                }
             }
 
             targetOS = portablePlatform switch
@@ -211,6 +215,7 @@ namespace Microsoft.NET.Build.Tasks
                 "linux-musl" => "linux",
                 "osx" => "osx",
                 "win" => "windows",
+                "freebsd" => "freebsd",
                 _ => null
             };
 
@@ -365,8 +370,9 @@ namespace Microsoft.NET.Build.Tasks
             }
             else
             {
-                // Unknown platform
-                return false;
+                // Generic Unix-like: linux, freebsd, and others. Does not check for arch
+                _crossgenTool.ToolPath = Path.Combine(_crossgenTool.PackagePath, "tools", "crossgen");
+                _crossgenTool.ClrJitPath = Path.Combine(_crossgenTool.PackagePath, "runtimes", _targetRuntimeIdentifier, "native", "libclrjit.so");
             }
 
             return File.Exists(_crossgenTool.ToolPath) && File.Exists(_crossgenTool.ClrJitPath);
@@ -393,8 +399,9 @@ namespace Microsoft.NET.Build.Tasks
             }
             else
             {
-                // Unknown platform
-                return false;
+                // Generic Unix-like: linux, freebsd, and others. Does not check for arch
+                toolFileName = "crossgen2";
+                v5_clrJitFileNamePattern = "libclrjit-{0}.so";
             }
 
             if (version5)
