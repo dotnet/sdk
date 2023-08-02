@@ -7762,5 +7762,73 @@ internal class SerialPort
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp8,
             }.RunAsync();
         }
+
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
+        [Fact, WorkItem(4984, "https://github.com/dotnet/roslyn-analyzers/issues/4984")]
+        public async Task NullCoalescingOperatorInsideCatchBlock_WithinLoop_NoDiagnosticsAsync()
+        {
+            await new VerifyCS.Test
+            {
+                TestCode = @"
+namespace Ca1508FalsePositive
+{
+    using System;
+    using System.Collections.Generic;
+
+    class Program
+    {
+        private static object AutoDetectAndConnect(string host)
+        {
+            List<Exception> exceptions = null;
+            foreach (string registeredScheduler in s_schedulers)
+            {
+                try
+                {
+                    object conn = Connect(registeredScheduler, host);
+                    if (conn != null)
+                        return conn;
+                }
+                catch (Exception ex)
+                {
+                    // warning CA1508: 'exceptions' is always 'null'. Remove or refactor the condition(s) to avoid dead code.
+                    (exceptions ??= new List<Exception>()).Add(ex);
+                }
+            }
+
+            // Commenting out this code block will ""resolve"" CA1508 above
+            if (exceptions == null)
+            {
+                throw new NotSupportedException(host);
+            }
+
+            throw new AggregateException(exceptions);
+
+            static object Connect(string a, string b) => throw new NotImplementedException($""{a}{b}"");
+        }
+
+        static List<string> s_schedulers = new List<string>();
+        static void Register(string scheduler) => s_schedulers.Add(scheduler);
+
+        static void Main(string[] args)
+        {
+            Register(""abc"");
+            Register(""def"");
+
+            try
+            {
+                var conn = AutoDetectAndConnect(args.Length > 0 ? args[0] : args.GetHashCode().ToString());
+                Console.WriteLine(conn);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
+        }
+    }
+}",
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp8,
+            }.RunAsync();
+        }
     }
 }
