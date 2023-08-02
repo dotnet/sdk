@@ -252,6 +252,7 @@ LogDateStamp=$(date +"%m%d%H%M%S")
 "$CLI_ROOT/dotnet" build-server shutdown
 
 if [ "$alternateTarget" == "true" ]; then
+  export NUGET_PACKAGES=$NUGET_PACKAGES/smoke-tests
   "$CLI_ROOT/dotnet" msbuild "$SCRIPT_ROOT/build.proj" -bl:"$SCRIPT_ROOT/artifacts/log/Debug/BuildTests_$LogDateStamp.binlog" -flp:"LogFile=$SCRIPT_ROOT/artifacts/logs/BuildTests_$LogDateStamp.log" -clp:v=m ${MSBUILD_ARGUMENTS[@]} "$@"
 else
   "$CLI_ROOT/dotnet" msbuild "$SCRIPT_ROOT/eng/tools/init-build.proj" -bl:"$SCRIPT_ROOT/artifacts/log/Debug/BuildXPlatTasks_$LogDateStamp.binlog" -flp:LogFile="$SCRIPT_ROOT/artifacts/logs/BuildXPlatTasks_$LogDateStamp.log" -t:PrepareOfflineLocalTools ${MSBUILD_ARGUMENTS[@]} "$@"
