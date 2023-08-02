@@ -2,6 +2,9 @@
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
   <PropertyGroup>
+    <!-- Addresses empty intermediate issue originally found by https://github.com/dotnet/arcade/pull/13067 -->
+    <!-- Should be removed once https://github.com/NuGet/Home/issues/11059 is implemented -->
+    <AllowEmptySourceBuiltIntermediates>true</AllowEmptySourceBuiltIntermediates>
     <NuGetKeyFilePath>$(KeysDir)NuGet.Client.snk</NuGetKeyFilePath>
     <DeterministicBuildOptOut>true</DeterministicBuildOptOut>
     <!-- SYSLIB0051 - Type or member is obsolete: https://github.com/NuGet/Home/issues/12626 -->
