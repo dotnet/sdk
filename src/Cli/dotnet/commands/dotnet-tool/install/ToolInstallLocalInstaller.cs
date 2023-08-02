@@ -3,9 +3,9 @@
 
 using System;
 using System.CommandLine;
-using System.CommandLine.Parsing;
 using System.IO;
 using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.ToolPackage;
 using Microsoft.Extensions.EnvironmentAbstractions;
@@ -18,7 +18,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
         private readonly ParseResult _parseResult;
         public string TargetFrameworkToInstall { get; private set; }
 
-        private readonly IToolPackageInstaller _toolPackageInstaller;
+        private readonly IToolPackageStore _toolPackageStore;
         private readonly PackageId _packageId;
         private readonly string _packageVersion;
         private readonly string _configFilePath;
@@ -36,20 +36,15 @@ namespace Microsoft.DotNet.Tools.Tool.Install
             _sources = parseResult.GetValue(ToolInstallCommandParser.AddSourceOption);
             _verbosity = Enum.GetName(parseResult.GetValue(ToolInstallCommandParser.VerbosityOption));
 
-            if (toolPackageInstaller == null)
-            {
-                (IToolPackageStore,
-                    IToolPackageStoreQuery,
-                    IToolPackageInstaller installer) toolPackageStoresAndInstaller
-                        = ToolPackageFactory.CreateToolPackageStoresAndInstaller(
-                            additionalRestoreArguments: parseResult.OptionValuesToBeForwarded(ToolInstallCommandParser.GetCommand()));
-                _toolPackageInstaller = toolPackageStoresAndInstaller.installer;
-            }
-            else
-            {
-                _toolPackageInstaller = toolPackageInstaller;
-            }
-
+            
+            (IToolPackageStore store,
+                IToolPackageStoreQuery,
+                IToolPackageInstaller installer) toolPackageStoresAndInstaller
+                    = ToolPackageFactory.CreateToolPackageStoresAndInstaller(
+                        additionalRestoreArguments: parseResult.OptionValuesToBeForwarded(ToolInstallCommandParser.GetCommand()));
+            _toolPackageStore = toolPackageStoresAndInstaller.store;
+            
+            
             TargetFrameworkToInstall = BundledTargetFramework.GetTargetFrameworkMoniker();
         }
 
@@ -73,13 +68,12 @@ namespace Microsoft.DotNet.Tools.Tool.Install
 
             try
             {
-                IToolPackage toolDownloadedPackage =
-                    _toolPackageInstaller.InstallPackageToExternalManagedLocation(
+                var toolPackageDownloader = new ToolPackageDownloader(_toolPackageStore);
+                IToolPackage toolDownloadedPackage = toolPackageDownloader.InstallPackageAsync(
                         new PackageLocation(
                             nugetConfig: configFile,
                             additionalFeeds: _sources,
-                            // Fix https://github.com/dotnet/sdk/issues/23135
-                            rootConfigDirectory: manifestFile.GetDirectoryPath().GetParentPath()),
+                            rootConfigDirectory: manifestFile.GetDirectoryPath()),
                         _packageId,
                         versionRange,
                         TargetFrameworkToInstall,

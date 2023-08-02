@@ -134,8 +134,10 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                     new PackageLocation(nugetConfig: configFile, additionalFeeds: _source),
                         packageId: _packageId,
                         versionRange: versionRange,
-                        targetFramework: _framework, verbosity: _verbosity
-                    ).GetAwaiter().GetResult();
+                        targetFramework: _framework,
+                        verbosity: _verbosity,
+                        isGlobalTool: true
+                    );
 
                     NuGetFramework framework;
                     if (string.IsNullOrEmpty(_framework) && package.Frameworks.Count() > 0)

@@ -114,8 +114,10 @@ namespace Microsoft.DotNet.Tools.Tool.Update
                     new PackageLocation(nugetConfig: GetConfigFile(), additionalFeeds: _additionalFeeds), 
                         packageId: _packageId,
                         versionRange: versionRange,
-                        targetFramework: _framework, verbosity: _verbosity
-                    ).GetAwaiter().GetResult();
+                        targetFramework: _framework,
+                        verbosity: _verbosity,
+                        isGlobalTool: true
+                    );
 
                     EnsureVersionIsHigher(oldPackageNullable, newInstalledPackage);
 

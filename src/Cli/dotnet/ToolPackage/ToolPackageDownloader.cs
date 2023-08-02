@@ -1,6 +1,5 @@
 ﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
-//
 
 using System;
 using System.Collections.Generic;
@@ -29,21 +28,60 @@ namespace Microsoft.DotNet.Cli.ToolPackage
 {
     internal class ToolPackageDownloader
     {
-        private readonly INuGetPackageDownloader _nugetPackageDownloader;
-        protected readonly DirectoryPath _tempPackagesDir;
-        protected readonly DirectoryPath _tempStageDir;
+        private INuGetPackageDownloader _nugetPackageDownloader;
         private readonly IToolPackageStore _toolPackageStore;
 
+        protected DirectoryPath _toolDownloadDir;
+        protected DirectoryPath _toolReturnPackageDirectory;
+        protected DirectoryPath _toolReturnJsonParentDirectory;
+
+        protected readonly DirectoryPath _globalToolStageDir;
+        protected readonly DirectoryPath _localToolDownloadDir;
+        protected readonly DirectoryPath _localToolAssetDir;
+        
+
         public ToolPackageDownloader(
-            IToolPackageStore store,
-            INuGetPackageDownloader nugetPackageDownloader = null,
-            string tempDirPath = null
-        ){
-            _toolPackageStore = store ?? throw new ArgumentNullException(nameof(store));
-            _tempPackagesDir = new DirectoryPath(tempDirPath ?? PathUtilities.CreateTempSubdirectory());
-            _tempStageDir = _toolPackageStore.GetRandomStagingDirectory();
-            _nugetPackageDownloader = nugetPackageDownloader ??
-                                     new NuGetPackageDownloader.NuGetPackageDownloader(_tempStageDir);
+            IToolPackageStore store
+        )
+        {
+            _toolPackageStore = store ?? throw new ArgumentNullException(nameof(store)); ;
+            _globalToolStageDir = _toolPackageStore.GetRandomStagingDirectory();
+            _localToolDownloadDir = new DirectoryPath(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "nuget", "package"));
+            _localToolAssetDir = new DirectoryPath(PathUtilities.CreateTempSubdirectory());  
+        }
+
+        public IToolPackage InstallPackageAsync(PackageLocation packageLocation, PackageId packageId,
+            VersionRange versionRange = null,
+            string targetFramework = null,
+            string verbosity = null,
+            bool isGlobalTool = false
+            )
+        {
+            _toolDownloadDir = isGlobalTool ? _globalToolStageDir : _localToolDownloadDir;
+            var assetFileDirectory = isGlobalTool ? _globalToolStageDir : _localToolAssetDir;
+            _nugetPackageDownloader = new NuGetPackageDownloader.NuGetPackageDownloader(_toolDownloadDir);
+
+            NuGetVersion version = DownloadAndExtractPackage(packageLocation, packageId, _nugetPackageDownloader, _toolDownloadDir.Value).GetAwaiter().GetResult();
+            CreateAssetFiles(packageId, version, _toolDownloadDir, assetFileDirectory);
+
+            if (isGlobalTool)
+            {
+                _toolReturnPackageDirectory = _toolPackageStore.GetPackageDirectory(packageId, version);
+                _toolReturnJsonParentDirectory = _toolPackageStore.GetPackageDirectory(packageId, version);
+                var packageRootDirectory = _toolPackageStore.GetRootPackageDirectory(packageId);
+                Directory.CreateDirectory(packageRootDirectory.Value);
+                FileAccessRetrier.RetryOnMoveAccessFailure(() => Directory.Move(_globalToolStageDir.Value, _toolReturnPackageDirectory.Value));
+            }
+            else
+            {
+                _toolReturnPackageDirectory = _toolDownloadDir;
+                _toolReturnJsonParentDirectory = _localToolAssetDir;
+            }
+
+            return new ToolPackageInstance(id: packageId,
+                            version: version,
+                            packageDirectory: _toolReturnPackageDirectory,
+                            assetsJsonParentDirectory: _toolReturnJsonParentDirectory);
         }
 
         private static void AddToolsAssets(
@@ -74,6 +112,7 @@ namespace Microsoft.DotNet.Cli.ToolPackage
            Action<LockFileItem> additionalAction,
            params PatternSet[] patterns)
         {
+            // Loop through each criteria taking the first one that matches one or more items.
             foreach (var managedCriteria in criteria)
             {
                 var group = items.FindBestItemGroup(
@@ -106,37 +145,34 @@ namespace Microsoft.DotNet.Cli.ToolPackage
             yield break;
         }
 
-        public async Task<IToolPackage> InstallPackageAsync(PackageLocation packageLocation, PackageId packageId,
-            VersionRange versionRange = null,
-            string targetFramework = null,
-            string verbosity = null
+        private static async Task<NuGetVersion> DownloadAndExtractPackage(
+            PackageLocation packageLocation,
+            PackageId packageId,
+            INuGetPackageDownloader _nugetPackageDownloader,
+            string hashPathLocation
             )
-        { 
+        {
             var packageSourceLocation = new PackageSourceLocation(packageLocation.NugetConfig, packageLocation.RootConfigDirectory, null, packageLocation.AdditionalFeeds);
             var packagePath = await _nugetPackageDownloader.DownloadPackageAsync(packageId, null, packageSourceLocation);
 
-            var tempExtractionDir = Path.GetDirectoryName(packagePath);
-            Directory.CreateDirectory(_tempStageDir.Value);
-
-            // Look fo nuget package on disk and read the version
+            // look for package on disk and read the version
             NuGetVersion version;
 
             using (FileStream packageStream = File.OpenRead(packagePath))
             {
                 PackageArchiveReader reader = new PackageArchiveReader(packageStream);
                 version = new NuspecReader(reader.GetNuspec()).GetVersion();
-                
+
                 var packageHash = Convert.ToBase64String(new CryptoHashProvider("SHA512").CalculateHash(reader.GetNuspec()));
-                var hashPath = new VersionFolderPathResolver(_tempStageDir.Value).GetHashPath(packageId.ToString(), version);
+                var hashPath = new VersionFolderPathResolver(hashPathLocation).GetHashPath(packageId.ToString(), version);
 
                 Directory.CreateDirectory(Path.GetDirectoryName(hashPath));
                 File.WriteAllText(hashPath, packageHash);
             }
 
-            var packageDirectory = _toolPackageStore.GetPackageDirectory(packageId, version);
-            var tempToolExtractionDir = Path.Combine(tempExtractionDir, packageId.ToString(), version.ToString());
-            var nupkgDir = Path.Combine(tempExtractionDir, packageId.ToString(), version.ToString());
-            var filesInPackage = await _nugetPackageDownloader.ExtractPackageAsync(packagePath, new DirectoryPath(tempExtractionDir));
+            // Extract the package
+            var nupkgDir = Path.Combine(hashPathLocation, packageId.ToString(), version.ToString());
+            var filesInPackage = await _nugetPackageDownloader.ExtractPackageAsync(packagePath, new DirectoryPath(nupkgDir));
 
             if (Directory.Exists(packagePath))
             {
@@ -146,7 +182,15 @@ namespace Microsoft.DotNet.Cli.ToolPackage
                         packageId,
                         version.ToNormalizedString()));
             }
+            return version;
+        }
 
+        private static void CreateAssetFiles(
+            PackageId packageId,
+            NuGetVersion version,
+            DirectoryPath nugetLocalRepository,
+            DirectoryPath assetFileDirectory)
+        {
             // To get runtimeGraph:
             var runtimeJsonPath = "C:\\Program Files\\dotnet\\sdk\\7.0.200\\RuntimeIdentifierGraph.json";
             var runtimeGraph = JsonRuntimeFormat.ReadRuntimeGraph(runtimeJsonPath);
@@ -156,7 +200,7 @@ namespace Microsoft.DotNet.Cli.ToolPackage
 
             //  Create LockFileTargetLibrary
             var lockFileLib = new LockFileTargetLibrary()
-            { 
+            {
                 Name = packageId.ToString(),
                 Version = version,
                 Type = LibraryType.Package,
@@ -164,7 +208,7 @@ namespace Microsoft.DotNet.Cli.ToolPackage
             };
 
             //  Create NuGetv3LocalRepository
-            NuGetv3LocalRepository localRepository = new(_tempStageDir.Value);
+            NuGetv3LocalRepository localRepository = new(nugetLocalRepository.Value);
             var package = localRepository.FindPackage(packageId.ToString(), version);
 
             var collection = new ContentItemCollection();
@@ -193,17 +237,7 @@ namespace Microsoft.DotNet.Cli.ToolPackage
             };
             lockFileTarget.Libraries.Add(lockFileLib);
             lockFile.Targets.Add(lockFileTarget);
-            new LockFileFormat().Write(Path.Combine(_tempStageDir.Value, "project.assets.json"), lockFile);
-
-            var packageRootDirectory = _toolPackageStore.GetRootPackageDirectory(packageId);
-            Directory.CreateDirectory(packageRootDirectory.Value);
-
-            FileAccessRetrier.RetryOnMoveAccessFailure(() => Directory.Move(_tempStageDir.Value, packageDirectory.Value));
-
-            return new ToolPackageInstance(id: packageId,
-                            version: version,
-                            packageDirectory: packageDirectory,
-                            assetsJsonParentDirectory: packageDirectory);
+            new LockFileFormat().Write(Path.Combine(assetFileDirectory.Value, "project.assets.json"), lockFile);
         }
     }
 }
