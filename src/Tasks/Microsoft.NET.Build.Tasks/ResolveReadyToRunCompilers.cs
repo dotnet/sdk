@@ -203,10 +203,6 @@ namespace Microsoft.NET.Build.Tasks
                 {
                     portablePlatform = "osx";
                 }
-                else if (RuntimeInformation.IsOSPlatform(OSPlatform.FreeBSD))
-                {
-                    portablePlatform = "freebsd";
-                }
             }
 
             targetOS = portablePlatform switch
@@ -370,9 +366,8 @@ namespace Microsoft.NET.Build.Tasks
             }
             else
             {
-                // Generic Unix-like: linux, freebsd, and others. Does not check for arch
-                _crossgenTool.ToolPath = Path.Combine(_crossgenTool.PackagePath, "tools", "crossgen");
-                _crossgenTool.ClrJitPath = Path.Combine(_crossgenTool.PackagePath, "runtimes", _targetRuntimeIdentifier, "native", "libclrjit.so");
+                // Unknown platform
+                return false;
             }
 
             return File.Exists(_crossgenTool.ToolPath) && File.Exists(_crossgenTool.ClrJitPath);
@@ -386,11 +381,6 @@ namespace Microsoft.NET.Build.Tasks
             {
                 toolFileName = "crossgen2.exe";
                 v5_clrJitFileNamePattern = "clrjit-{0}.dll";
-            }
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-            {
-                toolFileName = "crossgen2";
-                v5_clrJitFileNamePattern = "libclrjit-{0}.so";
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
