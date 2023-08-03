@@ -18,6 +18,9 @@ namespace Microsoft.DotNet.SourceBuild.SmokeTests;
 /// </summary>
 public class OmniSharpTests : SmokeTests
 {
+    // Update version as new releases become available: https://github.com/OmniSharp/omnisharp-roslyn/releases
+    private const string OmniSharpReleaseVersion = "1.39.8";
+
     private string OmniSharpDirectory { get; } = Path.Combine(Directory.GetCurrentDirectory(), "omnisharp");
 
     public OmniSharpTests(ITestOutputHelper outputHelper) : base(outputHelper) { }
@@ -61,12 +64,11 @@ public class OmniSharpTests : SmokeTests
         {
             using HttpClient client = new();
             string omniSharpTarballFile = $"omnisharp-linux-{Config.TargetArchitecture}.tar.gz";
-            Uri omniSharpTarballUrl = new($"https://github.com/OmniSharp/omnisharp-roslyn/releases/latest/download/{omniSharpTarballFile}");
+            Uri omniSharpTarballUrl = new($"https://github.com/OmniSharp/omnisharp-roslyn/releases/download/v{OmniSharpReleaseVersion}/{omniSharpTarballFile}");
             await client.DownloadFileAsync(omniSharpTarballUrl, omniSharpTarballFile, OutputHelper);
 
             Directory.CreateDirectory(OmniSharpDirectory);
             Utilities.ExtractTarball(omniSharpTarballFile, OmniSharpDirectory, OutputHelper);
-            ExecuteHelper.ExecuteProcessValidateExitCode("chmod", $"+x {OmniSharpDirectory}/run", OutputHelper);
             
             // Ensure the run script is executable (see https://github.com/OmniSharp/omnisharp-roslyn/issues/2547)
             File.SetUnixFileMode($"{OmniSharpDirectory}/run", UnixFileMode.UserRead | UnixFileMode.UserExecute);
