@@ -389,7 +389,7 @@ namespace Microsoft.NET.Build.Tasks
             }
             else
             {
-                // Generic Unix-like: linux, freebsd, and others. Does not check for arch
+                // Generic Unix-like: linux, freebsd, and others.
                 toolFileName = "crossgen2";
                 v5_clrJitFileNamePattern = "libclrjit-{0}.so";
             }
