@@ -209,8 +209,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
         {
             RunTest(original: """
                 namespace Foo
-                {
-                    
+                {   
                     public record RecordClass;
                     public record RecordClass1(int i);
                     public record RecordClass2(string s, int i);
@@ -237,7 +236,6 @@ namespace Microsoft.DotNet.GenAPI.Tests
                         public RecordClassWithConstructors() : this(1) { }
                         public RecordClassWithConstructors(string s) : this(int.Parse(s)) { }
                     }
-                
                 }
                 """,
                 expected: """
