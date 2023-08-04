@@ -31,7 +31,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   </ItemDefinitionGroup>
 
   <Target Name="_ComputeRequiresILLinkPack" BeforeTargets="ProcessFrameworkReferences">
-    <!-- Keep this in sync with requiresILLinkPack in ProcessFrameworkReferences.cs. 
+    <!-- Keep this in sync with the warnings produced for RequiresILLinkPack in ProcessFrameworkReferences.cs. 
          Must be set late enough to see the inferred value of EnableSingleFileAnalyzer. -->
     <PropertyGroup>
       <_RequiresILLinkPack Condition="'$(_RequiresILLinkPack)' == '' And (
