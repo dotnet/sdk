@@ -19,7 +19,6 @@ namespace Microsoft.NET.Build.Tests
         [InlineData("AssemblyDescriptionAttribute")]
         [InlineData("AssemblyTitleAttribute")]
         [InlineData("AssemblyTrademarkAttribute")]
-        [InlineData("DisableRuntimeMarshallingAttribute")]
         [InlineData("NeutralResourcesLanguageAttribute")]
         [InlineData("All")]
         public void It_respects_opt_outs(string attributeToOptOut)
@@ -41,7 +40,6 @@ namespace Microsoft.NET.Build.Tests
                     "/p:Product=TestProduct",
                     "/p:AssemblyTitle=TestTitle",
                     "/p:Trademark=TestTrademark",
-                    "/p:DisableRuntimeMarshalling=true",
                     "/p:NeutralLanguage=fr",
                     attributeToOptOut == "All" ?
                         "/p:GenerateAssemblyInfo=false" :
@@ -62,7 +60,6 @@ namespace Microsoft.NET.Build.Tests
                 { "AssemblyProductAttribute", "TestProduct" },
                 { "AssemblyTitleAttribute", "TestTitle" },
                 { "AssemblyTrademarkAttribute", "TestTrademark" },
-                { "DisableRuntimeMarshallingAttribute", "" },                
                 { "NeutralResourcesLanguageAttribute", "fr" },
             };
 
@@ -458,6 +455,89 @@ namespace Microsoft.NET.Build.Tests
             foreach (var attribute in parameterlessAttributes)
             {
                 if (attribute.Equals("RequiresPreviewFeaturesAttribute", System.StringComparison.Ordinal))
+                {
+                    contains = true;
+                    break;
+                }
+            }
+
+            Assert.False(contains);
+        }
+
+        [Theory]
+        [InlineData(true, true, ToolsetInfo.CurrentTargetFramework)]
+        [InlineData(true, false, ToolsetInfo.CurrentTargetFramework)]
+        [InlineData(false, false, ToolsetInfo.CurrentTargetFramework)]
+        public void TestDisableRuntimeMarshalling(bool disableRuntimeMarshalling, bool generateDisableRuntimeMarshallingAttribute, string targetFramework)
+        {
+            var testAsset = _testAssetsManager
+                .CopyTestAsset("HelloWorld", identifier: $"{disableRuntimeMarshalling}${generateDisableRuntimeMarshallingAttribute}${targetFramework}")
+                .WithSource()
+                .WithTargetFramework(targetFramework)
+                .WithProjectChanges((path, project) =>
+                {
+                    var ns = project.Root.Name.Namespace;
+
+                    project.Root.Add(
+                        new XElement(ns + "PropertyGroup",
+                            new XElement(ns + "DisableRuntimeMarshalling", $"{disableRuntimeMarshalling}")));
+
+                    if (disableRuntimeMarshalling && !generateDisableRuntimeMarshallingAttribute)
+                    {
+                        project.Root.Add(
+                            new XElement(ns + "PropertyGroup",
+                                new XElement(ns + "GenerateDisableRuntimeMarshallingAttribute", $"False")));
+                    }
+                });
+
+            var buildCommand = new BuildCommand(testAsset);
+            buildCommand.Execute().Should().Pass();
+
+            var assemblyPath = Path.Combine(buildCommand.GetOutputDirectory(targetFramework).FullName, "HelloWorld.dll");
+
+            var parameterlessAttributes = AssemblyInfo.GetParameterlessAttributes(assemblyPath);
+            bool contains = false;
+            foreach (var attribute in parameterlessAttributes)
+            {
+                if (attribute.Equals("DisableRuntimeMarshallingAttribute", System.StringComparison.Ordinal))
+                {
+                    contains = true;
+                    break;
+                }
+            }
+
+            if (!generateDisableRuntimeMarshallingAttribute)
+            {
+                Assert.False(contains);
+            }
+        }
+
+        [Fact]
+        public void It_doesnt_includes_disable_runtime_marshalling()
+        {
+            var testAsset = _testAssetsManager
+                .CopyTestAsset("HelloWorld")
+                .WithSource()
+                .WithTargetFramework(ToolsetInfo.CurrentTargetFramework)
+                .WithProjectChanges((path, project) =>
+                {
+                    var ns = project.Root.Name.Namespace;
+
+                    project.Root.Add(
+                        new XElement(ns + "PropertyGroup",
+                            new XElement(ns + "DisableRuntimeMarshalling", "false")));
+                });
+
+            var buildCommand = new BuildCommand(testAsset);
+            buildCommand.Execute().Should().Pass();
+
+            var assemblyPath = Path.Combine(buildCommand.GetOutputDirectory(ToolsetInfo.CurrentTargetFramework).FullName, "HelloWorld.dll");
+
+            var parameterlessAttributes = AssemblyInfo.GetParameterlessAttributes(assemblyPath);
+            bool contains = false;
+            foreach (var attribute in parameterlessAttributes)
+            {
+                if (attribute.Equals("DisableRuntimeMarshallingAttribute", System.StringComparison.Ordinal))
                 {
                     contains = true;
                     break;
