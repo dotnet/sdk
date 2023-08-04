@@ -15,6 +15,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Task = Microsoft.Build.Utilities.Task;
@@ -87,8 +88,8 @@ namespace Microsoft.DotNet.SourceBuild.Tasks.UsageReport
         /// <returns>The contents of the specified file.</returns>
         private string GetFileContents(string relativeFilePath, string commitSha)
         {
-            WebClient client = new WebClient();
-            var xmlString = client.DownloadString($"https://raw.githubusercontent.com/dotnet/source-build/{commitSha}/{relativeFilePath.Replace('\\', '/')}");
+            HttpClient client = new HttpClient();
+            string xmlString = client.GetStringAsync($"https://raw.githubusercontent.com/dotnet/source-build/{commitSha}/{relativeFilePath.Replace('\\', '/')}").Result;
             return xmlString;
         }
 
