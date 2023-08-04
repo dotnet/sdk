@@ -174,18 +174,6 @@ namespace Microsoft.DotNet.GenAPI
                 namedTypeNode = _syntaxGenerator.AddMembers(namedTypeNode, namedType.SynthesizeDummyFields(_symbolFilter));
             }
 
-            // exclude compiler generated members on records
-            if (namedType.IsRecord && namedType.TryGetRecordConstructor(out IMethodSymbol? recordConstructor))
-            {
-                // find the record parameters, so that we can exclude properties
-                var recordParameteterNames = recordConstructor.Parameters.Select(p => p.Name).ToHashSet();
-
-                // exclude compiler generated members, record constructor, and record properties
-                members = members.Where(member => !member.IsCompilerGenerated() &&
-                    !SymbolEqualityComparer.Default.Equals(member, recordConstructor) &&
-                    !recordParameteterNames.Contains(member.Name));
-            }
-
             namedTypeNode = _syntaxGenerator.AddMembers(namedTypeNode, namedType.TryGetInternalDefaultConstructor(_symbolFilter));
 
             foreach (ISymbol member in members.Order())
