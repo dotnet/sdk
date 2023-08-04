@@ -465,10 +465,12 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [Theory]
-        [InlineData(true, true, ToolsetInfo.CurrentTargetFramework)]
-        [InlineData(true, false, ToolsetInfo.CurrentTargetFramework)]
-        [InlineData(false, false, ToolsetInfo.CurrentTargetFramework)]
-        public void TestDisableRuntimeMarshalling(bool disableRuntimeMarshalling, bool generateDisableRuntimeMarshallingAttribute, string targetFramework)
+        [InlineData(true, true, "net6.0", false)]
+        [InlineData(true, true, "net7.0", true)]
+        [InlineData(true, true, ToolsetInfo.CurrentTargetFramework, true)]
+        [InlineData(true, false, ToolsetInfo.CurrentTargetFramework, true)]
+        [InlineData(false, false, ToolsetInfo.CurrentTargetFramework, true)]
+        public void TestDisableRuntimeMarshalling(bool disableRuntimeMarshalling, bool generateDisableRuntimeMarshallingAttribute, string targetFramework, bool shouldHaveAttribute)
         {
             var testAsset = _testAssetsManager
                 .CopyTestAsset("HelloWorld", identifier: $"{disableRuntimeMarshalling}${generateDisableRuntimeMarshallingAttribute}${targetFramework}")
@@ -503,6 +505,19 @@ namespace Microsoft.NET.Build.Tests
                 {
                     contains = true;
                     break;
+                }
+            }
+
+            if (disableRuntimeMarshalling && generateDisableRuntimeMarshallingAttribute)
+            {
+                if (shouldHaveAttribute)
+                {
+                    Assert.True(contains);
+                }
+                else
+                {
+                    // The assembly level attribute is generated only for .NET 7 and newer
+                    Assert.False(contains);
                 }
             }
 
