@@ -1,13 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.Logging;
 using Microsoft.NET.Build.Containers.Resources;
 using NuGet.RuntimeModel;
 using System.Diagnostics;
 using System.Net.Http.Json;
-using System.Text;
 using System.Text.Json.Nodes;
 
 namespace Microsoft.NET.Build.Containers;
@@ -27,22 +25,26 @@ internal sealed class Registry
     /// This is used in user-facing error messages, and it should match what the user would manually enter as
     /// part of Docker commands like `docker login`.
     /// </summary>
-    public string RegistryName { get; init; }
+    public string RegistryName { get; }
 
-    internal Registry(Uri baseUri, ILogger logger) : this(baseUri, logger, new DefaultRegistryAPI(baseUri, logger), new RegistrySettings()) { }
+    internal Registry(string registryName, ILogger logger, IRegistryAPI? registryAPI = null, RegistrySettings? settings = null) :
+        this(ContainerHelpers.TryExpandRegistryToUri(registryName), logger, registryAPI, settings)
+    { }
 
-    internal Registry(Uri baseUri, ILogger logger, IRegistryAPI registryAPI, RegistrySettings settings)
+    internal Registry(Uri baseUri, ILogger logger, IRegistryAPI? registryAPI = null, RegistrySettings? settings = null)
     {
-        _logger = logger;
-        _registryAPI = registryAPI;
-        _settings = settings;
         RegistryName = DeriveRegistryName(baseUri);
-        BaseUri = baseUri;
+
         // "docker.io" is not a real registry. Replace the uri to refer to an actual registry.
-        if (BaseUri.Host == ContainerHelpers.DockerRegistryAlias)
+        if (baseUri.Host == ContainerHelpers.DockerRegistryAlias)
         {
-            BaseUri = new UriBuilder(BaseUri.ToString()) { Host = DockerHubRegistry1 }.Uri;
+            baseUri = new UriBuilder(baseUri.ToString()) { Host = DockerHubRegistry1 }.Uri;
         }
+        BaseUri = baseUri;
+
+        _logger = logger;
+        _settings = settings ?? new RegistrySettings();
+        _registryAPI = registryAPI ?? new DefaultRegistryAPI(RegistryName, BaseUri, logger);
     }
 
     private static string DeriveRegistryName(Uri baseUri)
@@ -136,7 +138,7 @@ internal sealed class Registry
         JsonNode configDoc = await _registryAPI.Blob.GetJsonAsync(repositoryName, configSha, cancellationToken).ConfigureAwait(false);
 
         cancellationToken.ThrowIfCancellationRequested();
-        return new ImageBuilder(manifest, new ImageConfig(configDoc));
+        return new ImageBuilder(manifest, new ImageConfig(configDoc), _logger);
     }
 
     private async Task<ImageBuilder> PickBestImageFromManifestListAsync(

@@ -1,30 +1,16 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Xml.Linq;
 using System.Reflection;
 using System.Reflection.Metadata;
 using System.Reflection.PortableExecutable;
 using System.Runtime.CompilerServices;
-using System.Text;
 using System.Text.RegularExpressions;
-using FluentAssertions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.DependencyModel;
 using Microsoft.NET.Build.Tasks;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Microsoft.NET.TestFramework.ProjectConstruction;
 using Newtonsoft.Json.Linq;
-using Xunit;
-using Xunit.Abstractions;
 using static Microsoft.NET.Publish.Tests.PublishTestUtils;
-using System.Security.Permissions;
 
 namespace Microsoft.NET.Publish.Tests
 {
@@ -140,7 +126,7 @@ namespace Microsoft.NET.Publish.Tests
 
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
         [InlineData(ToolsetInfo.CurrentTargetFramework)]
-        public void ILLink_fails_when_no_matching_pack_is_found(string targetFramework)
+        public void PublishTrimmed_fails_when_no_matching_pack_is_found(string targetFramework)
         {
             var projectName = "HelloWorld";
             var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
@@ -158,15 +144,63 @@ namespace Microsoft.NET.Publish.Tests
             var publishCommand = new PublishCommand(testAsset);
             publishCommand.Execute($"/p:RuntimeIdentifier={rid}", "/p:PublishTrimmed=true")
                 .Should().Fail()
-                .And.HaveStdOutContaining("error NETSDK1195");
+                .And.HaveStdOutContaining($"error {Strings.PublishTrimmedRequiresVersion30}");
         }
 
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
-        // TODO: enable netstandard2.0 once ProcessFrameworkReferences is fixed to run
-        // when tool packs are referenced. See https://github.com/dotnet/sdk/pull/33062.
-        // Currently netstandard2.0 skips ProcessFrameworkReference because FrameworkReference
-        // is empty.
-        // [InlineData("netstandard2.0")]
+        [InlineData("netcoreapp2.0")]
+        [InlineData("netcoreapp2.1")]
+        [InlineData("netstandard2.1")]
+        public void PublishTrimmed_fails_for_unsupported_target_framework(string targetFramework)
+        {
+            var projectName = "HelloWorld";
+            var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
+
+            var testProject = CreateTestProjectForILLinkTesting(targetFramework, projectName);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
+            var publishCommand = new PublishCommand(testAsset);
+            publishCommand.Execute($"/p:RuntimeIdentifier={rid}", "/p:PublishTrimmed=true")
+                .Should().Fail()
+                .And.HaveStdOutContaining($"error {Strings.PublishTrimmedRequiresVersion30}");
+        }
+
+        [RequiresMSBuildVersionTheory("17.0.0.32901")]
+        [InlineData("netstandard2.0")]
+        [InlineData("netstandard2.1")]
+        public void IsTrimmable_warns_for_unsupported_target_framework(string targetFramework)
+        {
+            var projectName = "HelloWorld";
+            var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
+
+            var testProject = CreateTestProjectForILLinkTesting(targetFramework, projectName);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
+            var buildCommand = new BuildCommand(testAsset);
+            buildCommand.Execute("/p:IsTrimmable=true")
+                .Should().Pass()
+                // Note: can't check for Strings.IsTrimmableUnsupported because each line of
+                // the message gets prefixed with a file path by MSBuild.
+                .And.HaveStdOutContaining($"warning NETSDK1212");
+        }
+
+        [RequiresMSBuildVersionTheory("17.0.0.32901")]
+        [InlineData("netstandard2.1")]
+        public void RequiresILLinkPack_errors_for_unsupported_target_framework(string targetFramework)
+        {
+            var projectName = "HelloWorld";
+            var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
+
+            var testProject = CreateTestProjectForILLinkTesting(targetFramework, projectName);
+            testProject.AdditionalProperties["_RequiresILLinkPack"] = "true";
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
+            
+            var buildCommand = new BuildCommand(testAsset);
+            buildCommand.Execute()
+                .Should().Fail()
+                .And.HaveStdOutContaining($"error {Strings.ILLinkNoValidRuntimePackageError}");
+        }
+
+        [RequiresMSBuildVersionTheory("17.0.0.32901")]
+        [InlineData("netstandard2.0")]
         [InlineData("netstandard2.1")]
         public void ILLink_can_use_latest_with_unsupported_target_framework(string targetFramework)
         {
@@ -808,6 +842,10 @@ namespace Microsoft.NET.Publish.Tests
                     "ILLink : Trim analysis warning IL2026: Internal.Runtime.InteropServices.InMemoryAssemblyLoader.LoadInMemoryAssemblyInContextWhenSupported(IntPtr, IntPtr",
                     "ILLink : Trim analysis warning IL2026: System.Linq.Queryable: Using member 'System.Linq.EnumerableRewriter.s_seqMethods' which has 'RequiresUnreferencedCodeAttribute'",
                     "ILLink : Trim analysis warning IL2026: System.Transactions.DtcProxyShim.DtcProxyShimFactory.ConnectToProxyCore(String, Guid, Object, Boolean&, Byte[]&, ResourceManagerShim&",
+                    "ILLink : Trim analysis warning IL2026: System.Runtime.InteropServices: Using member 'System.Runtime.InteropServices.Marshalling.ComImportInteropInterfaceDetailsStrategy.s_attributeUsageAllowMultipleProperty' which has 'RequiresUnreferencedCodeAttribute'",
+                    "ILLink : Trim analysis warning IL2026: System.Runtime.InteropServices: Using member 'System.Runtime.InteropServices.Marshalling.ComImportInteropInterfaceDetailsStrategy.s_attributeUsageCtor' which has 'RequiresUnreferencedCodeAttribute'",
+                    "ILLink : Trim analysis warning IL2026: System.Runtime.InteropServices: Using member 'System.Runtime.InteropServices.Marshalling.ComImportInteropInterfaceDetailsStrategy.s_attributeBaseClassCtor' which has 'RequiresUnreferencedCodeAttribute'",
+                    "ILLink : Trim analysis warning IL2026: System.Runtime.InteropServices: Using member 'System.Runtime.InteropServices.Marshalling.ComImportInteropInterfaceDetailsStrategy.Instance' which has 'RequiresUnreferencedCodeAttribute'",
                     "ILLink : Trim analysis warning IL2045: System.Runtime.InteropServices.Marshal.GenerateProgIdForType(Type",
                     "ILLink : Trim analysis warning IL2045: System.Runtime.InteropServices.Marshal.GenerateProgIdForType(Type",
                     "ILLink : Trim analysis warning IL2045: System.Runtime.InteropServices.ComAwareEventInfo.GetDataForComInvocation(EventInfo, Guid&, Int32&",
@@ -1771,27 +1809,6 @@ namespace Microsoft.NET.Publish.Tests
             project.Root.Elements(ns + "ItemGroup")
                 .Where(ig => ig.Elements(ns + "TrimmerRootDescriptor").Any())
                 .First().Remove();
-        }
-
-        [Fact]
-        public void It_warns_when_targeting_netcoreapp_2_x_illink()
-        {
-            var testProject = new TestProject()
-            {
-                Name = "ConsoleApp",
-                TargetFrameworks = "netcoreapp2.2",
-                IsExe = true,
-            };
-
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: "GivenThatWeWantToRunILLink");
-
-            var publishCommand = new PublishCommand(testAsset);
-
-            publishCommand.Execute($"/p:PublishTrimmed=true")
-                .Should()
-                .Pass()
-                .And
-                .HaveStdOutContaining(Strings.PublishTrimmedRequiresVersion30);
         }
 
         private void SetMetadata(XDocument project, string assemblyName, string key, string value)
