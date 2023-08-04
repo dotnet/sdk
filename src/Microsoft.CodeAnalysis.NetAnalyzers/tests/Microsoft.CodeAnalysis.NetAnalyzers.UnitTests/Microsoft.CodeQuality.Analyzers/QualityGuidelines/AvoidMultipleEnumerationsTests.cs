@@ -181,7 +181,7 @@ End Namespace
             await VerifyVisualBasicAsync(vbCode);
         }
 
-        [Fact(Skip = "https://github.com/dotnet/roslyn-analyzers/issues/6830")]
+        [Fact]
         public async Task TestInvocationsInForEachLoop()
         {
             var csharpCode = @"
@@ -4067,7 +4067,7 @@ End Module
                 customizedLinqChainMethods: editorConfig);
         }
 
-        [Fact(Skip = "https://github.com/dotnet/roslyn-analyzers/issues/6830")]
+        [Fact]
         public async Task TestDomainMerge()
         {
             var csharpCode1 = @"
