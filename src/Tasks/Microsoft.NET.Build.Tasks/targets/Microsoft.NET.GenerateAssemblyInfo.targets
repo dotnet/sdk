@@ -156,7 +156,6 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <ItemGroup Condition="'$(GenerateDisableRuntimeMarshallingAttribute)' == 'true'
                          and '$(DisableRuntimeMarshalling)' == 'true'
-                         and '$(TargetPlatformIdentifier)' != ''
                          and '$(TargetFrameworkIdentifier)' == '.NETCoreApp'
                          and $([MSBuild]::VersionGreaterThanOrEquals($(_TargetFrameworkVersionWithoutV), '7.0'))">
       <AssemblyAttribute Include="System.Runtime.CompilerServices.DisableRuntimeMarshallingAttribute">
