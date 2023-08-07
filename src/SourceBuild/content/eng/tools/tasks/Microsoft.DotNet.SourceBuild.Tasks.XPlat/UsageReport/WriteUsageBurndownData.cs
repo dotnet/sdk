@@ -44,6 +44,11 @@ namespace Microsoft.DotNet.SourceBuild.Tasks.UsageReport
         [Required]
         public string OutputFilePath { get; set; }
 
+        /// <summary>
+        ///  Sends HTTP requests and receives HTTP responses.
+        /// </summary>
+        public HttpClient client = new HttpClient;
+
         public override bool Execute()
         {
             string baselineRelativeFileName = PrebuiltBaselineFile.Replace(RootDirectory, "");
@@ -88,7 +93,6 @@ namespace Microsoft.DotNet.SourceBuild.Tasks.UsageReport
         /// <returns>The contents of the specified file.</returns>
         private string GetFileContents(string relativeFilePath, string commitSha)
         {
-            HttpClient client = new HttpClient();
             string xmlString = client.GetStringAsync($"https://raw.githubusercontent.com/dotnet/source-build/{commitSha}/{relativeFilePath.Replace('\\', '/')}").Result;
             return xmlString;
         }
