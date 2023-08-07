@@ -1261,14 +1261,13 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ProjectCapability Include="NativeAOTProperties" Condition="'$(ShowNativeAOTProperties)' == 'true'"/>
   </ItemGroup>
 
-  <!-- Native AOT properties should be shown by default for projects targeting .NET 8 or higher, except for class libraries, WPF, WinForms projects -->
+  <!-- Native AOT properties should be shown by default for projects targeting .NET 8 or higher, except for WPF and WinForms projects -->
   <PropertyGroup>
     <ShowNativeAOTProperties Condition="'$(ShowNativeAOTProperties)' == ''
                            and '$(TargetFrameworkIdentifier)' == '.NETCoreApp'
                            and '$(_TargetFrameworkVersionWithoutV)' >= '8.0'">true</ShowNativeAOTProperties>
-    <ShowNativeAOTProperties Condition="'$(UseWPF)' == 'true'
-                             or '$(UseWindowsForms)' == 'true'
-                             or '$(OutputType)' == 'Library'">false</ShowNativeAOTProperties>
+    <ShowNativeAOTProperties Condition="'$(ShowNativeAOTProperties)' == ''
+                             and ('$(UseWPF)' == 'true' or '$(UseWindowsForms)' == 'true')">false</ShowNativeAOTProperties>
   </PropertyGroup>
 
   <!-- Reference Manager capabilities -->
