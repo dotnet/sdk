@@ -367,6 +367,9 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                         }
                         if (workloadSet != null)
                         {
+                            // Baseline workload manifest file starts with a version that can
+                            // (erroneously) be parsed as a workload manifest ID.
+                            workloadSet.ManifestVersions.Remove(new ManifestId("Version"));
                             workloadSet.Version = Path.GetFileName(workloadSetDirectory);
                             availableWorkloadSets[workloadSet.Version] = workloadSet;
                         }
