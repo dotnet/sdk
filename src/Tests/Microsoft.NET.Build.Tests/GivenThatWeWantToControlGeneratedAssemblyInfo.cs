@@ -494,7 +494,7 @@ namespace Microsoft.NET.Build.Tests
                 testProject.AdditionalProperties["GenerateDisableRuntimeMarshallingAttribute"] = generateDisableRuntimeMarshallingAttribute.Value.ToString();
             }
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: disableRuntimeMarshalling.ToString() + "_" + generateDisableRuntimeMarshallingAttribute + "_" + targetFramework);
 
             var buildCommand = new BuildCommand(testAsset);
 
