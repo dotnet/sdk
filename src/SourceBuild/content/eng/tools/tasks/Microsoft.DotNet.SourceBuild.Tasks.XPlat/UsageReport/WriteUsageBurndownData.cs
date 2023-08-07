@@ -47,9 +47,11 @@ namespace Microsoft.DotNet.SourceBuild.Tasks.UsageReport
         /// <summary>
         ///  Sends HTTP requests and receives HTTP responses.
         /// </summary>
-        public HttpClient client = new HttpClient;
+        private readonly HttpClient client = new HttpClient();
 
-        public override bool Execute()
+        public override bool Execute() => ExecuteAsync().GetAwaiter().GetResult();
+
+        private async Task<bool> ExecuteAsync()
         {
             string baselineRelativeFileName = PrebuiltBaselineFile.Replace(RootDirectory, "");
             string gitLogCommand = $"log --first-parent --pretty=format:%H,%f,%ci -- {PrebuiltBaselineFile}";
@@ -57,22 +59,26 @@ namespace Microsoft.DotNet.SourceBuild.Tasks.UsageReport
             DateTime startTime = DateTime.Now;
             Log.LogMessage(MessageImportance.High, "Generating summary usage burndown data...");
 
-            ParallelQuery<string> data = ExecuteGitCommand(RootDirectory, gitLogCommand).AsParallel().Select(commitLine =>
-            {
-                var splitLine = commitLine.Split(',');
-                var commit = new Commit()
+
+            IEnumerable<Task<Commit>> getCommitTasks = ExecuteGitCommand(RootDirectory, gitLogCommand)
+                .Select(async commitLine =>
                 {
-                    Sha = splitLine[0],
-                    Title = splitLine[1],
-                    CommitDate = DateTime.Parse(splitLine[2])
-                };
-                string fileContents = GetFileContents(baselineRelativeFileName, commit.Sha);
-                Usage[] usages = UsageData.Parse(XElement.Parse(fileContents)).Usages.NullAsEmpty().ToArray();
-                commit.PackageVersionCount = usages.Count();
-                commit.PackageCount = usages.GroupBy(i => i.PackageIdentity.Id).Select(grp => grp.First()).Count();
-                return commit;
-            })
-            .Select(c => c.ToString());
+                    var splitLine = commitLine.Split(',');
+                    var commit = new Commit()
+                    {
+                        Sha = splitLine[0],
+                        Title = splitLine[1],
+                        CommitDate = DateTime.Parse(splitLine[2])
+                    };
+                    string fileContents = await GetFileContentsAsync(baselineRelativeFileName, commit.Sha);
+                    Usage[] usages = UsageData.Parse(XElement.Parse(fileContents)).Usages.NullAsEmpty().ToArray();
+                    commit.PackageVersionCount = usages.Count();
+                    commit.PackageCount = usages.GroupBy(i => i.PackageIdentity.Id).Select(grp => grp.First()).Count();
+                    return commit;
+                });
+
+            Commit[] commits = await System.Threading.Tasks.Task.WhenAll(getCommitTasks);
+            IEnumerable<string> data = commits.Select(c => c.ToString());
     
             Directory.CreateDirectory(Path.GetDirectoryName(OutputFilePath));
 
@@ -91,10 +97,9 @@ namespace Microsoft.DotNet.SourceBuild.Tasks.UsageReport
         /// <param name="relativeFilePath">The relative path (from the git root) to the file.</param>
         /// <param name="commitSha">The commit sha for the version of the file to get.</param>
         /// <returns>The contents of the specified file.</returns>
-        private string GetFileContents(string relativeFilePath, string commitSha)
+        private async Task<string> GetFileContentsAsync(string relativeFilePath, string commitSha)
         {
-            string xmlString = client.GetStringAsync($"https://raw.githubusercontent.com/dotnet/source-build/{commitSha}/{relativeFilePath.Replace('\\', '/')}").Result;
-            return xmlString;
+            return await client.GetStringAsync($"https://raw.githubusercontent.com/dotnet/source-build/{commitSha}/{relativeFilePath.Replace('\\', '/')}");
         }
 
         /// <summary>
