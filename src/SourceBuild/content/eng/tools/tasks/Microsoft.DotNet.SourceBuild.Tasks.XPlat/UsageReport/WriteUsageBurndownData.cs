@@ -97,10 +97,8 @@ namespace Microsoft.DotNet.SourceBuild.Tasks.UsageReport
         /// <param name="relativeFilePath">The relative path (from the git root) to the file.</param>
         /// <param name="commitSha">The commit sha for the version of the file to get.</param>
         /// <returns>The contents of the specified file.</returns>
-        private async Task<string> GetFileContentsAsync(string relativeFilePath, string commitSha)
-        {
-            return await client.GetStringAsync($"https://raw.githubusercontent.com/dotnet/source-build/{commitSha}/{relativeFilePath.Replace('\\', '/')}");
-        }
+        private Task<string> GetFileContentsAsync(string relativeFilePath, string commitSha) => 
+            client.GetStringAsync($"https://raw.githubusercontent.com/dotnet/source-build/{commitSha}/{relativeFilePath.Replace('\\', '/')}");
 
         /// <summary>
         /// Executes a git command and returns the result.
