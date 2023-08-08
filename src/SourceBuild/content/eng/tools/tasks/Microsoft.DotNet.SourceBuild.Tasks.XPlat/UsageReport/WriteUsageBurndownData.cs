@@ -47,7 +47,7 @@ namespace Microsoft.DotNet.SourceBuild.Tasks.UsageReport
         /// <summary>
         ///  Sends HTTP requests and receives HTTP responses.
         /// </summary>
-        private readonly HttpClient client = new HttpClient();
+        private readonly HttpClient client = new();
 
         public override bool Execute() => ExecuteAsync().GetAwaiter().GetResult();
 
