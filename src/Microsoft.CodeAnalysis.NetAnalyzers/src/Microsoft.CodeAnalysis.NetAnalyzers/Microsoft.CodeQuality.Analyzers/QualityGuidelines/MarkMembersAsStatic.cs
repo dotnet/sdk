@@ -319,8 +319,8 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                 return false;
             }
 
-            if (methodSymbol.HasAttribute(comVisibleAttribute) ||
-                methodSymbol.ContainingType.HasAttribute(comVisibleAttribute))
+            if (methodSymbol.HasAnyAttribute(comVisibleAttribute) ||
+                methodSymbol.ContainingType.HasAnyAttribute(comVisibleAttribute))
             {
                 return true;
             }
@@ -371,7 +371,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
 
             while (symbol != null)
             {
-                if (symbol.HasAttribute(obsoleteAttributeType))
+                if (symbol.HasAnyAttribute(obsoleteAttributeType))
                     return true;
 
                 symbol = symbol is IMethodSymbol method && method.AssociatedSymbol != null

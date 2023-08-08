@@ -86,7 +86,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 return;
             }
 
-            if (!targetType.HasAttribute(dynamicInterfaceCastableImplementationAttribute))
+            if (!targetType.HasAnyAttribute(dynamicInterfaceCastableImplementationAttribute))
             {
                 return;
             }

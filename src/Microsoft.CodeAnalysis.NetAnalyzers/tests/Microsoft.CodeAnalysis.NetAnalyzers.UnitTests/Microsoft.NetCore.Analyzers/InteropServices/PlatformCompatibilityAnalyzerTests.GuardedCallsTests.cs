@@ -299,6 +299,56 @@ namespace PlatformCompatDemo.Bugs.GuardsAroundSupported
             await VerifyAnalyzerCSAsync(source);
         }
 
+        [Fact, WorkItem(6833, "https://github.com/dotnet/roslyn-analyzers/issues/6833")]
+        public async Task GuardsAroundSupported_InsideTryBlockAsync()
+        {
+            var source = @"
+using System.Runtime.Versioning;
+using System;
+
+namespace PlatformCompatDemo.Bugs.GuardsAroundSupported
+{
+    class Caller
+    {
+        public static void TestWithGuardMethods(bool f1, bool f2)
+        {
+            try
+            {
+                [|Target.SupportedOnWindows()|];
+            }
+            catch (Exception e1) when (f1)
+            {
+            }
+            catch (Exception e2) when (f2)
+            {
+            }
+            finally
+            {
+                if (OperatingSystem.IsWindows())
+                    Target.SupportedOnWindowsAndBrowser();
+            }
+        }
+    }
+
+    class Target
+    {
+        [SupportedOSPlatform(""windows"")]
+        public static void SupportedOnWindows() { }
+
+        [SupportedOSPlatform(""windows10.0"")]
+        public static void SupportedOnWindows10() { }
+
+        [SupportedOSPlatform(""windows""), SupportedOSPlatform(""browser"")]
+        public static void SupportedOnWindowsAndBrowser() { }
+
+        [SupportedOSPlatform(""windows10.0""), SupportedOSPlatform(""browser"")]
+        public static void SupportedOnWindows10AndBrowser() { }
+    }
+}";
+
+            await VerifyAnalyzerCSAsync(source);
+        }
+
         [Fact]
         public async Task SupportedOnOsx_GuardedWithIsMacOSAsync()
         {

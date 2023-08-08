@@ -118,7 +118,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
             {
                 Debug.Assert(_unmanagedFunctionPointerAttribute is not null);
                 INamedTypeSymbol type = (INamedTypeSymbol)context.Symbol;
-                if (type.TypeKind != TypeKind.Delegate || !type.HasAttribute(_unmanagedFunctionPointerAttribute))
+                if (type.TypeKind != TypeKind.Delegate || !type.HasAnyAttribute(_unmanagedFunctionPointerAttribute))
                 {
                     return;
                 }
@@ -152,7 +152,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                     reportDiagnostic(method.CreateDiagnostic(FeatureUnsupportedWhenRuntimeMarshallingDisabledHResultSwapping));
                 }
 
-                if (method.HasAttribute(_lcidConversionAttribute))
+                if (method.HasAnyAttribute(_lcidConversionAttribute))
                 {
                     reportDiagnostic(method.CreateDiagnostic(FeatureUnsupportedWhenRuntimeMarshallingDisabledUsingLCIDConversionAttribute));
                 }

@@ -118,7 +118,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
                                 foreach (IMethodSymbol method in methodSymbols)
                                 {
-                                    if (!method.HasAttribute(systemObsoleteAttribute)
+                                    if (!method.HasAnyAttribute(systemObsoleteAttribute)
                                         && HasSupersetOfParameterTypes(method, methodSymbol)
                                         && method.Name != containingMethodName
                                         && HasAsyncCompatibleReturnType(method, syncBlockingTypes))
@@ -234,7 +234,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 || CheckReturnTypeMatch("ValueTask", returnType, syncBlockingTypes)
                 || CheckReturnTypeMatch("IAsyncEnumerableGeneric", returnType, syncBlockingTypes)
                 || (syncBlockingTypes.TryGetValue("AsyncMethodBuilderAttribute", out INamedTypeSymbol? asyncMethodBuilderAttributeTypeValue)
-                && returnType.HasAttribute(asyncMethodBuilderAttributeTypeValue));
+                && returnType.HasAnyAttribute(asyncMethodBuilderAttributeTypeValue));
         }
 
         private static IMethodSymbol? GetParentMethodOrDelegate(OperationAnalysisContext context)
