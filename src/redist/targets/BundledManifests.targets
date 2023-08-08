@@ -116,7 +116,6 @@
 
     <ItemGroup>
       <FormattedBaselineManifest Include="{" />
-      <FormattedBaselineManifest Include="&quot;Version&quot;: &quot;$(WorkloadSetVersion)&quot;," />
       <FormattedBaselineManifest Include="&quot;%(BundledManifests.Identity)&quot;: &quot;%(BundledManifests.Version)&quot;,"/>
       <FormattedBaselineManifest Include="}" />
     </ItemGroup>
