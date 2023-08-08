@@ -116,7 +116,7 @@
 
     <ItemGroup>
       <FormattedBaselineManifest Include="{" />
-      <FormattedBaselineManifest Include="&quot;%(BundledManifests.Identity)&quot;: &quot;%(BundledManifests.Version)&quot;,"/>
+      <FormattedBaselineManifest Include="&quot;%(BundledManifests.Identity)&quot;: &quot;%(BundledManifests.Version)/$(NetFeatureBand)&quot;,"/>
       <FormattedBaselineManifest Include="}" />
     </ItemGroup>
 
