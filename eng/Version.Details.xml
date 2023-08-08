@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.TemplateEngine.Abstractions" Version="7.0.307">
+    <Dependency Name="Microsoft.TemplateEngine.Abstractions" Version="7.0.308">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>36193e187217d1efe43d4061d41c930a530985a6</Sha>
+      <Sha>35f99688a0f7449821ead6c575da18308ebbe567</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TemplateEngine.Mocks" Version="7.0.307-servicing.23362.3">
+    <Dependency Name="Microsoft.TemplateEngine.Mocks" Version="7.0.308-servicing.23401.16">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>36193e187217d1efe43d4061d41c930a530985a6</Sha>
+      <Sha>35f99688a0f7449821ead6c575da18308ebbe567</Sha>
       <SourceBuild RepoName="templating" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.NETCore.App.Ref" Version="7.0.10">
@@ -67,9 +67,9 @@
       <Sha>5b37dd5fea143baefbef2bd83836188af0815a30</Sha>
       <SourceBuild RepoName="fsharp" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="dotnet-format" Version="7.3.426909">
+    <Dependency Name="dotnet-format" Version="7.3.437504">
       <Uri>https://github.com/dotnet/format</Uri>
-      <Sha>88adfff40b5b96258cd91c6ea681b25488ba8606</Sha>
+      <Sha>5c1bc45a7a0b891c114ea97bdc1920f52600ca4a</Sha>
       <SourceBuildTarball RepoName="format" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="4.6.0-3.23329.3">
@@ -117,9 +117,9 @@
       <Uri>https://github.com/microsoft/vstest</Uri>
       <Sha>e7ea853f64af5a4c240acaf9e54cdae3ae0eb7bb</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.ILLink.Tasks" Version="7.0.100-1.23321.1">
+    <Dependency Name="Microsoft.NET.ILLink.Tasks" Version="7.0.100-1.23401.1">
       <Uri>https://github.com/dotnet/linker</Uri>
-      <Sha>13a94b5bdc9d01ecd9eb2bd699bd34d597c3ec19</Sha>
+      <Sha>53b3303c57b3fe659500fb362a0eef12991c1197</Sha>
       <SourceBuild RepoName="linker" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.DotNet.ILCompiler" Version="7.0.10">
@@ -127,9 +127,9 @@
       <Sha>a6dbb800a47735bde43187350fd3aff4071c7f9c</Sha>
       <SourceBuildTarball RepoName="runtime" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.NET.ILLink.Analyzers" Version="7.0.100-1.23321.1">
+    <Dependency Name="Microsoft.NET.ILLink.Analyzers" Version="7.0.100-1.23401.1">
       <Uri>https://github.com/dotnet/linker</Uri>
-      <Sha>13a94b5bdc9d01ecd9eb2bd699bd34d597c3ec19</Sha>
+      <Sha>53b3303c57b3fe659500fb362a0eef12991c1197</Sha>
     </Dependency>
     <Dependency Name="System.CodeDom" Version="7.0.0">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
@@ -283,22 +283,22 @@
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
-    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="7.0.0-beta.23361.2">
+    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="7.0.0-beta.23370.3">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>cae11bc40b691f546d788f7ab37f7eaf0e24ded8</Sha>
+      <Sha>c9c125ccc43361cd94433c2d7f7069d465ad11a5</Sha>
       <SourceBuild RepoName="arcade" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="7.0.0-beta.23361.2">
+    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="7.0.0-beta.23370.3">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>cae11bc40b691f546d788f7ab37f7eaf0e24ded8</Sha>
+      <Sha>c9c125ccc43361cd94433c2d7f7069d465ad11a5</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.SignTool" Version="7.0.0-beta.23361.2">
+    <Dependency Name="Microsoft.DotNet.SignTool" Version="7.0.0-beta.23370.3">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>cae11bc40b691f546d788f7ab37f7eaf0e24ded8</Sha>
+      <Sha>c9c125ccc43361cd94433c2d7f7069d465ad11a5</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.XUnitExtensions" Version="7.0.0-beta.23361.2">
+    <Dependency Name="Microsoft.DotNet.XUnitExtensions" Version="7.0.0-beta.23370.3">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>cae11bc40b691f546d788f7ab37f7eaf0e24ded8</Sha>
+      <Sha>c9c125ccc43361cd94433c2d7f7069d465ad11a5</Sha>
     </Dependency>
     <Dependency Name="System.Reflection.MetadataLoadContext" Version="7.0.0">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
@@ -309,9 +309,9 @@
       <Sha>740189d758fb3bbdc118c5b6171ef1a7351a8c44</Sha>
       <SourceBuild RepoName="xliff-tasks" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.TemplateEngine.TestHelper" Version="7.0.307-servicing.23362.3">
+    <Dependency Name="Microsoft.TemplateEngine.TestHelper" Version="7.0.308-servicing.23401.16">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>36193e187217d1efe43d4061d41c930a530985a6</Sha>
+      <Sha>35f99688a0f7449821ead6c575da18308ebbe567</Sha>
     </Dependency>
   </ToolsetDependencies>
 </Dependencies>
