@@ -88,13 +88,14 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             ShowHintForOtherTemplates(templateGroup, preferredTemplate.Template, instantiateCommandArgs, context.Output);
         }
 
-        public IEnumerable<Action<HelpContext>> CustomHelpLayout()
+        public IEnumerable<Func<HelpContext, bool>> CustomHelpLayout()
         {
             yield return (context) =>
             {
                 InstantiateCommandArgs instantiateCommandArgs = new(this, context.ParseResult);
                 using IEngineEnvironmentSettings environmentSettings = CreateEnvironmentSettings(instantiateCommandArgs, context.ParseResult);
                 WriteHelp(context, instantiateCommandArgs, environmentSettings);
+                return true;
             };
         }
 

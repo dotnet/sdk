@@ -52,7 +52,7 @@ namespace Dotnet_new3
             }
         }
 
-        private static IEnumerable<Action<HelpContext>> CustomHelpLayout(HelpContext context)
+        private static IEnumerable<Func<HelpContext, bool>> CustomHelpLayout(HelpContext context)
         {
             if (context.ParseResult.CommandResult.Command is ICustomHelp custom)
             {

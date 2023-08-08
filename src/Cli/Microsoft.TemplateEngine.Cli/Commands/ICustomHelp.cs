@@ -15,6 +15,6 @@ namespace Microsoft.TemplateEngine.Cli.Commands
         /// <summary>
         /// Returns custom help layout for the command.
         /// </summary>
-        IEnumerable<Action<HelpContext>> CustomHelpLayout();
+        IEnumerable<Func<HelpContext, bool>> CustomHelpLayout();
     }
 }

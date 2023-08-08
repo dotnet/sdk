@@ -8,7 +8,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 {
     internal partial class NewCommand
     {
-        public IEnumerable<Action<HelpContext>> CustomHelpLayout()
+        public IEnumerable<Func<HelpContext, bool>> CustomHelpLayout()
         {
             yield return (context) =>
             {
@@ -20,6 +20,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
                 using IEngineEnvironmentSettings environmentSettings = CreateEnvironmentSettings(args, context.ParseResult);
                 InstantiateCommandArgs instantiateCommandArgs = InstantiateCommandArgs.FromNewCommandArgs(args);
                 InstantiateCommand.WriteHelp(context, instantiateCommandArgs, environmentSettings);
+                return true;
             };
         }
     }
