@@ -108,7 +108,7 @@
     <PropertyGroup>
       <WorkloadSetVersion Condition="'$(DotNetFinalVersionKind)' == 'release'">$(VersionPrefix)-baseline$(_BuildNumberLabels)</WorkloadSetVersion>
       <WorkloadSetVersion Condition="'$(DotNetFinalVersionKind)' != 'release'">$(Version)</WorkloadSetVersion>
-      <RealFormattedManifestPaths>$(RedistLayoutPath)sdk-manifests\$(Version)\workloadsets\$(WorkloadSetVersion)</RealFormattedManifestPaths>
+      <RealFormattedManifestPaths>$(RedistLayoutPath)sdk-manifests\$(NetFeatureBand)\workloadsets\$(WorkloadSetVersion)</RealFormattedManifestPaths>
     </PropertyGroup>
 
     <ItemGroup>
@@ -116,7 +116,7 @@
 
     <ItemGroup>
       <FormattedBaselineManifest Include="{" />
-      <FormattedBaselineManifest Include="&quot;%(BundledManifests.Identity)&quot;: &quot;%(BundledManifests.Version)/$(Version)&quot;,"/>
+      <FormattedBaselineManifest Include="&quot;%(BundledManifests.Identity)&quot;: &quot;%(BundledManifests.Version)/%(BundledManifests.FeatureBand)&quot;,"/>
       <FormattedBaselineManifest Include="}" />
     </ItemGroup>
 
