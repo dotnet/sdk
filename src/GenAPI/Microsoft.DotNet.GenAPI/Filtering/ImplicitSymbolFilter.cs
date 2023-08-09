@@ -76,7 +76,7 @@ namespace Microsoft.DotNet.GenAPI.Filtering
                     if (symbol is IPropertySymbol)
                     {
                         // Exclude members with the same name as the record constructor's parameters
-                        return recordConstructor.Parameters.Any(p => p.Name == symbol.Name);
+                        return !recordConstructor.Parameters.Any(p => p.Name == symbol.Name);
                     }
                 }
             }
