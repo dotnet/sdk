@@ -3,6 +3,8 @@ const Microsoft.NET.Build.Containers.KnownLocalRegistryTypes.Podman = "Podman" -
 Microsoft.NET.Build.Containers.BaseImageNotFoundException
 Microsoft.NET.Build.Containers.Constants
 Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageTag.ComputeDotnetBaseImageTag() -> void
+Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageTag.RuntimeFrameworkVersion.get -> string!
+Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageTag.RuntimeFrameworkVersion.set -> void
 static Microsoft.NET.Build.Containers.ContainerBuilder.ContainerizeAsync(System.IO.DirectoryInfo! publishDirectory, string! workingDir, string! baseRegistry, string! baseImageName, string! baseImageTag, string![]! entrypoint, string![]! entrypointArgs, string![]! defaultArgs, string![]! appCommand, string![]! appCommandArgs, string! appCommandInstruction, string! imageName, string![]! imageTags, string? outputRegistry, System.Collections.Generic.Dictionary<string!, string!>! labels, Microsoft.NET.Build.Containers.Port[]? exposedPorts, System.Collections.Generic.Dictionary<string!, string!>! envVars, string! containerRuntimeIdentifier, string! ridGraphPath, string! localRegistry, string? containerUser, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<int>!
 static readonly Microsoft.NET.Build.Containers.Constants.Version -> string!
 Microsoft.NET.Build.Containers.ContainerBuilder
@@ -114,10 +116,6 @@ Microsoft.NET.Build.Containers.PortType.udp = 1 -> Microsoft.NET.Build.Container
 Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageTag
 Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageTag.ContainerFamily.get -> string!
 Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageTag.ContainerFamily.set -> void
-Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageTag.SdkVersion.get -> string!
-Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageTag.SdkVersion.set -> void
-Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageTag.TargetFrameworkVersion.get -> string!
-Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageTag.TargetFrameworkVersion.set -> void
 Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageTag.ComputedBaseImageTag.get -> string?
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.BaseImageName.get -> string!

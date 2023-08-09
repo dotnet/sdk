@@ -29,10 +29,14 @@
     <Error Condition="'$(_IsSDKContainerAllowedVersion)' != 'true'" Code="CONTAINER002" Text="The current .NET SDK ($(NETCoreSdkVersion)) doesn't support containerization. Please use version 7.0.100 or higher to enable containerization." />
   </Target>
 
-  <Target Name="_ComputeContainerBaseImageTag" Returns="$(_ContainerBaseImageTag)">
+  <Target Name="_ComputeContainerBaseImageTag" Returns="$(_ContainerBaseImageTag)" DependsOnTargets="ResolveTargetingPackAssets">
+    <!-- Publish target should have only one used RuntimeFramework -->
+    <PropertyGroup>
+      <_RuntimeFrameworkVersion>%(RuntimeFramework.Version)</_RuntimeFrameworkVersion>
+    </PropertyGroup>
+    
     <ComputeDotnetBaseImageTag
-      SdkVersion="$(NetCoreSdkVersion)"
-      TargetFrameworkVersion="$(_TargetFrameworkVersionWithoutV).0"
+      RuntimeFrameworkVersion="$(_RuntimeFrameworkVersion)"
       ContainerFamily="$(ContainerFamily)">
         <Output TaskParameter="ComputedBaseImageTag" PropertyName="_ContainerBaseImageTag" />
     </ComputeDotnetBaseImageTag>

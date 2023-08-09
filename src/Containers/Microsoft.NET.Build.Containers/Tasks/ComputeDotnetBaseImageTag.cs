@@ -20,10 +20,7 @@ public sealed class ComputeDotnetBaseImageTag : Microsoft.Build.Utilities.Task
     private const int FirstVersionWithNewTaggingScheme = 8;
 
     [Required]
-    public string SdkVersion { get; set; }
-
-    [Required]
-    public string TargetFrameworkVersion { get; set; }
+    public string RuntimeFrameworkVersion { get; set; }
 
     public string ContainerFamily { get; set; }
 
@@ -32,24 +29,19 @@ public sealed class ComputeDotnetBaseImageTag : Microsoft.Build.Utilities.Task
 
     public ComputeDotnetBaseImageTag()
     {
-        SdkVersion = "";
-        TargetFrameworkVersion = "";
         ContainerFamily = "";
+        RuntimeFrameworkVersion = "";
     }
 
     public override bool Execute()
     {
-        if (SemanticVersion.TryParse(TargetFrameworkVersion, out var tfm) && tfm.Major < FirstVersionWithNewTaggingScheme)
+        if (SemanticVersion.TryParse(RuntimeFrameworkVersion, out var rfv))
         {
-            ComputedBaseImageTag = $"{tfm.Major}.{tfm.Minor}";
-        }
-        else if (SemanticVersion.TryParse(SdkVersion, out var version))
-        {
-            ComputedBaseImageTag = ComputeVersionInternal(version, tfm);
+            ComputedBaseImageTag = ComputeVersionInternal(rfv);
         }
         else
         {
-            Log.LogError(Resources.Strings.InvalidSdkVersion, SdkVersion);
+            Log.LogError(Resources.Strings.InvalidSdkVersion, RuntimeFrameworkVersion);
             return !Log.HasLoggedErrors;
         }
 
@@ -63,19 +55,14 @@ public sealed class ComputeDotnetBaseImageTag : Microsoft.Build.Utilities.Task
     }
 
 
-    private string? ComputeVersionInternal(SemanticVersion version, SemanticVersion? tfm)
+    private string? ComputeVersionInternal(SemanticVersion version)
     {
-        if (tfm != null && (tfm.Major < version.Major || tfm.Minor < version.Minor))
-        {
-            // in this case the TFM is earlier, so we are assumed to be in a stable scenario
-            return $"{tfm.Major}.{tfm.Minor}";
-        }
         // otherwise if we're in a scenario where we're using the TFM for the given SDK version,
         // and that SDK version may be a prerelease, so we need to handle
         var baseImageTag = (version) switch
         {
             // all stable versions or prereleases with majors before the switch get major/minor tags
-            { IsPrerelease: false } or { Major: < FirstVersionWithNewTaggingScheme } => $"{version.Major}.{version.Minor}",
+            { IsPrerelease: false } or { Major: < FirstVersionWithNewTaggingScheme } => $"{version.Major}.{version.Minor}.{version.Patch}",
             // prereleases after the switch for the first SDK version get major/minor-channel.bump tags
             { IsPrerelease: true, Major: >= FirstVersionWithNewTaggingScheme, Patch: 100 } => DetermineLabelBasedOnChannel(version.Major, version.Minor, version.ReleaseLabels.ToArray()),
             // prereleases of subsequent SDK versions still get to use the stable tags
@@ -84,8 +71,9 @@ public sealed class ComputeDotnetBaseImageTag : Microsoft.Build.Utilities.Task
         return baseImageTag;
     }
 
-     private string? DetermineLabelBasedOnChannel(int major, int minor, string[] releaseLabels) {
-      // this would be a switch, but we have to support net47x where Range and Index aren't available
+    private string? DetermineLabelBasedOnChannel(int major, int minor, string[] releaseLabels)
+    {
+        // this would be a switch, but we have to support net47x where Range and Index aren't available
         if (releaseLabels.Length == 0)
         {
             return $"{major}.{minor}";
@@ -117,5 +105,5 @@ public sealed class ComputeDotnetBaseImageTag : Microsoft.Build.Utilities.Task
                 return null;
             }
         }
-     }
+    }
 }

@@ -26,10 +26,8 @@ Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageTag.ComputedBaseImage
 Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageTag.ComputeDotnetBaseImageTag() -> void
 Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageTag.ContainerFamily.get -> string!
 Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageTag.ContainerFamily.set -> void
-Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageTag.SdkVersion.get -> string!
-Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageTag.SdkVersion.set -> void
-Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageTag.TargetFrameworkVersion.get -> string!
-Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageTag.TargetFrameworkVersion.set -> void
+Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageTag.RuntimeFrameworkVersion.get -> string!
+Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageTag.RuntimeFrameworkVersion.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.BaseImageName.get -> string!
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.BaseImageName.set -> void
