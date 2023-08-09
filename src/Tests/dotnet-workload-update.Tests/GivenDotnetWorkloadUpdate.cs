@@ -12,6 +12,7 @@ using Microsoft.DotNet.Cli.Workload.Install.Tests;
 using Microsoft.DotNet.Workloads.Workload.Update;
 using Microsoft.DotNet.Cli.Utils;
 using static Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadResolver;
+using System.Text.Json;
 
 namespace Microsoft.DotNet.Cli.Workload.Update.Tests
 {
@@ -351,7 +352,7 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
                             null),
                     };
 
-            (_, var updateCommand, var packInstaller, var workloadResolver, var workloadManifestUpdater, var nuGetPackageDownloader) = GetTestInstallers(parseResult, manifestUpdates: manifestsToUpdate, sdkVersion: "6.0.300", identifier: existingSdkFeatureBand + newSdkFeatureBand, installedFeatureBand: existingSdkFeatureBand);
+            (var dotnetPath, var updateCommand, var packInstaller, var workloadResolver, var workloadManifestUpdater, var nuGetPackageDownloader) = GetTestInstallers(parseResult, manifestUpdates: manifestsToUpdate, sdkVersion: "6.0.300", identifier: existingSdkFeatureBand + newSdkFeatureBand, installedFeatureBand: existingSdkFeatureBand);
 
             updateCommand.UpdateWorkloads();
 
@@ -361,6 +362,12 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
             packInstaller.InstalledManifests[0].manifestUpdate.ExistingVersion.Should().Be(manifestsToUpdate[0].manifestUpdate.ExistingVersion);
             packInstaller.InstalledManifests[0].manifestUpdate.ExistingFeatureBand.Should().Be(manifestsToUpdate[0].manifestUpdate.ExistingFeatureBand);
             packInstaller.InstalledManifests[0].offlineCache.Should().Be(null);
+
+            var defaultJsonPath = Path.Combine(dotnetPath, "dotnet", "metadata", "workloads", "6.0.300", "InstallState", "default.json");
+            File.Exists(defaultJsonPath).Should().BeTrue();
+            var json = JsonDocument.Parse(new FileStream(defaultJsonPath, FileMode.Open, FileAccess.Read), new JsonDocumentOptions() { AllowTrailingCommas = true, CommentHandling = JsonCommentHandling.Skip });
+            json.RootElement.Should().NotBeNull();
+            json.RootElement.GetProperty("manifests").GetProperty("mock-manifest").GetString().Should().Be("2.0.0/" + newSdkFeatureBand);
         }
 
         [Fact]     
