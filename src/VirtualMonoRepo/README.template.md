@@ -64,7 +64,8 @@ Please, make the changes in the respective development repositories (e.g., [dotn
 
 ## Dev instructions
 
-Please note that **this repository is an experiment and a work-in-progress so it is possible that the build is broken**.
+Please note that **this repository is a work-in-progress** and there are some usability issues connected to this.
+These can be nuisances such as some checked-in files getting modified by the build itself and similar.
 For the latest information about Source-Build support, please watch for announcements posted on our [GitHub Discussions page](https://github.com/dotnet/source-build/discussions).
 
 ### Prerequisites
