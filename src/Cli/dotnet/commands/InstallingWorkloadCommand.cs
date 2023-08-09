@@ -108,10 +108,12 @@ namespace Microsoft.DotNet.Workloads.Workload
         private IEnumerable<string> ToJsonEnumerable(Dictionary<string, string> dict)
         {
             yield return "{";
+            yield return "\"manifests\": {";
             foreach (KeyValuePair<string, string> line in dict)
             {
                 yield return $"\"{line.Key}\": \"{line.Value}\",";
             }
+            yield return "}";
             yield return "}";
             yield break;
         }
