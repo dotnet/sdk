@@ -31,7 +31,12 @@ namespace EndToEnd.Tests
 
                     string manifestFile = manifestDir.GetFile("WorkloadManifest.json").FullName;
 
-                    File.Exists(manifestFile).Should().BeTrue();
+                    var baselineFile = manifestDir.GetFile("Baseline.WorkloadSet.json").FullName;
+                    if (!(new FileInfo(baselineFile).Exists))
+                    {
+                        new FileInfo(manifestFile).Exists.Should().BeTrue();
+                    }
+
                     using var fileStream = new FileStream(manifestFile, FileMode.Open, FileAccess.Read);
                     Action readManifest = () => WorkloadManifestReader.ReadWorkloadManifest(manifestId, fileStream, manifestFile);
                     readManifest.ShouldNotThrow("manifestId:" + manifestId + " manifestFile:" + manifestFile + "is invalid");
