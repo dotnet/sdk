@@ -35,11 +35,10 @@ namespace EndToEnd.Tests
                     if (!(new FileInfo(baselineFile).Exists))
                     {
                         new FileInfo(manifestFile).Exists.Should().BeTrue();
+                        using var fileStream = new FileStream(manifestFile, FileMode.Open, FileAccess.Read);
+                        Action readManifest = () => WorkloadManifestReader.ReadWorkloadManifest(manifestId, fileStream, manifestFile);
+                        readManifest.ShouldNotThrow("manifestId:" + manifestId + " manifestFile:" + manifestFile + "is invalid");
                     }
-
-                    using var fileStream = new FileStream(manifestFile, FileMode.Open, FileAccess.Read);
-                    Action readManifest = () => WorkloadManifestReader.ReadWorkloadManifest(manifestId, fileStream, manifestFile);
-                    readManifest.ShouldNotThrow("manifestId:" + manifestId + " manifestFile:" + manifestFile + "is invalid");
                 }
             }
             
