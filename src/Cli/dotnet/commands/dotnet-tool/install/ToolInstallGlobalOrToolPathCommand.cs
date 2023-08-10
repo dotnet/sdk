@@ -15,6 +15,7 @@ using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.ShellShim;
 using Microsoft.DotNet.ToolPackage;
 using Microsoft.DotNet.Tools.Tool.Common;
+using Microsoft.DotNet.Tools.Tool.Uninstall;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Common;
 using NuGet.Frameworks;
@@ -23,7 +24,8 @@ using NuGet.Versioning;
 namespace Microsoft.DotNet.Tools.Tool.Install
 {
     internal delegate IShellShimRepository CreateShellShimRepository(string appHostSourceDirectory, DirectoryPath? nonGlobalLocation = null);
-    internal delegate (IToolPackageStore, IToolPackageStoreQuery, IToolPackageInstaller) CreateToolPackageStoresAndInstaller(
+    
+    internal delegate (IToolPackageStore, IToolPackageStoreQuery, IToolPackageDownloader) CreateToolPackageStoresAndDownloader(
         DirectoryPath? nonGlobalLocation = null,
         IEnumerable<string> forwardRestoreArguments = null);
 
@@ -33,7 +35,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
         private readonly IReporter _reporter;
         private readonly IReporter _errorReporter;
         private CreateShellShimRepository _createShellShimRepository;
-        private CreateToolPackageStoresAndInstaller _createToolPackageStoresAndInstaller;
+        private CreateToolPackageStoresAndDownloader _createToolPackageStoresAndDownloader;
         private readonly ShellShimTemplateFinder _shellShimTemplateFinder;
 
         private readonly PackageId _packageId;
@@ -49,7 +51,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
 
         public ToolInstallGlobalOrToolPathCommand(
             ParseResult parseResult,
-            CreateToolPackageStoresAndInstaller createToolPackageStoreAndInstaller = null,
+            CreateToolPackageStoresAndDownloader createToolPackageStoreAndDownloader = null,
             CreateShellShimRepository createShellShimRepository = null,
             IEnvironmentPathInstruction environmentPathInstruction = null,
             IReporter reporter = null,
@@ -66,7 +68,8 @@ namespace Microsoft.DotNet.Tools.Tool.Install
             _toolPath = parseResult.GetValue(ToolAppliedOption.ToolPathOption);
             _architectureOption = parseResult.GetValue(ToolInstallCommandParser.ArchitectureOption);
 
-            _createToolPackageStoresAndInstaller = createToolPackageStoreAndInstaller ?? ToolPackageFactory.CreateToolPackageStoresAndInstaller;
+            _createToolPackageStoresAndDownloader = createToolPackageStoreAndDownloader ?? ToolPackageFactory.CreateToolPackageStoresAndDownloader;
+
             _forwardRestoreArguments = parseResult.OptionValuesToBeForwarded(ToolInstallCommandParser.GetCommand());
 
             _environmentPathInstruction = environmentPathInstruction
@@ -105,8 +108,8 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                 toolPath = new DirectoryPath(_toolPath);
             }
 
-            (IToolPackageStore toolPackageStore, IToolPackageStoreQuery toolPackageStoreQuery, IToolPackageInstaller toolPackageInstaller) =
-                _createToolPackageStoresAndInstaller(toolPath, _forwardRestoreArguments);
+            (IToolPackageStore toolPackageStore, IToolPackageStoreQuery toolPackageStoreQuery, IToolPackageDownloader toolPackageDownloader) =
+               _createToolPackageStoresAndDownloader(toolPath, _forwardRestoreArguments);
 
             // Prevent installation if any version of the package is installed
             if (toolPackageStoreQuery.EnumeratePackageVersions(_packageId).FirstOrDefault() != null)
@@ -128,7 +131,6 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                     TransactionScopeOption.Required,
                     TimeSpan.Zero))
                 {
-                    var toolPackageDownloader = new ToolPackageDownloader(toolPackageStore);
                     package = toolPackageDownloader.InstallPackageAsync(
                     new PackageLocation(nugetConfig: configFile, additionalFeeds: _source),
                         packageId: _packageId,
@@ -155,7 +157,6 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                     string appHostSourceDirectory = _shellShimTemplateFinder.ResolveAppHostSourceDirectoryAsync(_architectureOption, framework, RuntimeInformation.ProcessArchitecture).Result;
                     IShellShimRepository shellShimRepository = _createShellShimRepository(appHostSourceDirectory, toolPath);
 
-                    // actual executable that runs
                     foreach (var command in package.Commands)
                     {
                         shellShimRepository.CreateShim(command.Executable, command.Name, package.PackagedShims);

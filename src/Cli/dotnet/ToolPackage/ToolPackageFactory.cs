@@ -59,6 +59,22 @@ namespace Microsoft.DotNet.ToolPackage
             return (toolPackageStore, toolPackageStore, toolPackageInstaller, toolPackageUninstaller);
         }
 
+        public static (IToolPackageStore,
+            IToolPackageStoreQuery,
+            IToolPackageDownloader,
+            IToolPackageUninstaller)
+            CreateToolPackageStoresAndDownloaderAndUninstaller(
+                DirectoryPath? nonGlobalLocation = null, IEnumerable<string> additionalRestoreArguments = null)
+        {
+            ToolPackageStoreAndQuery toolPackageStore = CreateConcreteToolPackageStore(nonGlobalLocation);
+            var toolPackageDownloader = new ToolPackageDownloader(toolPackageStore);
+            var toolPackageUninstaller = new ToolPackageUninstaller(
+                toolPackageStore);
+
+            return (toolPackageStore, toolPackageStore, toolPackageDownloader, toolPackageUninstaller);
+        }
+
+
         public static IToolPackageStoreQuery CreateToolPackageStoreQuery(
             DirectoryPath? nonGlobalLocation = null)
         {
