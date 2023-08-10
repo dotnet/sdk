@@ -159,6 +159,8 @@
   </PropertyGroup>
 
   <PropertyGroup>
+    <!-- Use current machine distro RID if set. Otherwise, fall back to RuntimeInformation.RuntimeIdentifier -->
+    <TargetRid Condition="'$(TargetRid)' == ''">$(__DistroRid)</TargetRid>
     <TargetRid Condition="'$(TargetRid)' == ''">$([System.Runtime.InteropServices.RuntimeInformation]::RuntimeIdentifier)</TargetRid>
 
     <TargetOS Condition="'$(TargetOS)' == '' AND $([MSBuild]::IsOSPlatform('WINDOWS'))">Windows_NT</TargetOS>
