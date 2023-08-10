@@ -79,13 +79,13 @@ while read -r line; do
     if [[ $line == *"Private.SourceBuilt.Artifacts"* ]]; then
         if [ "$downloadArtifacts" == "true" ]; then
             echo "  Downloading source-built artifacts from $line..."
-            (cd $SCRIPT_ROOT/packages/archive/ && curl --retry 5 -O $line)
+            (cd $SCRIPT_ROOT/packages/archive/ && curl --fail --retry 5 -O $line)
         fi
     fi
     if [[ $line == *"Private.SourceBuilt.Prebuilts"* ]]; then
         if [ "$downloadPrebuilts" == "true" ]; then
             echo "  Downloading source-built prebuilts from $line..."
-            (cd $SCRIPT_ROOT/packages/archive/ && curl --retry 5 -O $line)
+            (cd $SCRIPT_ROOT/packages/archive/ && curl --fail --retry 5 -O $line)
         fi
     fi
 done < $SCRIPT_ROOT/packages/archive/archiveArtifacts.txt
