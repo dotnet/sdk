@@ -19,6 +19,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
         public string TargetFrameworkToInstall { get; private set; }
 
         private readonly IToolPackageStore _toolPackageStore;
+        private readonly IToolPackageDownloader _toolPackageDownloader;
         private readonly PackageId _packageId;
         private readonly string _packageVersion;
         private readonly string _configFilePath;
@@ -27,7 +28,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
 
         public ToolInstallLocalInstaller(
             ParseResult parseResult,
-            IToolPackageInstaller toolPackageInstaller = null)
+            IToolPackageDownloader toolPackageDownloader = null)
         {
             _parseResult = parseResult;
             _packageId = new PackageId(parseResult.GetValue(ToolInstallCommandParser.PackageIdArgument));
@@ -36,13 +37,13 @@ namespace Microsoft.DotNet.Tools.Tool.Install
             _sources = parseResult.GetValue(ToolInstallCommandParser.AddSourceOption);
             _verbosity = Enum.GetName(parseResult.GetValue(ToolInstallCommandParser.VerbosityOption));
 
-            
             (IToolPackageStore store,
                 IToolPackageStoreQuery,
-                IToolPackageInstaller installer) toolPackageStoresAndInstaller
-                    = ToolPackageFactory.CreateToolPackageStoresAndInstaller(
+                IToolPackageDownloader installer) toolPackageStoresAndDownloader
+                    = ToolPackageFactory.CreateToolPackageStoresAndDownloader(
                         additionalRestoreArguments: parseResult.OptionValuesToBeForwarded(ToolInstallCommandParser.GetCommand()));
-            _toolPackageStore = toolPackageStoresAndInstaller.store;
+            _toolPackageStore = toolPackageStoresAndDownloader.store;
+            _toolPackageDownloader = toolPackageDownloader?? toolPackageStoresAndDownloader.installer;
             
             
             TargetFrameworkToInstall = BundledTargetFramework.GetTargetFrameworkMoniker();
@@ -68,8 +69,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
 
             try
             {
-                var toolPackageDownloader = new ToolPackageDownloader(_toolPackageStore);
-                IToolPackage toolDownloadedPackage = toolPackageDownloader.InstallPackageAsync(
+                IToolPackage toolDownloadedPackage = _toolPackageDownloader.InstallPackageAsync(
                         new PackageLocation(
                             nugetConfig: configFile,
                             additionalFeeds: _sources,

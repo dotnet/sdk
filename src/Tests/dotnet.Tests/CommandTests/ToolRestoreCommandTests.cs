@@ -7,6 +7,7 @@ using System.CommandLine;
 using System.CommandLine.Parsing;
 using System.IO;
 using FluentAssertions;
+using System.Runtime.CompilerServices;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.ToolManifest;
@@ -28,7 +29,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
     {
         private readonly IFileSystem _fileSystem;
         private readonly IToolPackageStore _toolPackageStore;
-        private readonly ToolPackageInstallerMock _toolPackageInstallerMock;
+        private readonly ToolPackageDownloaderMock _toolPackageDownloaderMock;
         private readonly ParseResult _parseResult;
         private readonly BufferedReporter _reporter;
         private readonly string _temporaryDirectory;
@@ -64,41 +65,40 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             ToolPackageStoreMock toolPackageStoreMock =
                 new ToolPackageStoreMock(new DirectoryPath(_pathToPlacePackages), _fileSystem);
             _toolPackageStore = toolPackageStoreMock;
-            _toolPackageInstallerMock = new ToolPackageInstallerMock(
-                _fileSystem,
+
+            _toolPackageDownloaderMock = new ToolPackageDownloaderMock(
                 _toolPackageStore,
-                new ProjectRestorerMock(
-                    _fileSystem,
-                    _reporter,
-                    new List<MockFeed>
+                _fileSystem,    
+                _reporter,
+                new List<MockFeed>
+                {
+                    new MockFeed
                     {
-                        new MockFeed
+                        Type = MockFeedType.ImplicitAdditionalFeed,
+                        Packages = new List<MockFeedPackage>
                         {
-                            Type = MockFeedType.ImplicitAdditionalFeed,
-                            Packages = new List<MockFeedPackage>
+                            new MockFeedPackage
                             {
-                                new MockFeedPackage
-                                {
-                                    PackageId = _packageIdA.ToString(),
-                                    Version = _packageVersionA.ToNormalizedString(),
-                                    ToolCommandName = _toolCommandNameA.ToString()
-                                },
-                                new MockFeedPackage
-                                {
-                                    PackageId = _packageIdB.ToString(),
-                                    Version = _packageVersionB.ToNormalizedString(),
-                                    ToolCommandName = _toolCommandNameB.ToString()
-                                },
-                                new MockFeedPackage
-                                {
-                                    PackageId = _packageIdWithCommandNameCollisionWithA.ToString(),
-                                    Version = _packageVersionWithCommandNameCollisionWithA.ToNormalizedString(),
-                                    ToolCommandName = "A"
-                                }
+                                PackageId = _packageIdA.ToString(),
+                                Version = _packageVersionA.ToNormalizedString(),
+                                ToolCommandName = _toolCommandNameA.ToString()
+                            },
+                            new MockFeedPackage
+                            {
+                                PackageId = _packageIdB.ToString(),
+                                Version = _packageVersionB.ToNormalizedString(),
+                                ToolCommandName = _toolCommandNameB.ToString()
+                            },
+                            new MockFeedPackage
+                            {
+                                PackageId = _packageIdWithCommandNameCollisionWithA.ToString(),
+                                Version = _packageVersionWithCommandNameCollisionWithA.ToNormalizedString(),
+                                ToolCommandName = "A"
                             }
                         }
-                    }),
-                installCallback: () => _installCalledCount++);
+                    }
+                },
+                downloadCallback: () => _installCalledCount++);
 
             _parseResult = Parser.Instance.Parse("dotnet tool restore");
 
@@ -124,7 +124,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 });
 
             ToolRestoreCommand toolRestoreCommand = new ToolRestoreCommand(_parseResult,
-                _toolPackageInstallerMock,
+                _toolPackageDownloaderMock,
                 manifestFinder,
                 _localToolsResolverCache,
                 _fileSystem,
@@ -161,7 +161,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 });
 
             ToolRestoreCommand toolRestoreCommand = new ToolRestoreCommand(_parseResult,
-                _toolPackageInstallerMock,
+                _toolPackageDownloaderMock,
                 manifestFinder,
                 _localToolsResolverCache,
                 _fileSystem,
@@ -196,7 +196,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 });
 
             ToolRestoreCommand toolRestoreCommand = new ToolRestoreCommand(_parseResult,
-                _toolPackageInstallerMock,
+                _toolPackageDownloaderMock,
                 manifestFinder,
                 _localToolsResolverCache,
                 _fileSystem,
@@ -251,7 +251,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 });
 
             ToolRestoreCommand toolRestoreCommand = new ToolRestoreCommand(_parseResult,
-                _toolPackageInstallerMock,
+                _toolPackageDownloaderMock,
                 manifestFinder,
                 _localToolsResolverCache,
                 _fileSystem,
@@ -291,7 +291,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 });
 
             ToolRestoreCommand toolRestoreCommand = new ToolRestoreCommand(_parseResult,
-                _toolPackageInstallerMock,
+                _toolPackageDownloaderMock,
                 manifestFinder,
                 _localToolsResolverCache,
                 _fileSystem,
@@ -313,7 +313,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 new ToolManifestFinder(new DirectoryPath(Path.GetTempPath()), _fileSystem, new FakeDangerousFileDetector());
 
             ToolRestoreCommand toolRestoreCommand = new ToolRestoreCommand(_parseResult,
-                _toolPackageInstallerMock,
+                _toolPackageDownloaderMock,
                 realManifestFinderImplementationWithMockFinderSystem,
                 _localToolsResolverCache,
                 _fileSystem,
@@ -339,7 +339,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 });
 
             ToolRestoreCommand toolRestoreCommand = new ToolRestoreCommand(_parseResult,
-                _toolPackageInstallerMock,
+                _toolPackageDownloaderMock,
                 manifestFinder,
                 _localToolsResolverCache,
                 _fileSystem,
@@ -366,7 +366,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 });
 
             ToolRestoreCommand toolRestoreCommand = new ToolRestoreCommand(_parseResult,
-                _toolPackageInstallerMock,
+                _toolPackageDownloaderMock,
                 manifestFinder,
                 _localToolsResolverCache,
                 _fileSystem,
@@ -389,7 +389,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 new CannotFindManifestFinder();
 
             ToolRestoreCommand toolRestoreCommand = new ToolRestoreCommand(_parseResult,
-                _toolPackageInstallerMock,
+                _toolPackageDownloaderMock,
                 manifestFinder,
                 _localToolsResolverCache,
                 _fileSystem,
@@ -446,3 +446,4 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         }
     }
 }
+
