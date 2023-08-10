@@ -8,15 +8,12 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text.Json;
-using Microsoft.Build.Evaluation;
 using Microsoft.DotNet.Cli;
-using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.ToolPackage;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Client;
-using NuGet.Common;
 using NuGet.ContentModel;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
@@ -180,7 +177,22 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
 
 
                     // CreateAssetFiles(packageId, version, _toolDownloadDir, assetFileDirectory);
-
+                    if (!isGlobalTool)
+                    {
+                        packageDirectory = new DirectoryPath(NuGetGlobalPackagesFolder.GetLocation()).WithSubDirectories(packageId.ToString());
+                        _fileSystem.Directory.CreateDirectory(packageDirectory.Value);
+                        var executable = packageDirectory.WithFile("exe");
+                        _fileSystem.File.CreateEmptyFile(executable.Value); 
+                        return new TestToolPackage
+                        {
+                            Id = packageId,
+                            Version = NuGetVersion.Parse(feedPackage.Version),
+                            Commands = new List<RestoredCommand> {
+                            new RestoredCommand(new ToolCommandName(feedPackage.ToolCommandName), "runner", executable) },
+                            Warnings = Array.Empty<string>(),
+                            PackagedShims = Array.Empty<FilePath>()
+                        };
+                    }
                     if (isGlobalTool)
                     {
                         _toolReturnPackageDirectory = _toolPackageStore.GetPackageDirectory(packageId, version);
@@ -227,7 +239,7 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
                 });
         }
 
-        private static void AddToolsAssets(
+        /*private static void AddToolsAssets(
             ManagedCodeConventions managedCodeConventions,
             LockFileTargetLibrary lockFileLib,
             ContentItemCollection contentItems,
@@ -341,7 +353,7 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
             lockFileTarget.Libraries.Add(lockFileLib);
             lockFile.Targets.Add(lockFileTarget);
             new LockFileFormat().Write(Path.Combine(assetFileDirectory.Value, "project.assets.json"), lockFile);
-        }
+        }*/
 
         public MockFeedPackage GetPackage(
             string packageId,
@@ -423,6 +435,22 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
         {
             return f.Type == MockFeedType.ImplicitAdditionalFeed
                    || (f.Type == MockFeedType.ExplicitNugetConfig && f.Uri == nugetConfig.Value);
+        }
+
+        private class TestToolPackage : IToolPackage
+        {
+            public PackageId Id { get; set; }
+
+            public NuGetVersion Version { get; set; }
+            public DirectoryPath PackageDirectory { get; set; }
+
+            public IReadOnlyList<RestoredCommand> Commands { get; set; }
+
+            public IEnumerable<string> Warnings { get; set; }
+
+            public IReadOnlyList<FilePath> PackagedShims { get; set; }
+
+            public IEnumerable<NuGetFramework> Frameworks => throw new NotImplementedException();
         }
     }
 }
