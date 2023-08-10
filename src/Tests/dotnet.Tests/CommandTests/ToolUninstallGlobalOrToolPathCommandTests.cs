@@ -102,7 +102,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _fileSystem.Directory.Exists(packageDirectory.Value).Should().BeFalse();
             _fileSystem.File.Exists(shimPath).Should().BeFalse();
         }
-        
+
         [Fact]
         public void GivenAPackageWhenCallFromUninstallRedirectCommandItUninstalls()
         {
@@ -130,7 +130,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             _reporter.Lines.Clear();
 
-            
+
             ParseResult result = Parser.Instance.Parse("dotnet tool uninstall " + $"-g {PackageId}");
 
             (IToolPackageStore, IToolPackageStoreQuery, IToolPackageUninstaller) CreateToolPackageStoreAndUninstaller(
@@ -152,14 +152,14 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                     fileSystem: _fileSystem,
                     appHostShellShimMaker: new AppHostShellShimMakerMock(_fileSystem)),
                 _reporter);
-            
-            var uninstallCommand 
+
+            var uninstallCommand
                 = new ToolUninstallCommand(
-                    result, 
-                    toolUninstallGlobalOrToolPathCommand: toolUninstallGlobalOrToolPathCommand) ;
+                    result,
+                    toolUninstallGlobalOrToolPathCommand: toolUninstallGlobalOrToolPathCommand);
 
             uninstallCommand.Execute().Should().Be(0);
-            
+
             _reporter
                 .Lines
                 .Single()
@@ -237,16 +237,16 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             ParseResult result = Parser.Instance.Parse("dotnet tool install " + options);
 
             var store = new ToolPackageStoreMock(new DirectoryPath(_toolsDirectory), _fileSystem);
-            var packageInstallerMock = new ToolPackageInstallerMock(
-                _fileSystem,
-                store,
-                new ProjectRestorerMock(
-                    _fileSystem,
-                    _reporter));
+
+            var packageDownloaderMock = new ToolPackageDownloaderMock(
+                    store: store,
+                    fileSystem: _fileSystem,
+                    _reporter
+                    );
 
             return new ToolInstallGlobalOrToolPathCommand(
                 result,
-                (location, forwardArguments) => (store, store, packageInstallerMock),
+                (location, forwardArguments) => (store, store, packageDownloaderMock),
                 (_, _) => new ShellShimRepository(
                     new DirectoryPath(_shimsDirectory),
                     string.Empty,
@@ -282,3 +282,4 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         }
     }
 }
+
