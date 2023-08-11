@@ -13,15 +13,7 @@ using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.ToolPackage;
 using Microsoft.Extensions.EnvironmentAbstractions;
-using NuGet.Client;
-using NuGet.ContentModel;
 using NuGet.Frameworks;
-using NuGet.LibraryModel;
-using NuGet.Packaging;
-using NuGet.Packaging.Core;
-using NuGet.ProjectModel;
-using NuGet.Repositories;
-using NuGet.RuntimeModel;
 using NuGet.Versioning;
 using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Install.LocalizableStrings;
 

@@ -44,7 +44,7 @@ namespace Microsoft.DotNet.Cli.Install.Tests
             result
                 .StdOut
                 .Should()
-                .ContainVisuallySameFragmentIfNotLocalized("Restoring");
+                .BeEmpty();
         }
     }
 }

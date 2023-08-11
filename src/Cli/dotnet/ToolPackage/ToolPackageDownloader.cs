@@ -65,9 +65,14 @@ namespace Microsoft.DotNet.Cli.ToolPackage
             return TransactionalAction.Run<IToolPackage>(
                 action: () =>
                 {
+                    ILogger nugetLogger = new NullLogger();
+                    if( verbosity != null && (verbosity == "d" || verbosity == "detailed" || verbosity == "diag" || verbosity == "diagnostic"))
+                    {
+                        nugetLogger = new NuGetConsoleLogger();
+                    }
                     _toolDownloadDir = isGlobalTool ? _globalToolStageDir : _localToolDownloadDir;
                     var assetFileDirectory = isGlobalTool ? _globalToolStageDir : _localToolAssetDir;
-                    _nugetPackageDownloader = new NuGetPackageDownloader.NuGetPackageDownloader(_toolDownloadDir);
+                    _nugetPackageDownloader = new NuGetPackageDownloader.NuGetPackageDownloader(_toolDownloadDir, verboseLogger: nugetLogger);
                     rollbackDirectory = _toolDownloadDir.Value;
 
                     NuGetVersion version = DownloadAndExtractPackage(packageLocation, packageId, _nugetPackageDownloader, _toolDownloadDir.Value).GetAwaiter().GetResult();
