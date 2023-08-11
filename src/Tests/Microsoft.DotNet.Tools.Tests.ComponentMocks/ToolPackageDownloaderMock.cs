@@ -24,8 +24,6 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
         private readonly IToolPackageStore _toolPackageStore;
 
         protected DirectoryPath _toolDownloadDir;
-        protected DirectoryPath _toolReturnPackageDirectory;
-        protected DirectoryPath _toolReturnJsonParentDirectory;
 
         protected readonly DirectoryPath _globalToolStageDir;
         protected readonly DirectoryPath _localToolDownloadDir;
@@ -95,8 +93,6 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
             }
         }
 
-        
-
         public IToolPackage InstallPackageAsync(PackageLocation packageLocation, PackageId packageId,
             VersionRange versionRange = null,
             string targetFramework = null,
@@ -115,10 +111,7 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
                     _toolDownloadDir = isGlobalTool ? _globalToolStageDir : _localToolDownloadDir;
                     var assetFileDirectory = isGlobalTool ? _globalToolStageDir : _localToolAssetDir;
                     rollbackDirectory = _toolDownloadDir.Value;
-                    // _nugetPackageDownloader = new NuGetPackageDownloader.NuGetPackageDownloader(_toolDownloadDir);
-
-                    // NuGetVersion version = DownloadAndExtractPackage(packageLocation, packageId, _nugetPackageDownloader, _toolDownloadDir.Value).GetAwaiter().GetResult();
-
+                    
                     if (string.IsNullOrEmpty(packageId.ToString()))
                     {
                         throw new ToolPackageException(LocalizableStrings.ToolInstallationRestoreFailed);
@@ -166,15 +159,13 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
                                 version.ToNormalizedString()));
                     }
 
-
-
-                    // CreateAssetFiles(packageId, version, _toolDownloadDir, assetFileDirectory);
                     if (!isGlobalTool)
                     {
                         packageDirectory = new DirectoryPath(NuGetGlobalPackagesFolder.GetLocation()).WithSubDirectories(packageId.ToString());
                         _fileSystem.Directory.CreateDirectory(packageDirectory.Value);
                         var executable = packageDirectory.WithFile("exe");
                         _fileSystem.File.CreateEmptyFile(executable.Value); 
+
                         return new TestToolPackage
                         {
                             Id = packageId,
@@ -185,36 +176,28 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
                             PackagedShims = Array.Empty<FilePath>()
                         };
                     }
-                    if (isGlobalTool)
+                    else 
                     {
-                        _toolReturnPackageDirectory = _toolPackageStore.GetPackageDirectory(packageId, version);
-                        _toolReturnJsonParentDirectory = _toolPackageStore.GetPackageDirectory(packageId, version);
                         var packageRootDirectory = _toolPackageStore.GetRootPackageDirectory(packageId);
-                        // Directory.CreateDirectory(packageRootDirectory.Value);
-                        // FileAccessRetrier.RetryOnMoveAccessFailure(() => Directory.Move(_globalToolStageDir.Value, _toolReturnPackageDirectory.Value));
+                       
                         _fileSystem.Directory.CreateDirectory(packageRootDirectory.Value);
                         _fileSystem.Directory.Move(_toolDownloadDir.Value, packageDirectory.Value);
                         rollbackDirectory = packageDirectory.Value;
-                    }
-                    else
-                    {
-                        _toolReturnPackageDirectory = _toolDownloadDir;
-                        _toolReturnJsonParentDirectory = _localToolAssetDir;
-                    }
 
-                    IEnumerable<string> warnings = null;
-                    _warningsMap.TryGetValue(packageId, out warnings);
+                        IEnumerable<string> warnings = null;
+                        _warningsMap.TryGetValue(packageId, out warnings);
 
-                    IReadOnlyList<FilePath> packedShims = null;
-                    _packagedShimsMap.TryGetValue(packageId, out packedShims);
+                        IReadOnlyList<FilePath> packedShims = null;
+                        _packagedShimsMap.TryGetValue(packageId, out packedShims);
 
-                    IEnumerable<NuGetFramework> frameworks = null;
-                    _frameworksMap.TryGetValue(packageId, out frameworks);
+                        IEnumerable<NuGetFramework> frameworks = null;
+                        _frameworksMap.TryGetValue(packageId, out frameworks);
 
-                    return new ToolPackageMock(_fileSystem, id: packageId,
-                                    version: version,
-                                    packageDirectory: packageDirectory,
-                                    warnings: warnings, packagedShims: packedShims, frameworks: frameworks);
+                        return new ToolPackageMock(_fileSystem, id: packageId,
+                                        version: version,
+                                        packageDirectory: packageDirectory,
+                                        warnings: warnings, packagedShims: packedShims, frameworks: frameworks);
+                    }                   
                 },
                 rollback: () =>
                 {
@@ -230,122 +213,6 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
                     
                 });
         }
-
-        /*private static void AddToolsAssets(
-            ManagedCodeConventions managedCodeConventions,
-            LockFileTargetLibrary lockFileLib,
-            ContentItemCollection contentItems,
-            IReadOnlyList<SelectionCriteria> orderedCriteria)
-        {
-            var toolsGroup = GetLockFileItems(
-                orderedCriteria,
-                contentItems,
-                managedCodeConventions.Patterns.ToolsAssemblies);
-
-            lockFileLib.ToolsAssemblies.AddRange(toolsGroup);
-        }
-
-        private static IEnumerable<LockFileItem> GetLockFileItems(
-            IReadOnlyList<SelectionCriteria> criteria,
-            ContentItemCollection items,
-            params PatternSet[] patterns)
-        {
-            return GetLockFileItems(criteria, items, additionalAction: null, patterns);
-        }
-
-        private static IEnumerable<LockFileItem> GetLockFileItems(
-               IReadOnlyList<SelectionCriteria> criteria,
-               ContentItemCollection items,
-               Action<LockFileItem> additionalAction,
-               params PatternSet[] patterns)
-        {
-            // Loop through each criteria taking the first one that matches one or more items.
-            foreach (var managedCriteria in criteria)
-            {
-                var group = items.FindBestItemGroup(
-                    managedCriteria,
-                    patterns);
-
-                if (group != null)
-                {
-                    foreach (var item in group.Items)
-                    {
-                        var newItem = new LockFileItem(item.Path);
-                        object locale;
-                        if (item.Properties.TryGetValue("locale", out locale))
-                        {
-                            newItem.Properties["locale"] = (string)locale;
-                        }
-                        object related;
-                        if (item.Properties.TryGetValue("related", out related))
-                        {
-                            newItem.Properties["related"] = (string)related;
-                        }
-                        additionalAction?.Invoke(newItem);
-                        yield return newItem;
-                    }
-                    // Take only the first group that has items
-                    break;
-                }
-            }
-
-            yield break;
-        }
-
-        private static void CreateAssetFiles(
-            PackageId packageId,
-            NuGetVersion version,
-            DirectoryPath nugetLocalRepository,
-            DirectoryPath assetFileDirectory)
-        {
-            // To get runtimeGraph:
-            var runtimeJsonPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "runtimeIdentifierGraph.json");
-            var runtimeGraph = JsonRuntimeFormat.ReadRuntimeGraph(runtimeJsonPath);
-
-            // Create ManagedCodeConventions:
-            var conventions = new ManagedCodeConventions(runtimeGraph);
-
-            //  Create LockFileTargetLibrary
-            var lockFileLib = new LockFileTargetLibrary()
-            {
-                Name = packageId.ToString(),
-                Version = version,
-                Type = LibraryType.Package,
-                PackageType = new List<PackageType>() { PackageType.DotnetTool }
-            };
-
-            //  Create NuGetv3LocalRepository
-            NuGetv3LocalRepository localRepository = new(nugetLocalRepository.Value);
-            var package = localRepository.FindPackage(packageId.ToString(), version);
-
-            var collection = new ContentItemCollection();
-            collection.Load(package.Files);
-
-            //  Create criteria
-            var managedCriteria = new List<SelectionCriteria>(1);
-            var currentTargetFramework = NuGetFramework.Parse("net8.0");
-
-            var standardCriteria = conventions.Criteria.ForFrameworkAndRuntime(
-                currentTargetFramework,
-                RuntimeInformation.RuntimeIdentifier);
-            managedCriteria.Add(standardCriteria);
-
-            //  Create asset file
-            if (lockFileLib.PackageType.Contains(PackageType.DotnetTool))
-            {
-                AddToolsAssets(conventions, lockFileLib, collection, managedCriteria);
-            }
-
-            var lockFile = new LockFile();
-            var lockFileTarget = new LockFileTarget()
-            {
-                TargetFramework = currentTargetFramework,
-                RuntimeIdentifier = RuntimeInformation.RuntimeIdentifier
-            };
-            lockFileTarget.Libraries.Add(lockFileLib);
-            lockFile.Targets.Add(lockFileTarget);
-            new LockFileFormat().Write(Path.Combine(assetFileDirectory.Value, "project.assets.json"), lockFile);
-        }*/
 
         public MockFeedPackage GetPackage(
             string packageId,
