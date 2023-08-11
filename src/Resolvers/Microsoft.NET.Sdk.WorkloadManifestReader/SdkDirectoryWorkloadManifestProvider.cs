@@ -336,7 +336,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
         /// <summary>
         /// Returns installed workload sets that are available for this SDK (ie are in the same feature band)
         /// </summary>
-        private Dictionary<string, WorkloadSet> GetAvailableWorkloadSets()
+        public Dictionary<string, WorkloadSet> GetAvailableWorkloadSets()
         {
             Dictionary<string, WorkloadSet> availableWorkloadSets = new Dictionary<string, WorkloadSet>();
 
