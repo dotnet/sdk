@@ -306,7 +306,9 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             }
             else if (File.Exists(Path.Combine(manifestDirectory, "WorkloadManifest.json")))
             {
-                return (manifestId, manifestDirectory, null);
+                var manifestPath = Path.Combine(manifestVersionDirectories.First().directory, "WorkloadManifest.json");
+                var manifestContents = WorkloadManifestReader.ReadWorkloadManifest(manifestId, File.OpenRead(manifestPath), manifestPath);
+                return (manifestId, manifestDirectory, new ReleaseVersion(manifestContents.Version));
             }
             return (null, null, null);
         }
