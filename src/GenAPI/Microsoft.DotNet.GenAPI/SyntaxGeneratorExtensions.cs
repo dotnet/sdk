@@ -1,14 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Editing;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System.Collections.Generic;
 using Microsoft.DotNet.ApiSymbolExtensions.Filtering;
+using System.Transactions;
 
 namespace Microsoft.DotNet.GenAPI
 {
@@ -30,6 +28,14 @@ namespace Microsoft.DotNet.GenAPI
                     case TypeKind.Struct:
                     case TypeKind.Interface:
                         TypeDeclarationSyntax typeDeclaration = (TypeDeclarationSyntax)syntaxGenerator.Declaration(symbol);
+                        if (type.IsRecord && type.TryGetRecordConstructor(out IMethodSymbol? recordConstructor))
+                        {
+                            // if the type is a record and we can find it's parameters, use `record Name(parameters...)` syntax.
+                            typeDeclaration = typeDeclaration.WithParameterList(
+                                SyntaxFactory.ParameterList(
+                                    SyntaxFactory.SeparatedList<ParameterSyntax>(
+                                        recordConstructor.Parameters.Select(p => (ParameterSyntax)syntaxGenerator.ParameterDeclaration(p)))));
+                        }
                         return typeDeclaration
                             .WithBaseList(syntaxGenerator.GetBaseTypeList(type, symbolFilter))
                             .WithMembers(new SyntaxList<MemberDeclarationSyntax>());
@@ -92,6 +98,16 @@ namespace Microsoft.DotNet.GenAPI
                 }
             }
 
+            if (symbol is IPropertySymbol propertySymbol)
+            {
+                // Explicitly implemented indexers do not set IsIndexer
+                // https://github.com/dotnet/roslyn/issues/53911
+                if (!propertySymbol.IsIndexer && propertySymbol.ExplicitInterfaceImplementations.Any(i => i.IsIndexer))
+                {
+                    return syntaxGenerator.IndexerDeclaration(propertySymbol);
+                }
+            }
+
             try
             {
                 return syntaxGenerator.Declaration(symbol);
@@ -112,7 +128,16 @@ namespace Microsoft.DotNet.GenAPI
 
             if (type.TypeKind == TypeKind.Class && type.BaseType != null && symbolFilter.Include(type.BaseType))
             {
-                baseTypes.Add(SyntaxFactory.SimpleBaseType((TypeSyntax)syntaxGenerator.TypeExpression(type.BaseType)));
+                TypeSyntax baseTypeSyntax = (TypeSyntax)syntaxGenerator.TypeExpression(type.BaseType);
+
+                if (type.BaseType.IsRecord && type.BaseType.TryGetRecordConstructor(out IMethodSymbol? recordConstructor))
+                {
+                    baseTypes.Add(SyntaxFactory.PrimaryConstructorBaseType(baseTypeSyntax, recordConstructor.CreateDefaultArgumentList()));
+                }
+                else
+                {
+                    baseTypes.Add(SyntaxFactory.SimpleBaseType(baseTypeSyntax));
+                }
             }
 
             // includes only interfaces that were not filtered out by the given ISymbolFilter or none of TypeParameters were filtered out.

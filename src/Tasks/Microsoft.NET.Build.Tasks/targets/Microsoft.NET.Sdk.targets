@@ -48,6 +48,19 @@ Copyright (c) .NET Foundation. All rights reserved.
     <_GenerateSingleFileBundlePropertyInputsCache>$([MSBuild]::NormalizePath($(MSBuildProjectDirectory), $(_GenerateSingleFileBundlePropertyInputsCache)))</_GenerateSingleFileBundlePropertyInputsCache>
   </PropertyGroup>
 
+  <!-- For .NET 8 and higher, we will by default use a simplified "portable" RID graph -->
+  <PropertyGroup Condition="'$(UseRidGraph)' == ''">
+    <UseRidGraph Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '8.0'))">false</UseRidGraph>
+    <UseRidGraph Condition="'$(UseRidGraph)' == ''">true</UseRidGraph>
+  </PropertyGroup>
+  
+  <PropertyGroup Condition="'$(RuntimeIdentifierGraphPath)' == ''">
+    <RuntimeIdentifierGraphPath Condition="'$(UseRidGraph)' == 'true'">$(BundledRuntimeIdentifierGraphFile)</RuntimeIdentifierGraphPath>
+
+    <!-- The portable RID graph should be in the same directory as the full RID graph -->
+    <RuntimeIdentifierGraphPath Condition="'$(UseRidGraph)' != 'true'">$([System.IO.Path]::GetDirectoryName($(BundledRuntimeIdentifierGraphFile)))/PortableRuntimeIdentifierGraph.json</RuntimeIdentifierGraphPath>
+  </PropertyGroup>
+
   <ItemGroup>
     <GenerateRuntimeConfigurationFilesInputs Include="$(ProjectAssetsFile)" />
     <GenerateRuntimeConfigurationFilesInputs Include="$(ProjectAssetsCacheFile)" />
@@ -257,7 +270,8 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <!-- Set valid RID platforms for runtime assets if targeting .NET 8+ and using the RID graph is not enabled. -->
     <ItemGroup Condition="$([MSBuild]::VersionGreaterThanOrEquals($(_TargetFrameworkVersionWithoutV), '8.0'))
-        and @(RuntimeHostConfigurationOption->WithMetadataValue('Identity', 'System.Runtime.Loader.UseRidGraph')->WithMetadataValue('Value', 'true')->Count()) == 0">
+        and @(RuntimeHostConfigurationOption->WithMetadataValue('Identity', 'System.Runtime.Loader.UseRidGraph')->WithMetadataValue('Value', 'true')->Count()) == 0
+        and '@(_KnownRuntimeIdentifierPlatformsForTargetFramework)' != ''">
       <!-- Known RID platforms for all target frameworks comes from BundledVersions -->
       <_ValidRuntimeIdentifierPlatformsForAssets Include="@(_KnownRuntimeIdentiferPlatforms)" />
       <!-- Known RID platforms for current target framework comes from ProcessFrameworkReferences output -->
@@ -288,7 +302,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                       ResolvedRuntimeTargetsFiles="@(RuntimeTargetsCopyLocalItems)"
                       IsSelfContained="$(SelfContained)"
                       IncludeRuntimeFileVersions="$(IncludeFileVersionsInDependencyFile)"
-                      RuntimeGraphPath="$(BundledRuntimeIdentifierGraphFile)"
+                      RuntimeGraphPath="$(RuntimeIdentifierGraphPath)"
                       IncludeProjectsNotInAssetsFile="$(IncludeProjectsNotInAssetsFileInDepsFile)"
                       ValidRuntimeIdentifierPlatformsForAssets="@(_ValidRuntimeIdentifierPlatformsForAssets)"/>
     <ItemGroup>
@@ -626,6 +640,11 @@ Copyright (c) .NET Foundation. All rights reserved.
     <RuntimeHostConfigurationOption Include="System.Threading.ThreadPool.MaxThreads"
                                     Condition="'$(ThreadPoolMaxThreads)' != ''"
                                     Value="$(ThreadPoolMaxThreads)" />
+
+    <RuntimeHostConfigurationOption Include="System.Xml.XmlResolver.IsNetworkingEnabledByDefault"
+                                    Condition="'$(XmlResolverIsNetworkingEnabledByDefault)' != ''"
+                                    Value="$(XmlResolverIsNetworkingEnabledByDefault)"
+                                    Trim="true" />
   </ItemGroup>
 
   <!--

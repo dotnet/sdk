@@ -1,21 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.CommandLine;
-using System.CommandLine.Parsing;
-using System.IO;
-using System.Linq;
-using System.Xml.Linq;
-using FluentAssertions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.List.PackageReferences;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Microsoft.NET.TestFramework.ProjectConstruction;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.Cli.List.Package.Tests
 {
@@ -60,7 +47,7 @@ namespace Microsoft.DotNet.Cli.List.Package.Tests
             var projectDirectory = testAsset.Path;
 
             var packageName = "Newtonsoft.Json";
-            var packageVersion = "13.0.1";
+            var packageVersion = ToolsetInfo.GetNewtonsoftJsonPackageVersion();
             var cmd = new DotnetCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
                 .Execute("add", "package", packageName, "--version", packageVersion);

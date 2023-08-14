@@ -1,32 +1,14 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using FluentAssertions;
-using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.DependencyModel;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Microsoft.NET.TestFramework.ProjectConstruction;
 using Newtonsoft.Json.Linq;
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.ProjectModel;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Reflection.PortableExecutable;
-using System.Runtime.InteropServices;
-using System.Linq;
-using System.Text;
-using System.Xml.Linq;
-using Xunit;
-using Xunit.Abstractions;
 using Microsoft.NET.Build.Tasks;
 using NuGet.Versioning;
 using System.Runtime.CompilerServices;
-using System.Security.Cryptography;
-using Xunit.Sdk;
 
 namespace Microsoft.NET.Build.Tests
 {
@@ -952,24 +934,7 @@ class Program
             }
         }
 
-        [Theory]
-        // Non-portable RID should warn
-        [InlineData(ToolsetInfo.CurrentTargetFramework, new[] { "ubuntu.22.04-x64" }, true, true, null, true)]
-        [InlineData(ToolsetInfo.CurrentTargetFramework, new[] { "ubuntu.22.04-x64" }, true, false, null, true)]
-        [InlineData(ToolsetInfo.CurrentTargetFramework, new[] { "ubuntu.22.04-x64" }, false, true, null, true)]
-        // Non-portable and portable RIDs should warn
-        [InlineData(ToolsetInfo.CurrentTargetFramework, new[] { "ubuntu.22.04-x64", "win7-x86", "unix" }, true, true, null, true)]
-        // Portable RIDs only should not warn
-        [InlineData(ToolsetInfo.CurrentTargetFramework, new[] { "win-x86", "win", "linux", "linux-musl-x64", "osx", "osx-arm64", "unix", "browser", "browser-wasm", "ios-arm64" }, true, true, null, false)]
-        // No RID assets should not warn
-        [InlineData(ToolsetInfo.CurrentTargetFramework, new string[] { }, false, false, null, false)]
-        // Below .NET 8 should not warn
-        [InlineData("net7.0", new string[] { "ubuntu.22.04-x64", "win7-x86" }, true, true, null, false)]
-        // Explicitly set to use RID graph should not warn
-        [InlineData(ToolsetInfo.CurrentTargetFramework, new[] { "alpine-x64" }, true, true, true, false)]
-        // Explicitly set to not use RID graph should warn
-        [InlineData(ToolsetInfo.CurrentTargetFramework, new[] { "alpine-x64" }, true, true, false, true)]
-        public void It_warns_on_nonportable_rids(string targetFramework, string[] rids, bool addLibAssets, bool addNativeAssets, bool? useRidGraph, bool shouldWarn)
+        private TestProject CreateProjectWithRidAssets(string targetFramework, string[] rids, bool addLibAssets, bool addNativeAssets)
         {
             var packageProject = new TestProject()
             {
@@ -1002,6 +967,30 @@ class Program
                         });
                 }
             }
+
+            return packageProject;
+        }
+
+        [Theory]
+        // Non-portable RID should warn
+        [InlineData(ToolsetInfo.CurrentTargetFramework, new[] { "ubuntu.22.04-x64" }, true, true, null, true)]
+        [InlineData(ToolsetInfo.CurrentTargetFramework, new[] { "ubuntu.22.04-x64" }, true, false, null, true)]
+        [InlineData(ToolsetInfo.CurrentTargetFramework, new[] { "ubuntu.22.04-x64" }, false, true, null, true)]
+        // Non-portable and portable RIDs should warn
+        [InlineData(ToolsetInfo.CurrentTargetFramework, new[] { "ubuntu.22.04-x64", "win7-x86", "unix" }, true, true, null, true)]
+        // Portable RIDs only should not warn
+        [InlineData(ToolsetInfo.CurrentTargetFramework, new[] { "win-x86", "win", "linux", "linux-musl-x64", "osx", "osx-arm64", "unix", "browser", "browser-wasm", "ios-arm64" }, true, true, null, false)]
+        // No RID assets should not warn
+        [InlineData(ToolsetInfo.CurrentTargetFramework, new string[] { }, false, false, null, false)]
+        // Below .NET 8 should not warn
+        [InlineData("net7.0", new string[] { "ubuntu.22.04-x64", "win7-x86" }, true, true, null, false)]
+        // Explicitly set to use RID graph should not warn
+        [InlineData(ToolsetInfo.CurrentTargetFramework, new[] { "alpine-x64" }, true, true, true, false)]
+        // Explicitly set to not use RID graph should warn
+        [InlineData(ToolsetInfo.CurrentTargetFramework, new[] { "alpine-x64" }, true, true, false, true)]
+        public void It_warns_on_nonportable_rids(string targetFramework, string[] rids, bool addLibAssets, bool addNativeAssets, bool? useRidGraph, bool shouldWarn)
+        {
+            var packageProject = CreateProjectWithRidAssets(targetFramework, rids, addLibAssets, addNativeAssets);
 
             // Identifer based on test inputs to create test assets that are unique for each test case
             string assetIdentifier = $"{targetFramework}{string.Join(null, rids)}{addLibAssets}{addNativeAssets}{useRidGraph}{shouldWarn}";
@@ -1052,6 +1041,40 @@ class Program
             {
                 result.Should().NotHaveStdOutContaining("NETSDK1206");
             }
+        }
+
+        [Fact]
+        public void It_does_not_warn_on_rids_if_no_framework_references()
+        {
+            var packageProject = CreateProjectWithRidAssets(ToolsetInfo.CurrentTargetFramework, new string[] { "unix", "win", "alpine-x64"}, true, true);
+
+            var packCommand = new PackCommand(_testAssetsManager.CreateTestProject(packageProject));
+            packCommand.Execute().Should().Pass();
+            var package = new TestPackageReference(packageProject.Name, "1.0.0", packCommand.GetNuGetPackage());
+
+            var testProject = new TestProject()
+            {
+                Name = "NoFrameworkReferences",
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
+                IsExe = true
+            };
+
+            // Reference the package, add it to restore sources, and use a test-specific packages folder 
+            testProject.PackageReferences.Add(package);
+            testProject.AdditionalProperties["RestoreAdditionalProjectSources"] = Path.GetDirectoryName(package.NupkgPath);
+            testProject.AdditionalProperties["RestorePackagesPath"] = @"$(MSBuildProjectDirectory)\packages";
+
+            // Disable implicit framework references and don't add any framework references.
+            // This mimics the scenario of building runtime framework libraries. Since they are part of the
+            // framework itself, they just directly reference the other framework libraries they need.
+            testProject.AdditionalProperties["DisableImplicitFrameworkReferences"] = "true";
+            testProject.AdditionalProperties["UseAppHost"] = "false";
+            testProject.PackageReferences.Add(new TestPackageReference("NETStandard.Library", "1.6.1"));
+
+            TestAsset testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var result = new BuildCommand(testAsset).Execute();
+            result.Should().Pass()
+                .And.NotHaveStdOutContaining("NETSDK1206");
         }
 
         [Theory]

@@ -2,14 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Runtime.CompilerServices;
-using System.Xml.Linq;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.NET.Build.Containers.Resources;
 using Microsoft.NET.Build.Containers.UnitTests;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Xunit;
-using Xunit.Abstractions;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace Microsoft.NET.Build.Containers.IntegrationTests;
@@ -28,13 +23,13 @@ public class EndToEndTests : IDisposable
 
     public static string NewImageName([CallerMemberName] string callerMemberName = "")
     {
-        bool normalized = ContainerHelpers.NormalizeRepository(callerMemberName, out string? normalizedName);
-        if (!normalized)
+        var (normalizedName, warning, error) = ContainerHelpers.NormalizeRepository(callerMemberName);
+        if (error is (var format, var args))
         {
-            return normalizedName!;
+            throw new ArgumentException(String.Format(Strings.ResourceManager.GetString(format)!, args));
         }
 
-        return callerMemberName;
+        return normalizedName!; // non-null if error is null
     }
 
     public void Dispose()
@@ -50,7 +45,7 @@ public class EndToEndTests : IDisposable
 
         // Build the image
 
-        Registry registry = new Registry(ContainerHelpers.TryExpandRegistryToUri(DockerRegistryManager.LocalRegistry), logger);
+        Registry registry = new Registry(DockerRegistryManager.LocalRegistry, logger);
 
         ImageBuilder imageBuilder = await registry.GetImageManifestAsync(
             DockerRegistryManager.RuntimeBaseImage,
@@ -94,7 +89,7 @@ public class EndToEndTests : IDisposable
 
         // Build the image
 
-        Registry registry = new Registry(ContainerHelpers.TryExpandRegistryToUri(DockerRegistryManager.LocalRegistry), logger);
+        Registry registry = new Registry(DockerRegistryManager.LocalRegistry, logger);
 
         ImageBuilder imageBuilder = await registry.GetImageManifestAsync(
             DockerRegistryManager.RuntimeBaseImage,
@@ -394,7 +389,7 @@ public class EndToEndTests : IDisposable
         string publishDirectory = BuildLocalApp(tfm: ToolsetInfo.CurrentTargetFramework, rid: rid);
 
         // Build the image
-        Registry registry = new(ContainerHelpers.TryExpandRegistryToUri(DockerRegistryManager.BaseImageSource), logger);
+        Registry registry = new(DockerRegistryManager.BaseImageSource, logger);
         var isWin = rid.StartsWith("win");
         ImageBuilder? imageBuilder = await registry.GetImageManifestAsync(
             DockerRegistryManager.RuntimeBaseImage,
