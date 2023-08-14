@@ -5,6 +5,7 @@
     <ProjectDirectory>$(SubmoduleDirectory)$(RepositoryName)/</ProjectDirectory>
     <SkipEnsurePackagesCreated>true</SkipEnsurePackagesCreated>
     <IncludedPackageVersionPropsFile>$(CurrentSourceBuiltPackageVersionPropsPath)</IncludedPackageVersionPropsFile>
+    <EnableSourceControlManagerQueries>false</EnableSourceControlManagerQueries>
 
     <!--
       The default PackageVersionPropsFlowType behavior (DependenciesOnly) triggers logic that looks for a Version.Details.xml file.
