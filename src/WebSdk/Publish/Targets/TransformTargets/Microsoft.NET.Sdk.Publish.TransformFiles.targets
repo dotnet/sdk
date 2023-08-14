@@ -54,6 +54,7 @@ Copyright (C) Microsoft Corporation. All rights reserved.
         And '$(PublishIISAssets)' != 'false'"
         TargetPath="$(TargetPath)"
         PublishDir="$(PublishIntermediateOutputPath)"
+        TargetFrameworkIdentifier="$(TargetFrameworkIdentifier)"
         UseAppHost="$(_UseAppHost)"
         ExecutableExtension="$(_ExecutableExtension)"
         IsAzure="$(_TransformWebConfigForAzure)"

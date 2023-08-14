@@ -98,12 +98,6 @@ namespace Microsoft.NET.Sdk.Publish.Tasks
                 appPath = Path.ChangeExtension(appPath, !string.IsNullOrWhiteSpace(extension) ? extension : null);
                 aspNetCoreElement.SetAttributeValue("processPath", appPath);
             }
-            // For Apps targeting .NET Framework, the extension is always exe. RID is not set for .NETFramework apps with PlatformType set to AnyCPU.
-            else if (string.Equals(Path.GetExtension(appPath), ".exe", StringComparison.OrdinalIgnoreCase))
-            {
-                appPath = Path.ChangeExtension(appPath, ".exe");
-                aspNetCoreElement.SetAttributeValue("processPath", appPath);
-            }
             else
             {
                 aspNetCoreElement.SetAttributeValue("processPath", "dotnet");
