@@ -2129,4 +2129,13 @@ Widening and user defined conversions are not supported with generic types.</val
   <data name="UseStringMethodCharOverloadWithSingleCharactersTitle" xml:space="preserve">
     <value>Use char overload</value>
   </data>
+  <data name="AvoidSingleUseOfLocalJsonSerializerOptionsMessage" xml:space="preserve">
+    <value>Avoid creating a new 'JsonSerializerOptions' instance for every serialization operation. Cache and reuse instances instead.</value>
+  </data>
+  <data name="AvoidSingleUseOfLocalJsonSerializerOptionsDescription" xml:space="preserve">
+    <value>Avoid creating a new 'JsonSerializerOptions' instance for every serialization operation. Cache and reuse instances instead. Single use 'JsonSerializerOptions' instances can substantially degrade the performance of your application.</value>
+  </data>
+  <data name="AvoidSingleUseOfLocalJsonSerializerOptionsTitle" xml:space="preserve">
+    <value>Cache and reuse 'JsonSerializerOptions' instances</value>
+  </data>
 </root>
