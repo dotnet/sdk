@@ -322,7 +322,7 @@
     <MakeDir Directories="$(ExternalTarballsDir)" />
 
     <ItemGroup>
-      <ArtifactUrls Include="$(SourceBuiltArtifactsTarballUrl)$(SourceBuiltArtifactsTarballName).$(PrivateSourceBuiltArtifactsPackageVersion).tar.gz" />
+      <ArtifactUrls Include="$(SourceBuiltArtifactsTarballUrl)$(SourceBuiltArtifactsTarballName).$(PrivateSourceBuiltArtifactsPackageVersion).centos.7-x64.tar.gz" />
       <ArtifactUrls
         Include="$(SourceBuiltArtifactsTarballUrl)$(SourceBuiltPrebuiltsTarballName).$(PrivateSourceBuiltPrebuiltsPackageVersion).tar.gz"
         Condition="'$(PrivateSourceBuiltPrebuiltsPackageVersion)' != ''" />
