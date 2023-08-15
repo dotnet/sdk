@@ -27,6 +27,81 @@
         <target state="translated">Ajoutez un ou plusieurs projets à un fichier solution.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ConfigurationAddCommand">
+        <source>Add new config or platform to a solution file.</source>
+        <target state="new">Add new config or platform to a solution file.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ConfigurationAddConfigAlreadyExists">
+        <source>Solution config {0} already exists.</source>
+        <target state="new">Solution config {0} already exists.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ConfigurationAddCopyFromConfigDoesNotExists">
+        <source>Solution config {0} to copy from, does not exists.</source>
+        <target state="new">Solution config {0} to copy from, does not exists.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ConfigurationAddCopyFromPlatformDoesNotExists">
+        <source>Solution platform {0} to copy from, does not exists.</source>
+        <target state="new">Solution platform {0} to copy from, does not exists.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ConfigurationAddNewConfigOptionUpdateProjMissing">
+        <source>Update project options is not specified.</source>
+        <target state="new">Update project options is not specified.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ConfigurationAddNewConfigPlatformNameMissing">
+        <source>Specify at least one config or platform to add.</source>
+        <target state="new">Specify at least one config or platform to add.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ConfigurationAddOptionCopySettingsFrom">
+        <source>Existing config or platform to copy project settings from.</source>
+        <target state="new">Existing config or platform to copy project settings from.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ConfigurationAddOptionNewConfigName">
+        <source>New config to add to the solution.</source>
+        <target state="new">New config to add to the solution.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ConfigurationAddOptionNewPlatformName">
+        <source>New platform to add to the solution.</source>
+        <target state="new">New platform to add to the solution.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ConfigurationAddOptionUpdateProjects">
+        <source>Indicates whether to update project config or platform settings.</source>
+        <target state="new">Indicates whether to update project config or platform settings.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ConfigurationAddPlatformAlreadyExists">
+        <source>Solution platform {0} already exists.</source>
+        <target state="new">Solution platform {0} already exists.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ConfigurationAddSlnMissing">
+        <source>Solution file does not exists.</source>
+        <target state="new">Solution file does not exists.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ConfigurationArgumentSlnDescription">
+        <source>The solution file to operate on. If not specified, the command will search the current directory for one.</source>
+        <target state="new">The solution file to operate on. If not specified, the command will search the current directory for one.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ConfigurationCommand">
+        <source>Configuration Manager commands for .NET CLI.</source>
+        <target state="new">Configuration Manager commands for .NET CLI.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FileHeaderMissingError">
+        <source>Expected file header not found</source>
+        <target state="new">Expected file header not found</target>
+        <note />
+      </trans-unit>
       <trans-unit id="InRoot">
         <source>Place project in root of the solution, rather than creating a solution folder.</source>
         <target state="translated">Place le projet à la racine de la solution, au lieu de créer un dossier solution.</target>
