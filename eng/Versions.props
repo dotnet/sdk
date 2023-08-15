@@ -31,10 +31,10 @@
     <!-- roslyn -->
     <MicrosoftCodeAnalysisVersion>4.8.0-1.23378.8</MicrosoftCodeAnalysisVersion>
     <!-- roslyn-sdk -->
-    <MicrosoftCodeAnalysisAnalzerTestingVersion>1.1.2-beta1.22216.1</MicrosoftCodeAnalysisAnalzerTestingVersion>
+    <MicrosoftCodeAnalysisAnalyzerTestingVersion>1.1.2-beta1.22216.1</MicrosoftCodeAnalysisAnalyzerTestingVersion>
     <!-- runtime -->
-    <MicrosoftExtensionsFileSystemGlobbingVersion>7.0.0</MicrosoftExtensionsFileSystemGlobbingVersion>
-    <MicrosoftExtensionsLoggingVersion>7.0.0</MicrosoftExtensionsLoggingVersion>
+    <MicrosoftExtensionsFileSystemGlobbingVersion>8.0.0-rc.1.23408.3</MicrosoftExtensionsFileSystemGlobbingVersion>
+    <MicrosoftExtensionsLoggingVersion>8.0.0-rc.1.23408.3</MicrosoftExtensionsLoggingVersion>
     <!-- symreader -->
     <MicrosoftDiaSymReaderVersion>2.0.0</MicrosoftDiaSymReaderVersion>
     <!-- external -->
