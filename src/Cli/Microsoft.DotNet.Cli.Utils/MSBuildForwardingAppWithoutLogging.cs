@@ -113,7 +113,7 @@ namespace Microsoft.DotNet.Cli.Utils
                 // https://github.com/dotnet/runtime/issues/50554
                 InitializeForOutOfProcForwarding();
 
-                // Disable MSBUILDUSESERVER in any env vars are null as those are not properly transferred to build nodes
+                // Disable MSBUILDUSESERVER if any env vars are null as those are not properly transferred to build nodes
                 _msbuildRequiredEnvironmentVariables["MSBUILDUSESERVER"] = "0";
             }
         }
