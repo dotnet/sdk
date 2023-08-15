@@ -408,7 +408,7 @@ namespace EndToEnd.Tests
         {
             string framework = DetectExpectedDefaultFramework(templateName);
 
-            if (RuntimeInformation.RuntimeIdentifier.StartsWith("alpine")) //linux musl
+            if (RuntimeInformation.RuntimeIdentifier.StartsWith("linux-musl"))
             {
                 TestTemplateCreateAndBuild(templateName, build: false, framework: framework);
             }
