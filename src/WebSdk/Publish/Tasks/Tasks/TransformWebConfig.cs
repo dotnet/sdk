@@ -139,16 +139,18 @@ namespace Microsoft.NET.Sdk.Publish.Tasks
             // This will capture all apps targeting .NET Framework and skip adding the 2 aspNetCore elements to the web.config
             // but it is worth it to not have breakage at all in web.config.
             // Fixes: https://github.com/dotnet/sdk/issues/34595
-            XDocument transformedConfig = TargetFrameworkIdentifier != ".NETFramework" ? WebConfigTransform.Transform(
-                webConfigXml,
-                outputFile,
-                IsAzure,
-                UseAppHost,
-                ExecutableExtension,
-                AspNetCoreModuleName,
-                AspNetCoreHostingModel,
-                EnvironmentName,
-                ProjectFullPath) : webConfigXml;
+            XDocument transformedConfig = TargetFrameworkIdentifier != ".NETFramework" ||
+                (string.Equals(Path.GetExtension(Path.Combine(".", outputFile).Replace("/", "\\")), ".exe", StringComparison.OrdinalIgnoreCase) && !UseAppHost)
+                ? WebConfigTransform.Transform(
+                    webConfigXml,
+                    outputFile,
+                    IsAzure,
+                    UseAppHost,
+                    ExecutableExtension,
+                    AspNetCoreModuleName,
+                    AspNetCoreHostingModel,
+                    EnvironmentName,
+                    ProjectFullPath) : webConfigXml;
 
             // Telemetry
             transformedConfig = WebConfigTelemetry.AddTelemetry(transformedConfig, ProjectGuid, IgnoreProjectGuid, SolutionPath, ProjectFullPath);
