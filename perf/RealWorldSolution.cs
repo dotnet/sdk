@@ -5,7 +5,6 @@ using System.Collections.Immutable;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Diagnosers;
-using BenchmarkDotNet.Environments;
 using BenchmarkDotNet.Jobs;
 using Microsoft.CodeAnalysis.Tools.Utilities;
 using Microsoft.Extensions.Logging;
@@ -82,8 +81,6 @@ namespace Microsoft.CodeAnalysis.Tools.Perf.Real
             public RealWorldConfig()
             {
                 var job = Job.Dry
-                    .WithPlatform(BenchmarkDotNet.Environments.Platform.X64)
-                    .WithRuntime(CoreRuntime.Core21)
                     .WithWarmupCount(1)
                     .WithIterationCount(12)
                     .WithOutlierMode(Perfolizer.Mathematics.OutlierDetection.OutlierMode.RemoveAll);
