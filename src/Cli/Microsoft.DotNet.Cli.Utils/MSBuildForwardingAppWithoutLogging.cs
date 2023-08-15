@@ -17,7 +17,7 @@ namespace Microsoft.DotNet.Cli.Utils
     {
         private static readonly bool AlwaysExecuteMSBuildOutOfProc = Env.GetEnvironmentVariableAsBool("DOTNET_CLI_RUN_MSBUILD_OUTOFPROC");
         private static readonly bool UseMSBuildServer = Env.GetEnvironmentVariableAsBool("DOTNET_CLI_USE_MSBUILD_SERVER", false);
-        private static readonly string TerminalLoggerDefault = Env.GetEnvironmentVariable("DOTNET_CLI_BUILD_TERMINAL_LOGGER");
+        private static readonly string TerminalLoggerDefault = Env.GetEnvironmentVariable("DOTNET_CLI_CONFIGURE_MSBUILD_TERMINAL_LOGGER");
 
         private const string MSBuildExeName = "MSBuild.dll";
 
