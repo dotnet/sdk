@@ -93,7 +93,7 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
             }
         }
 
-        public IToolPackage InstallPackageAsync(PackageLocation packageLocation, PackageId packageId,
+        public IToolPackage InstallPackage(PackageLocation packageLocation, PackageId packageId,
             VersionRange versionRange = null,
             string targetFramework = null,
             string verbosity = null,

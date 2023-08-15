@@ -69,11 +69,11 @@ namespace Microsoft.DotNet.Tools.Tool.Install
 
             try
             {
-                IToolPackage toolDownloadedPackage = _toolPackageDownloader.InstallPackageAsync(
+                IToolPackage toolDownloadedPackage = _toolPackageDownloader.InstallPackage(
                         new PackageLocation(
                             nugetConfig: configFile,
                             additionalFeeds: _sources,
-                            rootConfigDirectory: manifestFile.GetDirectoryPath()),
+                            rootConfigDirectory: manifestFile.GetDirectoryPath().GetParentPath()),
                         _packageId,
                         versionRange,
                         TargetFrameworkToInstall,

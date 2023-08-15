@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.CommandLine;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
@@ -33,14 +34,29 @@ namespace Microsoft.DotNet.Cli.ToolPackage
         private INuGetPackageDownloader _nugetPackageDownloader;
         private readonly IToolPackageStore _toolPackageStore;
 
+        // The directory that the tool will be downloaded to
         protected DirectoryPath _toolDownloadDir;
+
+        // The directory that the tool package is returned 
         protected DirectoryPath _toolReturnPackageDirectory;
+
+        // The directory that the tool asset file is returned
         protected DirectoryPath _toolReturnJsonParentDirectory;
 
+        // The directory that global tools first downloaded
+        // example: C:\Users\username\.dotnet\tools\.store\.stage\tempFolder
         protected readonly DirectoryPath _globalToolStageDir;
+
+        // The directory that local tools first downloaded
+        // example: C:\Users\username\.nuget\package
         protected readonly DirectoryPath _localToolDownloadDir;
+
+        // The directory that local tools' asset files located
+        // example: C:\Users\username\AppData\Local\Temp\tempFolder
         protected readonly DirectoryPath _localToolAssetDir;
-        
+
+        public static readonly CliOption<VerbosityOptions> VerbosityOption = CommonOptions.VerbosityOption;
+
 
         public ToolPackageDownloader(
             IToolPackageStore store
@@ -48,11 +64,11 @@ namespace Microsoft.DotNet.Cli.ToolPackage
         {
             _toolPackageStore = store ?? throw new ArgumentNullException(nameof(store)); ;
             _globalToolStageDir = _toolPackageStore.GetRandomStagingDirectory();
-            _localToolDownloadDir = new DirectoryPath(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "nuget", "package"));
+            _localToolDownloadDir = new DirectoryPath(Environment.GetEnvironmentVariable("NUGET_PACKAGES"));
             _localToolAssetDir = new DirectoryPath(PathUtilities.CreateTempSubdirectory());  
         }
 
-        public IToolPackage InstallPackageAsync(PackageLocation packageLocation, PackageId packageId,
+        public IToolPackage InstallPackage(PackageLocation packageLocation, PackageId packageId,
             VersionRange versionRange = null,
             string targetFramework = null,
             string verbosity = null,
@@ -66,7 +82,10 @@ namespace Microsoft.DotNet.Cli.ToolPackage
                 action: () =>
                 {
                     ILogger nugetLogger = new NullLogger();
-                    if( verbosity != null && (verbosity == "d" || verbosity == "detailed" || verbosity == "diag" || verbosity == "diagnostic"))
+                    if( verbosity != null && (verbosity == VerbosityOptions.d.ToString() ||
+                                              verbosity == VerbosityOptions.detailed.ToString() ||
+                                              verbosity == VerbosityOptions.diag.ToString() ||
+                                              verbosity == VerbosityOptions.diagnostic.ToString()))
                     {
                         nugetLogger = new NuGetConsoleLogger();
                     }
@@ -113,6 +132,7 @@ namespace Microsoft.DotNet.Cli.ToolPackage
                 });
         }
 
+        // The following methods are copied from the LockFileUtils class in Nuget.Client
         private static void AddToolsAssets(
             ManagedCodeConventions managedCodeConventions,
             LockFileTargetLibrary lockFileLib,
@@ -199,10 +219,6 @@ namespace Microsoft.DotNet.Cli.ToolPackage
                 File.WriteAllText(hashPath, packageHash);
             }
 
-            // Extract the package
-            var nupkgDir = Path.Combine(hashPathLocation, packageId.ToString(), version.ToString());
-            var filesInPackage = await _nugetPackageDownloader.ExtractPackageAsync(packagePath, new DirectoryPath(nupkgDir));
-
             if (Directory.Exists(packagePath))
             {
                 throw new ToolPackageException(
@@ -211,6 +227,12 @@ namespace Microsoft.DotNet.Cli.ToolPackage
                         packageId,
                         version.ToNormalizedString()));
             }
+
+            // Extract the package
+            var nupkgDir = Path.Combine(hashPathLocation, packageId.ToString(), version.ToString());
+            var filesInPackage = await _nugetPackageDownloader.ExtractPackageAsync(packagePath, new DirectoryPath(nupkgDir));
+
+            
             return version;
         }
 
@@ -245,7 +267,8 @@ namespace Microsoft.DotNet.Cli.ToolPackage
 
             //  Create criteria
             var managedCriteria = new List<SelectionCriteria>(1);
-            var currentTargetFramework = NuGetFramework.Parse("net8.0");
+            // Use major.minor version of currently running version of .NET
+            var currentTargetFramework = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.NetCoreApp, new Version(Environment.Version.Major, Environment.Version.Minor));
 
             var standardCriteria = conventions.Criteria.ForFrameworkAndRuntime(
                 currentTargetFramework,

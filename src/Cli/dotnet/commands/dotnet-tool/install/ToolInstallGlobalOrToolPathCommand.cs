@@ -131,7 +131,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                     TransactionScopeOption.Required,
                     TimeSpan.Zero))
                 {
-                    package = toolPackageDownloader.InstallPackageAsync(
+                    package = toolPackageDownloader.InstallPackage(
                     new PackageLocation(nugetConfig: configFile, additionalFeeds: _source),
                         packageId: _packageId,
                         versionRange: versionRange,

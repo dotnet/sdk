@@ -9,7 +9,7 @@ namespace Microsoft.DotNet.Cli.ToolPackage
 {
     internal interface IToolPackageDownloader
     {
-        IToolPackage InstallPackageAsync(PackageLocation packageLocation, PackageId packageId,
+        IToolPackage InstallPackage(PackageLocation packageLocation, PackageId packageId,
             VersionRange versionRange = null,
             string targetFramework = null,
             string verbosity = null,

@@ -130,7 +130,7 @@ namespace Microsoft.DotNet.Tools.Tool.Restore
             try
             {
                 IToolPackage toolPackage =
-                    _toolPackageDownloader.InstallPackageAsync(
+                    _toolPackageDownloader.InstallPackage(
                         new PackageLocation(
                             nugetConfig: configFile,
                             additionalFeeds: _sources,

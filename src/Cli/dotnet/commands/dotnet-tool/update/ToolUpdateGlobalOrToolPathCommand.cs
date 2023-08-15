@@ -109,7 +109,7 @@ namespace Microsoft.DotNet.Tools.Tool.Update
 
                 RunWithHandlingInstallError(() =>
                 {
-                    IToolPackage newInstalledPackage = toolPackageDownloader.InstallPackageAsync(
+                    IToolPackage newInstalledPackage = toolPackageDownloader.InstallPackage(
                     new PackageLocation(nugetConfig: GetConfigFile(), additionalFeeds: _additionalFeeds), 
                         packageId: _packageId,
                         versionRange: versionRange,
