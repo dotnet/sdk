@@ -27,6 +27,9 @@ namespace Microsoft.DotNet.Tools.MSBuild
         internal const string SelfContainedTelemetryPropertyKey = "SelfContained";
         internal const string UseApphostTelemetryPropertyKey = "UseApphost";
         internal const string OutputTypeTelemetryPropertyKey = "OutputType";
+        internal const string UseArtifactsOutputTelemetryPropertyKey = "UseArtifactsOutput";
+        internal const string ArtifactsPathLocationTypeTelemetryPropertyKey = "ArtifactsPathLocationType";
+
 
         public MSBuildLogger()
         {
@@ -95,7 +98,9 @@ namespace Microsoft.DotNet.Tools.MSBuild
                     RuntimeIdentifierTelemetryPropertyKey,
                     SelfContainedTelemetryPropertyKey,
                     UseApphostTelemetryPropertyKey,
-                    OutputTypeTelemetryPropertyKey
+                    OutputTypeTelemetryPropertyKey,
+                    UseArtifactsOutputTelemetryPropertyKey,
+                    ArtifactsPathLocationTypeTelemetryPropertyKey
                 })
                 {
                     if (args.Properties.TryGetValue(key, out string value))
@@ -139,7 +144,7 @@ namespace Microsoft.DotNet.Tools.MSBuild
             else
             {
                 var passthroughEvents = new string[] {
-                    SdkTaskBaseCatchExceptionTelemetryEventName, 
+                    SdkTaskBaseCatchExceptionTelemetryEventName,
                     PublishPropertiesTelemetryEventName,
                     ReadyToRunTelemetryEventName };
 
