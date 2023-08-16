@@ -51,10 +51,10 @@ Copyright (C) Microsoft Corporation. All rights reserved.
         Condition="'$(_IsAspNetCoreProject)' == 'true'
         And '$(IsTransformWebConfigDisabled)' != 'true'
         And '$(IsWebConfigTransformDisabled)' != 'true'
+        And '$(IsAspNetCoreInWebConfigDisabled)' != 'true'
         And '$(PublishIISAssets)' != 'false'"
         TargetPath="$(TargetPath)"
         PublishDir="$(PublishIntermediateOutputPath)"
-        TargetFrameworkIdentifier="$(TargetFrameworkIdentifier)"
         UseAppHost="$(_UseAppHost)"
         ExecutableExtension="$(_ExecutableExtension)"
         IsAzure="$(_TransformWebConfigForAzure)"

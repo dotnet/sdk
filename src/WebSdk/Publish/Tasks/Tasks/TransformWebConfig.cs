@@ -26,15 +26,6 @@ namespace Microsoft.NET.Sdk.Publish.Tasks
         public bool UseAppHost { get; set; }
 
         /// <summary>
-        /// The Target Framework Identifier.
-        /// <br>.NET Framework = ".NETFramework"</br>
-        /// <br>.NET Standard = ".NETStandard"</br>
-        /// <br>.NET Core/.NET 5+ = ".NETCoreApp"</br>
-        /// </summary>
-        [Required]
-        public string TargetFrameworkIdentifier { get; set; }
-
-        /// <summary>
         /// [optional] Transform is targeted for Azure
         /// </summary>
         /// <returns></returns>
@@ -130,27 +121,16 @@ namespace Microsoft.NET.Sdk.Publish.Tasks
             }
 
             string outputFile = Path.GetFileName(TargetPath);
-
-            // For ASP.NET Framework web applications do not add any thing mentioning ASP.NET Core in it's Web.config file.
-            // It could break it at runtime when it tries to use the ASP.NET Core Module at runtime with it's version of ASP.NET
-            // (and as such the other ASP.NET Module for .NET Framework).
-            // Also it's because I expect the files between the web.config on non-SDK style and SDK style to be exact copies
-            // provided that it still targets .NET Framework.
-            // This will capture all apps targeting .NET Framework and skip adding the 2 aspNetCore elements to the web.config
-            // but it is worth it to not have breakage at all in web.config.
-            // Fixes: https://github.com/dotnet/sdk/issues/34595
-            XDocument transformedConfig = TargetFrameworkIdentifier != ".NETFramework" ||
-                (string.Equals(Path.GetExtension(Path.Combine(".", outputFile).Replace("/", "\\")), ".exe", StringComparison.OrdinalIgnoreCase) && !UseAppHost)
-                ? WebConfigTransform.Transform(
-                    webConfigXml,
-                    outputFile,
-                    IsAzure,
-                    UseAppHost,
-                    ExecutableExtension,
-                    AspNetCoreModuleName,
-                    AspNetCoreHostingModel,
-                    EnvironmentName,
-                    ProjectFullPath) : webConfigXml;
+            XDocument transformedConfig = WebConfigTransform.Transform(
+                webConfigXml,
+                outputFile,
+                IsAzure,
+                UseAppHost,
+                ExecutableExtension,
+                AspNetCoreModuleName,
+                AspNetCoreHostingModel,
+                EnvironmentName,
+                ProjectFullPath);
 
             // Telemetry
             transformedConfig = WebConfigTelemetry.AddTelemetry(transformedConfig, ProjectGuid, IgnoreProjectGuid, SolutionPath, ProjectFullPath);
