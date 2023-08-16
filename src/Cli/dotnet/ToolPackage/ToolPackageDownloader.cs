@@ -25,6 +25,7 @@ using NuGet.ProjectModel;
 using NuGet.Repositories;
 using NuGet.RuntimeModel;
 using NuGet.Versioning;
+using System;
 
 
 namespace Microsoft.DotNet.Cli.ToolPackage
@@ -64,7 +65,7 @@ namespace Microsoft.DotNet.Cli.ToolPackage
         {
             _toolPackageStore = store ?? throw new ArgumentNullException(nameof(store)); ;
             _globalToolStageDir = _toolPackageStore.GetRandomStagingDirectory();
-            _localToolDownloadDir = new DirectoryPath(Environment.GetEnvironmentVariable("NUGET_PACKAGES"));
+            _localToolDownloadDir = new DirectoryPath((Environment.GetEnvironmentVariable("NUGET_PACKAGES")) ?? (Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "nuget", "package")));
             _localToolAssetDir = new DirectoryPath(PathUtilities.CreateTempSubdirectory());  
         }
 
