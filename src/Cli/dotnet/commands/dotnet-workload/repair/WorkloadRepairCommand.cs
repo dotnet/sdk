@@ -30,7 +30,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Repair
             string tempDirPath = null,
             string version = null,
             string userProfileDir = null)
-            : base(parseResult, reporter: reporter, nugetPackageDownloader: nugetPackageDownloader)
+            : base(parseResult, reporter: reporter, tempDirPath: tempDirPath, nugetPackageDownloader: nugetPackageDownloader)
         {
             var configOption = parseResult.GetValue(WorkloadRepairCommandParser.ConfigOption);
             var sourceOption = parseResult.GetValue(WorkloadRepairCommandParser.SourceOption);
@@ -64,32 +64,41 @@ namespace Microsoft.DotNet.Workloads.Workload.Repair
 
         public override int Execute()
         {
+            WorkloadHistoryRecorder recorder = new WorkloadHistoryRecorder(_workloadResolver, _workloadInstaller);
+            recorder.HistoryRecord.CommandName = "uninstall";
+
             try
             {
-                Reporter.WriteLine();
-
-                var workloadIds = _workloadInstaller.GetWorkloadInstallationRecordRepository().GetInstalledWorkloads(new SdkFeatureBand(_sdkVersion));
-
-                if (!workloadIds.Any())
+                recorder.Run(() =>
                 {
-                    Reporter.WriteLine(LocalizableStrings.NoWorkloadsToRepair);
-                    return 0;
-                }
+                    try
+                    {
+                        Reporter.WriteLine();
 
-                Reporter.WriteLine(string.Format(LocalizableStrings.RepairingWorkloads, string.Join(" ", workloadIds)));
+                        var workloadIds = _workloadInstaller.GetWorkloadInstallationRecordRepository().GetInstalledWorkloads(new SdkFeatureBand(_sdkVersion));
 
-                ReinstallWorkloadsBasedOnCurrentManifests(workloadIds, new SdkFeatureBand(_sdkVersion));
+                        if (!workloadIds.Any())
+                        {
+                            Reporter.WriteLine(LocalizableStrings.NoWorkloadsToRepair);
+                            return;
+                        }
 
-                WorkloadInstallCommand.TryRunGarbageCollection(_workloadInstaller, Reporter, Verbosity);
+                        Reporter.WriteLine(string.Format(LocalizableStrings.RepairingWorkloads, string.Join(" ", workloadIds)));
 
-                Reporter.WriteLine();
-                Reporter.WriteLine(string.Format(LocalizableStrings.RepairSucceeded, string.Join(" ", workloadIds)));
-                Reporter.WriteLine();
-            }
-            catch (Exception e)
-            {
-                // Don't show entire stack trace
-                throw new GracefulException(string.Format(LocalizableStrings.WorkloadRepairFailed, e.Message), e, isUserError: false);
+                        ReinstallWorkloadsBasedOnCurrentManifests(workloadIds, new SdkFeatureBand(_sdkVersion));
+
+                        WorkloadInstallCommand.TryRunGarbageCollection(_workloadInstaller, Reporter, Verbosity);
+
+                        Reporter.WriteLine();
+                        Reporter.WriteLine(string.Format(LocalizableStrings.RepairSucceeded, string.Join(" ", workloadIds)));
+                        Reporter.WriteLine();
+                    }
+                    catch (Exception e)
+                    {
+                        // Don't show entire stack trace
+                        throw new GracefulException(string.Format(LocalizableStrings.WorkloadRepairFailed, e.Message), e, isUserError: false);
+                    }
+                });
             }
             finally
             {

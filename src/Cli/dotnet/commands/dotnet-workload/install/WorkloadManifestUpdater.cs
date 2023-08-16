@@ -457,8 +457,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                 }
             }
 
-            return WorkloadSet.FromJson(fileContent, _sdkFeatureBand).ManifestVersions
-                .Select(kvp => (kvp.Key, kvp.Value.Version, kvp.Value.FeatureBand));
+            return WorkloadRollbackInfo.FromJson(fileContent, _sdkFeatureBand).ManifestVersions;
         }
 
         private bool BackgroundUpdatesAreDisabled() =>

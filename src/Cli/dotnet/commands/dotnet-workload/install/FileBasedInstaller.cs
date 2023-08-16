@@ -385,6 +385,34 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             }
         }
 
+        string GetWorkloadHistoryDirectory()
+        {
+            return Path.Combine(_workloadMetadataDir, _sdkFeatureBand.ToString(), "history");
+        }
+
+        public void WriteWorkloadHistoryRecord(WorkloadHistoryRecord workloadHistoryRecord)
+        {
+            //  TODO: add workloads to filename?
+            var historyDirectory = GetWorkloadHistoryDirectory();
+            Directory.CreateDirectory(historyDirectory);
+            string logFile = Path.Combine(GetWorkloadHistoryDirectory(), $"{workloadHistoryRecord.TimeStarted:yyyy'-'MM'-'dd'T'HHmmss} {workloadHistoryRecord.CommandName}.json");
+            File.WriteAllText(logFile, JsonSerializer.Serialize(workloadHistoryRecord, new JsonSerializerOptions() { WriteIndented = true }));
+        }
+
+        public IEnumerable<WorkloadHistoryRecord> GetWorkloadHistoryRecords()
+        {
+            List<WorkloadHistoryRecord> historyRecords = new();
+
+            foreach (var file in Directory.GetFiles(GetWorkloadHistoryDirectory(), "*.json"))
+            {
+                //  TODO: Handle corrupted files
+                var historyRecord = JsonSerializer.Deserialize<WorkloadHistoryRecord>(File.ReadAllText(file));
+                historyRecords.Add(historyRecord);
+            }
+
+            return historyRecords;
+        }
+
         public void Shutdown()
         {
             // Perform any additional cleanup here that's intended to run at the end of the command, regardless
