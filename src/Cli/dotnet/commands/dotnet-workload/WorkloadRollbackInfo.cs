@@ -25,42 +25,15 @@ namespace Microsoft.DotNet.Workloads.Workload
             };
         }
 
-        public static WorkloadRollbackInfo FromDictionaryForJson(IDictionary<string, string> dictionary, SdkFeatureBand defaultFeatureBand)
+        public static WorkloadRollbackInfo FromJson(string json, SdkFeatureBand defaultFeatureBand)
         {
-            var manifestVersions = dictionary
-                .Select(manifest =>
-                {
-                    ManifestVersion manifestVersion;
-                    SdkFeatureBand manifestFeatureBand;
-                    var parts = manifest.Value.Split('/');
-
-                    string manifestVersionString = (parts[0]);
-                    if (!FXVersion.TryParse(manifestVersionString, out FXVersion version))
-                    {
-                        throw new FormatException(String.Format(Workload.Install.LocalizableStrings.InvalidVersionForWorkload, manifest.Key, manifestVersionString));
-                    }
-
-                    manifestVersion = new ManifestVersion(parts[0]);
-                    if (parts.Length == 1)
-                    {
-                        manifestFeatureBand = defaultFeatureBand;
-                    }
-                    else
-                    {
-                        manifestFeatureBand = new SdkFeatureBand(parts[1]);
-                    }
-                    return (new ManifestId(manifest.Key), manifestVersion, manifestFeatureBand);
-                }).ToList();
+            var manifestVersions = WorkloadSet.FromJson(json, defaultFeatureBand).ManifestVersions
+                .Select(kvp => (kvp.Key, kvp.Value.Version, kvp.Value.FeatureBand));
 
             return new WorkloadRollbackInfo()
             {
                 ManifestVersions = manifestVersions
             };
-        }
-
-        public static WorkloadRollbackInfo FromJson(string json, SdkFeatureBand defaultFeatureBand)
-        {
-            return FromDictionaryForJson(JsonSerializer.Deserialize<IDictionary<string, string>>(json), defaultFeatureBand);
         }
 
         public Dictionary<string, string> ToDictionaryForJson()
