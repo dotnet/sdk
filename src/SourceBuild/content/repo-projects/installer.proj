@@ -82,26 +82,5 @@
     <EnvironmentVariables Include="CLIBUILD_SKIP_BUNDLEDDOTNETTOOLS=true" />
   </ItemGroup>
 
-  <Target Name="CopyTarBall"
-          AfterTargets="ExtractIntermediatePackages"
-          Inputs="$(MSBuildProjectFullPath)"
-          Outputs="$(RepoCompletedSemaphorePath)CopyTarBall.complete">
-
-    <PropertyGroup>
-      <TarBallPath>$(SourceBuiltAssetsDir)dotnet-sdk-*$(TarBallExtension)</TarBallPath>
-    </PropertyGroup>
-
-    <ItemGroup>
-      <TarBall Include="$(TarBallPath)" />
-    </ItemGroup>
-
-    <Error Condition="'@(TarBall)' == ''" Text="'$(TarBallPath)' does not exist." />
-
-    <Copy SourceFiles="@(TarBall)"
-          DestinationFolder="$(SourceBuiltTarBallPath)" />
-
-    <WriteLinesToFile File="$(RepoCompletedSemaphorePath)CopyTarBall.complete" Overwrite="true" />
-  </Target>
-
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 </Project>

@@ -4,7 +4,6 @@
     <ImportNetSdkFromRepoToolset>false</ImportNetSdkFromRepoToolset>
     <_SuppressSdkImports>true</_SuppressSdkImports>
     <Configuration Condition="$(Configuration) == ''">Release</Configuration>
-    <EnableSourceControlManagerQueries>false</EnableSourceControlManagerQueries>
   </PropertyGroup>
 
   <Import Condition="'$(SkipArcadeSdkImport)' != 'true'" Project="Sdk.props" Sdk="Microsoft.DotNet.Arcade.Sdk" />
@@ -159,6 +158,8 @@
   </PropertyGroup>
 
   <PropertyGroup>
+    <!-- Use current machine distro RID if set. Otherwise, fall back to RuntimeInformation.RuntimeIdentifier -->
+    <TargetRid Condition="'$(TargetRid)' == ''">$(__DistroRid)</TargetRid>
     <TargetRid Condition="'$(TargetRid)' == ''">$([System.Runtime.InteropServices.RuntimeInformation]::RuntimeIdentifier)</TargetRid>
 
     <TargetOS Condition="'$(TargetOS)' == '' AND $([MSBuild]::IsOSPlatform('WINDOWS'))">Windows_NT</TargetOS>
@@ -166,10 +167,11 @@
     <TargetOS Condition="'$(TargetOS)' == '' AND $([MSBuild]::IsOSPlatform('LINUX'))">Linux</TargetOS>
     <TargetOS Condition="'$(TargetOS)' == '' AND $([MSBuild]::IsOSPlatform('FREEBSD'))">FreeBSD</TargetOS>
 
-    <PortableRid Condition="'$(TargetOS)' == 'FreeBSD'">freebsd-$(Platform)</PortableRid>
-    <PortableRid Condition="'$(TargetOS)' == 'OSX'">osx-$(Platform)</PortableRid>
-    <PortableRid Condition="'$(TargetOS)' == 'Linux'">linux-$(Platform)</PortableRid>
-    <PortableRid Condition="'$(TargetOS)' == 'Windows_NT'">win-$(Platform)</PortableRid>
+    <PortableRid Condition="'$(__PortableTargetOS)' != ''">$(__PortableTargetOS)-$(Platform)</PortableRid>
+    <PortableRid Condition="'$(PortableRid)' == '' AND '$(TargetOS)' == 'FreeBSD'">freebsd-$(Platform)</PortableRid>
+    <PortableRid Condition="'$(PortableRid)' == '' AND '$(TargetOS)' == 'OSX'">osx-$(Platform)</PortableRid>
+    <PortableRid Condition="'$(PortableRid)' == '' AND '$(TargetOS)' == 'Linux'">linux-$(Platform)</PortableRid>
+    <PortableRid Condition="'$(PortableRid)' == '' AND '$(TargetOS)' == 'Windows_NT'">win-$(Platform)</PortableRid>
     <TargetRid Condition="'$(PortableBuild)' == 'true' AND '$(PortableRid)' != ''">$(PortableRid)</TargetRid>
   </PropertyGroup>
 
