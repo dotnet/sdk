@@ -247,6 +247,10 @@ echo "Found bootstrap SDK $SDK_VERSION, bootstrap Arcade $ARCADE_BOOTSTRAP_VERSI
 export DOTNET_CLI_TELEMETRY_OPTOUT=1
 export NUGET_PACKAGES=$packagesRestoredDir/
 
+source $SCRIPT_ROOT/eng/common/native/init-os-and-arch.sh
+source $SCRIPT_ROOT/eng/common/native/init-distro-rid.sh
+initDistroRidGlobal "$os" "$arch" ""
+
 LogDateStamp=$(date +"%m%d%H%M%S")
 
 "$CLI_ROOT/dotnet" build-server shutdown
