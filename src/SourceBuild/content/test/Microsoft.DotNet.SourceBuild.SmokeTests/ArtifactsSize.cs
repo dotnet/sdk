@@ -1,6 +1,10 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Collections;
+using System.Collections.Generic;
+using System.Formats.Tar;
+using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
 
