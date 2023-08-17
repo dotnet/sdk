@@ -1285,6 +1285,24 @@ class Test {
         }
 
         [Fact]
+        public Task DbSetAddRange_NoDiagnostic()
+        {
+            return new VerifyCS.Test
+            {
+                TestCode = @"
+using Microsoft.EntityFrameworkCore;
+using System.Threading.Tasks;
+
+class Test {
+    public async Task RunAsync(DbSet<object> set) {
+        set.AddRange(1, 2);
+    }
+}",
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net70.WithPackages(EntityFrameworkPackages)
+            }.RunAsync();
+        }
+
+        [Fact]
         [WorkItem(6684, "https://github.com/dotnet/roslyn-analyzers/issues/6684")]
         public Task DbContextFactoryCreateDbContext_Diagnostic()
         {
