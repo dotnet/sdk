@@ -49,6 +49,14 @@ public static class Utilities
 
     public static IEnumerable<string> GetTarballContentNames(string tarballPath)
     {
+        foreach (var entry in GetTarballContent(tarballPath))
+        {
+            yield return entry.Name;
+        }
+    }
+
+    public static IEnumerable<TarEntry> GetTarballContent(string tarballPath)
+    {
         using FileStream fileStream = File.OpenRead(tarballPath);
         using GZipStream decompressorStream = new(fileStream, CompressionMode.Decompress);
         using TarReader reader = new(decompressorStream);
@@ -56,7 +64,7 @@ public static class Utilities
         TarEntry entry;
         while ((entry = reader.GetNextEntry()) is not null)
         {
-            yield return entry.Name;
+            yield return entry;
         }
     }
 
