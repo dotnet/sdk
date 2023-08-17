@@ -163,31 +163,6 @@
     <Message Importance="High" Text="Packaged smoke-test prereqs in '$(SmokeTestPrereqsTarballName)'" />
   </Target>
 
-  <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="UploadToAzure" />
-
-  <Target Name="PublishPrebuiltReportData">
-    <Error Text="RelativeBlobPath must be set to a non-empty string." Condition="'$(RelativeBlobPath)' == ''" />
-    <Error Text="ContainerName must be set to a non-empty string." Condition="'$(ContainerName)' == ''" />
-    <Error Text="AzureAccountName must be set to a non-empty string." Condition="'$(AzureAccountName)' == ''" />
-    <Error Text="AzureAccessToken must be set to a non-empty string." Condition="'$(AzureAccessToken)' == ''" />
-
-    <ItemGroup>
-      <ItemsToPublish Include="$(PackageReportDir)*.xml" />
-      <ItemsToPublish Include="$(PackageReportDir)*.csv" />
-      <ItemsToPublish>
-        <RelativeBlobPath>$(RelativeBlobPath)/%(Filename)%(Extension)</RelativeBlobPath>
-      </ItemsToPublish>
-    </ItemGroup>
-
-    <Message Text="Uploading files to '$(AzureAccountName)' blob storage at $(ContainerName)/$(RelativeBlobPath)" />
-
-    <UploadToAzure AccountName="$(AzureAccountName)"
-                   AccountKey="$(AzureAccessToken)"
-                   ContainerName="$(ContainerName)"
-                   Items="@(ItemsToPublish)"
-                   Overwrite="true" />
-  </Target>
-
   <Target Name="CreatePrebuiltsTarball"
           AfterTargets="Build"
           DependsOnTargets="
