@@ -69,7 +69,7 @@
       </trans-unit>
       <trans-unit id="DockerProcessCreationFailed">
         <source>CONTAINER3001: Failed creating docker process.</source>
-        <target state="translated">CONTAINER3001: Falha ao criar o processo do docker.</target>
+        <target state="new">CONTAINER3001: Failed creating docker process.</target>
         <note>{StrBegin="CONTAINER3001: "}</note>
       </trans-unit>
       <trans-unit id="EmptyOrWhitespacePropertyIgnored">
@@ -94,12 +94,12 @@
       </trans-unit>
       <trans-unit id="ImageLoadFailed">
         <source>CONTAINER1009: Failed to load image to local Docker daemon. stdout: {0}</source>
-        <target state="translated">CONTAINER1009: falha ao carregar a imagem no daemon do Docker local. stdout: {0}</target>
+        <target state="new">CONTAINER1009: Failed to load image to local Docker daemon. stdout: {0}</target>
         <note>{StrBegin="CONTAINER1009: "}</note>
       </trans-unit>
       <trans-unit id="ImagePullNotSupported">
         <source>CONTAINER1010: Pulling images from local Docker daemon is not supported.</source>
-        <target state="translated">CONTAINER1010: não há suporte para a extração de imagens do daemon do Docker local.</target>
+        <target state="new">CONTAINER1010: Pulling images from local Docker daemon is not supported.</target>
         <note>{StrBegin="CONTAINER1010: "}</note>
       </trans-unit>
       <trans-unit id="InvalidEnvVar">
@@ -164,7 +164,7 @@
       </trans-unit>
       <trans-unit id="LocalDaemonNotAvailable">
         <source>CONTAINER1012: The local Docker daemon is not available, but pushing to a local Docker daemon was requested. Please start the daemon and try again.</source>
-        <target state="translated">CONTAINER1012: o daemon do Docker local não está disponível, mas o push para um daemon do Docker local foi solicitado. Inicie o daemon e tente novamente.</target>
+        <target state="new">CONTAINER1012: The local Docker daemon is not available, but pushing to a local Docker daemon was requested. Please start the daemon and try again.</target>
         <note>{StrBegin="CONTAINER1012: "}</note>
       </trans-unit>
       <trans-unit id="LocalDocker_FailedToGetConfig">
@@ -279,7 +279,7 @@
       </trans-unit>
       <trans-unit id="UnknownDaemonType">
         <source>CONTAINER2002: Unknown local container daemon type '{0}'. Valid local container daemon types are {1}.</source>
-        <target state="translated">CONTAINER2002: Tipo de daemon de contêiner local desconhecido '{0}'. Os tipos de daemon de contêiner local válidos são {1}.</target>
+        <target state="new">CONTAINER2002: Unknown local container daemon type '{0}'. Valid local container daemon types are {1}.</target>
         <note>{StrBegin="CONTAINER2002: "}</note>
       </trans-unit>
       <trans-unit id="UnknownMediaType">
