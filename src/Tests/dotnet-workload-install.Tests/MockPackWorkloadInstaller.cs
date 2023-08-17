@@ -7,6 +7,7 @@ using Microsoft.DotNet.Workloads.Workload.Install.InstallRecord;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using Microsoft.DotNet.ToolPackage;
+using Microsoft.DotNet.Workloads.Workload;
 
 namespace Microsoft.DotNet.Cli.Workload.Install.Tests
 {
@@ -167,6 +168,8 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         {
             WorkloadResolver = workloadResolver;
         }
+
+        IEnumerable<WorkloadHistoryRecord> IInstaller.GetWorkloadHistoryRecords() => HistoryRecords;
     }
 
     internal class MockInstallationRecordRepository : IWorkloadInstallationRecordRepository

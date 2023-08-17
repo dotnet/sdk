@@ -2,12 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 //
 
-using System;
 using System.CommandLine;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
@@ -17,6 +12,7 @@ using Microsoft.DotNet.Configurer;
 using System.IO;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.DotNet.Cli.commands.dotnet_workload;
+
 
 namespace Microsoft.DotNet.Workloads.Workload.History
 {
@@ -39,12 +35,25 @@ namespace Microsoft.DotNet.Workloads.Workload.History
             string userProfileDir = null
         ) : base(parseResult, CommonOptions.HiddenVerbosityOption, reporter, tempDirPath, nugetPackageDownloader)
         {
-            _dotnetPath = dotnetDir ?? Path.GetDirectoryName(Environment.ProcessPath);
-            userProfileDir ??= CliFolderPathCalculator.DotnetUserProfileFolderPath;
-            _sdkVersion = WorkloadOptionsExtensions.GetValidatedSdkVersion(parseResult.GetValue(WorkloadRepairCommandParser.VersionOption), version, _dotnetPath, userProfileDir, true);
 
-            var workloadManifestProvider = new SdkDirectoryWorkloadManifestProvider(_dotnetPath, _sdkVersion.ToString(), userProfileDir);
-            _workloadResolver = workloadResolver ?? WorkloadResolver.Create(workloadManifestProvider, _dotnetPath, _sdkVersion.ToString(), userProfileDir);
+            var creationParameters = new WorkloadResolverFactory.CreationParameters()
+            {
+                DotnetPath = dotnetDir,
+                UserProfileDir = userProfileDir,
+                GlobalJsonStartDir = null,
+                SdkVersionFromOption = parseResult.SafelyGetValueForOption(InstallingWorkloadCommandParser.VersionOption),
+                VersionForTesting = version,
+                CheckIfFeatureBandManifestExists = !(parseResult.SafelyGetValueForOption(InstallingWorkloadCommandParser.PrintDownloadLinkOnlyOption)),
+                WorkloadResolverForTesting = workloadResolver,
+                UseInstalledSdkVersionForResolver = true
+            };
+
+            var creationResult = WorkloadResolverFactory.Create(creationParameters);
+
+            _dotnetPath = creationResult.DotnetPath;
+            userProfileDir = creationResult.UserProfileDir;
+            _sdkVersion = creationResult.SdkVersion;
+            _workloadResolver = creationResult.WorkloadResolver;
             var sdkFeatureBand = new SdkFeatureBand(_sdkVersion);
 
             _workloadInstaller = workloadInstaller ??
