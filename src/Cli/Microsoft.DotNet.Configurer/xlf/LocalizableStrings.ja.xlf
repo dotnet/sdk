@@ -19,16 +19,16 @@ Explore documentation: https://aka.ms/dotnet-docs
 Report issues and find source on GitHub: https://github.com/dotnet/core
 Use 'dotnet --help' to see available commands or visit: https://aka.ms/dotnet-cli
 --------------------------------------------------------------------------------------</source>
-        <target state="translated">----------------
-ASP.NET Core の HTTPS 開発証明書をインストールしました。
-証明書を信頼するには、'dotnet dev-certs https --trust' (Windows および macOS のみ) を実行します。
-HTTPS の詳細については、https://aka.ms/dotnet-https を参照してください
+        <target state="new">----------------
+Installed an ASP.NET Core HTTPS development certificate.
+To trust the certificate run 'dotnet dev-certs https --trust' (Windows and macOS only).
+Learn about HTTPS: https://aka.ms/dotnet-https
 ----------------
-最初のアプリを作成するには、https://aka.ms/dotnet-hello-world を参照してください
-最新情報については、https://aka.ms/dotnet-whats-new を参照してください
-ドキュメントを探索するには、https://aka.ms/dotnet-docs を参照してください
-GitHub で問題の報告とソースの検索を行うには、https://github.com/dotnet/core を参照してください
-'dotnet --help' を使用して使用可能なコマンドを確認するか、https://aka.ms/dotnet-cli にアクセスしてください
+Write your first app: https://aka.ms/dotnet-hello-world
+Find out what's new: https://aka.ms/dotnet-whats-new
+Explore documentation: https://aka.ms/dotnet-docs
+Report issues and find source on GitHub: https://github.com/dotnet/core
+Use 'dotnet --help' to see available commands or visit: https://aka.ms/dotnet-cli
 --------------------------------------------------------------------------------------</target>
         <note />
       </trans-unit>

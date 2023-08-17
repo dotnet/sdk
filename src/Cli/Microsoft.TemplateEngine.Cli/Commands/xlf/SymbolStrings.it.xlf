@@ -105,7 +105,7 @@ Se il comando è specificato senza l'argomento, vengono elencati tutti i pacchet
       </trans-unit>
       <trans-unit id="Option_AddSource">
         <source>Specifies a NuGet source to use during install.</source>
-        <target state="translated">Specifica un’origine NuGet da usare durante l’installazione.</target>
+        <target state="new">Specifies a NuGet source to use during install.</target>
         <note />
       </trans-unit>
       <trans-unit id="Option_AuthorFilter">

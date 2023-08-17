@@ -105,7 +105,7 @@ Wenn der Befehl ohne Argument angegeben wird, werden alle installierten Vorlagen
       </trans-unit>
       <trans-unit id="Option_AddSource">
         <source>Specifies a NuGet source to use during install.</source>
-        <target state="translated">Gibt eine NuGet-Quelle an, die während dem Installieren verwendet werden soll.</target>
+        <target state="new">Specifies a NuGet source to use during install.</target>
         <note />
       </trans-unit>
       <trans-unit id="Option_AuthorFilter">
