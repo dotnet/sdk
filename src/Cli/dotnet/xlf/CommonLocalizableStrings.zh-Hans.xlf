@@ -44,7 +44,7 @@
       </trans-unit>
       <trans-unit id="CustomConfigurationDisablesPublishAndPackReleaseProperties">
         <source>A custom configuration was detected in the project '{0}', so the property '{1}' will not take effect.</source>
-        <target state="translated">在项目 "{0}" 中检测到自定义配置，因此属性 "{1}" 将不会生效。</target>
+        <target state="new">A custom configuration was detected in the project '{0}', so the property '{1}' will not take effect.</target>
         <note />
       </trans-unit>
       <trans-unit id="DisableBuildServersOptionDescription">
@@ -193,8 +193,8 @@ export PATH="$PATH:{0}"
       <trans-unit id="SelfContainedOptionDescription">
         <source>Publish the .NET runtime with your application so the runtime doesn't need to be installed on the target machine.
 The default is 'true' if a runtime identifier is specified.</source>
-        <target state="translated">随应用程序一起发布 .NET 运行时，这样就不需要在目标计算机上安装运行时。
-如果指定了运行时标识符，则默认值为 "true"。</target>
+        <target state="new">Publish the .NET runtime with your application so the runtime doesn't need to be installed on the target machine.
+The default is 'true' if a runtime identifier is specified.</target>
         <note />
       </trans-unit>
       <trans-unit id="Solution">
@@ -205,8 +205,8 @@ The default is 'true' if a runtime identifier is specified.</source>
       <trans-unit id="SolutionExecutableConfigurationMismatchError">
         <source>Multiple executable projects in the solution contain conflicting '{0}' values. Ensure the values match. Consider using a Directory.build.props file to set all project configurations. Conflicting projects:
 {1}.</source>
-        <target state="translated">解决方案中的多个可执行项目包含冲突的 "{0}" 值。请确保值能够匹配。请考虑使用 Directory.build.props 文件设置所有项目配置。冲突项目: 
-{1}。</target>
+        <target state="new">Multiple executable projects in the solution contain conflicting '{0}' values. Ensure the values match. Consider using a Directory.build.props file to set all project configurations. Conflicting projects:
+{1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="SolutionFile">
