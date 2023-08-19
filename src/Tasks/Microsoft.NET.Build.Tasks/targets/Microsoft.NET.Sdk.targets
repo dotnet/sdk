@@ -1263,8 +1263,8 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <!-- Native AOT properties should be shown by default for projects targeting .NET 8 or higher, except for WPF and WinForms projects -->
   <PropertyGroup>
-    <ShowNativeAOTProperties Condition="('$(UseWPF)' == 'false' or '$(UseWPF)' == '')
-                             and ('$(UseWindowsForms)' == 'false' or '$(UseWindowsForms)' == '')
+    <ShowNativeAOTProperties Condition="'$(UseWPF)' != 'true'
+                             and '$(UseWindowsForms)' != 'true'
                              and '$(ShowNativeAOTProperties)' == ''
                              and '$(TargetFrameworkIdentifier)' == '.NETCoreApp'
                              and '$(_TargetFrameworkVersionWithoutV)' >= '8.0'">true</ShowNativeAOTProperties>

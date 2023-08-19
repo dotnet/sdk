@@ -20,6 +20,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ServerGarbageCollection>true</ServerGarbageCollection>
     <IsPackable Condition="'$(IsPackable)' == ''">false</IsPackable>
     <WarnOnPackingNonPackableProject Condition="'$(WarnOnPackingNonPackableProject)' == '' and '$(IsPackable)' == 'false'">true</WarnOnPackingNonPackableProject>
+    <ShowNativeAOTProperties>false</ShowNativeAOTProperties>
   </PropertyGroup>
 
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.Default.props"
