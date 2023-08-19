@@ -119,7 +119,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                         {
                             foreach (var (_, findTypeOrDefault) in applicableAttributes)
                             {
-                                if (findTypeOrDefault(attribute, context.Compilation) is INamedTypeSymbol namedType && namedType.ContainingAssembly.Equals(context.ContainingSymbol.ContainingAssembly))
+                                if (findTypeOrDefault(attribute, context.Compilation) is INamedTypeSymbol namedType && namedType.ContainingAssembly.Equals(type.ContainingAssembly))
                                 {
                                     instantiatedTypes.TryAdd(namedType, null);
                                     break;
