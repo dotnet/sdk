@@ -20,6 +20,8 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
     /// </summary>
     public abstract class AvoidUninstantiatedInternalClassesAnalyzer : DiagnosticAnalyzer
     {
+        private static readonly char[] s_commaArray = new[] { ',' };
+
         internal const string RuleId = "CA1812";
 
         internal static readonly DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(
@@ -101,21 +103,27 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                     }
 
                     // Instantiation from the subtype constructor initializer.
-                    if (type.BaseType != null)
+                    // We are only interested in base types that are from the same compilation, so we check sure they are in the same assembly.
+                    // Adding all base types is unnecessarily expensive.
+                    if (type.BaseType is { } baseType && baseType.ContainingAssembly.Equals(type.ContainingAssembly))
                     {
-                        instantiatedTypes.TryAdd(type.BaseType, null);
+                        instantiatedTypes.TryAdd(baseType, null);
                     }
 
-                    // Some attributes are known to behave as type activator so we want to check them
-                    var applicableAttributes = instantiatingAttributeChecker.Where(tuple => tuple.isAttributeTarget(type)).ToArray();
-                    foreach (var attribute in type.GetAttributes())
+                    var typeAttributes = type.GetAttributes();
+                    if (!typeAttributes.IsEmpty)
                     {
-                        foreach (var (_, findTypeOrDefault) in applicableAttributes)
+                        // Some attributes are known to behave as type activator so we want to check them
+                        var applicableAttributes = instantiatingAttributeChecker.Where(tuple => tuple.isAttributeTarget(type)).ToArray();
+                        foreach (var attribute in typeAttributes)
                         {
-                            if (findTypeOrDefault(attribute, context.Compilation) is INamedTypeSymbol namedType)
+                            foreach (var (_, findTypeOrDefault) in applicableAttributes)
                             {
-                                instantiatedTypes.TryAdd(namedType, null);
-                                break;
+                                if (findTypeOrDefault(attribute, context.Compilation) is INamedTypeSymbol namedType)
+                                {
+                                    instantiatedTypes.TryAdd(namedType, null);
+                                    break;
+                                }
                             }
                         }
                     }
@@ -258,12 +266,17 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
 
         private bool HasInstantiatedNestedType(INamedTypeSymbol type, IEnumerable<INamedTypeSymbol> instantiatedTypes)
         {
-            // We don't care whether a private nested type is instantiated, because if it
-            // is, it can only have happened within the type itself.
-            var nestedTypes = type.GetTypeMembers().Where(member => member.DeclaredAccessibility != Accessibility.Private);
+            var nestedTypes = type.GetTypeMembers();
 
             foreach (var nestedType in nestedTypes)
             {
+                // We don't care whether a private nested type is instantiated, because if it
+                // is, it can only have happened within the type itself.
+                if (nestedType.DeclaredAccessibility == Accessibility.Private)
+                {
+                    continue;
+                }
+
                 if (instantiatedTypes.Contains(nestedType))
                 {
                     return true;
@@ -411,7 +424,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
         private static bool IsTypeInCurrentAssembly(string typeName, Compilation compilation, out INamedTypeSymbol? namedType)
         {
             namedType = null;
-            var nameParts = typeName.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+            var nameParts = typeName.Split(s_commaArray, StringSplitOptions.RemoveEmptyEntries);
 
             return nameParts.Length >= 2 &&
                 nameParts[1].Trim().Equals(compilation.AssemblyName, StringComparison.Ordinal) &&
