@@ -79,7 +79,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                 startContext.RegisterOperationAction(context =>
                 {
                     var expr = (IObjectCreationOperation)context.Operation;
-                    if (expr.Type is INamedTypeSymbol namedType)
+                    if (expr.Type is INamedTypeSymbol namedType && namedType.ContainingAssembly.Equals(context.ContainingSymbol.ContainingAssembly))
                     {
                         instantiatedTypes.TryAdd(namedType, null);
                     }
@@ -119,7 +119,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                         {
                             foreach (var (_, findTypeOrDefault) in applicableAttributes)
                             {
-                                if (findTypeOrDefault(attribute, context.Compilation) is INamedTypeSymbol namedType)
+                                if (findTypeOrDefault(attribute, context.Compilation) is INamedTypeSymbol namedType && namedType.ContainingAssembly.Equals(context.ContainingSymbol.ContainingAssembly))
                                 {
                                     instantiatedTypes.TryAdd(namedType, null);
                                     break;
