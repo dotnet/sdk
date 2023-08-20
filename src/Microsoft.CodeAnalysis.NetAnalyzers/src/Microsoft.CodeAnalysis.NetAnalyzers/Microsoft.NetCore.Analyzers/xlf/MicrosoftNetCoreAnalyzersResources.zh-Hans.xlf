@@ -69,17 +69,17 @@
       </trans-unit>
       <trans-unit id="AvoidSingleUseOfLocalJsonSerializerOptionsDescription">
         <source>Avoid creating a new 'JsonSerializerOptions' instance for every serialization operation. Cache and reuse instances instead. Single use 'JsonSerializerOptions' instances can substantially degrade the performance of your application.</source>
-        <target state="new">Avoid creating a new 'JsonSerializerOptions' instance for every serialization operation. Cache and reuse instances instead. Single use 'JsonSerializerOptions' instances can substantially degrade the performance of your application.</target>
+        <target state="translated">避免为每个序列化操作创建新的“JsonSerializerOptions”实例。请改为缓存和重用实例。仅使用“JsonSerializerOptions”实例可能会显著降低应用程序的性能。</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidSingleUseOfLocalJsonSerializerOptionsMessage">
         <source>Avoid creating a new 'JsonSerializerOptions' instance for every serialization operation. Cache and reuse instances instead.</source>
-        <target state="new">Avoid creating a new 'JsonSerializerOptions' instance for every serialization operation. Cache and reuse instances instead.</target>
+        <target state="translated">避免为每个序列化操作创建新的“JsonSerializerOptions”实例。请改为缓存和重用实例。</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidSingleUseOfLocalJsonSerializerOptionsTitle">
         <source>Cache and reuse 'JsonSerializerOptions' instances</source>
-        <target state="new">Cache and reuse 'JsonSerializerOptions' instances</target>
+        <target state="translated">缓存并重用“JsonSerializerOptions”实例</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidStringBuilderPInvokeParametersDescription">

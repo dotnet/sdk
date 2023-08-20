@@ -69,17 +69,17 @@
       </trans-unit>
       <trans-unit id="AvoidSingleUseOfLocalJsonSerializerOptionsDescription">
         <source>Avoid creating a new 'JsonSerializerOptions' instance for every serialization operation. Cache and reuse instances instead. Single use 'JsonSerializerOptions' instances can substantially degrade the performance of your application.</source>
-        <target state="new">Avoid creating a new 'JsonSerializerOptions' instance for every serialization operation. Cache and reuse instances instead. Single use 'JsonSerializerOptions' instances can substantially degrade the performance of your application.</target>
+        <target state="translated">シリアル化操作ごとに新しい 'JsonSerializerOptions' インスタンスを作成しないでください。代わりにインスタンスをキャッシュして再利用します。'JsonSerializerOptions' インスタンスの単独使用では、アプリケーションのパフォーマンスが大幅に低下する可能性があります。</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidSingleUseOfLocalJsonSerializerOptionsMessage">
         <source>Avoid creating a new 'JsonSerializerOptions' instance for every serialization operation. Cache and reuse instances instead.</source>
-        <target state="new">Avoid creating a new 'JsonSerializerOptions' instance for every serialization operation. Cache and reuse instances instead.</target>
+        <target state="translated">シリアル化操作ごとに新しい 'JsonSerializerOptions' インスタンスを作成しないでください。代わりにインスタンスをキャッシュして再利用します。</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidSingleUseOfLocalJsonSerializerOptionsTitle">
         <source>Cache and reuse 'JsonSerializerOptions' instances</source>
-        <target state="new">Cache and reuse 'JsonSerializerOptions' instances</target>
+        <target state="translated">'JsonSerializerOptions' インスタンスをキャッシュして再利用する</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidStringBuilderPInvokeParametersDescription">

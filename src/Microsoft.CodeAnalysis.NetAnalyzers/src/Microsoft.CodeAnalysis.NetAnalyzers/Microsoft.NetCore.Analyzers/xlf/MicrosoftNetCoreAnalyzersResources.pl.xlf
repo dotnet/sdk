@@ -69,17 +69,17 @@
       </trans-unit>
       <trans-unit id="AvoidSingleUseOfLocalJsonSerializerOptionsDescription">
         <source>Avoid creating a new 'JsonSerializerOptions' instance for every serialization operation. Cache and reuse instances instead. Single use 'JsonSerializerOptions' instances can substantially degrade the performance of your application.</source>
-        <target state="new">Avoid creating a new 'JsonSerializerOptions' instance for every serialization operation. Cache and reuse instances instead. Single use 'JsonSerializerOptions' instances can substantially degrade the performance of your application.</target>
+        <target state="translated">Unikaj tworzenia nowego wystąpienia „JsonSerializerOptions” dla każdej operacji serializacji. Zamiast tego buforuj i ponownie wykorzystuj wystąpienia. Jednorazowe użycie wystąpienia „JsonSerializerOptions” może znacznie obniżyć wydajność aplikacji.</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidSingleUseOfLocalJsonSerializerOptionsMessage">
         <source>Avoid creating a new 'JsonSerializerOptions' instance for every serialization operation. Cache and reuse instances instead.</source>
-        <target state="new">Avoid creating a new 'JsonSerializerOptions' instance for every serialization operation. Cache and reuse instances instead.</target>
+        <target state="translated">Unikaj tworzenia nowego wystąpienia „JsonSerializerOptions” dla każdej operacji serializacji. Zamiast tego buforuj i ponownie używaj wystąpień.</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidSingleUseOfLocalJsonSerializerOptionsTitle">
         <source>Cache and reuse 'JsonSerializerOptions' instances</source>
-        <target state="new">Cache and reuse 'JsonSerializerOptions' instances</target>
+        <target state="translated">Buforuj i ponownie używaj wystąpień „JsonSerializerOptions”</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidStringBuilderPInvokeParametersDescription">

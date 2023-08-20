@@ -69,17 +69,17 @@
       </trans-unit>
       <trans-unit id="AvoidSingleUseOfLocalJsonSerializerOptionsDescription">
         <source>Avoid creating a new 'JsonSerializerOptions' instance for every serialization operation. Cache and reuse instances instead. Single use 'JsonSerializerOptions' instances can substantially degrade the performance of your application.</source>
-        <target state="new">Avoid creating a new 'JsonSerializerOptions' instance for every serialization operation. Cache and reuse instances instead. Single use 'JsonSerializerOptions' instances can substantially degrade the performance of your application.</target>
+        <target state="translated">Evitare di creare una nuova istanza di 'JsonSerializerOptions' per ogni operazione di serializzazione. Memorizzare nella cache le istanze e riutilizzarle. Le istanze monouso di 'JsonSerializerOptions' possono ridurre notevolmente le prestazioni dell'applicazione.</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidSingleUseOfLocalJsonSerializerOptionsMessage">
         <source>Avoid creating a new 'JsonSerializerOptions' instance for every serialization operation. Cache and reuse instances instead.</source>
-        <target state="new">Avoid creating a new 'JsonSerializerOptions' instance for every serialization operation. Cache and reuse instances instead.</target>
+        <target state="translated">Evitare di creare una nuova istanza di 'JsonSerializerOptions' per ogni operazione di serializzazione. Memorizzare nella cache le istanze e riutilizzarle.</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidSingleUseOfLocalJsonSerializerOptionsTitle">
         <source>Cache and reuse 'JsonSerializerOptions' instances</source>
-        <target state="new">Cache and reuse 'JsonSerializerOptions' instances</target>
+        <target state="translated">Memorizza nella cache e riutilizza le istanze di 'JsonSerializerOptions'</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidStringBuilderPInvokeParametersDescription">
