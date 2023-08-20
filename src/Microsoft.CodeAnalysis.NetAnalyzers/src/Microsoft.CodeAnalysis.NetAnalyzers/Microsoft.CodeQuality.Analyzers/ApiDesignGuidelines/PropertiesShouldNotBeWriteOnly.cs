@@ -57,40 +57,41 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         /// </summary>
         private static void AnalyzeSymbol(SymbolAnalysisContext context)
         {
-            if (context.Symbol is not IPropertySymbol property)
-            {
-                return;
-            }
+            var property = (IPropertySymbol)context.Symbol;
 
             // not raising a violation for when:
             //     property is overridden because the issue can only be fixed in the base type
             //     property is the implementation of any interface member
-            if (property.IsOverride || property.IsImplementationOfAnyInterfaceMember())
+            if (property.IsOverride || GetRule(property) is not DiagnosticDescriptor descriptor || property.IsImplementationOfAnyInterfaceMember())
             {
                 return;
             }
 
             Debug.Assert(context.Options.MatchesConfiguredVisibility(MakeMoreAccessibleRule, property, context.Compilation) == context.Options.MatchesConfiguredVisibility(AddGetterRule, property, context.Compilation));
+            Debug.Assert(descriptor == MakeMoreAccessibleRule || descriptor == AddGetterRule);
 
+            // Only analyze externally visible properties by default
+            if (context.Options.MatchesConfiguredVisibility(descriptor, property, context.Compilation))
+            {
+                context.ReportDiagnostic(property.CreateDiagnostic(descriptor, property.Name));
+            }
+        }
+
+        private static DiagnosticDescriptor? GetRule(IPropertySymbol property)
+        {
             // We handled the non-CA1044 cases earlier.  Now, we handle CA1044 cases
             // If there is no getter then it is not accessible
             if (property.IsWriteOnly)
             {
-                // Only analyze externally visible properties by default
-                if (context.Options.MatchesConfiguredVisibility(AddGetterRule, property, context.Compilation))
-                {
-                    context.ReportDiagnostic(property.CreateDiagnostic(AddGetterRule, property.Name));
-                }
+                return AddGetterRule;
             }
             // Otherwise if there is a setter, check for its relative accessibility
             else if (!property.IsReadOnly && (property.GetMethod!.DeclaredAccessibility < property.SetMethod!.DeclaredAccessibility))
             {
-                // Only analyze externally visible properties by default
-                if (context.Options.MatchesConfiguredVisibility(MakeMoreAccessibleRule, property, context.Compilation))
-                {
-                    context.ReportDiagnostic(property.CreateDiagnostic(MakeMoreAccessibleRule, property.Name));
-                }
+                return MakeMoreAccessibleRule;
             }
+
+            return null;
         }
     }
 }
