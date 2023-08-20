@@ -15,10 +15,15 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Resources
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
     public sealed class CSharpMarkAssembliesWithNeutralResourcesLanguageAnalyzer : MarkAssembliesWithNeutralResourcesLanguageAnalyzer
     {
-        protected override void RegisterAttributeAnalyzer(CompilationStartAnalysisContext context, Action onResourceFound, INamedTypeSymbol generatedCode)
+        protected override void RegisterAttributeAnalyzer(CompilationStartAnalysisContext context, Func<bool> shouldAnalyze, Action<SyntaxNodeAnalysisContext> onResourceFound, INamedTypeSymbol generatedCode)
         {
             context.RegisterSyntaxNodeAction(context =>
             {
+                if (!shouldAnalyze())
+                {
+                    return;
+                }
+
                 var attributeSyntax = (AttributeSyntax)context.Node;
                 if (!CheckAttribute(attributeSyntax))
                 {
@@ -30,7 +35,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Resources
                     return;
                 }
 
-                onResourceFound();
+                onResourceFound(context);
             }, SyntaxKind.Attribute);
         }
 
