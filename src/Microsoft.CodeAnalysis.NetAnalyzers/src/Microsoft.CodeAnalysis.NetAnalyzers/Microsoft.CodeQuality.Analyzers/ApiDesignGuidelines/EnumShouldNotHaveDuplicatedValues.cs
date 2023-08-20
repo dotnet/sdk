@@ -54,7 +54,8 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
             void visitEnumSymbol(SymbolStartAnalysisContext context)
             {
-                if (context.Symbol is not INamedTypeSymbol { TypeKind: TypeKind.Enum } enumSymbol)
+                var enumSymbol = (INamedTypeSymbol)context.Symbol;
+                if (enumSymbol.TypeKind != TypeKind.Enum)
                 {
                     return;
                 }

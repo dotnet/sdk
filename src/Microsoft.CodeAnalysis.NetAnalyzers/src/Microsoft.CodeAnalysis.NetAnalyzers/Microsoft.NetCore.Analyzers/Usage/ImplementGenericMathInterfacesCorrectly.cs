@@ -51,10 +51,8 @@ namespace Microsoft.NetCore.Analyzers.Usage
 
                 context.RegisterSymbolAction(context =>
                 {
-                    if (context.Symbol is INamedTypeSymbol ntSymbol)
-                    {
-                        AnalyzeSymbol(context, ntSymbol, iParsableInterface.ContainingNamespace, iNumberInterface.ContainingNamespace);
-                    }
+                    var symbol = (INamedTypeSymbol)context.Symbol;
+                    AnalyzeSymbol(context, symbol, iParsableInterface.ContainingNamespace, iNumberInterface.ContainingNamespace);
                 }, SymbolKind.NamedType);
             });
         }
