@@ -69,17 +69,17 @@
       </trans-unit>
       <trans-unit id="AvoidSingleUseOfLocalJsonSerializerOptionsDescription">
         <source>Avoid creating a new 'JsonSerializerOptions' instance for every serialization operation. Cache and reuse instances instead. Single use 'JsonSerializerOptions' instances can substantially degrade the performance of your application.</source>
-        <target state="new">Avoid creating a new 'JsonSerializerOptions' instance for every serialization operation. Cache and reuse instances instead. Single use 'JsonSerializerOptions' instances can substantially degrade the performance of your application.</target>
+        <target state="translated">Her serileştirme işlemi için yeni bir 'JsonSerializerOptions' örneği oluşturmaktan kaçının. Bunun yerine örnekleri önbelleğe alıp yeniden kullanın. Tek kullanımlık 'JsonSerializerOptions' örnekleri uygulamanızın performansını önemli ölçüde düşürebilir.</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidSingleUseOfLocalJsonSerializerOptionsMessage">
         <source>Avoid creating a new 'JsonSerializerOptions' instance for every serialization operation. Cache and reuse instances instead.</source>
-        <target state="new">Avoid creating a new 'JsonSerializerOptions' instance for every serialization operation. Cache and reuse instances instead.</target>
+        <target state="translated">Her serileştirme işlemi için yeni bir 'JsonSerializerOptions' örneği oluşturmaktan kaçının. Bunun yerine örnekleri önbelleğe alıp yeniden kullanın.</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidSingleUseOfLocalJsonSerializerOptionsTitle">
         <source>Cache and reuse 'JsonSerializerOptions' instances</source>
-        <target state="new">Cache and reuse 'JsonSerializerOptions' instances</target>
+        <target state="translated">'JsonSerializerOptions' örneklerini önbelleğe alıp yeniden kullanma</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidStringBuilderPInvokeParametersDescription">
