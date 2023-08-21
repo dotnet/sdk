@@ -85,7 +85,7 @@ public class ArtifactsSize : SmokeTests
     private void LogWarningMessage(string message)
     {
         string prefix = "##vso[task.logissue type=warning;]";
-        
+
         OutputHelper.WriteLine($"{Environment.NewLine}{prefix}{message}.{Environment.NewLine}");
         OutputHelper.WriteLine("##vso[task.complete result=SucceededWithIssues;]");
     }
@@ -94,8 +94,8 @@ public class ArtifactsSize : SmokeTests
     {
         try
         {
-            string originalBaselineFilePath = baselineFilePath.Substring(0, baselineFilePath.IndexOf("/bin")) + $"/assets/baselines/ArtifactsSizes/{Config.TargetRid}.txt";
-            File.Copy(baselineFilePath, originalBaselineFilePath, true);
+            string actualFilePath = Path.Combine(DotNetHelper.LogsDirectory, $"Updated_ArtifactsSizes_{Config.TargetRid}.txt");
+            File.Copy(baselineFilePath, actualFilePath, true);
         }
         catch (IOException ex)
         {
