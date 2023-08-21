@@ -241,9 +241,9 @@
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
       <Sha>f902a5b27cf2d89e555a1cf67ae796d11dab039e</Sha>
     </Dependency>
-    <Dependency Name="VS.Redist.Common.AspNetCore.SharedFramework.x64.9.0" Version="9.0.0-alpha.1.23415.6">
+    <Dependency Name="VS.Redist.Common.AspNetCore.SharedFramework.x64.9.0" Version="9.0.0-alpha.1.23421.8">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>2949277e66731eddd62251941feed12ba440c9fb</Sha>
+      <Sha>f902a5b27cf2d89e555a1cf67ae796d11dab039e</Sha>
       <SourceBuild RepoName="aspnetcore" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="dotnet-dev-certs" Version="9.0.0-alpha.1.23421.8">
