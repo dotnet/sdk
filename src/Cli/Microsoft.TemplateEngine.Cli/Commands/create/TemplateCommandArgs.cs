@@ -115,7 +115,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             {
                 throw new InvalidOperationException($"Parameter {parameterName} is not defined for {Template.Identity}.");
             }
-            if (parameter.Type == ParameterType.Hex && optionResult.Option.GetType() == typeof(long))
+            if (parameter.Type == ParameterType.Hex)
             {
                 var intValue = (long)optionValue;
                 return $"0x{intValue.ToString("X")}";
