@@ -14,14 +14,22 @@ namespace Microsoft.DotNet.SourceBuild.SmokeTests;
 [Trait("Category", "SdkContent")]
 public class ArtifactsSize : SmokeTests
 {
-    private readonly string baselineFilePath = BaselineHelper.GetBaselineFilePath($"ArtifactsSizes/{Config.TargetRid}.txt");
-    private readonly string[] baselineFileContent;
-    private readonly Regex buildVersionPattern = new(@"\b\d+\.\d+\.\d+[-@](alpha|preview|rc|rtm)\.\d(\.\d+\.\d+)?\b");
+    private static readonly string BaselineFilePath = BaselineHelper.GetBaselineFilePath($"ArtifactsSizes/{Config.TargetRid}.txt");
+    private static readonly Dictionary<string, long> BaselineFileContent = new Dictionary<string, long>();
+    private static readonly Regex BuildVersionPattern = new(@"\b\d+\.\d+\.\d+[-@](alpha|preview|rc|rtm)\.\d(\.\d+\.\d+)?\b");
 
 
     public ArtifactsSize(ITestOutputHelper outputHelper) : base(outputHelper)
     {
-        baselineFileContent = File.Exists(baselineFilePath) ? File.ReadAllLines(baselineFilePath) : Array.Empty<string>();
+        if(File.Exists(BaselineFilePath))
+        {
+            string[] baselineFileContent = File.ReadAllLines(BaselineFilePath);
+            foreach(string entry in baselineFileContent)
+            {
+                string[] splitEntry = entry.Split(':');
+                BaselineFileContent[splitEntry[0].Trim()] = long.Parse(splitEntry[1].Trim());
+            }
+        }
     }
 
     [SkippableFact(new[] { Config.SourceBuiltArtifactsPathEnv, Config.SdkTarballPathEnv, Config.TargetRidEnv }, skipOnNullOrWhiteSpace: true)]
@@ -35,53 +43,44 @@ public class ArtifactsSize : SmokeTests
         IEnumerable<TarEntry> artifactsTarEntries = Utilities.GetTarballContent(Config.SourceBuiltArtifactsPath).Where(entry => entry.EntryType == TarEntryType.RegularFile);
         IEnumerable<TarEntry> sdkTarEntries = Utilities.GetTarballContent(Config.SdkTarballPath).Where(entry => entry.EntryType == TarEntryType.RegularFile);
 
-        string[] tarEntries = sdkTarEntries.Concat(artifactsTarEntries)
+        (string FilePath, long Bytes)[] tarEntries = sdkTarEntries.Concat(artifactsTarEntries)
             .Select(entry =>
             {
                 string modifiedPath = buildVersionPattern.Replace(entry.Name, "VERSION");
-                string result = modifiedPath.Replace(Config.TargetRid, "TARGET_RID");
-                return $"{result}: {entry.Length} bytes";
+                string result = BaselineHelper.RemoveRids(modifiedPath);
+                return (result, entry.Length);
             })
-            .OrderBy(entry => entry)
+            .OrderBy(entry => entry.FilePath)
             .ToArray();
 
         foreach (string entry in tarEntries)
         {
-            string tarEntryFilename = entry.Substring(0, entry.IndexOf(":")).Trim();
-            string baselineEntry = baselineFileContent?.FirstOrDefault(baselineEntry => baselineEntry.StartsWith(tarEntryFilename)) ?? "";
-
-            if (string.IsNullOrEmpty(baselineEntry))
+            if (BaselineFileContent.ContainsKey(entry.Filename))
             {
                 LogWarningMessage($"{tarEntryFilename} does not exist in baseline. Adding it to the baseline file");
-                File.AppendAllText(baselineFilePath, $"{entry}" + Environment.NewLine);
+                File.AppendAllText(baselineFilePath, $"{entry}" + Environment.NewLine); // save writes to the end
             }
             else
             {
-                string tarEntrySize = entry.Substring(entry.IndexOf(":") + 1).Replace(" bytes", "").Trim();
-                string baselineEntrySize = baselineEntry.Substring(tarEntryFilename.Length + 1).Replace(" bytes", "").Trim() ?? "0";
-
-                string message = CompareFileSizes(tarEntryFilename, long.Parse(tarEntrySize), long.Parse(baselineEntrySize));
-                if (!string.IsNullOrEmpty(message))
-                {
-                    LogWarningMessage(message);
-                }
+                CompareFileSizes(tarEntryFilename, long.Parse(tarEntrySize), long.Parse(baselineEntrySize));
             }
         }
 
         CopyBaselineFile();
     }
 
-    private string CompareFileSizes(string filePath, long fileSize, long baselineSize)
+    private void CompareFileSizes(string filePath, long fileSize, long baselineSize)
     {
         if (fileSize == 0 && baselineSize != 0)
-            return $"{filePath} is now 0 bytes. It was {baselineSize} bytes";
+            LogWarningMessage($"'{filePath}' is now 0 bytes. It was {baselineSize} bytes");
         else if (fileSize != 0 && baselineSize == 0)
-            return $"{filePath} is no longer 0 bytes. It is now {fileSize} bytes";
+            LogWarningMessage($"'{filePath}' is no longer 0 bytes. It is now {fileSize} bytes");
         else if (baselineSize != 0 && Math.Abs(((fileSize - baselineSize) / (double)baselineSize) * 100) >= 25)
-            return $"{filePath} increased in size by more than 25%. It was originally {baselineSize} bytes and is now {fileSize} bytes";
-        return "";
+            LogWarningMessage($"'{filePath}' increased in size by more than 25%. It was originally {baselineSize} bytes and is now {fileSize} bytes");
+        return;
     }
 
+    // make an exdtension method in ITestOutputHelper
     private void LogWarningMessage(string message)
     {
         string prefix = "##vso[task.logissue type=warning;]";
