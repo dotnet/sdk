@@ -50,16 +50,18 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <!-- For .NET 8 and higher, we will by default use a simplified "portable" RID graph -->
   <PropertyGroup>
-    <_UseRidGraph>$(UseRidGraph)</_UseRidGraph>
-    <_UseRidGraph Condition="'$(_UseRidGraph)' == '' AND '$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '8.0'))">false</_UseRidGraph>
-    <_UseRidGraph Condition="'$(_UseRidGraph)' == ''">true</_UseRidGraph>
+    <_UseRidGraphWasSpecified Condition="'$(UseRidGraph)' != ''">true</_UseRidGraphWasSpecified>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(UseRidGraph)' == ''">
+    <UseRidGraph Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '8.0'))">false</UseRidGraph>
+    <UseRidGraph Condition="'$(UseRidGraph)' == ''">true</UseRidGraph>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(RuntimeIdentifierGraphPath)' == ''">
-    <RuntimeIdentifierGraphPath Condition="'$(_UseRidGraph)' == 'true'">$(BundledRuntimeIdentifierGraphFile)</RuntimeIdentifierGraphPath>
+    <RuntimeIdentifierGraphPath Condition="'$(UseRidGraph)' == 'true'">$(BundledRuntimeIdentifierGraphFile)</RuntimeIdentifierGraphPath>
 
     <!-- The portable RID graph should be in the same directory as the full RID graph -->
-    <RuntimeIdentifierGraphPath Condition="'$(_UseRidGraph)' != 'true'">$([System.IO.Path]::GetDirectoryName($(BundledRuntimeIdentifierGraphFile)))/PortableRuntimeIdentifierGraph.json</RuntimeIdentifierGraphPath>
+    <RuntimeIdentifierGraphPath Condition="'$(UseRidGraph)' != 'true'">$([System.IO.Path]::GetDirectoryName($(BundledRuntimeIdentifierGraphFile)))/PortableRuntimeIdentifierGraph.json</RuntimeIdentifierGraphPath>
   </PropertyGroup>
 
   <ItemGroup>
@@ -615,7 +617,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                                     Value="$(TieredPGO)" />
 
     <RuntimeHostConfigurationOption Include="System.Runtime.Loader.UseRidGraph"
-                                    Condition="'$(UseRidGraph)' != ''"
+                                    Condition="'$(_UseRidGraphWasSpecified)' == 'true'"
                                     Value="$(UseRidGraph)" />
 
     <RuntimeHostConfigurationOption Include="System.StartupHookProvider.IsSupported"
