@@ -1,3 +1,7 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
 using System;
 using System.IO;
 using System.Linq;
@@ -12,14 +16,15 @@ using Xunit.Abstractions;
 namespace Microsoft.DotNet.SourceBuild.SmokeTests;
 
 [Trait("Category", "SdkContent")]
-public class ArtifactsSize : SmokeTests
+public class ArtifactsSizeTest : SmokeTests
 {
     private static readonly string BaselineFilePath = BaselineHelper.GetBaselineFilePath($"ArtifactsSizes/{Config.TargetRid}.txt");
     private static readonly Dictionary<string, long> BaselineFileContent = new Dictionary<string, long>();
     private static readonly Regex BuildVersionPattern = new(@"\b\d+\.\d+\.\d+[-@](alpha|preview|rc|rtm)\.\d(\.\d+\.\d+)?\b");
+    private const int SizeThreshold = 25;
 
 
-    public ArtifactsSize(ITestOutputHelper outputHelper) : base(outputHelper)
+    public ArtifactsSizeTest(ITestOutputHelper outputHelper) : base(outputHelper)
     {
         if(File.Exists(BaselineFilePath))
         {
@@ -30,12 +35,16 @@ public class ArtifactsSize : SmokeTests
                 BaselineFileContent[splitEntry[0].Trim()] = long.Parse(splitEntry[1].Trim());
             }
         }
+        else
+        {
+            Assert.True(Directory.Exists(BaselineHelper.GetBaselineFilePath("ArtifactsSizes/")));
+            Assert.False(true, $"Baseline file `{BaselineFilePath}' does not exist. Please create the baseline file then rerun the test.");
+        }
     }
 
     [SkippableFact(new[] { Config.SourceBuiltArtifactsPathEnv, Config.SdkTarballPathEnv, Config.TargetRidEnv }, skipOnNullOrWhiteSpace: true)]
-    public void ArtifactsSizeTest()
+    public void CompareArtifactsToBaseline()
     {
-        Assert.True(Directory.Exists(BaselineHelper.GetBaselineFilePath("ArtifactsSizes/")));
         Assert.NotNull(Config.SourceBuiltArtifactsPath);
         Assert.NotNull(Config.SdkTarballPath);
         Assert.NotNull(Config.TargetRid);
@@ -46,47 +55,42 @@ public class ArtifactsSize : SmokeTests
         (string FilePath, long Bytes)[] tarEntries = sdkTarEntries.Concat(artifactsTarEntries)
             .Select(entry =>
             {
-                string modifiedPath = buildVersionPattern.Replace(entry.Name, "VERSION");
-                string result = BaselineHelper.RemoveRids(modifiedPath);
-                return (result, entry.Length);
+                string result = BaselineHelper.RemoveVersions(entry.Name);
+                result = BaselineHelper.RemoveRids(result);
+                result = BaselineHelper.RemoveNetTfmPaths(result);
+
+                return (FilePath: result, Bytes: entry.Length);
+
             })
             .OrderBy(entry => entry.FilePath)
             .ToArray();
 
-        foreach (string entry in tarEntries)
+        var missingBaselineEntries = new List<string>(0);
+        foreach (var entry in tarEntries)
         {
-            if (BaselineFileContent.ContainsKey(entry.Filename))
+            if (!BaselineFileContent.ContainsKey(entry.FilePath))
             {
-                LogWarningMessage($"{tarEntryFilename} does not exist in baseline. Adding it to the baseline file");
-                File.AppendAllText(baselineFilePath, $"{entry}" + Environment.NewLine); // save writes to the end
+                OutputHelper.LogWarningMessage($"{entry.FilePath} does not exist in baseline. Adding it to the baseline file");
+                missingBaselineEntries.Add($"{entry.FilePath}: {entry.Bytes}");
             }
             else
             {
-                CompareFileSizes(tarEntryFilename, long.Parse(tarEntrySize), long.Parse(baselineEntrySize));
+                CompareFileSizes(entry.FilePath, entry.Bytes, BaselineFileContent[entry.FilePath]);
             }
         }
 
+        File.AppendAllLines(BaselineFilePath, missingBaselineEntries.ToArray()); // save writes to the end
         CopyBaselineFile();
     }
 
     private void CompareFileSizes(string filePath, long fileSize, long baselineSize)
     {
         if (fileSize == 0 && baselineSize != 0)
-            LogWarningMessage($"'{filePath}' is now 0 bytes. It was {baselineSize} bytes");
+            OutputHelper.LogWarningMessage($"'{filePath}' is now 0 bytes. It was {baselineSize} bytes");
         else if (fileSize != 0 && baselineSize == 0)
-            LogWarningMessage($"'{filePath}' is no longer 0 bytes. It is now {fileSize} bytes");
-        else if (baselineSize != 0 && Math.Abs(((fileSize - baselineSize) / (double)baselineSize) * 100) >= 25)
-            LogWarningMessage($"'{filePath}' increased in size by more than 25%. It was originally {baselineSize} bytes and is now {fileSize} bytes");
-        return;
-    }
-
-    // make an exdtension method in ITestOutputHelper
-    private void LogWarningMessage(string message)
-    {
-        string prefix = "##vso[task.logissue type=warning;]";
-
-        OutputHelper.WriteLine($"{Environment.NewLine}{prefix}{message}.{Environment.NewLine}");
-        OutputHelper.WriteLine("##vso[task.complete result=SucceededWithIssues;]");
+            OutputHelper.LogWarningMessage($"'{filePath}' is no longer 0 bytes. It is now {fileSize} bytes");
+        else if (baselineSize != 0 && Math.Abs(((fileSize - baselineSize) / (double)baselineSize) * 100) >= SizeThreshold)
+            OutputHelper.LogWarningMessage($"'{filePath}' increased in size by more than {SizeThreshold}%. It was originally {baselineSize} bytes and is now {fileSize} bytes");
     }
 
     private void CopyBaselineFile()
@@ -94,11 +98,11 @@ public class ArtifactsSize : SmokeTests
         try
         {
             string actualFilePath = Path.Combine(DotNetHelper.LogsDirectory, $"Updated_ArtifactsSizes_{Config.TargetRid}.txt");
-            File.Copy(baselineFilePath, actualFilePath, true);
+            File.Copy(BaselineFilePath, actualFilePath, true);
         }
         catch (IOException ex)
         {
-            throw new InvalidOperationException($"An error occurred while copying the baselines file: {ex.Message}");
+            throw new InvalidOperationException($"An error occurred while copying the baselines file: {BaselineFilePath}", ex);
         }
     }
 }
