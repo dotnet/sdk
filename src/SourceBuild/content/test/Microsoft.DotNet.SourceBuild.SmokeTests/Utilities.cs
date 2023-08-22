@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Formats.Tar;
 using System.IO;
 using System.IO.Compression;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit.Abstractions;
@@ -47,13 +48,8 @@ public static class Utilities
         }
     }
 
-    public static IEnumerable<string> GetTarballContentNames(string tarballPath)
-    {
-        foreach (var entry in GetTarballContent(tarballPath))
-        {
-            yield return entry.Name;
-        }
-    }
+    public static IEnumerable<string> GetTarballContentNames(string tarballPath) =>
+        GetTarballContent(tarballPath).Select(entry => entry.Name);
 
     public static IEnumerable<TarEntry> GetTarballContent(string tarballPath)
     {
@@ -111,5 +107,13 @@ public static class Utilities
             Thread.Sleep(TimeSpan.FromSeconds(waitTime));
             exception = await executor();
         }
+    }
+
+    public static void LogWarningMessage(this ITestOutputHelper outputHelper, string message)
+    {
+        string prefix = "##vso[task.logissue type=warning;]";
+
+        outputHelper.WriteLine($"{Environment.NewLine}{prefix}{message}.{Environment.NewLine}");
+        outputHelper.WriteLine("##vso[task.complete result=SucceededWithIssues;]");
     }
 }
