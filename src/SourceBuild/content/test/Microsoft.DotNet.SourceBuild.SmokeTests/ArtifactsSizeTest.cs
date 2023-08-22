@@ -65,13 +65,11 @@ public class ArtifactsSizeTest : SmokeTests
             .OrderBy(entry => entry.FilePath)
             .ToArray();
 
-        var missingBaselineEntries = new List<string>(0);
         foreach (var entry in tarEntries)
         {
             if (!BaselineFileContent.ContainsKey(entry.FilePath))
             {
                 OutputHelper.LogWarningMessage($"{entry.FilePath} does not exist in baseline. Adding it to the baseline file");
-                missingBaselineEntries.Add($"{entry.FilePath}: {entry.Bytes}");
             }
             else
             {
@@ -79,8 +77,15 @@ public class ArtifactsSizeTest : SmokeTests
             }
         }
 
-        File.AppendAllLines(BaselineFilePath, missingBaselineEntries.ToArray()); // save writes to the end
-        CopyBaselineFile();
+        try
+        {
+            string actualFilePath = Path.Combine(DotNetHelper.LogsDirectory, $"Updated_ArtifactsSizes_{Config.TargetRid}.txt");
+            File.WriteAllLines(actualFilePath, tarEntries.Select(entry => $"{entry.FilePath}: {entry.Bytes}"));
+        }
+        catch (IOException ex)
+        {
+            throw new InvalidOperationException($"An error occurred while copying the baselines file: {BaselineFilePath}", ex);
+        }
     }
 
     private void CompareFileSizes(string filePath, long fileSize, long baselineSize)
@@ -91,18 +96,5 @@ public class ArtifactsSizeTest : SmokeTests
             OutputHelper.LogWarningMessage($"'{filePath}' is no longer 0 bytes. It is now {fileSize} bytes");
         else if (baselineSize != 0 && Math.Abs(((fileSize - baselineSize) / (double)baselineSize) * 100) >= SizeThreshold)
             OutputHelper.LogWarningMessage($"'{filePath}' increased in size by more than {SizeThreshold}%. It was originally {baselineSize} bytes and is now {fileSize} bytes");
-    }
-
-    private void CopyBaselineFile()
-    {
-        try
-        {
-            string actualFilePath = Path.Combine(DotNetHelper.LogsDirectory, $"Updated_ArtifactsSizes_{Config.TargetRid}.txt");
-            File.Copy(BaselineFilePath, actualFilePath, true);
-        }
-        catch (IOException ex)
-        {
-            throw new InvalidOperationException($"An error occurred while copying the baselines file: {BaselineFilePath}", ex);
-        }
     }
 }
