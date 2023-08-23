@@ -21,15 +21,15 @@ public class ArtifactsSizeTest : SmokeTests
     private static readonly string BaselineFilePath = BaselineHelper.GetBaselineFilePath($"ArtifactsSizes/{Config.TargetRid}.txt");
     private static readonly Dictionary<string, long> BaselineFileContent = new Dictionary<string, long>();
     private static readonly Regex BuildVersionPattern = new(@"\b\d+\.\d+\.\d+[-@](alpha|preview|rc|rtm)\.\d(\.\d+\.\d+)?\b");
-    private const int SizeThreshold = 25;
+    private const int SizeThresholdPercentage = 25;
 
 
     public ArtifactsSizeTest(ITestOutputHelper outputHelper) : base(outputHelper)
     {
-        if(File.Exists(BaselineFilePath))
+        if (File.Exists(BaselineFilePath))
         {
             string[] baselineFileContent = File.ReadAllLines(BaselineFilePath);
-            foreach(string entry in baselineFileContent)
+            foreach (string entry in baselineFileContent)
             {
                 string[] splitEntry = entry.Split(':');
                 BaselineFileContent[splitEntry[0].Trim()] = long.Parse(splitEntry[1].Trim());
@@ -67,13 +67,13 @@ public class ArtifactsSizeTest : SmokeTests
 
         foreach (var entry in tarEntries)
         {
-            if (!BaselineFileContent.ContainsKey(entry.FilePath))
+            if (!BaselineFileContent.TryGetValue(entry.FilePath, out long baselineBytes))
             {
                 OutputHelper.LogWarningMessage($"{entry.FilePath} does not exist in baseline. Adding it to the baseline file");
             }
             else
             {
-                CompareFileSizes(entry.FilePath, entry.Bytes, BaselineFileContent[entry.FilePath]);
+                CompareFileSizes(entry.FilePath, entry.Bytes, baselineBytes);
             }
         }
 
@@ -94,7 +94,7 @@ public class ArtifactsSizeTest : SmokeTests
             OutputHelper.LogWarningMessage($"'{filePath}' is now 0 bytes. It was {baselineSize} bytes");
         else if (fileSize != 0 && baselineSize == 0)
             OutputHelper.LogWarningMessage($"'{filePath}' is no longer 0 bytes. It is now {fileSize} bytes");
-        else if (baselineSize != 0 && Math.Abs(((fileSize - baselineSize) / (double)baselineSize) * 100) >= SizeThreshold)
-            OutputHelper.LogWarningMessage($"'{filePath}' increased in size by more than {SizeThreshold}%. It was originally {baselineSize} bytes and is now {fileSize} bytes");
+        else if (baselineSize != 0 && Math.Abs(((fileSize - baselineSize) / (double)baselineSize) * 100) >= SizeThresholdPercentage)
+            OutputHelper.LogWarningMessage($"'{filePath}' increased in size by more than {SizeThresholdPercentage}%. It was originally {baselineSize} bytes and is now {fileSize} bytes");
     }
 }
