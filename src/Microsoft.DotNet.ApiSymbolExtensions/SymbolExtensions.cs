@@ -7,9 +7,9 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
 {
     public static class SymbolExtensions
     {
-        public static SymbolDisplayFormat Format { get; } = GetSymbolDisplayFormat();
+        private static readonly SymbolDisplayFormat s_format = GetSymbolDisplayFormat();
 
-        public static SymbolDisplayFormat GetSymbolDisplayFormat()
+        private static SymbolDisplayFormat GetSymbolDisplayFormat()
         {
             // This is the default format for symbol.ToDisplayString;
             SymbolDisplayFormat format = SymbolDisplayFormat.CSharpErrorMessageFormat;
@@ -24,11 +24,11 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
                 ~SymbolDisplayMiscellaneousOptions.IncludeNullableReferenceTypeModifier);
 
             // Remove ref/out from parameters to compare APIs when building the mappers.
-            return format.WithParameterOptions(format.ParameterOptions & ~SymbolDisplayParameterOptions.IncludeParamsRefOut);
+            return format.WithParameterOptions((format.ParameterOptions | SymbolDisplayParameterOptions.IncludeExtensionThis) & ~SymbolDisplayParameterOptions.IncludeParamsRefOut);
         }
 
         public static string ToComparisonDisplayString(this ISymbol symbol) =>
-            symbol.ToDisplayString(Format)
+            symbol.ToDisplayString(s_format)
                   .Replace("System.IntPtr", "nint") // Treat IntPtr and nint as the same
                   .Replace("System.UIntPtr", "nuint"); // Treat UIntPtr and nuint as the same
 
