@@ -51,7 +51,7 @@ public class OmniSharpTests : SmokeTests
             OutputHelper,
             logOutput: true,
             millisecondTimeout: 5000,
-            configureCallback: (process) => DotNetHelper.ConfigureProcess(process, projectDirectory, setPath: true));
+            configureCallback: (process) => DotNetHelper.ConfigureProcess(process, projectDirectory));
 
         Assert.NotEqual(0, executeResult.Process.ExitCode);
         Assert.DoesNotContain("ERROR", executeResult.StdOut);

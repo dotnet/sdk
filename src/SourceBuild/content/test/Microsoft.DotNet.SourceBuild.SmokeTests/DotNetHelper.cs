@@ -126,7 +126,7 @@ internal class DotNetHelper
         }
     }
 
-    public static void ConfigureProcess(Process process, string? workingDirectory, bool setPath = false)
+    public static void ConfigureProcess(Process process, string? workingDirectory)
     {
         if (workingDirectory != null)
         {
@@ -137,11 +137,7 @@ internal class DotNetHelper
         process.StartInfo.EnvironmentVariables["DOTNET_SKIP_FIRST_TIME_EXPERIENCE"] = "1";
         process.StartInfo.EnvironmentVariables["DOTNET_ROOT"] = Config.DotNetDirectory;
         process.StartInfo.EnvironmentVariables["NUGET_PACKAGES"] = PackagesDirectory;
-
-        if (setPath)
-        {
-            process.StartInfo.EnvironmentVariables["PATH"] = $"{Config.DotNetDirectory}:{Environment.GetEnvironmentVariable("PATH")}";
-        }
+        process.StartInfo.EnvironmentVariables["PATH"] = $"{Config.DotNetDirectory}:{Environment.GetEnvironmentVariable("PATH")}";
     }
 
     public void ExecuteBuild(string projectName) =>
