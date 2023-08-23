@@ -752,54 +752,52 @@ namespace Microsoft.NET.Publish.Tests
             IsNativeImage(publishedDll).Should().BeTrue();
         }
 
-        [RequiresMSBuildVersionTheory("17.0.0.32901")]
+        [Theory]
         [InlineData(ToolsetInfo.CurrentTargetFramework)]
         public void NativeAotStaticLib_errors_out_when_eventpipe_is_enabled(string targetFramework)
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-            {
-                var projectName = "AotStaticLibraryPublishWithEventPipe";
-                var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
+            // Revisit once the issue is fixed
+            // https://github.com/dotnet/runtime/issues/89346
+            var projectName = "AotStaticLibraryPublishWithEventPipe";
+            var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
 
-                var testProject = CreateTestProjectWithAotLibrary(targetFramework, projectName);
-                testProject.AdditionalProperties["PublishAot"] = "true";
-                testProject.AdditionalProperties["RuntimeIdentifier"] = rid;
-                testProject.AdditionalProperties["NativeLib"] = "Static";
-                testProject.AdditionalProperties["SelfContained"] = "true";
-                testProject.AdditionalProperties["EventSourceSupport"] = "true";
-                var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testProject = CreateTestProjectWithAotLibrary(targetFramework, projectName);
+            testProject.AdditionalProperties["PublishAot"] = "true";
+            testProject.AdditionalProperties["RuntimeIdentifier"] = rid;
+            testProject.AdditionalProperties["NativeLib"] = "Static";
+            testProject.AdditionalProperties["SelfContained"] = "true";
+            testProject.AdditionalProperties["EventSourceSupport"] = "true";
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
-                var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
-                publishCommand
-                    .Execute()
-                    .Should().Fail()
-                    .And.HaveStdOutContaining("EventSource is not supported");
-            }
+            var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
+            publishCommand
+                .Execute()
+                .Should().Fail()
+                .And.HaveStdOutContaining("EventSource is not supported");
         }
 
-        [RequiresMSBuildVersionTheory("17.0.0.32901")]
+        [Theory]
         [InlineData(ToolsetInfo.CurrentTargetFramework)]
         public void NativeAotSharedLib_errors_out_when_eventpipe_is_enabled(string targetFramework)
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-            {
-                var projectName = "AotStaticLibraryPublishWithEventPipe";
-                var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
+            // Revisit once the issue is fixed
+            // https://github.com/dotnet/runtime/issues/89346
+            var projectName = "AotStaticLibraryPublishWithEventPipe";
+            var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
 
-                var testProject = CreateTestProjectWithAotLibrary(targetFramework, projectName);
-                testProject.AdditionalProperties["PublishAot"] = "true";
-                testProject.AdditionalProperties["RuntimeIdentifier"] = rid;
-                testProject.AdditionalProperties["NativeLib"] = "Shared";
-                testProject.AdditionalProperties["SelfContained"] = "true";
-                testProject.AdditionalProperties["EventSourceSupport"] = "true";
-                var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testProject = CreateTestProjectWithAotLibrary(targetFramework, projectName);
+            testProject.AdditionalProperties["PublishAot"] = "true";
+            testProject.AdditionalProperties["RuntimeIdentifier"] = rid;
+            testProject.AdditionalProperties["NativeLib"] = "Shared";
+            testProject.AdditionalProperties["SelfContained"] = "true";
+            testProject.AdditionalProperties["EventSourceSupport"] = "true";
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
-                var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
-                publishCommand
-                    .Execute()
-                    .Should().Fail()
-                    .And.HaveStdOutContaining("EventSource is not supported");
-            }
+            var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
+            publishCommand
+                .Execute()
+                .Should().Fail()
+                .And.HaveStdOutContaining("EventSource is not supported");
         }
 
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
