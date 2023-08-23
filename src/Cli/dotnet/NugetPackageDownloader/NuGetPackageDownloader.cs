@@ -15,6 +15,8 @@ using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Credentials;
+using NuGet.DependencyResolver;
+using NuGet.LibraryModel;
 using NuGet.Packaging;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
@@ -226,7 +228,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
 
             IPackageSearchMetadata packageMetadata;
 
-            IEnumerable<PackageSource> packagesSources = LoadNuGetSources(packageSourceLocation);
+            IEnumerable<PackageSource> packagesSources = LoadNuGetSources(packageId, packageSourceLocation);
             PackageSource source;
 
             if (packageVersion is null)
@@ -290,7 +292,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             return true;
         }
 
-        private IEnumerable<PackageSource> LoadNuGetSources(PackageSourceLocation packageSourceLocation = null)
+        private IEnumerable<PackageSource> LoadNuGetSources(PackageId packageId, PackageSourceLocation packageSourceLocation = null)
         {
             IEnumerable<PackageSource> defaultSources = new List<PackageSource>();
             string currentDirectory = Directory.GetCurrentDirectory();
@@ -312,6 +314,18 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             PackageSourceProvider packageSourceProvider = new PackageSourceProvider(settings);
             defaultSources = packageSourceProvider.LoadPackageSources().Where(source => source.IsEnabled);
 
+            PackageSourceMapping packageSourceMapping = PackageSourceMapping.GetPackageSourceMapping(settings);
+
+            // filter package patterns if enabled            
+            if (packageSourceMapping?.IsEnabled == true)
+            {
+                IReadOnlyList<string> sources = packageSourceMapping.GetConfiguredPackageSources(packageId.ToString());
+
+                if (sources.Count == 0)
+                {
+                    throw new NuGetPackageInstallerException("No NuGet sources are defined or enabled");
+                }
+            }
 
             if (packageSourceLocation?.AdditionalSourceFeed?.Any() ?? false)
             {
@@ -575,7 +589,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
         {
             CancellationToken cancellationToken = CancellationToken.None;
             IPackageSearchMetadata packageMetadata;
-            IEnumerable<PackageSource> packagesSources = LoadNuGetSources(packageSourceLocation);
+            IEnumerable<PackageSource> packagesSources = LoadNuGetSources(packageId, packageSourceLocation);
 
             (_, packageMetadata) = await GetLatestVersionInternalAsync(packageId.ToString(), packagesSources,
                 includePreview, cancellationToken).ConfigureAwait(false);
