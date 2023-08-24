@@ -31,13 +31,12 @@ public class ArtifactsSizeTest : SmokeTests
             string[] baselineFileContent = File.ReadAllLines(BaselineFilePath);
             foreach (string entry in baselineFileContent)
             {
-                string[] splitEntry = entry.Split(':');
-                BaselineFileContent[splitEntry[0].Trim()] = long.Parse(splitEntry[1].Trim());
+                string[] splitEntry = entry.Split(':', StringSplitOptions.TrimEntries);
+                BaselineFileContent[splitEntry[0]] = long.Parse(splitEntry[1]);
             }
         }
         else
         {
-            Assert.True(Directory.Exists(BaselineHelper.GetBaselineFilePath("ArtifactsSizes/")));
             Assert.False(true, $"Baseline file `{BaselineFilePath}' does not exist. Please create the baseline file then rerun the test.");
         }
     }
@@ -52,15 +51,12 @@ public class ArtifactsSizeTest : SmokeTests
         IEnumerable<TarEntry> artifactsTarEntries = Utilities.GetTarballContent(Config.SourceBuiltArtifactsPath).Where(entry => entry.EntryType == TarEntryType.RegularFile);
         IEnumerable<TarEntry> sdkTarEntries = Utilities.GetTarballContent(Config.SdkTarballPath).Where(entry => entry.EntryType == TarEntryType.RegularFile);
 
+        Dictionary<string, int> fileNameCountMap = new Dictionary<string, int>();
         (string FilePath, long Bytes)[] tarEntries = sdkTarEntries.Concat(artifactsTarEntries)
             .Select(entry =>
             {
-                string result = BaselineHelper.RemoveVersions(entry.Name);
-                result = BaselineHelper.RemoveRids(result);
-                result = BaselineHelper.RemoveNetTfmPaths(result);
-
+                string result = ProcessEntryName(entry.Name, fileNameCountMap);
                 return (FilePath: result, Bytes: entry.Length);
-
             })
             .OrderBy(entry => entry.FilePath)
             .ToArray();
@@ -88,13 +84,42 @@ public class ArtifactsSizeTest : SmokeTests
         }
     }
 
+    private string ProcessEntryName(string originalName, Dictionary<string, int> fileNameCountMap)
+    {
+        string result = BaselineHelper.RemoveRids(originalName);
+        result = BaselineHelper.RemoveVersions(result);
+
+        string pattern = @"x\.y\.z";
+        MatchCollection matches = Regex.Matches(result, pattern);
+
+        if (matches.Count > 0)
+        {
+            int count = fileNameCountMap.TryGetValue(result, out int value) ? value : 0;
+            fileNameCountMap[result] = count + 1;
+
+            if (count > 0)
+            {
+                int lastIndex = matches[matches.Count - 1].Index;
+                result = result.Substring(0, lastIndex) + $"x.y.z-{count}" + result.Substring(lastIndex + pattern.Length - 2);
+            }
+        }
+
+        return result;
+    }
+
     private void CompareFileSizes(string filePath, long fileSize, long baselineSize)
     {
         if (fileSize == 0 && baselineSize != 0)
+        {
             OutputHelper.LogWarningMessage($"'{filePath}' is now 0 bytes. It was {baselineSize} bytes");
+        }
         else if (fileSize != 0 && baselineSize == 0)
+        {
             OutputHelper.LogWarningMessage($"'{filePath}' is no longer 0 bytes. It is now {fileSize} bytes");
+        }
         else if (baselineSize != 0 && Math.Abs(((fileSize - baselineSize) / (double)baselineSize) * 100) >= SizeThresholdPercentage)
+        {
             OutputHelper.LogWarningMessage($"'{filePath}' increased in size by more than {SizeThresholdPercentage}%. It was originally {baselineSize} bytes and is now {fileSize} bytes");
+        }
     }
 }
