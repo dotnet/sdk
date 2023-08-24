@@ -81,6 +81,7 @@ namespace Microsoft.DotNet.SourceBuild.SmokeTests
         {
             (Process Process, string StdOut, string StdErr) diffResult =
                 ExecuteHelper.ExecuteProcess("git", $"diff --no-index {file1Path} {file2Path}", outputHelper);
+            Assert.Equal(1, diffResult.Process.ExitCode);
 
             return diffResult.StdOut;
         }
@@ -103,11 +104,14 @@ namespace Microsoft.DotNet.SourceBuild.SmokeTests
         {
             // Remove semantic versions
             // Regex source: https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string
+            Regex BuildVersionPattern = new(@"\d+(\.\d+)+([@-](alpha|preview|rc|rtm)(\.\d+)*)*");
+            string result = BuildVersionPattern.Replace(source, VersionPlaceholder);
+
             Regex semanticVersionRegex = new(
                 $"(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)"
                 + $"(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))"
                 + $"?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?");
-            string result = semanticVersionRegex.Replace(source, VersionPlaceholder);
+            result = semanticVersionRegex.Replace(result, VersionPlaceholder);
 
             return RemoveNetTfmPaths(result);
         }
