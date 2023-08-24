@@ -10,11 +10,6 @@ namespace Microsoft.DotNet.ToolPackage
 {
     internal interface IToolPackageInstaller
     {
-        IToolPackage InstallPackage(PackageLocation packageLocation, PackageId packageId,
-            VersionRange versionRange = null,
-            string targetFramework = null,
-            string verbosity = null);
-
         IToolPackage InstallPackageToExternalManagedLocation(PackageLocation packageLocation, PackageId packageId,
             VersionRange versionRange = null,
             string targetFramework = null,
