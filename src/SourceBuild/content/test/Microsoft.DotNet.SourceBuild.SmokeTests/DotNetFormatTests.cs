@@ -19,7 +19,7 @@ public class DotNetFormatTests : SmokeTests
     /// <Summary>
     /// Format an unformatted project and verify that the output matches the pre-computed solution.
     /// </Summary>
-    [Fact]
+    [SkippableFact(Config.ExcludeDotnetFormatEnv, skipOnTrue: true)]
     public void FormatProject()
     {
         string unformattedCsFilePath = Path.Combine(BaselineHelper.GetAssetsDirectory(), UnformattedFileName);
