@@ -72,17 +72,9 @@ namespace Microsoft.DotNet.Workloads.Workload.History
                 Reporter.WriteLine("No workload history found");
             }
 
-
-            //  TODO:
-            //  - Get workload history records
-            //  - Sort
-            //  - Compare adjacent records and create unknown records if necessary
-            //  - Display
-
             var table = new PrintableTable<WorkloadHistoryDisplay.DisplayRecord>();
             //  TODO: Localize column names
             table.AddColumn("ID", r => r.ID?.ToString() ?? "");
-            //  TODO: How to format date?
             table.AddColumn("Date", r => r.TimeStarted?.ToString() ?? "");
             table.AddColumn("Command", r => r.Command);
             //  TODO: Do we localize the separator between workloads?

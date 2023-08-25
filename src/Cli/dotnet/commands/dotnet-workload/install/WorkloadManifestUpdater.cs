@@ -208,19 +208,19 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             }
         }
 
-        public IEnumerable<ManifestVersionUpdate> CalculateManifestRollbacks(string rollbackDefinitionFilePath)
+        public IEnumerable<ManifestVersionUpdate> CalculateManifestRollbacks(string rollbackDefinitionFilePath, IEnumerable<(ManifestId id, ManifestVersion version, SdkFeatureBand featureBand)> manifestRollbackContents = null)
         {
             var currentManifestIds = GetInstalledManifestIds();
-            var manifestRollbacks = ParseRollbackDefinitionFile(rollbackDefinitionFilePath);
+            manifestRollbackContents ??= ParseRollbackDefinitionFile(rollbackDefinitionFilePath, _sdkFeatureBand);
 
-            var unrecognizedManifestIds = manifestRollbacks.Where(rollbackManifest => !currentManifestIds.Contains(rollbackManifest.Item1));
+            var unrecognizedManifestIds = manifestRollbackContents.Where(rollbackManifest => !currentManifestIds.Contains(rollbackManifest.Item1));
             if (unrecognizedManifestIds.Any())
             {
                 _reporter.WriteLine(string.Format(LocalizableStrings.RollbackDefinitionContainsExtraneousManifestIds, rollbackDefinitionFilePath, string.Join(" ", unrecognizedManifestIds)).Yellow());
-                manifestRollbacks = manifestRollbacks.Where(rollbackManifest => currentManifestIds.Contains(rollbackManifest.Item1));
+                manifestRollbackContents = manifestRollbackContents.Where(rollbackManifest => currentManifestIds.Contains(rollbackManifest.Item1));
             }
 
-            var manifestUpdates = manifestRollbacks
+            var manifestUpdates = manifestRollbackContents
                 .Select(manifest =>
                 {
                     var installedManifestInfo = GetInstalledManifestVersion(manifest.id);
@@ -437,7 +437,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             }
         }
 
-        private IEnumerable<(ManifestId id, ManifestVersion version, SdkFeatureBand featureBand)> ParseRollbackDefinitionFile(string rollbackDefinitionFilePath)
+        internal static IEnumerable<(ManifestId id, ManifestVersion version, SdkFeatureBand featureBand)> ParseRollbackDefinitionFile(string rollbackDefinitionFilePath, SdkFeatureBand featureBand)
         {
             string fileContent;
 
@@ -457,7 +457,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                 }
             }
 
-            return WorkloadRollbackInfo.FromJson(fileContent, _sdkFeatureBand).ManifestVersions;
+            return WorkloadRollbackInfo.FromJson(fileContent, featureBand).ManifestVersions;
         }
 
         private bool BackgroundUpdatesAreDisabled() =>
