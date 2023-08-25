@@ -480,7 +480,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
         {
             var historyDirectory = GetWorkloadHistoryDirectory();
             Directory.CreateDirectory(historyDirectory);
-            string logFile = Path.Combine(GetWorkloadHistoryDirectory(), $"{workloadHistoryRecord.TimeStarted:yyyy'-'MM'-'dd'T'HHmmss}_{workloadHistoryRecord.CommandName}.json");
+            string logFile = Path.Combine(historyDirectory, $"{workloadHistoryRecord.TimeStarted:yyyy'-'MM'-'dd'T'HHmmss}_{workloadHistoryRecord.CommandName}.json");
             File.WriteAllText(logFile, JsonSerializer.Serialize(workloadHistoryRecord, new JsonSerializerOptions() { WriteIndented = true }));
         }
 
