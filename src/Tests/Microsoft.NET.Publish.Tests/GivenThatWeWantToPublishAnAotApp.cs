@@ -21,22 +21,22 @@ namespace Microsoft.NET.Publish.Tests
         [Fact]
         public void Can_Publish_SingleFile_And_NativeAot()
         {
-            var project = CreateHelloWorldTestProject(ToolsetInfo.CurrentTargetFramework, "SingleFileAndNativeAot", true);
-            testProject.RecordProperties("NETCoreSdkPortableRuntimeIdentifier");
-            testProject.AdditionalProperties["PublishSingleFile"] = "true";
-            testProject.AdditionalProperties["PublishAot"] = "true";
+            var targetFramework = ToolsetInfo.CurrentTargetFramework;
+            var project = CreateHelloWorldTestProject(targetFramework, "SingleFileAndNativeAot", true);
+            var testAsset = _testAssetsManager.CreateTestProject(project);
+            var buildProperties = project.GetPropertyValues(testAsset.TestRoot, targetFramework);
+            project.RecordProperties("NETCoreSdkPortableRuntimeIdentifier");
+            project.AdditionalProperties["PublishSingleFile"] = "true";
+            project.AdditionalProperties["PublishAot"] = "true";
+
+            var rid = buildProperties["NETCoreSdkPortableRuntimeIdentifier"];
             var publishCommand = new PublishCommand(testAsset);
             publishCommand
                 .Execute($"/p:RuntimeIdentifier={rid}", "/p:SelfContained=true")
                 .Should().Pass();
 
-            var command = new RunExeCommand(Log, publishedExe)
-                .Execute().Should().Pass()
-                .And.HaveStdOutContaining("Hello World");
-
-            var rid = buildProperties["NETCoreSdkPortableRuntimeIdentifier"];
-            var publishDirectory = publishCommand.GetOutputDirectory(targetFramework: targetFramework, runtimeIdentifier: rid).FullName;
-            var publishedExe = Path.Combine(publishDirectory, $"{testProject.Name}{Constants.ExeSuffix}");
+            var publishDirectory = publishCommand.GetOutputDirectory(targetFramework, runtimeIdentifier: rid).FullName;
+            var publishedExe = Path.Combine(publishDirectory, $"{project.Name}{Constants.ExeSuffix}");
 
             var command = new RunExeCommand(Log, publishedExe)
                 .Execute().Should().Pass()
