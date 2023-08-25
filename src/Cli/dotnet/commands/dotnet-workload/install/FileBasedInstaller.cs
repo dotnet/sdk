@@ -478,10 +478,9 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
         public void WriteWorkloadHistoryRecord(WorkloadHistoryRecord workloadHistoryRecord)
         {
-            //  TODO: add workloads to filename?
             var historyDirectory = GetWorkloadHistoryDirectory();
             Directory.CreateDirectory(historyDirectory);
-            string logFile = Path.Combine(GetWorkloadHistoryDirectory(), $"{workloadHistoryRecord.TimeStarted:yyyy'-'MM'-'dd'T'HHmmss} {workloadHistoryRecord.CommandName}.json");
+            string logFile = Path.Combine(GetWorkloadHistoryDirectory(), $"{workloadHistoryRecord.TimeStarted:yyyy'-'MM'-'dd'T'HHmmss}_{workloadHistoryRecord.CommandName}.json");
             File.WriteAllText(logFile, JsonSerializer.Serialize(workloadHistoryRecord, new JsonSerializerOptions() { WriteIndented = true }));
         }
 
@@ -491,9 +490,16 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
             foreach (var file in Directory.GetFiles(GetWorkloadHistoryDirectory(), "*.json"))
             {
-                //  TODO: Handle corrupted files
-                var historyRecord = JsonSerializer.Deserialize<WorkloadHistoryRecord>(File.ReadAllText(file));
-                historyRecords.Add(historyRecord);
+                try
+                {
+                    var historyRecord = JsonSerializer.Deserialize<WorkloadHistoryRecord>(File.ReadAllText(file));
+                    historyRecords.Add(historyRecord);
+                }
+                catch (JsonException)
+                {
+                    // We picked up a file that wasn't in the correct format, but this isn't necessarily a problem, since we take all json files from
+                    // the workload history directory. Just ignore it.
+                }
             }
 
             return historyRecords;

@@ -73,10 +73,17 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
             try
             {
+                var manifestRollbacks = usedRollback ? WorkloadManifestUpdater.ParseRollbackDefinitionFile(_fromRollbackDefinition, _sdkFeatureBand) : null;
+
                 if (usedRollback)
                 {
-                    //  TODO: get rollback contents
-                    recorder.HistoryRecord.RollbackFileContents = null;
+                    var rollbackContents = new Dictionary<string, string>();
+                    foreach (var (id, version, featureBand) in manifestRollbacks)
+                    {
+                        rollbackContents[id.ToString()] = $"{version}/{featureBand}";
+                    }
+
+                    recorder.HistoryRecord.RollbackFileContents = rollbackContents;
                 }
 
                 if (_printDownloadLinkOnly)
@@ -128,7 +135,8 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                                 _workloadIds.Select(id => new WorkloadId(id)),
                                 _skipManifestUpdate,
                                 _includePreviews,
-                                string.IsNullOrWhiteSpace(_fromCacheOption) ? null : new DirectoryPath(_fromCacheOption));
+                                string.IsNullOrWhiteSpace(_fromCacheOption) ? null : new DirectoryPath(_fromCacheOption),
+                                manifestRollbacks);
                         }
                         catch (Exception e)
                         {
@@ -146,7 +154,12 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             return _workloadInstaller.ExitCode;
         }
 
-        public void InstallWorkloads(IEnumerable<WorkloadId> workloadIds, bool skipManifestUpdate = false, bool includePreviews = false, DirectoryPath? offlineCache = null)
+        public void InstallWorkloads(
+            IEnumerable<WorkloadId> workloadIds,
+            bool skipManifestUpdate = false,
+            bool includePreviews = false,
+            DirectoryPath? offlineCache = null,
+            IEnumerable<(ManifestId, ManifestVersion, SdkFeatureBand)> rollbackContents = null)
         {
             Reporter.WriteLine();
 

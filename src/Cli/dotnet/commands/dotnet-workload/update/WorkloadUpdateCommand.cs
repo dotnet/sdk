@@ -53,10 +53,16 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
             //recorder.HistoryRecord.WorkloadArguments = _workloadIds.Select(id => id.ToString()).ToList();
 
             bool usedRollback = !string.IsNullOrWhiteSpace(_fromRollbackDefinition);
+            var rollbackFileContents = usedRollback ? WorkloadManifestUpdater.ParseRollbackDefinitionFile(_fromRollbackDefinition, _sdkFeatureBand) : null;
             if (usedRollback)
             {
-                //  TODO: get rollback contents
-                recorder.HistoryRecord.RollbackFileContents = null;
+                var rollbackContents = new Dictionary<string, string>();
+                foreach (var (id, version, featureBand) in rollbackFileContents)
+                {
+                    rollbackContents[id.ToString()] = $"{version}/{featureBand}";
+                }
+
+                recorder.HistoryRecord.RollbackFileContents = rollbackContents;
             }
 
             try
@@ -98,7 +104,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
                     {
                         try
                         {
-                            UpdateWorkloads(_includePreviews, string.IsNullOrWhiteSpace(_fromCacheOption) ? null : new DirectoryPath(_fromCacheOption));
+                            UpdateWorkloads(_includePreviews, string.IsNullOrWhiteSpace(_fromCacheOption) ? null : new DirectoryPath(_fromCacheOption), rollbackFileContents);
                         }
                         catch (Exception e)
                         {
@@ -116,7 +122,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
             return _workloadInstaller.ExitCode;
         }
 
-        public void UpdateWorkloads(bool includePreviews = false, DirectoryPath? offlineCache = null)
+        public void UpdateWorkloads(bool includePreviews = false, DirectoryPath? offlineCache = null, IEnumerable<(ManifestId id, ManifestVersion version, SdkFeatureBand featureBand)> rollbackFileContents = null)
         {
             Reporter.WriteLine();
 

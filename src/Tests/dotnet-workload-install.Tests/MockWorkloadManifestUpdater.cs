@@ -40,7 +40,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             });
         }
 
-        public IEnumerable<ManifestVersionUpdate> CalculateManifestRollbacks(string rollbackDefinitionFilePath)
+        public IEnumerable<ManifestVersionUpdate> CalculateManifestRollbacks(string rollbackDefinitionFilePath, IEnumerable<(ManifestId id, ManifestVersion version, SdkFeatureBand featureBand)> manifestRollbackContents = null)
         {
             return _manifestUpdates.Select(t => t.ManifestUpdate);
         }
