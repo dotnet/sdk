@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Runtime.Versioning;
+using System.Text.Json;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Utils;
@@ -534,14 +535,38 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             }
         }
 
+        string GetWorkloadHistoryDirectory()
+        {
+            return Path.Combine(Environment.GetEnvironmentVariable("PROGRAMDATA"), "dotnet", "workloads", _sdkFeatureBand.ToString(), "history");
+        }
+
         public void WriteWorkloadHistoryRecord(WorkloadHistoryRecord workloadHistoryRecord)
         {
-            throw new NotImplementedException();
+            var historyDirectory = GetWorkloadHistoryDirectory();
+            Directory.CreateDirectory(historyDirectory);
+            string logFile = Path.Combine(historyDirectory, $"{workloadHistoryRecord.TimeStarted:yyyy'-'MM'-'dd'T'HHmmss}_{workloadHistoryRecord.CommandName}.json");
+            File.WriteAllText(logFile, JsonSerializer.Serialize(workloadHistoryRecord, new JsonSerializerOptions() { WriteIndented = true }));
         }
 
         public IEnumerable<WorkloadHistoryRecord> GetWorkloadHistoryRecords()
         {
-            throw new NotImplementedException();
+            List<WorkloadHistoryRecord> historyRecords = new();
+
+            foreach (var file in Directory.GetFiles(GetWorkloadHistoryDirectory(), "*.json"))
+            {
+                try
+                {
+                    var historyRecord = JsonSerializer.Deserialize<WorkloadHistoryRecord>(File.ReadAllText(file));
+                    historyRecords.Add(historyRecord);
+                }
+                catch (JsonException)
+                {
+                    // We picked up a file that wasn't in the correct format, but this isn't necessarily a problem, since we take all json files from
+                    // the workload history directory. Just ignore it.
+                }
+            }
+
+            return historyRecords;
         }
 
         public void Shutdown()
