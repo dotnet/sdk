@@ -753,16 +753,16 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         [Theory]
-        [InlineData(ToolsetInfo.CurrentTargetFramework, "Static")]
-        [InlineData(ToolsetInfo.CurrentTargetFramework, "Shared")]
-        public void NativeAotLib_errors_out_when_eventpipe_is_enabled(string targetFramework, string libType)
+        [InlineData("Static")]
+        [InlineData("Shared")]
+        public void NativeAotLib_errors_out_when_eventpipe_is_enabled(string libType)
         {
             // Revisit once the issue is fixed
             // https://github.com/dotnet/runtime/issues/89346
             var projectName = "AotStaticLibraryPublishWithEventPipe";
-            var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
+            var rid = EnvironmentInfo.GetCompatibleRid(ToolsetInfo.CurrentTargetFramework);
 
-            var testProject = CreateTestProjectWithAotLibrary(targetFramework, projectName);
+            var testProject = CreateTestProjectWithAotLibrary(ToolsetInfo.CurrentTargetFramework, projectName);
             testProject.AdditionalProperties["PublishAot"] = "true";
             testProject.AdditionalProperties["RuntimeIdentifier"] = rid;
             testProject.AdditionalProperties["NativeLib"] = libType;
