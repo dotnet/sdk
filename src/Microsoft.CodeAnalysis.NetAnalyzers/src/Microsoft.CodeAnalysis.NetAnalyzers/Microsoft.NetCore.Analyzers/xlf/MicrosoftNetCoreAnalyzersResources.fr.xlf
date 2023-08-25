@@ -2288,6 +2288,11 @@ Les conversions étendues et définies par l’utilisateur ne sont pas prises en
         <target state="translated">L'argument de mise en forme passé à System.String.Format ne contient aucun élément de mise en forme pour chaque argument d'objet correspondant, ou vice versa.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ProvideCorrectArgumentsToFormattingMethodsInvalidFormatMessage">
+        <source>The format argument is not a valid format string</source>
+        <target state="new">The format argument is not a valid format string</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ProvideCorrectArgumentsToFormattingMethodsMessage">
         <source>Provide correct arguments to formatting methods</source>
         <target state="translated">Indiquer le nombre correct d'arguments dans les méthodes de mise en forme</target>

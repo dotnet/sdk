@@ -2288,6 +2288,11 @@ Widening and user defined conversions are not supported with generic types.</sou
         <target state="translated">Передаваемый в System.String.Format аргумент формата не содержит элемент формата, соответствующий каждому из аргументов объекта, или наоборот.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ProvideCorrectArgumentsToFormattingMethodsInvalidFormatMessage">
+        <source>The format argument is not a valid format string</source>
+        <target state="new">The format argument is not a valid format string</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ProvideCorrectArgumentsToFormattingMethodsMessage">
         <source>Provide correct arguments to formatting methods</source>
         <target state="translated">Задайте правильные аргументы для методов форматирования</target>

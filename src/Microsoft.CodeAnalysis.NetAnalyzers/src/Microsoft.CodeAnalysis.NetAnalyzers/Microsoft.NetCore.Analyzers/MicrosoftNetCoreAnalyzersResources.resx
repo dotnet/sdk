@@ -290,6 +290,9 @@
   <data name="ProvideCorrectArgumentsToFormattingMethodsMessage" xml:space="preserve">
     <value>Provide correct arguments to formatting methods</value>
   </data>
+  <data name="ProvideCorrectArgumentsToFormattingMethodsInvalidFormatMessage" xml:space="preserve">
+    <value>The format argument is not a valid format string</value>
+  </data>
   <data name="TestForNaNCorrectlyTitle" xml:space="preserve">
     <value>Test for NaN correctly</value>
   </data>

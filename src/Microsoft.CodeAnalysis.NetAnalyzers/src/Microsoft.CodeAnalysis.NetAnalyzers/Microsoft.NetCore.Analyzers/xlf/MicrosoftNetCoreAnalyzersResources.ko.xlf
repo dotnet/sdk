@@ -2288,6 +2288,11 @@ Enumerable.OfType&lt;T&gt;에서 사용하는 제네릭 형식 검사(C# 'is' �
         <target state="translated">System.String.Format으로 전달된 format 인수에 각 개체 인수에 해당하는 format 항목이 포함되지 않으며 그 반대의 경우도 마찬가지입니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ProvideCorrectArgumentsToFormattingMethodsInvalidFormatMessage">
+        <source>The format argument is not a valid format string</source>
+        <target state="new">The format argument is not a valid format string</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ProvideCorrectArgumentsToFormattingMethodsMessage">
         <source>Provide correct arguments to formatting methods</source>
         <target state="translated">서식 지정 메서드에 올바른 인수를 제공하세요.</target>
