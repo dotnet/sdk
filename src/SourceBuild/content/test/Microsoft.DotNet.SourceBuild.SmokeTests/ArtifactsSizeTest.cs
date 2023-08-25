@@ -48,8 +48,12 @@ public class ArtifactsSizeTest : SmokeTests
         Assert.NotNull(Config.SdkTarballPath);
         Assert.NotNull(Config.TargetRid);
 
-        IEnumerable<TarEntry> artifactsTarEntries = Utilities.GetTarballContent(Config.SourceBuiltArtifactsPath).Where(entry => entry.EntryType == TarEntryType.RegularFile);
-        IEnumerable<TarEntry> sdkTarEntries = Utilities.GetTarballContent(Config.SdkTarballPath).Where(entry => entry.EntryType == TarEntryType.RegularFile);
+        IEnumerable<TarEntry> artifactsTarEntries = Utilities.GetTarballContent(Config.SourceBuiltArtifactsPath)
+                                                        .Where(entry => entry.EntryType == TarEntryType.RegularFile)
+                                                        .Where(entry => !entry.Name.Contains("SourceBuildReferencePackages"));
+        IEnumerable<TarEntry> sdkTarEntries = Utilities.GetTarballContent(Config.SdkTarballPath)
+                                                        .Where(entry => entry.EntryType == TarEntryType.RegularFile)
+                                                        .Where(entry => !entry.Name.Contains("SourceBuildReferencePackages"));
 
         Dictionary<string, int> fileNameCountMap = new Dictionary<string, int>();
         (string FilePath, long Bytes)[] tarEntries = sdkTarEntries.Concat(artifactsTarEntries)
