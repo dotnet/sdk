@@ -20,7 +20,6 @@ public class ArtifactsSizeTest : SmokeTests
 {
     private static readonly string BaselineFilePath = BaselineHelper.GetBaselineFilePath($"ArtifactsSizes/{Config.TargetRid}.txt");
     private static readonly Dictionary<string, long> BaselineFileContent = new Dictionary<string, long>();
-    private static readonly Regex BuildVersionPattern = new(@"\b\d+\.\d+\.\d+[-@](alpha|preview|rc|rtm)\.\d(\.\d+\.\d+)?\b");
     private const int SizeThresholdPercentage = 25;
 
 
@@ -52,8 +51,7 @@ public class ArtifactsSizeTest : SmokeTests
                                                         .Where(entry => entry.EntryType == TarEntryType.RegularFile)
                                                         .Where(entry => !entry.Name.Contains("SourceBuildReferencePackages"));
         IEnumerable<TarEntry> sdkTarEntries = Utilities.GetTarballContent(Config.SdkTarballPath)
-                                                        .Where(entry => entry.EntryType == TarEntryType.RegularFile)
-                                                        .Where(entry => !entry.Name.Contains("SourceBuildReferencePackages"));
+                                                        .Where(entry => entry.EntryType == TarEntryType.RegularFile);
 
         Dictionary<string, int> fileNameCountMap = new Dictionary<string, int>();
         (string FilePath, long Bytes)[] tarEntries = sdkTarEntries.Concat(artifactsTarEntries)
