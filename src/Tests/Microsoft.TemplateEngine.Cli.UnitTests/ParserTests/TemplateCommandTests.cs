@@ -61,7 +61,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
                 return Verify(e.Message);
             }
 
-            Assert.True(false, "should not land here");
+            Assert.Fail("should not land here");
             return Task.FromResult(1);
 
         }

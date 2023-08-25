@@ -90,7 +90,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
                     CliSearchFiltersFactory.GetMatchingTemplatesFilter(args),
                     default).ConfigureAwait(false);
 
-                Assert.Equal(1, searchResults.Count);
+                Assert.Single(searchResults);
                 Assert.Single(searchResults, result => result.Provider.Factory.DisplayName == "NuGet.org");
                 SearchResult nugetSearchResults = searchResults.Single(result => result.Provider.Factory.DisplayName == "NuGet.org");
                 Assert.Equal(2, nugetSearchResults.SearchHits.Count);
@@ -137,10 +137,10 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
                     CliSearchFiltersFactory.GetMatchingTemplatesFilter(args),
                     default).ConfigureAwait(false);
 
-                Assert.Equal(1, searchResults.Count);
+                Assert.Single(searchResults);
                 Assert.Single(searchResults, result => result.Provider.Factory.DisplayName == "NuGet.org");
                 SearchResult nugetSearchResults = searchResults.Single(result => result.Provider.Factory.DisplayName == "NuGet.org");
-                Assert.Equal(1, nugetSearchResults.SearchHits.Count);
+                Assert.Single(nugetSearchResults.SearchHits);
 
                 (ITemplatePackageInfo _, IReadOnlyList<ITemplateInfo> packTwoMatchedTemplates) = Assert.Single(nugetSearchResults.SearchHits, pack => pack.PackageInfo.Name.Equals(s_packTwoInfo.Name));
                 Assert.Single(packTwoMatchedTemplates, t => string.Equals(t.Name, s_fooTwoTemplate.Name));
@@ -181,10 +181,10 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
                     CliSearchFiltersFactory.GetMatchingTemplatesFilter(args),
                     default).ConfigureAwait(false);
 
-                Assert.Equal(1, searchResults.Count);
+                Assert.Single(searchResults);
                 Assert.Single(searchResults, result => result.Provider.Factory.DisplayName == "NuGet.org");
                 SearchResult nugetSearchResults = searchResults.Single(result => result.Provider.Factory.DisplayName == "NuGet.org");
-                Assert.Equal(0, nugetSearchResults.SearchHits.Count);
+                Assert.Empty(nugetSearchResults.SearchHits);
             }
         }
 
@@ -220,11 +220,11 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
                     CliSearchFiltersFactory.GetMatchingTemplatesFilter(args),
                     default).ConfigureAwait(false);
 
-                Assert.Equal(1, searchResults.Count);
+                Assert.Single(searchResults);
                 Assert.Single(searchResults, result => result.Provider.Factory.DisplayName == "NuGet.org");
                 SearchResult nugetSearchResults = searchResults.Single(result => result.Provider.Factory.DisplayName == "NuGet.org");
-                Assert.Equal(1, nugetSearchResults.SearchHits.Count);
-                Assert.Equal(1, nugetSearchResults.SearchHits[0].MatchedTemplates.Count);
+                Assert.Single(nugetSearchResults.SearchHits);
+                Assert.Single(nugetSearchResults.SearchHits[0].MatchedTemplates);
                 Assert.Equal(s_packThreeInfo.Name, nugetSearchResults.SearchHits[0].PackageInfo.Name);
                 Assert.Equal(s_barFSharpTemplate.Name, nugetSearchResults.SearchHits[0].MatchedTemplates[0].Name);
             }
@@ -264,7 +264,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
                     CliSearchFiltersFactory.GetMatchingTemplatesFilter(args),
                     default).ConfigureAwait(false);
 
-                Assert.Equal(1, searchResults.Count);
+                Assert.Single(searchResults);
                 Assert.Single(searchResults, result => result.Provider.Factory.DisplayName == "NuGet.org");
                 SearchResult nugetSearchResults = searchResults.Single(result => result.Provider.Factory.DisplayName == "NuGet.org");
                 Assert.Equal(matchCount, nugetSearchResults.SearchHits.Count);
@@ -306,7 +306,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
                     CliSearchFiltersFactory.GetMatchingTemplatesFilter(args),
                     default).ConfigureAwait(false);
 
-                Assert.Equal(1, searchResults.Count);
+                Assert.Single(searchResults);
                 Assert.Single(searchResults, result => result.Provider.Factory.DisplayName == "NuGet.org");
                 SearchResult nugetSearchResults = searchResults.Single(result => result.Provider.Factory.DisplayName == "NuGet.org");
                 Assert.Equal(matchCount, nugetSearchResults.SearchHits.Count);
@@ -349,7 +349,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
                     CliSearchFiltersFactory.GetMatchingTemplatesFilter(args),
                     default).ConfigureAwait(false);
 
-                Assert.Equal(1, searchResults.Count);
+                Assert.Single(searchResults);
                 Assert.Single(searchResults, result => result.Provider.Factory.DisplayName == "NuGet.org");
                 SearchResult nugetSearchResults = searchResults.Single(result => result.Provider.Factory.DisplayName == "NuGet.org");
                 Assert.Equal(packMatchCount, nugetSearchResults.SearchHits.Count);
@@ -396,7 +396,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
                     CliSearchFiltersFactory.GetMatchingTemplatesFilter(args),
                     default).ConfigureAwait(false);
 
-                Assert.Equal(1, searchResults.Count);
+                Assert.Single(searchResults);
                 Assert.Single(searchResults, result => result.Provider.Factory.DisplayName == "NuGet.org");
                 SearchResult nugetSearchResults = searchResults.Single(result => result.Provider.Factory.DisplayName == "NuGet.org");
                 Assert.Equal(packMatchCount, nugetSearchResults.SearchHits.Count);
@@ -438,10 +438,10 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
                     CliSearchFiltersFactory.GetMatchingTemplatesFilter(args),
                     default).ConfigureAwait(false);
 
-                Assert.Equal(1, searchResults.Count);
+                Assert.Single(searchResults);
                 Assert.Single(searchResults, result => result.Provider.Factory.DisplayName == "NuGet.org");
                 SearchResult nugetSearchResults = searchResults.Single(result => result.Provider.Factory.DisplayName == "NuGet.org");
-                Assert.Equal(0, nugetSearchResults.SearchHits.Count);
+                Assert.Empty(nugetSearchResults.SearchHits);
             }
         }
 
@@ -475,10 +475,10 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
                 CliSearchFiltersFactory.GetMatchingTemplatesFilter(args),
                 default).ConfigureAwait(false);
 
-            Assert.Equal(1, searchResults.Count);
+            Assert.Single(searchResults);
             Assert.Single(searchResults, result => result.Provider.Factory.DisplayName == "NuGet.org");
             SearchResult nugetSearchResults = searchResults.Single(result => result.Provider.Factory.DisplayName == "NuGet.org");
-            Assert.Equal(0, nugetSearchResults.SearchHits.Count);
+            Assert.Empty(nugetSearchResults.SearchHits);
         }
 
         [Theory]

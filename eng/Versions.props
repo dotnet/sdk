@@ -193,7 +193,7 @@
     <MicrosoftDotNetXUnitExtensionsVersion>7.0.0-beta.23408.3</MicrosoftDotNetXUnitExtensionsVersion>
     <MoqPackageVersion>4.18.4</MoqPackageVersion>
     <MicrosoftDotNetInstallerWindowsSecurityTestDataPackageVersion>6.0.0-beta.22262.1</MicrosoftDotNetInstallerWindowsSecurityTestDataPackageVersion>
-    <XunitPackageVersion>2.4.2</XunitPackageVersion>
+    <XunitPackageVersion>2.5.0</XunitPackageVersion>
   </PropertyGroup>
   <PropertyGroup>
     <ExeExtension>.exe</ExeExtension>
