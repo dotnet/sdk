@@ -116,9 +116,7 @@ namespace Microsoft.DotNet.SourceBuild.SmokeTests
                 $"(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)"
                 + $"(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))"
                 + $"?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?");
-            result = semanticVersionRegex.Replace(result, VersionPlaceholder);
-
-            return result;
+            return semanticVersionRegex.Replace(result, VersionPlaceholder);
         }
 
         /// <summary>
