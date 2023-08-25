@@ -102,18 +102,23 @@ namespace Microsoft.DotNet.SourceBuild.SmokeTests
 
         public static string RemoveVersions(string source)
         {
+            string result = RemoveNetTfmPaths(source);
+
+            // Remove build versions
+            // The semantic version regex incorectly parses through build versions such as "8.1.00-beta.final"
+            // so the build version regex is used to capture matches that the semantic version does not.
+            Regex BuildVersionPattern = new(@"\d+(\.\d+)+([@-](\w+)*\d*([\.+-](alpha|preview|rc|rtm|beta|final|servicing|bundled))*(\.\d+)*)*");
+            result = BuildVersionPattern.Replace(result, VersionPlaceholder);
+
             // Remove semantic versions
             // Regex source: https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string
-            Regex BuildVersionPattern = new(@"\d+(\.\d+)+([@-](alpha|preview|rc|rtm)(\.\d+)*)*");
-            string result = BuildVersionPattern.Replace(source, VersionPlaceholder);
-
             Regex semanticVersionRegex = new(
                 $"(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)"
                 + $"(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))"
                 + $"?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?");
             result = semanticVersionRegex.Replace(result, VersionPlaceholder);
 
-            return RemoveNetTfmPaths(result);
+            return result;
         }
 
         /// <summary>
