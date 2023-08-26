@@ -67,11 +67,11 @@ namespace Microsoft.DotNet.Cli.ToolPackage
         {
             _toolPackageStore = store ?? throw new ArgumentNullException(nameof(store)); ;
             _globalToolStageDir = _toolPackageStore.GetRandomStagingDirectory();
-            _localToolDownloadDir = new DirectoryPath((localToolPath) ?? ((Environment.GetEnvironmentVariable("NUGET_PACKAGES"))));
-            if(String.IsNullOrEmpty(_localToolDownloadDir.ToString()))
-            {
-                _localToolDownloadDir = new DirectoryPath((Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "nuget", "package")));
-            }
+            string localToolDownloadDir = localToolPath
+                ?? (Environment.GetEnvironmentVariable("NUGET_PACKAGES"))
+                ?? (Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "nuget", "package"));          
+            _localToolDownloadDir = new DirectoryPath(localToolDownloadDir);
+            
             _localToolAssetDir = new DirectoryPath(PathUtilities.CreateTempSubdirectory());
             _runtimeJsonPath = runtimeJsonPathTest ?? Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "RuntimeIdentifierGraph.json");
         }
