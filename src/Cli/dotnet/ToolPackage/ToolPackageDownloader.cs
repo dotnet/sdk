@@ -25,7 +25,6 @@ using NuGet.ProjectModel;
 using NuGet.Repositories;
 using NuGet.RuntimeModel;
 using NuGet.Versioning;
-using System;
 
 
 namespace Microsoft.DotNet.Cli.ToolPackage
@@ -56,18 +55,23 @@ namespace Microsoft.DotNet.Cli.ToolPackage
         // example: C:\Users\username\AppData\Local\Temp\tempFolder
         protected readonly DirectoryPath _localToolAssetDir;
 
-        public static readonly CliOption<VerbosityOptions> VerbosityOption = CommonOptions.VerbosityOption;
+        public static readonly Option<VerbosityOptions> VerbosityOption = CommonOptions.VerbosityOption;
 
         protected readonly string _runtimeJsonPath;
 
         public ToolPackageDownloader(
             IToolPackageStore store,
-            string runtimeJsonPathTest = null
+            string runtimeJsonPathTest = null,
+            string localToolPath = null
         )
         {
             _toolPackageStore = store ?? throw new ArgumentNullException(nameof(store)); ;
             _globalToolStageDir = _toolPackageStore.GetRandomStagingDirectory();
-            _localToolDownloadDir = new DirectoryPath((Environment.GetEnvironmentVariable("NUGET_PACKAGES")) ?? (Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "nuget", "package")));
+            _localToolDownloadDir = new DirectoryPath((localToolPath) ?? ((Environment.GetEnvironmentVariable("NUGET_PACKAGES"))));
+            if(String.IsNullOrEmpty(_localToolDownloadDir.ToString()))
+            {
+                _localToolDownloadDir = new DirectoryPath((Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "nuget", "package")));
+            }
             _localToolAssetDir = new DirectoryPath(PathUtilities.CreateTempSubdirectory());
             _runtimeJsonPath = runtimeJsonPathTest ?? Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "RuntimeIdentifierGraph.json");
         }

@@ -5,20 +5,17 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using FluentAssertions;
-using Microsoft.DotNet.Tools.Test.Utilities;
 using Microsoft.DotNet.Cli;
-using Microsoft.DotNet.Tools.Tool.Install;
+using Microsoft.DotNet.Cli.ToolPackage;
+using Microsoft.DotNet.ToolPackage;
 using Microsoft.DotNet.Tools.Tests.ComponentMocks;
 using Microsoft.Extensions.DependencyModel.Tests;
 using Microsoft.Extensions.EnvironmentAbstractions;
-using Xunit;
-using NuGet.Versioning;
-using Microsoft.NET.TestFramework.Utilities;
 using Microsoft.NET.TestFramework;
+using Microsoft.NET.TestFramework.Utilities;
+using NuGet.Versioning;
+using Xunit;
 using Xunit.Abstractions;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using Microsoft.DotNet.ToolPackage;
 
 namespace Microsoft.DotNet.PackageInstall.Tests
 {
@@ -43,12 +40,11 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 feeds: GetMockFeedsForConfigFile(nugetConfigPath));
 
             try
-
             {
                 var nugetCacheLocation =
                     new DirectoryPath(testDirectory).WithSubDirectories(Path.GetRandomFileName());
 
-                IToolPackage toolPackage = installer.InstallPackageToExternalManagedLocation(
+                IToolPackage toolPackage = installer.InstallPackage(
                     packageId: TestPackageId,
                     versionRange: VersionRange.Parse(TestPackageVersion),
                     packageLocation: new PackageLocation(nugetConfig: nugetConfigPath),
@@ -87,10 +83,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 testDirectory: testDirectory,
                 feeds: GetMockFeedsForConfigFile(nugetConfigPath));
 
-            var nugetCacheLocation =
-                new DirectoryPath(testDirectory).WithSubDirectories(Path.GetRandomFileName());
-
-            IToolPackage toolPackage = installer.InstallPackageToExternalManagedLocation(
+            IToolPackage toolPackage = installer.InstallPackage(
                 packageId: TestPackageId,
                 versionRange: VersionRange.Parse("1.0.0-*"),
                 packageLocation: new PackageLocation(nugetConfig: nugetConfigPath),
@@ -103,15 +96,6 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             var commands = toolPackage.Commands;
             commands[0].Executable.Value.Should().StartWith(expectedPackagesFolder);
             toolPackage.Version.Should().Be(NuGetVersion.Parse(TestPackageVersion));
-        }
-
-        private static FilePath GetUniqueTempProjectPathEachTest(string testDirectory)
-        {
-            var tempProjectDirectory =
-                new DirectoryPath(testDirectory).WithSubDirectories(Path.GetRandomFileName());
-            var tempProjectPath =
-                tempProjectDirectory.WithFile(Path.GetRandomFileName() + ".csproj");
-            return tempProjectPath;
         }
 
         private static List<MockFeed> GetMockFeedsForConfigFile(FilePath nugetConfig)
@@ -135,43 +119,37 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             };
         }
 
-        private (IToolPackageStore, IToolPackageInstaller, BufferedReporter, IFileSystem) Setup(
+        private (IToolPackageStore, IToolPackageDownloader, BufferedReporter, IFileSystem) Setup(
             bool useMock,
             string testDirectory,
-            List<MockFeed> feeds = null,
-            FilePath? tempProject = null,
-            DirectoryPath? offlineFeed = null)
+            List<MockFeed> feeds = null)
         {
             var root = new DirectoryPath(Path.Combine(Directory.GetCurrentDirectory(), Path.GetRandomFileName()));
             var reporter = new BufferedReporter();
 
             IFileSystem fileSystem;
             IToolPackageStore store;
-            IToolPackageInstaller installer;
+            IToolPackageDownloader downloader;
             if (useMock)
             {
                 fileSystem = new FileSystemMockBuilder().Build();
                 store = new ToolPackageStoreMock(root, fileSystem);
-                installer = new ToolPackageInstallerMock(
-                    fileSystem: fileSystem,
+                downloader = new ToolPackageDownloaderMock(
                     store: store,
-                    projectRestorer: new ProjectRestorerMock(
-                        fileSystem: fileSystem,
-                        reporter: reporter,
-                        feeds: feeds));
+                    fileSystem: fileSystem,
+                    reporter: reporter,
+                    feeds: feeds);
             }
             else
             {
                 fileSystem = new FileSystemWrapper();
                 store = new ToolPackageStoreAndQuery(root);
-                installer = new ToolPackageInstaller(
-                    store: store,
-                    projectRestorer: new Stage2ProjectRestorer(Log, reporter),
-                    tempProject: tempProject ?? GetUniqueTempProjectPathEachTest(testDirectory),
-                    offlineFeed: offlineFeed ?? new DirectoryPath("does not exist"));
+                var testRuntimeJsonPath = Path.Combine(TestContext.Current.ToolsetUnderTest.SdkFolderUnderTest, "RuntimeIdentifierGraph.json");
+                var localToolPath = Path.Combine(TestContext.GetRepoRoot(), "artifacts", ".nuget", "packages");
+                downloader = new ToolPackageDownloader(store, testRuntimeJsonPath, localToolPath);
             }
 
-            return (store, installer, reporter, fileSystem);
+            return (store, downloader, reporter, fileSystem);
         }
 
         private FilePath WriteNugetConfigFileToPointToTheFeed(string testDirectory)

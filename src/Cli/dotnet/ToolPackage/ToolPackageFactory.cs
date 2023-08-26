@@ -12,17 +12,6 @@ namespace Microsoft.DotNet.ToolPackage
 {
     internal static class ToolPackageFactory
     {
-        public static (IToolPackageStore, IToolPackageStoreQuery, IToolPackageInstaller) CreateToolPackageStoresAndInstaller(
-            DirectoryPath? nonGlobalLocation = null,  IEnumerable<string> additionalRestoreArguments = null)
-        {
-            ToolPackageStoreAndQuery toolPackageStore = CreateConcreteToolPackageStore(nonGlobalLocation);
-            var toolPackageInstaller = new ToolPackageInstaller(
-                toolPackageStore,
-                 new ProjectRestorer(additionalRestoreArguments: additionalRestoreArguments));
-
-            return (toolPackageStore, toolPackageStore, toolPackageInstaller);
-        }
-
         public static (IToolPackageStore, IToolPackageStoreQuery, IToolPackageDownloader) CreateToolPackageStoresAndDownloader(
             DirectoryPath? nonGlobalLocation = null, IEnumerable<string> additionalRestoreArguments = null)
         {
@@ -40,23 +29,6 @@ namespace Microsoft.DotNet.ToolPackage
                 toolPackageStore);
 
             return (toolPackageStore, toolPackageStore, toolPackageUninstaller);
-        }
-
-        public static (IToolPackageStore,
-            IToolPackageStoreQuery,
-            IToolPackageInstaller,
-            IToolPackageUninstaller)
-            CreateToolPackageStoresAndInstallerAndUninstaller(
-                DirectoryPath? nonGlobalLocation = null, IEnumerable<string> additionalRestoreArguments = null)
-        {
-            ToolPackageStoreAndQuery toolPackageStore = CreateConcreteToolPackageStore(nonGlobalLocation);
-            var toolPackageInstaller = new ToolPackageInstaller(
-                toolPackageStore,
-                new ProjectRestorer(additionalRestoreArguments: additionalRestoreArguments));
-            var toolPackageUninstaller = new ToolPackageUninstaller(
-                toolPackageStore);
-
-            return (toolPackageStore, toolPackageStore, toolPackageInstaller, toolPackageUninstaller);
         }
 
         public static (IToolPackageStore,
