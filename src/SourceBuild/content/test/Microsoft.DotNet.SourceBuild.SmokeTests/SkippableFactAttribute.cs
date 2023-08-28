@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Linq;
 using Xunit;
 
 namespace Microsoft.DotNet.SourceBuild.SmokeTests;
@@ -12,27 +13,35 @@ namespace Microsoft.DotNet.SourceBuild.SmokeTests;
 /// </summary>
 internal class SkippableFactAttribute : FactAttribute
 {
-    public SkippableFactAttribute(string envName, bool skipOnNullOrWhiteSpace = false, bool skipOnTrue = false) =>
-        CheckEnvs(skipOnNullOrWhiteSpace, skipOnTrue, (skip) => Skip = skip, envName);
+    public SkippableFactAttribute(string envName, bool skipOnNullOrWhiteSpaceEnv = false, bool skipOnTrueEnv = false, string[] skipArchitectures = null) =>
+        EvaluateSkips(skipOnNullOrWhiteSpaceEnv, skipOnTrueEnv, skipArchitectures, (skip) => Skip = skip, envName);
 
-    public SkippableFactAttribute(string[] envNames, bool skipOnNullOrWhiteSpace = false, bool skipOnTrue = false) =>
-        CheckEnvs(skipOnNullOrWhiteSpace, skipOnTrue, (skip) => Skip = skip, envNames);
+    public SkippableFactAttribute(string[] envNames, bool skipOnNullOrWhiteSpaceEnv = false, bool skipOnTrueEnv = false, string[] skipArchitectures = null) =>
+        EvaluateSkips(skipOnNullOrWhiteSpaceEnv, skipOnTrueEnv, skipArchitectures, (skip) => Skip = skip, envNames);
 
-    public static void CheckEnvs(bool skipOnNullOrWhiteSpace, bool skipOnTrue, Action<string> setSkip, params string[] envNames)
+    public static void EvaluateSkips(bool skipOnNullOrWhiteSpaceEnv, bool skipOnTrueEnv, string[] skipArchitectures, Action<string> setSkip, params string[] envNames)
     {
         foreach (string envName in envNames)
         {
             string? envValue = Environment.GetEnvironmentVariable(envName);
 
-            if (skipOnNullOrWhiteSpace && string.IsNullOrWhiteSpace(envValue))
+            if (skipOnNullOrWhiteSpaceEnv && string.IsNullOrWhiteSpace(envValue))
             {
                 setSkip($"Skipping because `{envName}` is null or whitespace");
                 break;
             }
-            else if (skipOnTrue && bool.TryParse(envValue, out bool boolValue) && boolValue)
+            else if (skipOnTrueEnv && bool.TryParse(envValue, out bool boolValue) && boolValue)
             {
                 setSkip($"Skipping because `{envName}` is set to True");
                 break;
+            }
+        }
+
+        if (skipArchitectures != null) {
+            string? arch = Config.TargetArchitecture;
+            if (skipArchitectures.Contains(arch))
+            {
+                setSkip($"Skipping because arch is `{arch}`");
             }
         }
     }
