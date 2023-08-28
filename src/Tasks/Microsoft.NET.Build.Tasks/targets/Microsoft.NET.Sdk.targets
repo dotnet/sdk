@@ -612,6 +612,14 @@ Copyright (c) .NET Foundation. All rights reserved.
                                     Condition="'$(TieredCompilationQuickJitForLoops)' != ''"
                                     Value="$(TieredCompilationQuickJitForLoops)" />
 
+    <RuntimeHostConfigurationOption Include="System.Runtime.TieredCompilation.CallCountThreshold"
+                                    Condition="'$(TieredCompilationCallCountThreshold)' != ''"
+                                    Value="$(TieredCompilationCallCountThreshold)" />
+
+    <RuntimeHostConfigurationOption Include="System.Runtime.TieredCompilation.CallCountingDelayMs"
+                                    Condition="'$(TieredCompilationCallCountingDelayMs)' != ''"
+                                    Value="$(TieredCompilationCallCountingDelayMs)" />
+
     <RuntimeHostConfigurationOption Include="System.Runtime.TieredPGO"
                                     Condition="'$(TieredPGO)' != ''"
                                     Value="$(TieredPGO)" />

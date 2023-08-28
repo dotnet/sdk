@@ -80,6 +80,8 @@ namespace Microsoft.NET.Publish.Tests
             ""System.Runtime.TieredCompilation"": true,
             ""System.Runtime.TieredCompilation.QuickJit"": true,
             ""System.Runtime.TieredCompilation.QuickJitForLoops"": true,
+            ""System.Runtime.TieredCompilation.CallCountThreshold"": 30,
+            ""System.Runtime.TieredCompilation.CallCountingDelayMs"": 100,
             ""System.Runtime.TieredPGO"": true,
             ""System.StartupHookProvider.IsSupported"": false,
             ""System.Text.Encoding.EnableUnsafeUTF7Encoding"": false,

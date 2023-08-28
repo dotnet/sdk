@@ -35,6 +35,8 @@
     <TieredCompilation>true</TieredCompilation>
     <TieredCompilationQuickJit>true</TieredCompilationQuickJit>
     <TieredCompilationQuickJitForLoops>true</TieredCompilationQuickJitForLoops>
+    <TieredCompilationCallCountThreshold>30</TieredCompilationCallCountThreshold>
+    <TieredCompilationCallCountingDelayMs>100</TieredCompilationCallCountingDelayMs>
     <TieredPGO>true</TieredPGO>
     <StartupHookSupport>false</StartupHookSupport>
     <EnableUnsafeUTF7Encoding>false</EnableUnsafeUTF7Encoding>
