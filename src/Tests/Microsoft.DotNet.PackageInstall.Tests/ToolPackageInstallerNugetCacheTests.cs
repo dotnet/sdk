@@ -145,8 +145,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 fileSystem = new FileSystemWrapper();
                 store = new ToolPackageStoreAndQuery(root);
                 var testRuntimeJsonPath = Path.Combine(TestContext.Current.ToolsetUnderTest.SdkFolderUnderTest, "RuntimeIdentifierGraph.json");
-                var localToolPath = Path.Combine(TestContext.GetRepoRoot(), "artifacts", ".nuget", "packages");
-                downloader = new ToolPackageDownloader(store, testRuntimeJsonPath, localToolPath);
+                // var localToolPath = Path.Combine(TestContext.GetRepoRoot(), "artifacts", ".nuget", "packages");
+                downloader = new ToolPackageDownloader(store, testRuntimeJsonPath);
             }
 
             return (store, downloader, reporter, fileSystem);

@@ -61,15 +61,17 @@ namespace Microsoft.DotNet.Cli.ToolPackage
 
         public ToolPackageDownloader(
             IToolPackageStore store,
-            string runtimeJsonPathTest = null,
-            string localToolPath = null
+            string runtimeJsonPathTest = null
+            // string localToolPath = null
         )
         {
             _toolPackageStore = store ?? throw new ArgumentNullException(nameof(store)); ;
             _globalToolStageDir = _toolPackageStore.GetRandomStagingDirectory();
-            string localToolDownloadDir = localToolPath
+            /*string localToolDownloadDir = localToolPath
                 ?? (Environment.GetEnvironmentVariable("NUGET_PACKAGES"))
-                ?? (Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "nuget", "package"));          
+                ?? (Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "nuget", "package"));*/
+            string localToolDownloadDir = (Environment.GetEnvironmentVariable("NUGET_PACKAGES"))
+                ?? (Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "nuget", "package"));
             _localToolDownloadDir = new DirectoryPath(localToolDownloadDir);
             
             _localToolAssetDir = new DirectoryPath(PathUtilities.CreateTempSubdirectory());
