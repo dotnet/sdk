@@ -90,32 +90,30 @@ namespace Microsoft.DotNet.SourceBuild.SmokeTests
 
         public static string GetBaselineFilePath(string baselineFileName) => Path.Combine(GetAssetsDirectory(), "baselines", baselineFileName);
 
-        public static string RemoveNetTfmPaths(string source)
-        {
-            string pathSeparator = Regex.Escape(Path.DirectorySeparatorChar.ToString());
-            Regex netTfmRegex = new($"{pathSeparator}net[1-9]+\\.[0-9]+{pathSeparator}");
-            return netTfmRegex.Replace(source, $"{Path.DirectorySeparatorChar}{NetTfmPlaceholder}{Path.DirectorySeparatorChar}");
-        }
-
         public static string RemoveRids(string diff, bool isPortable = false) =>
             isPortable ? diff.Replace(Config.PortableRid, "portable-rid") : diff.Replace(Config.TargetRid, "banana-rid");
 
         public static string RemoveVersions(string source)
         {
-            string result = RemoveNetTfmPaths(source);
-
-            // Remove build versions
-            // The semantic version regex incorectly parses through build versions such as "8.1.00-beta.final"
-            // so the build version regex is used to capture matches that the semantic version does not.
-            Regex BuildVersionPattern = new(@"\d+(\.\d+)+([@-](\w+)*\d*([\.+-](alpha|preview|rc|rtm|beta|final|servicing|bundled))*(\.\d+)*)*");
-            result = BuildVersionPattern.Replace(result, VersionPlaceholder);
+            // Remove version numbers for examples like "roslyn4.1", "testhost-1.0", "net8.0", and "netstandard2.1".
+            string result = Regex.Replace(source, $@"(roslyn|testhost-|netstandard|net)\d+\.\d+", match =>
+            {
+                string wordPart = match.Groups[1].Value;
+                return $"{wordPart}x.y";
+            });
 
             // Remove semantic versions
             // Regex source: https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string
+            // The regex from https://semver.org has been modified to account for the following:
+                // - The version should be preceded by a path separator, '.', '-', or '/'
+                // - The version should match a release identifier that begins with '.' or '-'
+                // - The version may have one or more release identifiers that begin with '.' or '-'
+                // - The version should end before a path separator, '.', '-', or '/'
             Regex semanticVersionRegex = new(
-                $"(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)"
-                + $"(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))"
-                + $"?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?");
+                @"(?<=[./-])(0|[1-9]\d*)\.(0|[1-9]\d*)(\.(0|[1-9]\d*))+" +
+                @"(((?:[-.]((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)))+" +
+                @"(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?" +
+                @"(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?(?=[/.-])");
             return semanticVersionRegex.Replace(result, VersionPlaceholder);
         }
 
