@@ -19,9 +19,15 @@ public class DotNetFormatTests : SmokeTests
     /// <Summary>
     /// Format an unformatted project and verify that the output matches the pre-computed solution.
     /// </Summary>
-    [SkippableFact(Config.ExcludeDotnetFormatEnv, skipOnTrueEnv: true)]
+    [Fact]
     public void FormatProject()
     {
+        if (Config.TargetRid.Contains("alpine"))
+        {
+            // Skipping this test on Alpine due to https://github.com/dotnet/format/issues/1945
+            return;
+        }
+
         string unformattedCsFilePath = Path.Combine(BaselineHelper.GetAssetsDirectory(), UnformattedFileName);
 
         string projectDirectory = DotNetHelper.ExecuteNew("console", nameof(FormatProject), "C#");
