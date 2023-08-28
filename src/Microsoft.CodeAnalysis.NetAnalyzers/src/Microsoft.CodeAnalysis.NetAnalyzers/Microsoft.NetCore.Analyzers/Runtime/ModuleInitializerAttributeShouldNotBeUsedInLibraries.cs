@@ -55,27 +55,26 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
                 context.RegisterSymbolAction(context =>
                 {
-                    if (context.Symbol is IMethodSymbol method)
+                    var method = (IMethodSymbol)context.Symbol;
+
+                    // Eliminate methods that would fail the CS8814, CS8815, and CS8816 checks
+                    // for what can have [ModuleInitializer] applied
+                    if (method.GetResultantVisibility() == SymbolVisibility.Private ||
+                        method.Parameters.Length > 0 ||
+                        method.IsGenericMethod ||
+                        method.ContainingType.IsGenericType ||
+                        !method.IsStatic ||
+                        !method.ReturnsVoid)
                     {
-                        // Eliminate methods that would fail the CS8814, CS8815, and CS8816 checks
-                        // for what can have [ModuleInitializer] applied
-                        if (method.GetResultantVisibility() == SymbolVisibility.Private ||
-                            method.Parameters.Length > 0 ||
-                            method.IsGenericMethod ||
-                            method.ContainingType.IsGenericType ||
-                            !method.IsStatic ||
-                            !method.ReturnsVoid)
-                        {
-                            return;
-                        }
+                        return;
+                    }
 
-                        AttributeData? initializerAttribute = context.Symbol.GetAttribute(moduleInitializerAttribute);
-                        SyntaxReference? attributeReference = initializerAttribute?.ApplicationSyntaxReference;
+                    AttributeData? initializerAttribute = context.Symbol.GetAttribute(moduleInitializerAttribute);
+                    SyntaxReference? attributeReference = initializerAttribute?.ApplicationSyntaxReference;
 
-                        if (attributeReference is not null)
-                        {
-                            context.ReportDiagnostic(attributeReference.GetSyntax(context.CancellationToken).CreateDiagnostic(Rule));
-                        }
+                    if (attributeReference is not null)
+                    {
+                        context.ReportDiagnostic(attributeReference.GetSyntax(context.CancellationToken).CreateDiagnostic(Rule));
                     }
                 },
                 SymbolKind.Method);
