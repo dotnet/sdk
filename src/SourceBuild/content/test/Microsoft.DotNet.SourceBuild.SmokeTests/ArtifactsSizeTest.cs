@@ -53,11 +53,11 @@ public class ArtifactsSizeTest : SmokeTests
         IEnumerable<TarEntry> sdkTarEntries = Utilities.GetTarballContent(Config.SdkTarballPath)
                                                         .Where(entry => entry.EntryType == TarEntryType.RegularFile);
 
-        Dictionary<string, int> fileNameCountMap = new Dictionary<string, int>();
+        var filePathCountMap = new Dictionary<string, int>();
         (string FilePath, long Bytes)[] tarEntries = sdkTarEntries.Concat(artifactsTarEntries)
             .Select(entry =>
             {
-                string result = ProcessEntryName(entry.Name, fileNameCountMap);
+                string result = ProcessEntryName(entry.Name, filePathCountMap);
                 return (FilePath: result, Bytes: entry.Length);
             })
             .OrderBy(entry => entry.FilePath)
@@ -86,23 +86,36 @@ public class ArtifactsSizeTest : SmokeTests
         }
     }
 
-    private string ProcessEntryName(string originalName, Dictionary<string, int> fileNameCountMap)
+    private string ProcessEntryName(string originalName, Dictionary<string, int> filePathCountMap)
     {
         string result = BaselineHelper.RemoveRids(originalName);
         result = BaselineHelper.RemoveVersions(result);
 
-        string pattern = @"x\.y\.z";
-        MatchCollection matches = Regex.Matches(result, pattern);
-
-        if (matches.Count > 0)
+        string[] patterns = {@"x\.y\.z", @"x\.y(?!\.z)"};
+        int matchIndex = -1;
+        string matchPattern = "";
+        foreach (string pattern in patterns)
         {
-            int count = fileNameCountMap.TryGetValue(result, out int value) ? value : 0;
-            fileNameCountMap[result] = count + 1;
+            MatchCollection matches = Regex.Matches(result, pattern);
+
+            if (matches.Count > 0)
+            {
+                if (matches[matches.Count - 1].Index > matchIndex)
+                {
+                    matchIndex = matches[matches.Count - 1].Index;
+                    matchPattern = matches[matches.Count - 1].Value;
+                }
+            }
+        }
+
+        if (matchIndex != -1)
+        {
+            int count = filePathCountMap.TryGetValue(result, out count) ? count : 0;
+            filePathCountMap[result] = count + 1;
 
             if (count > 0)
             {
-                int lastIndex = matches[matches.Count - 1].Index;
-                result = result.Substring(0, lastIndex) + $"x.y.z-{count}" + result.Substring(lastIndex + pattern.Length - 2);
+                result = result.Substring(0, matchIndex) + $"{matchPattern}-{count}" + result.Substring(matchIndex + matchPattern.Length);
             }
         }
 
