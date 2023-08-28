@@ -1,0 +1,11 @@
+﻿<Project>
+
+  <Target Name="IgnoreJavaScriptOutputAssembly" BeforeTargets="AssignProjectConfiguration">
+      <ItemGroup>
+        <ProjectReference Condition="'%(Extension)' == '.esproj'">
+          <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+        </ProjectReference>
+      </ItemGroup>
+  </Target>
+
+</Project>
