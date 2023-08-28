@@ -10,7 +10,6 @@ namespace Microsoft.DotNet.SourceBuild.SmokeTests;
 internal static class Config
 {
     public const string DotNetDirectoryEnv = "SMOKE_TESTS_DOTNET_DIR";
-    public const string ExcludeDotnetFormatEnv = "SMOKE_TESTS_EXCLUDE_DOTNETFORMAT";
     public const string ExcludeOmniSharpEnv = "SMOKE_TESTS_EXCLUDE_OMNISHARP";
     public const string MsftSdkTarballPathEnv = "SMOKE_TESTS_MSFT_SDK_TARBALL_PATH";
     public const string PoisonReportPathEnv = "SMOKE_TESTS_POISON_REPORT_PATH";
