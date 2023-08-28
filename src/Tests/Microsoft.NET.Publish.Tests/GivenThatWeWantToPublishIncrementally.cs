@@ -21,7 +21,7 @@ namespace Microsoft.NET.Publish.Tests
             };
             var testAsset = _testAssetsManager.CreateTestProject(testProject, testProject.Name);
 
-           
+
 
             // Publish normally
             var publishCommand = new PublishCommand(testAsset);
@@ -301,7 +301,7 @@ namespace Microsoft.NET.Publish.Tests
                 RuntimeIdentifier = rid
             };
 
-            testProject.PackageReferences.Add(new TestPackageReference("NewtonSoft.Json", "13.0.1", publish: "false"));
+            testProject.PackageReferences.Add(new TestPackageReference("NewtonSoft.Json", ToolsetInfo.GetNewtonsoftJsonPackageVersion(), publish: "false"));
             var testAsset = _testAssetsManager.CreateTestProject(testProject, testProject.Name);
 
             var publishCommand = new PublishCommand(testAsset);

@@ -38,9 +38,29 @@ internal sealed class DockerCli : ILocalRegistry
     public DockerCli(ILoggerFactory loggerFactory) : this(null, loggerFactory)
     { }
 
+    private static string? FindFullPathFromPath(string? command)
+    {
+        if (string.IsNullOrEmpty(command))
+        {
+            return command;
+        }
+
+        foreach (string directory in (Environment.GetEnvironmentVariable("PATH") ?? string.Empty).Split(Path.PathSeparator))
+        {
+            string fullPath = Path.Combine(directory, command + FileNameSuffixes.CurrentPlatform.Exe);
+            if (File.Exists(fullPath))
+            {
+                return fullPath;
+            }
+        }
+
+        return command;
+    }
+
     public async Task LoadAsync(BuiltImage image, ImageReference sourceReference, ImageReference destinationReference, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
+        string dockerPath = FindFullPathFromPath("docker") ?? "docker";
 
         string? commandPath = await GetCommandPathAsync(cancellationToken);
         if (commandPath is null)
@@ -49,7 +69,7 @@ internal sealed class DockerCli : ILocalRegistry
         }
 
         // call `docker load` and get it ready to receive input
-        ProcessStartInfo loadInfo = new(commandPath, $"load");
+        ProcessStartInfo loadInfo = new(dockerPath, $"load");
         loadInfo.RedirectStandardInput = true;
         loadInfo.RedirectStandardOutput = true;
         loadInfo.RedirectStandardError = true;
@@ -94,25 +114,25 @@ internal sealed class DockerCli : ILocalRegistry
             switch (commandPath)
             {
                 case DockerCommand:
-                {
-                    JsonDocument config = GetConfig();
+                    {
+                        JsonDocument config = GetConfig();
 
-                    if (!config.RootElement.TryGetProperty("ServerErrors", out JsonElement errorProperty))
-                    {
-                        return true;
+                        if (!config.RootElement.TryGetProperty("ServerErrors", out JsonElement errorProperty))
+                        {
+                            return true;
+                        }
+                        else if (errorProperty.ValueKind == JsonValueKind.Array && errorProperty.GetArrayLength() == 0)
+                        {
+                            return true;
+                        }
+                        else
+                        {
+                            // we have errors, turn them into a string and log them
+                            string messages = string.Join(Environment.NewLine, errorProperty.EnumerateArray());
+                            _logger.LogError($"The daemon server reported errors: {messages}");
+                            return false;
+                        }
                     }
-                    else if (errorProperty.ValueKind == JsonValueKind.Array && errorProperty.GetArrayLength() == 0)
-                    {
-                        return true;
-                    }
-                    else
-                    {
-                        // we have errors, turn them into a string and log them
-                        string messages = string.Join(Environment.NewLine, errorProperty.EnumerateArray());
-                        _logger.LogError($"The daemon server reported errors: {messages}");
-                        return false;
-                    }
-                }
                 case PodmanCommand:
                     return commandPathWasUnknown || await TryRunVersionCommandAsync(PodmanCommand, cancellationToken);
                 default:
@@ -141,9 +161,10 @@ internal sealed class DockerCli : ILocalRegistry
     /// <exception cref="DockerLoadException">when failed to retrieve docker configuration.</exception>
     internal static JsonDocument GetConfig()
     {
+        string dockerPath = FindFullPathFromPath("docker") ?? "docker";
         Process proc = new()
         {
-            StartInfo = new ProcessStartInfo("docker", "info --format=\"{{json .}}\"")
+            StartInfo = new ProcessStartInfo(dockerPath, "info --format=\"{{json .}}\"")
         };
 
         try

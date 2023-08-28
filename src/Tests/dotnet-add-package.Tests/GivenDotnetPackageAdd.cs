@@ -21,10 +21,10 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
                 .Path;
 
             var packageName = "Newtonsoft.Json";
-            var packageVersion = "13.0.1";
+            var packageVersion = ToolsetInfo.GetNewtonsoftJsonPackageVersion();
             var cmd = new DotnetCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
-                .Execute("add", "package", packageName, "--version",  packageVersion);
+                .Execute("add", "package", packageName, "--version", packageVersion);
             cmd.Should().Pass();
             cmd.StdOut.Should().Contain($"PackageReference for package '{packageName}' version '{packageVersion}' " +
                 $"added to file '{projectDirectory + Path.DirectorySeparatorChar + testAsset}.csproj'.");
@@ -53,7 +53,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
                 TargetFrameworks = targetFramework,
             };
 
-            var packages = inputVersions.Select(e => GetPackagePath(targetFramework, "A", e, identifier: expectedVersion + e +  inputVersions.GetHashCode().ToString())).ToArray(); 
+            var packages = inputVersions.Select(e => GetPackagePath(targetFramework, "A", e, identifier: expectedVersion + e + inputVersions.GetHashCode().ToString())).ToArray();
 
             testProject.AdditionalProperties.Add("RestoreSources",
                                      "$(RestoreSources);" + string.Join(";", packages.Select(package => Path.GetDirectoryName(package))));
@@ -79,13 +79,13 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
 
             var cmd = new DotnetCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
-                .Execute($"add", "package", "--prerelease", "Newtonsoft.Json", "--version", "13.0.1")
+                .Execute($"add", "package", "--prerelease", "Newtonsoft.Json", "--version", ToolsetInfo.GetNewtonsoftJsonPackageVersion())
                 .Should().Fail()
                 .And.HaveStdOutContaining("The --prerelease and --version options are not supported in the same command.");
         }
 
         [Fact]
-        public void 
+        public void
             WhenValidProjectAndPackageArePassedItGetsAdded()
         {
             var testAsset = "TestAppSimple";
@@ -96,7 +96,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
 
             var csproj = $"{projectDirectory + Path.DirectorySeparatorChar + testAsset}.csproj";
             var packageName = "Newtonsoft.Json";
-            var packageVersion = "13.0.1";
+            var packageVersion = ToolsetInfo.GetNewtonsoftJsonPackageVersion();
             var cmd = new DotnetCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
                 .Execute("add", csproj, "package", packageName, "--version", packageVersion)
@@ -116,11 +116,11 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
                 .WithSource()
                 .Path;
 
-            var packageDirectory = Path.Combine(projectDirectory, "local packages"); 
+            var packageDirectory = Path.Combine(projectDirectory, "local packages");
 
             var csproj = $"{projectDirectory + Path.DirectorySeparatorChar + testAsset}.csproj";
             var packageName = "Newtonsoft.Json";
-            var packageVersion = "13.0.1";
+            var packageVersion = ToolsetInfo.GetNewtonsoftJsonPackageVersion();
             var cmd = new DotnetCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
                 .Execute("add", csproj, "package", packageName, "--version", packageVersion, "--package-directory", packageDirectory)
@@ -144,7 +144,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
                 .Path;
 
             var packageName = "Newtonsoft.Json";
-            var packageVersion = "13.0.1";
+            var packageVersion = ToolsetInfo.GetNewtonsoftJsonPackageVersion();
             var cmd = new DotnetCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
                 .Execute($"add", "package", "--version", packageVersion, packageName)
@@ -165,7 +165,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
                 .Path;
 
             var packageName = "Newtonsoft.Json";
-            var packageVersion = "13.0.1";
+            var packageVersion = ToolsetInfo.GetNewtonsoftJsonPackageVersion();
             var framework = ToolsetInfo.CurrentTargetFramework;
             var cmd = new DotnetCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
@@ -187,7 +187,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
                 .Path;
 
             var packageName = "Newtonsoft.Json";
-            var packageVersion = "13.0.1";
+            var packageVersion = ToolsetInfo.GetNewtonsoftJsonPackageVersion();
             var cmd = new DotnetCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
                 .Execute($"add", "package", packageName, "--version", packageVersion)

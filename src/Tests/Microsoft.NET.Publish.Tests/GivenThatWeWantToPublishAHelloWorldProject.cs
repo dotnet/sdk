@@ -162,9 +162,6 @@ public static class Program
         }
 
         [Theory]
-        [InlineData("win-arm")]
-        [InlineData("win8-arm")]
-        [InlineData("win81-arm")]
         [InlineData($"{ToolsetInfo.LatestWinRuntimeIdentifier}-arm")]
         [InlineData($"{ToolsetInfo.LatestWinRuntimeIdentifier}-arm64")]
         public void Publish_standalone_post_netcoreapp2_arm_app(string runtimeIdentifier)
@@ -803,7 +800,7 @@ public static class Program
                     throw new ArgumentOutOfRangeException(nameof(type));
             }
 
-            testProject.PackageReferences.Add(new TestPackageReference("NewtonSoft.Json", "13.0.1"));
+            testProject.PackageReferences.Add(new TestPackageReference("NewtonSoft.Json", ToolsetInfo.GetNewtonsoftJsonPackageVersion()));
 
             var testAsset = _testAssetsManager.CreateTestProject(testProject, testProject.Name, identifier: type)
                 .WithProjectChanges(project =>
@@ -1089,7 +1086,7 @@ public static class Program
             var testProject = new TestProject()
             {
                 Name = "PublishImplicitRid",
-                TargetFrameworks = $"net472;{ToolsetInfo.CurrentTargetFramework}",
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework
             };
             testProject.AdditionalProperties.Add("IsPublishable", "false");
             var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: executeOptionsAndProperties);

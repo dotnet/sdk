@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using Microsoft.Build.Framework;
 using Microsoft.Extensions.Logging;
 using Microsoft.NET.Build.Containers.Logging;
@@ -111,6 +112,7 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
         // at this point we're done with modifications and are just pushing the data other places
         GeneratedContainerManifest = JsonSerializer.Serialize(builtImage.Manifest);
         GeneratedContainerConfiguration = builtImage.Config;
+        GeneratedContainerDigest = builtImage.Manifest.GetDigest();
 
         foreach (ImageReference destinationImageReference in destinationImageReferences)
         {
@@ -204,16 +206,18 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
         }
     }
 
-    private static void SetEnvironmentVariables(ImageBuilder img, ITaskItem[] envVars)
+    private void SetEnvironmentVariables(ImageBuilder img, ITaskItem[] envVars)
     {
         foreach (ITaskItem envVar in envVars)
         {
-            img.AddEnvironmentVariable(envVar.ItemSpec, envVar.GetMetadata("Value"));
+            var value = envVar.GetMetadata("Value");
+            img.AddEnvironmentVariable(envVar.ItemSpec, value);
         }
     }
 
-    private void SafeLog(string message, params object[] formatParams) {
-        if(BuildEngine != null) Log.LogMessage(MessageImportance.High, message, formatParams);
+    private void SafeLog(string message, params object[] formatParams)
+    {
+        if (BuildEngine != null) Log.LogMessage(MessageImportance.High, message, formatParams);
     }
 
     public void Dispose()

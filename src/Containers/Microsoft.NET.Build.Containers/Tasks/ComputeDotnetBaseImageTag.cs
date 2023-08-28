@@ -25,6 +25,8 @@ public sealed class ComputeDotnetBaseImageTag : Microsoft.Build.Utilities.Task
     [Required]
     public string TargetFrameworkVersion { get; set; }
 
+    public string ContainerFamily { get; set; }
+
     [Output]
     public string? ComputedBaseImageTag { get; private set; }
 
@@ -32,6 +34,7 @@ public sealed class ComputeDotnetBaseImageTag : Microsoft.Build.Utilities.Task
     {
         SdkVersion = "";
         TargetFrameworkVersion = "";
+        ContainerFamily = "";
     }
 
     public override bool Execute()
@@ -39,19 +42,24 @@ public sealed class ComputeDotnetBaseImageTag : Microsoft.Build.Utilities.Task
         if (SemanticVersion.TryParse(TargetFrameworkVersion, out var tfm) && tfm.Major < FirstVersionWithNewTaggingScheme)
         {
             ComputedBaseImageTag = $"{tfm.Major}.{tfm.Minor}";
-            return true;
         }
-
-        if (SemanticVersion.TryParse(SdkVersion, out var version))
+        else if (SemanticVersion.TryParse(SdkVersion, out var version))
         {
             ComputedBaseImageTag = ComputeVersionInternal(version, tfm);
-            return true;
         }
         else
         {
             Log.LogError(Resources.Strings.InvalidSdkVersion, SdkVersion);
-            return false;
+            return !Log.HasLoggedErrors;
         }
+
+        if (!string.IsNullOrWhiteSpace(ContainerFamily))
+        {
+            // for the inferred image tags, 'family' aka 'flavor' comes after the 'version' portion (including any preview/rc segments).
+            // so it's safe to just append here
+            ComputedBaseImageTag += $"-{ContainerFamily}";
+        }
+        return true;
     }
 
 
@@ -76,8 +84,9 @@ public sealed class ComputeDotnetBaseImageTag : Microsoft.Build.Utilities.Task
         return baseImageTag;
     }
 
-     private string? DetermineLabelBasedOnChannel(int major, int minor, string[] releaseLabels) {
-      // this would be a switch, but we have to support net47x where Range and Index aren't available
+    private string? DetermineLabelBasedOnChannel(int major, int minor, string[] releaseLabels)
+    {
+        // this would be a switch, but we have to support net47x where Range and Index aren't available
         if (releaseLabels.Length == 0)
         {
             return $"{major}.{minor}";
@@ -109,5 +118,5 @@ public sealed class ComputeDotnetBaseImageTag : Microsoft.Build.Utilities.Task
                 return null;
             }
         }
-     }
+    }
 }

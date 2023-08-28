@@ -43,7 +43,8 @@ setTimeout(async function () {
       const payload = JSON.parse(message.data);
       const action = {
         'UpdateStaticFile': () => updateStaticFile(payload.path),
-        'BlazorHotReloadDeltav1': () => applyBlazorDeltas(payload.sharedSecret, payload.deltas),
+        'BlazorHotReloadDeltav1': () => applyBlazorDeltas(payload.sharedSecret, payload.deltas, false),
+        'BlazorHotReloadDeltav2': () => applyBlazorDeltas(payload.sharedSecret, payload.deltas, true),
         'HotReloadDiagnosticsv1': () => displayDiagnostics(payload.diagnostics),
         'BlazorRequestApplyUpdateCapabilities': getBlazorWasmApplyUpdateCapabilities,
         'AspNetCoreHotReloadApplied': () => aspnetCoreHotReloadApplied()
@@ -123,14 +124,14 @@ setTimeout(async function () {
     styleElement.parentNode.insertBefore(newElement, styleElement.nextSibling);
   }
 
-  function applyBlazorDeltas(serverSecret, deltas) {
+  async function applyBlazorDeltas(serverSecret, deltas, sendErrorToClient) {
     if (sharedSecret && (serverSecret != sharedSecret.encodedSharedSecret)) {
       // Validate the shared secret if it was specified. It might be unspecified in older versions of VS
       // that do not support this feature as yet.
       throw 'Unable to validate the server. Rejecting apply-update payload.';
     }
 
-    let applyFailed = false;
+    let applyError = undefined;
     if (window.Blazor?._internal?.applyHotReload) {
       // Only apply hot reload deltas if Blazor has been initialized.
       // It's possible for Blazor to start after the initial page load, so we don't consider skipping this step
@@ -140,21 +141,20 @@ setTimeout(async function () {
           window.Blazor._internal.applyHotReload(d.moduleId, d.metadataDelta, d.ilDelta, d.pdbDelta)
         } catch (error) {
           console.warn(error);
-          applyFailed = true;
-        }
-      }); 
-    }
-
-    fetch('/_framework/blazor-hotreload', { method: 'post', headers: { 'content-type': 'application/json' }, body: JSON.stringify(deltas) })
-      .then(response => {
-        if (response.status == 200) {
-          const etag = response.headers['etag'];
-          window.sessionStorage.setItem('blazor-webassembly-cache', { etag, deltas });
+          applyError = error;
         }
       });
+    }
 
-    if (applyFailed) {
-      sendDeltaNotApplied();
+    try {
+      await fetch('/_framework/blazor-hotreload', { method: 'post', headers: { 'content-type': 'application/json' }, body: JSON.stringify(deltas) });
+    } catch (error) {
+      console.warn(error);
+      applyError = error;
+    }
+
+    if (applyError) {
+      sendDeltaNotApplied(sendErrorToClient ? applyError : undefined);
     } else {
       sendDeltaApplied();
       notifyHotReloadApplied();
@@ -202,8 +202,13 @@ setTimeout(async function () {
     connection.send(new Uint8Array([1]).buffer);
   }
 
-  function sendDeltaNotApplied() {
-    connection.send(new Uint8Array([0]).buffer);
+  function sendDeltaNotApplied(error) {
+    if (error) {
+      let encoder = new TextEncoder()
+      connection.send(encoder.encode("\0" + error.message + "\0" + error.stack));
+    } else {
+      connection.send(new Uint8Array([0]).buffer);
+    }
   }
 
   async function getSecret(serverKeyString) {

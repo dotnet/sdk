@@ -463,7 +463,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
 
             var publish = new PublishCommand(ProjectDirectory);
-            publish.Execute("/p:PublishSingleFile=true ", $"/p:RuntimeIdentifier={RuntimeInformation.RuntimeIdentifier}").Should().Pass();
+            publish.Execute("/p:PublishSingleFile=true", $"/p:RuntimeIdentifier={RuntimeInformation.RuntimeIdentifier}").Should().Pass();
 
             var intermediateOutputPath = publish.GetIntermediateDirectory(DefaultTfm, "Debug", RuntimeInformation.RuntimeIdentifier).ToString();
             var publishPath = publish.GetOutputDirectory(DefaultTfm, "Debug").ToString();
@@ -962,7 +962,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             {
                 var tfm = project.Root.Descendants("TargetFramework").Single();
                 tfm.Name = "TargetFrameworks";
-                tfm.Value="net6.0;" + DefaultTfm;
+                tfm.Value = "net6.0;" + DefaultTfm;
             });
 
             var pack = new MSBuildCommand(Log, "Pack", projectDirectory.Path);
