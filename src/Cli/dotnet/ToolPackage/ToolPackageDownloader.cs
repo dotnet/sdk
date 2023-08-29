@@ -25,7 +25,7 @@ using NuGet.ProjectModel;
 using NuGet.Repositories;
 using NuGet.RuntimeModel;
 using NuGet.Versioning;
-
+using NuGet.Configuration;
 
 namespace Microsoft.DotNet.Cli.ToolPackage
 {
@@ -61,21 +61,16 @@ namespace Microsoft.DotNet.Cli.ToolPackage
 
         public ToolPackageDownloader(
             IToolPackageStore store,
-            string runtimeJsonPathTest = null
-            // string localToolPath = null
+            string runtimeJsonPathForTests = null
         )
         {
             _toolPackageStore = store ?? throw new ArgumentNullException(nameof(store)); ;
             _globalToolStageDir = _toolPackageStore.GetRandomStagingDirectory();
-            /*string localToolDownloadDir = localToolPath
-                ?? (Environment.GetEnvironmentVariable("NUGET_PACKAGES"))
-                ?? (Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "nuget", "package"));*/
-            string localToolDownloadDir = (Environment.GetEnvironmentVariable("NUGET_PACKAGES"))
-                ?? (Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "nuget", "package"));
-            _localToolDownloadDir = new DirectoryPath(localToolDownloadDir);
+            ISettings settings = Settings.LoadDefaultSettings(Directory.GetCurrentDirectory());
+            _localToolDownloadDir = new DirectoryPath(SettingsUtility.GetGlobalPackagesFolder(settings));
             
             _localToolAssetDir = new DirectoryPath(PathUtilities.CreateTempSubdirectory());
-            _runtimeJsonPath = runtimeJsonPathTest ?? Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "RuntimeIdentifierGraph.json");
+            _runtimeJsonPath = runtimeJsonPathForTests ?? Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "RuntimeIdentifierGraph.json");
         }
 
         public IToolPackage InstallPackage(PackageLocation packageLocation, PackageId packageId,

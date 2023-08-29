@@ -51,9 +51,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                     targetFramework: _testTargetframework);
 
                 var commands = toolPackage.Commands;
-                var expectedPackagesFolder = testMockBehaviorIsInSync ?
-                            NuGetGlobalPackagesFolder.GetLocation() :
-                            TestContext.Current.NuGetCachePath;
+                var expectedPackagesFolder = NuGetGlobalPackagesFolder.GetLocation();
                 commands[0].Executable.Value.Should().StartWith(expectedPackagesFolder);
 
                 fileSystem.File
@@ -89,9 +87,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 packageLocation: new PackageLocation(nugetConfig: nugetConfigPath),
                 targetFramework: _testTargetframework);
 
-            var expectedPackagesFolder = testMockBehaviorIsInSync ?
-                            NuGetGlobalPackagesFolder.GetLocation() :
-                            TestContext.Current.NuGetCachePath;
+            var expectedPackagesFolder = NuGetGlobalPackagesFolder.GetLocation();
 
             var commands = toolPackage.Commands;
             commands[0].Executable.Value.Should().StartWith(expectedPackagesFolder);
@@ -144,9 +140,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             {
                 fileSystem = new FileSystemWrapper();
                 store = new ToolPackageStoreAndQuery(root);
-                var testRuntimeJsonPath = Path.Combine(TestContext.Current.ToolsetUnderTest.SdkFolderUnderTest, "RuntimeIdentifierGraph.json");
-                // var localToolPath = Path.Combine(TestContext.GetRepoRoot(), "artifacts", ".nuget", "packages");
-                downloader = new ToolPackageDownloader(store, testRuntimeJsonPath);
+                var runtimeJsonPathForTests = Path.Combine(TestContext.Current.ToolsetUnderTest.SdkFolderUnderTest, "RuntimeIdentifierGraph.json");
+                downloader = new ToolPackageDownloader(store, runtimeJsonPathForTests);
             }
 
             return (store, downloader, reporter, fileSystem);
