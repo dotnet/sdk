@@ -135,6 +135,10 @@
             "defaultRemote": "https://github.com/dotnet/runtime"
         },
         {
+            "name": "scenario-tests",
+            "defaultRemote": "https://github.com/dotnet/scenario-tests"
+        },
+        {
             "name": "sdk",
             "defaultRemote": "https://github.com/dotnet/sdk"
         },
