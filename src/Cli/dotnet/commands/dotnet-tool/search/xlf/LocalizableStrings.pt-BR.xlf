@@ -59,12 +59,12 @@
       </trans-unit>
       <trans-unit id="PrereleaseDescription">
         <source>determining whether to include pre-release packages.</source>
-        <target state="translated">determinando se os pacotes de pré-lançamento devem ser incluídos.</target>
+        <target state="new">determining whether to include pre-release packages.</target>
         <note />
       </trans-unit>
       <trans-unit id="SearchTermArgumentName">
         <source>Search Term</source>
-        <target state="translated">Termo de Pesquisa</target>
+        <target state="new">Search Term</target>
         <note />
       </trans-unit>
       <trans-unit id="SearchTermDescription">

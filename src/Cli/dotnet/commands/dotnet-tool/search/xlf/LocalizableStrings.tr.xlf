@@ -59,12 +59,12 @@
       </trans-unit>
       <trans-unit id="PrereleaseDescription">
         <source>determining whether to include pre-release packages.</source>
-        <target state="translated">yayın öncesi paketlerin eklenip eklenmeyeceğini belirleme.</target>
+        <target state="new">determining whether to include pre-release packages.</target>
         <note />
       </trans-unit>
       <trans-unit id="SearchTermArgumentName">
         <source>Search Term</source>
-        <target state="translated">Arama Terimi</target>
+        <target state="new">Search Term</target>
         <note />
       </trans-unit>
       <trans-unit id="SearchTermDescription">
