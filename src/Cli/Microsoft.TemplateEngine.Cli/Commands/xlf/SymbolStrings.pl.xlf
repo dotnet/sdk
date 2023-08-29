@@ -105,7 +105,7 @@ Jeśli polecenie zostanie określone bez argumentu, zostanie wyświetlona lista 
       </trans-unit>
       <trans-unit id="Option_AddSource">
         <source>Specifies a NuGet source to use during install.</source>
-        <target state="translated">Określa źródło NuGet do użycia podczas instalacji.</target>
+        <target state="new">Specifies a NuGet source to use during install.</target>
         <note />
       </trans-unit>
       <trans-unit id="Option_AuthorFilter">
