@@ -6864,5 +6864,75 @@ End Class
                 },
             }.RunAsync();
         }
+
+        [Fact, WorkItem(6755, "https://github.com/dotnet/roslyn-analyzers/issues/6755")]
+        public async Task CSharp_BinaryPattern_HandlesNull()
+        {
+            var code = """
+                public class C
+                {
+                    public string M1(string[] obj)
+                    {
+                        if (obj is null or [])
+                        {
+                            return null;
+                        }
+
+                        return obj.ToString();
+                    }
+
+                    public string M2(string[] obj)
+                    {
+                        if (obj is null or [])
+                        {
+                            return [|obj|].ToString();
+                        }
+
+                        return null;
+                    }
+                }
+                """;
+            await new VerifyCS.Test
+            {
+                TestCode = code,
+                FixedCode = code,
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp11,
+            }.RunAsync();
+        }
+
+        [Fact, WorkItem(6755, "https://github.com/dotnet/roslyn-analyzers/issues/6755")]
+        public async Task CSharp_BinaryPattern_HandlesNotNull()
+        {
+            var code = """
+                public class C
+                {
+                    public string M1(string[] obj)
+                    {
+                        if (obj is not null and [])
+                        {
+                            return obj.ToString();
+                        }
+                
+                        return null;
+                    }
+
+                    public string M2(string[] obj)
+                    {
+                        if (obj is not null and [])
+                        {
+                            return null;
+                        }
+                
+                        return [|obj|].ToString();
+                    }
+                }
+                """;
+            await new VerifyCS.Test
+            {
+                TestCode = code,
+                FixedCode = code,
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp11,
+            }.RunAsync();
+        }
     }
 }
