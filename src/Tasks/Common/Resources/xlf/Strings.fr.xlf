@@ -9,7 +9,7 @@
       </trans-unit>
       <trans-unit id="AotNoValidRuntimePackageError">
         <source>NETSDK1183: Unable to optimize assemblies for ahead-of-time compilation: a valid runtime package was not found. Either set the PublishAot property to false, or use a supported runtime identifier when publishing. When targeting .NET 7 or higher, make sure to restore packages with the PublishAot property set to true.</source>
-        <target state="translated">NETSDK1183: Nous n’avons pas pu optimiser les assemblys pour la compilation Ahead of time : un package d’exécution valide n’a pas été trouvé. Définissez la propriété PublishAot sur false ou utilisez un identificateur d’exécution pris en charge lors de la publication. Lorsque vous ciblez .NET 7 ou supérieur, assurez-vous de restaurer les packages avec la propriété PublishAot définie sur true.</target>
+        <target state="new">NETSDK1183: Unable to optimize assemblies for ahead-of-time compilation: a valid runtime package was not found. Either set the PublishAot property to false, or use a supported runtime identifier when publishing. When targeting .NET 7 or higher, make sure to restore packages with the PublishAot property set to true.</target>
         <note>{StrBegin="NETSDK1183: "}</note>
       </trans-unit>
       <trans-unit id="AotNotSupported">
@@ -592,12 +592,12 @@ The following are names of parameters or literal values and should not be transl
       </trans-unit>
       <trans-unit id="Net6NotCompatibleWithDev16">
         <source>NETSDK1182: Targeting .NET 6.0 or higher in Visual Studio 2019 is not supported.</source>
-        <target state="translated">NETSDK1182: le ciblage de .NET 6.0 ou plus dans Visual Studio 2019 n’est pas pris en charge.</target>
+        <target state="new">NETSDK1182: Targeting .NET 6.0 or higher in Visual Studio 2019 is not supported.</target>
         <note>{StrBegin="NETSDK1182: "}</note>
       </trans-unit>
       <trans-unit id="Net7NotCompatibleWithDev173">
         <source>NETSDK1192: Targeting .NET 7.0 or higher in Visual Studio 2022 17.3 is not supported.</source>
-        <target state="translated">NETSDK1192: le ciblage de .NET 7.0 ou plus dans Visual Studio 2022 17.3 n’est pas pris en charge.</target>
+        <target state="new">NETSDK1192: Targeting .NET 7.0 or higher in Visual Studio 2022 17.3 is not supported.</target>
         <note>{StrBegin="NETSDK1192: "}</note>
       </trans-unit>
       <trans-unit id="NoAppHostAvailable">
@@ -667,7 +667,7 @@ The following are names of parameters or literal values and should not be transl
       </trans-unit>
       <trans-unit id="PReleaseRequiresEnvVarOnSln">
         <source>NETSDK1190: To use '{0}' in solution projects, you must set the environment variable '{1}' (to true). This will increase the time to complete the operation.</source>
-        <target state="translated">NETSDK1190: Pour utiliser « {0} » dans les projets de solution, vous devez définir la variable d’environnement « {1} » (sur true). Cette opération augmente la durée de l’achèvement de l’opération.</target>
+        <target state="new">NETSDK1190: To use '{0}' in solution projects, you must set the environment variable '{1}' (to true). This will increase the time to complete the operation.</target>
         <note>{StrBegin="NETSDK1190: "}</note>
       </trans-unit>
       <trans-unit id="PackAsToolCannotSupportSelfContained">
@@ -757,7 +757,7 @@ The following are names of parameters or literal values and should not be transl
       </trans-unit>
       <trans-unit id="PublishUnsupportedWithoutTargetFramework">
         <source>NETSDK1129: The 'Publish' target is not supported without specifying a target framework. The current project targets multiple frameworks, you must specify the framework for the published application.</source>
-        <target state="translated">NETSDK1129: la cible 'Publish' n'est pas prise en charge sans spécification d'un framework cible. Dans la mesure où le projet actif cible plusieurs frameworks, vous devez spécifier le framework de l'application publiée.</target>
+        <target state="new">NETSDK1129: The 'Publish' target is not supported without specifying a target framework. The current project targets multiple frameworks, you must specify the framework for the published application.</target>
         <note>{StrBegin="NETSDK1129: "}</note>
       </trans-unit>
       <trans-unit id="ReadyToRunCompilationFailed">

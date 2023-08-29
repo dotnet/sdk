@@ -9,7 +9,7 @@
       </trans-unit>
       <trans-unit id="AotNoValidRuntimePackageError">
         <source>NETSDK1183: Unable to optimize assemblies for ahead-of-time compilation: a valid runtime package was not found. Either set the PublishAot property to false, or use a supported runtime identifier when publishing. When targeting .NET 7 or higher, make sure to restore packages with the PublishAot property set to true.</source>
-        <target state="translated">NETSDK1183: Ahead of Time 컴파일을 위해 어셈블리를 최적화할 수 없습니다. 유효한 런타임 패키지를 찾을 수 없습니다. PublishAot 속성을 false로 설정하거나 게시할 때 지원되는 런타임 식별자를 사용하세요. .NET 7 이상을 대상으로 하는 경우 PublishAot 속성이 true로 설정된 패키지를 복원해야 합니다.</target>
+        <target state="new">NETSDK1183: Unable to optimize assemblies for ahead-of-time compilation: a valid runtime package was not found. Either set the PublishAot property to false, or use a supported runtime identifier when publishing. When targeting .NET 7 or higher, make sure to restore packages with the PublishAot property set to true.</target>
         <note>{StrBegin="NETSDK1183: "}</note>
       </trans-unit>
       <trans-unit id="AotNotSupported">
@@ -592,12 +592,12 @@ The following are names of parameters or literal values and should not be transl
       </trans-unit>
       <trans-unit id="Net6NotCompatibleWithDev16">
         <source>NETSDK1182: Targeting .NET 6.0 or higher in Visual Studio 2019 is not supported.</source>
-        <target state="translated">NETSDK1182: Visual Studio 2019에서 .NET 6.0 이상을 대상으로 하는 것은 지원되지 않습니다.</target>
+        <target state="new">NETSDK1182: Targeting .NET 6.0 or higher in Visual Studio 2019 is not supported.</target>
         <note>{StrBegin="NETSDK1182: "}</note>
       </trans-unit>
       <trans-unit id="Net7NotCompatibleWithDev173">
         <source>NETSDK1192: Targeting .NET 7.0 or higher in Visual Studio 2022 17.3 is not supported.</source>
-        <target state="translated">NETSDK1192: Visual Studio 2022 17.3에서 .NET 7.0 이상을 대상으로 하는 것은 지원되지 않습니다.</target>
+        <target state="new">NETSDK1192: Targeting .NET 7.0 or higher in Visual Studio 2022 17.3 is not supported.</target>
         <note>{StrBegin="NETSDK1192: "}</note>
       </trans-unit>
       <trans-unit id="NoAppHostAvailable">
@@ -667,7 +667,7 @@ The following are names of parameters or literal values and should not be transl
       </trans-unit>
       <trans-unit id="PReleaseRequiresEnvVarOnSln">
         <source>NETSDK1190: To use '{0}' in solution projects, you must set the environment variable '{1}' (to true). This will increase the time to complete the operation.</source>
-        <target state="translated">NETSDK1190: 솔루션 프로젝트에서 '{0}'을(를) 사용하려면 환경 변수 '{1}'(true)를 설정해야 합니다. 이렇게 하면 작업을 완료하는 시간이 늘어나게 됩니다.</target>
+        <target state="new">NETSDK1190: To use '{0}' in solution projects, you must set the environment variable '{1}' (to true). This will increase the time to complete the operation.</target>
         <note>{StrBegin="NETSDK1190: "}</note>
       </trans-unit>
       <trans-unit id="PackAsToolCannotSupportSelfContained">
@@ -757,7 +757,7 @@ The following are names of parameters or literal values and should not be transl
       </trans-unit>
       <trans-unit id="PublishUnsupportedWithoutTargetFramework">
         <source>NETSDK1129: The 'Publish' target is not supported without specifying a target framework. The current project targets multiple frameworks, you must specify the framework for the published application.</source>
-        <target state="translated">NETSDK1129: 대상 프레임워크를 지정하지 않고 'Publish' 대상을 사용할 수 없습니다. 현재 프로젝트가 여러 프레임워크를 대상으로 하므로 게시된 애플리케이션의 프레임워크를 지정해야 합니다.</target>
+        <target state="new">NETSDK1129: The 'Publish' target is not supported without specifying a target framework. The current project targets multiple frameworks, you must specify the framework for the published application.</target>
         <note>{StrBegin="NETSDK1129: "}</note>
       </trans-unit>
       <trans-unit id="ReadyToRunCompilationFailed">
