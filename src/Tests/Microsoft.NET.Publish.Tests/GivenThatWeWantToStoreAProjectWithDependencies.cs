@@ -174,7 +174,7 @@ namespace Microsoft.NET.Publish.Tests
                "artifact.xml",
                "newtonsoft.json/9.0.2-beta2/lib/netstandard1.1/Newtonsoft.Json.dll",
                "newtonsoft.json/9.0.1/lib/netstandard1.0/Newtonsoft.Json.dll",
-               $"newtonsoft.json/{ToolsetInfo.GetNewtonsoftJsonPackageVersion()}/lib/net6.0/Newtonsoft.Json.dll",
+               $"newtonsoft.json/{ToolsetInfo.GetNewtonsoftJsonPackageVersion()}/lib/netstandard2.0/Newtonsoft.Json.dll",
                "fluentassertions/4.12.0/lib/netstandard1.3/FluentAssertions.Core.dll",
                "fluentassertions/4.12.0/lib/netstandard1.3/FluentAssertions.dll",
                "fluentassertions.json/4.12.0/lib/netstandard1.3/FluentAssertions.Json.dll",
@@ -280,7 +280,7 @@ namespace Microsoft.NET.Publish.Tests
             }
             else
             {
-                var newtonsoftSymbolsFolder = symbolsFolder.Sub("newtonsoft.json").Sub(ToolsetInfo.GetNewtonsoftJsonPackageVersion()).Sub("lib").Sub("net6.0");
+                var newtonsoftSymbolsFolder = symbolsFolder.Sub("newtonsoft.json").Sub(ToolsetInfo.GetNewtonsoftJsonPackageVersion()).Sub("lib").Sub("netstandard2.0");
                 newtonsoftSymbolsFolder.Should().Exist();
 
                 var newtonsoftSymbolsFiles = newtonsoftSymbolsFolder.GetFiles().ToArray();
@@ -324,7 +324,7 @@ namespace Microsoft.NET.Publish.Tests
 
             new DirectoryInfo(outputFolder).Should().OnlyHaveFiles(new List<string> {
                "artifact.xml",
-               $"newtonsoft.json/{ToolsetInfo.GetNewtonsoftJsonPackageVersion()}/lib/net6.0/Newtonsoft.Json.dll",
+               $"newtonsoft.json/{ToolsetInfo.GetNewtonsoftJsonPackageVersion()}/lib/netstandard2.0/Newtonsoft.Json.dll",
             });
         }
 

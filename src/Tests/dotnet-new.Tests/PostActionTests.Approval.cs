@@ -88,7 +88,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                     output.Replace("{TempPath}", "/tmp/");
                     output.Replace(workingDirectory, "%working directory%");
                     output.UnixifyNewlines();
-                    output.ScrubByRegex("(?<=Adding a package reference Newtonsoft.Json \\(version: 13.0.3\\) to project file %working directory%(\\\\|\\/)MyProject.csproj:\\n)(.*?)(?=\\nSuccessfully added a reference to the project file.)", "%CALLBACK OUTPUT%", System.Text.RegularExpressions.RegexOptions.Singleline);
+                    output.ScrubByRegex("(?<=Adding a package reference Newtonsoft.Json \\(version: 13.0.1\\) to project file %working directory%(\\\\|\\/)MyProject.csproj:\\n)(.*?)(?=\\nSuccessfully added a reference to the project file.)", "%CALLBACK OUTPUT%", System.Text.RegularExpressions.RegexOptions.Singleline);
                 });
         }
 

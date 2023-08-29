@@ -435,7 +435,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And.NotHaveStdErr()
                 .And.HaveStdOutContaining($"The template \"{templateName}\" was created successfully.")
                 .And.HaveStdOutContaining("Successfully added a reference to the project file.")
-                .And.HaveStdOutContaining("Adding a package reference Newtonsoft.Json (version: 13.0.3) to project file")
+                .And.HaveStdOutContaining("Adding a package reference Newtonsoft.Json (version: 13.0.1) to project file")
                 .And.NotHaveStdOutContaining("Manual instructions: Manually add");
 
             new DotnetBuildCommand(_log)
@@ -885,7 +885,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .WithCustomHive(tempSettingsDir)
                 .Execute("TestAssets.AddReference", "-o", workingDirectory);
             cmd.Should().Pass()
-                .And.HaveStdOutContaining("Adding a package reference Newtonsoft.Json (version: 13.0.3) to project file")
+                .And.HaveStdOutContaining("Adding a package reference Newtonsoft.Json (version: 13.0.1) to project file")
                 .And.HaveStdOutContaining("Successfully added a reference to the project file.");
         }
 

@@ -22,7 +22,7 @@
         "files": [ "Basic.csproj" ],
         "referenceType": "package",
         "reference": "Newtonsoft.Json",
-        "version": "13.0.3"
+        "version": "13.0.1"
       }
     }
   ]
