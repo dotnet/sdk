@@ -44,7 +44,7 @@
       </trans-unit>
       <trans-unit id="CustomConfigurationDisablesPublishAndPackReleaseProperties">
         <source>A custom configuration was detected in the project '{0}', so the property '{1}' will not take effect.</source>
-        <target state="translated">Une configuration personnalisée a été détectée dans le '{0}' du projet, la propriété '{1}' ne sera donc pas prise en compte.</target>
+        <target state="new">A custom configuration was detected in the project '{0}', so the property '{1}' will not take effect.</target>
         <note />
       </trans-unit>
       <trans-unit id="DisableBuildServersOptionDescription">
@@ -193,8 +193,8 @@ export PATH="$PATH:{0}"
       <trans-unit id="SelfContainedOptionDescription">
         <source>Publish the .NET runtime with your application so the runtime doesn't need to be installed on the target machine.
 The default is 'true' if a runtime identifier is specified.</source>
-        <target state="translated">Publiez le runtime .NET avec votre application pour éviter à l'utilisateur de l'installer sur la machine cible.
-La valeur par défaut est 'true' si un identificateur de runtime est spécifié.</target>
+        <target state="new">Publish the .NET runtime with your application so the runtime doesn't need to be installed on the target machine.
+The default is 'true' if a runtime identifier is specified.</target>
         <note />
       </trans-unit>
       <trans-unit id="Solution">
@@ -205,7 +205,7 @@ La valeur par défaut est 'true' si un identificateur de runtime est spécifié.
       <trans-unit id="SolutionExecutableConfigurationMismatchError">
         <source>Multiple executable projects in the solution contain conflicting '{0}' values. Ensure the values match. Consider using a Directory.build.props file to set all project configurations. Conflicting projects:
 {1}.</source>
-        <target state="translated">Plusieurs projets exécutables de la solution contiennent des valeurs de '{0}' en conflit. Vérifiez que les valeurs correspondent. Utilisez un fichier Directory.build.props pour définir toutes les configurations de projet. Projets en conflit :
+        <target state="new">Multiple executable projects in the solution contain conflicting '{0}' values. Ensure the values match. Consider using a Directory.build.props file to set all project configurations. Conflicting projects:
 {1}.</target>
         <note />
       </trans-unit>
