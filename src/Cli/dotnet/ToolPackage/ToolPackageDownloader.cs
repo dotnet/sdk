@@ -96,7 +96,7 @@ namespace Microsoft.DotNet.Cli.ToolPackage
                     }
                     _toolDownloadDir = isGlobalTool ? _globalToolStageDir : _localToolDownloadDir;
                     var assetFileDirectory = isGlobalTool ? _globalToolStageDir : _localToolAssetDir;
-                    _nugetPackageDownloader = new NuGetPackageDownloader.NuGetPackageDownloader(_toolDownloadDir, verboseLogger: nugetLogger);
+                    _nugetPackageDownloader = new NuGetPackageDownloader.NuGetPackageDownloader(_toolDownloadDir, verboseLogger: nugetLogger, isNuGetTool: true);
                     rollbackDirectory = _toolDownloadDir.Value;
 
                     NuGetVersion version = DownloadAndExtractPackage(packageLocation, packageId, _nugetPackageDownloader, _toolDownloadDir.Value, _toolPackageStore).GetAwaiter().GetResult();

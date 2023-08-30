@@ -44,6 +44,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
         private readonly IFirstPartyNuGetPackageSigningVerifier _firstPartyNuGetPackageSigningVerifier;
         private bool _validationMessagesDisplayed = false;
         private IDictionary<PackageSource, SourceRepository> _sourceRepositories;
+        private readonly bool _isNuGetTool;
 
         private bool _verifySignatures;
 
@@ -55,7 +56,8 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             IReporter reporter = null,
             RestoreActionConfig restoreActionConfig = null,
             Func<IEnumerable<Task>> timer = null,
-            bool verifySignatures = false)
+            bool verifySignatures = false,
+            bool isNuGetTool = false)
         {
             _packageInstallDir = packageInstallDir;
             _reporter = reporter ?? Reporter.Output;
@@ -77,6 +79,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
 
             DefaultCredentialServiceUtility.SetupDefaultCredentialService(new NuGetConsoleLogger(),
                 !_restoreActionConfig.Interactive);
+            _isNuGetTool = isNuGetTool;
         }
 
         public async Task<string> DownloadPackageAsync(PackageId packageId,
@@ -317,13 +320,13 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             PackageSourceMapping packageSourceMapping = PackageSourceMapping.GetPackageSourceMapping(settings);
 
             // filter package patterns if enabled            
-            if (packageSourceMapping?.IsEnabled == true)
+            if (_isNuGetTool && packageSourceMapping?.IsEnabled == true)
             {
                 IReadOnlyList<string> sources = packageSourceMapping.GetConfiguredPackageSources(packageId.ToString());
 
                 if (sources.Count == 0)
                 {
-                    throw new NuGetPackageInstallerException("No NuGet sources are defined or enabled");
+                    throw new NuGetPackageInstallerException(string.Format(LocalizableStrings.FailedToGetPackageUnderPackageSourceMapping, packageId));
                 }
             }
 

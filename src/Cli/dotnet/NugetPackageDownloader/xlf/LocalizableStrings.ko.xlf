@@ -7,6 +7,11 @@
         <target state="translated">{0} 버전 {1} 다운로드에 실패했습니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="FailedToGetPackageUnderPackageSourceMapping">
+        <source>Package Source Mapping is enabled but no feeds matched the specified packed ID: {0}. See the documentation for Package Source Mapping at https://learn.microsoft.com/nuget/consume-packages/package-source-mapping#enable-by-manually-editing-nugetconfig for more details.</source>
+        <target state="new">Package Source Mapping is enabled but no feeds matched the specified packed ID: {0}. See the documentation for Package Source Mapping at https://learn.microsoft.com/nuget/consume-packages/package-source-mapping#enable-by-manually-editing-nugetconfig for more details.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="FailedToLoadNuGetSource">
         <source>Failed to load NuGet source {0}</source>
         <target state="translated">NuGet 원본 {0}을(를) 로드하지 못했습니다.</target>
