@@ -45,8 +45,8 @@ index ------------
  ./packs/Microsoft.NETCore.App.Ref/x.y.z/
  ./packs/Microsoft.NETCore.App.Ref/x.y.z/analyzers/
 @@ ------------ @@
- ./packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.Xml.XPath.XDocument.dll
  ./sdk-manifests/
+ ./sdk-manifests/x.y.z/
  ./sdk-manifests/x.y.z/
 -./sdk-manifests/x.y.z/
  ./sdk-manifests/x.y.z/microsoft.net.workload.emscripten.current/
@@ -116,7 +116,6 @@ index ------------
 -./sdk/x.y.z/Containers/containerize/Microsoft.NET.Build.Containers.dll
 -./sdk/x.y.z/Containers/containerize/Microsoft.NET.StringTools.dll
 -./sdk/x.y.z/Containers/containerize/Microsoft.VisualStudio.Setup.Configuration.Interop.dll
--./sdk/x.y.z/Containers/containerize/Microsoft.Win32.SystemEvents.dll
 -./sdk/x.y.z/Containers/containerize/MSBuild.dll
 -./sdk/x.y.z/Containers/containerize/Newtonsoft.Json.dll
 -./sdk/x.y.z/Containers/containerize/NuGet.Common.dll
@@ -145,17 +144,13 @@ index ------------
 -./sdk/x.y.z/Containers/containerize/runtimes/win/
 -./sdk/x.y.z/Containers/containerize/runtimes/win/lib/
 -./sdk/x.y.z/Containers/containerize/runtimes/win/lib/netx.y/
--./sdk/x.y.z/Containers/containerize/runtimes/win/lib/netx.y/Microsoft.Win32.SystemEvents.dll
 -./sdk/x.y.z/Containers/containerize/runtimes/win/lib/netx.y/System.Diagnostics.EventLog.dll
 -./sdk/x.y.z/Containers/containerize/runtimes/win/lib/netx.y/System.Diagnostics.EventLog.Messages.dll
--./sdk/x.y.z/Containers/containerize/runtimes/win/lib/netx.y/System.Drawing.Common.dll
 -./sdk/x.y.z/Containers/containerize/runtimes/win/lib/netx.y/System.Security.Cryptography.Pkcs.dll
--./sdk/x.y.z/Containers/containerize/runtimes/win/lib/netx.y/System.Security.Cryptography.ProtectedData.dll
 -./sdk/x.y.z/Containers/containerize/runtimes/win/lib/netx.y/System.Windows.Extensions.dll
 -./sdk/x.y.z/Containers/containerize/System.CommandLine.dll
 -./sdk/x.y.z/Containers/containerize/System.Configuration.ConfigurationManager.dll
 -./sdk/x.y.z/Containers/containerize/System.Diagnostics.EventLog.dll
--./sdk/x.y.z/Containers/containerize/System.Drawing.Common.dll
 -./sdk/x.y.z/Containers/containerize/System.Reflection.MetadataLoadContext.dll
 -./sdk/x.y.z/Containers/containerize/System.Security.Cryptography.Pkcs.dll
 -./sdk/x.y.z/Containers/containerize/System.Security.Cryptography.ProtectedData.dll
@@ -284,23 +279,17 @@ index ------------
  ./sdk/x.y.z/Containers/tasks/netx.y/Microsoft.NET.Build.Containers.dll
  ./sdk/x.y.z/Containers/tasks/netx.y/Microsoft.NET.StringTools.dll
 -./sdk/x.y.z/Containers/tasks/netx.y/Microsoft.VisualStudio.Setup.Configuration.Interop.dll
- ./sdk/x.y.z/Containers/tasks/netx.y/Microsoft.Win32.SystemEvents.dll
  ./sdk/x.y.z/Containers/tasks/netx.y/MSBuild.dll
  ./sdk/x.y.z/Containers/tasks/netx.y/Newtonsoft.Json.dll
+ ./sdk/x.y.z/Containers/tasks/netx.y/NuGet.Common.dll
 @@ ------------ @@
- ./sdk/x.y.z/Containers/tasks/netx.y/runtimes/win/
- ./sdk/x.y.z/Containers/tasks/netx.y/runtimes/win/lib/
- ./sdk/x.y.z/Containers/tasks/netx.y/runtimes/win/lib/netx.y/
--./sdk/x.y.z/Containers/tasks/netx.y/runtimes/win/lib/netx.y/Microsoft.Win32.SystemEvents.dll
- ./sdk/x.y.z/Containers/tasks/netx.y/runtimes/win/lib/netx.y/System.Diagnostics.EventLog.dll
- ./sdk/x.y.z/Containers/tasks/netx.y/runtimes/win/lib/netx.y/System.Diagnostics.EventLog.Messages.dll
--./sdk/x.y.z/Containers/tasks/netx.y/runtimes/win/lib/netx.y/System.Drawing.Common.dll
- ./sdk/x.y.z/Containers/tasks/netx.y/runtimes/win/lib/netx.y/System.Security.Cryptography.Pkcs.dll
--./sdk/x.y.z/Containers/tasks/netx.y/runtimes/win/lib/netx.y/System.Security.Cryptography.ProtectedData.dll
--./sdk/x.y.z/Containers/tasks/netx.y/runtimes/win/lib/netx.y/System.Windows.Extensions.dll
- ./sdk/x.y.z/Containers/tasks/netx.y/System.CommandLine.dll
- ./sdk/x.y.z/Containers/tasks/netx.y/System.Configuration.ConfigurationManager.dll
- ./sdk/x.y.z/Containers/tasks/netx.y/System.Diagnostics.EventLog.dll
+ ./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/System.Composition.Hosting.dll
+ ./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/System.Composition.Runtime.dll
+ ./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/System.Composition.TypedParts.dll
+-./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/System.Diagnostics.EventLog.dll
+ ./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/tr/
+ ./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/tr/dotnet-watch.resources.dll
+ ./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/tr/Microsoft.CodeAnalysis.CSharp.Features.resources.dll
 @@ ------------ @@
  ./sdk/x.y.z/Microsoft.Build.NuGetSdkResolver.dll
  ./sdk/x.y.z/Microsoft.Build.Tasks.Core.dll
@@ -317,14 +306,6 @@ index ------------
  ./sdk/x.y.z/Microsoft.VisualStudio.TestPlatform.Client.dll
  ./sdk/x.y.z/Microsoft.VisualStudio.TestPlatform.Common.dll
  ./sdk/x.y.z/Microsoft.VisualStudio.TestPlatform.ObjectModel.dll
-@@ ------------ @@
- ./sdk/x.y.z/runtimes/win/
- ./sdk/x.y.z/runtimes/win/lib/
- ./sdk/x.y.z/runtimes/win/lib/netx.y/
--./sdk/x.y.z/runtimes/win/lib/netx.y/
- ./sdk/x.y.z/runtimes/win/lib/netx.y/System.Diagnostics.EventLog.dll
- ./sdk/x.y.z/runtimes/win/lib/netx.y/System.Diagnostics.EventLog.Messages.dll
- ./sdk/x.y.z/runtimes/win/lib/netx.y/System.Security.Cryptography.Pkcs.dll
 @@ ------------ @@
  ./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WebAssembly/tools/
  ./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WebAssembly/tools/netx.y/
