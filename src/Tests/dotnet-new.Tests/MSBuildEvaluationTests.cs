@@ -35,7 +35,8 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             cmd = new DotnetNewCommand(Log)
                 .WithCustomHive(tempSettingsDir)
                 .WithWorkingDirectory(projectPath)
-                .Execute("TestAssets.ClassTemplate", "--name", "MyTestClass");
+                // To run the template anyway, use '--force' option, refer to https://aka.ms/templating-exit-codes#100
+                .Execute("TestAssets.ClassTemplate", "--name", "MyTestClass", "--force");
             cmd.Should().Pass();
 
             string testFilePath = Path.Combine(projectPath, "MyTestClass.cs");
@@ -167,7 +168,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             cmd = new DotnetNewCommand(Log)
                 .WithCustomHive(tempSettingsDir)
                 .WithWorkingDirectory(projectPath)
-                .Execute("TestAssets.ClassTemplate", "--name", "MyTestClass", "--project", "MyProject.csproj");
+                .Execute("TestAssets.ClassTemplate", "--name", "MyTestClass", "--project", "MyProject.csproj", "--force");
             cmd.Should().Pass();
 
             cmd = new DotnetBuildCommand(Log)
