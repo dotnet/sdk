@@ -40,7 +40,7 @@ public class ArtifactsSizeTest : SmokeTests
         }
     }
 
-    [SkippableFact(new[] { Config.SourceBuiltArtifactsPathEnv, Config.SdkTarballPathEnv, Config.TargetRidEnv }, skipOnNullOrWhiteSpace: true)]
+    [SkippableFact(new[] { Config.SourceBuiltArtifactsPathEnv, Config.SdkTarballPathEnv, Config.TargetRidEnv }, skipOnNullOrWhiteSpaceEnv: true)]
     public void CompareArtifactsToBaseline()
     {
         Assert.NotNull(Config.SourceBuiltArtifactsPath);
