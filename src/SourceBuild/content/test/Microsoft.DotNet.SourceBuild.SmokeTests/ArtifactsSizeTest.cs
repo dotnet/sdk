@@ -47,18 +47,20 @@ public class ArtifactsSizeTest : SmokeTests
         Assert.NotNull(Config.SdkTarballPath);
         Assert.NotNull(Config.TargetRid);
 
-        IEnumerable<TarEntry> artifactsTarEntries = Utilities.GetTarballContent(Config.SourceBuiltArtifactsPath)
-                                                        .Where(entry => entry.EntryType == TarEntryType.RegularFile)
-                                                        .Where(entry => !entry.Name.Contains("SourceBuildReferencePackages"));
-        IEnumerable<TarEntry> sdkTarEntries = Utilities.GetTarballContent(Config.SdkTarballPath)
-                                                        .Where(entry => entry.EntryType == TarEntryType.RegularFile);
+        string tempTarballDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+        Directory.CreateDirectory(tempTarballDir);
+
+        Utilities.ExtractTarball(Config.SdkTarballPath, tempTarballDir, OutputHelper);
+        Utilities.ExtractTarball(Config.SourceBuiltArtifactsPath, tempTarballDir, OutputHelper);
 
         var filePathCountMap = new Dictionary<string, int>();
-        (string FilePath, long Bytes)[] tarEntries = sdkTarEntries.Concat(artifactsTarEntries)
-            .Select(entry =>
+        (string FilePath, long Bytes)[] tarEntries = Directory.EnumerateFiles(tempTarballDir, "*", SearchOption.AllDirectories)
+            .Where(filepath => !filepath.Contains("SourceBuildReferencePackages"))
+            .Select(filePath =>
             {
-                string result = ProcessEntryName(entry.Name, filePathCountMap);
-                return (FilePath: result, Bytes: entry.Length);
+                string result = filePath.Substring(tempTarballDir.Length + 1);
+                result = ProcessEntryName(result, filePathCountMap);
+                return (FilePath: result, Bytes: new FileInfo(filePath).Length);
             })
             .OrderBy(entry => entry.FilePath)
             .ToArray();
@@ -74,6 +76,8 @@ public class ArtifactsSizeTest : SmokeTests
                 CompareFileSizes(entry.FilePath, entry.Bytes, baselineBytes);
             }
         }
+
+        Directory.Delete(tempTarballDir, true);
 
         try
         {
@@ -132,9 +136,13 @@ public class ArtifactsSizeTest : SmokeTests
         {
             OutputHelper.LogWarningMessage($"'{filePath}' is no longer 0 bytes. It is now {fileSize} bytes");
         }
-        else if (baselineSize != 0 && Math.Abs(((fileSize - baselineSize) / (double)baselineSize) * 100) >= SizeThresholdPercentage)
+        else if (baselineSize != 0 && (((fileSize - baselineSize) / (double)baselineSize) * 100) >= SizeThresholdPercentage)
         {
             OutputHelper.LogWarningMessage($"'{filePath}' increased in size by more than {SizeThresholdPercentage}%. It was originally {baselineSize} bytes and is now {fileSize} bytes");
+        }
+        else if (baselineSize != 0 && (((baselineSize - fileSize) / (double)baselineSize) * 100) >= SizeThresholdPercentage)
+        {
+            OutputHelper.LogWarningMessage($"'{filePath}' decreased in size by more than {SizeThresholdPercentage}%. It was originally {baselineSize} bytes and is now {fileSize} bytes");
         }
     }
 }
