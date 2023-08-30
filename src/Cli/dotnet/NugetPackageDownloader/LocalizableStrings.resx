@@ -139,6 +139,6 @@
     <value>Failed to validate package signing.</value>
   </data>
   <data name="FailedToGetPackageUnderPackageSourceMapping" xml:space="preserve">
-    <value>Package Source Mapping is enabled but no feeds matched the specified packed ID: {0}. See the documentation for Package Source Mapping at https://learn.microsoft.com/nuget/consume-packages/package-source-mapping#enable-by-manually-editing-nugetconfig for more details.</value>
+    <value>Package Source Mapping is enabled but no feeds matched the specified packed ID: {0}. See the documentation for Package Source Mapping at aka.ms/nuget-package-source-mapping for more details.</value>
   </data>
 </root>

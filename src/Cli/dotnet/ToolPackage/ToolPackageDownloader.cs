@@ -64,7 +64,7 @@ namespace Microsoft.DotNet.Cli.ToolPackage
             string runtimeJsonPathForTests = null
         )
         {
-            _toolPackageStore = store ?? throw new ArgumentNullException(nameof(store)); ;
+            _toolPackageStore = store ?? throw new ArgumentNullException(nameof(store));
             _globalToolStageDir = _toolPackageStore.GetRandomStagingDirectory();
             ISettings settings = Settings.LoadDefaultSettings(Directory.GetCurrentDirectory());
             _localToolDownloadDir = new DirectoryPath(SettingsUtility.GetGlobalPackagesFolder(settings));
