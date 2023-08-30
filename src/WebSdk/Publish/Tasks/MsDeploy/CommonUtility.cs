@@ -650,7 +650,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
         {
             if (string.IsNullOrEmpty(quote))
             {
-                if (value != null & value.IndexOfAny(s_specialCharactersForCmd) >= 0)
+                if (value != null && value.IndexOfAny(s_specialCharactersForCmd) >= 0)
                 {
                     // any command line special characters, we use doubld quote by default
                     quote = "\"";
