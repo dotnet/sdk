@@ -628,24 +628,23 @@
       DataFile="$(PackageReportDataFile)"
       ProjectAssetsJsonArchiveFile="$(ProjectAssetsJsonArchiveFile)" />
 
-    <!-- Copy all restored packages to resulting prebuilt folder -->
+    <!-- Copy packages detected as prebuilts to the artifacts prebuilt folder -->
     <ItemGroup>
-      <UsedPrebuiltPackageFiles Include="@(AllRestoredPackageFiles)" />
+      <AllowedPackageFiles Include="@(TarballPrebuiltPackageFile)" />
+      <AllowedPackageFiles Include="@(SourceBuiltPackageFiles)" />
+      <AllowedPackageFiles Include="@(ReferencePackageFiles)" />
+      <AllowedPackageFiles>
+        <LCFilename>$([System.String]::Copy(%(Filename)).ToLower())</LCFilename>
+      </AllowedPackageFiles>
+
+      <PrebuiltPackageFiles Include="@(AllRestoredPackageFiles)" >
+        <LCFilename>$([System.String]::Copy(%(Filename)).ToLower())</LCFilename>
+      </PrebuiltPackageFiles>
+      <PrebuiltPackageFiles Remove="@(AllowedPackageFiles)" MatchOnMetadata="LCFilename" />
     </ItemGroup>
     <Copy
-      SourceFiles="@(UsedPrebuiltPackageFiles)"
+      SourceFiles="@(PrebuiltPackageFiles)"
       DestinationFolder="$(ResultingPrebuiltPackagesDir)" />
-
-    <!-- Remove packages that are known to be built -->
-    <ItemGroup>
-      <BuiltPackageFiles Include="@(TarballPrebuiltPackageFile)" />
-      <BuiltPackageFiles Include="@(SourceBuiltPackageFiles)" />
-      <BuiltPackageFiles Include="@(ReferencePackageFiles)" />
-      <BuiltPackageFiles>
-        <LCFilename>$([System.String]::Copy(%(Filename)).ToLower())</LCFilename>
-      </BuiltPackageFiles>
-    </ItemGroup>
-    <Delete Files="@(BuiltPackageFiles->'$(ResultingPrebuiltPackagesDir)%(LCFilename)%(Extension)')" />
 
     <WriteLinesToFile File="$(RepoCompletedSemaphorePath)WritePrebuiltUsageData.complete" Overwrite="true" />
   </Target>
