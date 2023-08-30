@@ -1,16 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
-using System.IO;
 using System.Text.Json.Nodes;
-using FluentAssertions;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Microsoft.NET.TestFramework.ProjectConstruction;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.NET.Sdk.Web.Tests
 {
@@ -39,7 +30,7 @@ namespace Microsoft.NET.Sdk.Web.Tests
             publishCommand.Execute($"/p:RuntimeIdentifier={rid}").Should().Pass();
 
             var buildProperties = testProject.GetPropertyValues(testAsset.TestRoot, targetFramework);
-            buildProperties["TrimMode"].Should().Be("partial");
+            buildProperties["TrimMode"].Should().Be("");
 
             string outputDirectory = publishCommand.GetOutputDirectory(targetFramework: targetFramework, runtimeIdentifier: rid).FullName;
             string runtimeConfigFile = Path.Combine(outputDirectory, $"{projectName}.runtimeconfig.json");
@@ -52,6 +43,28 @@ namespace Microsoft.NET.Sdk.Web.Tests
                     .Should().BeFalse();
         }
 
+        [Fact]
+        public void TrimMode_Defaulted_Correctly_On_Trimmed_Apps_Pre_Net8()
+        {
+            var projectName = "HelloWorld";
+            var targetFramework = "net7.0";
+            var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
+
+            var testProject = CreateTestProjectForILLinkTesting(targetFramework, projectName);
+            testProject.AdditionalProperties["PublishTrimmed"] = "true";
+            testProject.AdditionalProperties["RuntimeIdentifier"] = rid;
+            testProject.SelfContained = "true";
+            testProject.PropertiesToRecord.Add("TrimMode");
+
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: projectName + targetFramework);
+
+            var publishCommand = new PublishCommand(testAsset);
+            publishCommand.Execute().Should().Pass();
+
+            var buildProperties = testProject.GetPropertyValues(testAsset.TestRoot, targetFramework);
+            buildProperties["TrimMode"].Should().Be("partial");
+        }
+
         [Theory]
         [MemberData(nameof(SupportedTfms))]
         public void TrimmingOptions_Are_Defaulted_Correctly_On_Aot_Apps(string targetFramework)
@@ -61,7 +74,7 @@ namespace Microsoft.NET.Sdk.Web.Tests
 
             var testProject = CreateTestProjectForILLinkTesting(targetFramework, projectName);
             testProject.RecordProperties("NETCoreSdkPortableRuntimeIdentifier");
-            testProject.AdditionalProperties["PublishAOT"] = "true";
+            testProject.AdditionalProperties["PublishAot"] = "true";
             testProject.AdditionalProperties["UseCurrentRuntimeIdentifier"] = "true";
             testProject.PropertiesToRecord.Add("PublishTrimmed");
             testProject.PropertiesToRecord.Add("TrimMode");
@@ -83,6 +96,7 @@ namespace Microsoft.NET.Sdk.Web.Tests
 
             responseFileContents.Should().Contain("--feature:System.Text.Json.JsonSerializer.IsReflectionEnabledByDefault=false");
             responseFileContents.Should().Contain("--feature:System.Diagnostics.Tracing.EventSource.IsSupported=true");
+            responseFileContents.Should().Contain("--runtimeknob:System.GC.DynamicAdaptationMode=1");
             File.Exists(Path.Combine(outputDirectory, "web.config")).Should().BeFalse();
         }
 

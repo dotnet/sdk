@@ -1,18 +1,12 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.CommandLine;
-using System.IO;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.DotNet.Cli;
-using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Configurer;
 using Microsoft.DotNet.Installer.Windows;
 using Microsoft.DotNet.Workloads.Workload.Install;
-using Microsoft.DotNet.Workloads.Workload.Install.InstallRecord;
 using Microsoft.DotNet.Workloads.Workload.List;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 
@@ -42,21 +36,27 @@ namespace Microsoft.DotNet.Workloads.Workload.Clean
         {
             _cleanAll = parseResult.GetValue(WorkloadCleanCommandParser.CleanAllOption);
 
-            _dotnetPath = dotnetDir ?? Path.GetDirectoryName(Environment.ProcessPath);
-            if (_dotnetPath == null)
+            var creationParameters = new WorkloadResolverFactory.CreationParameters()
             {
-                throw new GracefulException(String.Format(LocalizableStrings.InvalidWorkloadProcessPath, Environment.ProcessPath ?? "null"));
-            }
+                DotnetPath = dotnetDir,
+                UserProfileDir = userProfileDir,
+                GlobalJsonStartDir = null,
+                SdkVersionFromOption = parseResult.GetValue(WorkloadUninstallCommandParser.VersionOption),
+                VersionForTesting = version,
+                CheckIfFeatureBandManifestExists = true,
+                WorkloadResolverForTesting = workloadResolver,
+                UseInstalledSdkVersionForResolver = true
+            };
 
-            _userProfileDir = userProfileDir ?? CliFolderPathCalculator.DotnetUserProfileFolderPath;
+            var creationResult = WorkloadResolverFactory.Create(creationParameters);
 
-            _sdkVersion = WorkloadOptionsExtensions.GetValidatedSdkVersion(parseResult.GetValue(WorkloadUninstallCommandParser.VersionOption), version, _dotnetPath, userProfileDir, true);
+            _dotnetPath = creationResult.DotnetPath;
+            _userProfileDir = creationResult.UserProfileDir;
+            _workloadResolver = creationResult.WorkloadResolver;
+            _sdkVersion = creationResult.SdkVersion;
+
             var sdkFeatureBand = new SdkFeatureBand(_sdkVersion);
-
-            var workloadManifestProvider = new SdkDirectoryWorkloadManifestProvider(_dotnetPath, _sdkVersion.ToString(), _userProfileDir);
-            _workloadResolver = workloadResolver ?? WorkloadResolver.Create(workloadManifestProvider, _dotnetPath, _sdkVersion.ToString(), _userProfileDir);
-            _workloadInstaller = WorkloadInstallerFactory.GetWorkloadInstaller(Reporter, sdkFeatureBand, _workloadResolver, Verbosity, _userProfileDir, VerifySignatures, PackageDownloader, _dotnetPath);
-
+            _workloadInstaller = WorkloadInstallerFactory.GetWorkloadInstaller(Reporter, sdkFeatureBand, creationResult.WorkloadResolver, Verbosity, creationResult.UserProfileDir, VerifySignatures, PackageDownloader, creationResult.DotnetPath);
         }
 
         public override int Execute()
@@ -105,7 +105,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Clean
                             continue;
                         }
 
-                        var workloadManifestProvider = new SdkDirectoryWorkloadManifestProvider(bandedDotnetPath, sdkVersion, _userProfileDir);
+                        var workloadManifestProvider = new SdkDirectoryWorkloadManifestProvider(bandedDotnetPath, sdkVersion, _userProfileDir, SdkDirectoryWorkloadManifestProvider.GetGlobalJsonPath(Environment.CurrentDirectory));
                         var bandedResolver = WorkloadResolver.Create(workloadManifestProvider, bandedDotnetPath, sdkVersion.ToString(), _userProfileDir);
 #pragma warning restore CS8604
 

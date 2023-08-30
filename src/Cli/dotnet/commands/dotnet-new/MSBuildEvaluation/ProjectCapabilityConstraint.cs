@@ -3,11 +3,6 @@
 
 #nullable enable
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Build.Evaluation;
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
@@ -120,7 +115,7 @@ namespace Microsoft.TemplateEngine.MSBuildEvaluation
                     return TemplateConstraintResult.CreateRestricted(
                         this,
                         _evaluationResult.ErrorMessage ?? string.Format(LocalizableStrings.MultipleProjectsEvaluationResult_Error, foundProjects),
-                        string.Format(LocalizableStrings.ProjectCapabilityConstraint_Restricted_MultipleProjectsFound_CTA, SharedOptions.ProjectPathOption.Aliases.First()));
+                        string.Format(LocalizableStrings.ProjectCapabilityConstraint_Restricted_MultipleProjectsFound_CTA, SharedOptions.ProjectPathOption.Name));
                 }
                 if (_evaluationResult.Status == MSBuildEvaluationResult.EvalStatus.NoRestore)
                 {

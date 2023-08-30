@@ -28,7 +28,7 @@
         <note />
       </trans-unit>
       <trans-unit id="DeletingWorkloadPack">
-        <source>Uninstalling workload pack {0} version {1}…</source>
+        <source>Uninstalling workload pack {0} version {1}...</source>
         <target state="translated">Odinstalowywanie pakietu obciążeń {0} w wersji {1}…</target>
         <note />
       </trans-unit>
@@ -43,8 +43,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DownloadingPackToCacheMessage">
-        <source>Downloading pack {0} version {1} to offline cache {2}…</source>
-        <target state="translated">Pobieranie pakietu {0} w wersji {1} do pamięci podręcznej trybu offline {2}…</target>
+        <source>Downloading pack {0} version {1} to offline cache {2}...</source>
+        <target state="translated">Trwa pobieranie paczki {0} w wersji {1} do pamięci podręcznej w trybie offline {2}...</target>
         <note />
       </trans-unit>
       <trans-unit id="ExpectedSingleManifest">
@@ -118,7 +118,7 @@
         <note />
       </trans-unit>
       <trans-unit id="InstallingWorkloadManifest">
-        <source>Installing workload manifest {0} version {1}…</source>
+        <source>Installing workload manifest {0} version {1}...</source>
         <target state="translated">Instalowanie manifestu obciążenia {0} w wersji {1}…</target>
         <note />
       </trans-unit>
@@ -199,7 +199,7 @@
       </trans-unit>
       <trans-unit id="PendingReboot">
         <source>The machine has a pending reboot. The workload operation will continue, but you may need to restart.</source>
-        <target state="needs-review-translation">Maszyna oczekuje na ponowny rozruch. Instalacja będzie kontynuowana, ale może być konieczne ponowne uruchomienie.</target>
+        <target state="translated">Urządzenie oczekuje na ponowne uruchomienie. Operacja obciążenia będzie kontynuowana, ale może być konieczne ponowne uruchomienie.</target>
         <note />
       </trans-unit>
       <trans-unit id="ResolvingPackageUrls">

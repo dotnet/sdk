@@ -1,16 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
-using System.Xml.Linq;
-using Microsoft.DotNet.Tools.Test.Utilities;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Xunit;
-using Xunit.Abstractions;
-
 [assembly: CollectionBehavior(DisableTestParallelization = true)]
 
 namespace Microsoft.DotNet.Tests.EndToEnd
@@ -26,7 +16,7 @@ namespace Microsoft.DotNet.Tests.EndToEnd
         {
             string projectDirectory = _testAssetsManager.CreateTestDirectory().Path;
 
-            string [] newArgs = new[] { "console", "--no-restore" };
+            string[] newArgs = new[] { "console", "--no-restore" };
             new DotnetNewCommand(Log)
                 .WithVirtualHive()
                 .WithWorkingDirectory(projectDirectory)
@@ -85,7 +75,7 @@ namespace Microsoft.DotNet.Tests.EndToEnd
                 .Should()
                 .Pass()
                 .And
-                .HaveStdOutContaining("Hello Portable World!");;
+                .HaveStdOutContaining("Hello Portable World!"); ;
         }
 
         [RequiresMSBuildVersionFact("16.8.0")]
@@ -119,7 +109,7 @@ namespace Microsoft.DotNet.Tests.EndToEnd
                 .WithWorkingDirectory(testInstance.Path)
                 .Execute("prefercliruntime")
                 .Should().Pass()
-                .And.HaveStdOutContaining("Hello I prefer the cli runtime World!");;
+                .And.HaveStdOutContaining("Hello I prefer the cli runtime World!"); ;
         }
     }
 }

@@ -1,12 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.DotNet.Watcher.Tools
@@ -14,10 +9,11 @@ namespace Microsoft.DotNet.Watcher.Tools
     internal sealed class NoRestoreFilter : IWatchFilter
     {
         private bool _canUseNoRestore;
-        private string[] _noRestoreArguments;
+        private string[]? _noRestoreArguments;
 
         public ValueTask ProcessAsync(DotNetWatchContext context, CancellationToken cancellationToken)
         {
+            Debug.Assert(context.ProcessSpec != null);
             Debug.Assert(!context.HotReloadEnabled);
 
             if (context.SuppressMSBuildIncrementalism)
@@ -27,7 +23,7 @@ namespace Microsoft.DotNet.Watcher.Tools
 
             if (context.Iteration == 0)
             {
-                var arguments = context.ProcessSpec.Arguments;
+                var arguments = context.ProcessSpec.Arguments ?? Array.Empty<string>();
                 _canUseNoRestore = CanUseNoRestore(arguments, context.Reporter);
                 if (_canUseNoRestore)
                 {

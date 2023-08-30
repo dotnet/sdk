@@ -27,16 +27,11 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.Collections;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
-using System.IO;
-using System.Collections;
 using System.Globalization;
 using System.Reflection;
-using System.Text;
 using Microsoft.DotNet.Cli.Sln.Internal.FileManipulation;
 using Microsoft.DotNet.Tools.Common;
 
@@ -409,8 +404,8 @@ namespace Microsoft.DotNet.Cli.Sln.Internal
         {
             get
             {
-                return (_properties == null || _properties.Count == 0) && 
-                    (_nestedPropertySets == null || _nestedPropertySets.All(t => t.IsEmpty)) && 
+                return (_properties == null || _properties.Count == 0) &&
+                    (_nestedPropertySets == null || _nestedPropertySets.All(t => t.IsEmpty)) &&
                     (_sectionLines == null || _sectionLines.Count == 0);
             }
         }
@@ -508,7 +503,7 @@ namespace Microsoft.DotNet.Cli.Sln.Internal
                 return SlnSectionType.PostProcess;
             }
             throw new InvalidSolutionFormatException(
-                curLineNum, 
+                curLineNum,
                 String.Format(LocalizableStrings.InvalidSectionTypeError, s));
         }
 

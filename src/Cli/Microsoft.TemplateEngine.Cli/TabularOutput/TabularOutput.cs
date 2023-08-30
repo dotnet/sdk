@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Text;
-
 namespace Microsoft.TemplateEngine.Cli.TabularOutput
 {
     internal class TabularOutput
@@ -75,7 +73,7 @@ namespace Microsoft.TemplateEngine.Cli.TabularOutput
             return this;
         }
 
-        internal string Layout()
+        internal string Layout(int indent = 0)
         {
             Dictionary<int, int> columnWidthLookup = new Dictionary<int, int>();
             List<TextWrapper[]> grid = new List<TextWrapper[]>();
@@ -121,7 +119,7 @@ namespace Microsoft.TemplateEngine.Cli.TabularOutput
                             b.Append(' ', _settings.ColumnPadding);
                         }
                     }
-                    b.AppendLine();
+                    b.AppendLine().Indent(indent);
                 }
             }
 
@@ -137,8 +135,7 @@ namespace Microsoft.TemplateEngine.Cli.TabularOutput
                         b.Append(new string(' ', _settings.ColumnPadding));
                     }
                 }
-
-                b.AppendLine();
+                b.AppendLine().Indent(indent);
             }
 
             IEnumerable<TextWrapper[]> rows = grid;
@@ -187,7 +184,7 @@ namespace Microsoft.TemplateEngine.Cli.TabularOutput
                             b.Append(' ', _settings.ColumnPadding);
                         }
                     }
-                    b.AppendLine();
+                    b.AppendLine().Indent(indent);
                 }
 
                 if (_settings.BlankLineBetweenRows)
@@ -198,7 +195,7 @@ namespace Microsoft.TemplateEngine.Cli.TabularOutput
                 ++currentRowIndex;
             }
 
-            return b.ToString();
+            return b.ToString().Indent(indent);
         }
 
         internal TabularOutput<T> OrderBy(object? columnToken, IComparer<string>? comparer = null)

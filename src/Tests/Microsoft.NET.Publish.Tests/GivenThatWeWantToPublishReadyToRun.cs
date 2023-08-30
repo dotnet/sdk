@@ -1,23 +1,11 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Reflection.Metadata;
 using System.Reflection.PortableExecutable;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-using FluentAssertions;
 using Microsoft.NET.Build.Tasks;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Microsoft.NET.TestFramework.ProjectConstruction;
 using NuGet.Frameworks;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.NET.Publish.Tests
 {
@@ -361,11 +349,6 @@ namespace Microsoft.NET.Publish.Tests
             return GetTargetOS(runtimeIdentifier) == TargetOSEnum.Windows;
         }
 
-        private static bool IsTargetOsLinux(string runtimeIdentifier)
-        {
-            return GetTargetOS(runtimeIdentifier) == TargetOSEnum.Linux;
-        }
-
         private void TestProjectPublishing_Internal(string projectName,
             string targetFramework,
             bool makeExeProject = true,
@@ -411,9 +394,9 @@ namespace Microsoft.NET.Publish.Tests
             else
                 publishDirectory.Should().NotHaveFile("System.Private.CoreLib.dll");
 
-            if (emitNativeSymbols && !IsTargetOsOsX(testProject.RuntimeIdentifier))
+            NuGetFramework framework = NuGetFramework.Parse(targetFramework);
+            if (emitNativeSymbols && (!IsTargetOsOsX(testProject.RuntimeIdentifier) || framework.Version.Major >= 6))
             {
-                NuGetFramework framework = NuGetFramework.Parse(targetFramework);
                 Log.WriteLine("Checking for symbol files");
                 IEnumerable<string> pdbFiles;
 
@@ -484,8 +467,7 @@ public class Program
             {
                 return Path.GetFileName(Path.ChangeExtension(assemblyFile, "ni.pdb"));
             }
-
-            if (IsTargetOsLinux(runtimeIdentifier))
+            else if (!IsTargetOsOsX(runtimeIdentifier) || framework.Version.Major >= 6)
             {
                 if (framework.Version.Major >= 6)
                 {

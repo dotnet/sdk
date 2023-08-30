@@ -1,10 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using Microsoft.Build.Exceptions;
 using Microsoft.DotNet.Cli.Utils;
 using NuGet.Frameworks;
@@ -51,8 +47,8 @@ namespace Microsoft.DotNet.CommandFactory
                 LocalizableStrings.MSBuildProjectPath,
                 ProjectFactoryName,
                 msBuildProjectPath));
-            
-            if(msBuildProjectPath == null)
+
+            if (msBuildProjectPath == null)
             {
                 return null;
             }
@@ -64,7 +60,7 @@ namespace Microsoft.DotNet.CommandFactory
             catch (InvalidProjectFileException ex)
             {
                 Reporter.Verbose.WriteLine(ex.ToString().Red());
-                
+
                 return null;
             }
         }

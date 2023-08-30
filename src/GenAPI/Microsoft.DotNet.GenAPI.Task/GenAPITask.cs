@@ -2,8 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Build.Framework;
-using Microsoft.NET.Build.Tasks;
 using Microsoft.DotNet.ApiSymbolExtensions.Logging;
+using Microsoft.NET.Build.Tasks;
 
 namespace Microsoft.DotNet.GenAPI.Task
 {
@@ -50,9 +50,9 @@ namespace Microsoft.DotNet.GenAPI.Task
         public string[]? ExcludeAttributesFiles { get; set; }
 
         /// <summary>
-        /// Include internal API's. Default is false.
+        /// If true, includes both internal and public API.
         /// </summary>
-        public bool IncludeVisibleOutsideOfAssembly { get; set; }
+        public bool RespectInternals { get; set; }
 
         /// <summary>
         /// Includes assembly attributes which are values that provide information about an assembly.
@@ -69,7 +69,7 @@ namespace Microsoft.DotNet.GenAPI.Task
                 ExceptionMessage,
                 ExcludeApiFiles,
                 ExcludeAttributesFiles,
-                IncludeVisibleOutsideOfAssembly,
+                RespectInternals,
                 IncludeAssemblyAttributes
             ));
         }

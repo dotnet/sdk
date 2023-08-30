@@ -1,10 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.CommandLine;
-using System.CommandLine.Parsing;
-using System.IO;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.ToolPackage;
@@ -91,7 +88,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
             {
                 throw new GracefulException(
                     messages: InstallToolCommandLowLevelErrorConverter.GetUserFacingMessages(ex, _packageId),
-                    verboseMessages: new[] {ex.ToString()},
+                    verboseMessages: new[] { ex.ToString() },
                     isUserError: false);
             }
         }

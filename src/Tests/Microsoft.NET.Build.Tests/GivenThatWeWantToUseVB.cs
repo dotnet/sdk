@@ -1,17 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Linq;
-
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using FluentAssertions;
-using Xunit.Abstractions;
-using Xunit;
-using System;
-using System.IO;
-using Microsoft.NET.TestFramework.ProjectConstruction;
 using Microsoft.Build.Utilities;
 using Microsoft.DotNet.Cli.Utils;
 
@@ -143,8 +132,8 @@ namespace Microsoft.NET.Build.Tests
                     });
 
                 case ("netcoreapp3.0", false):
-                   return (VBRuntime.Referenced, new[]
-                   {
+                    return (VBRuntime.Referenced, new[]
+                    {
                         "HelloWorld.dll",
                         "HelloWorld.pdb",
                         "HelloWorld.deps.json",

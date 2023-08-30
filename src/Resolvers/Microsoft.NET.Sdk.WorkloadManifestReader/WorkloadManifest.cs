@@ -1,8 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
-
 using Microsoft.DotNet.MSBuildSdkResolver;
 
 namespace Microsoft.NET.Sdk.WorkloadManifestReader
@@ -12,7 +10,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
     /// </summary>
     public class WorkloadManifest
     {
-        internal WorkloadManifest(string id, FXVersion version, string? description, string manifestPath,  Dictionary<WorkloadId, BaseWorkloadDefinition> workloads, Dictionary<WorkloadPackId, WorkloadPack> packs, Dictionary<string, FXVersion>? dependsOnManifests)
+        internal WorkloadManifest(string id, FXVersion version, string? description, string manifestPath, Dictionary<WorkloadId, BaseWorkloadDefinition> workloads, Dictionary<WorkloadPackId, WorkloadPack> packs, Dictionary<string, FXVersion>? dependsOnManifests)
         {
             Id = id;
             ParsedVersion = version;

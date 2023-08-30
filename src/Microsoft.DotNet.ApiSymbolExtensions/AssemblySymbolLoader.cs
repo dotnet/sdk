@@ -1,12 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.IO;
 using System.IO.Compression;
-using System.Linq;
 using System.Reflection.Metadata;
 using System.Reflection.PortableExecutable;
 using Microsoft.CodeAnalysis;
@@ -41,13 +37,13 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
         /// <summary>
         /// Creates a new instance of the <see cref="AssemblySymbolLoader"/> class.
         /// </summary>
-        /// <param name="resolveAssemblyReferences">True to attempt to load references for loaded assemblies from the locations specified with <see cref="AddReferenceSearchPaths(string[])"/>.  Default is false.</param>
-        /// <param name="includeInternals">True to include all internal metadata for assemblies loaded.  Default is false which only includes public and some internal metadata.  <seealso cref="MetadataImportOptions"/></param>
-        public AssemblySymbolLoader(bool resolveAssemblyReferences = false, bool includeInternals = false)
+        /// <param name="resolveAssemblyReferences">True to attempt to load references for loaded assemblies from the locations specified with <see cref="AddReferenceSearchPaths(string[])"/>. Default is false.</param>
+        /// <param name="includeInternalSymbols">True to include all internal metadata for assemblies loaded. Default is false which only includes public and some internal metadata. <seealso cref="MetadataImportOptions"/></param>
+        public AssemblySymbolLoader(bool resolveAssemblyReferences = false, bool includeInternalSymbols = false)
         {
             _loadedAssemblies = new Dictionary<string, MetadataReference>();
             CSharpCompilationOptions compilationOptions = new(OutputKind.DynamicallyLinkedLibrary, nullableContextOptions: NullableContextOptions.Enable,
-                metadataImportOptions: includeInternals ? MetadataImportOptions.Internal : MetadataImportOptions.Public);
+                metadataImportOptions: includeInternalSymbols ? MetadataImportOptions.Internal : MetadataImportOptions.Public);
             _cSharpCompilation = CSharpCompilation.Create($"AssemblyLoader_{DateTime.Now:MM_dd_yy_HH_mm_ss_FFF}", options: compilationOptions);
             _resolveReferences = resolveAssemblyReferences;
         }

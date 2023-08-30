@@ -1,10 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Threading.Tasks;
 using Microsoft.DotNet.ToolPackage;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Versioning;
@@ -73,10 +69,10 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
   ""packs"": {{
   }}
 }}";
-                   
-               File.WriteAllText(Path.Combine(dataFolder, "WorkloadManifest.json"), manifestContents);
+
+                File.WriteAllText(Path.Combine(dataFolder, "WorkloadManifest.json"), manifestContents);
             }
-            
+
             return Task.FromResult(new List<string>() as IEnumerable<string>);
         }
 

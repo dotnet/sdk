@@ -1,8 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using Microsoft.Build.Framework;
 using Microsoft.NET.Build.Tasks.ConflictResolution;
 using Microsoft.NET.Build.Tasks.UnitTests.Mocks;
@@ -79,7 +77,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 AssemblyVersion = new Version(4, 1, 0, 0),
                 ItemType = ConflictItemType.Platform
             };
-            
+
             Assert.Null(resolver.Resolve(packageItem, platformItem));
             Assert.Null(resolver.Resolve(platformItem, packageItem));
 

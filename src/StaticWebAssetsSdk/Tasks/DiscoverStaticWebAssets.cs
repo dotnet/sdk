@@ -1,12 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text.RegularExpressions;
 using Microsoft.Build.Framework;
-using Microsoft.Build.Utilities;
 using Microsoft.Extensions.FileSystemGlobbing;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
@@ -27,6 +22,8 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
 
         [Required]
         public string BasePath { get; set; }
+
+        public string AssetMergeSource { get; set; }
 
         [Output]
         public ITaskItem[] DiscoveredStaticWebAssets { get; set; }
@@ -67,6 +64,8 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                         BasePath = BasePath,
                         RelativePath = candidateRelativePath,
                         AssetMode = StaticWebAsset.AssetModes.All,
+                        AssetMergeSource = AssetMergeSource,
+                        AssetMergeBehavior = StaticWebAsset.MergeBehaviors.PreferTarget,
                         CopyToOutputDirectory = candidate.GetMetadata(nameof(StaticWebAsset.CopyToOutputDirectory)),
                         CopyToPublishDirectory = candidate.GetMetadata(nameof(StaticWebAsset.CopyToPublishDirectory))
                     };

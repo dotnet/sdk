@@ -1,10 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
 using System.Security.Cryptography;
-using System.Text;
 
 namespace Microsoft.NET.Sdk.Razor.Tool
 {
@@ -40,7 +37,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool
 
             return $"{userName}.{baseName}";
         }
-        
+
         private static string ComputeBaseName(string baseDirectory)
         {
             // Normalize away trailing slashes. File APIs are not consistent about including it, so it's

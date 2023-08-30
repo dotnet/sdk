@@ -2,18 +2,13 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Build.Framework;
-using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Text;
 
 namespace Microsoft.NET.Build.Tasks
 {
     public class CheckForImplicitPackageReferenceOverrides : TaskBase
     {
         [Required]
-        public ITaskItem [] PackageReferenceItems { get; set; }
+        public ITaskItem[] PackageReferenceItems { get; set; }
 
         [Required]
         public string MoreInformationLink { get; set; }
@@ -39,7 +34,7 @@ namespace Microsoft.NET.Build.Tasks
                         if (item.GetMetadata(MetadataKeys.IsImplicitlyDefined).Equals("true", StringComparison.OrdinalIgnoreCase))
                         {
                             itemsToRemove.Add(item);
-  
+
                             Log.LogWarning(Strings.PackageReferenceOverrideWarning, item.ItemSpec, MoreInformationLink);
                         }
                         else

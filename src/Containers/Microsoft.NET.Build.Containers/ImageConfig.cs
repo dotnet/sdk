@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.ObjectModel;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 
@@ -16,7 +17,8 @@ internal sealed class ImageConfig
     private readonly HashSet<Port> _exposedPorts;
     private readonly Dictionary<string, string> _environmentVariables;
     private string? _newWorkingDirectory;
-    private (string[] ExecutableArgs, string[]? Args)? _newEntryPoint;
+    private string[]? _newEntrypoint;
+    private string[]? _newCmd;
     private string? _user;
 
     /// <summary>
@@ -32,7 +34,8 @@ internal sealed class ImageConfig
     /// </summary>
     public bool IsWindows => "windows".Equals(_os, StringComparison.OrdinalIgnoreCase);
 
-    public string? User => _user;
+    public ReadOnlyDictionary<string, string> EnvironmentVariables => _environmentVariables.AsReadOnly();
+    public HashSet<Port> Ports => _exposedPorts;
 
     internal ImageConfig(string imageConfigJson) : this(JsonNode.Parse(imageConfigJson)!)
     {
@@ -54,9 +57,14 @@ internal sealed class ImageConfig
         _os = GetOs();
         _history = GetHistory();
         _user = GetUser();
+        _newEntrypoint = GetEntrypoint();
+        _newCmd = GetCmd();
     }
 
-    private string? GetUser() => _config["config"]?["User"]?.ToString();
+    // Return values from the base image config.
+    internal string? GetUser() => _config["config"]?["User"]?.ToString();
+    internal string[]? GetEntrypoint() => _config["config"]?["Entrypoint"]?.AsArray()?.Select(node => node!.GetValue<string>())?.ToArray();
+    private string[]? GetCmd() => _config["config"]?["Entrypoint"]?.AsArray()?.Select(node => node!.GetValue<string>())?.ToArray();
     private List<HistoryEntry> GetHistory() => _config["history"]?.AsArray().Select(node => node.Deserialize<HistoryEntry>()!).ToList() ?? new List<HistoryEntry>();
     private string GetOs() => _config["os"]?.ToString() ?? throw new ArgumentException("Base image configuration should contain an 'os' property.");
     private string GetArchitecture() => _config["architecture"]?.ToString() ?? throw new ArgumentException("Base image configuration should contain an 'architecture' property.");
@@ -76,7 +84,7 @@ internal sealed class ImageConfig
         {
             newConfig["Labels"] = CreateLabelMap();
         }
-        if (_environmentVariables.Any())
+        if (_environmentVariables.Count != 0)
         {
             newConfig["Env"] = CreateEnvironmentVariablesMapping();
         }
@@ -86,18 +94,14 @@ internal sealed class ImageConfig
             newConfig["WorkingDir"] = _newWorkingDirectory;
         }
 
-        if (_newEntryPoint.HasValue)
+        if (_newEntrypoint?.Length > 0)
         {
-            newConfig["Entrypoint"] = ToJsonArray(_newEntryPoint.Value.ExecutableArgs);
+            newConfig["Entrypoint"] = ToJsonArray(_newEntrypoint);
+        }
 
-            if (_newEntryPoint.Value.Args is null)
-            {
-                newConfig.Remove("Cmd");
-            }
-            else
-            {
-                newConfig["Cmd"] = ToJsonArray(_newEntryPoint.Value.Args);
-            }
+        if (_newCmd?.Length > 0)
+        {
+            newConfig["Cmd"] = ToJsonArray(_newCmd);
         }
 
         if (_user is not null)
@@ -107,7 +111,7 @@ internal sealed class ImageConfig
 
         // These fields aren't (yet) supported by the task layer, but we should
         // preserve them if they're already set in the base image.
-        foreach (string propertyName in new [] { "Volumes", "StopSignal" })
+        foreach (string propertyName in new[] { "Volumes", "StopSignal" })
         {
             if (_config["config"]?[propertyName] is JsonNode propertyValue)
             {
@@ -122,7 +126,7 @@ internal sealed class ImageConfig
         // The number of (non empty) history items must match the number of layers in the image.
         // Some registries like JFrog Artifactory have there a strict validation rule (see sdk-container-builds#382).
         int numberOfLayers = _rootFsLayers.Count;
-        int numberOfNonEmptyLayerHistoryEntries = _history.Count(h =>h.empty_layer is null or false);
+        int numberOfNonEmptyLayerHistoryEntries = _history.Count(h => h.empty_layer is null or false);
         int missingHistoryEntries = numberOfLayers - numberOfNonEmptyLayerHistoryEntries;
         HistoryEntry customHistoryEntry = new(created: DateTime.UtcNow, author: ".NET SDK",
             created_by: $".NET SDK Container Tooling, version {Constants.Version}");
@@ -163,7 +167,7 @@ internal sealed class ImageConfig
         {
             history["comment"] = h.comment;
         }
-        if (h.created is {} date)
+        if (h.created is { } date)
         {
             history["created"] = RFC3339Format(date);
         }
@@ -201,9 +205,10 @@ internal sealed class ImageConfig
         _newWorkingDirectory = workingDirectory;
     }
 
-    internal void SetEntryPoint(string[] executableArgs, string[]? args = null)
+    internal void SetEntrypointAndCmd(string[] entrypoint, string[] cmd)
     {
-        _newEntryPoint = (executableArgs, args);
+        _newEntrypoint = entrypoint;
+        _newCmd = cmd;
     }
 
     internal void AddLayer(Layer l)

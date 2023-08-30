@@ -1,10 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
-using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.ApiCompatibility.Logging;
 using Microsoft.DotNet.ApiSymbolExtensions;
@@ -66,7 +64,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Runner
                 IApiComparer apiComparer = _apiComparerFactory.Create();
                 apiComparer.Settings.StrictMode = workItem.Options.EnableStrictMode;
                 apiComparer.Settings.WithReferences = runWithReferences;
-                        
+
 
                 // Invoke the api comparer for the work item and operate on the difference result
                 IEnumerable<CompatDifference> differences = apiComparer.GetDifferences(leftContainerList, rightContainersList);
@@ -115,10 +113,8 @@ namespace Microsoft.DotNet.ApiCompatibility.Runner
             ApiCompatRunnerOptions options,
             out bool resolvedExternallyProvidedAssemblyReferences)
         {
-            // In order to enable reference support for baseline suppression we need a better way
-            // to resolve references for the baseline package. Let's not enable it for now.
             string[] aggregatedReferences = metadataInformation.Where(m => m.References != null).SelectMany(m => m.References!).Distinct().ToArray();
-            resolvedExternallyProvidedAssemblyReferences = !options.IsBaselineComparison && aggregatedReferences.Length > 0;
+            resolvedExternallyProvidedAssemblyReferences = aggregatedReferences.Length > 0;
 
             IAssemblySymbolLoader loader = _assemblySymbolLoaderFactory.Create(resolvedExternallyProvidedAssemblyReferences);
             if (resolvedExternallyProvidedAssemblyReferences)

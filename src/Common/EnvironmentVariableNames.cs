@@ -2,10 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #pragma warning disable IDE0240 // Nullable directive is redundant (when file is included to a project that already enables nullable
+
 #nullable enable
 
-using System.Runtime.InteropServices;
-using System;
 
 namespace Microsoft.DotNet.Cli
 {
@@ -23,10 +22,14 @@ namespace Microsoft.DotNet.Cli
         public static readonly string DOTNET_CLI_FORCE_UTF8_ENCODING = nameof(DOTNET_CLI_FORCE_UTF8_ENCODING);
         public static readonly string TELEMETRY_OPTOUT = "DOTNET_CLI_TELEMETRY_OPTOUT";
         public static readonly string DOTNET_ROOT = "DOTNET_ROOT";
-		
         public static readonly string DOTNET_MSBUILD_SDK_RESOLVER_ENABLE_LOG = "DOTNET_MSBUILD_SDK_RESOLVER_ENABLE_LOG";
         public static readonly string DOTNET_MSBUILD_SDK_RESOLVER_SDKS_DIR = "DOTNET_MSBUILD_SDK_RESOLVER_SDKS_DIR";
         public static readonly string DOTNET_MSBUILD_SDK_RESOLVER_SDKS_VER = "DOTNET_MSBUILD_SDK_RESOLVER_SDKS_VER";
+        public static readonly string DOTNET_TOOLS_ALLOW_MANIFEST_IN_ROOT = "DOTNET_TOOLS_ALLOW_MANIFEST_IN_ROOT";
+        public static readonly string DOTNET_GENERATE_ASPNET_CERTIFICATE = nameof(DOTNET_GENERATE_ASPNET_CERTIFICATE);
+        public static readonly string DOTNET_ADD_GLOBAL_TOOLS_TO_PATH = nameof(DOTNET_ADD_GLOBAL_TOOLS_TO_PATH);
+        public static readonly string DOTNET_NOLOGO = nameof(DOTNET_NOLOGO);
+        public static readonly string DOTNET_SKIP_WORKLOAD_INTEGRITY_CHECK = nameof(DOTNET_SKIP_WORKLOAD_INTEGRITY_CHECK);
 
 #if NET7_0_OR_GREATER
         private static readonly Version s_version6_0 = new(6, 0);

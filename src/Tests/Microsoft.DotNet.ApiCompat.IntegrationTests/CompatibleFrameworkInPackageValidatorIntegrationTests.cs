@@ -1,7 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.IO;
 using Microsoft.DotNet.ApiCompatibility;
 using Microsoft.DotNet.ApiCompatibility.Logging;
 using Microsoft.DotNet.ApiCompatibility.Rules;
@@ -10,11 +9,6 @@ using Microsoft.DotNet.ApiCompatibility.Tests;
 using Microsoft.DotNet.ApiSymbolExtensions;
 using Microsoft.DotNet.PackageValidation;
 using Microsoft.DotNet.PackageValidation.Validators;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Commands;
-using Microsoft.NET.TestFramework.ProjectConstruction;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.ApiCompat.IntegrationTests
 {
@@ -70,7 +64,7 @@ namespace PackageValidationTests
             Assert.NotEmpty(log.errors);
             // TODO: add asserts for assembly and header metadata.
             string assemblyName = $"{asset.TestProject.Name}.dll";
-            Assert.Contains($"CP0002 Member 'PackageValidationTests.First.test(string)' exists on lib/netstandard2.0/{assemblyName} but not on lib/{ToolsetInfo.CurrentTargetFramework}/{assemblyName}", log.errors);
+            Assert.Contains($"CP0002 Member 'void PackageValidationTests.First.test(string)' exists on lib/netstandard2.0/{assemblyName} but not on lib/{ToolsetInfo.CurrentTargetFramework}/{assemblyName}", log.errors);
         }
 
         [Fact]
@@ -111,8 +105,8 @@ namespace PackageValidationTests
             Assert.NotEmpty(log.errors);
             string assemblyName = $"{asset.TestProject.Name}.dll";
             // TODO: add asserts for assembly and header metadata.
-            Assert.Contains($"CP0002 Member 'PackageValidationTests.First.test(string)' exists on lib/netstandard2.0/{assemblyName} but not on lib/netcoreapp3.1/{assemblyName}", log.errors);
-            Assert.Contains($"CP0002 Member 'PackageValidationTests.First.test(bool)' exists on lib/netcoreapp3.1/{assemblyName} but not on lib/{ToolsetInfo.CurrentTargetFramework}/{assemblyName}", log.errors);
+            Assert.Contains($"CP0002 Member 'void PackageValidationTests.First.test(string)' exists on lib/netstandard2.0/{assemblyName} but not on lib/netcoreapp3.1/{assemblyName}", log.errors);
+            Assert.Contains($"CP0002 Member 'void PackageValidationTests.First.test(bool)' exists on lib/netcoreapp3.1/{assemblyName} but not on lib/{ToolsetInfo.CurrentTargetFramework}/{assemblyName}", log.errors);
         }
     }
 }

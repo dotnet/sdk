@@ -1,8 +1,5 @@
-﻿angular
-api
-apicontroller
-blazorserver
-blazorserver-empty
+﻿apicontroller
+blazor
 blazorwasm
 blazorwasm-empty
 buildprops
@@ -25,7 +22,6 @@ page
 proto
 razorclasslib
 razorcomponent
-react
 sln
 tool-manifest
 view
@@ -33,6 +29,7 @@ viewimports
 viewstart
 web
 webapi
+webapiaot
 webapp
 webconfig
 winforms
@@ -62,6 +59,7 @@ xunit
 /?
 /h
 create
+details
 install
 list
 search

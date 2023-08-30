@@ -1,13 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
-using System.Runtime.InteropServices;
-using FluentAssertions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.CommandFactory;
-using Xunit;
 
 namespace Microsoft.DotNet.Tests
 {
@@ -208,7 +203,7 @@ namespace Microsoft.DotNet.Tests
             commandFile.Should().Be("projectpathtestcommand1.exe");
         }
 
-        [Fact]
+        [WindowsOnlyFact]
         public void It_wraps_command_with_CMD_EXE_when_command_has_CMD_Extension_and_using_WindowsExePreferredCommandSpecFactory()
         {
             var environment = new EnvironmentProvider(new[] { ".cmd" });
@@ -231,7 +226,7 @@ namespace Microsoft.DotNet.Tests
             result.Should().NotBeNull();
 
             var commandFile = Path.GetFileName(result.Path);
-            commandFile.Should().Be("cmd.exe");
+            commandFile.Should().EndWith("cmd.exe");
 
             result.Args.Should().Contain(testCommandPath);
         }

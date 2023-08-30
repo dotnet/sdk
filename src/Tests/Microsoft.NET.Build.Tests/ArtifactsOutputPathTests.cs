@@ -1,25 +1,11 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.Contracts;
-using System.IO;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
-using FluentAssertions;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Microsoft.NET.TestFramework.ProjectConstruction;
-using Xunit;
-using Xunit.Abstractions;
-using Xunit.Sdk;
 
 namespace Microsoft.NET.Build.Tests
 {
+    using System.Runtime.InteropServices;
     using ArtifactsTestExtensions;
 
     public class ArtifactsOutputPathTests : SdkTest
@@ -508,6 +494,41 @@ namespace Microsoft.NET.Build.Tests
                 .Fail()
                 .And
                 .HaveStdOutContaining("NETSDK1200");
+        }
+
+        [Fact]
+        public void ItCanBuildWithMicrosoftBuildArtifactsSdk()
+        {
+            var testAsset = _testAssetsManager.CopyTestAsset("ArtifactsSdkTest")
+                .WithSource();
+
+            new DotnetBuildCommand(testAsset)
+                .Execute()
+                .Should()
+                .Pass();
+
+            new DirectoryInfo(Path.Combine(testAsset.Path, "artifacts", "MSBuildSdk", ToolsetInfo.CurrentTargetFramework))
+                .Should()
+                .OnlyHaveFiles(new[] { "MSBuildSdk.dll" });
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                //  Microsoft.Build.Artifacts doesn't appear to copy the (extensionless) executable to the artifacts folder on non-Windows platforms
+                new DirectoryInfo(Path.Combine(testAsset.Path, "artifacts", "PackageReference", ToolsetInfo.CurrentTargetFramework))
+                    .Should()
+                    .OnlyHaveFiles(new[] { "PackageReference.dll", $"PackageReference{EnvironmentInfo.ExecutableExtension}" });
+            }
+            else
+            {
+                new DirectoryInfo(Path.Combine(testAsset.Path, "artifacts", "PackageReference", ToolsetInfo.CurrentTargetFramework))
+                    .Should()
+                    .OnlyHaveFiles(new[] { "PackageReference.dll" });
+            }
+
+            //  Verify that default bin and obj folders still exist (which wouldn't be the case if using the .NET SDKs artifacts output functianality
+            new FileInfo(Path.Combine(testAsset.Path, "MSBuildSdk", "bin", "Debug", ToolsetInfo.CurrentTargetFramework, "MSBuildSdk.dll")).Should().Exist();
+            new FileInfo(Path.Combine(testAsset.Path, "MSBuildSdk", "obj", "Debug", ToolsetInfo.CurrentTargetFramework, "MSBuildSdk.dll")).Should().Exist();
+
         }
     }
 

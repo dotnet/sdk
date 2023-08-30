@@ -1,11 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
-using System.Text;
 using Microsoft.DotNet.Tools;
 
 namespace Microsoft.DotNet.Cli
@@ -39,7 +35,8 @@ namespace Microsoft.DotNet.Cli
             }
 
             _columns.Add(
-                new Column() {
+                new Column()
+                {
                     Header = header,
                     GetContent = getContent,
                     MaxWidth = maxWidth
@@ -183,7 +180,8 @@ namespace Microsoft.DotNet.Cli
         private int[] CalculateColumnWidths(IEnumerable<T> rows)
         {
             return _columns
-                .Select(c => {
+                .Select(c =>
+                {
                     var width = new StringInfo(c.Header ?? "").LengthInTextElements;
 
                     foreach (var row in rows)

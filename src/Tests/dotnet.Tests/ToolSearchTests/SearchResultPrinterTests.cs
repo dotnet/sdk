@@ -1,13 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
-using System.Linq;
-using FluentAssertions;
 using Microsoft.DotNet.ToolPackage;
 using Microsoft.DotNet.Tools.Tool.Search;
-using Microsoft.NET.TestFramework.Utilities;
-using Xunit;
 
 namespace dotnet.Tests.ToolSearchTests
 {
@@ -28,28 +23,28 @@ namespace dotnet.Tests.ToolSearchTests
                 "1.0.0",
                 "my tool description",
                 "my tool summary",
-                new List<string> {"tag1", "tag2"},
-                new List<string> {"author1", "author2"},
+                new List<string> { "tag1", "tag2" },
+                new List<string> { "author1", "author2" },
                 10,
                 true,
-                new List<SearchResultPackageVersion> {new SearchResultPackageVersion("1.0.0", 10)});
+                new List<SearchResultPackageVersion> { new SearchResultPackageVersion("1.0.0", 10) });
             _mostEmptyToCheckNullException = new SearchResultPackage(
                 new PackageId("my.tool"),
                 "1.0.0",
                 null,
                 null,
                 new List<string>(),
-                new List<string> {"author1", "author2"},
+                new List<string> { "author1", "author2" },
                 1244,
                 true,
-                new List<SearchResultPackageVersion> {new SearchResultPackageVersion("1.0.0", 10), new SearchResultPackageVersion("0.9.0", 1234)});
+                new List<SearchResultPackageVersion> { new SearchResultPackageVersion("1.0.0", 10), new SearchResultPackageVersion("0.9.0", 1234) });
         }
 
         [Fact]
         public void WhenDetailedIsFalseResultHasNecessaryInfo()
         {
             var searchResultPackages =
-                new List<SearchResultPackage> {_filledSearchResultPackage, _mostEmptyToCheckNullException};
+                new List<SearchResultPackage> { _filledSearchResultPackage, _mostEmptyToCheckNullException };
             _searchResultPrinter.Print(false, searchResultPackages);
 
             string[] expectedInformation =
@@ -74,7 +69,7 @@ namespace dotnet.Tests.ToolSearchTests
         public void WhenDetailedIsTrueResultHasNecessaryInfo()
         {
             var searchResultPackages =
-                new List<SearchResultPackage> {_filledSearchResultPackage, _mostEmptyToCheckNullException};
+                new List<SearchResultPackage> { _filledSearchResultPackage, _mostEmptyToCheckNullException };
             _searchResultPrinter.Print(true, searchResultPackages);
 
             string[] expectedInformation =
@@ -98,17 +93,17 @@ namespace dotnet.Tests.ToolSearchTests
         public void WhenInputIsEmptyDetailIsFalseItShouldPrintNoResultMessage()
         {
             var searchResultPackages =
-                new List<SearchResultPackage>() ;
+                new List<SearchResultPackage>();
             _searchResultPrinter.Print(false, searchResultPackages);
             _reporter.Lines.Count.Should().Be(1);
             _reporter.Lines.Should().Contain(LocalizableStrings.NoResult);
         }
-        
+
         [Fact]
         public void WhenInputIsEmptyDetailIsTrueItShouldPrintNoResultMessage()
         {
             var searchResultPackages =
-                new List<SearchResultPackage>() ;
+                new List<SearchResultPackage>();
             _searchResultPrinter.Print(true, searchResultPackages);
             _reporter.Lines.Count.Should().Be(1);
             _reporter.Lines.Should().Contain(LocalizableStrings.NoResult);

@@ -1,18 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
 using System.Reflection;
-using System.Runtime.InteropServices;
-using FluentAssertions;
 using Microsoft.NET.Build.Tests;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Microsoft.NET.TestFramework.ProjectConstruction;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.NET.Publish.Tests
 {
@@ -68,7 +58,7 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         [CoreMSBuildOnlyTheory]
-        [InlineData(ToolsetInfo.CurrentTargetFramework)] 
+        [InlineData(ToolsetInfo.CurrentTargetFramework)]
         void It_collects_crossgen2_publishing_properties(string targetFramework)
         {
             // Crossgen2 only supported for Linux/Windows x64 scenarios for now

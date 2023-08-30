@@ -1,11 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using FluentAssertions;
 using ManifestReaderTests;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Utils;
@@ -14,11 +9,6 @@ using Microsoft.DotNet.Workloads.Workload;
 using Microsoft.DotNet.Workloads.Workload.Install;
 using Microsoft.DotNet.Workloads.Workload.Uninstall;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Utilities;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.Cli.Workload.Uninstall.Tests
 {
@@ -218,8 +208,8 @@ namespace Microsoft.DotNet.Cli.Workload.Uninstall.Tests
             var workloadResolver = WorkloadResolver.CreateForTests(new MockManifestProvider(new[] { _manifestPath }), dotnetRoot, userLocal, userProfileDir);
             var nugetDownloader = new MockNuGetPackageDownloader(dotnetRoot);
 
-            var command = new List<string> { "dotnet", "workload", "uninstall", uninstallingWorkload};
-            if(args != null)
+            var command = new List<string> { "dotnet", "workload", "uninstall", uninstallingWorkload };
+            if (args != null)
             {
                 command.AddRange(args);
             }

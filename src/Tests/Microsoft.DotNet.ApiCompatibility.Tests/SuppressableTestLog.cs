@@ -1,8 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using Microsoft.DotNet.ApiCompatibility.Logging;
 using Microsoft.DotNet.ApiSymbolExtensions.Logging;
 
@@ -14,21 +12,20 @@ namespace Microsoft.DotNet.ApiCompatibility.Tests
         public List<string> warnings = new();
 
         public bool HasLoggedErrors => errors.Count != 0;
-        public bool HasLoggedSuppressions { get; private set; }
+        public bool HasLoggedErrorSuppressions { get; private set; }
 
         public bool LogError(Suppression suppression, string code, string message)
         {
-            HasLoggedSuppressions = true;
+            HasLoggedErrorSuppressions = true;
             errors.Add($"{code} {message}");
 
             return true;
         }
         public void LogError(string message) => errors.Add(message);
         public void LogError(string code, string message) => errors.Add($"{code} {message}");
-        
+
         public bool LogWarning(Suppression suppression, string code, string message)
         {
-            HasLoggedSuppressions = true;
             warnings.Add($"{code} {message}");
 
             return true;

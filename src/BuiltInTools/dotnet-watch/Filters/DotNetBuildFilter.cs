@@ -1,12 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.InteropServices.Marshalling;
-using System.Threading;
-using System.Threading.Tasks;
+
+using System.Diagnostics;
 using Microsoft.DotNet.Watcher.Internal;
 using Microsoft.Extensions.Tools.Internal;
 
@@ -29,6 +25,8 @@ namespace Microsoft.DotNet.Watcher.Tools
 
         public async ValueTask ProcessAsync(DotNetWatchContext context, CancellationToken cancellationToken)
         {
+            Debug.Assert(context.ProcessSpec != null);
+
             while (!cancellationToken.IsCancellationRequested)
             {
                 var arguments = new List<string>()

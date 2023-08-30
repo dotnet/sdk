@@ -1,12 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Xml.Linq;
 using Microsoft.NET.Sdk.Publish.Tasks.Xdt;
-using Xunit;
 
 namespace Microsoft.NET.Sdk.Publish.Tasks.Tests.Tasks
 {
@@ -149,7 +144,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tests.Tasks
             try
             {
                 // Arrange
-                List<XDocument> locationWebConfigTemplateList = new List<XDocument>() {WebConfigTransformTemplates.WebConfigTemplate};
+                List<XDocument> locationWebConfigTemplateList = new List<XDocument>() { WebConfigTransformTemplates.WebConfigTemplate };
                 foreach (var locationWebConfigTemplate in locationWebConfigTemplateList)
                 {
 

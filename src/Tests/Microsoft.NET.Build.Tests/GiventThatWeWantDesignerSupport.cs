@@ -1,20 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices;
-using FluentAssertions;
 using Microsoft.Extensions.DependencyModel;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Microsoft.NET.TestFramework.ProjectConstruction;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.NET.Build.Tests
 {
@@ -47,7 +36,7 @@ namespace Microsoft.NET.Build.Tests
                 Name = "DesignerTest",
                 IsExe = true,
                 TargetFrameworks = targetFramework,
-                PackageReferences = { new TestPackageReference("NewtonSoft.Json", "13.0.1") },
+                PackageReferences = { new TestPackageReference("NewtonSoft.Json", ToolsetInfo.GetNewtonsoftJsonPackageVersion()) },
                 ReferencedProjects = { projectRef }
             };
 
@@ -55,7 +44,7 @@ namespace Microsoft.NET.Build.Tests
                 .CreateTestProject(project, identifier: targetFramework);
 
             var command = new GetValuesCommand(
-                Log, 
+                Log,
                 Path.Combine(asset.Path, project.Name),
                 targetFramework,
                 "DesignerRuntimeImplementationProjectOutputGroupOutput",
@@ -67,12 +56,12 @@ namespace Microsoft.NET.Build.Tests
 
             command.Execute().Should().Pass();
 
-            var items = 
+            var items =
                 from item in command.GetValuesWithMetadata()
                 select new
                 {
-                   Identity = item.value,
-                   TargetPath = item.metadata["TargetPath"]
+                    Identity = item.value,
+                    TargetPath = item.metadata["TargetPath"]
                 };
 
             string depsFile = null;
@@ -104,7 +93,7 @@ namespace Microsoft.NET.Build.Tests
                 case "net5.0-windows":
                     var depsFileLibraries = GetRuntimeLibraryFileNames(depsFile);
                     depsFileLibraries.Should().BeEquivalentTo(new[] { "Newtonsoft.Json.dll" });
-                    
+
                     var options = GetRuntimeOptions(runtimeConfig);
                     options["configProperties"]["Microsoft.NETCore.DotNetHostPolicy.SetAppPaths"].Value<bool>().Should().BeTrue();
                     // runtimeconfiguration should not have platform.
@@ -132,7 +121,7 @@ namespace Microsoft.NET.Build.Tests
         private static IEnumerable<string> GetRuntimeLibraryFileNames(string depsFilePath)
         {
             var deps = ParseDepsFile(depsFilePath);
-  
+
             return deps.RuntimeLibraries
                        .SelectMany(r => r.RuntimeAssemblyGroups)
                        .SelectMany(a => a.AssetPaths)
@@ -152,7 +141,7 @@ namespace Microsoft.NET.Build.Tests
         {
             using (var stream = File.OpenRead(path))
             using (var reader = new DependencyContextJsonReader())
-            { 
+            {
                 return reader.Read(stream);
             }
         }

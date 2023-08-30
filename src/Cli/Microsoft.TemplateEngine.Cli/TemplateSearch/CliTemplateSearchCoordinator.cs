@@ -1,15 +1,16 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Text;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
 using Microsoft.TemplateEngine.Cli.Commands;
+using Microsoft.TemplateEngine.Cli.NuGet;
 using Microsoft.TemplateEngine.Cli.TabularOutput;
 using Microsoft.TemplateEngine.Edge.Settings;
 using Microsoft.TemplateSearch.Common;
 using Microsoft.TemplateSearch.Common.Abstractions;
+using static Microsoft.TemplateEngine.Cli.NuGet.NugetApiManager;
 
 namespace Microsoft.TemplateEngine.Cli.TemplateSearch
 {
@@ -105,6 +106,48 @@ namespace Microsoft.TemplateEngine.Cli.TemplateSearch
             return NewCommandStatus.NotFound;
         }
 
+        internal static async Task<(NugetPackageMetadata?, IReadOnlyList<ITemplateInfo>)> SearchForPackageDetailsAsync(
+            IEngineEnvironmentSettings environmentSettings,
+            NugetApiManager nugetApiManager,
+            string packageIdentifier,
+            string? version,
+            CancellationToken cancellationToken)
+        {
+            var nugetPackage = await nugetApiManager.GetPackageMetadataAsync(packageIdentifier, version, cancellationToken: cancellationToken).ConfigureAwait(false);
+            if (nugetPackage != null)
+            {
+                var packages = await SearchForPackageTemplatesAsync(
+                    environmentSettings,
+                    packageIdentifier,
+                    version,
+                    cancellationToken).ConfigureAwait(false);
+                return (nugetPackage, packages);
+            }
+
+            return (null, new List<ITemplateInfo>());
+        }
+
+        internal static async Task<IReadOnlyList<ITemplateInfo>> SearchForPackageTemplatesAsync(
+            IEngineEnvironmentSettings environmentSettings,
+            string packageIdentifier,
+            string? version,
+            CancellationToken cancellationToken)
+        {
+            var searchResults = await CliTemplateSearchCoordinatorFactory
+                    .CreateCliTemplateSearchCoordinator(environmentSettings)
+                    .SearchAsync(
+                        f => f.Name == packageIdentifier && (string.IsNullOrEmpty(version) || f.Version == version),
+                        t => t.Templates,
+                        cancellationToken).ConfigureAwait(false);
+
+            if (searchResults.Any() && searchResults[0].SearchHits.Any())
+            {
+                return searchResults[0].SearchHits[0].MatchedTemplates;
+            }
+
+            return new List<ITemplateInfo>();
+        }
+
         private static string EvaluatePackageToShow(IReadOnlyList<SearchResult> searchResults)
         {
             var microsoftAuthoredPackages = searchResults
@@ -152,13 +195,13 @@ namespace Microsoft.TemplateEngine.Cli.TemplateSearch
                     .DefineColumn(r => r.TemplateGroupInfo.Type, LocalizableStrings.ColumnNameType, TabularOutputSettings.ColumnNames.Type, defaultColumn: false)
                     .DefineColumn(r => r.TemplateGroupInfo.Classifications, LocalizableStrings.ColumnNameTags, TabularOutputSettings.ColumnNames.Tags, defaultColumn: false, shrinkIfNeeded: true, minWidth: 10)
                     .DefineColumn(r => GetPackageInfo(r.PackageName, r.PackageOwners), out object? packageColumn, LocalizableStrings.ColumnNamePackageNameAndOwners, showAlways: true)
-                    .DefineColumn(r => GetTrustedMark(r.Trusted), LocalizableStrings.ColumnNameTrusted, showAlways: true, textAlign: TextAlign.Center)
+                    .DefineColumn(r => GetReservedMark(r.Reserved), LocalizableStrings.ColumnNameTrusted, showAlways: true, textAlign: TextAlign.Center)
                     .DefineColumn(r => r.PrintableTotalDownloads, out object? downloadsColumn, LocalizableStrings.ColumnNameTotalDownloads, showAlways: true, textAlign: TextAlign.Center);
 
             Reporter.Output.WriteLine(formatter.Layout());
         }
 
-        private static string GetTrustedMark(bool trusted) => trusted ? "✓" : string.Empty;
+        private static string GetReservedMark(bool reserved) => reserved ? "✓" : string.Empty;
 
         private static string GetPackageInfo(string packageName, string packageOwners)
         {
@@ -195,7 +238,7 @@ namespace Microsoft.TemplateEngine.Cli.TemplateSearch
                     t,
                     packSearchResult.PackageInfo.Name,
                     string.Join(", ", packSearchResult.PackageInfo.Owners),
-                    packSearchResult.PackageInfo.Trusted,
+                    packSearchResult.PackageInfo.Reserved,
                     packSearchResult.PackageInfo.TotalDownloads)));
             }
 
@@ -209,7 +252,7 @@ namespace Microsoft.TemplateEngine.Cli.TemplateSearch
             // && !commandInput.RemainingParameters.Any())
             {
                 Reporter.Error.WriteLine(LocalizableStrings.CliTemplateSearchCoordinator_Error_NoTemplateName.Red().Bold());
-                Reporter.Error.WriteLine(LocalizableStrings.CliTemplateSearchCoordinator_Info_SearchHelp, string.Join(", ", SearchCommand.SupportedFilters.Select(f => $"'{f.OptionFactory().Aliases.First()}'")));
+                Reporter.Error.WriteLine(LocalizableStrings.CliTemplateSearchCoordinator_Info_SearchHelp, string.Join(", ", SearchCommand.SupportedFilters.Select(f => $"'{f.OptionFactory().Name}'")));
                 Reporter.Error.WriteLine(LocalizableStrings.Generic_ExamplesHeader);
                 Reporter.Error.WriteCommand(
                     Example
@@ -277,13 +320,13 @@ namespace Microsoft.TemplateEngine.Cli.TemplateSearch
             private const string MinimumDownloadCount = "<1k";
             private const char ThousandsChar = 'k';
 
-            internal SearchResultTableRow(TemplateGroupTableRow templateGroupTableRow, string packageName, string packageOwners, bool trusted, long downloads = 0)
+            internal SearchResultTableRow(TemplateGroupTableRow templateGroupTableRow, string packageName, string packageOwners, bool reserved, long downloads = 0)
             {
                 TemplateGroupInfo = templateGroupTableRow;
                 PackageName = packageName;
                 PackageOwners = packageOwners;
                 TotalDownloads = downloads;
-                Trusted = trusted;
+                Reserved = reserved;
             }
 
             internal static IComparer<long> TotalDownloadsComparer { get; } = new ThousandComparer();
@@ -292,7 +335,7 @@ namespace Microsoft.TemplateEngine.Cli.TemplateSearch
 
             internal string PackageOwners { get; private set; }
 
-            internal bool Trusted { get; private set; }
+            internal bool Reserved { get; private set; }
 
             internal string PrintableTotalDownloads
             {

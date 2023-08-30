@@ -1,19 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using FluentAssertions;
-using System;
-using System.IO;
-using System.Linq;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Microsoft.NET.TestFramework.ProjectConstruction;
-using Xunit;
-using Xunit.Abstractions;
-using System.Collections.Generic;
-using System.Runtime.InteropServices;
-
 namespace Microsoft.NET.Publish.Tests
 {
     public class GivenThatWeWantToPublishIncrementally : SdkTest
@@ -34,7 +21,7 @@ namespace Microsoft.NET.Publish.Tests
             };
             var testAsset = _testAssetsManager.CreateTestProject(testProject, testProject.Name);
 
-           
+
 
             // Publish normally
             var publishCommand = new PublishCommand(testAsset);
@@ -314,7 +301,7 @@ namespace Microsoft.NET.Publish.Tests
                 RuntimeIdentifier = rid
             };
 
-            testProject.PackageReferences.Add(new TestPackageReference("NewtonSoft.Json", "13.0.1", publish: "false"));
+            testProject.PackageReferences.Add(new TestPackageReference("NewtonSoft.Json", ToolsetInfo.GetNewtonsoftJsonPackageVersion(), publish: "false"));
             var testAsset = _testAssetsManager.CreateTestProject(testProject, testProject.Name);
 
             var publishCommand = new PublishCommand(testAsset);

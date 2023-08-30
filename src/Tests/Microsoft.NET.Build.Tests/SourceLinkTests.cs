@@ -1,18 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
-using System.Linq;
+using System.IO.Compression;
 using System.Reflection.Metadata;
-using System.Text;
-using System.Xml.Linq;
-using FluentAssertions;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.NET.Build.Tests
 {
@@ -122,7 +112,7 @@ namespace Microsoft.NET.Build.Tests
         /// <summary>
         /// When creating a new repository locally we want the build to work and not report warnings even before the remote is set.
         /// </summary>
-        [Fact]
+        [RequiresMSBuildVersionFact("17.8.0")]
         public void WithNoRemoteNoCommit()
         {
             var testAsset = _testAssetsManager
@@ -141,7 +131,7 @@ namespace Microsoft.NET.Build.Tests
         /// <summary>
         /// When creating a new repository locally we want the build to work and not report warnings even before the remote is set.
         /// </summary>
-        [Fact]
+        [RequiresMSBuildVersionFact("17.8.0")]
         public void WithNoRemote()
         {
             var testAsset = _testAssetsManager
@@ -188,7 +178,7 @@ namespace Microsoft.NET.Build.Tests
             string targetFrameworks = ToolsetInfo.CurrentTargetFramework + (multitarget ? ";netstandard2.0" : "");
 
             var testAsset = _testAssetsManager
-                .CopyTestAsset("SourceLinkTestApp", identifier: origin)
+                .CopyTestAsset("SourceLinkTestApp", identifier: origin + multitarget.ToString())
                 .WithSource();
 
             if (multitarget)
@@ -216,6 +206,15 @@ namespace Microsoft.NET.Build.Tests
 
                 ValidatePdb(Path.Combine(intermediateDir.FullName, "SourceLinkTestApp.pdb"), expectedEmbeddedSources: true);
             }
+
+            // check that commit sha is included in the package nuspec:
+            var binDir = buildCommand.GetOutputDirectory(targetFramework: "");
+            using var nupkg = ZipFile.OpenRead(Path.Combine(binDir.FullName, "SourceLinkTestApp.1.0.0.nupkg"));
+            using var nuspec = nupkg.GetEntry("SourceLinkTestApp.nuspec").Open();
+            using var nuspecStream = new MemoryStream();
+            nuspec.CopyTo(nuspecStream);
+            var nuspecStr = Encoding.UTF8.GetString(nuspecStream.ToArray());
+            Assert.Contains(@"repository type=""git"" commit=""1200000000000000000000000000000000000000""", nuspecStr);
         }
 
         [Theory]

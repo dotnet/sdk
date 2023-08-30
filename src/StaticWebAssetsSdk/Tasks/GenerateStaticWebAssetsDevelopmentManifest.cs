@@ -1,15 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Security.Cryptography;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using Microsoft.Build.Framework;
-using Microsoft.Build.Utilities;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
 {
@@ -50,7 +45,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
 
                 var manifest = ComputeDevelopmentManifest(
                     Assets.Select(a => StaticWebAsset.FromTaskItem(a)),
-                    DiscoveryPatterns.Select(StaticWebAssetsManifest.DiscoveryPattern.FromTaskItem));
+                    DiscoveryPatterns.Select(StaticWebAssetsDiscoveryPattern.FromTaskItem));
 
                 PersistManifest(manifest);
             }
@@ -63,7 +58,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
 
         public StaticWebAssetsDevelopmentManifest ComputeDevelopmentManifest(
             IEnumerable<StaticWebAsset> assets,
-            IEnumerable<StaticWebAssetsManifest.DiscoveryPattern> discoveryPatterns)
+            IEnumerable<StaticWebAssetsDiscoveryPattern> discoveryPatterns)
         {
             var assetsWithPathSegments = ComputeManifestAssets(assets).ToArray();
 
@@ -137,7 +132,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
 
         private StaticWebAssetsDevelopmentManifest CreateManifest(
             SegmentsAssetPair[] assetsWithPathSegments,
-            IEnumerable<(string[], IEnumerable<StaticWebAssetsManifest.DiscoveryPattern> values)> discoveryPatternsByBasePath)
+            IEnumerable<(string[], IEnumerable<StaticWebAssetsDiscoveryPattern> values)> discoveryPatternsByBasePath)
         {
             var contentRootIndex = new Dictionary<string, int>();
             var root = new StaticWebAssetNode() { };

@@ -1,9 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable enable
-
-using System.Collections.Generic;
 
 using Microsoft.Build.Graph;
 using Microsoft.Extensions.Tools.Internal;
@@ -16,9 +13,9 @@ namespace Microsoft.DotNet.Watcher.Tools
 
         public IReporter Reporter { get; init; } = NullReporter.Singleton;
 
-        public ProcessSpec ProcessSpec { get; init; } = default!;
+        public ProcessSpec? ProcessSpec { get; init; } = default!;
 
-        public FileSet FileSet { get; set; } = default!;
+        public FileSet? FileSet { get; set; }
 
         public int Iteration { get; set; } = -1;
 

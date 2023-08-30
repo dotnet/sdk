@@ -1,12 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 namespace Microsoft.NET.Sdk.WorkloadManifestReader
 {
     public class ManifestVersionUpdate : IEquatable<ManifestVersionUpdate>, IComparable<ManifestVersionUpdate>
@@ -37,7 +31,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             if (other == null) return 1;
             int ret = ManifestId.CompareTo(other.ManifestId);
             if (ret != 0) return ret;
-            
+
             if (ExistingVersion == null && other.ExistingVersion != null) return -1;
             if (ExistingVersion != null && other.ExistingVersion == null) return 1;
             if (ExistingVersion != null)

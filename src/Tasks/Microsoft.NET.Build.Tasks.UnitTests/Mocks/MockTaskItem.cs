@@ -1,9 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Collections;
-using System.Collections.Generic;
 using Microsoft.Build.Framework;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests
@@ -19,7 +17,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         public MockTaskItem(string itemSpec, Dictionary<string, string> metadata)
         {
             ItemSpec = itemSpec;
-            foreach(var m in metadata)
+            foreach (var m in metadata)
             {
                 _metadata.Add(m.Key, m.Value);
             }

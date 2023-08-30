@@ -2,9 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using Microsoft.DotNet.Tools.Sln;
-using System.CommandLine.Invocation;
-using System.CommandLine.Parsing;
 using Microsoft.DotNet.Tools.Sln.List;
 using LocalizableStrings = Microsoft.DotNet.Tools.Sln.LocalizableStrings;
 
@@ -12,21 +9,21 @@ namespace Microsoft.DotNet.Cli
 {
     public static class SlnListParser
     {
-        public static readonly Option<bool> SolutionFolderOption = new Option<bool>(new string[] { "--solution-folders" }, LocalizableStrings.ListSolutionFoldersArgumentDescription);
+        public static readonly CliOption<bool> SolutionFolderOption = new("--solution-folders") { Description = LocalizableStrings.ListSolutionFoldersArgumentDescription };
 
-        private static readonly Command Command = ConstructCommand();
+        private static readonly CliCommand Command = ConstructCommand();
 
-        public static Command GetCommand()
+        public static CliCommand GetCommand()
         {
             return Command;
         }
 
-        private static Command ConstructCommand()
+        private static CliCommand ConstructCommand()
         {
-            var command = new Command("list", LocalizableStrings.ListAppFullName);
+            CliCommand command = new("list", LocalizableStrings.ListAppFullName);
 
-            command.AddOption(SolutionFolderOption);
-            command.SetHandler((parseResult) => new ListProjectsInSolutionCommand(parseResult).Execute());
+            command.Options.Add(SolutionFolderOption);
+            command.SetAction((parseResult) => new ListProjectsInSolutionCommand(parseResult).Execute());
 
             return command;
         }

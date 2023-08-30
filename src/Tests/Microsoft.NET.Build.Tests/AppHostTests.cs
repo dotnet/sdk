@@ -1,24 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
 using System.Reflection.PortableExecutable;
-using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
-using FluentAssertions;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Microsoft.NET.TestFramework.ProjectConstruction;
-using Xunit;
-using Xunit.Abstractions;
 using NuGet.Frameworks;
-using System.Xml.Linq;
 
 namespace Microsoft.NET.Build.Tests
 {
@@ -329,7 +316,7 @@ namespace Microsoft.NET.Build.Tests
             apphostVersion.Should().Be(version);
         }
 
-        [WindowsOnlyFact(Skip = "https://github.com/dotnet/coreclr/issues/27275")]
+        [WindowsOnlyFact]
         public void FSharp_app_can_customize_the_apphost()
         {
             var targetFramework = "netcoreapp3.1";

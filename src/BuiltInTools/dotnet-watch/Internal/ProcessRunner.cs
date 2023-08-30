@@ -1,14 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable enable
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Tools.Internal;
 using IReporter = Microsoft.Extensions.Tools.Internal.IReporter;
 
@@ -71,7 +65,7 @@ namespace Microsoft.DotNet.Watcher.Internal
                 stopwatch.Start();
                 process.Start();
 
-                var args = processSpec.EscapedArguments ?? string.Join(" ", processSpec.Arguments);
+                var args = processSpec.EscapedArguments ?? string.Join(" ", processSpec.Arguments ?? Array.Empty<string>());
                 _reporter.Verbose($"Started '{processSpec.Executable}' '{args}' with process id {process.Id}", emoji: "🚀");
 
                 if (readOutput)
@@ -112,7 +106,7 @@ namespace Microsoft.DotNet.Watcher.Internal
             {
                 process.StartInfo.Arguments = processSpec.EscapedArguments;
             }
-            else
+            else if (processSpec.Arguments is not null)
             {
                 for (var i = 0; i < processSpec.Arguments.Count; i++)
                 {

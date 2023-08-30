@@ -1,27 +1,14 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Xml.Linq;
-using FluentAssertions;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Commands;
-using NuGet.Packaging;
-using Xunit;
-using Xunit.Abstractions;
-using Microsoft.NET.TestFramework.Assertions;
 
 namespace Microsoft.NET.ToolPack.Tests
 {
     public class GivenThatWeWantToPublishWithGeneratePackageOnBuildAndPackAsTool : SdkTest
     {
         public GivenThatWeWantToPublishWithGeneratePackageOnBuildAndPackAsTool(ITestOutputHelper log) : base(log)
-        {}
+        { }
 
         [Theory]
         [InlineData(false, false)]

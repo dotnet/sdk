@@ -1,9 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
+#if !NET
+using System.Text.RegularExpressions;
+#endif
 using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.ApiSymbolExtensions;
 using Microsoft.DotNet.ApiSymbolExtensions.Filtering;
@@ -28,7 +28,7 @@ namespace Microsoft.DotNet.GenAPI
                 string? exceptionMessage,
                 string[]? excludeApiFiles,
                 string[]? excludeAttributesFiles,
-                bool includeVisibleOutsideOfAssembly,
+                bool respectInternals,
                 bool includeAssemblyAttributes)
             {
                 Assemblies = assemblies;
@@ -38,7 +38,7 @@ namespace Microsoft.DotNet.GenAPI
                 ExceptionMessage = exceptionMessage;
                 ExcludeApiFiles = excludeApiFiles;
                 ExcludeAttributesFiles = excludeAttributesFiles;
-                IncludeVisibleOutsideOfAssembly = includeVisibleOutsideOfAssembly;
+                RespectInternals = respectInternals;
                 IncludeAssemblyAttributes = includeAssemblyAttributes;
             }
 
@@ -79,9 +79,9 @@ namespace Microsoft.DotNet.GenAPI
             public string[]? ExcludeAttributesFiles { get; }
 
             /// <summary>
-            /// Include internal API's. Default is false.
+            /// If true, includes both internal and public API.
             /// </summary>
-            public bool IncludeVisibleOutsideOfAssembly { get; }
+            public bool RespectInternals { get; }
 
             /// <summary>
             /// Includes assembly attributes which are values that provide information about an assembly.
@@ -96,7 +96,7 @@ namespace Microsoft.DotNet.GenAPI
         {
             bool resolveAssemblyReferences = context.AssemblyReferences?.Length > 0;
 
-            IAssemblySymbolLoader loader = new AssemblySymbolLoader(resolveAssemblyReferences, context.IncludeVisibleOutsideOfAssembly);
+            IAssemblySymbolLoader loader = new AssemblySymbolLoader(resolveAssemblyReferences, context.RespectInternals);
 
             if (context.AssemblyReferences is not null)
             {
@@ -106,7 +106,7 @@ namespace Microsoft.DotNet.GenAPI
             CompositeSymbolFilter compositeSymbolFilter = new CompositeSymbolFilter()
                 .Add(new ImplicitSymbolFilter())
                 .Add(new AccessibilitySymbolFilter(
-                    context.IncludeVisibleOutsideOfAssembly,
+                    context.RespectInternals,
                     includeEffectivelyPrivateSymbols: true,
                     includeExplicitInterfaceImplementationSymbols: true));
 
@@ -198,9 +198,17 @@ namespace Microsoft.DotNet.GenAPI
 
             """;
 
-            return !string.IsNullOrEmpty(headerFile) ?
+            string header = !string.IsNullOrEmpty(headerFile) ?
                 File.ReadAllText(headerFile) :
                 defaultFileHeader;
+
+#if NET
+            header = header.ReplaceLineEndings();
+#else
+            header = Regex.Replace(header, @"\r\n|\n\r|\n|\r", Environment.NewLine);
+#endif
+
+            return header;
         }
     }
 }

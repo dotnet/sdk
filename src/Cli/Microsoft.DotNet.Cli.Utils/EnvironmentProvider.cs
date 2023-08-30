@@ -1,12 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices;
-
 namespace Microsoft.DotNet.Cli.Utils
 {
     public class EnvironmentProvider : IEnvironmentProvider
@@ -28,7 +22,7 @@ namespace Microsoft.DotNet.Cli.Utils
                         ? Environment.GetEnvironmentVariable("PATHEXT")
                             .Split(';')
                             .Select(e => e.ToLower().Trim('"'))
-                        : new [] { string.Empty };
+                        : new[] { string.Empty };
                 }
 
                 return _executableExtensions;

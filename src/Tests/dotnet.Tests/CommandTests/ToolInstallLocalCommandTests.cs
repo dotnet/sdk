@@ -1,26 +1,18 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using FluentAssertions;
+using System.CommandLine;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.ToolManifest;
 using Microsoft.DotNet.ToolPackage;
-using Microsoft.DotNet.Tools.Tool.Install;
 using Microsoft.DotNet.Tools.Tests.ComponentMocks;
+using Microsoft.DotNet.Tools.Tool.Install;
 using Microsoft.Extensions.DependencyModel.Tests;
 using Microsoft.Extensions.EnvironmentAbstractions;
-using Xunit;
+using NuGet.Frameworks;
 using NuGet.Versioning;
 using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Install.LocalizableStrings;
-using Microsoft.DotNet.ToolManifest;
-using NuGet.Frameworks;
-using Microsoft.NET.TestFramework.Utilities;
-using System.CommandLine;
-using System.CommandLine.Parsing;
 using Parser = Microsoft.DotNet.Cli.Parser;
 using Microsoft.DotNet.Tools.Tool.Restore;
 using Microsoft.NET.TestFramework;
@@ -29,7 +21,7 @@ using Microsoft.DotNet.Tools.Tool.Update;
 
 namespace Microsoft.DotNet.Tests.Commands.Tool
 {
-    public class ToolInstallLocalCommandTests:SdkTest
+    public class ToolInstallLocalCommandTests : SdkTest
     {
         private readonly IFileSystem _fileSystem;
         private readonly IToolPackageStore _toolPackageStore;
@@ -49,7 +41,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         private readonly MockFeed _mockFeed;
 
 
-        public ToolInstallLocalCommandTests(ITestOutputHelper log):base(log) 
+        public ToolInstallLocalCommandTests(ITestOutputHelper log) : base(log)
         {
             _packageVersionA = NuGetVersion.Parse("1.0.4");
             _packageNewVersionA = NuGetVersion.Parse("2.0.0");
@@ -228,7 +220,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 new FilePath(_manifestFilePath),
                 _packageIdA,
                 new NuGetVersion(1, 1, 1),
-                new[] {_toolCommandNameA});
+                new[] { _toolCommandNameA });
 
             var toolInstallLocalCommand = GetDefaultTestToolInstallLocalCommand();
 
@@ -526,7 +518,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             ParseResult parseResult =
                 Parser.Instance.Parse(
                     $"dotnet tool install {_packageIdA.ToString()} --create-manifest-if-needed");
-            
+
             var installLocalCommand = new ToolInstallLocalCommand(
                 parseResult,
                 _toolPackageInstallerMock,

@@ -1,21 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.CommandLine;
-using System.CommandLine.IO;
-using System.CommandLine.Parsing;
-using System.IO;
-using System.Linq;
-using System.Xml.Linq;
-using FluentAssertions;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Microsoft.NET.TestFramework.ProjectConstruction;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.Cli.Build.Tests
 {
@@ -394,10 +380,24 @@ namespace Microsoft.DotNet.Cli.Build.Tests
         [InlineData("run")]
         public void It_uses_correct_runtime_help_description(string command)
         {
-            var console = new TestConsole();
-            var parseResult = Parser.Instance.Parse(new string[] { command, "-h" });
-            parseResult.Invoke(console);
-            console.Out.ToString().Should().Contain(command.Equals("build") ?
+            CliConfiguration sharedConfig = Parser.Instance;
+            CliConfiguration localCopy = new(sharedConfig.RootCommand)
+            {
+                EnableDefaultExceptionHandler = sharedConfig.EnableDefaultExceptionHandler,
+                EnableParseErrorReporting = sharedConfig.EnableParseErrorReporting,
+                EnableTypoCorrections = sharedConfig.EnableTypoCorrections,
+                ResponseFileTokenReplacer = sharedConfig.ResponseFileTokenReplacer,
+                ProcessTerminationTimeout = sharedConfig.ProcessTerminationTimeout,
+                EnablePosixBundling = sharedConfig.EnablePosixBundling,
+            };
+            localCopy.Directives.Clear();
+            localCopy.Directives.AddRange(sharedConfig.Directives);
+
+            localCopy.Output = new StringWriter();
+
+            var parseResult = localCopy.Parse(new string[] { command, "-h" });
+            parseResult.Invoke();
+            localCopy.Output.ToString().Should().Contain(command.Equals("build") ?
                 Tools.Build.LocalizableStrings.RuntimeOptionDescription :
                 Tools.Run.LocalizableStrings.RuntimeOptionDescription);
         }

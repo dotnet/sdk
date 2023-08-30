@@ -1,18 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Text.RegularExpressions;
-using System.Xml.Linq;
-using FluentAssertions;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Microsoft.NET.TestFramework.ProjectConstruction;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.NET.Build.Tests
 {
@@ -248,7 +237,7 @@ namespace Microsoft.NET.Build.Tests
                     project.Root.Add(itemGroup);
                     itemGroup.Add(new XElement(ns + "EnableNETAnalyzers", "true"));
                     itemGroup.Add(new XElement(ns + "TreatWarningsAsErrors", "true"));
-                    
+
                     // Don't error when generators/analyzers can't be loaded.
                     // This can occur when running tests against FullFramework MSBuild
                     // if the build machine has an MSBuild install with an older version of Roslyn

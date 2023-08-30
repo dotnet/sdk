@@ -1,8 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Runtime.InteropServices;
 using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Tools
@@ -32,7 +30,7 @@ namespace Microsoft.DotNet.Tools
             }
 
             CommandResult result = new CommandFactory.CommandFactory()
-                .Create("chmod", new[] {chmodArgument, path})
+                .Create("chmod", new[] { chmodArgument, path })
                 .CaptureStdOut()
                 .CaptureStdErr()
                 .Execute();

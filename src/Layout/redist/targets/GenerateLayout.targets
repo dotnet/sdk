@@ -1,4 +1,20 @@
 <Project>
+
+  <Target Name="PublishPortableRuntimeIdentifierGraph"
+          BeforeTargets="Build">
+
+      <ItemGroup Condition="'$(DotNetBuildFromSource)' == 'true' AND '$(TargetRid)' != '' AND '$(PortableRid)' != '' AND '$(TargetRid)' != '$(PortableRid)'">
+        <AdditionalRuntimeIdentifier Include="$(TargetRid)" Imports="$(PortableRid)" />
+      </ItemGroup>
+
+      <UpdatePortableRuntimeIdentifierGraph
+        InputFile="PortableRuntimeIdentifierGraph.json"
+        OutputFile="$(OutputPath)/PortableRuntimeIdentifierGraph.json"
+        AdditionalRuntimeIdentifiers="@(AdditionalRuntimeIdentifier)"
+        />
+
+  </Target>
+
   <Target Name="PublishVersionFile"
           BeforeTargets="Build">
 
@@ -57,9 +73,6 @@
       <AnalyzerTargets Include="$(PkgMicrosoft_CodeAnalysis_NetAnalyzers)/buildTransitive/Microsoft.CodeAnalysis.NetAnalyzers.targets" />
       <AnalyzerConfig Include="$(PkgMicrosoft_CodeAnalysis_NetAnalyzers)/buildTransitive/config/**/*" />
 
-      <ILLinkAnalyzersTargets Include="$(PkgMicrosoft_NET_ILLink_Tasks)/build/Microsoft.NET.ILLink.Analyzers.props" />
-      <ILLinkAnalyzersAssemblies Include="$(PkgMicrosoft_NET_ILLink_Tasks)/analyzers/dotnet/cs/**/*.dll" />
-
       <CodeStyleCSharpAssemblies Include="$(PkgMicrosoft_CodeAnalysis_CSharp_CodeStyle)/analyzers/dotnet/cs/**/*.dll" />
       <CodeStyleVisualBasicAssemblies Include="$(PkgMicrosoft_CodeAnalysis_VisualBasic_CodeStyle)/analyzers/dotnet/vb/**/*.dll" />
       <!-- The props files from these packages explicitly say they should never be included in the SDK -->
@@ -78,8 +91,6 @@
     <Error Condition="'@(CodeStyleVisualBasicTargets)' == ''" Text="Something moved around in Code style packeges, could not find targets/props. Adjust code here accordingly. TFM change?" />
     <Error Condition="'@(CodeStyleCSharpConfig)' == ''" Text="Something moved around in Code style packeges, could not find globalconfig files. Adjust code here accordingly. TFM change?" />
     <Error Condition="'@(CodeStyleVisualBasicConfig)' == ''" Text="Something moved around in Code style packeges, could not find globalconfig files. Adjust code here accordingly. TFM change?" />
-    <Error Condition="'@(ILLinkAnalyzersTargets)' == ''" Text="Something moved around in ILLink Analyzers package, adjust code accordingly." />
-    <Error Condition="'@(ILLinkAnalyzersAssemblies)' == ''" Text="Something moved around in ILLink Analyzers package, adjust code accordingly." />
 
     <Copy SourceFiles="@(AnalyzerAssemblies)" DestinationFiles="@(AnalyzerAssemblies->'$(AnalyzerAssembliesDirectory)/%(RecursiveDir)%(Filename)%(Extension)')" />
     <Copy SourceFiles="@(AnalyzerTargets)" DestinationFiles="@(AnalyzerTargets->'$(AnalyzerTargetsDirectory)/%(RecursiveDir)%(Filename)%(Extension)')" />
@@ -214,7 +225,8 @@
     <MSBuild
       Targets="Publish"
       Projects="$(RepoRoot)/src/Containers/containerize/containerize.csproj"
-      Properties="Configuration=$(Configuration);PublishDir=$(OutputPath)/Containers/containerize" />
+      Properties="Configuration=$(Configuration);PublishDir=$(OutputPath)/Containers/containerize"
+      Condition="'$(DotNetBuildFromSource)' != 'true'" />
   </Target>
 
   <Target Name="GenerateCliRuntimeConfigurationFiles"
@@ -230,8 +242,9 @@
           DestinationFiles="$(OutputPath)/%(BundledTools.Identity).runtimeconfig.json" />
 
     <Delete Files="$(OutputPath)/$(TargetName).deps.json;
-                   $(OutputPath)/$(TargetName).runtimeconfig.json;
-                   $(OutputPath)/%(BundledToolProjects.Identity).dll;
+                   $(OutputPath)/$(TargetName).runtimeconfig.json" />
+
+    <Delete Files="$(OutputPath)/%(BundledToolProjects.Identity).dll;
                    $(OutputPath)/%(BundledToolProjects.Identity).pdb" />
 
     <ChangeEntryPointLibraryName

@@ -1,29 +1,19 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using FluentAssertions;
+using System.CommandLine;
+using System.Text.Json;
+using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Tools;
-using Microsoft.DotNet.ToolPackage;
-using Microsoft.DotNet.Tools.Tool.Install;
-using Microsoft.DotNet.Tools.Tests.ComponentMocks;
 using Microsoft.DotNet.ShellShim;
+using Microsoft.DotNet.ToolPackage;
+using Microsoft.DotNet.Tools;
+using Microsoft.DotNet.Tools.Tests.ComponentMocks;
+using Microsoft.DotNet.Tools.Tool.Install;
 using Microsoft.Extensions.DependencyModel.Tests;
 using Microsoft.Extensions.EnvironmentAbstractions;
-using Xunit;
-using System.Runtime.InteropServices;
 using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Install.LocalizableStrings;
-using System.Text.Json;
-using Microsoft.NET.TestFramework.Utilities;
-using System.CommandLine;
-using System.CommandLine.Parsing;
 using Parser = Microsoft.DotNet.Cli.Parser;
-using Microsoft.DotNet.Cli.NuGetPackageDownloader;
-using Microsoft.NET.TestFramework;
 
 namespace Microsoft.DotNet.Tests.Commands.Tool
 {
@@ -48,7 +38,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         {
             _reporter = new BufferedReporter();
             _fileSystem = new FileSystemMockBuilder().UseCurrentSystemTemporaryDirectory().Build();
-            _temporaryDirectory =  _fileSystem.Directory.CreateTemporaryDirectory().DirectoryPath;
+            _temporaryDirectory = _fileSystem.Directory.CreateTemporaryDirectory().DirectoryPath;
             _pathToPlaceShim = Path.Combine(_temporaryDirectory, "pathToPlace");
             _fileSystem.Directory.CreateDirectory(_pathToPlaceShim);
             _pathToPlacePackages = _pathToPlaceShim + "Packages";
@@ -455,7 +445,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _fileSystem.Directory.Exists(Path.Combine(_pathToPlacePackages, PackageId)).Should().BeFalse();
         }
 
-         [Fact]
+        [Fact]
         public void WhenRunWithValidVersionWildcardItShouldSucceed()
         {
             ParseResult result = Parser.Instance.Parse($"dotnet tool install -g {PackageId} --version 1.0.*");
@@ -500,7 +490,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         public void AndPackagedShimIsProvidedWhenRunWithPackageIdItCreateShimUsingPackagedShim()
         {
             var extension = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ".exe" : string.Empty;
-            var prepackagedShimPath = Path.Combine (_temporaryDirectory, ToolCommandName + extension);
+            var prepackagedShimPath = Path.Combine(_temporaryDirectory, ToolCommandName + extension);
             var tokenToIdentifyPackagedShim = "packagedShim";
             _fileSystem.File.WriteAllText(prepackagedShimPath, tokenToIdentifyPackagedShim);
 
@@ -508,7 +498,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             var packagedShimsMap = new Dictionary<PackageId, IReadOnlyList<FilePath>>
             {
-                [new PackageId(PackageId)] = new[] {new FilePath(prepackagedShimPath)}
+                [new PackageId(PackageId)] = new[] { new FilePath(prepackagedShimPath) }
             };
 
             var installCommand = new ToolInstallGlobalOrToolPathCommand(

@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using System.CommandLine.Parsing;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
 
@@ -41,7 +40,7 @@ namespace Microsoft.DotNet.NugetSearch
             Prerelease = prerelease;
         }
 
-        private static int? GetParsedResultAsInt(ParseResult parseResult, Option<string> alias)
+        private static int? GetParsedResultAsInt(ParseResult parseResult, CliOption<string> alias)
         {
             var valueFromParser = parseResult.GetValue(alias);
             if (string.IsNullOrWhiteSpace(valueFromParser))

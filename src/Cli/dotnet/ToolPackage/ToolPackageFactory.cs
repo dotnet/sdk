@@ -1,8 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
-using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Configurer;
 using Microsoft.DotNet.Tools.Tool.Install;
 using Microsoft.Extensions.EnvironmentAbstractions;
@@ -12,7 +10,7 @@ namespace Microsoft.DotNet.ToolPackage
     internal static class ToolPackageFactory
     {
         public static (IToolPackageStore, IToolPackageStoreQuery, IToolPackageInstaller) CreateToolPackageStoresAndInstaller(
-            DirectoryPath? nonGlobalLocation = null,  IEnumerable<string> additionalRestoreArguments = null)
+            DirectoryPath? nonGlobalLocation = null, IEnumerable<string> additionalRestoreArguments = null)
         {
             ToolPackageStoreAndQuery toolPackageStore = CreateConcreteToolPackageStore(nonGlobalLocation);
             var toolPackageInstaller = new ToolPackageInstaller(

@@ -8,10 +8,6 @@
 
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 
 namespace Microsoft.NET.Build.Tasks.ConflictResolution
 {
@@ -214,7 +210,7 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
             var conflictItems = new ITaskItem[conflicts.Count];
 
             int i = 0;
-            foreach(var conflict in conflicts)
+            foreach (var conflict in conflicts)
             {
                 conflictItems[i++] = CreateConflictTaskItem(conflict);
             }

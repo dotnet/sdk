@@ -1,10 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable enable
-
-using System;
-
 namespace Microsoft.DotNet.Watcher
 {
     [Flags]
@@ -34,7 +30,7 @@ namespace Microsoft.DotNet.Watcher
         );
 
         public bool NonInteractive { get; set; }
-        
+
         public bool RunningAsTest { get => ((TestFlags & TestFlags.RunningAsTest) != TestFlags.None); }
 
         private static bool IsEnvironmentSet(string key)

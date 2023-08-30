@@ -1,11 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Xunit;
-using System.Text;
-using System.IO;
-using System;
-
 namespace Microsoft.NET.Sdk.Publish.Tasks.Tests
 {
     public class TransformWebConfigTests
@@ -33,9 +28,9 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tests
                 var webConfig = transformWebConfigTask.GetWebConfigFileOrDefault(projectFile, "web.config");
 
                 //Assert
-                Assert.Equal(Path.Combine(projectFolder, webConfigToSearchFor), webConfig); 
+                Assert.Equal(Path.Combine(projectFolder, webConfigToSearchFor), webConfig);
             }
-            finally 
+            finally
             {
                 if (File.Exists(Path.Combine(projectFolder, webConfigToSearchFor)))
                 {
@@ -49,26 +44,26 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tests
         {
             string projectFolder = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
             string fileName = "unrelated.txt";
-            try 
+            try
             {
                 //Arrange
                 CreateDummyFile(projectFolder, fileName);
                 var transformWebConfigTask = new TransformWebConfig();
 
                 var projectFile = Path.Combine(projectFolder, "Test.csproj");
-                
+
                 //Act
                 var webConfig = transformWebConfigTask.GetWebConfigFileOrDefault(projectFile, "web.config");
 
                 //Assert
                 Assert.Equal(Path.Combine(projectFolder, "web.config"), webConfig);
-            } 
-            finally 
+            }
+            finally
             {
                 if (File.Exists(Path.Combine(projectFolder, fileName)))
                 {
                     File.Delete(Path.Combine(projectFolder, fileName));
-                } 
+                }
             }
         }
 

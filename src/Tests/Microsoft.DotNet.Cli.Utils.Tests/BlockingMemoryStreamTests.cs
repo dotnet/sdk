@@ -1,10 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Threading;
-using Microsoft.DotNet.Tools.Test.Utilities;
-using Xunit;
-
 namespace Microsoft.DotNet.Cli.Utils
 {
     public class BlockingMemoryStreamTests
@@ -96,7 +92,7 @@ namespace Microsoft.DotNet.Cli.Utils
                 readerThreadExecuting.WaitOne();
 
                 Assert.True(readerThread.IsAlive);
-               
+
                 // give it a little while to ensure it is blocking
                 Thread.Sleep(10);
                 Assert.True(readerThread.IsAlive);

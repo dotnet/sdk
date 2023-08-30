@@ -1,19 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
 using System.IO.Compression;
-using System.Linq;
-using System.Xml.Linq;
-using FluentAssertions;
-using Microsoft.DotNet.Tools.Test.Utilities;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Microsoft.NET.TestFramework.Utilities;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.Pack.Tests
 {
@@ -39,7 +27,7 @@ namespace Microsoft.DotNet.Pack.Tests
             var outputDir = new DirectoryInfo(Path.Combine(testInstance.Path, "bin", "Test"));
 
             outputDir.Should().Exist()
-                          .And.HaveFiles(new []
+                          .And.HaveFiles(new[]
                                             {
                                                 "TestLibraryWithConfiguration.1.0.0.nupkg"
                                             });
@@ -59,7 +47,7 @@ namespace Microsoft.DotNet.Pack.Tests
                 .Should().Pass();
 
             outputDir.Should().Exist()
-                          .And.HaveFiles(new []
+                          .And.HaveFiles(new[]
                                             {
                                                 "TestLibraryWithConfiguration.1.0.0.nupkg"
                                             });
@@ -92,7 +80,7 @@ namespace Microsoft.DotNet.Pack.Tests
             outputPackage.Should().Exist();
         }
 
-        [Fact(Skip="Test project missing")]
+        [Fact(Skip = "Test project missing")]
         public void HasIncludedFiles()
         {
             var testInstance = _testAssetsManager.CopyTestAsset("EndToEndTestApp")
@@ -116,7 +104,7 @@ namespace Microsoft.DotNet.Pack.Tests
                      .And.Contain(e => e.FullName == "anotherpath/pack2.txt");
         }
 
-        [Fact(Skip="Test project doesn't override assembly name")]
+        [Fact(Skip = "Test project doesn't override assembly name")]
         public void PackAddsCorrectFilesForProjectsWithOutputNameSpecified()
         {
             var testInstance = _testAssetsManager.CopyTestAsset("LibraryWithOutputAssemblyName")

@@ -1,18 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.IO;
-using System.Linq;
-using FluentAssertions;
-
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Microsoft.NET.TestFramework.ProjectConstruction;
-
-using Xunit;
-using Xunit.Abstractions;
-
 namespace Microsoft.NET.Build.Tests
 {
     public class GivenThatWeWantToFloatWarningLevels : SdkTest
@@ -383,7 +371,7 @@ namespace Microsoft.NET.Build.Tests
         [InlineData("recommended", "true", new string[] { "CA1310", "CA1068", "CA2200" })]
         [InlineData("all", "false", new string[] { "CA1031", "CA1310", "CA1068", "CA2200" })]
         [InlineData("all", "true", new string[] { "CA1031", "CA1310", "CA1068", "CA2200" })]
-        [RequiresMSBuildVersionTheory("16.8")]
+        [RequiresMSBuildVersionTheory("17.8.0")]
         public void It_bulk_configures_rules_with_different_analysis_modes(string analysisMode, string codeAnalysisTreatWarningsAsErrors, string[] expectedViolations)
         {
             var testProject = new TestProject

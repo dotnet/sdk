@@ -1,20 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.IO;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Xunit;
-using System.Linq;
-using FluentAssertions;
-using System.Xml.Linq;
-using System.Runtime.Versioning;
-using System.Runtime.InteropServices;
-using System.Collections.Generic;
-using System;
 using System.Runtime.CompilerServices;
-using Xunit.Abstractions;
+using System.Runtime.Versioning;
 
 namespace Microsoft.NET.Build.Tests
 {
@@ -24,7 +12,7 @@ namespace Microsoft.NET.Build.Tests
         {
         }
 
-        [Fact(Skip = "https://github.com/dotnet/coreclr/issues/27275")]
+        [Fact]
         public void It_builds_the_library_successfully()
         {
             var testAsset = _testAssetsManager
@@ -46,7 +34,7 @@ namespace Microsoft.NET.Build.Tests
             });
         }
 
-        [Fact(Skip = "https://github.com/dotnet/coreclr/issues/27275")]
+        [Fact]
         public void It_builds_the_library_twice_in_a_row()
         {
             var testAsset = _testAssetsManager
@@ -69,10 +57,10 @@ namespace Microsoft.NET.Build.Tests
             ITestOutputHelper log,
             TestAssetsManager testAssetsManager,
             string itemTypeOrPropertyName,
-            Action<GetValuesCommand> setup = null, 
+            Action<GetValuesCommand> setup = null,
             string[] msbuildArgs = null,
-            GetValuesCommand.ValueType valueType = GetValuesCommand.ValueType.Item, 
-            [CallerMemberName] string callingMethod = "", 
+            GetValuesCommand.ValueType valueType = GetValuesCommand.ValueType.Item,
+            [CallerMemberName] string callingMethod = "",
             Action<XDocument> projectChanges = null)
         {
             msbuildArgs = msbuildArgs ?? Array.Empty<string>();
@@ -170,18 +158,18 @@ namespace Microsoft.NET.Build.Tests
 
             var definedConstants = getValuesCommand.GetValues();
 
-            definedConstants.Should().BeEquivalentTo(new[] { expectedDefine, "TRACE", "NETSTANDARD", "NETSTANDARD1_6", "NETSTANDARD1_0_OR_GREATER", "NETSTANDARD1_1_OR_GREATER", 
+            definedConstants.Should().BeEquivalentTo(new[] { expectedDefine, "TRACE", "NETSTANDARD", "NETSTANDARD1_6", "NETSTANDARD1_0_OR_GREATER", "NETSTANDARD1_1_OR_GREATER",
                 "NETSTANDARD1_2_OR_GREATER", "NETSTANDARD1_3_OR_GREATER", "NETSTANDARD1_4_OR_GREATER", "NETSTANDARD1_5_OR_GREATER", "NETSTANDARD1_6_OR_GREATER" });
         }
 
         [Theory]
-        [InlineData("netstandard1.6", new[] { "NETSTANDARD", "NETSTANDARD1_6", "NETSTANDARD1_0_OR_GREATER", "NETSTANDARD1_1_OR_GREATER", "NETSTANDARD1_2_OR_GREATER", 
+        [InlineData("netstandard1.6", new[] { "NETSTANDARD", "NETSTANDARD1_6", "NETSTANDARD1_0_OR_GREATER", "NETSTANDARD1_1_OR_GREATER", "NETSTANDARD1_2_OR_GREATER",
             "NETSTANDARD1_3_OR_GREATER", "NETSTANDARD1_4_OR_GREATER", "NETSTANDARD1_5_OR_GREATER", "NETSTANDARD1_6_OR_GREATER" })]
         [InlineData("net45", new[] { "NETFRAMEWORK", "NET45", "NET20_OR_GREATER", "NET30_OR_GREATER", "NET35_OR_GREATER", "NET40_OR_GREATER", "NET45_OR_GREATER" })]
-        [InlineData("net461", new[] { "NETFRAMEWORK", "NET461", "NET20_OR_GREATER", "NET30_OR_GREATER", "NET35_OR_GREATER", "NET40_OR_GREATER", "NET45_OR_GREATER", 
+        [InlineData("net461", new[] { "NETFRAMEWORK", "NET461", "NET20_OR_GREATER", "NET30_OR_GREATER", "NET35_OR_GREATER", "NET40_OR_GREATER", "NET45_OR_GREATER",
             "NET451_OR_GREATER", "NET452_OR_GREATER", "NET46_OR_GREATER", "NET461_OR_GREATER" })]
         [InlineData("netcoreapp2.0", new[] { "NETCOREAPP", "NETCOREAPP2_0", "NETCOREAPP1_0_OR_GREATER", "NETCOREAPP1_1_OR_GREATER", "NETCOREAPP2_0_OR_GREATER" })]
-        [InlineData("net5.0", new[] { "NETCOREAPP", "NET", "NET5_0", "NETCOREAPP1_0_OR_GREATER", "NETCOREAPP1_1_OR_GREATER", "NETCOREAPP2_0_OR_GREATER", 
+        [InlineData("net5.0", new[] { "NETCOREAPP", "NET", "NET5_0", "NETCOREAPP1_0_OR_GREATER", "NETCOREAPP1_1_OR_GREATER", "NETCOREAPP2_0_OR_GREATER",
             "NETCOREAPP2_1_OR_GREATER", "NETCOREAPP2_2_OR_GREATER", "NETCOREAPP3_0_OR_GREATER", "NETCOREAPP3_1_OR_GREATER", "NET5_0_OR_GREATER" })]
         public void It_implicitly_defines_compilation_constants_for_the_target_framework(string targetFramework, string[] expectedDefines)
         {

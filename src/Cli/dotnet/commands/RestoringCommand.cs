@@ -1,10 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.DotNet.Configurer;
 using Microsoft.DotNet.Tools.MSBuild;
 using Microsoft.DotNet.Tools.Restore;
@@ -41,7 +37,7 @@ namespace Microsoft.DotNet.Tools
             IEnumerable<string> arguments,
             bool noRestore)
         {
-            if (noRestore) 
+            if (noRestore)
             {
                 return arguments;
             }
@@ -80,7 +76,7 @@ namespace Microsoft.DotNet.Tools
         private static bool HasArgumentToExcludeFromRestore(IEnumerable<string> arguments)
             => arguments.Any(a => IsExcludedFromRestore(a));
 
-        private static readonly string[] propertyPrefixes = new string[]{ "-", "/", "--" };
+        private static readonly string[] propertyPrefixes = new string[] { "-", "/", "--" };
 
         private static bool IsExcludedFromRestore(string argument)
             => propertyPrefixes.Any(prefix => argument.StartsWith($"{prefix}property:TargetFramework=", StringComparison.Ordinal)) ||

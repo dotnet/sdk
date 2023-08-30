@@ -60,7 +60,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Target Name="ProcessFrameworkReferences" BeforeTargets="_CheckForInvalidConfigurationAndPlatform;CollectPackageReferences;CollectPackageDownloads"
           DependsOnTargets="AddWindowsSdkKnownFrameworkReferences"
-          Condition="'@(FrameworkReference)' != ''">
+          Condition="'@(FrameworkReference)' != '' Or '$(_RequiresILLinkPack)' == 'true'">
 
     <CheckForDuplicateFrameworkReferences
         FrameworkReferences="@(FrameworkReference)"
@@ -95,12 +95,18 @@ Copyright (c) .NET Foundation. All rights reserved.
                                 TargetPlatformIdentifier="$(TargetPlatformIdentifier)"
                                 TargetPlatformVersion="$(TargetPlatformVersion)"
                                 TargetingPackRoot="$(NetCoreTargetingPackRoot)"
-                                RuntimeGraphPath="$(BundledRuntimeIdentifierGraphFile)"
+                                RuntimeGraphPath="$(RuntimeIdentifierGraphPath)"
                                 SelfContained="$(SelfContained)"
                                 ReadyToRunEnabled="$(PublishReadyToRun)"
                                 ReadyToRunUseCrossgen2="$(PublishReadyToRunUseCrossgen2)"
-                                TrimmingEnabled="$(_IsTrimmingEnabled)"
-                                AotEnabled="$(PublishAot)"
+                                PublishAot="$(PublishAot)"
+                                RequiresILLinkPack="$(_RequiresILLinkPack)"
+                                IsAotCompatible="$(IsAotCompatible)"
+                                EnableAotAnalyzer="$(EnableAotAnalyzer)"
+                                PublishTrimmed="$(PublishTrimmed)"
+                                IsTrimmable="$(IsTrimmable)"
+                                EnableTrimAnalyzer="$(EnableTrimAnalyzer)"
+                                EnableSingleFileAnalyzer="$(EnableSingleFileAnalyzer)"
                                 AotUseKnownRuntimePackForTarget="$(PublishAotUsingRuntimePack)"
                                 RuntimeIdentifier="$(RuntimeIdentifier)"
                                 RuntimeIdentifiers="$(RuntimeIdentifiers)"
@@ -129,6 +135,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       <Output TaskParameter="TargetILCompilerPacks" ItemName="TargetILCompilerPack" />
       <Output TaskParameter="UnavailableRuntimePacks" ItemName="UnavailableRuntimePack" />
       <Output TaskParameter="ImplicitPackageReferences" ItemName="_ImplicitPackageReference" />
+      <Output TaskParameter="KnownRuntimeIdentifierPlatforms" ItemName="_KnownRuntimeIdentifierPlatformsForTargetFramework" />
 
     </ProcessFrameworkReferences>
 
@@ -149,7 +156,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                      DotNetSingleFileHostExecutableNameWithoutExtension="$(_DotNetSingleFileHostExecutableNameWithoutExtension)"
                      DotNetComHostLibraryNameWithoutExtension="$(_DotNetComHostLibraryNameWithoutExtension)"
                      DotNetIjwHostLibraryNameWithoutExtension="$(_DotNetIjwHostLibraryNameWithoutExtension)"
-                     RuntimeGraphPath="$(BundledRuntimeIdentifierGraphFile)"
+                     RuntimeGraphPath="$(RuntimeIdentifierGraphPath)"
                      KnownAppHostPacks="@(KnownAppHostPack)"
                      NuGetRestoreSupported="$(_NuGetRestoreSupported)"
                      EnableAppHostPackDownload="$(EnableAppHostPackDownload)"
@@ -457,12 +464,11 @@ Copyright (c) .NET Foundation. All rights reserved.
       <Output TaskParameter="FullFrameworkReferenceAssemblyPaths" PropertyName="_FullFrameworkReferenceAssemblyPaths"/>
     </GetReferenceAssemblyPaths>
 
-
     <ItemGroup>
       <_ExistingReferenceAssembliesPackageReference Include="@(PackageReference)" Condition="'%(PackageReference.Identity)' == 'Microsoft.NETFramework.ReferenceAssemblies'"/>
 
       <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="$(MicrosoftNETFrameworkReferenceAssembliesLatestPackageVersion)" IsImplicitlyDefined="true" PrivateAssets="All"
-                        Condition="'$(_FullFrameworkReferenceAssemblyPaths)' == '' and '@(_ExistingReferenceAssembliesPackageReference)' == ''"/>
+                        Condition="('$(_FullFrameworkReferenceAssemblyPaths)' == '' or $(_FullFrameworkReferenceAssemblyPaths.Contains('microsoft.netframework.referenceassemblies'))) and '@(_ExistingReferenceAssembliesPackageReference)' == ''"/>
     </ItemGroup>
   </Target>
 

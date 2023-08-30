@@ -1,11 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
-using System.Linq;
 using System.Text.RegularExpressions;
-using Microsoft.Build.Utilities;
 using Microsoft.Build.Framework;
 
 namespace Microsoft.DotNet.Cli.Build
@@ -98,7 +94,7 @@ namespace Microsoft.DotNet.Cli.Build
                 outText = outText.Replace(replacementPattern, replacementString);
             }
 
-            for (int i=0; i<ReplacementPatterns.Length; ++i)
+            for (int i = 0; i < ReplacementPatterns.Length; ++i)
             {
                 var replacementPattern = ReplacementPatterns[i].ItemSpec;
                 var replacementString = ReplacementStrings[i].ItemSpec;

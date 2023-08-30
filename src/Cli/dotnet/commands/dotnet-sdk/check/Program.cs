@@ -1,16 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.CommandLine;
+using System.Text.Json;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.NativeWrapper;
-using System;
-using System.CommandLine;
-using System.CommandLine.Parsing;
-using System.IO;
-using System.Text.Json;
 using EnvironmentProvider = Microsoft.DotNet.NativeWrapper.EnvironmentProvider;
-using Parser = Microsoft.DotNet.Cli.Parser;
 
 namespace Microsoft.DotNet.Tools.Sdk.Check
 {
@@ -27,7 +23,7 @@ namespace Microsoft.DotNet.Tools.Sdk.Check
             INETBundleProvider bundleProvider = null,
             IProductCollectionProvider productCollectionProvider = null,
             IReporter reporter = null,
-            string dotnetRoot = null, 
+            string dotnetRoot = null,
             string dotnetVersion = null) : base(parseResult)
         {
             _dotnetPath = dotnetRoot ?? EnvironmentProvider.GetDotnetExeDirectory();

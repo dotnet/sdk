@@ -1,10 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-
 namespace Microsoft.NET.Sdk.WorkloadManifestReader
 {
     internal class WorkloadSuggestionFinder
@@ -142,7 +138,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
         {
             var filtered = new HashSet<WorkloadSuggestionCandidate>();
 
-            foreach(var suggestion in completeSuggestions)
+            foreach (var suggestion in completeSuggestions)
             {
                 bool isSupersetOfAny = false;
                 foreach (var other in completeSuggestions)

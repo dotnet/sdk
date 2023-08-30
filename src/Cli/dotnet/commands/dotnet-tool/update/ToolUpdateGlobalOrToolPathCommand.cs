@@ -1,18 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.CommandLine;
-using System.CommandLine.Parsing;
-using System.IO;
-using System.Linq;
 using System.Transactions;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.ShellShim;
 using Microsoft.DotNet.ToolPackage;
-using Microsoft.DotNet.Tools.Tool.Common;
 using Microsoft.DotNet.Tools.Tool.Install;
 using Microsoft.DotNet.Tools.Tool.Uninstall;
 using Microsoft.Extensions.EnvironmentAbstractions;
@@ -24,7 +18,7 @@ namespace Microsoft.DotNet.Tools.Tool.Update
 
     internal delegate (IToolPackageStore, IToolPackageStoreQuery, IToolPackageInstaller, IToolPackageUninstaller) CreateToolPackageStoresAndInstallerAndUninstaller(
         DirectoryPath? nonGlobalLocation = null,
-		IEnumerable<string> additionalRestoreArguments = null);
+        IEnumerable<string> additionalRestoreArguments = null);
 
     internal class ToolUpdateGlobalOrToolPathCommand : CommandBase
     {
@@ -264,7 +258,7 @@ namespace Microsoft.DotNet.Tools.Tool.Update
                 _reporter.WriteLine(
                     string.Format(
                         (
-                        newInstalledPackage.Version.IsPrerelease ? 
+                        newInstalledPackage.Version.IsPrerelease ?
                         LocalizableStrings.UpdateSucceededPreVersionNoChange : LocalizableStrings.UpdateSucceededStableVersionNoChange
                         ),
                         newInstalledPackage.Id, newInstalledPackage.Version).Green());

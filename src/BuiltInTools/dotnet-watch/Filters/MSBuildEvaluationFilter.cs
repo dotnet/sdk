@@ -1,12 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
+
+using System.Diagnostics;
 
 namespace Microsoft.DotNet.Watcher.Tools
 {
@@ -23,7 +19,7 @@ namespace Microsoft.DotNet.Watcher.Tools
 
         private readonly IFileSetFactory _factory;
 
-        private List<(string fileName, DateTime lastWriteTimeUtc)> _msbuildFileTimestamps;
+        private List<(string fileName, DateTime lastWriteTimeUtc)>? _msbuildFileTimestamps;
 
         public MSBuildEvaluationFilter(IFileSetFactory factory)
         {
@@ -55,6 +51,9 @@ namespace Microsoft.DotNet.Watcher.Tools
 
         private bool RequiresMSBuildRevaluation(DotNetWatchContext context)
         {
+            Debug.Assert(context.Iteration > 0);
+            Debug.Assert(_msbuildFileTimestamps != null);
+
             var changedFile = context.ChangedFile;
             if (changedFile != null && IsMsBuildFileExtension(changedFile.Value.FilePath))
             {
@@ -82,6 +81,8 @@ namespace Microsoft.DotNet.Watcher.Tools
 
         private List<(string fileName, DateTime lastModifiedUtc)> GetMSBuildFileTimeStamps(DotNetWatchContext context)
         {
+            Debug.Assert(context.FileSet != null);
+
             var msbuildFiles = new List<(string fileName, DateTime lastModifiedUtc)>();
             foreach (var file in context.FileSet)
             {

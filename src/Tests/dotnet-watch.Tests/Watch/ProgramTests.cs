@@ -1,13 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Tools.Internal;
-using Microsoft.NET.TestFramework;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.Watcher.Tests
 {
@@ -44,7 +39,7 @@ namespace Microsoft.DotNet.Watcher.Tests
         [InlineData(new[] { "--no-hot-reload", "run", "args" }, "args")]
         [InlineData(new[] { "--no-hot-reload", "--", "run", "args" }, "run,args")]
         [InlineData(new[] { "--no-hot-reload" }, "")]
-        [InlineData(new string[] {}, "")]
+        [InlineData(new string[] { }, "")]
         [InlineData(new[] { "run" }, "")]
         [InlineData(new[] { "run", "args" }, "args")]
         [InlineData(new[] { "--", "run", "args" }, "run,args")]

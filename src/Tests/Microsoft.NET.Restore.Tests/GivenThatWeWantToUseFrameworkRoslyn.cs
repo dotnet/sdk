@@ -1,15 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.IO;
-using System.Runtime.InteropServices;
-using FluentAssertions;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.ProjectConstruction;
-using Xunit;
-using Xunit.Abstractions;
-
 namespace Microsoft.NET.Restore.Tests
 {
     public class GivenThatWeWantToUseFrameworkRoslyn : SdkTest
@@ -74,7 +65,7 @@ namespace Microsoft.NET.Restore.Tests
                 testAsset.GetRestoreCommand(Log, relativePath: testProjectName);
             var result = restoreCommand.Execute();
             result.Should().Pass();
-            result.Should().HaveStdOutContaining("NETSDK1080");
+            result.Should().HaveStdOutContaining("NETSDK1205");
         }
     }
 }

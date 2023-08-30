@@ -1,9 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Microsoft.Build.Framework;
 using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
@@ -220,14 +217,14 @@ namespace Microsoft.NET.Build.Tasks
         }
 
         public static IEnumerable<LockFileTargetLibrary> Filter(
-            this IEnumerable<LockFileTargetLibrary> libraries, 
+            this IEnumerable<LockFileTargetLibrary> libraries,
             HashSet<string> exclusionList)
         {
             return libraries.Where(e => !exclusionList.Contains(e.Name));
         }
 
         public static IEnumerable<IGrouping<string, LockFileRuntimeTarget>> GetRuntimeTargetsGroups(
-            this LockFileTargetLibrary library, 
+            this LockFileTargetLibrary library,
             string assetType)
         {
             return library.RuntimeTargets

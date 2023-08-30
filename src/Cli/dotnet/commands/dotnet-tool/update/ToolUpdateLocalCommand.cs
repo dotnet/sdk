@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.CommandLine;
 using System.IO;
 using System.Linq;
@@ -73,7 +72,7 @@ namespace Microsoft.DotNet.Tools.Tool.Update
 
         public override int Execute()
         {
-            (FilePath? manifestFileOptional, string warningMessage) = 
+            (FilePath? manifestFileOptional, string warningMessage) =
                 _toolManifestFinder.ExplicitManifestOrFindManifestContainPackageId(_explicitManifestFile, _packageId);
 
             if (warningMessage != null)

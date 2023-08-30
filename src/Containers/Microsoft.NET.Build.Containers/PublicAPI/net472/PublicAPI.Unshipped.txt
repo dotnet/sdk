@@ -5,18 +5,27 @@ Microsoft.NET.Build.Containers.ContainerHelpers.ParsePortError.InvalidPortType =
 Microsoft.NET.Build.Containers.ContainerHelpers.ParsePortError.MissingPortNumber = 0 -> Microsoft.NET.Build.Containers.ContainerHelpers.ParsePortError
 Microsoft.NET.Build.Containers.ContainerHelpers.ParsePortError.UnknownPortFormat = Microsoft.NET.Build.Containers.ContainerHelpers.ParsePortError.InvalidPortNumber | Microsoft.NET.Build.Containers.ContainerHelpers.ParsePortError.InvalidPortType -> Microsoft.NET.Build.Containers.ContainerHelpers.ParsePortError
 Microsoft.NET.Build.Containers.Port
+Microsoft.NET.Build.Containers.Port.Deconstruct(out int Number, out Microsoft.NET.Build.Containers.PortType Type) -> void
+Microsoft.NET.Build.Containers.Port.Equals(Microsoft.NET.Build.Containers.Port other) -> bool
 Microsoft.NET.Build.Containers.Port.Number.get -> int
 Microsoft.NET.Build.Containers.Port.Number.set -> void
 Microsoft.NET.Build.Containers.Port.Port() -> void
 Microsoft.NET.Build.Containers.Port.Port(int Number, Microsoft.NET.Build.Containers.PortType Type) -> void
 Microsoft.NET.Build.Containers.Port.Type.get -> Microsoft.NET.Build.Containers.PortType
 Microsoft.NET.Build.Containers.Port.Type.set -> void
+~override Microsoft.NET.Build.Containers.Port.ToString() -> string
+static Microsoft.NET.Build.Containers.Port.operator !=(Microsoft.NET.Build.Containers.Port left, Microsoft.NET.Build.Containers.Port right) -> bool
+static Microsoft.NET.Build.Containers.Port.operator ==(Microsoft.NET.Build.Containers.Port left, Microsoft.NET.Build.Containers.Port right) -> bool
+override Microsoft.NET.Build.Containers.Port.GetHashCode() -> int
+~override Microsoft.NET.Build.Containers.Port.Equals(object obj) -> bool
 Microsoft.NET.Build.Containers.PortType
 Microsoft.NET.Build.Containers.PortType.tcp = 0 -> Microsoft.NET.Build.Containers.PortType
 Microsoft.NET.Build.Containers.PortType.udp = 1 -> Microsoft.NET.Build.Containers.PortType
 Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageTag
 Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageTag.ComputedBaseImageTag.get -> string?
 Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageTag.ComputeDotnetBaseImageTag() -> void
+Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageTag.ContainerFamily.get -> string!
+Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageTag.ContainerFamily.set -> void
 Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageTag.SdkVersion.get -> string!
 Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageTag.SdkVersion.set -> void
 Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageTag.TargetFrameworkVersion.get -> string!
@@ -41,14 +50,24 @@ Microsoft.NET.Build.Containers.Tasks.CreateNewImage.Entrypoint.get -> Microsoft.
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.Entrypoint.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.EntrypointArgs.get -> Microsoft.Build.Framework.ITaskItem![]!
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.EntrypointArgs.set -> void
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.DefaultArgs.get -> Microsoft.Build.Framework.ITaskItem![]!
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.DefaultArgs.set -> void
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.AppCommand.get -> Microsoft.Build.Framework.ITaskItem![]!
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.AppCommand.set -> void
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.AppCommandArgs.get -> Microsoft.Build.Framework.ITaskItem![]!
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.AppCommandArgs.set -> void
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.AppCommandInstruction.get -> string!
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.AppCommandInstruction.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.ExposedPorts.get -> Microsoft.Build.Framework.ITaskItem![]!
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.ExposedPorts.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GeneratedContainerConfiguration.get -> string!
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GeneratedContainerConfiguration.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GeneratedContainerManifest.get -> string!
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GeneratedContainerManifest.set -> void
-Microsoft.NET.Build.Containers.Tasks.CreateNewImage.ImageName.get -> string!
-Microsoft.NET.Build.Containers.Tasks.CreateNewImage.ImageName.set -> void
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GeneratedContainerDigest.get -> string!
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GeneratedContainerDigest.set -> void
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.Repository.get -> string!
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.Repository.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.ImageTags.get -> string![]!
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.ImageTags.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.Labels.get -> Microsoft.Build.Framework.ITaskItem![]!
@@ -71,8 +90,8 @@ override Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GetProcessStartInfo
 Microsoft.NET.Build.Containers.Tasks.ParseContainerProperties
 Microsoft.NET.Build.Containers.Tasks.ParseContainerProperties.ContainerEnvironmentVariables.get -> Microsoft.Build.Framework.ITaskItem![]!
 Microsoft.NET.Build.Containers.Tasks.ParseContainerProperties.ContainerEnvironmentVariables.set -> void
-Microsoft.NET.Build.Containers.Tasks.ParseContainerProperties.ContainerImageName.get -> string!
-Microsoft.NET.Build.Containers.Tasks.ParseContainerProperties.ContainerImageName.set -> void
+Microsoft.NET.Build.Containers.Tasks.ParseContainerProperties.ContainerRepository.get -> string!
+Microsoft.NET.Build.Containers.Tasks.ParseContainerProperties.ContainerRepository.set -> void
 Microsoft.NET.Build.Containers.Tasks.ParseContainerProperties.ContainerImageTag.get -> string!
 Microsoft.NET.Build.Containers.Tasks.ParseContainerProperties.ContainerImageTag.set -> void
 Microsoft.NET.Build.Containers.Tasks.ParseContainerProperties.ContainerImageTags.get -> string![]!
@@ -82,7 +101,7 @@ Microsoft.NET.Build.Containers.Tasks.ParseContainerProperties.ContainerRegistry.
 Microsoft.NET.Build.Containers.Tasks.ParseContainerProperties.FullyQualifiedBaseImageName.get -> string!
 Microsoft.NET.Build.Containers.Tasks.ParseContainerProperties.FullyQualifiedBaseImageName.set -> void
 Microsoft.NET.Build.Containers.Tasks.ParseContainerProperties.NewContainerEnvironmentVariables.get -> Microsoft.Build.Framework.ITaskItem![]!
-Microsoft.NET.Build.Containers.Tasks.ParseContainerProperties.NewContainerImageName.get -> string!
+Microsoft.NET.Build.Containers.Tasks.ParseContainerProperties.NewContainerRepository.get -> string!
 Microsoft.NET.Build.Containers.Tasks.ParseContainerProperties.NewContainerRegistry.get -> string!
 Microsoft.NET.Build.Containers.Tasks.ParseContainerProperties.NewContainerTags.get -> string![]!
 Microsoft.NET.Build.Containers.Tasks.ParseContainerProperties.ParseContainerProperties() -> void

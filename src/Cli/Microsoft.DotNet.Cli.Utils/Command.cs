@@ -1,14 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using NuGet.Frameworks;
 
 namespace Microsoft.DotNet.Cli.Utils
 {
@@ -49,7 +43,7 @@ namespace Microsoft.DotNet.Cli.Utils
 
 #if DEBUG
             var sw = Stopwatch.StartNew();
-            
+
             Reporter.Verbose.WriteLine($"> {FormatProcessInfo(_process.StartInfo)}".White());
 #endif
             using (var reaper = new ProcessReaper(_process))

@@ -1,28 +1,16 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
 using System.Reflection;
 using System.Security.Cryptography;
-using FluentAssertions;
 using Microsoft.DotNet.Cli;
-using Microsoft.Extensions.EnvironmentAbstractions;
-using NuGet.Versioning;
-using Xunit;
-using System.Threading.Tasks;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
+using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.ToolPackage;
-using Microsoft.NET.HostModel;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Utilities;
+using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Packaging;
 using NuGet.Packaging.Signing;
-using Xunit.Abstractions;
-using System.Security.Cryptography.X509Certificates;
-using System.Linq;
-using System.Threading;
-using Microsoft.DotNet.Cli.Utils;
+using NuGet.Versioning;
 
 namespace Microsoft.DotNet.PackageInstall.Tests
 {
@@ -58,7 +46,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             string packagePath = await _installer.DownloadPackageAsync(
                 TestPackageId,
                 new NuGetVersion(TestPackageVersion),
-                new PackageSourceLocation(sourceFeedOverrides: new[] {GetTestLocalFeedPath()}));
+                new PackageSourceLocation(sourceFeedOverrides: new[] { GetTestLocalFeedPath() }));
             File.Exists(packagePath).Should().BeTrue();
             packagePath.Should().Contain(_tempDirectory.Value, "Package should be downloaded to the input folder");
         }
@@ -73,11 +61,11 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 _installer.DownloadPackageAsync(
                     TestPackageId,
                     new NuGetVersion(TestPackageVersion),
-                    new PackageSourceLocation(sourceFeedOverrides: new[] {nonExistFeed.Value})));
+                    new PackageSourceLocation(sourceFeedOverrides: new[] { nonExistFeed.Value })));
         }
 
         [Fact]
-        public async Task GivenAFailedSourceAndIgnoreFailedSourcesItShouldNotThrowFatalProtocolException ()
+        public async Task GivenAFailedSourceAndIgnoreFailedSourcesItShouldNotThrowFatalProtocolException()
         {
             var installer =
                 new NuGetPackageDownloader(_tempDirectory, null, new MockFirstPartyNuGetPackageSigningVerifier(),
@@ -126,7 +114,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                     TestPackageId,
                     new NuGetVersion(TestPackageVersion),
                     new PackageSourceLocation(validNugetConfigPath,
-                        sourceFeedOverrides: new[] {nonExistFeed.Value})));
+                        sourceFeedOverrides: new[] { nonExistFeed.Value })));
         }
 
         [Fact]
@@ -151,7 +139,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         {
             string packagePath = await _installer.DownloadPackageAsync(
                 TestPackageId,
-                packageSourceLocation: new PackageSourceLocation(sourceFeedOverrides: new[] {GetTestLocalFeedPath()}));
+                packageSourceLocation: new PackageSourceLocation(sourceFeedOverrides: new[] { GetTestLocalFeedPath() }));
             packagePath.Should().Contain("global.tool.console.demo.1.0.4.nupkg", "It can get the latest non preview version");
             File.Exists(packagePath).Should().BeTrue();
         }
@@ -165,7 +153,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             string packagePath = await _installer.DownloadPackageAsync(
                 TestPackageId,
                 new NuGetVersion(TestPackageVersion),
-                new PackageSourceLocation(sourceFeedOverrides: new[] {relativePath}));
+                new PackageSourceLocation(sourceFeedOverrides: new[] { relativePath }));
             File.Exists(packagePath).Should().BeTrue();
             packagePath.Should().Contain(_tempDirectory.Value, "Package should be downloaded to the input folder");
         }
@@ -178,7 +166,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             Log.WriteLine(relativePath);
             string packagePath = await _installer.DownloadPackageAsync(
                 TestPackageId,
-                packageSourceLocation: new PackageSourceLocation(sourceFeedOverrides: new[] {relativePath}),
+                packageSourceLocation: new PackageSourceLocation(sourceFeedOverrides: new[] { relativePath }),
                 includePreview: true);
             File.Exists(packagePath).Should().BeTrue();
             packagePath.Should().Contain(TestPackageId + "." + TestPreviewPackageVersion,
@@ -195,13 +183,13 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             await nuGetPackageDownloader.DownloadPackageAsync(
                 TestPackageId,
                 new NuGetVersion(TestPackageVersion),
-                new PackageSourceLocation(sourceFeedOverrides: new[] {GetTestLocalFeedPath()}));
+                new PackageSourceLocation(sourceFeedOverrides: new[] { GetTestLocalFeedPath() }));
 
             // download 2 packages should only print the message once
             string packagePath = await nuGetPackageDownloader.DownloadPackageAsync(
                 TestPackageId,
                 new NuGetVersion(TestPackageVersion),
-                new PackageSourceLocation(sourceFeedOverrides: new[] {GetTestLocalFeedPath()}));
+                new PackageSourceLocation(sourceFeedOverrides: new[] { GetTestLocalFeedPath() }));
 
             bufferedReporter.Lines.Should()
                 .ContainSingle(
@@ -221,7 +209,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 nuGetPackageDownloader.DownloadPackageAsync(
                     TestPackageId,
                     new NuGetVersion(TestPackageVersion),
-                    new PackageSourceLocation(sourceFeedOverrides: new[] {GetTestLocalFeedPath()})));
+                    new PackageSourceLocation(sourceFeedOverrides: new[] { GetTestLocalFeedPath() })));
 
             ex.Message.Should().Contain(commandOutput);
         }
@@ -236,13 +224,13 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             await nuGetPackageDownloader.DownloadPackageAsync(
                 TestPackageId,
                 new NuGetVersion(TestPackageVersion),
-                new PackageSourceLocation(sourceFeedOverrides: new[] {GetTestLocalFeedPath()}));
+                new PackageSourceLocation(sourceFeedOverrides: new[] { GetTestLocalFeedPath() }));
 
             // download 2 packages should only print the message once
             string packagePath = await nuGetPackageDownloader.DownloadPackageAsync(
                 TestPackageId,
                 new NuGetVersion(TestPackageVersion),
-                new PackageSourceLocation(sourceFeedOverrides: new[] {GetTestLocalFeedPath()}));
+                new PackageSourceLocation(sourceFeedOverrides: new[] { GetTestLocalFeedPath() }));
 
             bufferedReporter.Lines.Should()
                 .ContainSingle(

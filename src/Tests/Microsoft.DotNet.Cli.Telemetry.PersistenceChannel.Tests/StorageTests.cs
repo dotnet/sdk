@@ -1,18 +1,10 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
 using System.Runtime.CompilerServices;
-using System.Text;
-using FluentAssertions;
 using Microsoft.ApplicationInsights.Channel;
 using Microsoft.ApplicationInsights.DataContracts;
 using Microsoft.ApplicationInsights.Extensibility.Implementation;
-using Microsoft.DotNet.Tools.Test.Utilities;
-using Microsoft.NET.TestFramework;
-using Xunit;
-using Xunit.Abstractions;
 using IChannelTelemetry = Microsoft.ApplicationInsights.Channel.ITelemetry;
 
 namespace Microsoft.DotNet.Cli.Telemetry.PersistenceChannel.Tests
@@ -182,7 +174,7 @@ namespace Microsoft.DotNet.Cli.Telemetry.PersistenceChannel.Tests
 
         private static Transmission CreateTransmission(IChannelTelemetry telemetry)
         {
-            byte[] data = JsonSerializer.Serialize(new[] {telemetry});
+            byte[] data = JsonSerializer.Serialize(new[] { telemetry });
             Transmission transmission = new Transmission(
                 new Uri(@"http://some.url"),
                 data,

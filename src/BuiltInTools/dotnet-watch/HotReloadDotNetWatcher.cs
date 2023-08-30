@@ -1,16 +1,9 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable enable
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
-using System.IO;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Watcher.Internal;
 using Microsoft.DotNet.Watcher.Tools;
@@ -58,6 +51,8 @@ namespace Microsoft.DotNet.Watcher
 
         public async Task WatchAsync(DotNetWatchContext context, CancellationToken cancellationToken)
         {
+            Debug.Assert(context.ProcessSpec != null);
+
             var processSpec = context.ProcessSpec;
 
             var forceReload = new CancellationTokenSource();
@@ -100,6 +95,8 @@ namespace Microsoft.DotNet.Watcher
                     return;
                 }
 
+                Debug.Assert(fileSet.Project != null);
+
                 if (!fileSet.Project.IsNetCoreApp60OrNewer())
                 {
                     _reporter.Error($"Hot reload based watching is only supported in .NET 6.0 or newer apps. Update the project's launchSettings.json to disable this feature.");
@@ -126,9 +123,12 @@ namespace Microsoft.DotNet.Watcher
                 try
                 {
                     using var hotReload = new HotReload(_reporter);
-                    hotReload.Initialize(context, cancellationToken);
 
-                    _reporter.Verbose($"Running {processSpec.ShortDisplayName()} with the following arguments: '{string.Join(" ", processSpec.Arguments)}'");
+                    // Solution must be initialized before we start watching for file changes to avoid race condition
+                    // when the solution captures state of the file after the changes has already been made.
+                    await hotReload.InitializeAsync(context, cancellationToken);
+
+                    _reporter.Verbose($"Running {processSpec.ShortDisplayName()} with the following arguments: '{string.Join(" ", processSpec.Arguments ?? Array.Empty<string>())}'");
                     var processTask = _processRunner.RunAsync(processSpec, combinedCancellationSource.Token);
 
                     _reporter.Output("Started", emoji: "🚀");
@@ -294,7 +294,9 @@ namespace Microsoft.DotNet.Watcher
 
         private void ConfigureExecutable(DotNetWatchContext context, ProcessSpec processSpec)
         {
-            var project = context.FileSet.Project;
+            var project = context.FileSet?.Project;
+            Debug.Assert(project != null);
+
             processSpec.Executable = project.RunCommand;
             if (!string.IsNullOrEmpty(project.RunArguments))
             {
@@ -318,7 +320,7 @@ namespace Microsoft.DotNet.Watcher
 
             if (rootVariableName != null && string.IsNullOrEmpty(Environment.GetEnvironmentVariable(rootVariableName)))
             {
-                processSpec.EnvironmentVariables[rootVariableName] = Path.GetDirectoryName(_muxerPath);
+                processSpec.EnvironmentVariables[rootVariableName] = Path.GetDirectoryName(_muxerPath)!;
             }
 
             if (context.LaunchSettingsProfile.EnvironmentVariables is { } envVariables)

@@ -1,15 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using FluentAssertions;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 using Microsoft.Build.Framework;
-using Microsoft.NET.TestFramework;
 using Moq;
-using Xunit;
 
 namespace Microsoft.NET.Sdk.Razor.Tests
 {
@@ -361,6 +355,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 AssetKind = assetKind,
                 AssetMode = assetMode,
                 AssetRole = assetRole,
+                AssetMergeBehavior = StaticWebAsset.MergeBehaviors.PreferTarget,
+                AssetMergeSource = "",
                 RelatedAsset = relatedAsset,
                 AssetTraitName = assetTraitName,
                 AssetTraitValue = assetTraitValue,
@@ -375,13 +371,13 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             return result;
         }
 
-        private StaticWebAssetsManifest.DiscoveryPattern CreatePatternCandidate(
+        private StaticWebAssetsDiscoveryPattern CreatePatternCandidate(
             string name,
             string basePath,
             string pattern,
             string source)
         {
-            var result = new StaticWebAssetsManifest.DiscoveryPattern()
+            var result = new StaticWebAssetsDiscoveryPattern()
             {
                 Name = name,
                 BasePath = basePath,

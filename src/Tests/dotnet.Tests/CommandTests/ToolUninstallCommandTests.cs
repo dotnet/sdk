@@ -1,15 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using FluentAssertions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.Tool.Uninstall;
-using Xunit;
 using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Uninstall.LocalizableStrings;
-using Microsoft.NET.TestFramework.Utilities;
-using System.CommandLine;
-using System.CommandLine.Parsing;
 using Parser = Microsoft.DotNet.Cli.Parser;
 
 namespace Microsoft.DotNet.Tests.Commands.Tool
@@ -20,18 +14,18 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
         private const string PackageId = "global.tool.console.demo";
         private const string PackageVersion = "1.0.4";
-        
+
 
         public ToolUninstallCommandTests()
         {
             _reporter = new BufferedReporter();
         }
-        
+
         [Fact]
         public void WhenRunWithBothGlobalAndToolPathShowErrorMessage()
         {
             var result = Parser.Instance.Parse($"dotnet tool uninstall -g --tool-path /tmp/folder {PackageId}");
-            
+
             var toolUninstallCommand = new ToolUninstallCommand(result);
 
             Action a = () => toolUninstallCommand.Execute();
@@ -39,7 +33,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             a.Should().Throw<GracefulException>().And.Message
                 .Should().Contain(string.Format(
                     LocalizableStrings.UninstallToolCommandInvalidGlobalAndLocalAndToolPath,
-                    "global tool-path"));
+                    "--global --tool-path"));
         }
 
         [Fact]
@@ -54,16 +48,16 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             a.Should().Throw<GracefulException>().And.Message
                 .Should().Contain(
                     string.Format(LocalizableStrings.UninstallToolCommandInvalidGlobalAndLocalAndToolPath,
-                        "local tool-path"));
+                        "--local --tool-path"));
         }
-        
+
         [Fact]
         public void WhenRunWithGlobalAndToolManifestShowErrorMessage()
         {
             var result = Parser.Instance.Parse($"dotnet tool uninstall -g --tool-manifest folder/my-manifest.format {PackageId}");
 
             var toolUninstallCommand = new ToolUninstallCommand(result);
-            
+
             Action a = () => toolUninstallCommand.Execute();
 
             a.Should().Throw<GracefulException>().And.Message

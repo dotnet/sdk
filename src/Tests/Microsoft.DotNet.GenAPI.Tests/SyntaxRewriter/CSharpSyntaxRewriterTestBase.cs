@@ -3,11 +3,8 @@
 
 #nullable enable
 
-using Xunit;
-using System.IO;
-using System.Text;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 
 namespace Microsoft.DotNet.GenAPI.Tests.SyntaxRewriter
 {

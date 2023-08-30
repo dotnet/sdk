@@ -1,17 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
-using System.Linq;
-using System.Xml.Linq;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using System.Collections.Generic;
-using Xunit.Abstractions;
-using Microsoft.NET.TestFramework.ProjectConstruction;
-using NuGet.Frameworks;
-
 namespace Microsoft.NET.TestFramework
 {
     /// <summary>
@@ -92,20 +81,28 @@ namespace Microsoft.NET.TestFramework
             foreach (string srcFile in sourceFiles)
             {
                 string destFile = srcFile.Replace(_testAssetRoot, Path);
-                
-                if (System.IO.Path.GetFileName(srcFile).EndsWith("proj"))
+
+                if (System.IO.Path.GetFileName(srcFile).EndsWith("proj") || System.IO.Path.GetFileName(srcFile).EndsWith("xml"))
                 {
                     _projectFiles.Add(destFile);
                 }
                 File.Copy(srcFile, destFile, true);
             }
 
-            string[][] Properties = { new string[] { "TargetFramework", "$(CurrentTargetFramework)", ToolsetInfo.CurrentTargetFramework }, new string[] { "RuntimeIdentifier", "$(LatestWinRuntimeIdentifier)", ToolsetInfo.LatestWinRuntimeIdentifier }, new string[] { "RuntimeIdentifier", "$(LatestLinuxRuntimeIdentifier)", ToolsetInfo.LatestLinuxRuntimeIdentifier }, new string[] { "RuntimeIdentifier", "$(LatestMacRuntimeIdentifier)", ToolsetInfo.LatestMacRuntimeIdentifier }, new string[] { "RuntimeIdentifier", "$(LatestRuntimeIdentifiers)", ToolsetInfo.LatestRuntimeIdentifiers } };
+            string[][] Properties = {
+                new string[] { "TargetFramework", "$(CurrentTargetFramework)", ToolsetInfo.CurrentTargetFramework },
+                new string[] { "CurrentTargetFramework", "$(CurrentTargetFramework)", ToolsetInfo.CurrentTargetFramework },
+                new string[] { "RuntimeIdentifier", "$(LatestWinRuntimeIdentifier)", ToolsetInfo.LatestWinRuntimeIdentifier },
+                new string[] { "RuntimeIdentifier", "$(LatestLinuxRuntimeIdentifier)", ToolsetInfo.LatestLinuxRuntimeIdentifier },
+                new string[] { "RuntimeIdentifier", "$(LatestMacRuntimeIdentifier)", ToolsetInfo.LatestMacRuntimeIdentifier },
+                new string[] { "RuntimeIdentifier", "$(LatestRuntimeIdentifiers)", ToolsetInfo.LatestRuntimeIdentifiers } };
 
             foreach (string[] property in Properties)
             {
                 this.UpdateProjProperty(property[0], property[1], property[2]);
             }
+
+            this.ReplaceTheNewtonsoftJsonPackageVersionVariable();
 
             return this;
         }
@@ -119,6 +116,27 @@ namespace Microsoft.NET.TestFramework
                 var getNode = p.Root.Elements(ns + "PropertyGroup").Elements(ns + propertyName).FirstOrDefault();
                 getNode ??= p.Root.Elements(ns + "PropertyGroup").Elements(ns + $"{propertyName}s").FirstOrDefault();
                 getNode?.SetValue(getNode?.Value.Replace(variableName, targetValue));
+            });
+        }
+
+        public TestAsset ReplaceTheNewtonsoftJsonPackageVersionVariable()
+        {
+            string[] PropertyNames = new[] { "PackageReference", "Package" };
+            string targetName = "NewtonsoftJsonPackageVersion";
+
+            return WithProjectChanges(project =>
+            {
+                var ns = project.Root.Name.Namespace;
+                foreach (var PropertyName in PropertyNames)
+                {
+                    var packageReferencesToUpdate =
+                        project.Root.Descendants(ns + PropertyName)
+                            .Where(p => p.Attribute("Version") != null && p.Attribute("Version").Value.Equals($"$({targetName})", StringComparison.OrdinalIgnoreCase));
+                    foreach (var packageReference in packageReferencesToUpdate)
+                    {
+                        packageReference.Attribute("Version").Value = ToolsetInfo.GetNewtonsoftJsonPackageVersion();
+                    }
+                }
             });
         }
 
@@ -208,7 +226,7 @@ namespace Microsoft.NET.TestFramework
             }
             return this;
 
-            }
+        }
 
         public RestoreCommand GetRestoreCommand(ITestOutputHelper log, string relativePath = "")
         {

@@ -1,12 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Xunit;
-using FluentAssertions;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Xunit.Abstractions;
 using Microsoft.DotNet.Tools.Help;
 
 namespace Microsoft.DotNet.Help.Tests
@@ -128,7 +122,7 @@ Run 'dotnet [command] --help' for more information on a command.";
         public void WhenRunOnWindowsDotnetHelpCommandShouldContainProperProcessInformation()
         {
             var proc = HelpCommand.ConfigureProcess("https://aka.ms/dotnet-build");
-            Assert.Equal("cmd", proc.StartInfo.FileName);
+            Assert.EndsWith("cmd.exe", proc.StartInfo.FileName);
             Assert.Equal("/c start https://aka.ms/dotnet-build", proc.StartInfo.Arguments);
         }
 
@@ -144,7 +138,7 @@ Run 'dotnet [command] --help' for more information on a command.";
         public void WhenRunOnMacOsDotnetHelpCommandShouldContainProperProcessInformation()
         {
             var proc = HelpCommand.ConfigureProcess("https://aka.ms/dotnet-build");
-            Assert.Equal("open", proc.StartInfo.FileName);
+            Assert.EndsWith("open", proc.StartInfo.FileName);
             Assert.Equal("https://aka.ms/dotnet-build", proc.StartInfo.Arguments);
         }
     }

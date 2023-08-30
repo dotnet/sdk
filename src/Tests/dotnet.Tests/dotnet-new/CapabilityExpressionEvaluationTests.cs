@@ -3,14 +3,11 @@
 
 #nullable enable
 
-using System;
-using System.Collections.Generic;
 using Microsoft.TemplateEngine.MSBuildEvaluation;
-using Xunit;
 
 namespace Microsoft.DotNet.Cli.New.Tests
 {
-    public class CapabilityExpressionEvaluationTests 
+    public class CapabilityExpressionEvaluationTests
     {
         [Theory]
         [InlineData("Capability", "", false)]

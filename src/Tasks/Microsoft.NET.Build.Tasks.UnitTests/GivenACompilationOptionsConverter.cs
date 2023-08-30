@@ -1,7 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
 using System.Reflection;
 using FluentAssertions;
 using Microsoft.Build.Framework;
@@ -17,12 +16,12 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             .Assembly
             .GetType("Microsoft.NET.Build.Tasks.CompilationOptionsConverter")
             .GetMethod("ConvertFrom");
-        
+
         [Theory]
         [MemberData(nameof(CompilerOptionsData))]
         public void ItConvertsFromITaskItemsCorrectly(ITaskItem taskItem, CompilationOptions expectedOptions)
         {
-            CompilationOptions resultOptions = (CompilationOptions)s_convertFromMethod.Invoke(null, new object[] {taskItem});
+            CompilationOptions resultOptions = (CompilationOptions)s_convertFromMethod.Invoke(null, new object[] { taskItem });
 
             resultOptions.Should().BeEquivalentTo(expectedOptions);
         }

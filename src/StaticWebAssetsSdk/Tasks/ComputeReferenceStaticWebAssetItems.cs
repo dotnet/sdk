@@ -1,11 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Microsoft.Build.Framework;
-using Microsoft.Build.Utilities;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
 {
@@ -69,19 +65,19 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                     Log.LogMessage(MessageImportance.Low, reason);
                 }
 
-                var patterns = new List<StaticWebAssetsManifest.DiscoveryPattern>();
+                var patterns = new List<StaticWebAssetsDiscoveryPattern>();
                 if (Patterns != null)
                 {
                     foreach (var pattern in Patterns)
                     {
-                        if (!StaticWebAssetsManifest.DiscoveryPattern.HasSourceId(pattern, Source))
+                        if (!StaticWebAssetsDiscoveryPattern.HasSourceId(pattern, Source))
                         {
                             Log.LogMessage(MessageImportance.Low, "Skipping pattern '{0}' because is not defined in the current project.", pattern.ItemSpec);
                         }
                         else
                         {
                             Log.LogMessage(MessageImportance.Low, "Including pattern '{0}' because is defined in the current project.", pattern.ToString());
-                            patterns.Add(StaticWebAssetsManifest.DiscoveryPattern.FromTaskItem(pattern));
+                            patterns.Add(StaticWebAssetsDiscoveryPattern.FromTaskItem(pattern));
                         }
                     }
                 }

@@ -1,9 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Microsoft.Build.Framework;
 using Microsoft.NET.Build.Containers.Resources;
 
@@ -23,10 +20,10 @@ public sealed class ParseContainerProperties : Microsoft.Build.Utilities.Task
     public string ContainerRegistry { get; set; }
 
     /// <summary>
-    /// The image name for the container to be created.
+    /// The name of the container to be created.
     /// </summary>
     [Required]
-    public string ContainerImageName { get; set; }
+    public string ContainerRepository { get; set; }
 
     /// <summary>
     /// The tag for the container to be created.
@@ -55,7 +52,7 @@ public sealed class ParseContainerProperties : Microsoft.Build.Utilities.Task
     public string NewContainerRegistry { get; private set; }
 
     [Output]
-    public string NewContainerImageName { get; private set; }
+    public string NewContainerRepository { get; private set; }
 
     [Output]
     public string[] NewContainerTags { get; private set; }
@@ -67,7 +64,7 @@ public sealed class ParseContainerProperties : Microsoft.Build.Utilities.Task
     {
         FullyQualifiedBaseImageName = "";
         ContainerRegistry = "";
-        ContainerImageName = "";
+        ContainerRepository = "";
         ContainerImageTag = "";
         ContainerImageTags = Array.Empty<string>();
         ContainerEnvironmentVariables = Array.Empty<ITaskItem>();
@@ -75,7 +72,7 @@ public sealed class ParseContainerProperties : Microsoft.Build.Utilities.Task
         ParsedContainerImage = "";
         ParsedContainerTag = "";
         NewContainerRegistry = "";
-        NewContainerImageName = "";
+        NewContainerRepository = "";
         NewContainerTags = Array.Empty<string>();
         NewContainerEnvironmentVariables = Array.Empty<ITaskItem>();
 
@@ -147,22 +144,19 @@ public sealed class ParseContainerProperties : Microsoft.Build.Utilities.Task
             Log.LogWarningWithCodeFromResources(nameof(Strings.BaseImageNameRegistryFallback), nameof(FullyQualifiedBaseImageName), ContainerHelpers.DockerRegistryAlias);
         }
 
-        try
+        var (normalizedRepository, normalizationWarning, normalizationError) = ContainerHelpers.NormalizeRepository(ContainerRepository);
+        if (normalizedRepository is not null)
         {
-            if (!ContainerHelpers.NormalizeImageName(ContainerImageName, out var normalizedImageName))
-            {
-                Log.LogMessageFromResources(nameof(Strings.NormalizedContainerName), nameof(ContainerImageName), normalizedImageName);
-                NewContainerImageName = normalizedImageName!; // known to be not null due to output of NormalizeImageName
-            }
-            else
-            {
-                // name was valid already
-                NewContainerImageName = ContainerImageName;
-            }
+            NewContainerRepository = normalizedRepository;
         }
-        catch (ArgumentException)
+        if (normalizationWarning is (string warningMessageKey, object[] warningParams))
         {
-            Log.LogErrorWithCodeFromResources(nameof(Strings.InvalidContainerImageName), nameof(ContainerImageName), ContainerImageName);
+            Log.LogMessageFromResources(warningMessageKey, warningParams);
+        }
+
+        if (normalizationError is (string errorMessageKey, object[] errorParams))
+        {
+            Log.LogErrorWithCodeFromResources(errorMessageKey, errorParams);
             return !Log.HasLoggedErrors;
         }
 
@@ -178,7 +172,7 @@ public sealed class ParseContainerProperties : Microsoft.Build.Utilities.Task
             Log.LogMessage(MessageImportance.Low, "Host: {0}", ParsedContainerRegistry);
             Log.LogMessage(MessageImportance.Low, "Image: {0}", ParsedContainerImage);
             Log.LogMessage(MessageImportance.Low, "Tag: {0}", ParsedContainerTag);
-            Log.LogMessage(MessageImportance.Low, "Image Name: {0}", NewContainerImageName);
+            Log.LogMessage(MessageImportance.Low, "Image Name: {0}", NewContainerRepository);
             Log.LogMessage(MessageImportance.Low, "Image Tags: {0}", String.Join(", ", NewContainerTags));
         }
 
