@@ -38,6 +38,8 @@ namespace Microsoft.DotNet.Cli
             ArgumentHelpName = LocalizableStrings.FrameworkOptionName
         };
 
+        public static readonly Option<bool> AllowPackageDowngradeOption = new Option<bool>("--allow-downgrade", LocalizableStrings.AllowPackageDowngradeOptionDescription);
+
         public static readonly Option<bool> PrereleaseOption = ToolSearchCommandParser.PrereleaseOption;
 
         public static readonly Option<VerbosityOptions> VerbosityOption = CommonOptions.VerbosityOption;
@@ -80,6 +82,7 @@ namespace Microsoft.DotNet.Cli
             command.AddOption(ToolCommandRestorePassThroughOptions.InteractiveRestoreOption);
             command.AddOption(VerbosityOption);
             command.AddOption(ArchitectureOption);
+            command.AddOption(AllowPackageDowngradeOption);
 
             command.SetHandler((parseResult) => new ToolInstallCommand(parseResult).Execute());
 

@@ -232,4 +232,7 @@ If you would like to create a manifest, use `dotnet new tool-manifest`, usually 
   <data name="PrereleaseAndVersionAreNotSupportedAtTheSameTime" xml:space="preserve">
     <value>The --prerelease and --version options are not supported in the same command</value>
   </data>
+  <data name="AllowPackageDowngradeOptionDescription" xml:space="preserve">
+    <value>Allow package downgrade when installing a .NET tool package.</value>
+  </data>
 </root>

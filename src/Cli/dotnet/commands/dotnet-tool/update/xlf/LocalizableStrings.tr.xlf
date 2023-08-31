@@ -42,14 +42,14 @@
         <target state="translated">'{0}' aracı güncel (sürüm '{1}' bildirim dosyası {2}).</target>
         <note />
       </trans-unit>
-      <trans-unit id="UpdateLocaToolToLowerVersion">
-        <source>The requested version {0} is lower than existing version {1} (manifest file {2}).</source>
-        <target state="translated">İstenen sürüm ({0}) mevcut sürümünden ({1}) (bildirim dosyası {2}) düşük.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="UpdateLocalToolSucceeded">
         <source>Tool '{0}' was successfully updated from version '{1}' to version '{2}' (manifest file {3}).</source>
         <target state="translated">'{0}' aracı, '{1}' sürümünden '{2}' (bildirim dosyası {3}) sürümüne başarıyla güncelleştirildi.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UpdateLocalToolToLowerVersion">
+        <source>The requested version {0} is lower than existing version {1} (manifest file {2}).</source>
+        <target state="new">The requested version {0} is lower than existing version {1} (manifest file {2}).</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateSucceededPreVersionNoChange">
