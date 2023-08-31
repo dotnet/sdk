@@ -1,13 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
 using System.Xml;
-using System.Xml.Linq;
-using System.Linq;
 using Microsoft.Build.Framework;
-using Microsoft.Build.Utilities;
 
 namespace Microsoft.NET.Sdk.Publish.Tasks
 {
@@ -42,7 +37,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks
         public string ProjectGuid { get; set; }
         
         /// <summary>
-        /// Flag that determines whether the publish telemtry needs to be disabled. 
+        /// Flag that determines whether the publish telemetry needs to be disabled. 
         /// </summary>
         public bool IgnoreProjectGuid { get; set; }
         /// <summary>

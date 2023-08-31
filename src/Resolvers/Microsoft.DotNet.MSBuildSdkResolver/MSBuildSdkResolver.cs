@@ -5,10 +5,6 @@ using Microsoft.Build.Framework;
 using Microsoft.DotNet.Configurer;
 using Microsoft.DotNet.DotNetSdkResolver;
 using Microsoft.DotNet.NativeWrapper;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Reflection;
 using Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver;
 using Microsoft.DotNet.Cli;
@@ -64,6 +60,7 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
             public string DotnetRoot;
             public string MSBuildSdksDir;
             public string NETCoreSdkVersion;
+            public string GlobalJsonPath;
             public IDictionary<string, string> PropertiesToAdd;
             public CachingWorkloadResolver WorkloadResolver;
         }
@@ -73,6 +70,7 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
             string dotnetRoot = null;
             string msbuildSdksDir = null;
             string netcoreSdkVersion = null;
+            string globalJsonPath = null;
             IDictionary<string, string> propertiesToAdd = null;
             IDictionary<string, SdkResultItem> itemsToAdd = null;
             List<string> warnings = null;
@@ -93,6 +91,7 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
                 dotnetRoot = priorResult.DotnetRoot;
                 msbuildSdksDir = priorResult.MSBuildSdksDir;
                 netcoreSdkVersion = priorResult.NETCoreSdkVersion;
+                globalJsonPath = priorResult.GlobalJsonPath;
                 propertiesToAdd = priorResult.PropertiesToAdd;
                 workloadResolver = priorResult.WorkloadResolver;
 
@@ -138,6 +137,7 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
 
                 msbuildSdksDir = Path.Combine(resolverResult.ResolvedSdkDirectory, "Sdks");
                 netcoreSdkVersion = new DirectoryInfo(resolverResult.ResolvedSdkDirectory).Name;
+                globalJsonPath = resolverResult.GlobalJsonPath;
 
                 // These are overrides that are used to force the resolved SDK tasks and targets to come from a given
                 // base directory and report a given version to msbuild (which may be null if unknown. One key use case
@@ -228,13 +228,14 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
                 DotnetRoot = dotnetRoot,
                 MSBuildSdksDir = msbuildSdksDir,
                 NETCoreSdkVersion = netcoreSdkVersion,
+                GlobalJsonPath = globalJsonPath,
                 PropertiesToAdd = propertiesToAdd,
                 WorkloadResolver = workloadResolver
             };
 
             //  First check if requested SDK resolves to a workload SDK pack
             string userProfileDir = CliFolderPathCalculatorCore.GetDotnetUserProfileFolderPath();
-            var workloadResult = workloadResolver.Resolve(sdkReference.Name, dotnetRoot, netcoreSdkVersion, userProfileDir);
+            var workloadResult = workloadResolver.Resolve(sdkReference.Name, dotnetRoot, netcoreSdkVersion, userProfileDir, globalJsonPath);
 
             if (workloadResult is not CachingWorkloadResolver.NullResolutionResult)
             {

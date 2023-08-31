@@ -55,7 +55,7 @@ namespace Microsoft.DotNet.Cli.ToolPackage
         // example: C:\Users\username\AppData\Local\Temp\tempFolder
         protected readonly DirectoryPath _localToolAssetDir;
 
-        public static readonly Option<VerbosityOptions> VerbosityOption = CommonOptions.VerbosityOption;
+        public static readonly CliOption<VerbosityOptions> VerbosityOption = CommonOptions.VerbosityOption;
 
         protected readonly string _runtimeJsonPath;
 

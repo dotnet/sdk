@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Build.Framework;
-using System;
 
 namespace Microsoft.NET.Build.Tasks
 {
@@ -19,7 +18,7 @@ namespace Microsoft.NET.Build.Tasks
                 BuildEngine4.GetRegisteredTaskObject(previewMessageKey, RegisteredTaskObjectLifetime.Build);
             if (messageDisplayed == null)
             {
-                Log.LogMessage(MessageImportance.High, Strings.UsingPreviewSdk_Info);
+                Log.LogMessage(MessageImportance.High, Strings.UsingPreviewSdk);
 
                 BuildEngine4.RegisterTaskObject(
                     previewMessageKey,

@@ -1,7 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.ApiSymbolExtensions;
 
@@ -74,7 +73,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                 leftMetadata,
                 rightMetadata,
                 DiagnosticIds.CannotRemoveBaseType,
-                string.Format(Resources.CannotRemoveBaseType, left.ToDisplayString(), leftBaseType.ToDisplayString(), rightName, leftName),
+                string.Format(Resources.CannotRemoveBaseType, left.ToDisplayString(SymbolExtensions.DisplayFormat), leftBaseType.ToDisplayString(SymbolExtensions.DisplayFormat), rightName, leftName),
                 DifferenceType.Changed,
                 right));
         }
@@ -103,7 +102,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                         leftMetadata,
                         rightMetadata,
                         DiagnosticIds.CannotRemoveBaseInterface,
-                        string.Format(Resources.CannotRemoveBaseInterface, left.ToDisplayString(), leftInterface.ToDisplayString(), rightName, leftName),
+                        string.Format(Resources.CannotRemoveBaseInterface, left.ToDisplayString(SymbolExtensions.DisplayFormat), leftInterface.ToDisplayString(SymbolExtensions.DisplayFormat), rightName, leftName),
                         DifferenceType.Changed,
                         right));
                     return;

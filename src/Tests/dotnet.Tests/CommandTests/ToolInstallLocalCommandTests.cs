@@ -17,14 +17,12 @@ using Microsoft.DotNet.Tools.Tool.Install;
 using Microsoft.Extensions.DependencyModel.Tests;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Xunit;
-using NuGet.Frameworks;
 using NuGet.Versioning;
 using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Install.LocalizableStrings;
 using Microsoft.NET.TestFramework.Utilities;
 using System.CommandLine.Parsing;
+using NuGet.Frameworks;
 using Parser = Microsoft.DotNet.Cli.Parser;
-using Microsoft.NET.TestFramework;
-using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.Tests.Commands.Tool
 {

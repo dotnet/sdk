@@ -2,14 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Build.Utilities;
-using FluentAssertions;
-using Xunit;
-using Xunit.Abstractions;
 using Microsoft.NET.Build.Containers.IntegrationTests;
 using Microsoft.NET.Build.Containers.UnitTests;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Microsoft.NET.TestFramework;
 using FakeItEasy;
 using Microsoft.Build.Framework;
 using System.Runtime.CompilerServices;
@@ -69,6 +63,10 @@ public class CreateNewImageTests
 
         Assert.True(task.Execute(), FormatBuildMessages(errors));
         newProjectDir.Delete(true);
+    }
+
+    private static ImageConfig GetImageConfigFromTask(CreateNewImage task) {
+        return new(task.GeneratedContainerConfiguration);
     }
 
     [DockerAvailableFact]
@@ -203,6 +201,14 @@ public class CreateNewImageTests
 
         Assert.True(cni.Execute(), FormatBuildMessages(errors));
 
+        var config = GetImageConfigFromTask(cni);
+        // because we're building off of .net 8 images for this test, we can validate the user id and aspnet https urls
+        Assert.Equal("1654", config.GetUser());
+
+        var ports = config.Ports;
+        Assert.Single(ports);
+        Assert.Equal(new(8080, PortType.tcp), ports.First());
+
         ContainerCli.RunCommand(_testOutput, "--rm", $"{pcp.NewContainerRepository}:latest")
             .Execute()
             .Should().Pass()
@@ -214,10 +220,12 @@ public class CreateNewImageTests
     {
         const string RootlessBase ="dotnet/rootlessbase";
         const string AppImage = "dotnet/testimagerootless";
-        const string RootlessUser = "101";
+        const string RootlessUser = "1654";
+        var loggerFactory = new TestLoggerFactory(_testOutput);
+        var logger = loggerFactory.CreateLogger(nameof(CreateNewImage_RootlessBaseImage));
 
         // Build a rootless base runtime image.
-        Registry registry = new Registry(ContainerHelpers.TryExpandRegistryToUri(DockerRegistryManager.LocalRegistry));
+        Registry registry = new Registry(DockerRegistryManager.LocalRegistry, logger);
 
         ImageBuilder imageBuilder = await registry.GetImageManifestAsync(
             DockerRegistryManager.RuntimeBaseImage,
@@ -228,14 +236,13 @@ public class CreateNewImageTests
 
         Assert.NotNull(imageBuilder);
 
-        imageBuilder.SetUser(RootlessUser);
 
         BuiltImage builtImage = imageBuilder.Build();
 
         var sourceReference = new ImageReference(registry, DockerRegistryManager.RuntimeBaseImage, DockerRegistryManager.Net8PreviewImageTag);
         var destinationReference = new ImageReference(registry, RootlessBase, "latest");
 
-        await registry.PushAsync(builtImage, sourceReference, destinationReference, Console.WriteLine, cancellationToken: default).ConfigureAwait(false);
+        await registry.PushAsync(builtImage, sourceReference, destinationReference, cancellationToken: default).ConfigureAwait(false);
 
         // Build an application image on top of the rootless base runtime image.
         DirectoryInfo newProjectDir = new DirectoryInfo(Path.Combine(TestSettings.TestArtifactsDirectory, nameof(CreateNewImage_RootlessBaseImage)));
@@ -259,6 +266,8 @@ public class CreateNewImageTests
             .Should().Pass();
 
         CreateNewImage task = new CreateNewImage();
+        var (buildEngine, errors) = SetupBuildEngine();
+        task.BuildEngine = buildEngine;
         task.BaseRegistry = "localhost:5010";
         task.BaseImageName = RootlessBase;
         task.BaseImageTag = "latest";

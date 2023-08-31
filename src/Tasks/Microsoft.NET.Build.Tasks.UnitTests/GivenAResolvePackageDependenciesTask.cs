@@ -4,10 +4,6 @@
 using FluentAssertions;
 using Microsoft.Build.Framework;
 using NuGet.ProjectModel;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using NuGet.Common;
 using Xunit;
 using static Microsoft.NET.Build.Tasks.UnitTests.LockFileSnippets;
@@ -40,11 +36,11 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 {
                     new object[] {
                         "dotnet.new",
-                        new int[] { 110, 2536, 1, 845, 75 },
+                        new int[] { 110, 2536, 1, 846, 73 },
                     },
                     new object[] {
                         "simple.dependencies",
-                        new int[] { 113, 2613, 1, 877, 96 },
+                        new int[] { 113, 2613, 1, 878, 94 },
                     },
                 };
             }

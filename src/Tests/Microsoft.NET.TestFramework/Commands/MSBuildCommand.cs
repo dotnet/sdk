@@ -2,13 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.DotNet.Cli.Utils;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using Xunit.Abstractions;
 
 namespace Microsoft.NET.TestFramework.Commands
 {
@@ -75,18 +68,19 @@ namespace Microsoft.NET.TestFramework.Commands
             return buildProjectFiles[0];
         }
 
-        public virtual DirectoryInfo GetOutputDirectory(string targetFramework = null, string configuration = "Debug", string runtimeIdentifier = null)
+        public virtual DirectoryInfo GetOutputDirectory(string targetFramework = null, string configuration = "Debug", string runtimeIdentifier = null, string platform = null)
         {
             if (TestAsset != null)
             {
-                return new DirectoryInfo(OutputPathCalculator.FromProject(ProjectFile, TestAsset).GetOutputDirectory(targetFramework, configuration, runtimeIdentifier));
+                return new DirectoryInfo(OutputPathCalculator.FromProject(ProjectFile, TestAsset).GetOutputDirectory(targetFramework, configuration, runtimeIdentifier, platform));
             }
 
-            targetFramework = targetFramework ?? string.Empty;
-            configuration = configuration ?? string.Empty;
-            runtimeIdentifier = runtimeIdentifier ?? string.Empty;
+            platform ??= string.Empty;
+            targetFramework ??= string.Empty;
+            configuration ??= string.Empty;
+            runtimeIdentifier ??= string.Empty;
 
-            string output = Path.Combine(ProjectRootPath, "bin", configuration, targetFramework, runtimeIdentifier);
+            string output = Path.Combine(ProjectRootPath, "bin", platform, configuration, targetFramework, runtimeIdentifier);
             return new DirectoryInfo(output);
         }
 

@@ -280,7 +280,7 @@
     <comment>{StrBegin="NETSDK1044: "}</comment>
   </data>
   <data name="UnsupportedTargetFrameworkVersion" xml:space="preserve">
-    <value>NETSDK1045: The current .NET SDK does not support targeting {0} {1}.  Either target {0} {2} or lower, or use a version of the .NET SDK that supports {0} {1}.</value>
+    <value>NETSDK1045: The current .NET SDK does not support targeting {0} {1}.  Either target {0} {2} or lower, or use a version of the .NET SDK that supports {0} {1}. Download the .NET SDK from https://aka.ms/dotnet/download</value>
     <comment>{StrBegin="NETSDK1045: "}</comment>
   </data>
   <data name="TargetFrameworkWithSemicolon" xml:space="preserve">
@@ -327,8 +327,9 @@
     <value>NETSDK1056: Project is targeting runtime '{0}' but did not resolve any runtime-specific packages. This runtime may not be supported by the target framework.</value>
     <comment>{StrBegin="NETSDK1056: "}</comment>
   </data>
-  <data name="UsingPreviewSdk_Info" xml:space="preserve">
+  <data name="UsingPreviewSdk" xml:space="preserve">
     <value>NETSDK1057: You are using a preview version of .NET. See: https://aka.ms/dotnet-support-policy</value>
+    <comment>{StrBegin="NETSDK1057: "}</comment>
   </data>
   <data name="InvalidItemSpecToUse" xml:space="preserve">
     <value>NETSDK1058: Invalid value for ItemSpecToUse parameter: '{0}'.  This property must be blank or set to 'Left' or 'Right'</value>
@@ -831,10 +832,6 @@ You may need to build the project on another operating system or architecture, o
     <value>NETSDK1181: Error getting pack version: Pack '{0}' was not present in workload manifests.</value>
     <comment>{StrBegin="NETSDK1181: "}</comment>
   </data>
-  <data name="Net6NotCompatibleWithDev16" xml:space="preserve">
-    <value>NETSDK1182: Targeting .NET 6.0 or higher in Visual Studio 2019 is not supported.</value>
-    <comment>{StrBegin="NETSDK1182: "}</comment>
-  </data>
   <data name="TargetingPackNotRestored_TransitiveDisabled" xml:space="preserve">
     <value>NETSDK1184: The Targeting Pack for FrameworkReference '{0}' was not available. This may be because DisableTransitiveFrameworkReferenceDownloads was set to true.</value>
     <comment>{StrBegin="NETSDK1184: "}</comment>
@@ -849,11 +846,11 @@ You may need to build the project on another operating system or architecture, o
   </data>
   <data name="PackageContainsIncorrectlyCasedLocale" xml:space="preserve">
     <value>NETSDK1187: Package {0} {1} has a resource with the locale '{2}'. This locale has been normalized to the standard format '{3}' to prevent casing issues in the build. Consider notifying the package author about this casing issue.</value>
-    <comment>Error code is NETSDK1187. 0 is a package name, 1 is a package version, 2 is the incorrect locale string, and 3 is the correct locale string.</comment>
+    <comment>{StrBegin="NETSDK1187: "} 0 is a package name, 1 is a package version, 2 is the incorrect locale string, and 3 is the correct locale string.</comment>
   </data>
   <data name="PackageContainsUnknownLocale" xml:space="preserve">
     <value>NETSDK1188: Package {0} {1} has a resource with the locale '{2}'. This locale is not recognized by .NET. Consider notifying the package author that it appears to be using an invalid locale.</value>
-    <comment>Error code is NETSDK1188. 0 is a package name, 1 is a package version, and 2 is the incorrect locale string</comment>
+    <comment>{StrBegin="NETSDK1188: "} 0 is a package name, 1 is a package version, and 2 is the incorrect locale string</comment>
   </data>
   <data name="Prefer32BitIgnoredForNetCoreApp" xml:space="preserve">
     <value>NETSDK1189: Prefer32Bit is not supported and has no effect for netcoreapp target.</value>
@@ -862,10 +859,6 @@ You may need to build the project on another operating system or architecture, o
   <data name="ImplicitRuntimeIdentifierResolutionForPublishPropertyFailed" xml:space="preserve">
     <value>NETSDK1191: A runtime identifier for the property '{0}' couldn't be inferred. Specify a rid explicitly.</value>
     <comment>{StrBegin="NETSDK1191: "}</comment>
-  </data>
-  <data name="Net7NotCompatibleWithDev173" xml:space="preserve">
-    <value>NETSDK1192: Targeting .NET 7.0 or higher in Visual Studio 2022 17.3 is not supported.</value>
-    <comment>{StrBegin="NETSDK1192: "}</comment>
   </data>
   <data name="PublishSelfContainedMustBeBool" xml:space="preserve">
     <value>NETSDK1193: If PublishSelfContained is set, it must be either true or false. The value given was '{0}'.</value>
@@ -928,4 +921,32 @@ You may need to build the project on another operating system or architecture, o
     <value>NETSDK1207: Ahead-of-time compilation is not supported for the target framework.</value>
     <comment>{StrBegin="NETSDK1207: "}</comment>
   </data>
+  <data name="UnsupportedTargetPlatformIdentifierWithWorkloadsDisabled" xml:space="preserve">
+    <value>NETSDK1208: The target platform identifier {0} was not recognized. This is because MSBuildEnableWorkloadResolver is set to false which disables .NET SDK Workloads which is required for this identifer. Unset this environment variable or MSBuild property to enable workloads.</value>
+    <comment>{StrBegin="NETSDK1208: "}</comment>
+  </data>
+  <data name="UnsupportedVisualStudioVersion" xml:space="preserve">
+    <value>NETSDK1209: The current Visual Studio version does not support targeting {0} {1}.  Either target {0} {2} or lower, or use Visual Studio version {3} or higher</value>
+    <comment>{StrBegin="NETSDK1209: "}</comment>
+  </data>
+  <data name="IsAotCompatibleUnsupported" xml:space="preserve">
+    <value>NETSDK1210: IsAotCompatible is not supported for the target framework. Consider multi-targeting to a supported framework to enable ahead-of-time compilation analysis, and set IsAotCompatible only for the supported frameworks. For example:
+&lt;IsAotCompatible Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net7.0'))"&gt;true&lt;/IsAotCompatible&gt;</value>
+    <comment>{StrBegin="NETSDK1210: "}</comment>
+  </data>
+  <data name="EnableSingleFileAnalyzerUnsupported" xml:space="preserve">
+    <value>NETSDK1211: EnableSingleFileAnalyzer is not supported for the target framework. Consider multi-targeting to a supported framework to enable single-file analysis, and set EnableSingleFileAnalyzer only for the supported frameworks. For example:
+&lt;EnableSingleFileAnalyzer Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net6.0'))"&gt;true&lt;/EnableSingleFileAnalyzer&gt;</value>
+    <comment>{StrBegin="NETSDK1211: "}</comment>
+  </data>
+  <data name="IsTrimmableUnsupported" xml:space="preserve">
+    <value>NETSDK1212: IsTrimmable is not supported for the target framework. Consider multi-targeting to a supported framework to enable trimming, and set IsTrimmable only for the supported frameworks. For example:
+&lt;IsTrimmable Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net6.0'))"&gt;true&lt;/IsTrimmable&gt;</value>
+    <comment>{StrBegin="NETSDK1212: "}</comment>
+  </data>
+  <data name="Net8NotCompatibleWithDev177" xml:space="preserve">
+    <value>NETSDK1213: Targeting .NET 8.0 or higher in Visual Studio 2022 17.7 is not supported.</value>
+    <comment>{StrBegin="NETSDK1213: "}</comment>
+  </data>
+  <!-- The latest message added is Net8NotCompatibleWithDev177. Please update this value with each PR to catch parallel PRs both adding a new message -->
 </root>

@@ -1,11 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using Microsoft.CodeAnalysis;
@@ -242,7 +238,9 @@ namespace Microsoft.DotNet.GenAPI
             ImmutableArray<AttributeData> attributes = assembly.GetAttributes().ExcludeNonVisibleOutsideOfAssembly(_symbolFilter);
 
             // Emit assembly attributes from the IAssemblySymbol
-            List<SyntaxNode> attributeSyntaxNodes = attributes.Select(attribute => _syntaxGenerator.Attribute(attribute)
+            List<SyntaxNode> attributeSyntaxNodes = attributes
+                .Where(attribute => !attribute.IsReserved())
+                .Select(attribute => _syntaxGenerator.Attribute(attribute)
                 .WithTrailingTrivia(SyntaxFactory.LineFeed))
                 .ToList();
 

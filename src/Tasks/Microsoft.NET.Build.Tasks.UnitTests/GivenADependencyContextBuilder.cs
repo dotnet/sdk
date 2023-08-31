@@ -12,12 +12,7 @@ using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
 using NuGet.Versioning;
 using NuGet.RuntimeModel;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using Xunit;
-using Xunit.Sdk;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests
 {
@@ -155,8 +150,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         {
             using (JsonTextReader jsonReader = new JsonTextReader(File.OpenText(path)))
             {
-                JsonSerializer serializer = new JsonSerializer();
-                return serializer.Deserialize<JObject>(jsonReader);
+                return JObject.Load(jsonReader);
             }
         }
 

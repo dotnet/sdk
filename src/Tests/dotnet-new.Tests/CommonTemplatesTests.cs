@@ -2,17 +2,13 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
-using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.New;
 using Microsoft.Extensions.Logging;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
 using Microsoft.TemplateEngine.Authoring.TemplateVerifier;
 using Microsoft.TemplateEngine.TestHelper;
-using Xunit.Abstractions;
+using TestLoggerFactory = Microsoft.NET.TestFramework.TestLoggerFactory;
 
 namespace Microsoft.DotNet.Cli.New.IntegrationTests
 {
@@ -26,7 +22,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         {
             _fixture = fixture;
             _log = log;
-            _logger = new XunitLoggerProvider(log).CreateLogger("TestRun");
+            _logger = new TestLoggerFactory(log).CreateLogger(nameof(CommonTemplatesTests));
         }
 
         [Theory]

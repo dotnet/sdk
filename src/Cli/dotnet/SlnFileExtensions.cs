@@ -2,15 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Build.Construction;
-using Microsoft.Build.Evaluation;
 using Microsoft.Build.Exceptions;
 using Microsoft.Build.Execution;
 using Microsoft.DotNet.Cli.Sln.Internal;
 using Microsoft.DotNet.Cli.Utils;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 
 namespace Microsoft.DotNet.Tools.Common
 {
@@ -75,11 +70,14 @@ namespace Microsoft.DotNet.Tools.Common
                 // section comes first we need to add it first. This doesn't affect correctness but does
                 // stop VS from re-ordering things later on. Since we are keeping the SlnFile class low-level
                 // it shouldn't care about the VS implementation details. That's why we handle this here.
-                slnFile.AddDefaultBuildConfigurations();
+                if (AreBuildConfigurationsApplicable(slnProject.TypeGuid))
+                {
+                    slnFile.AddDefaultBuildConfigurations();
 
-                slnFile.MapSolutionConfigurationsToProject(
-                    projectInstance,
-                    slnFile.ProjectConfigurationsSection.GetOrCreatePropertySet(slnProject.Id));
+                    slnFile.MapSolutionConfigurationsToProject(
+                        projectInstance,
+                        slnFile.ProjectConfigurationsSection.GetOrCreatePropertySet(slnProject.Id));
+                }
 
                 SetupSolutionFolders(slnFile, solutionFolders, relativeProjectPath, slnProject);
 
@@ -88,6 +86,11 @@ namespace Microsoft.DotNet.Tools.Common
                 Reporter.Output.WriteLine(
                     string.Format(CommonLocalizableStrings.ProjectAddedToTheSolution, relativeProjectPath));
             }
+        }
+
+        private static bool AreBuildConfigurationsApplicable(string projectTypeGuid)
+        {
+            return !projectTypeGuid.Equals(ProjectTypeGuids.SharedProjectGuid, StringComparison.OrdinalIgnoreCase);
         }
 
         private static void SetupSolutionFolders(SlnFile slnFile, IList<string> solutionFolders, string relativeProjectPath, SlnProject slnProject)

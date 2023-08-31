@@ -3,9 +3,6 @@
 
 using Microsoft.Build.Execution;
 using Microsoft.DotNet.Cli.Sln.Internal;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Microsoft.DotNet.Tools.Common
 {
@@ -22,7 +19,12 @@ namespace Microsoft.DotNet.Tools.Common
 
         public static string GetDefaultProjectTypeGuid(this ProjectInstance projectInstance)
         {
-            return projectInstance.GetPropertyValue("DefaultProjectTypeGuid");
+            string projectTypeGuid = projectInstance.GetPropertyValue("DefaultProjectTypeGuid");
+            if (string.IsNullOrEmpty(projectTypeGuid) && projectInstance.FullPath.EndsWith(".shproj", StringComparison.OrdinalIgnoreCase))
+            {
+                projectTypeGuid = ProjectTypeGuids.SharedProjectGuid;
+            }
+            return projectTypeGuid;
         }
 
         public static IEnumerable<string> GetPlatforms(this ProjectInstance projectInstance)

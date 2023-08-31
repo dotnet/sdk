@@ -1,12 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.NET.TestFramework.Commands;
 using System.Globalization;
-using System.Collections.Generic;
 
 namespace Microsoft.NET.TestFramework
 {
@@ -100,6 +96,10 @@ namespace Microsoft.NET.TestFramework
                 runAsTool = true;
                 
                 testContext.TestAssetsDirectory = FindFolderInTree(Path.Combine("src", "Assets"), AppContext.BaseDirectory);
+            }
+            else if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DOTNET_SDK_TEST_ASSETS_DIRECTORY")))
+            {
+                testContext.TestAssetsDirectory = Environment.GetEnvironmentVariable("DOTNET_SDK_TEST_ASSETS_DIRECTORY");
             }
 
             string repoRoot = null;

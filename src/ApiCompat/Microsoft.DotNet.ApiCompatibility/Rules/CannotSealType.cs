@@ -1,7 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.ApiSymbolExtensions;
 
@@ -35,7 +34,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                     leftMetadata,
                     rightMetadata,
                     DiagnosticIds.CannotSealType,
-                    string.Format(GetResourceStringForTypeState(right), right.ToDisplayString(), rightMetadata, leftMetadata),
+                    string.Format(GetResourceStringForTypeState(right), right.ToDisplayString(SymbolExtensions.DisplayFormat), rightMetadata, leftMetadata),
                     DifferenceType.Changed,
                     right));
             }
@@ -45,7 +44,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                     leftMetadata,
                     rightMetadata,
                     DiagnosticIds.CannotSealType,
-                    string.Format(GetResourceStringForTypeState(left), left.ToDisplayString(), leftMetadata, rightMetadata),
+                    string.Format(GetResourceStringForTypeState(left), left.ToDisplayString(SymbolExtensions.DisplayFormat), leftMetadata, rightMetadata),
                     DifferenceType.Changed,
                     left));
             }

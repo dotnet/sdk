@@ -27,7 +27,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <UsingTask TaskName="GenerateDepsFile" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
   <UsingTask TaskName="GenerateRuntimeConfigurationFiles" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
   <UsingTask TaskName="GetAssemblyVersion" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
-  <UsingTask TaskName="GenerateSatelliteAssemblies" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />  
+  <UsingTask TaskName="GenerateSatelliteAssemblies" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
 
   <PropertyGroup>
     <DisableStandardFrameworkResolution Condition="'$(DisableStandardFrameworkResolution)' == ''">$(_IsNETCoreOrNETStandard)</DisableStandardFrameworkResolution>
@@ -46,6 +46,22 @@ Copyright (c) .NET Foundation. All rights reserved.
     <_GeneratePublishDependencyFilePropertyInputsCache>$([MSBuild]::NormalizePath($(MSBuildProjectDirectory), $(_GeneratePublishDependencyFilePropertyInputsCache)))</_GeneratePublishDependencyFilePropertyInputsCache>
     <_GenerateSingleFileBundlePropertyInputsCache Condition="'$(_GenerateSingleFileBundlePropertyInputsCache)' == ''">$(IntermediateOutputPath)$(MSBuildProjectName).genbundle.cache</_GenerateSingleFileBundlePropertyInputsCache>
     <_GenerateSingleFileBundlePropertyInputsCache>$([MSBuild]::NormalizePath($(MSBuildProjectDirectory), $(_GenerateSingleFileBundlePropertyInputsCache)))</_GenerateSingleFileBundlePropertyInputsCache>
+  </PropertyGroup>
+
+  <!-- For .NET 8 and higher, we will by default use a simplified "portable" RID graph -->
+  <PropertyGroup>
+    <_UseRidGraphWasSpecified Condition="'$(UseRidGraph)' != ''">true</_UseRidGraphWasSpecified>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(UseRidGraph)' == ''">
+    <UseRidGraph Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '8.0'))">false</UseRidGraph>
+    <UseRidGraph Condition="'$(UseRidGraph)' == ''">true</UseRidGraph>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(RuntimeIdentifierGraphPath)' == ''">
+    <RuntimeIdentifierGraphPath Condition="'$(UseRidGraph)' == 'true'">$(BundledRuntimeIdentifierGraphFile)</RuntimeIdentifierGraphPath>
+
+    <!-- The portable RID graph should be in the same directory as the full RID graph -->
+    <RuntimeIdentifierGraphPath Condition="'$(UseRidGraph)' != 'true'">$([System.IO.Path]::GetDirectoryName($(BundledRuntimeIdentifierGraphFile)))/PortableRuntimeIdentifierGraph.json</RuntimeIdentifierGraphPath>
   </PropertyGroup>
 
   <ItemGroup>
@@ -147,7 +163,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     If the property is explicitly set to TRUE:
       - The APIs are obsolete as warning, and calls to the APIs will succeed at runtime.
-    
+
     If the property is explicitly set to FALSE:
       - On .NET 5 & 6, the APIs are obsolete as warning, and calls to the APIs will fail at runtime.
       - On .NET 7+, the APIs are obsolete as error, and calls to the APIs will fail at runtime.
@@ -157,7 +173,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       - On .NET 7, the APIs are obsolete as error, but calls to the APIs will succeed at runtime.
       - On .NET 8+, the APIs are obsolete as error, and calls to the APIs will fail at runtime
         unless the SDK has opted in to keeping legacy BinaryFormatter behavior around.
-    
+
     n.b. The APIs are already marked obsolete (as warning) in .NET 5, so we don't need to special-case
     them unless we want to upgrade them to warn-as-error.
   -->
@@ -206,7 +222,7 @@ Copyright (c) .NET Foundation. All rights reserved.
          If they do, and they also set BuildWithNetFrameworkHostedCompiler, we will have
          a duplicate PackageReference. This makes it more explicit that that is not supported. -->
     <NETSdkWarning ResourceName="CannotDirectlyReferenceMicrosoftNetCompilersToolsetFramework"
-        Condition="'@(PackageReference->AnyHaveMetadataValue('Identity', 'Microsoft.Net.Compilers.Toolset.Framework'))' == 'true'" /> 
+        Condition="'@(PackageReference->AnyHaveMetadataValue('Identity', 'Microsoft.Net.Compilers.Toolset.Framework'))' == 'true'" />
 
     <ItemGroup Condition="'$(BuildWithNetFrameworkHostedCompiler)' == 'true' and '$(OS)' == 'Windows_NT'">
       <PackageReference Include="Microsoft.Net.Compilers.Toolset.Framework" PrivateAssets="all" Version="$(_NetFrameworkHostedCompilersVersion)" IsImplicitlyDefined="true" />
@@ -257,7 +273,8 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <!-- Set valid RID platforms for runtime assets if targeting .NET 8+ and using the RID graph is not enabled. -->
     <ItemGroup Condition="$([MSBuild]::VersionGreaterThanOrEquals($(_TargetFrameworkVersionWithoutV), '8.0'))
-        and @(RuntimeHostConfigurationOption->WithMetadataValue('Identity', 'System.Runtime.Loader.UseRidGraph')->WithMetadataValue('Value', 'true')->Count()) == 0">
+        and @(RuntimeHostConfigurationOption->WithMetadataValue('Identity', 'System.Runtime.Loader.UseRidGraph')->WithMetadataValue('Value', 'true')->Count()) == 0
+        and '@(_KnownRuntimeIdentifierPlatformsForTargetFramework)' != ''">
       <!-- Known RID platforms for all target frameworks comes from BundledVersions -->
       <_ValidRuntimeIdentifierPlatformsForAssets Include="@(_KnownRuntimeIdentiferPlatforms)" />
       <!-- Known RID platforms for current target framework comes from ProcessFrameworkReferences output -->
@@ -288,7 +305,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                       ResolvedRuntimeTargetsFiles="@(RuntimeTargetsCopyLocalItems)"
                       IsSelfContained="$(SelfContained)"
                       IncludeRuntimeFileVersions="$(IncludeFileVersionsInDependencyFile)"
-                      RuntimeGraphPath="$(BundledRuntimeIdentifierGraphFile)"
+                      RuntimeGraphPath="$(RuntimeIdentifierGraphPath)"
                       IncludeProjectsNotInAssetsFile="$(IncludeProjectsNotInAssetsFileInDepsFile)"
                       ValidRuntimeIdentifierPlatformsForAssets="@(_ValidRuntimeIdentifierPlatformsForAssets)"/>
     <ItemGroup>
@@ -503,7 +520,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <RuntimeHostConfigurationOption Include="System.GC.DynamicAdaptationMode"
                                     Condition="'$(GarbageCollectionAdaptationMode)' != ''"
                                     Value="$(GarbageCollectionAdaptationMode)" />
-    
+
     <RuntimeHostConfigurationOption Include="System.GC.RetainVM"
                                     Condition="'$(RetainVMGarbageCollection)' != ''"
                                     Value="$(RetainVMGarbageCollection)" />
@@ -511,6 +528,11 @@ Copyright (c) .NET Foundation. All rights reserved.
     <RuntimeHostConfigurationOption Include="System.Globalization.Invariant"
                                     Condition="'$(InvariantGlobalization)' != ''"
                                     Value="$(InvariantGlobalization)"
+                                    Trim="true" />
+
+    <RuntimeHostConfigurationOption Include="System.Globalization.Hybrid"
+                                    Condition="'$(HybridGlobalization)' != ''"
+                                    Value="$(HybridGlobalization)"
                                     Trim="true" />
 
     <RuntimeHostConfigurationOption Include="System.Globalization.PredefinedCulturesOnly"
@@ -568,6 +590,11 @@ Copyright (c) .NET Foundation. All rights reserved.
                                     Value="$(EnableCppCLIHostActivation)"
                                     Trim="true" />
 
+    <RuntimeHostConfigurationOption Include="System.Runtime.InteropServices.Marshalling.EnableGeneratedComInterfaceComImportInterop"
+                                    Condition="'$(EnableGeneratedComInterfaceComImportInterop)' != ''"
+                                    Value="$(EnableGeneratedComInterfaceComImportInterop)"
+                                    Trim="true" />
+
     <RuntimeHostConfigurationOption Include="System.Runtime.Serialization.EnableUnsafeBinaryFormatterSerialization"
                                     Condition="'$(EnableUnsafeBinaryFormatterSerialization)' != ''"
                                     Value="$(EnableUnsafeBinaryFormatterSerialization)"
@@ -588,6 +615,10 @@ Copyright (c) .NET Foundation. All rights reserved.
     <RuntimeHostConfigurationOption Include="System.Runtime.TieredPGO"
                                     Condition="'$(TieredPGO)' != ''"
                                     Value="$(TieredPGO)" />
+
+    <RuntimeHostConfigurationOption Include="System.Runtime.Loader.UseRidGraph"
+                                    Condition="'$(_UseRidGraphWasSpecified)' == 'true'"
+                                    Value="$(UseRidGraph)" />
 
     <RuntimeHostConfigurationOption Include="System.StartupHookProvider.IsSupported"
                                     Condition="'$(StartupHookSupport)' != ''"
@@ -616,6 +647,15 @@ Copyright (c) .NET Foundation. All rights reserved.
     <RuntimeHostConfigurationOption Include="System.Threading.ThreadPool.MaxThreads"
                                     Condition="'$(ThreadPoolMaxThreads)' != ''"
                                     Value="$(ThreadPoolMaxThreads)" />
+
+    <RuntimeHostConfigurationOption Include="System.Threading.ThreadPool.UseWindowsThreadPool"
+                                    Condition="'$(UseWindowsThreadPool)' != ''"
+                                    Value="$(UseWindowsThreadPool)" />
+
+    <RuntimeHostConfigurationOption Include="System.Xml.XmlResolver.IsNetworkingEnabledByDefault"
+                                    Condition="'$(XmlResolverIsNetworkingEnabledByDefault)' != ''"
+                                    Value="$(XmlResolverIsNetworkingEnabledByDefault)"
+                                    Trim="true" />
   </ItemGroup>
 
   <!--
@@ -1200,7 +1240,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <PropertyGroup>
     <_UseAttributeForTargetFrameworkInfoPropertyNames Condition="$([MSBuild]::VersionGreaterThanOrEquals($(MSBuildVersion), '17.0'))">true</_UseAttributeForTargetFrameworkInfoPropertyNames>
   </PropertyGroup>
-  
+
   <Target Name="ValidateExecutableReferences"
           AfterTargets="_GetProjectReferenceTargetFrameworkProperties"
           Condition="'$(ValidateExecutableReferencesMatchSelfContained)' != 'false'">

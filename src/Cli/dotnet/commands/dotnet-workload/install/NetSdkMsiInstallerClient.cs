@@ -1,14 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Utils;
@@ -495,9 +488,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                         RollBackMsiInstall(msiToInstall);
                     }
                 });
-
             }
-
         }
 
         void RollBackMsiInstall(WorkloadDownload msiToRollback, DirectoryPath? offlineCache = null)
@@ -1030,7 +1021,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             string tempDirPath = null,
             RestoreActionConfig restoreActionConfig = null)
         {
-            TimestampedFileLogger logger = new(Path.Combine(Path.GetTempPath(), $"Microsoft.NET.Workload_{Environment.ProcessId}_{DateTime.Now:yyyyMMdd_HHmmss}.log"));
+            TimestampedFileLogger logger = new(Path.Combine(Path.GetTempPath(), $"Microsoft.NET.Workload_{Environment.ProcessId}_{DateTime.Now:yyyyMMdd_HHmmss_fff}.log"));
             InstallClientElevationContext elevationContext = new(logger);
 
             if (nugetPackageDownloader == null)

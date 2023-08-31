@@ -3,7 +3,6 @@
 
 using System.CommandLine;
 using FakeItEasy;
-using FluentAssertions;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Cli.Commands;
 using Microsoft.TemplateEngine.Edge;
@@ -312,7 +311,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
                 Assert.True(templateOption.Aliases.Count > 0);
                 var longAlias = templateOption.Aliases.ElementAt(0);
                 var shortAlias = templateOption.Aliases.Count > 1 ? templateOption.Aliases.ElementAt(1) : null;
-                var isHidden = templateOption.Option.IsHidden;
+                var isHidden = templateOption.Option.Hidden;
                 Assert.Equal(expectedLongAlias, longAlias);
                 Assert.Equal(expectedShortAlias, shortAlias);
                 Assert.Equal(expectedIsHidden, isHidden);

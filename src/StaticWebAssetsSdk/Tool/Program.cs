@@ -1,14 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.CommandLine;
-using System.CommandLine.Invocation;
-using System.CommandLine.Parsing;
-using System.IO;
 using System.IO.Compression;
-using System.Threading.Tasks;
 
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tool
 {
@@ -16,23 +10,22 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tool
     {
         public static int Main(string[] args)
         {
-            var rootCommand = new RootCommand();
-            var brotli = new Command("brotli");
+            CliRootCommand rootCommand = new();
+            CliCommand brotli = new("brotli");
 
-            var compressionLevelOption = new Option<CompressionLevel>(
-                "-c",
-                defaultValueFactory: () => CompressionLevel.SmallestSize,
-                description: "System.IO.Compression.CompressionLevel for the Brotli compression algorithm.");
-            var sourcesOption = new Option<List<string>>(
-                "-s",
-                description: "A list of files to compress.")
+            CliOption<CompressionLevel> compressionLevelOption = new("-c")
             {
+                DefaultValueFactory = (_) => CompressionLevel.SmallestSize,
+                Description = "System.IO.Compression.CompressionLevel for the Brotli compression algorithm."
+            };
+            CliOption<List<string>> sourcesOption = new("-s")
+            {
+                Description = "A list of files to compress.",
                 AllowMultipleArgumentsPerToken = false
             };
-            var outputsOption = new Option<List<string>>(
-                "-o",
-                "The filenames to output the compressed file to.")
+            CliOption<List<string>> outputsOption = new("-o")
             {
+                Description = "The filenames to output the compressed file to.",
                 AllowMultipleArgumentsPerToken = false
             };
 
@@ -42,9 +35,8 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tool
 
             rootCommand.Add(brotli);
 
-            brotli.SetHandler((InvocationContext context) =>
+            brotli.SetAction((ParseResult parseResults) =>
             {
-                var parseResults = context.ParseResult;
                 var c = parseResults.GetValue(compressionLevelOption);
                 var s = parseResults.GetValue(sourcesOption);
                 var o = parseResults.GetValue(outputsOption);
@@ -69,7 +61,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tool
                 });
             });
 
-            return rootCommand.InvokeAsync(args).Result;
+            return rootCommand.Parse(args).Invoke();
         }
     }
 }

@@ -1,21 +1,14 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
-using System.IO;
 using System.Reflection;
-using FluentAssertions;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.ToolPackage;
 using Microsoft.DotNet.Tools.Tests.ComponentMocks;
 using Microsoft.Extensions.DependencyModel.Tests;
 using Microsoft.Extensions.EnvironmentAbstractions;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Utilities;
 using NuGet.Versioning;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.PackageInstall.Tests
 {

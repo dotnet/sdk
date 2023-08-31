@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.Extensions.Logging;
 using Microsoft.NET.Build.Containers.Resources;
 
 namespace Microsoft.NET.Build.Containers;
@@ -14,7 +15,11 @@ public static class ContainerBuilder
         string baseImageName,
         string baseImageTag,
         string[] entrypoint,
-        string[]? cmd,
+        string[] entrypointArgs,
+        string[] defaultArgs,
+        string[] appCommand,
+        string[] appCommandArgs,
+        string appCommandInstruction,
         string imageName,
         string[] imageTags,
         string? outputRegistry,
@@ -25,6 +30,7 @@ public static class ContainerBuilder
         string ridGraphPath,
         string localRegistry,
         string? containerUser,
+        ILoggerFactory loggerFactory,
         CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -32,12 +38,15 @@ public static class ContainerBuilder
         {
             throw new ArgumentException(string.Format(Resource.GetString(nameof(Strings.PublishDirectoryDoesntExist)), nameof(publishDirectory), publishDirectory.FullName));
         }
+        ILogger logger = loggerFactory.CreateLogger("Containerize");
+        logger.LogTrace("Trace logging: enabled.");
+
         bool isLocalPull = string.IsNullOrEmpty(baseRegistry);
-        Registry? sourceRegistry = isLocalPull ? null : new Registry(ContainerHelpers.TryExpandRegistryToUri(baseRegistry));
+        Registry? sourceRegistry = isLocalPull ? null : new Registry(baseRegistry, logger);
         ImageReference sourceImageReference = new(sourceRegistry, baseImageName, baseImageTag);
 
         bool isLocalPush = string.IsNullOrEmpty(outputRegistry);
-        Registry? destinationRegistry = isLocalPush ? null : new Registry(ContainerHelpers.TryExpandRegistryToUri(outputRegistry!));
+        Registry? destinationRegistry = isLocalPush ? null : new Registry(outputRegistry!, logger);
         IEnumerable<ImageReference> destinationImageReferences = imageTags.Select(t => new ImageReference(destinationRegistry, imageName, t));
 
         ImageBuilder? imageBuilder;
@@ -59,13 +68,37 @@ public static class ContainerBuilder
             Console.WriteLine(Resource.GetString(nameof(Strings.BaseImageNotFound)), sourceImageReference, containerRuntimeIdentifier);
             return 1;
         }
-        Console.WriteLine("Containerize: building image '{0}' with tags {1} on top of base image {2}", imageName, string.Join(",", imageName), sourceImageReference);
+        logger.LogInformation(Strings.ContainerBuilder_StartBuildingImage, imageName, string.Join(",", imageName), sourceImageReference);
         cancellationToken.ThrowIfCancellationRequested();
 
         Layer newLayer = Layer.FromDirectory(publishDirectory.FullName, workingDir, imageBuilder.IsWindows);
         imageBuilder.AddLayer(newLayer);
         imageBuilder.SetWorkingDirectory(workingDir);
-        imageBuilder.SetEntrypointAndCmd(entrypoint, cmd ?? Array.Empty<string>());
+
+        bool hasErrors = false;
+        (string[] imageEntrypoint, string[] imageCmd) = ImageBuilder.DetermineEntrypointAndCmd(entrypoint, entrypointArgs, defaultArgs, appCommand, appCommandArgs, appCommandInstruction,
+            baseImageEntrypoint: imageBuilder.BaseImageConfig.GetEntrypoint(),
+            logWarning: s =>
+            {
+                logger.LogWarning(Resource.GetString(nameof(s)));
+            },
+            logError: (s, a) => {
+                hasErrors = true;
+                if (a is null)
+                {
+                    logger.LogError(Resource.GetString(nameof(s)));
+                }
+                else
+                {
+                    logger.LogError(Resource.FormatString(nameof(s), a));
+                }
+            });
+        if (hasErrors)
+        {
+            return 1;
+        }
+        imageBuilder.SetEntrypointAndCmd(imageEntrypoint, imageCmd);
+
         foreach (KeyValuePair<string, string> label in labels)
         {
             // labels are validated by System.CommandLine API
@@ -91,7 +124,7 @@ public static class ContainerBuilder
         {
             if (isLocalPush)
             {
-                ILocalRegistry containerRegistry = KnownLocalRegistryTypes.CreateLocalRegistry(localRegistry, Console.WriteLine);
+                ILocalRegistry containerRegistry = KnownLocalRegistryTypes.CreateLocalRegistry(localRegistry, loggerFactory);
                 if (!(await containerRegistry.IsAvailableAsync(cancellationToken).ConfigureAwait(false)))
                 {
                     Console.WriteLine(DiagnosticMessage.ErrorFromResourceWithCode(nameof(Strings.LocalRegistryNotAvailable)));
@@ -101,7 +134,7 @@ public static class ContainerBuilder
                 try
                 {
                     await containerRegistry.LoadAsync(builtImage, sourceImageReference, destinationImageReference, cancellationToken).ConfigureAwait(false);
-                    Console.WriteLine("Containerize: Pushed image '{0}' to local registry", destinationImageReference.RepositoryAndTag);
+                    logger.LogInformation(Strings.ContainerBuilder_ImageUploadedToLocalDaemon, destinationImageReference.RepositoryAndTag);
                 }
                 catch (Exception ex)
                 {
@@ -119,9 +152,8 @@ public static class ContainerBuilder
                             builtImage,
                             sourceImageReference,
                             destinationImageReference,
-                            message => Console.WriteLine($"Containerize: {message}"),
                             cancellationToken)).ConfigureAwait(false);
-                        Console.WriteLine($"Containerize: Pushed image '{destinationImageReference}' to registry '{outputRegistry}'");
+                        logger.LogInformation(Strings.ContainerBuilder_ImageUploadedToRegistry, destinationImageReference.RepositoryAndTag, destinationImageReference.Registry.RegistryName);
                     }
                 }
                 catch (Exception e)

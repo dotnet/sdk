@@ -1,14 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
 using System.Security.Cryptography;
-using System.Text;
-using System.Xml.Linq;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
@@ -492,6 +486,7 @@ namespace Microsoft.NET.Build.Tasks
                     }
                     writer.Write(TargetFramework);
                     writer.Write(VerifyMatchingImplicitPackageVersion);
+                    writer.Write(DefaultImplicitPackages ?? "");
                 }
 
                 stream.Position = 0;
@@ -1519,7 +1514,8 @@ namespace Microsoft.NET.Build.Tasks
                         log.LibraryId == package.Name &&
                         log.TargetGraphs.Any(tg =>
                         {
-                            var parsedTargetGraph = NuGetFramework.Parse(tg);
+                            var parts = tg.Split(LockFile.DirectorySeparatorChar);
+                            var parsedTargetGraph = NuGetFramework.Parse(parts[0]);
                             var alias = _lockFile.PackageSpec.TargetFrameworks
                                 .FirstOrDefault(tf => tf.FrameworkName == parsedTargetGraph)
                                 ?.TargetAlias ?? tg;

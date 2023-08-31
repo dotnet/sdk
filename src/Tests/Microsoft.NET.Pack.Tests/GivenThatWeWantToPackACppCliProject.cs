@@ -1,16 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.IO;
-using System.Linq;
-using System.Xml.Linq;
-using FluentAssertions;
-using Microsoft.NET.Build.Tasks;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Xunit.Abstractions;
-
 namespace Microsoft.NET.Build.Tests
 {
     public class GivenThatWeWantToPackACppCliProject : SdkTest
@@ -25,7 +15,7 @@ namespace Microsoft.NET.Build.Tests
             var testAsset = _testAssetsManager
                 .CopyTestAsset("NetCoreCsharpAppReferenceCppCliLib")
                 .WithSource()
-                .WithProjectChanges((projectPath, project) => AddPackageReference(projectPath, project, "NewtonSoft.Json", "13.0.1"))
+                .WithProjectChanges((projectPath, project) => AddPackageReference(projectPath, project, "NewtonSoft.Json", ToolsetInfo.GetNewtonsoftJsonPackageVersion()))
                 .WithProjectChanges((projectPath, project) => AddBuildProperty(projectPath, project, "EnableManagedpackageReferenceSupport", "true"));
 
             new PackCommand(Log, Path.Combine(testAsset.TestRoot, "NETCoreCppCliTest", "NETCoreCppCliTest.vcxproj"))

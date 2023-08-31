@@ -1,9 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
-using System.Runtime.InteropServices;
 using Microsoft.DotNet.Tools;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.NET.HostModel;
@@ -50,7 +47,7 @@ namespace Microsoft.DotNet.ShellShim
                 HostWriter.CreateAppHost(appHostSourceFilePath: appHostSourcePath,
                                          appHostDestinationFilePath: appHostDestinationFilePath,
                                          appBinaryFilePath: appBinaryFilePath,
-                                         windowsGraphicalUserInterface: (windowsGraphicalUserInterfaceBit == WindowsGUISubsystem),
+                                         windowsGraphicalUserInterface: (windowsGraphicalUserInterfaceBit == WindowsGUISubsystem) && OperatingSystem.IsWindows(),
                                          assemblyToCopyResourcesFrom: entryPointFullPath);
             }
             else

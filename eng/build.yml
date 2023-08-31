@@ -15,13 +15,13 @@ parameters:
   timeoutInMinutes: 180
 
 jobs:
-- ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranch'], 'refs/heads/release/7.0.4xx'), not(contains(parameters.agentOs, 'TemplateEngine'))) }}:
+- ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranch'], 'refs/heads/release/8.0.1xx'), not(contains(parameters.agentOs, 'TemplateEngine'))) }}:
   - template: /eng/common/templates/job/onelocbuild.yml
     parameters:
       CreatePr: true
       LclSource: lclFilesfromPackage
       LclPackageId: 'LCL-JUNO-PROD-DOTNETSDK'
-      MirrorBranch: release/7.0.4xx
+      MirrorBranch: release/8.0.1xx
       MirrorRepo: sdk
 
 - ${{ if not(contains(parameters.agentOs, 'TemplateEngine')) }}:
@@ -171,7 +171,7 @@ jobs:
               SYSTEM_ACCESSTOKEN: $(System.AccessToken)
               HelixAccessToken: $(_HelixApiToken)
               RunAoTTests: 'false'
-  
+
       - task: PublishTestResults@2
         displayName: Publish Test Results	
         inputs:	
@@ -181,7 +181,7 @@ jobs:
           buildPlatform: '$(BuildPlatform)'	
           buildConfiguration: '$(_BuildConfig)'	
         condition: always()
-  
+
       - task: CopyFiles@2	
         displayName: Gather Logs	
         inputs:	

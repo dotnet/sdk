@@ -1,14 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.NET.Sdk.Razor.Tool.CommandLineUtils;
 
 namespace Microsoft.NET.Sdk.Razor.Tool
@@ -288,7 +281,17 @@ namespace Microsoft.NET.Sdk.Razor.Tool
 
             // The server should be in the same directory as the client
             var expectedCompilerPath = Path.Combine(clientDir, ServerName);
-            var expectedPath = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH") ?? "dotnet";
+
+            var expectedPath = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH");
+            if (string.IsNullOrEmpty(expectedPath))
+            {
+#if NET
+                expectedPath = System.Environment.ProcessPath;
+#else
+                expectedPath = Process.GetCurrentProcess().MainModule.FileName;
+#endif
+            }
+
             var argumentList = new string[]
             {
                 expectedCompilerPath,
