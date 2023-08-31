@@ -79,7 +79,7 @@
 /src/Microsoft.DotNet.ApiSymbolExtensions/ @dotnet/area-infrastructure-libraries @andriipatsula
 
 # Area-ApiCompat
-/src/ApiCompat/ @ericstj @dotnet/area-infrastructure-libraries
+/src/ApiCompat/ @dotnet/area-infrastructure-libraries
 /src/Tests/Microsoft.DotNet.ApiCompatibility*/ @dotnet/area-infrastructure-libraries
 /src/Tests/Microsoft.DotNet.ApiCompat*/ @dotnet/area-infrastructure-libraries
 /src/Tests/Microsoft.DotNet.PackageValidation*/ @dotnet/area-infrastructure-libraries
