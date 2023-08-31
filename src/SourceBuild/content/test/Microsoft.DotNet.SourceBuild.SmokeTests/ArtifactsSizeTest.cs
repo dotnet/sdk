@@ -19,7 +19,8 @@ namespace Microsoft.DotNet.SourceBuild.SmokeTests;
 public class ArtifactsSizeTest : SmokeTests
 {
     private static readonly string BaselineFilePath = BaselineHelper.GetBaselineFilePath($"ArtifactsSizes/{Config.TargetRid}.txt");
-    private static readonly Dictionary<string, long> BaselineFileContent = new Dictionary<string, long>();
+    private readonly Dictionary<string, long> BaselineFileContent = new();
+    private Dictionary<string, int> FilePathCountMap = new();
     private const int SizeThresholdPercentage = 25;
 
 
@@ -40,7 +41,7 @@ public class ArtifactsSizeTest : SmokeTests
         }
     }
 
-    [SkippableFact(new[] { Config.SourceBuiltArtifactsPathEnv, Config.SdkTarballPathEnv, Config.TargetRidEnv }, skipOnNullOrWhiteSpaceEnv: true)]
+    [SkippableFact(new[] { Config.SourceBuiltArtifactsPathEnv, Config.SdkTarballPathEnv, Config.TargetRidEnv, Config.ExcludeArtifactsSizeEnv }, skipOnNullOrWhiteSpaceEnv: true, skipOnTrueEnv: true)]
     public void CompareArtifactsToBaseline()
     {
         Assert.NotNull(Config.SourceBuiltArtifactsPath);
@@ -53,13 +54,12 @@ public class ArtifactsSizeTest : SmokeTests
         Utilities.ExtractTarball(Config.SdkTarballPath, tempTarballDir, OutputHelper);
         Utilities.ExtractTarball(Config.SourceBuiltArtifactsPath, tempTarballDir, OutputHelper);
 
-        var filePathCountMap = new Dictionary<string, int>();
         (string FilePath, long Bytes)[] tarEntries = Directory.EnumerateFiles(tempTarballDir, "*", SearchOption.AllDirectories)
             .Where(filepath => !filepath.Contains("SourceBuildReferencePackages"))
             .Select(filePath =>
             {
                 string result = filePath.Substring(tempTarballDir.Length + 1);
-                result = ProcessEntryName(result, filePathCountMap);
+                result = ProcessFilePath(result);
                 return (FilePath: result, Bytes: new FileInfo(filePath).Length);
             })
             .OrderBy(entry => entry.FilePath)
@@ -90,17 +90,24 @@ public class ArtifactsSizeTest : SmokeTests
         }
     }
 
-    private string ProcessEntryName(string originalName, Dictionary<string, int> filePathCountMap)
+    private string ProcessFilePath(string originalPath)
     {
-        string result = BaselineHelper.RemoveRids(originalName);
+        string result = BaselineHelper.RemoveRids(originalPath);
         result = BaselineHelper.RemoveVersions(result);
 
+        return AddDifferenciatingSuffix(result);
+    }
+
+    // Because version numbers are abstracted, it is possible to have duplicate FilePath entries.
+    // This code adds a numeric suffix to differentiate duplicate FilePath entries.
+    private string AddDifferenciatingSuffix(string filePath)
+    {
         string[] patterns = {@"x\.y\.z", @"x\.y(?!\.z)"};
         int matchIndex = -1;
         string matchPattern = "";
         foreach (string pattern in patterns)
         {
-            MatchCollection matches = Regex.Matches(result, pattern);
+            MatchCollection matches = Regex.Matches(filePath, pattern);
 
             if (matches.Count > 0)
             {
@@ -114,16 +121,16 @@ public class ArtifactsSizeTest : SmokeTests
 
         if (matchIndex != -1)
         {
-            int count = filePathCountMap.TryGetValue(result, out count) ? count : 0;
-            filePathCountMap[result] = count + 1;
+            int count = FilePathCountMap.TryGetValue(filePath, out count) ? count : 0;
+            FilePathCountMap[filePath] = count + 1;
 
             if (count > 0)
             {
-                result = result.Substring(0, matchIndex) + $"{matchPattern}-{count}" + result.Substring(matchIndex + matchPattern.Length);
+                return filePath.Substring(0, matchIndex) + $"{matchPattern}-{count}" + filePath.Substring(matchIndex + matchPattern.Length);
             }
         }
 
-        return result;
+        return filePath;
     }
 
     private void CompareFileSizes(string filePath, long fileSize, long baselineSize)
