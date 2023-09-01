@@ -27,6 +27,11 @@
         <target state="translated">Güncelleştirilmiş iş yükü bildirimleri denetleniyor.</target>
         <note />
       </trans-unit>
+      <trans-unit id="DeletingWorkloadManifest">
+        <source>Uninstalling workload manifest {0} version {1}...</source>
+        <target state="new">Uninstalling workload manifest {0} version {1}...</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DeletingWorkloadPack">
         <source>Uninstalling workload pack {0} version {1}...</source>
         <target state="translated">{0} iş yükü paketi sürüm {1} kaldırılıyor...</target>

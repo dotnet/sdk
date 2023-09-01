@@ -27,6 +27,11 @@
         <target state="translated">Es wird nach aktualisierten Workloadmanifesten gesucht.</target>
         <note />
       </trans-unit>
+      <trans-unit id="DeletingWorkloadManifest">
+        <source>Uninstalling workload manifest {0} version {1}...</source>
+        <target state="new">Uninstalling workload manifest {0} version {1}...</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DeletingWorkloadPack">
         <source>Uninstalling workload pack {0} version {1}...</source>
         <target state="translated">Das Workloadpaket {0}, Version {1}, wird deinstalliert…</target>

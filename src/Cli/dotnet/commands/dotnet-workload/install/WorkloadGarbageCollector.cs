@@ -13,32 +13,39 @@ using Microsoft.NET.Sdk.WorkloadManifestReader;
 
 namespace Microsoft.DotNet.Workloads.Workload.Install
 {
+    /// <summary>
+    /// Handles garbage collection of workload sets, workload manifests, and workload packs for a feature band.
+    ///
+    /// This class does not actually do the garbage collection (ie delete / uninstall) the items.  It calculates which
+    /// items should be kept installed.  The IInstaller implementation will be responsible for actually uninstalling
+    /// the items which are not needed.  The IInstaller implementation should keep "reference counts" for workload packs
+    /// and manifests for each feature band.  When it runs garbage collection, it should remove those reference counts
+    /// for the current feature band for items not specified in ManifestsToKeep and PacksToKeep.  Then, if an item
+    /// has no reference counts left, it can actually be deleted / uninstalled.
+    /// </summary>
     internal class WorkloadGarbageCollector
     {
-
-        string _sdkVersion;
+        SdkFeatureBand _sdkFeatureBand;
         string _dotnetDir;
         IEnumerable<WorkloadId> _installedWorkloads;
-        //List<string> installedSdkVersions;
         Func<string, IWorkloadResolver> _getResolverForWorkloadSet;
 
-
         public HashSet<string> WorkloadSetsToKeep = new();
-        public HashSet<(string id, string version, string featureBand)> ManifestsToKeep = new();
-        public HashSet<(string id, string version)> PacksToKeep = new();
+        public HashSet<(ManifestId id, ManifestVersion version, SdkFeatureBand featureBand)> ManifestsToKeep = new();
+        public HashSet<(WorkloadPackId id, string version)> PacksToKeep = new();
 
-        public WorkloadGarbageCollector(string dotnetDir, string sdkVersion, IEnumerable<WorkloadId> installedWorkloads, Func<string, IWorkloadResolver> getResolverForWorkloadSet)
+        public WorkloadGarbageCollector(string dotnetDir, SdkFeatureBand sdkFeatureBand, IEnumerable<WorkloadId> installedWorkloads, Func<string, IWorkloadResolver> getResolverForWorkloadSet)
         {
-            _sdkVersion = sdkVersion;
             _dotnetDir = dotnetDir;
+            _sdkFeatureBand = sdkFeatureBand;
             _installedWorkloads = installedWorkloads;
             _getResolverForWorkloadSet = getResolverForWorkloadSet;
+        }
 
-            //installedSdkVersions = NETCoreSdkResolverNativeWrapper.GetAvailableSdks(_dotnetDir)
-            //    .Select(path => new DirectoryInfo(path).Name)
-            //    .OrderByDescending(version => new ReleaseVersion(version))
-            //    .ToList();
-
+        public void Collect()
+        {
+            GarbageCollectWorkloadSets();
+            GarbageCollectWorkloadManifestsAndPacks();
         }
 
         IWorkloadResolver GetResolver(string workloadSetVersion = null)
@@ -48,7 +55,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
         void GarbageCollectWorkloadSets()
         {
-            //  Determine which workload sets to garbage collect.  IInstaller implementation will be responsible for actually uninstalling them
+            //  Determine which workload sets should not be garbage collected.  IInstaller implementation will be responsible for actually uninstalling the other ones (if not referenced by another feature band)
             //  Keep the following, garbage collect all others:
             //  - Workload set if specified in rollback state file, otherwise latest installed workload set
             //  - Workload sets from global.json GC roots (after scanning to see if GC root data is up-to-date)
@@ -56,14 +63,11 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
             //  What happens if there's a later SDK installed?  Could a workload set from a previous band be pinned to a later SDK?
 
-            var sdkFeatureBand = new SdkFeatureBand(_sdkVersion);
             var resolver = GetResolver();
 
-
             var installedWorkloadSets = resolver.GetWorkloadManifestProvider().GetAvailableWorkloadSets();
-
             
-            var installStateFilePath = Path.Combine(WorkloadInstallType.GetInstallStateFolder(sdkFeatureBand, _dotnetDir), "default.json");
+            var installStateFilePath = Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkFeatureBand, _dotnetDir), "default.json");
             if (File.Exists(installStateFilePath))
             {
                 //  If there is a rollback state file (default.json) in the workload install state folder, don't garbage collect the workload set it specifies.
@@ -83,69 +87,40 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                 }
             }
 
-            //  TODO:  Add baseline workload set versions for installed SDKs to list that shouldn't be collected.  They should stay installed until the SDK is uninstalled
-            //  Alternatively just don't collect workload sets that have a file named baseline.workloadset.json
+            //  Add baseline workload set versions for installed SDKs to list that shouldn't be collected.  They should stay installed until the SDK is uninstalled
+            foreach (var workloadSet in installedWorkloadSets.Values)
+            {
+                if (workloadSet.IsBaselineWorkloadSet)
+                {
+                    WorkloadSetsToKeep.Add(workloadSet.Version);
+                }
+            }
 
             //  TODO:
             //  Scan workload set GC roots, which correspond to global.json files that pinned to a workload set.  For each one, check to see if it's up-to-date.  If the global.json file
             //  doesn't exist anymore (or doesn't specify a workload set version), delete the GC root.  If the workload set version in global.json has changed, update the GC root.
             //  After updating GC roots, add workload sets listed in GC roots to list of workload sets to keep
 
-
-
-            ////  Garbage collect all other workload sets.
-            //foreach (var workloadSet in installedWorkloadSets.Keys)
-            //{
-            //    if (!workloadSetsToKeep.Contains(workloadSet))
-            //    {
-            //        WorkloadSetsToGarbageCollect.Add(workloadSet);
-            //    }
-            //}
-
-
-            //var manifestInstallDirForFeatureBand = GetManifestInstallDirForFeatureBand(_sdkFeatureBand.ToString());
-            //string workloadSetsDirectory = Path.Combine(manifestInstallDirForFeatureBand, SdkDirectoryWorkloadManifestProvider.WorkloadSetsFolderName);
-
-            //foreach ((string workloadSetVersion, _) in installedWorkloadSets)
-            //{
-            //    if (workloadSetsToKeep.Contains(workloadSetVersion))
-            //    {
-            //        //  Don't uninstall this workload set
-            //        continue;
-            //    }
-
-            //    string workloadSetDirectory = Path.Combine(workloadSetsDirectory, workloadSetVersion);
-            //    if (Directory.Exists(workloadSetDirectory))
-            //    {
-            //        //  If the directory doesn't exist, the workload set is probably from a directory specified via the DOTNETSDK_WORKLOAD_MANIFEST_ROOTS environment variable
-            //        //  In that case just ignore it, as the CLI doesn't manage that install
-            //        Directory.Delete(workloadSetDirectory, true);
-            //    }
-            //}
-
         }
 
         void GarbageCollectWorkloadManifestsAndPacks()
         {
-            //  Determine which workload manifests to garbage collect
+            //  Determine which workload manifests and packs should not be garbage collected
             //  This will be within the scope of a feature band.
-            //  The IInstaller implementation will be responsible for actually uninstalling the workload manifests, and it will use feature-band based ref counts to do this, the same way it does for workload packs
+            //  The IInstaller implementation will be responsible for actually uninstalling the workload manifests, and it will use feature-band based ref counts to do this.
             //  So if this method determines that a workload manifest should be garbage collected, but another feature band still depends on it, then the installer would remove the ref count for the current
             //  feature band, but not actually uninstall the manifest.
 
             //  Get default resolver for this feature band and add all manifests it resolves to a list to keep.  This will cover:
             //  - Any manifests listed in the rollback state file (default.json)
             //  - The latest version of each manifest, if a workload set is not installed and there is no rollback state file
-            //  Iterate through all installed workload sets for this SDK feature band that have not been marked for garbage collection
-            //  For each manifest version listed in a workload set, add it to a list to keep
-
-            //  IInstaller implementation should uninstall all manifests that are not in the list to keep (possibly only if they are using the side-by-side folder layout)
-
 
             List<IWorkloadResolver> resolvers = new List<IWorkloadResolver>();
             resolvers.Add(GetResolver());
 
 
+            //  Iterate through all installed workload sets for this SDK feature band that have not been marked for garbage collection
+            //  For each manifest version listed in a workload set, add it to a list to keep
             foreach (var workloadSet in WorkloadSetsToKeep)
             {
                 resolvers.Add(GetResolver(workloadSet));
@@ -155,7 +130,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             {
                 foreach (var manifest in resolver.GetInstalledManifests())
                 {
-                    ManifestsToKeep.Add((manifest.Id, manifest.Version, manifest.ManifestFeatureBand));
+                    ManifestsToKeep.Add((new ManifestId(manifest.Id), new ManifestVersion(manifest.Version), new SdkFeatureBand(manifest.ManifestFeatureBand)));
                 }
 
                 foreach (var pack in _installedWorkloads.SelectMany(workloadId => resolver.GetPacksInWorkload(workloadId))
@@ -165,6 +140,9 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                     PacksToKeep.Add((pack.Id, pack.Version));
                 }
             }
+
+            //  NOTE: We should not collect baseline workload manifests. When we have a corresponding baseline manifest, this will happen, as we have logic
+            //  to avoid collecting baseline manifests. Until then, it will be possible for the baseline manifests to be collected.
         }
     }
 }

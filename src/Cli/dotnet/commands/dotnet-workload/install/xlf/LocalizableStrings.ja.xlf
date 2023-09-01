@@ -27,6 +27,11 @@
         <target state="translated">更新されたワークロード マニフェストを確認しています。</target>
         <note />
       </trans-unit>
+      <trans-unit id="DeletingWorkloadManifest">
+        <source>Uninstalling workload manifest {0} version {1}...</source>
+        <target state="new">Uninstalling workload manifest {0} version {1}...</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DeletingWorkloadPack">
         <source>Uninstalling workload pack {0} version {1}...</source>
         <target state="translated">ワークロード パック {0} バージョン {1} をアンインストールしています...</target>

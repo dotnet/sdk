@@ -27,6 +27,11 @@
         <target state="translated">Comprobando si hay manifiestos de carga de trabajo actualizados.</target>
         <note />
       </trans-unit>
+      <trans-unit id="DeletingWorkloadManifest">
+        <source>Uninstalling workload manifest {0} version {1}...</source>
+        <target state="new">Uninstalling workload manifest {0} version {1}...</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DeletingWorkloadPack">
         <source>Uninstalling workload pack {0} version {1}...</source>
         <target state="translated">Desinstalando el paquete de carga de trabajo {0} versión{1}...</target>
