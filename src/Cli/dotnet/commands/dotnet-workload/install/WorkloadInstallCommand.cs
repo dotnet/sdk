@@ -167,7 +167,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
         {
             try
             {
-                workloadInstaller.GarbageCollectInstalledWorkloadPacks(workloadSetVersion => WorkloadResolverFactory.CreateForWorkloadSet(dotnetPath, sdkVersion.ToString(), userProfileDir, workloadSetVersion), offlineCache);
+                workloadInstaller.GarbageCollect(workloadSetVersion => WorkloadResolverFactory.CreateForWorkloadSet(dotnetPath, sdkVersion.ToString(), userProfileDir, workloadSetVersion), offlineCache);
             }
             catch (Exception e)
             {

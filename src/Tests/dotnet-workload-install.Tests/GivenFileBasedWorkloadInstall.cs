@@ -248,7 +248,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             Directory.CreateDirectory(workloadsRecordPath);
             File.Create(Path.Combine(workloadsRecordPath, "xamarin-empty-mock"));
 
-            installer.GarbageCollectInstalledWorkloadPacks(getResolver);
+            installer.GarbageCollect(getResolver);
 
             Directory.EnumerateFileSystemEntries(installedPacksPath)
                 .Should()
@@ -286,7 +286,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
                 }
             }
 
-            installer.GarbageCollectInstalledWorkloadPacks(getResolver);
+            installer.GarbageCollect(getResolver);
 
             Directory.EnumerateFileSystemEntries(installedPacksPath)
                 .Should()
@@ -332,7 +332,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             var installedWorkloadsPath = Path.Combine(dotnetRoot, "metadata", "workloads", sdkVersions[1], "InstalledWorkloads", "xamarin-android-build");
             File.WriteAllText(installedWorkloadsPath, string.Empty);
 
-            installer.GarbageCollectInstalledWorkloadPacks(getResolver);
+            installer.GarbageCollect(getResolver);
 
             Directory.EnumerateFileSystemEntries(installedPacksPath)
                 .Should()

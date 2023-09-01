@@ -450,11 +450,6 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
         }
 
-        public void GarbageCollectInstalledWorkloadPacks(Func<string, IWorkloadResolver> getResolverForWorkloadSet, DirectoryPath? offlineCache = null, bool cleanAllPacks = false)
-        {
-            GarbageCollect(getResolverForWorkloadSet, offlineCache, cleanAllPacks);
-        }
-
         /// <summary>
         /// Remove all workload installation records that aren't from Visual Studio.
         /// </summary>
