@@ -53,12 +53,16 @@ namespace Microsoft.DotNet.Tools.Tool.Install
 
         public override int Execute()
         {
-            (FilePath? manifestFileOptional, string warningMessage) =
-                _toolManifestFinder.ExplicitManifestOrFindManifestContainPackageId(_explicitManifestFile, _packageId);
-
-            if (warningMessage != null)
+            FilePath? manifestFileOptional = null;
+            if (_explicitManifestFile != null)
             {
-                _reporter.WriteLine(warningMessage.Yellow());
+                (manifestFileOptional, string warningMessage) =
+                    _toolManifestFinder.ExplicitManifestOrFindManifestContainPackageId(_explicitManifestFile, _packageId);
+
+                if (warningMessage != null)
+                {
+                    _reporter.WriteLine(warningMessage.Yellow());
+                }
             }
 
             FilePath manifestFile = manifestFileOptional ?? GetManifestFilePath();
