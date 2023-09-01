@@ -293,7 +293,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             return packs.Select(p => new WorkloadDownload(p.Id, p.ResolvedPackageId, p.Version)).ToList();
         }
 
-        public void GarbageCollectInstalledWorkloadPacks(DirectoryPath? offlineCache = null, bool cleanAllPacks = false)
+        public void GarbageCollectInstalledWorkloadPacks(Func<string, IWorkloadResolver> getResolverForWorkloadSet, DirectoryPath? offlineCache = null, bool cleanAllPacks = false)
         {
             var installedSdkFeatureBands = _installationRecordRepository.GetFeatureBandsWithInstallationRecords();
             _reporter.WriteLine(string.Format(LocalizableStrings.GarbageCollectingSdkFeatureBandsMessage, string.Join(" ", installedSdkFeatureBands)));

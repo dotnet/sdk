@@ -94,5 +94,11 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
             return result;
         }
+
+        public static IWorkloadResolver CreateForWorkloadSet(string dotnetPath, string sdkVersion, string userProfileDir, string workloadSetVersion)
+        {
+            var manifestProvider = SdkDirectoryWorkloadManifestProvider.ForWorkloadSet(dotnetPath, sdkVersion, userProfileDir, workloadSetVersion);
+            return WorkloadResolver.Create(manifestProvider, dotnetPath, sdkVersion, userProfileDir);
+        }
     }
 }

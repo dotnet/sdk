@@ -156,18 +156,18 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
             InstallWorkloadsWithInstallRecord(_workloadInstaller, workloadIds, _sdkFeatureBand, manifestsToUpdate, offlineCache);
 
-            TryRunGarbageCollection(_workloadInstaller, Reporter, Verbosity, offlineCache);
+            TryRunGarbageCollection(_workloadInstaller, Reporter, Verbosity, _dotnetPath, _sdkVersion.ToString(), _userProfileDir, offlineCache);
 
             Reporter.WriteLine();
             Reporter.WriteLine(string.Format(LocalizableStrings.InstallationSucceeded, string.Join(" ", workloadIds)));
             Reporter.WriteLine();
         }
 
-        internal static void TryRunGarbageCollection(IInstaller workloadInstaller, IReporter reporter, VerbosityOptions verbosity, DirectoryPath? offlineCache = null)
+        internal static void TryRunGarbageCollection(IInstaller workloadInstaller, IReporter reporter, VerbosityOptions verbosity, string dotnetPath, string sdkVersion, string userProfileDir, DirectoryPath? offlineCache = null)
         {
             try
             {
-                workloadInstaller.GarbageCollectInstalledWorkloadPacks(offlineCache);
+                workloadInstaller.GarbageCollectInstalledWorkloadPacks(workloadSetVersion => WorkloadResolverFactory.CreateForWorkloadSet(dotnetPath, sdkVersion.ToString(), userProfileDir, workloadSetVersion), offlineCache);
             }
             catch (Exception e)
             {

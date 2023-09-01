@@ -15,7 +15,10 @@ namespace Microsoft.DotNet.Workloads.Workload.Uninstall
     {
         private readonly IReadOnlyCollection<WorkloadId> _workloadIds;
         private readonly IInstaller _workloadInstaller;
+        private readonly string _dotnetPath;
         private readonly ReleaseVersion _sdkVersion;
+        private readonly string _userProfileDir;
+        
 
         public WorkloadUninstallCommand(
             ParseResult parseResult,
@@ -44,7 +47,9 @@ namespace Microsoft.DotNet.Workloads.Workload.Uninstall
 
             var creationResult = WorkloadResolverFactory.Create(creationParameters);
 
+            _dotnetPath = creationResult.DotnetPath;
             _sdkVersion = creationResult.SdkVersion;
+            _userProfileDir = creationResult.UserProfileDir;
 
             var sdkFeatureBand = new SdkFeatureBand(_sdkVersion);
             _workloadInstaller = WorkloadInstallerFactory.GetWorkloadInstaller(Reporter, sdkFeatureBand, creationResult.WorkloadResolver, Verbosity, creationResult.UserProfileDir, VerifySignatures, PackageDownloader, creationResult.DotnetPath);
@@ -71,7 +76,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Uninstall
                         .DeleteWorkloadInstallationRecord(workloadId, featureBand);
                 }
 
-                _workloadInstaller.GarbageCollectInstalledWorkloadPacks();
+                _workloadInstaller.GarbageCollectInstalledWorkloadPacks(workloadSetVersion => WorkloadResolverFactory.CreateForWorkloadSet(_dotnetPath, _sdkVersion.ToString(), _userProfileDir, workloadSetVersion));
 
                 Reporter.WriteLine();
                 Reporter.WriteLine(string.Format(LocalizableStrings.UninstallSucceeded, string.Join(" ", _workloadIds)));

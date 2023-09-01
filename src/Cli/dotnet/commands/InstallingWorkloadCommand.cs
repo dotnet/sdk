@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Utils;
@@ -23,6 +24,7 @@ namespace Microsoft.DotNet.Workloads.Workload
         protected readonly string _dotnetPath;
         protected readonly string _userProfileDir;
         protected readonly bool _checkIfManifestExist;
+        protected readonly ReleaseVersion _sdkVersion;
         protected readonly SdkFeatureBand _sdkFeatureBand;
         protected readonly SdkFeatureBand _installedFeatureBand;
         protected readonly string _fromRollbackDefinition;
@@ -74,6 +76,7 @@ namespace Microsoft.DotNet.Workloads.Workload
 
             _dotnetPath = creationResult.DotnetPath;
             _userProfileDir = creationResult.UserProfileDir;
+            _sdkVersion = creationResult.SdkVersion;
             _sdkFeatureBand = new SdkFeatureBand(creationResult.SdkVersion);
             _installedFeatureBand = new SdkFeatureBand(creationResult.InstalledSdkVersion);
             _workloadResolver = creationResult.WorkloadResolver;

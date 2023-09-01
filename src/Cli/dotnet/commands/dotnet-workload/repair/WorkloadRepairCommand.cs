@@ -19,6 +19,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Repair
         private IWorkloadResolver _workloadResolver;
         private readonly ReleaseVersion _sdkVersion;
         private readonly string _dotnetPath;
+        private readonly string _userProfileDir;
 
         public WorkloadRepairCommand(
             ParseResult parseResult,
@@ -53,6 +54,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Repair
 
             _dotnetPath = creationResult.DotnetPath;
             _sdkVersion = creationResult.SdkVersion;
+            _userProfileDir = creationResult.UserProfileDir;
             var sdkFeatureBand = new SdkFeatureBand(_sdkVersion);
             _workloadResolver = creationResult.WorkloadResolver;
 
@@ -80,7 +82,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Repair
 
                 ReinstallWorkloadsBasedOnCurrentManifests(workloadIds, new SdkFeatureBand(_sdkVersion));
 
-                WorkloadInstallCommand.TryRunGarbageCollection(_workloadInstaller, Reporter, Verbosity);
+                WorkloadInstallCommand.TryRunGarbageCollection(_workloadInstaller, Reporter, Verbosity, _dotnetPath, _sdkVersion.ToString(), _userProfileDir);
 
                 Reporter.WriteLine();
                 Reporter.WriteLine(string.Format(LocalizableStrings.RepairSucceeded, string.Join(" ", workloadIds)));
