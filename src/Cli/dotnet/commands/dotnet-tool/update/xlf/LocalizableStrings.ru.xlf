@@ -42,14 +42,14 @@
         <target state="translated">Средство "{0}" обновлено (версия "{1}", файл манифеста {2}).</target>
         <note />
       </trans-unit>
-      <trans-unit id="UpdateLocaToolToLowerVersion">
-        <source>The requested version {0} is lower than existing version {1} (manifest file {2}).</source>
-        <target state="translated">Запрошенная версия {0} ниже существующей версии {1} (файл манифеста {2}).</target>
-        <note />
-      </trans-unit>
       <trans-unit id="UpdateLocalToolSucceeded">
         <source>Tool '{0}' was successfully updated from version '{1}' to version '{2}' (manifest file {3}).</source>
         <target state="translated">Средство "{0}" обновлено с версии "{1}" до версии "{2}" (файл манифеста {3}).</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UpdateLocalToolToLowerVersion">
+        <source>The requested version {0} is lower than existing version {1} (manifest file {2}).</source>
+        <target state="new">The requested version {0} is lower than existing version {1} (manifest file {2}).</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateSucceededPreVersionNoChange">

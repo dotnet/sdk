@@ -42,14 +42,14 @@
         <target state="translated">L'outil '{0}' est à jour (version '{1}', fichier manifeste {2}).</target>
         <note />
       </trans-unit>
-      <trans-unit id="UpdateLocaToolToLowerVersion">
-        <source>The requested version {0} is lower than existing version {1} (manifest file {2}).</source>
-        <target state="translated">La version demandée {0} est inférieure à la version existante {1} (fichier manifeste {2}).</target>
-        <note />
-      </trans-unit>
       <trans-unit id="UpdateLocalToolSucceeded">
         <source>Tool '{0}' was successfully updated from version '{1}' to version '{2}' (manifest file {3}).</source>
         <target state="translated">L'outil '{0}' a été correctement mis à jour de la version '{1}' à la version '{2}' (fichier manifeste {3}).</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UpdateLocalToolToLowerVersion">
+        <source>The requested version {0} is lower than existing version {1} (manifest file {2}).</source>
+        <target state="new">The requested version {0} is lower than existing version {1} (manifest file {2}).</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateSucceededPreVersionNoChange">
