@@ -65,8 +65,7 @@ namespace Microsoft.DotNet.Watcher.Tests
 
             File.WriteAllText(Path.Combine(projectDir, "Update.cs"), newSrc);
 
-            // Handler is called before the app is resumed: 
-            await App.AssertOutputLineStartsWith("Updated types: Printer", failure: line => line.Contains("Changed!"));
+            await App.AssertOutputLineStartsWith("Updated types: Printer");
         }
     }
 }

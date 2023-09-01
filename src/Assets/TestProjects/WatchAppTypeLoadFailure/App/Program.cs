@@ -10,14 +10,24 @@ Console.WriteLine($"File deleted: {depPath}");
 
 while (true)
 {
-    Printer.Print();
+    lock (UpdateHandler.Guard)
+    {
+        Printer.Print();
+    }
+
     Thread.Sleep(100);
 }
 
 static class UpdateHandler
 {
+    // Lock to avoid the updated Print method executing concurrently with the update handler.
+    public static object Guard = new object();
+
     public static void UpdateApplication(Type[] types)
     {
-        Console.WriteLine($"Updated types: {(types == null ? "<null>" : types.Length == 0 ? "<empty>" : string.Join(",", types.Select(t => t.Name)))}");
+        lock (Guard)
+        {
+            Console.WriteLine($"Updated types: {(types == null ? "<null>" : types.Length == 0 ? "<empty>" : string.Join(",", types.Select(t => t.Name)))}");
+        }
     }
 }
