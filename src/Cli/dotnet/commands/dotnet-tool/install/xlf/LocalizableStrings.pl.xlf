@@ -2,6 +2,11 @@
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="pl" original="../LocalizableStrings.resx">
     <body>
+      <trans-unit id="AllowPackageDowngradeOptionDescription">
+        <source>Allow package downgrade when installing a .NET tool package.</source>
+        <target state="new">Allow package downgrade when installing a .NET tool package.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CreateManifestIfNeededOptionDescription">
         <source>Create a tool manifest if one isn't found during tool installation. For information on how manifests are located, see https://aka.ms/dotnet/tools/create-manifest-if-needed</source>
         <target state="translated">Utwórz manifest narzędzi, jeśli nie zostanie znaleziony podczas instalacji narzędzia. Aby uzyskać informacje o lokalizacji manifestów, zobacz https://aka.ms/dotnet/tools/create-manifest-if-needed</target>

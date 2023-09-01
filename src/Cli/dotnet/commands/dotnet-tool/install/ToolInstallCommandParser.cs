@@ -48,6 +48,8 @@ namespace Microsoft.DotNet.Cli
             Description = LocalizableStrings.CreateManifestIfNeededOptionDescription
         };
 
+        public static readonly CliOption<bool> AllowPackageDowngradeOption = new CliOption<bool>("--allow-downgrade", LocalizableStrings.AllowPackageDowngradeOptionDescription);
+
         public static readonly CliOption<VerbosityOptions> VerbosityOption = CommonOptions.VerbosityOption;
 
         // Don't use the common options version as we don't want this to be a forwarded option
@@ -94,6 +96,7 @@ namespace Microsoft.DotNet.Cli
             command.Options.Add(VerbosityOption);
             command.Options.Add(ArchitectureOption);
             command.Options.Add(CreateManifestIfNeededOption);
+            command.Options.Add(AllowPackageDowngradeOption);
 
             command.SetAction((parseResult) => new ToolInstallCommand(parseResult).Execute());
 
