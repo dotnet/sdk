@@ -218,7 +218,7 @@ and the corresponding package Ids for installed tools using the command
   <data name="UpdateLocalToolSucceeded" xml:space="preserve">
     <value>Tool '{0}' was successfully updated from version '{1}' to version '{2}' (manifest file {3}).</value>
   </data>
-  <data name="UpdateLocaToolToLowerVersion" xml:space="preserve">
+  <data name="UpdateLocalToolToLowerVersion" xml:space="preserve">
     <value>The requested version {0} is lower than existing version {1} (manifest file {2}).</value>
   </data>
   <data name="UpdateLocaToolSucceededVersionNoChange" xml:space="preserve">

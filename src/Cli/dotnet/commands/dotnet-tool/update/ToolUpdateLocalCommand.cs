@@ -72,73 +72,7 @@ namespace Microsoft.DotNet.Tools.Tool.Update
 
         public override int Execute()
         {
-            (FilePath? manifestFileOptional, string warningMessage) =
-                _toolManifestFinder.ExplicitManifestOrFindManifestContainPackageId(_explicitManifestFile, _packageId);
-
-            var manifestFile = manifestFileOptional ?? _toolManifestFinder.FindFirst();
-
-            var toolDownloadedPackage = _toolLocalPackageInstaller.Install(manifestFile);
-            var existingPackageWithPackageId =
-                _toolManifestFinder
-                    .Find(manifestFile)
-                    .Where(p => p.PackageId.Equals(_packageId));
-
-            if (!existingPackageWithPackageId.Any())
-            {
-                return _toolInstallLocalCommand.Value.Install(manifestFile);
-            }
-
-            var existingPackage = existingPackageWithPackageId.Single();
-            if (existingPackage.Version > toolDownloadedPackage.Version)
-            {
-                throw new GracefulException(new[]
-                    {
-                        string.Format(
-                            LocalizableStrings.UpdateLocaToolToLowerVersion,
-                            toolDownloadedPackage.Version.ToNormalizedString(),
-                            existingPackage.Version.ToNormalizedString(),
-                            manifestFile.Value)
-                    },
-                    isUserError: false);
-            }
-
-            if (existingPackage.Version != toolDownloadedPackage.Version)
-            {
-                _toolManifestEditor.Edit(
-                    manifestFile,
-                    _packageId,
-                    toolDownloadedPackage.Version,
-                    toolDownloadedPackage.Commands.Select(c => c.Name).ToArray());
-            }
-
-            _localToolsResolverCache.SaveToolPackage(
-                toolDownloadedPackage,
-                _toolLocalPackageInstaller.TargetFrameworkToInstall);
-
-            if (warningMessage != null)
-            {
-                _reporter.WriteLine(warningMessage.Yellow());
-            }
-
-            if (existingPackage.Version == toolDownloadedPackage.Version)
-            {
-                _reporter.WriteLine(
-                    string.Format(
-                        LocalizableStrings.UpdateLocaToolSucceededVersionNoChange,
-                        toolDownloadedPackage.Id,
-                        existingPackage.Version.ToNormalizedString(),
-                        manifestFile.Value));
-            }
-            else
-            {
-                _reporter.WriteLine(
-                    string.Format(
-                        LocalizableStrings.UpdateLocalToolSucceeded,
-                        toolDownloadedPackage.Id,
-                        existingPackage.Version.ToNormalizedString(),
-                        toolDownloadedPackage.Version.ToNormalizedString(),
-                        manifestFile.Value).Green());
-            }
+            _toolInstallLocalCommand.Value.Execute();
 
             return 0;
         }

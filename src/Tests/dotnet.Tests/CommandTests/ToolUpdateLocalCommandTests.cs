@@ -305,7 +305,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _reporter.Clear();
             Action a = () => _defaultToolUpdateLocalCommand.Execute();
             a.Should().Throw<GracefulException>().And.Message.Should().Contain(string.Format(
-                LocalizableStrings.UpdateLocaToolToLowerVersion,
+                LocalizableStrings.UpdateLocalToolToLowerVersion,
                 "0.9.0",
                 _packageOriginalVersionA.ToNormalizedString(),
                 _manifestFilePath));
