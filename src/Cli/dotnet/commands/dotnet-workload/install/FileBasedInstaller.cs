@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.Json;
+using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Utils;
@@ -21,6 +22,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
         private readonly IReporter _reporter;
         private readonly string _workloadMetadataDir;
         private const string InstalledPacksDir = "InstalledPacks";
+        private const string InstalledManifestsDir = "InstalledManifests";
         protected readonly string _dotnetDir;
         protected readonly string _userProfileDir;
         protected readonly DirectoryPath _tempPackagesDir;
@@ -192,13 +194,19 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             CliTransaction.RunNew(context => InstallWorkloads(workloadIds, sdkFeatureBand, context, offlineCache));
         }
 
+        string GetManifestInstallDirForFeatureBand(string sdkFeatureBand)
+        {
+            string rootInstallDir = WorkloadFileBasedInstall.IsUserLocal(_dotnetDir, _sdkFeatureBand.ToString()) ? _userProfileDir : _dotnetDir;
+            var manifestInstallDir = Path.Combine(rootInstallDir, "sdk-manifests", sdkFeatureBand);
+            return manifestInstallDir;
+        }
+
         public void InstallWorkloadManifest(ManifestVersionUpdate manifestUpdate, ITransactionContext transactionContext, DirectoryPath? offlineCache = null, bool isRollback = false)
         {
             string packagePath = null;
             string tempBackupDir = null;
-            string rootInstallDir = WorkloadFileBasedInstall.IsUserLocal(_dotnetDir, _sdkFeatureBand.ToString()) ? _userProfileDir : _dotnetDir;
 
-            var newManifestPath = Path.Combine(rootInstallDir, "sdk-manifests", manifestUpdate.NewFeatureBand, manifestUpdate.ManifestId.ToString(), manifestUpdate.NewVersion.ToString());
+            var newManifestPath = Path.Combine(GetManifestInstallDirForFeatureBand(manifestUpdate.NewFeatureBand), manifestUpdate.ManifestId.ToString(), manifestUpdate.NewVersion.ToString());
 
             _reporter.WriteLine(string.Format(LocalizableStrings.InstallingWorkloadManifest, manifestUpdate.ManifestId, manifestUpdate.NewVersion));
 
@@ -477,6 +485,39 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                     if (!Directory.EnumerateFileSystemEntries(packIdDir).Any())
                     {
                         Directory.Delete(packIdDir, true);
+                    }
+                }
+            }
+        }
+
+        private string GetManifestInstallRecordPath(ManifestId manifestId, ManifestVersion manifestVersion, SdkFeatureBand featureBand) =>
+            Path.Combine(_workloadMetadataDir, InstalledManifestsDir, "v1", manifestId.ToString(), manifestVersion.ToString(), featureBand.ToString());
+
+        void WriteManifestInstallationRecord(ManifestId manifestId, ManifestVersion manifestVersion, SdkFeatureBand featureBand)
+        {
+            var path = GetManifestInstallRecordPath(manifestId, manifestVersion, featureBand);
+            if (!Directory.Exists(Path.GetDirectoryName(path)))
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(path));
+            }
+            using var _ = File.Create(path);
+        }
+
+        void DeleteManifestInstallationRecord(ManifestId manifestId, ManifestVersion manifestVersion, SdkFeatureBand featureBand)
+        {
+            var manifestInstallRecord = GetManifestInstallRecordPath(manifestId, manifestVersion, featureBand);
+            if (File.Exists(manifestInstallRecord))
+            {
+                File.Delete(manifestInstallRecord);
+                var manifestRecordVersionDir = Path.GetDirectoryName(manifestInstallRecord);
+                if (!Directory.GetFileSystemEntries(manifestRecordVersionDir).Any())
+                {
+                    Directory.Delete(manifestRecordVersionDir);
+
+                    var manifestRecordIdDir = Path.GetDirectoryName(manifestRecordVersionDir);
+                    if (!Directory.GetFileSystemEntries(manifestRecordIdDir).Any())
+                    {
+                        Directory.Delete(manifestRecordIdDir);
                     }
                 }
             }

@@ -10,7 +10,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 {
     public partial class SdkDirectoryWorkloadManifestProvider : IWorkloadManifestProvider
     {
-        private const string WorkloadSetsFolderName = "workloadsets";
+        public const string WorkloadSetsFolderName = "workloadsets";
 
         private readonly string _sdkRootPath;
         private readonly SdkFeatureBand _sdkVersionBand;
