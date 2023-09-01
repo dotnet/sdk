@@ -48,7 +48,10 @@ namespace Microsoft.DotNet.Cli
             Description = LocalizableStrings.CreateManifestIfNeededOptionDescription
         };
 
-        public static readonly CliOption<bool> AllowPackageDowngradeOption = new CliOption<bool>("--allow-downgrade", LocalizableStrings.AllowPackageDowngradeOptionDescription);
+        public static readonly CliOption<bool> AllowPackageDowngradeOption = new("--allow-downgrade")
+        {
+            Description = LocalizableStrings.AllowPackageDowngradeOptionDescription
+        }; 
 
         public static readonly CliOption<VerbosityOptions> VerbosityOption = CommonOptions.VerbosityOption;
 
