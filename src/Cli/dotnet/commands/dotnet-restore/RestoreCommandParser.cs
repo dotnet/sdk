@@ -151,6 +151,12 @@ namespace Microsoft.DotNet.Cli
                 Hidden = !showHelp
             }.ForwardAs("-property:RestoreNoCache=true");
 
+            yield return new ForwardedOption<bool>("--no-http-cache")
+            {
+                Description = showHelp ? LocalizableStrings.CmdNoHttpCacheOptionDescription : string.Empty,
+                Hidden = !showHelp
+            }.ForwardAs("-property:RestoreNoHttpCache=true");
+
             yield return new ForwardedOption<bool>("--ignore-failed-sources")
             {
                 Description = showHelp ? LocalizableStrings.CmdIgnoreFailedSourcesOptionDescription : string.Empty,
