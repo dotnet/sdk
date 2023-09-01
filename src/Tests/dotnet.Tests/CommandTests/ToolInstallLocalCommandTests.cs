@@ -39,13 +39,16 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         private readonly string _manifestFilePath;
         private readonly PackageId _packageIdA = new PackageId("local.tool.console.a");
         private readonly NuGetVersion _packageVersionA;
+        private readonly NuGetVersion _packageNewVersionA;
         private readonly ToolCommandName _toolCommandNameA = new ToolCommandName("a");
         private readonly ToolManifestFinder _toolManifestFinder;
         private readonly ToolManifestEditor _toolManifestEditor;
+        private readonly MockFeed _mockFeed;
 
         public ToolInstallLocalCommandTests(ITestOutputHelper log):base(log) 
         {
             _packageVersionA = NuGetVersion.Parse("1.0.4");
+            _packageNewVersionA = NuGetVersion.Parse("2.0.0");
 
             _reporter = new BufferedReporter();
             _fileSystem = new FileSystemMockBuilder().UseCurrentSystemTemporaryDirectory().Build();
