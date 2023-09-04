@@ -53,19 +53,17 @@ namespace Microsoft.DotNet.Tools.Tool.Install
 
         public override int Execute()
         {
-            FilePath? manifestFileOptional = null;
-            if (_explicitManifestFile != null)
-            {
-                (manifestFileOptional, string warningMessage) =
-                    _toolManifestFinder.ExplicitManifestOrFindManifestContainPackageId(_explicitManifestFile, _packageId);
+            FilePath manifestFile = GetManifestFilePath();
 
-                if (warningMessage != null)
-                {
-                    _reporter.WriteLine(warningMessage.Yellow());
-                }
+            (FilePath? manifestFileOptional, string warningMessage) =
+                _toolManifestFinder.ExplicitManifestOrFindManifestContainPackageId(_explicitManifestFile, _packageId);
+
+            if (warningMessage != null)
+            {
+                _reporter.WriteLine(warningMessage.Yellow());
             }
 
-            FilePath manifestFile = manifestFileOptional ?? GetManifestFilePath();
+            manifestFile = manifestFileOptional ?? GetManifestFilePath();
             var existingPackageWithPackageId = _toolManifestFinder.Find(manifestFile).Where(p => p.PackageId.Equals(_packageId));
 
             if (!existingPackageWithPackageId.Any())
@@ -156,7 +154,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
             return 0;
         }
 
-        private FilePath GetManifestFilePath()
+        public FilePath GetManifestFilePath()
         {
             try
             {
