@@ -592,12 +592,12 @@ The following are names of parameters or literal values and should not be transl
       </trans-unit>
       <trans-unit id="Net6NotCompatibleWithDev16">
         <source>NETSDK1182: Targeting .NET 6.0 or higher in Visual Studio 2019 is not supported.</source>
-        <target state="translated">NETSDK1182: .NET 6.0 oder höher wird als Ziel in Visual Studio 2019 nicht unterstützt.</target>
+        <target state="new">NETSDK1182: Targeting .NET 6.0 or higher in Visual Studio 2019 is not supported.</target>
         <note>{StrBegin="NETSDK1182: "}</note>
       </trans-unit>
       <trans-unit id="Net7NotCompatibleWithDev173">
         <source>NETSDK1192: Targeting .NET 7.0 or higher in Visual Studio 2022 17.3 is not supported.</source>
-        <target state="translated">NETSDK1192: Die Ausrichtung auf .NET 7.0 oder höher in Visual Studio 2022 17.3 wird nicht unterstützt.</target>
+        <target state="new">NETSDK1192: Targeting .NET 7.0 or higher in Visual Studio 2022 17.3 is not supported.</target>
         <note>{StrBegin="NETSDK1192: "}</note>
       </trans-unit>
       <trans-unit id="NoAppHostAvailable">
