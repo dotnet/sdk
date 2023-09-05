@@ -45,7 +45,7 @@ index ------------
  ./packs/Microsoft.NETCore.App.Ref/x.y.z/
  ./packs/Microsoft.NETCore.App.Ref/x.y.z/analyzers/
 @@ ------------ @@
- ./packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.Xml.XPath.XDocument.dll
+ ./packs/NETStandard.Library.Ref/x.y.z/ref/netstandardx.y/System.Xml.XPath.XDocument.dll
  ./sdk-manifests/
  ./sdk-manifests/x.y.z/
 -./sdk-manifests/x.y.z/

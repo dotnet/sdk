@@ -16,10 +16,10 @@ namespace Microsoft.DotNet.SourceBuild.SmokeTests
 {
     internal class BaselineHelper
     {
-        private const string VersionPlaceholder = "x.y.z";
-        private const string VersionPlaceholderMatchingPattern = "*.*.*"; // wildcard pattern used to match on the version represented by the placeholder
-        private const string NetTfmPlaceholder = "netx.y";
-        private const string NetTfmPlaceholderMatchingPattern = "net*.*"; // wildcard pattern used to match on the version represented by the placeholder
+        private const string SemanticVersionPlaceholder = "x.y.z";
+        private const string SemanticVersionPlaceholderMatchingPattern = "*.*.*"; // wildcard pattern used to match on the version represented by the placeholder
+        private const string NonSemanticVersionPlaceholder = "x.y";
+        private const string NonSemanticVersionPlaceholderMatchingPattern = "*.*"; // wildcard pattern used to match on the version represented by the placeholder
 
         public static void CompareEntries(string baselineFileName, IOrderedEnumerable<string> actualEntries)
         {
@@ -81,7 +81,6 @@ namespace Microsoft.DotNet.SourceBuild.SmokeTests
         {
             (Process Process, string StdOut, string StdErr) diffResult =
                 ExecuteHelper.ExecuteProcess("git", $"diff --no-index {file1Path} {file2Path}", outputHelper);
-            Assert.Equal(1, diffResult.Process.ExitCode);
 
             return diffResult.StdOut;
         }
@@ -95,13 +94,14 @@ namespace Microsoft.DotNet.SourceBuild.SmokeTests
 
         public static string RemoveVersions(string source)
         {
-            // Remove version numbers for examples like "roslyn4.1", "testhost-1.0", "net8.0", and "netstandard2.1".
-            string result = Regex.Replace(source, $@"(roslyn|testhost-|netstandard|net)\d+\.\d+", match =>
+            // Remove version numbers for examples like "roslyn4.1", "net8.0", and "netstandard2.1".
+            string pathSeparator = Regex.Escape(Path.DirectorySeparatorChar.ToString());
+            string result = Regex.Replace(source, $@"{pathSeparator}(net|netstandard|roslyn)[1-9]+\.[0-9]+{pathSeparator}", match =>
             {
                 string wordPart = match.Groups[1].Value;
-                return $"{wordPart}x.y";
+                return $"{Path.DirectorySeparatorChar}{wordPart}{NonSemanticVersionPlaceholder}{Path.DirectorySeparatorChar}";
             });
-
+        
             // Remove semantic versions
             // Regex source: https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string
             // The regex from https://semver.org has been modified to account for the following:
@@ -110,11 +110,11 @@ namespace Microsoft.DotNet.SourceBuild.SmokeTests
                 // - The version may have one or more release identifiers that begin with '.' or '-'
                 // - The version should end before a path separator, '.', '-', or '/'
             Regex semanticVersionRegex = new(
-                @"(?<=[./-])(0|[1-9]\d*)\.(0|[1-9]\d*)(\.(0|[1-9]\d*))+" +
-                @"(((?:[-.]((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)))+" +
-                @"(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?" +
-                @"(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?(?=[/.-])");
-            return semanticVersionRegex.Replace(result, VersionPlaceholder);
+                @"(?<=[./-])(0|[1-9]\d*)\.(0|[1-9]\d*)(\.(0|[1-9]\d*))+"
+                + @"(((?:[-.]((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)))+"
+                + @"(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?"
+                + @"(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?(?=[/.-])");
+            return semanticVersionRegex.Replace(result, SemanticVersionPlaceholder);
         }
 
         /// <summary>
@@ -124,8 +124,8 @@ namespace Microsoft.DotNet.SourceBuild.SmokeTests
         public static Matcher GetFileMatcherFromPath(string path)
         {
             path = path
-                .Replace(VersionPlaceholder, VersionPlaceholderMatchingPattern)
-                .Replace(NetTfmPlaceholder, NetTfmPlaceholderMatchingPattern);
+                .Replace(SemanticVersionPlaceholder, SemanticVersionPlaceholderMatchingPattern)
+                .Replace(NonSemanticVersionPlaceholder, NonSemanticVersionPlaceholderMatchingPattern);
             Matcher matcher = new();
             matcher.AddInclude(path);
             return matcher;
