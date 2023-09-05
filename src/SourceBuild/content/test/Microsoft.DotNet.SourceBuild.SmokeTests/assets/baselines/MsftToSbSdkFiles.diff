@@ -283,14 +283,6 @@ index ------------
  ./sdk/x.y.z/Containers/tasks/netx.y/Newtonsoft.Json.dll
  ./sdk/x.y.z/Containers/tasks/netx.y/NuGet.Common.dll
 @@ ------------ @@
- ./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/System.Composition.Hosting.dll
- ./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/System.Composition.Runtime.dll
- ./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/System.Composition.TypedParts.dll
--./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/System.Diagnostics.EventLog.dll
- ./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/tr/
- ./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/tr/dotnet-watch.resources.dll
- ./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/tr/Microsoft.CodeAnalysis.CSharp.Features.resources.dll
-@@ ------------ @@
  ./sdk/x.y.z/Microsoft.Build.NuGetSdkResolver.dll
  ./sdk/x.y.z/Microsoft.Build.Tasks.Core.dll
  ./sdk/x.y.z/Microsoft.Build.Utilities.Core.dll
