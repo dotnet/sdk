@@ -302,7 +302,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
             var featureBandsWithWorkloadInstallRecords = _installationRecordRepository.GetFeatureBandsWithInstallationRecords();
 
-            var installedSdkFeatureBands = NETCoreSdkResolverNativeWrapper.GetAvailableSdks(_dotnetDir).Select(v => new SdkFeatureBand(v)).ToHashSet();
+            var installedSdkFeatureBands = NETCoreSdkResolverNativeWrapper.GetAvailableSdks(_dotnetDir).Select(sdkDir => new SdkFeatureBand(Path.GetFileName(sdkDir))).ToHashSet();
 
             _reporter.WriteLine(string.Format(LocalizableStrings.GarbageCollectingSdkFeatureBandsMessage, string.Join(" ", installedSdkFeatureBands)));
 

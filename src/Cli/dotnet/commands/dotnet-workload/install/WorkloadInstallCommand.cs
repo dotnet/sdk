@@ -173,7 +173,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             {
                 // Garbage collection failed, warn user
                 reporter.WriteLine(string.Format(LocalizableStrings.GarbageCollectionFailed,
-                    verbosity.IsDetailedOrDiagnostic() ? e.StackTrace.ToString() : e.Message).Yellow());
+                    verbosity.IsDetailedOrDiagnostic() ? e.ToString() : e.Message).Yellow());
             }
         }
 
