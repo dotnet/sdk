@@ -2238,18 +2238,6 @@ A writable collection property allows a user to replace the collection with a di
 |CodeFix|False|
 ---
 
-## [CA2229](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2229): Implement serialization constructors
-
-To fix a violation of this rule, implement the serialization constructor. For a sealed class, make the constructor private; otherwise, make it protected.
-
-|Item|Value|
-|-|-|
-|Category|Usage|
-|Enabled|True|
-|Severity|Hidden|
-|CodeFix|True|
----
-
 ## [CA2231](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2231): Overload operator equals on overriding value type Equals
 
 In most programming languages there is no default implementation of the equality operator (==) for value types. If your programming language supports operator overloads, you should consider implementing the equality operator. Its behavior should be identical to that of Equals.

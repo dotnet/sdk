@@ -56,10 +56,6 @@ public class CA2237SerializableMissingAttr : ISerializable
     }
 }",
                     },
-                    ExpectedDiagnostics =
-                    {
-                        GetCA2229DefaultCSharpResultAt(6, 14, "CA2237SerializableMissingAttr"),
-                    },
                 }
             }.RunAsync();
 
@@ -108,10 +104,6 @@ Public Class CA2237SerializableMissingAttr
     End Sub
 End Class"
                     },
-                    ExpectedDiagnostics =
-                    {
-                        GetCA2229DefaultBasicResultAt(6, 14, "CA2237SerializableMissingAttr"),
-                    },
                 },
             }.RunAsync();
         }
@@ -126,20 +118,6 @@ End Class"
         private static DiagnosticResult GetCA2237BasicResultAt(int line, int column, string objectName) =>
 #pragma warning disable RS0030 // Do not use banned APIs
             VerifyVB.Diagnostic(SerializationRulesDiagnosticAnalyzer.RuleCA2237)
-                .WithLocation(line, column)
-#pragma warning restore RS0030 // Do not use banned APIs
-                .WithArguments(objectName);
-
-        private static DiagnosticResult GetCA2229DefaultCSharpResultAt(int line, int column, string objectName) =>
-#pragma warning disable RS0030 // Do not use banned APIs
-            VerifyCS.Diagnostic(SerializationRulesDiagnosticAnalyzer.RuleCA2229Default)
-                .WithLocation(line, column)
-#pragma warning restore RS0030 // Do not use banned APIs
-                .WithArguments(objectName);
-
-        private static DiagnosticResult GetCA2229DefaultBasicResultAt(int line, int column, string objectName) =>
-#pragma warning disable RS0030 // Do not use banned APIs
-            VerifyVB.Diagnostic(SerializationRulesDiagnosticAnalyzer.RuleCA2229Default)
                 .WithLocation(line, column)
 #pragma warning restore RS0030 // Do not use banned APIs
                 .WithArguments(objectName);

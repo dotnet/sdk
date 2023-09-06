@@ -12,49 +12,12 @@ namespace Microsoft.NetCore.Analyzers.Runtime
     using static MicrosoftNetCoreAnalyzersResources;
 
     /// <summary>
-    /// CA2229: <inheritdoc cref="ImplementSerializationConstructorsTitle"/>
     /// CA2237: <inheritdoc cref="MarkISerializableTypesWithSerializableTitle"/>
     /// CA2235: <inheritdoc cref="MarkAllNonSerializableFieldsTitle"/>
     /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class SerializationRulesDiagnosticAnalyzer : DiagnosticAnalyzer
     {
-        // Implement serialization constructors
-        internal const string RuleCA2229Id = "CA2229";
-
-        private static readonly LocalizableString s_localizableTitleCA2229 = CreateLocalizableResourceString(nameof(ImplementSerializationConstructorsTitle));
-        private static readonly LocalizableString s_localizableDescriptionCA2229 = CreateLocalizableResourceString(nameof(ImplementSerializationConstructorsDescription));
-
-        internal static readonly DiagnosticDescriptor RuleCA2229Default = DiagnosticDescriptorHelper.Create(
-            RuleCA2229Id,
-            s_localizableTitleCA2229,
-            ImplementSerializationConstructorsMessageCreateMagicConstructor,
-            DiagnosticCategory.Usage,
-            RuleLevel.IdeHidden_BulkConfigurable,
-            description: s_localizableDescriptionCA2229,
-            isPortedFxCopRule: true,
-            isDataflowRule: false);
-
-        internal static readonly DiagnosticDescriptor RuleCA2229Sealed = DiagnosticDescriptorHelper.Create(
-            RuleCA2229Id,
-            s_localizableTitleCA2229,
-            ImplementSerializationConstructorsMessageMakeSealedMagicConstructorPrivate,
-            DiagnosticCategory.Usage,
-            RuleLevel.IdeHidden_BulkConfigurable,
-            description: s_localizableDescriptionCA2229,
-            isPortedFxCopRule: true,
-            isDataflowRule: false);
-
-        internal static readonly DiagnosticDescriptor RuleCA2229Unsealed = DiagnosticDescriptorHelper.Create(
-            RuleCA2229Id,
-            s_localizableTitleCA2229,
-            ImplementSerializationConstructorsMessageMakeUnsealedMagicConstructorFamily,
-            DiagnosticCategory.Usage,
-            RuleLevel.IdeHidden_BulkConfigurable,
-            description: s_localizableDescriptionCA2229,
-            isPortedFxCopRule: true,
-            isDataflowRule: false);
-
         // Mark ISerializable types with SerializableAttribute
         internal const string RuleCA2237Id = "CA2237";
 
@@ -81,7 +44,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             isPortedFxCopRule: true,
             isDataflowRule: false);
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(RuleCA2229Default, RuleCA2229Sealed, RuleCA2229Unsealed, RuleCA2235, RuleCA2237);
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(RuleCA2235, RuleCA2237);
 
         public override void Initialize(AnalysisContext context)
         {
@@ -93,18 +56,6 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 {
                     INamedTypeSymbol? iserializableTypeSymbol = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeSerializationISerializable);
                     if (iserializableTypeSymbol == null)
-                    {
-                        return;
-                    }
-
-                    INamedTypeSymbol? serializationInfoTypeSymbol = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeSerializationSerializationInfo);
-                    if (serializationInfoTypeSymbol == null)
-                    {
-                        return;
-                    }
-
-                    INamedTypeSymbol? streamingContextTypeSymbol = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeSerializationStreamingContext);
-                    if (streamingContextTypeSymbol == null)
                     {
                         return;
                     }
@@ -123,7 +74,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
                     var isNetStandardAssembly = !context.Compilation.TargetsDotNetFramework();
 
-                    var symbolAnalyzer = new SymbolAnalyzer(iserializableTypeSymbol, serializationInfoTypeSymbol, streamingContextTypeSymbol, serializableAttributeTypeSymbol, nonSerializedAttributeTypeSymbol, isNetStandardAssembly);
+                    var symbolAnalyzer = new SymbolAnalyzer(iserializableTypeSymbol, serializableAttributeTypeSymbol, nonSerializedAttributeTypeSymbol, isNetStandardAssembly);
                     context.RegisterSymbolAction(symbolAnalyzer.AnalyzeSymbol, SymbolKind.NamedType);
                 });
         }
@@ -131,23 +82,17 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         private sealed class SymbolAnalyzer
         {
             private readonly INamedTypeSymbol _iserializableTypeSymbol;
-            private readonly INamedTypeSymbol _serializationInfoTypeSymbol;
-            private readonly INamedTypeSymbol _streamingContextTypeSymbol;
             private readonly INamedTypeSymbol _serializableAttributeTypeSymbol;
             private readonly INamedTypeSymbol _nonSerializedAttributeTypeSymbol;
             private readonly bool _isNetStandardAssembly;
 
             public SymbolAnalyzer(
                 INamedTypeSymbol iserializableTypeSymbol,
-                INamedTypeSymbol serializationInfoTypeSymbol,
-                INamedTypeSymbol streamingContextTypeSymbol,
                 INamedTypeSymbol serializableAttributeTypeSymbol,
                 INamedTypeSymbol nonSerializedAttributeTypeSymbol,
                 bool isNetStandardAssembly)
             {
                 _iserializableTypeSymbol = iserializableTypeSymbol;
-                _serializationInfoTypeSymbol = serializationInfoTypeSymbol;
-                _streamingContextTypeSymbol = streamingContextTypeSymbol;
                 _serializableAttributeTypeSymbol = serializableAttributeTypeSymbol;
                 _nonSerializedAttributeTypeSymbol = nonSerializedAttributeTypeSymbol;
                 _isNetStandardAssembly = isNetStandardAssembly;
@@ -175,35 +120,6 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                              IsSerializable(baseType)))
                         {
                             context.ReportDiagnostic(namedTypeSymbol.CreateDiagnostic(RuleCA2237, namedTypeSymbol.Name));
-                        }
-                    }
-                    else
-                    {
-                        // Look for a serialization constructor.
-                        // A serialization constructor takes two params of type SerializationInfo and StreamingContext.
-                        IMethodSymbol? serializationCtor = namedTypeSymbol.Constructors
-                            .FirstOrDefault(c => c.IsSerializationConstructor(_serializationInfoTypeSymbol, _streamingContextTypeSymbol));
-
-                        // There is no serialization ctor - issue a diagnostic.
-                        if (serializationCtor == null)
-                        {
-                            context.ReportDiagnostic(namedTypeSymbol.CreateDiagnostic(RuleCA2229Default, namedTypeSymbol.Name));
-                        }
-                        else
-                        {
-                            // Check the accessibility
-                            // The serialization ctor should be protected if the class is unsealed and private if the class is sealed.
-                            if (namedTypeSymbol.IsSealed &&
-                                serializationCtor.DeclaredAccessibility != Accessibility.Private)
-                            {
-                                context.ReportDiagnostic(serializationCtor.CreateDiagnostic(RuleCA2229Sealed, namedTypeSymbol.Name));
-                            }
-
-                            if (!namedTypeSymbol.IsSealed &&
-                                serializationCtor.DeclaredAccessibility != Accessibility.Protected)
-                            {
-                                context.ReportDiagnostic(serializationCtor.CreateDiagnostic(RuleCA2229Unsealed, namedTypeSymbol.Name));
-                            }
                         }
                     }
                 }

@@ -473,24 +473,6 @@
   <data name="AddSerializableAttributeCodeActionTitle" xml:space="preserve">
     <value>Add Serializable attribute</value>
   </data>
-  <data name="ImplementSerializationConstructorsCodeActionTitle" xml:space="preserve">
-    <value>Implement Serialization constructor</value>
-  </data>
-  <data name="ImplementSerializationConstructorsDescription" xml:space="preserve">
-    <value>To fix a violation of this rule, implement the serialization constructor. For a sealed class, make the constructor private; otherwise, make it protected.</value>
-  </data>
-  <data name="ImplementSerializationConstructorsMessageCreateMagicConstructor" xml:space="preserve">
-    <value>Add a constructor to {0} with the following signature: 'protected {0}(SerializationInfo info, StreamingContext context)'.</value>
-  </data>
-  <data name="ImplementSerializationConstructorsMessageMakeSealedMagicConstructorPrivate" xml:space="preserve">
-    <value>Declare the serialization constructor of {0}, a sealed type, as private.</value>
-  </data>
-  <data name="ImplementSerializationConstructorsMessageMakeUnsealedMagicConstructorFamily" xml:space="preserve">
-    <value>Declare the serialization constructor of {0}, an unsealed type, as protected.</value>
-  </data>
-  <data name="ImplementSerializationConstructorsTitle" xml:space="preserve">
-    <value>Implement serialization constructors</value>
-  </data>
   <data name="MarkAllNonSerializableFieldsDescription" xml:space="preserve">
     <value>An instance field of a type that is not serializable is declared in a type that is serializable.</value>
   </data>
@@ -508,54 +490,6 @@
   </data>
   <data name="MarkISerializableTypesWithSerializableTitle" xml:space="preserve">
     <value>Mark ISerializable types with serializable</value>
-  </data>
-  <data name="ImplementISerializableCorrectlyDescription" xml:space="preserve">
-    <value>To fix a violation of this rule, make the GetObjectData method visible and overridable, and make sure that all instance fields are included in the serialization process or explicitly marked by using the NonSerializedAttribute attribute.</value>
-  </data>
-  <data name="ImplementISerializableCorrectlyMessageDefault" xml:space="preserve">
-    <value>Add an implementation of GetObjectData to type {0}</value>
-  </data>
-  <data name="ImplementISerializableCorrectlyMessageMakeOverridable" xml:space="preserve">
-    <value>Make {0}.GetObjectData virtual and overridable</value>
-  </data>
-  <data name="ImplementISerializableCorrectlyMessageMakeVisible" xml:space="preserve">
-    <value>Increase the accessibility of {0}.GetObjectData so that it is visible to derived types</value>
-  </data>
-  <data name="ImplementISerializableCorrectlyTitle" xml:space="preserve">
-    <value>Implement ISerializable correctly</value>
-  </data>
-  <data name="ImplementSerializationMethodsCorrectlyDescription" xml:space="preserve">
-    <value>A method that handles a serialization event does not have the correct signature, return type, or visibility.</value>
-  </data>
-  <data name="ImplementSerializationMethodsCorrectlyMessageGeneric" xml:space="preserve">
-    <value>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change its signature so that it is no longer generic</value>
-  </data>
-  <data name="ImplementSerializationMethodsCorrectlyMessageParameters" xml:space="preserve">
-    <value>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change its signature so that it takes a single parameter of type 'System.Runtime.Serialization.StreamingContext'</value>
-  </data>
-  <data name="ImplementSerializationMethodsCorrectlyMessageReturnType" xml:space="preserve">
-    <value>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change its return type from {1} to void (Sub in Visual Basic)</value>
-  </data>
-  <data name="ImplementSerializationMethodsCorrectlyMessageStatic" xml:space="preserve">
-    <value>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change it from static (Shared in Visual Basic) to an instance method</value>
-  </data>
-  <data name="ImplementSerializationMethodsCorrectlyMessageVisibility" xml:space="preserve">
-    <value>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change its accessibility to private</value>
-  </data>
-  <data name="ImplementSerializationMethodsCorrectlyTitle" xml:space="preserve">
-    <value>Implement serialization methods correctly</value>
-  </data>
-  <data name="ProvideDeserializationMethodsForOptionalFieldsDescription" xml:space="preserve">
-    <value>A type has a field that is marked by using the System.Runtime.Serialization.OptionalFieldAttribute attribute, and the type does not provide deserialization event handling methods.</value>
-  </data>
-  <data name="ProvideDeserializationMethodsForOptionalFieldsMessageOnDeserialized" xml:space="preserve">
-    <value>Add a 'private void OnDeserialized(StreamingContext)' method to type {0} and attribute it with the System.Runtime.Serialization.OnDeserializedAttribute</value>
-  </data>
-  <data name="ProvideDeserializationMethodsForOptionalFieldsMessageOnDeserializing" xml:space="preserve">
-    <value>Add a 'private void OnDeserializing(StreamingContext)' method to type {0} and attribute it with the System.Runtime.Serialization.OnDeserializingAttribute</value>
-  </data>
-  <data name="ProvideDeserializationMethodsForOptionalFieldsTitle" xml:space="preserve">
-    <value>Provide deserialization methods for optional fields</value>
   </data>
   <data name="ReviewCodeForSqlInjectionVulnerabilitiesMessage" xml:space="preserve">
     <value>Potential SQL injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</value>

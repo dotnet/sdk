@@ -3954,27 +3954,6 @@
             ]
           }
         },
-        "CA2229": {
-          "id": "CA2229",
-          "shortDescription": "Implement serialization constructors",
-          "fullDescription": "To fix a violation of this rule, implement the serialization constructor. For a sealed class, make the constructor private; otherwise, make it protected.",
-          "defaultLevel": "hidden",
-          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2229",
-          "properties": {
-            "category": "Usage",
-            "isEnabledByDefault": true,
-            "typeName": "SerializationRulesDiagnosticAnalyzer",
-            "languages": [
-              "C#",
-              "Visual Basic"
-            ],
-            "tags": [
-              "PortedFromFxCop",
-              "Telemetry",
-              "EnabledRuleInAggressiveMode"
-            ]
-          }
-        },
         "CA2231": {
           "id": "CA2231",
           "shortDescription": "Overload operator equals on overriding value type Equals",
