@@ -57,7 +57,7 @@ internal sealed class DockerCli : ILocalRegistry
         return command;
     }
 
-    public async Task LoadAsync(BuiltImage image, ImageReference sourceReference, ImageReference destinationReference, CancellationToken cancellationToken)
+    public async Task LoadAsync(BuiltImage image, SourceImageReference sourceReference, DestinationImageReference destinationReference, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
         string dockerPath = FindFullPathFromPath("docker") ?? "docker";
@@ -114,25 +114,25 @@ internal sealed class DockerCli : ILocalRegistry
             switch (commandPath)
             {
                 case DockerCommand:
-                {
-                    JsonDocument config = GetConfig();
+                    {
+                        JsonDocument config = GetConfig();
 
-                    if (!config.RootElement.TryGetProperty("ServerErrors", out JsonElement errorProperty))
-                    {
-                        return true;
+                        if (!config.RootElement.TryGetProperty("ServerErrors", out JsonElement errorProperty))
+                        {
+                            return true;
+                        }
+                        else if (errorProperty.ValueKind == JsonValueKind.Array && errorProperty.GetArrayLength() == 0)
+                        {
+                            return true;
+                        }
+                        else
+                        {
+                            // we have errors, turn them into a string and log them
+                            string messages = string.Join(Environment.NewLine, errorProperty.EnumerateArray());
+                            _logger.LogError($"The daemon server reported errors: {messages}");
+                            return false;
+                        }
                     }
-                    else if (errorProperty.ValueKind == JsonValueKind.Array && errorProperty.GetArrayLength() == 0)
-                    {
-                        return true;
-                    }
-                    else
-                    {
-                        // we have errors, turn them into a string and log them
-                        string messages = string.Join(Environment.NewLine, errorProperty.EnumerateArray());
-                        _logger.LogError($"The daemon server reported errors: {messages}");
-                        return false;
-                    }
-                }
                 case PodmanCommand:
                     return commandPathWasUnknown || await TryRunVersionCommandAsync(PodmanCommand, cancellationToken);
                 default:
@@ -196,7 +196,7 @@ internal sealed class DockerCli : ILocalRegistry
 
     private static void Proc_OutputDataReceived(object sender, DataReceivedEventArgs e) => throw new NotImplementedException();
 
-    private static async Task WriteImageToStreamAsync(BuiltImage image, ImageReference sourceReference, ImageReference destinationReference, Stream imageStream, CancellationToken cancellationToken)
+    private static async Task WriteImageToStreamAsync(BuiltImage image, SourceImageReference sourceReference, DestinationImageReference destinationReference, Stream imageStream, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
         using TarWriter writer = new(imageStream, TarEntryFormat.Pax, leaveOpen: true);
@@ -241,10 +241,11 @@ internal sealed class DockerCli : ILocalRegistry
         }
 
         // Add manifest
-        JsonArray tagsNode = new()
+        JsonArray tagsNode = new();
+        foreach (string tag in destinationReference.Tags)
         {
-            destinationReference.RepositoryAndTag
-        };
+            tagsNode.Add($"{destinationReference.Repository}:{tag}");
+        }
 
         JsonNode manifestNode = new JsonArray(new JsonObject
         {

@@ -45,7 +45,8 @@ public class DockerRegistryTests
         var registryAuthDir = new DirectoryInfo(Path.Combine(registryDir.FullName, "auth"));
         var registryCertsDir = new DirectoryInfo(Path.Combine(registryDir.FullName, "certs"));
         var registryName = "localhost:5555";
-        try {
+        try
+        {
             if (!registryCertsDir.Exists)
             {
                 registryCertsDir.Create();
@@ -77,8 +78,8 @@ public class DockerRegistryTests
             var ridgraphfile = ToolsetUtils.GetRuntimeGraphFilePath();
             Registry mcr = new Registry(DockerRegistryManager.BaseImageSource, logger);
 
-            var sourceImage = new ImageReference(mcr, DockerRegistryManager.RuntimeBaseImage, DockerRegistryManager.Net6ImageTag);
-            var destinationImage = new ImageReference(localAuthed, DockerRegistryManager.RuntimeBaseImage, DockerRegistryManager.Net6ImageTag);
+            var sourceImage = new SourceImageReference(mcr, DockerRegistryManager.RuntimeBaseImage, DockerRegistryManager.Net6ImageTag);
+            var destinationImage = new DestinationImageReference(localAuthed, DockerRegistryManager.RuntimeBaseImage,new[] { DockerRegistryManager.Net6ImageTag });
             ImageBuilder? downloadedImage = await mcr.GetImageManifestAsync(
                 DockerRegistryManager.RuntimeBaseImage,
                 DockerRegistryManager.Net6ImageTag,

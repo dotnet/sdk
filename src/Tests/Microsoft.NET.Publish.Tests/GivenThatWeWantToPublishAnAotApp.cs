@@ -18,7 +18,7 @@ namespace Microsoft.NET.Publish.Tests
         {
         }
 
-        [RequiresMSBuildVersionTheory("17.0.0.32901")]
+        [RequiresMSBuildVersionTheory("17.8.0")]
         [MemberData(nameof(Net7Plus), MemberType = typeof(PublishTestUtils))]
         public void NativeAot_hw_runs_with_no_warnings_when_PublishAot_is_enabled(string targetFramework)
         {
@@ -72,7 +72,7 @@ namespace Microsoft.NET.Publish.Tests
                 .And.HaveStdOutContaining("Hello World");
         }
 
-        [RequiresMSBuildVersionTheory("17.0.0.32901")]
+        [RequiresMSBuildVersionTheory("17.8.0")]
         [MemberData(nameof(Net7Plus), MemberType = typeof(PublishTestUtils))]
         public void NativeAot_hw_runs_with_no_warnings_when_PublishAot_is_false(string targetFramework)
         {
@@ -752,6 +752,31 @@ namespace Microsoft.NET.Publish.Tests
             IsNativeImage(publishedDll).Should().BeTrue();
         }
 
+        [Theory]
+        [InlineData("Static")]
+        [InlineData("Shared")]
+        public void NativeAotLib_errors_out_when_eventpipe_is_enabled(string libType)
+        {
+            // Revisit once the issue is fixed
+            // https://github.com/dotnet/runtime/issues/89346
+            var projectName = "AotStaticLibraryPublishWithEventPipe";
+            var rid = EnvironmentInfo.GetCompatibleRid(ToolsetInfo.CurrentTargetFramework);
+
+            var testProject = CreateTestProjectWithAotLibrary(ToolsetInfo.CurrentTargetFramework, projectName);
+            testProject.AdditionalProperties["PublishAot"] = "true";
+            testProject.AdditionalProperties["RuntimeIdentifier"] = rid;
+            testProject.AdditionalProperties["NativeLib"] = libType;
+            testProject.AdditionalProperties["SelfContained"] = "true";
+            testProject.AdditionalProperties["EventSourceSupport"] = "true";
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+
+            var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
+            publishCommand
+                .Execute()
+                .Should().Fail()
+                .And.HaveStdOutContaining("EventSource is not supported");
+        }
+
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
         [InlineData(ToolsetInfo.CurrentTargetFramework)]
         public void NativeAotSharedLib_only_runs_when_switch_is_enabled(string targetFramework)
@@ -825,7 +850,8 @@ namespace Microsoft.NET.Publish.Tests
 
         private void GetKnownILCompilerPackVersion(TestAsset testAsset, string targetFramework, out string version)
         {
-            var getKnownPacks = new GetValuesCommand(testAsset, "KnownILCompilerPack", GetValuesCommand.ValueType.Item, targetFramework) {
+            var getKnownPacks = new GetValuesCommand(testAsset, "KnownILCompilerPack", GetValuesCommand.ValueType.Item, targetFramework)
+            {
                 MetadataNames = new List<string> { "TargetFramework", "ILCompilerPackVersion" }
             };
             getKnownPacks.Execute().Should().Pass();
