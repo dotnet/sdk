@@ -9,7 +9,8 @@ using Product = Microsoft.DotNet.Cli.Utils.Product;
 
 namespace Microsoft.DotNet.Workloads.Workload.Install
 {
-    internal static class WorkloadResolverFactory
+
+    internal interface IWorkloadResolverFactory
     {
         public class CreationParameters
         {
@@ -33,9 +34,16 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             public IWorkloadResolver WorkloadResolver { get; set; }
         }
 
-        public static CreationResult Create(CreationParameters parameters)
+        CreationResult Create(CreationParameters creationParameters);
+
+        IWorkloadResolver CreateForWorkloadSet(string dotnetPath, string sdkVersion, string userProfileDir, string workloadSetVersion);
+    }
+
+    internal class WorkloadResolverFactory : IWorkloadResolverFactory
+    {
+        public IWorkloadResolverFactory.CreationResult Create(IWorkloadResolverFactory.CreationParameters parameters)
         {
-            var result = new CreationResult();
+            var result = new IWorkloadResolverFactory.CreationResult();
 
             result.InstalledSdkVersion = new ReleaseVersion(parameters.VersionForTesting ?? Product.Version);
 
@@ -95,7 +103,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             return result;
         }
 
-        public static IWorkloadResolver CreateForWorkloadSet(string dotnetPath, string sdkVersion, string userProfileDir, string workloadSetVersion)
+        public IWorkloadResolver CreateForWorkloadSet(string dotnetPath, string sdkVersion, string userProfileDir, string workloadSetVersion)
         {
             var manifestProvider = SdkDirectoryWorkloadManifestProvider.ForWorkloadSet(dotnetPath, sdkVersion, userProfileDir, workloadSetVersion);
             return WorkloadResolver.Create(manifestProvider, dotnetPath, sdkVersion, userProfileDir);

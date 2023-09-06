@@ -15,13 +15,13 @@ namespace Microsoft.DotNet.Workloads.Workload
     {
         public static void RunFirstUseCheck(IReporter reporter)
         {
-            var creationParameters = new WorkloadResolverFactory.CreationParameters()
+            var creationParameters = new IWorkloadResolverFactory.CreationParameters()
             {
                 CheckIfFeatureBandManifestExists = true,
                 UseInstalledSdkVersionForResolver = true
             };
 
-            var creationResult = WorkloadResolverFactory.Create(creationParameters);
+            var creationResult = new WorkloadResolverFactory().Create(creationParameters);
             var sdkFeatureBand = new SdkFeatureBand(creationResult.SdkVersion);
             var verifySignatures = WorkloadCommandBase.ShouldVerifySignatures();
             var tempPackagesDirectory = new DirectoryPath(PathUtilities.CreateTempSubdirectory());

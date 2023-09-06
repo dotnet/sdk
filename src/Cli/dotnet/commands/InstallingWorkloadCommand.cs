@@ -29,6 +29,7 @@ namespace Microsoft.DotNet.Workloads.Workload
         protected readonly SdkFeatureBand _installedFeatureBand;
         protected readonly string _fromRollbackDefinition;
         protected readonly PackageSourceLocation _packageSourceLocation;
+        protected readonly IWorkloadResolverFactory _workloadResolverFactory;
         protected IWorkloadResolver _workloadResolver;
         protected readonly IInstaller _workloadInstallerFromConstructor;
         protected readonly IWorkloadManifestUpdater _workloadManifestUpdaterFromConstructor;
@@ -38,15 +39,11 @@ namespace Microsoft.DotNet.Workloads.Workload
         public InstallingWorkloadCommand(
             ParseResult parseResult,
             IReporter reporter,
-            IWorkloadResolver workloadResolver,
+            IWorkloadResolverFactory workloadResolverFactory,
             IInstaller workloadInstaller,
             INuGetPackageDownloader nugetPackageDownloader,
             IWorkloadManifestUpdater workloadManifestUpdater,
-            string dotnetDir,
-            string userProfileDir,
-            string tempDirPath,
-            string version,
-            string installedFeatureBand = null)
+            string tempDirPath)
             : base(parseResult, reporter: reporter, tempDirPath: tempDirPath, nugetPackageDownloader: nugetPackageDownloader)
         {
             _printDownloadLinkOnly = parseResult.GetValue(InstallingWorkloadCommandParser.PrintDownloadLinkOnlyOption);
@@ -60,19 +57,18 @@ namespace Microsoft.DotNet.Workloads.Workload
             _packageSourceLocation = string.IsNullOrEmpty(configOption) && (sourceOption == null || !sourceOption.Any()) ? null :
                 new PackageSourceLocation(string.IsNullOrEmpty(configOption) ? null : new FilePath(configOption), sourceFeedOverrides: sourceOption);
 
-            var creationParameters = new WorkloadResolverFactory.CreationParameters()
+            workloadResolverFactory = workloadResolverFactory ?? new WorkloadResolverFactory();
+            _workloadResolverFactory = workloadResolverFactory;
+
+            var creationParameters = new IWorkloadResolverFactory.CreationParameters()
             {
-                DotnetPath = dotnetDir,
-                UserProfileDir = userProfileDir,
                 GlobalJsonStartDir = null,
                 SdkVersionFromOption = parseResult.GetValue(InstallingWorkloadCommandParser.VersionOption),
-                VersionForTesting = version,
                 CheckIfFeatureBandManifestExists = !(_printDownloadLinkOnly),    // don't check for manifest existence when print download link is passed
-                WorkloadResolverForTesting = workloadResolver,
                 UseInstalledSdkVersionForResolver = true
             };
 
-            var creationResult = WorkloadResolverFactory.Create(creationParameters);
+            var creationResult = _workloadResolverFactory.Create(creationParameters);
 
             _dotnetPath = creationResult.DotnetPath;
             _userProfileDir = creationResult.UserProfileDir;

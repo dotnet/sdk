@@ -16,6 +16,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Repair
     {
         private readonly PackageSourceLocation _packageSourceLocation;
         private readonly IInstaller _workloadInstaller;
+        protected readonly IWorkloadResolverFactory _workloadResolverFactory;
         private IWorkloadResolver _workloadResolver;
         private readonly ReleaseVersion _sdkVersion;
         private readonly string _dotnetPath;
@@ -24,13 +25,9 @@ namespace Microsoft.DotNet.Workloads.Workload.Repair
         public WorkloadRepairCommand(
             ParseResult parseResult,
             IReporter reporter = null,
-            IWorkloadResolver workloadResolver = null,
+            IWorkloadResolverFactory workloadResolverFactory = null,
             IInstaller workloadInstaller = null,
-            INuGetPackageDownloader nugetPackageDownloader = null,
-            string dotnetDir = null,
-            string tempDirPath = null,
-            string version = null,
-            string userProfileDir = null)
+            INuGetPackageDownloader nugetPackageDownloader = null)
             : base(parseResult, reporter: reporter, nugetPackageDownloader: nugetPackageDownloader)
         {
             var configOption = parseResult.GetValue(WorkloadRepairCommandParser.ConfigOption);
@@ -38,19 +35,18 @@ namespace Microsoft.DotNet.Workloads.Workload.Repair
             _packageSourceLocation = string.IsNullOrEmpty(configOption) && (sourceOption == null || !sourceOption.Any()) ? null :
                 new PackageSourceLocation(string.IsNullOrEmpty(configOption) ? null : new FilePath(configOption), sourceFeedOverrides: sourceOption);
 
-            var creationParameters = new WorkloadResolverFactory.CreationParameters()
+            workloadResolverFactory = workloadResolverFactory ?? new WorkloadResolverFactory();
+            _workloadResolverFactory = workloadResolverFactory;
+
+            var creationParameters = new IWorkloadResolverFactory.CreationParameters()
             {
-                DotnetPath = dotnetDir,
-                UserProfileDir = userProfileDir,
                 GlobalJsonStartDir = null,
                 SdkVersionFromOption = parseResult.GetValue(WorkloadRepairCommandParser.VersionOption),
-                VersionForTesting = version,
                 CheckIfFeatureBandManifestExists = true,
-                WorkloadResolverForTesting = workloadResolver,
                 UseInstalledSdkVersionForResolver = false
             };
 
-            var creationResult = WorkloadResolverFactory.Create(creationParameters);
+            var creationResult = workloadResolverFactory.Create(creationParameters);
 
             _dotnetPath = creationResult.DotnetPath;
             _sdkVersion = creationResult.SdkVersion;
@@ -60,7 +56,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Repair
 
             _workloadInstaller = workloadInstaller ??
                                  WorkloadInstallerFactory.GetWorkloadInstaller(Reporter, sdkFeatureBand,
-                                     _workloadResolver, Verbosity, creationResult.UserProfileDir, VerifySignatures, PackageDownloader, dotnetDir, TempDirectoryPath,
+                                     _workloadResolver, Verbosity, creationResult.UserProfileDir, VerifySignatures, PackageDownloader, _dotnetPath, TempDirectoryPath,
                                      _packageSourceLocation, _parseResult.ToRestoreActionConfig());
         }
 
@@ -82,7 +78,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Repair
 
                 ReinstallWorkloadsBasedOnCurrentManifests(workloadIds, new SdkFeatureBand(_sdkVersion));
 
-                WorkloadInstallCommand.TryRunGarbageCollection(_workloadInstaller, Reporter, Verbosity, _dotnetPath, _sdkVersion.ToString(), _userProfileDir);
+                WorkloadInstallCommand.TryRunGarbageCollection(_workloadInstaller, Reporter, Verbosity, workloadSetVersion => _workloadResolverFactory.CreateForWorkloadSet(_dotnetPath, _sdkVersion.ToString(), _userProfileDir, workloadSetVersion));
 
                 Reporter.WriteLine();
                 Reporter.WriteLine(string.Format(LocalizableStrings.RepairSucceeded, string.Join(" ", workloadIds)));
