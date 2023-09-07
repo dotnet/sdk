@@ -18,11 +18,10 @@ namespace Microsoft.DotNet.SourceBuild.SmokeTests;
 [Trait("Category", "SdkContent")]
 public class ArtifactsSizeTest : SmokeTests
 {
+    private const int SizeThresholdPercentage = 25;
     private static readonly string BaselineFilePath = BaselineHelper.GetBaselineFilePath($"ArtifactsSizes/{Config.TargetRid}.txt");
     private readonly Dictionary<string, long> BaselineFileContent = new();
     private Dictionary<string, int> FilePathCountMap = new();
-    private const int SizeThresholdPercentage = 25;
-
 
     public ArtifactsSizeTest(ITestOutputHelper outputHelper) : base(outputHelper)
     {
@@ -41,13 +40,41 @@ public class ArtifactsSizeTest : SmokeTests
         }
     }
 
-    [SkippableFact(new[] { Config.SourceBuiltArtifactsPathEnv, Config.SdkTarballPathEnv, Config.TargetRidEnv, Config.ExcludeArtifactsSizeEnv }, skipOnNullOrWhiteSpaceEnv: true, skipOnTrueEnv: true)]
+
+    [SkippableFact(Config.IncludeArtifactsSizeEnv, skipOnFalseEnv: true)]
     public void CompareArtifactsToBaseline()
     {
-        Assert.NotNull(Config.SourceBuiltArtifactsPath);
-        Assert.NotNull(Config.SdkTarballPath);
-        Assert.NotNull(Config.TargetRid);
+        OutputHelper.LogAndThrowIfNullOrEmpty(Config.SourceBuiltArtifactsPath, Config.SourceBuiltArtifactsPathEnv);
+        OutputHelper.LogAndThrowIfNullOrEmpty(Config.SdkTarballPath, Config.SdkTarballPathEnv);
+        OutputHelper.LogAndThrowIfNullOrEmpty(Config.TargetRid, Config.TargetRidEnv);
 
+        var tarEntries = ProcessSdkAndArtifactsTarballs();
+
+        foreach (var entry in tarEntries)
+        {
+            if (!BaselineFileContent.TryGetValue(entry.FilePath, out long baselineBytes))
+            {
+                OutputHelper.LogWarningMessage($"{entry.FilePath} does not exist in baseline. Adding it to the baseline file");
+            }
+            else
+            {
+                CompareFileSizes(entry.FilePath, entry.Bytes, baselineBytes);
+            }
+        }
+
+        try
+        {
+            string actualFilePath = Path.Combine(DotNetHelper.LogsDirectory, $"UpdatedArtifactsSizes_{Config.TargetRid}.txt");
+            File.WriteAllLines(actualFilePath, tarEntries.Select(entry => $"{entry.FilePath}: {entry.Bytes}"));
+        }
+        catch (IOException ex)
+        {
+            throw new InvalidOperationException($"An error occurred while copying the baselines file: {BaselineFilePath}", ex);
+        }
+    }
+
+    private (string FilePath, long Bytes)[] ProcessSdkAndArtifactsTarballs()
+    {
         string tempTarballDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
         Directory.CreateDirectory(tempTarballDir);
 
@@ -64,30 +91,10 @@ public class ArtifactsSizeTest : SmokeTests
             })
             .OrderBy(entry => entry.FilePath)
             .ToArray();
-
-        foreach (var entry in tarEntries)
-        {
-            if (!BaselineFileContent.TryGetValue(entry.FilePath, out long baselineBytes))
-            {
-                OutputHelper.LogWarningMessage($"{entry.FilePath} does not exist in baseline. Adding it to the baseline file");
-            }
-            else
-            {
-                CompareFileSizes(entry.FilePath, entry.Bytes, baselineBytes);
-            }
-        }
-
+        
         Directory.Delete(tempTarballDir, true);
-
-        try
-        {
-            string actualFilePath = Path.Combine(DotNetHelper.LogsDirectory, $"Updated_ArtifactsSizes_{Config.TargetRid}.txt");
-            File.WriteAllLines(actualFilePath, tarEntries.Select(entry => $"{entry.FilePath}: {entry.Bytes}"));
-        }
-        catch (IOException ex)
-        {
-            throw new InvalidOperationException($"An error occurred while copying the baselines file: {BaselineFilePath}", ex);
-        }
+        
+        return tarEntries;
     }
 
     private string ProcessFilePath(string originalPath)
