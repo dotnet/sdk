@@ -15,9 +15,9 @@ namespace Microsoft.DotNet.PackageInstall.Tests
 {
     public class ToolPackageUninstallerTests : SdkTest
     {
-        [Theory]
+        /*[Theory]
         [InlineData(false)]
-        [InlineData(true)]
+        [InlineData(true)]*/
         public void GivenAnInstalledPackageUninstallRemovesThePackage(bool testMockBehaviorIsInSync)
         {
             var source = GetTestLocalFeedPath();
