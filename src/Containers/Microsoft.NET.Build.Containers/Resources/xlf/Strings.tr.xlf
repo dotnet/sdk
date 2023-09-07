@@ -64,7 +64,7 @@
       </trans-unit>
       <trans-unit id="ContainerBuilder_ImageUploadedToRegistry">
         <source>Pushed image '{0}' to registry '{1}'.</source>
-        <target state="needs-review-translation">'{0}' kapsayıcısı, '{1}' kayıt defterine gönderildi.</target>
+        <target state="new">Pushed image '{0}' to registry '{1}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="ContainerBuilder_StartBuildingImage">

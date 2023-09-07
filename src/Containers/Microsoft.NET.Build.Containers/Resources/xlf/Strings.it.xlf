@@ -64,7 +64,7 @@
       </trans-unit>
       <trans-unit id="ContainerBuilder_ImageUploadedToRegistry">
         <source>Pushed image '{0}' to registry '{1}'.</source>
-        <target state="needs-review-translation">È stato eseguito il push del contenitore '{0}' nel registro '{1}'.</target>
+        <target state="new">Pushed image '{0}' to registry '{1}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="ContainerBuilder_StartBuildingImage">

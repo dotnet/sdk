@@ -64,7 +64,7 @@
       </trans-unit>
       <trans-unit id="ContainerBuilder_ImageUploadedToRegistry">
         <source>Pushed image '{0}' to registry '{1}'.</source>
-        <target state="needs-review-translation">Принудительно отправлен контейнер "{0}" в реестр "{1}".</target>
+        <target state="new">Pushed image '{0}' to registry '{1}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="ContainerBuilder_StartBuildingImage">
