@@ -313,16 +313,20 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
 
             PackageSourceMapping packageSourceMapping = PackageSourceMapping.GetPackageSourceMapping(settings);
 
-            // filter package patterns if enabled            
+            // filter package patterns if enabled
+            Console.WriteLine("31");
             if (_isNuGetTool && packageSourceMapping?.IsEnabled == true)
             {
+                Console.WriteLine("32");
                 IReadOnlyList<string> sources = packageSourceMapping.GetConfiguredPackageSources(packageId.ToString());
-
+                Console.WriteLine("33");
                 if (sources.Count == 0)
                 {
+                    Console.WriteLine("34");
                     throw new NuGetPackageInstallerException(string.Format(LocalizableStrings.FailedToGetPackageUnderPackageSourceMapping, packageId));
                 }
             }
+            Console.WriteLine("35");
 
             if (packageSourceLocation?.AdditionalSourceFeed?.Any() ?? false)
             {

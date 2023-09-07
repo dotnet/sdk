@@ -23,40 +23,44 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         [InlineData(true)]
         public void GivenNugetConfigInstallSucceeds(bool testMockBehaviorIsInSync)
         {
+            Console.WriteLine("1");
             string testDirectory = _testAssetsManager.CreateTestDirectory(identifier: testMockBehaviorIsInSync.ToString()).Path;
-
+            Console.WriteLine("2");
             var nugetConfigPath = WriteNugetConfigFileToPointToTheFeed(testDirectory);
-
+            Console.WriteLine("3");
             var (store, installer, reporter, fileSystem) = Setup(
                 useMock: testMockBehaviorIsInSync,
                 testDirectory: testDirectory,
                 feeds: GetMockFeedsForConfigFile(nugetConfigPath));
-
+            Console.WriteLine("4");
             try
             {
+                Console.WriteLine("5");
                 var nugetCacheLocation =
                     new DirectoryPath(testDirectory).WithSubDirectories(Path.GetRandomFileName());
-
+                Console.WriteLine("6");
                 IToolPackage toolPackage = installer.InstallPackage(
                     packageId: TestPackageId,
                     versionRange: VersionRange.Parse(TestPackageVersion),
                     packageLocation: new PackageLocation(nugetConfig: nugetConfigPath),
                     targetFramework: _testTargetframework);
-
+                Console.WriteLine("7");
                 var commands = toolPackage.Commands;
                 var expectedPackagesFolder = NuGetGlobalPackagesFolder.GetLocation();
                 commands[0].Executable.Value.Should().StartWith(expectedPackagesFolder);
-
+                Console.WriteLine("8");
                 fileSystem.File
                     .Exists(commands[0].Executable.Value)
                     .Should().BeTrue($"{commands[0].Executable.Value} should exist");
             }
             finally
             {
+                Console.WriteLine("9");
                 foreach (var line in reporter.Lines)
                 {
                     Log.WriteLine(line);
                 }
+                Console.WriteLine("10");
             }
         }
 
@@ -65,26 +69,30 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         [InlineData(true)]
         public void GivenNugetConfigVersionRangeInstallSucceeds(bool testMockBehaviorIsInSync)
         {
+            Console.WriteLine("11");
             string testDirectory = _testAssetsManager.CreateTestDirectory(identifier: testMockBehaviorIsInSync.ToString()).Path;
-
+            Console.WriteLine("12");
             var nugetConfigPath = WriteNugetConfigFileToPointToTheFeed(testDirectory);
-
+            Console.WriteLine("13");
             var (store, installer, reporter, fileSystem) = Setup(
                 useMock: testMockBehaviorIsInSync,
                 testDirectory: testDirectory,
                 feeds: GetMockFeedsForConfigFile(nugetConfigPath));
-
+            Console.WriteLine("14");
             IToolPackage toolPackage = installer.InstallPackage(
                 packageId: TestPackageId,
                 versionRange: VersionRange.Parse("1.0.0-*"),
                 packageLocation: new PackageLocation(nugetConfig: nugetConfigPath),
                 targetFramework: _testTargetframework);
-
+            Console.WriteLine("15");
             var expectedPackagesFolder = NuGetGlobalPackagesFolder.GetLocation();
-
+            Console.WriteLine("16");
             var commands = toolPackage.Commands;
+            Console.WriteLine("17");
             commands[0].Executable.Value.Should().StartWith(expectedPackagesFolder);
+            Console.WriteLine("18");
             toolPackage.Version.Should().Be(NuGetVersion.Parse(TestPackageVersion));
+            Console.WriteLine("19");
         }
 
         private static List<MockFeed> GetMockFeedsForConfigFile(FilePath nugetConfig)
@@ -113,14 +121,18 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             string testDirectory,
             List<MockFeed> feeds = null)
         {
+            Console.WriteLine("20");
             var root = new DirectoryPath(Path.Combine(Directory.GetCurrentDirectory(), Path.GetRandomFileName()));
+            Console.WriteLine("21");
             var reporter = new BufferedReporter();
-
+            Console.WriteLine("22");
             IFileSystem fileSystem;
+            Console.WriteLine("23");
             IToolPackageStore store;
             IToolPackageDownloader downloader;
             if (useMock)
             {
+                Console.WriteLine("24");
                 fileSystem = new FileSystemMockBuilder().Build();
                 store = new ToolPackageStoreMock(root, fileSystem);
                 downloader = new ToolPackageDownloaderMock(
@@ -128,20 +140,25 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                     fileSystem: fileSystem,
                     reporter: reporter,
                     feeds: feeds);
+                Console.WriteLine("25");
             }
             else
             {
+                Console.WriteLine("26");
                 fileSystem = new FileSystemWrapper();
                 store = new ToolPackageStoreAndQuery(root);
                 var runtimeJsonPathForTests = Path.Combine(TestContext.Current.ToolsetUnderTest.SdkFolderUnderTest, "RuntimeIdentifierGraph.json");
                 downloader = new ToolPackageDownloader(store, runtimeJsonPathForTests);
+                Console.WriteLine("27");
             }
-
+            Console.WriteLine("28");
             return (store, downloader, reporter, fileSystem);
+
         }
 
         private FilePath WriteNugetConfigFileToPointToTheFeed(string testDirectory)
         {
+            Console.WriteLine("29");
             var nugetConfigName = "NuGet.Config";
 
             var tempPathForNugetConfigWithWhiteSpace =
@@ -150,7 +167,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             Directory.CreateDirectory(tempPathForNugetConfigWithWhiteSpace);
 
             NuGetConfigWriter.Write(tempPathForNugetConfigWithWhiteSpace, GetTestLocalFeedPath());
-
+            Console.WriteLine("30");
             return new FilePath(Path.GetFullPath(Path.Combine(tempPathForNugetConfigWithWhiteSpace, nugetConfigName)));
         }
 
