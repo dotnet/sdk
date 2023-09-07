@@ -311,7 +311,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             PackageSourceProvider packageSourceProvider = new PackageSourceProvider(settings);
             defaultSources = packageSourceProvider.LoadPackageSources().Where(source => source.IsEnabled);
 
-            /*PackageSourceMapping packageSourceMapping = PackageSourceMapping.GetPackageSourceMapping(settings);
+            PackageSourceMapping packageSourceMapping = PackageSourceMapping.GetPackageSourceMapping(settings);
 
             // filter package patterns if enabled            
             if (_isNuGetTool && packageSourceMapping?.IsEnabled == true)
@@ -322,7 +322,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
                 {
                     throw new NuGetPackageInstallerException(string.Format(LocalizableStrings.FailedToGetPackageUnderPackageSourceMapping, packageId));
                 }
-            }*/
+            }
 
             if (packageSourceLocation?.AdditionalSourceFeed?.Any() ?? false)
             {
