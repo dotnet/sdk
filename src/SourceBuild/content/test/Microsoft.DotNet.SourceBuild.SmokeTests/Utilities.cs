@@ -11,6 +11,7 @@ using System.IO.Compression;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Xunit;
 using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.SourceBuild.SmokeTests;
@@ -112,5 +113,18 @@ public static class Utilities
 
         outputHelper.WriteLine($"{Environment.NewLine}{prefix}{message}.{Environment.NewLine}");
         outputHelper.WriteLine("##vso[task.complete result=SucceededWithIssues;]");
+    }
+
+    public static void LogAndThrowIfNullOrEmpty(this ITestOutputHelper outputHelper, string? variable, string variableName)
+    {
+        if (string.IsNullOrEmpty(variable) || string.IsNullOrWhiteSpace(variable))
+        {
+            string prefix = "##vso[task.logissue type=error;]";
+            string message = $"{variableName} is null, empty, or whitespace.";
+
+            outputHelper.WriteLine($"{Environment.NewLine}{prefix}{message}.{Environment.NewLine}");
+
+            throw new ArgumentException(message);
+        }
     }
 }

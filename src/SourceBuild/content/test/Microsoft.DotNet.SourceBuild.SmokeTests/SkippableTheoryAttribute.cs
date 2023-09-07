@@ -11,9 +11,9 @@ namespace Microsoft.DotNet.SourceBuild.SmokeTests;
 /// </summary>
 internal class SkippableTheoryAttribute : TheoryAttribute
 {
-    public SkippableTheoryAttribute(string envName, bool skipOnNullOrWhiteSpaceEnv = false, bool skipOnTrueEnv = false, string[] skipArchitectures = null) =>
-        SkippableFactAttribute.EvaluateSkips(skipOnNullOrWhiteSpaceEnv, skipOnTrueEnv, skipArchitectures, (skip) => Skip = skip, envName);
+    public SkippableTheoryAttribute(string envName, bool skipOnNullOrWhiteSpaceEnv = false, bool skipOnTrueEnv = false, bool skipOnFalseEnv = false, string[] skipArchitectures = null) =>
+        SkippableFactAttribute.EvaluateSkips(skipOnNullOrWhiteSpaceEnv, skipOnTrueEnv, skipOnFalseEnv, skipArchitectures, (skip) => Skip = skip, envName);
 
-    public SkippableTheoryAttribute(string[] envNames, bool skipOnNullOrWhiteSpaceEnv = false, bool skipOnTrueEnv = false, string[] skipArchitectures = null) =>
-        SkippableFactAttribute.EvaluateSkips(skipOnNullOrWhiteSpaceEnv, skipOnTrueEnv, skipArchitectures, (skip) => Skip = skip, envNames);
+    public SkippableTheoryAttribute(string[] envNames, bool skipOnNullOrWhiteSpaceEnv = false, bool skipOnTrueEnv = false, bool skipOnFalseEnv = false, string[] skipArchitectures = null) =>
+        SkippableFactAttribute.EvaluateSkips(skipOnNullOrWhiteSpaceEnv, skipOnTrueEnv, skipOnFalseEnv, skipArchitectures, (skip) => Skip = skip, envNames);
 }
