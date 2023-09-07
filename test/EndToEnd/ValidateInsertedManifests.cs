@@ -31,8 +31,7 @@ namespace EndToEnd.Tests
 
                     string manifestFile = manifestDir.GetFile("WorkloadManifest.json").FullName;
 
-                    var baselineFile = manifestDir.GetFile("Baseline.WorkloadSet.json").FullName;
-                    if (!(new FileInfo(baselineFile).Exists))
+                    if (!string.Equals(manifestId, "workloadsets"))
                     {
                         new FileInfo(manifestFile).Exists.Should().BeTrue();
                         using var fileStream = new FileStream(manifestFile, FileMode.Open, FileAccess.Read);
