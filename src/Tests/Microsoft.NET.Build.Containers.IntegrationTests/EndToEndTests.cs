@@ -220,7 +220,7 @@ public class EndToEndTests : IDisposable
         var sourceReference = new SourceImageReference(registry, DockerRegistryManager.RuntimeBaseImage,
             DockerRegistryManager.Net7ImageTag);
         var destinationReference = new DestinationImageReference(
-            KnownLocalRegistryTypes.CreateLocalRegistry(archiveFile, format), NewImageName(), tags);
+            KnownLocalRegistryTypes.CreateLocalRegistry(archiveFile, format), NewImageName(testName), tags);
 
         await destinationReference.LocalRegistry!.LoadAsync(builtImage, sourceReference, destinationReference, default)
             .ConfigureAwait(false);
