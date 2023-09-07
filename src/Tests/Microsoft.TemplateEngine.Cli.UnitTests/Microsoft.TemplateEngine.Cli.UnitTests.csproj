@@ -8,10 +8,18 @@
     <IsUnitTestProject>true</IsUnitTestProject>
     <EnableStyleCopAnalyzer>true</EnableStyleCopAnalyzer>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+
+    <!-- NU1608: Disable dependency constraints. Make packages referenced by the project directly rather than packages from other sources. -->
+    <!-- NETSDK1023: Disable implicit reference so that packages can be referenced in the project. -->
+    <NoWarn>$(NoWarn);NU1608;NETSDK1023</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
     <None Include="TemplateInstallTests/TestTemplates/**/*" CopyToOutputDirectory="Always" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="xunit.core" VersionOverride="2.5.0" />
   </ItemGroup>
 
   <ItemGroup>

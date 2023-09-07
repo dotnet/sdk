@@ -8,6 +8,10 @@
     <Nullable>enable</Nullable>
     <EnableStyleCopAnalyzer>true</EnableStyleCopAnalyzer>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+
+    <!-- NU1608: Disable dependency constraints. Make packages referenced by the project directly rather than packages from other sources. -->
+    <!-- NETSDK1023: Disable implicit reference so that packages can be referenced in the project. -->
+    <NoWarn>$(NoWarn);NU1608;NETSDK1023</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -23,6 +27,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="xunit.core" VersionOverride="2.5.0" />
     <PackageReference Include="Microsoft.DotNet.Common.ProjectTemplates.6.0" VersionOverride="6.0.*" GeneratePathProperty="true" />
     <PackageReference Include="Microsoft.DotNet.Common.ProjectTemplates.7.0" VersionOverride="7.0.*-*" GeneratePathProperty="true" />
     <PackageReference Include="Microsoft.DotNet.Web.ProjectTemplates.6.0" VersionOverride="6.0.*" GeneratePathProperty="true" />
