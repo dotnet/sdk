@@ -47,7 +47,7 @@ namespace Microsoft.DotNet.Cli.List.Package.Tests
             var projectDirectory = testAsset.Path;
 
             var packageName = "Newtonsoft.Json";
-            var packageVersion = "13.0.1";
+            var packageVersion = ToolsetInfo.GetNewtonsoftJsonPackageVersion();
             var cmd = new DotnetCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
                 .Execute("add", "package", packageName, "--version", packageVersion);
@@ -65,7 +65,7 @@ namespace Microsoft.DotNet.Cli.List.Package.Tests
                 .Should()
                 .Pass()
                 .And.NotHaveStdErr()
-                .And.HaveStdOutContainingIgnoreSpaces(packageName+packageVersion+packageVersion);
+                .And.HaveStdOutContainingIgnoreSpaces(packageName + packageVersion + packageVersion);
         }
 
         [Fact]
@@ -195,7 +195,7 @@ class Program
 
             new ListPackageCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
-                .Execute(args:"--include-transitive")
+                .Execute(args: "--include-transitive")
                 .Should()
                 .Pass()
                 .And.NotHaveStdErr()
@@ -244,7 +244,7 @@ class Program
                     .And.HaveStdOutContainingIgnoreSpaces(shouldInclude.Replace(" ", ""))
                     .And.NotHaveStdOutContaining(shouldntInclude.Replace(" ", ""));
             }
-            
+
         }
 
         [Fact]

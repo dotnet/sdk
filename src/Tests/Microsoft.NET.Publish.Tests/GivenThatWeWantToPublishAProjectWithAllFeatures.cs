@@ -16,7 +16,7 @@ namespace Microsoft.NET.Publish.Tests
 
         [Theory]
         [MemberData(nameof(PublishData))]
-        public void It_publishes_the_project_correctly(string targetFramework, string [] expectedPublishFiles)
+        public void It_publishes_the_project_correctly(string targetFramework, string[] expectedPublishFiles)
         {
             PublishCommand publishCommand = GetPublishCommand(targetFramework);
             publishCommand
@@ -68,6 +68,7 @@ namespace Microsoft.NET.Publish.Tests
             ""System.GC.RetainVM"": false,
             ""System.Net.Http.EnableActivityPropagation"": false,
             ""System.Net.Http.UseNativeHttpHandler"": true,
+            ""System.Net.Security.UseManagedNtlm"": true,
             ""System.Reflection.Metadata.MetadataUpdater.IsSupported"": false,
             ""System.Reflection.NullabilityInfoContext.IsSupported"": false,
             ""System.Resources.ResourceManager.AllowCustomResourceTypes"": false,
@@ -87,6 +88,8 @@ namespace Microsoft.NET.Publish.Tests
             ""System.Threading.Thread.EnableAutoreleasePool"": false,
             ""System.Threading.ThreadPool.MinThreads"": 2,
             ""System.Threading.ThreadPool.MaxThreads"": 9,
+            ""System.Threading.ThreadPool.UseWindowsThreadPool"": true,
+            ""System.Xml.XmlResolver.IsNetworkingEnabledByDefault"": false,
             ""extraProperty"": true
         },
         ""framework"": {
@@ -99,7 +102,7 @@ namespace Microsoft.NET.Publish.Tests
             baselineConfigJsonObject["runtimeOptions"]["tfm"] = targetFramework;
             baselineConfigJsonObject["runtimeOptions"]["framework"]["version"] =
                 targetFramework == "net6.0" ? "6.0.0" : "1.1.2";
-            
+
             runtimeConfigJsonObject
                 .Should()
                 .BeEquivalentTo(baselineConfigJsonObject);

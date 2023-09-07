@@ -23,7 +23,7 @@ namespace Microsoft.NET.Build.Tests
                 IsExe = true
             };
 
-            testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", "13.0.1"));
+            testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", ToolsetInfo.GetNewtonsoftJsonPackageVersion()));
 
             string filenameToSkip = "Newtonsoft.Json.dll";
 
@@ -226,7 +226,7 @@ namespace Microsoft.NET.Build.Tests
                                         new XAttribute("Condition", $"'%(Filename)%(Extension)' == '{filenameToSkip}'"));
 
                 itemGroup.Add(fileToSkipItem);
-            }            
+            }
 
             var conflictItem = new XElement(ns + "_ConflictPackageFiles",
                                 new XAttribute("Include", "@(_FileToSkip)"),
