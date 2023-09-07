@@ -120,6 +120,6 @@
       <FormattedBaselineManifest Include="}" />
     </ItemGroup>
 
-    <WriteLinestoFile File="$(RealFormattedManifestPaths)\Baseline.WorkloadSet.json" Lines="@(FormattedBaselineManifest)" />
+    <WriteLinestoFile File="$(RealFormattedManifestPaths)\baseline.workloadset.json" Lines="@(FormattedBaselineManifest)" />
   </Target>
 </Project>
