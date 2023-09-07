@@ -23,7 +23,7 @@ namespace Microsoft.DotNet.Cli.Install.Tests
         }
 
        /* [Fact]*/
-        public void ItRunsWithTheSpecifiedVerbosity()
+        /*public void ItRunsWithTheSpecifiedVerbosity()
         {
             var result = new DotnetToolCommand(Log)
                 .Execute("install -g -v:n nonexistent_tool_package".Split());
@@ -36,6 +36,6 @@ namespace Microsoft.DotNet.Cli.Install.Tests
                 .StdOut
                 .Should()
                 .BeEmpty();
-        }
+        }*/
     }
 }
