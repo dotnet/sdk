@@ -386,8 +386,8 @@
     <comment>{StrBegin="CONTAINER2005: "}</comment>
   </data>
   <data name="ArchiveRegistry_PushInfo" xml:space="preserve">
-    <value>local archive at '{0}'</value>
-    <comment>{0} is the path to the file written</comment>
+    <value>local archive at '{0}' as {1} </value>
+    <comment>{0} is the path to the file written, {1} is the format type written</comment>
   </data>
   <data name="DockerCli_PushInfo" xml:space="preserve">
     <value>local registry via '{0}'</value>

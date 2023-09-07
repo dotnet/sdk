@@ -2,8 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Extensions.Logging;
-using Microsoft.NET.Build.Containers.LocalDaemons;
-
 namespace Microsoft.NET.Build.Containers;
 
 /// <summary>
@@ -65,13 +63,15 @@ internal readonly record struct DestinationImageReference
         string[] imageTags,
         ILoggerFactory loggerFactory,
         string? archiveOutputPath,
+        ContainerImageArchiveFormat archiveOutputFormat,
         string? outputRegistry,
         string? localRegistryCommand)
     {
         DestinationImageReference destinationImageReference;
         if (!string.IsNullOrEmpty(archiveOutputPath))
         {
-            destinationImageReference = new DestinationImageReference(new ArchiveFileRegistry(archiveOutputPath), repository, imageTags);
+            ILocalRegistry localRegistry = KnownLocalRegistryTypes.CreateLocalRegistry(archiveOutputPath, archiveOutputFormat);
+            destinationImageReference = new DestinationImageReference(localRegistry, repository, imageTags);
         }
         else if (!string.IsNullOrEmpty(outputRegistry))
         {

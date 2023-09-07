@@ -23,9 +23,9 @@
         <note>{StrBegin="CONTAINER2026: "}</note>
       </trans-unit>
       <trans-unit id="ArchiveRegistry_PushInfo">
-        <source>local archive at '{0}'</source>
-        <target state="new">local archive at '{0}'</target>
-        <note>{0} is the path to the file written</note>
+        <source>local archive at '{0}' as {1} </source>
+        <target state="new">local archive at '{0}' as {1} </target>
+        <note>{0} is the path to the file written, {1} is the format type written</note>
       </trans-unit>
       <trans-unit id="BaseEntrypointOverwritten">
         <source>CONTAINER2022: The base image has an entrypoint that will be overwritten to start the application. Set ContainerAppCommandInstruction to 'Entrypoint' if this is desired. To preserve the base image entrypoint, set ContainerAppCommandInstruction to 'DefaultArgs'.</source>

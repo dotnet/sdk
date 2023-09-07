@@ -56,6 +56,7 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
             ImageTags,
             msbuildLoggerFactory,
             ArchiveOutputPath,
+            ArchiveOutputFormat,
             OutputRegistry,
             LocalRegistry);
 

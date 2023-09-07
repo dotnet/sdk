@@ -106,7 +106,7 @@ namespace Microsoft.NET.Build.Containers.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to local archive at &apos;{0}&apos;.
+        ///   Looks up a localized string similar to local archive at &apos;{0}&apos; as {1} .
         /// </summary>
         internal static string ArchiveRegistry_PushInfo {
             get {
