@@ -1,16 +1,18 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.ObjectModel;
 using System.Reflection;
 using System.Security.Cryptography;
 using Microsoft.DotNet.Cli;
-using Microsoft.Extensions.EnvironmentAbstractions;
-using NuGet.Versioning;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
+using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.ToolPackage;
+using Microsoft.Extensions.EnvironmentAbstractions;
+using NuGet.Configuration;
 using NuGet.Packaging;
 using NuGet.Packaging.Signing;
-using Microsoft.DotNet.Cli.Utils;
+using NuGet.Versioning;
 
 namespace Microsoft.DotNet.PackageInstall.Tests
 {
@@ -20,6 +22,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         private const string TestPreviewPackageVersion = "2.0.1-preview1";
         private static readonly PackageId TestPackageId = new PackageId("global.tool.console.demo");
         private readonly NuGetPackageDownloader _installer;
+        private readonly NuGetPackageDownloader _toolInstaller;
 
         private readonly DirectoryPath _tempDirectory;
 
@@ -33,6 +36,9 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             _installer =
                 new NuGetPackageDownloader(_tempDirectory, null, new MockFirstPartyNuGetPackageSigningVerifier(), _logger,
                     restoreActionConfig: new RestoreActionConfig(NoCache: true), timer: () => ExponentialRetry.Timer(ExponentialRetry.TestingIntervals));
+            _toolInstaller =
+                new NuGetPackageDownloader(_tempDirectory, null, new MockFirstPartyNuGetPackageSigningVerifier(), _logger,
+                    restoreActionConfig: new RestoreActionConfig(NoCache: true), timer: () => ExponentialRetry.Timer(ExponentialRetry.TestingIntervals), isNuGetTool: true);
         }
 
         [Fact]
@@ -159,6 +165,48 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         }
 
         [Fact]
+        public void GivenNoPackageSourceMappingItShouldError()
+        {
+            string getTestLocalFeedPath = GetTestLocalFeedPath();
+            string relativePath = Path.GetRelativePath(Environment.CurrentDirectory, getTestLocalFeedPath);
+            Log.WriteLine(relativePath);
+            var dictionary = new Dictionary<string, IReadOnlyList<string>>
+            {
+                { "sourceA", new List<string>() { "a" } }
+            };
+            var patterns = new ReadOnlyDictionary<string, IReadOnlyList<string>>(dictionary);
+            var mockPackageSourceMapping = new PackageSourceMapping(patterns);
+
+            Action a = () => _toolInstaller.DownloadPackageAsync(
+                TestPackageId,
+                new NuGetVersion(TestPackageVersion),
+                new PackageSourceLocation(sourceFeedOverrides: new[] { relativePath }),
+                packageSourceMapping: mockPackageSourceMapping).GetAwaiter().GetResult();
+            a.Should().Throw<NuGetPackageInstallerException>().And.Message.Should().Contain(string.Format(Cli.NuGetPackageDownloader.LocalizableStrings.FailedToGetPackageUnderPackageSourceMapping, TestPackageId));
+        }
+
+        [Fact]
+        public void GivenPackageSourceMappingFeedNotFoundItShouldError()
+        {
+            string getTestLocalFeedPath = GetTestLocalFeedPath();
+            string relativePath = Path.GetRelativePath(Environment.CurrentDirectory, getTestLocalFeedPath);
+            Log.WriteLine(relativePath);
+            var dictionary = new Dictionary<string, IReadOnlyList<string>>
+            {
+                { "global.tool.console.demo", new List<string>() { "nonexistentfeed" } }
+            };
+            var patterns = new ReadOnlyDictionary<string, IReadOnlyList<string>>(dictionary);
+            var mockPackageSourceMapping = new PackageSourceMapping(patterns);
+
+            Action a = () => _toolInstaller.DownloadPackageAsync(
+                TestPackageId,
+                new NuGetVersion(TestPackageVersion),
+                new PackageSourceLocation(sourceFeedOverrides: new[] { relativePath }),
+                packageSourceMapping: mockPackageSourceMapping).GetAwaiter().GetResult();
+            a.Should().Throw<NuGetPackageInstallerException>().And.Message.Should().Contain(string.Format(Cli.NuGetPackageDownloader.LocalizableStrings.FailedToGetPackageUnderPackageSourceMapping, TestPackageId));
+        }
+
+        [Fact]
         public async Task WhenPassedIncludePreviewItInstallSucceeds()
         {
             string getTestLocalFeedPath = GetTestLocalFeedPath();
@@ -193,7 +241,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
 
             bufferedReporter.Lines.Should()
                 .ContainSingle(
-                    LocalizableStrings.NuGetPackageSignatureVerificationSkipped);
+                    Cli.NuGetPackageDownloader.LocalizableStrings.NuGetPackageSignatureVerificationSkipped);
             File.Exists(packagePath).Should().BeTrue();
         }
 
@@ -234,7 +282,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
 
             bufferedReporter.Lines.Should()
                 .ContainSingle(
-                    LocalizableStrings.SkipNuGetpackageSigningValidationmacOSLinux);
+                    Cli.NuGetPackageDownloader.LocalizableStrings.SkipNuGetpackageSigningValidationmacOSLinux);
             File.Exists(packagePath).Should().BeTrue();
         }
 

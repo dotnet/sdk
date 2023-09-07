@@ -8,8 +8,6 @@ using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Credentials;
-using NuGet.DependencyResolver;
-using NuGet.LibraryModel;
 using NuGet.Packaging;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
@@ -80,12 +78,13 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             NuGetVersion packageVersion = null,
             PackageSourceLocation packageSourceLocation = null,
             bool includePreview = false,
-            DirectoryPath? downloadFolder = null)
+            DirectoryPath? downloadFolder = null,
+            PackageSourceMapping packageSourceMapping = null)
         {
             CancellationToken cancellationToken = CancellationToken.None;
 
             (var source, var resolvedPackageVersion) = await GetPackageSourceAndVersion(packageId, packageVersion,
-                packageSourceLocation, includePreview);
+                packageSourceLocation, includePreview, packageSourceMapping);
 
             FindPackageByIdResource resource = null;
             SourceRepository repository = GetSourceRepository(source);
@@ -219,13 +218,14 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
         private async Task<(PackageSource, NuGetVersion)> GetPackageSourceAndVersion(PackageId packageId,
              NuGetVersion packageVersion = null,
              PackageSourceLocation packageSourceLocation = null,
-             bool includePreview = false)
+             bool includePreview = false,
+             PackageSourceMapping packageSourceMapping = null)
         {
             CancellationToken cancellationToken = CancellationToken.None;
 
             IPackageSearchMetadata packageMetadata;
 
-            IEnumerable<PackageSource> packagesSources = LoadNuGetSources(packageId, packageSourceLocation);
+            IEnumerable<PackageSource> packagesSources = LoadNuGetSources(packageId, packageSourceLocation, packageSourceMapping);
             PackageSource source;
 
             if (packageVersion is null)
@@ -289,7 +289,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             return true;
         }
 
-        private IEnumerable<PackageSource> LoadNuGetSources(PackageId packageId, PackageSourceLocation packageSourceLocation = null)
+        private IEnumerable<PackageSource> LoadNuGetSources(PackageId packageId, PackageSourceLocation packageSourceLocation = null, PackageSourceMapping packageSourceMapping = null)
         {
             IEnumerable<PackageSource> defaultSources = new List<PackageSource>();
             string currentDirectory = Directory.GetCurrentDirectory();
@@ -311,7 +311,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             PackageSourceProvider packageSourceProvider = new PackageSourceProvider(settings);
             defaultSources = packageSourceProvider.LoadPackageSources().Where(source => source.IsEnabled);
 
-            PackageSourceMapping packageSourceMapping = PackageSourceMapping.GetPackageSourceMapping(settings);
+            packageSourceMapping = packageSourceMapping ?? PackageSourceMapping.GetPackageSourceMapping(settings);
 
             // filter package patterns if enabled            
             if (_isNuGetTool && packageSourceMapping?.IsEnabled == true)

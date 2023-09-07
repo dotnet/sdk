@@ -3,6 +3,7 @@
 
 using Microsoft.DotNet.ToolPackage;
 using Microsoft.Extensions.EnvironmentAbstractions;
+using NuGet.Configuration;
 using NuGet.Versioning;
 
 namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
@@ -13,7 +14,8 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             NuGetVersion packageVersion = null,
             PackageSourceLocation packageSourceLocation = null,
             bool includePreview = false,
-            DirectoryPath? downloadFolder = null);
+            DirectoryPath? downloadFolder = null,
+            PackageSourceMapping packageSourceMapping = null);
 
         Task<string> GetPackageUrl(PackageId packageId,
             NuGetVersion packageVersion = null,
