@@ -1916,6 +1916,18 @@ Widening and user defined conversions are not supported with generic types.</val
   <data name="UseSpanClearInsteadOfFillTitle" xml:space="preserve">
     <value>Prefer 'Clear' over 'Fill'</value>
   </data>
+  <data name="UseSearchValuesTitle" xml:space="preserve">
+    <value>Use a cached 'SearchValues' instance</value>
+  </data>
+  <data name="UseSearchValuesMessage" xml:space="preserve">
+    <value>Use a cached 'SearchValues' instance for improved searching performance</value>
+  </data>
+  <data name="UseSearchValuesDescription" xml:space="preserve">
+    <value>Using a cached 'SearchValues' instance is more efficient than passing values to 'IndexOfAny'/'ContainsAny' directly.</value>
+  </data>
+  <data name="UseSearchValuesCodeFixTitle" xml:space="preserve">
+    <value>Use 'SearchValues'</value>
+  </data>
   <data name="PreventNumericIntPtrUIntPtrBehavioralChangesDescription" xml:space="preserve">
     <value>Some built-in operators added in .NET 7 behave differently when overflowing than did the corresponding user-defined operators in .NET 6 and earlier versions. Some operators that previously threw in an unchecked context now don't throw unless wrapped within a checked context. Also, some operators that did not previously throw in a checked context now throw unless wrapped in an unchecked context.</value>
   </data>

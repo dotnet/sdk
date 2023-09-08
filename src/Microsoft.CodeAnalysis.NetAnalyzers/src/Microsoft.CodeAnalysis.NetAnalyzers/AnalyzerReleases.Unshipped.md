@@ -23,6 +23,7 @@ CA1861 | Performance | Info | AvoidConstArrays, [Documentation](https://learn.mi
 CA1862 | Performance | Info | RecommendCaseInsensitiveStringComparison, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1862)
 CA1863 | Performance | Hidden | UseCompositeFormatAnalyzer, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1862)
 CA1864 | Performance | Info | PreferDictionaryTryAddValueOverGuardedAddAnalyzer, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1864)
+CA1870 | Performance | Info | UseSearchValuesAnalyzer, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1870)
 CA2021 | Reliability | Warning | DoNotCallEnumerableCastOrOfTypeWithIncompatibleTypesAnalyzer, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2021)
 
 ### Removed Rules
