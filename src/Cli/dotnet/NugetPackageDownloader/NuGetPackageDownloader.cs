@@ -315,18 +315,23 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
 
             // filter package patterns if enabled
             Console.WriteLine("31");
+            Console.WriteLine(new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds());
             if (_isNuGetTool && packageSourceMapping?.IsEnabled == true)
             {
                 Console.WriteLine("32");
+                Console.WriteLine(new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds());
                 IReadOnlyList<string> sources = packageSourceMapping.GetConfiguredPackageSources(packageId.ToString());
                 Console.WriteLine("33");
+                Console.WriteLine(new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds());
                 if (sources.Count == 0)
                 {
                     Console.WriteLine("34");
+                    Console.WriteLine(new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds());
                     throw new NuGetPackageInstallerException(string.Format(LocalizableStrings.FailedToGetPackageUnderPackageSourceMapping, packageId));
                 }
             }
             Console.WriteLine("35");
+            Console.WriteLine(new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds());
 
             if (packageSourceLocation?.AdditionalSourceFeed?.Any() ?? false)
             {
@@ -350,6 +355,9 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
                 }
             }
 
+            Console.WriteLine("36");
+            Console.WriteLine(new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds());
+
             if (!packageSourceLocation?.SourceFeedOverrides.Any() ?? true)
             {
                 if (!defaultSources.Any())
@@ -359,6 +367,9 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
 
                 return defaultSources;
             }
+
+            Console.WriteLine("37");
+            Console.WriteLine(new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds());
 
             List<PackageSource> customSources = new List<PackageSource>();
             foreach (string source in packageSourceLocation?.SourceFeedOverrides)
@@ -380,6 +391,9 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
                 customSources.Add(packageSource);
             }
 
+            Console.WriteLine("38");
+            Console.WriteLine(new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds());
+
             IEnumerable<PackageSource> retrievedSources;
             if (packageSourceLocation != null && packageSourceLocation.SourceFeedOverrides.Any())
             {
@@ -390,10 +404,16 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
                 retrievedSources = defaultSources;
             }
 
+            Console.WriteLine("39");
+            Console.WriteLine(new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds());
+
             if (!retrievedSources.Any())
             {
                 throw new NuGetPackageInstallerException("No NuGet sources are defined or enabled");
             }
+
+            Console.WriteLine("40");
+            Console.WriteLine(new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds());
 
             return retrievedSources;
         }

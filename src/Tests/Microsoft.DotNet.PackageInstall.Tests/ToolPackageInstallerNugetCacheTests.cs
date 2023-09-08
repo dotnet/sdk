@@ -70,29 +70,38 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         public void GivenNugetConfigVersionRangeInstallSucceeds(bool testMockBehaviorIsInSync)
         {
             Console.WriteLine("11");
+            Console.WriteLine(new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds());
             string testDirectory = _testAssetsManager.CreateTestDirectory(identifier: testMockBehaviorIsInSync.ToString()).Path;
             Console.WriteLine("12");
+            Console.WriteLine(new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds());
             var nugetConfigPath = WriteNugetConfigFileToPointToTheFeed(testDirectory);
             Console.WriteLine("13");
+            Console.WriteLine(new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds());
             var (store, installer, reporter, fileSystem) = Setup(
                 useMock: testMockBehaviorIsInSync,
                 testDirectory: testDirectory,
                 feeds: GetMockFeedsForConfigFile(nugetConfigPath));
             Console.WriteLine("14");
+            Console.WriteLine(new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds());
             IToolPackage toolPackage = installer.InstallPackage(
                 packageId: TestPackageId,
                 versionRange: VersionRange.Parse("1.0.0-*"),
                 packageLocation: new PackageLocation(nugetConfig: nugetConfigPath),
                 targetFramework: _testTargetframework);
             Console.WriteLine("15");
+            Console.WriteLine(new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds());
             var expectedPackagesFolder = NuGetGlobalPackagesFolder.GetLocation();
             Console.WriteLine("16");
+            Console.WriteLine(new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds());
             var commands = toolPackage.Commands;
             Console.WriteLine("17");
+            Console.WriteLine(new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds());
             commands[0].Executable.Value.Should().StartWith(expectedPackagesFolder);
             Console.WriteLine("18");
+            Console.WriteLine(new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds());
             toolPackage.Version.Should().Be(NuGetVersion.Parse(TestPackageVersion));
             Console.WriteLine("19");
+            Console.WriteLine(new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds());
         }
 
         private static List<MockFeed> GetMockFeedsForConfigFile(FilePath nugetConfig)
@@ -122,17 +131,22 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             List<MockFeed> feeds = null)
         {
             Console.WriteLine("20");
+            Console.WriteLine(new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds());
             var root = new DirectoryPath(Path.Combine(Directory.GetCurrentDirectory(), Path.GetRandomFileName()));
             Console.WriteLine("21");
+            Console.WriteLine(new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds());
             var reporter = new BufferedReporter();
             Console.WriteLine("22");
+            Console.WriteLine(new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds());
             IFileSystem fileSystem;
             Console.WriteLine("23");
+            Console.WriteLine(new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds());
             IToolPackageStore store;
             IToolPackageDownloader downloader;
             if (useMock)
             {
                 Console.WriteLine("24");
+                Console.WriteLine(new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds());
                 fileSystem = new FileSystemMockBuilder().Build();
                 store = new ToolPackageStoreMock(root, fileSystem);
                 downloader = new ToolPackageDownloaderMock(
@@ -141,17 +155,21 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                     reporter: reporter,
                     feeds: feeds);
                 Console.WriteLine("25");
+                Console.WriteLine(new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds());
             }
             else
             {
                 Console.WriteLine("26");
+                Console.WriteLine(new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds());
                 fileSystem = new FileSystemWrapper();
                 store = new ToolPackageStoreAndQuery(root);
                 var runtimeJsonPathForTests = Path.Combine(TestContext.Current.ToolsetUnderTest.SdkFolderUnderTest, "RuntimeIdentifierGraph.json");
                 downloader = new ToolPackageDownloader(store, runtimeJsonPathForTests);
                 Console.WriteLine("27");
+                Console.WriteLine(new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds());
             }
             Console.WriteLine("28");
+            Console.WriteLine(new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds());
             return (store, downloader, reporter, fileSystem);
 
         }
@@ -159,6 +177,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         private FilePath WriteNugetConfigFileToPointToTheFeed(string testDirectory)
         {
             Console.WriteLine("29");
+            Console.WriteLine(new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds());
             var nugetConfigName = "NuGet.Config";
 
             var tempPathForNugetConfigWithWhiteSpace =
@@ -168,6 +187,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
 
             NuGetConfigWriter.Write(tempPathForNugetConfigWithWhiteSpace, GetTestLocalFeedPath());
             Console.WriteLine("30");
+            Console.WriteLine(new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds());
             return new FilePath(Path.GetFullPath(Path.Combine(tempPathForNugetConfigWithWhiteSpace, nugetConfigName)));
         }
 
