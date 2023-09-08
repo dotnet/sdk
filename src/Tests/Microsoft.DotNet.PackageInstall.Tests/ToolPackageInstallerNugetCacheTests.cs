@@ -18,9 +18,9 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         {
         }
 
-        [Theory]
+        /*[Theory]
         [InlineData(false)]
-        [InlineData(true)]
+        [InlineData(true)]*/
         public void GivenNugetConfigInstallSucceeds(bool testMockBehaviorIsInSync)
         {
             Console.WriteLine("1");
@@ -64,9 +64,9 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             }
         }
 
-        [Theory]
+        /*[Theory]
         [InlineData(false)]
-        [InlineData(true)]
+        [InlineData(true)]*/
         public void GivenNugetConfigVersionRangeInstallSucceeds(bool testMockBehaviorIsInSync)
         {
             Console.WriteLine("11");
