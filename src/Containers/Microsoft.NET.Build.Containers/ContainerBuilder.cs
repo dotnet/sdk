@@ -66,6 +66,11 @@ public static class ContainerBuilder
                     ridGraphPath,
                     cancellationToken).ConfigureAwait(false);
             }
+            catch (FormattableException e)
+            {
+                logger.LogError(String.Format(e.ResourceName, e.FormatArguments));
+                return 1;
+            }
             catch (RepositoryNotFoundException)
             {
                 logger.LogError(Resource.FormatString(nameof(Strings.RepositoryNotFound), baseImageName, baseImageTag, registry.RegistryName));
@@ -81,16 +86,17 @@ public static class ContainerBuilder
                 logger.LogError(e.Message);
                 return 1;
             }
+            catch (Exception e)
+            {
+                logger.LogError(e, null);
+                return 1;
+            }
         }
         else
         {
             throw new NotSupportedException(Resource.GetString(nameof(Strings.ImagePullNotSupported)));
         }
-        if (imageBuilder is null)
-        {
-            Console.WriteLine(Resource.GetString(nameof(Strings.BaseImageNotFound)), sourceImageReference, containerRuntimeIdentifier);
-            return 1;
-        }
+
         logger.LogInformation(Strings.ContainerBuilder_StartBuildingImage, imageName, string.Join(",", imageName), sourceImageReference);
         cancellationToken.ThrowIfCancellationRequested();
 

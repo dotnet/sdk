@@ -59,10 +59,38 @@
         <note>{StrBegin="CONTAINER2013: "}</note>
       </trans-unit>
       <trans-unit id="BaseImageNotFound">
-        <source>CONTAINER1011: Couldn't find matching base image for {0} that matches RuntimeIdentifier {1}.</source>
-        <target state="needs-review-translation">CONTAINER1011: impossible de trouver une image de base
-          correspondante pour {0} qui correspond à RuntimeIdentifier {1}.</target>
-        <note>{StrBegin="CONTAINER1011: "}</note>
+        <source>CONTAINER1011: The RuntimeIdentifier '{0}' is not supported by {1}:{2}. The supported RuntimeIdentifiers are {3}.</source>
+        <target state="new">CONTAINER1011: The RuntimeIdentifier '{0}' is not supported by {1}:{2}. The supported RuntimeIdentifiers are {3}.</target>
+        <note>
+
+
+
+      {StrBegin="CONTAINER1011: "}
+
+
+
+      0 is a .NET RuntimeIdentifier
+
+
+
+      1 is the image repository name
+
+
+
+      2 is the image tag
+
+
+
+      3 is a comma-separated list of supported RuntimeIdentifiers
+
+
+
+    </note>
+      </trans-unit>
+      <trans-unit id="BaseImageUnsupportedPlatform">
+        <source>CONTAINER1017: The image {0}:{1} has an unsupported platform: {2}</source>
+        <target state="new">CONTAINER1017: The image {0}:{1} has an unsupported platform: {2}</target>
+        <note>{StrBegin="CONTAINER1017: "}</note>
       </trans-unit>
       <trans-unit id="BlobUploadFailed">
         <source>CONTAINER1001: Failed to upload blob using {0}; received status code '{1}'.</source>

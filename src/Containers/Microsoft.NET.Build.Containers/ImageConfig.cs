@@ -26,7 +26,10 @@ internal sealed class ImageConfig
     /// </summary>
     private readonly List<string> _rootFsLayers;
     private readonly string _architecture;
+    private readonly string? _variant;
     private readonly string _os;
+    private readonly string? _osVersion;
+    private readonly string[]? _osFeatures;
     private readonly List<HistoryEntry> _history;
 
     /// <summary>
@@ -36,6 +39,11 @@ internal sealed class ImageConfig
 
     public ReadOnlyDictionary<string, string> EnvironmentVariables => _environmentVariables.AsReadOnly();
     public HashSet<Port> Ports => _exposedPorts;
+
+    /// <summary>
+    /// Represents the platform information of this image, including architecture, os, variant, os features and os version.
+    /// </summary>
+    public PlatformInformation PlatformInformation => new(_architecture, _os, _variant, _osFeatures ?? [], _osVersion);
 
     internal ImageConfig(string imageConfigJson) : this(JsonNode.Parse(imageConfigJson)!)
     {
@@ -53,8 +61,13 @@ internal sealed class ImageConfig
         _exposedPorts = GetExposedPorts();
         _environmentVariables = GetEnvironmentVariables();
         _rootFsLayers = GetRootFileSystemLayers();
+
         _architecture = GetArchitecture();
+        _variant = GetVariant();
         _os = GetOs();
+        _osVersion = GetOsVersion();
+        _osFeatures = GetOsFeatures();
+
         _history = GetHistory();
         _user = GetUser();
         _newEntrypoint = GetEntrypoint();
@@ -68,6 +81,9 @@ internal sealed class ImageConfig
     private List<HistoryEntry> GetHistory() => _config["history"]?.AsArray().Select(node => node.Deserialize<HistoryEntry>()!).ToList() ?? new List<HistoryEntry>();
     private string GetOs() => _config["os"]?.ToString() ?? throw new ArgumentException("Base image configuration should contain an 'os' property.");
     private string GetArchitecture() => _config["architecture"]?.ToString() ?? throw new ArgumentException("Base image configuration should contain an 'architecture' property.");
+    private string? GetVariant() => _config["variant"]?.ToString();
+    private string? GetOsVersion() => _config["os.version"]?.ToString();
+    private string[]? GetOsFeatures() => _config["os.features"]?.AsArray()?.Select(node => node!.GetValue<string>())?.ToArray();
 
     /// <summary>
     /// Builds in additional configuration and returns updated image configuration in JSON format as string.
@@ -111,7 +127,7 @@ internal sealed class ImageConfig
 
         // These fields aren't (yet) supported by the task layer, but we should
         // preserve them if they're already set in the base image.
-        foreach (string propertyName in new [] { "Volumes", "StopSignal" })
+        foreach (string propertyName in new[] { "Volumes", "StopSignal" })
         {
             if (_config["config"]?[propertyName] is JsonNode propertyValue)
             {
@@ -126,7 +142,7 @@ internal sealed class ImageConfig
         // The number of (non empty) history items must match the number of layers in the image.
         // Some registries like JFrog Artifactory have there a strict validation rule (see sdk-container-builds#382).
         int numberOfLayers = _rootFsLayers.Count;
-        int numberOfNonEmptyLayerHistoryEntries = _history.Count(h =>h.empty_layer is null or false);
+        int numberOfNonEmptyLayerHistoryEntries = _history.Count(h => h.empty_layer is null or false);
         int missingHistoryEntries = numberOfLayers - numberOfNonEmptyLayerHistoryEntries;
         HistoryEntry customHistoryEntry = new(created: DateTime.UtcNow, author: ".NET SDK",
             created_by: $".NET SDK Container Tooling, version {Constants.Version}");
@@ -167,7 +183,7 @@ internal sealed class ImageConfig
         {
             history["comment"] = h.comment;
         }
-        if (h.created is {} date)
+        if (h.created is { } date)
         {
             history["created"] = RFC3339Format(date);
         }

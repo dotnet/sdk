@@ -180,13 +180,24 @@ namespace Microsoft.NET.Build.Containers.Resources
         }
 
         /// <summary>
-        ///   Looks up a localized string similar to CONTAINER1011: Couldn&apos;t find matching base image for {0} that matches RuntimeIdentifier {1}..
+        ///   Looks up a localized string similar to CONTAINER1011: The RuntimeIdentifier &apos;{0}&apos; is not supported by {1}:{2}. The supported RuntimeIdentifiers are {3}.
         /// </summary>
         internal static string BaseImageNotFound
         {
             get
             {
                 return ResourceManager.GetString("BaseImageNotFound", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to CONTAINER1017: The image {0}:{1} has an unsupported platform: {2}
+        /// </summary>
+        internal static string BaseImageUnsupportedPlatform
+        {
+            get
+            {
+                return ResourceManager.GetString("BaseImageUnsupportedPlatform", resourceCulture);
             }
         }
 

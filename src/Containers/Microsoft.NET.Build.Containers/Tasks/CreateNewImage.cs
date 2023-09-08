@@ -76,9 +76,9 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
                 Log.LogErrorWithCodeFromResources(nameof(Strings.RepositoryNotFound), BaseImageName, BaseImageTag, registry.RegistryName);
                 return !Log.HasLoggedErrors;
             }
-            catch (UnableToAccessRepositoryException)
+            catch (FormattableException e)
             {
-                Log.LogErrorWithCodeFromResources(nameof(Strings.UnableToAccessRepository), BaseImageName, registry.RegistryName);
+                Log.LogErrorWithCodeFromResources(e.ResourceName, e.FormatArguments);
                 return !Log.HasLoggedErrors;
             }
             catch (ContainerHttpException e)
@@ -86,16 +86,15 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
                 Log.LogErrorFromException(e, showStackTrace: false, showDetail: true, file: null);
                 return !Log.HasLoggedErrors;
             }
+            catch (Exception e)
+            {
+                Log.LogErrorFromException(e);
+                return !Log.HasLoggedErrors;
+            }
         }
         else
         {
             throw new NotSupportedException(Resource.GetString(nameof(Strings.ImagePullNotSupported)));
-        }
-
-        if (imageBuilder is null)
-        {
-            Log.LogErrorWithCodeFromResources(nameof(Strings.BaseImageNotFound), sourceImageReference, ContainerRuntimeIdentifier);
-            return !Log.HasLoggedErrors;
         }
 
         SafeLog(Strings.ContainerBuilder_StartBuildingImage, Repository, String.Join(",", ImageTags), sourceImageReference);
