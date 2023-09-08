@@ -208,7 +208,7 @@ namespace Microsoft.DotNet.Cli.ToolPackage
             )
         {
             var packageSourceLocation = new PackageSourceLocation(packageLocation.NugetConfig, packageLocation.RootConfigDirectory, null, packageLocation.AdditionalFeeds);
-            var packagePath = await _nugetPackageDownloader.DownloadPackageAsync(packageId, null, packageSourceLocation);
+            var packagePath = await _nugetPackageDownloader.DownloadPackageAsync(packageId, null, packageSourceLocation).ConfigureAwait(false);
 
             // look for package on disk and read the version
             NuGetVersion version;

@@ -84,7 +84,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             CancellationToken cancellationToken = CancellationToken.None;
 
             (var source, var resolvedPackageVersion) = await GetPackageSourceAndVersion(packageId, packageVersion,
-                packageSourceLocation, includePreview, packageSourceMapping);
+                packageSourceLocation, includePreview, packageSourceMapping).ConfigureAwait(false);
 
             FindPackageByIdResource resource = null;
             SourceRepository repository = GetSourceRepository(source);
