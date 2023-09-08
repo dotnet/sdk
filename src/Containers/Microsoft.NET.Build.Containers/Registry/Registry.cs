@@ -141,19 +141,22 @@ internal sealed class Registry
 
         JsonNode configDoc = await _registryAPI.Blob.GetJsonAsync(repositoryName, configSha, cancellationToken).ConfigureAwait(false);
         var imageConfig = new ImageConfig(configDoc);
+
+        // decipher the RID from the platform information, and then use the deciphered RID to verify compatibility
+        // with the application's targeted RID.
+
         var configRid = CreateRidForPlatform(imageConfig.PlatformInformation);
         if (configRid is null)
         {
-            //TODO: proper error
             throw new UnsupportedPlatformException(repositoryName, reference, imageConfig.PlatformInformation);
         }
-        // validate here if the arch of the config is compatible with the rid
         var configRids = new[] { configRid };
         var bestManifestRid = GetBestMatchingRid(ridGraph, applicationRid, configRids);
         if (bestManifestRid is null)
         {
             throw new BaseImageNotFoundException(applicationRid, repositoryName, reference, configRids);
         }
+
         cancellationToken.ThrowIfCancellationRequested();
         return new ImageBuilder(manifest, imageConfig, _logger);
     }

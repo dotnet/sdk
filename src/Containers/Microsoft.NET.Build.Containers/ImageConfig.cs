@@ -26,8 +26,8 @@ internal sealed class ImageConfig
     /// </summary>
     private readonly List<string> _rootFsLayers;
     private readonly string _architecture;
-    private readonly string? _variant;
     private readonly string _os;
+    private readonly string? _variant;
     private readonly string? _osVersion;
     private readonly string[]? _osFeatures;
     private readonly List<HistoryEntry> _history;
@@ -61,20 +61,21 @@ internal sealed class ImageConfig
         _exposedPorts = GetExposedPorts();
         _environmentVariables = GetEnvironmentVariables();
         _rootFsLayers = GetRootFileSystemLayers();
-
-        _architecture = GetArchitecture();
-        _variant = GetVariant();
-        _os = GetOs();
-        _osVersion = GetOsVersion();
-        _osFeatures = GetOsFeatures();
-
         _history = GetHistory();
         _user = GetUser();
         _newEntrypoint = GetEntrypoint();
         _newCmd = GetCmd();
+
+        // we don't currently allow setting these properties - they are tied to the base image
+        // and represent the platform that the base image (and this anything that derives from this image) was built for
+        _architecture = GetArchitecture();
+        _os = GetOs();
+        _variant = GetVariant();
+        _osVersion = GetOsVersion();
+        _osFeatures = GetOsFeatures();
+
     }
 
-    // Return values from the base image config.
     internal string? GetUser() => _config["config"]?["User"]?.ToString();
     internal string[]? GetEntrypoint() => _config["config"]?["Entrypoint"]?.AsArray()?.Select(node => node!.GetValue<string>())?.ToArray();
     private string[]? GetCmd() => _config["config"]?["Entrypoint"]?.AsArray()?.Select(node => node!.GetValue<string>())?.ToArray();
