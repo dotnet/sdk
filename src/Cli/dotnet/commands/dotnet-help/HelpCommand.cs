@@ -23,7 +23,7 @@ namespace Microsoft.DotNet.Tools.Help
 
             result.ShowHelpOrErrorIfAppropriate();
 
-            if (!string.IsNullOrEmpty(result.GetValue(HelpCommandParser.Argument)))
+            if (result.GetValue(HelpCommandParser.Arguments) is { } args)
             {
                 return new HelpCommand(result).Execute();
             }
@@ -46,10 +46,12 @@ namespace Microsoft.DotNet.Tools.Help
 
         public static Process ConfigureProcess(string docUrl)
         {
-            return Process.Start(new ProcessStartInfo()
+            return new Process() { StartInfo = new ProcessStartInfo()
             {
-                FileName = docUrl
-            });
+                FileName = docUrl,
+                UseShellExecute = true
+            }
+            };
         }
 
 
@@ -60,34 +62,44 @@ namespace Microsoft.DotNet.Tools.Help
         /// <returns></returns>
         public int Execute()
         {
-            if (TryGetKnownCommand(_parseResult.GetValue(HelpCommandParser.Argument), out CliCommand command))
+            var commandAndArgs = _parseResult.GetValue(HelpCommandParser.Arguments);
+            var innerParseResult = Cli.Parser.Instance.Parse(["dotnet", .. commandAndArgs]);
+            if (innerParseResult.CommandResult is { } commandResult)
             {
-                if (TryGetEnhancedDocCommand(command, out DocumentedCommand documentedCommand))
+
+                if (commandResult.Command is DocumentedCommand documentedCommand)
                 {
                     if (!string.IsNullOrEmpty(documentedCommand.DocsLink))
                     {
                         var process = ConfigureProcess(documentedCommand.DocsLink);
-                        process.Start();
-                        process.WaitForExit();
-                        if (process.ExitCode != 0)
+                        try
                         {
-                            // if the 'open browser' process fails, we should fallback to
-                            // calling `--help` for that command and outputting that
-                            return TryCallHelp(documentedCommand);
+                            process.Start();
+                            process.WaitForExit();
+                            if (process.ExitCode != 0)
+                            {
+                                // if the 'open browser' process fails, we should fallback to
+                                // calling `--help` for that command and outputting that
+                                return innerParseResult.ShowHelp();
+                            }
+                            else
+                            {
+                                return process.ExitCode;
+                            }
                         }
-                        else
+                        catch 
                         {
-                            return process.ExitCode;
+                            return innerParseResult.ShowHelp();
                         }
                     }
                     else
                     {
-                        return TryCallHelp(documentedCommand);
+                        return innerParseResult.ShowHelp();
                     }
                 }
                 else
                 {
-                    return TryCallHelp(command);
+                    return innerParseResult.ShowHelp();
                 }
             }
             else
@@ -95,38 +107,12 @@ namespace Microsoft.DotNet.Tools.Help
                 Reporter.Error.WriteLine(
                     string.Format(
                         LocalizableStrings.CommandDoesNotExist,
-                        _parseResult.GetValue(HelpCommandParser.Argument)).Red());
+                        String.Join(" ", _parseResult.GetValue(HelpCommandParser.Arguments))
+                        ).Red()
+                    );
                 Reporter.Output.WriteLine(HelpUsageText.UsageText);
                 return 1;
             }
-        }
-
-        private bool TryGetKnownCommand(string commandName, out System.CommandLine.CliCommand command)
-        {
-            if (Cli.Parser.GetBuiltInCommand(commandName) is CliCommand builtInCommand)
-            {
-                command = builtInCommand;
-                return true;
-            }
-            command = null;
-            return false;
-        }
-
-        private bool TryGetEnhancedDocCommand(CliCommand command, out DocumentedCommand docsCommand)
-        {
-            if (command is DocumentedCommand docCmd)
-            {
-                docsCommand = docCmd;
-                return true;
-            }
-            docsCommand = null;
-            return false;
-        }
-
-        private int TryCallHelp(CliCommand command)
-        {
-            ParseResult p = Cli.Parser.Instance.Parse(["dotnet", command.Name]);
-            return p.ShowHelp();
         }
     }
 }
