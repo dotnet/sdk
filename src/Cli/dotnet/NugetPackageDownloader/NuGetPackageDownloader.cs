@@ -86,18 +86,21 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
 
             (var source, var resolvedPackageVersion) = await GetPackageSourceAndVersion(packageId, packageVersion,
                 packageSourceLocation, includePreview);
-
+            Console.WriteLine("50");
             FindPackageByIdResource resource = null;
             SourceRepository repository = GetSourceRepository(source);
+            Console.WriteLine("51");
 
             resource = await repository.GetResourceAsync<FindPackageByIdResource>(cancellationToken)
                 .ConfigureAwait(false);
+            Console.WriteLine("52");
 
             if (resource == null)
             {
                 throw new NuGetPackageNotFoundException(
                     string.Format(LocalizableStrings.IsNotFoundInNuGetFeeds, packageId, source.Source));
             }
+            Console.WriteLine("53");
 
             string nupkgPath = downloadFolder == null || !downloadFolder.HasValue
                 ? Path.Combine(_packageInstallDir.Value, packageId.ToString(),
@@ -105,9 +108,10 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
                     $"{packageId}.{resolvedPackageVersion.ToNormalizedString()}.nupkg")
                 : Path.Combine(downloadFolder.Value.Value,
                     $"{packageId}.{resolvedPackageVersion.ToNormalizedString()}.nupkg");
-
+            Console.WriteLine("54");
             Directory.CreateDirectory(Path.GetDirectoryName(nupkgPath));
             using FileStream destinationStream = File.Create(nupkgPath);
+            Console.WriteLine("55");
             bool success = await ExponentialRetry.ExecuteWithRetryOnFailure(async () => await resource.CopyNupkgToStreamAsync(
                 packageId.ToString(),
                 resolvedPackageVersion,
@@ -116,16 +120,16 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
                 _verboseLogger,
                 cancellationToken));
             destinationStream.Close();
-
+            Console.WriteLine("56");
             if (!success)
             {
                 throw new NuGetPackageInstallerException(
                     string.Format("Downloading {0} version {1} failed", packageId,
                         packageVersion.ToNormalizedString()));
             }
-
+            Console.WriteLine("57");
             VerifySigning(nupkgPath);
-
+            Console.WriteLine("58");
             return nupkgPath;
         }
 
@@ -226,23 +230,26 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             IPackageSearchMetadata packageMetadata;
 
             IEnumerable<PackageSource> packagesSources = LoadNuGetSources(packageId, packageSourceLocation);
+            Console.WriteLine("44");
             PackageSource source;
-
+            Console.WriteLine("45");
             if (packageVersion is null)
             {
+                Console.WriteLine("46");
                 (source, packageMetadata) = await GetLatestVersionInternalAsync(packageId.ToString(), packagesSources,
                     includePreview, cancellationToken).ConfigureAwait(false);
             }
             else
             {
+                Console.WriteLine("47");
                 packageVersion = new NuGetVersion(packageVersion);
                 (source, packageMetadata) =
                     await GetPackageMetadataAsync(packageId.ToString(), packageVersion, packagesSources,
                         cancellationToken).ConfigureAwait(false);
             }
-
+            Console.WriteLine("48");
             packageVersion = packageMetadata.Identity.Version;
-
+            Console.WriteLine("49");
             return (source, packageVersion);
         }
 
@@ -360,11 +367,13 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
 
             if (!packageSourceLocation?.SourceFeedOverrides.Any() ?? true)
             {
+                Console.WriteLine("41");
                 if (!defaultSources.Any())
                 {
+                    Console.WriteLine("42");
                     throw new NuGetPackageInstallerException("No NuGet sources are defined or enabled");
                 }
-
+                Console.WriteLine("43");
                 return defaultSources;
             }
 
