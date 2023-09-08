@@ -270,11 +270,8 @@
   <data name="SkippingManifestUpdate" xml:space="preserve">
     <value>Manifest packages were not found. Skipping manifest update...</value>
   </data>
-  <data name="NoManifestsExistForFeatureBand" xml:space="preserve">
-    <value>No manifests exist for SDK version {0}.</value>
-  </data>
-  <data name="IncompatibleManifests" xml:space="preserve">
-    <value>The current SDK isn't compatible with workload manifests of SDK version {0}.</value>
+  <data name="SdkVersionOptionNotSupported" xml:space="preserve">
+    <value>The --sdk-version option is no longer supported for this command.</value>
   </data>
   <data name="InadequatePermissions" xml:space="preserve">
     <value>Inadequate permissions. Run the command with elevated privileges.</value>

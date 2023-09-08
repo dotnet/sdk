@@ -38,15 +38,12 @@ namespace Microsoft.DotNet.Workloads.Workload.Repair
             workloadResolverFactory = workloadResolverFactory ?? new WorkloadResolverFactory();
             _workloadResolverFactory = workloadResolverFactory;
 
-            var creationParameters = new IWorkloadResolverFactory.CreationParameters()
+            if (!string.IsNullOrEmpty(parseResult.GetValue(WorkloadRepairCommandParser.VersionOption)))
             {
-                GlobalJsonStartDir = null,
-                SdkVersionFromOption = parseResult.GetValue(WorkloadRepairCommandParser.VersionOption),
-                CheckIfFeatureBandManifestExists = true,
-                UseInstalledSdkVersionForResolver = false
-            };
+                throw new GracefulException(Install.LocalizableStrings.SdkVersionOptionNotSupported);
+            }
 
-            var creationResult = workloadResolverFactory.Create(creationParameters);
+            var creationResult = workloadResolverFactory.Create();
 
             _dotnetPath = creationResult.DotnetPath;
             _sdkVersion = creationResult.SdkVersion;

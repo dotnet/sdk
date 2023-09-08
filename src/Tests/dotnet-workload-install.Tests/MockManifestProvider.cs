@@ -27,7 +27,7 @@ namespace ManifestReaderTests
 
         public SdkFeatureBand SdkFeatureBand { get; set; }
 
-        public Dictionary<string, WorkloadSet> GetAvailableWorkloadSets() => throw new NotImplementedException();
+        public Dictionary<string, WorkloadSet> GetAvailableWorkloadSets() => new();
 
         public IEnumerable<ReadableWorkloadManifest> GetManifests()
             {

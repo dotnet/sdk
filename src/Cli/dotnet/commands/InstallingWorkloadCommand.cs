@@ -26,7 +26,7 @@ namespace Microsoft.DotNet.Workloads.Workload
         protected readonly bool _checkIfManifestExist;
         protected readonly ReleaseVersion _sdkVersion;
         protected readonly SdkFeatureBand _sdkFeatureBand;
-        protected readonly SdkFeatureBand _installedFeatureBand;
+        protected readonly ReleaseVersion _targetSdkVersion;
         protected readonly string _fromRollbackDefinition;
         protected readonly PackageSourceLocation _packageSourceLocation;
         protected readonly IWorkloadResolverFactory _workloadResolverFactory;
@@ -60,22 +60,31 @@ namespace Microsoft.DotNet.Workloads.Workload
             workloadResolverFactory = workloadResolverFactory ?? new WorkloadResolverFactory();
             _workloadResolverFactory = workloadResolverFactory;
 
-            var creationParameters = new IWorkloadResolverFactory.CreationParameters()
+            if (!string.IsNullOrEmpty(parseResult.GetValue(InstallingWorkloadCommandParser.VersionOption)))
             {
-                GlobalJsonStartDir = null,
-                SdkVersionFromOption = parseResult.GetValue(InstallingWorkloadCommandParser.VersionOption),
-                CheckIfFeatureBandManifestExists = !(_printDownloadLinkOnly),    // don't check for manifest existence when print download link is passed
-                UseInstalledSdkVersionForResolver = true
-            };
+                //  Specifying a different SDK version to operate on is only supported for --print-download-link-only and --download-to-cache
+                if (_printDownloadLinkOnly || !string.IsNullOrEmpty(_downloadToCacheOption))
+                {
+                    _targetSdkVersion = new ReleaseVersion(parseResult.GetValue(InstallingWorkloadCommandParser.VersionOption));
+                }
+                else
+                {
+                    
+                    throw new GracefulException(Strings.SdkVersionOptionNotSupported);
+                }
+            }
 
-            var creationResult = _workloadResolverFactory.Create(creationParameters);
+            var creationResult = _workloadResolverFactory.Create();
 
             _dotnetPath = creationResult.DotnetPath;
             _userProfileDir = creationResult.UserProfileDir;
             _sdkVersion = creationResult.SdkVersion;
             _sdkFeatureBand = new SdkFeatureBand(creationResult.SdkVersion);
-            _installedFeatureBand = new SdkFeatureBand(creationResult.InstalledSdkVersion);
             _workloadResolver = creationResult.WorkloadResolver;
+            if (_targetSdkVersion == null)
+            {
+                _targetSdkVersion = _sdkVersion;
+            }
 
             _workloadInstallerFromConstructor = workloadInstaller;
             _workloadManifestUpdaterFromConstructor = workloadManifestUpdater;
@@ -104,7 +113,7 @@ namespace Microsoft.DotNet.Workloads.Workload
                         folderForManifestDownloads = tempPath.Value;
                     }
 
-                    var manifestDownloads = await _workloadManifestUpdater.GetManifestPackageDownloadsAsync(includePreview, _sdkFeatureBand, _installedFeatureBand);
+                    var manifestDownloads = await _workloadManifestUpdater.GetManifestPackageDownloadsAsync(includePreview, new SdkFeatureBand(_targetSdkVersion), _sdkFeatureBand);
 
                     if (!manifestDownloads.Any())
                     {
@@ -162,7 +171,7 @@ namespace Microsoft.DotNet.Workloads.Workload
             if (fromPreviousSdk)
             {
                 var priorFeatureBands = _workloadInstaller.GetWorkloadInstallationRecordRepository().GetFeatureBandsWithInstallationRecords()
-                    .Where(featureBand => featureBand.CompareTo(_installedFeatureBand) < 0);
+                    .Where(featureBand => featureBand.CompareTo(_sdkFeatureBand) < 0);
                 if (priorFeatureBands.Any())
                 {
                     var maxPriorFeatureBand = priorFeatureBands.Max();
@@ -172,7 +181,7 @@ namespace Microsoft.DotNet.Workloads.Workload
             }
             else
             {
-                var workloads = _workloadInstaller.GetWorkloadInstallationRecordRepository().GetInstalledWorkloads(_installedFeatureBand);
+                var workloads = _workloadInstaller.GetWorkloadInstallationRecordRepository().GetInstalledWorkloads(_sdkFeatureBand);
 
                 return workloads ?? Enumerable.Empty<WorkloadId>();
             }

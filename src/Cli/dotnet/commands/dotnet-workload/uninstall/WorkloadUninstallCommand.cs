@@ -34,15 +34,12 @@ namespace Microsoft.DotNet.Workloads.Workload.Uninstall
             workloadResolverFactory = workloadResolverFactory ?? new WorkloadResolverFactory();
             _workloadResolverFactory = workloadResolverFactory;
 
-            var creationParameters = new IWorkloadResolverFactory.CreationParameters()
+            if (!string.IsNullOrEmpty(parseResult.GetValue(WorkloadUninstallCommandParser.VersionOption)))
             {
-                GlobalJsonStartDir = null,
-                SdkVersionFromOption = parseResult.GetValue(WorkloadUninstallCommandParser.VersionOption),
-                CheckIfFeatureBandManifestExists = true,
-                UseInstalledSdkVersionForResolver = true
-            };
+                throw new GracefulException(Install.LocalizableStrings.SdkVersionOptionNotSupported);
+            }
 
-            var creationResult = workloadResolverFactory.Create(creationParameters);
+            var creationResult = workloadResolverFactory.Create();
 
             _dotnetPath = creationResult.DotnetPath;
             _sdkVersion = creationResult.SdkVersion;

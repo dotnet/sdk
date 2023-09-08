@@ -12,7 +12,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
     {
         public IWorkloadResolverFactory.CreationResult MockResult { get; set; } = new();
 
-        public IWorkloadResolverFactory.CreationResult Create(IWorkloadResolverFactory.CreationParameters creationParameters) => MockResult;
+        public IWorkloadResolverFactory.CreationResult Create(string globalJsonStartDir = null) => MockResult;
         public IWorkloadResolver CreateForWorkloadSet(string dotnetPath, string sdkVersion, string userProfileDir, string workloadSetVersion)
         {
             if (dotnetPath != MockResult.DotnetPath ||
@@ -33,7 +33,6 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         {
             MockResult.DotnetPath = dotnetPath;
             MockResult.SdkVersion = new ReleaseVersion(sdkVersion);
-            MockResult.InstalledSdkVersion = new ReleaseVersion(sdkVersion);
             MockResult.WorkloadResolver = workloadResolver;
             MockResult.UserProfileDir = userProfileDir;
         }

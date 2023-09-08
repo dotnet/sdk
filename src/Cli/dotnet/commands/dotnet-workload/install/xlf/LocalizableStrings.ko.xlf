@@ -107,11 +107,6 @@
         <target state="translated">시험판 워크로드 매니페스트를 허용합니다.</target>
         <note />
       </trans-unit>
-      <trans-unit id="IncompatibleManifests">
-        <source>The current SDK isn't compatible with workload manifests of SDK version {0}.</source>
-        <target state="translated">현재 SDK는 SDK 버전 {0} 워크로드 매니페스트와 호환되지 않습니다.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="InstallationSucceeded">
         <source>Successfully installed workload(s) {0}.</source>
         <target state="translated">워크로드 {0}을(를) 설치했습니다.</target>
@@ -187,11 +182,6 @@
         <target state="translated">{0} 제거 중 </target>
         <note />
       </trans-unit>
-      <trans-unit id="NoManifestsExistForFeatureBand">
-        <source>No manifests exist for SDK version {0}.</source>
-        <target state="translated">SDK 버전 {0}에 대한 매니페스트가 없습니다.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="NoTrustWithParentPID">
         <source>Failed to establish a trust relationship with parent process ({0}).</source>
         <target state="translated">부모 프로세스({0})와 신뢰 관계를 설정하지 못했습니다.</target>
@@ -235,6 +225,11 @@
       <trans-unit id="RollingBackPackInstall">
         <source>Rolling back pack {0} installation...</source>
         <target state="translated">팩 {0} 설치를 롤백 중...</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SdkVersionOptionNotSupported">
+        <source>The --sdk-version option is no longer supported for this command.</source>
+        <target state="new">The --sdk-version option is no longer supported for this command.</target>
         <note />
       </trans-unit>
       <trans-unit id="SkipManifestUpdateOptionDescription">

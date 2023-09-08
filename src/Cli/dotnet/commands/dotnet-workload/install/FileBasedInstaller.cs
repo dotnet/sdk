@@ -304,6 +304,9 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
             var installedSdkFeatureBands = NETCoreSdkResolverNativeWrapper.GetAvailableSdks(_dotnetDir).Select(sdkDir => new SdkFeatureBand(Path.GetFileName(sdkDir))).ToHashSet();
 
+            //  Tests will often use a dotnet folder without any SDKs installed.  To work around this, always add the current feature band to the list of installed feature bands
+            installedSdkFeatureBands.Add(_sdkFeatureBand);
+
             _reporter.WriteLine(string.Format(LocalizableStrings.GarbageCollectingSdkFeatureBandsMessage, string.Join(" ", installedSdkFeatureBands)));
 
             //  Garbage collect workload sets

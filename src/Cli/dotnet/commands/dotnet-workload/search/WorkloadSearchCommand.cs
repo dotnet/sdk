@@ -24,16 +24,13 @@ namespace Microsoft.DotNet.Workloads.Workload.Search
             _workloadIdStub = result.GetValue(WorkloadSearchCommandParser.WorkloadIdStubArgument);
 
             workloadResolverFactory = workloadResolverFactory ?? new WorkloadResolverFactory();
-            var creationParameters = new IWorkloadResolverFactory.CreationParameters()
-            {
-                DotnetPath = null,
-                GlobalJsonStartDir = null,
-                SdkVersionFromOption = result.GetValue(WorkloadSearchCommandParser.VersionOption),
-                CheckIfFeatureBandManifestExists = true,
-                UseInstalledSdkVersionForResolver = true
-            };
 
-            var creationResult = workloadResolverFactory.Create(creationParameters);
+            if (!string.IsNullOrEmpty(result.GetValue(WorkloadSearchCommandParser.VersionOption)))
+            {
+                throw new GracefulException(Install.LocalizableStrings.SdkVersionOptionNotSupported);
+            }
+
+            var creationResult = workloadResolverFactory.Create();
 
             _sdkVersion = creationResult.SdkVersion;
             _workloadResolver = creationResult.WorkloadResolver;

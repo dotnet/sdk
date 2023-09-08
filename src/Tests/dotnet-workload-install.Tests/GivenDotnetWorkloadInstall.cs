@@ -393,13 +393,29 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             var userProfileDir = Path.Combine(testDirectory, "user-profile");
             var tmpDir = Path.Combine(testDirectory, "tmp");
             var manifestPath = Path.Combine(_testAssetsManager.GetAndValidateTestProjectDirectory("SampleManifest"), "MockWorkloadsSample.json");
-            var workloadResolver = WorkloadResolver.CreateForTests(new MockManifestProvider(new[] { manifestPath }), dotnetRoot, userProfileDir: userProfileDir);
+            
             var manifestUpdater = new MockWorkloadManifestUpdater();
             var prev7SdkFeatureVersion = "6.0.100-preview.7.21379.14";
             var prev7FormattedFeatureVersion = "6.0.100-preview.7";
             var rc1SdkFeatureVersion = "6.0.100-rc.1.21463.6";
             var rc1FormattedFeatureVersion = "6.0.100-rc.1";
+
+            static void CreateFile(string path)
+            {
+                string directory = Path.GetDirectoryName(path);
+                if (!Directory.Exists(directory))
+                {
+                    Directory.CreateDirectory(directory);
+                }
+                using var _ = File.Create(path);
+            }
+
+            //  Create fake SDK directories (so garbage collector will see them as installed versions)
+            CreateFile(Path.Combine(dotnetRoot, "sdk", prev7SdkFeatureVersion, "dotnet.dll"));
+            CreateFile(Path.Combine(dotnetRoot, "sdk", rc1SdkFeatureVersion, "dotnet.dll"));
+
             var existingWorkload = "mock-1";
+            var workloadResolver = WorkloadResolver.CreateForTests(new MockManifestProvider(new[] { manifestPath }), dotnetRoot, userProfileDir: userProfileDir);
             var prev7workloadResolverFactory = new MockWorkloadResolverFactory(dotnetRoot, prev7SdkFeatureVersion, workloadResolver, userProfileDir);
             var rc1WorkloadResolverFactory = new MockWorkloadResolverFactory(dotnetRoot, rc1SdkFeatureVersion, workloadResolver, userProfileDir);
 

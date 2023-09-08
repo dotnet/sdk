@@ -107,11 +107,6 @@
         <target state="translated">Autorisez les manifestes de la charge de travail préliminaire.</target>
         <note />
       </trans-unit>
-      <trans-unit id="IncompatibleManifests">
-        <source>The current SDK isn't compatible with workload manifests of SDK version {0}.</source>
-        <target state="translated">Le kit de développement logiciel (SDK) actuel n’est pas compatible avec les manifestes de charge de travail de la version SDK {0}.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="InstallationSucceeded">
         <source>Successfully installed workload(s) {0}.</source>
         <target state="translated">Installation réussie de la ou des charges de travail {0}.</target>
@@ -187,11 +182,6 @@
         <target state="translated">Suppression de {0} </target>
         <note />
       </trans-unit>
-      <trans-unit id="NoManifestsExistForFeatureBand">
-        <source>No manifests exist for SDK version {0}.</source>
-        <target state="translated">Aucun manifeste n’existe pour la version du kit de développement logiciel (SDK) {0}.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="NoTrustWithParentPID">
         <source>Failed to establish a trust relationship with parent process ({0}).</source>
         <target state="translated">Impossible d’établir une relation de confiance avec le processus parent ({0}).</target>
@@ -235,6 +225,11 @@
       <trans-unit id="RollingBackPackInstall">
         <source>Rolling back pack {0} installation...</source>
         <target state="translated">Annulation de l'installation {0}...</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SdkVersionOptionNotSupported">
+        <source>The --sdk-version option is no longer supported for this command.</source>
+        <target state="new">The --sdk-version option is no longer supported for this command.</target>
         <note />
       </trans-unit>
       <trans-unit id="SkipManifestUpdateOptionDescription">

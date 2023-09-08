@@ -80,7 +80,7 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
             }
 
             // Mock updating the manifest
-            workloadResolver = WorkloadResolver.CreateForTests(
+            workloadResolverFactory.MockResult.WorkloadResolver = WorkloadResolver.CreateForTests(
                 new MockManifestProvider(new[] { Path.Combine(_testAssetsManager.GetAndValidateTestProjectDirectory("SampleUpdatedManifest"), "Sample.json") }),
                 dotnetRoot, userLocal, userProfileDir);
 
@@ -260,78 +260,34 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
             string.Join(" ", _reporter.Lines).Should().NotContain("xamarin.android.sdk", "Urls for packs with the same version should not be included in output");
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void GivenWorkloadUpdateAcrossFeatureBandsItErrorsWhenManifestsDoNotExist(bool userLocal)
+        [Fact]
+        public void GivenWorkloadUpdateItPrintsDownloadUrlsForNewFeatureBand()
         {
-            var testDirectory = _testAssetsManager.CreateTestDirectory(identifier: userLocal ? "userlocal" : "default").Path;
-            var dotnetRoot = Path.Combine(testDirectory, "dotnet");
-            var userProfileDir = Path.Combine(testDirectory, "user-profile");
-            var sdkFeatureVersion = "7.0.100";
-            var updateParseResult = Parser.Instance.Parse(new string[] { "dotnet", "workload", "update", "--sdk-version", sdkFeatureVersion });
+            var mockWorkloadIds = new WorkloadId[] { new WorkloadId("xamarin-android") };
+            var parseResult = Parser.Instance.Parse(new string[] { "dotnet", "workload", "update", "--print-download-link-only", "--sdk-version", "7.0.100" });
+            (_, var command, _, _, _, _) = GetTestInstallers(parseResult, installedWorkloads: mockWorkloadIds, includeInstalledPacks: true, sdkVersion: "6.0.400");
 
-            if (userLocal)
-            {
-                WorkloadFileBasedInstall.SetUserLocal(dotnetRoot, sdkFeatureVersion);
-            }
+            command.Execute();
 
-            var workloadResolverFactory = new MockWorkloadResolverFactory();
-
-            //  Create a "real" workload resolver with test parameters
-            workloadResolverFactory.MockResult = new WorkloadResolverFactory().Create(new IWorkloadResolverFactory.CreationParameters()
-            {
-                DotnetPath = dotnetRoot,
-                UserProfileDir = userProfileDir,
-                SdkVersionFromOption = sdkFeatureVersion,
-            });
-
-            var exceptionThrown = Assert.Throws<GracefulException>(() => new WorkloadUpdateCommand(updateParseResult, reporter: _reporter, workloadResolverFactory: workloadResolverFactory));
-            exceptionThrown.Message.Should().Contain("No manifests exist");
+            _reporter.Lines.Should().Contain("==allPackageLinksJsonOutputStart==");
+            string.Join(" ", _reporter.Lines).Should().Contain("http://mock-url/xamarin.android.templates.1.0.3.nupkg", "New pack urls should be included in output");
+            string.Join(" ", _reporter.Lines).Should().Contain("http://mock-url/xamarin.android.framework.8.4.0.nupkg", "Urls for packs with updated versions should be included in output");
+            string.Join(" ", _reporter.Lines).Should().NotContain("xamarin.android.sdk", "Urls for packs with the same version should not be included in output");
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void GivenWorkloadUpdateAcrossFeatureBandsItErrorsWhenUnableToReadManifest(bool userLocal)
+        [Fact]
+        public void GivenWorkloadUpdateWithSdkVersionItErrors()
         {
-            var testDirectory = _testAssetsManager.CreateTestDirectory(identifier: userLocal ? "userlocal" : "default").Path;
+            var testDirectory = _testAssetsManager.CreateTestDirectory().Path;
             var dotnetRoot = Path.Combine(testDirectory, "dotnet");
             var userProfileDir = Path.Combine(testDirectory, "user-profile");
             var sdkFeatureVersion = "7.0.100";
             var updateParseResult = Parser.Instance.Parse(new string[] { "dotnet", "workload", "update", "--sdk-version", sdkFeatureVersion });
 
-            string installRoot = userLocal ? userProfileDir : dotnetRoot;
-            if (userLocal)
-            {
-                WorkloadFileBasedInstall.SetUserLocal(dotnetRoot, sdkFeatureVersion);
-            }
-
-            // Write manifest of "new" format that we don't recognize
-            Directory.CreateDirectory(Path.Combine(installRoot, "sdk-manifests", "7.0.100", "mock.workload"));
-            File.WriteAllText(Path.Combine(installRoot, "sdk-manifests", "7.0.100", "mock.workload", "WorkloadManifest.json"), @"{
-  ""version"": 1,
-  ""workloads"": {
-    ""mock.workload"": {
-      ""new.item"": ""fake""
-    }
-  }
-}
-");
-
-            var workloadResolverFactory = new MockWorkloadResolverFactory();
-
-            //  Create a "real" workload resolver with test parameters
-            workloadResolverFactory.MockResult = new WorkloadResolverFactory().Create(new IWorkloadResolverFactory.CreationParameters()
-            {
-                DotnetPath = dotnetRoot,
-                UserProfileDir = userProfileDir,
-                SdkVersionFromOption = sdkFeatureVersion,
-            });
-
+            var workloadResolverFactory = new MockWorkloadResolverFactory(dotnetRoot, sdkFeatureVersion, workloadResolver: null, userProfileDir);
 
             var exceptionThrown = Assert.Throws<GracefulException>(() => new WorkloadUpdateCommand(updateParseResult, reporter: _reporter, workloadResolverFactory: workloadResolverFactory));
-            exceptionThrown.Message.Should().Contain(string.Format(Workloads.Workload.Install.LocalizableStrings.IncompatibleManifests, "7.0.100"));
+            exceptionThrown.Message.Should().Contain("--sdk-version option is no longer supported");
         }
 
         [Fact]
@@ -430,24 +386,18 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
             var userProfileDir = Path.Combine(testDirectory, "user-profile");
             Directory.CreateDirectory(userProfileDir);
 
-            var sdkFeatureVersion = "6.0.200";
-           
             var mockRollbackFileContent = @"{""mock.workload"":""6.0.0.15/6.0.100""}";
             var rollbackFilePath = Path.Combine(testDirectory, "rollback.json");
             File.WriteAllText(rollbackFilePath, mockRollbackFileContent);
             
             var updateParseResult = Parser.Instance.Parse(new string[] { "dotnet", "workload", "update", "--from-rollback-file", rollbackFilePath });
 
-            var workloadResolverFactory = new MockWorkloadResolverFactory();
+            string sdkVersion = "6.0.100";
 
             //  Create a "real" workload resolver with test parameters
-            workloadResolverFactory.MockResult = new WorkloadResolverFactory().Create(new IWorkloadResolverFactory.CreationParameters()
-            {
-                DotnetPath = dotnetRoot,
-                UserProfileDir = userProfileDir,
-                SdkVersionFromOption = sdkFeatureVersion,
-            });
-
+            var sdkWorkloadManifestProvider = new SdkDirectoryWorkloadManifestProvider(dotnetRoot, sdkVersion, userProfileDir, globalJsonPath: null);
+            var workloadResolver = WorkloadResolver.Create(sdkWorkloadManifestProvider, dotnetRoot, sdkVersion, userProfileDir);
+            var workloadResolverFactory = new MockWorkloadResolverFactory(dotnetRoot, "6.0.100", workloadResolver, userProfileDir);
 
             var updateCommand = new WorkloadUpdateCommand(updateParseResult, reporter: _reporter, workloadResolverFactory: workloadResolverFactory, tempDirPath: testDirectory);
 

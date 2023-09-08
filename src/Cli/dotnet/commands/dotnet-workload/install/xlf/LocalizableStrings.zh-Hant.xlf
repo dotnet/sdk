@@ -107,11 +107,6 @@
         <target state="translated">允許發行前階段工作負載資訊清單。</target>
         <note />
       </trans-unit>
-      <trans-unit id="IncompatibleManifests">
-        <source>The current SDK isn't compatible with workload manifests of SDK version {0}.</source>
-        <target state="translated">目前的 SDK 與 SDK 版本 {0} 的工作負載資訊清單不相容。</target>
-        <note />
-      </trans-unit>
       <trans-unit id="InstallationSucceeded">
         <source>Successfully installed workload(s) {0}.</source>
         <target state="translated">已成功安裝工作負載 (s) {0}。</target>
@@ -187,11 +182,6 @@
         <target state="translated">正在移除 {0} </target>
         <note />
       </trans-unit>
-      <trans-unit id="NoManifestsExistForFeatureBand">
-        <source>No manifests exist for SDK version {0}.</source>
-        <target state="translated">沒有 SDK 版本 {0} 的資訊清單。</target>
-        <note />
-      </trans-unit>
       <trans-unit id="NoTrustWithParentPID">
         <source>Failed to establish a trust relationship with parent process ({0}).</source>
         <target state="translated">無法與父處理序 ({0}) 建立信任關係。</target>
@@ -235,6 +225,11 @@
       <trans-unit id="RollingBackPackInstall">
         <source>Rolling back pack {0} installation...</source>
         <target state="translated">正在回復套件 {0} 安裝...</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SdkVersionOptionNotSupported">
+        <source>The --sdk-version option is no longer supported for this command.</source>
+        <target state="new">The --sdk-version option is no longer supported for this command.</target>
         <note />
       </trans-unit>
       <trans-unit id="SkipManifestUpdateOptionDescription">

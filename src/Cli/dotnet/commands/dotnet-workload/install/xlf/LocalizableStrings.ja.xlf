@@ -107,11 +107,6 @@
         <target state="translated">プレリリースのワークロード マニフェストを許可します。</target>
         <note />
       </trans-unit>
-      <trans-unit id="IncompatibleManifests">
-        <source>The current SDK isn't compatible with workload manifests of SDK version {0}.</source>
-        <target state="translated">現在の SDK は、SDK バージョン {0} のワークロード マニフェストと互換性がありません。</target>
-        <note />
-      </trans-unit>
       <trans-unit id="InstallationSucceeded">
         <source>Successfully installed workload(s) {0}.</source>
         <target state="translated">ワークロード {0} が正常にインストールされました。</target>
@@ -187,11 +182,6 @@
         <target state="translated">{0} を削除しています </target>
         <note />
       </trans-unit>
-      <trans-unit id="NoManifestsExistForFeatureBand">
-        <source>No manifests exist for SDK version {0}.</source>
-        <target state="translated">SDK バージョン {0} のマニフェストが存在しません。</target>
-        <note />
-      </trans-unit>
       <trans-unit id="NoTrustWithParentPID">
         <source>Failed to establish a trust relationship with parent process ({0}).</source>
         <target state="translated">親プロセス ({0}) との信頼関係を確立できませんでした。</target>
@@ -235,6 +225,11 @@
       <trans-unit id="RollingBackPackInstall">
         <source>Rolling back pack {0} installation...</source>
         <target state="translated">パック {0} のインストールをロールバックしています...</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SdkVersionOptionNotSupported">
+        <source>The --sdk-version option is no longer supported for this command.</source>
+        <target state="new">The --sdk-version option is no longer supported for this command.</target>
         <note />
       </trans-unit>
       <trans-unit id="SkipManifestUpdateOptionDescription">
