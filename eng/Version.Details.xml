@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.TemplateEngine.Abstractions" Version="8.0.100-rc.2.23457.5">
+    <Dependency Name="Microsoft.TemplateEngine.Abstractions" Version="8.0.100-rc.2.23458.1">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>16b85b0fbb462857b028a130166a5b4b8312b9ea</Sha>
+      <Sha>336cd00ce8222a8e314c2b613e1d15c24dc1986c</Sha>
       <SourceBuild RepoName="templating" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.NETCore.App.Ref" Version="8.0.0-rc.2.23457.7">
@@ -274,18 +274,18 @@
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
       <Sha>237376d05c8e7ce126a231e06d406633ebf2e1ce</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.Razor.Tooling.Internal" Version="7.0.0-preview.23457.3">
+    <Dependency Name="Microsoft.CodeAnalysis.Razor.Tooling.Internal" Version="7.0.0-preview.23458.3">
       <Uri>https://github.com/dotnet/razor</Uri>
-      <Sha>96978ed13b05392a75346a8bc9b58b6e1e89dcf9</Sha>
+      <Sha>47c853b3e0652272cfab9ef21ef59abfc22e0810</Sha>
       <SourceBuild RepoName="razor" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Mvc.Razor.Extensions.Tooling.Internal" Version="7.0.0-preview.23457.3">
+    <Dependency Name="Microsoft.AspNetCore.Mvc.Razor.Extensions.Tooling.Internal" Version="7.0.0-preview.23458.3">
       <Uri>https://github.com/dotnet/razor</Uri>
-      <Sha>96978ed13b05392a75346a8bc9b58b6e1e89dcf9</Sha>
+      <Sha>47c853b3e0652272cfab9ef21ef59abfc22e0810</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Sdk.Razor.SourceGenerators.Transport" Version="7.0.0-preview.23457.3">
+    <Dependency Name="Microsoft.NET.Sdk.Razor.SourceGenerators.Transport" Version="7.0.0-preview.23458.3">
       <Uri>https://github.com/dotnet/razor</Uri>
-      <Sha>96978ed13b05392a75346a8bc9b58b6e1e89dcf9</Sha>
+      <Sha>47c853b3e0652272cfab9ef21ef59abfc22e0810</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.FileProviders.Embedded" Version="8.0.0-rc.2.23457.19">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>

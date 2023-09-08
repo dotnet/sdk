@@ -139,12 +139,12 @@
   </data>
   <data name="BaseImageNotFound" xml:space="preserve">
     <value>CONTAINER1011: The RuntimeIdentifier '{0}' is not supported by {1}:{2}. The supported RuntimeIdentifiers are {3}.</value>
-    <comment>&#xD;&#xD;&#xD;&#xD;
-      {StrBegin="CONTAINER1011: "}&#xD;&#xD;&#xD;&#xD;
-      0 is a .NET RuntimeIdentifier&#xD;&#xD;&#xD;&#xD;
-      1 is the image repository name&#xD;&#xD;&#xD;&#xD;
-      2 is the image tag&#xD;&#xD;&#xD;&#xD;
-      3 is a comma-separated list of supported RuntimeIdentifiers&#xD;&#xD;&#xD;&#xD;
+    <comment>
+      {StrBegin="CONTAINER1011: "}
+      0 is a .NET RuntimeIdentifier
+      1 is the image repository name
+      2 is the image tag
+      3 is a comma-separated list of supported RuntimeIdentifiers
     </comment>
   </data>
   <data name="BlobUploadFailed" xml:space="preserve">
