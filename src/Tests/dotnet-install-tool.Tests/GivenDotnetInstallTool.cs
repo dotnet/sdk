@@ -22,8 +22,8 @@ namespace Microsoft.DotNet.Cli.Install.Tests
                 .NotHaveStdOutContaining("Restoring");
         }
 
-       /* [Fact]*/
-        /*public void ItRunsWithTheSpecifiedVerbosity()
+        [Fact]
+        public void ItRunsWithTheSpecifiedVerbosity()
         {
             var result = new DotnetToolCommand(Log)
                 .Execute("install -g -v:n nonexistent_tool_package".Split());
@@ -36,6 +36,6 @@ namespace Microsoft.DotNet.Cli.Install.Tests
                 .StdOut
                 .Should()
                 .BeEmpty();
-        }*/
+        }
     }
 }
