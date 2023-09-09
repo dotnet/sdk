@@ -43,7 +43,7 @@ namespace Microsoft.DotNet.Tools.Run
 
             if (ShouldBuild)
             {
-                if (string.Equals("true", launchSettings?.DotNetRunMessages, StringComparison.OrdinalIgnoreCase))
+                if (string.Equals("true", launchSettings?.DotNetRunMessages, StringComparison.OrdinalIgnoreCase) || launchSettings?.DotNetRunMessages is null)
                 {
                     Reporter.Output.WriteLine(LocalizableStrings.RunCommandBuilding);
                 }

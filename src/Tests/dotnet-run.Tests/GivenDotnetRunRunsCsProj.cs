@@ -129,7 +129,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                 .WithWorkingDirectory(testProjectDirectory)
                 .Execute("--framework", ToolsetInfo.CurrentTargetFramework)
                 .Should().Pass()
-                         .And.HaveStdOut("Hello World!");
+                         .And.HaveStdOutContaining("Hello World!");
         }
 
         [Fact]
@@ -783,9 +783,9 @@ namespace Microsoft.DotNet.Cli.Run.Tests
         }
 
         [Fact]
-        public void ItDoesNotPrintBuildingMessageByDefault()
+        public void ItPrintsBuildingMessageByDefault()
         {
-            var expectedValue = "Building...";
+            var expectedValue = LocalizableStrings.RunCommandBuilding;
             var testAppName = "TestAppSimple";
             var testInstance = _testAssetsManager.CopyTestAsset(testAppName)
                 .WithSource();
@@ -796,13 +796,13 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                .Should()
                .Pass()
                .And
-               .NotHaveStdOutContaining(expectedValue);
+               .HaveStdOutContaining(expectedValue);
         }
 
         [Fact]
         public void ItPrintsBuildingMessageIfLaunchSettingHasDotnetRunMessagesSet()
         {
-            var expectedValue = "Building...";
+            var expectedValue = LocalizableStrings.RunCommandBuilding;
             var testAppName = "TestAppWithLaunchSettings";
             var testInstance = _testAssetsManager.CopyTestAsset(testAppName)
                 .WithSource();
@@ -814,6 +814,40 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                .Pass()
                .And
                .HaveStdOutContaining(expectedValue);
+        }
+
+        [Fact]
+        public void ItPrintsBuildingMessageIfNoLaunchSettings()
+        {
+            var expectedValue = LocalizableStrings.RunCommandBuilding;
+            var testAppName = "TestAppSimple";
+            var testInstance = _testAssetsManager.CopyTestAsset(testAppName)
+                .WithSource();
+
+            new DotnetCommand(Log, "run")
+               .WithWorkingDirectory(testInstance.Path)
+               .Execute()
+               .Should()
+               .Pass()
+               .And
+               .HaveStdOutContaining(expectedValue);
+        }
+
+        [Fact]
+        public void ItDoesNotPrintBuildingMessageIfLaunchSettingIsFalse()
+        {
+            var expectedValue = LocalizableStrings.RunCommandBuilding;
+            var testAppName = "TestAppWithLaunchSettingsAndDotNetRunMessagesIsFalse";
+            var testInstance = _testAssetsManager.CopyTestAsset(testAppName)
+                .WithSource();
+
+            new DotnetCommand(Log, "run")
+               .WithWorkingDirectory(testInstance.Path)
+               .Execute()
+               .Should()
+               .Pass()
+               .And
+               .NotHaveStdOutContaining(expectedValue);
         }
 
         [Fact]
