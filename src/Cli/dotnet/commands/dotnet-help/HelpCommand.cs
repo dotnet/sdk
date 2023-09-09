@@ -67,40 +67,25 @@ namespace Microsoft.DotNet.Tools.Help
             if (innerParseResult.CommandResult is { } commandResult)
             {
 
-                if (commandResult.Command is DocumentedCommand documentedCommand)
+                if (commandResult.Command is DocumentedCommand documentedCommand
+                    && !string.IsNullOrEmpty(documentedCommand.DocsLink))
                 {
-                    if (!string.IsNullOrEmpty(documentedCommand.DocsLink))
+                    var process = ConfigureProcess(documentedCommand.DocsLink);
+                    try
                     {
-                        var process = ConfigureProcess(documentedCommand.DocsLink);
-                        try
+                        process.Start();
+                        process.WaitForExit();
+                        if (process.ExitCode == 0)
                         {
-                            process.Start();
-                            process.WaitForExit();
-                            if (process.ExitCode != 0)
-                            {
-                                // if the 'open browser' process fails, we should fallback to
-                                // calling `--help` for that command and outputting that
-                                return innerParseResult.ShowHelp();
-                            }
-                            else
-                            {
-                                return process.ExitCode;
-                            }
-                        }
-                        catch 
-                        {
-                            return innerParseResult.ShowHelp();
+                            return process.ExitCode;
                         }
                     }
-                    else
-                    {
-                        return innerParseResult.ShowHelp();
-                    }
+                    catch { }
                 }
-                else
-                {
-                    return innerParseResult.ShowHelp();
-                }
+
+                // if the 'open browser' process fails, we should fallback to
+                // calling `--help` for that command and outputting that
+                return innerParseResult.ShowHelp();
             }
             else
             {
