@@ -40,7 +40,6 @@ namespace Microsoft.DotNet.Watcher.Tests
             var testAsset = TestAssets.CopyTestAsset("WatchAppTypeLoadFailure")
                 .WithSource();
 
-            App.DotnetWatchArgs.Add("--verbose");
             await App.StartWatcherAsync(testAsset, "App");
 
             await App.WaitForSessionStarted();

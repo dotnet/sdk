@@ -91,8 +91,6 @@ namespace Microsoft.DotNet.Watcher.Tests
             var testAsset = TestAssets.CopyTestAsset("WatchAppWithLaunchSettings")
                 .WithSource();
 
-            App.DotnetWatchArgs.Add("--verbose");
-
             await App.StartWatcherAsync(testAsset);
 
             await App.AssertOutputLineEquals("Environment: Development");
@@ -106,7 +104,6 @@ namespace Microsoft.DotNet.Watcher.Tests
 
             var directoryInfo = new DirectoryInfo(testAsset.Path);
 
-            App.DotnetWatchArgs.Add("--verbose");
             App.DotnetWatchArgs.Add("--project");
             App.DotnetWatchArgs.Add(Path.Combine(directoryInfo.Name, "WatchAppWithLaunchSettings.csproj"));
 
@@ -123,7 +120,6 @@ namespace Microsoft.DotNet.Watcher.Tests
                 .WithSource();
 
             App.EnvironmentVariables.Add("READ_INPUT", "true");
-            App.DotnetWatchArgs.Add("--verbose");
             App.DotnetWatchArgs.Add("--non-interactive");
 
             await App.StartWatcherAsync(testAsset);

@@ -93,13 +93,14 @@ namespace Microsoft.DotNet.Watcher.Tests
 
         public void Start(TestAsset asset, IEnumerable<string> arguments, string relativeProjectDirectory = null, string workingDirectory = null, TestFlags testFlags = TestFlags.RunningAsTest)
         {
-            var projectDirectory = Path.Combine(asset.Path, relativeProjectDirectory);
+            var projectDirectory = (relativeProjectDirectory != null) ? Path.Combine(asset.Path, relativeProjectDirectory) : asset.Path;
 
             Prepare(projectDirectory);
 
             var args = new List<string>
             {
                 "watch",
+                "--verbose",
             };
             args.AddRange(DotnetWatchArgs);
             args.AddRange(arguments);

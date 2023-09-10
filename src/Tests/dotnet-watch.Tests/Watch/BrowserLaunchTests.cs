@@ -18,8 +18,6 @@ namespace Microsoft.DotNet.Watcher.Tests
             var testAsset = TestAssets.CopyTestAsset(AppName)
                 .WithSource();
 
-            App.DotnetWatchArgs.Add("--verbose");
-
             await App.StartWatcherAsync(testAsset, testFlags: TestFlags.BrowserRequired);
 
             // Verify we launched the browser.
@@ -33,8 +31,6 @@ namespace Microsoft.DotNet.Watcher.Tests
                 .WithSource();
 
             App.EnvironmentVariables.Add("DOTNET_WATCH_BROWSER_PATH", "mycustombrowser.bat");
-
-            App.DotnetWatchArgs.Add("--verbose");
 
             await App.StartWatcherAsync(testAsset, testFlags: TestFlags.BrowserRequired);
 
