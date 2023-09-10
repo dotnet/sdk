@@ -35,7 +35,7 @@ namespace Microsoft.DotNet.Watcher.Tests
             await App.AssertOutputLineStartsWith("Changed!");
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/sdk/issues/35264")]
         public async Task HandleTypeLoadFailure()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchAppTypeLoadFailure")
