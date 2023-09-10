@@ -16,8 +16,7 @@ namespace Microsoft.DotNet.Watcher.Tests
         public async Task LaunchesBrowserOnStart()
         {
             var testAsset = TestAssets.CopyTestAsset(AppName)
-                .WithSource()
-                .Path;
+                .WithSource();
 
             App.DotnetWatchArgs.Add("--verbose");
 
@@ -31,8 +30,7 @@ namespace Microsoft.DotNet.Watcher.Tests
         public async Task UsesBrowserSpecifiedInEnvironment()
         {
             var testAsset = TestAssets.CopyTestAsset(AppName)
-                .WithSource()
-                .Path;
+                .WithSource();
 
             App.EnvironmentVariables.Add("DOTNET_WATCH_BROWSER_PATH", "mycustombrowser.bat");
 
