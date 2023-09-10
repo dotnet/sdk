@@ -848,6 +848,16 @@ class Program
         Console.WriteLine(str);
     }
 }";
+            // disabling "Building..." message
+            testProject.SourceFiles["Properties/launchSettings.json"] = @"
+{
+    ""profiles"": {
+        ""TestApp"": {
+            ""commandName"": ""Project"",
+            ""dotnetRunMessages"": ""false""
+        }
+    }
+}";
             var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFrameworkVersion);
             var buildCommand = new BuildCommand(testAsset);
             buildCommand.WithWorkingDirectory(testAsset.Path)

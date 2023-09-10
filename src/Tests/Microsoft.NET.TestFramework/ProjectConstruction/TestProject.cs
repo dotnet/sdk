@@ -421,7 +421,15 @@ namespace {safeThisName}
             {
                 foreach (var kvp in SourceFiles)
                 {
-                    File.WriteAllText(Path.Combine(targetFolder, kvp.Key), kvp.Value);
+                    var path = Path.Combine(targetFolder, kvp.Key);
+
+                    var fi = new FileInfo(path);
+                    if (!fi.Directory.Exists) 
+                    {
+                        fi.Directory.Create();
+                    }
+
+                    File.WriteAllText(path, kvp.Value);
                 }
             }
 
