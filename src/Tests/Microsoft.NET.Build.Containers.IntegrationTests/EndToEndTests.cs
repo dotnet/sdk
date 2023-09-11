@@ -170,7 +170,12 @@ public class EndToEndTests : IDisposable
             : archiveParent;
 
         string newImageNameWithTag = NewImageName() + ":latest";
-        string dockerHost = ContainerCli.IsPodman ? "host.containers.internal" : "host.docker.internal";
+        string dockerHost = OperatingSystem.IsWindows()
+            ? (ContainerCli.IsPodman ? "host.containers.internal" : "host.docker.internal")
+            // For default networking we can use a static IP
+            // https://stackoverflow.com/questions/48546124/what-is-linux-equivalent-of-host-docker-internal
+            : "172.17.0.1"; 
+            
         ContainerCli.RunCommand(_testOutput, $"-v", $"{archiveMountPath}:/data", "--rm", "--tty", "quay.io/skopeo/stable:latest",
                 "copy", "--dest-tls-verify=false", "--format", "oci", $"oci-archive:/data/{archiveOutput.Name}", $"docker://{dockerHost}:{DockerRegistryManager.LocalRegistryPort}/{newImageNameWithTag}")
             .Execute()
