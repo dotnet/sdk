@@ -89,14 +89,48 @@ namespace Microsoft.NET.Sdk.Razor.Tool
                 }
             }
 
+            PatchExtensions(ExtensionNames, ExtensionFilePaths);
+
             return true;
+        }
+
+        /// <summary>
+        /// Replaces the assembly for MVC extension v1 or v2 with the one shipped alongside SDK (as opposed to the one from NuGet).
+        /// </summary>
+        /// <remarks>
+        /// Needed so the Razor compiler can change its APIs without breaking legacy MVC scenarios.
+        /// </remarks>
+        internal static void PatchExtensions(CommandOption extensionNames, CommandOption extensionFilePaths)
+        {
+            string currentDirectory = null;
+
+            for (int i = 0; i < extensionNames.Values.Count; i++)
+            {
+                var replacementFileName = extensionNames.Values[i] switch
+                {
+                    "MVC-1.0" or "MVC-1.1" => "Microsoft.CodeAnalysis.Razor.Compiler.Mvc.Version1_X.dll",
+                    "MVC-2.0" or "MVC-2.1" => "Microsoft.CodeAnalysis.Razor.Compiler.Mvc.Version2_X.dll",
+                    _ => null,
+                };
+
+                if (replacementFileName != null && HasExpectedFileName(extensionFilePaths.Values[i]))
+                {
+                    currentDirectory ??= Path.GetDirectoryName(typeof(Application).Assembly.Location);
+                    extensionFilePaths.Values[i] = Path.Combine(currentDirectory, replacementFileName);
+                }
+            }
+
+            static bool HasExpectedFileName(string filePath)
+            {
+                return "Microsoft.AspNetCore.Mvc.Razor.Extensions".Equals(Path.GetFileNameWithoutExtension(filePath), StringComparison.OrdinalIgnoreCase);
+            }
         }
 
         protected override Task<int> ExecuteCoreAsync()
         {
             if (!Parent.Checker.Check(ExtensionFilePaths.Values))
             {
-                Error.WriteLine($"Extenions could not be loaded. See output for details.");
+                Error.WriteLine($"Extensions could not be loaded. See output for details.");
                 return Task.FromResult(ExitCodeFailure);
             }
 
