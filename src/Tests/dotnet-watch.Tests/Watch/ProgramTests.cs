@@ -60,6 +60,7 @@ namespace Microsoft.DotNet.Watcher.Tests
             var testAsset = TestAssets.CopyTestAsset("WatchHotReloadAppMultiTfm")
                 .WithSource();
 
+            App.DotnetWatchArgs.Clear();
             App.Start(testAsset, arguments: new[]
             {
                 "--no-hot-reload",

@@ -107,6 +107,7 @@ namespace Microsoft.DotNet.Watcher.Tests
             var testAsset = TestAssets.CopyTestAsset(AppName)
                .WithSource();
 
+            App.DotnetWatchArgs.Clear();
             App.Start(testAsset, new[] { "--list" });
             var lines = await App.Process.GetAllOutputLinesAsync(CancellationToken.None);
             var files = lines.Where(l => !l.StartsWith("watch :"));

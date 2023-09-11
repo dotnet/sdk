@@ -27,7 +27,7 @@ namespace Microsoft.DotNet.Watcher.Tests
 
         public AwaitableProcess Process { get; private set; }
 
-        public List<string> DotnetWatchArgs { get; } = new List<string>();
+        public List<string> DotnetWatchArgs { get; } = new() { "--verbose" };
 
         public Dictionary<string, string> EnvironmentVariables { get; } = new Dictionary<string, string>();
 
@@ -100,7 +100,6 @@ namespace Microsoft.DotNet.Watcher.Tests
             var args = new List<string>
             {
                 "watch",
-                "--verbose",
             };
             args.AddRange(DotnetWatchArgs);
             args.AddRange(arguments);
