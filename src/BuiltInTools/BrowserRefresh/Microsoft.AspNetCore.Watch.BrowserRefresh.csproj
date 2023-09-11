@@ -14,11 +14,15 @@
     <EmbeddedResource Include="BlazorHotReload.js" />
   </ItemGroup>
 
-  <!-- Reference 6.0.2 Asp.Net targeting pack in Source Build - this was the earliest version after the API surface stabilized -->
   <ItemGroup Condition="'$(DotNetBuildFromSource)' == 'true'">
+    <!-- Reference 6.0.2 Asp.Net targeting pack in Source Build - this was the earliest version after the API surface stabilized -->
     <FrameworkReference
       Update="Microsoft.AspNetCore.App"
       TargetingPackVersion="6.0.2" />
+    <!-- Reference RTM Microsoft.NETCore.App.Ref -->
+    <FrameworkReference
+      Update="Microsoft.NETCore.App"
+      TargetingPackVersion="6.0.0" />
   </ItemGroup>
 
 </Project>
