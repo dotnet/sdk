@@ -18,7 +18,9 @@
   <ItemGroup Condition="'$(DotNetBuildFromSource)' == 'true'">
     <FrameworkReference
       Update="Microsoft.AspNetCore.App"
-      TargetingPackVersion="6.0.2" />
+      TargetingPackVersion="6.0.2"
+      LatestRuntimeFrameworkVersion="6.0.2"
+      DefaultRuntimeFrameworkVersion="6.0.2" />
   </ItemGroup>
 
 </Project>
