@@ -16,7 +16,7 @@
 
   <!-- Reference 6.0.2 Asp.Net targeting pack in Source Build - this was the earliest version after the API surface stabilized -->
   <ItemGroup Condition="'$(DotNetBuildFromSource)' == 'true'">
-    <KnownFrameworkReference
+    <FrameworkReference
       Update="Microsoft.AspNetCore.App"
       TargetingPackVersion="6.0.2" />
   </ItemGroup>
