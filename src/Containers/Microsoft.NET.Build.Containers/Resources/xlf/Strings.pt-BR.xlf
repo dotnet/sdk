@@ -59,9 +59,9 @@
     </note>
       </trans-unit>
       <trans-unit id="BaseImageUnsupportedPlatform">
-        <source>CONTAINER1017: The image {0}:{1} has an unsupported platform: {2}</source>
-        <target state="new">CONTAINER1017: The image {0}:{1} has an unsupported platform: {2}</target>
-        <note>{StrBegin="CONTAINER1017: "}</note>
+        <source>CONTAINER1018: The image {0}:{1} has an unsupported platform: {2}</source>
+        <target state="new">CONTAINER1018: The image {0}:{1} has an unsupported platform: {2}</target>
+        <note>{StrBegin="CONTAINER1018: "}</note>
       </trans-unit>
       <trans-unit id="BlobUploadFailed">
         <source>CONTAINER1001: Failed to upload blob using {0}; received status code '{1}'.</source>

@@ -424,7 +424,7 @@
     <comment>{0} is the command used</comment>
   </data>
   <data name="BaseImageUnsupportedPlatform" xml:space="preserve">
-    <value>CONTAINER1017: The image {0}:{1} has an unsupported platform: {2}</value>
-    <comment>{StrBegin="CONTAINER1017: "}</comment>
+    <value>CONTAINER1018: The image {0}:{1} has an unsupported platform: {2}</value>
+    <comment>{StrBegin="CONTAINER1018: "}</comment>
   </data>
 </root>
