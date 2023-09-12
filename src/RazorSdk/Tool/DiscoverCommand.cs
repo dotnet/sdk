@@ -89,7 +89,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool
                 }
             }
 
-            PatchExtensions(ExtensionNames, ExtensionFilePaths);
+            PatchExtensions(ExtensionNames, ExtensionFilePaths, Error);
 
             return true;
         }
@@ -100,23 +100,32 @@ namespace Microsoft.NET.Sdk.Razor.Tool
         /// <remarks>
         /// Needed so the Razor compiler can change its APIs without breaking legacy MVC scenarios.
         /// </remarks>
-        internal static void PatchExtensions(CommandOption extensionNames, CommandOption extensionFilePaths)
+        internal static void PatchExtensions(CommandOption extensionNames, CommandOption extensionFilePaths, TextWriter error)
         {
             string currentDirectory = null;
 
             for (int i = 0; i < extensionNames.Values.Count; i++)
             {
-                var replacementFileName = extensionNames.Values[i] switch
+                var extensionName = extensionNames.Values[i];
+                var replacementFileName = extensionName switch
                 {
                     "MVC-1.0" or "MVC-1.1" => "Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X.dll",
                     "MVC-2.0" or "MVC-2.1" => "Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X.dll",
                     _ => null,
                 };
 
-                if (replacementFileName != null && HasExpectedFileName(extensionFilePaths.Values[i]))
+                if (replacementFileName != null)
                 {
-                    currentDirectory ??= Path.GetDirectoryName(typeof(Application).Assembly.Location);
-                    extensionFilePaths.Values[i] = Path.Combine(currentDirectory, replacementFileName);
+                    var extensionFilePath = extensionFilePaths.Values[i];
+                    if (!HasExpectedFileName(extensionFilePath))
+                    {
+                        error.WriteLine($"Extension '{extensionName}' has unexpected path '{extensionFilePath}'.");
+                    }
+                    else
+                    {
+                        currentDirectory ??= Path.GetDirectoryName(typeof(Application).Assembly.Location);
+                        extensionFilePaths.Values[i] = Path.Combine(currentDirectory, replacementFileName);
+                    }
                 }
             }
 
