@@ -1,49 +1,11 @@
 ﻿## dotnet-format
 <img width="480" alt="dotnet-format" src="https://user-images.githubusercontent.com/9797472/61659851-6bbdc880-ac7d-11e9-95f7-d30c7de1a18a.png">
 
-[![Nuget](https://img.shields.io/nuget/v/dotnet-format.svg)](https://www.nuget.org/packages/dotnet-format)
-
 |Branch| Windows (Debug)| Windows (Release)| Linux (Debug) | Linux (Release) | Localization (Debug) | Localization (Release) |
 |---|:--:|:--:|:--:|:--:|:--:|:--:|
-[main](https://github.com/dotnet/format/tree/main)|[![Build Status](https://dev.azure.com/dnceng/public/_apis/build/status/dotnet/format/dotnet.format?branchName=main&jobName=Windows&_configuration=debug&label=build)](https://dev.azure.com/dnceng/public/_build/latest?definitionId=347&branchName=main)|[![Build Status](https://dev.azure.com/dnceng/public/_apis/build/status/dotnet/format/dotnet.format?branchName=main&jobName=Windows&_configuration=release&label=build)](https://dev.azure.com/dnceng/public/_build/latest?definitionId=347&branchName=main)|[![Build Status](https://dev.azure.com/dnceng/public/_apis/build/status/dotnet/format/dotnet.format?branchName=main&jobName=Linux&_configuration=debug&label=build)](https://dev.azure.com/dnceng/public/_build/latest?definitionId=347&branchName=main)|[![Build Status](https://dev.azure.com/dnceng/public/_apis/build/status/dotnet/format/dotnet.format?branchName=main&jobName=Linux&_configuration=release&label=build)](https://dev.azure.com/dnceng/public/_build/latest?definitionId=347&branchName=main)|[![Build Status](https://dev.azure.com/dnceng/public/_apis/build/status/dotnet/format/dotnet.format?branchName=main&jobName=Linux_Spanish&_configuration=debug&label=build)](https://dev.azure.com/dnceng/public/_build/latest?definitionId=347&branchName=main)|[![Build Status](https://dev.azure.com/dnceng/public/_apis/build/status/dotnet/format/dotnet.format?branchName=main&jobName=Linux_Spanish&_configuration=release&label=build)](https://dev.azure.com/dnceng/public/_build/latest?definitionId=347&branchName=main)|
-
+[main](https://github.com/dotnet/format/tree/main)|[![Build Status](https://dev.azure.com/dnceng-public/public/_apis/build/status%2Fdotnet%2Fformat%2Fdotnet.format?branchName=main&jobName=Windows&configuration=Windows%20Debug)](https://dev.azure.com/dnceng-public/public/_build/latest?definitionId=176&branchName=main)|[![Build Status](https://dev.azure.com/dnceng-public/public/_apis/build/status%2Fdotnet%2Fformat%2Fdotnet.format?branchName=main&jobName=Windows&configuration=Windows%20Release)](https://dev.azure.com/dnceng-public/public/_build/latest?definitionId=176&branchName=main)|[![Build Status](https://dev.azure.com/dnceng-public/public/_apis/build/status%2Fdotnet%2Fformat%2Fdotnet.format?branchName=main&jobName=Linux&configuration=Linux%20Debug)](https://dev.azure.com/dnceng-public/public/_build/latest?definitionId=176&branchName=main)|[![Build Status](https://dev.azure.com/dnceng-public/public/_apis/build/status%2Fdotnet%2Fformat%2Fdotnet.format?branchName=main&jobName=Linux&configuration=Linux%20Release)](https://dev.azure.com/dnceng-public/public/_build/latest?definitionId=176&branchName=main)|[![Build Status](https://dev.azure.com/dnceng-public/public/_apis/build/status%2Fdotnet%2Fformat%2Fdotnet.format?branchName=main&jobName=Linux_Spanish&configuration=Linux_Spanish%20Debug)](https://dev.azure.com/dnceng-public/public/_build/latest?definitionId=176&branchName=main)|[![Build Status](https://dev.azure.com/dnceng-public/public/_apis/build/status%2Fdotnet%2Fformat%2Fdotnet.format?branchName=main&jobName=Linux_Spanish&configuration=Linux_Spanish%20Release)](https://dev.azure.com/dnceng-public/public/_build/latest?definitionId=176&branchName=main)|
 
 `dotnet-format` is a code formatter for `dotnet` that applies style preferences to a project or solution. Preferences will be read from an `.editorconfig` file, if present, otherwise a default set of preferences will be used. At this time `dotnet-format` is able to format C# and Visual Basic projects with a subset of [supported .editorconfig options](./docs/Supported-.editorconfig-options.md).
-
-### New in v5.1.225507
-
-#### New Features
-
-- Can now specify that format run against a solution filter with `dotnet format solution.slnf`
-- Can now filter diagnostics with `dotnet format --fix-analyzers --diagnostics ID0001`
-- Can now generate a MSBuild binary log with `dotnet format --binary-log PATH`
-- Can now support analyzers which update non-code files, such as the [PublicApiAnalyzers](https://github.com/dotnet/roslyn-analyzers#microsoftcodeanalysispublicapianalyzers)
-
-#### Breaking Changes
-
-- Implicit restore when fixing code style or 3rd party analyzers (disable with `--no-restore`)
-- Adopt csc style for warnings and errors
-- Warnings and errors are now written to the standard error stream
-
-#### Changes
-- [Add DiagnosticId to the format report (1133)](https://github.com/dotnet/format/pull/1133)
-- [Reenabled .NET Core 2.1 support (1021)](https://github.com/dotnet/format/pull/1021)
-- [Update System.CommandLine to 2.0.0-beta1.21216.1 (1118)](https://www.github.com/dotnet/format/pull/1118)
-- [Support AdditionalDocument changes (1106)](https://www.github.com/dotnet/format/pull/1106)
-- [Fix typo in examples (1082)](https://www.github.com/dotnet/format/pull/1082)
-- [Run CodeStyle formatter before removing unnecessary imports (1071)](https://www.github.com/dotnet/format/pull/1071)
-- [Allow Solution Filter files to be passed as the workspace path (1059)](https://www.github.com/dotnet/format/pull/1059)
-- [Add .pre-commit-hooks.yaml (872)](https://www.github.com/dotnet/format/pull/872)
-- [Add implicit restore when running analysis. Adds `--no-restore` option. (1015)](https://www.github.com/dotnet/format/pull/1015)
-- [Add separate command for binary log (1044)](https://www.github.com/dotnet/format/pull/1044)
-- [Use correct flag for codestyle codefixes (1037)](https://www.github.com/dotnet/format/pull/1037)
-- [Enhance whitespace issue logging with a detailed TextChange message (1017)](https://www.github.com/dotnet/format/pull/1017)
-- [Log all formatter error messages in a csc-style (1016)](https://www.github.com/dotnet/format/pull/1016)
-- [LogDebug each project's applied .editorconfig (1013)](https://www.github.com/dotnet/format/pull/1013)
-- [Add option to filter diagnostics by id (1007)](https://www.github.com/dotnet/format/pull/1007)
-- [Fix pre-commit directory (1004)](https://www.github.com/dotnet/format/pull/1004)
-- [Log warnings and errors to the standard error stream (982)](https://www.github.com/dotnet/format/pull/982)
-- [Only report fixable compiler diagnostics. (981)](https://www.github.com/dotnet/format/pull/981)
 
 ### How To Use
 
@@ -103,9 +65,13 @@ Add `format` after `dotnet` and before the command arguments that you want to ru
 | `dotnet format --include 'test/Utilities/*.cs' --folder`         | With single quotes, formats the files expanded from built-in glob expansion. A single file pattern is fed to formatter, which gets expanded internally. Also applies to `--exclude` option. |
 | `ls tests/Utilities/*.cs \| dotnet format --include - --folder`  | Formats the list of files redirected from pipeline via standard input. Formatter will iterate over `Console.In` to read the list of files. Also applies to `--exclude` option. |
 
-#### How to install Development Builds
+### How to install Development Builds
 
-Development builds of `dotnet-format` are being hosted on Azure Packages. You can visit the [dotnet-format Azure Packages page](https://dev.azure.com/dnceng/public/_packaging?_a=package&feed=dotnet8&view=versions&package=dotnet-format&protocolType=NuGet).
+Development builds of `dotnet-format` are being hosted on Azure Packages.
+
+Note: After installing .NET 6 Preview 7 SDK or higher you will need to run the dotnet-format global tool by invoking `dotnet-format`. Invoking `dotnet format` will invoke the SDK's copy of dotnet-format.
+
+#### Installing the latest build
 
 You can install the latest build of the tool using the following command.
 
@@ -113,7 +79,19 @@ You can install the latest build of the tool using the following command.
 dotnet tool install -g dotnet-format --version "8.*" --add-source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet8/nuget/v3/index.json
 ```
 
-Note: After installing .NET 6 Preview 7 SDK or higher you will need to run the dotnet-format global tool by invoking `dotnet-format`. Invoking `dotnet format` will invoke the SDK's copy of dotnet-format.
+#### Installing a specific build
+
+You can install a specific build of the tool using the following command. Be sure to update the version string to match the intended version.
+
+```console
+dotnet tool install -g dotnet-format --version "8.0.446201" --add-source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet8/nuget/v3/index.json
+```
+
+You can visit the [dotnet8 feed](https://dev.azure.com/dnceng/public/_artifacts/feed/dotnet8/NuGet/dotnet-format/versions) for a full list of versions.
+
+#### Looking for earlier versions of dotnet-format?
+
+Visit the [dotnet7 feed](https://dev.azure.com/dnceng/public/_artifacts/feed/dotnet7/NuGet/dotnet-format/versions) or [dotnet6 feed](https://dev.azure.com/dnceng/public/_artifacts/feed/dotnet6/NuGet/dotnet-format/versions) instead. Be sure to use the source URL appropriate for the version that you are installing.
 
 ### How To Build From Source
 
@@ -122,8 +100,8 @@ You can build and package the tool using the following commands. The instruction
 ```console
 build -pack
 # The final line from the build will read something like
-# Successfully created package '..\artifacts\packages\Debug\Shipping\dotnet-format.7.0.0-dev.nupkg'.
-# Use the value that is in the form `7.0.0-dev` as the version in the next command.
+# Successfully created package '..\artifacts\packages\Debug\Shipping\dotnet-format.8.0.0-dev.nupkg'.
+# Use the value that is in the form `8.0.0-dev` as the version in the next command.
 dotnet tool install --add-source .\artifacts\packages\Debug\Shipping -g dotnet-format --version <version>
 dotnet format
 ```
