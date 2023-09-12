@@ -88,8 +88,8 @@ public static class ContainerBuilder
             }
             catch (Exception e)
             {
-                logger.LogError(e, null);
-                return 1;
+                logger.LogError(e, "Unexpected error while fetching image");
+                throw;
             }
         }
         else
