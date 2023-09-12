@@ -149,6 +149,20 @@ namespace Microsoft.DotNet.Cli.Workload.Uninstall.Tests
             var sdkFeatureVersion = "6.0.100";
             var uninstallingWorkload = "mock-1";
 
+            static void CreateFile(string path)
+            {
+                string directory = Path.GetDirectoryName(path);
+                if (!Directory.Exists(directory))
+                {
+                    Directory.CreateDirectory(directory);
+                }
+                using var _ = File.Create(path);
+            }
+
+            //  Create fake SDK directories (so garbage collector will see them as installed versions)
+            CreateFile(Path.Combine(dotnetRoot, "sdk", prevSdkFeatureVersion, "dotnet.dll"));
+            CreateFile(Path.Combine(dotnetRoot, "sdk", sdkFeatureVersion, "dotnet.dll"));
+
             string installRoot = userLocal ? userProfileDir : dotnetRoot;
             if (userLocal)
             {

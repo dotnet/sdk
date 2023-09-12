@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using System.Text.Json;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using Microsoft.DotNet.Workloads.Workload;
 using Microsoft.DotNet.Workloads.Workload.Repair;
@@ -84,9 +85,10 @@ namespace Microsoft.DotNet.Cli.Workload.Repair.Tests
             // Add extra pack dirs and records
             var extraPackRecordPath = Path.Combine(installRoot, "metadata", "workloads", "InstalledPacks", "v1", "Test.Pack.A", "1.0.0", sdkFeatureVersion);
             Directory.CreateDirectory(Path.GetDirectoryName(extraPackRecordPath));
-            File.WriteAllText(extraPackRecordPath, string.Empty);
             var extraPackPath = Path.Combine(installRoot, "packs", "Test.Pack.A", "1.0.0");
             Directory.CreateDirectory(extraPackPath);
+            var packRecordContents = JsonSerializer.Serialize<WorkloadResolver.PackInfo>(new(new WorkloadPackId("Test.Pack.A"), "1.0.0", WorkloadPackKind.Sdk, extraPackPath, "Test.Pack.A"));
+            File.WriteAllText(extraPackRecordPath, packRecordContents);
 
             var repairCommand = new WorkloadRepairCommand(_parseResult, reporter: _reporter, workloadResolverFactory,
                 nugetPackageDownloader: nugetDownloader);

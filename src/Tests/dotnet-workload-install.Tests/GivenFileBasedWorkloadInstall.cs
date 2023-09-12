@@ -324,7 +324,8 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
                 {
                     var packRecordPath = Path.Combine(installedPacksPath, pack.Id, pack.Version, sdkVersion);
                     Directory.CreateDirectory(Path.GetDirectoryName(packRecordPath));
-                    File.WriteAllText(packRecordPath, string.Empty);
+                    var packRecordContents = JsonSerializer.Serialize<WorkloadResolver.PackInfo>(pack);
+                    File.WriteAllText(packRecordPath, packRecordContents);
                     Directory.CreateDirectory(pack.Path);
                 }
             }
@@ -469,7 +470,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
 
             IWorkloadResolver GetResolver(string sdkVersion)
             {
-                if (sdkFeatureBand.Equals(new SdkFeatureBand(sdkVersion)))
+                if (sdkVersion != null && !sdkFeatureBand.Equals(new SdkFeatureBand(sdkVersion)))
                 {
                     throw new NotSupportedException("Mock doesn't support creating resolver for different feature bands: " + sdkVersion);
                 }
