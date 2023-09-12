@@ -65,9 +65,13 @@ Add `format` after `dotnet` and before the command arguments that you want to ru
 | `dotnet format --include 'test/Utilities/*.cs' --folder`         | With single quotes, formats the files expanded from built-in glob expansion. A single file pattern is fed to formatter, which gets expanded internally. Also applies to `--exclude` option. |
 | `ls tests/Utilities/*.cs \| dotnet format --include - --folder`  | Formats the list of files redirected from pipeline via standard input. Formatter will iterate over `Console.In` to read the list of files. Also applies to `--exclude` option. |
 
-#### How to install Development Builds
+### How to install Development Builds
 
-Development builds of `dotnet-format` are being hosted on Azure Packages. You can visit the [dotnet-format Azure Packages page](https://dev.azure.com/dnceng/public/_packaging?_a=package&feed=dotnet8&view=versions&package=dotnet-format&protocolType=NuGet).
+Development builds of `dotnet-format` are being hosted on Azure Packages.
+
+Note: After installing .NET 6 Preview 7 SDK or higher you will need to run the dotnet-format global tool by invoking `dotnet-format`. Invoking `dotnet format` will invoke the SDK's copy of dotnet-format.
+
+#### Installing the latest build
 
 You can install the latest build of the tool using the following command.
 
@@ -75,7 +79,19 @@ You can install the latest build of the tool using the following command.
 dotnet tool install -g dotnet-format --version "8.*" --add-source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet8/nuget/v3/index.json
 ```
 
-Note: After installing .NET 6 Preview 7 SDK or higher you will need to run the dotnet-format global tool by invoking `dotnet-format`. Invoking `dotnet format` will invoke the SDK's copy of dotnet-format.
+#### Installing a specific build
+
+You can install a specific build of the tool using the following command. Be sure to update the version string to match the intended version.
+
+```console
+dotnet tool install -g dotnet-format --version "8.0.446201" --add-source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet8/nuget/v3/index.json
+```
+
+You can visit the [dotnet8 feed](https://dev.azure.com/dnceng/public/_artifacts/feed/dotnet8/NuGet/dotnet-format/versions) for a full list of versions.
+
+#### Looking for earlier versions of dotnet-format?
+
+Visit the [dotnet7 feed](https://dev.azure.com/dnceng/public/_artifacts/feed/dotnet7/NuGet/dotnet-format/versions) or [dotnet6 feed](https://dev.azure.com/dnceng/public/_artifacts/feed/dotnet6/NuGet/dotnet-format/versions) instead. Be sure to use the source URL appropriate for the version that you are installing.
 
 ### How To Build From Source
 
@@ -84,8 +100,8 @@ You can build and package the tool using the following commands. The instruction
 ```console
 build -pack
 # The final line from the build will read something like
-# Successfully created package '..\artifacts\packages\Debug\Shipping\dotnet-format.7.0.0-dev.nupkg'.
-# Use the value that is in the form `7.0.0-dev` as the version in the next command.
+# Successfully created package '..\artifacts\packages\Debug\Shipping\dotnet-format.8.0.0-dev.nupkg'.
+# Use the value that is in the form `8.0.0-dev` as the version in the next command.
 dotnet tool install --add-source .\artifacts\packages\Debug\Shipping -g dotnet-format --version <version>
 dotnet format
 ```
