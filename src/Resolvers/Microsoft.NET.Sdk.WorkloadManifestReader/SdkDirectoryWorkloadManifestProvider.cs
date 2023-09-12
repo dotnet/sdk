@@ -139,6 +139,9 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                 byte[] bytes = sha256Hash.ComputeHash(Encoding.UTF8.GetBytes(string.Join(";",
                             GetManifests().OrderBy(m => m.ManifestId).Select(m => $"{m.ManifestId}.{m.ManifestFeatureBand}.{m.ManifestVersion}").ToArray()
                         )));
+
+                // Only append the first four bytes to the version hash.
+                // We want the versions outputted here to be unique but ideally not too long.
                 StringBuilder sb = new();
                 for (int b = 0; b < 4 && b < bytes.Length; b++)
                 {
@@ -313,9 +316,9 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                     return (manifestId, manifestDirectory, new ReleaseVersion(manifestContents.Version));
                 }
                 catch
-                {
-                    return (manifestId, manifestDirectory, null);
-                }
+                { }
+
+                return (manifestId, manifestDirectory, null);
             }
             return (null, null, null);
         }
