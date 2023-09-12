@@ -10,22 +10,13 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Runtime
     <DiagnosticAnalyzer(LanguageNames.VisualBasic)>
     Public NotInheritable Class BasicUseSpanBasedStringConcat : Inherits UseSpanBasedStringConcat
 
-        Private Protected Overrides Function TryGetTopMostConcatOperation(binaryOperation As IBinaryOperation, ByRef rootBinaryOperation As IBinaryOperation) As Boolean
-
+        Private Protected Overrides Function IsTopMostConcatOperation(binaryOperation As IBinaryOperation) As Boolean
             If Not IsStringConcatOperation(binaryOperation) Then
-                rootBinaryOperation = Nothing
                 Return False
             End If
 
-            Dim parentBinaryOperation = binaryOperation
-            Dim current As IBinaryOperation
-            Do
-                current = parentBinaryOperation
-                parentBinaryOperation = TryCast(WalkUpImplicitConversionToObject(current.Parent), IBinaryOperation)
-            Loop While parentBinaryOperation IsNot Nothing AndAlso IsStringConcatOperation(parentBinaryOperation)
-
-            rootBinaryOperation = current
-            Return True
+            Dim parentBinaryOperation = TryCast(WalkUpImplicitConversionToObject(binaryOperation.Parent), IBinaryOperation)
+            Return parentBinaryOperation Is Nothing OrElse Not IsStringConcatOperation(parentBinaryOperation)
         End Function
 
         Private Protected Overrides Function WalkDownBuiltInImplicitConversionOnConcatOperand(operand As IOperation) As IOperation

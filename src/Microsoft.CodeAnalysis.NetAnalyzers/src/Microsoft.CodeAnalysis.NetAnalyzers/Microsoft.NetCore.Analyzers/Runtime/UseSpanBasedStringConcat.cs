@@ -6,7 +6,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
-using Analyzer.Utilities.PooledObjects;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Operations;
@@ -32,11 +31,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             isDataflowRule: false);
 
         /// <summary>
-        /// If the specified binary operation is a string concatenation operation, we try to walk up to the top-most
-        /// string-concatenation operation that it is part of. If it is not a string-concatenation operation, we simply
-        /// return false.
+        /// Returns true if the specified binary operation is a top-most string concatenation operation
         /// </summary>
-        private protected abstract bool TryGetTopMostConcatOperation(IBinaryOperation binaryOperation, [NotNullWhen(true)] out IBinaryOperation? rootBinaryOperation);
+        private protected abstract bool IsTopMostConcatOperation(IBinaryOperation binaryOperation);
 
         /// <summary>
         /// Remove the built in implicit conversion on operands to concat.
@@ -59,49 +56,19 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             if (!RequiredSymbols.TryGetSymbols(context.Compilation, out RequiredSymbols symbols))
                 return;
 
-            context.RegisterOperationBlockStartAction(OnOperationBlockStart);
+            context.RegisterOperationAction(context =>
+            {
+                //  Report diagnostic only if the operation is the top-most concat operation so we don't report sub-expressions of an
+                //  already-reported violation.
+                //  We also don't report any diagnostic if the concat operation has too many operands for the span-based
+                //  Concat overloads to handle.
+                var binary = (IBinaryOperation)context.Operation;
+                if (IsTopMostConcatOperation(binary) && ShouldBeReported(binary))
+                    context.ReportDiagnostic(binary.CreateDiagnostic(Rule));
+            }, OperationKind.Binary);
             return;
 
             // Local functions
-            void OnOperationBlockStart(OperationBlockStartAnalysisContext context)
-            {
-                //  Maintain set of all top-most concat operations so we don't report sub-expressions of an
-                //  already-reported violation. 
-                //  We also don't report any diagnostic if the concat operation has too many operands for the span-based
-                //  Concat overloads to handle.
-                var topMostConcatOperations = TemporarySet<IBinaryOperation>.Empty;
-
-                context.RegisterOperationAction(PopulateTopMostConcatOperations, OperationKind.Binary);
-                context.RegisterOperationBlockEndAction(ReportDiagnosticsOnRootConcatOperationsWithSubstringCalls);
-
-                void PopulateTopMostConcatOperations(OperationAnalysisContext context)
-                {
-                    //  If the current operation is a string-concatenation operation, walk up to the top-most concat
-                    //  operation and add it to the set.
-                    var binary = (IBinaryOperation)context.Operation;
-                    if (!TryGetTopMostConcatOperation(binary, out var topMostConcatOperation))
-                        return;
-
-                    topMostConcatOperations.Add(topMostConcatOperation, context.CancellationToken);
-                }
-
-                void ReportDiagnosticsOnRootConcatOperationsWithSubstringCalls(OperationBlockAnalysisContext context)
-                {
-                    //  We report diagnostics for all top-most concat operations that contain 
-                    //  direct or conditional substring invocations when there is an applicable span-based overload of
-                    //  the string.Concat method.
-                    //  We don't report when the concatenation contains anything other than strings or character literals.
-                    foreach (var operation in topMostConcatOperations.NonConcurrentEnumerable)
-                    {
-                        if (ShouldBeReported(operation))
-                        {
-                            context.ReportDiagnostic(operation.CreateDiagnostic(Rule));
-                        }
-                    }
-
-                    topMostConcatOperations.Free(context.CancellationToken);
-                }
-            }
 
             bool ShouldBeReported(IBinaryOperation topMostConcatOperation)
             {
@@ -133,8 +100,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
             bool IsAnyDirectOrConditionalSubstringInvocation(IOperation operation)
             {
-                if (operation is IConditionalAccessOperation conditionallAccessOperation)
-                    operation = conditionallAccessOperation.WhenNotNull;
+                if (operation is IConditionalAccessOperation conditionalAccessOperation)
+                    operation = conditionalAccessOperation.WhenNotNull;
 
                 return operation is IInvocationOperation invocation && symbols.IsAnySubstringMethod(invocation.TargetMethod);
             }

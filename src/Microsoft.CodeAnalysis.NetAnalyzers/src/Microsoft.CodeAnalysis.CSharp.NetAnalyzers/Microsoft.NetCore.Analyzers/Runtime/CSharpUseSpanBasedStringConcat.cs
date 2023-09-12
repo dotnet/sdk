@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Operations;
@@ -11,20 +10,10 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
     public sealed class CSharpUseSpanBasedStringConcat : UseSpanBasedStringConcat
     {
-        private protected override bool TryGetTopMostConcatOperation(IBinaryOperation binaryOperation, [NotNullWhen(true)] out IBinaryOperation? rootBinaryOperation)
+        private protected override bool IsTopMostConcatOperation(IBinaryOperation binaryOperation)
         {
-            if (!IsConcatOperation(binaryOperation))
-            {
-                rootBinaryOperation = default;
-                return false;
-            }
-
-            var current = binaryOperation;
-            while (current.Parent is IBinaryOperation parentBinaryOperation && IsConcatOperation(parentBinaryOperation))
-                current = parentBinaryOperation;
-
-            rootBinaryOperation = current;
-            return true;
+            return IsConcatOperation(binaryOperation) &&
+                (binaryOperation.Parent is not IBinaryOperation parentBinary || !IsConcatOperation(parentBinary));
 
             static bool IsConcatOperation(IBinaryOperation operation)
             {
