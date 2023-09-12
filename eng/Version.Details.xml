@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.TemplateEngine.Abstractions" Version="7.0.308">
+    <Dependency Name="Microsoft.TemplateEngine.Abstractions" Version="7.0.309">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>4203211435ef1500ca9c121e3e4deb933b34cc78</Sha>
+      <Sha>8466c9f3be953229e2a94e7ae54777e6845cfc26</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TemplateEngine.Mocks" Version="7.0.308-servicing.23409.6">
+    <Dependency Name="Microsoft.TemplateEngine.Mocks" Version="7.0.309-servicing.23461.11">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>4203211435ef1500ca9c121e3e4deb933b34cc78</Sha>
+      <Sha>8466c9f3be953229e2a94e7ae54777e6845cfc26</Sha>
       <SourceBuild RepoName="templating" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.NETCore.App.Ref" Version="7.0.11">
@@ -67,9 +67,9 @@
       <Sha>5b37dd5fea143baefbef2bd83836188af0815a30</Sha>
       <SourceBuild RepoName="fsharp" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="dotnet-format" Version="7.3.437504">
+    <Dependency Name="dotnet-format" Version="7.3.441803">
       <Uri>https://github.com/dotnet/format</Uri>
-      <Sha>5c1bc45a7a0b891c114ea97bdc1920f52600ca4a</Sha>
+      <Sha>bcf9a5e237f9cc7263e971b5adc20ad046f89b90</Sha>
       <SourceBuildTarball RepoName="format" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="4.6.0-3.23329.3">
@@ -309,9 +309,9 @@
       <Sha>740189d758fb3bbdc118c5b6171ef1a7351a8c44</Sha>
       <SourceBuild RepoName="xliff-tasks" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.TemplateEngine.TestHelper" Version="7.0.308-servicing.23409.6">
+    <Dependency Name="Microsoft.TemplateEngine.TestHelper" Version="7.0.309-servicing.23461.11">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>4203211435ef1500ca9c121e3e4deb933b34cc78</Sha>
+      <Sha>8466c9f3be953229e2a94e7ae54777e6845cfc26</Sha>
     </Dependency>
   </ToolsetDependencies>
 </Dependencies>
