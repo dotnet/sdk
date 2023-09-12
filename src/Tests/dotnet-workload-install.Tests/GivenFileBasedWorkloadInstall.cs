@@ -226,7 +226,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             var (dotnetRoot, installer, _, getResolver) = GetTestInstaller();
             var packs = new PackInfo[]
             {
-                CreatePackInfo("Xamarin.Android.Sdk", "8.4.7", WorkloadPackKind.Library, Path.Combine(dotnetRoot, "packs", "Xamarin.Android.Sdk", "8.4.7"), "Xamarin.Android.Sdk"),
+                CreatePackInfo("Xamarin.Android.Sdk", "8.4.7", WorkloadPackKind.Library, Path.Combine(dotnetRoot, "library-packs", "Xamarin.Android.Sdk.8.4.7.nupkg"), "Xamarin.Android.Sdk"),
                 CreatePackInfo("Xamarin.Android.Framework", "8.4.0", WorkloadPackKind.Framework, Path.Combine(dotnetRoot, "packs", "Xamarin.Android.Framework", "8.4.0"), "Xamarin.Android.Framework")
             };
             var sdkVersions = new WorkloadId[] { new WorkloadId("6.0.100"), new WorkloadId("6.0.300") };
@@ -239,8 +239,17 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
                 {
                     var packRecordPath = Path.Combine(installedPacksPath, pack.Id, pack.Version, sdkVersion);
                     Directory.CreateDirectory(Path.GetDirectoryName(packRecordPath));
-                    File.WriteAllText(packRecordPath, string.Empty);
-                    Directory.CreateDirectory(pack.Path);
+                    var packRecordContents = JsonSerializer.Serialize<WorkloadResolver.PackInfo>(pack);
+                    File.WriteAllText(packRecordPath, packRecordContents);
+                    if (pack.Kind == WorkloadPackKind.Library)
+                    {
+                        Directory.CreateDirectory(Path.GetDirectoryName(pack.Path));
+                        using var _ = File.Create(pack.Path);
+                    }
+                    else
+                    {
+                        Directory.CreateDirectory(pack.Path);
+                    }
                 }
             }
             // Write fake install record for 6.0.300
@@ -255,9 +264,16 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
                 .BeEmpty();
             foreach (var pack in packs)
             {
-                Directory.Exists(pack.Path)
-                    .Should()
-                    .BeFalse();
+                if (pack.Kind == WorkloadPackKind.Library)
+                {
+                    File.Exists(pack.Path).Should().BeFalse();
+                }
+                else
+                {
+                    Directory.Exists(pack.Path)
+                        .Should()
+                        .BeFalse();
+                }
             }
         }
 
