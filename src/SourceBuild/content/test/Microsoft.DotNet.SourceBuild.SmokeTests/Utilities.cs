@@ -115,16 +115,11 @@ public static class Utilities
         outputHelper.WriteLine("##vso[task.complete result=SucceededWithIssues;]");
     }
 
-    public static void LogAndThrowIfNullOrEmpty(this ITestOutputHelper outputHelper, string? variable, string variableName)
+    public static void ValidateNotNullOrWhiteSpace(string? variable, string variableName)
     {
-        if (string.IsNullOrEmpty(variable) || string.IsNullOrWhiteSpace(variable))
+        if (string.IsNullOrWhiteSpace(variable))
         {
-            string prefix = "##vso[task.logissue type=error;]";
-            string message = $"{variableName} is null, empty, or whitespace.";
-
-            outputHelper.WriteLine($"{Environment.NewLine}{prefix}{message}.{Environment.NewLine}");
-
-            throw new ArgumentException(message);
+            throw new ArgumentException($"{variableName} is null, empty, or whitespace.");
         }
     }
 }

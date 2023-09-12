@@ -44,9 +44,9 @@ public class ArtifactsSizeTest : SmokeTests
     [SkippableFact(Config.IncludeArtifactsSizeEnv, skipOnFalseEnv: true)]
     public void CompareArtifactsToBaseline()
     {
-        OutputHelper.LogAndThrowIfNullOrEmpty(Config.SourceBuiltArtifactsPath, Config.SourceBuiltArtifactsPathEnv);
-        OutputHelper.LogAndThrowIfNullOrEmpty(Config.SdkTarballPath, Config.SdkTarballPathEnv);
-        OutputHelper.LogAndThrowIfNullOrEmpty(Config.TargetRid, Config.TargetRidEnv);
+        Utilities.ValidateNotNullOrWhiteSpace(Config.SourceBuiltArtifactsPath, Config.SourceBuiltArtifactsPathEnv);
+        Utilities.ValidateNotNullOrWhiteSpace(Config.SdkTarballPath, Config.SdkTarballPathEnv);
+        Utilities.ValidateNotNullOrWhiteSpace(Config.TargetRid, Config.TargetRidEnv);
 
         var tarEntries = ProcessSdkAndArtifactsTarballs();
 
