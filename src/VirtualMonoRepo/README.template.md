@@ -29,6 +29,8 @@ See also [dotnet/source-build](https://github.com/dotnet/source-build) for more 
     - Enable developers to make and test changes spanning multiple repositories.
     - More efficient pipeline for security fixes during the CVE pre-disclosure process.
 
+We will achieve these goals while keeping active coding work in the separate repos where it happens today. For example: ASP.NET features will continue to be developed in `dotnet/aspnetcore` and CLR features will be continue to be developed in `dotnet/runtime`. Each of these repos have their own distinct communities and processes, and aggregating development into a true mono-repo would work against that. Hence, the "virtual" monolithic repo: the VMR gives us the simplicity of a mono-repo for building and servicing the product, while active development of components of that product stays in its various existing repos. The day to day experience for typical contributors will not change.
+
 ## Limitations
 
 **This is a work-in-progress.**
