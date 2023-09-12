@@ -8,8 +8,10 @@ using System.Collections.Generic;
 using System.Formats.Tar;
 using System.IO;
 using System.IO.Compression;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Xunit;
 using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.SourceBuild.SmokeTests;
@@ -102,6 +104,22 @@ public static class Utilities
 
             Thread.Sleep(TimeSpan.FromSeconds(waitTime));
             exception = await executor();
+        }
+    }
+
+    public static void LogWarningMessage(this ITestOutputHelper outputHelper, string message)
+    {
+        string prefix = "##vso[task.logissue type=warning;]";
+
+        outputHelper.WriteLine($"{Environment.NewLine}{prefix}{message}.{Environment.NewLine}");
+        outputHelper.WriteLine("##vso[task.complete result=SucceededWithIssues;]");
+    }
+
+    public static void ValidateNotNullOrWhiteSpace(string? variable, string variableName)
+    {
+        if (string.IsNullOrWhiteSpace(variable))
+        {
+            throw new ArgumentException($"{variableName} is null, empty, or whitespace.");
         }
     }
 }
