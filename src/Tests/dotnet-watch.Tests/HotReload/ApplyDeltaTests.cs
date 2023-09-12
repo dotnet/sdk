@@ -61,7 +61,7 @@ namespace Microsoft.DotNet.Watcher.Tests
 
             File.WriteAllText(Path.Combine(testAsset.Path, "App", "Update.cs"), newSrc);
 
-            await App.AssertOutputLineStartsWith("Updated types: PrinterX");
+            await App.AssertOutputLineStartsWith("Updated types: Printer");
         }
     }
 }
