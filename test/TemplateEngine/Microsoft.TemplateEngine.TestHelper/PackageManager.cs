@@ -192,7 +192,7 @@ namespace Microsoft.TemplateEngine.TestHelper
                 else
                 {
                     _nugetLogger.LogDebug($"[NuGet Package Manager] Getting package metadata {identifier}::{version}.");
-                    packageVersion = new NuGetVersion(version);
+                    packageVersion = new NuGetVersion(version!);
                     (source, packageMetadata) = await GetPackageMetadataAsync(identifier, packageVersion, packagesSources, cancellationToken).ConfigureAwait(false);
                 }
 
