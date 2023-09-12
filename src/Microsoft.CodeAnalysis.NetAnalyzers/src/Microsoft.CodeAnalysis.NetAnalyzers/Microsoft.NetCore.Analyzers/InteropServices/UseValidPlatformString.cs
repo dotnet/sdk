@@ -152,8 +152,8 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
 
         private static void AnalyzeOperation(IOperation operation, OperationAnalysisContext context, PooledDictionary<string, int> knownPlatforms)
         {
-            if (operation is IInvocationOperation invocation &&
-                methodNames.Contains(invocation.TargetMethod.Name) &&
+            var invocation = (IInvocationOperation)operation;
+            if (methodNames.Contains(invocation.TargetMethod.Name) &&
                 invocation.Arguments.Length > 0 &&
                 invocation.Arguments[0].Value is { } argument &&
                 argument.ConstantValue.HasValue &&
