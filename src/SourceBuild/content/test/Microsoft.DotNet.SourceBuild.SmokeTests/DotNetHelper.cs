@@ -286,6 +286,9 @@ internal class DotNetHelper
 
     private static string GetProjectDirectory(string projectName) => Path.Combine(ProjectsDirectory, projectName);
 
+    public static bool ShouldPublishComplex() =>
+        string.Equals(Config.TargetArchitecture,"ppc64le") || string.Equals(Config.TargetArchitecture,"s390x");
+
     private class WebAppValidator
     {
         private readonly ITestOutputHelper _outputHelper;
