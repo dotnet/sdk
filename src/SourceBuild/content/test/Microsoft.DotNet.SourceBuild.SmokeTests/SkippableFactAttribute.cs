@@ -30,18 +30,15 @@ internal class SkippableFactAttribute : FactAttribute
                 setSkip($"Skipping because `{envName}` is null or whitespace");
                 break;
             }
-            else if ((skipOnTrueEnv || skipOnFalseEnv) && bool.TryParse(envValue, out bool boolValue))
+            else if (skipOnTrueEnv && bool.TryParse(envValue, out bool boolValue) && boolValue)
             {
-                if (skipOnTrueEnv && boolValue)
-                {
-                    setSkip($"Skipping because `{envName}` is set to True");
-                    break;
-                }
-                else if (skipOnFalseEnv && !boolValue)
-                {
-                    setSkip($"Skipping because `{envName}` is set to False");
-                    break;
-                }
+                setSkip($"Skipping because `{envName}` is set to True");
+                break;
+            }
+            else if (skipOnFalseEnv && (!bool.TryParse(envValue, out boolValue) || !boolValue))
+            {
+                setSkip($"Skipping because `{envName}` is set to False or an invalid value");
+                break;
             }
         }
 
