@@ -28,7 +28,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Tests
 
             string output = new RegexStringTransformer(CaptureGroupPattern, ReplacementPattern).Transform(Input);
 
-            Assert.NotEqual(ReplacementPattern, output);
+            Assert.Equal(ReplacementPattern, output);
         }
 
         [Fact]

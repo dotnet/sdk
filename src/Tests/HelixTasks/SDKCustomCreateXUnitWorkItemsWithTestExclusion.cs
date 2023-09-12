@@ -142,20 +142,11 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
             var partitionedWorkItem = new List<ITaskItem>();
             foreach (var assemblyPartitionInfo in assemblyPartitionInfos)
             {
-                var identity = assemblyPartitionInfo.DisplayName + testIdentityDifferentiator;
-                var testResultsDir = IsPosixShell ? @"$HELIX_WORKITEM_UPLOAD_ROOT/" : @"%HELIX_WORKITEM_UPLOAD_ROOT%\";
-
-                string command;
+                string command = $"{driver} exec {assemblyName} {testExecutionDirectory} {msbuildAdditionalSdkResolverFolder} {(XUnitArguments != null ? " " + XUnitArguments : "")} -xml testResults.xml {assemblyPartitionInfo.ClassListArgumentString} {arguments}";
                 if (netFramework)
                 {
                     var testFilter = String.IsNullOrEmpty(assemblyPartitionInfo.ClassListArgumentString) ? "" : $"--filter \"{assemblyPartitionInfo.ClassListArgumentString}\"";
-                    command = $"{driver} test {assemblyName} {testExecutionDirectory} {msbuildAdditionalSdkResolverFolder} {(XUnitArguments != null ? " " + XUnitArguments : "")} --results-directory {testResultsDir} --logger trx {testFilter}";
-                }
-                else
-                {
-                    command  =
-                        $"{driver} exec {assemblyName} {testExecutionDirectory} {msbuildAdditionalSdkResolverFolder} {(XUnitArguments != null ? " " + XUnitArguments : "")} " +
-                        $"-html \"{testResultsDir}{identity}.html\" {assemblyPartitionInfo.ClassListArgumentString} {arguments}";
+                    command = $"{driver} test {assemblyName} {testExecutionDirectory} {msbuildAdditionalSdkResolverFolder} {(XUnitArguments != null ? " " + XUnitArguments : "")} --results-directory .\\ --logger trx {testFilter}";
                 }
 
                 Log.LogMessage($"Creating work item with properties Identity: {assemblyName}, PayloadDirectory: {publishDirectory}, Command: {command}");
@@ -169,9 +160,9 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
                     }
                 }
 
-                partitionedWorkItem.Add(new Microsoft.Build.Utilities.TaskItem(identity, new Dictionary<string, string>()
+                partitionedWorkItem.Add(new Microsoft.Build.Utilities.TaskItem(assemblyPartitionInfo.DisplayName + testIdentityDifferentiator, new Dictionary<string, string>()
                     {
-                        { "Identity", identity},
+                        { "Identity", assemblyPartitionInfo.DisplayName + testIdentityDifferentiator},
                         { "PayloadDirectory", publishDirectory },
                         { "Command", command },
                         { "Timeout", timeout.ToString() },
