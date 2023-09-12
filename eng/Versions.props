@@ -40,7 +40,7 @@
     <!-- external -->
     <BenchmarkDotNetVersion>0.13.5</BenchmarkDotNetVersion>
     <BenchmarkDotNetAnnotationsVersion>0.13.5</BenchmarkDotNetAnnotationsVersion>
-    <MicrosoftBuildLocatorVersion>1.5.5</MicrosoftBuildLocatorVersion>
+    <MicrosoftBuildLocatorVersion>1.6.1</MicrosoftBuildLocatorVersion>
     <MicrosoftVisualStudioCompositionVersion>17.4.16</MicrosoftVisualStudioCompositionVersion>
   </PropertyGroup>
 </Project>
