@@ -113,7 +113,7 @@ namespace Microsoft.DotNet.Watcher.Tests
             commandSpec.WithEnvironmentVariable("__DOTNET_WATCH_TEST_FLAGS", testFlags.ToString());
 
             var encLogPath = Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT") is { } ciOutputRoot
-                ? Path.Combine(".hotreload", ciOutputRoot, asset.Name)
+                ? Path.Combine(ciOutputRoot, ".hotreload", asset.Name)
                 : Path.Combine(asset.Path, ".hotreload");
 
             commandSpec.WithEnvironmentVariable("Microsoft_CodeAnalysis_EditAndContinue_LogDir", encLogPath);
