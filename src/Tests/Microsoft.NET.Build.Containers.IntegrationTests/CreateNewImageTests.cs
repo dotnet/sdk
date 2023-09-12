@@ -1,12 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Runtime.CompilerServices;
+using FakeItEasy;
+using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Microsoft.NET.Build.Containers.IntegrationTests;
 using Microsoft.NET.Build.Containers.UnitTests;
-using FakeItEasy;
-using Microsoft.Build.Framework;
-using System.Runtime.CompilerServices;
 
 namespace Microsoft.NET.Build.Containers.Tasks.IntegrationTests;
 
@@ -52,7 +52,7 @@ public class CreateNewImageTests
         task.BaseImageTag = "7.0";
 
         task.OutputRegistry = "localhost:5010";
-        task.LocalRegistry = "Docker";
+        task.LocalRegistry = DockerAvailableFactAttribute.LocalRegistry;
         task.PublishDirectory = Path.Combine(newProjectDir.FullName, "bin", "Release", ToolsetInfo.CurrentTargetFramework, "linux-arm64", "publish");
         task.Repository = "dotnet/create-new-image-baseline";
         task.ImageTags = new[] { "latest" };
@@ -65,7 +65,8 @@ public class CreateNewImageTests
         newProjectDir.Delete(true);
     }
 
-    private static ImageConfig GetImageConfigFromTask(CreateNewImage task) {
+    private static ImageConfig GetImageConfigFromTask(CreateNewImage task)
+    {
         return new(task.GeneratedContainerConfiguration);
     }
 
@@ -197,7 +198,7 @@ public class CreateNewImageTests
         cni.ContainerEnvironmentVariables = pcp.NewContainerEnvironmentVariables;
         cni.ContainerRuntimeIdentifier = "linux-x64";
         cni.RuntimeIdentifierGraphPath = ToolsetUtils.GetRuntimeGraphFilePath();
-        cni.LocalRegistry = global::Microsoft.NET.Build.Containers.KnownLocalRegistryTypes.Docker;
+        cni.LocalRegistry = DockerAvailableFactAttribute.LocalRegistry;
 
         Assert.True(cni.Execute(), FormatBuildMessages(errors));
 
@@ -218,7 +219,7 @@ public class CreateNewImageTests
     [DockerAvailableFact]
     public async System.Threading.Tasks.Task CreateNewImage_RootlessBaseImage()
     {
-        const string RootlessBase ="dotnet/rootlessbase";
+        const string RootlessBase = "dotnet/rootlessbase";
         const string AppImage = "dotnet/testimagerootless";
         const string RootlessUser = "1654";
         var loggerFactory = new TestLoggerFactory(_testOutput);
@@ -239,8 +240,8 @@ public class CreateNewImageTests
 
         BuiltImage builtImage = imageBuilder.Build();
 
-        var sourceReference = new ImageReference(registry, DockerRegistryManager.RuntimeBaseImage, DockerRegistryManager.Net8PreviewImageTag);
-        var destinationReference = new ImageReference(registry, RootlessBase, "latest");
+        var sourceReference = new SourceImageReference(registry, DockerRegistryManager.RuntimeBaseImage, DockerRegistryManager.Net8PreviewImageTag);
+        var destinationReference = new DestinationImageReference(registry, RootlessBase, new[] { "latest" });
 
         await registry.PushAsync(builtImage, sourceReference, destinationReference, cancellationToken: default).ConfigureAwait(false);
 
@@ -306,7 +307,7 @@ public class CreateNewImageTests
         return (buildEngine, errors);
     }
 
-    private static string GetTestDirectoryName([CallerMemberName]string testName = "DefaultTest") => Path.Combine(TestSettings.TestArtifactsDirectory, testName + "_" + DateTime.Now.ToString("yyyyMMddHHmmss"));
+    private static string GetTestDirectoryName([CallerMemberName] string testName = "DefaultTest") => Path.Combine(TestSettings.TestArtifactsDirectory, testName + "_" + DateTime.Now.ToString("yyyyMMddHHmmss"));
 
     private static string FormatBuildMessages(List<string?> messages) => string.Join("\r\n", messages);
 }

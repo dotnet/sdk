@@ -9,7 +9,7 @@ namespace Microsoft.NET.Build.Tests
         {
         }
 
-        [RequiresMSBuildVersionTheory("17.0")]
+        [RequiresMSBuildVersionTheory("17.8.0")]
         [InlineData(".NETCoreApp")]
         [InlineData(".NETStandard")]
         public void TheMaximumVersionsAreSupported(string targetFrameworkIdentifier)
@@ -17,7 +17,7 @@ namespace Microsoft.NET.Build.Tests
             var project = new TestProject
             {
                 Name = "packagethatwillgomissing",
-                TargetFrameworks = targetFrameworkIdentifier ==  ".NETCoreApp" ? ToolsetInfo.CurrentTargetFramework : "netstandard2.1",
+                TargetFrameworks = targetFrameworkIdentifier == ".NETCoreApp" ? ToolsetInfo.CurrentTargetFramework : "netstandard2.1",
             };
 
             TestAsset asset = _testAssetsManager
@@ -26,9 +26,9 @@ namespace Microsoft.NET.Build.Tests
             string testDirectory = Path.Combine(asset.TestRoot, project.Name);
 
             var getMaximumVersion = new GetValuesCommand(
-                Log, 
-                testDirectory, 
-                project.TargetFrameworks, 
+                Log,
+                testDirectory,
+                project.TargetFrameworks,
                 targetFrameworkIdentifier.Substring(1) + "MaximumVersion",
                 GetValuesCommand.ValueType.Property);
 

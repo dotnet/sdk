@@ -19,16 +19,16 @@ internal class DefaultRegistryAPI : IRegistryAPI
         bool isAmazonECRRegistry = baseUri.IsAmazonECRRegistry();
         _baseUri = baseUri;
         _logger = logger;
-        _client = CreateClient(registryName, baseUri, isAmazonECRRegistry);
-        Manifest = new DefaultManifestOperations(_baseUri, _client, _logger);
-        Blob = new DefaultBlobOperations(_baseUri, _client, _logger);
+        _client = CreateClient(registryName, baseUri, logger, isAmazonECRRegistry);
+        Manifest = new DefaultManifestOperations(_baseUri, registryName, _client, _logger);
+        Blob = new DefaultBlobOperations(_baseUri, registryName, _client, _logger);
     }
 
     public IBlobOperations Blob { get; }
 
     public IManifestOperations Manifest { get; }
 
-    private static HttpClient CreateClient(string registryName, Uri baseUri, bool isAmazonECRRegistry = false)
+    private static HttpClient CreateClient(string registryName, Uri baseUri, ILogger logger, bool isAmazonECRRegistry = false)
     {
         var innerHandler = new SocketsHttpHandler()
         {
@@ -45,7 +45,7 @@ internal class DefaultRegistryAPI : IRegistryAPI
             };
         }
 
-        HttpMessageHandler clientHandler = new AuthHandshakeMessageHandler(registryName, innerHandler);
+        HttpMessageHandler clientHandler = new AuthHandshakeMessageHandler(registryName, innerHandler, logger);
 
         if (isAmazonECRRegistry)
         {

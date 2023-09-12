@@ -56,7 +56,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Restore
             {
                 var project = new ProjectInstance(projectFile, globalProperties, null);
 
-                bool buildResult = project.Build(new[] {"_GetRequiredWorkloads"},
+                bool buildResult = project.Build(new[] { "_GetRequiredWorkloads" },
                     loggers: new ILogger[]
                     {
                         new ConsoleLogger(Verbosity.ToLoggerVerbosity())
