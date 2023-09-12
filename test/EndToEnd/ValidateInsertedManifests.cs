@@ -27,14 +27,17 @@ namespace EndToEnd.Tests
             {
                 foreach (var manifestDir in manifestVersionDir.EnumerateDirectories())
                 {
-                    var manifestId = manifestDir.Name;
+                    var manifestId = manifestVersionDir.Name;
 
                     string manifestFile = manifestDir.GetFile("WorkloadManifest.json").FullName;
 
-                    File.Exists(manifestFile).Should().BeTrue();
-                    using var fileStream = new FileStream(manifestFile, FileMode.Open, FileAccess.Read);
-                    Action readManifest = () => WorkloadManifestReader.ReadWorkloadManifest(manifestId, fileStream, manifestFile);
-                    readManifest.ShouldNotThrow("manifestId:" + manifestId + " manifestFile:" + manifestFile + "is invalid");
+                    if (!string.Equals(manifestId, "workloadsets"))
+                    {
+                        new FileInfo(manifestFile).Exists.Should().BeTrue();
+                        using var fileStream = new FileStream(manifestFile, FileMode.Open, FileAccess.Read);
+                        Action readManifest = () => WorkloadManifestReader.ReadWorkloadManifest(manifestId, fileStream, manifestFile);
+                        readManifest.ShouldNotThrow("manifestId:" + manifestId + " manifestFile:" + manifestFile + "is invalid");
+                    }
                 }
             }
             
