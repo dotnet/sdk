@@ -156,7 +156,8 @@
       
       <!-- Copy ASP.NET runtime and targeting pack to internal layout, as we don't currently chain that in with a pkg dependency -->
       <ExtractArchiveToDirectory SourceArchive="$(DownloadsFolder)$(AspNetCoreSharedFxArchiveFileName)"
-                                 DestinationDirectory="$(SdkInternalLayoutPath)" />
+                                 DestinationDirectory="$(SdkInternalLayoutPath)"
+                                 DirectoriesToCopy="shared/Microsoft.AspNetCore.App" />
       <ExtractArchiveToDirectory SourceArchive="$(DownloadsFolder)$(AspNetTargetingPackArchiveFileName)"
                                  DestinationDirectory="$(SdkInternalLayoutPath)" />
 
