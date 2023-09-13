@@ -81,10 +81,7 @@ namespace Microsoft.DotNet.Workloads.Workload
             _sdkVersion = creationResult.SdkVersion;
             _sdkFeatureBand = new SdkFeatureBand(creationResult.SdkVersion);
             _workloadResolver = creationResult.WorkloadResolver;
-            if (_targetSdkVersion == null)
-            {
-                _targetSdkVersion = _sdkVersion;
-            }
+            _targetSdkVersion ??= _sdkVersion;
 
             _workloadInstallerFromConstructor = workloadInstaller;
             _workloadManifestUpdaterFromConstructor = workloadManifestUpdater;

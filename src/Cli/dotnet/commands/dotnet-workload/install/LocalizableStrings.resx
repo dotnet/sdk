@@ -272,6 +272,7 @@
   </data>
   <data name="SdkVersionOptionNotSupported" xml:space="preserve">
     <value>The --sdk-version option is no longer supported for this command.</value>
+    <comment>{Locked="--sdk-version"}</comment>
   </data>
   <data name="InadequatePermissions" xml:space="preserve">
     <value>Inadequate permissions. Run the command with elevated privileges.</value>

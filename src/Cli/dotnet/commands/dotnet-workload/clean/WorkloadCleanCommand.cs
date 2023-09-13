@@ -33,7 +33,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Clean
         {
             _cleanAll = parseResult.GetValue(WorkloadCleanCommandParser.CleanAllOption);
 
-            workloadResolverFactory = workloadResolverFactory ?? new WorkloadResolverFactory();
+            workloadResolverFactory ??= new WorkloadResolverFactory();
             _workloadResolverFactory = workloadResolverFactory;
 
             if (!string.IsNullOrEmpty(parseResult.GetValue(WorkloadUninstallCommandParser.VersionOption)))

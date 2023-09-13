@@ -230,7 +230,7 @@
       <trans-unit id="SdkVersionOptionNotSupported">
         <source>The --sdk-version option is no longer supported for this command.</source>
         <target state="new">The --sdk-version option is no longer supported for this command.</target>
-        <note />
+        <note>{Locked="--sdk-version"}</note>
       </trans-unit>
       <trans-unit id="SkipManifestUpdateOptionDescription">
         <source>Skip updating the workload manifests.</source>
