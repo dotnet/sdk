@@ -12,6 +12,11 @@
         <target state="translated">Aktualizace všech nainstalovaných úloh.</target>
         <note />
       </trans-unit>
+      <trans-unit id="FromHistoryOptionDescription">
+        <source>Update workloads to a previous version specified by the --before or --after option.</source>
+        <target state="new">Update workloads to a previous version specified by the --before or --after option.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="FromPreviousSdkOptionDescription">
         <source>Include workloads installed with earlier SDK versions in update.</source>
         <target state="translated">Zahrnout do aktualizace úlohy nainstalované s předchozími verzemi sady SDK.</target>
@@ -20,6 +25,21 @@
       <trans-unit id="FromRollbackDefinitionOptionDescription">
         <source>Update workloads based on specified rollback definition file.</source>
         <target state="translated">Aktualizuje úlohy na základě zadaného souboru definice vrácení zpět.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="HistoryAfterOptionDescription">
+        <source>Update workloads to the state from after the specified ID.</source>
+        <target state="new">Update workloads to the state from after the specified ID.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="HistoryBeforeOptionDescription">
+        <source>Update workloads to the state from before the specified ID.</source>
+        <target state="new">Update workloads to the state from before the specified ID.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="HistoryManifestOnlyOptionDescription">
+        <source>Update workload manifests without updating the installed workloads.</source>
+        <target state="new">Update workload manifests without updating the installed workloads.</target>
         <note />
       </trans-unit>
       <trans-unit id="NoWorkloadsToUpdate">

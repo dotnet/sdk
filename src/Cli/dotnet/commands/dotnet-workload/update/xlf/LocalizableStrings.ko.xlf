@@ -12,6 +12,11 @@
         <target state="translated">설치된 모든 워크로드를 업데이트합니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="FromHistoryOptionDescription">
+        <source>Update workloads to a previous version specified by the --before or --after option.</source>
+        <target state="new">Update workloads to a previous version specified by the --before or --after option.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="FromPreviousSdkOptionDescription">
         <source>Include workloads installed with earlier SDK versions in update.</source>
         <target state="translated">업데이트에 이전 SDK 버전과 함께 설치된 워크로드를 포함합니다.</target>
@@ -20,6 +25,21 @@
       <trans-unit id="FromRollbackDefinitionOptionDescription">
         <source>Update workloads based on specified rollback definition file.</source>
         <target state="translated">지정된 롤백 정의 파일을 기반으로 워크로드를 업데이트합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="HistoryAfterOptionDescription">
+        <source>Update workloads to the state from after the specified ID.</source>
+        <target state="new">Update workloads to the state from after the specified ID.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="HistoryBeforeOptionDescription">
+        <source>Update workloads to the state from before the specified ID.</source>
+        <target state="new">Update workloads to the state from before the specified ID.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="HistoryManifestOnlyOptionDescription">
+        <source>Update workload manifests without updating the installed workloads.</source>
+        <target state="new">Update workload manifests without updating the installed workloads.</target>
         <note />
       </trans-unit>
       <trans-unit id="NoWorkloadsToUpdate">

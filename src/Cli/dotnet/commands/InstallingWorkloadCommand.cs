@@ -31,6 +31,10 @@ namespace Microsoft.DotNet.Workloads.Workload
         protected readonly SdkFeatureBand _sdkFeatureBand;
         protected readonly ReleaseVersion _targetSdkVersion;
         protected readonly string _fromRollbackDefinition;
+        protected readonly bool _fromHistorySpecified;
+        protected readonly bool _historyManifestOnlyOption;
+        protected readonly string _afterID;
+        protected readonly string _beforeID;
         protected readonly PackageSourceLocation _packageSourceLocation;
         protected readonly IWorkloadResolverFactory _workloadResolverFactory;
         protected IWorkloadResolver _workloadResolver;
@@ -55,6 +59,10 @@ namespace Microsoft.DotNet.Workloads.Workload
             _downloadToCacheOption = parseResult.GetValue(InstallingWorkloadCommandParser.DownloadToCacheOption);
 
             _fromRollbackDefinition = parseResult.GetValue(InstallingWorkloadCommandParser.FromRollbackFileOption);
+            _fromHistorySpecified = !string.IsNullOrEmpty(parseResult.GetValue(InstallingWorkloadCommandParser.FromHistoryOption));
+            _historyManifestOnlyOption = !string.IsNullOrEmpty(parseResult.GetValue(InstallingWorkloadCommandParser.HistoryManifestOnlyOption));
+            _afterID = parseResult.GetValue(InstallingWorkloadCommandParser.AfterHistoryOption);
+            _beforeID = parseResult.GetValue(InstallingWorkloadCommandParser.BeforeHistoryOption);
             var configOption = parseResult.GetValue(InstallingWorkloadCommandParser.ConfigOption);
             var sourceOption = parseResult.GetValue(InstallingWorkloadCommandParser.SourceOption);
             _packageSourceLocation = string.IsNullOrEmpty(configOption) && (sourceOption == null || !sourceOption.Any()) ? null :
@@ -260,6 +268,30 @@ namespace Microsoft.DotNet.Workloads.Workload
             Hidden = true
         };
 
+        public static readonly CliOption<string> FromHistoryOption = new("--from-history")
+        {
+            Description = Update.LocalizableStrings.FromHistoryOptionDescription,
+            Hidden = true
+        };
+
+        public static readonly CliOption<string> HistoryManifestOnlyOption = new("--manifests-only")
+        {
+            Description = Update.LocalizableStrings.HistoryManifestOnlyOptionDescription,
+            Hidden = true
+        };
+
+        public static readonly CliOption<string> BeforeHistoryOption = new("--before")
+        {
+            Description = Update.LocalizableStrings.HistoryBeforeOptionDescription,
+            Hidden = true
+        };
+
+        public static readonly CliOption<string> AfterHistoryOption = new("--after")
+        {
+            Description = Update.LocalizableStrings.HistoryAfterOptionDescription,
+            Hidden = true
+        };
+
         public static readonly CliOption<string> ConfigOption = new("--configfile")
         {
             Description = Strings.ConfigFileOptionDescription,
@@ -282,6 +314,10 @@ namespace Microsoft.DotNet.Workloads.Workload
             command.Options.Add(DownloadToCacheOption);
             command.Options.Add(IncludePreviewOption);
             command.Options.Add(FromRollbackFileOption);
+            command.Options.Add(FromHistoryOption);
+            command.Options.Add(HistoryManifestOnlyOption);
+            command.Options.Add(BeforeHistoryOption);
+            command.Options.Add(AfterHistoryOption);
         }
     }
 }

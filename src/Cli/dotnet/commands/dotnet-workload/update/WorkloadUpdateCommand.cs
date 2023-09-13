@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections;
+using System.Collections.Generic;
 using System.CommandLine;
 using System.Text.Json;
 using Microsoft.DotNet.Cli;
@@ -146,6 +148,65 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
             Reporter.WriteLine();
         }
 
+        private IEnumerable<ManifestVersionUpdate> CalculateManifestUpdates(IEnumerable<(ManifestId id, ManifestVersion version, SdkFeatureBand featureBand)> rollbackFileContents)
+        {
+            if (string.IsNullOrWhiteSpace(_fromRollbackDefinition))
+            {
+                return _workloadManifestUpdater.CalculateManifestUpdates().Select(m => m.manifestUpdate);
+            }
+            else if (_fromHistorySpecified)
+            {
+                var workloadHistoryRecords = _workloadInstaller.GetWorkloadHistoryRecords().OrderBy(r => r.TimeStarted).ToList();
+                WorkloadHistoryState state;
+                if (!string.IsNullOrEmpty(_afterID))
+                {
+                    if (!int.TryParse(_afterID, out int index))
+                    {
+                        throw;
+                    }
+
+                    var workloadHistoryRecord = workloadHistoryRecords[index - 1];
+                    state = workloadHistoryRecord.StateAfterCommand;
+                }
+                else if (!string.IsNullOrEmpty(_beforeID))
+                {
+                    if (!int.TryParse(_beforeID, out int index))
+                    {
+                        throw;
+                    }
+
+                    var workloadHistoryRecord = workloadHistoryRecords[index - 1];
+                    state = workloadHistoryRecord.StateBeforeCommand;
+                }
+                else
+                {
+                    throw;
+                }
+
+                var currentWorkloadState = WorkloadRollbackInfo.FromManifests(_workloadResolver.GetInstalledManifests());
+
+                var versionUpdates = new List<ManifestVersionUpdate>();
+
+                foreach (KeyValuePair<string, string> m in state.ManifestVersions)
+                {
+                    var manifestId = new ManifestId(m.Key);
+                    var currentVersionInformation = _workloadManifestUpdater.GetInstalledManifestVersion(manifestId);
+                    versionUpdates.Add(new ManifestVersionUpdate(
+                        manifestId,
+                        currentVersionInformation.manifestVersion,
+                        currentVersionInformation.sdkFeatureBand.ToString(),
+                        new ManifestVersion(m.Value.Split('/')[0]),
+                        m.Value.Split('/')[1]));
+                }
+
+                return versionUpdates;
+            }
+            else
+            {
+                return _workloadManifestUpdater.CalculateManifestRollbacks(_fromRollbackDefinition, rollbackFileContents);
+            }
+        }
+
         private void UpdateWorkloadsWithInstallRecord(
             SdkFeatureBand sdkFeatureBand,
             IEnumerable<ManifestVersionUpdate> manifestsToUpdate,
@@ -177,7 +238,9 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
 
                     _workloadResolver.RefreshWorkloadManifests();
 
-                    var workloads = GetUpdatableWorkloads();
+                    if (!_fromHistorySpecified || !_historyManifestOnlyOption)
+                    {
+                        var workloads = GetUpdatableWorkloads();
 
                     _workloadInstaller.InstallWorkloads(workloads, sdkFeatureBand, context, offlineCache);
 
