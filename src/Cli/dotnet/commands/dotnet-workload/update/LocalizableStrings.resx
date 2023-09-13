@@ -153,4 +153,16 @@
   <data name="FromRollbackDefinitionOptionDescription" xml:space="preserve">
     <value>Update workloads based on specified rollback definition file.</value>
   </data>
+  <data name="FromHistoryOptionDescription" xml:space="preserve">
+    <value>Update workloads to a previous version specified by the --before or --after option.</value>
+  </data>
+  <data name="HistoryManifestOnlyOptionDescription" xml:space="preserve">
+    <value>Update workload manifests without updating the installed workloads.</value>
+  </data>
+  <data name="HistoryBeforeOptionDescription" xml:space="preserve">
+    <value>Update workloads to the state from before the specified ID.</value>
+  </data>
+  <data name="HistoryAfterOptionDescription" xml:space="preserve">
+    <value>Update workloads to the state from after the specified ID.</value>
+  </data>
 </root>
