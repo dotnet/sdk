@@ -34,9 +34,6 @@ namespace Microsoft.DotNet.Cli.ToolPackage
         private INuGetPackageDownloader _nugetPackageDownloader;
         private readonly IToolPackageStore _toolPackageStore;
 
-        // The directory that the tool will be downloaded to
-        protected DirectoryPath _toolDownloadDir;
-
         // The directory that the tool package is returned 
         protected DirectoryPath _toolReturnPackageDirectory;
 
@@ -54,8 +51,6 @@ namespace Microsoft.DotNet.Cli.ToolPackage
         // The directory that local tools' asset files located
         // example: C:\Users\username\AppData\Local\Temp\tempFolder
         protected readonly DirectoryPath _localToolAssetDir;
-
-        public static readonly CliOption<VerbosityOptions> VerbosityOption = CommonOptions.VerbosityOption;
 
         protected readonly string _runtimeJsonPath;
 
@@ -87,6 +82,7 @@ namespace Microsoft.DotNet.Cli.ToolPackage
                 action: () =>
                 {
                     ILogger nugetLogger = new NullLogger();
+                    
                     if (verbosity != null && (verbosity == VerbosityOptions.d.ToString() ||
                                               verbosity == VerbosityOptions.detailed.ToString() ||
                                               verbosity == VerbosityOptions.diag.ToString() ||
@@ -94,33 +90,40 @@ namespace Microsoft.DotNet.Cli.ToolPackage
                     {
                         nugetLogger = new NuGetConsoleLogger();
                     }
-                    _toolDownloadDir = isGlobalTool ? _globalToolStageDir : _localToolDownloadDir;
-                    var assetFileDirectory = isGlobalTool ? _globalToolStageDir : _localToolAssetDir;
-                    _nugetPackageDownloader = new NuGetPackageDownloader.NuGetPackageDownloader(_toolDownloadDir, verboseLogger: nugetLogger, isNuGetTool: true);
-                    rollbackDirectory = _toolDownloadDir.Value;
 
-                    NuGetVersion version = DownloadAndExtractPackage(packageLocation, packageId, _nugetPackageDownloader, _toolDownloadDir.Value, _toolPackageStore).GetAwaiter().GetResult();
-                    CreateAssetFiles(packageId, version, _toolDownloadDir, assetFileDirectory, _runtimeJsonPath);
+                    var versionString = versionRange?.OriginalString ?? "*";
+                    versionRange = VersionRange.Parse(versionString);
+
+                    var toolDownloadDir = isGlobalTool ? _globalToolStageDir : _localToolDownloadDir;
+                    var assetFileDirectory = isGlobalTool ? _globalToolStageDir : _localToolAssetDir;
+                    _nugetPackageDownloader = new NuGetPackageDownloader.NuGetPackageDownloader(toolDownloadDir, verboseLogger: nugetLogger, isNuGetTool: true);
+                    rollbackDirectory = toolDownloadDir.Value;
+
+                    NuGetVersion version = DownloadAndExtractPackage(packageLocation, packageId, _nugetPackageDownloader, toolDownloadDir.Value, _toolPackageStore).GetAwaiter().GetResult();
+                    CreateAssetFile(packageId, version, toolDownloadDir, assetFileDirectory, _runtimeJsonPath);
+
+                    DirectoryPath toolReturnPackageDirectory;
+                    DirectoryPath toolReturnJsonParentDirectory;
 
                     if (isGlobalTool)
                     {
-                        _toolReturnPackageDirectory = _toolPackageStore.GetPackageDirectory(packageId, version);
-                        _toolReturnJsonParentDirectory = _toolPackageStore.GetPackageDirectory(packageId, version);
+                        toolReturnPackageDirectory = _toolPackageStore.GetPackageDirectory(packageId, version);
+                        toolReturnJsonParentDirectory = _toolPackageStore.GetPackageDirectory(packageId, version);
                         var packageRootDirectory = _toolPackageStore.GetRootPackageDirectory(packageId);
                         Directory.CreateDirectory(packageRootDirectory.Value);
                         FileAccessRetrier.RetryOnMoveAccessFailure(() => Directory.Move(_globalToolStageDir.Value, _toolReturnPackageDirectory.Value));
-                        rollbackDirectory = _toolReturnPackageDirectory.Value;
+                        rollbackDirectory = toolReturnPackageDirectory.Value;
                     }
                     else
                     {
-                        _toolReturnPackageDirectory = _toolDownloadDir;
-                        _toolReturnJsonParentDirectory = _localToolAssetDir;
+                        toolReturnPackageDirectory = toolDownloadDir;
+                        toolReturnJsonParentDirectory = _localToolAssetDir;
                     }
 
                     return new ToolPackageInstance(id: packageId,
                                     version: version,
-                                    packageDirectory: _toolReturnPackageDirectory,
-                                    assetsJsonParentDirectory: _toolReturnJsonParentDirectory);
+                                    packageDirectory: toolReturnPackageDirectory,
+                                    assetsJsonParentDirectory: toolReturnJsonParentDirectory);
                 },
                 rollback: () =>
                 {
@@ -252,7 +255,7 @@ namespace Microsoft.DotNet.Cli.ToolPackage
             return version;
         }
 
-        private static void CreateAssetFiles(
+        private static void CreateAssetFile(
             PackageId packageId,
             NuGetVersion version,
             DirectoryPath nugetLocalRepository,

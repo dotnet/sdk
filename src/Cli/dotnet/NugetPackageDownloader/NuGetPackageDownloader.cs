@@ -322,6 +322,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
                 {
                     throw new NuGetPackageInstallerException(string.Format(LocalizableStrings.FailedToGetPackageUnderPackageSourceMapping, packageId));
                 }
+                defaultSources = defaultSources.Where(source => sources.Contains(source.Name));
             }
 
             if (packageSourceLocation?.AdditionalSourceFeed?.Any() ?? false)

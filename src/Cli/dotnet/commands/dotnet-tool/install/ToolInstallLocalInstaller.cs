@@ -38,11 +38,11 @@ namespace Microsoft.DotNet.Tools.Tool.Install
 
             (IToolPackageStore store,
                 IToolPackageStoreQuery,
-                IToolPackageDownloader installer) toolPackageStoresAndDownloader
+                IToolPackageDownloader downloader) toolPackageStoresAndDownloader
                     = ToolPackageFactory.CreateToolPackageStoresAndDownloader(
                         additionalRestoreArguments: parseResult.OptionValuesToBeForwarded(ToolInstallCommandParser.GetCommand()));
             _toolPackageStore = toolPackageStoresAndDownloader.store;
-            _toolPackageDownloader = toolPackageDownloader?? toolPackageStoresAndDownloader.installer;
+            _toolPackageDownloader = toolPackageDownloader?? toolPackageStoresAndDownloader.downloader;
             
             
             TargetFrameworkToInstall = BundledTargetFramework.GetTargetFrameworkMoniker();
