@@ -111,7 +111,7 @@ namespace Microsoft.DotNet.Cli.ToolPackage
                         toolReturnJsonParentDirectory = _toolPackageStore.GetPackageDirectory(packageId, version);
                         var packageRootDirectory = _toolPackageStore.GetRootPackageDirectory(packageId);
                         Directory.CreateDirectory(packageRootDirectory.Value);
-                        FileAccessRetrier.RetryOnMoveAccessFailure(() => Directory.Move(_globalToolStageDir.Value, _toolReturnPackageDirectory.Value));
+                        FileAccessRetrier.RetryOnMoveAccessFailure(() => Directory.Move(_globalToolStageDir.Value, toolReturnPackageDirectory.Value));
                         rollbackDirectory = toolReturnPackageDirectory.Value;
                     }
                     else
