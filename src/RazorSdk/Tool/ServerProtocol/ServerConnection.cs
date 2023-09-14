@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using Microsoft.AspNetCore.Razor.Tasks;
 using Microsoft.NET.Sdk.Razor.Tool.CommandLineUtils;
 
 namespace Microsoft.NET.Sdk.Razor.Tool
@@ -274,14 +275,8 @@ namespace Microsoft.NET.Sdk.Razor.Tool
             }
         }
 
-        // Internal for testing.
-        internal static bool TryCreateServerCore(string clientDir, string pipeName, out int? processId, bool debug = false)
+        private static string FindDotNetExecutable()
         {
-            processId = null;
-
-            // The server should be in the same directory as the client
-            var expectedCompilerPath = Path.Combine(clientDir, ServerName);
-
             var expectedPath = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH");
             if (string.IsNullOrEmpty(expectedPath))
             {
@@ -293,14 +288,42 @@ namespace Microsoft.NET.Sdk.Razor.Tool
 
                 if (!Path.GetFileNameWithoutExtension(expectedPath).Equals("dotnet"))
                 {
-                    // We were running from Visual Studio and found MSBuild instead of dotnet. Reroute to dotnet...
+                    // We were probably running from Visual Studio and found MSBuild instead of dotnet. Reroute to dotnet...
                     expectedPath = Path.Combine(Path.GetDirectoryName(expectedPath), "..", "..", "..", "dotnet");
                     var directory = new DirectoryInfo(expectedPath);
 
                     // The runtime is part of the path. Get the latest runtime available.
                     expectedPath = Path.Combine(directory.EnumerateDirectories().Last().FullName, "runtime", "dotnet.exe");
+
+                    if (!File.Exists(expectedPath))
+                    {
+                        // This was actually Visual Studio Build Tools, not Visual Studio.
+                        // There's no dotnet.exe associated with Build Tools, so we have to get it from the PATH.
+                        var paths = Environment.GetEnvironmentVariable("PATH").Split(Path.PathSeparator);
+                        foreach (string path in paths)
+                        {
+                            var dotnetPath = Path.Combine(path, "dotnet.exe");
+                            if (File.Exists(dotnetPath))
+                            {
+                                return dotnetPath;
+                            }
+                        }
+                    }
                 }
             }
+
+            return File.Exists(expectedPath) ? expectedPath : "dotnet";
+        }
+
+        // Internal for testing.
+        internal static bool TryCreateServerCore(string clientDir, string pipeName, out int? processId, bool debug = false)
+        {
+            processId = null;
+
+            // The server should be in the same directory as the client
+            var expectedCompilerPath = Path.Combine(clientDir, ServerName);
+
+            var expectedPath = FindDotNetExecutable();
 
             var argumentList = new string[]
             {
