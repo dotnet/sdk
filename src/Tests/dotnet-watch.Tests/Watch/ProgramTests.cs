@@ -39,7 +39,7 @@ namespace Microsoft.DotNet.Watcher.Tests
         [InlineData(new[] { "--no-hot-reload", "run", "args" }, "args")]
         [InlineData(new[] { "--no-hot-reload", "--", "run", "args" }, "run,args")]
         [InlineData(new[] { "--no-hot-reload" }, "")]
-        [InlineData(new string[] {}, "")]
+        [InlineData(new string[] { }, "")]
         [InlineData(new[] { "run" }, "")]
         [InlineData(new[] { "run", "args" }, "args")]
         [InlineData(new[] { "--", "run", "args" }, "run,args")]
@@ -47,8 +47,7 @@ namespace Microsoft.DotNet.Watcher.Tests
         public async Task Arguments(string[] arguments, string expectedApplicationArgs)
         {
             var testAsset = TestAssets.CopyTestAsset("WatchHotReloadApp", identifier: string.Join(",", arguments))
-                .WithSource()
-                .Path;
+                .WithSource();
 
             App.Start(testAsset, arguments);
 
@@ -59,9 +58,9 @@ namespace Microsoft.DotNet.Watcher.Tests
         public async Task RunArguments_NoHotReload()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchHotReloadAppMultiTfm")
-                .WithSource()
-                .Path;
+                .WithSource();
 
+            App.DotnetWatchArgs.Clear();
             App.Start(testAsset, arguments: new[]
             {
                 "--no-hot-reload",
@@ -94,8 +93,7 @@ namespace Microsoft.DotNet.Watcher.Tests
         public async Task RunArguments_HotReload()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchHotReloadAppMultiTfm")
-                .WithSource()
-                .Path;
+                .WithSource();
 
             App.Start(testAsset, arguments: new[]
             {
@@ -127,8 +125,7 @@ namespace Microsoft.DotNet.Watcher.Tests
         public async Task ArgumentsFromLaunchSettings_Watch(string profileName, string expectedArgs)
         {
             var testAsset = TestAssets.CopyTestAsset("WatchAppWithLaunchSettings")
-                .WithSource()
-                .Path;
+                .WithSource();
 
             App.Start(testAsset, arguments: new[]
             {
@@ -150,8 +147,7 @@ namespace Microsoft.DotNet.Watcher.Tests
         public async Task ArgumentsFromLaunchSettings_HotReload(string profileName, string expectedArgs)
         {
             var testAsset = TestAssets.CopyTestAsset("WatchAppWithLaunchSettings")
-                .WithSource()
-                .Path;
+                .WithSource();
 
             App.Start(testAsset, arguments: new[]
             {
