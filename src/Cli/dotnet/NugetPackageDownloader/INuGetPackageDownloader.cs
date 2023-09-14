@@ -17,6 +17,12 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             DirectoryPath? downloadFolder = null,
             PackageSourceMapping packageSourceMapping = null);
 
+        Task<string> DownloadPackageAsync(PackageId packageId,
+            VersionRange packageVersion = null,
+            PackageSourceLocation packageSourceLocation = null,
+            DirectoryPath? downloadFolder = null,
+            PackageSourceMapping packageSourceMapping = null);
+
         Task<string> GetPackageUrl(PackageId packageId,
             NuGetVersion packageVersion = null,
             PackageSourceLocation packageSourceLocation = null,

@@ -56,6 +56,15 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             return Task.FromResult(path);
         }
 
+        public Task<string> DownloadPackageAsync(PackageId packageId,
+            VersionRange packageVersion = null,
+            PackageSourceLocation packageSourceLocation = null,
+            DirectoryPath? downloadFolder = null,
+            PackageSourceMapping packageSourceMapping = null)
+        {
+            throw new NotImplementedException();
+        }
+
         public Task<IEnumerable<string>> ExtractPackageAsync(string packagePath, DirectoryPath targetFolder)
         {
             ExtractCallParams.Add((packagePath, targetFolder));

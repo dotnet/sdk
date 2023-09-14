@@ -29,6 +29,17 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             return Task.FromResult(mockPackagePath);
         }
 
+        public Task<string> DownloadPackageAsync(PackageId packageId,
+            VersionRange packageVersion = null,
+            PackageSourceLocation packageSourceLocation = null,
+            DirectoryPath? downloadFolder = null,
+            PackageSourceMapping packageSourceMapping = null)
+        {
+            var mockPackagePath = Path.Combine(MockPackageDir, $"{packageId}.{packageVersion}.nupkg");
+            File.WriteAllText(mockPackagePath, string.Empty);
+            return Task.FromResult(mockPackagePath);
+        }
+
         public Task<IEnumerable<string>> ExtractPackageAsync(string packagePath, DirectoryPath targetFolder)
         {
             Directory.CreateDirectory(targetFolder.Value);

@@ -31,7 +31,6 @@ namespace Microsoft.DotNet.Cli.ToolPackage
 {
     internal class ToolPackageDownloader : IToolPackageDownloader
     {
-        private INuGetPackageDownloader _nugetPackageDownloader;
         private readonly IToolPackageStore _toolPackageStore;
 
         // The directory that the tool package is returned 
@@ -96,11 +95,11 @@ namespace Microsoft.DotNet.Cli.ToolPackage
 
                     var toolDownloadDir = isGlobalTool ? _globalToolStageDir : _localToolDownloadDir;
                     var assetFileDirectory = isGlobalTool ? _globalToolStageDir : _localToolAssetDir;
-                    _nugetPackageDownloader = new NuGetPackageDownloader.NuGetPackageDownloader(toolDownloadDir, verboseLogger: nugetLogger, isNuGetTool: true);
-                    rollbackDirectory = toolDownloadDir.Value;
+                    var nugetPackageDownloader = new NuGetPackageDownloader.NuGetPackageDownloader(toolDownloadDir, verboseLogger: nugetLogger, isNuGetTool: true);
+                    rollbackDirectory = Path.Combine(toolDownloadDir.Value, packageId.ToString());
 
-                    NuGetVersion version = DownloadAndExtractPackage(packageLocation, packageId, _nugetPackageDownloader, toolDownloadDir.Value, _toolPackageStore).GetAwaiter().GetResult();
-                    CreateAssetFile(packageId, version, toolDownloadDir, assetFileDirectory, _runtimeJsonPath);
+                    NuGetVersion version = DownloadAndExtractPackage(packageLocation, packageId, nugetPackageDownloader, toolDownloadDir.Value, _toolPackageStore, versionRange).GetAwaiter().GetResult();
+                    CreateAssetFile(packageId, version, toolDownloadDir, assetFileDirectory, _runtimeJsonPath, targetFramework);
 
                     DirectoryPath toolReturnPackageDirectory;
                     DirectoryPath toolReturnJsonParentDirectory;
@@ -112,7 +111,7 @@ namespace Microsoft.DotNet.Cli.ToolPackage
                         var packageRootDirectory = _toolPackageStore.GetRootPackageDirectory(packageId);
                         Directory.CreateDirectory(packageRootDirectory.Value);
                         FileAccessRetrier.RetryOnMoveAccessFailure(() => Directory.Move(_globalToolStageDir.Value, toolReturnPackageDirectory.Value));
-                        rollbackDirectory = toolReturnPackageDirectory.Value;
+                        rollbackDirectory = Path.Combine(toolReturnPackageDirectory.Value, packageId.ToString(), version.ToString());
                     }
                     else
                     {
@@ -205,32 +204,26 @@ namespace Microsoft.DotNet.Cli.ToolPackage
         private static async Task<NuGetVersion> DownloadAndExtractPackage(
             PackageLocation packageLocation,
             PackageId packageId,
-            INuGetPackageDownloader _nugetPackageDownloader,
-            string hashPathLocation,
-            IToolPackageStore toolPackageStore
+            INuGetPackageDownloader nugetPackageDownloader,
+            string packagesRootPath,
+            IToolPackageStore toolPackageStore,
+            VersionRange versionRange
             )
         {
+            NuGetVersion packageVersion = null;
             var packageSourceLocation = new PackageSourceLocation(packageLocation.NugetConfig, packageLocation.RootConfigDirectory, null, packageLocation.AdditionalFeeds);
-            var packagePath = await _nugetPackageDownloader.DownloadPackageAsync(packageId, null, packageSourceLocation).ConfigureAwait(false);
+            var packagePath = await nugetPackageDownloader.DownloadPackageAsync(packageId, packageVersion, packageSourceLocation).ConfigureAwait(false);
 
             // look for package on disk and read the version
             NuGetVersion version;
+            DirectoryPath packageDirectory;
 
             using (FileStream packageStream = File.OpenRead(packagePath))
             {
                 PackageArchiveReader reader = new PackageArchiveReader(packageStream);
                 version = new NuspecReader(reader.GetNuspec()).GetVersion();
 
-                var packageDirectory = toolPackageStore.GetPackageDirectory(packageId, version);
-
-                if (Directory.Exists(packageDirectory.Value))
-                {
-                    throw new ToolPackageException(
-                        string.Format(
-                            CommonLocalizableStrings.ToolPackageConflictPackageId,
-                            packageId,
-                            version.ToNormalizedString()));
-                }
+                packageDirectory = toolPackageStore.GetPackageDirectory(packageId, version);
 
                 if (Directory.Exists(packagePath))
                 {
@@ -242,15 +235,24 @@ namespace Microsoft.DotNet.Cli.ToolPackage
                 }
 
                 var packageHash = Convert.ToBase64String(new CryptoHashProvider("SHA512").CalculateHash(reader.GetNuspec()));
-                var hashPath = new VersionFolderPathResolver(hashPathLocation).GetHashPath(packageId.ToString(), version);
+                var hashPath = new VersionFolderPathResolver(packagesRootPath).GetHashPath(packageId.ToString(), version);
 
                 Directory.CreateDirectory(Path.GetDirectoryName(hashPath));
                 File.WriteAllText(hashPath, packageHash);
             }
 
+            if (Directory.Exists(packageDirectory.Value))
+            {
+                throw new ToolPackageException(
+                    string.Format(
+                        CommonLocalizableStrings.ToolPackageConflictPackageId,
+                        packageId,
+                        version.ToNormalizedString()));
+            }
+
             // Extract the package
-            var nupkgDir = Path.Combine(hashPathLocation, packageId.ToString(), version.ToString());
-            var filesInPackage = await _nugetPackageDownloader.ExtractPackageAsync(packagePath, new DirectoryPath(nupkgDir));
+            var nupkgDir = Path.Combine(packagesRootPath, packageId.ToString(), version.ToString());
+            var filesInPackage = await nugetPackageDownloader.ExtractPackageAsync(packagePath, new DirectoryPath(nupkgDir));
 
             return version;
         }
@@ -258,9 +260,11 @@ namespace Microsoft.DotNet.Cli.ToolPackage
         private static void CreateAssetFile(
             PackageId packageId,
             NuGetVersion version,
-            DirectoryPath nugetLocalRepository,
+            DirectoryPath packagesRootPath,
             DirectoryPath assetFileDirectory,
-            string runtimeJsonGraph)
+            string runtimeJsonGraph,
+            string targetFramework = null
+            )
         {
             // To get runtimeGraph:
             var runtimeGraph = JsonRuntimeFormat.ReadRuntimeGraph(runtimeJsonGraph);
@@ -278,7 +282,7 @@ namespace Microsoft.DotNet.Cli.ToolPackage
             };
 
             //  Create NuGetv3LocalRepository
-            NuGetv3LocalRepository localRepository = new(nugetLocalRepository.Value);
+            NuGetv3LocalRepository localRepository = new(packagesRootPath.Value);
             var package = localRepository.FindPackage(packageId.ToString(), version);
 
             var collection = new ContentItemCollection();
@@ -287,7 +291,7 @@ namespace Microsoft.DotNet.Cli.ToolPackage
             //  Create criteria
             var managedCriteria = new List<SelectionCriteria>(1);
             // Use major.minor version of currently running version of .NET
-            var currentTargetFramework = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.NetCoreApp, new Version(Environment.Version.Major, Environment.Version.Minor));
+            var currentTargetFramework = new NuGetFramework(targetFramework ?? FrameworkConstants.FrameworkIdentifiers.NetCoreApp, new Version(Environment.Version.Major, Environment.Version.Minor));
 
             var standardCriteria = conventions.Criteria.ForFrameworkAndRuntime(
                 currentTargetFramework,

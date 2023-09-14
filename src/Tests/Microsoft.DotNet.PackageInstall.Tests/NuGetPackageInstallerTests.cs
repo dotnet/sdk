@@ -143,8 +143,10 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         [Fact]
         public async Task GivenNoPackageVersionItCanInstallLatestVersionOfPackage()
         {
+            NuGetVersion packageVersion = null;
             string packagePath = await _installer.DownloadPackageAsync(
                 TestPackageId,
+                packageVersion,
                 packageSourceLocation: new PackageSourceLocation(sourceFeedOverrides: new[] {GetTestLocalFeedPath()}));
             packagePath.Should().Contain("global.tool.console.demo.1.0.4.nupkg", "It can get the latest non preview version");
             File.Exists(packagePath).Should().BeTrue();
