@@ -46,7 +46,7 @@ namespace Microsoft.DotNet.ShellShim
             }
             else if (OperatingSystem.IsMacOS() && isDotnetBeingInvokedFromNativeInstaller)
             {
-                environmentPath = new OsxBashEnvironmentPath(
+                environmentPath = new OsxEnvironmentPath(
                     executablePath: CliFolderPathCalculator.ToolsShimPathInUnix,
                     reporter: Reporter.Output,
                     environmentProvider: environmentProvider,
@@ -62,14 +62,6 @@ namespace Microsoft.DotNet.ShellShim
             if (environmentProvider == null)
             {
                 environmentProvider = new EnvironmentProvider();
-            }
-
-            if (OperatingSystem.IsMacOS() && ZshDetector.IsZshTheUsersShell(environmentProvider))
-            {
-                return new OsxZshEnvironmentPathInstruction(
-                    executablePath: CliFolderPathCalculator.ToolsShimPathInUnix,
-                    reporter: Reporter.Output,
-                    environmentProvider: environmentProvider);
             }
 
             if (OperatingSystem.IsWindows())

@@ -94,37 +94,6 @@ export PATH="$PATH:{0}"
 </target>
         <note />
       </trans-unit>
-      <trans-unit id="EnvironmentPathOSXZshManualInstructions">
-        <source>Tools directory '{0}' is not currently on the PATH environment variable.
-If you are using zsh, you can add it to your profile by running the following command:
-
-cat &lt;&lt; \EOF &gt;&gt; ~/.zprofile
-# Add .NET Core SDK tools
-export PATH="$PATH:{0}"
-EOF
-
-And run `zsh -l` to make it available for current session.
-
-You can only add it to the current session by running the following command:
-
-export PATH="$PATH:{0}"
-</source>
-        <target state="translated">Le répertoire d'outils '{0}' n'est pas dans la variable d'environnement PATH.
-Si vous utilisez zsh, vous pouvez l'ajouter à votre profil en exécutant la commande suivante :
-
-cat &lt;&lt; \EOF &gt;&gt; ~/.zprofile
-# Ajouter les outils du kit SDK .NET Core
-export PATH="$PATH:{0}"
-EOF
-
-Exécutez ensuite 'zsh -l' afin de le rendre disponible pour la session active.
-
-Vous pouvez uniquement l'ajouter à la session active en exécutant la commande suivante :
-
-export PATH="$PATH:{0}"
-</target>
-        <note />
-      </trans-unit>
       <trans-unit id="FrameworkDependentOptionDescription">
         <source>Publish your application as a framework dependent application. A compatible .NET runtime must be installed on the target machine to run your application.</source>
         <target state="translated">Publiez votre application en tant qu'application dépendante du framework. Un runtime .NET compatible doit être installé sur la machine cible pour exécuter votre application.</target>

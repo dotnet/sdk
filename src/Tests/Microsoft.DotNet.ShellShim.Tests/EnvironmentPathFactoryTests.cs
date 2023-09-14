@@ -9,35 +9,17 @@ namespace Microsoft.DotNet.ShellShim.Tests
     public class EnvironmentPathFactoryTests
     {
         [MacOsOnlyFact]
-        public void GivenFollowingEnvironmentVariableValueItCanReturnOsxZshEnvironmentPathInstruction()
+        public void GivenFollowingEnvironmentVariableValueItShouldReturnOsxEnvironmentPath()
         {
             Mock<IEnvironmentProvider> provider = new Mock<IEnvironmentProvider>(MockBehavior.Strict);
 
-            provider
-                .Setup(p => p.GetEnvironmentVariable("SHELL"))
-                .Returns("/bin/zsh");
-
             IEnvironmentPathInstruction result =
                 EnvironmentPathFactory.CreateEnvironmentPathInstruction(provider.Object);
-            (result is OsxZshEnvironmentPathInstruction).Should().BeTrue();
-        }
-
-        [MacOsOnlyFact]
-        public void GivenFollowingEnvironmentVariableValueItShouldReturnOsxBashEnvironmentPath()
-        {
-            Mock<IEnvironmentProvider> provider = new Mock<IEnvironmentProvider>(MockBehavior.Strict);
-
-            provider
-                .Setup(p => p.GetEnvironmentVariable("SHELL"))
-                .Returns("/bin/bash");
-
-            IEnvironmentPathInstruction result =
-                EnvironmentPathFactory.CreateEnvironmentPathInstruction(provider.Object);
-            (result is OsxBashEnvironmentPath).Should().BeTrue();
+            (result is OsxEnvironmentPath).Should().BeTrue();
         }
 
         [WindowsOnlyFact]
-        public void GivenWindowsItShouldReturnOsxBashEnvironmentPath()
+        public void GivenWindowsItShouldReturnWindowsEnvironmentPath()
         {
             Mock<IEnvironmentProvider> provider = new Mock<IEnvironmentProvider>(MockBehavior.Loose);
 
@@ -47,7 +29,7 @@ namespace Microsoft.DotNet.ShellShim.Tests
         }
 
         [LinuxOnlyFact]
-        public void GivenLinuxItShouldReturnOsxBashEnvironmentPath()
+        public void GivenLinuxItShouldReturnLinuxEnvironmentPath()
         {
             Mock<IEnvironmentProvider> provider = new Mock<IEnvironmentProvider>(MockBehavior.Loose);
 

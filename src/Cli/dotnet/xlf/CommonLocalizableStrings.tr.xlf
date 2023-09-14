@@ -94,37 +94,6 @@ export PATH="$PATH:{0}"
 </target>
         <note />
       </trans-unit>
-      <trans-unit id="EnvironmentPathOSXZshManualInstructions">
-        <source>Tools directory '{0}' is not currently on the PATH environment variable.
-If you are using zsh, you can add it to your profile by running the following command:
-
-cat &lt;&lt; \EOF &gt;&gt; ~/.zprofile
-# Add .NET Core SDK tools
-export PATH="$PATH:{0}"
-EOF
-
-And run `zsh -l` to make it available for current session.
-
-You can only add it to the current session by running the following command:
-
-export PATH="$PATH:{0}"
-</source>
-        <target state="translated">'{0}' araçlar dizini şu anda PATH ortam değişkeninde değil.
-zsh kullanıyorsanız, aşağıdaki komutu çalıştırarak bunu profilinize ekleyebilirsiniz:
-
-cat &lt;&lt; \EOF &gt;&gt; ~/.zprofile
-# .NET Core SDK araçları ekleyin
-export PATH="$PATH:{0}"
-EOF
-
-Geçerli oturum için kullanılabilir hale getirmek üzere `zsh -l` komutunu çalıştırın.
-
-Aşağıdaki komutu çalıştırarak araçlar dizinini yalnızca geçerli oturuma ekleyebilirsiniz:
-
-export PATH="$PATH:{0}"
-</target>
-        <note />
-      </trans-unit>
       <trans-unit id="FrameworkDependentOptionDescription">
         <source>Publish your application as a framework dependent application. A compatible .NET runtime must be installed on the target machine to run your application.</source>
         <target state="translated">Uygulamanızı çerçeveye bağımlı bir uygulama olarak yayımlayın. Uygulamanızı çalıştırmak için hedef makineye uyumlu bir .NET çalışma zamanı yüklenmelidir.</target>
