@@ -52,26 +52,26 @@
       <Sha>abfa03c97f4175d4d209435cd0e71f558e36c3fd</Sha>
       <SourceBuild RepoName="emsdk" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.Build" Version="17.8.0-preview-23431-02">
+    <Dependency Name="Microsoft.Build" Version="17.8.0-preview-23462-02">
       <Uri>https://github.com/dotnet/msbuild</Uri>
-      <Sha>3c910ba83fc9dbd8e12f50dddc8c381404f928c4</Sha>
+      <Sha>caf06d19326f9e7dcc06d4d4f4b04f1c6ddae5f0</Sha>
       <SourceBuild RepoName="msbuild" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.Build.Localization" Version="17.8.0-preview-23431-02">
+    <Dependency Name="Microsoft.Build.Localization" Version="17.8.0-preview-23462-02">
       <Uri>https://github.com/dotnet/msbuild</Uri>
-      <Sha>3c910ba83fc9dbd8e12f50dddc8c381404f928c4</Sha>
+      <Sha>caf06d19326f9e7dcc06d4d4f4b04f1c6ddae5f0</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.msbuild" Version="17.8.0-preview-23431-02">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.msbuild" Version="17.8.0-preview-23462-02">
       <Uri>https://github.com/dotnet/msbuild</Uri>
-      <Sha>3c910ba83fc9dbd8e12f50dddc8c381404f928c4</Sha>
+      <Sha>caf06d19326f9e7dcc06d4d4f4b04f1c6ddae5f0</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.FSharp.Compiler" Version="12.8.0-beta.23457.4">
+    <Dependency Name="Microsoft.FSharp.Compiler" Version="12.8.0-beta.23463.1">
       <Uri>https://github.com/dotnet/fsharp</Uri>
-      <Sha>95b9d4c9eccc2607d4cb507f41f3d585fa5d9e38</Sha>
+      <Sha>a9a75d25fb94900408feb0cece0ae8606931cd4d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.fsharp" Version="8.0.100-beta.23457.4">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.fsharp" Version="8.0.100-beta.23463.1">
       <Uri>https://github.com/dotnet/fsharp</Uri>
-      <Sha>95b9d4c9eccc2607d4cb507f41f3d585fa5d9e38</Sha>
+      <Sha>a9a75d25fb94900408feb0cece0ae8606931cd4d</Sha>
       <SourceBuild RepoName="fsharp" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="dotnet-format" Version="8.0.441502">
@@ -278,18 +278,18 @@
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
       <Sha>5a5ee72cf4d2dac73d9ca4d9aa333a4362313dab</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.Razor.Tooling.Internal" Version="7.0.0-preview.23462.7">
+    <Dependency Name="Microsoft.CodeAnalysis.Razor.Tooling.Internal" Version="7.0.0-preview.23463.3">
       <Uri>https://github.com/dotnet/razor</Uri>
-      <Sha>cfc7529ef1849320d265a61c6d9691c5e86fb0b5</Sha>
+      <Sha>328202545a4fdd5a8c15ee10c58f35b330e38f0b</Sha>
       <SourceBuild RepoName="razor" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Mvc.Razor.Extensions.Tooling.Internal" Version="7.0.0-preview.23462.7">
+    <Dependency Name="Microsoft.AspNetCore.Mvc.Razor.Extensions.Tooling.Internal" Version="7.0.0-preview.23463.3">
       <Uri>https://github.com/dotnet/razor</Uri>
-      <Sha>cfc7529ef1849320d265a61c6d9691c5e86fb0b5</Sha>
+      <Sha>328202545a4fdd5a8c15ee10c58f35b330e38f0b</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Sdk.Razor.SourceGenerators.Transport" Version="7.0.0-preview.23462.7">
+    <Dependency Name="Microsoft.NET.Sdk.Razor.SourceGenerators.Transport" Version="7.0.0-preview.23463.3">
       <Uri>https://github.com/dotnet/razor</Uri>
-      <Sha>cfc7529ef1849320d265a61c6d9691c5e86fb0b5</Sha>
+      <Sha>328202545a4fdd5a8c15ee10c58f35b330e38f0b</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.FileProviders.Embedded" Version="9.0.0-alpha.1.23462.17">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
@@ -312,17 +312,17 @@
       <Sha>9a1c3e1b7f0c8763d4c96e593961a61a72679a7b</Sha>
       <SourceBuild RepoName="xdt" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0-preview.23462.3">
+    <Dependency Name="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0-preview.23463.1">
       <Uri>https://github.com/dotnet/roslyn-analyzers</Uri>
-      <Sha>837c22a23433f441fa56d96eb45d13c65408f7c3</Sha>
+      <Sha>c8647c0e7cecdd12fff9e36e3daf6d408a1c00aa</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.PublicApiAnalyzers" Version="3.11.0-beta1.23462.3">
+    <Dependency Name="Microsoft.CodeAnalysis.PublicApiAnalyzers" Version="3.11.0-beta1.23463.1">
       <Uri>https://github.com/dotnet/roslyn-analyzers</Uri>
-      <Sha>837c22a23433f441fa56d96eb45d13c65408f7c3</Sha>
+      <Sha>c8647c0e7cecdd12fff9e36e3daf6d408a1c00aa</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.roslyn-analyzers" Version="3.11.0-beta1.23462.3">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.roslyn-analyzers" Version="3.11.0-beta1.23463.1">
       <Uri>https://github.com/dotnet/roslyn-analyzers</Uri>
-      <Sha>837c22a23433f441fa56d96eb45d13c65408f7c3</Sha>
+      <Sha>c8647c0e7cecdd12fff9e36e3daf6d408a1c00aa</Sha>
       <SourceBuild RepoName="roslyn-analyzers" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="System.CommandLine" Version="2.0.0-beta4.23307.1">
