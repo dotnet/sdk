@@ -211,9 +211,9 @@ namespace Microsoft.DotNet.Cli.ToolPackage
             VersionRange versionRange
             )
         {
-            NuGetVersion packageVersion = null;
+            // NuGetVersion packageVersion = null;
             var packageSourceLocation = new PackageSourceLocation(packageLocation.NugetConfig, packageLocation.RootConfigDirectory, null, packageLocation.AdditionalFeeds);
-            var packagePath = await nugetPackageDownloader.DownloadPackageAsync(packageId, packageVersion, packageSourceLocation).ConfigureAwait(false);
+            var packagePath = await nugetPackageDownloader.DownloadPackageAsync(packageId, versionRange, packageSourceLocation).ConfigureAwait(false);
 
             // look for package on disk and read the version
             NuGetVersion version;

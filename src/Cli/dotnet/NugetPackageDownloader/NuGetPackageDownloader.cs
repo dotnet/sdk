@@ -517,13 +517,12 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
                 foundPackagesBySource
                     .SelectMany(result => result.foundPackages.Select(package => (result.source, package)));
 
-            var availableVersions = await Task.WhenAll(accumulativeSearchResults.Select(async t => (t.source, t.package, versions: await t.package.GetVersionsAsync())));
-            var expandedVersions = availableVersions.SelectMany(t => t.versions.Select(versionInfo => (versionInfo.Version, t.source, t.package)));
-            var bestVersion = versionRange.FindBestMatch(expandedVersions.Select(t => t.Version));
+            var availableVersions = accumulativeSearchResults.Select(t => t.package.Identity.Version).ToList();
+            var bestVersion = versionRange.FindBestMatch(availableVersions);
             if (bestVersion != null)
             {
-                var bestExpandedVersion = expandedVersions.First(v => v.Version == bestVersion);
-                return (bestExpandedVersion.source, bestExpandedVersion.package);
+                var bestResult = accumulativeSearchResults.First(t => t.package.Identity.Version == bestVersion);
+                return bestResult;
             }
             else
             {
