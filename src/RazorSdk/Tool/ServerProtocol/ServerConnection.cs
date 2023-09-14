@@ -290,6 +290,16 @@ namespace Microsoft.NET.Sdk.Razor.Tool
 #else
                 expectedPath = Process.GetCurrentProcess().MainModule.FileName;
 #endif
+
+                if (!Path.GetFileNameWithoutExtension(expectedPath).Equals("dotnet"))
+                {
+                    // We were running from Visual Studio and found MSBuild instead of dotnet. Reroute to dotnet...
+                    expectedPath = Path.Combine(Path.GetDirectoryName(expectedPath), "..", "..", "..", "dotnet");
+                    var directory = new DirectoryInfo(expectedPath);
+
+                    // The runtime is part of the path. Get the latest runtime available.
+                    expectedPath = Path.Combine(directory.EnumerateDirectories().Last().FullName, "runtime", "dotnet.exe");
+                }
             }
 
             var argumentList = new string[]
