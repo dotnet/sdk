@@ -81,13 +81,14 @@ namespace Microsoft.DotNet.Cli.ToolPackage
                 action: () =>
                 {
                     ILogger nugetLogger = new NullLogger();
-                    
-                    if (verbosity != null && (verbosity == VerbosityOptions.d.ToString() ||
-                                              verbosity == VerbosityOptions.detailed.ToString() ||
-                                              verbosity == VerbosityOptions.diag.ToString() ||
-                                              verbosity == VerbosityOptions.diagnostic.ToString()))
+                    if(verbosity != null)
                     {
-                        nugetLogger = new NuGetConsoleLogger();
+                        VerbosityOptions verbosityOption;
+                        Enum.TryParse(verbosity, out verbosityOption);
+                        if (verbosityOption.IsDetailedOrDiagnostic())
+                        {
+                            nugetLogger = new NuGetConsoleLogger();
+                        }
                     }
 
                     var versionString = versionRange?.OriginalString ?? "*";
