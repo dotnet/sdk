@@ -22,6 +22,11 @@
         <target state="translated">CONTAINER2026: 當 ContainerAppCommandInstruction 為 '{0}' 時，ContainerAppCommand 和 ContainerAppCommandArgs 必須是空白。</target>
         <note>{StrBegin="CONTAINER2026: "}</note>
       </trans-unit>
+      <trans-unit id="ArchiveRegistry_PushInfo">
+        <source>local archive at '{0}'</source>
+        <target state="translated">位於 '{0}' 的本機封存</target>
+        <note>{0} is the path to the file written</note>
+      </trans-unit>
       <trans-unit id="BaseEntrypointOverwritten">
         <source>CONTAINER2022: The base image has an entrypoint that will be overwritten to start the application. Set ContainerAppCommandInstruction to 'Entrypoint' if this is desired. To preserve the base image entrypoint, set ContainerAppCommandInstruction to 'DefaultArgs'.</source>
         <target state="translated">CONTAINER2022: 基礎映像有一個進入點，將被覆寫以啟動應用程式。如果這是預期的行為，請將 ContainerAppCommandInstruction 設定為 'Entrypoint'。若要保留基礎映像進入點，請將 ContainerAppCommandInstruction 設定為 'DefaultArgs'。</target>
@@ -53,13 +58,13 @@
         <note>{StrBegin="CONTAINER1001: "}</note>
       </trans-unit>
       <trans-unit id="ContainerBuilder_ImageUploadedToLocalDaemon">
-        <source>Pushed container '{0}' to Docker daemon.</source>
-        <target state="translated">已推送容器 '{0}' 至 Docker 精靈。</target>
+        <source>Pushed image '{0}' to {1}.</source>
+        <target state="translated">已將影像 '{0}' 推送至 {1}。</target>
         <note />
       </trans-unit>
       <trans-unit id="ContainerBuilder_ImageUploadedToRegistry">
-        <source>Pushed container '{0}' to registry '{1}'.</source>
-        <target state="translated">已將容器 '{0}' 推送至登錄 '{1}'。</target>
+        <source>Pushed image '{0}' to registry '{1}'.</source>
+        <target state="translated">已將影像 '{0}' 推送至登錄 '{1}'。</target>
         <note />
       </trans-unit>
       <trans-unit id="ContainerBuilder_StartBuildingImage">
@@ -77,6 +82,11 @@
         <target state="translated">CONTAINER2012: 無法識別登錄 '{0}'。</target>
         <note>{StrBegin="CONTAINER2012: "}</note>
       </trans-unit>
+      <trans-unit id="DockerCli_PushInfo">
+        <source>local registry via '{0}'</source>
+        <target state="translated">透過 '{0}' 的本機登錄</target>
+        <note>{0} is the command used</note>
+      </trans-unit>
       <trans-unit id="DockerInfoFailed">
         <source>CONTAINER3002: Failed to get docker info({0})\n{1}\n{2}</source>
         <target state="translated">CONTAINER3002: 無法取得 Docker 資訊({0})\n{1}\n{2}</target>
@@ -87,7 +97,7 @@
         <target state="translated">CONTAINER3002: 無法取得 Docker 資訊: {0}</target>
         <note>{StrBegin="CONTAINER3002: "}</note>
       </trans-unit>
-      <trans-unit id="DockerProcessCreationFailed">
+      <trans-unit id="ContainerRuntimeProcessCreationFailed">
         <source>CONTAINER3001: Failed creating {0} process.</source>
         <target state="translated">CONTAINER3001: 無法建立 {0} 程序。</target>
         <note>CONTAINER3001: {0} is the name of the command we failed to run, usually 'docker' or 'podman'.</note>
@@ -247,14 +257,24 @@
         <target state="translated">CONTAINER2011: {0} '{1}' 不存在</target>
         <note>{StrBegin="CONTAINER2011: "}</note>
       </trans-unit>
+      <trans-unit id="RegistryOperationFailed">
+        <source>CONTAINER1017: Unable to communicate with the registry '{0}'.</source>
+        <target state="translated">CONTAINER1017: 無法與登錄 '{0}' 通訊。</target>
+        <note>{StrBegin="CONTAINER1017:" }</note>
+      </trans-unit>
       <trans-unit id="RegistryOutputPushFailed">
         <source>CONTAINER1013: Failed to push to the output registry: {0}</source>
         <target state="translated">CONTAINER1013: 無法推送至輸出登錄: {0}</target>
         <note>{StrBegin="CONTAINER1013: "}</note>
       </trans-unit>
+      <trans-unit id="RegistryPullFailed">
+        <source>CONTAINER1014: Manifest pull failed.</source>
+        <target state="translated">CONTAINER1014: 資訊清單提取失敗。</target>
+        <note>{StrBegin="CONTAINER1014: "}</note>
+      </trans-unit>
       <trans-unit id="RegistryPushFailed">
         <source>CONTAINER1005: Registry push failed; received status code '{0}'.</source>
-        <target state="new">CONTAINER1005: Registry push failed; received status code '{0}'.</target>
+        <target state="translated">CONTAINER1005: 登錄推送失敗; 已收到狀態碼 '{0}'。</target>
         <note>{StrBegin="CONTAINER1005: "}</note>
       </trans-unit>
       <trans-unit id="Registry_ConfigUploadStarted">
@@ -302,6 +322,11 @@
         <target state="translated">已上傳標記 '{0}' 至 '{1}'。</target>
         <note>{1} is the registry name</note>
       </trans-unit>
+      <trans-unit id="RepositoryNotFound">
+        <source>CONTAINER1015: Unable to access the repository '{0}' at tag '{1}' in the registry '{2}'. Please confirm that this name and tag are present in the registry.</source>
+        <target state="translated">CONTAINER1015: 無法存取登錄 '{2}' 中標籤 '{1}' 的存放庫 '{0}'。請確認此名稱和標籤存在於登錄中。</target>
+        <note>{StrBegin="CONTAINER1015: "}</note>
+      </trans-unit>
       <trans-unit id="RequiredItemsContainsEmptyItems">
         <source>CONTAINER4003: Required '{0}' items contain empty items.</source>
         <target state="translated">CONTAINER4003: 必要的 '{0}' 項目包含空項目。</target>
@@ -321,6 +346,11 @@
         <source>CONTAINER1006: Too many retries, stopping.</source>
         <target state="translated">CONTAINER1006: 重試太多次，正在停止。</target>
         <note>{StrBegin="CONTAINER1006: "}</note>
+      </trans-unit>
+      <trans-unit id="UnableToAccessRepository">
+        <source>CONTAINER1016: Unable to access the repository '{0}' in the registry '{1}'. Please confirm your credentials are correct and that you have access to this repository and registry.</source>
+        <target state="translated">CONTAINER1016: 無法存取登錄 '{1}' 中的存放庫 '{0}'。請確認您的認證正確，且您擁有此存放庫和登錄的存取權。</target>
+        <note>{StrBegin="CONTAINER1016:" }</note>
       </trans-unit>
       <trans-unit id="UnknownAppCommandInstruction">
         <source>CONTAINER2021: Unknown AppCommandInstruction '{0}'. Valid instructions are {1}.</source>

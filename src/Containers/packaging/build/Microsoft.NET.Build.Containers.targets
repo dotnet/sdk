@@ -188,7 +188,10 @@
     </PublishContainerDependsOn>
   </PropertyGroup>
 
-  <Target Name="PublishContainer" DependsOnTargets="$(PublishContainerDependsOn)">
+  <!-- TODO: change this comparison to include $(EnableSdkContainerSupport) == true when console apps Import the Publish SDK -->
+  <Target Name="PublishContainer"
+    DependsOnTargets="$(PublishContainerDependsOn)"
+    Condition="'$(IsPublishable)' == 'true'">
 
     <PropertyGroup Condition="'$(DOTNET_HOST_PATH)' == ''">
       <DotNetHostDirectory>$(NetCoreRoot)</DotNetHostDirectory>
@@ -204,6 +207,7 @@
                     BaseImageTag="$(ContainerBaseTag)"
                     LocalRegistry="$(LocalRegistry)"
                     OutputRegistry="$(ContainerRegistry)"
+                    ArchiveOutputPath="$(ContainerArchiveOutputPath)"
                     Repository="$(ContainerRepository)"
                     ImageTags="@(ContainerImageTags)"
                     PublishDirectory="$(PublishDir)"
@@ -224,6 +228,7 @@
       <Output TaskParameter="GeneratedContainerManifest" PropertyName="GeneratedContainerManifest" />
       <Output TaskParameter="GeneratedContainerConfiguration" PropertyName="GeneratedContainerConfiguration" />
       <Output TaskParameter="GeneratedContainerDigest" PropertyName="GeneratedContainerDigest" />
+      <Output TaskParameter="GeneratedArchiveOutputPath" PropertyName="GeneratedArchiveOutputPath" />
     </CreateNewImage>
   </Target>
 </Project>
