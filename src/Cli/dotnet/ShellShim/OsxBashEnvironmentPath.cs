@@ -42,7 +42,7 @@ namespace Microsoft.DotNet.ShellShim
                 return;
             }
 
-            _fileSystem.WriteAllText(DotnetCliToolsPathsDPath, _packageExecutablePath.PathWithTilde);
+            _fileSystem.WriteAllText(DotnetCliToolsPathsDPath, _packageExecutablePath.Path);
         }
 
         private bool PackageExecutablePathExists()
