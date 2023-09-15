@@ -724,9 +724,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             throw new Exception($"Manifest with id {manifestId} does not exist.");
         }
             
-
         public IEnumerable<WorkloadManifestInfo> GetInstalledManifests() => _manifests.Select(t => t.Value.info);
-
 
         private class EmptyWorkloadManifestProvider : IWorkloadManifestProvider
         {

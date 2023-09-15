@@ -35,15 +35,14 @@ namespace Microsoft.DotNet.Workloads.Workload.Repair
             _packageSourceLocation = string.IsNullOrEmpty(configOption) && (sourceOption == null || !sourceOption.Any()) ? null :
                 new PackageSourceLocation(string.IsNullOrEmpty(configOption) ? null : new FilePath(configOption), sourceFeedOverrides: sourceOption);
 
-            workloadResolverFactory = workloadResolverFactory ?? new WorkloadResolverFactory();
-            _workloadResolverFactory = workloadResolverFactory;
+            _workloadResolverFactory = workloadResolverFactory ?? new WorkloadResolverFactory();
 
             if (!string.IsNullOrEmpty(parseResult.GetValue(WorkloadRepairCommandParser.VersionOption)))
             {
                 throw new GracefulException(Install.LocalizableStrings.SdkVersionOptionNotSupported);
             }
 
-            var creationResult = workloadResolverFactory.Create();
+            var creationResult = _workloadResolverFactory.Create();
 
             _dotnetPath = creationResult.DotnetPath;
             _sdkVersion = creationResult.SdkVersion;

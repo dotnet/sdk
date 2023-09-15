@@ -33,15 +33,14 @@ namespace Microsoft.DotNet.Workloads.Workload.Clean
         {
             _cleanAll = parseResult.GetValue(WorkloadCleanCommandParser.CleanAllOption);
 
-            workloadResolverFactory ??= new WorkloadResolverFactory();
-            _workloadResolverFactory = workloadResolverFactory;
+            _workloadResolverFactory ??= new WorkloadResolverFactory();
 
             if (!string.IsNullOrEmpty(parseResult.GetValue(WorkloadUninstallCommandParser.VersionOption)))
             {
                 throw new GracefulException(Install.LocalizableStrings.SdkVersionOptionNotSupported);
             }
 
-            var creationResult = workloadResolverFactory.Create();
+            var creationResult = _workloadResolverFactory.Create();
 
             _dotnetPath = creationResult.DotnetPath;
             _userProfileDir = creationResult.UserProfileDir;

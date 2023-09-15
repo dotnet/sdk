@@ -57,8 +57,7 @@ namespace Microsoft.DotNet.Workloads.Workload
             _packageSourceLocation = string.IsNullOrEmpty(configOption) && (sourceOption == null || !sourceOption.Any()) ? null :
                 new PackageSourceLocation(string.IsNullOrEmpty(configOption) ? null : new FilePath(configOption), sourceFeedOverrides: sourceOption);
 
-            workloadResolverFactory = workloadResolverFactory ?? new WorkloadResolverFactory();
-            _workloadResolverFactory = workloadResolverFactory;
+            _workloadResolverFactory = workloadResolverFactory ?? new WorkloadResolverFactory();
 
             if (!string.IsNullOrEmpty(parseResult.GetValue(InstallingWorkloadCommandParser.VersionOption)))
             {
@@ -69,7 +68,6 @@ namespace Microsoft.DotNet.Workloads.Workload
                 }
                 else
                 {
-                    
                     throw new GracefulException(Strings.SdkVersionOptionNotSupported);
                 }
             }

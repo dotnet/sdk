@@ -152,10 +152,7 @@ namespace Microsoft.DotNet.Cli.Workload.Uninstall.Tests
             static void CreateFile(string path)
             {
                 string directory = Path.GetDirectoryName(path);
-                if (!Directory.Exists(directory))
-                {
-                    Directory.CreateDirectory(directory);
-                }
+                Directory.CreateDirectory(directory);
                 using var _ = File.Create(path);
             }
 

@@ -31,15 +31,14 @@ namespace Microsoft.DotNet.Workloads.Workload.Uninstall
             _workloadIds = parseResult.GetValue(WorkloadUninstallCommandParser.WorkloadIdArgument)
                 .Select(workloadId => new WorkloadId(workloadId)).ToList().AsReadOnly();
 
-            workloadResolverFactory = workloadResolverFactory ?? new WorkloadResolverFactory();
-            _workloadResolverFactory = workloadResolverFactory;
+            _workloadResolverFactory = workloadResolverFactory ?? new WorkloadResolverFactory();
 
             if (!string.IsNullOrEmpty(parseResult.GetValue(WorkloadUninstallCommandParser.VersionOption)))
             {
                 throw new GracefulException(Install.LocalizableStrings.SdkVersionOptionNotSupported);
             }
 
-            var creationResult = workloadResolverFactory.Create();
+            var creationResult = _workloadResolverFactory.Create();
 
             _dotnetPath = creationResult.DotnetPath;
             _sdkVersion = creationResult.SdkVersion;

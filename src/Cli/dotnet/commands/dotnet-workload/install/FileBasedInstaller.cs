@@ -553,22 +553,20 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
         void WriteManifestInstallationRecord(ManifestId manifestId, ManifestVersion manifestVersion, SdkFeatureBand featureBand, SdkFeatureBand referencingFeatureBand)
         {
             var path = GetManifestInstallRecordPath(manifestId, manifestVersion, featureBand, referencingFeatureBand);
-            if (!Directory.Exists(Path.GetDirectoryName(path)))
-            {
-                Directory.CreateDirectory(Path.GetDirectoryName(path));
-            }
+            Directory.CreateDirectory(Path.GetDirectoryName(path));
+
             using var _ = File.Create(path);
         }
 
         private Dictionary<(ManifestId manifestId, ManifestVersion manifestVersion, SdkFeatureBand manifestFeatureBand), List<SdkFeatureBand>> GetAllManifestInstallRecords()
         {
-            Dictionary<(ManifestId manifestId, ManifestVersion manifestVersion, SdkFeatureBand manifestFeatureBand), List<SdkFeatureBand>> ret = new();
+            Dictionary<(ManifestId manifestId, ManifestVersion manifestVersion, SdkFeatureBand manifestFeatureBand), List<SdkFeatureBand>> records = new();
 
             var installedManifestsDir = Path.Combine(_workloadMetadataDir, InstalledManifestsDir, "v1");
 
             if (!Directory.Exists(installedManifestsDir))
             {
-                return ret;
+                return records;
             }
 
             foreach (var manifestIdDir in Directory.GetDirectories(installedManifestsDir))
@@ -584,10 +582,10 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                         {
                             var referencingFeatureBand = new SdkFeatureBand(Path.GetFileName(featureBandInstallationRecord));
 
-                            if (!ret.TryGetValue((manifestId, manifestVersion, manifestFeatureBand), out var referencingFeatureBands))
+                            if (!records.TryGetValue((manifestId, manifestVersion, manifestFeatureBand), out var referencingFeatureBands))
                             {
                                 referencingFeatureBands = new List<SdkFeatureBand>();
-                                ret[(manifestId, manifestVersion, manifestFeatureBand)] = referencingFeatureBands;
+                                records[(manifestId, manifestVersion, manifestFeatureBand)] = referencingFeatureBands;
                             }
 
                             referencingFeatureBands.Add(referencingFeatureBand);
@@ -596,7 +594,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                 }
             }
 
-            return ret;
+            return records;
         }
 
         private string GetPackInstallRecordPath(WorkloadPackId packId, string packVersion, SdkFeatureBand featureBand) =>
@@ -604,13 +602,13 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
         private Dictionary<(WorkloadPackId packId, string packVersion), List<SdkFeatureBand>> GetAllPackInstallRecords()
         {
-            Dictionary<(WorkloadPackId packId, string packVersion), List<SdkFeatureBand>> ret = new();
+            Dictionary<(WorkloadPackId packId, string packVersion), List<SdkFeatureBand>> records = new();
 
             var installedPacksDir = Path.Combine(_workloadMetadataDir, InstalledPacksDir, "v1");
 
             if (!Directory.Exists(installedPacksDir))
             {
-                return ret;
+                return records;
             }
 
             foreach (var packIdDir in Directory.GetDirectories(installedPacksDir))
@@ -623,17 +621,17 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                     {
                         var referencingFeatureBand = new SdkFeatureBand(Path.GetFileName(bandRecord));
 
-                        if (!ret.TryGetValue((packId, packVersion), out var referencingFeatureBands))
+                        if (!records.TryGetValue((packId, packVersion), out var referencingFeatureBands))
                         {
                             referencingFeatureBands = new List<SdkFeatureBand>();
-                            ret[(packId, packVersion)] = referencingFeatureBands;
+                            records[(packId, packVersion)] = referencingFeatureBands;
                         }
                         referencingFeatureBands.Add(referencingFeatureBand);
                     }
                 }
             }
 
-            return ret;
+            return records;
         }
 
         private void WritePackInstallationRecord(PackInfo packInfo, SdkFeatureBand featureBand)
