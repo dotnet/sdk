@@ -1,14 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections;
-using System.Collections.Generic;
 using System.CommandLine;
 using System.Text.Json;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.ToolPackage;
+using Microsoft.DotNet.Workloads.Workload.History;
 using Microsoft.DotNet.Workloads.Workload.Install;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
@@ -52,16 +51,18 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
         {
             WorkloadHistoryRecorder recorder = new WorkloadHistoryRecorder(_workloadResolver, _workloadInstaller);
             recorder.HistoryRecord.CommandName = "update";
-            //recorder.HistoryRecord.WorkloadArguments = _workloadIds.Select(id => id.ToString()).ToList();
 
             bool usedRollback = !string.IsNullOrWhiteSpace(_fromRollbackDefinition);
             var rollbackFileContents = usedRollback ? WorkloadManifestUpdater.ParseRollbackDefinitionFile(_fromRollbackDefinition, _sdkFeatureBand) : null;
             if (usedRollback)
             {
                 var rollbackContents = new Dictionary<string, string>();
+                recorder.HistoryRecord.WorkloadArguments = new List<string>();
                 foreach (var (id, version, featureBand) in rollbackFileContents)
                 {
-                    rollbackContents[id.ToString()] = $"{version}/{featureBand}";
+                    var idString = id.ToString();
+                    recorder.HistoryRecord.WorkloadArguments.Add(idString);
+                    rollbackContents[idString] = $"{version}/{featureBand}";
                 }
 
                 recorder.HistoryRecord.RollbackFileContents = rollbackContents;
@@ -73,7 +74,9 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
                 {
                     try
                     {
-                        recorder.Run(() => DownloadToOfflineCacheAsync(new DirectoryPath(_downloadToCacheOption), _includePreviews).Wait());
+                        var workloadIds = GetUpdatableWorkloads();
+                        recorder.HistoryRecord.WorkloadArguments = workloadIds.Select(id => id.ToString()).ToList();
+                        recorder.Run(() => DownloadToOfflineCacheAsync(new DirectoryPath(_downloadToCacheOption), _includePreviews, workloadIds).Wait());
                     }
                     catch (Exception e)
                     {
@@ -83,13 +86,13 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
                 else if (_printDownloadLinkOnly)
                 {
                     var packageUrls = GetUpdatablePackageUrlsAsync(_includePreviews).GetAwaiter().GetResult();
-                    Reporter.WriteLine("==allPackageLinksJsonOutputStart==");
-                    Reporter.WriteLine(JsonSerializer.Serialize(packageUrls, new JsonSerializerOptions() { WriteIndented = true }));
-                    Reporter.WriteLine("==allPackageLinksJsonOutputEnd==");
+                    PrintDownloadLink(packageUrls);
                 }
                 else if (_adManifestOnlyOption)
                 {
-                    recorder.Run(() => _workloadManifestUpdater.UpdateAdvertisingManifestsAsync(_includePreviews, string.IsNullOrWhiteSpace(_fromCacheOption) ? null : new DirectoryPath(_fromCacheOption)).Wait());
+                    var workloadManifestInfo = _workloadResolver.GetInstalledManifests();
+                    recorder.HistoryRecord.WorkloadArguments = workloadManifestInfo.Select(m => m.Id).ToList();
+                    recorder.Run(() => _workloadManifestUpdater.UpdateAdvertisingManifestsAsync(_includePreviews, string.IsNullOrWhiteSpace(_fromCacheOption) ? null : new DirectoryPath(_fromCacheOption), workloadManifestInfo).Wait());
                     Reporter.WriteLine();
                     Reporter.WriteLine(LocalizableStrings.WorkloadUpdateAdManifestsSucceeded);
                 }
@@ -106,7 +109,9 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
                     {
                         try
                         {
-                            UpdateWorkloads(_includePreviews, string.IsNullOrWhiteSpace(_fromCacheOption) ? null : new DirectoryPath(_fromCacheOption), rollbackFileContents);
+                            var workloadIds = GetUpdatableWorkloads();
+                            recorder.HistoryRecord.WorkloadArguments = workloadIds.Select(id => id.ToString()).ToList();
+                            UpdateWorkloads(_includePreviews, string.IsNullOrWhiteSpace(_fromCacheOption) ? null : new DirectoryPath(_fromCacheOption), rollbackFileContents, workloadIds: workloadIds);
                         }
                         catch (Exception e)
                         {
@@ -124,11 +129,11 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
             return _workloadInstaller.ExitCode;
         }
 
-        public void UpdateWorkloads(bool includePreviews = false, DirectoryPath? offlineCache = null, IEnumerable<(ManifestId id, ManifestVersion version, SdkFeatureBand featureBand)> rollbackFileContents = null)
+        public void UpdateWorkloads(bool includePreviews = false, DirectoryPath? offlineCache = null, IEnumerable<(ManifestId id, ManifestVersion version, SdkFeatureBand featureBand)> rollbackFileContents = null, IEnumerable<WorkloadId> workloadIds = null)
         {
             Reporter.WriteLine();
 
-            var workloadIds = GetUpdatableWorkloads();
+            workloadIds ??= GetUpdatableWorkloads();
             _workloadManifestUpdater.UpdateAdvertisingManifestsAsync(includePreviews, offlineCache).Wait();
 
             var useRollback = !string.IsNullOrWhiteSpace(_fromRollbackDefinition);
@@ -252,9 +257,9 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
                 });
         }
 
-        private async Task DownloadToOfflineCacheAsync(DirectoryPath offlineCache, bool includePreviews)
+        private async Task DownloadToOfflineCacheAsync(DirectoryPath offlineCache, bool includePreviews, IEnumerable<WorkloadId> workloadIds)
         {
-            await GetDownloads(GetUpdatableWorkloads(), skipManifestUpdate: false, includePreviews, offlineCache.Value);
+            await GetDownloads(workloadIds, skipManifestUpdate: false, includePreviews, offlineCache.Value);
         }
 
         private async Task<IEnumerable<string>> GetUpdatablePackageUrlsAsync(bool includePreview)

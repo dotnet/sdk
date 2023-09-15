@@ -8,7 +8,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 {
     internal interface IWorkloadManifestUpdater
     {
-        Task UpdateAdvertisingManifestsAsync(bool includePreviews, DirectoryPath? offlineCache = null);
+        Task UpdateAdvertisingManifestsAsync(bool includePreviews, DirectoryPath? offlineCache = null, IEnumerable<WorkloadManifestInfo> manifests = null);
 
         Task BackgroundUpdateAdvertisingManifestsWhenRequiredAsync();
 

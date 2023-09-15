@@ -97,10 +97,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                     var workloadsToDownload = existingWorkloads.Union(_workloadIds.Select(id => new WorkloadId(id))).ToList();
 
                     var packageUrls = GetPackageDownloadUrlsAsync(workloadsToDownload, _skipManifestUpdate, _includePreviews).GetAwaiter().GetResult();
-
-                    Reporter.WriteLine("==allPackageLinksJsonOutputStart==");
-                    Reporter.WriteLine(JsonSerializer.Serialize(packageUrls, new JsonSerializerOptions() { WriteIndented = true }));
-                    Reporter.WriteLine("==allPackageLinksJsonOutputEnd==");
+                    PrintDownloadLink(packageUrls);
                 }
                 else if (!string.IsNullOrWhiteSpace(_downloadToCacheOption))
                 {

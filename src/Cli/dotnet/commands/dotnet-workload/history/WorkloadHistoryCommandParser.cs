@@ -1,16 +1,8 @@
 ﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
-//
 
-using System;
-using System.Collections.Generic;
 using System.CommandLine;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Workloads.Workload.History;
-using Microsoft.DotNet.Workloads.Workload.Uninstall;
 
 namespace Microsoft.DotNet.Cli
 {
@@ -25,7 +17,7 @@ namespace Microsoft.DotNet.Cli
 
         private static CliCommand ConstructCommand()
         {
-            var command = new CliCommand("history", Workloads.Workload.History.LocalizableStrings.CommandDescription);
+            var command = new CliCommand("history", LocalizableStrings.CommandDescription);
 
             command.SetAction(parseResult => new WorkloadHistoryCommand(parseResult).Execute());
 

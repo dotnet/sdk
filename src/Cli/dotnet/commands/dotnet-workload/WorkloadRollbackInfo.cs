@@ -1,14 +1,7 @@
 ﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
-//
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
-using Microsoft.DotNet.MSBuildSdkResolver;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 
 namespace Microsoft.DotNet.Workloads.Workload
@@ -38,14 +31,12 @@ namespace Microsoft.DotNet.Workloads.Workload
 
         public Dictionary<string, string> ToDictionaryForJson()
         {
-            var dictionary = ManifestVersions.ToDictionary(m => m.Id.ToString(), m => m.Version + "/" + m.FeatureBand, StringComparer.OrdinalIgnoreCase);
-            return dictionary;
+            return ManifestVersions.ToDictionary(m => m.Id.ToString(), m => m.Version + "/" + m.FeatureBand, StringComparer.OrdinalIgnoreCase);
         }
 
         public string ToJson()
         {
-            var json = JsonSerializer.Serialize(ToDictionaryForJson(), new JsonSerializerOptions() { WriteIndented = true });
-            return json;
+            return JsonSerializer.Serialize(ToDictionaryForJson(), new JsonSerializerOptions() { WriteIndented = true });
         }
 
 

@@ -205,6 +205,13 @@ namespace Microsoft.DotNet.Workloads.Workload
             return ret;
         }
 
+        protected void PrintDownloadLink(IEnumerable<string> packageUrls)
+        {
+            Reporter.WriteLine("==allPackageLinksJsonOutputStart==");
+            Reporter.WriteLine(JsonSerializer.Serialize(packageUrls, new JsonSerializerOptions() { WriteIndented = true }));
+            Reporter.WriteLine("==allPackageLinksJsonOutputEnd==");
+        }
+
         protected IEnumerable<WorkloadId> GetInstalledWorkloads(bool fromPreviousSdk)
         {
             if (fromPreviousSdk)
