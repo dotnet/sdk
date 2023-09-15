@@ -24,7 +24,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             _tempDirManifestPath = tempDirManifestPath;
         }
 
-        public Task UpdateAdvertisingManifestsAsync(bool includePreview, DirectoryPath? cachePath = null)
+        public Task UpdateAdvertisingManifestsAsync(bool includePreview, DirectoryPath? cachePath = null, IEnumerable<WorkloadManifestInfo> manifests = null)
         {
             UpdateAdvertisingManifestsCallCount++;
             return Task.CompletedTask;

@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using System.Text.Json;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Utils;
@@ -164,6 +165,13 @@ namespace Microsoft.DotNet.Workloads.Workload
             }
 
             return ret;
+        }
+
+        protected void PrintDownloadLink(IEnumerable<string> packageUrls)
+        {
+            Reporter.WriteLine("==allPackageLinksJsonOutputStart==");
+            Reporter.WriteLine(JsonSerializer.Serialize(packageUrls, new JsonSerializerOptions() { WriteIndented = true }));
+            Reporter.WriteLine("==allPackageLinksJsonOutputEnd==");
         }
 
         protected IEnumerable<WorkloadId> GetInstalledWorkloads(bool fromPreviousSdk)

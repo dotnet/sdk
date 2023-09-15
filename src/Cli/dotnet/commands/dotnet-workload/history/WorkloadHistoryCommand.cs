@@ -8,11 +8,8 @@ using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Workloads.Workload.Install;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
-using Microsoft.DotNet.Configurer;
-using System.IO;
 using Microsoft.Deployment.DotNet.Releases;
-using Microsoft.DotNet.Cli.commands.dotnet_workload;
-
+using Microsoft.DotNet.Cli.Commands.DotNetWorkloads;
 
 namespace Microsoft.DotNet.Workloads.Workload.History
 {
@@ -35,7 +32,6 @@ namespace Microsoft.DotNet.Workloads.Workload.History
             string userProfileDir = null
         ) : base(parseResult, CommonOptions.HiddenVerbosityOption, reporter, tempDirPath, nugetPackageDownloader)
         {
-
             var creationParameters = new WorkloadResolverFactory.CreationParameters()
             {
                 DotnetPath = dotnetDir,
