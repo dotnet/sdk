@@ -17,12 +17,6 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             DirectoryPath? downloadFolder = null,
             PackageSourceMapping packageSourceMapping = null);
 
-        Task<string> DownloadPackageAsync(PackageId packageId,
-            VersionRange packageVersion = null,
-            PackageSourceLocation packageSourceLocation = null,
-            DirectoryPath? downloadFolder = null,
-            PackageSourceMapping packageSourceMapping = null);
-
         Task<string> GetPackageUrl(PackageId packageId,
             NuGetVersion packageVersion = null,
             PackageSourceLocation packageSourceLocation = null,
@@ -33,5 +27,9 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
         Task<NuGetVersion> GetLatestPackageVersion(PackageId packageId,
              PackageSourceLocation packageSourceLocation = null,
              bool includePreview = false);
-    }
+
+        Task<NuGetVersion> GetBestPackageVersionAsync(PackageId packageId,
+            VersionRange versionRange,
+             PackageSourceLocation packageSourceLocation = null);
+    } 
 }

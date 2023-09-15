@@ -56,15 +56,6 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             return Task.FromResult(path);
         }
 
-        public Task<string> DownloadPackageAsync(PackageId packageId,
-            VersionRange packageVersion = null,
-            PackageSourceLocation packageSourceLocation = null,
-            DirectoryPath? downloadFolder = null,
-            PackageSourceMapping packageSourceMapping = null)
-        {
-            throw new NotImplementedException();
-        }
-
         public Task<IEnumerable<string>> ExtractPackageAsync(string packagePath, DirectoryPath targetFolder)
         {
             ExtractCallParams.Add((packagePath, targetFolder));
@@ -91,6 +82,13 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
         {
             return Task.FromResult(new NuGetVersion("10.0.0"));
         }
+
+        public Task<NuGetVersion> GetBestPackageVersionAsync(PackageId packageId, VersionRange versionRange, PackageSourceLocation packageSourceLocation = null)
+        {
+            return Task.FromResult(new NuGetVersion("10.0.0"));
+        }
+
+
 
         public Task<string> GetPackageUrl(PackageId packageId,
             NuGetVersion packageVersion,

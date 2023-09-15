@@ -90,10 +90,6 @@ namespace Microsoft.DotNet.Cli.ToolPackage
                             nugetLogger = new NuGetConsoleLogger();
                         }
                     }
-
-                    var versionString = versionRange?.OriginalString ?? "*";
-                    versionRange = VersionRange.Parse(versionString);
-
                     var toolDownloadDir = isGlobalTool ? _globalToolStageDir : _localToolDownloadDir;
                     var assetFileDirectory = isGlobalTool ? _globalToolStageDir : _localToolAssetDir;
                     var nugetPackageDownloader = new NuGetPackageDownloader.NuGetPackageDownloader(toolDownloadDir, verboseLogger: nugetLogger, isNuGetTool: true);
@@ -211,9 +207,9 @@ namespace Microsoft.DotNet.Cli.ToolPackage
             VersionRange versionRange
             )
         {
-            // NuGetVersion packageVersion = null;
             var packageSourceLocation = new PackageSourceLocation(packageLocation.NugetConfig, packageLocation.RootConfigDirectory, null, packageLocation.AdditionalFeeds);
-            var packagePath = await nugetPackageDownloader.DownloadPackageAsync(packageId, versionRange, packageSourceLocation).ConfigureAwait(false);
+            NuGetVersion packageVersion = await nugetPackageDownloader.GetBestPackageVersionAsync(packageId, versionRange, packageSourceLocation).ConfigureAwait(false);
+            var packagePath = await nugetPackageDownloader.DownloadPackageAsync(packageId, packageVersion, packageSourceLocation).ConfigureAwait(false);
 
             // look for package on disk and read the version
             NuGetVersion version;
@@ -292,7 +288,15 @@ namespace Microsoft.DotNet.Cli.ToolPackage
             //  Create criteria
             var managedCriteria = new List<SelectionCriteria>(1);
             // Use major.minor version of currently running version of .NET
-            var currentTargetFramework = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.NetCoreApp, new Version(Environment.Version.Major, Environment.Version.Minor));
+            NuGetFramework currentTargetFramework;
+            if(targetFramework != null)
+            {
+                currentTargetFramework = NuGetFramework.Parse(targetFramework); 
+            }
+            else
+            {
+                currentTargetFramework = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.NetCoreApp, new Version(Environment.Version.Major, Environment.Version.Minor));
+            }
 
             var standardCriteria = conventions.Criteria.ForFrameworkAndRuntime(
                 currentTargetFramework,

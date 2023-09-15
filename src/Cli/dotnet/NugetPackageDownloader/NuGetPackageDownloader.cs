@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Threading;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.ToolPackage;
 using Microsoft.DotNet.Tools;
@@ -85,59 +86,6 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
 
             (var source, var resolvedPackageVersion) = await GetPackageSourceAndVersion(packageId, packageVersion,
                 packageSourceLocation, includePreview, packageSourceMapping).ConfigureAwait(false);
-
-            FindPackageByIdResource resource = null;
-            SourceRepository repository = GetSourceRepository(source);
-
-            resource = await repository.GetResourceAsync<FindPackageByIdResource>(cancellationToken)
-                .ConfigureAwait(false);
-
-            if (resource == null)
-            {
-                throw new NuGetPackageNotFoundException(
-                    string.Format(LocalizableStrings.IsNotFoundInNuGetFeeds, packageId, source.Source));
-            }
-
-            string nupkgPath = downloadFolder == null || !downloadFolder.HasValue
-                ? Path.Combine(_packageInstallDir.Value, packageId.ToString(),
-                    resolvedPackageVersion.ToNormalizedString(),
-                    $"{packageId}.{resolvedPackageVersion.ToNormalizedString()}.nupkg")
-                : Path.Combine(downloadFolder.Value.Value,
-                    $"{packageId}.{resolvedPackageVersion.ToNormalizedString()}.nupkg");
-
-            Directory.CreateDirectory(Path.GetDirectoryName(nupkgPath));
-            using FileStream destinationStream = File.Create(nupkgPath);
-            bool success = await ExponentialRetry.ExecuteWithRetryOnFailure(async () => await resource.CopyNupkgToStreamAsync(
-                packageId.ToString(),
-                resolvedPackageVersion,
-                destinationStream,
-                _cacheSettings,
-                _verboseLogger,
-                cancellationToken));
-            destinationStream.Close();
-
-            if (!success)
-            {
-                throw new NuGetPackageInstallerException(
-                    string.Format("Downloading {0} version {1} failed", packageId,
-                        packageVersion.ToNormalizedString()));
-            }
-
-            VerifySigning(nupkgPath);
-
-            return nupkgPath;
-        }
-
-        public async Task<string> DownloadPackageAsync(PackageId packageId,
-            VersionRange packageVersion = null,
-            PackageSourceLocation packageSourceLocation = null,
-            DirectoryPath? downloadFolder = null,
-            PackageSourceMapping packageSourceMapping = null)
-        {
-            CancellationToken cancellationToken = CancellationToken.None;
-
-            (var source, var resolvedPackageVersion) = await GetPackageSourceAndVersion(packageId, packageVersion,
-                packageSourceLocation, packageSourceMapping).ConfigureAwait(false);
 
             FindPackageByIdResource resource = null;
             SourceRepository repository = GetSourceRepository(source);
@@ -295,39 +243,6 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             }
 
             packageVersion = packageMetadata.Identity.Version;
-
-            return (source, packageVersion);
-        }
-
-        private async Task<(PackageSource, NuGetVersion)> GetPackageSourceAndVersion(PackageId packageId,
-             VersionRange versionRange = null,
-             PackageSourceLocation packageSourceLocation = null,
-             PackageSourceMapping packageSourceMapping = null)
-        {
-            CancellationToken cancellationToken = CancellationToken.None;
-
-            IPackageSearchMetadata packageMetadata;
-
-            IEnumerable<PackageSource> packagesSources = LoadNuGetSources(packageId, packageSourceLocation, packageSourceMapping);
-            PackageSource source;
-
-            (source, packageMetadata) = await GetMatchingVersionInternalAsync(packageId.ToString(), packagesSources,
-                    versionRange, cancellationToken).ConfigureAwait(false);
-
-            /*if (packageVersion is null)
-            {
-                (source, packageMetadata) = await GetMatchingVersionInternalAsync(packageId.ToString(), packagesSources,
-                    includePreview, cancellationToken).ConfigureAwait(false);
-            }
-            else
-            {
-                packageVersion = new NuGetVersion(packageVersion);
-                (source, packageMetadata) =
-                    await GetPackageMetadataAsync(packageId.ToString(), packageVersion, packagesSources,
-                        cancellationToken).ConfigureAwait(false);
-            }*/
-
-            NuGetVersion packageVersion = packageMetadata.Identity.Version;
 
             return (source, packageVersion);
         }
@@ -600,6 +515,23 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             (PackageSource, IPackageSearchMetadata) latestVersion = accumulativeSearchResults
                 .MaxBy(r => r.package.Identity.Version);
             return latestVersion;
+        }
+
+        public async Task<NuGetVersion> GetBestPackageVersionAsync(PackageId packageId,
+            VersionRange versionRange,
+             PackageSourceLocation packageSourceLocation = null)
+        {
+            CancellationToken cancellationToken = CancellationToken.None;
+            IPackageSearchMetadata packageMetadata;
+
+            IEnumerable<PackageSource> packagesSources = LoadNuGetSources(packageId, packageSourceLocation);
+            PackageSource source;
+
+            (source, packageMetadata) = await GetMatchingVersionInternalAsync(packageId.ToString(), packagesSources,
+                    versionRange, cancellationToken).ConfigureAwait(false);
+
+            NuGetVersion packageVersion = packageMetadata.Identity.Version;
+            return packageVersion;
         }
 
         private async Task<(PackageSource, IPackageSearchMetadata)> GetPackageMetadataAsync(string packageIdentifier,

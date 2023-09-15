@@ -29,17 +29,6 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             return Task.FromResult(mockPackagePath);
         }
 
-        public Task<string> DownloadPackageAsync(PackageId packageId,
-            VersionRange packageVersion = null,
-            PackageSourceLocation packageSourceLocation = null,
-            DirectoryPath? downloadFolder = null,
-            PackageSourceMapping packageSourceMapping = null)
-        {
-            var mockPackagePath = Path.Combine(MockPackageDir, $"{packageId}.{packageVersion}.nupkg");
-            File.WriteAllText(mockPackagePath, string.Empty);
-            return Task.FromResult(mockPackagePath);
-        }
-
         public Task<IEnumerable<string>> ExtractPackageAsync(string packagePath, DirectoryPath targetFolder)
         {
             Directory.CreateDirectory(targetFolder.Value);
@@ -48,7 +37,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
         }
 
         public Task<NuGetVersion> GetLatestPackageVersion(PackageId packageId, PackageSourceLocation packageSourceLocation = null, bool includePreview = false) => throw new NotImplementedException();
-
+        public Task<NuGetVersion> GetBestPackageVersionAsync(PackageId packageId, VersionRange versionRange, PackageSourceLocation packageSourceLocation = null) => throw new NotImplementedException();
         public Task<string> GetPackageUrl(PackageId packageId,
             NuGetVersion packageVersion,
             PackageSourceLocation packageSourceLocation = null,
