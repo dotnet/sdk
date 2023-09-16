@@ -29,10 +29,14 @@ namespace Microsoft.TemplateEngine.Cli.Commands
                 nameArgument = null;
             }
             var nameOption = parseResult.GetValueForOptionOrNull(SharedOptions.NameOption);
-            if (nameArgument is not null && nameOption is not null)
+            _command.Validators.Add(commandResult =>
             {
-                throw new InvalidOperationException($"Name argument '{nameArgument}' and name option (--name) '{nameOption}' have both been provided. Only one may be provided at a time.");
-            }
+                if (nameArgument is not null && nameOption is not null)
+                {
+                    commandResult.AddError(LocalizableStrings.Commands_Validator_NameArgumentOptionConflict, nameArgument, nameOption);
+                }
+            });
+
             Name = nameArgument ?? nameOption;
 
             IsForceFlagSpecified = parseResult.GetValue(SharedOptions.ForceOption);

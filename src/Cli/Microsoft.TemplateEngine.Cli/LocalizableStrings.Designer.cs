@@ -621,6 +621,15 @@ namespace Microsoft.TemplateEngine.Cli {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Name argument &apos;{0}&apos; and name option (--name) &apos;{1}&apos; have both been provided. Only one may be provided at a time..
+        /// </summary>
+        internal static string Commands_Validator_NameArgumentOptionConflict {
+            get {
+                return ResourceManager.GetString("Commands_Validator_NameArgumentOptionConflict", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Argument(s) {0} are not recognized. Must be one of: {1}..
         /// </summary>
         internal static string Commands_Validator_WrongArgumentValue {

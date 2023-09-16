@@ -66,6 +66,9 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             return constraintResult.All(s => s.EvaluationStatus == TemplateConstraintResult.Status.Allowed);
         }
 
+        internal static void AddError(this CommandResult commandResult, string format, params object?[] args) =>
+            commandResult.AddError(string.Format(format, args));
+
         private static void ValidateAllowedValues(OptionResult optionResult, string[] allowedValues, string? allowedHiddenValue = null)
         {
             var invalidArguments = optionResult.Tokens.Where(token => !allowedValues.Append(allowedHiddenValue).Contains(token.Value, StringComparer.OrdinalIgnoreCase)).ToList();

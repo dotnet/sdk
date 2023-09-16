@@ -96,6 +96,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
         // This is only used to let the help generation know there is a name argument.
         // It doesn't contribute to parsing the arguments because the arity is set to 0.
         // InstantiateCommand reparses the arguments in the context of TemplateCommand to properly parse the name.
+        // This argument contributes to the help output provided by WriteCustomInstantiateHelp.
         internal static CliArgument<string> NameArgument { get; } = new CliArgument<string>("name")
         {
             Description = SymbolStrings.TemplateCommand_Option_Name,
