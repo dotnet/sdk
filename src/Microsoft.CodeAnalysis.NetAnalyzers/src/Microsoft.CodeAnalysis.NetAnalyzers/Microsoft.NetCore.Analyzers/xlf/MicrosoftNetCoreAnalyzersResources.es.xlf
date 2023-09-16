@@ -2244,48 +2244,48 @@ La ampliación y las conversiones definidas por el usuario no se admiten con tip
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringComparerDescription">
-        <source>Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons when using 'CompareTo', because they lead to an allocation. Instead, use 'StringComparer' to perform case-insensitive comparisons.</source>
-        <target state="translated">Evite llamar a "ToLower", "ToUpper", "ToLowerInvariant" y "ToUpperInvariant" para realizar comparaciones de cadenas sin distinción de mayúsculas y minúsculas al usar "CompareTo", porque dan lugar a una asignación. En su lugar, use "StringComparer" para realizar comparaciones sin distinción de mayúsculas y minúsculas.</target>
+        <source>Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons when using 'CompareTo', because they lead to an allocation. Instead, use 'StringComparer' to perform case-insensitive comparisons. Switching to using 'StringComparer' might cause subtle changes in behavior, so it's important to conduct thorough testing after applying the suggestion. Additionally, if a culturally sensitive comparison is not required, consider using 'StringComparer.OrdinalIgnoreCase'.</source>
+        <target state="needs-review-translation">Evite llamar a "ToLower", "ToUpper", "ToLowerInvariant" y "ToUpperInvariant" para realizar comparaciones de cadenas sin distinción de mayúsculas y minúsculas al usar "CompareTo", porque dan lugar a una asignación. En su lugar, use "StringComparer" para realizar comparaciones sin distinción de mayúsculas y minúsculas.</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringComparerMessage">
-        <source>Prefer using 'StringComparer' to perform a case-insensitive comparison</source>
-        <target state="translated">Preferir el uso de "StringComparer" para realizar una comparación sin distinción de mayúsculas y minúsculas</target>
+        <source>Prefer using 'StringComparer' to perform a case-insensitive comparison, but keep in mind that this might cause subtle changes in behavior, so make sure to conduct thorough testing after applying the suggestion, or if culturally sensitive comparison is not required, consider using 'StringComparer.OrdinalIgnoreCase'</source>
+        <target state="needs-review-translation">Preferir el uso de "StringComparer" para realizar una comparación sin distinción de mayúsculas y minúsculas</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringComparerStringComparisonCodeFixTitle">
         <source>Use the 'string.{0}(string, StringComparison)' overload</source>
-        <target state="translated">Usar la sobrecarga "string.{0}(string, StringComparison)"</target>
+        <target state="needs-review-translation">Usar la sobrecarga "string.{0}(string, StringComparison)"</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringComparisonDescription">
-        <source>Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons because they lead to an allocation. Instead, prefer calling the method overloads of 'Contains', 'IndexOf' and 'StartsWith' that take a 'StringComparison' enum value to perform case-insensitive comparisons.</source>
-        <target state="translated">Evite llamar a "ToLower", "ToUpper", "ToLowerInvariant" y "ToUpperInvariant" para realizar comparaciones de cadenas sin distinción de mayúsculas y minúsculas porque dan lugar a una asignación. En su lugar, es preferible llamar a las sobrecargas de método de "Contains", "IndexOf" y "StartsWith" que toman un valor de enumeración "StringComparison" para realizar comparaciones sin distinción de mayúsculas y minúsculas.</target>
+        <source>Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons because they lead to an allocation. Instead, prefer calling the method overloads of 'Contains', 'IndexOf' and 'StartsWith' that take a 'StringComparison' enum value to perform case-insensitive comparisons. Switching to using an overload that takes a 'StringComparison' might cause subtle changes in behavior, so it's important to conduct thorough testing after applying the suggestion. Additionally, if a culturally sensitive comparison is not required, consider using 'StringComparison.OrdinalIgnoreCase'.</source>
+        <target state="new">Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons because they lead to an allocation. Instead, prefer calling the method overloads of 'Contains', 'IndexOf' and 'StartsWith' that take a 'StringComparison' enum value to perform case-insensitive comparisons. Switching to using an overload that takes a 'StringComparison' might cause subtle changes in behavior, so it's important to conduct thorough testing after applying the suggestion. Additionally, if a culturally sensitive comparison is not required, consider using 'StringComparison.OrdinalIgnoreCase'.</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringComparisonMessage">
-        <source>Prefer the string comparison method overload of '{0}' that takes a 'StringComparison' enum value to perform a case-insensitive comparison</source>
-        <target state="translated">Preferir la sobrecarga de método de comparación de cadenas de "{0}" que toma un valor de enumeración "StringComparison" para realizar una comparación sin distinción de mayúsculas y minúsculas</target>
+        <source>Prefer the string comparison method overload of '{0}' that takes a 'StringComparison' enum value to perform a case-insensitive comparison, but keep in mind that this might cause subtle changes in behavior, so make sure to conduct thorough testing after applying the suggestion, or if culturally sensitive comparison is not required, consider using 'StringComparison.OrdinalIgnoreCase'</source>
+        <target state="new">Prefer the string comparison method overload of '{0}' that takes a 'StringComparison' enum value to perform a case-insensitive comparison, but keep in mind that this might cause subtle changes in behavior, so make sure to conduct thorough testing after applying the suggestion, or if culturally sensitive comparison is not required, consider using 'StringComparison.OrdinalIgnoreCase'</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringComparisonTitle">
-        <source>Prefer the 'StringComparison' method overloads to perform case-insensitive string comparisons</source>
-        <target state="translated">Preferir las sobrecargas del método "StringComparison" para realizar comparaciones de cadenas sin distinción de mayúsculas y minúsculas</target>
+        <source>Use the 'StringComparison' method overloads to perform case-insensitive string comparisons</source>
+        <target state="needs-review-translation">Preferir las sobrecargas del método "StringComparison" para realizar comparaciones de cadenas sin distinción de mayúsculas y minúsculas</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringEqualsCodeFixTitle">
         <source>Use 'string.Equals(string, StringComparison)'</source>
-        <target state="translated">Use "string.Equals(string, StringComparison)"</target>
+        <target state="needs-review-translation">Use "string.Equals(string, StringComparison)"</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringEqualsDescription">
-        <source>Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons, as in 'string.ToLower() == string.ToLower()', because they lead to an allocation. Instead, use 'string.Equals(string, StringComparison)' to perform case-insensitive comparisons.</source>
-        <target state="translated">Evite llamar a "ToLower", "ToUpper", "ToLowerInvariant" y "ToUpperInvariant" para realizar comparaciones de cadenas sin distinción de mayúsculas y minúsculas como en "string.ToLower() == string.ToLower()", porque dan lugar a una asignación. En su lugar, use "string.Equals(string, StringComparison)" para realizar comparaciones sin distinción de mayúsculas y minúsculas.</target>
+        <source>Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons, as in 'string.ToLower() == string.ToLower()', because they lead to an allocation. Instead, use 'string.Equals(string, StringComparison)' to perform case-insensitive comparisons. Switching to using an overload that takes a 'StringComparison' might cause subtle changes in behavior, so it's important to conduct thorough testing after applying the suggestion. Additionally, if a culturally sensitive comparison is not required, consider using 'StringComparison.OrdinalIgnoreCase'.</source>
+        <target state="needs-review-translation">Evite llamar a "ToLower", "ToUpper", "ToLowerInvariant" y "ToUpperInvariant" para realizar comparaciones de cadenas sin distinción de mayúsculas y minúsculas como en "string.ToLower() == string.ToLower()", porque dan lugar a una asignación. En su lugar, use "string.Equals(string, StringComparison)" para realizar comparaciones sin distinción de mayúsculas y minúsculas.</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringEqualsMessage">
-        <source>Prefer using 'string.Equals(string, StringComparison)' to perform a case-insensitive comparison</source>
-        <target state="translated">Elija usar "string". Equals(string, StringComparison)" para realizar una comparación sin distinción de mayúsculas y minúsculas</target>
+        <source>Prefer using 'string.Equals(string, StringComparison)' to perform a case-insensitive comparison, but keep in mind that this might cause subtle changes in behavior, so make sure to conduct thorough testing after applying the suggestion, or if culturally sensitive comparison is not required, consider using 'StringComparison.OrdinalIgnoreCase'</source>
+        <target state="needs-review-translation">Elija usar "string". Equals(string, StringComparison)" para realizar una comparación sin distinción de mayúsculas y minúsculas</target>
         <note />
       </trans-unit>
       <trans-unit id="RemoveRedundantCall">

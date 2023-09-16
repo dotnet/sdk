@@ -2024,29 +2024,29 @@ Widening and user defined conversions are not supported with generic types.</val
   <data name="RecommendCaseInsensitiveStringComparerStringComparisonCodeFixTitle" xml:space="preserve">
     <value>Use the 'string.{0}(string, StringComparison)' overload</value>
   </data>
+  <data name="RecommendCaseInsensitiveStringComparerDescription" xml:space="preserve">
+    <value>Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons when using 'CompareTo', because they lead to an allocation. Instead, use 'StringComparer' to perform case-insensitive comparisons. Switching to using 'StringComparer' might cause subtle changes in behavior, so it's important to conduct thorough testing after applying the suggestion. Additionally, if a culturally sensitive comparison is not required, consider using 'StringComparer.OrdinalIgnoreCase'.</value>
+  </data>
+  <data name="RecommendCaseInsensitiveStringComparerMessage" xml:space="preserve">
+    <value>Prefer using 'StringComparer' to perform a case-insensitive comparison, but keep in mind that this might cause subtle changes in behavior, so make sure to conduct thorough testing after applying the suggestion, or if culturally sensitive comparison is not required, consider using 'StringComparer.OrdinalIgnoreCase'</value>
+  </data>
   <data name="RecommendCaseInsensitiveStringEqualsCodeFixTitle" xml:space="preserve">
     <value>Use 'string.Equals(string, StringComparison)'</value>
   </data>
-  <data name="RecommendCaseInsensitiveStringComparerDescription" xml:space="preserve">
-    <value>Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons when using 'CompareTo', because they lead to an allocation. Instead, use 'StringComparer' to perform case-insensitive comparisons.</value>
-  </data>
-  <data name="RecommendCaseInsensitiveStringComparerMessage" xml:space="preserve">
-    <value>Prefer using 'StringComparer' to perform a case-insensitive comparison</value>
-  </data>
     <data name="RecommendCaseInsensitiveStringEqualsDescription" xml:space="preserve">
-    <value>Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons, as in 'string.ToLower() == string.ToLower()', because they lead to an allocation. Instead, use 'string.Equals(string, StringComparison)' to perform case-insensitive comparisons.</value>
+    <value>Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons, as in 'string.ToLower() == string.ToLower()', because they lead to an allocation. Instead, use 'string.Equals(string, StringComparison)' to perform case-insensitive comparisons. Switching to using an overload that takes a 'StringComparison' might cause subtle changes in behavior, so it's important to conduct thorough testing after applying the suggestion. Additionally, if a culturally sensitive comparison is not required, consider using 'StringComparison.OrdinalIgnoreCase'.</value>
   </data>
     <data name="RecommendCaseInsensitiveStringEqualsMessage" xml:space="preserve">
-    <value>Prefer using 'string.Equals(string, StringComparison)' to perform a case-insensitive comparison</value>
+    <value>Prefer using 'string.Equals(string, StringComparison)' to perform a case-insensitive comparison, but keep in mind that this might cause subtle changes in behavior, so make sure to conduct thorough testing after applying the suggestion, or if culturally sensitive comparison is not required, consider using 'StringComparison.OrdinalIgnoreCase'</value>
   </data>
   <data name="RecommendCaseInsensitiveStringComparisonTitle" xml:space="preserve">
-    <value>Prefer the 'StringComparison' method overloads to perform case-insensitive string comparisons</value>
+    <value>Use the 'StringComparison' method overloads to perform case-insensitive string comparisons</value>
   </data>
   <data name="RecommendCaseInsensitiveStringComparisonDescription" xml:space="preserve">
-    <value>Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons because they lead to an allocation. Instead, prefer calling the method overloads of 'Contains', 'IndexOf' and 'StartsWith' that take a 'StringComparison' enum value to perform case-insensitive comparisons.</value>
+    <value>Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons because they lead to an allocation. Instead, prefer calling the method overloads of 'Contains', 'IndexOf' and 'StartsWith' that take a 'StringComparison' enum value to perform case-insensitive comparisons. Switching to using an overload that takes a 'StringComparison' might cause subtle changes in behavior, so it's important to conduct thorough testing after applying the suggestion. Additionally, if a culturally sensitive comparison is not required, consider using 'StringComparison.OrdinalIgnoreCase'.</value>
   </data>
   <data name="RecommendCaseInsensitiveStringComparisonMessage" xml:space="preserve">
-    <value>Prefer the string comparison method overload of '{0}' that takes a 'StringComparison' enum value to perform a case-insensitive comparison</value>
+    <value>Prefer the string comparison method overload of '{0}' that takes a 'StringComparison' enum value to perform a case-insensitive comparison, but keep in mind that this might cause subtle changes in behavior, so make sure to conduct thorough testing after applying the suggestion, or if culturally sensitive comparison is not required, consider using 'StringComparison.OrdinalIgnoreCase'</value>
   </data>
   <data name="PreferDictionaryTryAddValueCodeFixTitle" xml:space="preserve">
     <value>Use 'TryAdd(TKey, TValue)'</value>

@@ -2244,48 +2244,48 @@ Enumerable.OfType&lt;T&gt;에서 사용하는 제네릭 형식 검사(C# 'is' �
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringComparerDescription">
-        <source>Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons when using 'CompareTo', because they lead to an allocation. Instead, use 'StringComparer' to perform case-insensitive comparisons.</source>
-        <target state="translated">'CompareTo'를 사용할 때 대/소문자를 구분하지 않는 문자열 비교를 수행하기 위해 'ToLower', 'ToUpper', 'ToLowerInvariant' 및 'ToUpperInvariant'를 호출하지 마세요. 할당으로 이어지기 때문입니다. 대신 'StringComparer'를 사용하여 대소문자를 구분하지 않는 비교를 수행하세요.</target>
+        <source>Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons when using 'CompareTo', because they lead to an allocation. Instead, use 'StringComparer' to perform case-insensitive comparisons. Switching to using 'StringComparer' might cause subtle changes in behavior, so it's important to conduct thorough testing after applying the suggestion. Additionally, if a culturally sensitive comparison is not required, consider using 'StringComparer.OrdinalIgnoreCase'.</source>
+        <target state="needs-review-translation">'CompareTo'를 사용할 때 대/소문자를 구분하지 않는 문자열 비교를 수행하기 위해 'ToLower', 'ToUpper', 'ToLowerInvariant' 및 'ToUpperInvariant'를 호출하지 마세요. 할당으로 이어지기 때문입니다. 대신 'StringComparer'를 사용하여 대소문자를 구분하지 않는 비교를 수행하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringComparerMessage">
-        <source>Prefer using 'StringComparer' to perform a case-insensitive comparison</source>
-        <target state="translated">대소문자를 구분하지 않는 비교를 수행하려면 'StringComparer' 사용을 선호합니다.</target>
+        <source>Prefer using 'StringComparer' to perform a case-insensitive comparison, but keep in mind that this might cause subtle changes in behavior, so make sure to conduct thorough testing after applying the suggestion, or if culturally sensitive comparison is not required, consider using 'StringComparer.OrdinalIgnoreCase'</source>
+        <target state="needs-review-translation">대소문자를 구분하지 않는 비교를 수행하려면 'StringComparer' 사용을 선호합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringComparerStringComparisonCodeFixTitle">
         <source>Use the 'string.{0}(string, StringComparison)' overload</source>
-        <target state="translated">'string.{0}(string, StringComparison)' 오버로드 사용</target>
+        <target state="needs-review-translation">'string.{0}(string, StringComparison)' 오버로드 사용</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringComparisonDescription">
-        <source>Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons because they lead to an allocation. Instead, prefer calling the method overloads of 'Contains', 'IndexOf' and 'StartsWith' that take a 'StringComparison' enum value to perform case-insensitive comparisons.</source>
-        <target state="translated">대/소문자를 구분하지 않는 문자열 비교를 수행하기 위해 'ToLower', 'ToUpper', 'ToLowerInvariant' 및 'ToUpperInvariant'를 호출하지 마세요. 대신 대/소문자를 구분하지 않는 비교를 수행하기 위해 'StringComparison' 열거형 값을 사용하는 'Contains', 'IndexOf' 및 'StartsWith'의 메서드 오버로드를 호출하는 것이 좋습니다.</target>
+        <source>Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons because they lead to an allocation. Instead, prefer calling the method overloads of 'Contains', 'IndexOf' and 'StartsWith' that take a 'StringComparison' enum value to perform case-insensitive comparisons. Switching to using an overload that takes a 'StringComparison' might cause subtle changes in behavior, so it's important to conduct thorough testing after applying the suggestion. Additionally, if a culturally sensitive comparison is not required, consider using 'StringComparison.OrdinalIgnoreCase'.</source>
+        <target state="new">Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons because they lead to an allocation. Instead, prefer calling the method overloads of 'Contains', 'IndexOf' and 'StartsWith' that take a 'StringComparison' enum value to perform case-insensitive comparisons. Switching to using an overload that takes a 'StringComparison' might cause subtle changes in behavior, so it's important to conduct thorough testing after applying the suggestion. Additionally, if a culturally sensitive comparison is not required, consider using 'StringComparison.OrdinalIgnoreCase'.</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringComparisonMessage">
-        <source>Prefer the string comparison method overload of '{0}' that takes a 'StringComparison' enum value to perform a case-insensitive comparison</source>
-        <target state="translated">대/소문자를 구분하지 않는 비교를 수행하기 위해 'StringComparison' 열거형 값을 사용하는 '{0}'의 문자열 비교 메서드 오버로드를 선호합니다.</target>
+        <source>Prefer the string comparison method overload of '{0}' that takes a 'StringComparison' enum value to perform a case-insensitive comparison, but keep in mind that this might cause subtle changes in behavior, so make sure to conduct thorough testing after applying the suggestion, or if culturally sensitive comparison is not required, consider using 'StringComparison.OrdinalIgnoreCase'</source>
+        <target state="new">Prefer the string comparison method overload of '{0}' that takes a 'StringComparison' enum value to perform a case-insensitive comparison, but keep in mind that this might cause subtle changes in behavior, so make sure to conduct thorough testing after applying the suggestion, or if culturally sensitive comparison is not required, consider using 'StringComparison.OrdinalIgnoreCase'</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringComparisonTitle">
-        <source>Prefer the 'StringComparison' method overloads to perform case-insensitive string comparisons</source>
-        <target state="translated">대소문자를 구분하지 않는 문자열 비교를 수행하려면 'StringComparison' 메서드 오버로드를 선호합니다.</target>
+        <source>Use the 'StringComparison' method overloads to perform case-insensitive string comparisons</source>
+        <target state="needs-review-translation">대소문자를 구분하지 않는 문자열 비교를 수행하려면 'StringComparison' 메서드 오버로드를 선호합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringEqualsCodeFixTitle">
         <source>Use 'string.Equals(string, StringComparison)'</source>
-        <target state="translated">'string.Equals(문자열, StringComparison)' 사용</target>
+        <target state="needs-review-translation">'string.Equals(문자열, StringComparison)' 사용</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringEqualsDescription">
-        <source>Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons, as in 'string.ToLower() == string.ToLower()', because they lead to an allocation. Instead, use 'string.Equals(string, StringComparison)' to perform case-insensitive comparisons.</source>
-        <target state="translated">'ToLower', 'ToUpper', 'ToLowerInvariant' 및 'ToUpperInvariant'를 호출하여 'string.ToLower() == string.ToLower()'에서와 같이 대/소문자를 구분하지 않는 문자열 비교를 수행하지 마세요. 할당으로 이어지기 때문입니다. 대신 대소문자를 구분하지 않는 비교를 수행하려면 'string.Equals(string, StringComparison)'을 사용하세요.</target>
+        <source>Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons, as in 'string.ToLower() == string.ToLower()', because they lead to an allocation. Instead, use 'string.Equals(string, StringComparison)' to perform case-insensitive comparisons. Switching to using an overload that takes a 'StringComparison' might cause subtle changes in behavior, so it's important to conduct thorough testing after applying the suggestion. Additionally, if a culturally sensitive comparison is not required, consider using 'StringComparison.OrdinalIgnoreCase'.</source>
+        <target state="needs-review-translation">'ToLower', 'ToUpper', 'ToLowerInvariant' 및 'ToUpperInvariant'를 호출하여 'string.ToLower() == string.ToLower()'에서와 같이 대/소문자를 구분하지 않는 문자열 비교를 수행하지 마세요. 할당으로 이어지기 때문입니다. 대신 대소문자를 구분하지 않는 비교를 수행하려면 'string.Equals(string, StringComparison)'을 사용하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringEqualsMessage">
-        <source>Prefer using 'string.Equals(string, StringComparison)' to perform a case-insensitive comparison</source>
-        <target state="translated">대소문자를 구분하지 않는 비교를 수행하려면 'string.Equals(string, StringComparison)' 사용을 선호하세요.</target>
+        <source>Prefer using 'string.Equals(string, StringComparison)' to perform a case-insensitive comparison, but keep in mind that this might cause subtle changes in behavior, so make sure to conduct thorough testing after applying the suggestion, or if culturally sensitive comparison is not required, consider using 'StringComparison.OrdinalIgnoreCase'</source>
+        <target state="needs-review-translation">대소문자를 구분하지 않는 비교를 수행하려면 'string.Equals(string, StringComparison)' 사용을 선호하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="RemoveRedundantCall">

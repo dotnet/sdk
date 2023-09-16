@@ -15,6 +15,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
         [MemberData(nameof(DiagnosedAndFixedData))]
         [MemberData(nameof(DiagnosedAndFixedInvertedData))]
         [MemberData(nameof(CSharpDiagnosedAndFixedNamedData))]
+        [MemberData(nameof(CSharpDiagnosedAndFixedInvertedNamedData))]
         public async Task Diagnostic_Assign(string diagnosedLine, string fixedLine)
         {
             string originalCode = $@"using System;
@@ -44,6 +45,7 @@ class C
         [MemberData(nameof(DiagnosedAndFixedData))]
         [MemberData(nameof(DiagnosedAndFixedInvertedData))]
         [MemberData(nameof(CSharpDiagnosedAndFixedNamedData))]
+        [MemberData(nameof(CSharpDiagnosedAndFixedInvertedNamedData))]
         public async Task Diagnostic_Return(string diagnosedLine, string fixedLine)
         {
             string originalCode = $@"using System;
@@ -70,10 +72,11 @@ class C
         }
 
         [Theory]
-        [MemberData(nameof(DiagnosedAndFixedWithEqualsToData))]
-        [MemberData(nameof(DiagnosedAndFixedWithEqualsToInvertedData))]
-        [MemberData(nameof(CSharpDiagnosedAndFixedWithEqualsToNamedData))]
-        public async Task Diagnostic_If(string diagnosedLine, string fixedLine, string equalsTo)
+        [MemberData(nameof(DiagnosedAndFixedImplicitBooleanData))]
+        [MemberData(nameof(DiagnosedAndFixedWithAppendedMethodData))]
+        [MemberData(nameof(DiagnosedAndFixedWithAppendedMethodInvertedData))]
+        [MemberData(nameof(CSharpDiagnosedAndFixedWithAppendedMethodNamedData))]
+        public async Task Diagnostic_If(string diagnosedLine, string fixedLine, string appendedMethod)
         {
             string originalCode = $@"using System;
 class C
@@ -82,7 +85,8 @@ class C
     {{
         string a = ""aBc"";
         string b = ""bc"";
-        if ([|{diagnosedLine}|]{equalsTo})
+        bool myBoolean = false;
+        if ([|{diagnosedLine}|]{appendedMethod})
         {{
             return 5;
         }}
@@ -96,7 +100,8 @@ class C
     {{
         string a = ""aBc"";
         string b = ""bc"";
-        if ({fixedLine}{equalsTo})
+        bool myBoolean = false;
+        if ({fixedLine}{appendedMethod})
         {{
             return 5;
         }}
@@ -110,6 +115,7 @@ class C
         [MemberData(nameof(DiagnosedAndFixedData))]
         [MemberData(nameof(DiagnosedAndFixedInvertedData))]
         [MemberData(nameof(CSharpDiagnosedAndFixedNamedData))]
+        [MemberData(nameof(CSharpDiagnosedAndFixedInvertedNamedData))]
         public async Task Diagnostic_IgnoreResult(string diagnosedLine, string fixedLine)
         {
             string originalCode = $@"using System;
@@ -139,6 +145,7 @@ class C
         [MemberData(nameof(DiagnosedAndFixedStringLiteralsData))]
         [MemberData(nameof(DiagnosedAndFixedStringLiteralsInvertedData))]
         [MemberData(nameof(CSharpDiagnosedAndFixedStringLiteralsNamedData))]
+        [MemberData(nameof(CSharpDiagnosedAndFixedStringLiteralsInvertedNamedData))]
         public async Task Diagnostic_StringLiterals_ReturnExpressionBody(string diagnosedLine, string fixedLine)
         {
             string originalCode = $@"using System;
@@ -158,6 +165,7 @@ class C
         [MemberData(nameof(DiagnosedAndFixedStringReturningMethodsData))]
         [MemberData(nameof(DiagnosedAndFixedStringReturningMethodsInvertedData))]
         [MemberData(nameof(CSharpDiagnosedAndFixedStringReturningMethodsNamedData))]
+        [MemberData(nameof(CSharpDiagnosedAndFixedStringReturningMethodsInvertedNamedData))]
         public async Task Diagnostic_StringReturningMethods_Discard(string diagnosedLine, string fixedLine)
         {
             string originalCode = $@"using System;
@@ -188,6 +196,7 @@ class C
         [MemberData(nameof(DiagnosedAndFixedParenthesizedInvertedData))]
         [MemberData(nameof(CSharpDiagnosedAndFixedParenthesizedNamedData))]
         [MemberData(nameof(CSharpDiagnosedAndFixedParenthesizedNamedInvertedData))]
+        [MemberData(nameof(CSharpDiagnosedAndFixedParenthesizedComplexCasesData))]
         public async Task Diagnostic_Parenthesized_ReturnCastedToString(string diagnosedLine, string fixedLine)
         {
             string originalCode = $@"using System;
@@ -196,6 +205,8 @@ class C
     string GetString() => ""aBc"";
     string M()
     {{
+        string a = ""aBc"";
+        string b = ""cDe"";
         return ([|{diagnosedLine}|]).ToString();
     }}
 }}";
@@ -205,6 +216,8 @@ class C
     string GetString() => ""aBc"";
     string M()
     {{
+        string a = ""aBc"";
+        string b = ""cDe"";
         return ({fixedLine}).ToString();
     }}
 }}";
@@ -249,9 +262,9 @@ class C
     bool M(string a, string b)
     {{
         // Trivia
-        bool /* Trivia */ result = /* Trivia */ [|a.ToLower() // Trivia
+        bool /* Trivia */ result = /* Trivia */ [|a.ToLowerInvariant() // Trivia
             == /* Trivia */ b.ToLowerInvariant()|] /* Trivia */; // Trivia
-        if (/* Trivia */ [|a.ToLowerInvariant() /* Trivia */ != /* Trivia */ b.ToLower()|] /* Trivia */) // Trivia
+        if (/* Trivia */ [|a.ToLower() /* Trivia */ != /* Trivia */ b.ToLower()|] /* Trivia */) // Trivia
             return /* Trivia */ [|b /* Trivia */ != /* Trivia */ a.ToLowerInvariant()|] /* Trivia */; // Trivia
         return // Trivia
             [|""abc"" /* Trivia */ == /* Trivia */ a.ToUpperInvariant()|] /* Trivia */; // Trivia
@@ -264,7 +277,7 @@ class C
     bool M(string a, string b)
     {{
         // Trivia
-        bool /* Trivia */ result = /* Trivia */ a.Equals(b, StringComparison.CurrentCultureIgnoreCase) /* Trivia */; // Trivia
+        bool /* Trivia */ result = /* Trivia */ a.Equals(b, StringComparison.InvariantCultureIgnoreCase) /* Trivia */; // Trivia
         if (/* Trivia */ !a.Equals(b, StringComparison.CurrentCultureIgnoreCase) /* Trivia */) // Trivia
             return /* Trivia */ !b /* Trivia */ .Equals /* Trivia */ (a, StringComparison.InvariantCultureIgnoreCase) /* Trivia */; // Trivia
         return // Trivia
@@ -298,9 +311,29 @@ class C
         }
 
         [Theory]
+        [MemberData(nameof(DiagnosticNoFixStartsWithContainsIndexOfData))]
+        public async Task Diagnostic_NoFix_StartsWithContainsIndexOf(string diagnosedLine)
+        {
+            string originalCode = $@"using System;
+class C
+{{
+    string GetStringA() => ""aBc"";
+    string GetStringB() => ""cDe"";
+    object M()
+    {{
+        string a = ""AbC"";
+        string b = ""CdE"";
+        return [|{diagnosedLine}|];
+    }}
+}}";
+            await VerifyFixCSharpAsync(originalCode, originalCode);
+        }
+
+        [Theory]
         [MemberData(nameof(DiagnosticNoFixCompareToData))]
         [MemberData(nameof(DiagnosticNoFixCompareToInvertedData))]
         [MemberData(nameof(CSharpDiagnosticNoFixCompareToNamedData))]
+        [MemberData(nameof(CSharpDiagnosticNoFixCompareToInvertedNamedData))]
         public async Task Diagnostic_NoFix_CompareTo(string diagnosedLine)
         {
             string originalCode = $@"using System;
@@ -315,7 +348,7 @@ class C
         return [|{diagnosedLine}|];
     }}
 }}";
-            await VerifyDiagnosticOnlyCSharpAsync(originalCode);
+            await VerifyFixCSharpAsync(originalCode, originalCode);
         }
 
         [Theory]
@@ -325,13 +358,16 @@ class C
             string originalCode = $@"using System;
 class C
 {{
+    string GetString() => string.Empty;
     bool M()
     {{
+        string a = ""aBc"";
+        string b = ""dEf"";
         return [|{diagnosedLine}|];
     }}
 }}";
 
-            await VerifyDiagnosticOnlyCSharpAsync(originalCode);
+            await VerifyFixCSharpAsync(originalCode, originalCode);
         }
 
         private async Task VerifyNoDiagnosticCSharpAsync(string originalSource)
@@ -340,17 +376,6 @@ class C
             {
                 TestCode = originalSource,
                 FixedCode = originalSource
-            };
-
-            await test.RunAsync();
-        }
-
-        private async Task VerifyDiagnosticOnlyCSharpAsync(string originalSource)
-        {
-            VerifyCS.Test test = new()
-            {
-                TestCode = originalSource,
-                MarkupOptions = MarkupOptions.UseFirstDescriptor
             };
 
             await test.RunAsync();

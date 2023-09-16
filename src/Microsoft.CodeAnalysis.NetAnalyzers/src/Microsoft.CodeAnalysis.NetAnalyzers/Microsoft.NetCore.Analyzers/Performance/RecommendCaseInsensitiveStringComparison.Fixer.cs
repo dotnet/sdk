@@ -22,8 +22,11 @@ namespace Microsoft.NetCore.Analyzers.Performance
     /// </summary>
     public abstract class RecommendCaseInsensitiveStringComparisonFixer : CodeFixProvider
     {
-        protected abstract IEnumerable<SyntaxNode> GetNewArgumentsForInvocation(SyntaxGenerator generator, string caseChangingApproachValue, IInvocationOperation mainInvocationOperation,
-            INamedTypeSymbol stringComparisonType, out SyntaxNode? mainInvocationInstance);
+        protected const string StringTypeName = "String";
+
+        protected abstract IEnumerable<SyntaxNode> GetNewArgumentsForInvocation(SyntaxGenerator generator,
+            string caseChangingApproachValue, IInvocationOperation mainInvocationOperation, INamedTypeSymbol stringComparisonType,
+            string? leftOffendingMethod, string? rightOffendingMethod, out SyntaxNode? mainInvocationInstance);
 
         protected abstract IEnumerable<SyntaxNode> GetNewArgumentsForBinary(SyntaxGenerator generator, SyntaxNode rightNode, SyntaxNode typeMemberAccess);
 
@@ -60,16 +63,53 @@ namespace Microsoft.NetCore.Analyzers.Performance
 
             SyntaxGenerator generator = SyntaxGenerator.GetGenerator(doc);
 
-            // The desired case changing enum value should've already been chosen in the analyzer
-            if (!context.Diagnostics[0].Properties.TryGetValue(RCISCAnalyzer.CaseChangingApproachName, out string? caseChangingApproachValue) || caseChangingApproachValue == null)
+            ImmutableDictionary<string, string?> dict = context.Diagnostics[0].Properties;
+
+            // The dictionary should contain the keys for both left and right offending methods,
+            // and at least one of them should not be null.
+            if (!dict.TryGetValue(RCISCAnalyzer.LeftOffendingMethodName, out string? leftOffendingMethod) ||
+                !dict.TryGetValue(RCISCAnalyzer.RightOffendingMethodName, out string? rightOffendingMethod) ||
+                (leftOffendingMethod == null && rightOffendingMethod == null))
             {
                 return;
             }
 
+            bool leftIsToLowerOrToUpper = leftOffendingMethod is RCISCAnalyzer.StringToLowerMethodName or RCISCAnalyzer.StringToUpperMethodName;
+            bool rightIsToLowerOrToUpper = rightOffendingMethod is RCISCAnalyzer.StringToLowerMethodName or RCISCAnalyzer.StringToUpperMethodName;
+
+            bool leftIsToLowerInvariantOrToUpperInvariant = leftOffendingMethod is RCISCAnalyzer.StringToLowerInvariantMethodName or RCISCAnalyzer.StringToUpperInvariantMethodName;
+            bool rightIsToLowerInvariantOrToUpperInvariant = rightOffendingMethod is RCISCAnalyzer.StringToLowerInvariantMethodName or RCISCAnalyzer.StringToUpperInvariantMethodName;
+
+            // If the cultures of the two strings are incompatible, do not offer a fix
+            if ((leftIsToLowerOrToUpper && rightIsToLowerInvariantOrToUpperInvariant) ||
+                (rightIsToLowerOrToUpper && leftIsToLowerInvariantOrToUpperInvariant))
+            {
+                return;
+            }
+
+            string? caseChangingApproachValue = null;
+            if (leftIsToLowerOrToUpper || rightIsToLowerOrToUpper)
+            {
+                caseChangingApproachValue = RCISCAnalyzer.StringComparisonCurrentCultureIgnoreCaseName;
+            }
+            else if (leftIsToLowerInvariantOrToUpperInvariant || rightIsToLowerInvariantOrToUpperInvariant)
+            {
+                caseChangingApproachValue = RCISCAnalyzer.StringComparisonInvariantCultureIgnoreCaseName;
+            }
+
+            Debug.Assert(caseChangingApproachValue != null, "Unexpected offending methods");
+
             if (operation is IInvocationOperation invocation)
             {
+                if (invocation.TargetMethod.Name is RCISCAnalyzer.StringCompareToMethodName)
+                {
+                    // Never offer a fix for CompareTo
+                    return;
+                }
+
                 Task<Document> createChangedDocument(CancellationToken _) => FixInvocationAsync(generator, doc, root,
-                invocation, stringComparisonType, invocation.TargetMethod.Name, caseChangingApproachValue);
+                invocation, stringComparisonType, invocation.TargetMethod.Name,
+                caseChangingApproachValue!, leftOffendingMethod, rightOffendingMethod);
 
                 string title = string.Format(System.Globalization.CultureInfo.CurrentCulture,
                     MicrosoftNetCoreAnalyzersResources.RecommendCaseInsensitiveStringComparerStringComparisonCodeFixTitle, invocation.TargetMethod.Name);
@@ -84,7 +124,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
             else if (operation is IBinaryOperation binaryOperation &&
                      binaryOperation.LeftOperand != null && binaryOperation.RightOperand != null)
             {
-                Task<Document> createChangedDocument(CancellationToken _) => FixBinaryAsync(generator, doc, root, binaryOperation, stringComparisonType, caseChangingApproachValue);
+                Task<Document> createChangedDocument(CancellationToken _) => FixBinaryAsync(generator, doc, root, binaryOperation, stringComparisonType, caseChangingApproachValue!);
 
                 string title = MicrosoftNetCoreAnalyzersResources.RecommendCaseInsensitiveStringEqualsCodeFixTitle;
 
@@ -98,7 +138,8 @@ namespace Microsoft.NetCore.Analyzers.Performance
         }
 
         private Task<Document> FixInvocationAsync(SyntaxGenerator generator, Document doc, SyntaxNode root, IInvocationOperation mainInvocation,
-            INamedTypeSymbol stringComparisonType, string diagnosableMethodName, string caseChangingApproachValue)
+            INamedTypeSymbol stringComparisonType, string diagnosableMethodName,
+            string caseChangingApproachValue, string? leftOffendingMethod, string? rightOffendingMethod)
         {
             // Defensive check: The max number of arguments is held by IndexOf
             Debug.Assert(mainInvocation.Arguments.Length <= 3);
@@ -122,13 +163,15 @@ namespace Microsoft.NetCore.Analyzers.Performance
             //    B) a.IndexOf(b, startIndex: n, StringComparison.Desired)
             //    C) a.IndexOf(b, startIndex: n, count: m, StringComparison.Desired)
 
-            // Defensive check: Should not fix string.CompareTo
+            // Defensive check: Should not fix string.CompareTo (or any other method)
             Debug.Assert(diagnosableMethodName is
                 RCISCAnalyzer.StringContainsMethodName or
                 RCISCAnalyzer.StringIndexOfMethodName or
                 RCISCAnalyzer.StringStartsWithMethodName);
 
-            IEnumerable<SyntaxNode> newArguments = GetNewArgumentsForInvocation(generator, caseChangingApproachValue, mainInvocation, stringComparisonType, out SyntaxNode? mainInvocationInstance);
+            IEnumerable<SyntaxNode> newArguments = GetNewArgumentsForInvocation(generator,
+                caseChangingApproachValue, mainInvocation, stringComparisonType,
+                leftOffendingMethod, rightOffendingMethod, out SyntaxNode? mainInvocationInstance);
 
             SyntaxNode stringMemberAccessExpression = generator.MemberAccessExpression(mainInvocationInstance, mainInvocation.TargetMethod.Name);
 
