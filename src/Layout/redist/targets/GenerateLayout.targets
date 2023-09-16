@@ -1,4 +1,20 @@
 <Project>
+
+  <Target Name="PublishPortableRuntimeIdentifierGraph"
+          BeforeTargets="Build">
+
+      <ItemGroup Condition="'$(DotNetBuildFromSource)' == 'true' AND '$(TargetRid)' != '' AND '$(PortableRid)' != '' AND '$(TargetRid)' != '$(PortableRid)'">
+        <AdditionalRuntimeIdentifier Include="$(TargetRid)" Imports="$(PortableRid)" />
+      </ItemGroup>
+
+      <UpdatePortableRuntimeIdentifierGraph
+        InputFile="PortableRuntimeIdentifierGraph.json"
+        OutputFile="$(OutputPath)/PortableRuntimeIdentifierGraph.json"
+        AdditionalRuntimeIdentifiers="@(AdditionalRuntimeIdentifier)"
+        />
+
+  </Target>
+
   <Target Name="PublishVersionFile"
           BeforeTargets="Build">
 
@@ -226,8 +242,9 @@
           DestinationFiles="$(OutputPath)/%(BundledTools.Identity).runtimeconfig.json" />
 
     <Delete Files="$(OutputPath)/$(TargetName).deps.json;
-                   $(OutputPath)/$(TargetName).runtimeconfig.json;
-                   $(OutputPath)/%(BundledToolProjects.Identity).dll;
+                   $(OutputPath)/$(TargetName).runtimeconfig.json" />
+
+    <Delete Files="$(OutputPath)/%(BundledToolProjects.Identity).dll;
                    $(OutputPath)/%(BundledToolProjects.Identity).pdb" />
 
     <ChangeEntryPointLibraryName
@@ -438,9 +455,6 @@
     <PropertyGroup>
       <ReplacementPattern>"version": ".*"</ReplacementPattern>
       <ReplacementString>"version": "$(MicrosoftNETCoreAppRuntimePackageVersion)"</ReplacementString>
-
-      <DisabledBinaryFormatterPattern>"System.Runtime.Serialization.EnableUnsafeBinaryFormatterSerialization": false</DisabledBinaryFormatterPattern>
-      <EnableBinaryFormatterString>"System.Runtime.Serialization.EnableUnsafeBinaryFormatterSerialization": true</EnableBinaryFormatterString>
     </PropertyGroup>
     <ItemGroup>
       <!-- Exclude F# from retargeting: https://github.com/dotnet/toolset/issues/2866 -->
@@ -455,14 +469,6 @@
       DestinationFiles="@(ToolRuntimeConfigPath)"
       ReplacementPatterns="$(ReplacementPattern)"
       ReplacementStrings="$(ReplacementString)" />
-
-    <!-- Work around https://github.com/dotnet/msbuild/issues/6215 by opting back into net7 behavior -->
-    <ReplaceFileContents
-      InputFiles="@(ToolRuntimeConfigPath)"
-      DestinationFiles="@(ToolRuntimeConfigPath)"
-      ReplacementPatterns="$(DisabledBinaryFormatterPattern)"
-      ReplacementStrings="$(EnableBinaryFormatterString)"
-      Condition=" '%(ToolRuntimeConfigPath.FileName)' == 'MSBuild.runtimeconfig'" />
 
     <Move
       SourceFiles="@(MSBuild15Items)"

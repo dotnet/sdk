@@ -2,16 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Resources;
 using System.Text.RegularExpressions;
 using FluentAssertions;
 using Xunit;
-using System.Linq;
-using System.Xml.Linq;
-using System.Reflection;
-using System.Reflection.Metadata;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests
 {
@@ -37,8 +31,10 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             1101,
             1108,
             1180,
+            1182,
             1183,
-            1190
+            1190,
+            1192
         };
 
         //ILLink lives in other repos and violated the _info requirement for no error code
@@ -101,9 +97,9 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 var value = data.Element(ns + "value").Value;
                 var comment = data.Element(ns + "comment")?.Value ?? "";
                 var prefix = value.Substring(0, value.IndexOf(' '));
-                
+
                 if (name.EndsWith("_Info"))
-                { 
+                {
                     comment.Should().NotContain("StrBegin",
                         because: "informational messages should not have error codes.");
                 }

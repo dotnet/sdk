@@ -2,17 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using System.CommandLine.Parsing;
-using System.IO;
-using System.Linq;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.ToolManifest;
 using Microsoft.DotNet.ToolPackage;
 using Microsoft.DotNet.Tools.Tool.Common;
 using Microsoft.Extensions.EnvironmentAbstractions;
-using System.Collections.Generic;
-using NuGet.Packaging;
 
 namespace Microsoft.DotNet.Tools.Tool.Install
 {
@@ -97,7 +92,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                         e.Message,
                         LocalizableStrings.NoManifestGuide
                     },
-                    verboseMessages: new[] {e.VerboseMessage},
+                    verboseMessages: new[] { e.VerboseMessage },
                     isUserError: false);
             }
         }

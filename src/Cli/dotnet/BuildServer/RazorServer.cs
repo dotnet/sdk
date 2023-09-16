@@ -1,14 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Diagnostics;
-using System.IO;
-using System.Threading.Tasks;
 using Microsoft.DotNet.Cli;
-using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.CommandFactory;
-using Microsoft.DotNet.Tools;
 using Microsoft.Extensions.EnvironmentAbstractions;
 
 namespace Microsoft.DotNet.BuildServer
@@ -36,7 +30,7 @@ namespace Microsoft.DotNet.BuildServer
 
         public void Shutdown()
         {
-            if(!_fileSystem.File.Exists(PidFile.ServerPath.Value))
+            if (!_fileSystem.File.Exists(PidFile.ServerPath.Value))
             {
                 // The razor server path doesn't exist anymore so trying to shut it down would fail
                 // Ensure the pid file is cleaned up so we don't try to shut it down again

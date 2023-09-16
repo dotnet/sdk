@@ -2,11 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Build.Framework;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using System.Collections.Immutable;
 
@@ -42,7 +37,7 @@ namespace Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver
     class CachingWorkloadResolver
     {
         private sealed record CachedState
-        {            
+        {
             public string DotnetRootPath { get; init; }
             public string SdkVersion { get; init; }
             public string GlobalJsonPath { get; init; }
@@ -139,7 +134,7 @@ namespace Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver
             else if (sdkReferenceName.Equals("Microsoft.NET.SDK.WorkloadManifestTargetsLocator", StringComparison.OrdinalIgnoreCase))
             {
                 List<string> workloadManifestPaths = new List<string>();
-                foreach (var manifestDirectory in manifestProvider.GetManifestDirectories())
+                foreach (var manifestDirectory in manifestProvider.GetManifests().Select(m => m.ManifestDirectory))
                 {
                     var workloadManifestTargetPath = Path.Combine(manifestDirectory, "WorkloadManifest.targets");
                     if (File.Exists(workloadManifestTargetPath))
@@ -151,7 +146,7 @@ namespace Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver
             }
             else
             {
-                var packInfo = workloadResolver.TryGetPackInfo(new WorkloadPackId (sdkReferenceName));
+                var packInfo = workloadResolver.TryGetPackInfo(new WorkloadPackId(sdkReferenceName));
                 if (packInfo != null)
                 {
                     if (Directory.Exists(packInfo.Path))

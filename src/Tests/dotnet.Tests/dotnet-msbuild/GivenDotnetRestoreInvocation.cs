@@ -1,10 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using FluentAssertions;
-using Microsoft.DotNet.Tools.Restore;
-using Microsoft.NET.TestFramework;
-using Xunit;
+using RestoreCommand = Microsoft.DotNet.Tools.Restore.RestoreCommand;
 
 namespace Microsoft.DotNet.Cli.MSBuild.Tests
 {
@@ -13,7 +10,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
     {
         private const string ExpectedPrefix =
             "-maxcpucount -verbosity:m -nologo -target:Restore";
-        private static readonly string WorkingDirectory = 
+        private static readonly string WorkingDirectory =
             TestPathUtilities.FormatAbsolutePath(nameof(GivenDotnetRestoreInvocation));
 
         [Theory]

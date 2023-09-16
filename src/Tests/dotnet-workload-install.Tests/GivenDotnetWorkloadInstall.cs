@@ -1,30 +1,16 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.CommandLine;
-using System.CommandLine.Parsing;
-using System.IO;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using FluentAssertions;
 using ManifestReaderTests;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
+using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Workloads.Workload;
 using Microsoft.DotNet.Workloads.Workload.Install;
-using Microsoft.NET.Sdk.WorkloadManifestReader;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Utilities;
-using Xunit;
-using Xunit.Abstractions;
-using Microsoft.DotNet.Workloads.Workload.Install.InstallRecord;
-using Microsoft.NET.TestFramework.Commands;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.Extensions.EnvironmentAbstractions;
-using Microsoft.DotNet.Cli.Utils;
-using System.Text.Json;
 using Microsoft.DotNet.Workloads.Workload.List;
+using Microsoft.Extensions.EnvironmentAbstractions;
+using Microsoft.NET.Sdk.WorkloadManifestReader;
 
 namespace Microsoft.DotNet.Cli.Workload.Install.Tests
 {
@@ -184,10 +170,10 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             var dotnetRoot = Path.Combine(testDirectory, "dotnet");
             var installer = new MockPackWorkloadInstaller();
             var workloadResolver = WorkloadResolver.CreateForTests(new MockManifestProvider(new[] { _manifestPath }), dotnetRoot);
-            var parseResult = Parser.Instance.Parse(new string[] { "dotnet", "workload", "install", "xamarin-android"});
+            var parseResult = Parser.Instance.Parse(new string[] { "dotnet", "workload", "install", "xamarin-android" });
 
             IWorkloadInfoHelper workloadInfoHelper = new WorkloadInfoHelper(isInteractive: false, workloadResolver: workloadResolver);
-            WorkloadCommandParser.ShowWorkloadsInfo(parseResult, workloadInfoHelper: workloadInfoHelper, reporter:_reporter);
+            WorkloadCommandParser.ShowWorkloadsInfo(parseResult, workloadInfoHelper: workloadInfoHelper, reporter: _reporter);
             _reporter.Lines.Should().Contain("There are no installed workloads to display.");
         }
 
@@ -214,7 +200,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         public void GivenWorkloadInstallItCanUpdateInstalledManifests(bool userLocal, string sdkVersion)
         {
             var parseResult =
-                Parser.Instance.Parse(new string[] {"dotnet", "workload", "install", "xamarin-android"});
+                Parser.Instance.Parse(new string[] { "dotnet", "workload", "install", "xamarin-android" });
             var featureBand = new SdkFeatureBand(sdkVersion);
             var manifestsToUpdate =
                 new (ManifestVersionUpdate manifestUpdate, Dictionary<WorkloadId, WorkloadDefinition> Workloads)[]
@@ -315,7 +301,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         [InlineData(true, "6.0.101")]
         [InlineData(true, "6.0.102-preview1")]
         [InlineData(false, "6.0.100")]
-		public void GivenWorkloadInstallItPrintsDownloadUrls(bool userLocal, string sdkVersion)
+        public void GivenWorkloadInstallItPrintsDownloadUrls(bool userLocal, string sdkVersion)
         {
             var parseResult = Parser.Instance.Parse(new string[] { "dotnet", "workload", "install", "xamarin-android", "--print-download-link-only" });
             (_, var installManager, _, _, _, _) = GetTestInstallers(parseResult, userLocal, sdkVersion, tempDirManifestPath: _manifestPath, installedFeatureBand: sdkVersion);
@@ -462,7 +448,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             {
                 WorkloadResolver = workloadResolver
             };
-            
+
             var nugetDownloader = new MockNuGetPackageDownloader(dotnetRoot);
             var manifestUpdater = new MockWorkloadManifestUpdater(manifestUpdates, tempDirManifestPath);
             if (userLocal)
@@ -503,7 +489,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             var installParseResult = Parser.Instance.Parse(new string[] { "dotnet", "workload", "install", workload, "--from-rollback-file", rollbackFilePath });
             var installCommand = new WorkloadInstallCommand(installParseResult, reporter: _reporter, workloadResolver: workloadResolver, nugetPackageDownloader: new MockNuGetPackageDownloader(tmpDir),
                 userProfileDir: userProfileDir, version: sdkFeatureVersion, dotnetDir: dotnetRoot, tempDirPath: testDirectory, installedFeatureBand: "6.0.100");
-            
+
             Assert.Throws<GracefulException>(() => installCommand.Execute());
             string.Join(" ", _reporter.Lines).Should().Contain("Invalid rollback definition");
         }
@@ -535,7 +521,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
                 workloadManifestUpdater: manifestUpdater, userProfileDir: userProfileDir, version: sdkFeatureVersion, dotnetDir: dotnetRoot, tempDirPath: testDirectory, installedFeatureBand: "6.0.100");
             installCommand.Execute()
                 .Should().Be(0);
-            
+
             // Install command warns
             string.Join(" ", _reporter.Lines).Should().Contain(string.Format(Workloads.Workload.Install.LocalizableStrings.WorkloadAlreadyInstalled, workloadId));
 
@@ -544,7 +530,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             Directory.GetFiles(installRecordPath).Count().Should().Be(2);
         }
 
-        [Fact(Skip="https://github.com/dotnet/sdk/issues/25175")]
+        [Fact(Skip = "https://github.com/dotnet/sdk/issues/25175")]
         public void HideManifestUpdateCheckWhenVerbosityIsQuiet()
         {
             var command = new DotnetCommand(Log);
@@ -559,7 +545,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         }
 
 
-        [Theory(Skip="https://github.com/dotnet/sdk/issues/25175")]
+        [Theory(Skip = "https://github.com/dotnet/sdk/issues/25175")]
         [InlineData("--verbosity:minimal")]
         [InlineData("--verbosity:normal")]
         public void HideManifestUpdatesWhenVerbosityIsMinimalOrNormal(string verbosityFlag)
@@ -575,7 +561,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
                 .NotHaveStdOutContaining(Workloads.Workload.Install.LocalizableStrings.AdManifestUpdated);
         }
 
-        [Theory(Skip="https://github.com/dotnet/sdk/issues/25175")]
+        [Theory(Skip = "https://github.com/dotnet/sdk/issues/25175")]
         [InlineData("--verbosity:detailed")]
         [InlineData("--verbosity:diagnostic")]
         public void ShowManifestUpdatesWhenVerbosityIsDetailedOrDiagnostic(string verbosityFlag)
@@ -599,7 +585,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             string.Join(" ", _reporter.Lines).Should().Contain(Workloads.Workload.Install.LocalizableStrings.CheckForUpdatedWorkloadManifests);
             string.Join(" ", _reporter.Lines).Should().Contain(String.Format(Workloads.Workload.Install.LocalizableStrings.CheckForUpdatedWorkloadManifests, "mock-manifest"));
         }
-                
+
         private string AppendForUserLocal(string identifier, bool userLocal)
         {
             if (!userLocal)

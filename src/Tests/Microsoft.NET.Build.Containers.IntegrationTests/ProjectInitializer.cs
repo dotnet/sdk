@@ -4,8 +4,6 @@
 using System.Runtime.CompilerServices;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Framework;
-using Microsoft.NET.TestFramework;
-using Xunit;
 
 namespace Microsoft.NET.Build.Containers.IntegrationTests;
 
@@ -36,7 +34,7 @@ public sealed class ProjectInitializer
         return tempTargetLocation;
     }
 
-    public static (Project, CapturingLogger, IDisposable) InitProject(Dictionary<string, string> bonusProps, [CallerMemberName]string projectName = "")
+    public static (Project, CapturingLogger, IDisposable) InitProject(Dictionary<string, string> bonusProps, [CallerMemberName] string projectName = "")
     {
         var props = new Dictionary<string, string>();
         // required parameters

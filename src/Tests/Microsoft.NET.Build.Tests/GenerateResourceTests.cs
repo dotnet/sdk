@@ -1,17 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Microsoft.NET.TestFramework.ProjectConstruction;
-using Xunit;
-using Xunit.Abstractions;
-
 namespace Microsoft.NET.Build.Tests
 {
     public class GenerateResourceTests : SdkTest
@@ -21,7 +10,7 @@ namespace Microsoft.NET.Build.Tests
         {
         }
 
-        [Theory(Skip="https://github.com/microsoft/msbuild/issues/4488")]
+        [Theory(Skip = "https://github.com/microsoft/msbuild/issues/4488")]
         [InlineData(ToolsetInfo.CurrentTargetFramework, true)]
         public void DependentUponTest(string targetFramework, bool isExe)
         {

@@ -3,27 +3,23 @@
 
 #nullable enable
 
-using System;
-using System.Collections.Generic;
 using System.CommandLine;
-using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Tools.New;
-using Microsoft.TemplateEngine.Cli;
-using Microsoft.TemplateEngine.Abstractions;
-using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
-using Microsoft.DotNet.Workloads.Workload.List;
-using Microsoft.TemplateEngine.Abstractions.Components;
-using LocalizableStrings = Microsoft.DotNet.Tools.New.LocalizableStrings;
-using Microsoft.TemplateEngine.MSBuildEvaluation;
-using Microsoft.TemplateEngine.Abstractions.Constraints;
-using System.IO;
-using Microsoft.TemplateEngine.Cli.PostActionProcessors;
-using Microsoft.DotNet.Tools.New.PostActionProcessors;
-using Microsoft.TemplateEngine.Cli.Commands;
-using Microsoft.Extensions.Logging;
-using Microsoft.DotNet.Tools;
 using System.CommandLine.Parsing;
-using System.Linq;
+using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Tools;
+using Microsoft.DotNet.Tools.New;
+using Microsoft.DotNet.Tools.New.PostActionProcessors;
+using Microsoft.DotNet.Workloads.Workload.List;
+using Microsoft.Extensions.Logging;
+using Microsoft.TemplateEngine.Abstractions;
+using Microsoft.TemplateEngine.Abstractions.Components;
+using Microsoft.TemplateEngine.Abstractions.Constraints;
+using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
+using Microsoft.TemplateEngine.Cli;
+using Microsoft.TemplateEngine.Cli.Commands;
+using Microsoft.TemplateEngine.Cli.PostActionProcessors;
+using Microsoft.TemplateEngine.MSBuildEvaluation;
+using LocalizableStrings = Microsoft.DotNet.Tools.New.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli
 {
@@ -167,7 +163,7 @@ namespace Microsoft.DotNet.Cli
             builtIns.Add((typeof(ISdkInfoProvider), new SdkInfoProvider()));
 
             string? preferredLangEnvVar = Environment.GetEnvironmentVariable(PrefferedLangEnvVarName);
-            string preferredLang = string.IsNullOrWhiteSpace(preferredLangEnvVar)? "C#" : preferredLangEnvVar;
+            string preferredLang = string.IsNullOrWhiteSpace(preferredLangEnvVar) ? "C#" : preferredLangEnvVar;
 
             var preferences = new Dictionary<string, string>
             {

@@ -2,10 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Runtime.CompilerServices;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.Cli.New.IntegrationTests
 {
@@ -110,13 +106,18 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         /// <summary>
         /// Installs test template to dotnet new.
         /// </summary>
-        /// <param name="templateName">The name of the test tempalte to install.</param>
+        /// <param name="templateNameOrPath">The name or path of the test tempalte to install.</param>
         /// <param name="log">Test logger.</param>
         /// <param name="homeDirectory">The settings path for dotnet new.</param>
         /// <param name="workingDirectory">The working directory to use.</param>
-        internal static string InstallTestTemplate(string templateName, ITestOutputHelper log, string homeDirectory, string? workingDirectory = null)
+        internal string InstallTestTemplate(string templateNameOrPath, ITestOutputHelper log, string homeDirectory, string? workingDirectory = null)
         {
-            string testTemplate = GetTestTemplateLocation(templateName);
+            string testTemplate = GetTestTemplateLocation(templateNameOrPath);
+
+            if (Directory.Exists(templateNameOrPath))
+            {
+                testTemplate = templateNameOrPath;
+            }
 
             DotnetNewCommand command = new DotnetNewCommand(log, "install", testTemplate)
                 .WithCustomHive(homeDirectory);
@@ -137,11 +138,15 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         /// <summary>
         /// Packs test template package and returns path to it.
         /// </summary>
-        internal static string PackTestNuGetPackage(ITestOutputHelper log, [CallerMemberName] string testName = "UnnamedTest")
+        internal string PackTestNuGetPackage(ITestOutputHelper log, [CallerMemberName] string testName = "UnnamedTest")
         {
-            string outputLocation = CreateTemporaryFolder(testName, "TestNuGetPackage");
+            var testAsset = _testAssetsManager.CopyTestAsset("dotnet-new", callingMethod: testName, testAssetSubdirectory: "TestPackages").WithSource();
+            string testProject = Path.GetFileName(DotnetNewTestTemplatePackageProjectPath);
+            string testPath = testAsset.Path;
 
-            new DotnetPackCommand(log, DotnetNewTestTemplatePackageProjectPath, "-o", outputLocation)
+            string outputLocation = Path.Combine(testPath, "TestNuGetPackage");
+
+            new DotnetPackCommand(log, $"{testPath}\\{testProject}", "-o", outputLocation)
                 .Execute()
                 .Should()
             .Pass();
@@ -184,6 +189,5 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             }
             return repoRoot;
         }
-
     }
 }

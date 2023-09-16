@@ -3,11 +3,6 @@
 //
 
 using System.IO.Compression;
-using System.Xml.Linq;
-using FluentAssertions;
-using Microsoft.NET.TestFramework;
-using Microsoft.DotNet.Cli.Utils;
-using Xunit;
 
 namespace Microsoft.NET.Build.Containers.IntegrationTests;
 
@@ -153,7 +148,7 @@ public class PackageTests
               "tasks/net8.0/Valleysoft.DockerCredsProvider.dll"
         };
 
-        string packageFilePath = Path.Combine(TestContext.Current.TestExecutionDirectory, "Container", "package", $"Microsoft.NET.Build.Containers.{Product.Version}.nupkg");
+        (string packageFilePath, string packageVersion) = ToolsetUtils.GetContainersPackagePath();
         using ZipArchive archive = new(File.OpenRead(packageFilePath), ZipArchiveMode.Read, false);
 
         IEnumerable<string> actualEntries = archive.Entries
@@ -163,6 +158,6 @@ public class PackageTests
 
         actualEntries
                 .Should()
-                .BeEquivalentTo(packageContents, $"Microsoft.NET.Build.Containers.{Product.Version}.nupkg content differs from expected. Please add the entry to the list, if the addition is expected.");
+                .BeEquivalentTo(packageContents, $"{Path.GetFileName(packageFilePath)} content differs from expected. Please add the entry to the list, if the addition is expected.");
     }
 }

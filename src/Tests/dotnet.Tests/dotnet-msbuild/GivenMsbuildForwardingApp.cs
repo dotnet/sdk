@@ -1,14 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
 using Microsoft.DotNet.Tools.MSBuild;
-using FluentAssertions;
-using Xunit;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.Cli.MSBuild.Tests
 {
@@ -23,7 +16,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         {
             var msbuildPath = "<msbuildpath>";
             new MSBuildForwardingApp(new string[0], msbuildPath)
-                .GetProcessStartInfo().FileName.Should().Be("dotnet.exe");
+                .GetProcessStartInfo().FileName.Should().EndWith("dotnet.exe");
         }
 
         [UnixOnlyFact]
@@ -31,7 +24,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         {
             var msbuildPath = "<msbuildpath>";
             new MSBuildForwardingApp(new string[0], msbuildPath)
-                .GetProcessStartInfo().FileName.Should().Be("dotnet");
+                .GetProcessStartInfo().FileName.Should().EndWith("dotnet");
         }
 
         [Theory]
@@ -57,7 +50,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                 .Exist();
         }
 
-        [Fact(Skip ="Test app base folder doesn't have Sdks")]
+        [Fact(Skip = "Test app base folder doesn't have Sdks")]
         public void ItSetsMSBuildSDKsPathToExistingPath()
         {
             var msbuildPath = "<msbuildpath>";

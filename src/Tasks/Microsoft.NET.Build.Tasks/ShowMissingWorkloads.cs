@@ -1,12 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Microsoft.DotNet.Configurer;
@@ -51,7 +46,7 @@ namespace Microsoft.NET.Build.Tasks
                 var workloadResolver = WorkloadResolver.Create(workloadManifestProvider, NetCoreRoot, NETCoreSdkVersion, userProfileDir);
 
                 var suggestedWorkloads = workloadResolver.GetWorkloadSuggestionForMissingPacks(
-                    MissingWorkloadPacks.Select(item => new WorkloadPackId (item.ItemSpec)).ToList(),
+                    MissingWorkloadPacks.Select(item => new WorkloadPackId(item.ItemSpec)).ToList(),
                     out ISet<WorkloadPackId> unsatisfiablePacks
                 );
 

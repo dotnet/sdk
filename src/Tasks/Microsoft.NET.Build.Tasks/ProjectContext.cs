@@ -1,13 +1,10 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using Microsoft.Build.Framework;
 using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
 
 namespace Microsoft.NET.Build.Tasks
 {
@@ -67,7 +64,7 @@ namespace Microsoft.NET.Build.Tasks
             Debug.Assert(lockFileTarget != null);
             if (isFrameworkDependent)
             {
-                Debug.Assert(platformLibrary != null || 
+                Debug.Assert(platformLibrary != null ||
                     (runtimeFrameworks != null && runtimeFrameworks.Any()));
             }
 
@@ -157,7 +154,7 @@ namespace Microsoft.NET.Build.Tasks
             Dictionary<string, LockFileTargetLibrary> libraryLookup =
                 runtimeLibraries.ToDictionary(e => e.Name, StringComparer.OrdinalIgnoreCase);
 
-            return  _lockFileTarget.GetTransitivePackagesList(platformLibrary, libraryLookup);
+            return _lockFileTarget.GetTransitivePackagesList(platformLibrary, libraryLookup);
         }
 
         public IEnumerable<LockFileTargetLibrary> GetCompileLibraries(IEnumerable<string> compileExcludeFromPublishPackageIds)

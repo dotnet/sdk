@@ -1,17 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
-using System.Linq;
-using FluentAssertions;
 using Microsoft.Extensions.DependencyModel;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Microsoft.NET.TestFramework.ProjectConstruction;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.NET.Build.Tests
 {
@@ -36,7 +26,7 @@ namespace Microsoft.NET.Build.Tests
             testProject.AdditionalProperties.Add("PreserveCompilationContext", "true");
 
             if (withoutCopyingRefs)
-            { 
+            {
                 testProject.AdditionalProperties.Add("PreserveCompilationReferences", "false");
             }
 
@@ -116,7 +106,7 @@ namespace Microsoft.NET.Build.Tests
             });
         }
 
-        private static readonly string[] net462ReferenceOnlyAssemblies = new []
+        private static readonly string[] net462ReferenceOnlyAssemblies = new[]
         {
             "Microsoft.Win32.Primitives.dll",
             "netfx.force.conflicts.dll",

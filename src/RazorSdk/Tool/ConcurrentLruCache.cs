@@ -1,8 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 
 namespace Microsoft.NET.Sdk.Razor.Tool
@@ -22,7 +20,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool
         private readonly object _lockObject = new object();
 
         public ConcurrentLruCache(int capacity)
-            : this (capacity, EqualityComparer<TKey>.Default)
+            : this(capacity, EqualityComparer<TKey>.Default)
         {
         }
 

@@ -1,11 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
 
 //only Microsoft.DotNet.NativeWrapper (net7.0) has nullables disabled
 #pragma warning disable IDE0240 // Remove redundant nullable directive
@@ -77,7 +73,7 @@ namespace Microsoft.DotNet.NativeWrapper
                     .Equals(Constants.DotNet, StringComparison.InvariantCultureIgnoreCase))
             {
                 string dotnetExeFromPath = GetCommandPath(Constants.DotNet);
-                
+
                 if (dotnetExeFromPath != null && !Interop.RunningOnWindows)
                 {
                     // e.g. on Linux the 'dotnet' command from PATH is a symlink so we need to
@@ -88,7 +84,9 @@ namespace Microsoft.DotNet.NativeWrapper
                 if (!string.IsNullOrWhiteSpace(dotnetExeFromPath))
                 {
                     dotnetExe = dotnetExeFromPath;
-                } else {
+                }
+                else
+                {
                     log?.Invoke($"GetDotnetExeDirectory: dotnet command path not found.  Using current process");
                     log?.Invoke($"GetDotnetExeDirectory: Path variable: {_getEnvironmentVariable(Constants.PATH)}");
                 }

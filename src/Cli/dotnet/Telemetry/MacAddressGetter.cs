@@ -1,14 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Linq;
-using System.Diagnostics;
-using System.Collections.Generic;
-using System.Runtime.InteropServices;
-using System.Text.RegularExpressions;
-using System.Net.NetworkInformation;
 using System.ComponentModel;
+using System.Diagnostics;
+using System.IO;
+using System.Net.NetworkInformation;
+using System.Text.RegularExpressions;
 using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.Telemetry
@@ -64,9 +61,14 @@ namespace Microsoft.DotNet.Cli.Telemetry
 
         private static string GetIpCommandOutput()
         {
+            var fileName = File.Exists(@"/usr/bin/ip") ? @"/usr/bin/ip" :
+                           File.Exists(@"/usr/sbin/ip") ? @"/usr/sbin/ip" :
+                           File.Exists(@"/sbin/ip") ? @"/sbin/ip" :
+                           "ip";
+
             var ipResult = new ProcessStartInfo
             {
-                FileName = "ip",
+                FileName = fileName,
                 Arguments = "link",
                 UseShellExecute = false
             }.ExecuteAndCaptureOutput(out string ipStdOut, out string ipStdErr);
@@ -87,7 +89,7 @@ namespace Microsoft.DotNet.Cli.Telemetry
             {
                 var result = new ProcessStartInfo
                 {
-                    FileName = "getmac.exe",
+                    FileName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System), "getmac.exe"),
                     UseShellExecute = false
                 }.ExecuteAndCaptureOutput(out string stdOut, out string stdErr);
 
@@ -104,9 +106,14 @@ namespace Microsoft.DotNet.Cli.Telemetry
             {
                 try
                 {
+                    var fileName = File.Exists("/sbin/ifconfig") ? "/sbin/ifconfig" :
+                                   File.Exists("/usr/sbin/ifconfig") ? "/usr/sbin/ifconfig" :
+                                   File.Exists("/usr/bin/ifconfig") ? "/usr/bin/ifconfig" :
+                                   "ifconfig";
+
                     var ifconfigResult = new ProcessStartInfo
                     {
-                        FileName = "ifconfig",
+                        FileName = fileName,
                         Arguments = "-a",
                         UseShellExecute = false
                     }.ExecuteAndCaptureOutput(out string ifconfigStdOut, out string ifconfigStdErr);

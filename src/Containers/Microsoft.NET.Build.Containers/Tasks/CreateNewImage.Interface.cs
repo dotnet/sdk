@@ -1,9 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Reflection;
-using System.Resources;
 using Microsoft.Build.Framework;
 using Microsoft.NET.Build.Containers.Resources;
 
@@ -44,6 +41,11 @@ partial class CreateNewImage
     /// The registry to push to.
     /// </summary>
     public string OutputRegistry { get; set; }
+
+    /// <summary>
+    /// The file path to which to write a tar.gz archive of the container image.
+    /// </summary>
+    public string ArchiveOutputPath { get; set; }
 
     /// <summary>
     /// The kind of local registry to use, if any.
@@ -150,6 +152,12 @@ partial class CreateNewImage
     [Output]
     public string GeneratedContainerConfiguration { get; set; }
 
+    [Output]
+    public string GeneratedContainerDigest { get; set; }
+
+    [Output]
+    public string GeneratedArchiveOutputPath { get; set; }
+
     public CreateNewImage()
     {
         ContainerizeDirectory = "";
@@ -159,6 +167,7 @@ partial class CreateNewImage
         BaseImageName = "";
         BaseImageTag = "";
         OutputRegistry = "";
+        ArchiveOutputPath = "";
         Repository = "";
         ImageTags = Array.Empty<string>();
         PublishDirectory = "";
@@ -179,6 +188,8 @@ partial class CreateNewImage
 
         GeneratedContainerConfiguration = "";
         GeneratedContainerManifest = "";
+        GeneratedContainerDigest = "";
+        GeneratedArchiveOutputPath = "";
 
         TaskResources = Resource.Manager;
     }

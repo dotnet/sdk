@@ -1,21 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using FluentAssertions;
-using Microsoft.DotNet.Tools;
 using Microsoft.NET.Build.Tasks;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Microsoft.NET.TestFramework.ProjectConstruction;
-using Xunit;
-using Xunit.Abstractions;
-using Xunit.Sdk;
 
 namespace Microsoft.NET.Publish.Tests
 {
@@ -259,7 +246,7 @@ namespace Microsoft.NET.Publish.Tests
             var secondProjectTfm = ToolsetInfo.CurrentTargetFramework; // This should work for Net8+, test name is for brevity
 
             var (testAsset, testProjects) = Setup(new List<string> { firstProjectTfm }, new List<string> { secondProjectTfm }, PublishRelease, "", publishReleaseValue, identifier: publishReleaseValue);
-        
+
             var dotnetCommand = new DotnetPublishCommand(Log);
             dotnetCommand
                 .WithEnvironmentVariable("DOTNET_CLI_LAZY_PUBLISH_AND_PACK_RELEASE_FOR_SOLUTIONS", "true")

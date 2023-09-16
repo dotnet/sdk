@@ -2,12 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 
-using System;
 using System.Diagnostics;
 using System.Globalization;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.DotNet.Watcher.Internal;
 using Microsoft.DotNet.Watcher.Tools;
 using Microsoft.Extensions.Tools.Internal;
@@ -75,6 +71,7 @@ namespace Microsoft.DotNet.Watcher
                 context.RequiresMSBuildRevaluation = false;
 
                 processSpec.EnvironmentVariables["DOTNET_WATCH_ITERATION"] = (context.Iteration + 1).ToString(CultureInfo.InvariantCulture);
+                processSpec.EnvironmentVariables["DOTNET_LAUNCH_PROFILE"] = context.LaunchSettingsProfile?.LaunchProfileName ?? string.Empty;
 
                 var fileSet = context.FileSet;
                 if (fileSet == null)

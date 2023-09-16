@@ -1,11 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.CommandLine;
 using System.CommandLine.Parsing;
-using System.IO;
+using System.Diagnostics;
+using System.Reflection;
 using Microsoft.DotNet.ApiCompatibility.Logging;
 using Microsoft.DotNet.ApiSymbolExtensions.Logging;
 using NuGet.Frameworks;
@@ -23,6 +22,16 @@ namespace Microsoft.DotNet.ApiCompat.Tool
             CliOption<bool> generateSuppressionFileOption = new("--generate-suppression-file")
             {
                 Description = "If true, generates a compatibility suppression file.",
+                Recursive = true
+            };
+            CliOption<bool> preserveUnnecessarySuppressionsOption = new("--preserve-unnecessary-suppressions")
+            {
+                Description = "If true, preserves unnecessary suppressions when re-generating the suppression file.",
+                Recursive = true
+            };
+            CliOption<bool> permitUnnecessarySuppressionsOption = new("--permit-unnecessary-suppressions")
+            {
+                Description = "If true, permits unnecessary suppressions in the suppression file.",
                 Recursive = true
             };
             CliOption<string[]> suppressionFilesOption = new("--suppression-file")
@@ -57,7 +66,7 @@ namespace Microsoft.DotNet.ApiCompat.Tool
             CliOption<MessageImportance> verbosityOption = new("--verbosity", "-v")
             {
                 Description = "Controls the log level verbosity. Allowed values are high, normal, and low.",
-                DefaultValueFactory = _ => MessageImportance.High,
+                DefaultValueFactory = _ => MessageImportance.Normal,
                 Recursive = true
             };
             CliOption<bool> enableRuleAttributesMustMatchOption = new("--enable-rule-attributes-must-match")
@@ -133,11 +142,13 @@ namespace Microsoft.DotNet.ApiCompat.Tool
                 Arity = ArgumentArity.ZeroOrMore
             };
 
-            CliRootCommand rootCommand = new("Microsoft.DotNet.ApiCompat v" + Environment.Version.ToString(2))
+            CliRootCommand rootCommand = new("Microsoft.DotNet.ApiCompat v" + FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location).ProductVersion)
             {
                 TreatUnmatchedTokensAsErrors = true
             };
             rootCommand.Options.Add(generateSuppressionFileOption);
+            rootCommand.Options.Add(preserveUnnecessarySuppressionsOption);
+            rootCommand.Options.Add(permitUnnecessarySuppressionsOption);
             rootCommand.Options.Add(suppressionFilesOption);
             rootCommand.Options.Add(suppressionOutputFileOption);
             rootCommand.Options.Add(noWarnOption);
@@ -166,6 +177,8 @@ namespace Microsoft.DotNet.ApiCompat.Tool
 
                 MessageImportance verbosity = parseResult.GetValue(verbosityOption);
                 bool generateSuppressionFile = parseResult.GetValue(generateSuppressionFileOption);
+                bool preserveUnnecessarySuppressions = parseResult.GetValue(preserveUnnecessarySuppressionsOption);
+                bool permitUnnecessarySuppressions = parseResult.GetValue(permitUnnecessarySuppressionsOption);
                 string[]? suppressionFiles = parseResult.GetValue(suppressionFilesOption);
                 string? suppressionOutputFile = parseResult.GetValue(suppressionOutputFileOption);
                 string? noWarn = parseResult.GetValue(noWarnOption);
@@ -186,6 +199,8 @@ namespace Microsoft.DotNet.ApiCompat.Tool
                 Func<ISuppressionEngine, SuppressableConsoleLog> logFactory = (suppressionEngine) => new(suppressionEngine, verbosity);
                 ValidateAssemblies.Run(logFactory,
                     generateSuppressionFile,
+                    preserveUnnecessarySuppressions,
+                    permitUnnecessarySuppressions,
                     suppressionFiles,
                     suppressionOutputFile,
                     noWarn,
@@ -223,7 +238,8 @@ namespace Microsoft.DotNet.ApiCompat.Tool
             };
             CliOption<bool> enableStrictModeForCompatibleTfmsOption = new("--enable-strict-mode-for-compatible-tfms")
             {
-                Description = "Validates api compatibility in strict mode for contract and implementation assemblies for all compatible target frameworks."
+                Description = "Validates api compatibility in strict mode for contract and implementation assemblies for all compatible target frameworks.",
+                DefaultValueFactory = _ => true
             };
             CliOption<bool> enableStrictModeForCompatibleFrameworksInPackageOption = new("--enable-strict-mode-for-compatible-frameworks-in-package")
             {
@@ -274,6 +290,8 @@ namespace Microsoft.DotNet.ApiCompat.Tool
 
                 MessageImportance verbosity = parseResult.GetValue(verbosityOption);
                 bool generateSuppressionFile = parseResult.GetValue(generateSuppressionFileOption);
+                bool preserveUnnecessarySuppressions = parseResult.GetValue(preserveUnnecessarySuppressionsOption);
+                bool permitUnnecessarySuppressions = parseResult.GetValue(permitUnnecessarySuppressionsOption);
                 string[]? suppressionFiles = parseResult.GetValue(suppressionFilesOption);
                 string? suppressionOutputFile = parseResult.GetValue(suppressionOutputFileOption);
                 string? noWarn = parseResult.GetValue(noWarnOption);
@@ -295,6 +313,8 @@ namespace Microsoft.DotNet.ApiCompat.Tool
                 Func<ISuppressionEngine, SuppressableConsoleLog> logFactory = (suppressionEngine) => new(suppressionEngine, verbosity);
                 ValidatePackage.Run(logFactory,
                     generateSuppressionFile,
+                    preserveUnnecessarySuppressions,
+                    permitUnnecessarySuppressions,
                     suppressionFiles,
                     suppressionOutputFile,
                     noWarn,
@@ -361,12 +381,12 @@ namespace Microsoft.DotNet.ApiCompat.Tool
 
         private static Dictionary<NuGetFramework, IEnumerable<string>>? ParsePackageAssemblyReferenceArgument(ArgumentResult argumentResult)
         {
-            const string invalidPackageAssemblyReferenceFormatMessage = "Invalid package assembly reference format {TargetFrameworkMoniker(+TargetPlatformMoniker)=assembly1,assembly2,assembly3,...}";
+            const string invalidPackageAssemblyReferenceFormatMessage = "Invalid package assembly reference format {TargetFrameworkMoniker(+TargetPlatformMoniker)|assembly1,assembly2,assembly3,...}";
 
             Dictionary<NuGetFramework, IEnumerable<string>> packageAssemblyReferencesDict = new(argumentResult.Tokens.Count);
             foreach (var token in argumentResult.Tokens)
             {
-                string[] parts = token.Value.Split('=');
+                string[] parts = token.Value.Split('|');
                 if (parts.Length != 2)
                 {
                     argumentResult.AddError(invalidPackageAssemblyReferenceFormatMessage);

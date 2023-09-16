@@ -1,12 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.CommandLine;
 using System.CommandLine.Parsing;
 using System.Diagnostics;
-using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.DotNet.Cli.Utils;
 using static Microsoft.DotNet.Cli.Parser;
@@ -65,7 +62,8 @@ namespace Microsoft.DotNet.Cli
             /// <summary>given a string and a series of parts, ensures that all parts are present in the string in sequential order</summary>
             static bool ErrorContainsAllParts(ReadOnlySpan<char> error, string[] parts)
             {
-                foreach(var part in parts) {
+                foreach (var part in parts)
+                {
                     var foundIndex = error.IndexOf(part);
                     if (foundIndex != -1)
                     {
@@ -211,7 +209,7 @@ namespace Microsoft.DotNet.Cli
             var optionString = shorthand ? "-p" : "--property";
             var options = parseResult.CommandResult.Children.Where(c => c.Token().Type.Equals(CliTokenType.Option));
             var propertyOptions = options.Where(o => o.Token().Value.Equals(optionString));
-            var propertyValues = propertyOptions.SelectMany(o => o.Tokens.Select(t=> t.Value)).ToArray();
+            var propertyValues = propertyOptions.SelectMany(o => o.Tokens.Select(t => t.Value)).ToArray();
             return propertyValues;
         }
 
@@ -236,8 +234,9 @@ namespace Microsoft.DotNet.Cli
                 !parseResult.Errors.Any(e => e.SymbolResult == optionResult))
             {
                 return optionResult.GetValue(optionToGet);
-            } 
-            else {
+            }
+            else
+            {
                 return default;
             }
         }

@@ -1,19 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using FluentAssertions;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Microsoft.NET.TestFramework.ProjectConstruction;
-using NuGet.Common;
-using NuGet.Packaging;
-using NuGet.Packaging.Core;
-using System.IO;
-using System.Threading;
-using Xunit;
-using Xunit.Abstractions;
-
 namespace Microsoft.NET.Restore.Tests
 {
     public class GivenThatWeWantToRestoreProjectsWithPackageDowngrades : SdkTest
@@ -73,7 +60,7 @@ namespace Microsoft.NET.Restore.Tests
             var restoreCommand = testAsset.GetRestoreCommand(Log, relativePath: testProjectName);
             restoreCommand
                 .Execute($"/p:RestorePackagesPath={packagesFolder}")
-                .Should().Pass();;
+                .Should().Pass(); ;
         }
     }
 }

@@ -1,13 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.CommandLine;
 using System.CommandLine.Parsing;
-using System.IO;
-using System.Linq;
-using Microsoft.DotNet.Workloads.Workload.Install;
 using Microsoft.DotNet.Workloads.Workload.List;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using Microsoft.TemplateEngine.Cli.Commands;
@@ -35,7 +30,7 @@ namespace Microsoft.DotNet.Cli
 
         internal static void ShowWorkloadsInfo(ParseResult parseResult = null, IWorkloadInfoHelper workloadInfoHelper = null, IReporter reporter = null, string dotnetDir = null)
         {
-            if(workloadInfoHelper != null)
+            if (workloadInfoHelper != null)
             {
                 workloadInfoHelper ??= new WorkloadInfoHelper(parseResult != null ? parseResult.HasOption(SharedOptions.InteractiveOption) : false);
             }
@@ -48,20 +43,18 @@ namespace Microsoft.DotNet.Cli
             reporter ??= Cli.Utils.Reporter.Output;
             string dotnetPath = dotnetDir ?? Path.GetDirectoryName(Environment.ProcessPath);
 
-            if (!installedList.Any())
+            if (installedWorkloads.Count == 0)
             {
                 reporter.WriteLine(CommonStrings.NoWorkloadsInstalledInfoWarning);
                 return;
             }
 
+            var manifestInfoDict = workloadInfoHelper.WorkloadResolver.GetInstalledManifests().ToDictionary(info => info.Id, StringComparer.OrdinalIgnoreCase);
 
             foreach (var workload in installedWorkloads.AsEnumerable())
             {
                 var workloadManifest = workloadInfoHelper.WorkloadResolver.GetManifestFromWorkload(new WorkloadId(workload.Key));
-                var workloadFeatureBand = new WorkloadManifestInfo(
-                    workloadManifest.Id,
-                    workloadManifest.Version,
-                    Path.GetDirectoryName(workloadManifest.ManifestPath)!).ManifestFeatureBand;
+                var workloadFeatureBand = manifestInfoDict[workloadManifest.Id].ManifestFeatureBand;
 
                 const int align = 10;
                 const string separator = "   ";
@@ -78,8 +71,9 @@ namespace Microsoft.DotNet.Cli
                 reporter.WriteLine($"       {workloadManifest.ManifestPath,align}");
 
                 reporter.Write($"{separator}{CommonStrings.WorkloadInstallTypeColumn}:");
-                reporter.WriteLine($"       {WorkloadInstallerFactory.GetWorkloadInstallType(new SdkFeatureBand(workloadFeatureBand), dotnetPath),align}"
+                reporter.WriteLine($"       {WorkloadInstallType.GetWorkloadInstallType(new SdkFeatureBand(workloadFeatureBand), dotnetPath).ToString(),align}"
                 );
+                reporter.WriteLine("");
             }
         }
 

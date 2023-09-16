@@ -1,10 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Runtime.InteropServices;
-using System.Text;
-
 namespace Microsoft.NET.Sdk.Razor.Tool
 {
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
@@ -71,7 +67,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool
         internal static extern bool CreateProcess
         (
             string lpApplicationName,
-            [In, Out]StringBuilder lpCommandLine,
+            [In, Out] StringBuilder lpCommandLine,
             IntPtr lpProcessAttributes,
             IntPtr lpThreadAttributes,
             [In, MarshalAs(UnmanagedType.Bool)]

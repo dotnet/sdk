@@ -1,27 +1,18 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.IO;
 using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
-using FluentAssertions;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Microsoft.NET.TestFramework.Utilities;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.NET.Sdk.Razor.Tests
 {
     public class BuildWithComponentsIntegrationTest : AspNetSdkTest
     {
-        public BuildWithComponentsIntegrationTest(ITestOutputHelper log) : base(log) {}
+        public BuildWithComponentsIntegrationTest(ITestOutputHelper log) : base(log) { }
 
         [CoreMSBuildOnlyFact]
         public void Build_Components_WithDotNetCoreMSBuild_Works() => Build_ComponentsWorks();
 
-        [RequiresMSBuildVersionFact("17.7.0.25102")]
+        [RequiresMSBuildVersionFact("17.8.0.37606")]
         public void Build_Components_WithDesktopMSBuild_Works() => Build_ComponentsWorks();
 
         [Fact]

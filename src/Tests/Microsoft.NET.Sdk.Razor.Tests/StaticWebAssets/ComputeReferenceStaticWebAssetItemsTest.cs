@@ -1,13 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
-using System.IO;
-using FluentAssertions;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 using Microsoft.Build.Framework;
 using Moq;
-using Xunit;
 
 namespace Microsoft.NET.Sdk.Razor.Tests
 {
@@ -52,7 +48,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 BuildEngine = buildEngine.Object,
                 Source = "MyPackage",
                 Assets = new[] { CreateCandidate("wwwroot\\candidate.js", "MyPackage", "Discovered", "candidate.js", "All", "All") },
-                Patterns = new [] { CreatePatternCandidate("MyPackage\\wwwroot", "base", Directory.GetCurrentDirectory(), "wwwroot\\**", "MyPackage") },
+                Patterns = new[] { CreatePatternCandidate("MyPackage\\wwwroot", "base", Directory.GetCurrentDirectory(), "wwwroot\\**", "MyPackage") },
                 AssetKind = "Build",
                 ProjectMode = "Default"
             };

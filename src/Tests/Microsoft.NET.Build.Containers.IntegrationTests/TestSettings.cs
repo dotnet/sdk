@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
-using Microsoft.NET.TestFramework;
 
 namespace Microsoft.NET.Build.Containers.IntegrationTests;
 
@@ -20,9 +19,9 @@ internal static class TestSettings
         {
             if (_testArtifactsDir == null)
             {
-                lock(_tmpLock)
+                lock (_tmpLock)
                 {
-                    if(_testArtifactsDir == null)
+                    if (_testArtifactsDir == null)
                     {
                         string tmpDir = Path.Combine(TestContext.Current.TestExecutionDirectory, "ContainersTests", DateTime.Now.ToString("yyyyMMddHHmmssfff", CultureInfo.InvariantCulture));
                         if (!Directory.Exists(tmpDir))

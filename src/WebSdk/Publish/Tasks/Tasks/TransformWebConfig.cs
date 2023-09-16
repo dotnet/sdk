@@ -1,13 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
 using System.Xml;
-using System.Xml.Linq;
-using System.Linq;
 using Microsoft.Build.Framework;
-using Microsoft.Build.Utilities;
 
 namespace Microsoft.NET.Sdk.Publish.Tasks
 {
@@ -35,12 +30,12 @@ namespace Microsoft.NET.Sdk.Publish.Tasks
         /// </summary>
         /// <returns></returns>
         public bool IsAzure { get; set; }
-        
+
         /// <summary>
         /// ProjectGuid that uniquely identifies the project. Used for Telemetry
         /// </summary>
         public string ProjectGuid { get; set; }
-        
+
         /// <summary>
         /// Flag that determines whether the publish telemetry needs to be disabled. 
         /// </summary>
@@ -160,9 +155,9 @@ namespace Microsoft.NET.Sdk.Publish.Tasks
             var currentWebConfigFileName = Directory.EnumerateFiles(projectDirectory)
                 .FirstOrDefault(file => string.Equals(Path.GetFileName(file), defaultWebConfigName, StringComparison.OrdinalIgnoreCase));
             var webConfigFileName = currentWebConfigFileName == null ? defaultWebConfigName : Path.GetFileName(currentWebConfigFileName);
-            var projectWebConfigPath = Path.Combine(projectDirectory, webConfigFileName); 
+            var projectWebConfigPath = Path.Combine(projectDirectory, webConfigFileName);
 
-            return projectWebConfigPath; 
+            return projectWebConfigPath;
         }
 
     }

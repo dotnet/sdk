@@ -2,8 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using System.CommandLine.Parsing;
-using System.IO;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.ToolManifest;
@@ -47,7 +45,7 @@ namespace Microsoft.DotNet.Tools.Tool.Uninstall
             if (!manifestFileOptional.HasValue)
             {
                 throw new GracefulException(
-                    new[] { string.Format(LocalizableStrings.NoManifestFileContainPackageId, _packageId) }, 
+                    new[] { string.Format(LocalizableStrings.NoManifestFileContainPackageId, _packageId) },
                     isUserError: false);
             }
 

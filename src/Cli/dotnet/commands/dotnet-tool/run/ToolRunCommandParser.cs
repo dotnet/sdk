@@ -3,7 +3,6 @@
 
 using System.CommandLine;
 using Microsoft.DotNet.Tools.Tool.Run;
-using System.Collections.Generic;
 using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Run.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli
@@ -20,7 +19,7 @@ namespace Microsoft.DotNet.Cli
         {
             Description = "arguments forwarded to the tool"
         };
-       
+
         private static readonly CliCommand Command = ConstructCommand();
 
         public static CliCommand GetCommand()

@@ -1,11 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Linq;
-using FluentAssertions;
 using Microsoft.DotNet.CommandFactory;
-using Microsoft.DotNet.Tools.Test.Utilities;
-using Xunit;
 
 namespace Microsoft.DotNet.Tests
 {
@@ -23,7 +19,7 @@ namespace Microsoft.DotNet.Tests
             resolvers.Select(r => r.GetType())
                 .Should()
                 .ContainInOrder(
-                    new []{
+                    new[]{
                         typeof(MuxerCommandResolver),
                         typeof(DotnetToolsCommandResolver),
                         typeof(LocalToolsCommandResolver),

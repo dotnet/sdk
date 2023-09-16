@@ -1,21 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using FluentAssertions;
 using Microsoft.DotNet.Cli.Sln.Internal;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools;
 using Microsoft.DotNet.Tools.Common;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using System;
-using System.IO;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.Cli.Sln.Add.Tests
 {
@@ -710,6 +699,27 @@ EndGlobal
                 p => p.TypeGuid == ProjectTypeGuids.SolutionFolderGuid);
             solutionFolderProjects.Count().Should().Be(0);
             slnFile.Sections.GetSection("NestedProjects").Should().BeNull();
+        }
+
+        [Fact]
+        public void WhenSharedProjectAddedShouldStillBuild()
+        {
+            var projectDirectory = _testAssetsManager
+                .CopyTestAsset("TestAppWithSlnAndCsprojFiles")
+                .WithSource()
+                .Path;
+
+            var projectToAdd = Path.Combine("Shared", "Shared.shproj");
+            var cmd = new DotnetCommand(Log)
+                .WithWorkingDirectory(projectDirectory)
+                .Execute($"sln", "App.sln", "add", projectToAdd);
+            cmd.Should().Pass();
+            cmd.StdErr.Should().BeEmpty();
+
+            cmd = new DotnetBuildCommand(Log)
+                .WithWorkingDirectory(projectDirectory)
+                .Execute();
+            cmd.Should().Pass();
         }
 
         [Theory]

@@ -1,8 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
 using Microsoft.DotNet.ApiCompatibility.Logging;
 using Microsoft.DotNet.ApiSymbolExtensions.Logging;
 
@@ -33,7 +31,7 @@ namespace Microsoft.DotNet.ApiCompat.Tool
 
             HasLoggedErrorSuppressions = true;
             LogError(code, message);
-            
+
             return true;
         }
 
@@ -42,9 +40,9 @@ namespace Microsoft.DotNet.ApiCompat.Tool
         {
             if (_suppressionEngine.IsErrorSuppressed(suppression))
                 return false;
-            
+
             LogWarning(code, message);
-            
+
             return true;
         }
     }

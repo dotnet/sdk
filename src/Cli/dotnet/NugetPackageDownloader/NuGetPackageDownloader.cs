@@ -1,13 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.ToolPackage;
 using Microsoft.DotNet.Tools;
@@ -22,6 +15,7 @@ using NuGet.Versioning;
 
 namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
 {
+    // TODO: Never name a class the same name as the namespace. Update either for easier type resolution.
     internal class NuGetPackageDownloader : INuGetPackageDownloader
     {
         private readonly SourceCacheContext _cacheSettings;
@@ -162,7 +156,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             bool includePreview = false)
         {
             (var source, var resolvedPackageVersion) = await GetPackageSourceAndVersion(packageId, packageVersion, packageSourceLocation, includePreview);
-            
+
             SourceRepository repository = GetSourceRepository(source);
             if (repository.PackageSource.IsLocal)
             {
@@ -426,7 +420,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
                     .SelectMany(result => result.foundPackages.Select(package => (result.source, package)));
 
             if (!accumulativeSearchResults.Any())
-            {  
+            {
                 throw new NuGetPackageNotFoundException(
                     string.Format(
                         LocalizableStrings.IsNotFoundInNuGetFeeds,

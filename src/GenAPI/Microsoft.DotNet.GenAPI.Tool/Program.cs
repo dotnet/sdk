@@ -1,9 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
 using System.CommandLine;
 using System.CommandLine.Parsing;
+using System.Diagnostics;
+using System.Reflection;
 using Microsoft.DotNet.ApiSymbolExtensions.Logging;
 
 namespace Microsoft.DotNet.GenAPI.Tool
@@ -79,7 +80,7 @@ namespace Microsoft.DotNet.GenAPI.Tool
                 Description = "Includes assembly attributes which are values that provide information about an assembly. Default is false."
             };
 
-            CliRootCommand rootCommand = new("Microsoft.DotNet.GenAPI")
+            CliRootCommand rootCommand = new("Microsoft.DotNet.GenAPI v" + FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location).ProductVersion)
             {
                 TreatUnmatchedTokensAsErrors = true
             };

@@ -1,15 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.CommandLine;
+using System.CommandLine.Completions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools;
 using Microsoft.DotNet.Tools.Common;
-using System;
-using System.Collections.Generic;
-using System.CommandLine;
-using System.CommandLine.Completions;
-using System.IO;
-using System.Linq;
 
 namespace Microsoft.DotNet.Cli
 {
@@ -54,7 +50,7 @@ namespace Microsoft.DotNet.Cli
             {
                 Description = CommonLocalizableStrings.ArtifactsPathOptionDescription,
                 HelpName = CommonLocalizableStrings.ArtifactsPathArgumentName
-            }.ForwardAsSingle(o => $"-property:ArtifactsPath={CommandDirectoryContext.GetFullPath(o)}");            
+            }.ForwardAsSingle(o => $"-property:ArtifactsPath={CommandDirectoryContext.GetFullPath(o)}");
 
         private static string RuntimeArgName = CommonLocalizableStrings.RuntimeIdentifierArgumentName;
         public static IEnumerable<string> RuntimeArgFunc(string rid)
@@ -111,10 +107,10 @@ namespace Microsoft.DotNet.Cli
             return arg;
         }
 
-        public static CliOption<bool> NoRestoreOption =new("--no-restore")
-            {
-                Description = CommonLocalizableStrings.NoRestoreDescription
-            };
+        public static CliOption<bool> NoRestoreOption = new("--no-restore")
+        {
+            Description = CommonLocalizableStrings.NoRestoreDescription
+        };
 
         public static CliOption<bool> InteractiveMsBuildForwardOption =
             new ForwardedOption<bool>("--interactive")
@@ -205,8 +201,7 @@ namespace Microsoft.DotNet.Cli
                 return Array.Empty<string>();
             }
 
-            var selfContainedSpecified = (parseResult.GetResult(SelfContainedOption) ?? parseResult.GetResult(NoSelfContainedOption)) is not null;
-            return ResolveRidShorthandOptions(null, arg, selfContainedSpecified);
+            return ResolveRidShorthandOptions(null, arg);
         }
 
         internal static IEnumerable<string> ResolveOsOptionToRuntimeIdentifier(string arg, ParseResult parseResult)
@@ -216,24 +211,12 @@ namespace Microsoft.DotNet.Cli
                 throw new GracefulException(CommonLocalizableStrings.CannotSpecifyBothRuntimeAndOsOptions);
             }
 
-            var selfContainedSpecified = (parseResult.GetResult(SelfContainedOption) ?? parseResult.GetResult(NoSelfContainedOption)) is not null;
-            if (parseResult.BothArchAndOsOptionsSpecified())
-            {
-                return ResolveRidShorthandOptions(arg, ArchOptionValue(parseResult), selfContainedSpecified);
-            }
-
-            return ResolveRidShorthandOptions(arg, null, selfContainedSpecified);
+            var arch = parseResult.BothArchAndOsOptionsSpecified() ? ArchOptionValue(parseResult) : null;
+            return ResolveRidShorthandOptions(arg, arch);
         }
 
-        private static IEnumerable<string> ResolveRidShorthandOptions(string os, string arch, bool userSpecifiedSelfContainedOption)
-        {
-            var properties = new string[] { $"-property:RuntimeIdentifier={ResolveRidShorthandOptionsToRuntimeIdentifier(os, arch)}" };
-            if (!userSpecifiedSelfContainedOption)
-            {
-                properties = properties.Append("-property:SelfContained=false").ToArray();
-            }
-            return properties;
-        }
+        private static IEnumerable<string> ResolveRidShorthandOptions(string os, string arch) =>
+            new string[] { $"-property:RuntimeIdentifier={ResolveRidShorthandOptionsToRuntimeIdentifier(os, arch)}" };
 
         internal static string ResolveRidShorthandOptionsToRuntimeIdentifier(string os, string arch)
         {

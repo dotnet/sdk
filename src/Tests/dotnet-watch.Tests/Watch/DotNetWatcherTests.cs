@@ -1,13 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Globalization;
-using System.IO;
-using System.Threading.Tasks;
-using Microsoft.NET.TestFramework;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.Watcher.Tests
 {
@@ -26,22 +20,56 @@ namespace Microsoft.DotNet.Watcher.Tests
             Assert.True(string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DOTNET_WATCH")), "DOTNET_WATCH cannot be set already when this test is running");
 
             var testAsset = TestAssets.CopyTestAsset(AppName)
-                .WithSource()
-                .Path;
+                .WithSource();
 
             await App.StartWatcherAsync(testAsset);
             Assert.Equal("1", await App.AssertOutputLineStartsWith("DOTNET_WATCH = "));
         }
 
         [Fact]
+        public async Task RunsWithDotnetLaunchProfileEnvVariableWhenNotExplicitlySpecified()
+        {
+            Assert.True(string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DOTNET_LAUNCH_PROFILE")), "DOTNET_LAUNCH_PROFILE cannot be set already when this test is running");
+
+            var testAsset = TestAssets.CopyTestAsset(AppName)
+                .WithSource();
+
+            await App.StartWatcherAsync(testAsset);
+            Assert.Equal("<<<First>>>", await App.AssertOutputLineStartsWith("DOTNET_LAUNCH_PROFILE = "));
+        }
+
+        [Fact]
+        public async Task RunsWithDotnetLaunchProfileEnvVariableWhenExplicitlySpecified()
+        {
+            Assert.True(string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DOTNET_LAUNCH_PROFILE")), "DOTNET_LAUNCH_PROFILE cannot be set already when this test is running");
+
+            var testAsset = TestAssets.CopyTestAsset(AppName)
+                .WithSource();
+
+            await App.StartWatcherAsync(testAsset, applicationArguments: [ "--launch-profile", "Second"]);
+            Assert.Equal("<<<Second>>>", await App.AssertOutputLineStartsWith("DOTNET_LAUNCH_PROFILE = "));
+        }
+
+        [Fact]
+        public async Task RunsWithDotnetLaunchProfileEnvVariableWhenExplicitlySpecifiedButNotPresentIsEmpty()
+        {
+            Assert.True(string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DOTNET_LAUNCH_PROFILE")), "DOTNET_LAUNCH_PROFILE cannot be set already when this test is running");
+
+            var testAsset = TestAssets.CopyTestAsset(AppName)
+                .WithSource();
+
+            await App.StartWatcherAsync(testAsset, applicationArguments: ["--launch-profile", "Third"]);
+            Assert.Equal("<<<First>>>", await App.AssertOutputLineStartsWith("DOTNET_LAUNCH_PROFILE = "));
+        }
+
+        [Fact]
         public async Task RunsWithIterationEnvVariable()
         {
             var testAsset = TestAssets.CopyTestAsset(AppName)
-                .WithSource()
-                .Path;
+                .WithSource();
 
             await App.StartWatcherAsync(testAsset);
-            var source = Path.Combine(testAsset, "Program.cs");
+            var source = Path.Combine(testAsset.Path, "Program.cs");
             var contents = File.ReadAllText(source);
             const string messagePrefix = "DOTNET_WATCH_ITERATION = ";
 
@@ -61,10 +89,7 @@ namespace Microsoft.DotNet.Watcher.Tests
         public async Task Run_WithHotReloadEnabled_ReadsLaunchSettings()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchAppWithLaunchSettings")
-                .WithSource()
-                .Path;
-
-            App.DotnetWatchArgs.Add("--verbose");
+                .WithSource();
 
             await App.StartWatcherAsync(testAsset);
 
@@ -75,12 +100,10 @@ namespace Microsoft.DotNet.Watcher.Tests
         public async Task Run_WithHotReloadEnabled_ReadsLaunchSettings_WhenUsingProjectOption()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchAppWithLaunchSettings")
-                .WithSource()
-                .Path;
+                .WithSource();
 
-            var directoryInfo = new DirectoryInfo(testAsset);
+            var directoryInfo = new DirectoryInfo(testAsset.Path);
 
-            App.DotnetWatchArgs.Add("--verbose");
             App.DotnetWatchArgs.Add("--project");
             App.DotnetWatchArgs.Add(Path.Combine(directoryInfo.Name, "WatchAppWithLaunchSettings.csproj"));
 
@@ -94,11 +117,9 @@ namespace Microsoft.DotNet.Watcher.Tests
         public async Task Run_WithHotReloadEnabled_DoesNotReadConsoleIn_InNonInteractiveMode()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchAppWithLaunchSettings")
-                .WithSource()
-                .Path;
+                .WithSource();
 
             App.EnvironmentVariables.Add("READ_INPUT", "true");
-            App.DotnetWatchArgs.Add("--verbose");
             App.DotnetWatchArgs.Add("--non-interactive");
 
             await App.StartWatcherAsync(testAsset);

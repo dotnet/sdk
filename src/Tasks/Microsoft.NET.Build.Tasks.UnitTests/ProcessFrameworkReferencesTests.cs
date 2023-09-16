@@ -1,10 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using FluentAssertions;
 using Microsoft.NET.TestFramework;
 using Xunit;
@@ -170,7 +166,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 RuntimeGraphPath =
                     runtimeGraphPathPath,
                 FrameworkReferences =
-                    new[] {new MockTaskItem("Microsoft.Windows.SDK.NET.Ref", new Dictionary<string, string>())},
+                    new[] { new MockTaskItem("Microsoft.Windows.SDK.NET.Ref", new Dictionary<string, string>()) },
                 KnownFrameworkReferences = new[]
                 {
                     new MockTaskItem("Microsoft.Windows.SDK.NET.Ref",

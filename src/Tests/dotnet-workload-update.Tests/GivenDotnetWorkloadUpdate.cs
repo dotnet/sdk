@@ -1,29 +1,17 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
 using System.CommandLine;
-using System.CommandLine.Parsing;
-using System.IO;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using FluentAssertions;
 using ManifestReaderTests;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
+using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Cli.Workload.Install.Tests;
 using Microsoft.DotNet.Workloads.Workload;
 using Microsoft.DotNet.Workloads.Workload.Install;
-using Microsoft.NET.Sdk.WorkloadManifestReader;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Utilities;
-using Xunit;
-using Xunit.Abstractions;
-using Microsoft.DotNet.Workloads.Workload.Install.InstallRecord;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.DotNet.Cli.Workload.Install.Tests;
 using Microsoft.DotNet.Workloads.Workload.Update;
-using Microsoft.DotNet.Cli.Utils;
+using Microsoft.NET.Sdk.WorkloadManifestReader;
 using static Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadResolver;
-using System;
 
 namespace Microsoft.DotNet.Cli.Workload.Update.Tests
 {
@@ -354,7 +342,7 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
         public void ApplyRollbackAcrossFeatureBand(string existingSdkFeatureBand, string newSdkFeatureBand)
         {
             var parseResult = Parser.Instance.Parse(new string[] { "dotnet", "workload", "update", "--from-rollback-file", "rollback.json" });
-      
+
             var manifestsToUpdate =
                 new (ManifestVersionUpdate manifestUpdate,
                 Dictionary<WorkloadId, WorkloadDefinition> Workloads)[]
@@ -375,7 +363,7 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
             packInstaller.InstalledManifests[0].offlineCache.Should().Be(null);
         }
 
-        [Fact]     
+        [Fact]
         public void ApplyRollbackWithMultipleManifestsAcrossFeatureBand()
         {
             var parseResult = Parser.Instance.Parse(new string[] { "dotnet", "workload", "update", "--from-rollback-file", "rollback.json" });
@@ -411,20 +399,20 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
         public void GivenInvalidVersionInRollbackFileItErrors()
         {
             _reporter.Clear();
-            
+
             var testDirectory = _testAssetsManager.CreateTestDirectory().Path;
             var dotnetRoot = Path.Combine(testDirectory, "dotnet");
             var userProfileDir = Path.Combine(testDirectory, "user-profile");
             Directory.CreateDirectory(userProfileDir);
 
             var sdkFeatureVersion = "6.0.200";
-           
+
             var mockRollbackFileContent = @"{""mock.workload"":""6.0.0.15/6.0.100""}";
             var rollbackFilePath = Path.Combine(testDirectory, "rollback.json");
             File.WriteAllText(rollbackFilePath, mockRollbackFileContent);
-            
+
             var updateParseResult = Parser.Instance.Parse(new string[] { "dotnet", "workload", "update", "--from-rollback-file", rollbackFilePath });
-            
+
             var updateCommand = new WorkloadUpdateCommand(updateParseResult, reporter: _reporter, userProfileDir: userProfileDir, dotnetDir: dotnetRoot, version: sdkFeatureVersion, tempDirPath: testDirectory, installedFeatureBand: sdkFeatureVersion);
 
             var exception = Assert.Throws<GracefulException>(() => updateCommand.Execute());

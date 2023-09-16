@@ -1,18 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using FluentAssertions;
-using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Telemetry;
 using Microsoft.DotNet.Cli.Utils;
-using System.CommandLine;
-using System.CommandLine.Parsing;
 using Parser = Microsoft.DotNet.Cli.Parser;
-using System.Collections.Generic;
-using Xunit;
-using Microsoft.NET.TestFramework;
-using Xunit.Abstractions;
-using System;
 
 namespace Microsoft.DotNet.Tests
 {
@@ -72,7 +63,7 @@ namespace Microsoft.DotNet.Tests
         public void TopLevelCommandNameShouldBeSentToTelemetryWithSomeZeroPerformanceData()
         {
             var parseResult = Parser.Instance.Parse(new List<string>() { "build" });
-            TelemetryEventEntry.SendFiltered(Tuple.Create(parseResult, new Dictionary<string, double>() { { "Startup Time", 0 },{ "Parse Time", 23456 } }));
+            TelemetryEventEntry.SendFiltered(Tuple.Create(parseResult, new Dictionary<string, double>() { { "Startup Time", 0 }, { "Parse Time", 23456 } }));
             _fakeTelemetry.LogEntries.Should().Contain(e => e.EventName == "toplevelparser/command" &&
                   e.Properties.ContainsKey("verb") &&
                   e.Properties["verb"] == Sha256Hasher.Hash("BUILD") &&
@@ -121,7 +112,7 @@ namespace Microsoft.DotNet.Tests
                     e.Properties.ContainsKey("verb") &&
                     e.Properties["verb"] == Sha256Hasher.Hash("NEW") &&
                     e.Measurement == null);
-}
+        }
 
         [Fact]
         public void SubLevelCommandNameShouldBeSentToTelemetryWithSomeZeroPerformanceData()
@@ -142,9 +133,9 @@ namespace Microsoft.DotNet.Tests
         public void WorkloadSubLevelCommandNameAndArgumentShouldBeSentToTelemetry()
         {
             var parseResult =
-                Parser.Instance.Parse(new List<string>() {"workload", "install", "microsoft-ios-sdk-full"});
+                Parser.Instance.Parse(new List<string>() { "workload", "install", "microsoft-ios-sdk-full" });
             TelemetryEventEntry.SendFiltered(Tuple.Create(parseResult,
-                new Dictionary<string, double>() {{"Startup Time", 0}, {"Parse Time", 23456}}));
+                new Dictionary<string, double>() { { "Startup Time", 0 }, { "Parse Time", 23456 } }));
             _fakeTelemetry.LogEntries.Should().Contain(e => e.EventName == "sublevelparser/command" &&
                                                             e.Properties.ContainsKey("verb") &&
                                                             e.Properties["verb"] == Sha256Hasher.Hash("WORKLOAD") &&
@@ -158,9 +149,9 @@ namespace Microsoft.DotNet.Tests
         public void ToolsSubLevelCommandNameAndArgumentShouldBeSentToTelemetry()
         {
             var parseResult =
-                Parser.Instance.Parse(new List<string>() {"tool", "install", "dotnet-format"});
+                Parser.Instance.Parse(new List<string>() { "tool", "install", "dotnet-format" });
             TelemetryEventEntry.SendFiltered(Tuple.Create(parseResult,
-                new Dictionary<string, double>() {{"Startup Time", 0}, {"Parse Time", 23456}}));
+                new Dictionary<string, double>() { { "Startup Time", 0 }, { "Parse Time", 23456 } }));
             _fakeTelemetry.LogEntries.Should().Contain(e => e.EventName == "sublevelparser/command" &&
                                                             e.Properties.ContainsKey("verb") &&
                                                             e.Properties["verb"] == Sha256Hasher.Hash("TOOL") &&
@@ -190,7 +181,7 @@ namespace Microsoft.DotNet.Tests
         public void WhenCalledWithMissingArgumentWorkloadSubLevelCommandNameAndArgumentShouldBeSentToTelemetry()
         {
             var parseResult =
-                Parser.Instance.Parse(new List<string>() { "-d", "workload", "install"});
+                Parser.Instance.Parse(new List<string>() { "-d", "workload", "install" });
             TelemetryEventEntry.SendFiltered(Tuple.Create(parseResult,
                 new Dictionary<string, double>() { { "Startup Time", 0 }, { "Parse Time", 23456 } }));
             _fakeTelemetry.LogEntries.Should().Contain(e => e.EventName == "sublevelparser/command" &&

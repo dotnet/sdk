@@ -1,10 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Diagnostics;
-using System.IO;
-using System.Text;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
@@ -82,7 +79,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks
         private const string AspNetCoreEnvironment = "ASPNETCORE_ENVIRONMENT";
         private bool GenerateSQLScript(string sqlFileFullPath, string dbContextName, bool isLoggingEnabled = true)
         {
-            string previousAspNetCoreEnvironment = Environment.GetEnvironmentVariable(AspNetCoreEnvironment); 
+            string previousAspNetCoreEnvironment = Environment.GetEnvironmentVariable(AspNetCoreEnvironment);
             Environment.SetEnvironmentVariable(AspNetCoreEnvironment, "Development");
             ProcessStartInfo psi = new ProcessStartInfo("dotnet", $@"ef migrations script --no-build --idempotent --configuration {Configuration} --output ""{sqlFileFullPath}"" --context {dbContextName} {EFMigrationsAdditionalArgs}")
             {

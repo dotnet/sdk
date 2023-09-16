@@ -1,22 +1,12 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.IO;
-using FluentAssertions;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Commands;
-using Xunit;
-using Xunit.Abstractions;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.ProjectConstruction;
-using System.Collections.Generic;
-
 namespace Microsoft.NET.Build.Tests
 {
     public class GivenThatWeWantACustomTFM : SdkTest
     {
         public GivenThatWeWantACustomTFM(ITestOutputHelper log) : base(log)
-        {}
+        { }
 
         [Fact]
         public void It_imports_custom_parsing_targets()
@@ -26,8 +16,8 @@ namespace Microsoft.NET.Build.Tests
             TestProject testProject = new TestProject()
             {
                 Name = "CustomTFMProject",
-                IsExe = true, 
-                TargetFrameworks = $"{ targetFramework }-{ runtimeIdentifier }"
+                IsExe = true,
+                TargetFrameworks = $"{targetFramework}-{runtimeIdentifier}"
             };
 
             testProject.AdditionalProperties["BeforeTargetFrameworkInferenceTargets"] = @"$(MSBuildProjectDirectory)\CustomTargetFramework.targets";

@@ -1,9 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.ApiCompatibility.Logging;
 using Microsoft.DotNet.ApiSymbolExtensions.Logging;
@@ -51,7 +48,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                         right.Identity.GetDisplayName()));
                 }
                 /* When comparing multiple assemblies and not operating in strict mode, we don't emit a difference but an
-                   informational message to prevent user errors (i.e. wrong input to the task). */
+                   informational message to prevent user errors (i.e. wrong input to the frontend). */
                 else
                 {
                     _log.LogMessage(MessageImportance.Normal, message);
@@ -110,7 +107,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                     rightMetadata.DisplayString,
                     rightIdentity));
             }
- 
+
             if (rightAssemblyVersion < leftAssemblyVersion)
             {
                 differences.Add(CreateIdentityDifference(
@@ -142,7 +139,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                     leftMetadata,
                     rightMetadata,
                     Resources.AssemblyPublicKeyTokenDoesNotMatch,
-                    GetStringRepresentation(leftAssemblyPublicKeyToken), 
+                    GetStringRepresentation(leftAssemblyPublicKeyToken),
                     GetStringRepresentation(rightAssemblyPublicKeyToken),
                     leftMetadata.DisplayString,
                     rightMetadata.DisplayString,
@@ -154,7 +151,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                     leftMetadata,
                     rightMetadata,
                     Resources.AssemblyPublicKeyTokenDoesNotMatch,
-                    GetStringRepresentation(rightAssemblyPublicKeyToken), 
+                    GetStringRepresentation(rightAssemblyPublicKeyToken),
                     GetStringRepresentation(leftAssemblyPublicKeyToken),
                     rightMetadata.DisplayString,
                     leftMetadata.DisplayString,

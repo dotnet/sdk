@@ -1,7 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
 using System.CommandLine;
 using Microsoft.DotNet.Cli;
 
@@ -11,13 +10,13 @@ namespace Microsoft.DotNet.Tools.MSBuild
     {
         public MSBuildCommand
             (IEnumerable<string> msbuildArgs,
-            string msbuildPath = null) 
+            string msbuildPath = null)
              : base(msbuildArgs, msbuildPath)
         {
         }
 
         public static MSBuildCommand FromArgs(string[] args, string msbuildPath = null)
-        { 
+        {
             var parser = Cli.Parser.Instance;
             var result = parser.ParseFrom("dotnet msbuild", args);
             return FromParseResult(result, msbuildPath);

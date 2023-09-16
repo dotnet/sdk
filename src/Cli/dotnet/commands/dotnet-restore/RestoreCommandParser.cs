@@ -1,9 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
 using System.CommandLine;
-using System.Linq;
 using Microsoft.DotNet.Tools;
 using Microsoft.DotNet.Tools.Restore;
 using LocalizableStrings = Microsoft.DotNet.Tools.Restore.LocalizableStrings;
@@ -27,7 +25,7 @@ namespace Microsoft.DotNet.Cli
         }.ForwardAsSingle(o => $"-property:RestoreSources={string.Join("%3B", o)}")
         .AllowSingleArgPerToken();
 
-        private static IEnumerable<CliOption> FullRestoreOptions() => 
+        private static IEnumerable<CliOption> FullRestoreOptions() =>
             ImplicitRestoreOptions(true, true, true, true).Concat(
                 new CliOption[] {
                     CommonOptions.VerbosityOption,
@@ -84,7 +82,7 @@ namespace Microsoft.DotNet.Cli
         }
         private static string GetOsFromRid(string rid) => rid.Substring(0, rid.LastIndexOf("-"));
         private static string GetArchFromRid(string rid) => rid.Substring(rid.LastIndexOf("-") + 1, rid.Length - rid.LastIndexOf("-") - 1);
-        public static string RestoreRuntimeArgFunc(IEnumerable<string> rids) 
+        public static string RestoreRuntimeArgFunc(IEnumerable<string> rids)
         {
             List<string> convertedRids = new();
             foreach (string rid in rids)

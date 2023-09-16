@@ -1,11 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Xml.Linq;
 using Microsoft.NET.Sdk.Publish.Tasks.Properties;
 
 namespace Microsoft.NET.Sdk.Publish.Tasks
@@ -24,7 +19,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks
             }
 
             XElement rootElement = null;
-            
+
             // Find the first aspNetCore element. If it is null use the default logic. Else use the root containing the aspNetCore element.
             var firstAspNetCoreElement = webConfig.Root.Descendants(aspNetCoreElementName).FirstOrDefault();
             if (firstAspNetCoreElement == null)
@@ -252,7 +247,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks
                 if (document != null && !string.IsNullOrEmpty(projectGuid))
                 {
                     IEnumerable<XComment> comments = document.DescendantNodes().OfType<XComment>();
-                    projectGuid =  projectGuid.Trim('{', '}', '(', ')').Trim();
+                    projectGuid = projectGuid.Trim('{', '}', '(', ')').Trim();
                     string projectGuidValue = string.Format("ProjectGuid: {0}", projectGuid);
                     XComment projectGuidComment = comments.FirstOrDefault(comment => string.Equals(comment.Value, projectGuidValue, StringComparison.OrdinalIgnoreCase));
                     if (projectGuidComment != null)

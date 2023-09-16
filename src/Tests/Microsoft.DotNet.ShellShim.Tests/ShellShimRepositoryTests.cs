@@ -1,29 +1,16 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Reflection.Metadata;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using System.Transactions;
-using System.Xml.Linq;
-using FluentAssertions;
+using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.ToolPackage;
 using Microsoft.DotNet.Tools;
-using Microsoft.DotNet.Tools.Test.Utilities;
 using Microsoft.DotNet.Tools.Tests.ComponentMocks;
 using Microsoft.Extensions.EnvironmentAbstractions;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Xunit;
-using Xunit.Abstractions;
 using NuGet.Frameworks;
-using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 
 namespace Microsoft.DotNet.ShellShim.Tests
 {
@@ -366,7 +353,7 @@ namespace Microsoft.DotNet.ShellShim.Tests
             shellShimRepository.CreateShim(
                 new FilePath("dummy.dll"),
                 new ToolCommandName(shellCommandName),
-                new[] {new FilePath(dummyShimPath)});
+                new[] { new FilePath(dummyShimPath) });
 
             var createdShim = Directory.EnumerateFileSystemEntries(pathToShim).Single();
             File.ReadAllText(createdShim).Should().Contain(tokenToIdentifyCopiedShim);

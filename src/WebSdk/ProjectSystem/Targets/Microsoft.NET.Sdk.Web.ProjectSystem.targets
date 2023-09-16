@@ -46,24 +46,24 @@ Copyright (c) .NET Foundation. All rights reserved.
     <EnableUnsafeBinaryFormatterSerialization Condition="'$(EnableUnsafeBinaryFormatterSerialization)' == ''">false</EnableUnsafeBinaryFormatterSerialization>
   </PropertyGroup>
 
-  <!-- Default settings for trimmed and aot'd apps. -->
-  <PropertyGroup Condition="'$(PublishTrimmed)' == 'true' Or '$(PublishAot)' == 'true'">
-    <JsonSerializerIsReflectionEnabledByDefault Condition="'$(JsonSerializerIsReflectionEnabledByDefault)' == ''">false</JsonSerializerIsReflectionEnabledByDefault>
-  </PropertyGroup>
-
   <!-- Default settings for aot'd apps. -->
   <PropertyGroup Condition="'$(PublishAot)' == 'true'">
-    <!-- Enable the built-in source generators. -->
-    <EnableRequestDelegateGenerator Condition="'$(EnableRequestDelegateGenerator)' == ''">true</EnableRequestDelegateGenerator>
-    <EnableConfigurationBindingGenerator Condition="'$(EnableConfigurationBindingGenerator)' == ''">true</EnableConfigurationBindingGenerator>
-
     <!-- Enable System.GC.DynamicAdaptationMode by default for aot'd apps to get a GC that dynamically adapts to the application's memory use. -->
     <GarbageCollectionAdaptationMode Condition="'$(GarbageCollectionAdaptationMode)' == '' And '$(ServerGarbageCollection)' == 'true'">1</GarbageCollectionAdaptationMode>
   </PropertyGroup>
 
-  <!-- Enable the interceptors compiler feature by default for projects that use the RequestDelegateGenerator. -->
-  <PropertyGroup Condition="'$(EnableRequestDelegateGenerator)' == 'true'">
-    <Features>$(Features);InterceptorsPreview</Features>
+  <!-- Default settings for trimmed apps. -->
+  <PropertyGroup Condition="'$(PublishTrimmed)' == 'true' Or '$(PublishAot)' == 'true'">
+    <!-- Enable the built-in source generators. -->
+    <EnableRequestDelegateGenerator Condition="'$(EnableRequestDelegateGenerator)' == ''">true</EnableRequestDelegateGenerator>
+    <EnableConfigurationBindingGenerator Condition="'$(EnableConfigurationBindingGenerator)' == ''">true</EnableConfigurationBindingGenerator>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- Set the namespaces emitted by the RequestDelegateGenerator for interception when applicable. -->
+    <InterceptorsPreviewNamespaces Condition="'$(EnableRequestDelegateGenerator)' == 'true'">$(InterceptorsPreviewNamespaces);Microsoft.AspNetCore.Http.Generated</InterceptorsPreviewNamespaces>
+    <!-- Set the namespaces emitted by the ConfigurationBindingGenerator for interception when applicable. -->
+    <InterceptorsPreviewNamespaces Condition="'$(EnableConfigurationBindingGenerator)' == 'true'">$(InterceptorsPreviewNamespaces);Microsoft.Extensions.Configuration.Binder.SourceGeneration</InterceptorsPreviewNamespaces>
   </PropertyGroup>
 
   <!--

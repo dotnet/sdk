@@ -1,22 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using FluentAssertions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.ToolPackage;
-using Microsoft.DotNet.Tools.Test.Utilities;
 using Microsoft.Extensions.DependencyModel.Tests;
 using Microsoft.Extensions.EnvironmentAbstractions;
-using Microsoft.NET.TestFramework;
 using NuGet.Frameworks;
 using NuGet.Versioning;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.PackageInstall.Tests
 {
@@ -295,7 +285,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 useRealFileSystem: true,
                 corruptCache: (fileSystem, cachePath, existingCache) =>
                 {
-                    File.WriteAllBytes(cachePath, new byte[] {0x12, 0x23, 0x34, 0x45});
+                    File.WriteAllBytes(cachePath, new byte[] { 0x12, 0x23, 0x34, 0x45 });
                 }
             );
         }

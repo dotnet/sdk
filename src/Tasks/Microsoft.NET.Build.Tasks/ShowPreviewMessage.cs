@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Build.Framework;
-using System;
 
 namespace Microsoft.NET.Build.Tasks
 {
@@ -15,7 +14,7 @@ namespace Microsoft.NET.Build.Tasks
         {
             const string previewMessageKey = "Microsoft.NET.Build.Tasks.DisplayPreviewMessageKey";
 
-            object messageDisplayed = 
+            object messageDisplayed =
                 BuildEngine4.GetRegisteredTaskObject(previewMessageKey, RegisteredTaskObjectLifetime.Build);
             if (messageDisplayed == null)
             {

@@ -1,10 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Microsoft.Build.Framework;
 
 namespace Microsoft.NET.Build.Tasks
@@ -44,7 +40,7 @@ namespace Microsoft.NET.Build.Tasks
                     string versionOnPackageReference = packageReference.GetMetadata(MetadataKeys.Version);
                     if (string.IsNullOrEmpty(versionOnPackageReference))
                     {
-                        packageReference.SetMetadata(MetadataKeys.Version, 
+                        packageReference.SetMetadata(MetadataKeys.Version,
                             TargetLatestRuntimePatch ? implicitVersion.LatestVersion : implicitVersion.DefaultVersion);
 
                         packageReference.SetMetadata(MetadataKeys.IsImplicitlyDefined, "true");

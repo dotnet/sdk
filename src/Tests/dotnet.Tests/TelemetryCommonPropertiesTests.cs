@@ -1,15 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using FluentAssertions;
-using Xunit;
-using System;
-using System.Collections.Generic;
-using System.Runtime.InteropServices;
 using Microsoft.DotNet.Cli.Telemetry;
 using Microsoft.DotNet.Configurer;
-using Microsoft.NET.TestFramework;
-using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.Tests
 {
@@ -48,7 +41,7 @@ namespace Microsoft.DotNet.Tests
 
             Guid.TryParse(assignedMachineId, out var _).Should().BeTrue("it should be a guid");
         }
-        
+
         [Fact]
         public void TelemetryCommonPropertiesShouldReturnHashedMachineIdOld()
         {
@@ -150,14 +143,20 @@ namespace Microsoft.DotNet.Tests
 
         [Theory]
         [MemberData(nameof(CITelemetryTestCases))]
-        public void CanDetectCIStatusForEnvVars(Dictionary<string, string> envVars, bool expected) {
-            try {
-                foreach (var (key, value) in envVars) {
+        public void CanDetectCIStatusForEnvVars(Dictionary<string, string> envVars, bool expected)
+        {
+            try
+            {
+                foreach (var (key, value) in envVars)
+                {
                     Environment.SetEnvironmentVariable(key, value);
                 }
                 new CIEnvironmentDetectorForTelemetry().IsCIEnvironment().Should().Be(expected);
-            } finally {
-                foreach (var (key, value) in envVars) {
+            }
+            finally
+            {
+                foreach (var (key, value) in envVars)
+                {
                     Environment.SetEnvironmentVariable(key, null);
                 }
             }
