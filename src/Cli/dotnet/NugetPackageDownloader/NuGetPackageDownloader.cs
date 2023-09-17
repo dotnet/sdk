@@ -292,7 +292,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
 
         private IEnumerable<PackageSource> LoadNuGetSources(PackageId packageId, PackageSourceLocation packageSourceLocation = null, PackageSourceMapping packageSourceMapping = null)
         {
-            IEnumerable<PackageSource> defaultSources = new List<PackageSource>();
+            List<PackageSource> defaultSources = new List<PackageSource>();
             string currentDirectory = Directory.GetCurrentDirectory();
             ISettings settings;
             if (packageSourceLocation?.NugetConfig != null)
@@ -310,7 +310,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             }
 
             PackageSourceProvider packageSourceProvider = new PackageSourceProvider(settings);
-            defaultSources = packageSourceProvider.LoadPackageSources().Where(source => source.IsEnabled);
+            defaultSources = packageSourceProvider.LoadPackageSources().Where(source => source.IsEnabled).ToList();
 
             packageSourceMapping = packageSourceMapping ?? PackageSourceMapping.GetPackageSourceMapping(settings);
 
@@ -323,7 +323,11 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
                 {
                     throw new NuGetPackageInstallerException(string.Format(LocalizableStrings.FailedToGetPackageUnderPackageSourceMapping, packageId));
                 }
-                defaultSources = defaultSources.Where(source => sources.Contains(source.Name));
+                defaultSources = defaultSources.Where(source => sources.Contains(source.Name)).ToList();
+                if (defaultSources.Count == 0)
+                {
+                    throw new NuGetPackageInstallerException(string.Format(LocalizableStrings.FailedToGetPackageUnderPackageSourceMapping, packageId));
+                }
             }
 
             if (packageSourceLocation?.AdditionalSourceFeed?.Any() ?? false)
@@ -344,7 +348,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
                         continue;
                     }
 
-                    defaultSources = defaultSources.Append(packageSource);
+                    defaultSources.Add(packageSource);
                 }
             }
 

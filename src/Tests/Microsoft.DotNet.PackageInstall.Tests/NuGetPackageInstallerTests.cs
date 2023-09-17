@@ -195,7 +195,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             Log.WriteLine(relativePath);
             var dictionary = new Dictionary<string, IReadOnlyList<string>>
             {
-                { "global.tool.console.demo", new List<string>() { "nonexistentfeed" } }
+                { "nonexistentfeed", new List<string>() { TestPackageId.ToString() } }
             };
             var patterns = new ReadOnlyDictionary<string, IReadOnlyList<string>>(dictionary);
             var mockPackageSourceMapping = new PackageSourceMapping(patterns);
