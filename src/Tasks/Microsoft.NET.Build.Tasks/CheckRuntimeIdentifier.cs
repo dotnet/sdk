@@ -12,23 +12,19 @@ namespace Microsoft.NET.Build.Tasks
     public sealed class CheckRuntimeIdentifier : TaskBase
     {
         #region Input Items
-
         /// <summary>
         /// Path to assets.json.
         /// </summary>
         public string ProjectAssetsFile { get; set; }
-
         /// <summary>
         /// TargetFramework to use for compile-time assets.
         /// </summary>
         [Required]
         public string TargetFramework { get; set; }
-
         /// <summary>
         /// RID to use for runtime assets (may be empty)
         /// </summary>
         public string RuntimeIdentifier { get; set; }
-
         #endregion
 
         protected override void ExecuteCore()

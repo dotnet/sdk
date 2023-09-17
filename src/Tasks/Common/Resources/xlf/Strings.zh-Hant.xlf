@@ -107,6 +107,11 @@
         <target state="translated">NETSDK1006: 資產檔案路徑 '{0}' 並非根目錄。僅支援完整的路徑。</target>
         <note>{StrBegin="NETSDK1006: "}</note>
       </trans-unit>
+      <trans-unit id="AssetsFileRuntimeIdentifierMismatch">
+        <source>NETSDK1214: Runtime Identifier {0} is not present in project.assets.json. Please ensure the Runtime Identifier is specified in your project file (e.g., &lt;RuntimeIdentifier&gt;{0}&lt;/RuntimeIdentifier&gt;) and the project was restored before invoking the command.</source>
+        <target state="new">NETSDK1214: Runtime Identifier {0} is not present in project.assets.json. Please ensure the Runtime Identifier is specified in your project file (e.g., &lt;RuntimeIdentifier&gt;{0}&lt;/RuntimeIdentifier&gt;) and the project was restored before invoking the command.</target>
+        <note>{StrBegin="NETSDK1214: "}</note>
+      </trans-unit>
       <trans-unit id="AtLeastOneTargetFrameworkMustBeSpecified">
         <source>NETSDK1001: At least one possible target framework must be specified.</source>
         <target state="translated">NETSDK1001: 至少必須指定一個可能的目標架構。</target>

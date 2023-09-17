@@ -107,6 +107,11 @@
         <target state="translated">NETSDK1006: 자산 파일 경로 '{0}'이(가) 루트에서 시작하지 않습니다. 전체 경로만 지원됩니다.</target>
         <note>{StrBegin="NETSDK1006: "}</note>
       </trans-unit>
+      <trans-unit id="AssetsFileRuntimeIdentifierMismatch">
+        <source>NETSDK1214: Runtime Identifier {0} is not present in project.assets.json. Please ensure the Runtime Identifier is specified in your project file (e.g., &lt;RuntimeIdentifier&gt;{0}&lt;/RuntimeIdentifier&gt;) and the project was restored before invoking the command.</source>
+        <target state="new">NETSDK1214: Runtime Identifier {0} is not present in project.assets.json. Please ensure the Runtime Identifier is specified in your project file (e.g., &lt;RuntimeIdentifier&gt;{0}&lt;/RuntimeIdentifier&gt;) and the project was restored before invoking the command.</target>
+        <note>{StrBegin="NETSDK1214: "}</note>
+      </trans-unit>
       <trans-unit id="AtLeastOneTargetFrameworkMustBeSpecified">
         <source>NETSDK1001: At least one possible target framework must be specified.</source>
         <target state="translated">NETSDK1001: 가능한 대상 프레임워크를 하나 이상 지정해야 합니다.</target>
