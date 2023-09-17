@@ -6,8 +6,8 @@ using Microsoft.Build.Framework;
 namespace Microsoft.NET.Build.Tasks
 {
     /// <summary>
-    /// Check if Runtime Identifier of the current MSBuild task matches the targets of projects.assets.json.
-    /// Without this check MSBuild targets that rely on RID (e.g. Clean) fail with a cryptic error.
+    /// Check if Runtime Identifier of the current MSBuild task exists in the targets of the project.assets.json.
+    /// Throw an error if RID is not present in the targets.
     /// </summary>
     public sealed class CheckRuntimeIdentifier : TaskBase
     {
@@ -60,10 +60,7 @@ namespace Microsoft.NET.Build.Tasks
 
         private void ThrowRuntimeIdentifierMismatchError()
         {
-            var ridMismatchMessage = string.Format(Strings.AssetsFileMissingRuntimeIdentifier,
-                ProjectAssetsFile, $"{TargetFramework}/{RuntimeIdentifier}",
-                TargetFramework, RuntimeIdentifier);
-
+            var ridMismatchMessage = string.Format(Strings.AssetsFileRuntimeIdentifierMismatch, RuntimeIdentifier);
             throw new BuildErrorException(ridMismatchMessage);
         }
     }
