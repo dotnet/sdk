@@ -68,7 +68,7 @@ namespace Microsoft.DotNet.Cli.ToolPackage
         }
 
         public IToolPackage InstallPackage(PackageLocation packageLocation, PackageId packageId,
-            VerbosityOptions verbosity,
+            VerbosityOptions verbosity = VerbosityOptions.normal,
             VersionRange versionRange = null,
             string targetFramework = null,
             bool isGlobalTool = false
@@ -95,20 +95,22 @@ namespace Microsoft.DotNet.Cli.ToolPackage
                     var packageSourceLocation = new PackageSourceLocation(packageLocation.NugetConfig, packageLocation.RootConfigDirectory, null, packageLocation.AdditionalFeeds);
                     NuGetVersion packageVersion = nugetPackageDownloader.GetBestPackageVersionAsync(packageId, versionRange, packageSourceLocation).GetAwaiter().GetResult();
 
-                    rollbackDirectory = isGlobalTool ? toolDownloadDir.Value: Path.Combine(toolDownloadDir.Value, packageId.ToString(), packageVersion.ToString());  
+                    rollbackDirectory = isGlobalTool ? toolDownloadDir.Value: Path.Combine(toolDownloadDir.Value, packageId.ToString(), packageVersion.ToString());
 
-                    NuGetv3LocalRepository nugetPackageRootDirectory = new(Path.Combine(_toolPackageStore.GetRootPackageDirectory(packageId).ToString().Trim('"'), packageVersion.ToString()));
-                    var globalPackage = nugetPackageRootDirectory.FindPackage(packageId.ToString(), packageVersion);
-
-                    if(isGlobalTool && globalPackage != null)
+                    if (isGlobalTool)
                     {
-                        throw new ToolPackageException(
-                            string.Format(
-                                CommonLocalizableStrings.ToolPackageConflictPackageId,
-                                packageId,
-                                packageVersion.ToNormalizedString()));
-                    }
+                        NuGetv3LocalRepository nugetPackageRootDirectory = new(Path.Combine(_toolPackageStore.GetRootPackageDirectory(packageId).ToString().Trim('"'), packageVersion.ToString()));
+                        var globalPackage = nugetPackageRootDirectory.FindPackage(packageId.ToString(), packageVersion);
 
+                        if (globalPackage != null)
+                        {
+                            throw new ToolPackageException(
+                                string.Format(
+                                    CommonLocalizableStrings.ToolPackageConflictPackageId,
+                                    packageId,
+                                    packageVersion.ToNormalizedString()));
+                        }
+                    }
                     NuGetv3LocalRepository localRepository = new(toolDownloadDir.Value);
                     var package = localRepository.FindPackage(packageId.ToString(), packageVersion);
 

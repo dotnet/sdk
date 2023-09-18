@@ -414,6 +414,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 feeds: GetMockFeedsForSource(source));
 
             static void FailedStepAfterSuccessDownload() => throw new GracefulException("simulated error");
+            ISettings settings = Settings.LoadDefaultSettings(Directory.GetCurrentDirectory());
+            var localToolDownloadDir = Path.Combine(new DirectoryPath(SettingsUtility.GetGlobalPackagesFolder(settings)).ToString().Trim('"'), TestPackageId.ToString());
 
             Action a = () =>
             {
@@ -427,15 +429,19 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                         versionRange: VersionRange.Parse(TestPackageVersion),
                         targetFramework: _testTargetframework);
 
+                    fileSystem
+                    .Directory
+                        .Exists(localToolDownloadDir)
+                        .Should()
+                        .BeTrue();
+
                     FailedStepAfterSuccessDownload();
                     t.Complete();
                 }
             };
 
             a.Should().Throw<GracefulException>().WithMessage("simulated error");
-
-            ISettings settings = Settings.LoadDefaultSettings(Directory.GetCurrentDirectory());
-            var localToolDownloadDir = Path.Combine(new DirectoryPath(SettingsUtility.GetGlobalPackagesFolder(settings)).ToString().Trim('"'), TestPackageId.ToString());
+            
             fileSystem
             .Directory
                 .Exists(localToolDownloadDir)
@@ -467,21 +473,18 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                     TransactionScopeOption.Required,
                     TimeSpan.Zero))
                 {
-                    Action first = () => downloader.InstallPackage(new PackageLocation(additionalFeeds: new[] { source }),
+                    downloader.InstallPackage(new PackageLocation(additionalFeeds: new[] { source }),
                         packageId: TestPackageId,
                         verbosity: TestVerbosity,
                         versionRange: VersionRange.Parse(TestPackageVersion),
                         targetFramework: _testTargetframework);
 
-                    first.Should().NotThrow();
 
-                    Action second = () => downloader.InstallPackage(new PackageLocation(additionalFeeds: new[] { source }),
+                    downloader.InstallPackage(new PackageLocation(additionalFeeds: new[] { source }),
                         packageId: TestPackageId,
                         verbosity: TestVerbosity,
                         versionRange: VersionRange.Parse(TestPackageVersion),
                         targetFramework: _testTargetframework);
-
-                    second.Should().NotThrow();
 
                     t.Complete();
                 }
