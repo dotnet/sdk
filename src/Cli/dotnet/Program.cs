@@ -139,9 +139,14 @@ namespace Microsoft.DotNet.Cli
                             ToolPathSentinelFileName)));
                 if (parseResult.ValueForOption<bool>(Parser.DiagOption) && parseResult.IsDotnetBuiltInCommand())
                 {
-                    Environment.SetEnvironmentVariable(CommandContext.Variables.Verbose, bool.TrueString);
-                    CommandContext.SetVerbose(true);
-                    Reporter.Reset();
+                    // We found --diagnostic or -d, but we still need to determine whether the option should
+                    // be attached to the dotnet command or the subcommand.
+                    if (args.DiagOptionPrecedesSubcommand(parseResult.RootSubCommandResult()))
+                    {
+                        Environment.SetEnvironmentVariable(CommandContext.Variables.Verbose, bool.TrueString);
+                        CommandContext.SetVerbose(true);
+                        Reporter.Reset();
+                    }
                 }
                 if (parseResult.HasOption(Parser.VersionOption) && parseResult.IsTopLevelDotnetCommand())
                 {

@@ -69,6 +69,30 @@ namespace Microsoft.DotNet.Cli
             return subargs.Concat(runArgs).ToArray();
         }
 
+        public static bool DiagOptionPrecedesSubcommand(this string[] args, string subCommand)
+        {
+            if (string.IsNullOrEmpty(subCommand))
+            {
+                return true;
+            }
+            else
+            {
+                for (var i = 0; i < args.Length; i++)
+                {
+                    if (args[i].Equals(subCommand))
+                    {
+                        return false;
+                    }
+                    else if (DiagOption.Aliases.Contains(args[i]))
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
         private static string GetSymbolResultValue(ParseResult parseResult, SymbolResult symbolResult)
         {
             if (symbolResult.Token() == null)
