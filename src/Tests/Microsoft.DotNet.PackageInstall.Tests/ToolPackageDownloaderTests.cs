@@ -16,6 +16,7 @@ using NuGet.Versioning;
 using System.Runtime.CompilerServices;
 using Microsoft.DotNet.ToolPackage;
 using NuGet.Frameworks;
+using NuGet.Configuration;
 
 namespace Microsoft.DotNet.PackageInstall.Tests
 {
@@ -399,6 +400,91 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                           TestPackageVersion));
 
             AssertInstallRollBack(fileSystem, store);
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void GivenFailureWhenInstallLocalToolsItWillRollbackPackageVersion(bool testMockBehaviorIsInSync)
+        {
+            var source = GetTestLocalFeedPath();
+
+            var (store, storeQuery, downloader, uninstaller, reporter, fileSystem) = Setup(
+                useMock: testMockBehaviorIsInSync,
+                feeds: GetMockFeedsForSource(source));
+
+            static void FailedStepAfterSuccessDownload() => throw new GracefulException("simulated error");
+
+            Action a = () =>
+            {
+                using (var t = new TransactionScope(
+                    TransactionScopeOption.Required,
+                    TimeSpan.Zero))
+                {
+                    downloader.InstallPackage(new PackageLocation(additionalFeeds: new[] { source }),
+                        packageId: TestPackageId,
+                        verbosity: TestVerbosity,
+                        versionRange: VersionRange.Parse(TestPackageVersion),
+                        targetFramework: _testTargetframework);
+
+                    FailedStepAfterSuccessDownload();
+                    t.Complete();
+                }
+            };
+
+            a.Should().Throw<GracefulException>().WithMessage("simulated error");
+
+            ISettings settings = Settings.LoadDefaultSettings(Directory.GetCurrentDirectory());
+            var localToolDownloadDir = Path.Combine(new DirectoryPath(SettingsUtility.GetGlobalPackagesFolder(settings)).ToString().Trim('"'), TestPackageId.ToString());
+            fileSystem
+            .Directory
+                .Exists(localToolDownloadDir)
+                .Should()
+                .BeTrue();
+
+            fileSystem
+                .Directory
+                .EnumerateFileSystemEntries(localToolDownloadDir)
+                .Should()
+                .BeEmpty();
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void GivenSecondInstallOfLocalToolItShouldNotThrowException(bool testMockBehaviorIsInSync)
+        {
+            var source = GetTestLocalFeedPath();
+
+            var (store, storeQuery, downloader, uninstaller, reporter, fileSystem) = Setup(
+                useMock: testMockBehaviorIsInSync,
+                feeds: GetMockFeedsForSource(source));
+
+            Action a = () =>
+            {
+                using (var t = new TransactionScope(
+                    TransactionScopeOption.Required,
+                    TimeSpan.Zero))
+                {
+                    Action first = () => downloader.InstallPackage(new PackageLocation(additionalFeeds: new[] { source }),
+                        packageId: TestPackageId,
+                        verbosity: TestVerbosity,
+                        versionRange: VersionRange.Parse(TestPackageVersion),
+                        targetFramework: _testTargetframework);
+
+                    first.Should().NotThrow();
+
+                    Action second = () => downloader.InstallPackage(new PackageLocation(additionalFeeds: new[] { source }),
+                        packageId: TestPackageId,
+                        verbosity: TestVerbosity,
+                        versionRange: VersionRange.Parse(TestPackageVersion),
+                        targetFramework: _testTargetframework);
+
+                    second.Should().NotThrow();
+
+                    t.Complete();
+                }
+            };
         }
 
         [Theory]
