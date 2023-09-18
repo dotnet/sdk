@@ -125,6 +125,8 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
                     var packageVersion = feedPackage.Version;
                     targetFramework = string.IsNullOrEmpty(targetFramework) ? "targetFramework" : targetFramework;
 
+                    rollbackDirectory = isGlobalTool ? _toolDownloadDir.Value : Path.Combine(_toolDownloadDir.Value, packageId.ToString(), packageVersion.ToString());
+
                     var fakeExecutableSubDirectory = Path.Combine(
                        packageId.ToString().ToLowerInvariant(),
                        packageVersion.ToLowerInvariant(),
@@ -163,7 +165,9 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
                         packageDirectory = new DirectoryPath(NuGetGlobalPackagesFolder.GetLocation()).WithSubDirectories(packageId.ToString());
                         _fileSystem.Directory.CreateDirectory(packageDirectory.Value);
                         var executable = packageDirectory.WithFile("exe");
-                        _fileSystem.File.CreateEmptyFile(executable.Value); 
+                        _fileSystem.File.CreateEmptyFile(executable.Value);
+                        rollbackDirectory = Path.Combine(packageDirectory.Value, packageVersion);
+
 
                         return new TestToolPackage
                         {

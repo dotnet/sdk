@@ -442,11 +442,12 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 .Should()
                 .BeTrue();
 
+            var localToolVersionDir = Path.Combine(localToolDownloadDir, TestPackageVersion.ToString());
             fileSystem
                 .Directory
-                .EnumerateFileSystemEntries(localToolDownloadDir)
+                .Exists(localToolVersionDir)
                 .Should()
-                .BeEmpty();
+                .BeFalse();
         }
 
         [Theory]
