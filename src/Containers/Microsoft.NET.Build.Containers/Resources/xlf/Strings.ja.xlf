@@ -22,6 +22,11 @@
         <target state="translated">CONTAINER2026: ContainerAppCommandInstruction が '{0}' の場合、ContainerAppCommand と ContainerAppCommandArgs を空にする必要があります。</target>
         <note>{StrBegin="CONTAINER2026: "}</note>
       </trans-unit>
+      <trans-unit id="ArchiveRegistry_PushInfo">
+        <source>local archive at '{0}'</source>
+        <target state="translated">ローカル アーカイブ ('{0}')</target>
+        <note>{0} is the path to the file written</note>
+      </trans-unit>
       <trans-unit id="BaseEntrypointOverwritten">
         <source>CONTAINER2022: The base image has an entrypoint that will be overwritten to start the application. Set ContainerAppCommandInstruction to 'Entrypoint' if this is desired. To preserve the base image entrypoint, set ContainerAppCommandInstruction to 'DefaultArgs'.</source>
         <target state="translated">CONTAINER2022: 基本イメージに、アプリケーションの開始時に上書きされるエントリ ポイントがあります。このまま上書きする場合は、ContainerAppCommandInstruction を 'Entrypoint' に設定します。基本イメージのエントリ ポイントを保持するには、ContainerAppCommandInstruction を 'DefaultArgs' に設定します。</target>
@@ -53,13 +58,13 @@
         <note>{StrBegin="CONTAINER1001: "}</note>
       </trans-unit>
       <trans-unit id="ContainerBuilder_ImageUploadedToLocalDaemon">
-        <source>Pushed container '{0}' to Docker daemon.</source>
-        <target state="translated">コンテナー '{0}' を Docker デーモンにプッシュしました。</target>
+        <source>Pushed image '{0}' to {1}.</source>
+        <target state="translated">イメージ '{0}' を {1} にプッシュしました。</target>
         <note />
       </trans-unit>
       <trans-unit id="ContainerBuilder_ImageUploadedToRegistry">
-        <source>Pushed container '{0}' to registry '{1}'.</source>
-        <target state="translated">コンテナー '{0}' をレジストリ '{1}' にプッシュしました。</target>
+        <source>Pushed image '{0}' to registry '{1}'.</source>
+        <target state="translated">イメージ '{0}' をレジストリ '{1}' にプッシュしました。</target>
         <note />
       </trans-unit>
       <trans-unit id="ContainerBuilder_StartBuildingImage">
@@ -77,6 +82,11 @@
         <target state="translated">CONTAINER2012: レジストリ '{0}' を認識できませんでした。</target>
         <note>{StrBegin="CONTAINER2012: "}</note>
       </trans-unit>
+      <trans-unit id="DockerCli_PushInfo">
+        <source>local registry via '{0}'</source>
+        <target state="translated">'{0}' 経由のローカル レジストリ</target>
+        <note>{0} is the command used</note>
+      </trans-unit>
       <trans-unit id="DockerInfoFailed">
         <source>CONTAINER3002: Failed to get docker info({0})\n{1}\n{2}</source>
         <target state="translated">CONTAINER3002: Docker 情報 ({0})\n{1}\n{2} を取得できませんでした</target>
@@ -87,7 +97,7 @@
         <target state="translated">CONTAINER3002: Docker 情報を取得できませんでした: {0}</target>
         <note>{StrBegin="CONTAINER3002: "}</note>
       </trans-unit>
-      <trans-unit id="DockerProcessCreationFailed">
+      <trans-unit id="ContainerRuntimeProcessCreationFailed">
         <source>CONTAINER3001: Failed creating {0} process.</source>
         <target state="translated">CONTAINER3001: {0} プロセスを作成できませんでした。</target>
         <note>CONTAINER3001: {0} is the name of the command we failed to run, usually 'docker' or 'podman'.</note>
@@ -247,14 +257,24 @@
         <target state="translated">CONTAINER2011: {0} '{1}' が存在しません</target>
         <note>{StrBegin="CONTAINER2011: "}</note>
       </trans-unit>
+      <trans-unit id="RegistryOperationFailed">
+        <source>CONTAINER1017: Unable to communicate with the registry '{0}'.</source>
+        <target state="translated">CONTAINER1017: レジストリ '{0}' と通信できません。</target>
+        <note>{StrBegin="CONTAINER1017:" }</note>
+      </trans-unit>
       <trans-unit id="RegistryOutputPushFailed">
         <source>CONTAINER1013: Failed to push to the output registry: {0}</source>
         <target state="translated">CONTAINER1013: 出力レジストリにプッシュできませんでした: {0}</target>
         <note>{StrBegin="CONTAINER1013: "}</note>
       </trans-unit>
+      <trans-unit id="RegistryPullFailed">
+        <source>CONTAINER1014: Manifest pull failed.</source>
+        <target state="translated">CONTAINER1014: マニフェストのプルに失敗しました。</target>
+        <note>{StrBegin="CONTAINER1014: "}</note>
+      </trans-unit>
       <trans-unit id="RegistryPushFailed">
-        <source>CONTAINER1005: Registry push failed.</source>
-        <target state="translated">CONTAINER1005: レジストリのプッシュに失敗しました。</target>
+        <source>CONTAINER1005: Registry push failed; received status code '{0}'.</source>
+        <target state="translated">CONTAINER1005: レジストリのプッシュに失敗しました。状態コード '{0}' を受信しました。</target>
         <note>{StrBegin="CONTAINER1005: "}</note>
       </trans-unit>
       <trans-unit id="Registry_ConfigUploadStarted">
@@ -302,6 +322,11 @@
         <target state="translated">タグ '{0}' を '{1}' にアップロードしました。</target>
         <note>{1} is the registry name</note>
       </trans-unit>
+      <trans-unit id="RepositoryNotFound">
+        <source>CONTAINER1015: Unable to access the repository '{0}' at tag '{1}' in the registry '{2}'. Please confirm that this name and tag are present in the registry.</source>
+        <target state="translated">CONTAINER1015: レジストリ '{2}' のタグ '{1}' にあるリポジトリ '{0}' にアクセスできません。この名前とタグがレジストリに存在することを確認してください。</target>
+        <note>{StrBegin="CONTAINER1015: "}</note>
+      </trans-unit>
       <trans-unit id="RequiredItemsContainsEmptyItems">
         <source>CONTAINER4003: Required '{0}' items contain empty items.</source>
         <target state="translated">CONTAINER4003: 必須の '{0}' 項目に空の項目が含まれています。</target>
@@ -321,6 +346,11 @@
         <source>CONTAINER1006: Too many retries, stopping.</source>
         <target state="translated">CONTAINER1006: 再試行回数が多すぎます。停止しています。</target>
         <note>{StrBegin="CONTAINER1006: "}</note>
+      </trans-unit>
+      <trans-unit id="UnableToAccessRepository">
+        <source>CONTAINER1016: Unable to access the repository '{0}' in the registry '{1}'. Please confirm your credentials are correct and that you have access to this repository and registry.</source>
+        <target state="translated">CONTAINER1016: レジストリ '{1}' のリポジトリ '{0}' にアクセスできません。資格情報が正しいこと、およびこのリポジトリとレジストリへのアクセス権があることを確認してください。</target>
+        <note>{StrBegin="CONTAINER1016:" }</note>
       </trans-unit>
       <trans-unit id="UnknownAppCommandInstruction">
         <source>CONTAINER2021: Unknown AppCommandInstruction '{0}'. Valid instructions are {1}.</source>
