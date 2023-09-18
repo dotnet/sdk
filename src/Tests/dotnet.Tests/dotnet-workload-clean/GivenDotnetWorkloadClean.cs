@@ -165,11 +165,11 @@ namespace Microsoft.DotNet.Cli.Workload.Clean.Tests
 
         private void AssertExtraneousPacksAreRemoved(string extraPackPath, string extraPackRecordPath, bool entirePackRootPathShouldRemain = false)
         {
-            File.Exists(extraPackRecordPath).Should().BeFalse();
+            new FileInfo(extraPackRecordPath).Should().NotExist();
             if (!entirePackRootPathShouldRemain)
             {
-                Directory.Exists(Path.GetDirectoryName(Path.GetDirectoryName(extraPackRecordPath))).Should().BeFalse();
-                Directory.Exists(extraPackPath).Should().BeFalse();
+                new DirectoryInfo(Path.GetDirectoryName(Path.GetDirectoryName(extraPackRecordPath))).Should().NotExist();
+                new DirectoryInfo(extraPackPath).Should().NotExist();
             }
         }
 
