@@ -64,7 +64,7 @@ namespace Microsoft.DotNet.Cli
             var runArgs = subargs.Contains("--") ? subargs.GetRange(subargs.IndexOf("--"), subargs.Count() - subargs.IndexOf("--")) : new List<string>();
             subargs = subargs.Contains("--") ? subargs.GetRange(0, subargs.IndexOf("--")) : subargs;
 
-            subargs.SkipWhile(arg => DiagOption.Aliases.Contains(arg));
+            subargs = subargs.SkipWhile(arg => DiagOption.Aliases.Contains(arg)).ToList();
             if (subargs[0].Equals("dotnet"))
             {
                 subargs.RemoveAt(0);
