@@ -102,7 +102,7 @@ namespace Microsoft.DotNet.Cli.ToolPackage
 
                     rollbackDirectory = isGlobalTool ? toolDownloadDir.Value: Path.Combine(toolDownloadDir.Value, packageId.ToString(), packageVersion.ToString());  
 
-                    NuGetv3LocalRepository nugetPackageRootDirectory = new(Path.Combine(_toolPackageStore.Root.ToString(), packageId.ToString(), packageVersion.ToString()));
+                    NuGetv3LocalRepository nugetPackageRootDirectory = new(Path.Combine(_toolPackageStore.GetRootPackageDirectory(packageId).ToString().Trim('"'), packageVersion.ToString()));
                     var globalPackage = nugetPackageRootDirectory.FindPackage(packageId.ToString(), packageVersion);
 
                     if(isGlobalTool && globalPackage != null)
