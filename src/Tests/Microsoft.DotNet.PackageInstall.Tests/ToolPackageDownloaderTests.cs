@@ -50,6 +50,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
 
             var package = downloader.InstallPackage(new PackageLocation(nugetConfig: nugetConfigPath),
                 packageId: TestPackageId,
+                verbosity: TestVerbosity,
                 versionRange: VersionRange.Parse(TestPackageVersion),
                 targetFramework: _testTargetframework,
                 isGlobalTool: true);
@@ -77,6 +78,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             {
                 package = downloader.InstallPackage(new PackageLocation(nugetConfig: nugetConfigPath),
                     packageId: TestPackageId,
+                    verbosity: TestVerbosity,
                     versionRange: VersionRange.Parse(TestPackageVersion),
                     targetFramework: _testTargetframework,
                     isGlobalTool: true);
@@ -102,6 +104,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
 
             var package = downloader.InstallPackage(new PackageLocation(nugetConfig: nugetConfigPath),
                 packageId: TestPackageId,
+                verbosity: TestVerbosity,
                 versionRange: VersionRange.Parse(TestPackageVersion),
                 targetFramework: _testTargetframework,
                 isGlobalTool: true);
@@ -164,6 +167,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             var package = downloader.InstallPackage(
                 new PackageLocation(rootConfigDirectory: subDirUnderNugetConfigPath),
                 packageId: TestPackageId,
+                verbosity: TestVerbosity,
                 versionRange: VersionRange.Parse(TestPackageVersion),
                 targetFramework: _testTargetframework,
                 isGlobalTool: true);
@@ -187,6 +191,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             var package = downloader.InstallPackage(
                 new PackageLocation(nugetConfig: nugetConfigPath),
                 packageId: TestPackageId,
+                verbosity: TestVerbosity,
                 targetFramework: _testTargetframework,
                 isGlobalTool: true);
 
@@ -208,6 +213,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
 
             var package = downloader.InstallPackage(new PackageLocation(nugetConfig: nugetConfigPath),
                 packageId: TestPackageId,
+                verbosity: TestVerbosity,
                 versionRange: VersionRange.Parse(TestPackageVersion),
                 isGlobalTool: true);
 
@@ -229,6 +235,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
 
             var package = downloader.InstallPackage(new PackageLocation(additionalFeeds: new[] { source }),
                 packageId: TestPackageId,
+                verbosity: TestVerbosity,
                 versionRange: VersionRange.Parse(TestPackageVersion),
                 targetFramework: _testTargetframework,
                 isGlobalTool: true);
@@ -252,6 +259,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             var package = downloader.InstallPackage(
                 new PackageLocation(additionalFeeds: new[]
                     {Path.GetRelativePath(Directory.GetCurrentDirectory(), source)}), packageId: TestPackageId,
+                verbosity: TestVerbosity,
                 versionRange: VersionRange.Parse(TestPackageVersion),
                 targetFramework: _testTargetframework,
                 isGlobalTool: true);
@@ -274,6 +282,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
 
             var package = downloader.InstallPackage(
                 new PackageLocation(additionalFeeds: new[] { new Uri(source).AbsoluteUri }), packageId: TestPackageId,
+                verbosity: TestVerbosity,
                 versionRange: VersionRange.Parse(TestPackageVersion),
                 targetFramework: _testTargetframework,
                 isGlobalTool: true);
@@ -299,6 +308,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             var package = downloader.InstallPackage(new PackageLocation(nugetConfig: nugetConfigPath,
                     additionalFeeds: new[] { emptySource }),
                 packageId: TestPackageId,
+                verbosity: TestVerbosity,
                 versionRange: VersionRange.Parse(TestPackageVersion),
                 targetFramework: _testTargetframework,
                 isGlobalTool: true);
@@ -329,6 +339,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 {
                     downloader.InstallPackage(new PackageLocation(additionalFeeds: new[] { source }),
                         packageId: TestPackageId,
+                        verbosity: TestVerbosity,
                         versionRange: VersionRange.Parse(TestPackageVersion),
                         targetFramework: _testTargetframework,
                         isGlobalTool: true);
@@ -362,6 +373,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 {
                     Action first = () => downloader.InstallPackage(new PackageLocation(additionalFeeds: new[] { source }),
                         packageId: TestPackageId,
+                        verbosity: TestVerbosity,
                         versionRange: VersionRange.Parse(TestPackageVersion),
                         targetFramework: _testTargetframework,
                         isGlobalTool: true);
@@ -370,6 +382,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
 
                     downloader.InstallPackage(new PackageLocation(additionalFeeds: new[] { source }),
                         packageId: TestPackageId,
+                        verbosity: TestVerbosity,
                         versionRange: VersionRange.Parse(TestPackageVersion),
                         targetFramework: _testTargetframework,
                         isGlobalTool: true);
@@ -401,6 +414,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
 
             var package = downloader.InstallPackage(new PackageLocation(additionalFeeds: new[] { source }),
                 packageId: TestPackageId,
+                verbosity: TestVerbosity,
                 versionRange: VersionRange.Parse(TestPackageVersion),
                 targetFramework: _testTargetframework,
                 isGlobalTool: true);
@@ -409,6 +423,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
 
             Action secondCall = () => downloader.InstallPackage(new PackageLocation(additionalFeeds: new[] { source }),
                 packageId: TestPackageId,
+                verbosity: TestVerbosity,
                 versionRange: VersionRange.Parse(TestPackageVersion),
                 targetFramework: _testTargetframework,
                 isGlobalTool: true);
@@ -451,6 +466,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
 
             var package = downloader.InstallPackage(new PackageLocation(additionalFeeds: new[] { source }),
                 packageId: TestPackageId,
+                verbosity: TestVerbosity,
                 versionRange: VersionRange.Parse(TestPackageVersion),
                 targetFramework: _testTargetframework,
                 isGlobalTool: true);
@@ -476,6 +492,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             var package = downloader.InstallPackage(
                 new PackageLocation(additionalFeeds: new[] { source }),
                 packageId: TestPackageId,
+                verbosity: TestVerbosity,
                 versionRange: VersionRange.Parse(TestPackageVersion),
                 targetFramework: _testTargetframework,
                 isGlobalTool: true);
@@ -510,6 +527,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
 
             var package = downloader.InstallPackage(new PackageLocation(additionalFeeds: new[] { source }),
                 packageId: TestPackageId,
+                verbosity: TestVerbosity,
                 versionRange: VersionRange.Parse(TestPackageVersion),
                 targetFramework: _testTargetframework,
                 isGlobalTool: true);
@@ -540,6 +558,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
 
             var package = downloader.InstallPackage(new PackageLocation(nugetConfig: nugetConfigPath),
                 packageId: new PackageId("GlObAl.TooL.coNsoLe.DemO"),
+                verbosity: TestVerbosity,
                 targetFramework: _testTargetframework,
                 isGlobalTool: true);
 
@@ -570,6 +589,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
 
             var package = downloader.InstallPackage(new PackageLocation(nugetConfig: nugetConfigPath),
                 packageId: TestPackageId,
+                verbosity: TestVerbosity,
                 versionRange: VersionRange.Parse(TestPackageVersion),
                 targetFramework: _testTargetframework,
                 isGlobalTool: true);
@@ -596,6 +616,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             var package = downloader.InstallPackage(new PackageLocation(nugetConfig: nugetConfigPath,
                     additionalFeeds: new[] { emptySource }),
                 packageId: TestPackageId,
+                verbosity: TestVerbosity,
                 versionRange: VersionRange.Parse("1.0.0-rc*"),
                 targetFramework: _testTargetframework,
                 isGlobalTool: true);
@@ -647,6 +668,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                         nugetConfig: nugetConfigPath,
                         additionalFeeds: new[] { emptySource }),
                     packageId: packageId,
+                    verbosity: TestVerbosity,
                     versionRange: VersionRange.Parse(packageVersion),
                     targetFramework: _testTargetframework,
                     isGlobalTool: true);
@@ -883,7 +905,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         private const string TestPackageVersion = "1.0.4";
         private static readonly PackageId TestPackageId = new PackageId("global.tool.console.demo");
         private static readonly IEnumerable<NuGetFramework> TestFrameworks = new NuGetFramework[] { NuGetFramework.Parse("netcoreapp2.1") };
-
+        private static readonly VerbosityOptions TestVerbosity = new VerbosityOptions();
         public ToolPackageDownloaderTests(ITestOutputHelper log) : base(log)
         {
         }

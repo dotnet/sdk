@@ -68,9 +68,9 @@ namespace Microsoft.DotNet.Cli.ToolPackage
         }
 
         public IToolPackage InstallPackage(PackageLocation packageLocation, PackageId packageId,
+            VerbosityOptions verbosity,
             VersionRange versionRange = null,
             string targetFramework = null,
-            string verbosity = null,
             bool isGlobalTool = false
             )
         {
@@ -81,14 +81,9 @@ namespace Microsoft.DotNet.Cli.ToolPackage
                 action: () =>
                 {
                     ILogger nugetLogger = new NullLogger();
-                    if(verbosity != null)
+                    if (verbosity.IsDetailedOrDiagnostic())
                     {
-                        VerbosityOptions verbosityOption;
-                        Enum.TryParse(verbosity, out verbosityOption);
-                        if (verbosityOption.IsDetailedOrDiagnostic())
-                        {
-                            nugetLogger = new NuGetConsoleLogger();
-                        }
+                        nugetLogger = new NuGetConsoleLogger();
                     }
                     var versionString = versionRange?.OriginalString ?? "*";
                     versionRange = VersionRange.Parse(versionString);

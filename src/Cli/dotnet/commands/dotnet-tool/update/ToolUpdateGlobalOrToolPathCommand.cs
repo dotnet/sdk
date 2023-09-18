@@ -33,7 +33,7 @@ namespace Microsoft.DotNet.Tools.Tool.Update
         private readonly string _framework;
         private readonly string[] _additionalFeeds;
         private readonly bool _global;
-        private readonly string _verbosity;
+        private readonly VerbosityOptions _verbosity;
         private readonly string _toolPath;
         private readonly IEnumerable<string> _forwardRestoreArguments;
         private readonly string _packageVersion;
@@ -50,7 +50,7 @@ namespace Microsoft.DotNet.Tools.Tool.Update
             _additionalFeeds = parseResult.GetValue(ToolUpdateCommandParser.AddSourceOption);
             _packageVersion = parseResult.GetValue(ToolUpdateCommandParser.VersionOption);
             _global = parseResult.GetValue(ToolUpdateCommandParser.GlobalOption);
-            _verbosity = Enum.GetName(parseResult.GetValue(ToolUpdateCommandParser.VerbosityOption));
+            _verbosity = parseResult.GetValue(ToolUpdateCommandParser.VerbosityOption);
             _toolPath = parseResult.GetValue(ToolUpdateCommandParser.ToolPathOption);
             _forwardRestoreArguments = parseResult.OptionValuesToBeForwarded(ToolUpdateCommandParser.GetCommand());
 

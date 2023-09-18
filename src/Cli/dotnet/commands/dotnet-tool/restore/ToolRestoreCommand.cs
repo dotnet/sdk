@@ -23,7 +23,7 @@ namespace Microsoft.DotNet.Tools.Tool.Restore
         private readonly IReporter _reporter;
         private readonly string[] _sources;
         private readonly IToolPackageDownloader _toolPackageDownloader;
-        private readonly string _verbosity;
+        private readonly VerbosityOptions _verbosity;
 
         public ToolRestoreCommand(
             ParseResult result,
@@ -60,7 +60,7 @@ namespace Microsoft.DotNet.Tools.Tool.Restore
 
             _configFilePath = result.GetValue(ToolRestoreCommandParser.ConfigOption);
             _sources = result.GetValue(ToolRestoreCommandParser.AddSourceOption);
-            _verbosity = Enum.GetName(result.GetValue(ToolRestoreCommandParser.VerbosityOption));
+            _verbosity = result.GetValue(ToolRestoreCommandParser.VerbosityOption);
         }
 
         public override int Execute()
@@ -130,8 +130,8 @@ namespace Microsoft.DotNet.Tools.Tool.Restore
                             nugetConfig: configFile,
                             additionalFeeds: _sources,
                             rootConfigDirectory: package.FirstEffectDirectory),
-                        package.PackageId, ToVersionRangeWithOnlyOneVersion(package.Version), targetFramework,
-                        verbosity: _verbosity);
+                        package.PackageId, verbosity: _verbosity, ToVersionRangeWithOnlyOneVersion(package.Version), targetFramework
+                        );
 
                 if (!ManifestCommandMatchesActualInPackage(package.CommandNames, toolPackage.Commands))
                 {

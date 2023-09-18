@@ -10,9 +10,9 @@ namespace Microsoft.DotNet.Cli.ToolPackage
     internal interface IToolPackageDownloader
     {
         IToolPackage InstallPackage(PackageLocation packageLocation, PackageId packageId,
+            VerbosityOptions verbosity,
             VersionRange versionRange = null,
             string targetFramework = null,
-            string verbosity = null,
             bool isGlobalTool = false
         );
     }

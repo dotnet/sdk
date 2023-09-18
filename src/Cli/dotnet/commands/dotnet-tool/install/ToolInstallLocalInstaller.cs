@@ -23,7 +23,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
         private readonly string _packageVersion;
         private readonly string _configFilePath;
         private readonly string[] _sources;
-        private readonly string _verbosity;
+        private readonly VerbosityOptions _verbosity;
 
         public ToolInstallLocalInstaller(
             ParseResult parseResult,
@@ -34,7 +34,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
             _packageVersion = parseResult.GetValue(ToolInstallCommandParser.VersionOption);
             _configFilePath = parseResult.GetValue(ToolInstallCommandParser.ConfigOption);
             _sources = parseResult.GetValue(ToolInstallCommandParser.AddSourceOption);
-            _verbosity = Enum.GetName(parseResult.GetValue(ToolInstallCommandParser.VerbosityOption));
+            _verbosity = parseResult.GetValue(ToolInstallCommandParser.VerbosityOption);
 
             (IToolPackageStore store,
                 IToolPackageStoreQuery,
@@ -74,9 +74,10 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                             additionalFeeds: _sources,
                             rootConfigDirectory: manifestFile.GetDirectoryPath().GetParentPath()),
                         _packageId,
+                        verbosity: _verbosity,
                         versionRange,
-                        TargetFrameworkToInstall,
-                        verbosity: _verbosity);
+                        TargetFrameworkToInstall
+                        );
 
                 return toolDownloadedPackage;
             }

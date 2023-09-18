@@ -93,9 +93,9 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
         }
 
         public IToolPackage InstallPackage(PackageLocation packageLocation, PackageId packageId,
+            VerbosityOptions verbosity,
             VersionRange versionRange = null,
             string targetFramework = null,
-            string verbosity = null,
             bool isGlobalTool = false
             )
         {

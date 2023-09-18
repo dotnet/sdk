@@ -321,12 +321,12 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
 
                 if (sources.Count == 0)
                 {
-                    throw new NuGetPackageInstallerException(string.Format(LocalizableStrings.FailedToGetPackageUnderPackageSourceMapping, packageId));
+                    throw new NuGetPackageInstallerException(string.Format(LocalizableStrings.FailedToFindSourceUnderPackageSourceMapping, packageId));
                 }
                 defaultSources = defaultSources.Where(source => sources.Contains(source.Name)).ToList();
                 if (defaultSources.Count == 0)
                 {
-                    throw new NuGetPackageInstallerException(string.Format(LocalizableStrings.FailedToGetPackageUnderPackageSourceMapping, packageId));
+                    throw new NuGetPackageInstallerException(string.Format(LocalizableStrings.FailedToMapSourceUnderPackageSourceMapping, packageId));
                 }
             }
 

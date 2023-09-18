@@ -184,7 +184,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 new NuGetVersion(TestPackageVersion),
                 new PackageSourceLocation(sourceFeedOverrides: new[] { relativePath }),
                 packageSourceMapping: mockPackageSourceMapping).GetAwaiter().GetResult();
-            a.Should().Throw<NuGetPackageInstallerException>().And.Message.Should().Contain(string.Format(Cli.NuGetPackageDownloader.LocalizableStrings.FailedToGetPackageUnderPackageSourceMapping, TestPackageId));
+            a.Should().Throw<NuGetPackageInstallerException>().And.Message.Should().Contain(string.Format(Cli.NuGetPackageDownloader.LocalizableStrings.FailedToFindSourceUnderPackageSourceMapping, TestPackageId));
         }
 
         [Fact]
@@ -205,7 +205,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 new NuGetVersion(TestPackageVersion),
                 new PackageSourceLocation(sourceFeedOverrides: new[] { relativePath }),
                 packageSourceMapping: mockPackageSourceMapping).GetAwaiter().GetResult();
-            a.Should().Throw<NuGetPackageInstallerException>().And.Message.Should().Contain(string.Format(Cli.NuGetPackageDownloader.LocalizableStrings.FailedToGetPackageUnderPackageSourceMapping, TestPackageId));
+            a.Should().Throw<NuGetPackageInstallerException>().And.Message.Should().Contain(string.Format(Cli.NuGetPackageDownloader.LocalizableStrings.FailedToMapSourceUnderPackageSourceMapping, TestPackageId));
         }
 
         [Fact]

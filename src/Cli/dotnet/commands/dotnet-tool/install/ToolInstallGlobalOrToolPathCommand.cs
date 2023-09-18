@@ -39,7 +39,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
         private readonly string _framework;
         private readonly string[] _source;
         private readonly bool _global;
-        private readonly string _verbosity;
+        private readonly VerbosityOptions _verbosity;
         private readonly string _toolPath;
         private readonly string _architectureOption;
         private IEnumerable<string> _forwardRestoreArguments;
@@ -59,7 +59,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
             _framework = parseResult.GetValue(ToolInstallCommandParser.FrameworkOption);
             _source = parseResult.GetValue(ToolInstallCommandParser.AddSourceOption);
             _global = parseResult.GetValue(ToolAppliedOption.GlobalOption);
-            _verbosity = Enum.GetName(parseResult.GetValue(ToolInstallCommandParser.VerbosityOption));
+            _verbosity = parseResult.GetValue(ToolInstallCommandParser.VerbosityOption);
             _toolPath = parseResult.GetValue(ToolAppliedOption.ToolPathOption);
             _architectureOption = parseResult.GetValue(ToolInstallCommandParser.ArchitectureOption);
 

@@ -29,6 +29,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
 
             var package = downloader.InstallPackage(new PackageLocation(additionalFeeds: new[] { source }),
                 packageId: TestPackageId,
+                verbosity: TestVerbosity,
                 versionRange: VersionRange.Parse(TestPackageVersion),
                 targetFramework: _testTargetframework,
                 isGlobalTool: true);
@@ -118,7 +119,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         private readonly string _testTargetframework = BundledTargetFramework.GetTargetFrameworkMoniker();
         private const string TestPackageVersion = "1.0.4";
         private static readonly PackageId TestPackageId = new PackageId("global.tool.console.demo.with.shim");
-
+        private static readonly VerbosityOptions TestVerbosity = new VerbosityOptions();
         public ToolPackageUninstallerTests(ITestOutputHelper log) : base(log)
         {
         }
