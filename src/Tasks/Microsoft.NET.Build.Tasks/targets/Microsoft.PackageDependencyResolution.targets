@@ -231,7 +231,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <!-- Throws an error when currently used runtime identifier is not present in project.assets.json. -->
   <Target Name="CheckRuntimeIdentifier"
-          Condition="'$(DesignTimeBuild)' != 'true'"
+          Condition="'$(DesignTimeBuild)' != 'true' And Exists('$(ProjectAssetsFile)')"
           BeforeTargets="ResolvePackageAssets">
 
     <CheckRuntimeIdentifier

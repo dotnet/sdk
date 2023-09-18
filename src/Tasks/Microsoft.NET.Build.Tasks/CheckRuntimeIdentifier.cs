@@ -15,6 +15,7 @@ namespace Microsoft.NET.Build.Tasks
         /// <summary>
         /// Path to assets.json.
         /// </summary>
+        [Required]
         public string ProjectAssetsFile { get; set; }
         /// <summary>
         /// TargetFramework to use for compile-time assets.
@@ -25,39 +26,24 @@ namespace Microsoft.NET.Build.Tasks
         /// RID to use for runtime assets (may be empty)
         /// </summary>
         public string RuntimeIdentifier { get; set; }
+
         #endregion
 
         protected override void ExecuteCore()
         {
-            if (string.IsNullOrEmpty(ProjectAssetsFile))
-            {
-                return; // can't check RuntimeIdentifier without ProjectAssetsFile
-            }
-
             if (string.IsNullOrEmpty(RuntimeIdentifier))
             {
                 return; // can't check RuntimeIdentifier if it is null
             }
 
-            if (LockFileHasMatchingRuntimeIdentifier())
-            {
-                return;
-            }
-
-            ThrowRuntimeIdentifierMismatchError();
-        }
-
-        private bool LockFileHasMatchingRuntimeIdentifier()
-        {
             var lockFile = new LockFileCache(this).GetLockFile(ProjectAssetsFile);
             var target = lockFile.GetTargetAndReturnNullIfNotFound(TargetFramework, RuntimeIdentifier);
-            return target != null;
-        }
 
-        private void ThrowRuntimeIdentifierMismatchError()
-        {
-            var ridMismatchMessage = string.Format(Strings.AssetsFileRuntimeIdentifierMismatch, RuntimeIdentifier);
-            throw new BuildErrorException(ridMismatchMessage);
+            if (target is null)
+            {
+                var ridMismatchMessage = string.Format(Strings.AssetsFileRuntimeIdentifierMismatch, RuntimeIdentifier);
+                throw new BuildErrorException(ridMismatchMessage);
+            }
         }
     }
 }
