@@ -448,7 +448,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
                 throw new NuGetPackageNotFoundException(
                     string.Format(
                         LocalizableStrings.IsNotFoundInNuGetFeeds,
-                        packageIdentifier,
+                        $"{packageIdentifier}::{versionRange}",
                         string.Join(", ", packageSources.Select(source => source.Source))));
             }
 
