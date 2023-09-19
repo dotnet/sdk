@@ -57,7 +57,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
             {
                 throw new ArgumentException($"{nameof(identifier)} cannot be null or empty", nameof(identifier));
             }
-            if (string.IsNullOrWhiteSpace(identifier))
+            if (string.IsNullOrWhiteSpace(downloadPath))
             {
                 throw new ArgumentException($"{nameof(downloadPath)} cannot be null or empty", nameof(downloadPath));
             }
