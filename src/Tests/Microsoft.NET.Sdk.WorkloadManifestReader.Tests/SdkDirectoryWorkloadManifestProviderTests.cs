@@ -248,6 +248,7 @@ namespace ManifestReaderTests
             CreateMockManifest(_manifestRoot, "8.0.100", "ios", "11.0.1", true);
             CreateMockManifest(_manifestRoot, "8.0.100", "ios", "11.0.2", true);
             CreateMockManifest(_manifestRoot, "8.0.200", "ios", "12.0.1", true);
+            CreateMockManifest(_manifestRoot, "8.0.200", "ios", "12.0.2", true);
 
             CreateMockWorkloadSet(_manifestRoot, "8.0.200", "8.0.201", """
     {

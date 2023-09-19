@@ -10,7 +10,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 {
     public partial class SdkDirectoryWorkloadManifestProvider : IWorkloadManifestProvider
     {
-        private const string WorkloadSetsFolderName = "workloadsets";
+        public const string WorkloadSetsFolderName = "workloadsets";
 
         private readonly string _sdkRootPath;
         private readonly SdkFeatureBand _sdkVersionBand;
@@ -28,7 +28,12 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
         {
         }
 
-        internal SdkDirectoryWorkloadManifestProvider(string sdkRootPath, string sdkVersion, Func<string, string?> getEnvironmentVariable, string? userProfileDir, string? globalJsonPath = null)
+        public static SdkDirectoryWorkloadManifestProvider ForWorkloadSet(string sdkRootPath, string sdkVersion, string? userProfileDir, string workloadSetVersion)
+        {
+            return new SdkDirectoryWorkloadManifestProvider(sdkRootPath, sdkVersion, Environment.GetEnvironmentVariable, userProfileDir, globalJsonPath: null, workloadSetVersion);
+        }
+
+        internal SdkDirectoryWorkloadManifestProvider(string sdkRootPath, string sdkVersion, Func<string, string?> getEnvironmentVariable, string? userProfileDir, string? globalJsonPath = null, string? workloadSetVersion = null)
         {
             if (string.IsNullOrWhiteSpace(sdkVersion))
             {
@@ -39,6 +44,11 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             {
                 throw new ArgumentException($"'{nameof(sdkRootPath)}' cannot be null or whitespace",
                     nameof(sdkRootPath));
+            }
+
+            if (globalJsonPath != null && workloadSetVersion != null)
+            {
+                throw new ArgumentException($"Cannot specify both {nameof(globalJsonPath)} and {nameof(workloadSetVersion)}");
             }
 
             _sdkRootPath = sdkRootPath;
@@ -88,29 +98,39 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 
             var availableWorkloadSets = GetAvailableWorkloadSets();
 
-            string? globalJsonWorkloadSetVersion = GlobalJsonReader.GetWorkloadVersionFromGlobalJson(globalJsonPath);
-            if (globalJsonWorkloadSetVersion != null)
+            if (workloadSetVersion != null)
             {
-                if (!availableWorkloadSets.TryGetValue(globalJsonWorkloadSetVersion, out _workloadSet))
+                if (!availableWorkloadSets.TryGetValue(workloadSetVersion, out _workloadSet))
                 {
-                    throw new FileNotFoundException(string.Format(Strings.WorkloadVersionFromGlobalJsonNotFound, globalJsonWorkloadSetVersion, globalJsonPath));
+                    throw new FileNotFoundException(string.Format(Strings.WorkloadVersionNotFound, workloadSetVersion));
                 }
             }
             else
             {
-                var installStateFilePath = Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkVersionBand, _sdkRootPath), "default.json");
-                if (File.Exists(installStateFilePath))
+                string? globalJsonWorkloadSetVersion = GlobalJsonReader.GetWorkloadVersionFromGlobalJson(globalJsonPath);
+                if (globalJsonWorkloadSetVersion != null)
                 {
-                    var installState = InstallStateReader.ReadInstallState(installStateFilePath);
-                    if (!string.IsNullOrEmpty(installState.WorkloadSetVersion))
+                    if (!availableWorkloadSets.TryGetValue(globalJsonWorkloadSetVersion, out _workloadSet))
                     {
-                        if (!availableWorkloadSets.TryGetValue(installState.WorkloadSetVersion!, out _workloadSet))
-                        {
-                            throw new FileNotFoundException(string.Format(Strings.WorkloadVersionFromInstallStateNotFound, installState.WorkloadSetVersion, installStateFilePath));
-                        }
+                        throw new FileNotFoundException(string.Format(Strings.WorkloadVersionFromGlobalJsonNotFound, globalJsonWorkloadSetVersion, globalJsonPath));
                     }
-                    _manifestsFromInstallState = installState.Manifests;
-                    _installStateFilePath = installStateFilePath;
+                }
+                else
+                {
+                    var installStateFilePath = Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkVersionBand, _sdkRootPath), "default.json");
+                    if (File.Exists(installStateFilePath))
+                    {
+                        var installState = InstallStateReader.ReadInstallState(installStateFilePath);
+                        if (!string.IsNullOrEmpty(installState.WorkloadSetVersion))
+                        {
+                            if (!availableWorkloadSets.TryGetValue(installState.WorkloadSetVersion!, out _workloadSet))
+                            {
+                                throw new FileNotFoundException(string.Format(Strings.WorkloadVersionFromInstallStateNotFound, installState.WorkloadSetVersion, installStateFilePath));
+                            }
+                        }
+                        _manifestsFromInstallState = installState.Manifests;
+                        _installStateFilePath = installStateFilePath;
+                    }
                 }
             }
 
@@ -184,7 +204,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                 }
             }
 
-            //  Load manifests from workload set, if any
+            //  Load manifests from workload set, if any.  This will override any manifests for the same IDs that were loaded previously in this method
             if (_workloadSet != null)
             {
                 foreach (var kvp in _workloadSet.ManifestVersions)
@@ -336,7 +356,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
         /// <summary>
         /// Returns installed workload sets that are available for this SDK (ie are in the same feature band)
         /// </summary>
-        private Dictionary<string, WorkloadSet> GetAvailableWorkloadSets()
+        public Dictionary<string, WorkloadSet> GetAvailableWorkloadSets()
         {
             Dictionary<string, WorkloadSet> availableWorkloadSets = new Dictionary<string, WorkloadSet>();
 
@@ -367,6 +387,11 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                         }
                         if (workloadSet != null)
                         {
+                            if (File.Exists(Path.Combine(workloadSetDirectory, "baseline.workloadset.json")))
+                            {
+                                workloadSet.IsBaselineWorkloadSet = true;
+                            }
+
                             workloadSet.Version = Path.GetFileName(workloadSetDirectory);
                             availableWorkloadSets[workloadSet.Version] = workloadSet;
                         }

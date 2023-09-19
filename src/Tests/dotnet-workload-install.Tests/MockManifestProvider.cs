@@ -27,6 +27,8 @@ namespace ManifestReaderTests
 
         public SdkFeatureBand SdkFeatureBand { get; set; }
 
+        public Dictionary<string, WorkloadSet> GetAvailableWorkloadSets() => new();
+
         public IEnumerable<ReadableWorkloadManifest> GetManifests()
             {
                 foreach ((var id, var path, var featureBand) in _manifests)
