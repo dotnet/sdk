@@ -88,7 +88,7 @@ namespace Microsoft.DotNet.Workloads.Workload
             _workloadManifestUpdaterFromConstructor = workloadManifestUpdater;
         }
 
-        protected internal void CreateDefaultJsonFromRollback(bool createDefaultJson, IEnumerable<ManifestVersionUpdate> manifestVersionUpdates)
+        protected internal void UpdateInstallState(bool createDefaultJson, IEnumerable<ManifestVersionUpdate> manifestVersionUpdates)
         {
             var defaultJsonPath = Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkFeatureBand, _dotnetPath), "default.json");
             if (createDefaultJson)

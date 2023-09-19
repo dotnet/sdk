@@ -129,7 +129,19 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             Reporter.WriteLine();
 
             var manifestsToUpdate = Enumerable.Empty<ManifestVersionUpdate> ();
-            var useRollback = !string.IsNullOrWhiteSpace(_fromRollbackDefinition);
+            var useRollback = false;
+
+            if (!skipManifestUpdate)
+            {
+                var installStateFilePath = Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkFeatureBand, _dotnetPath), "default.json");
+                if (File.Exists(installStateFilePath))
+                {
+                    //  If there is a rollback state file, then we don't want to automatically update workloads when a workload is installed
+                    //  To update to a new version, the user would need to run "dotnet workload update"
+                    skipManifestUpdate = true;
+                }
+            }
+
             if (!skipManifestUpdate)
             {
                 if (Verbosity != VerbosityOptions.quiet && Verbosity != VerbosityOptions.q)
@@ -144,6 +156,8 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                     Reporter.WriteLine(string.Format(LocalizableStrings.WorkloadAlreadyInstalled, string.Join(" ", previouslyInstalledWorkloads)).Yellow());
                 }
                 workloadIds = workloadIds.Concat(installedWorkloads).Distinct();
+
+                useRollback = !string.IsNullOrWhiteSpace(_fromRollbackDefinition);
 
                 _workloadManifestUpdater.UpdateAdvertisingManifestsAsync(includePreviews, offlineCache).Wait();
                 manifestsToUpdate = useRollback ?
@@ -180,7 +194,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             SdkFeatureBand sdkFeatureBand,
             IEnumerable<ManifestVersionUpdate> manifestsToUpdate,
             DirectoryPath? offlineCache,
-            bool useRollback)
+            bool usingRollback)
         {
             IEnumerable<PackInfo> workloadPackToInstall = new List<PackInfo>();
             IEnumerable<WorkloadId> newWorkloadInstallRecords = new List<WorkloadId>();
@@ -213,7 +227,10 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                         recordRepo.WriteWorkloadInstallationRecord(workloadId, sdkFeatureBand);
                     }
 
-                    CreateDefaultJsonFromRollback(useRollback, manifestsToUpdate);
+                    if (usingRollback)
+                    {
+                        UpdateInstallState(true, manifestsToUpdate);
+                    }
                 },
                 rollback: () =>
                 {

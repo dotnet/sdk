@@ -156,7 +156,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
 
                     _workloadInstaller.InstallWorkloads(workloads, sdkFeatureBand, context, offlineCache);
 
-                    CreateDefaultJsonFromRollback(useRollback, manifestsToUpdate);
+                    UpdateInstallState(useRollback, manifestsToUpdate);
                 },
                 rollback: () =>
                 {
