@@ -89,6 +89,19 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Performance
                     values.Count <= 128 &&                  // Arbitrary limit to avoid emitting huge literals
                     !ContainsAnyComments(creationSyntax))   // Avoid removing potentially valuable comments
                 {
+                    if (isByte)
+                    {
+                        foreach (char c in values)
+                        {
+                            if (c > 127)
+                            {
+                                // We shouldn't turn non-ASCII byte values into Utf8StringLiterals as that may change behavior.
+                                // e.g. (byte)'ÿ' means 0xFF, but "ÿ"u8 is two bytes (0xC3, 0xBF) that encode that character in UTF8.
+                                return null;
+                            }
+                        }
+                    }
+
                     string valuesString = string.Concat(values);
                     string stringLiteral = SymbolDisplay.FormatLiteral(valuesString, quote: true);
 

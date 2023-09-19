@@ -772,6 +772,42 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
         }
 
         [Fact]
+        public async Task TestCodeFixerDoesNotUseUtf8StringLiteralsForNonAsciiChars()
+        {
+            string source =
+                """
+                using System;
+                using System.Buffers;
+
+                internal sealed class Test
+                {
+                    private void TestMethod(ReadOnlySpan<byte> span)
+                    {
+                        _ = span.IndexOfAny([|new[] { (byte)'ÿ', (byte)'a', (byte)'e', (byte)'i', (byte)'o', (byte)'u' }|]);
+                    }
+                }
+                """;
+
+            string expected =
+                """
+                using System;
+                using System.Buffers;
+
+                internal sealed class Test
+                {
+                    private static readonly SearchValues<byte> s_myBytes = SearchValues.Create(new[] { (byte)'ÿ', (byte)'a', (byte)'e', (byte)'i', (byte)'o', (byte)'u' });
+
+                    private void TestMethod(ReadOnlySpan<byte> span)
+                    {
+                        _ = span.IndexOfAny(s_myBytes);
+                    }
+                }
+                """;
+
+            await VerifyCodeFixAsync(LanguageVersion.CSharp11, source, expected);
+        }
+
+        [Fact]
         public static async Task TestCodeFixerDoesNotRemoveTheOriginalMemberIfPublic()
         {
             string source =
