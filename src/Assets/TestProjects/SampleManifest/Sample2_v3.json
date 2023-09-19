@@ -1,5 +1,5 @@
 {
-    "version": "1.0.0",
+    "version": "3.0.0",
     "workloads": {
         "xamarin-android": {
             "description": "Create, build and run Android apps",
@@ -51,18 +51,18 @@
         },
         "Xamarin.Android.Templates": {
             "kind": "template",
-            "version": "1.0.3"
+            "version": "1.2.0"
         },
         "Xamarin.Android.Framework": {
             "kind": "framework",
-            "version": "8.4.0"
+            "version": "8.6.0"
         },
         "Xamarin.Android.Runtime": {
             "kind": "library",
-            "version": "8.4.7.4"
+            "version": "8.6.0.0"
         },
         "Xamarin.Android.BuildTools": {
-            "version": "8.4.7",
+            "version": "8.6.0",
             "kind": "sdk",
             "alias-to": {
                 "osx": "Xamarin.Android.BuildTools.MacHost",
