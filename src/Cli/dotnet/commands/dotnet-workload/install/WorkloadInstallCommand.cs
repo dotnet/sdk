@@ -129,6 +129,19 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             Reporter.WriteLine();
 
             var manifestsToUpdate = Enumerable.Empty<ManifestVersionUpdate> ();
+            var useRollback = false;
+
+            if (!skipManifestUpdate)
+            {
+                var installStateFilePath = Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkFeatureBand, _dotnetPath), "default.json");
+                if (File.Exists(installStateFilePath))
+                {
+                    //  If there is a rollback state file, then we don't want to automatically update workloads when a workload is installed
+                    //  To update to a new version, the user would need to run "dotnet workload update"
+                    skipManifestUpdate = true;
+                }
+            }
+
             if (!skipManifestUpdate)
             {
                 if (Verbosity != VerbosityOptions.quiet && Verbosity != VerbosityOptions.q)
@@ -144,13 +157,15 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                 }
                 workloadIds = workloadIds.Concat(installedWorkloads).Distinct();
 
+                useRollback = !string.IsNullOrWhiteSpace(_fromRollbackDefinition);
+
                 _workloadManifestUpdater.UpdateAdvertisingManifestsAsync(includePreviews, offlineCache).Wait();
-                manifestsToUpdate = string.IsNullOrWhiteSpace(_fromRollbackDefinition) ?
-                    _workloadManifestUpdater.CalculateManifestUpdates().Select(m => m.manifestUpdate) :
-                    _workloadManifestUpdater.CalculateManifestRollbacks(_fromRollbackDefinition);
+                manifestsToUpdate = useRollback ?
+                    _workloadManifestUpdater.CalculateManifestRollbacks(_fromRollbackDefinition) :
+                    _workloadManifestUpdater.CalculateManifestUpdates().Select(m => m.manifestUpdate);
             }
 
-            InstallWorkloadsWithInstallRecord(_workloadInstaller, workloadIds, _sdkFeatureBand, manifestsToUpdate, offlineCache);
+            InstallWorkloadsWithInstallRecord(_workloadInstaller, workloadIds, _sdkFeatureBand, manifestsToUpdate, offlineCache, useRollback);
 
             TryRunGarbageCollection(_workloadInstaller, Reporter, Verbosity, workloadSetVersion => _workloadResolverFactory.CreateForWorkloadSet(_dotnetPath, _sdkVersion.ToString(), _userProfileDir, workloadSetVersion), offlineCache);
 
@@ -178,7 +193,8 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             IEnumerable<WorkloadId> workloadIds,
             SdkFeatureBand sdkFeatureBand,
             IEnumerable<ManifestVersionUpdate> manifestsToUpdate,
-            DirectoryPath? offlineCache)
+            DirectoryPath? offlineCache,
+            bool usingRollback)
         {
             IEnumerable<PackInfo> workloadPackToInstall = new List<PackInfo>();
             IEnumerable<WorkloadId> newWorkloadInstallRecords = new List<WorkloadId>();
@@ -209,6 +225,11 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                     foreach (var workloadId in newWorkloadInstallRecords)
                     {
                         recordRepo.WriteWorkloadInstallationRecord(workloadId, sdkFeatureBand);
+                    }
+
+                    if (usingRollback)
+                    {
+                        UpdateInstallState(true, manifestsToUpdate);
                     }
                 },
                 rollback: () =>
