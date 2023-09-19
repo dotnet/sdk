@@ -30,7 +30,7 @@ namespace Microsoft.TemplateEngine.Edge.Constraints
         {
             if (NuGetVersion.TryParse(value, out NuGetVersion? nuGetVersion))
             {
-                version = new NuGetVersionSpecification(nuGetVersion);
+                version = new NuGetVersionSpecification(nuGetVersion!);
                 return true;
             }
             version = null;

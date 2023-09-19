@@ -206,7 +206,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
             bool previewVersionInstalled = false;
             if (NuGetVersion.TryParse(version, out NuGetVersion? currentVersion))
             {
-                previewVersionInstalled = currentVersion.IsPrerelease;
+                previewVersionInstalled = currentVersion!.IsPrerelease;
             }
 
             FloatRange floatRange = new FloatRange(previewVersionInstalled ? NuGetVersionFloatBehavior.AbsoluteLatest : NuGetVersionFloatBehavior.Major);
