@@ -7,11 +7,6 @@
         <target state="translated">Не удалось скачать версию {0} {1}.</target>
         <note />
       </trans-unit>
-      <trans-unit id="FailedToFindSourceUnderPackageSourceMapping">
-        <source>Package Source Mapping is enabled, but no source found under the specified package ID: {0}. See the documentation for Package Source Mapping at https://aka.ms/nuget-package-source-mapping for more details.</source>
-        <target state="new">Package Source Mapping is enabled, but no source found under the specified package ID: {0}. See the documentation for Package Source Mapping at https://aka.ms/nuget-package-source-mapping for more details.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="FailedToLoadNuGetSource">
         <source>Failed to load NuGet source {0}</source>
         <target state="translated">Не удалось загрузить источник NuGet {0}</target>
@@ -20,11 +15,6 @@
       <trans-unit id="FailedToLoadNuGetSourceSourceIsNotValid">
         <source>Failed to load NuGet source {0}: the source is not valid. It will be skipped in further processing.</source>
         <target state="translated">Не удалось загрузить источник NuGet {0}: недопустимый источник. Он будет пропущен при дальнейшей обработке.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="FailedToMapSourceUnderPackageSourceMapping">
-        <source>Package Source Mapping is enabled, but no source mapped under the specified package ID: {0}. See the documentation for Package Source Mapping at https://aka.ms/nuget-package-source-mapping for more details.</source>
-        <target state="new">Package Source Mapping is enabled, but no source mapped under the specified package ID: {0}. See the documentation for Package Source Mapping at https://aka.ms/nuget-package-source-mapping for more details.</target>
         <note />
       </trans-unit>
       <trans-unit id="FailedToValidatePackageSigning">
