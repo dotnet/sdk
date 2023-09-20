@@ -11,8 +11,12 @@ using Microsoft.NetCore.Analyzers.Performance;
 
 namespace Microsoft.NetCore.CSharp.Analyzers.Performance
 {
+    /// <summary>
+    /// CA1853: <inheritdoc cref="NetCore.Analyzers.MicrosoftNetCoreAnalyzersResources.DoNotGuardDictionaryRemoveByContainsKeyTitle"/>
+    /// CA1868: <inheritdoc cref="NetCore.Analyzers.MicrosoftNetCoreAnalyzersResources.DoNotGuardSetAddOrRemoveByContainsTitle"/>
+    /// </summary>
     [ExportCodeFixProvider(LanguageNames.CSharp), Shared]
-    public sealed class CSharpDoNotGuardSetAddOrRemoveByContainsFixer : DoNotGuardSetAddOrRemoveByContainsFixer
+    public sealed class CSharpDoNotGuardCallFixer : DoNotGuardCallFixer
     {
         protected override bool SyntaxSupportedByFixer(SyntaxNode conditionalSyntax, SyntaxNode childStatementSyntax)
         {
@@ -23,9 +27,9 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Performance
 
             if (conditionalSyntax is IfStatementSyntax ifStatementSyntax)
             {
-                var addOrRemoveInElse = childStatementSyntax.Parent is ElseClauseSyntax || childStatementSyntax.Parent?.Parent is ElseClauseSyntax;
+                var guardedCallInElse = childStatementSyntax.Parent is ElseClauseSyntax || childStatementSyntax.Parent?.Parent is ElseClauseSyntax;
 
-                return addOrRemoveInElse
+                return guardedCallInElse
                     ? ifStatementSyntax.Else?.Statement.ChildNodes().Count() == 1
                     : ifStatementSyntax.Statement.ChildNodes().Count() == 1;
             }
@@ -40,11 +44,11 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Performance
             if (conditionalOperationNode is IfStatementSyntax { Else: not null } ifStatementSyntax)
             {
                 var expression = GetNegatedExpression(document, childOperationNode);
-                var addOrRemoveInElse = childOperationNode.Parent is ElseClauseSyntax || childOperationNode.Parent?.Parent is ElseClauseSyntax;
+                var guardedCallInElse = childOperationNode.Parent is ElseClauseSyntax || childOperationNode.Parent?.Parent is ElseClauseSyntax;
 
                 SyntaxNode newConditionalOperationNode = ifStatementSyntax
                     .WithCondition((ExpressionSyntax)expression)
-                    .WithStatement(addOrRemoveInElse ? ifStatementSyntax.Statement : ifStatementSyntax.Else.Statement)
+                    .WithStatement(guardedCallInElse ? ifStatementSyntax.Statement : ifStatementSyntax.Else.Statement)
                     .WithElse(null)
                     .WithAdditionalAnnotations(Formatter.Annotation).WithTriviaFrom(conditionalOperationNode);
 

@@ -3120,7 +3120,7 @@
           "properties": {
             "category": "Performance",
             "isEnabledByDefault": true,
-            "typeName": "DoNotGuardDictionaryRemoveByContainsKey",
+            "typeName": "DoNotGuardCallAnalyzer",
             "languages": [
               "C#",
               "Visual Basic"
@@ -3300,7 +3300,7 @@
           "properties": {
             "category": "Performance",
             "isEnabledByDefault": true,
-            "typeName": "DoNotGuardSetAddOrRemoveByContains",
+            "typeName": "DoNotGuardCallAnalyzer",
             "languages": [
               "C#",
               "Visual Basic"
