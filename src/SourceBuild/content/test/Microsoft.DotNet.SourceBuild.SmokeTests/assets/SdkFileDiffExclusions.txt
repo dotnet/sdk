@@ -78,6 +78,11 @@ msft,./sdk/x.y.z/DotnetTools/dotnet-format/System.Security.Cryptography.Protecte
 msft,./sdk/x.y.z/DotnetTools/dotnet-format/System.Security.Permissions.dll
 msft,./sdk/x.y.z/DotnetTools/dotnet-format/System.Windows.Extensions.dll
 
+# https://github.com/dotnet/source-build/issues/3632
+msft,./sdk/x.y.z/DotnetTools/dotnet-format/*/Microsoft.CodeAnalysis.Workspaces.MSBuild.resources.dll
+sb,./sdk/x.y.z/DotnetTools/dotnet-format/*/Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.resources.dll
+sb,./sdk/x.y.z/DotnetTools/dotnet-format/Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.dll
+
 # netfx runtimes for fsharp - https://github.com/dotnet/source-build/issues/3290
 msft,./sdk/x.y.z/FSharp/Microsoft.VisualStudio.Setup.Configuration.Interop.dll
 msft,./sdk/x.y.z/FSharp/runtimes/win/lib/netx.y/Microsoft.Win32.SystemEvents.dll
