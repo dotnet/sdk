@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net6.0;net472</TargetFrameworks>
+    <TargetFrameworks>net8.0;net472</TargetFrameworks>
     <TargetFrameworks Condition="'$(DotNetBuildFromSource)' == 'true'">net8.0;net472</TargetFrameworks>
     <StrongNameKeyId>Open</StrongNameKeyId>
     <Nullable>enable</Nullable>
@@ -20,10 +20,6 @@
 
   <ItemGroup>
     <EmbeddedResource Update="Resources.resx" GenerateSource="True" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
-    <Reference Include="System.IO.Compression" />
   </ItemGroup>
 
 </Project>
