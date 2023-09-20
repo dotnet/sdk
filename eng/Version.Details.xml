@@ -47,10 +47,9 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>575843df1aeb430a3071e2e494d29b59080751ad</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Workload.Emscripten.Current.Manifest-8.0.100.Transport" Version="8.0.0-rc.2.23463.1" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
+    <Dependency Name="Microsoft.NET.Workload.Emscripten.Current.Manifest-8.0.100" Version="8.0.0-rc.2.23463.1" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/emsdk</Uri>
       <Sha>1999c8c8ab7473a7e1c5b7bdf5ba6d9a985a69cc</Sha>
-      <SourceBuild RepoName="emsdk" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.Build" Version="17.8.0-preview-23469-05">
       <Uri>https://github.com/dotnet/msbuild</Uri>
