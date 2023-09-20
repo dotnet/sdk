@@ -135,10 +135,6 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 
         private void BuildLegacySymbols(Func<ParseResult, ITemplateEngineHost> hostBuilder)
         {
-            this.Arguments.Add(ShortNameArgument);
-            this.Arguments.Add(NameArgument);
-            this.Arguments.Add(RemainingArguments);
-
             //legacy options
             Dictionary<FilterOptionDefinition, CliOption> options = new();
             foreach (var filterDef in LegacyFilterDefinitions)

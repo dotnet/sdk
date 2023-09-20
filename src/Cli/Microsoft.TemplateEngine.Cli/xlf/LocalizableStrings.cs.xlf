@@ -323,6 +323,11 @@ Pokud si chcete zobrazit všechny aliasy, spusťte bez argumentů příkaz dotne
         <target state="translated">Pokud chcete vytvořit instanci šablony s krátkým názvem „{0}“, spusťte:</target>
         <note>Followed by command example from new line.</note>
       </trans-unit>
+      <trans-unit id="Commands_Validator_NameArgumentOptionConflict">
+        <source>Name argument '{0}' and name option (--name) '{1}' have both been provided. Only one may be provided at a time.</source>
+        <target state="new">Name argument '{0}' and name option (--name) '{1}' have both been provided. Only one may be provided at a time.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Commands_Validator_WrongArgumentValue">
         <source>Argument(s) {0} are not recognized. Must be one of: {1}.</source>
         <target state="translated">Argument(y) {0} nebyl(y) rozpoznán(y). Musí se jednat o jeden z těchto argumentů: {1}.</target>

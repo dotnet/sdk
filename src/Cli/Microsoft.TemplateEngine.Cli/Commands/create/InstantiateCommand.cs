@@ -180,9 +180,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             var argsList = args.ToList();
             ParseResult parseResult = command.Parse(args, configuration);
 
-#pragma warning disable CA1826
             var firstTemplateCommandToken = parseResult.CommandResult.Tokens.FirstOrDefault()?.Value ?? string.Empty;
-#pragma warning restore CA1826
             int tokenIndex;
             if (firstTemplateCommandToken.StartsWith('-') && (tokenIndex = argsList.IndexOf(firstTemplateCommandToken)) >= 0)
             {

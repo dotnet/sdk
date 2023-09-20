@@ -297,7 +297,7 @@ dotnet_diagnostic.CA1823.severity = warning
 # Avoid zero-length array allocations.
 dotnet_diagnostic.CA1825.severity = warning
 # Do not use Enumerable methods on indexable collections. Instead use the collection directly
-dotnet_diagnostic.CA1826.severity = warning
+dotnet_diagnostic.CA1826.severity = none
 # Do not use Count() or LongCount() when Any() can be used
 dotnet_diagnostic.CA1827.severity = warning
 # Use Length/Count property instead of Count() when available

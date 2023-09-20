@@ -323,6 +323,11 @@ Run 'dotnet {1} --show-aliases' with no args to show all aliases.</source>
         <target state="translated">短い名前の '{0}' を持つテンプレートをインスタンス化するには、次を実行します。</target>
         <note>Followed by command example from new line.</note>
       </trans-unit>
+      <trans-unit id="Commands_Validator_NameArgumentOptionConflict">
+        <source>Name argument '{0}' and name option (--name) '{1}' have both been provided. Only one may be provided at a time.</source>
+        <target state="new">Name argument '{0}' and name option (--name) '{1}' have both been provided. Only one may be provided at a time.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Commands_Validator_WrongArgumentValue">
         <source>Argument(s) {0} are not recognized. Must be one of: {1}.</source>
         <target state="translated">引数 {0} は認識されません。次のいずれかである必要があります: {1}。</target>

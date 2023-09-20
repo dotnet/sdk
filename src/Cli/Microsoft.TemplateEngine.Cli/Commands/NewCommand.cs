@@ -17,6 +17,10 @@ namespace Microsoft.TemplateEngine.Cli.Commands
         {
             this.TreatUnmatchedTokensAsErrors = true;
 
+            this.Arguments.Add(ShortNameArgument);
+            this.Arguments.Add(NameArgument);
+            this.Arguments.Add(RemainingArguments);
+
             //it is important that legacy commands are built before non-legacy, as non legacy commands are building validators that rely on legacy stuff
             BuildLegacySymbols(hostBuilder);
 
