@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.TemplateEngine.Abstractions" Version="8.0.100-rc.2.23468.2">
+    <Dependency Name="Microsoft.TemplateEngine.Abstractions" Version="8.0.100-rc.2.23469.7">
       <Uri>https://github.com/dotnet/templating</Uri>
       <Sha>63165401705fa7c7404ec7317c4178ff9769c484</Sha>
       <SourceBuild RepoName="templating" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.TemplateEngine.Mocks" Version="8.0.100-rc.2.23468.2">
+    <Dependency Name="Microsoft.TemplateEngine.Mocks" Version="8.0.100-rc.2.23469.7">
       <Uri>https://github.com/dotnet/templating</Uri>
       <Sha>63165401705fa7c7404ec7317c4178ff9769c484</Sha>
     </Dependency>
