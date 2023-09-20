@@ -72,6 +72,35 @@ namespace Microsoft.NET.Publish.Tests
                 .And.HaveStdOutContaining("Hello World");
         }
 
+        [Fact]
+        public void NoCopyOutputSymbolsToPublishDirectory()
+        {
+            var targetFramework = ToolsetInfo.CurrentTargetFramework;
+            var projectName = "HellowWorldNativeAotApp";
+            var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
+
+            var testProject = CreateHelloWorldTestProject(targetFramework, projectName, true);
+            testProject.AdditionalProperties["PublishAot"] = "true";
+            testProject.AdditionalProperties["CopyOutputSymbolsToPublishDirectory"] = "false";
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+
+            var publishCommand = new PublishCommand(testAsset);
+            publishCommand
+                .Execute($"/p:RuntimeIdentifier={rid}", "/p:SelfContained=true")
+                .Should().Pass();
+
+            var publishDirectory = publishCommand.GetOutputDirectory(targetFramework: targetFramework, runtimeIdentifier: rid).FullName;
+            var publishedExe = Path.Combine(publishDirectory, $"{testProject.Name}{Constants.ExeSuffix}");
+
+            var command = new RunExeCommand(Log, publishedExe)
+                .Execute().Should().Pass()
+                .And.HaveStdOutContaining("Hello World");
+
+            // No Symbols in publish directory
+            DoSymbolsExist(publishDirectory, testProject.Name).Should().BeFalse();
+            IsNativeImage(publishedExe).Should().BeTrue();
+        }
+
         [RequiresMSBuildVersionTheory("17.8.0")]
         [MemberData(nameof(Net7Plus), MemberType = typeof(PublishTestUtils))]
         public void NativeAot_hw_runs_with_no_warnings_when_PublishAot_is_false(string targetFramework)
