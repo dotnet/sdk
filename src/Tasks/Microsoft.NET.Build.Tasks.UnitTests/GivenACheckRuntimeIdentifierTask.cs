@@ -21,7 +21,7 @@ public class GivenACheckRuntimeIdentifierTask : SdkTest
 
     public GivenACheckRuntimeIdentifierTask(ITestOutputHelper log) : base(log)
     {
-        var testDirectory = _testAssetsManager.CreateTestDirectory();
+        var testDirectory = _testAssetsManager.CreateTestDirectory(nameof(GivenACheckRuntimeIdentifierTask));
         _assetsFilePath = Path.Combine(testDirectory.Path, AssetsFileName);
         _task = new CheckRuntimeIdentifier
         {

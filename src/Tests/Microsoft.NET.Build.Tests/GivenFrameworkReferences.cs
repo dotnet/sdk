@@ -507,7 +507,7 @@ namespace FrameworkReferenceTest
             //  If we do the work in https://github.com/dotnet/cli/issues/10528,
             //  then we should add a new error message here indicating that the runtime pack hasn't
             //  been downloaded.
-            string expectedErrorCode = "NETSDK1047";
+            string expectedErrorCode = "NETSDK1214";
 
             buildCommand
                 .ExecuteWithoutRestore($"/p:RuntimeIdentifier={runtimeIdentifier}")
