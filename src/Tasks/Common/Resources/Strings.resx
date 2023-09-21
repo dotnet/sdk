@@ -431,7 +431,7 @@ The following are names of parameters or literal values and should not be transl
     <comment>{StrBegin="NETSDK1082: "}</comment>
   </data>
   <data name="RuntimeIdentifierNotRecognized" xml:space="preserve">
-    <value>NETSDK1083: The specified RuntimeIdentifier '{0}' is not recognized.</value>
+    <value>NETSDK1083: The specified RuntimeIdentifier '{0}' is not recognized. See https://aka.ms/netsdk1083 for more information.</value>
     <comment>{StrBegin="NETSDK1083: "}</comment>
   </data>
   <data name="NoAppHostAvailable" xml:space="preserve">
