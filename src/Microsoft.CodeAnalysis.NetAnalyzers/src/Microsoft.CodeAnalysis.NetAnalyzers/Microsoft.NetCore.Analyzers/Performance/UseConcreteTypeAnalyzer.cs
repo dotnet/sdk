@@ -123,7 +123,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
             context.RegisterCompilationStartAction(context =>
             {
                 var voidType = context.Compilation.GetSpecialType(SpecialType.System_Void);
-                var publicOrInternalColl = Collector.GetInstance(voidType, symbol => context.Options.MatchesConfiguredVisibility(UseConcreteTypeForMethodReturn, symbol, context.Compilation, SymbolVisibilityGroup.Private));
+                var publicOrInternalColl = Collector.GetInstance(voidType, symbol => symbol.IsInSource() && context.Options.MatchesConfiguredVisibility(UseConcreteTypeForMethodReturn, symbol, context.Compilation, SymbolVisibilityGroup.Private));
 
                 context.RegisterSymbolStartAction(context =>
                 {
@@ -134,7 +134,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                         return;
                     }
 
-                    var coll = Collector.GetInstance(voidType, symbol => context.Options.MatchesConfiguredVisibility(UseConcreteTypeForMethodReturn, symbol, context.Compilation, SymbolVisibilityGroup.Private));
+                    var coll = Collector.GetInstance(voidType, symbol => symbol.IsInSource() && context.Options.MatchesConfiguredVisibility(UseConcreteTypeForMethodReturn, symbol, context.Compilation, SymbolVisibilityGroup.Private));
 
                     // we accumulate a bunch of info in the collector object
                     context.RegisterOperationAction(context => coll.HandleInvocation((IInvocationOperation)context.Operation), OperationKind.Invocation);
