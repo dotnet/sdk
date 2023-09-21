@@ -157,6 +157,11 @@
         <target state="translated">CONTAINER1010: ローカル レジストリからのイメージのプルはサポートされていません。</target>
         <note>{StrBegin="CONTAINER1010: "}</note>
       </trans-unit>
+      <trans-unit id="InvalidContainerImageArchiveFormat">
+        <source>CONTAINER2030: Invalid {0} are provided. Possible values are {1}.</source>
+        <target state="new">CONTAINER2030: Invalid {0} are provided. Possible values are {1}.</target>
+        <note>{StrBegin="CONTAINER2030: "}</note>
+      </trans-unit>
       <trans-unit id="InvalidEnvVar">
         <source>CONTAINER2015: {0}: '{1}' was not a valid Environment Variable. Ignoring.</source>
         <target state="translated">CONTAINER2015: {0}: '{1}' は有効な環境変数ではありませんでした。無視しています。</target>

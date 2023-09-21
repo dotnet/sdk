@@ -157,6 +157,11 @@
         <target state="translated">CONTAINER1010: 로컬 레지스트리에서 이미지 끌어오기가 지원되지 않습니다.</target>
         <note>{StrBegin="CONTAINER1010: "}</note>
       </trans-unit>
+      <trans-unit id="InvalidContainerImageArchiveFormat">
+        <source>CONTAINER2030: Invalid {0} are provided. Possible values are {1}.</source>
+        <target state="new">CONTAINER2030: Invalid {0} are provided. Possible values are {1}.</target>
+        <note>{StrBegin="CONTAINER2030: "}</note>
+      </trans-unit>
       <trans-unit id="InvalidEnvVar">
         <source>CONTAINER2015: {0}: '{1}' was not a valid Environment Variable. Ignoring.</source>
         <target state="translated">CONTAINER2015: {0}: '{1}'은(는) 유효한 환경 변수가 아닙니다. 무시 중.</target>

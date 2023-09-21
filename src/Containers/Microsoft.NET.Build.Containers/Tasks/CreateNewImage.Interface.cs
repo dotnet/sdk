@@ -48,9 +48,9 @@ partial class CreateNewImage
     public string ArchiveOutputPath { get; set; }
 
     /// <summary>
-    /// The format of the written container image.
+    /// The format of the written container image. Can be <code>Docker</code> or <code>OpenContainerInitiative</code>.
     /// </summary>
-    public ContainerImageArchiveFormat ArchiveOutputFormat { get; set; }
+    public string ArchiveOutputFormat { get; set; }
 
     /// <summary>
     /// The kind of local registry to use, if any.
@@ -173,7 +173,7 @@ partial class CreateNewImage
         BaseImageTag = "";
         OutputRegistry = "";
         ArchiveOutputPath = "";
-        ArchiveOutputFormat = ContainerImageArchiveFormat.Docker;
+        ArchiveOutputFormat = ContainerImageArchiveFormat.Docker.ToString();
         Repository = "";
         ImageTags = Array.Empty<string>();
         PublishDirectory = "";

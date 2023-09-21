@@ -327,6 +327,10 @@
     <value>CONTAINER2029: ContainerEntrypointArgsSet are provided. Change to use ContainerAppCommandArgs for arguments that must always be set, or ContainerDefaultArgs for arguments that can be overridden when the container is created.</value>
     <comment>{StrBegin="CONTAINER2029: "}</comment>
   </data>
+  <data name="InvalidContainerImageArchiveFormat" xml:space="preserve">
+    <value>CONTAINER2030: Invalid {0} are provided. Possible values are {1}.</value>
+    <comment>{StrBegin="CONTAINER2030: "}</comment>
+  </data>
   <data name="_Test" xml:space="preserve">
     <value>CONTAINER0000: Value for unit test {0}</value>
     <comment>Used only for unit tests</comment>
