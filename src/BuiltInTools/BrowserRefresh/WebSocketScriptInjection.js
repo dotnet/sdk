@@ -290,8 +290,11 @@ setTimeout(async function () {
 
       webSocket.addEventListener('open', onOpen);
       webSocket.addEventListener('close', onClose);
-      webSocket.addEventListener('close', () => window.Blazor?.removeEventListener('enhancedload', notifyHotReloadApplied));
-      window.Blazor?.addEventListener('enhancedload', notifyHotReloadApplied);
+      if (window.Blazor?.removeEventListener && window.Blazor?.addEventListener)
+      {
+        webSocket.addEventListener('close', () => window.Blazor?.removeEventListener('enhancedload', notifyHotReloadApplied));
+        window.Blazor?.addEventListener('enhancedload', notifyHotReloadApplied);
+      }
     });
   }
 }, 500);
