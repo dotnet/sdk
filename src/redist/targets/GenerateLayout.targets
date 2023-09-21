@@ -11,7 +11,7 @@
     <AspNetCoreBlobVersion>$(VSRedistCommonAspNetCoreSharedFrameworkx6490PackageVersion)</AspNetCoreBlobVersion>
     <AspNetCoreBlobVersion Condition=" '$(DotNetBuildFromSource)' == 'true' and '$(DotNetBuildFromSourceFlavor)' == 'Product' ">$(MicrosoftAspNetCoreAppRuntimePackageVersion)</AspNetCoreBlobVersion>
 
-    <CoreSetupBlobVersion>$(VSRedistCommonNetCoreSharedFrameworkx6480PackageVersion)</CoreSetupBlobVersion>
+    <CoreSetupBlobVersion>$(VSRedistCommonNetCoreSharedFrameworkx6490PackageVersion)</CoreSetupBlobVersion>
     <CoreSetupBlobVersion Condition=" '$(DotNetBuildFromSource)' == 'true' and '$(DotNetBuildFromSourceFlavor)' == 'Product' ">$(MicrosoftNETCoreAppRuntimePackageVersion)</CoreSetupBlobVersion>
 
     <WindowsDesktopBlobVersion>$(VSRedistCommonWindowsDesktopSharedFrameworkx6480PackageVersion)</WindowsDesktopBlobVersion>
@@ -20,7 +20,7 @@
     <!-- Note that there may need to be a tweak for source build if we rev the targeting pack, something of the form
          <NETCoreAppTargetingPackBlobVersion Condition=" '$(DotNetBuildFromSource)' == 'true' and '$(DotNetBuildFromSourceFlavor)' == 'Product' ">$(CoreSetupBlobVersion)</NETCoreAppTargetingPackBlobVersion>
     -->
-    <NETCoreAppTargetingPackBlobVersion>$(VSRedistCommonNetCoreTargetingPackx6480PackageVersion)</NETCoreAppTargetingPackBlobVersion>
+    <NETCoreAppTargetingPackBlobVersion>$(VSRedistCommonNetCoreTargetingPackx6490PackageVersion)</NETCoreAppTargetingPackBlobVersion>
 
     <AspNetCoreTargetingPackBlobVersion>$(MicrosoftAspNetCoreAppRefInternalPackageVersion)</AspNetCoreTargetingPackBlobVersion>
     <WindowsDesktopTargetingPackBlobVersion>$(VSRedistCommonWindowsDesktopTargetingPackx6480PackageVersion)</WindowsDesktopTargetingPackBlobVersion>
@@ -60,7 +60,7 @@
       <DownloadedSharedHostInstallerFileName Condition=" '$(InstallerExtension)' != '' ">dotnet-host$(InstallerStartSuffix)-$(SharedHostVersion)-$(SharedFrameworkInstallerFileRid)$(InstallerExtension)</DownloadedSharedHostInstallerFileName>
       <DownloadedHostFxrInstallerFileName Condition=" '$(InstallerExtension)' != '' ">dotnet-hostfxr$(InstallerStartSuffix)-$(HostFxrVersion)-$(SharedFrameworkInstallerFileRid)$(InstallerExtension)</DownloadedHostFxrInstallerFileName>
       <DownloadedSharedFrameworkInstallerFileName Condition=" '$(InstallerExtension)' != '' and '$(PgoInstrument)' != 'true' ">dotnet-runtime$(InstallerStartSuffix)-$(MicrosoftNETCoreAppRuntimePackageVersion)-$(SharedFrameworkInstallerFileRid)$(InstallerExtension)</DownloadedSharedFrameworkInstallerFileName>
-      <DownloadedSharedFrameworkInstallerFileName Condition=" '$(InstallerExtension)' != '' and '$(PgoInstrument)' == 'true' ">dotnet-runtime$(InstallerStartSuffix)$(PgoTerm)-$(VSRedistCommonNetCoreSharedFrameworkx6480PackageVersion)-$(SharedFrameworkInstallerFileRid)$(InstallerExtension)</DownloadedSharedFrameworkInstallerFileName>
+      <DownloadedSharedFrameworkInstallerFileName Condition=" '$(InstallerExtension)' != '' and '$(PgoInstrument)' == 'true' ">dotnet-runtime$(InstallerStartSuffix)$(PgoTerm)-$(VSRedistCommonNetCoreSharedFrameworkx6490PackageVersion)-$(SharedFrameworkInstallerFileRid)$(InstallerExtension)</DownloadedSharedFrameworkInstallerFileName>
       <DownloadedRuntimeDepsInstallerFileName Condition=" '$(InstallerExtension)' != '' ">dotnet-runtime-deps-$(SharedHostVersion)-$(RuntimeDepsInstallerFileRid)$(InstallerExtension)</DownloadedRuntimeDepsInstallerFileName>
       <DownloadedWinFormsAndWpfSharedFrameworkInstallerFileName Condition=" '$(InstallerExtension)' != '' ">windowsdesktop-runtime-$(MicrosoftWindowsDesktopAppRuntimePackageVersion)-$(SharedFrameworkInstallerFileRid)$(InstallerExtension)</DownloadedWinFormsAndWpfSharedFrameworkInstallerFileName>
       <DownloadedNetCoreAppTargetingPackInstallerFileName Condition=" '$(InstallerExtension)' != '' ">dotnet-targeting-pack-$(MicrosoftNETCoreAppRefPackageVersion)-$(SharedFrameworkInstallerFileRid)$(InstallerExtension)</DownloadedNetCoreAppTargetingPackInstallerFileName>
@@ -81,7 +81,7 @@
       <SharedFrameworkRid Condition="$(ProductMonikerRid.StartsWith('linux-musl'))">$(ProductMonikerRid)</SharedFrameworkRid>
       <SharedFrameworkRid Condition=" '$(UsePortableLinuxSharedFramework)' == 'true' ">linux-$(Architecture)</SharedFrameworkRid>
       <CombinedFrameworkHostArchiveFileName Condition=" '$(PgoInstrument)' != 'true' ">dotnet-runtime-$(MicrosoftNETCoreAppRuntimePackageVersion)-$(SharedFrameworkRid)$(ArchiveExtension)</CombinedFrameworkHostArchiveFileName>
-      <CombinedFrameworkHostArchiveFileName Condition=" '$(PgoInstrument)' == 'true' ">dotnet-runtime$(PgoTerm)-$(VSRedistCommonNetCoreSharedFrameworkx6480PackageVersion)-$(SharedFrameworkRid)$(ArchiveExtension)</CombinedFrameworkHostArchiveFileName>
+      <CombinedFrameworkHostArchiveFileName Condition=" '$(PgoInstrument)' == 'true' ">dotnet-runtime$(PgoTerm)-$(VSRedistCommonNetCoreSharedFrameworkx6490PackageVersion)-$(SharedFrameworkRid)$(ArchiveExtension)</CombinedFrameworkHostArchiveFileName>
       <WinFormsAndWpfSharedFxArchiveFileName>windowsdesktop-runtime-$(MicrosoftWindowsDesktopAppRuntimePackageVersion)-$(SharedFrameworkRid)$(ArchiveExtension)</WinFormsAndWpfSharedFxArchiveFileName>
 
       <Crossgen2Rid>$(HostOSName)-$(BuildArchitecture)</Crossgen2Rid>
