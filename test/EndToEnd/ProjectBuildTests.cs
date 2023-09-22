@@ -424,8 +424,26 @@ namespace EndToEnd.Tests
             string[] runtimeFolders = Directory.GetDirectories(Path.Combine(dotnetFolder, "shared", "Microsoft.NETCore.App"));
 
             int latestMajorVersion = runtimeFolders.Select(folder => int.Parse(Path.GetFileName(folder).Split('.').First())).Max();
-            if (latestMajorVersion == 8)
+            if (latestMajorVersion == 9)
             {
+                // TODO: This block need to be updated when every template updates their default tfm.
+                // Currently winforms updated their default templates target but not others.
+                if (template.StartsWith("mstest")
+                       || template.StartsWith("winforms")
+                       || template.StartsWith("wpf")
+                       || template.StartsWith("web")
+                       || template.StartsWith("razor")
+                       || template.StartsWith("blazor")
+                       || template.StartsWith("mvc")
+                       || template.StartsWith("worker")
+                       || template.StartsWith("grpc")
+                       || template.StartsWith("classlib")
+                       || template.StartsWith("console")
+                       || template.StartsWith("nunit")
+                       || template.StartsWith("xunit"))
+                {
+                    return $"net8.0";
+                }
                 return $"net{latestMajorVersion}.0";
             }
 
