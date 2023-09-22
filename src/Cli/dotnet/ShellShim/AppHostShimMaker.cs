@@ -40,14 +40,14 @@ namespace Microsoft.DotNet.ShellShim
             string entryPointFullPath = Path.GetFullPath(entryPoint.Value);
             var appBinaryFilePath = Path.GetRelativePath(Path.GetDirectoryName(appHostDestinationFilePath), entryPointFullPath);
 
-
             if (ResourceUpdater.IsSupportedOS())
             {
-                var windowsGraphicalUserInterfaceBit = PEUtils.GetWindowsGraphicalUserInterfaceBit(entryPointFullPath);
+                bool windowsGraphicalUserInterface = OperatingSystem.IsWindows()
+                    && PEUtils.GetWindowsGraphicalUserInterfaceBit(entryPointFullPath) == WindowsGUISubsystem;
                 HostWriter.CreateAppHost(appHostSourceFilePath: appHostSourcePath,
                                          appHostDestinationFilePath: appHostDestinationFilePath,
                                          appBinaryFilePath: appBinaryFilePath,
-                                         windowsGraphicalUserInterface: (windowsGraphicalUserInterfaceBit == WindowsGUISubsystem) && OperatingSystem.IsWindows(),
+                                         windowsGraphicalUserInterface: windowsGraphicalUserInterface,
                                          assemblyToCopyResourcesFrom: entryPointFullPath,
                                          enableMacOSCodeSign: OperatingSystem.IsMacOS());
             }
