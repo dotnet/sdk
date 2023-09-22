@@ -2106,6 +2106,26 @@
             ]
           }
         },
+        "CA1514": {
+          "id": "CA1514",
+          "shortDescription": "Avoid redundant length argument",
+          "fullDescription": "An explicit length calculation can be error-prone and can be avoided when slicing to end of the buffer.",
+          "defaultLevel": "note",
+          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1514",
+          "properties": {
+            "category": "Maintainability",
+            "isEnabledByDefault": true,
+            "typeName": "AvoidLengthCalculationWhenSlicingToEndAnalyzer",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
         "CA1700": {
           "id": "CA1700",
           "shortDescription": "Do not name enum values 'Reserved'",

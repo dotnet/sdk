@@ -52,6 +52,26 @@
         <target state="translated">Избегайте бесконечной рекурсии</target>
         <note />
       </trans-unit>
+      <trans-unit id="AvoidLengthCalculationWhenSlicingToEndCodeFixTitle">
+        <source>Remove redundant length argument</source>
+        <target state="new">Remove redundant length argument</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidLengthCalculationWhenSlicingToEndDescription">
+        <source>An explicit length calculation can be error-prone and can be avoided when slicing to end of the buffer.</source>
+        <target state="new">An explicit length calculation can be error-prone and can be avoided when slicing to end of the buffer.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidLengthCalculationWhenSlicingToEndMessage">
+        <source>'{0}' uses a redundant length calculation that can be removed</source>
+        <target state="new">'{0}' uses a redundant length calculation that can be removed</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidLengthCalculationWhenSlicingToEndTitle">
+        <source>Avoid redundant length argument</source>
+        <target state="new">Avoid redundant length argument</target>
+        <note />
+      </trans-unit>
       <trans-unit id="AvoidMultipleEnumerationsMessage">
         <source>Possible multiple enumerations of 'IEnumerable' collection. Consider using an implementation that avoids multiple enumerations.</source>
         <target state="translated">Возможно несколько перечислений коллекции IEnumerable. Рассмотрите возможность использования реализации без нескольких перечислений.</target>

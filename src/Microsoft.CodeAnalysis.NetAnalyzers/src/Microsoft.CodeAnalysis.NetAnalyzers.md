@@ -912,6 +912,18 @@ Throw helpers are simpler and more efficient than an if block constructing a new
 |CodeFix|True|
 ---
 
+## [CA1514](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1514): Avoid redundant length argument
+
+An explicit length calculation can be error-prone and can be avoided when slicing to end of the buffer.
+
+|Item|Value|
+|-|-|
+|Category|Maintainability|
+|Enabled|True|
+|Severity|Info|
+|CodeFix|True|
+---
+
 ## [CA1700](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1700): Do not name enum values 'Reserved'
 
 This rule assumes that an enumeration member that has a name that contains "reserved" is not currently used but is a placeholder to be renamed or removed in a future version. Renaming or removing a member is a breaking change.
