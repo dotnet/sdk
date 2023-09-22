@@ -49,7 +49,7 @@ namespace Microsoft.NET.Build.Tests
             WriteFile(Path.Combine(packageAsset.TestRoot, referencedPackage.Name, "Nontransformed.ps1"), "Content file");
             WriteFile(Path.Combine(packageAsset.TestRoot, referencedPackage.Name, "Test.ps1.pp"), "Content file");
             packageAsset = packageAsset
-                .WithProjectChanges(project => AddContent(project));
+                .WithProjectChanges(AddContent);
 
             var packCommand = new PackCommand(packageAsset);
             packCommand.Execute()

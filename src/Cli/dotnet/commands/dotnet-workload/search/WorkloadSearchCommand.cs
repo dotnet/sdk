@@ -59,7 +59,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Search
             table.AddColumn(LocalizableStrings.DescriptionColumnName, workload => workload.Description);
 
             Reporter.WriteLine();
-            table.PrintRows(availableWorkloads, l => Reporter.WriteLine(l));
+            table.PrintRows(availableWorkloads, Reporter.WriteLine);
             Reporter.WriteLine();
 
             return 0;

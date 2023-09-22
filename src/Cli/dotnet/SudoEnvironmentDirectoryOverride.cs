@@ -53,7 +53,7 @@ namespace Microsoft.DotNet.Cli
 
             string userNuGetConfig = Settings.OrderedSettingsFileNames
                 .Select(fileName => Path.Combine(userSettingsDir, fileName))
-                .FirstOrDefault(f => File.Exists(f));
+                .FirstOrDefault(File.Exists);
 
             var overridenSettingsDir = NuGetEnvironment.GetFolderPath(NuGetFolderPath.UserSettingsDirectory);
             var overridenNugetConfig = Path.Combine(overridenSettingsDir, Settings.DefaultSettingsFileName);

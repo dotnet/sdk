@@ -115,7 +115,7 @@ namespace Microsoft.DotNet.Tools
             ProjectItemGroupElement itemGroup = ProjectRootElement.FindUniformOrCreateItemGroupWithCondition(
                 ProjectItemElementType,
                 framework);
-            foreach (var @ref in refs.Select((r) => PathUtility.GetPathWithBackSlashes(r)))
+            foreach (var @ref in refs.Select(PathUtility.GetPathWithBackSlashes))
             {
                 if (ProjectRootElement.HasExistingItemWithCondition(framework, @ref))
                 {

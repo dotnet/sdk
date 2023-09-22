@@ -48,7 +48,7 @@ namespace Microsoft.NET.Build.Tasks
                 {
                     var additionalFrameworkReferences = runtimePack.GetMetadata(MetadataKeys.AdditionalFrameworkReferences);
                     if (additionalFrameworkReferences == null ||
-                        !additionalFrameworkReferences.Split(';').Any(afr => frameworkReferenceNames.Contains(afr)))
+                        !additionalFrameworkReferences.Split(';').Any(frameworkReferenceNames.Contains))
                     {
                         //  This is a runtime pack for a shared framework that ultimately wasn't referenced, so don't include its assets
                         continue;

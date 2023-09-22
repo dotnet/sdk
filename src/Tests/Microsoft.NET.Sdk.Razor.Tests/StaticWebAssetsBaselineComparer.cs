@@ -44,14 +44,14 @@ Then, using the dogfood SDK run the .\src\RazorSdk\update-test-baselines.ps1 scr
             .OrderBy(a => a.BasePath)
             .ThenBy(a => a.RelativePath)
             .ThenBy(a => a.AssetKind)
-            .GroupBy(a => GetGroup(a))
+            .GroupBy(GetGroup)
             .ToDictionary(a => a.Key, a => a.ToArray());
 
         var expectedAssets = expected.Assets
             .OrderBy(a => a.BasePath)
             .ThenBy(a => a.RelativePath)
             .ThenBy(a => a.AssetKind)
-            .GroupBy(a => GetGroup(a))
+            .GroupBy(GetGroup)
             .ToDictionary(a => a.Key, a => a.ToArray());
 
         foreach (var (group, manifestAssetsGroup) in manifestAssets)

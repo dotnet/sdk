@@ -91,7 +91,7 @@ namespace Microsoft.DotNet.Workloads.Workload.List
                 });
                 table.AddColumn(InformationStrings.WorkloadSourceColumn, workload => workload.Value);
 
-                table.PrintRows(installedWorkloads.AsEnumerable(), l => Reporter.WriteLine(l));
+                table.PrintRows(installedWorkloads.AsEnumerable(), Reporter.WriteLine);
 
                 Reporter.WriteLine();
                 Reporter.WriteLine(LocalizableStrings.WorkloadListFooter);

@@ -83,7 +83,7 @@ namespace Microsoft.DotNet.ApiSymbolExtensions.Tests
         private static CSharpCompilation CreateCSharpCompilationFromSyntax(IEnumerable<string> syntax, string name, bool enableNullable, byte[] publicKey, bool allowUnsafe)
         {
             CSharpCompilation compilation = CreateCSharpCompilation(name, enableNullable, publicKey, allowUnsafe);
-            IEnumerable<SyntaxTree> syntaxTrees = syntax.Select(s => GetSyntaxTree(s));
+            IEnumerable<SyntaxTree> syntaxTrees = syntax.Select(GetSyntaxTree);
             return compilation.AddSyntaxTrees(syntaxTrees);
         }
 

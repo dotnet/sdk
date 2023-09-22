@@ -23,42 +23,42 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 
         internal static FilterOptionDefinition AuthorFilter { get; } =
              new TemplateFilterOptionDefinition(
-                 optionFactory: () => SharedOptionsFactory.CreateAuthorOption(),
-                 matchFilter: authorArg => WellKnownSearchFilters.AuthorFilter(authorArg),
+                 optionFactory: SharedOptionsFactory.CreateAuthorOption,
+                 matchFilter: WellKnownSearchFilters.AuthorFilter,
                  mismatchCriteria: resolutionResult => resolutionResult.HasAuthorMismatch,
                  matchInfoName: MatchInfo.BuiltIn.Author);
 
         internal static FilterOptionDefinition BaselineFilter { get; } =
             new TemplateFilterOptionDefinition(
-                optionFactory: () => SharedOptionsFactory.CreateBaselineOption(),
-                matchFilter: baselineArg => WellKnownSearchFilters.BaselineFilter(baselineArg),
+                optionFactory: SharedOptionsFactory.CreateBaselineOption,
+                matchFilter: WellKnownSearchFilters.BaselineFilter,
                 mismatchCriteria: resolutionResult => resolutionResult.HasBaselineMismatch,
                 matchInfoName: MatchInfo.BuiltIn.Baseline);
 
         internal static FilterOptionDefinition LanguageFilter { get; } =
             new TemplateFilterOptionDefinition(
-                optionFactory: () => SharedOptionsFactory.CreateLanguageOption(),
-                matchFilter: languageArg => WellKnownSearchFilters.LanguageFilter(languageArg),
+                optionFactory: SharedOptionsFactory.CreateLanguageOption,
+                matchFilter: WellKnownSearchFilters.LanguageFilter,
                 mismatchCriteria: resolutionResult => resolutionResult.HasLanguageMismatch,
                 matchInfoName: MatchInfo.BuiltIn.Language);
 
         internal static FilterOptionDefinition TagFilter { get; } =
             new TemplateFilterOptionDefinition(
-                optionFactory: () => SharedOptionsFactory.CreateTagOption(),
-                matchFilter: tagArg => WellKnownSearchFilters.ClassificationFilter(tagArg),
+                optionFactory: SharedOptionsFactory.CreateTagOption,
+                matchFilter: WellKnownSearchFilters.ClassificationFilter,
                 mismatchCriteria: resolutionResult => resolutionResult.HasClassificationMismatch,
                 matchInfoName: MatchInfo.BuiltIn.Classification);
 
         internal static FilterOptionDefinition TypeFilter { get; } =
             new TemplateFilterOptionDefinition(
-                optionFactory: () => SharedOptionsFactory.CreateTypeOption(),
-                matchFilter: typeArg => WellKnownSearchFilters.TypeFilter(typeArg),
+                optionFactory: SharedOptionsFactory.CreateTypeOption,
+                matchFilter: WellKnownSearchFilters.TypeFilter,
                 mismatchCriteria: resolutionResult => resolutionResult.HasTypeMismatch,
                 matchInfoName: MatchInfo.BuiltIn.Type);
 
         internal static FilterOptionDefinition PackageFilter { get; } =
             new PackageFilterOptionDefinition(
-                optionFactory: () => SharedOptionsFactory.CreatePackageOption(),
+                optionFactory: SharedOptionsFactory.CreatePackageOption,
                 matchFilter: PackageMatchFilter);
 
         /// <summary>

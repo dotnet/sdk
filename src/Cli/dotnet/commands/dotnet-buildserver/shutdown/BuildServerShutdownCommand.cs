@@ -88,7 +88,7 @@ namespace Microsoft.DotNet.Tools.BuildServer.Shutdown
             foreach (var server in _serverProvider.EnumerateBuildServers(_enumerationFlags))
             {
                 WriteShutdownMessage(server);
-                tasks.Add((server, Task.Run(() => server.Shutdown())));
+                tasks.Add((server, Task.Run(server.Shutdown)));
             }
 
             return tasks;

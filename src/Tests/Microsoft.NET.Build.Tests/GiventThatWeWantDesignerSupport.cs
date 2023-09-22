@@ -125,7 +125,7 @@ namespace Microsoft.NET.Build.Tests
             return deps.RuntimeLibraries
                        .SelectMany(r => r.RuntimeAssemblyGroups)
                        .SelectMany(a => a.AssetPaths)
-                       .Select(p => Path.GetFileName(p));
+                       .Select(Path.GetFileName);
         }
 
         private static JToken ParseRuntimeConfig(string path)

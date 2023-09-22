@@ -61,7 +61,7 @@ namespace Microsoft.Extensions.DotNetDeltaApplier
             // Arrange
             var actions = new HotReloadAgent.UpdateHandlerActions();
             var log = new List<string>();
-            var agent = new HotReloadAgent(message => log.Add(message));
+            var agent = new HotReloadAgent(log.Add);
 
             agent.GetHandlerActions(actions, typeof(HandlerWithClearCache));
 
@@ -76,7 +76,7 @@ namespace Microsoft.Extensions.DotNetDeltaApplier
             // Arrange
             var actions = new HotReloadAgent.UpdateHandlerActions();
             var log = new List<string>();
-            var agent = new HotReloadAgent(message => log.Add(message));
+            var agent = new HotReloadAgent(log.Add);
 
             agent.GetHandlerActions(actions, typeof(HandlerWithUpdateApplication));
 
@@ -91,7 +91,7 @@ namespace Microsoft.Extensions.DotNetDeltaApplier
             // Arrange
             var actions = new HotReloadAgent.UpdateHandlerActions();
             var log = new List<string>();
-            var agent = new HotReloadAgent(message => log.Add(message));
+            var agent = new HotReloadAgent(log.Add);
 
             agent.GetHandlerActions(actions, typeof(HandlerWithBothActions));
 
@@ -106,7 +106,7 @@ namespace Microsoft.Extensions.DotNetDeltaApplier
             // Arrange
             var actions = new HotReloadAgent.UpdateHandlerActions();
             var log = new List<string>();
-            var agent = new HotReloadAgent(message => log.Add(message));
+            var agent = new HotReloadAgent(log.Add);
             var handlerType = typeof(HandlerWithIncorrectSignature);
 
             agent.GetHandlerActions(actions, handlerType);
@@ -123,7 +123,7 @@ namespace Microsoft.Extensions.DotNetDeltaApplier
             // Arrange
             var actions = new HotReloadAgent.UpdateHandlerActions();
             var log = new List<string>();
-            var agent = new HotReloadAgent(message => log.Add(message));
+            var agent = new HotReloadAgent(log.Add);
             var handlerType = typeof(HandlerWithNoActions);
 
             agent.GetHandlerActions(actions, handlerType);

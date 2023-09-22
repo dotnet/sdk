@@ -56,7 +56,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
             var packages = inputVersions.Select(e => GetPackagePath(targetFramework, "A", e, identifier: expectedVersion + e + inputVersions.GetHashCode().ToString())).ToArray();
 
             testProject.AdditionalProperties.Add("RestoreSources",
-                                     "$(RestoreSources);" + string.Join(";", packages.Select(package => Path.GetDirectoryName(package))));
+                                     "$(RestoreSources);" + string.Join(";", packages.Select(Path.GetDirectoryName)));
 
             var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: inputVersions.GetHashCode().ToString());
 

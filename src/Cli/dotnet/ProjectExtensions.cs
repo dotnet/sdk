@@ -27,7 +27,7 @@ namespace Microsoft.DotNet.Tools.ProjectExtensions
             var uniqueTargetFrameworkStrings = new HashSet<string>(targetFrameworksStrings);
 
             return uniqueTargetFrameworkStrings
-                .Select((frameworkString) => NuGetFramework.Parse(frameworkString));
+                .Select(NuGetFramework.Parse);
         }
 
         public static IEnumerable<string> GetConfigurations(this Project project)

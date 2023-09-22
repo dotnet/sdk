@@ -162,7 +162,7 @@ namespace Microsoft.NET.Build.Tests
                 .Select(r => r.Trim('"'))
                 .ToList();
 
-            references.Select(r => Path.GetFileName(r))
+            references.Select(Path.GetFileName)
                 .Should().Contain("netstandard.dll");
         }
 

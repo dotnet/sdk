@@ -190,7 +190,7 @@ namespace Microsoft.TemplateEngine.MSBuildEvaluation
 
                 if (targetFrameworks != null)
                 {
-                    targetFrameworksString = string.Join(",", targetFrameworks.Select(tfm => Sha256Hasher.HashWithNormalizedCasing(tfm)));
+                    targetFrameworksString = string.Join(",", targetFrameworks.Select(Sha256Hasher.HashWithNormalizedCasing));
                 }
                 else if (targetFramework != null)
                 {

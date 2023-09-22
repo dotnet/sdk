@@ -64,7 +64,7 @@ namespace Microsoft.DotNet.Cli.Telemetry
             else
             {
                 //initialize in task to offload to parallel thread
-                _trackEventTask = Task.Run(() => InitializeTelemetry());
+                _trackEventTask = Task.Run(InitializeTelemetry);
             }
         }
 

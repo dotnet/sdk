@@ -49,7 +49,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             completeSuggestions = new HashSet<WorkloadSuggestionCandidate>();
             foreach (var workload in expandedWorkloads)
             {
-                if (workload.expandedPacks.Any(e => requestedPacks.Contains(e)))
+                if (workload.expandedPacks.Any(requestedPacks.Contains))
                 {
                     var unsatisfied = new HashSet<WorkloadPackId>(requestedPacks.Where(p => !workload.expandedPacks.Contains(p)));
                     var suggestion = new WorkloadSuggestionCandidate(new HashSet<WorkloadId>() { workload.id }, workload.expandedPacks, unsatisfied);

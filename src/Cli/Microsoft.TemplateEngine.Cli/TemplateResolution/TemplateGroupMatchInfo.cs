@@ -103,7 +103,7 @@ namespace Microsoft.TemplateEngine.Cli.TemplateResolution
                 {
                     return Array.Empty<ITemplateMatchInfo>();
                 }
-                return _templateMatchInfos.Where(template => TemplateInfoMatch(template));
+                return _templateMatchInfos.Where(TemplateInfoMatch);
             }
         }
 
@@ -172,9 +172,9 @@ namespace Microsoft.TemplateEngine.Cli.TemplateResolution
         internal IEnumerable<ITemplateInfo> TemplatesWithMatchingParametersForPreferredLanguage
             => TemplateMatchInfosWithMatchingParametersForPreferredLanguage.Select(template => template.Info);
 
-        private bool IsGroupTemplateInfoMatch => _isTemplateMatchEvaluated && _templateMatchInfos.Any(template => TemplateInfoMatch(template));
+        private bool IsGroupTemplateInfoMatch => _isTemplateMatchEvaluated && _templateMatchInfos.Any(TemplateInfoMatch);
 
-        private bool IsGroupTemplateParametersMatch => _isTemplateParameterMatchEvaluated && _templateMatchInfos.Any(template => TemplateParametersMatch(template));
+        private bool IsGroupTemplateParametersMatch => _isTemplateParameterMatchEvaluated && _templateMatchInfos.Any(TemplateParametersMatch);
 
         /// <summary>
         /// Applies filters to template group.

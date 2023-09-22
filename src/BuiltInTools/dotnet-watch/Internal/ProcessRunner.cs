@@ -33,7 +33,7 @@ namespace Microsoft.DotNet.Watcher.Internal
             using (var process = CreateProcess(processSpec))
             using (var processState = new ProcessState(process, _reporter))
             {
-                cancellationToken.Register(() => processState.TryKill());
+                cancellationToken.Register(processState.TryKill);
 
                 var readOutput = false;
                 var readError = false;

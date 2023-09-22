@@ -22,29 +22,29 @@ public class CreateNewImageToolTaskTests
     {
         CreateNewImage task = new();
 
-        Exception e = Assert.Throws<InvalidOperationException>(() => task.GenerateCommandLineCommandsInt());
+        Exception e = Assert.Throws<InvalidOperationException>(task.GenerateCommandLineCommandsInt);
         Assert.Equal("CONTAINER4001: Required property 'PublishDirectory' was not set or empty.", e.Message);
 
         DirectoryInfo publishDir = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), DateTime.Now.ToString("yyyyMMddHHmmssfff")));
 
         task.PublishDirectory = publishDir.FullName;
 
-        e = Assert.Throws<InvalidOperationException>(() => task.GenerateCommandLineCommandsInt());
+        e = Assert.Throws<InvalidOperationException>(task.GenerateCommandLineCommandsInt);
         Assert.Equal("CONTAINER4001: Required property 'BaseRegistry' was not set or empty.", e.Message);
 
         task.BaseRegistry = "MyBaseRegistry";
 
-        e = Assert.Throws<InvalidOperationException>(() => task.GenerateCommandLineCommandsInt());
+        e = Assert.Throws<InvalidOperationException>(task.GenerateCommandLineCommandsInt);
         Assert.Equal("CONTAINER4001: Required property 'BaseImageName' was not set or empty.", e.Message);
 
         task.BaseImageName = "MyBaseImageName";
 
-        e = Assert.Throws<InvalidOperationException>(() => task.GenerateCommandLineCommandsInt());
+        e = Assert.Throws<InvalidOperationException>(task.GenerateCommandLineCommandsInt);
         Assert.Equal("CONTAINER4001: Required property 'Repository' was not set or empty.", e.Message);
 
         task.Repository = "MyImageName";
 
-        e = Assert.Throws<InvalidOperationException>(() => task.GenerateCommandLineCommandsInt());
+        e = Assert.Throws<InvalidOperationException>(task.GenerateCommandLineCommandsInt);
         Assert.Equal("CONTAINER4001: Required property 'WorkingDirectory' was not set or empty.", e.Message);
 
         task.WorkingDirectory = "MyWorkingDirectory";

@@ -222,7 +222,7 @@ namespace Microsoft.DotNet.GenAPI
             // Use the `Private` visibility if internal symbols are not filtered out.
             if (IncludeInternalSymbols(symbolFilter) ||
                 (symbolFilter is CompositeSymbolFilter compositeSymbolFilter &&
-                    compositeSymbolFilter.Filters.Any(filter => IncludeInternalSymbols(filter))))
+                    compositeSymbolFilter.Filters.Any(IncludeInternalSymbols)))
             {
                 visibility = SyntaxKind.PrivateKeyword;
             }

@@ -128,7 +128,7 @@ namespace Microsoft.NET.Build.Tests
 
             var namespaces = command.GetValues();
 
-            Assert.Equal(expectEnabled ?? false, expectedNamespaces.All(expectedNamespace => namespaces.Contains(expectedNamespace)));
+            Assert.Equal(expectEnabled ?? false, expectedNamespaces.All(namespaces.Contains));
         }
 
         [Theory]
@@ -170,7 +170,7 @@ namespace Microsoft.NET.Build.Tests
             switch (language)
             {
                 case "C#":
-                    analyzers.Select(x => GetPackageAndPath(x)).Should().BeEquivalentTo(new[]
+                    analyzers.Select(GetPackageAndPath).Should().BeEquivalentTo(new[]
                             {
                                 ("microsoft.net.sdk", (string) null, "analyzers/Microsoft.CodeAnalysis.CSharp.NetAnalyzers.dll"),
                                 ("microsoft.net.sdk", (string)null, "analyzers/Microsoft.CodeAnalysis.NetAnalyzers.dll"),
@@ -188,7 +188,7 @@ namespace Microsoft.NET.Build.Tests
                     break;
 
                 case "VB":
-                    analyzers.Select(x => GetPackageAndPath(x)).Should().BeEquivalentTo(new[]
+                    analyzers.Select(GetPackageAndPath).Should().BeEquivalentTo(new[]
                         {
                             ("microsoft.net.sdk", (string)null, "analyzers/Microsoft.CodeAnalysis.VisualBasic.NetAnalyzers.dll"),
                             ("microsoft.net.sdk", (string)null, "analyzers/Microsoft.CodeAnalysis.NetAnalyzers.dll"),
@@ -245,7 +245,7 @@ namespace Microsoft.NET.Build.Tests
 
                 getValuesCommand.Execute("-p:TargetFramework=" + targetFramework).Should().Pass();
 
-                return getValuesCommand.GetValues().Select(x => GetPackageAndPath(x)).ToList();
+                return getValuesCommand.GetValues().Select(GetPackageAndPath).ToList();
             }
 
             GetAnalyzersForTargetFramework(ToolsetInfo.CurrentTargetFramework).Should().BeEquivalentTo(new[] { ("system.text.json", "6.0.0-preview.4.21253.7", "analyzers/dotnet/cs/System.Text.Json.SourceGeneration.dll") });

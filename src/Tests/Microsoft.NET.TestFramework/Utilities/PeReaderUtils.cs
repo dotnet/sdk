@@ -39,7 +39,7 @@ namespace Microsoft.NET.TestFramework.Utilities
 
                 var mdReader = peReader.GetMetadataReader();
                 var attrs = mdReader.GetAssemblyDefinition().GetCustomAttributes()
-                    .Select(ah => mdReader.GetCustomAttribute(ah));
+                    .Select(mdReader.GetCustomAttribute);
 
                 foreach (var attr in attrs)
                 {

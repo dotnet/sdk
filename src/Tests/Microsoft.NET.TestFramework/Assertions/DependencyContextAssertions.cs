@@ -28,7 +28,7 @@ namespace Microsoft.NET.TestFramework.Assertions
         public AndConstraint<DependencyContextAssertions> HaveNoDuplicateNativeAssets(string runtimeIdentifier)
         {
             var nativeAssets = _dependencyContext.GetRuntimeNativeAssets(runtimeIdentifier);
-            var nativeFilenames = nativeAssets.Select(n => Path.GetFileName(n));
+            var nativeFilenames = nativeAssets.Select(Path.GetFileName);
             var duplicateNativeAssets = nativeFilenames.GroupBy(n => n).Where(g => g.Count() > 1);
             duplicateNativeAssets.Select(g => g.Key).Should().BeEmpty();
 

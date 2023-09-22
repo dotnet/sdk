@@ -67,7 +67,7 @@ namespace Microsoft.NET.Publish.Tests
 
             var testProject = CreateTestProjectForILLinkTesting(targetFramework, projectName, referenceProjectName, referenceClassLibAsPackage);
             var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework + referenceClassLibAsPackage)
-                .WithProjectChanges(project => EnableNonFrameworkTrimming(project));
+                .WithProjectChanges(EnableNonFrameworkTrimming);
 
             var publishCommand = new PublishCommand(testAsset);
             publishCommand.Execute($"/p:RuntimeIdentifier={rid}", "/p:PublishTrimmed=true").Should().Pass();
@@ -1042,7 +1042,7 @@ namespace Microsoft.NET.Publish.Tests
 
             var testProject = CreateTestProjectForILLinkTesting(targetFramework, projectName, referenceProjectName);
             var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework)
-                .WithProjectChanges(project => EnableNonFrameworkTrimming(project))
+                .WithProjectChanges(EnableNonFrameworkTrimming)
                 .WithProjectChanges(project => AddRootDescriptor(project, $"{referenceProjectName}.xml"));
 
             var publishCommand = new PublishCommand(testAsset);
@@ -1102,7 +1102,7 @@ namespace Microsoft.NET.Publish.Tests
                 // Set up a conditional feature substitution for the "FeatureDisabled" property
                 modifyReferencedProject: (referencedProject) => AddFeatureDefinition(referencedProject, referenceProjectName));
             var testAsset = _testAssetsManager.CreateTestProject(testProject)
-                .WithProjectChanges(project => EnableNonFrameworkTrimming(project))
+                .WithProjectChanges(EnableNonFrameworkTrimming)
                 // Set a matching RuntimeHostConfigurationOption, with Trim = "true"
                 .WithProjectChanges(project => AddRuntimeConfigOption(project, trim: true))
                 .WithProjectChanges(project => AddRootDescriptor(project, $"{referenceProjectName}.xml"));
@@ -1135,7 +1135,7 @@ namespace Microsoft.NET.Publish.Tests
                 // Set up a conditional feature substitution for the "FeatureDisabled" property
                 modifyReferencedProject: (referencedProject) => AddFeatureDefinition(referencedProject, referenceProjectName));
             var testAsset = _testAssetsManager.CreateTestProject(testProject)
-                .WithProjectChanges(project => EnableNonFrameworkTrimming(project))
+                .WithProjectChanges(EnableNonFrameworkTrimming)
                 // Set a matching RuntimeHostConfigurationOption, with Trim = "false"
                 .WithProjectChanges(project => AddRuntimeConfigOption(project, trim: false))
                 .WithProjectChanges(project => AddRootDescriptor(project, $"{referenceProjectName}.xml"));
@@ -1267,7 +1267,7 @@ namespace Microsoft.NET.Publish.Tests
 
             var testProject = CreateTestProjectForILLinkTesting(targetFramework, projectName, referenceProjectName, referenceProjectIdentifier: targetFramework);
             var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework)
-                .WithProjectChanges(project => EnableNonFrameworkTrimming(project))
+                .WithProjectChanges(EnableNonFrameworkTrimming)
                 .WithProjectChanges(project => AddRootDescriptor(project, $"{referenceProjectName}.xml"));
 
             var publishCommand = new PublishCommand(testAsset);
@@ -1294,7 +1294,7 @@ namespace Microsoft.NET.Publish.Tests
             // Remove root descriptor to change the linker behavior.
             WaitForUtcNowToAdvance();
             // File.SetLastWriteTimeUtc(Path.Combine(testAsset.TestRoot, testProject.Name, $"{projectName}.cs"), DateTime.UtcNow);
-            testAsset = testAsset.WithProjectChanges(project => RemoveRootDescriptor(project));
+            testAsset = testAsset.WithProjectChanges(RemoveRootDescriptor);
 
             // Link, discarding classlib
             publishCommand.Execute($"/p:RuntimeIdentifier={rid}", "/p:PublishTrimmed=true").Should().Pass();
@@ -1320,7 +1320,7 @@ namespace Microsoft.NET.Publish.Tests
 
             var testProject = CreateTestProjectForILLinkTesting(targetFramework, projectName, referenceProjectName);
             var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework)
-                .WithProjectChanges(project => EnableNonFrameworkTrimming(project));
+                .WithProjectChanges(EnableNonFrameworkTrimming);
 
             var publishCommand = new PublishCommand(testAsset);
             publishCommand.Execute($"/p:RuntimeIdentifier={rid}", "/p:PublishTrimmed=true").Should().Pass();
@@ -1353,7 +1353,7 @@ namespace Microsoft.NET.Publish.Tests
 
             var testProject = CreateTestProjectForILLinkTesting(targetFramework, projectName, referenceProjectName);
             var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework)
-                .WithProjectChanges(project => EnableNonFrameworkTrimming(project));
+                .WithProjectChanges(EnableNonFrameworkTrimming);
 
             var publishCommand = new PublishCommand(testAsset);
             publishCommand.Execute($"/p:RuntimeIdentifier={rid}", "/p:PublishTrimmed=true", "/p:DebuggerSupport=false").Should().Pass();
@@ -1381,7 +1381,7 @@ namespace Microsoft.NET.Publish.Tests
 
             var testProject = CreateTestProjectForILLinkTesting(targetFramework, projectName, referenceProjectName);
             var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework)
-                .WithProjectChanges(project => EnableNonFrameworkTrimming(project));
+                .WithProjectChanges(EnableNonFrameworkTrimming);
 
             var publishCommand = new PublishCommand(testAsset);
             publishCommand.Execute($"/p:RuntimeIdentifier={rid}", "/p:PublishTrimmed=true", "/p:TrimmerRemoveSymbols=true").Should().Pass();
@@ -1409,7 +1409,7 @@ namespace Microsoft.NET.Publish.Tests
 
             var testProject = CreateTestProjectForILLinkTesting(targetFramework, projectName, referenceProjectName);
             var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework)
-                .WithProjectChanges(project => EnableNonFrameworkTrimming(project));
+                .WithProjectChanges(EnableNonFrameworkTrimming);
 
             var publishCommand = new PublishCommand(testAsset);
             publishCommand.Execute($"/p:RuntimeIdentifier={rid}", "/p:PublishTrimmed=true",

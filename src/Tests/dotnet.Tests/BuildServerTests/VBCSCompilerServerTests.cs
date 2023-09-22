@@ -26,7 +26,7 @@ namespace Microsoft.DotNet.Tests.BuildServerTests
 
             var server = new VBCSCompilerServer(CreateCommandFactoryMock(exitCode: 1, stdErr: ErrorMessage).Object);
 
-            Action a = () => server.Shutdown();
+            Action a = server.Shutdown;
 
             a.Should().Throw<BuildServerException>().WithMessage(
                 string.Format(

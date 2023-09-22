@@ -195,9 +195,9 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
             var exceptionThrown = Assert.Throws<GracefulException>(() => command.Execute());
             exceptionThrown.Message.Should().Contain("Failing pack: Xamarin.Android.Framework");
             var expectedPacks = mockWorkloadIds
-                .SelectMany(workloadId => workloadResolver.GetPacksInWorkload(workloadId))
+                .SelectMany(workloadResolver.GetPacksInWorkload)
                 .Distinct()
-                .Select(packId => workloadResolver.TryGetPackInfo(packId))
+                .Select(workloadResolver.TryGetPackInfo)
                 .Where(pack => pack != null);
             installer.RolledBackPacks.Should().BeEquivalentTo(expectedPacks);
             installer.InstallationRecordRepository.WorkloadInstallRecord.Should().BeEmpty();

@@ -74,7 +74,7 @@ namespace Microsoft.DotNet.Tools
             => new[] { argument }.Concat(arguments);
 
         private static bool HasArgumentToExcludeFromRestore(IEnumerable<string> arguments)
-            => arguments.Any(a => IsExcludedFromRestore(a));
+            => arguments.Any(IsExcludedFromRestore);
 
         private static readonly string[] propertyPrefixes = new string[] { "-", "/", "--" };
 

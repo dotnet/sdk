@@ -51,13 +51,13 @@ namespace Microsoft.DotNet.ApiCompat
 #if NETCOREAPP
         private Assembly? Resolve(AssemblyLoadContext context, AssemblyName assemblyName)
         {
-            return LoadRoslyn(assemblyName, path => context.LoadFromAssemblyPath(path));
+            return LoadRoslyn(assemblyName, context.LoadFromAssemblyPath);
         }
 #else
         private Assembly? Resolve(object sender, ResolveEventArgs args)
         {
             AssemblyName name = new(args.Name);
-            return LoadRoslyn(name, path => Assembly.LoadFrom(path));
+            return LoadRoslyn(name, Assembly.LoadFrom);
         }
 #endif
 

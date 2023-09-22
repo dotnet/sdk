@@ -53,7 +53,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool
 
         private bool CheckCore(IEnumerable<string> assemblyFilePaths)
         {
-            var items = assemblyFilePaths.Select(a => ExtensionVerificationItem.Create(a)).ToArray();
+            var items = assemblyFilePaths.Select(ExtensionVerificationItem.Create).ToArray();
             var assemblies = new HashSet<AssemblyIdentity>(items.Select(i => i.Identity));
 
             for (var i = 0; i < items.Length; i++)

@@ -14,7 +14,7 @@ namespace Microsoft.DotNet.Tools.Sdk.Check
             {
                 return uri != null ? Task.Run(() => ProductCollection.GetAsync(uri.ToString())).Result :
                     filePath != null ? Task.Run(() => ProductCollection.GetFromFileAsync(filePath, false)).Result :
-                    Task.Run(() => ProductCollection.GetAsync()).Result;
+                    Task.Run(ProductCollection.GetAsync).Result;
             }
             catch (Exception e)
             {

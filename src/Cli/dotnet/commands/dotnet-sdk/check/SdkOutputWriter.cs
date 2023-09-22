@@ -28,9 +28,9 @@ namespace Microsoft.DotNet.Tools.Sdk.Check
 
             var table = new PrintableTable<NetSdkInfo>();
             table.AddColumn(LocalizableStrings.VersionColumnHeader, sdk => sdk.Version.ToString());
-            table.AddColumn(LocalizableStrings.StatusColumnHeader, sdk => GetSdkStatusMessage(sdk));
+            table.AddColumn(LocalizableStrings.StatusColumnHeader, GetSdkStatusMessage);
 
-            table.PrintRows(_sdkInfo.OrderBy(sdk => sdk.Version), l => _reporter.WriteLine(l));
+            table.PrintRows(_sdkInfo.OrderBy(sdk => sdk.Version), _reporter.WriteLine);
 
             if (NewFeatureBandAvailable())
             {

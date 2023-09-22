@@ -44,7 +44,7 @@ namespace Microsoft.DotNet.Tests.BuildServerTests
                 commandFactory: CreateCommandFactoryMock(serverPath, PipeName, exitCode: 1, stdErr: ErrorMessage).Object,
                 fileSystem: fileSystemMock);
 
-            Action a = () => server.Shutdown();
+            Action a = server.Shutdown;
 
             a.Should().Throw<BuildServerException>().WithMessage(
                 string.Format(
@@ -117,7 +117,7 @@ namespace Microsoft.DotNet.Tests.BuildServerTests
                 commandFactory: commandFactoryMock.Object,
                 fileSystem: fileSystemMock);
 
-            Action a = () => server.Shutdown();
+            Action a = server.Shutdown;
 
             a.Should().NotThrow();
             commandFactoryMock.Verify(c => c.Create(It.IsAny<string>(), It.IsAny<IEnumerable<string>>(), It.IsAny<NuGetFramework>(), It.IsAny<string>()), Times.Never);

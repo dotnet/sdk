@@ -53,7 +53,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 RollForward = "LatestMinor"
             };
 
-            Action a = () => task.PublicExecuteCore();
+            Action a = task.PublicExecuteCore;
             a.Should().NotThrow();
 
             File.ReadAllText(_runtimeConfigPath).Should()
@@ -108,7 +108,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 RollForward = "LatestMinor"
             };
 
-            Action a = () => task.PublicExecuteCore();
+            Action a = task.PublicExecuteCore;
             a.Should().NotThrow();
 
             File.ReadAllText(_runtimeConfigPath).Should()
@@ -161,7 +161,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 RollForward = "LatestMinor"
             };
 
-            Action a = () => task.PublicExecuteCore();
+            Action a = task.PublicExecuteCore;
             a.Should().NotThrow();
 
             File.ReadAllText(_runtimeConfigPath).Should()
@@ -201,7 +201,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 RollForward = "LatestMinor"
             };
 
-            Action a = () => task.PublicExecuteCore();
+            Action a = task.PublicExecuteCore;
             a.Should().NotThrow();
 
             File.ReadAllText(_runtimeConfigPath).Should()

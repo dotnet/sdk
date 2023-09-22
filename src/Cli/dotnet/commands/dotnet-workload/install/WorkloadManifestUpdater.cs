@@ -418,7 +418,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
         private async Task<bool> UpdatedAdManifestPackagesExistAsync()
         {
             var manifests = GetInstalledManifestIds();
-            var availableUpdates = await Task.WhenAll(manifests.Select(manifest => NewerManifestPackageExists(manifest)))
+            var availableUpdates = await Task.WhenAll(manifests.Select(NewerManifestPackageExists))
                 .ConfigureAwait(false);
             return availableUpdates.Any();
         }

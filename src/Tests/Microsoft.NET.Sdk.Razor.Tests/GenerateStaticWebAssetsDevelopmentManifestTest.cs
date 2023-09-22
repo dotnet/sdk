@@ -515,7 +515,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         {
             return new StaticWebAssetsDevelopmentManifest()
             {
-                ContentRoots = contentRoots.Select(cr => StaticWebAsset.NormalizeContentRootPath(cr)).ToArray(),
+                ContentRoots = contentRoots.Select(StaticWebAsset.NormalizeContentRootPath).ToArray(),
                 Root = root
             };
         }

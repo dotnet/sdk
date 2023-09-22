@@ -95,7 +95,7 @@ namespace Microsoft.NET.Build.Tasks
                     new SingleProjectInfo(sourceProjectFile, name, version, outputName, dependencyReferences: null, resourceAssemblies: null));
             }
 
-            IEnumerable<ITaskItem> projectReferenceSatellitePaths = referenceSatellitePaths.Where(r => ReferenceInfo.IsProjectReference(r));
+            IEnumerable<ITaskItem> projectReferenceSatellitePaths = referenceSatellitePaths.Where(ReferenceInfo.IsProjectReference);
 
             foreach (ITaskItem projectReferenceSatellitePath in projectReferenceSatellitePaths)
             {

@@ -292,7 +292,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             }
 
             var candidateFeatureBands = Directory.GetDirectories(sdkManifestPath)
-                .Select(dir => Path.GetFileName(dir))
+                .Select(Path.GetFileName)
                 .Select(featureBand => new SdkFeatureBand(featureBand))
                 .Where(featureBand => featureBand < _sdkVersionBand || _sdkVersionBand.ToStringWithoutPrerelease().Equals(featureBand.ToString(), StringComparison.Ordinal));
 

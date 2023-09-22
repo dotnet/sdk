@@ -63,9 +63,9 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
         List<WorkloadDownload> GetMsisForWorkloads(IEnumerable<WorkloadId> workloads)
         {
             var packs = workloads
-                .SelectMany(workloadId => _workloadResolver.GetPacksInWorkload(workloadId))
+                .SelectMany(_workloadResolver.GetPacksInWorkload)
                 .Distinct()
-                .Select(packId => _workloadResolver.TryGetPackInfo(packId))
+                .Select(_workloadResolver.TryGetPackInfo)
                 .Where(pack => pack != null);
 
             return GetMsisForPacks(packs);

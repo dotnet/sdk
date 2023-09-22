@@ -23,8 +23,8 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             // Establish a connection with the install client and logger. We're relying on tasks to handle
             // this, otherwise, the ordering needs to be lined up with how the client configures
             // the underlying pipe streams to avoid deadlock.
-            Task dispatchTask = new Task(() => Dispatcher.Connect());
-            Task loggerTask = new Task(() => logger.Connect());
+            Task dispatchTask = new Task(Dispatcher.Connect);
+            Task loggerTask = new Task(logger.Connect);
 
             dispatchTask.Start();
             loggerTask.Start();

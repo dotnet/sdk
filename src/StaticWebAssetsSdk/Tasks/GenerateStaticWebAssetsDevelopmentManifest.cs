@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                 }
 
                 var manifest = ComputeDevelopmentManifest(
-                    Assets.Select(a => StaticWebAsset.FromTaskItem(a)),
+                    Assets.Select(StaticWebAsset.FromTaskItem),
                     DiscoveryPatterns.Select(StaticWebAssetsDiscoveryPattern.FromTaskItem));
 
                 PersistManifest(manifest);

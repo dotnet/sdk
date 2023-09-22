@@ -17,7 +17,7 @@ namespace Microsoft.DotNet.Tests
             var table = new PrintableTable<string[]>();
 
             var lines = new List<string>();
-            table.PrintRows(new string[][] { }, l => lines.Add(l));
+            table.PrintRows(new string[][] { }, lines.Add);
 
             lines.Should().BeEmpty();
         }
@@ -422,7 +422,7 @@ namespace Microsoft.DotNet.Tests
             }
 
             var lines = new List<string>();
-            table.PrintRows(data.Rows, l => lines.Add(l));
+            table.PrintRows(data.Rows, lines.Add);
 
             lines.Should().Equal(data.ExpectedLines);
             table.CalculateWidth(data.Rows).Should().Be(data.ExpectedTableWidth);

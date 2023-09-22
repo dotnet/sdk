@@ -877,7 +877,7 @@ class C
             testProject.AdditionalProperties.Add("SelfContained", "true");
 
             var testAsset = _testAssetsManager.CreateTestProject(testProject)
-                .WithProjectChanges(project => VerifyPrepareForBundle(project));
+                .WithProjectChanges(VerifyPrepareForBundle);
 
             var publishCommand = new PublishCommand(testAsset);
             var singleFilePath = Path.Combine(GetPublishDirectory(publishCommand, ToolsetInfo.CurrentTargetFramework).FullName, $"SingleFileTest{Constants.ExeSuffix}");
@@ -935,7 +935,7 @@ class C
             testProject.AdditionalProperties.Add("SelfContained", "true");
 
             var testAsset = _testAssetsManager.CreateTestProject(testProject)
-                .WithProjectChanges(project => VerifyPrepareForBundle(project));
+                .WithProjectChanges(VerifyPrepareForBundle);
 
             var publishCommand = new PublishCommand(testAsset);
 

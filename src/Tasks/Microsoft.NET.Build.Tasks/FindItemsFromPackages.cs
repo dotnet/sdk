@@ -28,7 +28,7 @@ namespace Microsoft.NET.Build.Tasks
         protected override void ExecuteCore()
         {
             var packageIdentities = new HashSet<PackageIdentity>(
-                Packages.Select(p => ItemUtilities.GetPackageIdentity(p)));
+                Packages.Select(ItemUtilities.GetPackageIdentity));
 
             var itemsFromPackages = new List<ITaskItem>();
             foreach (ITaskItem item in Items)

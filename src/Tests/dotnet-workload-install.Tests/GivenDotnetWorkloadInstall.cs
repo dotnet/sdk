@@ -89,9 +89,9 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             var exceptionThrown = Assert.Throws<Exception>(() => installManager.InstallWorkloads(mockWorkloadIds, true));
             exceptionThrown.Message.Should().Be("Failing workload: xamarin-android-build");
             var expectedPacks = mockWorkloadIds
-                .SelectMany(workloadId => workloadResolver.GetPacksInWorkload(workloadId))
+                .SelectMany(workloadResolver.GetPacksInWorkload)
                 .Distinct()
-                .Select(packId => workloadResolver.TryGetPackInfo(packId))
+                .Select(workloadResolver.TryGetPackInfo)
                 .Where(pack => pack != null);
             installer.RolledBackPacks.Should().BeEquivalentTo(expectedPacks);
             installer.InstallationRecordRepository.WorkloadInstallRecord.Should().BeEmpty();
@@ -425,7 +425,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             // Assert feature band records are correct
             var featureBandRecords = Directory.GetFiles(Directory.GetDirectories(packRecordDirs[0])[0]);
             featureBandRecords.Count().Should().Be(2);
-            featureBandRecords.Select(recordPath => Path.GetFileName(recordPath))
+            featureBandRecords.Select(Path.GetFileName)
                 .Should().BeEquivalentTo(new string[] { prev7FormattedFeatureVersion, rc1FormattedFeatureVersion });
         }
 

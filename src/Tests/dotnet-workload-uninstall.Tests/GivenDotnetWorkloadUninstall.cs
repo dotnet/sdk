@@ -169,8 +169,8 @@ namespace Microsoft.DotNet.Cli.Workload.Uninstall.Tests
             var packRecordDirs = Directory.GetDirectories(Path.Combine(installRoot, "metadata", "workloads", "InstalledPacks", "v1"));
             packRecordDirs.Count().Should().Be(3);
             var featureBandMarkerFiles = Directory.GetDirectories(Path.Combine(installRoot, "metadata", "workloads", "InstalledPacks", "v1"))
-                .SelectMany(packIdDirs => Directory.GetDirectories(packIdDirs))
-                .SelectMany(packVersionDirs => Directory.GetFiles(packVersionDirs));
+                .SelectMany(Directory.GetDirectories)
+                .SelectMany(Directory.GetFiles);
             featureBandMarkerFiles.Count().Should().Be(6); // 3 packs x 2 feature bands
 
             UninstallWorkload(uninstallingWorkload, testDirectory, sdkFeatureVersion);

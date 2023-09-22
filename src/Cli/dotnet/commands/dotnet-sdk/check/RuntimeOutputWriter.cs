@@ -29,9 +29,9 @@ namespace Microsoft.DotNet.Tools.Sdk.Check
             var table = new PrintableTable<NetRuntimeInfo>();
             table.AddColumn(LocalizableStrings.NameColumnHeader, runtime => runtime.Name.ToString());
             table.AddColumn(LocalizableStrings.VersionColumnHeader, runtime => runtime.Version.ToString());
-            table.AddColumn(LocalizableStrings.StatusColumnHeader, runtime => GetRuntimeStatusMessage(runtime));
+            table.AddColumn(LocalizableStrings.StatusColumnHeader, GetRuntimeStatusMessage);
 
-            table.PrintRows(_runtimeInfo.OrderBy(sdk => sdk.Version), l => _reporter.WriteLine(l));
+            table.PrintRows(_runtimeInfo.OrderBy(sdk => sdk.Version), _reporter.WriteLine);
 
             _reporter.WriteLine();
         }

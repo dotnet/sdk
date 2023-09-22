@@ -29,7 +29,7 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
         public PackageOverrideResolver(ITaskItem[] packageOverrideItems)
         {
             _packageOverrideItems = packageOverrideItems;
-            _packageOverrides = new Lazy<Dictionary<string, PackageOverride>>(() => BuildPackageOverrides());
+            _packageOverrides = new Lazy<Dictionary<string, PackageOverride>>(BuildPackageOverrides);
         }
 
         public Dictionary<string, PackageOverride> PackageOverrides => _packageOverrides.Value;

@@ -130,7 +130,7 @@ namespace Microsoft.NET.Publish.Tests
             var testAsset = _testAssetsManager.CreateTestProject(testProject)
                 // populate a runtime config file with a key value pair
                 // <RuntimeHostConfigurationOption Include="key1" Value="value1" />
-                .WithProjectChanges(project => AddRuntimeConfigOption(project));
+                .WithProjectChanges(AddRuntimeConfigOption);
 
             var publishCommand = new PublishCommand(testAsset);
             publishCommand
@@ -181,7 +181,7 @@ namespace Microsoft.NET.Publish.Tests
             var testAsset = _testAssetsManager.CreateTestProject(testProject)
                 // populate a runtime config file with a key value pair
                 // <RuntimeHostConfigurationOption Include="key1" Value="value1" />
-                .WithProjectChanges(project => AddRuntimeConfigOption(project));
+                .WithProjectChanges(AddRuntimeConfigOption);
 
             var publishCommand = new PublishCommand(testAsset);
             publishCommand
@@ -226,7 +226,7 @@ namespace Microsoft.NET.Publish.Tests
             var testAsset = _testAssetsManager.CreateTestProject(testProject)
                 // populate a runtime config file with a key value pair
                 // <RuntimeHostConfigurationOption Include="key1" Value="value1" />
-                .WithProjectChanges(project => AddRuntimeConfigOption(project));
+                .WithProjectChanges(AddRuntimeConfigOption);
 
             var buildCommand = new BuildCommand(testAsset);
             buildCommand.Execute($"/p:UseCurrentRuntimeIdentifier=true")
