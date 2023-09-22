@@ -164,7 +164,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                     var expectedArch = RuntimeInformation.ProcessArchitecture.Equals(Architecture.Arm64) ? "arm64" : Environment.Is64BitOperatingSystem ? "x64" : "x86";
                     command.GetArgumentsToMSBuild()
                         .Should()
-                        .StartWith($"{ExpectedPrefix} -restore -consoleloggerparameters:Summary -property:RuntimeIdentifier=os-{expectedArch} -property:SelfContained=false");
+                        .StartWith($"{ExpectedPrefix} -restore -consoleloggerparameters:Summary -property:RuntimeIdentifier=os-{expectedArch}");
                 });
             }
             finally { CultureInfo.CurrentCulture = currentCultureBefore; }
@@ -192,7 +192,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                     }
                     command.GetArgumentsToMSBuild()
                         .Should()
-                        .StartWith($"{ExpectedPrefix} -restore -consoleloggerparameters:Summary -property:RuntimeIdentifier={expectedOs}-arch -property:SelfContained=false");
+                        .StartWith($"{ExpectedPrefix} -restore -consoleloggerparameters:Summary -property:RuntimeIdentifier={expectedOs}-arch");
                 });
             }
             finally { CultureInfo.CurrentCulture = currentCultureBefore;}
