@@ -14,7 +14,7 @@
     <CoreSetupBlobVersion>$(VSRedistCommonNetCoreSharedFrameworkx6490PackageVersion)</CoreSetupBlobVersion>
     <CoreSetupBlobVersion Condition=" '$(DotNetBuildFromSource)' == 'true' and '$(DotNetBuildFromSourceFlavor)' == 'Product' ">$(MicrosoftNETCoreAppRuntimePackageVersion)</CoreSetupBlobVersion>
 
-    <WindowsDesktopBlobVersion>$(VSRedistCommonWindowsDesktopSharedFrameworkx6480PackageVersion)</WindowsDesktopBlobVersion>
+    <WindowsDesktopBlobVersion>$(VSRedistCommonWindowsDesktopSharedFrameworkx6490PackageVersion)</WindowsDesktopBlobVersion>
 
     <!-- Because the ref packs are not serviced in every build, the blob location may vary -->
     <!-- Note that there may need to be a tweak for source build if we rev the targeting pack, something of the form
@@ -23,7 +23,7 @@
     <NETCoreAppTargetingPackBlobVersion>$(VSRedistCommonNetCoreTargetingPackx6490PackageVersion)</NETCoreAppTargetingPackBlobVersion>
 
     <AspNetCoreTargetingPackBlobVersion>$(MicrosoftAspNetCoreAppRefInternalPackageVersion)</AspNetCoreTargetingPackBlobVersion>
-    <WindowsDesktopTargetingPackBlobVersion>$(VSRedistCommonWindowsDesktopTargetingPackx6480PackageVersion)</WindowsDesktopTargetingPackBlobVersion>
+    <WindowsDesktopTargetingPackBlobVersion>$(VSRedistCommonWindowsDesktopTargetingPackx6490PackageVersion)</WindowsDesktopTargetingPackBlobVersion>
     <NETStandardTargetingPackBlobVersion>3.0.0</NETStandardTargetingPackBlobVersion>
   </PropertyGroup>
 
