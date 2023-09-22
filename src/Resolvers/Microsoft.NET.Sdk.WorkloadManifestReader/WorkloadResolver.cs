@@ -20,7 +20,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
         private readonly Dictionary<string, (WorkloadManifest manifest, WorkloadManifestInfo info)> _manifests = new(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<WorkloadId, (WorkloadDefinition workload, WorkloadManifest manifest)> _workloads = new();
         private readonly Dictionary<WorkloadPackId, (WorkloadPack pack, WorkloadManifest manifest)> _packs = new();
-        private IWorkloadManifestProvider? _manifestProvider;
+        private IWorkloadManifestProvider _manifestProvider;
         private string[] _currentRuntimeIdentifiers;
         private readonly (string path, bool installable)[] _dotnetRootPaths;
 
@@ -78,7 +78,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
         /// Creates a resolver by composing all the manifests from the provider.
         /// </summary>
         private WorkloadResolver(IWorkloadManifestProvider manifestProvider, (string path, bool installable)[] dotnetRootPaths, string[] currentRuntimeIdentifiers)
-            : this(dotnetRootPaths, currentRuntimeIdentifiers)
+            : this(dotnetRootPaths, currentRuntimeIdentifiers, manifestProvider.GetSdkFeatureBand())
         {
             _manifestProvider = manifestProvider;
 
@@ -88,11 +88,12 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 
         /// <summary>
         /// Creates a resolver with no manifests.
-        /// </summary>A
-        private WorkloadResolver((string path, bool installable)[] dotnetRootPaths, string[] currentRuntimeIdentifiers)
+        /// </summary>
+        private WorkloadResolver((string path, bool installable)[] dotnetRootPaths, string[] currentRuntimeIdentifiers, string sdkFeatureBand)
         {
             _dotnetRootPaths = dotnetRootPaths;
             _currentRuntimeIdentifiers = currentRuntimeIdentifiers;
+            _manifestProvider = new EmptyWorkloadManifestProvider(sdkFeatureBand);
         }
 
         public void RefreshWorkloadManifests()
@@ -610,7 +611,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
         {
             // we specifically don't assign the overlayManifestProvider to the new resolver
             // because it's not possible to refresh an overlay resolver
-            var overlayResolver = new WorkloadResolver(_dotnetRootPaths, _currentRuntimeIdentifiers);
+            var overlayResolver = new WorkloadResolver(_dotnetRootPaths, _currentRuntimeIdentifiers, GetSdkFeatureBand());
             overlayResolver.LoadManifestsFromProvider(overlayManifestProvider);
 
             // after loading the overlay manifests into the new resolver
@@ -628,6 +629,11 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
         public string GetSdkFeatureBand()
         {
             return _manifestProvider?.GetSdkFeatureBand() ?? throw new Exception("Cannot get SDK feature band from ManifestProvider");
+        }
+
+        public IWorkloadManifestProvider GetWorkloadManifestProvider()
+        {
+            return _manifestProvider;
         }
 
         public class PackInfo
@@ -718,8 +724,21 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             throw new Exception($"Manifest with id {manifestId} does not exist.");
         }
             
-
         public IEnumerable<WorkloadManifestInfo> GetInstalledManifests() => _manifests.Select(t => t.Value.info);
+
+        private class EmptyWorkloadManifestProvider : IWorkloadManifestProvider
+        {
+            string _sdkFeatureBand;
+
+            public EmptyWorkloadManifestProvider(string sdkFeatureBand)
+            {
+                _sdkFeatureBand = sdkFeatureBand;
+            }
+
+            public Dictionary<string, WorkloadSet> GetAvailableWorkloadSets() => new();
+            public IEnumerable<ReadableWorkloadManifest> GetManifests() => Enumerable.Empty<ReadableWorkloadManifest>();
+            public string GetSdkFeatureBand() => _sdkFeatureBand;
+        }
     }
 
     static class DictionaryExtensions

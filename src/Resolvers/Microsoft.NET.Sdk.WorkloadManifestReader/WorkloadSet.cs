@@ -22,6 +22,10 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
         //  TODO: Generate version from hash of manifest versions if not otherwise set
         public string? Version { get; set; }
 
+        //  Indicates that a workload set is a baseline workload set that was installed with the .NET SDK.
+        //  It should not be subject to normal garbage collection unless the SDK that installed it is removed
+        public bool IsBaselineWorkloadSet { get; set; }
+
         public static WorkloadSet FromManifests(IEnumerable<WorkloadManifestInfo> manifests)
         {
             return new WorkloadSet()
