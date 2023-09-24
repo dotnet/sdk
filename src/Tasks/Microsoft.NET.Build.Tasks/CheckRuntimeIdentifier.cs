@@ -23,23 +23,19 @@ namespace Microsoft.NET.Build.Tasks
         [Required]
         public string TargetFramework { get; set; }
         /// <summary>
-        /// RID to use for runtime assets (may be empty)
+        /// RID to use for runtime assets.
         /// </summary>
+        [Required]
         public string RuntimeIdentifier { get; set; }
 
         #endregion
 
         protected override void ExecuteCore()
         {
-            if (string.IsNullOrEmpty(RuntimeIdentifier))
-            {
-                return; // can't check RuntimeIdentifier if it is null
-            }
-
             var lockFile = new LockFileCache(this).GetLockFile(ProjectAssetsFile);
             var target = lockFile.GetTargetAndReturnNullIfNotFound(TargetFramework, RuntimeIdentifier);
-
-            if (target is null)
+            var targetNotFound = target is null;
+            if (targetNotFound)
             {
                 var ridMismatchMessage = string.Format(Strings.AssetsFileRuntimeIdentifierMismatch, RuntimeIdentifier);
                 throw new BuildErrorException(ridMismatchMessage);

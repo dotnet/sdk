@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using FluentAssertions;
+using Microsoft.Build.Framework;
 using Microsoft.NET.TestFramework;
 using Xunit;
 using Xunit.Abstractions;
@@ -10,76 +11,76 @@ namespace Microsoft.NET.Build.Tasks.UnitTests;
 
 public class GivenACheckRuntimeIdentifierTask : SdkTest
 {
-    private const string AssetsFileName = "project.assets.json";
-    private const string TargetFramework = "net8.0";
+    private const string ProjectAssetsFileName = "project.assets.json";
     private const string UbuntuX64RuntimeIdentifier = "ubuntu-x64";
     private const string WindowsX64RuntimeIdentifier = "win-x64";
     private const string ExpectedErrorCode = "NETSDK1214";
 
-    private readonly CheckRuntimeIdentifier _task;
-    private readonly string _assetsFilePath;
+    public GivenACheckRuntimeIdentifierTask(ITestOutputHelper log) : base(log) { }
 
-    public GivenACheckRuntimeIdentifierTask(ITestOutputHelper log) : base(log)
+    [Fact]
+    public void ItShouldFailIfAssetsFileHasNoTargetRuntimeIdentifier()
     {
-        var testDirectory = _testAssetsManager.CreateTestDirectory(nameof(GivenACheckRuntimeIdentifierTask));
-        _assetsFilePath = Path.Combine(testDirectory.Path, AssetsFileName);
-        _task = new CheckRuntimeIdentifier
+        var assetsFilePath = CreateProjectAssetsJsonFile(AssetsJsonWithoutAddedRuntimeIdentifiers,
+            nameof(ItShouldFailIfAssetsFileHasNoTargetRuntimeIdentifier));
+
+        var task = CreateTaskWithRuntimeIdentifier(assetsFilePath, WindowsX64RuntimeIdentifier);
+        task.Execute();
+        AssertThatExpectedBuildErrorHappened(task);
+    }
+
+    [Fact]
+    public void ItShouldSucceedIfRuntimeIdentifierMatchesTheAssetFile()
+    {
+        var assetsFilePath = CreateProjectAssetsJsonFile(AssetsJsonWithWithAddedWinX64RuntimeIdentifier,
+            nameof(ItShouldSucceedIfRuntimeIdentifierMatchesTheAssetFile));
+
+        var task = CreateTaskWithRuntimeIdentifier(assetsFilePath, WindowsX64RuntimeIdentifier);
+        task.Execute();
+        AssertThatThereWereNoErrors(task);
+    }
+
+    [Fact]
+    public void ItShouldFailIfTargetIdentifierDiffersFromAssetsFile()
+    {
+        var assetsFilePath = CreateProjectAssetsJsonFile(AssetsJsonWithoutAddedRuntimeIdentifiers,
+            nameof(ItShouldFailIfTargetIdentifierDiffersFromAssetsFile));
+
+        var task = CreateTaskWithRuntimeIdentifier(assetsFilePath, UbuntuX64RuntimeIdentifier);
+        task.Execute();
+        AssertThatExpectedBuildErrorHappened(task);
+    }
+
+    private string CreateProjectAssetsJsonFile(string content, string testIdentifier)
+    {
+        var testDirectory = _testAssetsManager.CreateTestDirectory(identifier: testIdentifier);
+        var assetsFilePath = Path.Combine(testDirectory.Path, ProjectAssetsFileName); 
+        File.WriteAllText(assetsFilePath, content);
+        return assetsFilePath;
+    }
+
+    private static CheckRuntimeIdentifier CreateTaskWithRuntimeIdentifier(string assetsFilePath, string msBuildRuntimeIdentifier)
+    {
+        return new CheckRuntimeIdentifier
         {
-            ProjectAssetsFile = _assetsFilePath,
-            TargetFramework = TargetFramework,
+            ProjectAssetsFile = assetsFilePath,
+            TargetFramework = "net8.0",
+            RuntimeIdentifier = msBuildRuntimeIdentifier,
             BuildEngine = new MockBuildEngine()
         };
     }
 
-    [Fact]
-    public void ItShouldFailWithABuildErrorIfAssetsFileIsMissingTargetRuntimeIdentifier()
+    private static void AssertThatExpectedBuildErrorHappened(ITask task)
     {
-        WriteToAssetsFile(AssetsJsonWithoutAddedRuntimeIdentifiers);
-        _task.RuntimeIdentifier = WindowsX64RuntimeIdentifier;
-        _task.Execute();
-        AssertThatTaskThrewExpectedBuildError();
-    }
-
-    [Fact]
-    public void ItShouldExecuteWithoutErrorsIfRuntimeIdentifierIsPresentInAssetsFile()
-    {
-        WriteToAssetsFile(AssetsJsonWithWithAddedWinX64RuntimeIdentifier);
-        _task.RuntimeIdentifier = WindowsX64RuntimeIdentifier;
-        _task.Execute();
-        AssertThatTaskThrewNoErrors();
-    }
-
-    [Fact]
-    public void ItShouldFailWithABuildErrorIfTargetIdentifierDiffersFromCurrentOne()
-    {
-        WriteToAssetsFile(AssetsJsonWithWithAddedWinX64RuntimeIdentifier);
-        _task.RuntimeIdentifier = UbuntuX64RuntimeIdentifier;
-        _task.Execute();
-        AssertThatTaskThrewExpectedBuildError();
-    }
-
-    [Fact]
-    public void ItShouldNotFailIfRuntimeIdentifierIsMissing()
-    {
-        WriteToAssetsFile(AssetsJsonWithWithAddedWinX64RuntimeIdentifier);
-        _task.RuntimeIdentifier = null;
-        _task.Execute();
-        AssertThatTaskThrewNoErrors();
-    }
-
-    private void WriteToAssetsFile(string content) => File.WriteAllText(_assetsFilePath, content);
-
-    private void AssertThatTaskThrewExpectedBuildError()
-    {
-        var engine = (MockBuildEngine)_task.BuildEngine;
+        var engine = (MockBuildEngine)task.BuildEngine;
         engine.Errors.Should().HaveCount(1);
         var error = engine.Errors.Single();
         error.Code.Should().Be(ExpectedErrorCode);
     }
 
-    private void AssertThatTaskThrewNoErrors()
+    private static void AssertThatThereWereNoErrors(ITask task)
     {
-        var engine = (MockBuildEngine)_task.BuildEngine;
+        var engine = (MockBuildEngine)task.BuildEngine;
         engine.Errors.Should().HaveCount(0);
     }
 
@@ -157,7 +158,6 @@ public class GivenACheckRuntimeIdentifierTask : SdkTest
         }
       }
     }";
-
 
     private const string AssetsJsonWithWithAddedWinX64RuntimeIdentifier = @"
     {
