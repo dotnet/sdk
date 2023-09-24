@@ -43,7 +43,7 @@ public class GivenACheckRuntimeIdentifierTask : SdkTest
     [Fact]
     public void ItShouldFailIfTargetIdentifierDiffersFromAssetsFile()
     {
-        var assetsFilePath = CreateProjectAssetsJsonFile(AssetsJsonWithoutAddedRuntimeIdentifiers,
+        var assetsFilePath = CreateProjectAssetsJsonFile(AssetsJsonWithWithAddedWinX64RuntimeIdentifier,
             nameof(ItShouldFailIfTargetIdentifierDiffersFromAssetsFile));
 
         var task = CreateTaskWithRuntimeIdentifier(assetsFilePath, UbuntuX64RuntimeIdentifier);
