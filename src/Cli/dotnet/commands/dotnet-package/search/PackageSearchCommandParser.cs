@@ -1,0 +1,62 @@
+﻿using System;
+using System.CommandLine;
+using Microsoft.DotNet.Tools.Package.Search;
+using LocalizableStrings = Microsoft.DotNet.Tools.Package.Search.LocalizableStrings;
+
+namespace Microsoft.DotNet.Cli
+{
+    internal static class PackageSearchCommandParser
+    {
+        public static readonly CliArgument<string> SearchTermArgument = new("searchTerm")
+        {
+            HelpName = LocalizableStrings.SearchTermArgumentName,
+            Description = LocalizableStrings.SearchTermDescription
+        };
+
+        public static readonly CliOption<string> Source = new("--source")
+        {
+            Description = LocalizableStrings.SourceDescription,
+            HelpName = LocalizableStrings.SourceArgumentName
+        };
+
+        public static readonly CliOption<bool> ExactMatch = new("--exact-match")
+        {
+            Description = LocalizableStrings.ExactMatchDescription
+        };
+
+        public static readonly CliOption<string> Verbosity = new("--verbosity")
+
+        {
+            Description = LocalizableStrings.VerbosityDescription,
+            HelpName = LocalizableStrings.VerbosityArgumentName
+        };
+
+        public static readonly CliOption<bool> Prerelease = new("--prerelease")
+        {
+            Description = LocalizableStrings.PrereleaseDescription
+        };
+
+        private static readonly CliCommand command = ConstructCommand();
+
+        public static CliCommand GetCommand()
+        {
+            return command;
+        }
+
+        private static CliCommand ConstructCommand()
+        {
+            CliCommand command = new CliCommand("search", LocalizableStrings.CommandDescription);
+
+            command.Arguments.Add(SearchTermArgument);
+
+            command.Options.Add(Source);
+            command.Options.Add(ExactMatch);
+            command.Options.Add(Verbosity);
+            command.Options.Add(Prerelease);
+
+            command.SetAction((parseResult) => new PackageSearchCommand(parseResult).Execute());
+
+            return command;
+        }
+    }
+}

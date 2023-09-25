@@ -51,6 +51,7 @@ namespace Microsoft.DotNet.Cli
             HelpCommandParser.GetCommand(),
             SdkCommandParser.GetCommand(),
             InstallSuccessCommand,
+            PackageCommandParser.GetCommand(),
             WorkloadCommandParser.GetCommand()
         };
 

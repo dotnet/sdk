@@ -1,0 +1,52 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
+  <file datatype="xml" source-language="en" target-language="fr" original="../LocalizableStrings.resx">
+    <body>
+      <trans-unit id="CommandDescription">
+        <source>Search for a package in nuget.org. </source>
+        <target state="new">Search for a package in nuget.org. </target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ExactMatchDescription">
+        <source>Return exact matches only as a search result.</source>
+        <target state="new">Return exact matches only as a search result.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PrereleaseDescription">
+        <source>Allow prelease packages to be shown.</source>
+        <target state="new">Allow prelease packages to be shown.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SearchTermArgumentName">
+        <source>SEARCH_TERM</source>
+        <target state="new">SEARCH_TERM</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SearchTermDescription">
+        <source>Search term from package id.</source>
+        <target state="new">Search term from package id.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SourceArgumentName">
+        <source>Source</source>
+        <target state="new">Source</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SourceDescription">
+        <source>A list of package sources to search.</source>
+        <target state="new">A list of package sources to search.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="VerbosityArgumentName">
+        <source>Verbosity</source>
+        <target state="new">Verbosity</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="VerbosityDescription">
+        <source>The amount of details in the output : quiet, normal, detailed.</source>
+        <target state="new">The amount of details in the output : quiet, normal, detailed.</target>
+        <note />
+      </trans-unit>
+    </body>
+  </file>
+</xliff>
