@@ -58,6 +58,11 @@ sb,./packs/Microsoft.NETCore.App.Runtime.*/*
 # netfx tooling - dumpminitool - https://github.com/dotnet/source-build/issues/3289
 msft,./sdk/x.y.z/Extensions/dump/*
 
+# https://github.com/dotnet/msbuild/issues/9213
+msft,./sdk/x.y.z/**/System.Windows.Extensions.dll
+msft,./sdk/x.y.z/**/System.Security.Permissions.dll
+msft,./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/System.Diagnostics.EventLog.dll
+
 # netfx runtimes for dotnet-watch - https://github.com/dotnet/source-build/issues/3285
 msft,./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/Microsoft.CodeAnalysis.Elfie.dll
 msft,./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/Microsoft.Win32.SystemEvents.dll
