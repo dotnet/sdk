@@ -13,20 +13,23 @@ namespace Microsoft.DotNet.NugetSearch
             string searchTerm = null,
             int? skip = null,
             int? take = null,
-            bool prerelease = false)
+            bool prerelease = false,
+            string packageType = null)
         {
             SearchTerm = searchTerm;
             Skip = skip;
             Take = take;
             Prerelease = prerelease;
+            PackageType = packageType;
         }
 
         public string SearchTerm { get; }
         public int? Skip { get; }
         public int? Take { get; }
         public bool Prerelease { get; }
+        public string PackageType { get; }
 
-        public NugetSearchApiParameter(ParseResult parseResult)
+        public NugetSearchApiParameter(ParseResult parseResult, string packageType)
         {
             var searchTerm = parseResult.GetValue(ToolSearchCommandParser.SearchTermArgument);
 
@@ -38,6 +41,7 @@ namespace Microsoft.DotNet.NugetSearch
             Skip = skip;
             Take = take;
             Prerelease = prerelease;
+            PackageType = packageType;
         }
 
         private static int? GetParsedResultAsInt(ParseResult parseResult, CliOption<string> alias)

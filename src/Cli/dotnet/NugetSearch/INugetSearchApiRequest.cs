@@ -3,7 +3,7 @@
 
 namespace Microsoft.DotNet.NugetSearch
 {
-    internal interface INugetToolSearchApiRequest
+    internal interface INugetSearchApiRequest
     {
         Task<string> GetResult(NugetSearchApiParameter nugetSearchApiParameter);
     }
